@@ -22,10 +22,12 @@ A consumer manifest uses `schema_version=lf-gate-group-manifest/v1` and must dec
 - `expected_total_checks`;
 - stable ordered `groups`;
 - every group must be `execution_class=DETERMINISTIC`;
-- every discovered test must belong to exactly one group;
-- no stale, missing or duplicate test assignment is accepted.
+- every group declares exactly one check carrier: `tests` or explicit `commands`;
+- explicit commands use the same non-shell `argv/source_path/critical` contract already consumed by `run_gate_checks_v1.py`;
+- every discovered check source must belong to exactly one group;
+- no stale, missing or duplicate check assignment is accepted.
 
-The grouped runner fails closed when the manifest and the discovered filesystem differ. This prevents a new `test_*.py` from silently escaping the gate.
+The grouped runner fails closed when the manifest and the discovered filesystem differ. This prevents a new deterministic check source from silently escaping the gate. Explicit commands do not create a second executor: the orchestrator still delegates every check to `run_gate_checks_v1.py`.
 
 ## Execution policy
 
@@ -76,7 +78,7 @@ Stable candidate identity is still useful for diagnostics and regression, but re
 
 ## Consumer example
 
-Profile Runtime V3 consumes this capability through `profile_runtime_v3_gate_manifest.json`. That manifest is a consumer declaration only; the grouping engine remains transversal and reusable by other LF gates.
+Profile Runtime V3 consumes this capability through `profile_runtime_v3_gate_manifest.json`. `lf-contract-check` may consume the same engine through a consumer manifest whose stable group IDs are selected by its Router `required_controls`; applicability remains Router-owned and must not be reimplemented in the manifest. Consumer manifests are declarations only; the grouping engine remains transversal and reusable by other LF gates.
 
 ## Cuándo consumirlo
 
