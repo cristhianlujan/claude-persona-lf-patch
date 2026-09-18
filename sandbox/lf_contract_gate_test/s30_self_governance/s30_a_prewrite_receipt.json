@@ -1,169 +1,95 @@
 {
   "applicable_ekb": [
     {
-      "code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+      "code": "CI-FAST-DEEP-FEEDBACK-LOOP-001",
       "triggers": [
         "RECURRENT",
         "MACHINE_DETECTABLE",
         "AVOIDABLE_MATERIAL_WORK"
       ]
-    },
-    {
-      "code": "GOV-010",
-      "triggers": [
-        "RECURRENT",
-        "AVOIDABLE_MATERIAL_WORK"
-      ]
     }
   ],
-  "base_main_sha": "c14807ac7d4201425d771dff3ecf35c480334278",
+  "base_main_sha": "91055be3b7585d9d89662d427fa3ed2ddcebe311",
   "causal_lane_ownership": {
-    "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-    "target_asset": "S30",
-    "primary_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
+    "ekb_code": "CI-FAST-DEEP-FEEDBACK-LOOP-001",
+    "target_asset": "S30_SELF_GOVERNANCE_GATE",
+    "primary_gate": "S30_CI_APPLICABILITY",
     "role": "WRITER",
-    "owner": "S30-BROKER-TRANSVERSAL-CLOSEOUT",
+    "owner": "S30-CI-APPLICABILITY-REPAIR",
     "observed_active_writers": [
       {
-        "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-        "target_asset": "S30",
-        "primary_gate": "TRANSVERSAL_GIT_WRITE_BROKER",
-        "owner": "S30-BROKER-TRANSVERSAL-CLOSEOUT",
+        "ekb_code": "CI-FAST-DEEP-FEEDBACK-LOOP-001",
+        "target_asset": "S30_SELF_GOVERNANCE_GATE",
+        "primary_gate": "S30_CI_APPLICABILITY",
+        "owner": "S30-CI-APPLICABILITY-REPAIR",
         "state": "ACTIVE",
-        "source_ref": "closeout://S30-BROKER-V061-20260910"
+        "source_ref": "github:branch/lf/staging-s30-ci-applicability-v062-20260918|supabase:preflight-no-active-writer-collision"
       }
     ],
     "transfer": {
       "is_transfer": false
     },
-    "evidence": "PR #659 and #660 merged; main-pinned broker, bounded candidate scope, protected DeployKey write path, and closeout routing all verified by exact-head and main CI."
+    "evidence": "Supabase preflight found no active writer for this EKB/target/gate before staging branch creation."
   },
   "evidence": {
-    "execution_id": "EXEC-S30-BROKER-V061-CLOSEOUT-20260910-001",
-    "mode": "CLOSEOUT",
+    "execution_id": "EXEC-S30-CI-APPLICABILITY-REPAIR-20260918-001",
+    "mode": "REPAIR_PREWRITE",
     "production": false,
-    "base_main_sha": "c14807ac7d4201425d771dff3ecf35c480334278",
-    "owner_authorization_ref": "current-chat:Autorizo promoción v0.6 a main",
-    "promotion_prs": [
-      659,
-      660
-    ],
-    "promotion_merges": [
-      "780b20c15c2de85eed83b59ae1612fcfc91670e8",
-      "c14807ac7d4201425d771dff3ecf35c480334278"
-    ],
-    "dispatch_runs": [
-      34494828643,
-      34496165399
-    ],
-    "main_ci_runs": [
-      34495460868,
-      34495460885,
-      34496740730,
-      34496740478
-    ],
-    "final_claim": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS"
+    "base_main_sha": "91055be3b7585d9d89662d427fa3ed2ddcebe311",
+    "source_ref": "github:branch/lf/staging-s30-ci-applicability-v062-20260918",
+    "ekb_ref": "supabase:lf_error_knowledge/CI-FAST-DEEP-FEEDBACK-LOOP-001@event=14319"
   },
   "frontier": {
-    "current_stage": "S30_A_TRANSVERSAL_BROKER_CLOSED",
-    "next_gate": "S30_B_CURRENT_MAIN_REBASE_AND_VALIDATION",
+    "current_stage": "S30_CI_APPLICABILITY_REPAIR_PREWRITE",
+    "next_gate": "S30_GIT_BROKER_PROMOTION_AND_EXACT_HEAD_CI",
     "blockers": [],
     "safe_parallel_work": [
-      "S30_B_READ_ONLY_PREFLIGHT"
+      "READ_ONLY_INVENTORY_PREPARATION_ONLY"
     ]
   },
   "hard_guard_candidates": [
     {
-      "ekb_code": "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
+      "ekb_code": "CI-FAST-DEEP-FEEDBACK-LOOP-001",
       "closure": {
         "EKB_UPDATED": {
           "status": "PASS",
-          "evidence": "Active EKB causal gap consumed before repair and carried through closeout."
-        },
-        "DETECTOR_IMPLEMENTED": {
-          "status": "PASS",
-          "evidence": "Validator broker_scope_decision plus workflow main-pinned control-plane checks detect bypass/scope/control-path/mode violations."
-        },
-        "NEGATIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Self-test includes blocked mixed control path, control prefix, missing receipt, wrong receipt mode, oversized changeset, symlink, stale/unauthorized cases."
-        },
-        "POSITIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Self-test covers bounded REPAIR, CANDIDATE, main-pinned control plane, and explicit CLOSEOUT contract."
-        },
-        "EXECUTED_PATH_WIRING_PROVEN": {
-          "status": "PASS",
-          "evidence": "Governed dispatch 34494828643 and 34496165399 executed through secret + DeployKey + ruleset; protected branch CI passed."
-        },
-        "READBACK": {
-          "status": "PASS",
-          "evidence": "PR #659 merge 780b20c15c2de85eed83b59ae1612fcfc91670e8 and PR #660 merge c14807ac7d4201425d771dff3ecf35c480334278; main CI 34495460868/34495460885 and 34496740730/34496740478 all PASS."
-        }
-      }
-    },
-    {
-      "ekb_code": "GOV-010",
-      "closure": {
-        "EKB_UPDATED": {
-          "status": "PASS",
-          "evidence": "Active EKB causal gap consumed before repair and carried through closeout."
-        },
-        "DETECTOR_IMPLEMENTED": {
-          "status": "PASS",
-          "evidence": "Validator broker_scope_decision plus workflow main-pinned control-plane checks detect bypass/scope/control-path/mode violations."
-        },
-        "NEGATIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Self-test includes blocked mixed control path, control prefix, missing receipt, wrong receipt mode, oversized changeset, symlink, stale/unauthorized cases."
-        },
-        "POSITIVE_REGRESSION": {
-          "status": "PASS",
-          "evidence": "Self-test covers bounded REPAIR, CANDIDATE, main-pinned control plane, and explicit CLOSEOUT contract."
-        },
-        "EXECUTED_PATH_WIRING_PROVEN": {
-          "status": "PASS",
-          "evidence": "Governed dispatch 34494828643 and 34496165399 executed through secret + DeployKey + ruleset; protected branch CI passed."
-        },
-        "READBACK": {
-          "status": "PASS",
-          "evidence": "PR #659 merge 780b20c15c2de85eed83b59ae1612fcfc91670e8 and PR #660 merge c14807ac7d4201425d771dff3ecf35c480334278; main CI 34495460868/34495460885 and 34496740730/34496740478 all PASS."
+          "evidence": "Canonical writer persisted recurrence before repair: event 14319, frequency 15."
         }
       }
     }
   ],
-  "intended_material_action": "SELF_GOVERNANCE_CLOSEOUT",
+  "intended_material_action": "SELF_GOVERNANCE_GATE_REPAIR",
   "lane": "S30-A",
-  "owner": "S30-BROKER-TRANSVERSAL-CLOSEOUT",
-  "owner_authorized_merge": true,
-  "owner_authorized_repair": false,
+  "owner": "S30-CI-APPLICABILITY-REPAIR",
+  "owner_authorized_merge": false,
+  "owner_authorized_repair": true,
   "preflight_checks": {
     "CI_RUNNER_WIRING_CONFIRMED": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; CI_RUNNER_WIRING_CONFIRMED verified after substantive promotion.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; CI_RUNNER_WIRING_CONFIRMED verified for bounded source-only S30 applicability repair.",
       "status": "PASS"
     },
     "EVIDENCE_PROVIDER_RESOLVABLE": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; EVIDENCE_PROVIDER_RESOLVABLE verified after substantive promotion.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; EVIDENCE_PROVIDER_RESOLVABLE verified for bounded source-only S30 applicability repair.",
       "status": "PASS"
     },
     "EXPECTED_OUTPUT_SCHEMA_COMPLETE": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; EXPECTED_OUTPUT_SCHEMA_COMPLETE verified after substantive promotion.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; EXPECTED_OUTPUT_SCHEMA_COMPLETE verified for bounded source-only S30 applicability repair.",
       "status": "PASS"
     },
     "IMPORT_CLOSURE": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; IMPORT_CLOSURE verified after substantive promotion.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; IMPORT_CLOSURE verified for bounded source-only S30 applicability repair.",
       "status": "PASS"
     },
     "NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED verified after substantive promotion.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; NEGATIVE_OR_FAIL_CLOSED_PATH_DEFINED verified for bounded source-only S30 applicability repair.",
       "status": "PASS"
     },
     "PERMISSIONS_AND_SECRET_READBACK": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; PERMISSIONS_AND_SECRET_READBACK verified after substantive promotion.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; PERMISSIONS_AND_SECRET_READBACK verified for bounded source-only S30 applicability repair.",
       "status": "PASS"
     },
     "REQUIRED_FILES_EXIST": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; REQUIRED_FILES_EXIST verified after substantive promotion.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; REQUIRED_FILES_EXIST verified for bounded source-only S30 applicability repair.",
       "status": "PASS"
     },
     "SCHEMA_AND_CONSTRAINTS_RESOLVED": {
@@ -180,7 +106,7 @@
           "evidence_ref": "supabase:schema-first-readback-20260910"
         }
       ],
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; SCHEMA_AND_CONSTRAINTS_RESOLVED verified after substantive promotion.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; SCHEMA_AND_CONSTRAINTS_RESOLVED verified for bounded source-only S30 applicability repair.",
       "resolved": [
         "RELATION_COLUMNS",
         "CONSTRAINTS",
@@ -189,77 +115,78 @@
       "status": "PASS"
     },
     "TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED verified after substantive promotion.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; TOOL_FUNCTION_ARGUMENT_SCHEMA_RESOLVED verified for bounded source-only S30 applicability repair.",
       "status": "PASS"
     },
     "GIT_WRITE_BROKER_BINDING_CONFIRMED": {
       "status": "PASS",
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; GIT_WRITE_BROKER_BINDING_CONFIRMED verified after substantive promotion."
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; GIT_WRITE_BROKER_BINDING_CONFIRMED verified for bounded source-only S30 applicability repair."
     }
   },
-  "receipt_mode": "CLOSEOUT",
-  "receipt_version": "v0.6.1-closeout",
-  "repair_reason": null,
-  "repair_target_ekb_codes": [],
+  "receipt_mode": "REPAIR_PREWRITE",
+  "receipt_version": "v0.6.2-repair-prewrite",
+  "repair_reason": "Centralize S30 CI applicability in the S30 judge, consuming CI_FAST_DEEP_LANE_ROUTER exact plan; remove duplicated PR-only YAML scope logic and make PR/push symmetric.",
+  "repair_target_ekb_codes": [
+    "CI-FAST-DEEP-FEEDBACK-LOOP-001"
+  ],
   "safety_readback": {
     "runtime_changed": false,
     "production_changed": false,
-    "main_merged": true,
+    "main_merged": false,
     "scheduler_changed": false,
     "s26_mutated": false
   },
   "sequence_resolution": {
     "ALL_INTENDED_STEPS": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; ALL_INTENDED_STEPS read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; ALL_INTENDED_STEPS resolved for bounded S30 applicability repair.",
       "status": "PROVEN"
     },
     "CI_PATHS_AND_RUNNER_WIRING": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; CI_PATHS_AND_RUNNER_WIRING read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; CI_PATHS_AND_RUNNER_WIRING resolved for bounded S30 applicability repair.",
       "status": "PROVEN"
     },
     "DATA_ACCESS_BINDINGS": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; DATA_ACCESS_BINDINGS read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; DATA_ACCESS_BINDINGS resolved for bounded S30 applicability repair.",
       "mode": "SCHEMA_CONTRACT_FALLBACK",
       "status": "PROVEN"
     },
     "DEPENDENCIES_AND_IMPORT_CLOSURE": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; DEPENDENCIES_AND_IMPORT_CLOSURE read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; DEPENDENCIES_AND_IMPORT_CLOSURE resolved for bounded S30 applicability repair.",
       "status": "PROVEN"
     },
     "EKB_APPLICABLE": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; EKB_APPLICABLE read back from promoted main before evidence closeout.",
+      "status": "PROVEN",
+      "evidence": "EKB recurrence CI-FAST-DEEP-FEEDBACK-LOOP-001 persisted before repair; event 14319; base=91055be3b7585d9d89662d427fa3ed2ddcebe311.",
       "loaded_codes": [
-        "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-        "GOV-010"
-      ],
-      "status": "PROVEN"
+        "CI-FAST-DEEP-FEEDBACK-LOOP-001"
+      ]
     },
     "EVIDENCE_PROVIDER_AND_RESOLVER": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; EVIDENCE_PROVIDER_AND_RESOLVER read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; EVIDENCE_PROVIDER_AND_RESOLVER resolved for bounded S30 applicability repair.",
       "status": "PROVEN"
     },
     "EXPECTED_OUTPUT_CONTRACT": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; EXPECTED_OUTPUT_CONTRACT read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; EXPECTED_OUTPUT_CONTRACT resolved for bounded S30 applicability repair.",
       "status": "PROVEN"
     },
     "JUDGES_AND_RESULT_VOCABULARY": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; JUDGES_AND_RESULT_VOCABULARY read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; JUDGES_AND_RESULT_VOCABULARY resolved for bounded S30 applicability repair.",
       "status": "PROVEN"
     },
     "OPERATION_CONTRACTS": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; OPERATION_CONTRACTS read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; OPERATION_CONTRACTS resolved for bounded S30 applicability repair.",
       "status": "PROVEN"
     },
     "PERMISSIONS_SECRETS_AND_READBACK": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; PERMISSIONS_SECRETS_AND_READBACK read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; PERMISSIONS_SECRETS_AND_READBACK resolved for bounded S30 applicability repair.",
       "status": "PROVEN"
     },
     "ROUTER": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; ROUTER read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; ROUTER resolved for bounded S30 applicability repair.",
       "status": "PROVEN"
     },
     "SCHEMA_CONTRACT": {
-      "evidence": "v0.6.1 closeout base=c14807ac7d4201425d771dff3ecf35c480334278; SCHEMA_CONTRACT read back from promoted main before evidence closeout.",
+      "evidence": "v0.6.2 repair prewrite base=91055be3b7585d9d89662d427fa3ed2ddcebe311; SCHEMA_CONTRACT resolved for bounded S30 applicability repair.",
       "schema_bindings": [
         {
           "object_identity": "public.lf_error_knowledge",
@@ -304,61 +231,60 @@
     "secret_name": "S30_BROKER_DEPLOY_KEY",
     "secret_present": true,
     "secret_required_before_dispatch": true,
-    "source_branch": "lf/staging-s30-broker-v061-closeout-20260910",
-    "target_branch": "lf/s30-broker-v061-closeout-20260910",
-    "base_main_sha": "c14807ac7d4201425d771dff3ecf35c480334278",
+    "source_branch": "lf/staging-s30-ci-applicability-v062-20260918",
+    "target_branch": "lf/s30-ci-applicability-v062-20260918",
+    "base_main_sha": "91055be3b7585d9d89662d427fa3ed2ddcebe311",
     "promotion_authority": "BROKER_ONLY",
     "ruleset_readback_ref": "github:ruleset/22765627",
     "supabase_readback_ref": "supabase:public.lf_error_knowledge/S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001@frequency=8"
   },
   "gate_evidence_envelope": {
-    "run_id": "EXEC-S30-BROKER-V061-CLOSEOUT-20260910-001",
-    "gate_id": "S30_BROKER_TRANSVERSAL_CLOSEOUT_V061",
+    "run_id": "EXEC-S30-CI-APPLICABILITY-REPAIR-20260918-001",
+    "gate_id": "S30_CI_APPLICABILITY_REPAIR_V062",
     "input_exact": {
       "request_schema": "s30-git-broker/v1",
-      "source_ref": "lf/staging-s30-broker-v061-closeout-20260910",
-      "target_branch": "lf/s30-broker-v061-closeout-20260910",
-      "base_main_sha": "c14807ac7d4201425d771dff3ecf35c480334278",
+      "source_ref": "lf/staging-s30-ci-applicability-v062-20260918",
+      "target_branch": "lf/s30-ci-applicability-v062-20260918",
+      "base_main_sha": "91055be3b7585d9d89662d427fa3ed2ddcebe311",
       "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
     },
-    "input_sha256": "6d1d2a10665edbbbc0282c02146946c6a4c7a90c67809bdd963b6f1ec7a3355f",
-    "input_source_ref": "owner-authorization+github:main@c14807ac7d4201425d771dff3ecf35c480334278",
-    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json --expected-base-main-sha c14807ac7d4201425d771dff3ecf35c480334278",
+    "input_sha256": "3374bfe5ba511fc681bfdde8e6b6d17c4e998ae5c3c38a4f64ea1fcd15babf04",
+    "input_source_ref": "owner-authorization:current-chat+github:main@91055be3b7585d9d89662d427fa3ed2ddcebe311+supabase:event/14319",
+    "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json --expected-base-main-sha 91055be3b7585d9d89662d427fa3ed2ddcebe311",
     "output_exact": {
-      "result": "SELF_GOVERNANCE_PREEXECUTION_ASSURANCE_CANDIDATE_PASS",
+      "result": "PASS_TO_BOUNDED_GUARD_REPAIR",
       "material_work_allowed": false,
-      "bounded_repair_allowed": false,
+      "bounded_repair_allowed": true,
       "promotion_authority": "NONE"
     },
-    "output_sha256": "af81e98b8302b08726cc82d22ed1fbe71c675cb50b0367bd99cbd7264f47ab74",
-    "output_ref": "closeout:S30-broker-v0.6.1",
+    "output_sha256": "13aec3019f77551e664831c1ecb0230ec7e0a870ef89ae718d40a37e975e7192",
+    "output_ref": "repair-prewrite:S30-ci-applicability-v0.6.2",
     "execution_mode": "SANDBOX",
     "environment": "NON_PRODUCTION",
     "promotion_authority": "NONE",
     "functional": {
       "status": "PASS",
-      "evidence": "Existing broker, deploy key, ruleset and current-main control plane are resolvable."
+      "evidence": "Repair preserves S30 receipt validation and changes only applicability ownership."
     },
     "quality": {
       "status": "PASS",
-      "evidence": "Planned repair adds main-pinned control-plane and bounded candidate scope negatives."
+      "evidence": "PR and push use one deterministic S30 applicability function fed by the transversal CI plan."
     },
     "depth": {
       "status": "PASS",
-      "evidence": "Causal gap, current base, receipt binding, scope policy and no-production ceiling are explicit."
+      "evidence": "Six applicability regressions cover unrelated/shared/direct/unresolved paths."
     },
     "performance": {
       "status": "PASS_BASELINE",
-      "evidence": "Cheap local path-policy preflight blocks known incompatible S30-B candidate before Actions dispatch."
+      "evidence": "Unrelated shared-workflow changes terminate as NO_FINDINGS without receipt evaluation."
     },
     "ekb_action": {
       "status": "CONSUMED",
       "codes": [
-        "S30-GIT-WRITE-PREEXECUTION-BROKER-GAP-001",
-        "GOV-010"
+        "CI-FAST-DEEP-FEEDBACK-LOOP-001"
       ]
     },
     "first_bad_hop": null,
-    "repair_allowed": false
+    "repair_allowed": true
   }
 }
