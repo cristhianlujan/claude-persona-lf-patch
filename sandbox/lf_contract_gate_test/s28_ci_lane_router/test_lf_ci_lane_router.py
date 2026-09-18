@@ -258,6 +258,11 @@ def required_controls_shadow_main():
     migration = "supabase/migrations/20260909010101_lf_example.sql"
     input_migration = "supabase/migrations/20260909010102_input_governance_example.sql"
     workflow = ".github/workflows/lf-contract-check.yml"
+    validate_workflow = ".github/workflows/validate-lf-packs.yml"
+    bootstrap_workflow = ".github/workflows/lf-bootstrap-reproducibility.yml"
+    router_readme = "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md"
+    router = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
+    router_test = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py"
 
     got = classify([migration])
     assert got.required_controls == (CONTROL_MIGRATION_SOURCE_PARITY,), got
