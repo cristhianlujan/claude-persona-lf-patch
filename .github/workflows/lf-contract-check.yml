@@ -524,61 +524,17 @@ jobs:
           echo "PASS_LF_CONTRACT_FAST_P0_DOCS"
           echo "Deep migration/runtime/visual/E.16 work skipped because the canonical preflight proved an exact regular P0-doc-only delta."
 
-      - name: Validate declared governance paths
+      - name: Enforce declared governance paths through existing gate orchestrator
         if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')
         run: |
           set -euo pipefail
-          runtime_dir=.lf_gate_runtime/lf_contract_check/declared_governance_paths
-          frozen_dir="$runtime_dir/frozen_inputs"
-          rm -rf "$runtime_dir"
-          mkdir -p "$frozen_dir/gobernanza/repositorios" "$frozen_dir/gobernanza/contratos"
           pip install pyyaml
-          cp gobernanza/repositorios/matriz_repos_lf.yaml "$frozen_dir/gobernanza/repositorios/matriz_repos_lf.yaml"
-          cp gobernanza/contratos/contrato_perfil_lf.yaml "$frozen_dir/gobernanza/contratos/contrato_perfil_lf.yaml"
-          python3 scripts/validate_declared_paths.py --repo-root . \
-            > >(tee "$runtime_dir/legacy.stdout.log") \
-            2> >(tee "$runtime_dir/legacy.stderr.log" >&2)
-
-      - name: Shadow declared governance paths through existing gate orchestrator
-        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          rm -rf .lf_gate_diagnostics/lf_contract_check/declared_governance_paths_shadow
+          rm -rf .lf_gate_diagnostics/lf_contract_check/declared_governance_paths
           python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py \
             --manifest sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_declared_paths_manifest_v1.json \
-            --artifact-dir .lf_gate_diagnostics/lf_contract_check/declared_governance_paths_shadow \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/declared_governance_paths \
             --group DECLARED_GOVERNANCE_PATHS
-          echo "SHADOW_DECLARED_GOVERNANCE_PATHS_EXECUTED"
-
-      - name: Verify legacy and declarative declared governance paths equivalence
-        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')
-        env:
-          LF_REQUIRED_CONTROLS_JSON: ${{ steps.feedback_tier.outputs.lf_contract_controls_json }}
-          LF_PR_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: |
-          set -euo pipefail
-          runtime_dir=.lf_gate_runtime/lf_contract_check/declared_governance_paths
-          frozen_dir="$runtime_dir/frozen_inputs"
-          source_head="$LF_PR_HEAD_SHA"
-          tested_head="$(git rev-parse HEAD)"
-          if [ -z "$source_head" ]; then
-            source_head="$tested_head"
-          fi
-          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_parity_equivalence_v1.py \
-            --control DECLARED_GOVERNANCE_PATHS \
-            --expected-source-path scripts/validate_declared_paths.py \
-            --required-controls-json "$LF_REQUIRED_CONTROLS_JSON" \
-            --legacy-required true \
-            --legacy-result PASS \
-            --legacy-stdout "$runtime_dir/legacy.stdout.log" \
-            --legacy-stderr "$runtime_dir/legacy.stderr.log" \
-            --shadow-summary .lf_gate_diagnostics/lf_contract_check/declared_governance_paths_shadow/lf_gate_group_summary_v1.json \
-            --input-pair "$frozen_dir/gobernanza/repositorios/matriz_repos_lf.yaml=gobernanza/repositorios/matriz_repos_lf.yaml" \
-            --input-pair "$frozen_dir/gobernanza/contratos/contrato_perfil_lf.yaml=gobernanza/contratos/contrato_perfil_lf.yaml" \
-            --expected-source-head "$source_head" \
-            --expected-tested-head "$tested_head" \
-            --output .lf_gate_diagnostics/lf_contract_check/declared_governance_paths_shadow/declared_governance_paths_equivalence_v1.json
+          echo "PASS_DECLARED_GOVERNANCE_PATHS_DECLARATIVE_AUTHORITY"
 
       - name: Verify hosted Supabase Data API excludes net schema
         if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'SUPABASE_CONTROL_PLANE_READBACK')
