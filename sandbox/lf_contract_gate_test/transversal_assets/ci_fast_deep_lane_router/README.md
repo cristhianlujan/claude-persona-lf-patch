@@ -125,7 +125,7 @@ El full regression conserva valor como auditoría del Router, pero no sustituye 
 
 **Carrier regression** se usa cuando cambia uno de los tres workflows carrier. El plan selecciona dinámicamente todos los controles reutilizables de `full_regression_controls` cuyo `carrier` coincide con el workflow modificado, conserva los controles disparados por path/material y luego calcula el closure recursivo de dependencias. No existe una lista paralela hardcodeada por workflow.
 
-Ejemplo esperado para un cambio aislado de `.github/workflows/validate-lf-packs.yml`: los controles reutilizables de `VALIDATE_LF_PACKS` más `CI_ROUTER_SELFTEST` disparado por el path; no los controles globales no causales de Bootstrap o `lf-contract-check`.
+Ejemplo esperado para un cambio aislado de `.github/workflows/validate-lf-packs.yml`: los controles reutilizables de `VALIDATE_LF_PACKS` más los triggers transversales legítimos del path (`CI_ROUTER_SELFTEST` y `DECLARED_GOVERNANCE_PATHS`); no los restantes controles globales no causales de Bootstrap o `lf-contract-check`.
 
 Los controles material-bound (por ejemplo candidate apply/rollback) sólo son requeridos si existe ese material en el diff; no se convierten en PASS artificial dentro de una regresión genérica.
 
