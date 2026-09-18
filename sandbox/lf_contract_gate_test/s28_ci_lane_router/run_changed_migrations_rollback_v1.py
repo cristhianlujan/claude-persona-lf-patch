@@ -43,6 +43,14 @@ def sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+def migration_identity(path: str) -> tuple[str, str]:
+    name = Path(path).name
+    match = re.fullmatch(r"([0-9]{14})_([A-Za-z0-9_]+)\\.sql", name)
+    if not match:
+        raise ProbeError(f"FAIL_DB_CANDIDATE_MIGRATION_NAME_INVALID:{path}")
+    return match.group(1), match.group(2)
+
+
 def changed_migrations(repo: Path, base: str, head: str) -> list[tuple[str, str]]:
     raw = subprocess.check_output(
         [
@@ -261,10 +269,13 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
         if frame["execution_payload_sha256"] != payload_digest:
             raise ProbeError(f"FAIL_DB_CANDIDATE_PAYLOAD_DIGEST_INTERNAL:{path}")
 
+        migration_version, migration_name = migration_identity(path)
         manifest_rows.append(
             {
                 "status": status,
                 "path": path,
+                "migration_version": migration_version,
+                "migration_name": migration_name,
                 "source_sha256": source_digest,
                 "source_bytes": len(raw),
                 "execution_payload_sha256": payload_digest,
@@ -287,6 +298,12 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
         )
 
     probe_rows = []
+    probe_only_chunks = [
+        "\\set ON_ERROR_STOP on",
+        "BEGIN;",
+        "SET LOCAL statement_timeout = '120s';",
+        "SET LOCAL lock_timeout = '15s';",
+    ]
     for probe_rel in args.probe_sql:
         probe_path = repo / probe_rel
         if not probe_path.is_file():
@@ -311,19 +328,19 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
                 "transaction_frame": probe_frame,
             }
         )
-        chunks.extend(
-            [
-                (
-                    f"\\echo LF_DB_CANDIDATE_PROBE_BEGIN {probe_rel} "
-                    f"source_sha256={source_digest} payload_sha256={payload_digest}"
-                ),
-                probe_payload,
-                (
-                    f"\\echo LF_DB_CANDIDATE_PROBE_PASS {probe_rel} "
-                    f"source_sha256={source_digest} payload_sha256={payload_digest}"
-                ),
-            ]
-        )
+        probe_chunk = [
+            (
+                f"\\echo LF_DB_CANDIDATE_PROBE_BEGIN {probe_rel} "
+                f"source_sha256={source_digest} payload_sha256={payload_digest}"
+            ),
+            probe_payload,
+            (
+                f"\\echo LF_DB_CANDIDATE_PROBE_PASS {probe_rel} "
+                f"source_sha256={source_digest} payload_sha256={payload_digest}"
+            ),
+        ]
+        chunks.extend(probe_chunk)
+        probe_only_chunks.extend(probe_chunk)
 
     chunks.extend(
         [
@@ -336,6 +353,20 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
     sql_out.parent.mkdir(parents=True, exist_ok=True)
     sql_out.write_text("\n".join(chunks) + "\n", encoding="utf-8")
 
+    probe_only_chunks.extend(
+        [
+            "SELECT 'LF_DB_ALREADY_APPLIED_EXACT_PROBES_COMPLETE' AS probe_result;",
+            "ROLLBACK;",
+            "SELECT 'LF_DB_ALREADY_APPLIED_EXACT_ROLLBACK_COMPLETE' AS probe_result;",
+        ]
+    )
+    probe_only_sha = None
+    if args.probe_only_sql_out:
+        probe_only_out = Path(args.probe_only_sql_out)
+        probe_only_out.parent.mkdir(parents=True, exist_ok=True)
+        probe_only_out.write_text("\n".join(probe_only_chunks) + "\n", encoding="utf-8")
+        probe_only_sha = sha(probe_only_out.read_bytes())
+
     manifest = {
         "schema_version": SCHEMA_VERSION,
         "status": "READY",
@@ -344,6 +375,7 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
         "migration_count": len(manifest_rows),
         "migrations": manifest_rows,
         "combined_sql_sha256": sha(sql_out.read_bytes()),
+        "probe_only_sql_sha256": probe_only_sha,
         "transaction_escape_scan": "PASS",
         "post_apply_probes": probe_rows,
         "source_material_binding": "EXACT_SOURCE_SHA_WITH_EXPLICIT_OUTER_FRAME_NORMALIZATION",
@@ -364,6 +396,7 @@ def main() -> int:
     p.add_argument("--head", required=True)
     p.add_argument("--sql-out", required=True)
     p.add_argument("--manifest-out", required=True)
+    p.add_argument("--probe-only-sql-out")
     p.add_argument("--probe-sql", action="append", default=[])
     args = p.parse_args()
 
