@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref || github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -66,6 +66,9 @@ jobs:
           head="${LF_PLAN_HEAD_SHA:-$(git rev-parse HEAD)}"
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
             head="$(git rev-parse HEAD)"
+          fi
+          if [[ -n "$base" ]]; then
+            git fetch --no-tags origin "$base" "$head"
           fi
           mkdir -p .lf_ci
           args=(
