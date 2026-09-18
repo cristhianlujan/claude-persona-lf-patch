@@ -357,6 +357,40 @@ jobs:
             --next-action FIX_CI_ROUTER_SELFTEST_AND_RERUN \
             --downstream-impact lf-contract-check
 
+      - name: Enforce lf-contract-check transversal closure prerequisites
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/transversal_asset_readme/test_validate_active_shared_readmes_v1.py
+          psql -X -v ON_ERROR_STOP=1 -At -c "
+            select coalesce(
+              jsonb_agg(
+                jsonb_build_object(
+                  'codigo_activo',codigo_activo,
+                  'inventory_status',metadata #>> '{transversal_inventory,inventory_status}',
+                  'readme_ref',metadata #>> '{transversal_inventory,documentation,readme_ref}',
+                  'estado_operativo',estado_operativo,
+                  'archived_at',archived_at
+                )
+                order by codigo_activo
+              ),
+              '[]'::jsonb
+            )::text
+            from public.lf_activos
+            where metadata ? 'transversal_inventory';
+          " > /tmp/lf_contract_check_transversal_inventory.json
+          python3 sandbox/lf_contract_gate_test/transversal_asset_readme/validate_active_shared_readmes_v1.py \
+            --inventory-json /tmp/lf_contract_check_transversal_inventory.json \
+            --repo-root . \
+            --require-code GITHUB_CONTRACT_GATE_LF
+
       - name: Complete FAST P0 docs lane
         if: steps.feedback_tier.outputs.tier == 'FAST_P0_DOCS'
         run: |
