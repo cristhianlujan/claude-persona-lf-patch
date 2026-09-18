@@ -27,6 +27,7 @@ _REQUIRED_FIELDS = frozenset({
     "p0_exact_head_external_required",
     "deep_shared",
 })
+_OPTIONAL_FIELDS = frozenset({"required_controls"})
 _SYMBOL_RE = re.compile(r"^[A-Z][A-Z0-9_-]*$")
 
 
@@ -46,6 +47,7 @@ class SharedControlOwnership:
     ci_router_selftest_required: bool
     p0_exact_head_external_required: bool
     deep_shared: bool
+    required_controls: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -74,6 +76,26 @@ def _require_bool(raw: Mapping[str, Any], field: str, control_id: str) -> bool:
     return value
 
 
+def _required_controls(raw: Mapping[str, Any], control_id: str, legacy: tuple[str, ...]) -> tuple[str, ...]:
+    value = raw.get("required_controls")
+    if value is None:
+        return legacy
+    if not isinstance(value, list):
+        raise SharedRegistryValidationError("FAIL_LF_SHARED_REGISTRY_REQUIRED_CONTROLS", f"{control_id}:not_list")
+    if any(not isinstance(item, str) or _SYMBOL_RE.fullmatch(item) is None for item in value):
+        raise SharedRegistryValidationError("FAIL_LF_SHARED_REGISTRY_REQUIRED_CONTROL_ID", control_id)
+    if len(value) != len(set(value)):
+        raise SharedRegistryValidationError("FAIL_LF_SHARED_REGISTRY_REQUIRED_CONTROL_DUPLICATE", control_id)
+    canonical = tuple(sorted(value))
+    for required in legacy:
+        if required not in canonical:
+            raise SharedRegistryValidationError(
+                "FAIL_LF_SHARED_REGISTRY_REQUIRED_CONTROL_LEGACY_MISMATCH",
+                f"{control_id}:{required}",
+            )
+    return canonical
+
+
 def compile_shared_registry(data: Mapping[str, Any]) -> CompiledSharedRegistry:
     if not isinstance(data, Mapping):
         raise SharedRegistryValidationError("FAIL_LF_SHARED_REGISTRY_ROOT", "root must be object")
@@ -93,7 +115,7 @@ def compile_shared_registry(data: Mapping[str, Any]) -> CompiledSharedRegistry:
         if not isinstance(raw, Mapping):
             raise SharedRegistryValidationError("FAIL_LF_SHARED_REGISTRY_ENTRY", str(index))
         missing = _REQUIRED_FIELDS - set(raw)
-        extra = set(raw) - _REQUIRED_FIELDS
+        extra = set(raw) - (_REQUIRED_FIELDS | _OPTIONAL_FIELDS)
         if missing:
             raise SharedRegistryValidationError("FAIL_LF_SHARED_REGISTRY_ENTRY_INCOMPLETE", f"{index}:{sorted(missing)}")
         if extra:
@@ -122,6 +144,7 @@ def compile_shared_registry(data: Mapping[str, Any]) -> CompiledSharedRegistry:
                 "FAIL_LF_SHARED_REGISTRY_PROFILE",
                 f"{control_id}:V1_REQUIRES_EXACT_NON_SPECIALIZED_SELFTEST",
             )
+        required_controls = _required_controls(raw, control_id, ("CI_ROUTER_SELFTEST",))
 
         controls.append(
             SharedControlOwnership(
@@ -132,6 +155,7 @@ def compile_shared_registry(data: Mapping[str, Any]) -> CompiledSharedRegistry:
                 ci_router_selftest_required=selftest,
                 p0_exact_head_external_required=p0_external,
                 deep_shared=deep_shared,
+                required_controls=required_controls,
             )
         )
 
