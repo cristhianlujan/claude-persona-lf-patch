@@ -85,9 +85,32 @@ def load_manifest(path: Path) -> dict:
         if group.get("execution_class") != "DETERMINISTIC":
             raise ValueError(f"execution_class_not_deterministic:{gid}")
         tests = group.get("tests")
-        if not isinstance(tests, list) or not tests or any(not isinstance(x, str) or not x for x in tests):
-            raise ValueError(f"tests_invalid:{gid}")
-        assigned.extend(tests)
+        commands = group.get("commands")
+        if (tests is None) == (commands is None):
+            raise ValueError(f"exactly_one_of_tests_or_commands_required:{gid}")
+        if tests is not None:
+            if not isinstance(tests, list) or not tests or any(not isinstance(x, str) or not x for x in tests):
+                raise ValueError(f"tests_invalid:{gid}")
+            assigned.extend(tests)
+        else:
+            if not isinstance(commands, list) or not commands:
+                raise ValueError(f"commands_invalid:{gid}")
+            for command in commands:
+                if not isinstance(command, dict):
+                    raise ValueError(f"command_must_be_object:{gid}")
+                unknown = set(command) - {"argv", "source_path", "critical"}
+                if unknown:
+                    raise ValueError(f"command_unknown_keys:{gid}:{','.join(sorted(unknown))}")
+                argv = command.get("argv")
+                source_path = command.get("source_path")
+                critical = command.get("critical", False)
+                if not isinstance(argv, list) or len(argv) < 2 or any(not isinstance(x, str) or not x for x in argv):
+                    raise ValueError(f"command_argv_invalid:{gid}")
+                if not isinstance(source_path, str) or not source_path:
+                    raise ValueError(f"command_source_path_invalid:{gid}")
+                if not isinstance(critical, bool):
+                    raise ValueError(f"command_critical_invalid:{gid}")
+                assigned.append(source_path)
 
     duplicates = sorted({x for x in assigned if assigned.count(x) > 1})
     if duplicates:
@@ -175,8 +198,14 @@ def main() -> int:
         ]
         for impact in group.get("downstream_impact") or manifest.get("downstream_impact") or []:
             command += ["--downstream-impact", str(impact)]
-        for test_path in group["tests"]:
-            spec = {"argv": [sys.executable, test_path], "source_path": test_path, "critical": False}
+        if group.get("tests") is not None:
+            check_specs = [
+                {"argv": [sys.executable, test_path], "source_path": test_path, "critical": False}
+                for test_path in group["tests"]
+            ]
+        else:
+            check_specs = [dict(spec) for spec in group["commands"]]
+        for spec in check_specs:
             command += ["--command-json", canonical(spec)]
 
         rc = subprocess.run(command).returncode
@@ -196,7 +225,7 @@ def main() -> int:
             "group_name": group.get("name") or gid,
             "execution_class": "DETERMINISTIC",
             "result": result,
-            "expected_check_count": len(group["tests"]),
+            "expected_check_count": len(check_specs),
             "executed_check_count": executed,
             "diagnostic_complete": report.get("diagnostic_complete") is True,
             "report_ref": str(report_path.as_posix()),
@@ -204,7 +233,7 @@ def main() -> int:
             "claim_surface": group.get("claim_surface", "CONTROL_EVIDENCE_ONLY"),
         }
         rows.append(row)
-        print(f"LF_GATE_GROUP group_id={gid} result={result} expected={len(group['tests'])} executed={executed}")
+        print(f"LF_GATE_GROUP group_id={gid} result={result} expected={len(check_specs)} executed={executed}")
         if result != "PASS":
             stopped = True
             break
