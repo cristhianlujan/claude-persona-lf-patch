@@ -62,8 +62,7 @@ alter table public.lf_operation_registry
 -- are explicitly REQUIRED. This includes Router-derived transversal policies.
 update public.lf_operation_registry r
 set policy_requirement_mode='REQUIRED',
-    updated_at=clock_timestamp(),
-    updated_by_execution_id=coalesce(updated_by_execution_id,created_by_execution_id)
+    updated_at=clock_timestamp()
 where r.lifecycle_state_code='OP_OPERATIONAL'
   and exists (
     select 1
@@ -75,8 +74,7 @@ where r.lifecycle_state_code='OP_OPERATIONAL'
 -- an invented policy. Their "no policy applies" state becomes explicit and auditable.
 update public.lf_operation_registry r
 set policy_requirement_mode='NONE_EXPLICIT',
-    updated_at=clock_timestamp(),
-    updated_by_execution_id=coalesce(updated_by_execution_id,created_by_execution_id)
+    updated_at=clock_timestamp()
 where r.lifecycle_state_code='OP_OPERATIONAL'
   and r.policy_requirement_mode is null
   and r.operation_code in (
