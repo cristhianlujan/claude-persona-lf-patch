@@ -76,6 +76,7 @@ def main() -> int:
         repo_root=repo,
         force_full=force_full,
         force_full_reason=force_reason,
+        source_ref=args.head or None,
     )
     plan["base_sha"] = args.base
     plan["head_sha"] = args.head
