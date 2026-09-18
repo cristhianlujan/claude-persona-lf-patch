@@ -99,11 +99,59 @@ def test_same_revision_is_current() -> None:
     assert r["rebind_allowed"] is False, r
 
 
+
+def test_push_to_main_binds_new_evidence_to_current_main() -> None:
+    repo, base = setup_repo()
+    p = repo / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
+    p.write_text("print('router v2')\n", encoding="utf-8")
+    current = commit_all(repo, "main update")
+    bound = M.resolve_authority_evidence_revision(
+        repo=repo,
+        event_name="push",
+        ref_name="main",
+        diff_base_revision=base,
+        candidate_head_revision=current,
+        current_revision=current,
+    )
+    assert bound == current
+    r = M.evaluate_ci_authority_currentness(
+        repo=repo, bound_revision=bound, current_revision=current
+    )
+    assert r["decision"] == "CURRENT", r
+    assert r["ready"] is True, r
+
+
+def test_feature_push_uses_merge_base_not_diff_base_as_authority() -> None:
+    repo, base = setup_repo()
+    sh(repo, "checkout", "-b", "feature")
+    (repo / "unrelated/readme.md").write_text("feature\n", encoding="utf-8")
+    feature = commit_all(repo, "feature")
+    sh(repo, "checkout", "master")
+    (repo / "unrelated/readme.md").write_text("main-v2\n", encoding="utf-8")
+    current = commit_all(repo, "main advance")
+    bound = M.resolve_authority_evidence_revision(
+        repo=repo,
+        event_name="push",
+        ref_name="feature",
+        diff_base_revision=base,
+        candidate_head_revision=feature,
+        current_revision=current,
+    )
+    assert bound == base
+    r = M.evaluate_ci_authority_currentness(
+        repo=repo, bound_revision=bound, current_revision=current
+    )
+    assert r["decision"] == "CURRENT_REBOUND", r
+    assert r["ready"] is True, r
+
+
 def main() -> None:
     tests = [
         test_unrelated_main_change_is_current_rebound,
         test_ci_authority_change_blocks_without_compatibility_proof,
         test_same_revision_is_current,
+        test_push_to_main_binds_new_evidence_to_current_main,
+        test_feature_push_uses_merge_base_not_diff_base_as_authority,
     ]
     for test in tests:
         test()

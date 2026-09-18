@@ -72,21 +72,11 @@ jobs:
           fi
           git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
           authority_current="$(git rev-parse refs/remotes/origin/main)"
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            authority_bound="$base"
-          elif [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF_NAME:-}" == "main" && -n "$base" && "$base" != "0000000000000000000000000000000000000000" ]]; then
-            authority_bound="$base"
-          elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
-            authority_bound="$(git merge-base "$head" "$authority_current")"
-          else
-            authority_bound="$authority_current"
-          fi
           mkdir -p .lf_ci
           args=(
             --repo-root .
             --base "$base"
             --head "$head"
-            --authority-bound-revision "$authority_bound"
             --authority-current-revision "$authority_current"
             --event-name "${GITHUB_EVENT_NAME}"
             --event-action "${LF_PLAN_EVENT_ACTION:-}"
