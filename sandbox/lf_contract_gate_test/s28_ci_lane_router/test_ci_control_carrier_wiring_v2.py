@@ -56,6 +56,7 @@ def main() -> None:
     # All carriers consume the same canonical plan implementation, not a local
     # FAST/DEEP classifier.
     require(texts["LF_CONTRACT_CHECK"], "lf_ci_execution_plan_v2.py", "FAIL_CONTRACT_PLAN_NOT_WIRED")
+    require(texts["LF_CONTRACT_CHECK"], "source_ref=exact_head", "FAIL_CONTRACT_EXACT_HEAD_MATERIAL_BINDING_MISSING")
     require(texts["VALIDATE_LF_PACKS"], "emit_ci_execution_plan_v2.py", "FAIL_PACKS_PLAN_NOT_WIRED")
     require(texts["LF_BOOTSTRAP_REPRODUCIBILITY"], "emit_ci_execution_plan_v2.py", "FAIL_BOOTSTRAP_PLAN_NOT_WIRED")
 
