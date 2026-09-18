@@ -7,8 +7,8 @@ HERE=Path(__file__).resolve().parent
 VALIDATOR=HERE/"validate_active_shared_readmes_v1.py"
 HEADINGS=["## Propósito","## Cuándo consumirlo","## Cómo consumirlo","## Superficies canónicas","## Fail-closed / límites","## Validación y readback","## No duplicación","## Currentness"]
 
-def readme_text(code: str) -> str:
-    return f"# {code}\n\nACTIVE_SHARED_ENFORCEMENT\n\n"+"\n\n".join(h+"\nOK" for h in HEADINGS)
+def readme_text(code: str, inventory_status: str = "ACTIVE_SHARED_ENFORCEMENT") -> str:
+    return f"# {code}\n\n{inventory_status}\n\n"+"\n\n".join(h+"\nOK" for h in HEADINGS)
 
 def write_index(root: Path, entries: list[tuple[str,str]]):
     p=root/"sandbox/lf_contract_gate_test/transversal_assets/README.md"
@@ -40,7 +40,7 @@ with tempfile.TemporaryDirectory() as td:
     }]
     ok=run(root,rows,"--require-code","TEST_ASSET")
     assert ok.returncode==0,(ok.stdout,ok.stderr)
-    assert '"schema_version": "lf-transversal-readme-contract/v2"' in ok.stdout
+    assert '"schema_version": "lf-transversal-readme-contract/v3"' in ok.stdout
 
 # Live asset cannot be ACTIVE_SHARED_ENFORCEMENT without an indexed README ref.
 with tempfile.TemporaryDirectory() as td:
@@ -123,4 +123,40 @@ with tempfile.TemporaryDirectory() as td:
     assert bad.returncode==1,(bad.stdout,bad.stderr)
     assert "REQUIRED_OPERATION_ASSET_MISSING" in bad.stdout
 
-print("TRANSVERSAL_ACTIVE_SHARED_README_CONTRACT_V2_PASS")
+
+# Active transversal policies are first-class documented assets too.
+with tempfile.TemporaryDirectory() as td:
+    root=Path(td)
+    ref="sandbox/lf_contract_gate_test/transversal_assets/policy_asset/README.md"
+    p=root/ref; p.parent.mkdir(parents=True)
+    p.write_text(readme_text("POLICY_ASSET","ACTIVE_TRANSVERSAL_POLICY"),encoding="utf-8")
+    write_index(root,[("POLICY_ASSET",ref)])
+    rows=[{
+        "codigo_activo":"POLICY_ASSET",
+        "inventory_status":"ACTIVE_TRANSVERSAL_POLICY",
+        "readme_ref":ref,
+        "estado_operativo":"ACTIVO",
+        "archived_at":None,
+    }]
+    ok=run(root,rows,"--require-code","POLICY_ASSET")
+    assert ok.returncode==0,(ok.stdout,ok.stderr)
+
+# A policy README must declare the same live inventory status.
+with tempfile.TemporaryDirectory() as td:
+    root=Path(td)
+    ref="sandbox/lf_contract_gate_test/transversal_assets/policy_status_mismatch/README.md"
+    p=root/ref; p.parent.mkdir(parents=True)
+    p.write_text(readme_text("POLICY_STATUS_MISMATCH","ACTIVE_SHARED_ENFORCEMENT"),encoding="utf-8")
+    write_index(root,[("POLICY_STATUS_MISMATCH",ref)])
+    rows=[{
+        "codigo_activo":"POLICY_STATUS_MISMATCH",
+        "inventory_status":"ACTIVE_TRANSVERSAL_POLICY",
+        "readme_ref":ref,
+        "estado_operativo":"ACTIVO",
+        "archived_at":None,
+    }]
+    bad=run(root,rows)
+    assert bad.returncode==1,(bad.stdout,bad.stderr)
+    assert "README_INVENTORY_STATUS_MISSING" in bad.stdout
+
+print("TRANSVERSAL_DOCUMENTED_ACTIVE_README_CONTRACT_V3_PASS")
