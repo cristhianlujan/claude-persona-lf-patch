@@ -43,6 +43,16 @@ def sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+def git_blob_sha(repo: Path, path: str) -> str:
+    value = subprocess.check_output(
+        ["git","-C",str(repo),"hash-object","--",path],
+        text=True,
+    ).strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", value):
+        raise ProbeError(f"FAIL_DB_CANDIDATE_GIT_BLOB_SHA:{path}:{value}")
+    return value
+
+
 def migration_identity(path: str) -> tuple[str, str]:
     name = Path(path).name
     match = re.fullmatch(r"([0-9]{14})_([A-Za-z0-9_]+)\.sql", name)
@@ -277,6 +287,7 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
                 "migration_version": migration_version,
                 "migration_name": migration_name,
                 "source_sha256": source_digest,
+                "source_git_blob_sha1": git_blob_sha(repo, path),
                 "source_bytes": len(raw),
                 "execution_payload_sha256": payload_digest,
                 "transaction_frame": frame,

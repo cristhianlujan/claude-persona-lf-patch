@@ -13,6 +13,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROUTER_PATH = HERE / "lf_ci_lane_router.py"
 PLAN_PATH = HERE / "lf_ci_execution_plan_v2.py"
+CURRENTNESS_PATH = HERE / "lf_ci_currentness_bridge_v1.py"
 
 
 def _load(path: Path, name: str):
@@ -27,6 +28,7 @@ def _load(path: Path, name: str):
 
 ROUTER = _load(ROUTER_PATH, "lf_ci_lane_router_runtime")
 PLAN = _load(PLAN_PATH, "lf_ci_execution_plan_v2_runtime")
+CURRENTNESS = _load(CURRENTNESS_PATH, "lf_ci_currentness_bridge_v1_runtime")
 
 
 def parser() -> argparse.ArgumentParser:
@@ -34,6 +36,8 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--repo-root", default=".")
     p.add_argument("--base")
     p.add_argument("--head")
+    p.add_argument("--authority-bound-revision")
+    p.add_argument("--authority-current-revision")
     p.add_argument("--event-name", default=os.environ.get("GITHUB_EVENT_NAME", "LOCAL"))
     p.add_argument("--event-action", default="")
     p.add_argument("--ref-name", default=os.environ.get("GITHUB_REF_NAME", ""))
@@ -78,14 +82,31 @@ def main() -> int:
         force_full_reason=force_reason,
         source_ref=args.head or None,
     )
+    applicability_sha256 = plan["plan_sha256"]
+    current_revision = args.authority_current_revision or args.base or args.head
+    if not current_revision:
+        raise SystemExit("BLOCK_CI_AUTHORITY_CURRENT_REVISION_MISSING")
+    bound_revision = args.authority_bound_revision or current_revision
+    currentness = CURRENTNESS.evaluate_ci_authority_currentness(
+        repo=repo,
+        bound_revision=bound_revision,
+        current_revision=current_revision,
+    )
+    CURRENTNESS.require_ready(currentness)
+
+    plan["plan_sha256"] = applicability_sha256
+    plan["applicability_sha256"] = applicability_sha256
+    plan["source_authority"] = currentness
+    plan["authority_evidence_revision"] = bound_revision
     plan["base_sha"] = args.base
     plan["head_sha"] = args.head
     plan["event_name"] = args.event_name
     plan["event_action"] = args.event_action
-    # Rebind digest to the exact event/base/head envelope.
-    digest_source = dict(plan)
-    digest_source.pop("plan_sha256", None)
-    plan["plan_sha256"] = PLAN._sha(PLAN._canonical(digest_source).encode("utf-8"))
+    evidence_source = dict(plan)
+    evidence_source.pop("evidence_sha256", None)
+    plan["evidence_sha256"] = PLAN._sha(
+        PLAN._canonical(evidence_source).encode("utf-8")
+    )
 
     out = Path(args.output_json)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -96,6 +117,10 @@ def main() -> int:
         carrier = plan.get("carrier_controls") or {}
         values = {
             "plan_sha256": plan["plan_sha256"],
+            "applicability_sha256": plan["applicability_sha256"],
+            "evidence_sha256": plan["evidence_sha256"],
+            "authority_current_revision": plan["source_authority"]["resolved_revision"],
+            "currentness_decision": plan["source_authority"]["decision"],
             "lane_mode": plan["lane_mode"],
             "full_regression": str(plan["full_regression"]).lower(),
             "required_controls_json": json.dumps(plan["required_controls"], separators=(",", ":")),
@@ -111,6 +136,9 @@ def main() -> int:
     print(json.dumps({
         "schema_version": plan["schema_version"],
         "plan_sha256": plan["plan_sha256"],
+        "applicability_sha256": plan["applicability_sha256"],
+        "evidence_sha256": plan["evidence_sha256"],
+        "currentness_decision": plan["source_authority"]["decision"],
         "lane_mode": plan["lane_mode"],
         "full_regression": plan["full_regression"],
         "required_controls": plan["required_controls"],
