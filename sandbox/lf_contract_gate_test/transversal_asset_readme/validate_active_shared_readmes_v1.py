@@ -18,6 +18,7 @@ REQUIRED_HEADINGS = [
     "## Currentness",
 ]
 INDEX_RE = re.compile(r"^- `([^`]+)` — .* → `([^`]+)`\s*$")
+DOCUMENTED_ACTIVE_STATUSES = {"ACTIVE_SHARED_ENFORCEMENT", "ACTIVE_TRANSVERSAL_POLICY"}
 
 def slug(code: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", code.lower()).strip("_")
@@ -73,16 +74,16 @@ def main() -> int:
             continue
         inventory[code]=row
 
-    active_shared={
+    documented_active={
         code:row
         for code,row in inventory.items()
-        if row.get("inventory_status")=="ACTIVE_SHARED_ENFORCEMENT"
+        if row.get("inventory_status") in DOCUMENTED_ACTIVE_STATUSES
     }
 
-    # Direction 1: every live ACTIVE_SHARED_ENFORCEMENT asset must be indexed and consumable.
-    for code,row in sorted(active_shared.items()):
+    # Direction 1: every active shared capability or transversal policy must be indexed and consumable.
+    for code,row in sorted(documented_active.items()):
         if row.get("estado_operativo")!="ACTIVO":
-            failures.append(f"{code}:ACTIVE_SHARED_NOT_OPERATIONALLY_ACTIVE:{row.get('estado_operativo')}")
+            failures.append(f"{code}:DOCUMENTED_ACTIVE_NOT_OPERATIONALLY_ACTIVE:{row.get('estado_operativo')}")
         if row.get("archived_at") not in (None,""):
             failures.append(f"{code}:ACTIVE_SHARED_ARCHIVED:{row.get('archived_at')}")
         indexed=str(row.get("readme_ref") or "").strip()
@@ -107,18 +108,19 @@ def main() -> int:
         missing=[h for h in REQUIRED_HEADINGS if h not in text]
         if missing:
             failures.append(f"{code}:README_CONSUMPTION_SECTIONS_MISSING:{','.join(missing)}")
-        if "ACTIVE_SHARED_ENFORCEMENT" not in text:
-            failures.append(f"{code}:README_ACTIVE_SHARED_CONTRACT_MISSING:{indexed}")
+        expected_status=str(row.get("inventory_status") or "").strip()
+        if expected_status not in text:
+            failures.append(f"{code}:README_INVENTORY_STATUS_MISSING:{expected_status}:{indexed}")
 
-    # Direction 2: every source index entry must resolve to one current ACTIVE_SHARED_ENFORCEMENT asset.
+    # Direction 2: every source index entry must resolve to one current documented active transversal asset.
     for code,indexed in sorted(index.items()):
         row=inventory.get(code)
         if row is None:
             failures.append(f"{code}:INDEXED_ASSET_NOT_IN_LIVE_INVENTORY:{indexed}")
             continue
-        if row.get("inventory_status")!="ACTIVE_SHARED_ENFORCEMENT":
+        if row.get("inventory_status") not in DOCUMENTED_ACTIVE_STATUSES:
             failures.append(
-                f"{code}:INDEXED_ASSET_NOT_ACTIVE_SHARED:{row.get('inventory_status')}:{indexed}"
+                f"{code}:INDEXED_ASSET_NOT_DOCUMENTED_ACTIVE:{row.get('inventory_status')}:{indexed}"
             )
         if row.get("estado_operativo")!="ACTIVO":
             failures.append(f"{code}:INDEXED_ASSET_NOT_OPERATIONALLY_ACTIVE:{row.get('estado_operativo')}")
@@ -134,17 +136,17 @@ def main() -> int:
         if row is None:
             failures.append(f"{code}:REQUIRED_OPERATION_ASSET_MISSING")
             continue
-        if row.get("inventory_status")!="ACTIVE_SHARED_ENFORCEMENT":
-            failures.append(f"{code}:REQUIRED_OPERATION_ASSET_NOT_ACTIVE_SHARED:{row.get('inventory_status')}")
+        if row.get("inventory_status") not in DOCUMENTED_ACTIVE_STATUSES:
+            failures.append(f"{code}:REQUIRED_OPERATION_ASSET_NOT_DOCUMENTED_ACTIVE:{row.get('inventory_status')}")
         if row.get("estado_operativo")!="ACTIVO" or row.get("archived_at") not in (None,""):
             failures.append(f"{code}:REQUIRED_OPERATION_ASSET_NOT_ACTIVE")
         if code not in index:
             failures.append(f"{code}:REQUIRED_OPERATION_README_NOT_INDEXED")
 
     if checked==0:
-        failures.append("NO_ACTIVE_SHARED_ASSETS")
+        failures.append("NO_DOCUMENTED_ACTIVE_TRANSVERSAL_ASSETS")
     summary={
-        "schema_version":"lf-transversal-readme-contract/v2",
+        "schema_version":"lf-transversal-readme-contract/v3",
         "checked":checked,
         "indexed":len(index),
         "inventory_rows":len(inventory),
