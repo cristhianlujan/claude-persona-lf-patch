@@ -35,12 +35,16 @@ def main():
    wf_rows.append({"path":rel,"workflow_ref":m.group(0)})
  dup=[{"sha256":h,"paths":sorted(ps),"n":len(ps)} for h,ps in by_hash.items() if len(ps)>1]
  dup.sort(key=lambda x:(-x["n"],x["paths"]))
+ actual_workflows={p.relative_to(root).as_posix() for p in root.glob(".github/workflows/*") if p.is_file() and p.suffix in (".yml",".yaml")}
+ wf_existing=[x for x in wf_rows if x["workflow_ref"] in actual_workflows]
+ wf_missing=[x for x in wf_rows if x["workflow_ref"] not in actual_workflows]
  print(json.dumps({
-  "schema_version":"aud03-repo-architecture-scan/v1",
+  "schema_version":"aud03-repo-architecture-scan/v2",
   "files_scanned":len(files),
   "sha40_literals":{"count":len(sha_rows),"runtime_source_count":sum(x["family"]=="RUNTIME_SOURCE" for x in sha_rows),"rows":sha_rows},
   "supabase_project_ref_literals":{"count":len(project_rows),"paths":sorted(project_rows)},
-  "workflow_file_refs_in_code":{"count":len(wf_rows),"rows":wf_rows},
+  "workflow_file_refs_in_code":{"count":len(wf_rows),"existing_count":len(wf_existing),"missing_count":len(wf_missing),
+    "existing_rows":wf_existing,"missing_rows":wf_missing},
   "exact_duplicate_executable_groups":{"count":len(dup),"groups":dup}
  },sort_keys=True,separators=(",",":")))
 if __name__=="__main__":main()
