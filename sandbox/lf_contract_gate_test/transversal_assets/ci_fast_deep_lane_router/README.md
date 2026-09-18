@@ -64,7 +64,7 @@ Antes de usarlo, resolver el activo en `public.lf_activos` y confirmar que no es
 7. Los controles no seleccionados quedan `NOT_APPLICABLE` con razón explícita; no se presentan como PASS material.
 8. Cerrar únicamente cuando el plan tenga `coverage_complete=true` y la evidencia corresponda al exact-head.
 
-## Aplicabilidad y fail-closed
+## Fail-closed / límites
 
 El plan combina:
 
