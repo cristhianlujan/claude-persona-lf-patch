@@ -1,0 +1,35 @@
+{
+  "schema_version": "lf-gate-group-manifest/v1",
+  "consumer_code": "LF_CONTRACT_CHECK",
+  "gate_id": "LF_CONTRACT_CHECK_DECLARATIVE_CONTROLS_SHADOW",
+  "owner": "LF_CONTRACT_CHECK",
+  "discover_glob": "sandbox/lf_contract_gate_test/lf_migration_source_parity.py",
+  "expected_total_checks": 1,
+  "downstream_impact": [
+    "MIGRATION_SOURCE_PARITY",
+    "CI_GOVERNANCE"
+  ],
+  "groups": [
+    {
+      "group_id": "MIGRATION_SOURCE_PARITY",
+      "name": "MIGRATION_SOURCE_PARITY",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "MIGRATION_SOURCE_PARITY",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "commands": [
+        {
+          "argv": [
+            "python3",
+            "sandbox/lf_contract_gate_test/lf_migration_source_parity.py",
+            "supabase/migrations",
+            ".lf_gate_runtime/lf_contract_check/migration_source_parity/lf-post-cutover-migrations-compact.csv",
+            ".lf_gate_runtime/lf_contract_check/migration_source_parity/lf-grandfathered-migrations.csv",
+            ".lf_gate_runtime/lf_contract_check/migration_source_parity/lf-legacy-checkpoint.csv"
+          ],
+          "source_path": "sandbox/lf_contract_gate_test/lf_migration_source_parity.py",
+          "critical": true
+        }
+      ]
+    }
+  ]
+}
