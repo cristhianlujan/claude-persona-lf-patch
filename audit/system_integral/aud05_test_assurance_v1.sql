@@ -25,12 +25,12 @@ claim_eval as (
  group by c.claim_code,c.version
 ),
 obl_eval as (
- select o.obligation_code,o.claim_code,o.claim_version,o.required,
+ select o.obligation_code,o.version,o.claim_code,o.claim_version,o.required,
         count(e.evaluation_id) eval_count,
         count(*) filter(where e.result in ('PASS','PASSED','PASS_CLOSED')) pass_count
  from obligations o left join public.lf_assurance_evaluations e
    on e.claim_code=o.claim_code and e.claim_version=o.claim_version and e.obligation_code=o.obligation_code
- group by o.obligation_code,o.claim_code,o.claim_version,o.required
+ group by o.obligation_code,o.version,o.claim_code,o.claim_version,o.required
 ),
 cases as (
  select c.*,
