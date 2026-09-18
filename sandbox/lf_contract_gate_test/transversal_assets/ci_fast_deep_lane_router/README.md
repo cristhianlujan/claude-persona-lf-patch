@@ -89,12 +89,14 @@ Una migración modificada no queda probada por reconstruir el schema remoto vige
 Cuando el plan contiene `DB_CANDIDATE_APPLY_ROLLBACK`:
 
 1. resolver exactamente las migraciones cambiadas entre base y head;
-2. calcular SHA-256/bytes de cada archivo;
-3. rechazar statements que puedan escapar del rollback transaccional;
-4. ejecutar los **bytes exactos del candidato** dentro de `BEGIN/ROLLBACK` contra el sandbox autorizado;
-5. ejecutar probes post-apply aplicables dentro de la misma transacción;
-6. verificar que el ledger durable permanezca idéntico antes/después;
-7. persistir el manifest y log de la prueba.
+2. calcular SHA-256/bytes del **source exact-head** de cada archivo;
+3. aceptar sin transformación los candidatos sin control transaccional propio;
+4. si el source usa el patrón canónico **único** `BEGIN/COMMIT` exterior, normalizar sólo esos dos statements para que el material interior corra dentro del `BEGIN/ROLLBACK` del probe;
+5. bloquear cualquier otro control transaccional o statement que pueda escapar del rollback;
+6. registrar por separado `source_sha256`, `execution_payload_sha256` y el modo de normalización; nunca llamar “bytes exactos ejecutados” a un payload cuyo frame fue normalizado;
+7. ejecutar los statements interiores del candidato y los probes post-apply aplicables dentro de la misma transacción de CI;
+8. verificar que el ledger durable permanezca idéntico antes/después;
+9. persistir manifest y log, incluyendo un manifest BLOCKED aun cuando la preparación falle.
 
 `POLICY_RESOLVER_REGRESSION`, cuando aplica, se ejecuta después del apply del candidato y antes del rollback; no usa el schema remoto anterior como sustituto del candidato.
 
