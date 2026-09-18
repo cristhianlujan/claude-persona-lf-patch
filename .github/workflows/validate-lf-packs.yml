@@ -94,7 +94,6 @@ jobs:
           PY
 
       - name: S30 self-governance regression and fresh receipt gate
-        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'S30_SELF_GOVERNANCE')
         shell: bash
         env:
           S30_REQUEST_SCHEMA: ${{ inputs.request_schema }}
