@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed equivalence judge for legacy vs declarative MIGRATION_SOURCE_PARITY.
+"""Fail-closed equivalence judge for one legacy vs declarative LF contract control.
 
 This is not an executor. It compares two executions of the same deterministic
 control on one checkout and one frozen input snapshot.
@@ -12,7 +12,8 @@ import json
 import re
 from pathlib import Path
 
-CONTROL = "MIGRATION_SOURCE_PARITY"
+DEFAULT_CONTROL = "MIGRATION_SOURCE_PARITY"
+DEFAULT_SOURCE_PATH = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 SCHEMA_VERSION = "lf-contract-check-control-equivalence/v1"
 _SHA40 = re.compile(r"^[0-9a-f]{40}$")
 
@@ -55,6 +56,8 @@ def require_file(path: Path, label: str) -> None:
 
 def main() -> int:
     p = argparse.ArgumentParser()
+    p.add_argument("--control", default=DEFAULT_CONTROL)
+    p.add_argument("--expected-source-path", default=DEFAULT_SOURCE_PATH)
     p.add_argument("--required-controls-json", required=True)
     p.add_argument("--legacy-required", required=True)
     p.add_argument("--legacy-result", choices=["PASS", "FAIL", "BLOCKED"], required=True)
@@ -67,9 +70,16 @@ def main() -> int:
     p.add_argument("--output", required=True)
     args = p.parse_args()
 
+    control = args.control.strip()
+    expected_source_path = args.expected_source_path.strip()
+    if not control:
+        raise SystemExit("FAIL_PARITY_EQUIVALENCE_CONTROL")
+    if not expected_source_path:
+        raise SystemExit("FAIL_PARITY_EQUIVALENCE_EXPECTED_SOURCE_PATH")
+
     controls = parse_controls(args.required_controls_json)
     legacy_required = parse_bool(args.legacy_required)
-    declarative_required = CONTROL in controls
+    declarative_required = control in controls
     if legacy_required != declarative_required:
         raise SystemExit(
             f"FAIL_PARITY_EQUIVALENCE_APPLICABILITY legacy={legacy_required} declarative={declarative_required}"
@@ -121,7 +131,7 @@ def main() -> int:
         raise SystemExit("FAIL_PARITY_EQUIVALENCE_SHADOW_PRODUCER")
     if summary.get("consumer_code") != "LF_CONTRACT_CHECK":
         raise SystemExit("FAIL_PARITY_EQUIVALENCE_SHADOW_CONSUMER")
-    if summary.get("selected_group_ids") != [CONTROL] or summary.get("executed_group_ids") != [CONTROL]:
+    if summary.get("selected_group_ids") != [control] or summary.get("executed_group_ids") != [control]:
         raise SystemExit("FAIL_PARITY_EQUIVALENCE_GROUP_SELECTION")
     if summary.get("remaining_group_ids") != []:
         raise SystemExit("FAIL_PARITY_EQUIVALENCE_REMAINING_GROUPS")
@@ -136,7 +146,7 @@ def main() -> int:
     if not isinstance(groups, list) or len(groups) != 1:
         raise SystemExit("FAIL_PARITY_EQUIVALENCE_GROUP_COUNT")
     group = groups[0]
-    if group.get("group_id") != CONTROL:
+    if group.get("group_id") != control:
         raise SystemExit("FAIL_PARITY_EQUIVALENCE_GROUP_ID")
     if group.get("expected_check_count") != 1 or group.get("executed_check_count") != 1:
         raise SystemExit("FAIL_PARITY_EQUIVALENCE_CHECK_COUNT")
@@ -152,8 +162,10 @@ def main() -> int:
     if not isinstance(checks, list) or len(checks) != 1:
         raise SystemExit("FAIL_PARITY_EQUIVALENCE_CHILD_CHECKS")
     check = checks[0]
-    if check.get("source_path") != "sandbox/lf_contract_gate_test/lf_migration_source_parity.py":
-        raise SystemExit("FAIL_PARITY_EQUIVALENCE_SOURCE_PATH")
+    if check.get("source_path") != expected_source_path:
+        raise SystemExit(
+            f"FAIL_PARITY_EQUIVALENCE_SOURCE_PATH expected={expected_source_path} actual={check.get('source_path')}"
+        )
     if check.get("source_commit") != args.expected_source_head:
         raise SystemExit(
             f"FAIL_PARITY_EQUIVALENCE_SOURCE_COMMIT expected={args.expected_source_head} actual={check.get('source_commit')}"
@@ -180,7 +192,7 @@ def main() -> int:
 
     receipt = {
         "schema_version": SCHEMA_VERSION,
-        "control": CONTROL,
+        "control": control,
         "result": "PASS_EQUIVALENT",
         "applicability": {
             "legacy_required": legacy_required,
@@ -211,7 +223,9 @@ def main() -> int:
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print("PASS_LF_CONTRACT_CHECK_PARITY_EQUIVALENCE divergence_count=0")
+    print(f"PASS_LF_CONTRACT_CHECK_CONTROL_EQUIVALENCE control={control} divergence_count=0")
+    if control == DEFAULT_CONTROL:
+        print("PASS_LF_CONTRACT_CHECK_PARITY_EQUIVALENCE divergence_count=0")
     return 0
 
 

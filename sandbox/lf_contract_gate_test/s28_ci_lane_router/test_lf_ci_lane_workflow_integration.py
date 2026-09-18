@@ -237,6 +237,20 @@ def main() -> None:
     require(text, "Shadow declared governance paths through existing gate orchestrator", "FAIL_DGP_SHADOW_STEP_MISSING")
     require(text, "--group DECLARED_GOVERNANCE_PATHS", "FAIL_DGP_SHADOW_GROUP_NOT_SELECTED")
     require(text, "SHADOW_DECLARED_GOVERNANCE_PATHS_EXECUTED", "FAIL_DGP_SHADOW_EXECUTION_MARKER_MISSING")
+    require(text, "Verify legacy and declarative declared governance paths equivalence", "FAIL_DGP_EQUIVALENCE_STEP_MISSING")
+    require(text, "--control DECLARED_GOVERNANCE_PATHS", "FAIL_DGP_EQUIVALENCE_CONTROL_MISSING")
+    require(text, "--expected-source-path scripts/validate_declared_paths.py", "FAIL_DGP_EQUIVALENCE_SOURCE_PATH_MISSING")
+    require(text, "declared_governance_paths_equivalence_v1.json", "FAIL_DGP_EQUIVALENCE_RECEIPT_MISSING")
+    require(
+        text,
+        'cp gobernanza/repositorios/matriz_repos_lf.yaml "$frozen_dir/gobernanza/repositorios/matriz_repos_lf.yaml"',
+        "FAIL_DGP_EQUIVALENCE_FROZEN_MATRIX_MISSING",
+    )
+    require(
+        text,
+        'cp gobernanza/contratos/contrato_perfil_lf.yaml "$frozen_dir/gobernanza/contratos/contrato_perfil_lf.yaml"',
+        "FAIL_DGP_EQUIVALENCE_FROZEN_CONTRACT_MISSING",
+    )
     require(text, "Prepare LF migration source parity frozen inputs", "FAIL_DECLARATIVE_PARITY_INPUT_PREP_MISSING")
     require(text, "Enforce required_controls through existing gate orchestrator", "FAIL_DECLARATIVE_PARITY_AUTHORITY_STEP_MISSING")
     require(text, "--group MIGRATION_SOURCE_PARITY", "FAIL_DECLARATIVE_PARITY_GROUP_NOT_SELECTED")
@@ -308,6 +322,18 @@ def main() -> None:
         "FAIL_DGP_SHADOW_UNIFIED_PLAN_GUARD_MISSING",
     )
     assert "secrets." not in shadow_block, "FAIL_DGP_SHADOW_SECRET_INHERITANCE_DECLARED"
+
+    equivalence_marker = "- name: Verify legacy and declarative declared governance paths equivalence"
+    equivalence_start = text.index(equivalence_marker)
+    equivalence_end = text.index("\n      - name:", equivalence_start + len(equivalence_marker))
+    equivalence_block = text[equivalence_start:equivalence_end]
+    require(
+        equivalence_block,
+        "contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')",
+        "FAIL_DGP_EQUIVALENCE_UNIFIED_PLAN_GUARD_MISSING",
+    )
+    assert "continue-on-error: true" not in equivalence_block, "FAIL_DGP_EQUIVALENCE_JUDGE_WEAKENED"
+    assert "secrets." not in equivalence_block, "FAIL_DGP_EQUIVALENCE_SECRET_DECLARED"
 
     router_text = Path(ROUTER).read_text(encoding="utf-8")
     require(router_text, PRODUCT_OWNERSHIP.name, "FAIL_GENERIC_PRODUCT_OWNERSHIP_NOT_WIRED")
