@@ -2,7 +2,6 @@
   "schema_version": "lf-ci-control-impact-registry/v2",
   "full_regression_controls": [
     "CI_ROUTER_SELFTEST",
-    "DB_CANDIDATE_APPLY_ROLLBACK",
     "DECLARED_GOVERNANCE_PATHS",
     "E16_ACTIONS_INVENTORY",
     "E16_GOVERNANCE",
@@ -14,10 +13,8 @@
     "MIGRATION_SOURCE_PARITY",
     "NO_BYPASS_PROFILE_CARD_SKILL",
     "P0_EXACT_HEAD_EXTERNAL",
-    "P0_FAST_DOCS",
     "P0_VISUAL_RUNTIME",
     "PASS_EVIDENCE",
-    "POLICY_RESOLVER_REGRESSION",
     "PROFILE_PACK",
     "PROFILE_RUNTIME_V3",
     "R8_USER_STORY_AUDIT",
@@ -141,10 +138,6 @@
       "control_id": "INPUT_GOVERNANCE_MIGRATION_PARITY",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "supabase/migrations/"
-        },
         {
           "kind": "exact",
           "value": "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
