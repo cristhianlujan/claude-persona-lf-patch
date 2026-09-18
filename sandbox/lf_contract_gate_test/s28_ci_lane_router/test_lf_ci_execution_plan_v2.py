@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -133,6 +135,34 @@ def test_exact_p0_fast_doc_is_single_control() -> None:
     assert got["coverage_complete"] is True
 
 
+
+def test_material_evidence_reads_exact_source_ref_not_checkout_tree() -> None:
+    root = make_repo({})
+    subprocess.run(["git","init"],cwd=root,check=True,capture_output=True)
+    subprocess.run(["git","config","user.email","ci@example.invalid"],cwd=root,check=True)
+    subprocess.run(["git","config","user.name","CI"],cwd=root,check=True)
+    path = "supabase/migrations/20260918042000_policy.sql"
+    target = root / path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    committed = b"select * from public.lf_operation_policy_bindings;\n"
+    target.write_bytes(committed)
+    subprocess.run(["git","add",path],cwd=root,check=True)
+    subprocess.run(["git","commit","-m","candidate"],cwd=root,check=True,capture_output=True)
+    head = subprocess.check_output(["git","rev-parse","HEAD"],cwd=root,text=True).strip()
+    target.write_text("select 42;\n",encoding="utf-8")
+    got = P.build_plan(
+        changed_paths=[path],
+        lane_required_controls=(),
+        lane_mode="SPECIALIZED_REQUIRED",
+        repo_root=root,
+        source_ref=head,
+    )
+    evidence = got["material_evidence"][0]
+    assert evidence["source_ref"] == head
+    assert evidence["sha256"] == hashlib.sha256(committed).hexdigest()
+    assert "POLICY_RESOLVER_REGRESSION" in got["required_controls"]
+
+
 def test_plan_replay_is_deterministic() -> None:
     path = "supabase/migrations/20260918042000_policy.sql"
     files = {path: "select * from public.lf_operation_policy_bindings;"}
@@ -150,6 +180,7 @@ def main() -> None:
         test_router_self_change_forces_full_regression,
         test_dependency_closure_is_explicit,
         test_exact_p0_fast_doc_is_single_control,
+        test_material_evidence_reads_exact_source_ref_not_checkout_tree,
         test_plan_replay_is_deterministic,
     ]
     for test in tests:
