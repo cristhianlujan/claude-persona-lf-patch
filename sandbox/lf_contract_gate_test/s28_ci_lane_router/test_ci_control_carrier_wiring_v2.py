@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -37,9 +38,8 @@ def require_job_guard(text: str, job_id: str, control_id: str) -> None:
     marker = f"  {job_id}:"
     start = text.find(marker)
     assert start >= 0, f"FAIL_CI_CARRIER_JOB_MISSING:{job_id}"
-    end = text.find("\n  ", start + len(marker))
-    if end < 0:
-        end = len(text)
+    match = re.search(r"(?m)^  [A-Za-z0-9_-]+:\s*$", text[start + len(marker):])
+    end = start + len(marker) + match.start() if match else len(text)
     block = text[start:end]
     require(block, "if:", f"FAIL_CI_CARRIER_JOB_UNGUARDED:{job_id}")
     require(block, control_id, f"FAIL_CI_CARRIER_CONTROL_NOT_BOUND:{job_id}")
