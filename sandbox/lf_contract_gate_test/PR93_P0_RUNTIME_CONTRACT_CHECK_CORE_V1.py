@@ -23,20 +23,29 @@ CUSTOMER_PROFILE_CREATOR_BLOBS={
  "supabase/functions/run-creacion-perfil-lf/index.ts":"0cc7f2771e8fb01399afcf7fd591a3e6dc864738",
 }
 CUSTOMER_PROFILE_CREATOR_PATHS=frozenset(CUSTOMER_PROFILE_CREATOR_BLOBS)
+PROFILE_UPDATER_BRANCH="lf/profile-updater-graduation-hardening-20260915"
+PROFILE_UPDATER_PR_NUMBER=843
+PROFILE_UPDATER_BLOBS={
+ "supabase/functions/run-creacion-perfil-lf/index.ts":"3f2436a2b9c9f1aafeef00c81f6c9797a1596952",
+ "supabase/functions/run-creacion-perfil-lf/graduation.ts":"48e823b9b3e2b75640590027b9b60ec83d5d18dc",
+}
+PROFILE_UPDATER_PATHS=frozenset(PROFILE_UPDATER_BLOBS)
 EXPECTED_RUNTIME_BLOBS=dict(_base.EXPECTED_RUNTIME_BLOBS); EXPECTED_RUNTIME_BLOBS.update(CUSTOMER_PROFILE_CREATOR_BLOBS)
 EXPECTED_EDGE_PATHS=frozenset(path for path in EXPECTED_RUNTIME_BLOBS if path.startswith("supabase/functions/"))
-CONTROLLED_RUNTIME_PATHS=frozenset(EXPECTED_RUNTIME_BLOBS)
+CONTROLLED_RUNTIME_PATHS=frozenset(set(EXPECTED_RUNTIME_BLOBS)|set(PROFILE_UPDATER_PATHS))
 _BASE_EVALUATE_CONTROLLED_RUNTIME_SCOPE=_base.evaluate_controlled_runtime_scope
 def _sync_base_extensions(): _base.EXPECTED_RUNTIME_BLOBS=EXPECTED_RUNTIME_BLOBS; _base.EXPECTED_EDGE_PATHS=EXPECTED_EDGE_PATHS; _base.CONTROLLED_RUNTIME_PATHS=CONTROLLED_RUNTIME_PATHS
-def _verify_customer_main_merge_via_github():
+def _verify_exact_pr_main_merge(pr_number:int,branch_name:str,user_agent:str):
  if os.environ.get("GITHUB_EVENT_NAME")!="push" or os.environ.get("GITHUB_REPOSITORY")!=TARGET_REPOSITORY or os.environ.get("GITHUB_REF")!="refs/heads/main": return False
  head_sha=os.environ.get("GITHUB_SHA",""); token=os.environ.get("GITHUB_TOKEN","").strip()
  if BLOB_RE.fullmatch(head_sha) is None or not token: return False
- request=urllib.request.Request(f"https://api.github.com/repos/{TARGET_REPOSITORY}/pulls/{CUSTOMER_PROFILE_CREATOR_PR_NUMBER}",headers={"Accept":"application/vnd.github+json","Authorization":f"Bearer {token}","X-GitHub-Api-Version":"2022-11-28","User-Agent":"profile-creator-customer-runtime-scope-v1"})
+ request=urllib.request.Request(f"https://api.github.com/repos/{TARGET_REPOSITORY}/pulls/{pr_number}",headers={"Accept":"application/vnd.github+json","Authorization":f"Bearer {token}","X-GitHub-Api-Version":"2022-11-28","User-Agent":user_agent})
  try:
   with urllib.request.urlopen(request,timeout=15) as response: payload=json.loads(response.read().decode("utf-8"))
  except (urllib.error.URLError,TimeoutError,UnicodeDecodeError,json.JSONDecodeError): return False
- return isinstance(payload,dict) and payload.get("merged") is True and (payload.get("base") or {}).get("ref")==MAIN_BRANCH and (payload.get("head") or {}).get("ref")==CUSTOMER_PROFILE_CREATOR_BRANCH and payload.get("merge_commit_sha")==head_sha
+ return isinstance(payload,dict) and payload.get("merged") is True and (payload.get("base") or {}).get("ref")==MAIN_BRANCH and (payload.get("head") or {}).get("ref")==branch_name and payload.get("merge_commit_sha")==head_sha
+def _verify_customer_main_merge_via_github(): return _verify_exact_pr_main_merge(CUSTOMER_PROFILE_CREATOR_PR_NUMBER,CUSTOMER_PROFILE_CREATOR_BRANCH,"profile-creator-customer-runtime-scope-v1")
+def _verify_profile_updater_main_merge_via_github(): return _verify_exact_pr_main_merge(PROFILE_UPDATER_PR_NUMBER,PROFILE_UPDATER_BRANCH,"profile-updater-runtime-scope-v1")
 def _evaluate_customer_profile_creator_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None,main_merge_verified:bool=False)->bool:
  changed=set(changed_files); controlled={path for path in changed if path in CONTROLLED_RUNTIME_PATHS or path.startswith("supabase/functions/")}
  if controlled!=set(CUSTOMER_PROFILE_CREATOR_PATHS): raise RuntimeScopeError("FAIL_RUNTIME_CUSTOMER_PROFILE_CREATOR_SCOPE",f"exclusive Customer Profile Creator runtime scope mismatch: unexpected={sorted(controlled-set(CUSTOMER_PROFILE_CREATOR_PATHS))!r} missing={sorted(set(CUSTOMER_PROFILE_CREATOR_PATHS)-controlled)!r}")
@@ -48,6 +57,17 @@ def _evaluate_customer_profile_creator_scope(changed_files:Sequence[str],*,branc
   if observed!=expected_blob: raise RuntimeScopeError("FAIL_RUNTIME_BLOB_MISMATCH",f"Customer Profile Creator blob mismatch for {path}: expected={expected_blob} observed={observed}")
   if mode_by_path is not None and mode_by_path.get(path)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Customer Profile Creator path must be regular file 100644: {path}")
  return True
+def _evaluate_profile_updater_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None,main_merge_verified:bool=False)->bool:
+ changed=set(changed_files); controlled={path for path in changed if path in CONTROLLED_RUNTIME_PATHS or path.startswith("supabase/functions/")}
+ if controlled!=set(PROFILE_UPDATER_PATHS): raise RuntimeScopeError("FAIL_RUNTIME_PROFILE_UPDATER_SCOPE",f"exclusive Profile Updater runtime scope mismatch: unexpected={sorted(controlled-set(PROFILE_UPDATER_PATHS))!r} missing={sorted(set(PROFILE_UPDATER_PATHS)-controlled)!r}")
+ if branch==MAIN_BRANCH:
+  if not (main_merge_verified or _verify_profile_updater_main_merge_via_github()): raise RuntimeScopeError("FAIL_RUNTIME_MAIN_NOT_MERGED","Profile Updater main transition requires exact merged PR #843")
+ elif branch!=PROFILE_UPDATER_BRANCH: raise RuntimeScopeError("FAIL_RUNTIME_BRANCH_MISMATCH",f"Profile Updater runtime requires {PROFILE_UPDATER_BRANCH!r} or verified main; got {branch!r}")
+ for path,expected_blob in PROFILE_UPDATER_BLOBS.items():
+  observed=blob_by_path.get(path)
+  if observed!=expected_blob: raise RuntimeScopeError("FAIL_RUNTIME_BLOB_MISMATCH",f"Profile Updater blob mismatch for {path}: expected={expected_blob} observed={observed}")
+  if mode_by_path is not None and mode_by_path.get(path)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Profile Updater path must be regular file 100644: {path}")
+ return True
 def _evaluate_customer_profile_creator_maintenance_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None)->bool:
  changed=set(changed_files)
  if changed!=set(CUSTOMER_PROFILE_CREATOR_MAINTENANCE_PATHS): raise RuntimeScopeError("FAIL_RUNTIME_CUSTOMER_PROFILE_CREATOR_MAINTENANCE_SCOPE",f"exclusive Profile Creator workflow maintenance scope mismatch: unexpected={sorted(changed-set(CUSTOMER_PROFILE_CREATOR_MAINTENANCE_PATHS))!r} missing={sorted(set(CUSTOMER_PROFILE_CREATOR_MAINTENANCE_PATHS)-changed)!r}")
@@ -58,7 +78,11 @@ def _evaluate_customer_profile_creator_maintenance_scope(changed_files:Sequence[
   if mode_by_path is not None and mode_by_path.get(path)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Profile Creator workflow maintenance path must be regular file 100644: {path}")
  return True
 def evaluate_controlled_runtime_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None,main_merge_verified:bool=False)->bool:
- if set(changed_files)&set(CUSTOMER_PROFILE_CREATOR_PATHS): return _evaluate_customer_profile_creator_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
+ changed=set(changed_files)
+ if changed&set(PROFILE_UPDATER_PATHS):
+  controlled={path for path in changed if path in CONTROLLED_RUNTIME_PATHS or path.startswith("supabase/functions/")}
+  if controlled==set(PROFILE_UPDATER_PATHS): return _evaluate_profile_updater_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
+ if changed&set(CUSTOMER_PROFILE_CREATOR_PATHS): return _evaluate_customer_profile_creator_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
  _sync_base_extensions(); return _BASE_EVALUATE_CONTROLLED_RUNTIME_SCOPE(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
 def _customer_scope_self_test():
  exact=dict(CUSTOMER_PROFILE_CREATOR_BLOBS); modes={path:"100644" for path in exact}; paths=list(CUSTOMER_PROFILE_CREATOR_PATHS); assert _evaluate_customer_profile_creator_scope(paths,branch=CUSTOMER_PROFILE_CREATOR_BRANCH,blob_by_path=exact,mode_by_path=modes)
@@ -73,11 +97,24 @@ def _customer_scope_self_test():
   except RuntimeScopeError: continue
   raise SystemExit(f"FAIL_CUSTOMER_PROFILE_CREATOR_MAINTENANCE_NEGATIVE_{label.upper()}")
  print("PASS_CUSTOMER_PROFILE_CREATOR_WORKFLOW_MAINTENANCE_SCOPE=4/4")
+def _profile_updater_scope_self_test():
+ exact=dict(PROFILE_UPDATER_BLOBS); modes={path:"100644" for path in exact}; paths=list(PROFILE_UPDATER_PATHS); assert _evaluate_profile_updater_scope(paths,branch=PROFILE_UPDATER_BRANCH,blob_by_path=exact,mode_by_path=modes)
+ for label,branch,blobs,changed in [("branch","feature/arbitrary",exact,paths),("blob",PROFILE_UPDATER_BRANCH,{**exact,"supabase/functions/run-creacion-perfil-lf/graduation.ts":"0"*40},paths),("edge",PROFILE_UPDATER_BRANCH,exact,[*paths,"supabase/functions/arbitrary/index.ts"])]:
+  try: _evaluate_profile_updater_scope(changed,branch=branch,blob_by_path=blobs,mode_by_path={path:"100644" for path in changed})
+  except RuntimeScopeError: continue
+  raise SystemExit(f"FAIL_PROFILE_UPDATER_SCOPE_NEGATIVE_{label.upper()}")
+ print("PASS_PROFILE_UPDATER_EXACT_RUNTIME_SCOPE=4/4")
 _original_get_changed_files=_base.get_changed_files
 def _customer_branch_scope_for_push():
  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
  if BLOB_RE.fullmatch(merge_base) is None: raise RuntimeScopeError("FAIL_RUNTIME_CUSTOMER_PUSH_BASE_UNRESOLVED","Customer Profile Creator push could not resolve merge-base with main")
  changed_files=_base.e16.git_changed_files(merge_base,"HEAD"); blobs={path:git_blob_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_BLOBS}; modes={path:git_mode_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_BLOBS}; _base._runtime_scope_enabled=_evaluate_customer_profile_creator_scope(changed_files,branch=CUSTOMER_PROFILE_CREATOR_BRANCH,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_CUSTOMER_PROFILE_CREATOR_PUSH_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
+def _profile_updater_changed_files():
+ if os.environ.get("GITHUB_EVENT_NAME")=="push":
+  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
+  if BLOB_RE.fullmatch(merge_base) is None: raise RuntimeScopeError("FAIL_RUNTIME_PROFILE_UPDATER_BASE_UNRESOLVED","Profile Updater could not resolve merge-base with main")
+  return _base.e16.git_changed_files(merge_base,"HEAD")
+ return _base.e16.get_changed_files()
 def _customer_maintenance_changed_files():
  if os.environ.get("GITHUB_EVENT_NAME")=="push":
   subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
@@ -86,6 +123,9 @@ def _customer_maintenance_changed_files():
  return _base.e16.get_changed_files()
 def _customer_get_changed_files():
  branch=current_event_branch()
+ if branch==PROFILE_UPDATER_BRANCH:
+  changed_files=_profile_updater_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_UPDATER_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_UPDATER_BLOBS}
+  _base._runtime_scope_enabled=_evaluate_profile_updater_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_PROFILE_UPDATER_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
  if branch==CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BRANCH:
   changed_files=_customer_maintenance_changed_files(); blobs={path:git_blob_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS}
   _base._runtime_scope_enabled=_evaluate_customer_profile_creator_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); print(f"PASS_CUSTOMER_PROFILE_CREATOR_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
@@ -101,4 +141,5 @@ def _customer_is_allowed_path(path:str)->bool:
  return _BASE_RUNTIME_IS_ALLOWED_PATH(path)
 def main(): _sync_base_extensions(); _base.evaluate_controlled_runtime_scope=evaluate_controlled_runtime_scope; _base.get_changed_files=_customer_get_changed_files; _base.is_allowed_path=_customer_is_allowed_path; return _base.main()
 _customer_scope_self_test()
+_profile_updater_scope_self_test()
 if __name__=="__main__": raise SystemExit(main())

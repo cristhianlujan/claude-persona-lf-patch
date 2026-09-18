@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { GRADUATION_SERVER_FIELDS, enrichGoldenGraduationReceipt } from "./graduation.ts";
 
-const ENDPOINT_VERSION = "v22-profile-update-server-trust-context";
+const ENDPOINT_VERSION = "v23-profile-update-graduation-evidence";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
 const REPOSITORY = "cristhianlujan/claude-persona-lf-patch";
@@ -17,6 +18,7 @@ const TRUST_FIELDS = new Set([
   "server_trust_context_valid",
   "server_trust_context_source",
   "server_trust_context",
+  ...GRADUATION_SERVER_FIELDS,
 ]);
 
 function headers(): HeadersInit {
@@ -81,6 +83,9 @@ async function execution(id: string): Promise<any | null> {
 async function initStep(id: string): Promise<any | null> {
   return one(`/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(id)}&step_order=eq.0&step_id=eq.init_execution&select=execution_id,step_order,step_id,status,evidence_ref,evidence_payload`, "INIT_STEP_READ");
 }
+async function priorStep(id: string, stepId: string): Promise<any | null> {
+  return one(`/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(id)}&step_id=eq.${encodeURIComponent(stepId)}&select=execution_id,step_order,step_id,status,evidence_ref,evidence_payload,observed_at`, "PRIOR_STEP_READ");
+}
 function baselineObservation(recorded: any[]): Record<string, unknown> | null {
   const row = recorded.find((r: any) => r.step_id === "baseline_read");
   if (!row) return null;
@@ -116,7 +121,7 @@ function stripCallerTrust(evidence: Record<string, unknown>): Record<string, unk
   return Object.fromEntries(Object.entries(evidence).filter(([k]) => !TRUST_FIELDS.has(k)));
 }
 async function githubJson(url: string, label: string): Promise<any> {
-  const r = await fetch(url, { headers: { accept: "application/vnd.github+json", "user-agent": "lf-profile-operation-runtime-v22" }, signal: AbortSignal.timeout(15000) });
+  const r = await fetch(url, { headers: { accept: "application/vnd.github+json", "user-agent": "lf-profile-operation-runtime-v23" }, signal: AbortSignal.timeout(15000) });
   if (!r.ok) throw new Error(`${label}_${r.status}`);
   return await r.json();
 }
@@ -196,9 +201,12 @@ Deno.serve(async (req: Request) => {
           if (!trusted.ok) return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: trusted.code, operation_code: ex.operation_code, step_id: stepId, write_executed: false }, 409);
           evidence = trusted.evidence;
         }
+        if (stepId === "close") {
+          evidence = await enrichGoldenGraduationReceipt(REPOSITORY, ex, stepId, evidence, githubJson, priorStep);
+        }
         const result = await rpc("lf_record_profile_operation_step_v1", { p_execution_id: id, p_step_id: stepId, p_evidence_ref: evidenceRef, p_evidence_payload: evidence, p_actor_execution_id: id });
         const afterEx = await execution(id), after = afterEx ? await operationSnapshot(afterEx) : null;
-        return json({ outcome: result?.outcome ?? "BLOCKED", endpoint_version: ENDPOINT_VERSION, execution_id: id, operation_code: ex.operation_code, step_id: stepId, result, snapshot_after: after, server_trust_context_derived: stepId === "pre_write_execution_binding_gate", github_write_executed: false }, result?.outcome === "STEP_RECORDED" ? 200 : 409);
+        return json({ outcome: result?.outcome ?? "BLOCKED", endpoint_version: ENDPOINT_VERSION, execution_id: id, operation_code: ex.operation_code, step_id: stepId, result, snapshot_after: after, server_trust_context_derived: stepId === "pre_write_execution_binding_gate", graduation_receipt_server_verified: evidence.server_contract_receipt_verified === true, github_write_executed: false }, result?.outcome === "STEP_RECORDED" ? 200 : 409);
       }
       const result = await rpc("lf_record_creacion_perfil_step_v1", { p_execution_id: id, p_step_id: stepId, p_evidence_ref: evidenceRef, p_evidence_payload: evidence, p_actor_execution_id: id });
       const afterEx = await execution(id), after = afterEx ? await operationSnapshot(afterEx) : null;
