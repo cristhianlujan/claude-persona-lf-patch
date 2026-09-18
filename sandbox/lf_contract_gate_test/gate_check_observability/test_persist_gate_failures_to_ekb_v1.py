@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -54,45 +53,70 @@ def fixture(root: Path) -> Path:
 
 def main() -> None:
     with tempfile.TemporaryDirectory() as td:
-        root = Path(td); summary = fixture(root); out = root / "out"
+        root = Path(td)
+        summary = fixture(root)
+        out = root / "out"
         proc = subprocess.run([
-            sys.executable, str(BRIDGE), "--summary", str(summary),
-            "--artifact-dir", str(out), "--emit-only",
+            sys.executable,
+            str(BRIDGE),
+            "--summary",
+            str(summary),
+            "--artifact-dir",
+            str(out),
+            "--emit-only",
         ], capture_output=True, text=True)
         assert proc.returncode == 0, proc.stderr
         candidates = json.loads((out / "ekb_candidates_v1.json").read_text(encoding="utf-8"))
         assert candidates["candidate_count"] == 1
+        assert candidates["productive_target"] == "public.lf_operation_gate_check_results"
+        assert candidates["productive_ingress"] == "public.lf_record_gate_checks_v1"
+        assert candidates["pre_ekb_gate"] == "PRE_EKB_GATE"
+        assert candidates["direct_ekb_write_allowed"] is False
         item = candidates["candidates"][0]
         assert item["codigo"].startswith("CI-GATE-G01-")
         assert item["root_cause_family"] == "UNCLASSIFIED_WITH_REASON"
         assert item["detectability"] == "LOUD_EARLY"
 
-    with tempfile.TemporaryDirectory() as td:
-        root = Path(td); summary = fixture(root); out = root / "out"; fake = root / "psql"; log = root / "sql.json"
-        write(fake, '''#!/usr/bin/env python3
-import json,os,sys
-open(os.environ['FAKE_PSQL_LOG'],'w').write(json.dumps(sys.argv[1:]))
-print('{"writer":"public.lf_write_pipeline_ekb_v1","classification":"RECURRENCE"}')
-''')
-        fake.chmod(0o755)
-        env = {**os.environ, "PGPASSWORD": "secret", "FAKE_PSQL_LOG": str(log)}
-        proc = subprocess.run([
-            sys.executable, str(BRIDGE), "--summary", str(summary),
-            "--artifact-dir", str(out), "--write", "--psql", str(fake),
-            "--execution-id", "EXEC-1",
-        ], env=env, capture_output=True, text=True)
-        assert proc.returncode == 0, proc.stderr
-        argv = json.loads(log.read_text(encoding="utf-8"))
-        sql = argv[argv.index("-c") + 1]
-        assert "lf_write_pipeline_ekb_v1" in sql
-        assert "insert into" not in sql.lower() and "update " not in sql.lower()
         receipt = json.loads((out / "ekb_persistence_receipt_v1.json").read_text(encoding="utf-8"))
-        assert receipt["status"] == "EKB_PERSISTED"
+        assert receipt["status"] == "EMIT_ONLY_LEDGER_REQUIRED"
+        assert receipt["productive_target"] == "public.lf_operation_gate_check_results"
+        assert receipt["productive_ingress"] == "public.lf_record_gate_checks_v1"
+        assert receipt["pre_ekb_gate"] == "PRE_EKB_GATE"
+        assert receipt["direct_ekb_write_allowed"] is False
+
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        summary = fixture(root)
+        out = root / "out"
+        proc = subprocess.run([
+            sys.executable,
+            str(BRIDGE),
+            "--summary",
+            str(summary),
+            "--artifact-dir",
+            str(out),
+            "--write",
+        ], capture_output=True, text=True)
+        assert proc.returncode != 0
+        assert "--write" in proc.stderr
 
     source = BRIDGE.read_text(encoding="utf-8").lower()
-    assert "insert into public.lf_error_knowledge" not in source
-    assert "update public.lf_error_knowledge" not in source
-    print("LF_GATE_EKB_BRIDGE_V1_TEST_PASS")
+    for forbidden in (
+        "lf_write_pipeline_ekb_v1",
+        "pgpassword",
+        "canonical_writer_sql",
+        "subprocess.run",
+        "insert into transversal.error_knowledge",
+        "update transversal.error_knowledge",
+        "insert into public.lf_error_knowledge",
+        "update public.lf_error_knowledge",
+    ):
+        assert forbidden not in source, forbidden
+
+    assert "public.lf_operation_gate_check_results" in source
+    assert "public.lf_record_gate_checks_v1" in source
+    assert "pre_ekb_gate" in source
+    print("LF_GATE_EKB_BRIDGE_EMIT_ONLY_V2_TEST_PASS")
 
 
 if __name__ == "__main__":
