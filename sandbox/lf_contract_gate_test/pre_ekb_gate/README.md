@@ -6,12 +6,12 @@ Capacidad transversal LF que garantiza que un fallo durable quede persistido en 
 
 - Capability: `PRE_EKB_GATE`
 - Nombre canónico: `TRANSVERSAL_PRE_EKB_GATE`
-- Versión: `v0.2.1`
+- Versión: `v0.2.2`
 - Estado documental: `VIGENTE`
 - Estado operativo: `ACTIVO`
 - Runtime: `SUPABASE_ENFORCED`
 - Inventory status: `ACTIVE_SHARED_ENFORCEMENT`
-- Primer consumidor enforced: `ACTUALIZACION_DB_LF`
+- Consumidores enforced: `ACTUALIZACION_DB_LF`, `GITHUB_CONTRACT_GATE_LF`
 - Autoridad operacional: Supabase
 - No crea un segundo EKB, error store, Router ni workflow engine.
 
@@ -274,6 +274,42 @@ Antes de agregar otro consumidor:
 
 Si el consumidor necesita un formato de fallo incompatible, primero ampliar el contrato transversal; no crear un writer paralelo.
 
+## Uso dentro de GITHUB_CONTRACT_GATE_LF / lf-contract-check
+
+`lf-contract-check` consume PRE_EKB_GATE únicamente para fallos determinísticos que ya tienen un `LF_GATE_ERROR_V1` durable.
+
+La identidad operacional es:
+
+```text
+GITHUB_CONTRACT_GATE_LF
+  -> canonical step: contract_judge
+  -> public.lf_record_gate_checks_v1
+  -> public.lf_operation_gate_check_results
+  -> trigger PRE_EKB_GATE
+  -> ACT-0001 / EJECUCION_SKILL_LF
+  -> ACT-0057
+  -> ESCRITURA_BASE_CONOCIMIENTO_LF
+  -> EKB receipt/readback
+```
+
+Reglas de integración:
+
+- el workflow no llama directamente a `lf_write_pipeline_ekb_v1`;
+- el workflow no usa `persist_gate_failures_to_ekb_v1.py` como writer productivo;
+- cada corrida que necesita persistencia reserva una ejecución gobernada propia de `GITHUB_CONTRACT_GATE_LF`;
+- el source commit queda ligado al exact candidate head;
+- los checks se registran por el ingress canónico `lf_record_gate_checks_v1`;
+- PASS no genera EKB;
+- FAIL/BLOCKED exige `persistence_result=EKB_PERSISTED` por cada check no-PASS;
+- un `BLOCKED_EKB_PERSISTENCE` mantiene el flujo bloqueado;
+- esta integración no convierte fallos no instrumentados del workflow en causas inventadas. Los fallos sin `LF_GATE_ERROR_V1` siguen bajo el control `CI-GATE-DIAGNOSTIC-EVIDENCE-GAP-001`.
+
+Binding source-first:
+
+- migration: `20260918145500_lf_s30_github_contract_gate_pre_ekb_consumer_v1.sql`;
+- consumer exacto en `metadata.transversal_inventory.consumers_known`: `GITHUB_CONTRACT_GATE_LF`;
+- canary transaccional: FAIL + recurrence + PASS sin EKB + BLOCKED, con rollback y cero residuo.
+
 ## Uso dentro de ACTUALIZACION_DB_LF
 
 `ACTUALIZACION_DB_LF` es el primer consumidor enforced.
@@ -316,6 +352,12 @@ Corrección de normalización canónica:
 - `supabase/migrations/20260917235000_s30_pre_ekb_canonical_code_normalization_v1.sql`
 - PR #889
 - ledger exact version `20260917235000`
+
+Ampliación de consumer para `GITHUB_CONTRACT_GATE_LF`:
+
+- `supabase/migrations/20260918145500_lf_s30_github_contract_gate_pre_ekb_consumer_v1.sql`
+- consumer path: `lf-contract-check -> GITHUB_CONTRACT_GATE_LF -> contract_judge`
+- no cambia el writer ni el Router; sólo extiende el binding de la capability existente.
 
 EKB relevante:
 
