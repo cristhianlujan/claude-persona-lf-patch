@@ -98,14 +98,15 @@ Cuando el plan contiene `DB_CANDIDATE_APPLY_ROLLBACK`:
 8. verificar que el ledger durable permanezca idéntico antes/después;
 9. persistir manifest y log, incluyendo un manifest BLOCKED aun cuando la preparación falle.
 
-Antes de ejecutar DDL, el carrier refina la aplicabilidad contra el ledger remoto usando sólo la identidad `version + name` de las migraciones ya seleccionadas por el plan:
+Antes de ejecutar DDL, el carrier refina la aplicabilidad contra el ledger remoto y la provenance gobernada de las migraciones ya seleccionadas por el plan:
 
 - ninguna aplicada → `PENDING`: ejecutar candidate apply/rollback;
-- todas aplicadas con identidad exacta → `ALL_APPLIED_EXACT`: no reejecutar DDL; ejecutar únicamente los probes post-apply dentro de rollback y mantener `MIGRATION_SOURCE_PARITY` como autoridad separada de identidad/contenido;
+- todas aplicadas y con provenance exacta → `ALL_APPLIED_EXACT`: no reejecutar DDL; ejecutar únicamente los probes post-apply dentro de rollback;
+- aplicada pero sin `lf_operation_effect_guard.state=SUCCEEDED`, `write_readback=PASS`, `version + name` y **Git blob exacto** del candidato → `APPLIED_UNVERIFIED` y BLOCK;
 - versión existente con nombre distinto → BLOCK;
 - estado mixto (unas aplicadas y otras pendientes) → BLOCK hasta disponer de una ruta explícita de aplicación selectiva.
 
-El refinamiento evita que una migración ya aplicada source-first vuelva a disparar guards de prestate y produzca un falso fallo del candidato.
+El refinamiento evita dos falsos resultados: reejecutar una migración ya aplicada y aceptar como “exacta” una migración live sólo porque coincide su número/nombre. `MIGRATION_SOURCE_PARITY` sigue siendo una autoridad separada del control candidate-bound.
 
 `POLICY_RESOLVER_REGRESSION`, cuando aplica, se ejecuta después del apply del candidato y antes del rollback; no usa el schema remoto anterior como sustituto del candidato.
 
@@ -179,4 +180,29 @@ Si aparece un nuevo tipo de material o control, extender el registro y los tests
 
 ## Currentness
 
-Este README documenta el contrato de consumo. Antes de una decisión material, consultar `public.lf_activos`, source revision y superficies runtime vigentes. Si cambia el contrato de aplicabilidad, revalidar todos los carriers afectados.
+La autoridad Git de CI es **móvil**: `refs/heads/main`. Un SHA no representa la autoridad viva; representa una observación o evidencia histórica.
+
+Separación obligatoria:
+
+- `diff_base_revision`: base usada para reconstruir el delta exacto del candidato;
+- `authority_ref`: `refs/heads/main`;
+- `authority_evidence_revision`: revisión histórica de main contra la que se evalúa currentness;
+- `resolved_revision`: SHA vigente de main observado al ejecutar;
+- `applicability_sha256` / `plan_sha256`: identidad estable de materiales, controles y decisión de aplicabilidad;
+- `evidence_sha256`: recibo de una corrida concreta; puede diferir entre carriers/corridas porque conserva el contexto histórico observado.
+
+Los tres carriers deben resolver main vivo y delegar el drift al **`CURRENTNESS_AUTHORITY` existente**. No crear otro currentness engine.
+
+Reglas:
+
+- main avanzó pero los materiales CI declarados no cambiaron → `CURRENT_REBOUND`; no rebasear sólo para obtener otro SHA;
+- cambió un material de la autoridad CI y no existe prueba de compatibilidad → `UNKNOWN_FAIL_CLOSED`;
+- cambio material demostrado como breaking → `STALE_AFFECTED`;
+- historia divergente o evidencia incompleta → fail closed;
+- la evidencia anterior permanece inmutable como referencia documental; no se reescribe para aparentar currentness.
+
+En feature branches, el base histórico del último commit de la rama no debe confundirse con main. La revisión de autoridad se deriva del merge-base con `refs/heads/main`; el diff del candidato conserva su propio base/head.
+
+Materiales de currentness de esta capability incluyen los tres workflows CI, `s28_ci_lane_router/**`, `gate_check_observability/**`, este README y la implementación `material_currentness/**`.
+
+Antes de una decisión material, consultar además `public.lf_activos` y las superficies runtime vigentes. Si cambia el contrato de aplicabilidad, revalidar sólo el closure afectado; no perseguir el SHA global de main.
