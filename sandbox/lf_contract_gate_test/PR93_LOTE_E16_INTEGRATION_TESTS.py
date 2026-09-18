@@ -196,26 +196,44 @@ def main() -> int:
             "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
             "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
             "scripts/lf_contract_check.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/run_lf_adapter_binding_tests.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_obligation_manifest.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_judge.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GUARDS.md",
         ]
         for relative in files:
             destination = repo / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source / relative, destination)
+
+        runtime_relative = Path("sandbox/lf_contract_gate_test/profile_execution_runtime")
+        shutil.copytree(
+            source / runtime_relative,
+            repo / runtime_relative,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+        )
+
+        e16_root = source / "sandbox/lf_contract_gate_test"
+        e16_files = sorted(path for path in e16_root.glob("PR93_LOTE_E16_*") if path.is_file())
+        required_e16 = {
+            "PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
+            "PR93_LOTE_E16_GITHUB_INVENTORY.py",
+            "PR93_LOTE_E16_INVENTORY_TESTS.py",
+            "PR93_LOTE_E16_REGRESSION_TESTS.py",
+            "PR93_LOTE_E16_RATIFICATION_TESTS.py",
+            "PR93_LOTE_E16_INTEGRATION_TESTS.py",
+            "PR93_LOTE_E16_GUARDS.md",
+        }
+        observed_e16 = {path.name for path in e16_files}
+        missing_e16 = sorted(required_e16 - observed_e16)
+        if missing_e16:
+            raise SystemExit(f"E16 integration source closure missing required files: {missing_e16}")
+        for source_path in e16_files:
+            relative = source_path.relative_to(source)
+            destination = repo / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_path, destination)
+        print(
+            "PASS_E16_INTEGRATION_SOURCE_CLOSURE="
+            f"runtime_tree+e16_family:{len(e16_files)}"
+        )
         checked(["git", "add", "-A"], repo)
         checked(["git", "commit", "-m", "E16 candidate"], repo)
         head = checked(["git", "rev-parse", "HEAD"], repo)
