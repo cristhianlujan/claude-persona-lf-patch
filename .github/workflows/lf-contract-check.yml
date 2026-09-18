@@ -340,11 +340,21 @@ jobs:
           )
           PY
 
-      - name: Run CI lane router self-tests
+      - name: Run CI lane router self-tests with deterministic diagnostics
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.ci_router_selftest_required == 'true'
         run: |
-          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py
-          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_CI_ROUTER_SELFTEST \
+            --step-id ci_lane_router_selftests \
+            --mode COLLECT_ALL \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py","critical":true}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py","critical":true}' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/ci_router_selftest \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix CIR \
+            --owner CI_FAST_DEEP_LANE_ROUTER \
+            --next-action FIX_CI_ROUTER_SELFTEST_AND_RERUN \
+            --downstream-impact lf-contract-check
 
       - name: Complete FAST P0 docs lane
         if: steps.feedback_tier.outputs.tier == 'FAST_P0_DOCS'
