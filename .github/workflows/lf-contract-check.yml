@@ -1463,11 +1463,11 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -At -f /tmp/lf_contract_pre_ekb.sql
           echo "PASS_LF_CONTRACT_PRE_EKB_CANONICAL_HANDOFF nonpass_checks=$nonpass_count"
 
-      - name: Capture authenticated E.16 Actions inventory
-        if: github.event_name == 'pull_request' && contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_ACTIONS_INVENTORY')
+      - name: Capture authenticated E.16 current-carrier Actions readback
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_ACTIONS_INVENTORY')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          E16_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           LF_FEEDBACK_TIER: ${{ steps.feedback_tier.outputs.tier }}
         run: |
           set -euo pipefail
