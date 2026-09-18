@@ -143,9 +143,9 @@ def main() -> int:
     workflow = (source / ".github/workflows/lf-contract-check.yml").read_text(encoding="utf-8")
     required_workflow_terms = (
         "actions: read",
-        "if: github.event_name == 'pull_request'",
+        "if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_ACTIONS_INVENTORY')",
         'PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}',
-        'E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}',
+        "E16_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}",
         '--head-sha "$E16_HEAD_SHA"',
         "PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
         "PR93_LOTE_E16_REGRESSION_TESTS.py",
@@ -164,12 +164,13 @@ def main() -> int:
     present_forbidden = [term for term in forbidden_workflow_terms if term in workflow]
     if present_forbidden:
         raise SystemExit(f"workflow binding contains forbidden legacy forms: {present_forbidden}")
-    if workflow.count('${{ github.event.pull_request.head.sha }}') != 2:
-        raise SystemExit("workflow must bind pull_request.head.sha exactly twice: router and E.16 inventory")
     if workflow.count('PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}') != 1:
         raise SystemExit("router must bind exact pull_request.head.sha exactly once")
-    if workflow.count('E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}') != 1:
-        raise SystemExit("E.16 inventory must bind exact pull_request.head.sha exactly once")
+    e16_head_binding = "E16_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+    if workflow.count(e16_head_binding) != 1:
+        raise SystemExit("E.16 current-carrier readback must bind PR head or push/workflow SHA exactly once")
+    if "if: github.event_name == 'pull_request' && contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_ACTIONS_INVENTORY')" in workflow:
+        raise SystemExit("E.16 current-carrier readback must not be restricted to pull_request")
     print("PASS_E16_WORKFLOW_BINDING=15/15")
 
     with tempfile.TemporaryDirectory(prefix="pr93-e16-integration-") as temp:
