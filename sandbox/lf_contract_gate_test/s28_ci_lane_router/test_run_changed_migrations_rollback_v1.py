@@ -23,7 +23,7 @@ M = load()
 
 def expect_block(sql: str, code: str) -> None:
     try:
-        M.validate_transaction_safe("x.sql", sql)
+        M.prepare_transaction_payload("x.sql", sql)
     except M.ProbeError as exc:
         assert code in str(exc), str(exc)
     else:
@@ -31,52 +31,135 @@ def expect_block(sql: str, code: str) -> None:
 
 
 def test_allows_plpgsql_begin_end_inside_dollar_body() -> None:
-    M.validate_transaction_safe(
-        "x.sql",
-        """create or replace function public.f() returns void language plpgsql as $fn$
+    source = """create or replace function public.f() returns void language plpgsql as $fn$
 begin
   perform 1;
 end;
 $fn$;
-""",
+"""
+    payload, frame = M.prepare_transaction_payload("x.sql", source)
+    assert payload == source
+    assert frame["mode"] == "NONE"
+
+
+def test_allows_and_normalizes_single_outer_begin_commit() -> None:
+    source = """-- migration wrapper
+begin;
+
+create table x(id int);
+do $block$
+begin
+  perform 1;
+end;
+$block$;
+
+commit;
+-- trailing comment
+"""
+    payload, frame = M.prepare_transaction_payload("x.sql", source)
+    assert frame["mode"] == "SINGLE_OUTER_BEGIN_COMMIT_NORMALIZED"
+    assert frame["source_transaction_statements"] == 2
+    assert frame["interior_material_preserved"] is True
+    assert "create table x(id int);" in payload
+    assert "perform 1;" in payload
+    code = M.strip_non_code(payload)
+    assert not M.TX_STMT.search(code)
+    assert len(payload.encode("utf-8")) == len(source.encode("utf-8"))
+    assert frame["source_sha256"] != frame["execution_payload_sha256"]
+
+
+def test_blocks_lone_top_level_commit() -> None:
+    expect_block(
+        "create table x(id int);\ncommit;\n",
+        "BLOCK_DB_CANDIDATE_TRANSACTION_CONTROL",
     )
 
 
-def test_blocks_top_level_commit() -> None:
-    expect_block("create table x(id int);\ncommit;\n", "BLOCK_DB_CANDIDATE_NONTRANSACTIONAL")
+def test_blocks_lone_top_level_begin() -> None:
+    expect_block(
+        "begin;\ncreate table x(id int);\n",
+        "BLOCK_DB_CANDIDATE_TRANSACTION_CONTROL",
+    )
 
 
-def test_blocks_top_level_begin() -> None:
-    expect_block("begin;\ncreate table x(id int);\n", "BLOCK_DB_CANDIDATE_NONTRANSACTIONAL")
+def test_blocks_rollback_even_with_begin() -> None:
+    expect_block(
+        "begin;\ncreate table x(id int);\nrollback;\n",
+        "BLOCK_DB_CANDIDATE_TRANSACTION_CONTROL",
+    )
 
 
-def test_blocks_vacuum() -> None:
-    expect_block("VACUUM public.x;\n", "BLOCK_DB_CANDIDATE_NONTRANSACTIONAL")
+def test_blocks_multiple_transaction_frames() -> None:
+    expect_block(
+        "begin;\ncreate table x(id int);\ncommit;\nbegin;\nselect 1;\ncommit;\n",
+        "BLOCK_DB_CANDIDATE_TRANSACTION_CONTROL",
+    )
 
 
-def test_blocks_concurrent_index() -> None:
-    expect_block("CREATE INDEX CONCURRENTLY x_i ON x(id);\n", "BLOCK_DB_CANDIDATE_NONTRANSACTIONAL")
+def test_blocks_code_before_outer_begin() -> None:
+    expect_block(
+        "select 1;\nbegin;\ncreate table x(id int);\ncommit;\n",
+        "BLOCK_DB_CANDIDATE_TRANSACTION_CONTROL",
+    )
+
+
+def test_blocks_code_after_outer_commit() -> None:
+    expect_block(
+        "begin;\ncreate table x(id int);\ncommit;\nselect 1;\n",
+        "BLOCK_DB_CANDIDATE_TRANSACTION_CONTROL",
+    )
+
+
+def test_blocks_vacuum_inside_outer_frame() -> None:
+    expect_block(
+        "begin;\nVACUUM public.x;\ncommit;\n",
+        "BLOCK_DB_CANDIDATE_NONTRANSACTIONAL",
+    )
+
+
+def test_blocks_concurrent_index_inside_outer_frame() -> None:
+    expect_block(
+        "begin;\nCREATE INDEX CONCURRENTLY x_i ON x(id);\ncommit;\n",
+        "BLOCK_DB_CANDIDATE_NONTRANSACTIONAL",
+    )
 
 
 def test_ignores_comment_and_string_tokens() -> None:
-    M.validate_transaction_safe(
-        "x.sql",
-        """-- COMMIT;
+    source = """-- COMMIT;
 select 'BEGIN; VACUUM'::text;
 /* DROP DATABASE nope; */
 create table x(id int);
-""",
-    )
+"""
+    payload, frame = M.prepare_transaction_payload("x.sql", source)
+    assert payload == source
+    assert frame["mode"] == "NONE"
+
+
+def test_start_transaction_outer_frame_is_supported() -> None:
+    source = """START TRANSACTION;
+select 1;
+COMMIT;
+"""
+    payload, frame = M.prepare_transaction_payload("x.sql", source)
+    assert frame["mode"] == "SINGLE_OUTER_BEGIN_COMMIT_NORMALIZED"
+    assert frame["source_open_kind"] == "START TRANSACTION"
+    assert not M.TX_STMT.search(M.strip_non_code(payload))
 
 
 def main() -> None:
     tests = [
         test_allows_plpgsql_begin_end_inside_dollar_body,
-        test_blocks_top_level_commit,
-        test_blocks_top_level_begin,
-        test_blocks_vacuum,
-        test_blocks_concurrent_index,
+        test_allows_and_normalizes_single_outer_begin_commit,
+        test_blocks_lone_top_level_commit,
+        test_blocks_lone_top_level_begin,
+        test_blocks_rollback_even_with_begin,
+        test_blocks_multiple_transaction_frames,
+        test_blocks_code_before_outer_begin,
+        test_blocks_code_after_outer_commit,
+        test_blocks_vacuum_inside_outer_frame,
+        test_blocks_concurrent_index_inside_outer_frame,
         test_ignores_comment_and_string_tokens,
+        test_start_transaction_outer_frame_is_supported,
     ]
     for test in tests:
         test()
