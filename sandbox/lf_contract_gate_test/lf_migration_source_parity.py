@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# Applicability invariant: any change to this validator requires MIGRATION_SOURCE_PARITY.
+# This comment is intentionally behavior-neutral and keeps that Router binding visible.
+
 import csv
 import hashlib
 import io
