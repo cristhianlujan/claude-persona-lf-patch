@@ -1,0 +1,76 @@
+{
+  "review_case": "CARD-UPDATE-I7-MEGA1-IR-002",
+  "scope": "ACTUALIZACION_CARD_LF Mega 1 Supabase-native no-write remediation",
+  "producer_source_commit": "d242cd8b7833f1a150d086e9a78169c758609bee",
+  "target_card": "CARD-CAND-DASHBOARD-CLIENTE-LECTOR-LF-001",
+  "authority": "SUPABASE",
+  "external_card_carriers_allowed": false,
+  "current_content": {
+    "table": "public.lf_card_content_versions",
+    "row_id": 1,
+    "content_version": "v0.1-supabase-native.1",
+    "content_chars": 833,
+    "content_sha256": "0401cea0e645f7910676839855e336ecdc1248bfc8cf388e7abe157992e19dab",
+    "status": "CURRENT"
+  },
+  "live_snapshot_expectations": {
+    "active_external_card_refs": 0,
+    "active_card_update_routes": 0,
+    "card_binding_type": "SUPABASE_NATIVE_CARD_CONTENT",
+    "card_binding_authority": true,
+    "card_runtime_estado": "PRODUCCION_CONTROLADA_READ_ONLY",
+    "card_estado_operativo": "READ_ONLY",
+    "card_estado_documental": "VIGENTE",
+    "card_impacto_automatico": "BLOQUEADO"
+  },
+  "mega1_executions": [
+    "EXEC-CARD-UPDATE-I7-MEGA1-CANARY-20260914-001",
+    "EXEC-CARD-UPDATE-I7-MEGA1-CANARY-20260914-002",
+    "EXEC-CARD-UPDATE-I7-MEGA1-SUPABASE-CANARY-20260914-003"
+  ],
+  "expected_execution_terminal_state": "CANCELLED",
+  "primary_canary_execution": "EXEC-CARD-UPDATE-I7-MEGA1-SUPABASE-CANARY-20260914-003",
+  "primary_canary_expectations": {
+    "steps_0_80": "STEP_PASS_WITH_EVIDENCE",
+    "step_90": "BLOCKED_STEP_NOT_CLEAN",
+    "write_executed": false,
+    "mega1_scope_result": "PASS_READY_FOR_INDEPENDENT_REVIEW"
+  },
+  "producer_self_audit_claims_to_falsify": {
+    "F01": "PASS",
+    "F02": "PASS",
+    "F03": "PASS",
+    "F04": "PASS",
+    "F05": "PASS_NO_WRITE_SCOPE",
+    "F06": "PASS_HONEST_MATRIX",
+    "F07": "PASS",
+    "F08": "PASS"
+  },
+  "explicit_not_executed": [
+    "REAL_CARD_WRITE",
+    "REAL_POSTWRITE_READBACK",
+    "REAL_ROLLBACK_WRITE",
+    "REAL_ROLLBACK_READBACK"
+  ],
+  "migration_ledger_expected": [
+    ["20260914070453", "lf_card_update_i7_core_direct_hardening_v05"],
+    ["20260914070957", "lf_card_update_i7_baseline_rollback_contract_v04"],
+    ["20260914074126", "lf_card_update_i7_server_evidence_v3_verified_apply"],
+    ["20260914074307", "lf_card_update_i7_server_validation_adapter_v04"],
+    ["20260914080026", "lf_card_update_i7_source_aware_trust_intent_v1_verified_apply"],
+    ["20260914080200", "lf_card_update_i7_step80_server_assertions_fix_v1"],
+    ["20260914121148", "lf_card_content_supabase_native_v1"],
+    ["20260914144747", "lf_card_update_supabase_native_contract_v1_verified_apply"]
+  ],
+  "canonical_source_refs": {
+    "card_content_migration_commit": "4f68d52393529dec3638ca6e1740b257f522ab2e",
+    "card_content_migration_path": "supabase/migrations/20260914115500_lf_card_content_supabase_native_v1.sql",
+    "card_update_contract_commit": "d242cd8b7833f1a150d086e9a78169c758609bee",
+    "card_update_contract_path": "supabase/migrations/20260914121000_lf_card_update_supabase_native_contract_v1.sql",
+    "core_hardening_blob": "cd0eb837bb746d55d6a19d3d4f322e1674d4634e",
+    "server_evidence_v3_blob": "2ab7f085be3e4617009bee0bdb27920b9750fb08"
+  },
+  "review_ceiling": "NO_MERGE_NO_GOLDEN_NO_PRODUCTION_NO_RUNTIME_NO_CARD_WRITE",
+  "required_reviewer_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "review_instruction": "Attempt falsification. Do not use producer conclusions as expected verdict. Verify immutable Git refs and live Supabase readbacks. Return only the required JSON receipt defined in the handoff."
+}
