@@ -205,7 +205,9 @@ def build_plan(
         if unknown_lane
         else None
     )
-    carrier_regression = bool(carrier_self_changes and not full_regression)
+    if full_regression:
+        carrier_self_changes = ()
+    carrier_regression = bool(carrier_self_changes)
     carrier_regression_reason = "CI_CARRIER_SELF_CHANGE" if carrier_regression else None
 
     required: set[str] = set(lane_required_controls)
