@@ -527,8 +527,26 @@ jobs:
       - name: Validate declared governance paths
         if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')
         run: |
+          set -euo pipefail
+          runtime_dir=.lf_gate_runtime/lf_contract_check/declared_governance_paths
+          rm -rf "$runtime_dir"
+          mkdir -p "$runtime_dir"
           pip install pyyaml
-          python3 scripts/validate_declared_paths.py --repo-root .
+          python3 scripts/validate_declared_paths.py --repo-root . \
+            > >(tee "$runtime_dir/legacy.stdout.log") \
+            2> >(tee "$runtime_dir/legacy.stderr.log" >&2)
+
+      - name: Shadow declared governance paths through existing gate orchestrator
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/declared_governance_paths_shadow
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py \
+            --manifest sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_declared_paths_manifest_v1.json \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/declared_governance_paths_shadow \
+            --group DECLARED_GOVERNANCE_PATHS
+          echo "SHADOW_DECLARED_GOVERNANCE_PATHS_EXECUTED"
 
       - name: Verify hosted Supabase Data API excludes net schema
         if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'SUPABASE_CONTROL_PLANE_READBACK')
