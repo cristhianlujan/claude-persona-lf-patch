@@ -32,6 +32,18 @@ def require_step_guard(text: str, step_name: str, control_id: str) -> None:
     require(block, control_id, f"FAIL_CI_CARRIER_CONTROL_NOT_BOUND:{step_name}")
 
 
+
+def require_job_guard(text: str, job_id: str, control_id: str) -> None:
+    marker = f"  {job_id}:"
+    start = text.find(marker)
+    assert start >= 0, f"FAIL_CI_CARRIER_JOB_MISSING:{job_id}"
+    end = text.find("\n  ", start + len(marker))
+    if end < 0:
+        end = len(text)
+    block = text[start:end]
+    require(block, "if:", f"FAIL_CI_CARRIER_JOB_UNGUARDED:{job_id}")
+    require(block, control_id, f"FAIL_CI_CARRIER_CONTROL_NOT_BOUND:{job_id}")
+
 def main() -> None:
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
     controls = registry["controls"]
@@ -50,9 +62,9 @@ def main() -> None:
     bootstrap = texts["LF_BOOTSTRAP_REPRODUCIBILITY"]
     for forbidden in ("docs_only=", "schema_sensitive=", "deep_required", "remote_schema_required"):
         assert forbidden not in bootstrap, f"FAIL_BOOTSTRAP_PARALLEL_CLASSIFIER_REMAINS:{forbidden}"
-    require_step_guard(bootstrap, "schema-bootstrap-probe", "REMOTE_SCHEMA_REPRODUCIBILITY")
-    require_step_guard(bootstrap, "v7-runtime-apply-rollback", "V7_RUNTIME_REGRESSION")
-    require_step_guard(bootstrap, "candidate-migration-apply-rollback", "DB_CANDIDATE_APPLY_ROLLBACK")
+    require_job_guard(bootstrap, "schema-bootstrap-probe", "REMOTE_SCHEMA_REPRODUCIBILITY")
+    require_job_guard(bootstrap, "v7-runtime-apply-rollback", "V7_RUNTIME_REGRESSION")
+    require_job_guard(bootstrap, "candidate-migration-apply-rollback", "DB_CANDIDATE_APPLY_ROLLBACK")
     require(bootstrap, "run_changed_migrations_rollback_v1.py", "FAIL_EXACT_CANDIDATE_ROLLBACK_NOT_WIRED")
     require(bootstrap, "policy_resolver_post_apply_probe_v1.sql", "FAIL_POLICY_RESOLVER_POST_APPLY_NOT_WIRED")
     require(bootstrap, "ledger_before.txt", "FAIL_CANDIDATE_LEDGER_PRESTATE_MISSING")
