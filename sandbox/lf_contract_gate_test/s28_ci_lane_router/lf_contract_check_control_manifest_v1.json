@@ -1,7 +1,7 @@
 {
   "schema_version": "lf-gate-group-manifest/v1",
   "consumer_code": "LF_CONTRACT_CHECK",
-  "gate_id": "LF_CONTRACT_CHECK_DECLARATIVE_CONTROLS_SHADOW",
+  "gate_id": "LF_CONTRACT_CHECK_DECLARATIVE_CONTROLS",
   "owner": "LF_CONTRACT_CHECK",
   "discover_glob": "sandbox/lf_contract_gate_test/lf_migration_source_parity.py",
   "expected_total_checks": 1,
