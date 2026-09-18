@@ -147,8 +147,16 @@ def test_validate_packs_carrier_self_change_is_scoped() -> None:
     assert got["carrier_regression_carriers"] == ["VALIDATE_LF_PACKS"]
     expected = full_controls_for_carrier("VALIDATE_LF_PACKS")
     assert set(got["carrier_controls"]["VALIDATE_LF_PACKS"]) == expected
-    assert got["carrier_controls"]["LF_CONTRACT_CHECK"] == ["CI_ROUTER_SELFTEST"]
-    assert_has(got, *sorted(expected), "CI_ROUTER_SELFTEST")
+    assert got["carrier_controls"]["LF_CONTRACT_CHECK"] == [
+        "CI_ROUTER_SELFTEST",
+        "DECLARED_GOVERNANCE_PATHS",
+    ]
+    assert_has(
+        got,
+        *sorted(expected),
+        "CI_ROUTER_SELFTEST",
+        "DECLARED_GOVERNANCE_PATHS",
+    )
     assert_not(
         got,
         "LF_CONTRACT_CORE",
@@ -178,7 +186,10 @@ def test_bootstrap_carrier_self_change_is_scoped() -> None:
     assert got["carrier_regression_carriers"] == ["LF_BOOTSTRAP_REPRODUCIBILITY"]
     expected = full_controls_for_carrier("LF_BOOTSTRAP_REPRODUCIBILITY")
     assert set(got["carrier_controls"]["LF_BOOTSTRAP_REPRODUCIBILITY"]) == expected
-    assert got["carrier_controls"]["LF_CONTRACT_CHECK"] == ["CI_ROUTER_SELFTEST"]
+    assert got["carrier_controls"]["LF_CONTRACT_CHECK"] == [
+        "CI_ROUTER_SELFTEST",
+        "DECLARED_GOVERNANCE_PATHS",
+    ]
     assert "VALIDATE_LF_PACKS" not in got["carrier_controls"]
 
 
