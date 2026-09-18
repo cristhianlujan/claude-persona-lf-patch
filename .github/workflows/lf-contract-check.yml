@@ -580,7 +580,7 @@ jobs:
         env:
           LF_REQUIRED_CONTROLS_JSON: ${{ steps.feedback_tier.outputs.required_controls_json }}
           LF_LEGACY_PARITY_REQUIRED: ${{ steps.feedback_tier.outputs.migration_parity_required }}
-          LF_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LF_PR_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
           source_head="$LF_PR_HEAD_SHA"
