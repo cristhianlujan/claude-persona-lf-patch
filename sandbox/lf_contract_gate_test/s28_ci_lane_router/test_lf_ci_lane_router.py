@@ -300,6 +300,22 @@ def required_controls_shadow_main():
         future.p0_exact_head_external_required,
     ))
 
+    reg = fresh_registry()
+    future_lane = future_entry()
+    future_lane["required_controls"] = ["FUTURE_TRANSVERSAL_CONTROL"]
+    reg["lanes"].append(future_lane)
+    routed_future = classify(["sandbox/lf_contract_gate_test/s30_e_future/a.json"], registry_data=reg)
+    assert routed_future.required_controls == ("FUTURE_TRANSVERSAL_CONTROL",), routed_future
+    assert routed_future.mode == "S30_FUTURE_ISOLATED", routed_future
+
+    bad_reg = fresh_registry()
+    bad_lane = future_entry()
+    bad_lane["required_controls"] = ["FUTURE_TRANSVERSAL_CONTROL", "FUTURE_TRANSVERSAL_CONTROL"]
+    bad_reg["lanes"].append(bad_lane)
+    bad_decision = classify(["sandbox/lf_contract_gate_test/s30_e_future/a.json"], registry_data=bad_reg)
+    assert bad_decision.mode == "DEEP_SHARED_REGISTRY_INVALID", bad_decision
+    assert bad_decision.deep_shared is True
+
     try:
         LaneDecision(
             mode="INVALID_LEGACY_MISMATCH",
@@ -316,7 +332,7 @@ def required_controls_shadow_main():
     else:
         raise AssertionError("legacy/required_controls mismatch must fail closed")
 
-    print("CI_REQUIRED_CONTROLS_SHADOW_PASS=8/8")
+    print("CI_REQUIRED_CONTROLS_SHADOW_PASS=10/10")
 
 
 if __name__ == "__main__":
