@@ -1,0 +1,42 @@
+{
+  "schema": "S36_WP5_CURRENTNESS_RECEIPT_V1",
+  "verified_at_utc": "2026-09-15T00:49:41.624Z",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "main_sha": "ee3af8b6a7b100f294b176638f5889ad079ff62a",
+  "branch": "lf-s36-wp5-performance-assurance-20260914",
+  "executor_execution_id": "EXEC-S36-WP05-PERFORMANCE-RESUME-20260914-001",
+  "rebase_mode": "CLEAN_SINGLE_COMMIT_REAPPLY_WP5_ONLY",
+  "merge_commit_created": false,
+  "pr_policy": "CLEAN_AUTONOMOUS_EXCLUSIVE_WP5",
+  "main_delta_since_prior_currentness": {
+    "material_change": "Merge PR #829: S36 WP6 assurance completeness CI gate",
+    "wp5_target_changed": false,
+    "wp5_fixture_changed": false,
+    "wp5_scope_overlap": false
+  },
+  "target_binding": {
+    "path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_resolver_readonly_v1.py",
+    "git_blob_sha": "f17ab693b4c90e57c57b64df17ebfecdf3d19773"
+  },
+  "fixture_binding": {
+    "path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_structured_inputs_v1.json",
+    "git_blob_sha": "59cfcceb2c21d193605a0f4d9b27db610ca9b38e"
+  },
+  "resolved_historical_parity": {
+    "version": "20260914231805",
+    "name": "s36_card_update_i8_prepromotion_assurance_v1",
+    "state": "CANONICAL_IN_MAIN_AND_LIVE"
+  },
+  "current_external_parity_blocker": {
+    "version": "20260915000334",
+    "name": "s36_wp3_asset_lifecycle_assurance_v1",
+    "owner": "S36-WP03",
+    "source_pr": 828,
+    "source_pr_state": "OPEN",
+    "state": "LIVE_REMOTE_ONLY_PENDING_OWNER_CANONICALIZATION",
+    "wp5_must_not_absorb": true
+  },
+  "baseline_reuse_decision": "VALID_SAME_TARGET_AND_FIXTURE_BLOBS",
+  "baseline_relabelled_as_new_execution": false,
+  "production_like_authorized": false
+}
