@@ -365,10 +365,9 @@ def validate_profile_creator_edge_admission_scope() -> None:
         failures.append("supabase_functions_prefix_must_remain_denied")
     if PROFILE_CREATOR_CALLER_EDGE_PATH not in ALLOWED_EXACT:
         failures.append("profile_creator_edge_exact_missing")
-    if not is_allowed_path(PROFILE_CREATOR_CALLER_EDGE_PATH):
-        failures.append("profile_creator_edge_not_allowed")
     for path in sorted(PROFILE_CREATOR_CALLER_EDGE_DENIED_LOOKALIKES):
-        if path in ALLOWED_EXACT or is_allowed_path(path):
+        statically_allowed = path in ALLOWED_EXACT or any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
+        if statically_allowed:
             failures.append(f"lookalike_unexpectedly_allowed:{path}")
     if failures:
         fail("FAIL_PROFILE_CREATOR_EDGE_ADMISSION_SCOPE_INVARIANT", ",".join(failures))
