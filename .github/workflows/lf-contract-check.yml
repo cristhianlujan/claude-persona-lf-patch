@@ -1348,20 +1348,20 @@ jobs:
             select count(*) into v_total
             from public.lf_operation_gate_check_results
             where execution_id={sql_text(execution_id)};
-          
+
             if v_total<>{total_checks} then
               raise exception 'LF_CONTRACT_PRE_EKB_TOTAL_CHECK_READBACK_MISMATCH expected={total_checks} actual=%',v_total;
             end if;
-          
+
             select count(*) into v_nonpass
             from public.lf_operation_gate_check_results
             where execution_id={sql_text(execution_id)}
               and check_status in ('FAIL','BLOCKED');
-          
+
             if v_nonpass<>{nonpass_checks} then
               raise exception 'LF_CONTRACT_PRE_EKB_NONPASS_READBACK_MISMATCH expected={nonpass_checks} actual=%',v_nonpass;
             end if;
-          
+
             select count(*) into v_missing
             from public.lf_operation_gate_check_results g
             where g.execution_id={sql_text(execution_id)}
@@ -1374,21 +1374,21 @@ jobs:
                   and e.payload->>'persistence_result'='EKB_PERSISTED'
                   and e.payload->>'gate_check_result_id'=g.id::text
               );
-          
+
             if v_missing<>0 then
               raise exception 'LF_CONTRACT_PRE_EKB_RECEIPT_MISSING count=%',v_missing;
             end if;
-          
+
             select count(*) into v_blocked
             from public.lf_eventos e
             where e.created_by_execution_id={sql_text(execution_id)}
               and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
               and e.payload->>'persistence_result'='BLOCKED_EKB_PERSISTENCE';
-          
+
             if v_blocked<>0 then
               raise exception 'LF_CONTRACT_PRE_EKB_AUTOPERSIST_BLOCKED count=%',v_blocked;
             end if;
-          
+
             select count(*) into v_bad_child
             from public.lf_eventos e
             left join public.lf_operation_execution child
@@ -1402,11 +1402,11 @@ jobs:
                 or child.target_code<>'ACT-0057'
                 or child.status<>'COMPLETED'
               );
-          
+
             if v_bad_child<>0 then
               raise exception 'LF_CONTRACT_PRE_EKB_CHILD_READBACK_MISMATCH count=%',v_bad_child;
             end if;
-          
+
             update public.lf_operation_execution
             set status='BLOCKED',
                 completed_at=coalesce(completed_at,clock_timestamp()),
@@ -1425,7 +1425,7 @@ jobs:
                 updated_at=clock_timestamp()
             where execution_id={sql_text(execution_id)}
               and status='IN_PROGRESS';
-          
+
             if not found then
               raise exception 'LF_CONTRACT_PRE_EKB_PARENT_FINALIZE_FAILED';
             end if;
