@@ -168,7 +168,14 @@ select jsonb_build_object(
    'root_family_null',(select count(*) from ekb where nullif(btrim(root_cause_family),'') is null),
    'unclassified_with_reason',(select count(*) from ekb where root_cause_family='UNCLASSIFIED_WITH_REASON'),
    'strict_binding_rows',(select count(*) from strict_binding_ekb),
-   'strict_binding_frequency_sum',(select coalesce(sum(greatest(coalesce(frecuencia,1),1)),0) from strict_binding_ekb)
+   'strict_binding_frequency_sum',(select coalesce(sum(greatest(coalesce(frecuencia,1),1)),0) from strict_binding_ekb),
+   'root_family_distribution',coalesce((select jsonb_agg(jsonb_build_object(
+      'root_cause_family',family,'rows',n,'frequency_sum',freq
+   ) order by n desc,family) from (
+      select coalesce(nullif(btrim(root_cause_family),''),'<NULL>') family,
+             count(*) n,sum(greatest(coalesce(frecuencia,1),1)) freq
+      from ekb group by 1
+   )x),'[]'::jsonb)
  ),
  'prevention',jsonb_build_object(
    'rows',(select count(*) from rules),
@@ -178,7 +185,20 @@ select jsonb_build_object(
    'lifecycle_null',(select count(*) from rules where nullif(btrim(lifecycle_phase),'') is null),
    'exact_duplicate_groups',(select count(*) from exact_rule_duplicates),
    'strict_binding_rules',(select count(*) from strict_binding_rules),
-   'strict_binding_active',(select count(*) from strict_binding_rules where activa)
+   'strict_binding_active',(select count(*) from strict_binding_rules where activa),
+   'category_distribution',coalesce((select jsonb_agg(jsonb_build_object(
+      'category',category,'rows',n,'active',active_n
+   ) order by n desc,category) from (
+      select coalesce(nullif(btrim(categoria),''),'<NULL>') category,
+             count(*) n,count(*) filter(where activa) active_n
+      from rules group by 1
+   )x),'[]'::jsonb),
+   'lifecycle_distribution',coalesce((select jsonb_agg(jsonb_build_object(
+      'lifecycle_phase',phase,'rows',n
+   ) order by n desc,phase) from (
+      select coalesce(nullif(btrim(lifecycle_phase),''),'<NULL>') phase,count(*) n
+      from rules group by 1
+   )x),'[]'::jsonb)
  ),
  'usage_7d',(select j from usage7),
  'mother_rule_candidates',coalesce((select jsonb_agg(jsonb_build_object(
