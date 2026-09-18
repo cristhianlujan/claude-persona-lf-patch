@@ -82,10 +82,16 @@ jobs:
             args+=(--force-full --force-full-reason WORKFLOW_DISPATCH_FULL_REGRESSION)
           fi
           python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py "${args[@]}"
-          {
-            echo "### Unified CI applicability plan"
-            echo "- plan sha256: `${{ steps.ci_plan.outputs.plan_sha256 }}`"
-          } >> "$GITHUB_STEP_SUMMARY"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=json.loads(Path(".lf_ci/lf_ci_execution_plan_v2.json").read_text())
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as h:
+              h.write("### Unified CI applicability plan\n")
+              h.write(f"- plan sha256: `{p['plan_sha256']}`\n")
+              h.write(f"- full regression: `{str(p['full_regression']).lower()}`\n")
+              h.write(f"- Validate LF Packs controls: `{json.dumps(p.get('carrier_controls',{}).get('VALIDATE_LF_PACKS',[]),separators=(',',':'))}`\n")
+          PY
 
       - name: S30 self-governance regression and fresh receipt gate
         if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'S30_SELF_GOVERNANCE')
