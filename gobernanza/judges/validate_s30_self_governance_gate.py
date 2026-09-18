@@ -477,6 +477,45 @@ def self_test(c):
     assert c["git_write_broker"].get("control_plane_sha_must_equal_base_main") is True
     assert c["git_write_broker"].get("staging_trust")=="UNTRUSTED_INPUT_ONLY"
     results["positive_broker_control_plane_contract"]="PASS_MAIN_PINNED_CONTROL_PLANE"
+
+    # S30 applicability is owner-local but consumes the transversal CI plan.
+    app=(c.get("ci_enforcement") or {}).get("applicability") or {}
+    shared=app.get("shared_workflow_material") or {}
+    start=shared.get("start_marker"); end=shared.get("end_marker")
+    workflow=shared.get("path")
+    before=f"name: x\n  {start}\n    run: echo s30\n  {end}\n    run: echo other\n"
+    same=f"name: x\n  {start}\n    run: echo s30\n  {end}\n    run: echo other changed\n"
+    changed_block=f"name: x\n  {start}\n    run: echo s30-v2\n  {end}\n    run: echo other\n"
+
+    d=s30_applicability_decision(c,[workflow],before,same)
+    assert d["decision"]=="NO_FINDINGS" and d["owned_block_changed"] is False,d
+    results["positive_pr_unrelated_shared_workflow_no_findings"]="NO_FINDINGS"
+
+    d=s30_applicability_decision(c,[workflow],before,same)
+    assert d["decision"]=="NO_FINDINGS" and d["owned_block_changed"] is False,d
+    results["positive_push_unrelated_shared_workflow_no_findings"]="NO_FINDINGS"
+
+    d=s30_applicability_decision(c,[workflow],before,changed_block)
+    assert d["decision"]=="RUN" and d["owned_block_changed"] is True,d
+    results["positive_pr_owned_workflow_block_run"]="RUN"
+
+    d=s30_applicability_decision(c,[workflow],before,changed_block)
+    assert d["decision"]=="RUN" and d["owned_block_changed"] is True,d
+    results["positive_push_owned_workflow_block_run"]="RUN"
+
+    direct=(app.get("direct_material_paths") or [])[0]
+    d=s30_applicability_decision(c,[direct])
+    assert d["decision"]=="RUN" and direct in d["touched_materials"],d
+    results["positive_direct_s30_material_run"]="RUN"
+
+    try:
+        s30_applicability_decision(c,[workflow],"name: x\n","name: x\n")
+    except AssertionError as exc:
+        assert "BLOCK_S30_APPLICABILITY_WORKFLOW_BLOCK_UNRESOLVED" in str(exc),str(exc)
+        results["negative_owned_workflow_marker_unresolved"]="BLOCKED"
+    else:
+        raise AssertionError("expected fail-closed unresolved S30 workflow block")
+
     return {"status":"PASS","cases":results}
 
 def event_payload():
@@ -489,28 +528,94 @@ def run_git(*args):
 def fetch_exact(*refs):
     subprocess.run(["git","fetch","origin",*refs,"--depth=1"],check=True)
 
-def ci_changed_and_base():
-    event=os.environ.get("GITHUB_EVENT_NAME",""); payload=event_payload()
-    if event=="pull_request":
-        pr=payload.get("pull_request") or {}
-        base_sha=((pr.get("base") or {}).get("sha") or "").strip()
-        head_sha=((pr.get("head") or {}).get("sha") or "").strip()
-        if len(base_sha)!=40 or len(head_sha)!=40:
-            raise AssertionError("pull_request event missing exact base/head SHA")
-        fetch_exact(base_sha,head_sha)
-        changed=run_git("diff","--name-only",base_sha,head_sha).splitlines()
-        return [x.strip() for x in changed if x.strip()], base_sha
-    if event=="push" and os.environ.get("GITHUB_REF")=="refs/heads/main":
-        before=(payload.get("before") or "").strip(); after=(payload.get("after") or os.environ.get("GITHUB_SHA","")).strip()
-        if len(before)!=40 or set(before)<=set("0"): return [],None
-        if len(after)!=40: raise AssertionError("push event missing exact after SHA")
-        fetch_exact(before,after)
-        changed=run_git("diff","--name-only",before,after).splitlines()
-        return [x.strip() for x in changed if x.strip()], before
-    return [],None
+def extract_owned_workflow_block(text: str, start_marker: str, end_marker: str) -> str:
+    lines=text.replace("\r\n","\n").replace("\r","\n").split("\n")
+    starts=[i for i,line in enumerate(lines) if line.strip()==start_marker]
+    ends=[i for i,line in enumerate(lines) if line.strip()==end_marker]
+    if len(starts)!=1 or len(ends)!=1 or starts[0]>=ends[0]:
+        raise AssertionError(
+            "BLOCK_S30_APPLICABILITY_WORKFLOW_BLOCK_UNRESOLVED:"
+            f"starts={len(starts)}:ends={len(ends)}"
+        )
+    return "\n".join(lines[starts[0]:ends[0]]).rstrip()+"\n"
 
-def ci_auto(c, receipt_path):
-    changed,expected=ci_changed_and_base()
+def s30_applicability_decision(
+    c: Dict[str, Any],
+    changed_paths,
+    workflow_before: Optional[str]=None,
+    workflow_after: Optional[str]=None,
+) -> Dict[str, Any]:
+    cfg=(c.get("ci_enforcement") or {}).get("applicability") or {}
+    direct=set(cfg.get("direct_material_paths") or [])
+    changed=sorted(set(str(x).strip() for x in (changed_paths or []) if str(x).strip()))
+    touched_direct=sorted(direct.intersection(changed))
+    if touched_direct:
+        return {
+            "decision":"RUN",
+            "reason":"DIRECT_S30_MATERIAL_CHANGED",
+            "touched_materials":touched_direct,
+        }
+
+    shared=cfg.get("shared_workflow_material") or {}
+    workflow=shared.get("path")
+    if not nonempty(workflow):
+        raise AssertionError("BLOCK_S30_APPLICABILITY_SHARED_WORKFLOW_PATH_MISSING")
+    if workflow not in changed:
+        return {
+            "decision":"NO_FINDINGS",
+            "reason":cfg.get("no_findings_reason","NO_S30_OWNED_MATERIAL_CHANGED"),
+            "touched_materials":[],
+        }
+
+    if workflow_before is None or workflow_after is None:
+        raise AssertionError("BLOCK_S30_APPLICABILITY_WORKFLOW_CONTENT_MISSING")
+    start_marker=shared.get("start_marker")
+    end_marker=shared.get("end_marker")
+    if not nonempty(start_marker) or not nonempty(end_marker):
+        raise AssertionError("BLOCK_S30_APPLICABILITY_WORKFLOW_MARKER_CONFIG_MISSING")
+
+    before_block=extract_owned_workflow_block(workflow_before,start_marker,end_marker)
+    after_block=extract_owned_workflow_block(workflow_after,start_marker,end_marker)
+    if before_block==after_block:
+        return {
+            "decision":"NO_FINDINGS",
+            "reason":cfg.get("no_findings_reason","NO_S30_OWNED_MATERIAL_CHANGED"),
+            "touched_materials":[],
+            "shared_workflow_changed":True,
+            "owned_block_changed":False,
+        }
+    return {
+        "decision":"RUN",
+        "reason":"S30_OWNED_WORKFLOW_BLOCK_CHANGED",
+        "touched_materials":[workflow],
+        "shared_workflow_changed":True,
+        "owned_block_changed":True,
+    }
+
+def ci_plan_context(plan_path: Path):
+    if not plan_path.is_file():
+        raise AssertionError("BLOCK_S30_CI_PLAN_MISSING")
+    plan=load_json(plan_path)
+    if plan.get("schema_version")!="lf-ci-execution-plan/v2":
+        raise AssertionError("BLOCK_S30_CI_PLAN_SCHEMA")
+    if plan.get("router_capability")!="CI_FAST_DEEP_LANE_ROUTER":
+        raise AssertionError("BLOCK_S30_CI_PLAN_ROUTER_AUTHORITY")
+    if (plan.get("source_authority") or {}).get("ready") is not True:
+        raise AssertionError("BLOCK_S30_CI_PLAN_CURRENTNESS_NOT_READY")
+    base=str(plan.get("base_sha") or "").strip()
+    head=str(plan.get("head_sha") or "").strip()
+    changed=plan.get("changed_paths")
+    if len(base)!=40 or len(head)!=40:
+        raise AssertionError("BLOCK_S30_CI_PLAN_EXACT_BASE_HEAD")
+    if not isinstance(changed,list):
+        raise AssertionError("BLOCK_S30_CI_PLAN_CHANGED_PATHS")
+    return [str(x).strip() for x in changed if str(x).strip()],base,head,plan
+
+def git_show_text(ref: str, path: str) -> str:
+    return run_git("show",f"{ref}:{path}")
+
+def ci_auto(c, receipt_path, plan_path: Path):
+    changed,expected,head,plan=ci_plan_context(plan_path)
     ns=(c.get("ci_enforcement") or {}).get("s30_governed_path_namespace") or {}
     governed=sorted(set(ns.get("governed_paths") or []).intersection(changed))
     event=os.environ.get("GITHUB_EVENT_NAME","")
@@ -518,9 +623,32 @@ def ci_auto(c, receipt_path):
         payload=event_payload(); pr=payload.get("pull_request") or {}; head_ref=((pr.get("head") or {}).get("ref") or "").strip()
         if not head_ref.startswith(ns.get("protected_branch_prefix","") or "__missing_prefix__"):
             raise AssertionError(f"{ns.get('on_mismatch','BLOCK_S30_GOVERNED_PATH_OUTSIDE_PROTECTED_NAMESPACE')}: head={head_ref}")
-    touched=sorted(set(c["ci_enforcement"]["fresh_receipt_trigger_paths"]).intersection(changed))
-    if not touched: return {"status":"PASS","fresh_receipt_evaluated":False,"reason":"NO_S30_GATE_TRIGGER_PATH_CHANGED","changed_file_count":len(changed)}
-    if expected is None: raise AssertionError("S30 gate paths changed but expected base unresolved")
+
+    app_cfg=(c.get("ci_enforcement") or {}).get("applicability") or {}
+    shared=app_cfg.get("shared_workflow_material") or {}
+    workflow=shared.get("path")
+    before_text=after_text=None
+    if workflow in changed:
+        fetch_exact(expected,head)
+        try:
+            before_text=git_show_text(expected,workflow)
+            after_text=git_show_text(head,workflow)
+        except subprocess.CalledProcessError as exc:
+            raise AssertionError("BLOCK_S30_APPLICABILITY_WORKFLOW_READBACK") from exc
+
+    applicability=s30_applicability_decision(c,changed,before_text,after_text)
+    if applicability["decision"]=="NO_FINDINGS":
+        return {
+            "status":"PASS",
+            "fresh_receipt_evaluated":False,
+            "reason":applicability["reason"],
+            "applicability":applicability,
+            "changed_file_count":len(changed),
+            "plan_sha256":plan.get("applicability_sha256") or plan.get("plan_sha256"),
+        }
+    if applicability["decision"]!="RUN":
+        raise AssertionError("BLOCK_S30_APPLICABILITY_DECISION_INVALID")
+
     receipt=load_json(receipt_path)
     if event=="pull_request" and governed and (receipt.get("git_write_binding") or {}).get("status")!="OPERATIONAL":
         raise AssertionError("BLOCK_S30_GOVERNED_PR_WITHOUT_OPERATIONAL_BROKER_BINDING")
@@ -531,17 +659,25 @@ def ci_auto(c, receipt_path):
         allowed=set(c["repair_mode"]["allowed_changed_paths"])
         outside=sorted(set(changed)-allowed)
         if outside: raise AssertionError("bounded repair touched disallowed paths: "+",".join(outside))
-    return {"status":"PASS","fresh_receipt_evaluated":True,"touched_trigger_paths":touched,
-            "changed_file_count":len(changed),"expected_base_main_sha":expected,"result":result["result"]}
+    return {
+        "status":"PASS",
+        "fresh_receipt_evaluated":True,
+        "applicability":applicability,
+        "changed_file_count":len(changed),
+        "expected_base_main_sha":expected,
+        "plan_sha256":plan.get("applicability_sha256") or plan.get("plan_sha256"),
+        "result":result["result"],
+    }
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--contract",default=str(CONTRACT_DEFAULT)); ap.add_argument("--input")
     ap.add_argument("--expected-base-main-sha"); ap.add_argument("--self-test",action="store_true"); ap.add_argument("--ci-auto",action="store_true")
+    ap.add_argument("--ci-plan",default=".lf_ci/lf_ci_execution_plan_v2.json")
     ap.add_argument("--ci-receipt",default=str(DEFAULT_RECEIPT)); a=ap.parse_args()
     c=load_json(Path(a.contract)); out={}
     if a.self_test: out["self_test"]=self_test(c)
     if a.input: out["evaluation"]=evaluate(c,load_json(Path(a.input)),a.expected_base_main_sha)
-    if a.ci_auto: out["ci_auto"]=ci_auto(c,Path(a.ci_receipt))
+    if a.ci_auto: out["ci_auto"]=ci_auto(c,Path(a.ci_receipt),Path(a.ci_plan))
     if not out: ap.error("provide --self-test, --input and/or --ci-auto")
     print(json.dumps(out,indent=2,sort_keys=True))
     return 2 if "evaluation" in out and out["evaluation"]["result"]=="FAIL_CLOSED_BEFORE_MATERIAL_WORK" else 0
