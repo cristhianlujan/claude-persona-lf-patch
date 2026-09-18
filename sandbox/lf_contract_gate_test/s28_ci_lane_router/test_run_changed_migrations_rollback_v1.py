@@ -149,10 +149,10 @@ COMMIT;
 
 def test_migration_identity_is_strict() -> None:
     version, name = M.migration_identity(
-        "supabase/migrations/20260918054000_lf_s30_operation_policy_context_admission_v1.sql"
+        "supabase/migrations/20990101010101_example_candidate_migration_v1.sql"
     )
-    assert version == "20260918054000"
-    assert name == "lf_s30_operation_policy_context_admission_v1"
+    assert version == "20990101010101"
+    assert name == "example_candidate_migration_v1"
     try:
         M.migration_identity("supabase/migrations/not_a_canonical_name.sql")
     except M.ProbeError as exc:
