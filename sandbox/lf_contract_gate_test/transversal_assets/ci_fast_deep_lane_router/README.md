@@ -34,6 +34,7 @@ lf-ci-execution-plan/v2
  ├─ dependency closure
  ├─ material_evidence[] (SHA/bytes)
  ├─ carrier_controls{}
+ ├─ carrier_regression_carriers[]
  ├─ coverage_complete
  └─ plan_sha256
       ↓
@@ -75,10 +76,12 @@ El plan combina:
 
 Reglas:
 
-- cambio desconocido o no mapeado → full regression reusable;
-- cambio sobre la propia autoridad CI o sus carriers → full regression reusable;
-- controles que requieren un candidato material concreto no se fabrican durante un full regression sin candidato: quedan N/A;
-- una dependencia requerida se agrega automáticamente al plan;
+- cambio desconocido o no mapeado → full regression global reusable;
+- cambio bajo la propia autoridad del Router/aplicabilidad → full regression global reusable;
+- cambio de uno o más workflows carrier → regresión completa **solo de los carriers modificados**, más triggers path/material y closure recursivo de dependencias;
+- si un workflow carrier pierde su matcher declarativo, el path queda no manejado y vuelve a full global fail-closed;
+- controles que requieren un candidato material concreto no se fabrican durante una regresión genérica sin candidato: quedan N/A;
+- una dependencia requerida se agrega automáticamente al plan, incluso si cruza de carrier;
 - un control desconocido emitido por el Router bloquea;
 - ninguna ruta puede degradarse silenciosamente a FAST.
 
@@ -110,17 +113,21 @@ El refinamiento evita dos falsos resultados: reejecutar una migración ya aplica
 
 `POLICY_RESOLVER_REGRESSION`, cuando aplica, se ejecuta después del apply del candidato y antes del rollback; no usa el schema remoto anterior como sustituto del candidato.
 
-## Full regression
+## Full regression y carrier regression
 
 El full regression conserva valor como auditoría del Router, pero no sustituye la causalidad del PR.
 
-Se usa para:
+**Full global** se usa para:
 
-- cambios a la propia autoridad CI;
+- cambios a la propia autoridad del Router/aplicabilidad;
 - scopes desconocidos/no mapeados;
 - `main`/manual cuando corresponda.
 
-Los controles material-bound (por ejemplo candidate apply/rollback) sólo son requeridos si existe ese material en el diff; no se convierten en PASS artificial dentro de un full genérico.
+**Carrier regression** se usa cuando cambia uno de los tres workflows carrier. El plan selecciona dinámicamente todos los controles reutilizables de `full_regression_controls` cuyo `carrier` coincide con el workflow modificado, conserva los controles disparados por path/material y luego calcula el closure recursivo de dependencias. No existe una lista paralela hardcodeada por workflow.
+
+Ejemplo esperado para un cambio aislado de `.github/workflows/validate-lf-packs.yml`: los controles reutilizables de `VALIDATE_LF_PACKS` más `CI_ROUTER_SELFTEST` disparado por el path; no los controles globales no causales de Bootstrap o `lf-contract-check`.
+
+Los controles material-bound (por ejemplo candidate apply/rollback) sólo son requeridos si existe ese material en el diff; no se convierten en PASS artificial dentro de una regresión genérica.
 
 ## Carriers
 
