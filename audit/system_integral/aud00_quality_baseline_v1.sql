@@ -4,6 +4,7 @@
 -- schema_fp=56c2af889d3f6a4781b1ac74ba7da5bb
 --
 -- Purpose: map user objectives to existing LF canon, measurable controls and thresholds.
+-- v1 correction: prevention-rule keys are schema-first (regla_codigo/regla/justificacion).
 with criteria(code,objective,match_regex,control_method,threshold) as (
   values
   ('Q01','Operar sin errores','(error|failure|fail|defect|incidenc)','COUNT reproducible OPEN High/Critical findings on critical path','0 un-dispositioned reproducible High/Critical findings'),
@@ -22,16 +23,19 @@ with criteria(code,objective,match_regex,control_method,threshold) as (
 ),
 canon as (
   select 'BEST_PRACTICE' source_type,
-         categoria source_category,
+         coalesce(categoria,'') source_category,
          titulo source_key,
-         coalesce(practica,'') source_text
+         coalesce(practica,'')||' '||coalesce(evidencia,'') source_text
   from public.lf_best_practices
   union all
-  select 'PREVENTION_RULE',categoria,titulo,coalesce(regla,'')
+  select 'PREVENTION_RULE',
+         coalesce(categoria,''),
+         regla_codigo,
+         coalesce(regla,'')||' '||coalesce(justificacion,'')
   from public.lf_prevention_rules
   where activa
   union all
-  select 'DECISION',coalesce(estado,''),coalesce(titulo,adr),coalesce(decision,'')
+  select 'DECISION',coalesce(estado,''),coalesce(titulo,adr),coalesce(decision,'')||' '||coalesce(razon,'')||' '||coalesce(impacto,'')
   from public.lf_decision_log
   where lower(coalesce(estado,'')) not in ('superseded','archived')
   union all
