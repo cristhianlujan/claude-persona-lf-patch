@@ -133,7 +133,9 @@
         }
       ],
       "material_matchers": [],
-      "dependencies": []
+      "dependencies": [
+        "PROFILE_RUNTIME_V3"
+      ]
     },
     {
       "control_id": "INPUT_GOVERNANCE_MIGRATION_PARITY",
