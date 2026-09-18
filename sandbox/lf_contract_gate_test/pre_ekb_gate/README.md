@@ -64,6 +64,91 @@ repair / resume / clean retry
 
 Si el receipt EKB no existe, el flujo debe permanecer fail-closed.
 
+
+## Relación con GATE_CHECK_OBSERVABILITY
+
+La ruta transversal canónica es:
+
+```text
+OPERACIÓN REAL
+    |
+    v
+GATE_CHECK_OBSERVABILITY
+    |
+    v
+public.lf_operation_gate_check_results
+    |
+    +-- PASS --------------------> continúa
+    |
+    +-- FAIL / BLOCKED
+            |
+            v
+        PRE_EKB_GATE
+            |
+            v
+         ACT-0001
+            |
+            v
+    EJECUCION_SKILL_LF
+            |
+            v
+         ACT-0057
+            |
+            v
+ESCRITURA_BASE_CONOCIMIENTO_LF
+            |
+            v
+ public.lf_write_pipeline_ekb_v1
+            |
+            v
+            EKB
+            |
+            v
+     receipt + readback
+            |
+            v
+     reparación / rerun
+```
+
+`GATE_CHECK_OBSERVABILITY` detecta, descompone y diagnostica. `PRE_EKB_GATE` gobierna qué fallos durables deben persistirse y bloquea el retry limpio hasta disponer de receipt.
+
+### Regla de consumer
+
+`GATE_CHECK_OBSERVABILITY` **no** se registra como consumer de `PRE_EKB_GATE`.
+
+El consumer es siempre la `operation_code` real cuya ejecución produjo el fallo, por ejemplo:
+
+- `ACTUALIZACION_DB_LF`
+- `EJECUCION_...`
+- `CREACION_...`
+- `ACTUALIZACION_...`
+
+Esto mantiene a `GATE_CHECK_OBSERVABILITY` consumer-agnostic y permite reutilizar el mismo motor para múltiples operaciones.
+
+### Bridge histórico/directo
+
+El artefacto:
+
+```text
+sandbox/lf_contract_gate_test/gate_check_observability/persist_gate_failures_to_ekb_v1.py
+```
+
+no es la autoridad productiva objetivo de persistencia EKB.
+
+Mientras exista, debe considerarse adapter de traducción/prueba. La ruta objetivo productiva es:
+
+```text
+failure diagnostic
+  -> public.lf_operation_gate_check_results
+  -> PRE_EKB_GATE
+  -> governed child dispatch
+  -> ACT-0057
+  -> canonical EKB writer
+```
+
+No se debe agregar una segunda vía productiva directa al writer.
+
+
 ## Entradas que cubre
 
 ### Gate checks
