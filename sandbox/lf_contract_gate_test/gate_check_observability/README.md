@@ -2,6 +2,10 @@
 
 Canonical LF transversal capability: `GATE_CHECK_OBSERVABILITY` / `TRANSVERSAL_GATE_CHECK_OBSERVABILITY`.
 
+## Propósito
+
+Proveer diagnóstico determinístico y reutilizable a nivel de check, con identidad estable, evidencia exacta y descomposición por subproceso, sin incorporar semántica específica del consumer.
+
 This package provides deterministic check-level diagnostics for reusable LF gates. It is intentionally capability-agnostic: consumers declare their checks in a manifest; this package must not contain hardcoded Profile Runtime, Currentness, Parity or other capability semantics.
 
 ## Components
@@ -73,3 +77,36 @@ Stable candidate identity is still useful for diagnostics and regression, but re
 ## Consumer example
 
 Profile Runtime V3 consumes this capability through `profile_runtime_v3_gate_manifest.json`. That manifest is a consumer declaration only; the grouping engine remains transversal and reusable by other LF gates.
+
+## Cuándo consumirlo
+
+Cuando una operación o pipeline necesita ejecutar checks determinísticos, producir diagnóstico exacto y exponer evidencia reusable para Claim/Excel sin hardcodear semántica del consumer.
+
+## Cómo consumirlo
+
+1. Resolver `GATE_CHECK_OBSERVABILITY` en `public.lf_activos` y confirmar `ACTIVO / ACTIVE_SHARED_ENFORCEMENT`.
+2. Consumir únicamente sus superficies canónicas y conservar operation/consumer identity, source revision y evidencia.
+3. No crear una implementación paralela.
+4. Cerrar con readback durable y currentness suficiente.
+
+## Superficies canónicas
+
+- `public.lf_operation_gate_check_results`
+- `sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py`
+- `sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py`
+
+## Fail-closed / límites
+
+Si falta currentness, binding, autoridad o evidencia requerida, bloquear. Este README documenta consumo; no concede permisos ni sustituye contratos/runtime.
+
+## Validación y readback
+
+Ejecutar los gates propios de la capability y del consumer, conservar evidencia exacta y verificar el resultado desde la superficie durable correspondiente.
+
+## No duplicación
+
+Extender esta capability por su owner cuando haga falta; no crear una segunda ruta que resuelva la misma responsabilidad.
+
+## Currentness
+
+Consultar `public.lf_activos` y la superficie runtime vigente antes de cada decisión material. El README debe actualizarse si cambia el contrato de consumo.

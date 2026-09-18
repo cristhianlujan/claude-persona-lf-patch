@@ -369,3 +369,37 @@ La autoridad operacional permanece en Supabase y en los contratos/policies activ
 El README explica el uso; no otorga permisos.
 
 Cualquier cambio que amplíe consumidores, modifique semántica de bloqueo o altere el writer debe pasar por el mecanismo gobernado correspondiente y cerrar con evidencia/readback.
+
+## Cuándo consumirlo
+
+Cuando una operación real ya produjo un FAIL/BLOCKED/RETURNED o excepción durable y debe persistir el conocimiento antes de repair/resume/retry limpio.
+
+## Cómo consumirlo
+
+1. Resolver `PRE_EKB_GATE` en `public.lf_activos` y confirmar `ACTIVO / ACTIVE_SHARED_ENFORCEMENT`.
+2. Consumir únicamente sus superficies canónicas y conservar operation/consumer identity, source revision y evidencia.
+3. No crear una implementación paralela.
+4. Cerrar con readback durable y currentness suficiente.
+
+## Superficies canónicas
+
+- `public.lf_pre_ekb_gate_check_dispatch_v1(bigint)`
+- `public.lf_pre_ekb_step_failure_dispatch_v1(text,text)`
+- `public.lf_pre_ekb_exception_dispatch_v1(...)`
+- `ACT-0057 / ESCRITURA_BASE_CONOCIMIENTO_LF`
+
+## Fail-closed / límites
+
+Si falta currentness, binding, autoridad o evidencia requerida, bloquear. Este README documenta consumo; no concede permisos ni sustituye contratos/runtime.
+
+## Validación y readback
+
+Ejecutar los gates propios de la capability y del consumer, conservar evidencia exacta y verificar el resultado desde la superficie durable correspondiente.
+
+## No duplicación
+
+Extender esta capability por su owner cuando haga falta; no crear una segunda ruta que resuelva la misma responsabilidad.
+
+## Currentness
+
+Consultar `public.lf_activos` y la superficie runtime vigente antes de cada decisión material. El README debe actualizarse si cambia el contrato de consumo.

@@ -244,6 +244,38 @@ jobs:
       - name: Validate strict independent receipt-to-bundle binding regressions
         run: python profiles/quality_pack/evals/run_independent_review_bundle_binding_tests.py
 
+      - name: Validate active transversal README consumption contracts
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+        shell: bash
+        run: |
+          set -euo pipefail
+          python sandbox/lf_contract_gate_test/transversal_asset_readme/test_validate_active_shared_readmes_v1.py
+          psql -X -v ON_ERROR_STOP=1 -At -c "
+            select coalesce(
+              jsonb_agg(
+                jsonb_build_object(
+                  'codigo_activo',codigo_activo,
+                  'inventory_status',metadata #>> '{transversal_inventory,inventory_status}',
+                  'readme_ref',metadata #>> '{transversal_inventory,documentation,readme_ref}'
+                )
+                order by codigo_activo
+              ),
+              '[]'::jsonb
+            )::text
+            from public.lf_activos
+            where archived_at is null
+              and metadata #>> '{transversal_inventory,inventory_status}'='ACTIVE_SHARED_ENFORCEMENT';
+          " > /tmp/lf_active_shared_assets_readmes.json
+          python sandbox/lf_contract_gate_test/transversal_asset_readme/validate_active_shared_readmes_v1.py \
+            --inventory-json /tmp/lf_active_shared_assets_readmes.json \
+            --repo-root .
+
       - name: Validate transversal grouped gate observability controls
         shell: bash
         run: |
