@@ -67,7 +67,7 @@ jobs:
               if [[ "$main_rc" -ne 0 || -z "$current_main_sha" ]]; then
                 reason="CURRENT_MAIN_LOOKUP_FAILED_FAIL_DEEP"
               elif [[ "$current_main_sha" != "$EVENT_BASE_SHA" ]]; then
-                reason="CURRENT_MAIN_DIFFERS_EVENT_BASE_FAIL_DEEP"
+                reason="CURRENTNESS_REEVALUATION_REQUIRED_RUN_DEEP"
               else
                 set +e
                 runs_response="$(gh api -X GET \
@@ -130,7 +130,7 @@ jobs:
                         else
                           run_deep="false"
                           decision="SKIP_READY_REUSE_EXACT_DEEP"
-                          reason="EXACT_PR_HEAD_BASE_CURRENT_MAIN_AND_REAL_DEEP_SUCCESS"
+                          reason="EXACT_PR_HEAD_SAME_BASE_REAL_DEEP_SUCCESS_REUSE_ONLY"
                           reused_run_id="$latest_run_id"
                         fi
                       fi
