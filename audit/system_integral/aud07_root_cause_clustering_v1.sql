@@ -96,7 +96,7 @@ mother_candidates as (
   ('MR01_ACTIVATION_REQUIRES_DURABLE_BINDING_AND_CONSUMER_READBACK',
    'PARENT_PROCESS_INVARIANT',
    'A component is not operational merely because it exists or is referenced. Activation requires durable consumer binding, enforcement at the execution path and independent consumer readback.',
-   jsonb_build_array(176,171,161,162),
+   jsonb_build_array(178,176,171,161,162),
    jsonb_build_array('capabilities 44 / formal bindings 0','reliability reserve callers 9 / acquire-checkpoint-release callers 0','test runs 1170 / populated contract_codes 0','operation required-test binding 9/45'),
    'CONFIRMED_CROSS_DOMAIN_PATTERN_NOT_SINGLE_TECHNICAL_BUG'),
   ('MR02_STANDARD_OPERATION_LIFECYCLE_PROTOCOL',
