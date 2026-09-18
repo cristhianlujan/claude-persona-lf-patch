@@ -1,0 +1,33 @@
+{
+  "schema_version": "lf-gate-group-manifest/v1",
+  "consumer_code": "LF_CONTRACT_CHECK",
+  "gate_id": "LF_CONTRACT_CHECK_DECLARED_GOVERNANCE_PATHS_SHADOW",
+  "owner": "LF_CONTRACT_CHECK",
+  "discover_glob": "scripts/validate_declared_paths.py",
+  "expected_total_checks": 1,
+  "downstream_impact": [
+    "DECLARED_GOVERNANCE_PATHS",
+    "CI_GOVERNANCE"
+  ],
+  "groups": [
+    {
+      "group_id": "DECLARED_GOVERNANCE_PATHS",
+      "name": "DECLARED_GOVERNANCE_PATHS",
+      "execution_class": "DETERMINISTIC",
+      "matrix_tag": "DECLARED_GOVERNANCE_PATHS",
+      "claim_surface": "CONTROL_EVIDENCE_ONLY",
+      "commands": [
+        {
+          "argv": [
+            "python3",
+            "scripts/validate_declared_paths.py",
+            "--repo-root",
+            "."
+          ],
+          "source_path": "scripts/validate_declared_paths.py",
+          "critical": true
+        }
+      ]
+    }
+  ]
+}

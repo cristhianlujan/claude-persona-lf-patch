@@ -19,6 +19,7 @@ PRODUCT_OWNERSHIP = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pr
 PRODUCT_REGISTRY = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_product_lane_ownership_registry_v1.json")
 ENTRYPOINT = Path("sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py")
 CONTROL_MANIFEST = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_control_manifest_v1.json")
+DGP_SHADOW_MANIFEST = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_declared_paths_manifest_v1.json")
 GROUP_ORCHESTRATOR = "sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py"
 PARITY_EQUIVALENCE = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_parity_equivalence_v1.py"
 PARITY_EQUIVALENCE_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py"
@@ -231,7 +232,11 @@ def main() -> None:
     require(text, "transversal_asset_readme/validate_active_shared_readmes_v1.py", "FAIL_TRANSVERSAL_CLOSURE_VALIDATOR_NOT_WIRED")
     require(text, "--require-code GITHUB_CONTRACT_GATE_LF", "FAIL_TRANSVERSAL_CLOSURE_REQUIRED_OPERATION_MISSING")
     require(text, str(CONTROL_MANIFEST), "FAIL_DECLARATIVE_CONTROL_MANIFEST_NOT_WIRED")
+    require(text, str(DGP_SHADOW_MANIFEST), "FAIL_DGP_SHADOW_MANIFEST_NOT_WIRED")
     require(text, GROUP_ORCHESTRATOR, "FAIL_GATE_GROUP_ORCHESTRATOR_NOT_WIRED")
+    require(text, "Shadow declared governance paths through existing gate orchestrator", "FAIL_DGP_SHADOW_STEP_MISSING")
+    require(text, "--group DECLARED_GOVERNANCE_PATHS", "FAIL_DGP_SHADOW_GROUP_NOT_SELECTED")
+    require(text, "SHADOW_DECLARED_GOVERNANCE_PATHS_EXECUTED", "FAIL_DGP_SHADOW_EXECUTION_MARKER_MISSING")
     require(text, "Prepare LF migration source parity frozen inputs", "FAIL_DECLARATIVE_PARITY_INPUT_PREP_MISSING")
     require(text, "Enforce required_controls through existing gate orchestrator", "FAIL_DECLARATIVE_PARITY_AUTHORITY_STEP_MISSING")
     require(text, "--group MIGRATION_SOURCE_PARITY", "FAIL_DECLARATIVE_PARITY_GROUP_NOT_SELECTED")
@@ -272,6 +277,37 @@ def main() -> None:
     parity_group = control_manifest["groups"][0]
     assert parity_group["execution_class"] == "DETERMINISTIC", parity_group
     assert parity_group["commands"][0]["source_path"] == "sandbox/lf_contract_gate_test/lf_migration_source_parity.py", parity_group
+
+    dgp_manifest = json.loads(DGP_SHADOW_MANIFEST.read_text(encoding="utf-8"))
+    assert dgp_manifest["schema_version"] == "lf-gate-group-manifest/v1", dgp_manifest
+    assert dgp_manifest["consumer_code"] == "LF_CONTRACT_CHECK", dgp_manifest
+    assert dgp_manifest["gate_id"] == "LF_CONTRACT_CHECK_DECLARED_GOVERNANCE_PATHS_SHADOW", dgp_manifest
+    assert dgp_manifest["expected_total_checks"] == 1, dgp_manifest
+    assert [g["group_id"] for g in dgp_manifest["groups"]] == ["DECLARED_GOVERNANCE_PATHS"], dgp_manifest
+    dgp_group = dgp_manifest["groups"][0]
+    assert dgp_group["execution_class"] == "DETERMINISTIC", dgp_group
+    assert dgp_group["claim_surface"] == "CONTROL_EVIDENCE_ONLY", dgp_group
+    assert dgp_group["commands"][0]["source_path"] == "scripts/validate_declared_paths.py", dgp_group
+
+    legacy_marker = "- name: Validate declared governance paths"
+    legacy_start = text.index(legacy_marker)
+    legacy_end = text.index("\n      - name:", legacy_start + len(legacy_marker))
+    legacy_block = text[legacy_start:legacy_end]
+    assert "continue-on-error: true" not in legacy_block, "FAIL_DGP_LEGACY_AUTHORITY_WEAKENED"
+    require(legacy_block, "legacy.stdout.log", "FAIL_DGP_LEGACY_STDOUT_NOT_CAPTURED")
+    require(legacy_block, "legacy.stderr.log", "FAIL_DGP_LEGACY_STDERR_NOT_CAPTURED")
+
+    shadow_marker = "- name: Shadow declared governance paths through existing gate orchestrator"
+    shadow_start = text.index(shadow_marker)
+    shadow_end = text.index("\n      - name:", shadow_start + len(shadow_marker))
+    shadow_block = text[shadow_start:shadow_end]
+    require(shadow_block, "continue-on-error: true", "FAIL_DGP_SHADOW_NOT_NON_AUTHORITATIVE")
+    require(
+        shadow_block,
+        "contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')",
+        "FAIL_DGP_SHADOW_UNIFIED_PLAN_GUARD_MISSING",
+    )
+    assert "secrets." not in shadow_block, "FAIL_DGP_SHADOW_SECRET_INHERITANCE_DECLARED"
 
     router_text = Path(ROUTER).read_text(encoding="utf-8")
     require(router_text, PRODUCT_OWNERSHIP.name, "FAIL_GENERIC_PRODUCT_OWNERSHIP_NOT_WIRED")
