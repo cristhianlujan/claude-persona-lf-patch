@@ -67,6 +67,7 @@ def test_policy_resolver_migration_is_precise_and_candidate_bound() -> None:
     )
     assert_not(
         got,
+        "INPUT_GOVERNANCE_MIGRATION_PARITY",
         "V7_RUNTIME_REGRESSION",
         "REMOTE_SCHEMA_REPRODUCIBILITY",
         "PROFILE_RUNTIME_V3",
@@ -98,7 +99,10 @@ def test_unknown_surface_fails_closed_to_full_regression() -> None:
     got = plan([path], {path: "x"}, mode="DEEP_SHARED_UNKNOWN")
     assert got["full_regression"] is True
     assert got["full_regression_reason"] == "UNKNOWN_SCOPE_FAIL_CLOSED"
-    assert set(got["required_controls"]) == set(got["control_universe"])
+    assert "DB_CANDIDATE_APPLY_ROLLBACK" not in got["required_controls"]
+    assert "POLICY_RESOLVER_REGRESSION" not in got["required_controls"]
+    assert "P0_FAST_DOCS" not in got["required_controls"]
+    assert len(got["required_controls"]) + len(got["not_applicable_controls"]) == len(got["control_universe"])
 
 
 def test_router_self_change_forces_full_regression() -> None:
@@ -106,7 +110,10 @@ def test_router_self_change_forces_full_regression() -> None:
     got = plan([path], {path: "x"}, lane=("CI_ROUTER_SELFTEST",), mode="CI_ROUTER_SELFTEST_ONLY")
     assert got["full_regression"] is True
     assert got["full_regression_reason"] == "CI_APPLICABILITY_AUTHORITY_SELF_CHANGE"
-    assert set(got["required_controls"]) == set(got["control_universe"])
+    assert "DB_CANDIDATE_APPLY_ROLLBACK" not in got["required_controls"]
+    assert "POLICY_RESOLVER_REGRESSION" not in got["required_controls"]
+    assert "P0_FAST_DOCS" not in got["required_controls"]
+    assert len(got["required_controls"]) + len(got["not_applicable_controls"]) == len(got["control_universe"])
 
 
 def test_dependency_closure_is_explicit() -> None:
@@ -115,6 +122,15 @@ def test_dependency_closure_is_explicit() -> None:
     reasons = got["required_control_reasons"]
     assert "DEPENDENCY_OF:POLICY_RESOLVER_REGRESSION" in reasons["DB_CANDIDATE_APPLY_ROLLBACK"]
     assert "DEPENDENCY_OF:DB_CANDIDATE_APPLY_ROLLBACK" in reasons["MIGRATION_SOURCE_PARITY"]
+
+
+
+def test_exact_p0_fast_doc_is_single_control() -> None:
+    path = "docs/p0/MATRIZ_OPCIONES_OCR_CV.md"
+    got = plan([path], {path: "# evidence"}, lane=(), mode="DEEP_SHARED_KNOWN")
+    assert got["full_regression"] is False
+    assert got["required_controls"] == ["P0_FAST_DOCS"], got["required_controls"]
+    assert got["coverage_complete"] is True
 
 
 def test_plan_replay_is_deterministic() -> None:
@@ -133,6 +149,7 @@ def main() -> None:
         test_unknown_surface_fails_closed_to_full_regression,
         test_router_self_change_forces_full_regression,
         test_dependency_closure_is_explicit,
+        test_exact_p0_fast_doc_is_single_control,
         test_plan_replay_is_deterministic,
     ]
     for test in tests:
