@@ -2,6 +2,10 @@
 
 Canonical LF transversal capability: `GATE_CHECK_OBSERVABILITY` / `TRANSVERSAL_GATE_CHECK_OBSERVABILITY`.
 
+## Propósito
+
+Proveer diagnóstico determinístico y reutilizable a nivel de check, con identidad estable, evidencia exacta y descomposición por subproceso, sin incorporar semántica específica del consumer.
+
 This package provides deterministic check-level diagnostics for reusable LF gates. It is intentionally capability-agnostic: consumers declare their checks in a manifest; this package must not contain hardcoded Profile Runtime, Currentness, Parity or other capability semantics.
 
 ## Components
