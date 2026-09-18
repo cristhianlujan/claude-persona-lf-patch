@@ -53,6 +53,49 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Resolve unified CI applicability plan
+        id: ci_plan
+        env:
+          LF_PLAN_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || inputs.base_main_sha }}
+          LF_PLAN_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          LF_PLAN_EVENT_ACTION: ${{ github.event.action }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${LF_PLAN_BASE_SHA:-}"
+          head="${LF_PLAN_HEAD_SHA:-$(git rev-parse HEAD)}"
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            head="$(git rev-parse HEAD)"
+          fi
+          if [[ -n "$base" ]]; then
+            git fetch --no-tags origin "$base" "$head"
+          fi
+          mkdir -p .lf_ci
+          args=(
+            --repo-root .
+            --base "$base"
+            --head "$head"
+            --event-name "${GITHUB_EVENT_NAME}"
+            --event-action "${LF_PLAN_EVENT_ACTION:-}"
+            --ref-name "${GITHUB_REF_NAME:-}"
+            --output-json .lf_ci/lf_ci_execution_plan_v2.json
+            --github-output "$GITHUB_OUTPUT"
+          )
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            args+=(--force-full --force-full-reason WORKFLOW_DISPATCH_FULL_REGRESSION)
+          fi
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py "${args[@]}"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=json.loads(Path(".lf_ci/lf_ci_execution_plan_v2.json").read_text())
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as h:
+              h.write("### Unified CI applicability plan\n")
+              h.write(f"- plan sha256: `{p['plan_sha256']}`\n")
+              h.write(f"- full regression: `{str(p['full_regression']).lower()}`\n")
+              h.write(f"- Validate LF Packs controls: `{json.dumps(p.get('carrier_controls',{}).get('VALIDATE_LF_PACKS',[]),separators=(',',':'))}`\n")
+          PY
+
       - name: S30 self-governance regression and fresh receipt gate
         shell: bash
         env:
@@ -194,6 +237,7 @@ jobs:
           fi
 
       - name: Validate bounded S30 sandbox regressions
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'S30_BOUNDED_REGRESSION')
         shell: bash
         run: |
           set -euo pipefail
@@ -209,42 +253,53 @@ jobs:
             python "${test_file}"
           done
       - name: S26-E governance EKB applicability and card fallback gate
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_RUNTIME_V3')
         run: |
           python gobernanza/judges/validate_s26_governance_ekb_gate_strict.py \
             --self-test \
             --input sandbox/lf_contract_gate_test/s26_governance_ekb/s26_e_preexecution_receipt.json
 
       - name: Install Profile Runtime API test dependencies
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_RUNTIME_V3')
         run: python -m pip install --disable-pip-version-check -r services/profile_runtime_api/requirements-dev.in
 
       - name: Test persistent Profile Runtime API
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_RUNTIME_V3')
         env:
           PYTHONPATH: services/profile_runtime_api
           PYTHONDONTWRITEBYTECODE: "1"
         run: python -m pytest services/profile_runtime_api/tests
 
       - name: Validate profile template pack
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK')
         run: python profiles/_template/validators/validate_pack.py profiles/_template
 
       - name: Validate skill template pack
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'SKILL_PACK')
         run: python skills/_template/validators/validate_pack.py skills/_template
 
       - name: Validate skill creator pack
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'SKILL_PACK')
         run: python skills/skill_creator/validators/validate_pack.py skills/skill_creator
 
       - name: Validate profile creator pack
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK')
         run: python skills/profile_creator/validators/validate_pack.py skills/profile_creator
 
       - name: Validate learning engine pack
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'LEARNING_ENGINE_PACK')
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
 
       - name: Validate S26 semantic-to-render binding regressions
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_RUNTIME_V3')
         run: python sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_binding_validator_tests.py
 
       - name: Validate strict independent receipt-to-bundle binding regressions
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_RUNTIME_V3')
         run: python profiles/quality_pack/evals/run_independent_review_bundle_binding_tests.py
 
       - name: Validate active transversal README consumption contracts
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'TRANSVERSAL_README')
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           PGHOST: aws-1-us-east-1.pooler.supabase.com
@@ -278,6 +333,7 @@ jobs:
             --repo-root .
 
       - name: Validate transversal grouped gate observability controls
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'GATE_CHECK_OBSERVABILITY')
         shell: bash
         run: |
           set -euo pipefail
@@ -296,6 +352,7 @@ jobs:
             --downstream-impact ASSURANCE
 
       - name: Validate PROFILE_RUNTIME V3 decomposed deterministic gates
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_RUNTIME_V3')
         env:
           LF_PERSISTENT_RUNTIME_SCOPE: ISOLATED_CANDIDATE
           LF_LLAMA_SOURCE_COMMIT: 925e1179947ea0c0ebfb0032df18af3a729822be
@@ -308,6 +365,7 @@ jobs:
             --artifact-dir .lf_gate_diagnostics/profile_runtime_v3
 
       - name: Qualify canonical diagnostic Claim
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'GATE_CHECK_OBSERVABILITY')
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           PGHOST: aws-1-us-east-1.pooler.supabase.com
@@ -322,6 +380,7 @@ jobs:
             --artifact-dir .lf_gate_diagnostics/profile_runtime_v3/qualification/claim
 
       - name: Qualify deep Excel matrix
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'GATE_CHECK_OBSERVABILITY')
         shell: bash
         run: |
           set -euo pipefail
@@ -331,7 +390,7 @@ jobs:
             --artifact-dir .lf_gate_diagnostics/profile_runtime_v3/qualification/excel
 
       - name: Emit PROFILE_RUNTIME gate failure handoff
-        if: always()
+        if: always() && steps.ci_plan.outcome == 'success' && (contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_RUNTIME_V3') || contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'GATE_CHECK_OBSERVABILITY'))
         shell: bash
         run: |
           set -euo pipefail
@@ -343,13 +402,22 @@ jobs:
             --emit-only
 
       - name: Persist PROFILE_RUNTIME V3 gate diagnostics
-        if: always()
+        if: always() && steps.ci_plan.outcome == 'success' && (contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_RUNTIME_V3') || contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'GATE_CHECK_OBSERVABILITY'))
         uses: actions/upload-artifact@v4
         with:
           name: lf-gate-diagnostics-profile-runtime-v3-${{ github.run_id }}-${{ github.run_attempt }}
           path: .lf_gate_diagnostics/profile_runtime_v3
           if-no-files-found: error
           retention-days: 30
+      - name: Persist unified CI applicability plan
+        if: always() && steps.ci_plan.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-ci-applicability-plan-packs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/lf_ci_execution_plan_v2.json
+          if-no-files-found: error
+          retention-days: 30
+
 
   s30-governed-write-broker:
     name: Governed S30 protected write broker

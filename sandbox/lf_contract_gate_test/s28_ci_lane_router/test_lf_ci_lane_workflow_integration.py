@@ -22,6 +22,10 @@ CONTROL_MANIFEST = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_con
 GROUP_ORCHESTRATOR = "sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py"
 PARITY_EQUIVALENCE = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_parity_equivalence_v1.py"
 PARITY_EQUIVALENCE_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py"
+EXECUTION_PLAN = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py"
+IMPACT_REGISTRY = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json"
+EXECUTION_PLAN_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py"
+ROLLBACK_PROBE_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_run_changed_migrations_rollback_v1.py"
 
 
 def require(text: str, token: str, code: str) -> None:
@@ -218,7 +222,11 @@ def main() -> None:
     require(text, "input_governance_parity_required", "FAIL_INPUT_GOV_APPLICABILITY_OUTPUT_MISSING")
     require(text, "ci_router_selftest_required", "FAIL_CI_ROUTER_SELFTEST_OUTPUT_MISSING")
     require(text, "required_controls_json", "FAIL_REQUIRED_CONTROLS_OUTPUT_MISSING")
-    require(text, "MIGRATION_SOURCE_PARITY execution authority: required_controls -> LF_GATE_GROUP_ORCHESTRATOR_V1", "FAIL_REQUIRED_CONTROLS_AUTHORITY_MARKER_MISSING")
+    require(text, "execution authority: CI_FAST_DEEP_LANE_ROUTER plan -> carrier controls", "FAIL_UNIFIED_CI_PLAN_AUTHORITY_MARKER_MISSING")
+    require(text, EXECUTION_PLAN, "FAIL_UNIFIED_CI_EXECUTION_PLAN_NOT_WIRED")
+    require(text, "lf_contract_controls_json", "FAIL_CARRIER_CONTROL_OUTPUT_MISSING")
+    require(text, EXECUTION_PLAN_TEST, "FAIL_CI_EXECUTION_PLAN_TEST_NOT_WIRED")
+    require(text, ROLLBACK_PROBE_TEST, "FAIL_CANDIDATE_ROLLBACK_PROBE_TEST_NOT_WIRED")
     require(text, "Enforce lf-contract-check transversal closure prerequisites", "FAIL_TRANSVERSAL_CLOSURE_GUARD_STEP_MISSING")
     require(text, "transversal_asset_readme/validate_active_shared_readmes_v1.py", "FAIL_TRANSVERSAL_CLOSURE_VALIDATOR_NOT_WIRED")
     require(text, "--require-code GITHUB_CONTRACT_GATE_LF", "FAIL_TRANSVERSAL_CLOSURE_REQUIRED_OPERATION_MISSING")
@@ -233,22 +241,27 @@ def main() -> None:
     require(text, "lf-migration-statement-counts.csv", "FAIL_PARITY_EQUIVALENCE_FROZEN_COUNTS_MISSING")
     require(
         text,
-        "contains(fromJSON(steps.feedback_tier.outputs.required_controls_json), 'MIGRATION_SOURCE_PARITY')",
-        "FAIL_LF_MIGRATION_REQUIRED_CONTROLS_GUARD_MISSING",
+        "contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'MIGRATION_SOURCE_PARITY')",
+        "FAIL_LF_MIGRATION_UNIFIED_PLAN_GUARD_MISSING",
     )
-    if "steps.feedback_tier.outputs.migration_parity_required == 'true'" in text:
+    if "if: steps.feedback_tier.outputs.migration_parity_required == 'true'" in text:
         raise SystemExit("FAIL_LEGACY_MIGRATION_BOOLEAN_STILL_EXECUTION_AUTHORITY")
+    if "if: steps.feedback_tier.outputs.input_governance_parity_required == 'true'" in text:
+        raise SystemExit("FAIL_LEGACY_INPUT_GOV_BOOLEAN_STILL_EXECUTION_AUTHORITY")
+    if "if: steps.feedback_tier.outputs.ci_router_selftest_required == 'true'" in text:
+        raise SystemExit("FAIL_LEGACY_SELFTEST_BOOLEAN_STILL_EXECUTION_AUTHORITY")
     require(
         text,
-        "steps.feedback_tier.outputs.input_governance_parity_required == 'true'",
-        "FAIL_INPUT_GOV_STEP_NOT_PATH_SCOPED",
+        "contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'INPUT_GOVERNANCE_MIGRATION_PARITY')",
+        "FAIL_INPUT_GOV_UNIFIED_PLAN_GUARD_MISSING",
     )
     require(
         text,
-        "steps.feedback_tier.outputs.ci_router_selftest_required == 'true'",
-        "FAIL_SELFTEST_STEP_NOT_PATH_SCOPED",
+        "contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'CI_ROUTER_SELFTEST')",
+        "FAIL_SELFTEST_UNIFIED_PLAN_GUARD_MISSING",
     )
     require(text, "name: lf-contract-check", "FAIL_REQUIRED_CHECK_CONTEXT_CHANGED")
+    require(text, "github.event.pull_request.head.sha", "FAIL_EXACT_PR_HEAD_CHECKOUT_MISSING")
     require(text, "if: needs.dedupe-router.outputs.run_deep == 'true'", "FAIL_DEEP_JOB_GUARD_CHANGED")
 
     control_manifest = json.loads(CONTROL_MANIFEST.read_text(encoding="utf-8"))

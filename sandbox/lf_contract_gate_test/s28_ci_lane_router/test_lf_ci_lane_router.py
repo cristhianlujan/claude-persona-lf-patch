@@ -30,6 +30,8 @@ def main():
     input_migration = "supabase/migrations/20260909010102_input_governance_example.sql"
     workflow = ".github/workflows/lf-contract-check.yml"
     validate_workflow = ".github/workflows/validate-lf-packs.yml"
+    bootstrap_workflow = ".github/workflows/lf-bootstrap-reproducibility.yml"
+    router_readme = "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md"
     router = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
     router_test = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py"
     contract_validator = "scripts/lf_contract_check.py"
@@ -52,6 +54,9 @@ def main():
     check("input_governance_validator", ["sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"], migration=False, input_gov=True, selftest=False, p0_external=False, deep_shared=False)
     check("workflow_self_change", [workflow], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("validate_lf_packs_workflow_self_change", [validate_workflow], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
+    check("bootstrap_workflow_self_change", [bootstrap_workflow], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
+    check("router_readme_self_change", [router_readme], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
+    check("all_ci_owner_surfaces_known", [workflow, validate_workflow, bootstrap_workflow, router_readme, router, router_test], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("router_self_change", [router, router_test], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("lf_contract_check_validator_control", [contract_validator], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("entrypoint_control_change", [entrypoint], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
@@ -253,6 +258,11 @@ def required_controls_shadow_main():
     migration = "supabase/migrations/20260909010101_lf_example.sql"
     input_migration = "supabase/migrations/20260909010102_input_governance_example.sql"
     workflow = ".github/workflows/lf-contract-check.yml"
+    validate_workflow = ".github/workflows/validate-lf-packs.yml"
+    bootstrap_workflow = ".github/workflows/lf-bootstrap-reproducibility.yml"
+    router_readme = "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md"
+    router = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
+    router_test = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py"
 
     got = classify([migration])
     assert got.required_controls == (CONTROL_MIGRATION_SOURCE_PARITY,), got
@@ -266,6 +276,11 @@ def required_controls_shadow_main():
 
     got = classify([workflow])
     assert got.required_controls == (CONTROL_CI_ROUTER_SELFTEST,), got
+
+    owner_bundle = classify([workflow, validate_workflow, bootstrap_workflow, router_readme, router, router_test])
+    assert owner_bundle.required_controls == (CONTROL_CI_ROUTER_SELFTEST,), owner_bundle
+    assert owner_bundle.mode == "CI_ROUTER_SELFTEST_ONLY", owner_bundle
+    assert owner_bundle.p0_exact_head_external_required is False, owner_bundle
 
     unknown = classify(["mystery/new_surface.xyz"])
     assert unknown.required_controls == tuple(sorted((

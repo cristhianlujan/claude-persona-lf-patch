@@ -231,9 +231,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout exact candidate source
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
       - name: Set up Python
@@ -241,8 +242,12 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Canonical preflight and feedback tier
+      - name: Canonical preflight and unified CI applicability plan
         id: feedback_tier
+        env:
+          LF_PLAN_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          LF_PLAN_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          LF_PLAN_EVENT_ACTION: ${{ github.event.action }}
         shell: bash
         run: |
           set -euo pipefail
@@ -261,8 +266,27 @@ jobs:
           spec.loader.exec_module(validator)
 
           validator.validate_p0_closure_evidence_scope()
-          changed = validator.get_changed_files()
-          print("Feedback-tier changed files:")
+          exact_base = (os.environ.get("LF_PLAN_BASE_SHA") or "").strip()
+          exact_head = (os.environ.get("LF_PLAN_HEAD_SHA") or os.environ.get("GITHUB_SHA") or "").strip()
+          event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+          if event_name in {"pull_request","push"}:
+              if not exact_base or not exact_head:
+                  raise SystemExit("FAIL_CI_PLAN_EXACT_BASE_HEAD_MISSING")
+              subprocess.run(
+                  ["git","fetch","--no-tags","origin",exact_base,exact_head],
+                  check=True,
+                  stdout=subprocess.DEVNULL,
+              )
+              raw_changed = subprocess.check_output(
+                  ["git","diff","--name-only","--no-renames",exact_base,exact_head],
+                  text=True,
+              )
+              changed = sorted({line.strip() for line in raw_changed.splitlines() if line.strip()})
+          elif event_name == "workflow_dispatch":
+              changed = []
+          else:
+              raise SystemExit(f"FAIL_CI_PLAN_UNSUPPORTED_EVENT:{event_name}")
+          print("Unified-plan exact changed files:")
           for path in changed:
               print(f"- {path}")
 
@@ -273,18 +297,13 @@ jobs:
           lane_router = importlib.util.module_from_spec(lane_spec)
           lane_spec.loader.exec_module(lane_router)
           lane = lane_router.classify(changed)
-          migration_required = str(lane.migration_parity_required).lower()
-          input_gov_required = str(lane.input_governance_parity_required).lower()
-          selftest_required = str(lane.ci_router_selftest_required).lower()
-          required_controls_json = json.dumps(list(lane.required_controls), separators=(",", ":"))
 
-          tier = "DEEP"
-          reason = "NO_PATHS_FAIL_CLOSED"
+          # Canonical content/scope checks remain authoritative before applicability.
+          p0_regular = False
           if changed:
               governed = validator.validate_changed_files(changed)
               validator.validate_governed_receipt(changed, governed)
               validator.validate_forbidden_terms(changed)
-              reason = "NON_P0_DOC_OR_MIXED_SURFACE"
 
               p0_docs = validator.P0_CLOSURE_EVIDENCE_ALLOWED_EXACT
               if all(path in p0_docs for path in changed):
@@ -301,12 +320,72 @@ jobs:
                       mode = metadata.split(b" ", 1)[0]
                       if mode in {b"100644", b"100755"}:
                           regular.add(raw_path.decode("utf-8", "strict"))
+                  p0_regular = all(path in regular for path in changed)
 
-                  if all(path in regular for path in changed):
-                      tier = "FAST_P0_DOCS"
-                      reason = "CANONICAL_P0_CLOSURE_EVIDENCE_ONLY"
-                  else:
-                      reason = "P0_DOC_NONREGULAR_OR_DELETED_FORCE_DEEP"
+          plan_path = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py")
+          plan_spec = importlib.util.spec_from_file_location("lf_ci_execution_plan_v2", plan_path)
+          if plan_spec is None or plan_spec.loader is None:
+              raise SystemExit("FAIL_S28_CI_EXECUTION_PLAN_LOAD")
+          plan_module = importlib.util.module_from_spec(plan_spec)
+          import sys
+          sys.modules[plan_spec.name] = plan_module
+          plan_spec.loader.exec_module(plan_module)
+
+          ref_name = os.environ.get("GITHUB_REF_NAME", "")
+          force_full = event_name == "workflow_dispatch" or (event_name == "push" and ref_name == "main")
+          force_reason = (
+              "WORKFLOW_DISPATCH_FULL_REGRESSION" if event_name == "workflow_dispatch"
+              else "MAIN_PUSH_FULL_REGRESSION" if event_name == "push" and ref_name == "main"
+              else None
+          )
+          if changed and all(path in validator.P0_CLOSURE_EVIDENCE_ALLOWED_EXACT for path in changed) and not p0_regular:
+              force_full = True
+              force_reason = "P0_FAST_DOC_NONREGULAR_OR_DELETED_FAIL_CLOSED"
+
+          plan = plan_module.build_plan(
+              changed_paths=changed,
+              lane_required_controls=lane.required_controls,
+              lane_mode=lane.mode,
+              repo_root=Path("."),
+              force_full=force_full,
+              force_full_reason=force_reason,
+              source_ref=exact_head,
+          )
+          plan["base_sha"] = os.environ.get("LF_PLAN_BASE_SHA") or None
+          plan["head_sha"] = os.environ.get("LF_PLAN_HEAD_SHA") or os.environ.get("GITHUB_SHA")
+          plan["event_name"] = event_name
+          plan["event_action"] = os.environ.get("LF_PLAN_EVENT_ACTION") or ""
+          digest_source = dict(plan)
+          digest_source.pop("plan_sha256", None)
+          plan["plan_sha256"] = plan_module._sha(
+              plan_module._canonical(digest_source).encode("utf-8")
+          )
+
+          plan_dir = Path(".lf_ci")
+          plan_dir.mkdir(parents=True, exist_ok=True)
+          plan_file = plan_dir / "lf_ci_execution_plan_v2.json"
+          plan_file.write_text(
+              json.dumps(plan, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+
+          required_controls_json = json.dumps(plan["required_controls"], separators=(",", ":"))
+          lf_contract_controls_json = json.dumps(
+              plan.get("carrier_controls", {}).get("LF_CONTRACT_CHECK", []),
+              separators=(",", ":"),
+          )
+          migration_required = str("MIGRATION_SOURCE_PARITY" in plan["required_controls"]).lower()
+          input_gov_required = str("INPUT_GOVERNANCE_MIGRATION_PARITY" in plan["required_controls"]).lower()
+          selftest_required = str("CI_ROUTER_SELFTEST" in plan["required_controls"]).lower()
+          p0_fast_only = plan["required_controls"] == ["P0_FAST_DOCS"] and p0_regular
+          tier = "FAST_P0_DOCS" if p0_fast_only else "DEEP"
+          reason = (
+              "UNIFIED_PLAN_P0_FAST_DOCS"
+              if p0_fast_only
+              else f"UNIFIED_PLAN_{plan['full_regression_reason']}"
+              if plan["full_regression"]
+              else "UNIFIED_APPLICABILITY_PLAN"
+          )
 
           output = Path(os.environ["GITHUB_OUTPUT"])
           with output.open("a", encoding="utf-8") as handle:
@@ -316,32 +395,31 @@ jobs:
               handle.write(f"input_governance_parity_required={input_gov_required}\n")
               handle.write(f"ci_router_selftest_required={selftest_required}\n")
               handle.write(f"required_controls_json={required_controls_json}\n")
+              handle.write(f"lf_contract_controls_json={lf_contract_controls_json}\n")
+              handle.write(f"plan_sha256={plan['plan_sha256']}\n")
+              handle.write(f"plan_full_regression={str(plan['full_regression']).lower()}\n")
               handle.write(f"lane_mode={lane.mode}\n")
 
           summary = os.environ.get("GITHUB_STEP_SUMMARY")
           if summary:
               with open(summary, "a", encoding="utf-8") as handle:
-                  handle.write("### Strategy 28 LF contract feedback tier\n")
-                  handle.write(f"- tier: `{tier}`\n")
-                  handle.write(f"- reason: `{reason}`\n")
+                  handle.write("### Strategy 28 — unified CI applicability authority\n")
+                  handle.write(f"- tier compatibility output: `{tier}`\n")
                   handle.write(f"- lane mode: `{lane.mode}`\n")
-                  handle.write(f"- migration parity required: `{migration_required}`\n")
-                  handle.write(f"- input governance parity required: `{input_gov_required}`\n")
-                  handle.write(f"- CI router self-test required: `{selftest_required}`\n")
+                  handle.write(f"- plan sha256: `{plan['plan_sha256']}`\n")
+                  handle.write(f"- full regression: `{str(plan['full_regression']).lower()}`\n")
                   handle.write(f"- required controls: `{required_controls_json}`\n")
-                  handle.write("- MIGRATION_SOURCE_PARITY execution authority: required_controls -> LF_GATE_GROUP_ORCHESTRATOR_V1; legacy booleans remain compatibility outputs for other controls\n")
-                  handle.write("- FAST scope: exact canonical P0 closure-evidence docs only\n")
-                  handle.write("- specialized N/A is path-owned; unknown ownership remains fail-closed\n")
+                  handle.write(f"- lf-contract-check controls: `{lf_contract_controls_json}`\n")
+                  handle.write("- execution authority: CI_FAST_DEEP_LANE_ROUTER plan -> carrier controls; unknown/self-change => full regression\n")
 
           print(
-              f"PASS_LF_FEEDBACK_TIER tier={tier} reason={reason} lane={lane.mode} "
-              f"migration={migration_required} input_gov={input_gov_required} selftest={selftest_required} "
-              f"required_controls={required_controls_json}"
+              f"PASS_LF_UNIFIED_CI_PLAN tier={tier} lane={lane.mode} "
+              f"plan_sha={plan['plan_sha256']} controls={required_controls_json}"
           )
           PY
 
       - name: Run CI lane router self-tests with deterministic diagnostics
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.ci_router_selftest_required == 'true'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'CI_ROUTER_SELFTEST')
         run: |
           python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
             --gate-id LF_CONTRACT_CHECK_CI_ROUTER_SELFTEST \
@@ -350,6 +428,9 @@ jobs:
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py","critical":true}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py","critical":true}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_run_changed_migrations_rollback_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_run_changed_migrations_rollback_v1.py","critical":true}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py","critical":true}' \
             --artifact-dir .lf_gate_diagnostics/lf_contract_check/ci_router_selftest \
             --artifact-name lf_gate_error_v1.json \
             --check-prefix CIR \
@@ -392,19 +473,19 @@ jobs:
             --require-code GITHUB_CONTRACT_GATE_LF
 
       - name: Complete FAST P0 docs lane
-        if: steps.feedback_tier.outputs.tier == 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'P0_FAST_DOCS')
         run: |
           echo "PASS_LF_CONTRACT_FAST_P0_DOCS"
           echo "Deep migration/runtime/visual/E.16 work skipped because the canonical preflight proved an exact regular P0-doc-only delta."
 
       - name: Validate declared governance paths
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')
         run: |
           pip install pyyaml
           python3 scripts/validate_declared_paths.py --repo-root .
 
       - name: Verify hosted Supabase Data API excludes net schema
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'SUPABASE_CONTROL_PLANE_READBACK')
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -471,7 +552,7 @@ jobs:
           PY
 
       - name: Prepare LF migration source parity frozen inputs
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && contains(fromJSON(steps.feedback_tier.outputs.required_controls_json), 'MIGRATION_SOURCE_PARITY')
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'MIGRATION_SOURCE_PARITY')
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -552,7 +633,7 @@ jobs:
           cp "$RUNNER_TEMP/lf-migration-statement-counts.csv" "$shadow_dir/lf-migration-statement-counts.csv"
 
       - name: Enforce required_controls through existing gate orchestrator
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && contains(fromJSON(steps.feedback_tier.outputs.required_controls_json), 'MIGRATION_SOURCE_PARITY')
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'MIGRATION_SOURCE_PARITY')
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -588,7 +669,7 @@ jobs:
           echo "DECLARATIVE_REQUIRED_CONTROL_ENFORCED=MIGRATION_SOURCE_PARITY"
 
       - name: Enforce Input Governance migration source parity
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.input_governance_parity_required == 'true'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'INPUT_GOVERNANCE_MIGRATION_PARITY')
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -620,14 +701,14 @@ jobs:
             --cutover "$INPUT_GOVERNANCE_CUTOVER"
 
       - name: Install deterministic audit dependencies
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'P0_VISUAL_RUNTIME') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'S36_ASSURANCE') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'LF_CONTRACT_CORE') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_GOVERNANCE') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'LF_VALIDATION_ENGINE') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'NO_BYPASS_PROFILE_CARD_SKILL') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'PASS_EVIDENCE') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'R8_USER_STORY_AUDIT')
         run: |
           python3 -m pip install --disable-pip-version-check \
             PyYAML==6.0.2 \
             jsonschema==4.23.0
 
       - name: Provision governed P0 visual runtime
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'P0_VISUAL_RUNTIME')
         run: |
           set -euo pipefail
           if [ -n "${P0_CI_ENGINEERING_REGRESSION:-}" ]; then
@@ -640,7 +721,7 @@ jobs:
           sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa
 
       - name: Run S36 assurance completeness gate self-test with deterministic diagnostics
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'S36_ASSURANCE')
         run: |
           set -euo pipefail
           rm -rf .lf_gate_diagnostics/lf_contract_check/s36_assurance_selftest
@@ -658,7 +739,7 @@ jobs:
             --downstream-impact GOVERNANCE
 
       - name: Enforce S36 assurance completeness debt monotonicity with deterministic diagnostics
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'S36_ASSURANCE')
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         run: |
@@ -678,7 +759,7 @@ jobs:
             --downstream-impact GOVERNANCE
 
       - name: Validate LF contract
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'LF_CONTRACT_CORE')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -796,7 +877,7 @@ jobs:
           PY
 
       - name: Run E.16 governance regression matrices with deterministic diagnostics
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_GOVERNANCE')
         run: |
           set -euo pipefail
           rm -rf .lf_gate_diagnostics/lf_contract_check/e16_regression_matrices
@@ -818,7 +899,7 @@ jobs:
             --downstream-impact GOVERNANCE
 
       - name: Run LF validation engine self-test with deterministic diagnostics
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'LF_VALIDATION_ENGINE')
         run: |
           set -euo pipefail
           rm -rf .lf_gate_diagnostics/lf_contract_check/validation_engine_selftest
@@ -836,7 +917,7 @@ jobs:
             --downstream-impact GOVERNANCE
 
       - name: Run NO BYPASS judge profile-card-skill self-test with deterministic diagnostics
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'NO_BYPASS_PROFILE_CARD_SKILL')
         run: |
           set -euo pipefail
           rm -rf .lf_gate_diagnostics/lf_contract_check/no_bypass_selftest
@@ -854,7 +935,7 @@ jobs:
             --downstream-impact GOVERNANCE
 
       - name: Enforce merge and CI evidence for PASS candidates with deterministic diagnostics
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'PASS_EVIDENCE')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -874,7 +955,7 @@ jobs:
             --downstream-impact GOVERNANCE
 
       - name: Audit creating-integral-user-stories A01-A62 with deterministic diagnostics
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'R8_USER_STORY_AUDIT')
         run: |
           set -euo pipefail
           rm -rf .lf_gate_diagnostics/lf_contract_check/r8_audit
@@ -906,6 +987,15 @@ jobs:
             echo "INFO_LF_DETERMINISTIC_DIAGNOSTICS_NOT_REACHED: an earlier non-deterministic gate stopped the job before any deterministic producer ran"
           fi
 
+      - name: Persist unified CI applicability plan
+        if: always() && steps.feedback_tier.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-ci-applicability-plan-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/lf_ci_execution_plan_v2.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Persist deterministic LF contract gate diagnostics
         if: always() && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true'
         uses: actions/upload-artifact@v4
@@ -916,7 +1006,7 @@ jobs:
           retention-days: 30
 
       - name: Capture authenticated E.16 Actions inventory
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_ACTIONS_INVENTORY')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -933,7 +1023,7 @@ jobs:
             --output .audit-output/creating-integral-user-stories/github-actions-inventory-e16.json
 
       - name: Build authoritative reconciliation manifest
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_GOVERNANCE')
         env:
           LF_WORKFLOW_EVENT: ${{ github.event_name }}
         run: |
@@ -999,7 +1089,7 @@ jobs:
           PY
 
       - name: Upload per-artifact audit evidence and canonical source snapshot
-        if: always() && steps.feedback_tier.outcome == 'success' && steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: always() && steps.feedback_tier.outcome == 'success' && contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_GOVERNANCE')
         uses: actions/upload-artifact@v4
         with:
           name: r8-continuous-audit-${{ github.run_id }}
