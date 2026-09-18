@@ -500,7 +500,7 @@ jobs:
           print("DB_CANDIDATE_MANIFEST_PASS", m["migration_count"], m["combined_sql_sha256"])
           PY
 
-      - name: Execute exact candidate bytes inside rollback-only sandbox transaction
+      - name: Execute candidate rollback or verify already-applied exact source
         shell: bash
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
@@ -516,25 +516,210 @@ jobs:
           export PGDATABASE=postgres
           export PGSSLMODE=require
 
-          docker run --rm             -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE             postgres:17.6             psql -X -v ON_ERROR_STOP=1 -At -c               "select count(*)::text||':'||coalesce(max(version),'') from supabase_migrations.schema_migrations"             > .lf_ci/db_candidate/ledger_before.txt
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            psql -X -v ON_ERROR_STOP=1 -At -c \
+              "select count(*)::text||':'||coalesce(max(version),'') from supabase_migrations.schema_migrations" \
+            > .lf_ci/db_candidate/ledger_before.txt
 
-          docker run --rm -i             -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE             postgres:17.6             psql -X -v ON_ERROR_STOP=1             < .lf_ci/db_candidate/candidate_rollback.sql             | tee .lf_ci/db_candidate/candidate_rollback.log
+          python3 - <<'PY'
+          import json,re
+          from pathlib import Path
+          manifest=json.loads(Path(".lf_ci/db_candidate/candidate_manifest.json").read_text())
+          rows=manifest.get("migrations") or []
+          if not rows:
+              raise SystemExit("BLOCK_DB_CANDIDATE_MANIFEST_EMPTY")
+          values=[]
+          for row in rows:
+              version=row.get("migration_version","")
+              name=row.get("migration_name","")
+              blob=row.get("source_git_blob_sha1","")
+              if not re.fullmatch(r"\d{14}",version):
+                  raise SystemExit(f"BLOCK_DB_CANDIDATE_VERSION_INVALID:{version}")
+              if not re.fullmatch(r"[a-z0-9_]+",name):
+                  raise SystemExit(f"BLOCK_DB_CANDIDATE_NAME_INVALID:{name}")
+              if not re.fullmatch(r"[0-9a-f]{40}",blob):
+                  raise SystemExit(f"BLOCK_DB_CANDIDATE_GIT_BLOB_INVALID:{blob}")
+              values.append(f"('{version}','{name}','{blob}')")
+          sql=f"""
+          with expected(version,name,git_blob) as (
+            values {','.join(values)}
+          )
+          select
+            e.version,
+            e.name,
+            e.git_blob,
+            case
+              when m.version is null then 'UNAPPLIED'
+              when g.receipt is not null then 'APPLIED_EXACT'
+              else 'APPLIED_UNVERIFIED'
+            end as source_state,
+            coalesce(g.execution_id,''),
+            coalesce(g.source_head,''),
+            coalesce(g.write_readback,'')
+          from expected e
+          left join supabase_migrations.schema_migrations m
+            on m.version=e.version
+           and m.name=e.name
+          left join lateral (
+            select
+              og.execution_id,
+              og.receipt,
+              og.receipt->>'source_head' as source_head,
+              og.receipt->>'write_readback' as write_readback
+            from public.lf_operation_effect_guard og
+            where og.effect_scope='SUPABASE_MIGRATION:'||e.version
+              and og.state='SUCCEEDED'
+              and og.receipt->>'migration_version'=e.version
+              and og.receipt->>'migration_name'=e.name
+              and og.receipt->>'source_blob'=e.git_blob
+              and og.receipt->>'write_readback'='PASS'
+            order by og.resolved_at desc nulls last
+            limit 1
+          ) g on true
+          order by e.version;
+          """
+          Path(".lf_ci/db_candidate/provenance_query.sql").write_text(sql)
+          PY
 
-          grep -q "LF_DB_CANDIDATE_ALL_APPLIED_BEFORE_ROLLBACK" .lf_ci/db_candidate/candidate_rollback.log
+          docker run --rm -i \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            psql -X -v ON_ERROR_STOP=1 -At -F 
+      - name: Persist exact candidate rollback evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-db-candidate-rollback-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ci/db_candidate/candidate_manifest.json
+            .lf_ci/db_candidate/execution_mode.json
+            .lf_ci/db_candidate/provenance.tsv
+            .lf_ci/db_candidate/provenance_query.sql
+            .lf_ci/db_candidate/candidate_readback.sql
+            .lf_ci/db_candidate/ledger_before.txt
+            .lf_ci/db_candidate/ledger_after.txt
+            .lf_ci/db_candidate/candidate_rollback.log
+          if-no-files-found: error
+          retention-days: 30
+
+\t' \
+            < .lf_ci/db_candidate/provenance_query.sql \
+            > .lf_ci/db_candidate/provenance.tsv
+
+          mode="$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path(".lf_ci/db_candidate/candidate_manifest.json").read_text())
+          expected={(r["migration_version"],r["migration_name"],r["source_git_blob_sha1"]) for r in manifest["migrations"]}
+          actual=[]
+          for line in Path(".lf_ci/db_candidate/provenance.tsv").read_text().splitlines():
+              if not line.strip():
+                  continue
+              parts=line.split("\t")
+              if len(parts)!=7:
+                  raise SystemExit(f"BLOCK_DB_CANDIDATE_PROVENANCE_SHAPE:{line}")
+              actual.append(parts)
+          if len(actual)!=len(expected):
+              raise SystemExit("BLOCK_DB_CANDIDATE_PROVENANCE_COUNT_MISMATCH")
+          states=set()
+          evidence=[]
+          for version,name,blob,state,execution_id,source_head,write_readback in actual:
+              if (version,name,blob) not in expected:
+                  raise SystemExit(f"BLOCK_DB_CANDIDATE_PROVENANCE_IDENTITY_MISMATCH:{version}:{name}:{blob}")
+              states.add(state)
+              evidence.append({
+                  "migration_version":version,
+                  "migration_name":name,
+                  "source_git_blob_sha1":blob,
+                  "state":state,
+                  "execution_id":execution_id or None,
+                  "source_head":source_head or None,
+                  "write_readback":write_readback or None,
+              })
+          if states=={"UNAPPLIED"}:
+              mode="UNAPPLIED_CANDIDATE_ROLLBACK"
+          elif states=={"APPLIED_EXACT"}:
+              mode="APPLIED_EXACT_SOURCE_READBACK"
+          elif "APPLIED_UNVERIFIED" in states:
+              raise SystemExit("BLOCK_DB_CANDIDATE_APPLIED_SOURCE_UNVERIFIED")
+          else:
+              raise SystemExit(f"BLOCK_DB_CANDIDATE_MIXED_APPLIED_STATE:{sorted(states)}")
+          Path(".lf_ci/db_candidate/execution_mode.json").write_text(
+              json.dumps({"mode":mode,"provenance":evidence},indent=2,sort_keys=True)+"\n"
+          )
+          print(mode)
+          PY
+          )"
+          echo "DB_CANDIDATE_EXECUTION_MODE=$mode"
+
+          if [[ "$mode" == "UNAPPLIED_CANDIDATE_ROLLBACK" ]]; then
+            sql_file=.lf_ci/db_candidate/candidate_rollback.sql
+            required_marker=LF_DB_CANDIDATE_ALL_APPLIED_BEFORE_ROLLBACK
+          elif [[ "$mode" == "APPLIED_EXACT_SOURCE_READBACK" ]]; then
+            python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          manifest=json.loads(Path(".lf_ci/db_candidate/candidate_manifest.json").read_text())
+          chunks=[
+              "\\set ON_ERROR_STOP on",
+              "BEGIN;",
+              "SET LOCAL statement_timeout = '120s';",
+              "SET LOCAL lock_timeout = '15s';",
+          ]
+          for probe in manifest.get("post_apply_probes",[]):
+              path=Path(probe["path"])
+              raw=path.read_bytes()
+              digest=hashlib.sha256(raw).hexdigest()
+              if digest != probe["source_sha256"]:
+                  raise SystemExit(f"BLOCK_DB_CANDIDATE_PROBE_SOURCE_DRIFT:{path}")
+              chunks += [
+                  f"\\echo LF_DB_APPLIED_EXACT_PROBE_BEGIN {path} sha256={digest}",
+                  raw.decode("utf-8"),
+                  f"\\echo LF_DB_APPLIED_EXACT_PROBE_PASS {path} sha256={digest}",
+              ]
+          chunks += [
+              "SELECT 'LF_DB_APPLIED_EXACT_READBACK_BEFORE_ROLLBACK' AS probe_result;",
+              "ROLLBACK;",
+              "SELECT 'LF_DB_CANDIDATE_ROLLBACK_COMPLETE' AS probe_result;",
+          ]
+          Path(".lf_ci/db_candidate/candidate_readback.sql").write_text("\n".join(chunks)+"\n")
+          PY
+            sql_file=.lf_ci/db_candidate/candidate_readback.sql
+            required_marker=LF_DB_APPLIED_EXACT_READBACK_BEFORE_ROLLBACK
+          else
+            echo "BLOCK_DB_CANDIDATE_UNKNOWN_EXECUTION_MODE:$mode" >&2
+            exit 1
+          fi
+
+          docker run --rm -i \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            psql -X -v ON_ERROR_STOP=1 \
+            < "$sql_file" \
+            | tee .lf_ci/db_candidate/candidate_rollback.log
+
+          grep -q "$required_marker" .lf_ci/db_candidate/candidate_rollback.log
           grep -q "LF_DB_CANDIDATE_ROLLBACK_COMPLETE" .lf_ci/db_candidate/candidate_rollback.log
           controls='${{ needs.feedback-tier-router.outputs.bootstrap_controls_json }}'
           if python3 -c 'import json,sys; raise SystemExit(0 if "POLICY_RESOLVER_REGRESSION" in json.loads(sys.argv[1]) else 1)' "$controls"; then
             grep -q "POLICY_RESOLVER_REGRESSION_PASS" .lf_ci/db_candidate/candidate_rollback.log
           fi
 
-          docker run --rm             -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE             postgres:17.6             psql -X -v ON_ERROR_STOP=1 -At -c               "select count(*)::text||':'||coalesce(max(version),'') from supabase_migrations.schema_migrations"             > .lf_ci/db_candidate/ledger_after.txt
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            psql -X -v ON_ERROR_STOP=1 -At -c \
+              "select count(*)::text||':'||coalesce(max(version),'') from supabase_migrations.schema_migrations" \
+            > .lf_ci/db_candidate/ledger_after.txt
 
           cmp -s .lf_ci/db_candidate/ledger_before.txt .lf_ci/db_candidate/ledger_after.txt || {
             echo "BLOCK_DB_CANDIDATE_LEDGER_RESIDUE" >&2
             diff -u .lf_ci/db_candidate/ledger_before.txt .lf_ci/db_candidate/ledger_after.txt || true
             exit 1
           }
-          echo "DB_CANDIDATE_APPLY_ROLLBACK_PASS"
+          echo "DB_CANDIDATE_CONTROL_PASS mode=$mode"
 
       - name: Persist exact candidate rollback evidence
         if: always()
