@@ -54,7 +54,7 @@ def load_tarball(repo:str,sha:str,token:str|None):
 
 def load_local(root:str,sha:str):
     p=pathlib.Path(root)
-    paths=sorted(str(x.relative_to(p)).replace(os.sep,"/") for x in p.rglob("*") if x.is_file())
+    paths=sorted(str(x.relative_to(p)).replace(os.sep,"/") for x in p.rglob("*") if x.is_file() and ".git" not in x.relative_to(p).parts)
     def read(path:str)->str: return (p/path).read_text(encoding="utf-8",errors="replace")
     return paths,read,sha
 
