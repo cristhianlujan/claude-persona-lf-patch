@@ -269,11 +269,12 @@ def required_controls_shadow_main():
 
     unknown = classify(["mystery/new_surface.xyz"])
     assert unknown.required_controls == tuple(sorted((
-        CONTROL_CI_ROUTER_SELFTEST,
         CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY,
         CONTROL_MIGRATION_SOURCE_PARITY,
         CONTROL_P0_EXACT_HEAD_EXTERNAL,
     ))), unknown
+    assert unknown.deep_shared is True
+    assert unknown.ci_router_selftest_required is False
 
     a = classify([workflow, migration])
     b = classify([migration, workflow])
