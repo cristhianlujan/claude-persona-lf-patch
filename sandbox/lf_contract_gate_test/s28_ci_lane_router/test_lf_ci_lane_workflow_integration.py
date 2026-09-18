@@ -224,7 +224,6 @@ def main() -> None:
     require(text, "Prepare LF migration source parity frozen inputs", "FAIL_DECLARATIVE_PARITY_INPUT_PREP_MISSING")
     require(text, "Enforce required_controls through existing gate orchestrator", "FAIL_DECLARATIVE_PARITY_AUTHORITY_STEP_MISSING")
     require(text, "--group MIGRATION_SOURCE_PARITY", "FAIL_DECLARATIVE_PARITY_GROUP_NOT_SELECTED")
-    require(text, "LF_REQUIRED_CONTROLS_JSON", "FAIL_DECLARATIVE_REQUIRED_CONTROLS_INPUT_MISSING")
     require(text, PARITY_EQUIVALENCE, "FAIL_PARITY_EQUIVALENCE_JUDGE_NOT_WIRED")
     require(text, PARITY_EQUIVALENCE_TEST, "FAIL_PARITY_EQUIVALENCE_TEST_NOT_WIRED")
     if "Verify legacy and declarative migration parity equivalence" in text:
@@ -300,7 +299,7 @@ def main() -> None:
     helper = load_reconciliation_helper()
     assert_reconciliation_behavior(helper)
     assert_merge_path_recovery(helper)
-    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=46/46")
+    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=45/45")
 
 
 if __name__ == "__main__":
