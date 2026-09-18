@@ -1,0 +1,46 @@
+{
+  "captured_on": "2026-09-14",
+  "source": "read-only Supabase + canonical GitHub main",
+  "project_id": "mhwmirqcgxxukpctffuv",
+  "main_sha": "18784e12ae4e4b8c7c48ae4004011444deb1fbeb",
+  "operational_consumers_with_active_github_write": [
+    {"operation_code":"ACTUALIZACION_ADAPTER_LF","asset_type":"ADAPTER","write_order":70,"readback_order":80,"contract_status":"ACTIVE_ENFORCEMENT","write_binding":true,"readback_binding":true},
+    {"operation_code":"ACTUALIZACION_PERFIL_LF","asset_type":"PERFIL","write_order":70,"readback_order":80,"contract_status":"ACTIVE_ENFORCEMENT","write_binding":true,"readback_binding":true},
+    {"operation_code":"ACTUALIZACION_SKILL_LF","asset_type":"SKILL","write_order":70,"readback_order":80,"contract_status":"ACTIVE_ENFORCEMENT","write_binding":true,"readback_binding":true},
+    {"operation_code":"CREACION_CARD_LF","asset_type":"CARD","write_order":25,"readback_order":26,"contract_status":"ACTIVE","write_binding":false,"readback_binding":false},
+    {"operation_code":"CREACION_ESTRATEGIA_LF","asset_type":"STRATEGY","write_order":36,"readback_order":37,"contract_status":"ACTIVE_ENFORCEMENT","write_binding":true,"readback_binding":true},
+    {"operation_code":"CREACION_PERFIL_LF","asset_type":"PERFIL","write_order":24,"readback_order":25,"contract_status":"ACTIVE","write_binding":true,"readback_binding":true},
+    {"operation_code":"CREACION_SKILL_LF","asset_type":"SKILL","write_order":23,"readback_order":24,"contract_status":"ACTIVE","write_binding":false,"readback_binding":false}
+  ],
+  "common_existing_evidence_shapes": {
+    "updater_write": ["branch","written_files","commit_sha","identity_preserved"],
+    "updater_readback": ["exact_head","readback_files","sha_match","identity_preserved"],
+    "strategy_create_write": ["source_file_commit_sha","step_result","blocking_codes"],
+    "strategy_create_readback": ["source_file_blob_sha","step_result","blocking_codes"]
+  },
+  "existing_governance_assets": {
+    "git_contract_gate_operation": {
+      "operation_code": "GITHUB_CONTRACT_GATE_LF",
+      "lifecycle_state_code": "OP_OPERATIONAL",
+      "status": "PRODUCCION_CONTROLADA_READ_ONLY",
+      "operation_type": "CONTRACT_GATE",
+      "write_operation": false
+    },
+    "s30_git_write_broker": {
+      "contract_version": "S30_GIT_WRITE_BROKER_V2",
+      "workflow": ".github/workflows/validate-lf-packs.yml",
+      "control_plane_ref": "refs/heads/main",
+      "request_schema": "s30-git-broker/v1",
+      "staging_prefix": "lf/staging-s30-",
+      "protected_target_prefix": "lf/s30-",
+      "exact_base_main_required": true,
+      "exact_source_remote_sha_required": true,
+      "base_ancestry_required": true,
+      "bounded_scope_validation": true,
+      "governed_deploy_key": true,
+      "post_push_remote_sha_readback": true,
+      "universal_provider_claim": false
+    }
+  },
+  "gap": "Repository mutation evidence and admission are repeated inside asset operations; there is no transversal operation/provider contract that normalizes request identity, exact-head precondition, ownership scope, idempotency, unknown-outcome handling, and write/readback receipt without duplicating transport."
+}
