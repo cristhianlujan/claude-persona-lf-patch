@@ -324,6 +324,7 @@ jobs:
               force_full = True
               force_reason = "P0_FAST_DOC_NONREGULAR_OR_DELETED_FAIL_CLOSED"
 
+          exact_head = os.environ.get("LF_PLAN_HEAD_SHA") or os.environ.get("GITHUB_SHA")
           plan = plan_module.build_plan(
               changed_paths=changed,
               lane_required_controls=lane.required_controls,
@@ -331,6 +332,7 @@ jobs:
               repo_root=Path("."),
               force_full=force_full,
               force_full_reason=force_reason,
+              source_ref=exact_head,
           )
           plan["base_sha"] = os.environ.get("LF_PLAN_BASE_SHA") or None
           plan["head_sha"] = os.environ.get("LF_PLAN_HEAD_SHA") or os.environ.get("GITHUB_SHA")
