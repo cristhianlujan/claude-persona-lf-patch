@@ -95,10 +95,11 @@ def main() -> None:
             str(summary),
             "--artifact-dir",
             str(out),
+            "--emit-only",
             "--write",
         ], capture_output=True, text=True)
         assert proc.returncode != 0
-        assert "--write" in proc.stderr
+        assert "unrecognized arguments: --write" in proc.stderr
 
     source = BRIDGE.read_text(encoding="utf-8").lower()
     for forbidden in (
