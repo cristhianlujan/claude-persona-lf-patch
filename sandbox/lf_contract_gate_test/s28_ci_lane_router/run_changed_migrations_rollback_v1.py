@@ -45,7 +45,7 @@ def sha(raw: bytes) -> str:
 
 def migration_identity(path: str) -> tuple[str, str]:
     name = Path(path).name
-    match = re.fullmatch(r"([0-9]{14})_([A-Za-z0-9_]+)\\.sql", name)
+    match = re.fullmatch(r"([0-9]{14})_([A-Za-z0-9_]+)\.sql", name)
     if not match:
         raise ProbeError(f"FAIL_DB_CANDIDATE_MIGRATION_NAME_INVALID:{path}")
     return match.group(1), match.group(2)
