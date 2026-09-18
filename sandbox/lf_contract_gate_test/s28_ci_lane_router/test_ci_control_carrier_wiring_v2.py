@@ -90,6 +90,7 @@ def main() -> None:
     contract_steps = {
         "Run CI lane router self-tests with deterministic diagnostics": "CI_ROUTER_SELFTEST",
         "Validate declared governance paths": "DECLARED_GOVERNANCE_PATHS",
+        "Shadow declared governance paths through existing gate orchestrator": "DECLARED_GOVERNANCE_PATHS",
         "Verify hosted Supabase Data API excludes net schema": "SUPABASE_CONTROL_PLANE_READBACK",
         "Prepare LF migration source parity frozen inputs": "MIGRATION_SOURCE_PARITY",
         "Enforce required_controls through existing gate orchestrator": "MIGRATION_SOURCE_PARITY",
