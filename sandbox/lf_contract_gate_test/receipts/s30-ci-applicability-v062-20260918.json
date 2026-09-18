@@ -1,0 +1,44 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.6.2-repair-prewrite",
+  "issued_by": "contract_judge",
+  "operation_code": "S30_SELF_GOVERNANCE_GATE_V062_CI_APPLICABILITY_REPAIR",
+  "execution_id": "EXEC-S30-CI-APPLICABILITY-REPAIR-20260918-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "bd12fb22297a860cd3f560b34f534f7301265a10",
+  "judge_sha": "980d6307ae973d307e0fc4a6572c0d6bf992a642",
+  "source_sha_list": [
+    "b68118518527cd464ea422601736f9a410783b0e",
+    "91055be3b7585d9d89662d427fa3ed2ddcebe311",
+    "c40b7d12e479906d1e70ed2fb9b0d8d60e2630f2",
+    "a20b9534d705718ae1908e23674ace9ec9de5127"
+  ],
+  "target_paths": [
+    ".github/workflows/validate-lf-packs.yml",
+    "gobernanza/contratos/s30_self_governance_gate_v1.json",
+    "gobernanza/judges/validate_s30_self_governance_gate.py",
+    "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-18T14:44:35Z",
+  "evidence": {
+    "base_main_sha": "91055be3b7585d9d89662d427fa3ed2ddcebe311",
+    "ekb_code": "CI-FAST-DEEP-FEEDBACK-LOOP-001",
+    "ekb_event_id": 14319,
+    "staging_branch": "lf/staging-s30-ci-applicability-v062-20260918",
+    "substantive_head": "b68118518527cd464ea422601736f9a410783b0e",
+    "validate_lf_packs_run_id": 35358116492,
+    "validate_lf_packs_result": "PASS",
+    "lf_contract_check_run_id": 35358116517,
+    "lf_contract_check_result": "FAIL_RECEIPT_MISSING",
+    "lf_contract_check_classification": "EXPECTED_GOVERNANCE_RECEIPT_GATE",
+    "s30_self_test": "PASS_INCLUDING_PR_PUSH_NO_FINDINGS_RUN_AND_FAIL_CLOSED_CASES",
+    "repair_scope": "S30_APPLICABILITY_ONLY",
+    "runtime_changed": false,
+    "production_changed": false,
+    "scheduler_changed": false,
+    "s26_mutated": false
+  },
+  "notes": "Source-bound sidecar for the bounded S30 applicability repair. It authorizes no runtime or production change and exists to cover the governed source paths for exact-head repository CI."
+}
