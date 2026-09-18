@@ -323,6 +323,7 @@ jobs:
                   p0_regular = all(path in regular for path in changed)
 
           plan_path = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py")
+          currentness_path = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_currentness_bridge_v1.py")
           plan_spec = importlib.util.spec_from_file_location("lf_ci_execution_plan_v2", plan_path)
           if plan_spec is None or plan_spec.loader is None:
               raise SystemExit("FAIL_S28_CI_EXECUTION_PLAN_LOAD")
@@ -330,6 +331,23 @@ jobs:
           import sys
           sys.modules[plan_spec.name] = plan_module
           plan_spec.loader.exec_module(plan_module)
+          currentness_spec = importlib.util.spec_from_file_location(
+              "lf_ci_currentness_bridge_v1", currentness_path
+          )
+          if currentness_spec is None or currentness_spec.loader is None:
+              raise SystemExit("FAIL_S28_CI_CURRENTNESS_BRIDGE_LOAD")
+          currentness_module = importlib.util.module_from_spec(currentness_spec)
+          sys.modules[currentness_spec.name] = currentness_module
+          currentness_spec.loader.exec_module(currentness_module)
+
+          subprocess.run(
+              ["git","fetch","--no-tags","origin","refs/heads/main:refs/remotes/origin/main"],
+              check=True,
+              stdout=subprocess.DEVNULL,
+          )
+          authority_current = subprocess.check_output(
+              ["git","rev-parse","refs/remotes/origin/main"], text=True
+          ).strip()
 
           ref_name = os.environ.get("GITHUB_REF_NAME", "")
           force_full = event_name == "workflow_dispatch" or (event_name == "push" and ref_name == "main")
@@ -351,14 +369,27 @@ jobs:
               force_full_reason=force_reason,
               source_ref=exact_head,
           )
+          applicability_sha256 = plan["plan_sha256"]
+          bound_revision = exact_base or authority_current
+          currentness = currentness_module.evaluate_ci_authority_currentness(
+              repo=Path("."),
+              bound_revision=bound_revision,
+              current_revision=authority_current,
+          )
+          currentness_module.require_ready(currentness)
+
+          plan["plan_sha256"] = applicability_sha256
+          plan["applicability_sha256"] = applicability_sha256
+          plan["source_authority"] = currentness
+          plan["evidence_base_revision"] = bound_revision
           plan["base_sha"] = os.environ.get("LF_PLAN_BASE_SHA") or None
           plan["head_sha"] = os.environ.get("LF_PLAN_HEAD_SHA") or os.environ.get("GITHUB_SHA")
           plan["event_name"] = event_name
           plan["event_action"] = os.environ.get("LF_PLAN_EVENT_ACTION") or ""
-          digest_source = dict(plan)
-          digest_source.pop("plan_sha256", None)
-          plan["plan_sha256"] = plan_module._sha(
-              plan_module._canonical(digest_source).encode("utf-8")
+          evidence_source = dict(plan)
+          evidence_source.pop("evidence_sha256", None)
+          plan["evidence_sha256"] = plan_module._sha(
+              plan_module._canonical(evidence_source).encode("utf-8")
           )
 
           plan_dir = Path(".lf_ci")
@@ -397,6 +428,10 @@ jobs:
               handle.write(f"required_controls_json={required_controls_json}\n")
               handle.write(f"lf_contract_controls_json={lf_contract_controls_json}\n")
               handle.write(f"plan_sha256={plan['plan_sha256']}\n")
+              handle.write(f"applicability_sha256={plan['applicability_sha256']}\n")
+              handle.write(f"evidence_sha256={plan['evidence_sha256']}\n")
+              handle.write(f"authority_current_revision={plan['source_authority']['resolved_revision']}\n")
+              handle.write(f"currentness_decision={plan['source_authority']['decision']}\n")
               handle.write(f"plan_full_regression={str(plan['full_regression']).lower()}\n")
               handle.write(f"lane_mode={lane.mode}\n")
 
@@ -406,7 +441,9 @@ jobs:
                   handle.write("### Strategy 28 — unified CI applicability authority\n")
                   handle.write(f"- tier compatibility output: `{tier}`\n")
                   handle.write(f"- lane mode: `{lane.mode}`\n")
-                  handle.write(f"- plan sha256: `{plan['plan_sha256']}`\n")
+                  handle.write(f"- applicability sha256: `{plan['applicability_sha256']}`\n")
+                  handle.write(f"- evidence sha256: `{plan['evidence_sha256']}`\n")
+                  handle.write(f"- currentness: `{plan['source_authority']['decision']}` -> `{plan['source_authority']['resolved_revision']}`\n")
                   handle.write(f"- full regression: `{str(plan['full_regression']).lower()}`\n")
                   handle.write(f"- required controls: `{required_controls_json}`\n")
                   handle.write(f"- lf-contract-check controls: `{lf_contract_controls_json}`\n")
@@ -429,6 +466,7 @@ jobs:
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py","critical":true}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_currentness_bridge_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_currentness_bridge_v1.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_run_changed_migrations_rollback_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_run_changed_migrations_rollback_v1.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py","critical":true}' \
             --artifact-dir .lf_gate_diagnostics/lf_contract_check/ci_router_selftest \
