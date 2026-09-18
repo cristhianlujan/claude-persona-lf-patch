@@ -36,6 +36,7 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--repo-root", default=".")
     p.add_argument("--base")
     p.add_argument("--head")
+    p.add_argument("--authority-bound-revision")
     p.add_argument("--authority-current-revision")
     p.add_argument("--event-name", default=os.environ.get("GITHUB_EVENT_NAME", "LOCAL"))
     p.add_argument("--event-action", default="")
@@ -85,7 +86,7 @@ def main() -> int:
     current_revision = args.authority_current_revision or args.base or args.head
     if not current_revision:
         raise SystemExit("BLOCK_CI_AUTHORITY_CURRENT_REVISION_MISSING")
-    bound_revision = args.base or current_revision
+    bound_revision = args.authority_bound_revision or current_revision
     currentness = CURRENTNESS.evaluate_ci_authority_currentness(
         repo=repo,
         bound_revision=bound_revision,
@@ -99,7 +100,7 @@ def main() -> int:
     plan["plan_sha256"] = applicability_sha256
     plan["applicability_sha256"] = applicability_sha256
     plan["source_authority"] = currentness
-    plan["evidence_base_revision"] = bound_revision
+    plan["authority_evidence_revision"] = bound_revision
     plan["base_sha"] = args.base
     plan["head_sha"] = args.head
     plan["event_name"] = args.event_name
