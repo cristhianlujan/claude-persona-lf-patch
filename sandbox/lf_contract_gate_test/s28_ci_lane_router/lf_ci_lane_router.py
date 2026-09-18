@@ -8,6 +8,7 @@ specialized N/A.
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 from pathlib import Path, PurePosixPath
 from typing import Iterable, Mapping, Any
@@ -59,11 +60,18 @@ FAIL_CLOSED_REQUIRED_CONTROLS = tuple(sorted({
     CONTROL_CI_ROUTER_SELFTEST,
     CONTROL_P0_EXACT_HEAD_EXTERNAL,
 }))
+_CONTROL_CODE_RE = re.compile(r"^[A-Z][A-Z0-9_-]*$")
 
 
 def _canonical_required_controls(values: Iterable[str]) -> tuple[str, ...]:
     raw = tuple(values)
-    if any(not isinstance(value, str) or not value or value.strip() != value for value in raw):
+    if any(
+        not isinstance(value, str)
+        or not value
+        or value.strip() != value
+        or _CONTROL_CODE_RE.fullmatch(value) is None
+        for value in raw
+    ):
         raise ValueError("FAIL_LF_REQUIRED_CONTROL_ID")
     if len(raw) != len(set(raw)):
         raise ValueError("FAIL_LF_REQUIRED_CONTROL_DUPLICATE")
@@ -253,6 +261,7 @@ def classify(
     deep_shared = False
     product_modes: set[str] = set()
     product_namespaces: set[str] = set()
+    required_controls: set[str] = set()
     reasons: list[str] = []
 
     for path in changed:
@@ -264,15 +273,19 @@ def classify(
 
         if path.startswith(MIGRATION_PREFIX) or path in {MIGRATION_VALIDATOR, MIGRATION_TRANSPORT_TEST}:
             migration = True
+            required_controls.add(CONTROL_MIGRATION_SOURCE_PARITY)
             reasons.append(f"MIGRATION:{path}")
         if _is_input_governance_migration(path) or path == INPUT_GOV_VALIDATOR:
             input_gov = True
+            required_controls.add(CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY)
             reasons.append(f"INPUT_GOV:{path}")
         if path.startswith(CI_ROUTER_PREFIX):
             selftest = True
+            required_controls.add(CONTROL_CI_ROUTER_SELFTEST)
             reasons.append(f"CI_ROUTER_SELFTEST:{path}")
         if _is_p0_exact_head_external_owner(path):
             p0_external = True
+            required_controls.add(CONTROL_P0_EXACT_HEAD_EXTERNAL)
             reasons.append(f"P0_EXACT_HEAD_EXTERNAL:{path}")
 
         if shared_control is not None:
@@ -281,6 +294,7 @@ def classify(
             selftest = selftest or shared_control.ci_router_selftest_required
             p0_external = p0_external or shared_control.p0_exact_head_external_required
             deep_shared = deep_shared or shared_control.deep_shared
+            required_controls.update(shared_control.required_controls)
             reasons.append(f"SHARED_CONTROL:{shared_control.control_id}:{path}")
 
         if product_lane is not None:
@@ -289,6 +303,7 @@ def classify(
             selftest = selftest or product_lane.ci_router_selftest_required
             p0_external = p0_external or product_lane.p0_exact_head_external_required
             deep_shared = deep_shared or product_lane.deep_shared
+            required_controls.update(product_lane.required_controls)
             reasons.append(f"PRODUCT_LANE:{product_lane.lane_id}:{path}")
             if product_lane.known:
                 product_modes.add(product_lane.mode)
@@ -310,6 +325,11 @@ def classify(
         input_gov = True
         p0_external = True
         deep_shared = True
+        required_controls.update((
+            CONTROL_MIGRATION_SOURCE_PARITY,
+            CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY,
+            CONTROL_P0_EXACT_HEAD_EXTERNAL,
+        ))
 
     if unknown:
         mode = "DEEP_SHARED_UNKNOWN"
@@ -324,12 +344,13 @@ def classify(
     else:
         mode = "DEEP_SHARED_KNOWN"
 
-    required_controls = _legacy_required_controls(
+    required_controls.update(_legacy_required_controls(
         migration_parity_required=migration,
         input_governance_parity_required=input_gov,
         ci_router_selftest_required=selftest,
         p0_exact_head_external_required=p0_external,
-    )
+    ))
+    canonical_required_controls = _canonical_required_controls(required_controls)
     return LaneDecision(
         mode=mode,
         migration_parity_required=migration,
@@ -338,5 +359,5 @@ def classify(
         p0_exact_head_external_required=p0_external,
         deep_shared=deep_shared,
         reasons=tuple(reasons) or ("KNOWN_SHARED",),
-        required_controls=required_controls,
+        required_controls=canonical_required_controls,
     )
