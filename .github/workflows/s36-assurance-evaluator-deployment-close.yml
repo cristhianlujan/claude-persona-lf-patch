@@ -1,0 +1,278 @@
+name: S36 Assurance Evaluator Deployment Close
+
+on:
+  workflow_run:
+    workflows: ["S36 Assurance Evaluator Control"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: t01-assurance-evaluator-deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy-close:
+    name: T01 exact-version deployment close
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+      SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+      MIGRATION_VERSION: "20260917190500"
+      MIGRATION_NAME: lf_assurance_evaluator_transversal_v1
+      MIGRATION_PATH: supabase/migrations/20260917190500_lf_assurance_evaluator_transversal_v1.sql
+      T01_SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+
+    steps:
+      - name: Checkout exact successful main revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 1
+
+      - name: Require encrypted deployment credential
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          [ -n "${PGPASSWORD:-}" ] || { echo "BLOCK_T01_DEPLOY_DB_CREDENTIAL_MISSING"; exit 1; }
+
+      - name: Freeze exact T01 source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$MIGRATION_PATH"
+          test "$(basename "$MIGRATION_PATH")" = "${MIGRATION_VERSION}_${MIGRATION_NAME}.sql"
+          grep -Fq 'LF_ASSURANCE_EVALUATOR_TRANSVERSAL_V1' "$MIGRATION_PATH"
+          test "$(git rev-parse HEAD)" = "$T01_SOURCE_SHA"
+          blob="$(git rev-parse "HEAD:${MIGRATION_PATH}")"
+          source_sha256="$(sha256sum "$MIGRATION_PATH" | awk '{print $1}')"
+          [ -n "$blob" ] && [ -n "$source_sha256" ]
+          echo "T01_BLOB_SHA=$blob" >> "$GITHUB_ENV"
+          echo "T01_SOURCE_SHA256=$source_sha256" >> "$GITHUB_ENV"
+          echo "T01_SOURCE_IDENTITY=PASS version=$MIGRATION_VERSION blob=$blob sha256=$source_sha256"
+
+      - name: Read live T01 prestate only
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          sql="select case
+            when exists (
+              select 1 from supabase_migrations.schema_migrations
+              where version='${MIGRATION_VERSION}'
+                and name='${MIGRATION_NAME}'
+                and idempotency_key='gitblob:${T01_BLOB_SHA}'
+                and cardinality(statements)=1
+            ) then 'EXACT_OK'
+            when exists (select 1 from supabase_migrations.schema_migrations where version='${MIGRATION_VERSION}') then 'EXACT_MISMATCH'
+            when exists (select 1 from supabase_migrations.schema_migrations where name='${MIGRATION_NAME}') then 'NAME_DRIFT'
+            else 'MISSING'
+          end;"
+
+          state="$(docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 psql -X -At -v ON_ERROR_STOP=1 -c "$sql")"
+
+          case "$state" in
+            EXACT_OK|MISSING) ;;
+            *) echo "BLOCK_T01_DEPLOY_PRESTATE:$state"; exit 1 ;;
+          esac
+
+          if [ "$state" = "MISSING" ]; then
+            partial_sql="with sigs(sig) as (values
+              ('public.lf_assurance_case_evidence_v1(text,text,text)'),
+              ('public.lf_assurance_obligation_evidence_v1(text,text,text,integer)'),
+              ('public.lf_assurance_defeater_evidence_v1(text,text,text,integer)'),
+              ('public.lf_assurance_claim_resolve_core_v1(text,text,text,text,integer,integer)'),
+              ('public.lf_assurance_claim_evaluate_v1(text,text,text,text,integer)'),
+              ('public.lf_assurance_claim_evaluate_and_record_v1(text,text,text,text,integer,text,text)')
+            ) select count(*) from sigs where to_regprocedure(sig) is not null;"
+            partial="$(docker run --rm \
+              -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+              postgres:17.6 psql -X -At -v ON_ERROR_STOP=1 -c "$partial_sql")"
+            [ "$partial" = "0" ] || { echo "BLOCK_T01_DEPLOY_PARTIAL_FUNCTION_STATE:$partial"; exit 1; }
+          fi
+
+          echo "T01_LIVE_STATE=$state" >> "$GITHUB_ENV"
+          echo "T01_PRESTATE=PASS state=$state"
+
+      - name: Build exact-version atomic T01 write package
+        if: env.T01_LIVE_STATE == 'MISSING'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os, re
+          from pathlib import Path
+
+          path = Path(os.environ['MIGRATION_PATH'])
+          source = path.read_text(encoding='utf-8')
+          version = os.environ['MIGRATION_VERSION']
+          name = os.environ['MIGRATION_NAME']
+          blob = os.environ['T01_BLOB_SHA']
+          source_sha = os.environ['T01_SOURCE_SHA']
+
+          source_tag = '$t01_source_190500$'
+          guard_tag = '$t01_guard_190500$'
+          if source_tag in source or guard_tag in source:
+              raise SystemExit('BLOCK_T01_DEPLOY_DOLLAR_TAG_COLLISION')
+          if any(line.lstrip().startswith('\\') for line in source.splitlines()):
+              raise SystemExit('BLOCK_T01_DEPLOY_PSQL_META_COMMAND_IN_SOURCE')
+          if re.search(r'(?im)^\s*(begin|commit|rollback)\s*;', source):
+              raise SystemExit('BLOCK_T01_DEPLOY_NESTED_TRANSACTION_IN_SOURCE')
+
+          sigs = [
+              'public.lf_assurance_case_evidence_v1(text,text,text)',
+              'public.lf_assurance_obligation_evidence_v1(text,text,text,integer)',
+              'public.lf_assurance_defeater_evidence_v1(text,text,text,integer)',
+              'public.lf_assurance_claim_resolve_core_v1(text,text,text,text,integer,integer)',
+              'public.lf_assurance_claim_evaluate_v1(text,text,text,text,integer)',
+              'public.lf_assurance_claim_evaluate_and_record_v1(text,text,text,text,integer,text,text)',
+          ]
+          values = ',\n'.join("      ('%s')" % s.replace("'", "''") for s in sigs)
+
+          sql = f"""\\set ON_ERROR_STOP on
+          begin;
+          select pg_advisory_xact_lock(hashtextextended('T01|{version}|{name}',0));
+          do {guard_tag}
+          declare
+            v_partial integer;
+          begin
+            if exists (select 1 from supabase_migrations.schema_migrations where version='{version}') then
+              raise exception 'BLOCK_T01_DEPLOY_VERSION_APPEARED_DURING_WRITE';
+            end if;
+            if exists (select 1 from supabase_migrations.schema_migrations where name='{name}') then
+              raise exception 'BLOCK_T01_DEPLOY_NAME_DRIFT_APPEARED_DURING_WRITE';
+            end if;
+            with sigs(sig) as (values
+          {values}
+            ) select count(*) into v_partial from sigs where to_regprocedure(sig) is not null;
+            if v_partial <> 0 then
+              raise exception 'BLOCK_T01_DEPLOY_PARTIAL_FUNCTION_STATE_DURING_WRITE:%',v_partial;
+            end if;
+          end;
+          {guard_tag};
+
+          {source.rstrip()}
+
+          insert into supabase_migrations.schema_migrations(
+            version,statements,name,created_by,idempotency_key,rollback
+          ) values (
+            '{version}',
+            array[{source_tag}{source}{source_tag}]::text[],
+            '{name}',
+            'github-actions:T01:{source_sha}',
+            'gitblob:{blob}',
+            array[]::text[]
+          );
+          commit;
+          """
+          out = Path(os.environ['RUNNER_TEMP']) / 't01-190500-deploy.sql'
+          out.write_text(sql, encoding='utf-8')
+          print(f'T01_WRITE_PACKAGE=PASS bytes={out.stat().st_size}')
+          PY
+
+      - name: Apply only T01 190500 atomically
+        if: env.T01_LIVE_STATE == 'MISSING'
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          docker run --rm -i \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 psql -X -v ON_ERROR_STOP=1 \
+            < "$RUNNER_TEMP/t01-190500-deploy.sql"
+          echo "T01_WRITE=PASS version=$MIGRATION_VERSION only"
+
+      - name: Exact live readback and permission proof
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          row_sql="select version||'|'||coalesce(name,'')||'|'||coalesce(idempotency_key,'')||'|'||cardinality(statements)::text||'|'||encode(extensions.digest(coalesce(statements[1],''),'sha256'),'hex') from supabase_migrations.schema_migrations where version='${MIGRATION_VERSION}';"
+          row="$(docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 psql -X -At -v ON_ERROR_STOP=1 -c "$row_sql")"
+          expected="${MIGRATION_VERSION}|${MIGRATION_NAME}|gitblob:${T01_BLOB_SHA}|1|${T01_SOURCE_SHA256}"
+          [ "$row" = "$expected" ] || { echo "BLOCK_T01_DEPLOY_LEDGER_READBACK_MISMATCH"; echo "observed=$row"; echo "expected=$expected"; exit 1; }
+
+          acl_sql="with sigs(sig) as (values
+            ('public.lf_assurance_case_evidence_v1(text,text,text)'),
+            ('public.lf_assurance_obligation_evidence_v1(text,text,text,integer)'),
+            ('public.lf_assurance_defeater_evidence_v1(text,text,text,integer)'),
+            ('public.lf_assurance_claim_resolve_core_v1(text,text,text,text,integer,integer)'),
+            ('public.lf_assurance_claim_evaluate_v1(text,text,text,text,integer)'),
+            ('public.lf_assurance_claim_evaluate_and_record_v1(text,text,text,text,integer,text,text)')
+          ), f as (
+            select sig,to_regprocedure(sig) as oid from sigs
+          ), stats as (
+            select
+              count(*) filter (where oid is not null) as present,
+              count(*) filter (where oid is not null and has_function_privilege('service_role',oid,'EXECUTE')) as service_exec,
+              count(*) filter (where oid is not null and has_function_privilege('anon',oid,'EXECUTE')) as anon_exec,
+              count(*) filter (where oid is not null and has_function_privilege('authenticated',oid,'EXECUTE')) as auth_exec,
+              count(*) filter (where oid is not null and p.prosecdef) as security_definer
+            from f left join pg_proc p on p.oid=f.oid
+          ), public_acl as (
+            select count(*) as public_exec
+            from f join pg_proc p on p.oid=f.oid
+            cross join lateral aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a
+            where a.grantee=0 and a.privilege_type='EXECUTE'
+          )
+          select stats.present||'|'||stats.service_exec||'|'||stats.anon_exec||'|'||stats.auth_exec||'|'||public_acl.public_exec||'|'||stats.security_definer from stats,public_acl;"
+          acl="$(docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 psql -X -At -v ON_ERROR_STOP=1 -c "$acl_sql")"
+          [ "$acl" = "6|6|0|0|0|0" ] || { echo "BLOCK_T01_DEPLOY_FUNCTION_OR_ACL_READBACK:$acl"; exit 1; }
+
+          smoke_sql="select public.lf_assurance_claim_evaluate_v1('CONTROL_PLANE','T01_LIVE_SMOKE','${T01_SOURCE_SHA}','__T01_MISSING_CLAIM__',1)->>'result';"
+          smoke="$(docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 psql -X -At -v ON_ERROR_STOP=1 -c "$smoke_sql")"
+          [ "$smoke" = "UNPROVEN" ] || { echo "BLOCK_T01_DEPLOY_FAIL_CLOSED_SMOKE:$smoke"; exit 1; }
+
+          echo "T01_LIVE_READBACK=PASS version=$MIGRATION_VERSION functions=6 service_role=6 public=0 anon=0 authenticated=0 security_definer=0 smoke=UNPROVEN"
+          {
+            echo '### T01 deployment close'
+            echo "- source main revision: \`${T01_SOURCE_SHA}\`"
+            echo "- migration: \`${MIGRATION_VERSION}_${MIGRATION_NAME}.sql\`"
+            echo "- source blob: \`${T01_BLOB_SHA}\`"
+            echo '- deployment scope: `T01 190500 only`'
+            echo '- exact ledger/source readback: `PASS`'
+            echo '- functions: `6/6`'
+            echo '- service_role execute: `6/6`'
+            echo '- public / anon / authenticated execute: `0`'
+            echo '- security definer functions: `0`'
+            echo '- live fail-closed smoke: `UNPROVEN`'
+            echo '- foreign migrations read/write: `NONE`'
+            echo '- T01 status: `PASS_CLOSED`'
+          } >> "$GITHUB_STEP_SUMMARY"

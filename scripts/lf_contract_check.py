@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.17
+LF Contract Check v0.18
 
 Sandbox validator for controlled LF governance gates.
+
+v0.18 changes:
+- Admits only the two exact T01 Assurance Evaluator workflow paths.
+- Adds an intrinsic fail-closed invariant that keeps T01 workflow siblings/lookalikes denied.
+- Keeps the broad .github/ prefix default-denied.
 
 v0.17 changes:
 - Admits only the exact LF Currentness Authority workflow path.
@@ -97,6 +102,18 @@ PROFILE_CREATOR_CALLER_WORKFLOW_DENIED_LOOKALIKES = {
     ".github/workflows/lf-customer-profile-creator-governance-caller/child.yml",
     ".github/workflows/lf-customer-profile-creator-governance-caller-copy.yml",
 }
+T01_ASSURANCE_WORKFLOW_PATHS = {
+    ".github/workflows/s36-assurance-evaluator-control.yml",
+    ".github/workflows/s36-assurance-evaluator-deployment-close.yml",
+}
+T01_ASSURANCE_WORKFLOW_DENIED_LOOKALIKES = {
+    ".github/workflows/s36-assurance-evaluator-control.yaml",
+    ".github/workflows/s36-assurance-evaluator-control.yml.bak",
+    ".github/workflows/s36-assurance-evaluator-control-copy.yml",
+    ".github/workflows/s36-assurance-evaluator-deployment-close.yaml",
+    ".github/workflows/s36-assurance-evaluator-deployment-close.yml.bak",
+    ".github/workflows/s36-assurance-evaluator-deployment-close-copy.yml",
+}
 
 ALLOWED_GITHUB_EXACT = {
     ".github/workflows/lf-contract-check.yml",
@@ -108,6 +125,7 @@ ALLOWED_GITHUB_EXACT = {
     ".github/workflows/validate-lf-packs.yml",
     ".github/workflows/lf-material-currentness.yml",
     PROFILE_CREATOR_CALLER_WORKFLOW_PATH,
+    *T01_ASSURANCE_WORKFLOW_PATHS,
 }
 OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     "CLAUDE.md",
@@ -342,6 +360,27 @@ def validate_profile_creator_workflow_admission_scope() -> None:
     print(
         "PASS_PROFILE_CREATOR_WORKFLOW_ADMISSION_SCOPE_INVARIANT: "
         f"approved=1 denied={len(PROFILE_CREATOR_CALLER_WORKFLOW_DENIED_LOOKALIKES)} broad_prefix=denied"
+    )
+
+
+def validate_t01_assurance_workflow_admission_scope() -> None:
+    failures: list[str] = []
+    if ".github/" in ALLOWED_PREFIXES:
+        failures.append("github_prefix_must_remain_denied")
+    for path in sorted(T01_ASSURANCE_WORKFLOW_PATHS):
+        if path not in ALLOWED_GITHUB_EXACT:
+            failures.append(f"t01_workflow_exact_missing:{path}")
+        if not is_allowed_path(path):
+            failures.append(f"t01_workflow_not_allowed:{path}")
+    for path in sorted(T01_ASSURANCE_WORKFLOW_DENIED_LOOKALIKES):
+        if path in ALLOWED_GITHUB_EXACT or is_allowed_path(path):
+            failures.append(f"lookalike_unexpectedly_allowed:{path}")
+    if failures:
+        fail("FAIL_T01_ASSURANCE_WORKFLOW_ADMISSION_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_T01_ASSURANCE_WORKFLOW_ADMISSION_SCOPE_INVARIANT: "
+        f"approved={len(T01_ASSURANCE_WORKFLOW_PATHS)} "
+        f"denied={len(T01_ASSURANCE_WORKFLOW_DENIED_LOOKALIKES)} broad_prefix=denied"
     )
 
 
@@ -589,6 +628,7 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
 def main() -> None:
     validate_contract()
     validate_profile_creator_workflow_admission_scope()
+    validate_t01_assurance_workflow_admission_scope()
     validate_operational_protocol_scope()
     validate_compact_protocol_contract()
     validate_p0_closure_evidence_scope()

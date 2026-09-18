@@ -82,6 +82,15 @@ MARKER_RE = re.compile(
     r"cutover=(\d{14}) legacy_start=(\d{14}) legacy_end=(\d{14}) "
     r"legacy_count=(\d+) legacy_sha256=([0-9a-f]{64})$"
 )
+SOURCE_SUPPORT_MARKER_RE = re.compile(r"^-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=(.+)$")
+SOURCE_SUPPORT_PATH_RE = re.compile(r"^[A-Za-z0-9._@+/-]+$")
+SOURCE_SUPPORT_MAX_PATHS = 32
+SOURCE_SUPPORT_ALWAYS_FORBIDDEN_PREFIXES = ("supabase/migrations/",)
+SOURCE_SUPPORT_CONTROL_PATHS = {
+    ".github/workflows/lf-contract-check.yml",
+    "scripts/lf_contract_check.py",
+    "sandbox/lf_contract_gate_test/lf_migration_source_parity.py",
+}
 SHA_PROOF_RE = re.compile(r"^sha256:([0-9a-f]{64})$")
 PG_ENV_NAMES = ("PGHOST", "PGPORT", "PGUSER", "PGPASSWORD", "PGDATABASE", "PGSSLMODE")
 POSTGRES_IMAGE = "postgres:17.6"
@@ -108,6 +117,60 @@ def fail(code: str, detail: str = "") -> None:
     raise SystemExit(f"{code}{suffix}")
 
 
+def _parse_source_support_paths(
+    source_sql: str,
+    *,
+    bootstrap_allow_control_paths: bool = False,
+) -> tuple[str, ...]:
+    declared: list[str] = []
+    for line in source_sql.splitlines():
+        if not line.startswith("-- LF_MIGRATION_SOURCE_SUPPORT_V1"):
+            continue
+        match = SOURCE_SUPPORT_MARKER_RE.fullmatch(line)
+        if match is None:
+            fail("FAIL_LF_MIGRATION_SOURCE_SUPPORT_MARKER", line[:200])
+        path = match.group(1)
+        segments = path.split("/")
+        if (
+            len(path) > 240
+            or not SOURCE_SUPPORT_PATH_RE.fullmatch(path)
+            or path.startswith("/")
+            or path.endswith("/")
+            or "\\" in path
+            or any(segment in ("", ".", "..") for segment in segments)
+            or any(token in path for token in ("*", "?", "[", "]", "{", "}"))
+        ):
+            fail("FAIL_LF_MIGRATION_SOURCE_SUPPORT_PATH", path)
+        if path.startswith(SOURCE_SUPPORT_ALWAYS_FORBIDDEN_PREFIXES):
+            fail("FAIL_LF_MIGRATION_SOURCE_SUPPORT_PROTECTED", path)
+        if path in SOURCE_SUPPORT_CONTROL_PATHS and not bootstrap_allow_control_paths:
+            fail("FAIL_LF_MIGRATION_SOURCE_SUPPORT_PROTECTED", path)
+        if path in declared:
+            fail("FAIL_LF_MIGRATION_SOURCE_SUPPORT_DUPLICATE", path)
+        declared.append(path)
+    if len(declared) > SOURCE_SUPPORT_MAX_PATHS:
+        fail(
+            "FAIL_LF_MIGRATION_SOURCE_SUPPORT_COUNT",
+            f"declared={len(declared)} max={SOURCE_SUPPORT_MAX_PATHS}",
+        )
+    return tuple(sorted(declared))
+
+
+def _base_source_support_capable(base: str) -> bool:
+    gate_path = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
+    proc = subprocess.run(
+        ["git", "show", f"{base}:{gate_path}"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        timeout=20,
+    )
+    if proc.returncode != 0:
+        fail("FAIL_LF_MIGRATION_SOURCE_FIRST_BASE_GATE_READ", gate_path)
+    return "def _parse_source_support_paths(" in proc.stdout
+
+
 def _classify_source_first_pending(
     *,
     local_versions: set[str],
@@ -116,6 +179,7 @@ def _classify_source_first_pending(
     local_names: dict[str, str],
     base_has_expected_path: bool,
     event_name: str,
+    support_paths: tuple[str, ...] = (),
 ) -> str | None:
     remote_only = sorted(remote_versions - local_versions)
     local_only = sorted(local_versions - remote_versions)
@@ -140,10 +204,13 @@ def _classify_source_first_pending(
     name = local_names.get(version, "")
     expected_path = f"supabase/migrations/{version}_{name}.sql"
     normalized_changed = sorted(path.replace("\\", "/") for path in changed_paths if path)
-    if normalized_changed != [expected_path]:
+    expected_changed = sorted([expected_path, *support_paths])
+    if len(normalized_changed) != len(set(normalized_changed)):
+        fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE", "duplicate_changed_path_after_normalization")
+    if normalized_changed != expected_changed:
         fail(
             "FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE",
-            f"expected={[expected_path]} changed={normalized_changed}",
+            f"expected={expected_changed} changed={normalized_changed}",
         )
     if base_has_expected_path:
         fail(
@@ -196,6 +263,7 @@ def _git_source_first_context(
         fail("FAIL_LF_MIGRATION_SOURCE_FIRST_GIT_CONTEXT", type(exc).__name__)
     changed_paths = [line.strip() for line in changed_proc.stdout.splitlines() if line.strip()]
     local_only = sorted(set(local) - set(remote))
+    support_paths: tuple[str, ...] = ()
     if len(local_only) == 1:
         version = local_only[0]
         expected_path = f"supabase/migrations/{version}_{local[version][0]}.sql"
@@ -207,6 +275,11 @@ def _git_source_first_context(
             check=False,
             timeout=20,
         ).returncode == 0
+        bootstrap_allow_control_paths = not _base_source_support_capable(base)
+        support_paths = _parse_source_support_paths(
+            local[version][2],
+            bootstrap_allow_control_paths=bootstrap_allow_control_paths,
+        )
     else:
         base_has_expected_path = False
     return _classify_source_first_pending(
@@ -216,6 +289,7 @@ def _git_source_first_context(
         local_names={version: row[0] for version, row in local.items()},
         base_has_expected_path=base_has_expected_path,
         event_name=event_name,
+        support_paths=support_paths,
     )
 
 
@@ -226,6 +300,8 @@ def source_first_self_test() -> None:
     local = {"20260901000000", version}
     remote = {"20260901000000"}
     names = {version: name}
+    checks = 0
+
     if _classify_source_first_pending(
         local_versions=local,
         remote_versions=remote,
@@ -235,15 +311,48 @@ def source_first_self_test() -> None:
         event_name="pull_request",
     ) != version:
         fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SELFTEST_POSITIVE")
-    checks = 1
+    checks += 1
+
+    support_source = "\n".join(
+        [
+            "-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=.github/workflows/source-first-probe.yml",
+            "-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=sandbox/source_first_probe/test_probe.py",
+        ]
+    )
+    support = _parse_source_support_paths(support_source)
+    if _classify_source_first_pending(
+        local_versions=local,
+        remote_versions=remote,
+        changed_paths=[path, *support],
+        local_names=names,
+        base_has_expected_path=False,
+        event_name="pull_request",
+        support_paths=support,
+    ) != version:
+        fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SELFTEST_SUPPORT_POSITIVE")
+    checks += 1
+
+    bootstrap_source = (
+        "-- LF_MIGRATION_SOURCE_SUPPORT_V1 "
+        "path=sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
+    )
+    bootstrap_support = _parse_source_support_paths(
+        bootstrap_source,
+        bootstrap_allow_control_paths=True,
+    )
+    if bootstrap_support != ("sandbox/lf_contract_gate_test/lf_migration_source_parity.py",):
+        fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SELFTEST_BOOTSTRAP_POSITIVE")
+    checks += 1
+
     negatives = [
-        (local, remote | {"20260902000000"}, [path], False, "pull_request", "FAIL_LF_MIGRATION_VERSION_PARITY"),
-        (local | {"20260914162001"}, remote, [path], False, "pull_request", "FAIL_LF_MIGRATION_SOURCE_FIRST_PENDING_COUNT"),
-        (local, remote, [path, "README.md"], False, "pull_request", "FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE"),
-        (local, remote, [path], True, "pull_request", "FAIL_LF_MIGRATION_SOURCE_FIRST_BASE_ALREADY_HAS_SOURCE"),
-        (local, remote, [path], False, "push", "FAIL_LF_MIGRATION_VERSION_PARITY"),
+        (local, remote | {"20260902000000"}, [path], False, "pull_request", (), "FAIL_LF_MIGRATION_VERSION_PARITY"),
+        (local | {"20260914162001"}, remote, [path], False, "pull_request", (), "FAIL_LF_MIGRATION_SOURCE_FIRST_PENDING_COUNT"),
+        (local, remote, [path, "README.md"], False, "pull_request", (), "FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE"),
+        (local, remote, [path, support[0]], False, "pull_request", support, "FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE"),
+        (local, remote, [path], True, "pull_request", (), "FAIL_LF_MIGRATION_SOURCE_FIRST_BASE_ALREADY_HAS_SOURCE"),
+        (local, remote, [path], False, "push", (), "FAIL_LF_MIGRATION_VERSION_PARITY"),
     ]
-    for local_versions, remote_versions, changed, base_has, event_name, expected in negatives:
+    for local_versions, remote_versions, changed, base_has, event_name, declared_support, expected in negatives:
         try:
             _classify_source_first_pending(
                 local_versions=set(local_versions),
@@ -252,6 +361,7 @@ def source_first_self_test() -> None:
                 local_names=names,
                 base_has_expected_path=base_has,
                 event_name=event_name,
+                support_paths=tuple(declared_support),
             )
         except SystemExit as exc:
             if not str(exc).startswith(expected):
@@ -259,7 +369,32 @@ def source_first_self_test() -> None:
         else:
             fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SELFTEST_NEGATIVE", expected)
         checks += 1
-    print(f"PASS_LF_MIGRATION_SOURCE_FIRST_SELFTEST={checks}/6")
+
+    parser_negatives = [
+        ("-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=../README.md", False, "FAIL_LF_MIGRATION_SOURCE_SUPPORT_PATH"),
+        ("-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=/tmp/probe", False, "FAIL_LF_MIGRATION_SOURCE_SUPPORT_PATH"),
+        ("-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=sandbox/*/probe.py", False, "FAIL_LF_MIGRATION_SOURCE_SUPPORT_PATH"),
+        ("-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=supabase/migrations/20260914162001_other.sql", True, "FAIL_LF_MIGRATION_SOURCE_SUPPORT_PROTECTED"),
+        ("-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=scripts/lf_contract_check.py", False, "FAIL_LF_MIGRATION_SOURCE_SUPPORT_PROTECTED"),
+        ("-- LF_MIGRATION_SOURCE_SUPPORT_V1 paths=README.md", False, "FAIL_LF_MIGRATION_SOURCE_SUPPORT_MARKER"),
+        (
+            "-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=README.md\n"
+            "-- LF_MIGRATION_SOURCE_SUPPORT_V1 path=README.md",
+            False,
+            "FAIL_LF_MIGRATION_SOURCE_SUPPORT_DUPLICATE",
+        ),
+    ]
+    for source, bootstrap, expected in parser_negatives:
+        try:
+            _parse_source_support_paths(source, bootstrap_allow_control_paths=bootstrap)
+        except SystemExit as exc:
+            if not str(exc).startswith(expected):
+                fail("FAIL_LF_MIGRATION_SOURCE_SUPPORT_SELFTEST_NEGATIVE", str(exc))
+        else:
+            fail("FAIL_LF_MIGRATION_SOURCE_SUPPORT_SELFTEST_NEGATIVE", expected)
+        checks += 1
+
+    print(f"PASS_LF_MIGRATION_SOURCE_FIRST_SELFTEST={checks}/{checks}")
 
 
 def remote_content_sha256(field: str, version: str) -> str:
@@ -636,7 +771,7 @@ def main() -> int:
         print(
             "PASS_LF_MIGRATION_SOURCE_FIRST_PENDING: "
             f"version={pending_version} name={pending_name} sha256={pending_sha} "
-            "scope=EXACT_ONE_NEW_MIGRATION_PR remote_ahead=false"
+            "scope=EXACT_ONE_NEW_MIGRATION_SOURCE_FIRST remote_ahead=false"
         )
     else:
         print(
