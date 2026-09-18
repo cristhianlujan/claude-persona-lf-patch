@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
@@ -132,17 +133,29 @@ def _material_matches(path: str, content: str | None, matcher: Mapping[str,str])
     return False
 
 
-def _read_material(repo_root: Path, path: str) -> tuple[str | None, dict[str,Any]]:
-    target = repo_root / path
-    if not target.is_file():
-        return None, {"path":path,"state":"MISSING_OR_DELETED"}
-    raw = target.read_bytes()
+def _read_material(repo_root: Path, path: str, source_ref: str | None = None) -> tuple[str | None, dict[str,Any]]:
+    if source_ref:
+        result = subprocess.run(
+            ["git","-C",str(repo_root),"show",f"{source_ref}:{path}"],
+            check=False,
+            capture_output=True,
+        )
+        if result.returncode != 0:
+            return None, {"path":path,"state":"MISSING_OR_DELETED","source_ref":source_ref}
+        raw = result.stdout
+    else:
+        target = repo_root / path
+        if not target.is_file():
+            return None, {"path":path,"state":"MISSING_OR_DELETED"}
+        raw = target.read_bytes()
     evidence: dict[str,Any] = {
         "path": path,
         "state": "PRESENT",
         "sha256": _sha(raw),
         "bytes": len(raw),
     }
+    if source_ref:
+        evidence["source_ref"] = source_ref
     if path.startswith("supabase/migrations/") and path.endswith(".sql"):
         try:
             content = raw.decode("utf-8")
@@ -162,6 +175,7 @@ def build_plan(
     repo_root: Path,
     force_full: bool = False,
     force_full_reason: str | None = None,
+    source_ref: str | None = None,
 ) -> dict[str,Any]:
     control_universe, full_regression_controls, controls = load_registry()
     by_id = {c.control_id:c for c in controls}
@@ -197,12 +211,12 @@ def build_plan(
         for cid in full_regression_controls:
             reason_map[cid].add(f"FULL_REGRESSION:{full_reason}")
         for path in changed:
-            _, evidence = _read_material(repo_root,path)
+            _, evidence = _read_material(repo_root,path,source_ref)
             material_evidence.append(evidence)
             handled_paths.add(path)
     else:
         for path in changed:
-            content, evidence = _read_material(repo_root,path)
+            content, evidence = _read_material(repo_root,path,source_ref)
             matched_controls: set[str] = set()
             for control in controls:
                 if any(_path_matches(path,m) for m in control.path_matchers):
