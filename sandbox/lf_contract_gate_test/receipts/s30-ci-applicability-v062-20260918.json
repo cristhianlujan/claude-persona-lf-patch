@@ -12,7 +12,8 @@
     "b68118518527cd464ea422601736f9a410783b0e",
     "91055be3b7585d9d89662d427fa3ed2ddcebe311",
     "c40b7d12e479906d1e70ed2fb9b0d8d60e2630f2",
-    "a20b9534d705718ae1908e23674ace9ec9de5127"
+    "a20b9534d705718ae1908e23674ace9ec9de5127",
+    "fb00bb5744ac833d2e64fb355c24fc9a8b944d6e"
   ],
   "target_paths": [
     ".github/workflows/validate-lf-packs.yml",
@@ -26,7 +27,7 @@
     "base_main_sha": "91055be3b7585d9d89662d427fa3ed2ddcebe311",
     "ekb_code": "CI-FAST-DEEP-FEEDBACK-LOOP-001",
     "ekb_event_id": 14319,
-    "staging_branch": "lf/staging-s30-ci-applicability-v062-20260918",
+    "staging_branch": "lf/staging-s30-ci-applicability-v062-squash-20260918",
     "substantive_head": "b68118518527cd464ea422601736f9a410783b0e",
     "validate_lf_packs_run_id": 35358116492,
     "validate_lf_packs_result": "PASS",
