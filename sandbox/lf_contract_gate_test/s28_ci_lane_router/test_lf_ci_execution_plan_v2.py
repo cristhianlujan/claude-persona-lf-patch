@@ -122,6 +122,22 @@ def test_router_self_change_forces_full_regression() -> None:
     assert "P0_FAST_DOCS" not in got["required_controls"]
     assert len(got["required_controls"]) + len(got["not_applicable_controls"]) == len(got["control_universe"])
 
+def test_global_authority_change_dominates_carrier_regression() -> None:
+    router = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py"
+    workflow = ".github/workflows/validate-lf-packs.yml"
+    got = plan(
+        [router, workflow],
+        {router: "x", workflow: "name: validate-lf-packs\n"},
+        lane=("CI_ROUTER_SELFTEST",),
+        mode="CI_ROUTER_SELFTEST_ONLY",
+    )
+    assert got["full_regression"] is True
+    assert got["full_regression_reason"] == "CI_APPLICABILITY_AUTHORITY_SELF_CHANGE"
+    assert got["carrier_regression"] is False
+    assert got["carrier_regression_reason"] is None
+    assert got["carrier_regression_carriers"] == []
+
+
 def test_validate_packs_carrier_self_change_is_scoped() -> None:
     path = ".github/workflows/validate-lf-packs.yml"
     got = plan([path], {path: "name: validate-lf-packs\n"}, lane=("CI_ROUTER_SELFTEST",), mode="CI_ROUTER_SELFTEST_ONLY")
@@ -255,6 +271,7 @@ def main() -> None:
         test_profile_change_does_not_select_database_bootstrap,
         test_unknown_surface_fails_closed_to_full_regression,
         test_router_self_change_forces_full_regression,
+        test_global_authority_change_dominates_carrier_regression,
         test_validate_packs_carrier_self_change_is_scoped,
         test_contract_carrier_self_change_is_scoped,
         test_bootstrap_carrier_self_change_is_scoped,
