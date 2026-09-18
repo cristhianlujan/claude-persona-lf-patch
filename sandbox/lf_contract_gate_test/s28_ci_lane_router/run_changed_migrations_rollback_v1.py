@@ -43,6 +43,24 @@ def sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+def git_blob_sha(repo: Path, path: str) -> str:
+    value = subprocess.check_output(
+        ["git","-C",str(repo),"hash-object","--",path],
+        text=True,
+    ).strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", value):
+        raise ProbeError(f"FAIL_DB_CANDIDATE_GIT_BLOB_SHA:{path}:{value}")
+    return value
+
+
+def migration_identity(path: str) -> tuple[str, str]:
+    name = Path(path).name
+    match = re.fullmatch(r"(\d{14})_([a-z0-9_]+)\.sql", name)
+    if not match:
+        raise ProbeError(f"FAIL_DB_CANDIDATE_MIGRATION_IDENTITY:{path}")
+    return match.group(1), match.group(2)
+
+
 def changed_migrations(repo: Path, base: str, head: str) -> list[tuple[str, str]]:
     raw = subprocess.check_output(
         [
@@ -261,11 +279,15 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
         if frame["execution_payload_sha256"] != payload_digest:
             raise ProbeError(f"FAIL_DB_CANDIDATE_PAYLOAD_DIGEST_INTERNAL:{path}")
 
+        version, migration_name = migration_identity(path)
         manifest_rows.append(
             {
                 "status": status,
                 "path": path,
+                "migration_version": version,
+                "migration_name": migration_name,
                 "source_sha256": source_digest,
+                "source_git_blob_sha1": git_blob_sha(repo, path),
                 "source_bytes": len(raw),
                 "execution_payload_sha256": payload_digest,
                 "transaction_frame": frame,
