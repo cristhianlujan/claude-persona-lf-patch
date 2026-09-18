@@ -57,6 +57,49 @@ def manifest(root: Path, fail_second: bool = False) -> Path:
     return path
 
 
+def command_manifest(root: Path) -> Path:
+    scripts = []
+    for i in range(2):
+        path = root / f"command_{i}.py"
+        write(path, "import sys\nprint('ok', sys.argv[1])\n")
+        scripts.append(str(path))
+    value = {
+        "schema_version": "lf-gate-group-manifest/v1",
+        "consumer_code": "COMMAND_TEST",
+        "gate_id": "COMMAND_TEST_GATE",
+        "owner": "TEST_OWNER",
+        "discover_glob": str(root / "command_*.py"),
+        "expected_total_checks": 2,
+        "groups": [
+            {
+                "group_id": "CONTROL_A",
+                "execution_class": "DETERMINISTIC",
+                "commands": [
+                    {
+                        "argv": [sys.executable, scripts[0], "A"],
+                        "source_path": scripts[0],
+                        "critical": True,
+                    }
+                ],
+            },
+            {
+                "group_id": "CONTROL_B",
+                "execution_class": "DETERMINISTIC",
+                "commands": [
+                    {
+                        "argv": [sys.executable, scripts[1], "B"],
+                        "source_path": scripts[1],
+                        "critical": False,
+                    }
+                ],
+            },
+        ],
+    }
+    path = root / "command-manifest.json"
+    write(path, json.dumps(value))
+    return path
+
+
 def run_case(root: Path, manifest_path: Path, child: Path, groups: list[str] | None = None):
     artifact = root / "artifact"
     cmd = [
@@ -109,6 +152,24 @@ def main() -> None:
         assert proc.returncode == 2
         assert summary["gate_result"] == "BLOCKED"
         assert "duplicate_test_assignment" in summary["error_summary"]
+
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td); child = root / "child.py"; fake_child(child); manifest_path = command_manifest(root)
+        proc, summary = run_case(root, manifest_path, child, ["CONTROL_A"])
+        assert proc.returncode == 0, proc.stderr
+        assert summary["executed_group_ids"] == ["CONTROL_A"]
+        assert summary["prueba_paso_a_paso"][0]["expected_check_count"] == 1
+        assert summary["targeted_repair_only"] is True
+        assert summary["claim_ready"] is False
+
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td); child = root / "child.py"; fake_child(child); manifest_path = command_manifest(root)
+        data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        data["groups"][0]["tests"] = [data["groups"][0]["commands"][0]["source_path"]]
+        write(manifest_path, json.dumps(data))
+        proc, summary = run_case(root, manifest_path, child)
+        assert proc.returncode == 2
+        assert "exactly_one_of_tests_or_commands_required:CONTROL_A" in summary["error_summary"]
 
     print("LF_GATE_GROUP_ORCHESTRATOR_V1_TEST_PASS")
 
