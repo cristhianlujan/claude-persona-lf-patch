@@ -163,6 +163,31 @@ def test_material_evidence_reads_exact_source_ref_not_checkout_tree() -> None:
     assert "POLICY_RESOLVER_REGRESSION" in got["required_controls"]
 
 
+
+def test_full_regression_keeps_candidate_bound_migration_controls() -> None:
+    workflow = ".github/workflows/lf-contract-check.yml"
+    migration = "supabase/migrations/20260918042000_policy.sql"
+    files = {
+        workflow: "name: lf-contract-check\n",
+        migration: "select * from public.lf_operation_policy_bindings;\n",
+    }
+    got = plan(
+        [workflow, migration],
+        files,
+        lane=("CI_ROUTER_SELFTEST","MIGRATION_SOURCE_PARITY"),
+        mode="SPECIALIZED_REQUIRED",
+    )
+    assert got["full_regression"] is True
+    assert got["full_regression_reason"] == "CI_APPLICABILITY_AUTHORITY_SELF_CHANGE"
+    assert_has(
+        got,
+        "CI_ROUTER_SELFTEST",
+        "MIGRATION_SOURCE_PARITY",
+        "DB_CANDIDATE_APPLY_ROLLBACK",
+        "POLICY_RESOLVER_REGRESSION",
+    )
+
+
 def test_plan_replay_is_deterministic() -> None:
     path = "supabase/migrations/20260918042000_policy.sql"
     files = {path: "select * from public.lf_operation_policy_bindings;"}
@@ -181,6 +206,7 @@ def main() -> None:
         test_dependency_closure_is_explicit,
         test_exact_p0_fast_doc_is_single_control,
         test_material_evidence_reads_exact_source_ref_not_checkout_tree,
+        test_full_regression_keeps_candidate_bound_migration_controls,
         test_plan_replay_is_deterministic,
     ]
     for test in tests:
