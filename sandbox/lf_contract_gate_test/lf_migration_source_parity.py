@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 # Applicability invariant: any change to this validator requires MIGRATION_SOURCE_PARITY.
-# This comment is intentionally behavior-neutral and keeps that Router binding visible.
+# Router required_controls is the execution-authority selector for that binding.
 
 import csv
 import hashlib
