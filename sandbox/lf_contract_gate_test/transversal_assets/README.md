@@ -12,7 +12,7 @@ Este índice existe para que cualquier agente o proceso pueda resolver una capab
 
 ## Regla de activación
 
-Un activo `ACTIVE_SHARED_ENFORCEMENT` debe tener un README consumible **y** `metadata.transversal_inventory.documentation.readme_ref` no vacío. `Validate LF Packs` verifica ambas obligaciones contra el inventario vivo.
+Todo activo transversal documentable en estado `ACTIVE_SHARED_ENFORCEMENT` o `ACTIVE_TRANSVERSAL_POLICY` debe tener un README consumible **y** `metadata.transversal_inventory.documentation.readme_ref` no vacío. `Validate LF Packs` verifica ambas obligaciones contra el inventario vivo.
 
 ## Activos
 
@@ -21,6 +21,7 @@ Un activo `ACTIVE_SHARED_ENFORCEMENT` debe tener un README consumible **y** `met
 - `C05_GENERIC_EXECUTION_RELIABILITY` — `TRANSVERSAL_C05_GENERIC_EXECUTION_RELIABILITY` → `sandbox/lf_contract_gate_test/transversal_assets/c05_generic_execution_reliability/README.md`
 - `CAPABILITY_VERSION_COMPATIBILITY` — `TRANSVERSAL_CAPABILITY_VERSION_COMPATIBILITY` → `sandbox/lf_contract_gate_test/transversal_assets/capability_version_compatibility/README.md`
 - `CI_FAST_DEEP_LANE_ROUTER` — `TRANSVERSAL_CI_FAST_DEEP_LANE_ROUTER` → `sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md`
+- `CONTEXT_BUDGET_GOVERNANCE` — `TRANSVERSAL_CONTEXT_BUDGET_GOVERNANCE` → `sandbox/lf_contract_gate_test/transversal_assets/context_budget_governance/README.md`
 - `EVENT_CONTRACT_GOVERNANCE` — `TRANSVERSAL_EVENT_CONTRACT_GOVERNANCE` → `sandbox/lf_contract_gate_test/transversal_assets/event_contract_governance/README.md`
 - `EVIDENCE_RESOLVER_REGISTRY` — `TRANSVERSAL_EVIDENCE_RESOLVER_REGISTRY` → `sandbox/lf_contract_gate_test/transversal_assets/evidence_resolver_registry/README.md`
 - `EXECUTION_EVENT_READBACK_INDEX` — `TRANSVERSAL_EXECUTION_EVENT_READBACK_INDEX` → `sandbox/lf_contract_gate_test/transversal_assets/execution_event_readback_index/README.md`
@@ -33,6 +34,7 @@ Un activo `ACTIVE_SHARED_ENFORCEMENT` debe tener un README consumible **y** `met
 - `OPERATION_NEUTRAL_STEP_RECORDER` — `TRANSVERSAL_OPERATION_NEUTRAL_STEP_RECORDER` → `sandbox/lf_contract_gate_test/transversal_assets/operation_neutral_step_recorder/README.md`
 - `OPERATION_STEP_CONTRACT_JUDGE_ENFORCEMENT` — `TRANSVERSAL_OPERATION_STEP_CONTRACT_JUDGE_ENFORCEMENT` → `sandbox/lf_contract_gate_test/transversal_assets/operation_step_contract_judge_enforcement/README.md`
 - `PRE_EKB_GATE` — `TRANSVERSAL_PRE_EKB_GATE` → `sandbox/lf_contract_gate_test/pre_ekb_gate/README.md`
+- `POL-LF-POLICY-CONSUMPTION` — `POL_LF_POLICY_CONSUMPTION` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_policy_consumption/README.md`
 - `QUALIFICATION_FRAMEWORK` — `TRANSVERSAL_QUALIFICATION_FRAMEWORK` → `sandbox/lf_contract_gate_test/transversal_assets/qualification_framework/README.md`
 - `QUALIFICATION_RECEIPTS` — `TRANSVERSAL_QUALIFICATION_RECEIPTS` → `sandbox/lf_contract_gate_test/transversal_assets/qualification_receipts/README.md`
 - `QUALIFICATION_STORE_SECURITY` — `TRANSVERSAL_QUALIFICATION_STORE_SECURITY` → `sandbox/lf_contract_gate_test/transversal_assets/qualification_store_security/README.md`
@@ -42,6 +44,20 @@ Un activo `ACTIVE_SHARED_ENFORCEMENT` debe tener un README consumible **y** `met
 - `TRANSACTIONAL_EXECUTION_BEGIN` — `TRANSVERSAL_TRANSACTIONAL_EXECUTION_BEGIN` → `sandbox/lf_contract_gate_test/transversal_assets/transactional_execution_begin/README.md`
 - `TYPED_EVIDENCE_REGISTRY` — `TRANSVERSAL_TYPED_EVIDENCE_REGISTRY` → `sandbox/lf_contract_gate_test/transversal_assets/typed_evidence_registry/README.md`
 - `VALIDATION_EXEMPTION_ONE_USE` — `TRANSVERSAL_VALIDATION_EXEMPTION_ONE_USE` → `sandbox/lf_contract_gate_test/transversal_assets/validation_exemption_one_use/README.md`
+
+- `OPERATION_LIFECYCLE_POLICY` — `TRANSVERSAL_OPERATION_LIFECYCLE_POLICY` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_operation_lifecycle/README.md`
+
+- `POL-LF-OPERATION-LIFECYCLE` — `POL_LF_OPERATION_LIFECYCLE` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_operation_lifecycle/README.md`
+
+- `POLICY_CONSUMPTION` — `TRANSVERSAL_POLICY_CONSUMPTION` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_policy_consumption/README.md`
+
+- `POL-LF-SOURCE-RESOLUTION` — `POL_LF_SOURCE_RESOLUTION` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_source_resolution/README.md`
+
+- `SOURCE_RESOLUTION_POLICY` — `TRANSVERSAL_SOURCE_RESOLUTION_POLICY` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_source_resolution/README.md`
+
+- `POL-LF-STATE-MODEL` — `POL_LF_STATE_MODEL` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_state_model/README.md`
+
+- `STATE_MODEL_POLICY` — `TRANSVERSAL_STATE_MODEL_POLICY` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_state_model/README.md`
 
 ## Campos mínimos del README
 
