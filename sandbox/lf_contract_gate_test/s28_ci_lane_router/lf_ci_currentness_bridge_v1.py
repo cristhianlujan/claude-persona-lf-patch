@@ -13,6 +13,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -54,6 +55,55 @@ def _load_currentness():
 
 
 CURRENTNESS = _load_currentness()
+
+
+def resolve_authority_evidence_revision(
+    *,
+    repo: Path,
+    event_name: str,
+    ref_name: str,
+    diff_base_revision: str | None,
+    candidate_head_revision: str | None,
+    current_revision: str,
+) -> str:
+    """Resolve the historical authority revision for currentness.
+
+    The diff base and the moving authority are intentionally distinct.
+    A push to main creates *new* evidence for the just-materialized main and
+    therefore binds currentness to current_revision, not event.before.
+    """
+    if not HEX40.fullmatch(current_revision or ""):
+        raise ValueError("FAIL_CI_CURRENTNESS_CURRENT_REVISION")
+    event_name = (event_name or "").strip()
+    ref_name = (ref_name or "").strip()
+
+    if event_name == "pull_request":
+        if not HEX40.fullmatch(diff_base_revision or ""):
+            raise ValueError("FAIL_CI_CURRENTNESS_PR_DIFF_BASE")
+        return str(diff_base_revision)
+
+    if event_name == "push" and ref_name == "main":
+        return current_revision
+
+    if event_name == "push":
+        if not HEX40.fullmatch(candidate_head_revision or ""):
+            raise ValueError("FAIL_CI_CURRENTNESS_PUSH_HEAD")
+        value = subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(repo),
+                "merge-base",
+                str(candidate_head_revision),
+                current_revision,
+            ],
+            text=True,
+        ).strip()
+        if not HEX40.fullmatch(value):
+            raise ValueError("FAIL_CI_CURRENTNESS_MERGE_BASE")
+        return value
+
+    return current_revision
 
 
 def build_binding(*, bound_revision: str, current_revision: str) -> dict[str, Any]:
