@@ -36,8 +36,16 @@ def main():
   for m in SHA40.finditer(text):
    sha_rows.append({"path":rel,"line":text.count("\n",0,m.start())+1,"sha":m.group(0),"family":fam})
   if PROJECT_REF in text:project_rows.append(rel)
-  if POOLER in text:pooler_rows.append({"path":rel,"family":fam})
+
   for m in WFREF.finditer(text):wf_rows.append({"path":rel,"workflow_ref":m.group(0),"family":fam})
+ pooler_rows=[]
+ for p in root.rglob("*"):
+  if not p.is_file() or ".git" in p.relative_to(root).parts:continue
+  try:text=p.read_text(encoding="utf-8",errors="replace")
+  except:continue
+  if POOLER in text:
+   rel=p.relative_to(root).as_posix()
+   pooler_rows.append({"path":rel,"family":family(pathlib.PurePosixPath(rel))})
  dup=[{"sha256":h,"paths":sorted(ps),"n":len(ps)} for h,ps in by_hash.items() if len(ps)>1]
  dup.sort(key=lambda x:(-x["n"],x["paths"]))
  actual={p.relative_to(root).as_posix() for p in root.glob(".github/workflows/*") if p.is_file() and p.suffix in (".yml",".yaml")}
