@@ -27,6 +27,8 @@ EXECUTION_PLAN = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_executi
 IMPACT_REGISTRY = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json"
 EXECUTION_PLAN_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py"
 ROLLBACK_PROBE_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_run_changed_migrations_rollback_v1.py"
+PRE_EKB_README = Path("sandbox/lf_contract_gate_test/pre_ekb_gate/README.md")
+LF_CONTRACT_PRE_EKB_MIGRATION = Path("supabase/migrations/20260918145500_lf_s30_github_contract_gate_pre_ekb_consumer_v1.sql")
 
 
 def require(text: str, token: str, code: str) -> None:
@@ -282,6 +284,128 @@ def main() -> None:
     require(text, "name: lf-contract-check", "FAIL_REQUIRED_CHECK_CONTEXT_CHANGED")
     require(text, "github.event.pull_request.head.sha", "FAIL_EXACT_PR_HEAD_CHECKOUT_MISSING")
     require(text, "if: needs.dedupe-router.outputs.run_deep == 'true'", "FAIL_DEEP_JOB_GUARD_CHANGED")
+
+    # P4: deterministic non-pass diagnostics must enter the existing productive
+    # ledger/PRE_EKB route only after the artifact is durable.
+    require(
+        text,
+        "Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE",
+        "FAIL_LF_CONTRACT_PRE_EKB_STEP_MISSING",
+    )
+    require(
+        text,
+        "id: deterministic_diagnostics_artifact",
+        "FAIL_LF_CONTRACT_PRE_EKB_ARTIFACT_STEP_ID_MISSING",
+    )
+    pre_ekb_marker = "- name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE"
+    pre_ekb_start = text.index(pre_ekb_marker)
+    try:
+        pre_ekb_end = text.index("\n      - name:", pre_ekb_start + len(pre_ekb_marker))
+    except ValueError:
+        pre_ekb_end = len(text)
+    pre_ekb_block = text[pre_ekb_start:pre_ekb_end]
+    require(pre_ekb_block, "if: always()", "FAIL_LF_CONTRACT_PRE_EKB_NOT_ALWAYS_READBACK")
+    require(
+        pre_ekb_block,
+        "steps.deterministic_diagnostics_artifact.outcome == 'success'",
+        "FAIL_LF_CONTRACT_PRE_EKB_ARTIFACT_DURABILITY_NOT_REQUIRED",
+    )
+    require(
+        pre_ekb_block,
+        "public.lf_pre_ekb_gate_consumer_v1('GITHUB_CONTRACT_GATE_LF')",
+        "FAIL_LF_CONTRACT_PRE_EKB_CONSUMER_READBACK_MISSING",
+    )
+    require(
+        pre_ekb_block,
+        "public.fn_lf_operation_reserve_execution_v1",
+        "FAIL_LF_CONTRACT_PRE_EKB_PARENT_EXECUTION_NOT_RESERVED",
+    )
+    require(
+        pre_ekb_block,
+        "public.lf_record_gate_checks_v1",
+        "FAIL_LF_CONTRACT_PRE_EKB_PRODUCTIVE_INGRESS_MISSING",
+    )
+    require(pre_ekb_block, "'contract_judge'", "FAIL_LF_CONTRACT_PRE_EKB_CANONICAL_STEP_MISSING")
+    require(pre_ekb_block, "EKB_PERSISTED", "FAIL_LF_CONTRACT_PRE_EKB_RECEIPT_READBACK_MISSING")
+    require(
+        pre_ekb_block,
+        "BLOCKED_EKB_PERSISTENCE",
+        "FAIL_LF_CONTRACT_PRE_EKB_BLOCKED_PERSISTENCE_GUARD_MISSING",
+    )
+    require(pre_ekb_block, "ACT-0057", "FAIL_LF_CONTRACT_PRE_EKB_CHILD_SKILL_READBACK_MISSING")
+    require(
+        pre_ekb_block,
+        "LF_EXACT_SOURCE_SHA",
+        "FAIL_LF_CONTRACT_PRE_EKB_EXACT_HEAD_BINDING_MISSING",
+    )
+    if "persist_gate_failures_to_ekb_v1.py" in pre_ekb_block:
+        raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_EMIT_ONLY_ADAPTER_USED_PRODUCTIVELY")
+    if "public.lf_write_pipeline_ekb_v1" in pre_ekb_block:
+        raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_DIRECT_WRITER_BYPASS")
+
+    pre_ekb_sql = LF_CONTRACT_PRE_EKB_MIGRATION.read_text(encoding="utf-8")
+    require(
+        pre_ekb_sql,
+        "'GITHUB_CONTRACT_GATE_LF'",
+        "FAIL_LF_CONTRACT_PRE_EKB_MIGRATION_CONSUMER_MISSING",
+    )
+    require(
+        pre_ekb_sql,
+        "public.lf_record_gate_checks_v1",
+        "FAIL_LF_CONTRACT_PRE_EKB_MIGRATION_CANARY_INGRESS_MISSING",
+    )
+    require(
+        pre_ekb_sql,
+        "trg_lf_pre_ekb_gate_check_autopersist_v1",
+        "FAIL_LF_CONTRACT_PRE_EKB_TRIGGER_PREFLIGHT_MISSING",
+    )
+    require(pre_ekb_sql, "RECURRENCE", "FAIL_LF_CONTRACT_PRE_EKB_RECURRENCE_CANARY_MISSING")
+    require(
+        pre_ekb_sql,
+        "BLOCK_LF_CONTRACT_PRE_EKB_PASS_CANARY_CREATED_EKB",
+        "FAIL_LF_CONTRACT_PRE_EKB_PASS_NEGATIVE_MISSING",
+    )
+    require(
+        pre_ekb_sql,
+        "BLOCK_LF_CONTRACT_PRE_EKB_BLOCK_CANARY_NO_RECEIPT",
+        "FAIL_LF_CONTRACT_PRE_EKB_BLOCKED_CANARY_MISSING",
+    )
+    require(
+        pre_ekb_sql,
+        "LF_CONTRACT_PRE_EKB_CANARY_ROLLBACK",
+        "FAIL_LF_CONTRACT_PRE_EKB_ROLLBACK_CANARY_MISSING",
+    )
+    require(
+        pre_ekb_sql,
+        "BLOCK_LF_CONTRACT_PRE_EKB_CANARY_EXECUTION_RESIDUE",
+        "FAIL_LF_CONTRACT_PRE_EKB_ZERO_RESIDUE_ASSERTION_MISSING",
+    )
+    for forbidden in (
+        "create table ",
+        "create or replace function public.lf_write_pipeline_ekb_v1",
+        "create or replace function public.lf_record_gate_checks_v1",
+        "create or replace function public.lf_pre_ekb_gate_check_dispatch_v1",
+    ):
+        if forbidden.lower() in pre_ekb_sql.lower():
+            raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_PARALLEL_SURFACE:{forbidden}")
+
+    pre_ekb_readme = PRE_EKB_README.read_text(encoding="utf-8")
+    require(pre_ekb_readme, "Versión: `v0.2.2`", "FAIL_LF_CONTRACT_PRE_EKB_README_VERSION")
+    require(
+        pre_ekb_readme,
+        "GITHUB_CONTRACT_GATE_LF",
+        "FAIL_LF_CONTRACT_PRE_EKB_README_CONSUMER_MISSING",
+    )
+    require(
+        pre_ekb_readme,
+        "public.lf_record_gate_checks_v1",
+        "FAIL_LF_CONTRACT_PRE_EKB_README_INGRESS_MISSING",
+    )
+    require(
+        pre_ekb_readme,
+        "CI-GATE-DIAGNOSTIC-EVIDENCE-GAP-001",
+        "FAIL_LF_CONTRACT_PRE_EKB_SCOPE_BOUNDARY_MISSING",
+    )
 
     control_manifest = json.loads(CONTROL_MANIFEST.read_text(encoding="utf-8"))
     assert control_manifest["consumer_code"] == "LF_CONTRACT_CHECK", control_manifest
