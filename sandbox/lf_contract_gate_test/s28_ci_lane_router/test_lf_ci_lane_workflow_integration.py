@@ -19,7 +19,7 @@ PRODUCT_OWNERSHIP = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pr
 PRODUCT_REGISTRY = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_product_lane_ownership_registry_v1.json")
 ENTRYPOINT = Path("sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py")
 CONTROL_MANIFEST = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_control_manifest_v1.json")
-DGP_SHADOW_MANIFEST = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_declared_paths_manifest_v1.json")
+DGP_CONTROL_MANIFEST = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_declared_paths_manifest_v1.json")
 GROUP_ORCHESTRATOR = "sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py"
 PARITY_EQUIVALENCE = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_parity_equivalence_v1.py"
 PARITY_EQUIVALENCE_TEST = "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py"
@@ -232,25 +232,25 @@ def main() -> None:
     require(text, "transversal_asset_readme/validate_active_shared_readmes_v1.py", "FAIL_TRANSVERSAL_CLOSURE_VALIDATOR_NOT_WIRED")
     require(text, "--require-code GITHUB_CONTRACT_GATE_LF", "FAIL_TRANSVERSAL_CLOSURE_REQUIRED_OPERATION_MISSING")
     require(text, str(CONTROL_MANIFEST), "FAIL_DECLARATIVE_CONTROL_MANIFEST_NOT_WIRED")
-    require(text, str(DGP_SHADOW_MANIFEST), "FAIL_DGP_SHADOW_MANIFEST_NOT_WIRED")
+    require(text, str(DGP_CONTROL_MANIFEST), "FAIL_DGP_CONTROL_MANIFEST_NOT_WIRED")
     require(text, GROUP_ORCHESTRATOR, "FAIL_GATE_GROUP_ORCHESTRATOR_NOT_WIRED")
-    require(text, "Shadow declared governance paths through existing gate orchestrator", "FAIL_DGP_SHADOW_STEP_MISSING")
-    require(text, "--group DECLARED_GOVERNANCE_PATHS", "FAIL_DGP_SHADOW_GROUP_NOT_SELECTED")
-    require(text, "SHADOW_DECLARED_GOVERNANCE_PATHS_EXECUTED", "FAIL_DGP_SHADOW_EXECUTION_MARKER_MISSING")
-    require(text, "Verify legacy and declarative declared governance paths equivalence", "FAIL_DGP_EQUIVALENCE_STEP_MISSING")
-    require(text, "--control DECLARED_GOVERNANCE_PATHS", "FAIL_DGP_EQUIVALENCE_CONTROL_MISSING")
-    require(text, "--expected-source-path scripts/validate_declared_paths.py", "FAIL_DGP_EQUIVALENCE_SOURCE_PATH_MISSING")
-    require(text, "declared_governance_paths_equivalence_v1.json", "FAIL_DGP_EQUIVALENCE_RECEIPT_MISSING")
     require(
         text,
-        'cp gobernanza/repositorios/matriz_repos_lf.yaml "$frozen_dir/gobernanza/repositorios/matriz_repos_lf.yaml"',
-        "FAIL_DGP_EQUIVALENCE_FROZEN_MATRIX_MISSING",
+        "Enforce declared governance paths through existing gate orchestrator",
+        "FAIL_DGP_DECLARATIVE_AUTHORITY_STEP_MISSING",
     )
+    require(text, "--group DECLARED_GOVERNANCE_PATHS", "FAIL_DGP_DECLARATIVE_GROUP_NOT_SELECTED")
     require(
         text,
-        'cp gobernanza/contratos/contrato_perfil_lf.yaml "$frozen_dir/gobernanza/contratos/contrato_perfil_lf.yaml"',
-        "FAIL_DGP_EQUIVALENCE_FROZEN_CONTRACT_MISSING",
+        "PASS_DECLARED_GOVERNANCE_PATHS_DECLARATIVE_AUTHORITY",
+        "FAIL_DGP_DECLARATIVE_AUTHORITY_MARKER_MISSING",
     )
+    if "- name: Validate declared governance paths" in text:
+        raise SystemExit("FAIL_DGP_LEGACY_DIRECT_STEP_STILL_ACTIVE_AFTER_CUTOVER")
+    if "Shadow declared governance paths through existing gate orchestrator" in text:
+        raise SystemExit("FAIL_DGP_SHADOW_STEP_STILL_ACTIVE_AFTER_CUTOVER")
+    if "Verify legacy and declarative declared governance paths equivalence" in text:
+        raise SystemExit("FAIL_DGP_RUNTIME_EQUIVALENCE_STILL_ACTIVE_AFTER_CUTOVER")
     require(text, "Prepare LF migration source parity frozen inputs", "FAIL_DECLARATIVE_PARITY_INPUT_PREP_MISSING")
     require(text, "Enforce required_controls through existing gate orchestrator", "FAIL_DECLARATIVE_PARITY_AUTHORITY_STEP_MISSING")
     require(text, "--group MIGRATION_SOURCE_PARITY", "FAIL_DECLARATIVE_PARITY_GROUP_NOT_SELECTED")
@@ -292,10 +292,10 @@ def main() -> None:
     assert parity_group["execution_class"] == "DETERMINISTIC", parity_group
     assert parity_group["commands"][0]["source_path"] == "sandbox/lf_contract_gate_test/lf_migration_source_parity.py", parity_group
 
-    dgp_manifest = json.loads(DGP_SHADOW_MANIFEST.read_text(encoding="utf-8"))
+    dgp_manifest = json.loads(DGP_CONTROL_MANIFEST.read_text(encoding="utf-8"))
     assert dgp_manifest["schema_version"] == "lf-gate-group-manifest/v1", dgp_manifest
     assert dgp_manifest["consumer_code"] == "LF_CONTRACT_CHECK", dgp_manifest
-    assert dgp_manifest["gate_id"] == "LF_CONTRACT_CHECK_DECLARED_GOVERNANCE_PATHS_SHADOW", dgp_manifest
+    assert dgp_manifest["gate_id"] == "LF_CONTRACT_CHECK_DECLARED_GOVERNANCE_PATHS", dgp_manifest
     assert dgp_manifest["expected_total_checks"] == 1, dgp_manifest
     assert [g["group_id"] for g in dgp_manifest["groups"]] == ["DECLARED_GOVERNANCE_PATHS"], dgp_manifest
     dgp_group = dgp_manifest["groups"][0]
@@ -303,37 +303,20 @@ def main() -> None:
     assert dgp_group["claim_surface"] == "CONTROL_EVIDENCE_ONLY", dgp_group
     assert dgp_group["commands"][0]["source_path"] == "scripts/validate_declared_paths.py", dgp_group
 
-    legacy_marker = "- name: Validate declared governance paths"
-    legacy_start = text.index(legacy_marker)
-    legacy_end = text.index("\n      - name:", legacy_start + len(legacy_marker))
-    legacy_block = text[legacy_start:legacy_end]
-    assert "continue-on-error: true" not in legacy_block, "FAIL_DGP_LEGACY_AUTHORITY_WEAKENED"
-    require(legacy_block, "legacy.stdout.log", "FAIL_DGP_LEGACY_STDOUT_NOT_CAPTURED")
-    require(legacy_block, "legacy.stderr.log", "FAIL_DGP_LEGACY_STDERR_NOT_CAPTURED")
-
-    shadow_marker = "- name: Shadow declared governance paths through existing gate orchestrator"
-    shadow_start = text.index(shadow_marker)
-    shadow_end = text.index("\n      - name:", shadow_start + len(shadow_marker))
-    shadow_block = text[shadow_start:shadow_end]
-    require(shadow_block, "continue-on-error: true", "FAIL_DGP_SHADOW_NOT_NON_AUTHORITATIVE")
+    authority_marker = "- name: Enforce declared governance paths through existing gate orchestrator"
+    authority_start = text.index(authority_marker)
+    authority_end = text.index("\n      - name:", authority_start + len(authority_marker))
+    authority_block = text[authority_start:authority_end]
     require(
-        shadow_block,
+        authority_block,
         "contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')",
-        "FAIL_DGP_SHADOW_UNIFIED_PLAN_GUARD_MISSING",
+        "FAIL_DGP_AUTHORITY_UNIFIED_PLAN_GUARD_MISSING",
     )
-    assert "secrets." not in shadow_block, "FAIL_DGP_SHADOW_SECRET_INHERITANCE_DECLARED"
-
-    equivalence_marker = "- name: Verify legacy and declarative declared governance paths equivalence"
-    equivalence_start = text.index(equivalence_marker)
-    equivalence_end = text.index("\n      - name:", equivalence_start + len(equivalence_marker))
-    equivalence_block = text[equivalence_start:equivalence_end]
-    require(
-        equivalence_block,
-        "contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')",
-        "FAIL_DGP_EQUIVALENCE_UNIFIED_PLAN_GUARD_MISSING",
-    )
-    assert "continue-on-error: true" not in equivalence_block, "FAIL_DGP_EQUIVALENCE_JUDGE_WEAKENED"
-    assert "secrets." not in equivalence_block, "FAIL_DGP_EQUIVALENCE_SECRET_DECLARED"
+    assert "continue-on-error: true" not in authority_block, "FAIL_DGP_AUTHORITY_WEAKENED"
+    assert "secrets." not in authority_block, "FAIL_DGP_AUTHORITY_SECRET_DECLARED"
+    require(authority_block, "pip install pyyaml", "FAIL_DGP_RUNTIME_DEPENDENCY_MISSING")
+    require(authority_block, str(DGP_CONTROL_MANIFEST), "FAIL_DGP_AUTHORITY_MANIFEST_MISSING")
+    require(authority_block, "--group DECLARED_GOVERNANCE_PATHS", "FAIL_DGP_AUTHORITY_GROUP_MISSING")
 
     router_text = Path(ROUTER).read_text(encoding="utf-8")
     require(router_text, PRODUCT_OWNERSHIP.name, "FAIL_GENERIC_PRODUCT_OWNERSHIP_NOT_WIRED")

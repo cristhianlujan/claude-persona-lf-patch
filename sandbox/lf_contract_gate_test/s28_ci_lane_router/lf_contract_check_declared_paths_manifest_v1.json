@@ -1,7 +1,7 @@
 {
   "schema_version": "lf-gate-group-manifest/v1",
   "consumer_code": "LF_CONTRACT_CHECK",
-  "gate_id": "LF_CONTRACT_CHECK_DECLARED_GOVERNANCE_PATHS_SHADOW",
+  "gate_id": "LF_CONTRACT_CHECK_DECLARED_GOVERNANCE_PATHS",
   "owner": "LF_CONTRACT_CHECK",
   "discover_glob": "scripts/validate_declared_paths.py",
   "expected_total_checks": 1,
