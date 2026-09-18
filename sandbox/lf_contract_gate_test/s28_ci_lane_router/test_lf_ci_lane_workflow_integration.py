@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import importlib.util
+import json
 import subprocess
 import sys
 import tempfile
@@ -17,6 +18,8 @@ RECONCILE_POOLER_FALLBACK = Path("sandbox/lf_contract_gate_test/s28_ci_lane_rout
 PRODUCT_OWNERSHIP = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_product_lane_ownership.py")
 PRODUCT_REGISTRY = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_product_lane_ownership_registry_v1.json")
 ENTRYPOINT = Path("sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py")
+CONTROL_MANIFEST = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_control_manifest_v1.json")
+GROUP_ORCHESTRATOR = "sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py"
 
 
 def require(text: str, token: str, code: str) -> None:
@@ -214,6 +217,11 @@ def main() -> None:
     require(text, "ci_router_selftest_required", "FAIL_CI_ROUTER_SELFTEST_OUTPUT_MISSING")
     require(text, "required_controls_json", "FAIL_REQUIRED_CONTROLS_SHADOW_OUTPUT_MISSING")
     require(text, "required controls are shadow-only", "FAIL_REQUIRED_CONTROLS_SHADOW_MODE_MARKER_MISSING")
+    require(text, str(CONTROL_MANIFEST), "FAIL_DECLARATIVE_CONTROL_MANIFEST_NOT_WIRED")
+    require(text, GROUP_ORCHESTRATOR, "FAIL_GATE_GROUP_ORCHESTRATOR_NOT_WIRED")
+    require(text, "Shadow declarative required_controls through existing gate orchestrator", "FAIL_DECLARATIVE_SHADOW_STEP_MISSING")
+    require(text, "--group MIGRATION_SOURCE_PARITY", "FAIL_DECLARATIVE_PARITY_GROUP_NOT_SELECTED")
+    require(text, "LF_REQUIRED_CONTROLS_JSON", "FAIL_DECLARATIVE_REQUIRED_CONTROLS_INPUT_MISSING")
     require(
         text,
         "steps.feedback_tier.outputs.migration_parity_required == 'true'",
@@ -231,6 +239,14 @@ def main() -> None:
     )
     require(text, "name: lf-contract-check", "FAIL_REQUIRED_CHECK_CONTEXT_CHANGED")
     require(text, "if: needs.dedupe-router.outputs.run_deep == 'true'", "FAIL_DEEP_JOB_GUARD_CHANGED")
+
+    control_manifest = json.loads(CONTROL_MANIFEST.read_text(encoding="utf-8"))
+    assert control_manifest["consumer_code"] == "LF_CONTRACT_CHECK", control_manifest
+    assert control_manifest["expected_total_checks"] == 1, control_manifest
+    assert [g["group_id"] for g in control_manifest["groups"]] == ["MIGRATION_SOURCE_PARITY"], control_manifest
+    parity_group = control_manifest["groups"][0]
+    assert parity_group["execution_class"] == "DETERMINISTIC", parity_group
+    assert parity_group["commands"][0]["source_path"] == "sandbox/lf_contract_gate_test/lf_migration_source_parity.py", parity_group
 
     router_text = Path(ROUTER).read_text(encoding="utf-8")
     require(router_text, PRODUCT_OWNERSHIP.name, "FAIL_GENERIC_PRODUCT_OWNERSHIP_NOT_WIRED")
@@ -273,7 +289,7 @@ def main() -> None:
     helper = load_reconciliation_helper()
     assert_reconciliation_behavior(helper)
     assert_merge_path_recovery(helper)
-    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=34/34")
+    print("PASS_CI_LANE_WORKFLOW_INTEGRATION=39/39")
 
 
 if __name__ == "__main__":
