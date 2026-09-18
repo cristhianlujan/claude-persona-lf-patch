@@ -1049,6 +1049,7 @@ jobs:
           retention-days: 30
 
       - name: Persist deterministic LF contract gate diagnostics
+        id: deterministic_diagnostics_artifact
         if: always() && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true'
         uses: actions/upload-artifact@v4
         with:
@@ -1056,6 +1057,411 @@ jobs:
           path: .lf_gate_diagnostics/lf_contract_check
           if-no-files-found: error
           retention-days: 30
+
+      - name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE
+        if: always() && steps.feedback_tier.outcome == 'success' && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true' && steps.deterministic_diagnostics_artifact.outcome == 'success'
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+          LF_EXACT_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          LF_WORKFLOW_EVENT: ${{ github.event_name }}
+          LF_REPOSITORY: ${{ github.repository }}
+          LF_RUN_ID: ${{ github.run_id }}
+          LF_RUN_ATTEMPT: ${{ github.run_attempt }}
+          LF_JOB_ID: ${{ github.job }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${PGPASSWORD:-}" ]; then
+            echo "FAIL_LF_CONTRACT_PRE_EKB_DB_PASSWORD_MISSING"
+            exit 1
+          fi
+
+          binding="$(psql -X -v ON_ERROR_STOP=1 -At -c "select public.lf_pre_ekb_gate_consumer_v1('GITHUB_CONTRACT_GATE_LF')::text")"
+          if [ "$binding" != "true" ] && [ "$binding" != "t" ]; then
+            echo "FAIL_LF_CONTRACT_PRE_EKB_CONSUMER_NOT_BOUND"
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(".lf_gate_diagnostics/lf_contract_check")
+          exact_source = os.environ["LF_EXACT_SOURCE_SHA"].strip()
+          repository = os.environ["LF_REPOSITORY"].strip()
+          run_id = os.environ["LF_RUN_ID"].strip()
+          run_attempt = int(os.environ["LF_RUN_ATTEMPT"])
+          job_id = os.environ.get("LF_JOB_ID", "lf-contract-check").strip() or "lf-contract-check"
+          workflow_event = os.environ.get("LF_WORKFLOW_EVENT", "").strip()
+          artifact_name = f"lf-gate-diagnostics-lf-contract-check-{run_id}-{run_attempt}"
+          workflow_path = ".github/workflows/lf-contract-check.yml"
+
+          if len(exact_source) != 40 or any(ch not in "0123456789abcdef" for ch in exact_source.lower()):
+              raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_SOURCE_SHA_INVALID")
+
+          def load(path: Path) -> dict:
+              value = json.loads(path.read_text(encoding="utf-8"))
+              if not isinstance(value, dict):
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_REPORT_NOT_OBJECT:{path}")
+              if value.get("contract") != "LF_GATE_ERROR_V1":
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_REPORT_CONTRACT:{path}")
+              return value
+
+          def durable_ref(path: Path, check_id: str) -> str:
+              rel = path.relative_to(root).as_posix()
+              return (
+                  f"github-actions://{repository}/runs/{run_id}/artifacts/"
+                  f"{artifact_name}/{rel}#check={check_id}"
+              )
+
+          def transformed_check(report: dict, path: Path, raw: dict) -> dict:
+              status = str(raw.get("check_status") or raw.get("status") or "").upper()
+              check_id = str(raw.get("check_id") or "").strip()
+              if status not in {"PASS", "FAIL", "BLOCKED", "SKIPPED"} or not check_id:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_CHECK_ID_OR_STATUS:{path}")
+              condition = str(raw.get("condition") or "").strip()
+              producer = str(raw.get("producer") or raw.get("source_path") or report.get("producer") or "").strip()
+              owner = str(raw.get("owner") or report.get("owner") or "LF_CONTRACT_CHECK").strip()
+              next_action = str(raw.get("next_action") or report.get("next_action") or "FIX_FAILED_LF_CONTRACT_CHECK_AND_RERUN").strip()
+              error_class = raw.get("error_class")
+              if not condition or not producer or not owner or not next_action:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_CHECK_METADATA:{path}:{check_id}")
+              if status in {"FAIL", "BLOCKED"} and not str(error_class or "").strip():
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_ERROR_CLASS:{path}:{check_id}")
+              rc = raw.get("rc", raw.get("exit_code"))
+              if not isinstance(rc, int):
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_RC:{path}:{check_id}")
+              return {
+                  "check_id": check_id,
+                  "status": status,
+                  "critical": bool(raw.get("critical", False)),
+                  "error_class": error_class,
+                  "condition": condition,
+                  "expected": raw.get("expected"),
+                  "actual": raw.get("actual"),
+                  "input_ref": raw.get("input_ref"),
+                  "evidence_ref": durable_ref(path, check_id),
+                  "producer": producer,
+                  "rc": rc,
+                  "downstream_impact": raw.get("downstream_impact", report.get("downstream_impact", [])),
+                  "owner": owner,
+                  "next_action": next_action,
+              }
+
+          batches = []
+          seen_gate_ids = set()
+          for path in sorted(root.rglob("lf_gate_error_v1.json")):
+              report = load(path)
+              gate_result = str(report.get("gate_result") or "").upper()
+              if gate_result == "PASS":
+                  continue
+              if gate_result not in {"FAIL", "BLOCKED"}:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_GATE_RESULT:{path}:{gate_result}")
+
+              for key in ("source_commit", "tested_commit"):
+                  value = str(report.get(key) or "").strip()
+                  if value and value != exact_source:
+                      raise SystemExit(
+                          f"FAIL_LF_CONTRACT_PRE_EKB_EXACT_HEAD:{path}:{key}:"
+                          f"expected={exact_source}:actual={value}"
+                      )
+
+              gate_id = str(report.get("gate_id") or "").strip()
+              if not gate_id:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_GATE_ID:{path}")
+              if gate_id in seen_gate_ids:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_DUPLICATE_GATE_ID:{gate_id}")
+              seen_gate_ids.add(gate_id)
+
+              raw_checks = report.get("checks")
+              if raw_checks is None:
+                  raw_checks = []
+              if not isinstance(raw_checks, list):
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_CHECKS_NOT_ARRAY:{path}")
+
+              if raw_checks:
+                  checks = [transformed_check(report, path, x) for x in raw_checks if isinstance(x, dict)]
+                  expected_ids = report.get("expected_check_ids")
+                  if not isinstance(expected_ids, list) or not expected_ids:
+                      raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_EXPECTED_IDS:{path}")
+              else:
+                  synthetic_id = "GATE-BLOCKED" if gate_result == "BLOCKED" else "GATE-FAILED"
+                  synthetic = {
+                      "check_id": synthetic_id,
+                      "status": gate_result,
+                      "critical": True,
+                      "error_class": str(report.get("error_class") or f"GATE_{gate_result}"),
+                      "condition": str(report.get("condition") or "gate execution reaches PASS"),
+                      "expected": report.get("expected", {"gate_result": "PASS"}),
+                      "actual": report.get("actual", {"gate_result": gate_result}),
+                      "input_ref": workflow_path,
+                      "evidence_ref": durable_ref(path, synthetic_id),
+                      "producer": str(report.get("producer") or "GATE_CHECK_OBSERVABILITY"),
+                      "rc": int(report.get("rc", 2 if gate_result == "BLOCKED" else 1)),
+                      "downstream_impact": report.get("downstream_impact", ["CI_GOVERNANCE"]),
+                      "owner": str(report.get("owner") or "LF_CONTRACT_CHECK"),
+                      "next_action": str(report.get("next_action") or "FIX_FAILED_LF_CONTRACT_CHECK_AND_RERUN"),
+                  }
+                  checks = [synthetic]
+                  expected_ids = [synthetic_id]
+
+              if not checks:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_EMPTY_TRANSFORMED_CHECKS:{path}")
+
+              nonpass = sum(1 for item in checks if item["status"] in {"FAIL", "BLOCKED"})
+              if nonpass == 0:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_NONPASS_REPORT_WITHOUT_NONPASS_CHECK:{path}")
+
+              batches.append(
+                  {
+                      "gate_id": gate_id,
+                      "gate_mode": str(report.get("gate_mode") or "COLLECT_ALL"),
+                      "expected_check_ids": expected_ids,
+                      "checks": checks,
+                      "report_ref": durable_ref(path, "REPORT"),
+                  }
+              )
+
+          total_checks = sum(len(batch["checks"]) for batch in batches)
+          nonpass_checks = sum(
+              1
+              for batch in batches
+              for item in batch["checks"]
+              if item["status"] in {"FAIL", "BLOCKED"}
+          )
+          metadata = {
+              "schema_version": "lf-contract-check-pre-ekb-ingress/v1",
+              "operation_code": "GITHUB_CONTRACT_GATE_LF",
+              "canonical_step_id": "contract_judge",
+              "source_commit": exact_source,
+              "run_id": run_id,
+              "run_attempt": run_attempt,
+              "workflow_event": workflow_event,
+              "artifact_name": artifact_name,
+              "batch_count": len(batches),
+              "total_check_count": total_checks,
+              "nonpass_check_count": nonpass_checks,
+          }
+          Path("/tmp/lf_contract_pre_ekb_meta.json").write_text(
+              json.dumps(metadata, sort_keys=True) + "\n", encoding="utf-8"
+          )
+
+          if not batches:
+              Path("/tmp/lf_contract_pre_ekb.sql").write_text("", encoding="utf-8")
+              print("PASS_LF_CONTRACT_PRE_EKB_NO_NONPASS_DIAGNOSTICS")
+              raise SystemExit(0)
+
+          execution_id = f"EXEC-LF-CONTRACT-CHECK-{run_id}-{run_attempt}"
+          idempotency_key = f"LF-CONTRACT-CHECK:{run_id}:{run_attempt}:{exact_source}"
+          target_code = f"LF_CONTRACT_CHECK_RUN_{run_id}_{run_attempt}"
+          request_payload = {
+              "operation_code": "GITHUB_CONTRACT_GATE_LF",
+              "execution_id": execution_id,
+              "source_commit": exact_source,
+              "workflow_event": workflow_event,
+              "batches": batches,
+          }
+          request_sha = hashlib.sha256(
+              json.dumps(request_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+          ).hexdigest()
+
+          def sql_text(value: str) -> str:
+              encoded = base64.b64encode(value.encode("utf-8")).decode("ascii")
+              return f"convert_from(decode('{encoded}','base64'),'UTF8')"
+
+          def sql_json(value) -> str:
+              raw = json.dumps(value, sort_keys=True, separators=(",", ":"))
+              return f"{sql_text(raw)}::jsonb"
+
+          manifest = {
+              "scope": "LF_CONTRACT_CHECK_PRE_EKB_GATE_HANDOFF",
+              "source_commit": exact_source,
+              "github_run_id": run_id,
+              "github_run_attempt": run_attempt,
+              "workflow_event": workflow_event,
+              "diagnostic_artifact": artifact_name,
+              "canonical_step_id": "contract_judge",
+              "productive_ingress": "public.lf_record_gate_checks_v1",
+              "ekb_governance": "PRE_EKB_GATE",
+              "direct_ekb_write_allowed": False,
+          }
+
+          statements = ["\\set ON_ERROR_STOP on"]
+          statements.append(
+              "select public.fn_lf_operation_reserve_execution_v1("
+              f"{sql_text(execution_id)},"
+              "'GITHUB_CONTRACT_GATE_LF',"
+              "'REPOSITORY_GOVERNED_PATHS',"
+              f"{sql_text(target_code)},"
+              f"{sql_text(idempotency_key)},"
+              f"'{request_sha}',"
+              f"{sql_text(execution_id)},"
+              f"{sql_text(repository)},"
+              f"{sql_text(workflow_path)},"
+              f"{sql_json(manifest)}"
+              ")::text;"
+          )
+
+          for batch in batches:
+              context = {
+                  "source_commit": exact_source,
+                  "source_path": workflow_path,
+                  "run_id": run_id,
+                  "job_id": job_id,
+                  "owner": "GITHUB_CONTRACT_GATE_LF",
+                  "next_action": "FIX_FAILED_LF_CONTRACT_CHECK_AND_RERUN",
+                  "environment": "CANDIDATE" if workflow_event == "pull_request" else "CI",
+                  "attempt_no": run_attempt,
+                  "downstream_impact": ["CI_GOVERNANCE", "EKB"],
+              }
+              statements.append(
+                  "select public.lf_record_gate_checks_v1("
+                  f"{sql_text(execution_id)},"
+                  "'contract_judge',"
+                  f"{sql_text(batch['gate_id'])},"
+                  f"{sql_text(batch['gate_mode'])},"
+                  f"{sql_json(batch['expected_check_ids'])},"
+                  f"{sql_json(batch['checks'])},"
+                  f"{sql_json(context)},"
+                  f"{sql_text(execution_id)}"
+                  ")::text;"
+              )
+
+          statements.append(
+              f"""
+do $verify$
+declare
+  v_total integer;
+  v_nonpass integer;
+  v_missing integer;
+  v_blocked integer;
+  v_bad_child integer;
+begin
+  select count(*) into v_total
+  from public.lf_operation_gate_check_results
+  where execution_id={sql_text(execution_id)};
+
+  if v_total<>{total_checks} then
+    raise exception 'LF_CONTRACT_PRE_EKB_TOTAL_CHECK_READBACK_MISMATCH expected={total_checks} actual=%',v_total;
+  end if;
+
+  select count(*) into v_nonpass
+  from public.lf_operation_gate_check_results
+  where execution_id={sql_text(execution_id)}
+    and check_status in ('FAIL','BLOCKED');
+
+  if v_nonpass<>{nonpass_checks} then
+    raise exception 'LF_CONTRACT_PRE_EKB_NONPASS_READBACK_MISMATCH expected={nonpass_checks} actual=%',v_nonpass;
+  end if;
+
+  select count(*) into v_missing
+  from public.lf_operation_gate_check_results g
+  where g.execution_id={sql_text(execution_id)}
+    and g.check_status in ('FAIL','BLOCKED')
+    and not exists (
+      select 1
+      from public.lf_eventos e
+      where e.created_by_execution_id=g.execution_id
+        and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
+        and e.payload->>'persistence_result'='EKB_PERSISTED'
+        and e.payload->>'gate_check_result_id'=g.id::text
+    );
+
+  if v_missing<>0 then
+    raise exception 'LF_CONTRACT_PRE_EKB_RECEIPT_MISSING count=%',v_missing;
+  end if;
+
+  select count(*) into v_blocked
+  from public.lf_eventos e
+  where e.created_by_execution_id={sql_text(execution_id)}
+    and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
+    and e.payload->>'persistence_result'='BLOCKED_EKB_PERSISTENCE';
+
+  if v_blocked<>0 then
+    raise exception 'LF_CONTRACT_PRE_EKB_AUTOPERSIST_BLOCKED count=%',v_blocked;
+  end if;
+
+  select count(*) into v_bad_child
+  from public.lf_eventos e
+  left join public.lf_operation_execution child
+    on child.execution_id=e.payload->>'child_execution_id'
+  where e.created_by_execution_id={sql_text(execution_id)}
+    and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
+    and e.payload->>'persistence_result'='EKB_PERSISTED'
+    and (
+      child.execution_id is null
+      or child.operation_code<>'EJECUCION_SKILL_LF'
+      or child.target_code<>'ACT-0057'
+      or child.status<>'COMPLETED'
+    );
+
+  if v_bad_child<>0 then
+    raise exception 'LF_CONTRACT_PRE_EKB_CHILD_READBACK_MISMATCH count=%',v_bad_child;
+  end if;
+
+  update public.lf_operation_execution
+  set status='BLOCKED',
+      completed_at=coalesce(completed_at,clock_timestamp()),
+      checkpoint_payload=jsonb_build_object(
+        'lot_code','LF_CONTRACT_CHECK_PRE_EKB_HANDOFF',
+        'source_commit',{sql_text(exact_source)},
+        'github_run_id',{sql_text(run_id)},
+        'github_run_attempt',{run_attempt},
+        'batch_count',{len(batches)},
+        'total_check_count',{total_checks},
+        'nonpass_check_count',{nonpass_checks},
+        'persistence_result','EKB_PERSISTED',
+        'readback_result','PASS'
+      ),
+      updated_by_execution_id={sql_text(execution_id)},
+      updated_at=clock_timestamp()
+  where execution_id={sql_text(execution_id)}
+    and status='IN_PROGRESS';
+
+  if not found then
+    raise exception 'LF_CONTRACT_PRE_EKB_PARENT_FINALIZE_FAILED';
+  end if;
+end
+$verify$;
+"""
+          )
+          statements.append(
+              "select jsonb_build_object("
+              "'result','PASS_LF_CONTRACT_PRE_EKB_HANDOFF',"
+              "'execution_id'," + sql_text(execution_id) + ","
+              "'gate_rows',(select count(*) from public.lf_operation_gate_check_results where execution_id=" + sql_text(execution_id) + "),"
+              "'ekb_receipts',(select count(*) from public.lf_eventos where created_by_execution_id=" + sql_text(execution_id) + " and origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1' and payload->>'persistence_result'='EKB_PERSISTED'),"
+              "'status',(select status from public.lf_operation_execution where execution_id=" + sql_text(execution_id) + ")"
+              ")::text;"
+          )
+
+          Path("/tmp/lf_contract_pre_ekb.sql").write_text("\n".join(statements) + "\n", encoding="utf-8")
+          print(
+              "LF_CONTRACT_PRE_EKB_PREPARED "
+              f"batches={len(batches)} total_checks={total_checks} nonpass_checks={nonpass_checks}"
+          )
+          PY
+
+          nonpass_count="$(python3 - <<'PY'
+          import json
+          print(json.load(open("/tmp/lf_contract_pre_ekb_meta.json", encoding="utf-8"))["nonpass_check_count"])
+          PY
+          )"
+          if [ "$nonpass_count" -eq 0 ]; then
+            echo "PASS_LF_CONTRACT_PRE_EKB_NOT_REQUIRED_ALL_DIAGNOSTICS_PASS"
+            exit 0
+          fi
+
+          psql -X -v ON_ERROR_STOP=1 -At -f /tmp/lf_contract_pre_ekb.sql
+          echo "PASS_LF_CONTRACT_PRE_EKB_CANONICAL_HANDOFF nonpass_checks=$nonpass_count"
 
       - name: Capture authenticated E.16 Actions inventory
         if: github.event_name == 'pull_request' && contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_ACTIONS_INVENTORY')
