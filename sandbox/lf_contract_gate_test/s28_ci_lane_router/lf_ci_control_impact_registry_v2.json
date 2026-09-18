@@ -388,7 +388,7 @@
     },
     {
       "control_id": "POLICY_RESOLVER_REGRESSION",
-      "carrier": "LF_CONTRACT_CHECK",
+      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
       "path_matchers": [],
       "material_matchers": [
         {
