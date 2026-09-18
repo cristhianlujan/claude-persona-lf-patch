@@ -411,6 +411,7 @@ jobs:
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_run_changed_migrations_rollback_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_run_changed_migrations_rollback_v1.py","critical":true}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py","critical":true}' \
             --artifact-dir .lf_gate_diagnostics/lf_contract_check/ci_router_selftest \
             --artifact-name lf_gate_error_v1.json \
             --check-prefix CIR \
