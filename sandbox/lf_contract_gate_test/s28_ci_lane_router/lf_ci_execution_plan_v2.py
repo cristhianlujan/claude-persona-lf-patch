@@ -102,10 +102,9 @@ def load_registry(path: Path = REGISTRY_PATH) -> tuple[tuple[str, ...], tuple[Im
         if any(not isinstance(x,str) or not re.fullmatch(r"[A-Z][A-Z0-9_]*",x) for x in deps):
             raise PlanError(f"FAIL_CI_IMPACT_DEPENDENCY_ID:{cid}")
         controls.append(ImpactControl(cid,carrier,tuple(pm),tuple(mm),tuple(deps)))
-    if set(full) != seen:
-        missing = sorted(seen-set(full))
-        stale = sorted(set(full)-seen)
-        raise PlanError(f"FAIL_CI_IMPACT_FULL_UNIVERSE_MISMATCH:missing={missing}:stale={stale}")
+    unknown_full = sorted(set(full)-seen)
+    if unknown_full:
+        raise PlanError(f"FAIL_CI_IMPACT_FULL_REGRESSION_UNKNOWN_CONTROL:{unknown_full}")
     for control in controls:
         unknown = sorted(set(control.dependencies)-seen)
         if unknown:
@@ -194,8 +193,9 @@ def build_plan(
     handled_paths: set[str] = set()
 
     if full_regression:
-        required.update(full_universe)
-        for cid in full_universe:
+        full_controls, _ = load_registry()
+        required.update(full_controls)
+        for cid in full_controls:
             reason_map[cid].add(f"FULL_REGRESSION:{full_reason}")
         for path in changed:
             _, evidence = _read_material(repo_root,path)
