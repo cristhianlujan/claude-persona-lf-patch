@@ -206,31 +206,30 @@ def build_plan(
     material_evidence: list[dict[str,Any]] = []
     handled_paths: set[str] = set()
 
+    # Material/path applicability is always evaluated, including during a
+    # full regression. Full regression adds reusable controls; it must never
+    # suppress candidate-bound controls triggered by the same diff.
+    for path in changed:
+        content, evidence = _read_material(repo_root,path,source_ref)
+        matched_controls: set[str] = set()
+        for control in controls:
+            if any(_path_matches(path,m) for m in control.path_matchers):
+                matched_controls.add(control.control_id)
+                reason_map[control.control_id].add(f"PATH:{path}")
+            if any(_material_matches(path,content,m) for m in control.material_matchers):
+                matched_controls.add(control.control_id)
+                reason_map[control.control_id].add(f"MATERIAL:{path}")
+        if matched_controls:
+            handled_paths.add(path)
+            required.update(matched_controls)
+        evidence["matched_controls"] = sorted(matched_controls)
+        material_evidence.append(evidence)
+
     if full_regression:
         required.update(full_regression_controls)
         for cid in full_regression_controls:
             reason_map[cid].add(f"FULL_REGRESSION:{full_reason}")
-        for path in changed:
-            _, evidence = _read_material(repo_root,path,source_ref)
-            material_evidence.append(evidence)
-            handled_paths.add(path)
     else:
-        for path in changed:
-            content, evidence = _read_material(repo_root,path,source_ref)
-            matched_controls: set[str] = set()
-            for control in controls:
-                if any(_path_matches(path,m) for m in control.path_matchers):
-                    matched_controls.add(control.control_id)
-                    reason_map[control.control_id].add(f"PATH:{path}")
-                if any(_material_matches(path,content,m) for m in control.material_matchers):
-                    matched_controls.add(control.control_id)
-                    reason_map[control.control_id].add(f"MATERIAL:{path}")
-            if matched_controls:
-                handled_paths.add(path)
-                required.update(matched_controls)
-            evidence["matched_controls"] = sorted(matched_controls)
-            material_evidence.append(evidence)
-
         unhandled = sorted(set(changed)-handled_paths)
         if unhandled:
             full_regression = True
