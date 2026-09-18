@@ -18,7 +18,9 @@ db_objects as (
  union all select name,'FUNCTION_FAMILY' kind from fn_family
 ),
 fk as (
- select 'db::'||con.conrelid::regclass::text source,'db::'||con.confrelid::regclass::text target,'DB_FK' kind
+ select 'db::'||ns.nspname||'.'||cs.relname source,
+        'db::'||nt.nspname||'.'||ct.relname target,
+        'DB_FK' kind
  from pg_constraint con
  join pg_class cs on cs.oid=con.conrelid join pg_namespace ns on ns.oid=cs.relnamespace
  join pg_class ct on ct.oid=con.confrelid join pg_namespace nt on nt.oid=ct.relnamespace
