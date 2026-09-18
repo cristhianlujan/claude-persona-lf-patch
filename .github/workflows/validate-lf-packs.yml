@@ -297,16 +297,8 @@ jobs:
             --summary .lf_gate_diagnostics/profile_runtime_v3/lf_gate_group_summary_v1.json \
             --artifact-dir .lf_gate_diagnostics/profile_runtime_v3/qualification/excel
 
-      - name: Persist PROFILE_RUNTIME gate failures to governed EKB
+      - name: Emit PROFILE_RUNTIME gate failure handoff
         if: always()
-        env:
-          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
-          PGHOST: aws-1-us-east-1.pooler.supabase.com
-          PGPORT: "5432"
-          PGUSER: postgres.mhwmirqcgxxukpctffuv
-          PGDATABASE: postgres
-          PGSSLMODE: require
-          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
         run: |
           set -euo pipefail
@@ -315,9 +307,7 @@ jobs:
             --summary .lf_gate_diagnostics/profile_runtime_v3/lf_gate_group_summary_v1.json \
             --artifact-dir .lf_gate_diagnostics/profile_runtime_v3/ekb \
             --allow-missing \
-            --write \
-            --operation-code ESCRITURA_BASE_CONOCIMIENTO_LF \
-            --execution-id "CI-GATE-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+            --emit-only
 
       - name: Persist PROFILE_RUNTIME V3 gate diagnostics
         if: always()

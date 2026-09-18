@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Translate durable LF gate failures into governed EKB writer calls.
+"""Translate durable LF gate failures into emit-only handoff artifacts.
 
-The deterministic gate runners stay side-effect free. This adapter consumes their
-artifacts and, only in --write mode, calls public.lf_write_pipeline_ekb_v1 via
-psql. It never inserts or updates an EKB table directly.
+The deterministic gate runners stay side-effect free. This compatibility adapter
+never performs database writes. Productive failure persistence must enter
+public.lf_operation_gate_check_results through public.lf_record_gate_checks_v1;
+PRE_EKB_GATE then owns the governed route to canonical EKB persistence.
 """
 from __future__ import annotations
 
@@ -13,14 +14,11 @@ import hashlib
 import json
 import os
 import re
-import shutil
-import subprocess
 from pathlib import Path
 from typing import Iterable
 
 SCHEMA_VERSION = "lf-gate-ekb-persistence/v1"
 PRODUCER = "LF_GATE_EKB_BRIDGE_V1"
-CANONICAL_WRITER_SQL = "select public.lf_write_pipeline_ekb_v1(:'operation_code', :'payload'::jsonb, :'execution_id')::text;"
 
 
 def now() -> str:
@@ -162,13 +160,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--summary", action="append", default=[])
     p.add_argument("--report", action="append", default=[])
     p.add_argument("--artifact-dir", required=True)
-    mode = p.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--emit-only", action="store_true")
-    mode.add_argument("--write", action="store_true")
+    p.add_argument("--emit-only", action="store_true", required=True)
     p.add_argument("--allow-missing", action="store_true")
-    p.add_argument("--operation-code", default="ESCRITURA_BASE_CONOCIMIENTO_LF")
-    p.add_argument("--execution-id", default=None)
-    p.add_argument("--psql", default="psql")
     return p.parse_args()
 
 
@@ -193,77 +186,73 @@ def main() -> int:
                 continue
             candidates.extend(candidates_from_child(load_json(path), str(path.as_posix())))
     except (OSError, json.JSONDecodeError, ValueError) as exc:
-        receipt = {"schema_version": SCHEMA_VERSION, "producer": PRODUCER, "status": "EKB_PERSISTENCE_BLOCKED", "reason": f"INPUT_INVALID:{exc}", "timestamp": now()}
+        receipt = {
+            "schema_version": SCHEMA_VERSION,
+            "producer": PRODUCER,
+            "status": "EMIT_BLOCKED",
+            "reason": f"INPUT_INVALID:{exc}",
+            "direct_ekb_write_allowed": False,
+            "timestamp": now(),
+        }
         write_json(out_dir / "ekb_persistence_receipt_v1.json", receipt)
         return 2
 
     if missing and not args.allow_missing:
-        receipt = {"schema_version": SCHEMA_VERSION, "producer": PRODUCER, "status": "EKB_PERSISTENCE_BLOCKED", "reason": "INPUT_MISSING", "missing": missing, "timestamp": now()}
+        receipt = {
+            "schema_version": SCHEMA_VERSION,
+            "producer": PRODUCER,
+            "status": "EMIT_BLOCKED",
+            "reason": "INPUT_MISSING",
+            "missing": missing,
+            "direct_ekb_write_allowed": False,
+            "timestamp": now(),
+        }
         write_json(out_dir / "ekb_persistence_receipt_v1.json", receipt)
         return 2
 
     candidates = dedupe(candidates)
-    write_json(out_dir / "ekb_candidates_v1.json", {"schema_version": SCHEMA_VERSION, "producer": PRODUCER, "candidate_count": len(candidates), "candidates": candidates})
+    write_json(
+        out_dir / "ekb_candidates_v1.json",
+        {
+            "schema_version": SCHEMA_VERSION,
+            "producer": PRODUCER,
+            "candidate_count": len(candidates),
+            "candidates": candidates,
+            "productive_target": "public.lf_operation_gate_check_results",
+            "productive_ingress": "public.lf_record_gate_checks_v1",
+            "pre_ekb_gate": "PRE_EKB_GATE",
+            "direct_ekb_write_allowed": False,
+        },
+    )
 
     if not candidates:
-        receipt = {"schema_version": SCHEMA_VERSION, "producer": PRODUCER, "status": "NO_FAILURES_NO_WRITE" if not missing else "GATE_NOT_REACHED_NO_WRITE", "missing": missing, "candidate_count": 0, "timestamp": now()}
+        receipt = {
+            "schema_version": SCHEMA_VERSION,
+            "producer": PRODUCER,
+            "status": "NO_FAILURES_NO_WRITE" if not missing else "GATE_NOT_REACHED_NO_WRITE",
+            "missing": missing,
+            "candidate_count": 0,
+            "direct_ekb_write_allowed": False,
+            "timestamp": now(),
+        }
         write_json(out_dir / "ekb_persistence_receipt_v1.json", receipt)
         print(json.dumps(receipt, sort_keys=True))
         return 0
-
-    if args.emit_only:
-        receipt = {"schema_version": SCHEMA_VERSION, "producer": PRODUCER, "status": "EMIT_ONLY", "candidate_count": len(candidates), "error_codes": [x["codigo"] for x in candidates], "timestamp": now()}
-        write_json(out_dir / "ekb_persistence_receipt_v1.json", receipt)
-        print(json.dumps(receipt, sort_keys=True))
-        return 0
-
-    execution_id = args.execution_id or f"CI-GATE-{os.environ.get('GITHUB_RUN_ID','LOCAL')}-{os.environ.get('GITHUB_RUN_ATTEMPT','1')}"
-    psql_path = shutil.which(args.psql) if os.path.sep not in args.psql else args.psql
-    if not psql_path or not os.environ.get("PGPASSWORD"):
-        receipt = {"schema_version": SCHEMA_VERSION, "producer": PRODUCER, "status": "EKB_PERSISTENCE_BLOCKED", "reason": "PSQL_OR_ENCRYPTED_DB_CREDENTIAL_MISSING", "candidate_count": len(candidates), "timestamp": now()}
-        write_json(out_dir / "ekb_persistence_receipt_v1.json", receipt)
-        print(json.dumps(receipt, sort_keys=True))
-        return 2
-
-    results = []
-    for item in candidates:
-        cmd = [
-            psql_path, "-X", "-v", "ON_ERROR_STOP=1", "-At",
-            "-v", f"operation_code={args.operation_code}",
-            "-v", f"execution_id={execution_id}",
-            "-v", f"payload={canonical(item)}",
-            "-c", CANONICAL_WRITER_SQL,
-        ]
-        proc = subprocess.run(cmd, capture_output=True, text=True)
-        if proc.returncode != 0:
-            receipt = {
-                "schema_version": SCHEMA_VERSION,
-                "producer": PRODUCER,
-                "status": "EKB_PERSISTENCE_BLOCKED",
-                "reason": "CANONICAL_WRITER_CALL_FAILED",
-                "error_code": item["codigo"],
-                "stderr": redact((proc.stderr or "")[-1200:]),
-                "persisted_before_failure": results,
-                "timestamp": now(),
-            }
-            write_json(out_dir / "ekb_persistence_receipt_v1.json", receipt)
-            print(json.dumps({"status": receipt["status"], "error_code": item["codigo"]}, sort_keys=True))
-            return 2
-        raw = (proc.stdout or "").strip().splitlines()
-        results.append({"error_code": item["codigo"], "writer_readback": raw[-1] if raw else ""})
 
     receipt = {
         "schema_version": SCHEMA_VERSION,
         "producer": PRODUCER,
-        "status": "EKB_PERSISTED",
-        "operation_code": args.operation_code,
-        "execution_id": execution_id,
+        "status": "EMIT_ONLY_LEDGER_REQUIRED",
         "candidate_count": len(candidates),
-        "results": results,
+        "error_codes": [x["codigo"] for x in candidates],
+        "productive_target": "public.lf_operation_gate_check_results",
+        "productive_ingress": "public.lf_record_gate_checks_v1",
+        "pre_ekb_gate": "PRE_EKB_GATE",
+        "direct_ekb_write_allowed": False,
         "timestamp": now(),
     }
     write_json(out_dir / "ekb_persistence_receipt_v1.json", receipt)
-    print(json.dumps({"status": "EKB_PERSISTED", "candidate_count": len(candidates)}, sort_keys=True))
+    print(json.dumps(receipt, sort_keys=True))
     return 0
 
 

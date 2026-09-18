@@ -8,7 +8,7 @@ This package provides deterministic check-level diagnostics for reusable LF gate
 
 - `run_gate_checks_v1.py` — existing deterministic check runner. Produces `LF_GATE_ERROR_V1` with exact source path, command, exit code, stdout/stderr hashes, assertion/error, traceback, trace ids and source/tested commit.
 - `run_gate_groups_v1.py` — groups deterministic checks into stable subprocesses while continuing to delegate every individual check to `run_gate_checks_v1.py`.
-- `persist_gate_failures_to_ekb_v1.py` — side-effect adapter. Reads durable diagnostics and, only in `--write` mode, calls the canonical `public.lf_write_pipeline_ekb_v1` writer. It never writes EKB tables directly.
+- `persist_gate_failures_to_ekb_v1.py` — compatibility translator/test adapter. It is emit-only and has no productive database-write path. Productive failures must enter `public.lf_operation_gate_check_results` through `public.lf_record_gate_checks_v1`; `PRE_EKB_GATE` then owns persistence to EKB.
 
 ## Group manifest contract
 
@@ -42,13 +42,33 @@ The summary preserves the two LF proof views:
 
 ## EKB behavior
 
-Deterministic runners never mutate LF operational state. Failure persistence is a separate adapter so control evidence is reproducible.
+Deterministic runners never mutate LF operational state. `GATE_CHECK_OBSERVABILITY` detects and explains failures; it is not a `PRE_EKB_GATE` consumer. The consumer is the real `operation_code` whose execution failed.
 
-`persist_gate_failures_to_ekb_v1.py` creates a stable error code from gate + group + source path + error class. A repeated failure therefore becomes a recurrence in canonical EKB instead of creating a new row each run.
+The productive route is singular:
 
-For new automatic failures the bridge deliberately uses `root_cause_family=UNCLASSIFIED_WITH_REASON`; detection is evidence, not a root-cause diagnosis. The bridge records the exact failing test, error/assertion, trace, failure digest, run and source/tested commit.
+```text
+real operation
+  -> GATE_CHECK_OBSERVABILITY
+  -> public.lf_operation_gate_check_results
+  -> PRE_EKB_GATE
+  -> ACT-0001 / governed child dispatch
+  -> EJECUCION_SKILL_LF
+  -> ACT-0057
+  -> ESCRITURA_BASE_CONOCIMIENTO_LF
+  -> public.lf_write_pipeline_ekb_v1
+  -> EKB receipt/readback
+```
 
-`--emit-only` validates/serializes candidates without a database write. `--write` requires the encrypted database credential and `psql`, then invokes only `public.lf_write_pipeline_ekb_v1`. Missing writer transport is persisted as `EKB_PERSISTENCE_BLOCKED`; it is never reported as successful EKB persistence.
+`persist_gate_failures_to_ekb_v1.py` remains only as an emit-only compatibility translator for diagnostics and tests. It serializes candidate identity/evidence and explicitly declares:
+
+- productive target: `public.lf_operation_gate_check_results`;
+- productive ingress: `public.lf_record_gate_checks_v1`;
+- EKB governance: `PRE_EKB_GATE`;
+- direct EKB write: forbidden.
+
+The legacy `--write` path is intentionally unsupported. The adapter does not accept database credentials, does not invoke `psql`, and does not call the canonical EKB writer.
+
+Stable candidate identity is still useful for diagnostics and regression, but recurrence authority belongs downstream to the durable ledger plus `PRE_EKB_GATE`, not to this adapter.
 
 ## Consumer example
 

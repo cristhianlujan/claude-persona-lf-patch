@@ -16,7 +16,10 @@ def main():
     assert a==ekb.stable_error_code("G","G01","x/test.py","AssertionError")
     assert a!=ekb.stable_error_code("G","G01","x/test.py","TimeoutError")
     src=EKB.read_text(encoding="utf-8").lower()
-    assert "lf_write_pipeline_ekb_v1" in src
+    assert "lf_write_pipeline_ekb_v1" not in src
+    assert "public.lf_operation_gate_check_results" in src
+    assert "public.lf_record_gate_checks_v1" in src
+    assert "pre_ekb_gate" in src
     for forbidden in ("insert into transversal.error_knowledge","update transversal.error_knowledge","insert into public.lf_error_knowledge","update public.lf_error_knowledge"):
         assert forbidden not in src
     engine=GROUP_RUNNER.read_text(encoding="utf-8")
