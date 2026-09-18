@@ -349,6 +349,7 @@ jobs:
             --mode COLLECT_ALL \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py","critical":true}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py","critical":true}' \
             --artifact-dir .lf_gate_diagnostics/lf_contract_check/ci_router_selftest \
             --artifact-name lf_gate_error_v1.json \
             --check-prefix CIR \
@@ -505,11 +506,8 @@ jobs:
 
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\n'||coalesce(name,'')||E'\n'||array_to_string(statements,E'\n--STATEMENT--\n'),E'\n--MIGRATION--\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '20260801063708' and '20260801170332'" > "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
 
-          python3 sandbox/lf_contract_gate_test/lf_migration_source_parity.py \
-            supabase/migrations \
-            "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" \
-            "$RUNNER_TEMP/lf-grandfathered-migrations.csv" \
-            "$RUNNER_TEMP/lf-legacy-checkpoint.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(cardinality(statements),0)::text from supabase_migrations.schema_migrations where version=any('${LF_MANAGED_VERSIONS}'::text[]) order by version" > "$RUNNER_TEMP/lf-migration-statement-counts.csv"
+          export LF_MIGRATION_STATEMENT_COUNTS_CSV="$RUNNER_TEMP/lf-migration-statement-counts.csv"
 
           shadow_dir=".lf_gate_runtime/lf_contract_check/migration_source_parity"
           rm -rf "$shadow_dir"
@@ -517,6 +515,17 @@ jobs:
           cp "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" "$shadow_dir/lf-post-cutover-migrations-compact.csv"
           cp "$RUNNER_TEMP/lf-grandfathered-migrations.csv" "$shadow_dir/lf-grandfathered-migrations.csv"
           cp "$RUNNER_TEMP/lf-legacy-checkpoint.csv" "$shadow_dir/lf-legacy-checkpoint.csv"
+          cp "$RUNNER_TEMP/lf-migration-statement-counts.csv" "$shadow_dir/lf-migration-statement-counts.csv"
+
+          python3 sandbox/lf_contract_gate_test/lf_migration_source_parity.py \
+            supabase/migrations \
+            "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" \
+            "$RUNNER_TEMP/lf-grandfathered-migrations.csv" \
+            "$RUNNER_TEMP/lf-legacy-checkpoint.csv" \
+            > "$shadow_dir/legacy.stdout.log" \
+            2> "$shadow_dir/legacy.stderr.log"
+          cat "$shadow_dir/legacy.stdout.log"
+          cat "$shadow_dir/legacy.stderr.log" >&2
 
       - name: Shadow declarative required_controls through existing gate orchestrator
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
@@ -530,6 +539,7 @@ jobs:
           LF_MIGRATION_CLASSIFICATION_BASELINE_END: "20260822195004"
           LF_MIGRATION_GRANDFATHERED_COUNT: "154"
           LF_MIGRATION_GRANDFATHERED_SHA256: "f6694a57d984bb02266630c12151e6334ef40535d17f7986be6e1820956186a5"
+          LF_MIGRATION_STATEMENT_COUNTS_CSV: .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv
         run: |
           set -euo pipefail
           selected="$(python3 - <<'PY'
@@ -545,7 +555,8 @@ jobs:
           for input in \
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-post-cutover-migrations-compact.csv \
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-grandfathered-migrations.csv \
-            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-legacy-checkpoint.csv
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-legacy-checkpoint.csv \
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv
           do
             if [ ! -s "$input" ]; then
               echo "SHADOW_REQUIRED_CONTROL_INPUT_MISSING=$input"
@@ -563,6 +574,34 @@ jobs:
             --artifact-dir .lf_gate_diagnostics/lf_contract_check/declarative_controls_shadow \
             --group MIGRATION_SOURCE_PARITY
           echo "SHADOW_REQUIRED_CONTROL_EXECUTED=MIGRATION_SOURCE_PARITY"
+
+      - name: Verify legacy and declarative migration parity equivalence
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.migration_parity_required == 'true'
+        env:
+          LF_REQUIRED_CONTROLS_JSON: ${{ steps.feedback_tier.outputs.required_controls_json }}
+          LF_LEGACY_PARITY_REQUIRED: ${{ steps.feedback_tier.outputs.migration_parity_required }}
+          LF_PR_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          source_head="$LF_PR_HEAD_SHA"
+          tested_head="$(git rev-parse HEAD)"
+          if [ -z "$source_head" ]; then
+            source_head="$tested_head"
+          fi
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_parity_equivalence_v1.py \
+            --required-controls-json "$LF_REQUIRED_CONTROLS_JSON" \
+            --legacy-required "$LF_LEGACY_PARITY_REQUIRED" \
+            --legacy-result PASS \
+            --legacy-stdout .lf_gate_runtime/lf_contract_check/migration_source_parity/legacy.stdout.log \
+            --legacy-stderr .lf_gate_runtime/lf_contract_check/migration_source_parity/legacy.stderr.log \
+            --shadow-summary .lf_gate_diagnostics/lf_contract_check/declarative_controls_shadow/lf_gate_group_summary_v1.json \
+            --input-pair "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv=.lf_gate_runtime/lf_contract_check/migration_source_parity/lf-post-cutover-migrations-compact.csv" \
+            --input-pair "$RUNNER_TEMP/lf-grandfathered-migrations.csv=.lf_gate_runtime/lf_contract_check/migration_source_parity/lf-grandfathered-migrations.csv" \
+            --input-pair "$RUNNER_TEMP/lf-legacy-checkpoint.csv=.lf_gate_runtime/lf_contract_check/migration_source_parity/lf-legacy-checkpoint.csv" \
+            --input-pair "$RUNNER_TEMP/lf-migration-statement-counts.csv=.lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv" \
+            --expected-source-head "$source_head" \
+            --expected-tested-head "$tested_head" \
+            --output .lf_gate_diagnostics/lf_contract_check/declarative_controls_shadow/migration_source_parity_equivalence_v1.json
 
       - name: Enforce Input Governance migration source parity
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.input_governance_parity_required == 'true'
