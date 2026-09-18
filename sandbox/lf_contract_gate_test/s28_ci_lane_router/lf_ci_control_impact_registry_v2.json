@@ -19,7 +19,6 @@
     "R8_USER_STORY_AUDIT",
     "REMOTE_SCHEMA_REPRODUCIBILITY",
     "S30_BOUNDED_REGRESSION",
-    "S30_SELF_GOVERNANCE",
     "S36_ASSURANCE",
     "SKILL_PACK",
     "SUPABASE_CONTROL_PLANE_READBACK",
@@ -483,18 +482,6 @@
         {
           "kind": "prefix",
           "value": "sandbox/lf_contract_gate_test/receipts/s30_"
-        }
-      ],
-      "material_matchers": [],
-      "dependencies": []
-    },
-    {
-      "control_id": "S30_SELF_GOVERNANCE",
-      "carrier": "VALIDATE_LF_PACKS",
-      "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/s30_self_governance/"
         }
       ],
       "material_matchers": [],
