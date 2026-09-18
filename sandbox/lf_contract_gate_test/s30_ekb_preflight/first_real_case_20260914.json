@@ -1,0 +1,72 @@
+{
+  "case_code": "S30-EKB-PREFLIGHT-CI-SOURCE-PARITY-20260914",
+  "operation_code": "ACTUALIZACION_DB_LF",
+  "lifecycle_phases": ["CI_SOURCE_PARITY"],
+  "consumer_roles": ["GOVERNANCE", "CI"],
+  "required_codes": [
+    "GOV-001",
+    "AUD-018",
+    "CI-009",
+    "CI-014",
+    "CI-MIGRATION-SOURCE-PARITY-001",
+    "GOV-024",
+    "GOVERNED-PATH-RECEIPT-PREFLIGHT-001",
+    "PROGRAMMING-E2E-MIGRATION-PARITY-001",
+    "SRC-005",
+    "PROFILES-EKB-PREFLIGHT-OMISSION-001"
+  ],
+  "context_match_codes": [
+    "CI-MIGRATION-SOURCE-PARITY-001",
+    "GOV-CI-MIGRATION-SOURCE-PARITY-20260829"
+  ],
+  "expected_selected_codes": [
+    "AUD-018",
+    "CI-009",
+    "CI-014",
+    "CI-MIGRATION-SOURCE-PARITY-001",
+    "GOV-001",
+    "GOV-024",
+    "GOV-CI-MIGRATION-SOURCE-PARITY-20260829",
+    "GOVERNED-PATH-RECEIPT-PREFLIGHT-001",
+    "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+    "PROGRAMMING-E2E-MIGRATION-PARITY-001",
+    "SRC-005"
+  ],
+  "errors": [
+    {"codigo":"AUD-018","categoria":"Auditoría","severidad":"Critical","lifecycle_phase":"testing","consumer_role":["Builder","Judge","Auditor","DevOps"],"detectability":"PROCESS_DEPENDENT","has_inline_prevention":true},
+    {"codigo":"CI-009","categoria":"DevOps/CI","severidad":"High","lifecycle_phase":"testing","consumer_role":["Architect","Builder","Auditor","DevOps"],"detectability":"SILENT","has_inline_prevention":true},
+    {"codigo":"CI-014","categoria":"DevOps/CI","severidad":"ALTA","lifecycle_phase":"governance","consumer_role":["profile_builder","orchestrator","CI","auditor"],"detectability":"LOUD_LATE","has_inline_prevention":true},
+    {"codigo":"CI-MIGRATION-SOURCE-PARITY-001","categoria":"CI_GOVERNANCE","severidad":"High","lifecycle_phase":"CI_SOURCE_PARITY","consumer_role":["GOVERNANCE","CI"],"detectability":"LOUD_EARLY","has_inline_prevention":true},
+    {"codigo":"GOV-001","categoria":"Gobernanza","severidad":"High","lifecycle_phase":"construction","consumer_role":["Planner","Builder","Auditor","DevOps"],"detectability":"PROCESS_DEPENDENT","has_inline_prevention":true},
+    {"codigo":"GOV-024","categoria":"GOVERNANCE_INTEGRITY","severidad":"ALTA","lifecycle_phase":"governance","consumer_role":["orchestrator","profile_builder","profile_creator","CI","auditor"],"detectability":"LOUD_LATE","has_inline_prevention":true},
+    {"codigo":"GOV-CI-MIGRATION-SOURCE-PARITY-20260829","categoria":"GOBERNANZA_CI","severidad":"High","lifecycle_phase":"CI_SOURCE_PARITY","consumer_role":["PROFILES","ADAPTER","PROFILE_CREATOR","CI","GOVERNANCE"],"detectability":"LOUD_LATE","has_inline_prevention":true},
+    {"codigo":"GOVERNED-PATH-RECEIPT-PREFLIGHT-001","categoria":"GITHUB_CI_GOVERNANCE","severidad":"media","lifecycle_phase":"construction","consumer_role":["Architect"],"detectability":"LOUD_EARLY","has_inline_prevention":true},
+    {"codigo":"PROFILES-EKB-PREFLIGHT-OMISSION-001","categoria":"GOVERNANCE_LEARNING","severidad":"ALTA","lifecycle_phase":"PRECHECK","consumer_role":["Architect"],"detectability":"PROCESS_DEPENDENT","has_inline_prevention":true},
+    {"codigo":"PROGRAMMING-E2E-MIGRATION-PARITY-001","categoria":"CI_CD_GOVERNANCE","severidad":"ALTA","lifecycle_phase":"E2E_EXECUTION","consumer_role":["PROGRAMMING_AGENT","CI_CD","GOVERNANCE"],"detectability":"LOUD_LATE","has_inline_prevention":true},
+    {"codigo":"SRC-005","categoria":"Source control","severidad":"Medium","lifecycle_phase":"construction","consumer_role":["Builder","DevOps"],"detectability":null,"has_inline_prevention":true}
+  ],
+  "active_rule_codes_by_error": {
+    "AUD-018": ["PRV-AUD-018"],
+    "CI-009": ["PRV-CI-009"],
+    "GOV-001": ["PRV-GOV-001"],
+    "PROFILES-EKB-PREFLIGHT-OMISSION-001": ["PROFILES-RULE-EKB-BEFORE-PROBLEM-001"],
+    "SRC-005": ["PRV-SRC-005"]
+  },
+  "control_coverage": {
+    "coverage_version": "LF_EKB_CONTROL_COVERAGE_V1",
+    "bindings": [
+      {"error_code":"AUD-018","control_mode":"PROCESS_EVIDENCE","control_ref":"CI_EVIDENCE_LF/AUD018_EXECUTION_RECEIPT","status":"PENDING","evidence_ref":null,"executed":false},
+      {"error_code":"CI-009","control_mode":"DETERMINISTIC_CHECK","control_ref":"lf_migration_source_parity.py/classification","status":"PENDING","evidence_ref":null,"executed":false},
+      {"error_code":"CI-014","control_mode":"PROCESS_EVIDENCE","control_ref":"REPOSITORY_CHANGE_LF/current-main-reread","status":"PENDING","evidence_ref":null,"executed":false},
+      {"error_code":"CI-MIGRATION-SOURCE-PARITY-001","control_mode":"DETERMINISTIC_CHECK","control_ref":"MIGRATION_LIFECYCLE_LF/source-parity","status":"PENDING","evidence_ref":null,"executed":false},
+      {"error_code":"GOV-001","control_mode":"PROCESS_EVIDENCE","control_ref":"CAPABILITY_PREFLIGHT/real-tool-readback","status":"PENDING","evidence_ref":null,"executed":false},
+      {"error_code":"GOV-024","control_mode":"DETERMINISTIC_CHECK","control_ref":"OPERATION_BOOTSTRAP_LF/pre-write-execution-binding","status":"PENDING","evidence_ref":null,"executed":false},
+      {"error_code":"GOV-CI-MIGRATION-SOURCE-PARITY-20260829","control_mode":"DETERMINISTIC_CHECK","control_ref":"MIGRATION_LIFECYCLE_LF/owner-preserving-reconciliation","status":"PENDING","evidence_ref":null,"executed":false},
+      {"error_code":"GOVERNED-PATH-RECEIPT-PREFLIGHT-001","control_mode":"DETERMINISTIC_CHECK","control_ref":"lf-contract-check/governed-receipt-preflight","status":"PENDING","evidence_ref":null,"executed":false},
+      {"error_code":"PROFILES-EKB-PREFLIGHT-OMISSION-001","control_mode":"PROCESS_EVIDENCE","control_ref":"EKB_PREFLIGHT_LF/pre-mutation-receipt","status":"PENDING","evidence_ref":null,"executed":false},
+      {"error_code":"PROGRAMMING-E2E-MIGRATION-PARITY-001","control_mode":"DETERMINISTIC_CHECK","control_ref":"MIGRATION_LIFECYCLE_LF/pre-write-parity","status":"PENDING","evidence_ref":null,"executed":false},
+      {"error_code":"SRC-005","control_mode":"DETERMINISTIC_CHECK","control_ref":"REPOSITORY_CHANGE_LF/branch-scope-head-precondition","status":"PENDING","evidence_ref":null,"executed":false}
+    ]
+  },
+  "expected_result": "EKB_RESOLVED_CONTROLS_PENDING"
+}
