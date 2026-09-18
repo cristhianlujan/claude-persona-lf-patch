@@ -55,15 +55,26 @@ class Eval:
             if fn=="str":
                 if not args or args[0] is UNKNOWN:return UNKNOWN
                 return str(args[0])
-            if fn.endswith(".resolve"):
-                return self.ev(n.func.value) if isinstance(n.func,ast.Attribute) else UNKNOWN
+            method=n.func.attr if isinstance(n.func,ast.Attribute) else None
+            if method in ("resolve","absolute"):
+                return self.ev(n.func.value)
             if fn in ("os.path.join","posixpath.join"):
                 if not args or any(x is UNKNOWN for x in args):return UNKNOWN
                 return pathlib.Path(str(args[0])).joinpath(*map(str,args[1:]))
-            if fn.endswith(".joinpath"):
-                base=self.ev(n.func.value) if isinstance(n.func,ast.Attribute) else UNKNOWN
+            if method=="joinpath":
+                base=self.ev(n.func.value)
                 if base is UNKNOWN or any(x is UNKNOWN for x in args):return UNKNOWN
                 return pathlib.Path(base).joinpath(*map(str,args))
+            if method=="with_name":
+                base=self.ev(n.func.value)
+                if base is UNKNOWN or not args or args[0] is UNKNOWN:return UNKNOWN
+                try:return pathlib.Path(base).with_name(str(args[0]))
+                except:return UNKNOWN
+            if method=="with_suffix":
+                base=self.ev(n.func.value)
+                if base is UNKNOWN or not args or args[0] is UNKNOWN:return UNKNOWN
+                try:return pathlib.Path(base).with_suffix(str(args[0]))
+                except:return UNKNOWN
         return UNKNOWN
 
 def assign_names(target):
