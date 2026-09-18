@@ -98,6 +98,8 @@ Cuando el plan contiene `DB_CANDIDATE_APPLY_ROLLBACK`:
 8. verificar que el ledger durable permanezca idéntico antes/después;
 9. persistir manifest y log, incluyendo un manifest BLOCKED aun cuando la preparación falle.
 
+Si el ledger indica que la migración ya fue aplicada, el mismo control no intenta re-ejecutarla. Debe verificar en forma fail-closed que el `effect_guard` durable tenga `state=SUCCEEDED`, `write_readback=PASS` y el mismo Git blob exacto del source candidato. Sólo entonces cambia a `APPLIED_EXACT_SOURCE_READBACK` y ejecuta los probes post-apply dentro de `BEGIN/ROLLBACK` sin volver a aplicar la migración. Un ledger aplicado sin provenance exacta, o una mezcla de migraciones aplicadas/no aplicadas, bloquea.
+
 `POLICY_RESOLVER_REGRESSION`, cuando aplica, se ejecuta después del apply del candidato y antes del rollback; no usa el schema remoto anterior como sustituto del candidato.
 
 ## Full regression
