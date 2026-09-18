@@ -14,9 +14,15 @@ CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS={
  "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py":"df5a987996cd499df69d74d0d5d309111c9113ec",
 }
 CUSTOMER_PROFILE_CREATOR_MAINTENANCE_PATHS=frozenset(CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS)
+PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH="lf/profile-update-bound-revision-compat-20260918-01"
+PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BLOBS={
+ "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts":"173b88ea3e123c962bea963666a59bbf0cc50a14",
+ "sandbox/lf_contract_gate_test/profile_creator_bound_revision_transport_contract.py":"3fd31c21f058d46bba92676cc8836af986cef9fd",
+}
+PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PATHS=frozenset(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BLOBS)
 CUSTOMER_PROFILE_CREATOR_BLOBS={
  CUSTOMER_PROFILE_CREATOR_WORKFLOW:"346fe830af781a304a74f10240c3e19f7a48eb23",
- "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts":"c768820cbf5570188214430631cfc12a2a7b4bed",
+ "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts":"173b88ea3e123c962bea963666a59bbf0cc50a14",
  "supabase/functions/lf-profile-creator-governance-caller-v1/batch.ts":"604b2934cf12dbd4d9ddc40453d77816c6a17ade",
  "supabase/functions/lf-profile-creator-governance-caller-v1/.trigger-customer-identity-privacy-20260902":"a157de04967fd3222aa161e0e74f45500e49e768",
  "supabase/functions/lf-profile-creator-governance-caller-v1/.trigger-customer-payments-recovery-20260902":"61a0379d2686b1b388449a0939fc5e720c98b8df",
@@ -57,7 +63,17 @@ def _evaluate_customer_profile_creator_maintenance_scope(changed_files:Sequence[
   if observed!=expected_blob: raise RuntimeScopeError("FAIL_RUNTIME_BLOB_MISMATCH",f"Profile Creator workflow maintenance blob mismatch for {path}: expected={expected_blob} observed={observed}")
   if mode_by_path is not None and mode_by_path.get(path)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Profile Creator workflow maintenance path must be regular file 100644: {path}")
  return True
+def _evaluate_profile_update_bound_revision_maintenance_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None)->bool:
+ changed=set(changed_files)
+ if changed!=set(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PATHS): raise RuntimeScopeError("FAIL_RUNTIME_PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_SCOPE",f"exclusive Profile Update bound-revision maintenance scope mismatch: unexpected={sorted(changed-set(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PATHS))!r} missing={sorted(set(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PATHS)-changed)!r}")
+ if branch!=PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH: raise RuntimeScopeError("FAIL_RUNTIME_BRANCH_MISMATCH",f"Profile Update bound-revision maintenance requires {PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH!r}; got {branch!r}")
+ for path,expected_blob in PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BLOBS.items():
+  observed=blob_by_path.get(path)
+  if observed!=expected_blob: raise RuntimeScopeError("FAIL_RUNTIME_BLOB_MISMATCH",f"Profile Update bound-revision maintenance blob mismatch for {path}: expected={expected_blob} observed={observed}")
+  if mode_by_path is not None and mode_by_path.get(path)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Profile Update bound-revision maintenance path must be regular file 100644: {path}")
+ return True
 def evaluate_controlled_runtime_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None,main_merge_verified:bool=False)->bool:
+ if branch==PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PATHS): return _evaluate_profile_update_bound_revision_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
  if set(changed_files)&set(CUSTOMER_PROFILE_CREATOR_PATHS): return _evaluate_customer_profile_creator_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
  _sync_base_extensions(); return _BASE_EVALUATE_CONTROLLED_RUNTIME_SCOPE(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
 def _customer_scope_self_test():
@@ -73,6 +89,12 @@ def _customer_scope_self_test():
   except RuntimeScopeError: continue
   raise SystemExit(f"FAIL_CUSTOMER_PROFILE_CREATOR_MAINTENANCE_NEGATIVE_{label.upper()}")
  print("PASS_CUSTOMER_PROFILE_CREATOR_WORKFLOW_MAINTENANCE_SCOPE=4/4")
+ bound=dict(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BLOBS); bound_modes={path:"100644" for path in bound}; bound_paths=list(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PATHS); assert _evaluate_profile_update_bound_revision_maintenance_scope(bound_paths,branch=PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH,blob_by_path=bound,mode_by_path=bound_modes)
+ for label,branch,blobs,changed in [("branch","feature/arbitrary",bound,bound_paths),("blob",PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH,{**bound,"supabase/functions/lf-profile-creator-governance-caller-v1/index.ts":"0"*40},bound_paths),("extra",PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH,bound,[*bound_paths,"supabase/functions/arbitrary/index.ts"])]:
+  try: _evaluate_profile_update_bound_revision_maintenance_scope(changed,branch=branch,blob_by_path=blobs,mode_by_path={path:"100644" for path in changed})
+  except RuntimeScopeError: continue
+  raise SystemExit(f"FAIL_PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_NEGATIVE_{label.upper()}")
+ print("PASS_PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_SCOPE=4/4")
 _original_get_changed_files=_base.get_changed_files
 def _customer_branch_scope_for_push():
  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
@@ -84,8 +106,17 @@ def _customer_maintenance_changed_files():
   if BLOB_RE.fullmatch(merge_base) is None: raise RuntimeScopeError("FAIL_RUNTIME_CUSTOMER_MAINTENANCE_BASE_UNRESOLVED","Profile Creator workflow maintenance could not resolve merge-base with main")
   return _base.e16.git_changed_files(merge_base,"HEAD")
  return _base.e16.get_changed_files()
+def _profile_update_bound_revision_changed_files():
+ if os.environ.get("GITHUB_EVENT_NAME")=="push":
+  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
+  if BLOB_RE.fullmatch(merge_base) is None: raise RuntimeScopeError("FAIL_RUNTIME_PROFILE_UPDATE_BOUND_REVISION_BASE_UNRESOLVED","Profile Update bound-revision maintenance could not resolve merge-base with main")
+  return _base.e16.git_changed_files(merge_base,"HEAD")
+ return _base.e16.get_changed_files()
 def _customer_get_changed_files():
  branch=current_event_branch()
+ if branch==PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH:
+  changed_files=_profile_update_bound_revision_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BLOBS}
+  _base._runtime_scope_enabled=_evaluate_profile_update_bound_revision_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
  if branch==CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BRANCH:
   changed_files=_customer_maintenance_changed_files(); blobs={path:git_blob_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS}
   _base._runtime_scope_enabled=_evaluate_customer_profile_creator_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); print(f"PASS_CUSTOMER_PROFILE_CREATOR_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
