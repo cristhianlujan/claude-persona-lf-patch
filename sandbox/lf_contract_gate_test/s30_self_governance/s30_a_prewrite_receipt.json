@@ -36,7 +36,7 @@
     "mode": "REPAIR_PREWRITE",
     "production": false,
     "base_main_sha": "91055be3b7585d9d89662d427fa3ed2ddcebe311",
-    "source_ref": "github:branch/lf/staging-s30-ci-applicability-v062-20260918",
+    "source_ref": "github:branch/lf/staging-s30-ci-applicability-v062-squash-20260918",
     "ekb_ref": "supabase:lf_error_knowledge/CI-FAST-DEEP-FEEDBACK-LOOP-001@event=14319"
   },
   "frontier": {
@@ -231,7 +231,7 @@
     "secret_name": "S30_BROKER_DEPLOY_KEY",
     "secret_present": true,
     "secret_required_before_dispatch": true,
-    "source_branch": "lf/staging-s30-ci-applicability-v062-20260918",
+    "source_branch": "lf/staging-s30-ci-applicability-v062-squash-20260918",
     "target_branch": "lf/s30-ci-applicability-v062-20260918",
     "base_main_sha": "91055be3b7585d9d89662d427fa3ed2ddcebe311",
     "promotion_authority": "BROKER_ONLY",
@@ -243,12 +243,12 @@
     "gate_id": "S30_CI_APPLICABILITY_REPAIR_V062",
     "input_exact": {
       "request_schema": "s30-git-broker/v1",
-      "source_ref": "lf/staging-s30-ci-applicability-v062-20260918",
+      "source_ref": "lf/staging-s30-ci-applicability-v062-squash-20260918",
       "target_branch": "lf/s30-ci-applicability-v062-20260918",
       "base_main_sha": "91055be3b7585d9d89662d427fa3ed2ddcebe311",
       "receipt_path": "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json"
     },
-    "input_sha256": "3374bfe5ba511fc681bfdde8e6b6d17c4e998ae5c3c38a4f64ea1fcd15babf04",
+    "input_sha256": "0ab4aa5dad64e9d4d1b19a42950c31d92f55989ae3ee93fa734eee5604ea6d32",
     "input_source_ref": "owner-authorization:current-chat+github:main@91055be3b7585d9d89662d427fa3ed2ddcebe311+supabase:event/14319",
     "validation_or_transformation_exact": "validate_s30_self_governance_gate.py --input sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json --expected-base-main-sha 91055be3b7585d9d89662d427fa3ed2ddcebe311",
     "output_exact": {
