@@ -14,7 +14,7 @@ def write_index(root: Path, entries: list[tuple[str,str]]):
     p=root/"sandbox/lf_contract_gate_test/transversal_assets/README.md"
     p.parent.mkdir(parents=True,exist_ok=True)
     lines=["# LF Transversal Assets — README Contract","","## Activos",""]
-    lines += [f"- \`{code}\` — \`TRANSVERSAL_{code}\` → \`{ref}\`" for code,ref in entries]
+    lines += [f"- `{code}` — `TRANSVERSAL_{code}` → `{ref}`" for code,ref in entries]
     p.write_text("\n".join(lines)+"\n",encoding="utf-8")
 
 def run(root: Path, rows: list[dict], *extra: str):
