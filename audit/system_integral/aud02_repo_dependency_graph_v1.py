@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""AUD-2 repository dependency graph v1.
+"""AUD-2 repository dependency graph v2.
 
 Read-only, SHA-bound. Sources: auto|api|tarball|local.
-Emits:
-- static Python import graph using ast
-- dynamic spec_from_file_location declarations
-- local paths declared by GitHub workflows, including sandbox/ paths
-No filename-based runner heuristic.
+Static import metrics are explicit at three granularities:
+- unique_file_pairs
+- statement_edges
+- alias_edges
+Dynamic imports distinguish text references from executable AST calls.
+Workflow sandbox routes are material only when exact file, exact directory, or glob.
 """
 from __future__ import annotations
-import argparse, ast, base64, io, json, os, pathlib, posixpath, re, tarfile, urllib.request
+import argparse, ast, base64, io, json, os, pathlib, re, tarfile, urllib.request
 
-PATH_RE=re.compile(r"(?<![A-Za-z0-9_.-])((?:\.?[A-Za-z0-9_-]+/)+[A-Za-z0-9_.-]+)(?![A-Za-z0-9_.-])")
+SANDBOX_RE=re.compile(r'sandbox/[A-Za-z0-9_./*?{}:+-]+')
+SPEC_TOKEN="spec_from_file_location"
 
 def request(url,token=None):
     h={"Accept":"application/vnd.github+json","User-Agent":"lf-system-integral-audit"}
@@ -42,71 +44,102 @@ def load_tarball(repo,sha,token):
     return paths,read,sha,"tarball"
 
 def load_local(root,sha):
-    p=pathlib.Path(root); paths=sorted(str(x.relative_to(p)).replace(os.sep,"/") for x in p.rglob("*") if x.is_file() and ".git" not in x.relative_to(p).parts)
+    p=pathlib.Path(root)
+    paths=sorted(str(x.relative_to(p)).replace(os.sep,"/") for x in p.rglob("*")
+                 if x.is_file() and ".git" not in x.relative_to(p).parts)
     return paths,lambda path:(p/path).read_text(encoding="utf-8",errors="replace"),sha,"local"
 
 def module_index(py_paths):
     idx={}
     for p in py_paths:
-        if p.endswith("/__init__.py"): mod=p[:-12].replace("/",".")
-        else: mod=p[:-3].replace("/",".")
+        mod=p[:-12].replace("/",".") if p.endswith("/__init__.py") else p[:-3].replace("/",".")
         if mod: idx[mod]=p
     return idx
 
-def resolve_module(name,idx):
-    cur=name
-    while cur:
-        if cur in idx: return idx[cur]
-        cur=cur.rsplit(".",1)[0] if "." in cur else ""
+def module_and_pkg(path):
+    mod=path[:-12].replace("/",".") if path.endswith("/__init__.py") else path[:-3].replace("/",".")
+    pkg=mod if path.endswith("/__init__.py") else (mod.rsplit(".",1)[0] if "." in mod else "")
+    return mod,pkg
+
+def local_variants(name,pkg):
+    out=[name] if name else []; parts=pkg.split(".") if pkg else []
+    for i in range(len(parts),0,-1):
+        cand=".".join(parts[:i]+([name] if name else []))
+        if cand: out.append(cand)
+    return list(dict.fromkeys(out))
+
+def resolve(cands,idx):
+    for cand in cands:
+        cur=cand
+        while cur:
+            if cur in idx: return idx[cur]
+            cur=cur.rsplit(".",1)[0] if "." in cur else ""
     return None
 
-def source_package(path):
-    mod=path[:-3].replace("/",".")
-    if mod.endswith(".__init__"): return mod[:-9]
-    return mod.rsplit(".",1)[0] if "." in mod else ""
-
-def static_imports(paths,read):
+def repo_graph(paths,read):
     py=sorted(p for p in paths if p.endswith(".py")); idx=module_index(py)
-    edges=set(); parsed=[]; parse_errors=[]; dynamic=[]
+    pairs=set(); stmt=[]; aliases=[]; parse_errors=[]; dynamic_calls=[]; dynamic_text=[]
     for p in py:
-        try: tree=ast.parse(read(p),filename=p)
+        text=read(p)
+        if SPEC_TOKEN in text: dynamic_text.append(p)
+        try: tree=ast.parse(text,filename=p)
         except SyntaxError as e:
             parse_errors.append({"path":p,"line":e.lineno,"error":e.msg}); continue
-        parsed.append(p); pkg=source_package(p)
+        _,pkg=module_and_pkg(p)
         for node in ast.walk(tree):
             if isinstance(node,ast.Import):
+                dsts=[]
                 for a in node.names:
-                    dst=resolve_module(a.name,idx)
-                    if dst and dst!=p: edges.add((p,dst,"IMPORT",a.name))
+                    dst=resolve(local_variants(a.name,pkg),idx)
+                    if dst and dst!=p:
+                        pairs.add((p,dst)); aliases.append((p,dst,a.name,node.lineno)); dsts.append(dst)
+                for dst in sorted(set(dsts)): stmt.append((p,dst,node.lineno,"IMPORT"))
             elif isinstance(node,ast.ImportFrom):
                 base=node.module or ""
                 if node.level:
-                    parts=pkg.split(".") if pkg else []
-                    keep=max(0,len(parts)-node.level+1)
-                    prefix=".".join(parts[:keep])
-                    base=".".join(x for x in (prefix,base) if x)
-                candidates=[base+"."+a.name for a in node.names if a.name!="*"]+[base]
-                dst=next((resolve_module(c,idx) for c in candidates if c),None)
-                if dst and dst!=p: edges.add((p,dst,"IMPORT_FROM",base))
+                    parts=pkg.split(".") if pkg else []; keep=max(0,len(parts)-node.level+1)
+                    bases=[".".join(parts[:keep]+([base] if base else []))]
+                else: bases=local_variants(base,pkg)
+                dsts=[]
+                for a in node.names:
+                    cands=[]
+                    if a.name!="*": cands += [(b+"."+a.name).strip(".") for b in bases]
+                    cands += bases
+                    dst=resolve(cands,idx)
+                    if dst and dst!=p:
+                        pairs.add((p,dst)); aliases.append((p,dst,(base+"."+a.name).strip("."),node.lineno)); dsts.append(dst)
+                for dst in sorted(set(dsts)): stmt.append((p,dst,node.lineno,"IMPORT_FROM"))
             elif isinstance(node,ast.Call):
-                fn=node.func
-                name=(fn.attr if isinstance(fn,ast.Attribute) else fn.id if isinstance(fn,ast.Name) else "")
-                if name=="spec_from_file_location":
-                    lit=None
-                    if len(node.args)>=2 and isinstance(node.args[1],ast.Constant) and isinstance(node.args[1].value,str): lit=node.args[1].value
-                    dynamic.append({"source":p,"line":getattr(node,"lineno",None),"literal_path":lit})
-    return py,parsed,parse_errors,sorted(edges),dynamic
+                f=node.func; name=f.attr if isinstance(f,ast.Attribute) else f.id if isinstance(f,ast.Name) else ""
+                if name==SPEC_TOKEN:
+                    lit=node.args[1].value if len(node.args)>=2 and isinstance(node.args[1],ast.Constant) and isinstance(node.args[1].value,str) else None
+                    dynamic_calls.append({"source":p,"line":getattr(node,"lineno",None),"literal_path":lit})
+    return {
+      "python_files":len(py),"parsed_files":len(py)-len(parse_errors),"parse_errors":parse_errors,
+      "unique_file_pairs":len(pairs),"statement_edges":len(stmt),"alias_edges":len(aliases),
+      "pair_edges":[{"source":a,"target":b} for a,b in sorted(pairs)],
+      "dynamic_text_reference_files":len(set(dynamic_text)),
+      "dynamic_ast_call_files":len({x["source"] for x in dynamic_calls}),
+      "dynamic_ast_calls":len(dynamic_calls),"dynamic_declarations":dynamic_calls
+    }
 
-def workflow_paths(paths,read):
+def workflows(paths,read):
     pathset=set(paths); wfs=sorted(p for p in paths if p.startswith(".github/workflows/") and p.endswith((".yml",".yaml")))
-    refs=set(); sandbox=set()
+    dirs=set()
+    for p in paths:
+        parts=p.split("/")
+        for i in range(1,len(parts)): dirs.add("/".join(parts[:i]))
+    raw=set(); material=set(); dyn_occ=0
     for wf in wfs:
-        txt=read(wf)
-        for m in PATH_RE.finditer(txt):
-            raw=m.group(1).removeprefix("./").rstrip(",:)'\"")
-            if raw in pathset: refs.add((wf,raw))
-            if raw.startswith("sandbox/"): sandbox.add(raw)
-    return wfs,sorted(refs),sorted(sandbox)
+        text=read(wf); dyn_occ += text.count(SPEC_TOKEN)
+        for m in SANDBOX_RE.finditer(text):
+            tok=m.group(0).rstrip(".,;:)'\"}]"); raw.add(tok)
+            if tok in pathset or tok in dirs or any(c in tok for c in "*?["): material.add(tok)
+    return {
+      "count":len(wfs),"paths":wfs,"dynamic_spec_occurrences":dyn_occ,
+      "sandbox_tokens_raw":len(raw),"sandbox_routes_material":len(material),
+      "sandbox_routes":sorted(material),"discarded_nonmaterial_tokens":sorted(raw-material)
+    }
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--repo",default="cristhianlujan/claude-persona-lf-patch")
@@ -117,20 +150,12 @@ def main():
         if not ns.root: raise SystemExit("--root required")
         paths,read,tree_sha,source=load_local(ns.root,ns.sha)
     else:
-        loaders=(("api",load_api),("tarball",load_tarball)) if ns.source=="auto" else ((ns.source,load_api if ns.source=="api" else load_tarball),)
-        for _,loader in loaders:
+        loaders=(load_api,load_tarball) if ns.source=="auto" else ((load_api,) if ns.source=="api" else (load_tarball,))
+        for loader in loaders:
             try: paths,read,tree_sha,source=loader(ns.repo,ns.sha,token); break
             except Exception as e: errs.append(f"{type(e).__name__}:{e}")
         else: raise RuntimeError("; ".join(errs))
-    py,parsed,parse_errors,edges,dynamic=static_imports(paths,read)
-    workflows,wfrefs,sandbox=workflow_paths(paths,read)
-    out={
-      "schema_version":"aud02-repo-dependency-graph/v1","repo":ns.repo,"main_sha":ns.sha,"tree_sha":tree_sha,"source":source,
-      "fallback_errors":errs,
-      "static_ast":{"python_files":len(py),"parsed_files":len(parsed),"parse_errors":parse_errors,"internal_edges":len(edges),"edges":[{"source":a,"target":b,"kind":k,"module":m} for a,b,k,m in edges]},
-      "dynamic_imports":{"spec_from_file_location_calls":len(dynamic),"files":len({x["source"] for x in dynamic}),"declarations":dynamic},
-      "workflows":{"count":len(workflows),"local_path_edges":len(wfrefs),"sandbox_paths":len(sandbox),"sandbox_path_list":sandbox,"edges":[{"source":a,"target":b,"kind":"WORKFLOW_PATH"} for a,b in wfrefs]}
-    }
+    out={"schema_version":"aud02-repo-dependency-graph/v2","repo":ns.repo,"main_sha":ns.sha,"tree_sha":tree_sha,
+         "source":source,"fallback_errors":errs,"static_ast":repo_graph(paths,read),"workflows":workflows(paths,read)}
     print(json.dumps(out,sort_keys=True,separators=(",",":")))
-
 if __name__=="__main__": main()
