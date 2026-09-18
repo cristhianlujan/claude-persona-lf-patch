@@ -85,3 +85,56 @@ select jsonb_build_object(
     'missing_url',(select count(*) from public.v_lf_fuente_operativa where nullif(btrim(coalesce(url,'')),'') is null)
   )
 ) as aud01_database_universe;
+
+
+-- Per-universe fingerprints for delta-only revalidation.
+select jsonb_build_object(
+ 'assets_fp',(
+   select md5(string_agg(
+     codigo_activo||'|'||coalesce(tipo_activo,'')||'|'||coalesce(subtipo_activo,'')||'|'||
+     coalesce(estado_operativo,'')||'|'||coalesce(version,''),
+     E'\n' order by codigo_activo
+   ))
+   from public.lf_activos where archived_at is null
+ ),
+ 'operations_fp',(
+   select md5(string_agg(
+     operation_code||'|'||coalesce(operation_family,'')||'|'||coalesce(operation_domain,'')||'|'||
+     coalesce(operation_type,'')||'|'||coalesce(status,'')||'|'||coalesce(lifecycle_state_code,'')||'|'||coalesce(version,''),
+     E'\n' order by operation_code
+   ))
+   from public.lf_operation_registry
+ ),
+ 'strategy_snapshots_fp',(
+   select md5(string_agg(
+     snapshot_code||'|'||coalesce(snapshot_family,'')||'|'||coalesce(snapshot_type,'')||'|'||
+     coalesce(status,'')||'|'||coalesce(lifecycle_state_code,'')||'|'||coalesce(version,''),
+     E'\n' order by snapshot_code,id
+   ))
+   from public.lf_strategy_snapshots where archived_at is null
+ ),
+ 'db_object_identity_fp',(
+   select md5(string_agg(identity,E'\n' order by identity))
+   from (
+     select 'TABLE|'||table_schema||'.'||table_name identity
+     from information_schema.tables
+     where table_schema in ('public','private') and table_type='BASE TABLE'
+     union all
+     select 'VIEW|'||table_schema||'.'||table_name
+     from information_schema.views
+     where table_schema in ('public','private')
+     union all
+     select 'FUNCTION|'||n.nspname||'.'||p.proname||'('||pg_get_function_identity_arguments(p.oid)||')'
+     from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+     where n.nspname in ('public','private') and p.prokind='f'
+   ) x
+ ),
+ 'operational_view_fp',(
+   select md5(string_agg(
+     codigo_activo||'|'||coalesce(estado_operativo,'')||'|'||coalesce(version_normalizada,'')||'|'||
+     coalesce(owner_name,'')||'|'||coalesce(url,''),
+     E'\n' order by codigo_activo
+   ))
+   from public.v_lf_fuente_operativa
+ )
+) as aud01_universe_fingerprints;
