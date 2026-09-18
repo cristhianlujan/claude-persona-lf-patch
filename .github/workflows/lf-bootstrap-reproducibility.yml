@@ -484,6 +484,7 @@ jobs:
             --base "${{ needs.feedback-tier-router.outputs.base_sha }}"
             --head "${{ needs.feedback-tier-router.outputs.head_sha }}"
             --sql-out .lf_ci/db_candidate/candidate_rollback.sql
+            --probe-only-sql-out .lf_ci/db_candidate/post_apply_probe_rollback.sql
             --manifest-out .lf_ci/db_candidate/candidate_manifest.json
           )
           controls='${{ needs.feedback-tier-router.outputs.bootstrap_controls_json }}'
@@ -500,7 +501,96 @@ jobs:
           print("DB_CANDIDATE_MANIFEST_PASS", m["migration_count"], m["combined_sql_sha256"])
           PY
 
+      - name: Classify exact changed migrations against live ledger
+        id: runtime_state
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${PGPASSWORD:-}" ]]; then
+            echo "BLOCK_DB_CANDIDATE_DB_PASSWORD_MISSING" >&2
+            exit 1
+          fi
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          python3 - <<'PY' > .lf_ci/db_candidate/ledger_query.sql
+          import json
+          from pathlib import Path
+          m=json.loads(Path(".lf_ci/db_candidate/candidate_manifest.json").read_text())
+          rows=m["migrations"]
+          if not rows:
+              raise SystemExit("BLOCK_DB_CANDIDATE_RUNTIME_STATE_EMPTY")
+          versions=[]
+          for row in rows:
+              version=row.get("migration_version","")
+              name=row.get("migration_name","")
+              if len(version)!=14 or not version.isdigit() or not name.replace("_","").isalnum():
+                  raise SystemExit("BLOCK_DB_CANDIDATE_RUNTIME_IDENTITY_INVALID")
+              versions.append(version)
+          quoted=",".join("'" + v + "'" for v in versions)
+          print(
+              "select version||E'\\t'||coalesce(name,'') "
+              "from supabase_migrations.schema_migrations "
+              f"where version in ({quoted}) order by version;"
+          )
+          PY
+
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            psql -X -v ON_ERROR_STOP=1 -At -c "$(cat .lf_ci/db_candidate/ledger_query.sql)" \
+            > .lf_ci/db_candidate/live_changed_migrations.tsv
+
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          m=json.loads(Path(".lf_ci/db_candidate/candidate_manifest.json").read_text())
+          expected={row["migration_version"]: row["migration_name"] for row in m["migrations"]}
+          actual={}
+          for line in Path(".lf_ci/db_candidate/live_changed_migrations.tsv").read_text().splitlines():
+              if not line.strip():
+                  continue
+              version,name=line.split("\t",1)
+              actual[version]=name
+
+          mismatched={
+              version: {"expected":name,"actual":actual[version]}
+              for version,name in expected.items()
+              if version in actual and actual[version] != name
+          }
+          if mismatched:
+              raise SystemExit("BLOCK_DB_CANDIDATE_LEDGER_NAME_MISMATCH:"+json.dumps(mismatched,sort_keys=True))
+
+          applied=sorted(version for version in expected if version in actual)
+          pending=sorted(version for version in expected if version not in actual)
+          if applied and pending:
+              raise SystemExit(
+                  "BLOCK_DB_CANDIDATE_MIXED_RUNTIME_STATE:"
+                  + json.dumps({"applied":applied,"pending":pending},sort_keys=True)
+              )
+          mode="ALL_APPLIED_EXACT" if applied else "PENDING"
+          state={
+              "schema_version":"lf-db-candidate-runtime-state/v1",
+              "mode":mode,
+              "expected":expected,
+              "applied":applied,
+              "pending":pending,
+          }
+          Path(".lf_ci/db_candidate/runtime_state.json").write_text(
+              json.dumps(state,indent=2,sort_keys=True)+"\n"
+          )
+          with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as fh:
+              fh.write(f"mode={mode}\n")
+          print("DB_CANDIDATE_RUNTIME_STATE",json.dumps(state,sort_keys=True))
+          PY
+
       - name: Execute exact candidate bytes inside rollback-only sandbox transaction
+        if: steps.runtime_state.outputs.mode == 'PENDING'
         shell: bash
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
@@ -536,6 +626,58 @@ jobs:
           }
           echo "DB_CANDIDATE_APPLY_ROLLBACK_PASS"
 
+      - name: Validate already-applied exact migrations without replaying DDL
+        if: steps.runtime_state.outputs.mode == 'ALL_APPLIED_EXACT'
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${PGPASSWORD:-}" ]]; then
+            echo "BLOCK_DB_CANDIDATE_DB_PASSWORD_MISSING" >&2
+            exit 1
+          fi
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            psql -X -v ON_ERROR_STOP=1 -At -c \
+              "select count(*)::text||':'||coalesce(max(version),'') from supabase_migrations.schema_migrations" \
+            > .lf_ci/db_candidate/ledger_before.txt
+
+          docker run --rm -i \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            psql -X -v ON_ERROR_STOP=1 \
+            < .lf_ci/db_candidate/post_apply_probe_rollback.sql \
+            | tee .lf_ci/db_candidate/candidate_rollback.log
+
+          grep -q "LF_DB_ALREADY_APPLIED_EXACT_PROBES_COMPLETE" .lf_ci/db_candidate/candidate_rollback.log
+          grep -q "LF_DB_ALREADY_APPLIED_EXACT_ROLLBACK_COMPLETE" .lf_ci/db_candidate/candidate_rollback.log
+          controls='${{ needs.feedback-tier-router.outputs.bootstrap_controls_json }}'
+          if python3 -c 'import json,sys; raise SystemExit(0 if "POLICY_RESOLVER_REGRESSION" in json.loads(sys.argv[1]) else 1)' "$controls"; then
+            grep -q "POLICY_RESOLVER_REGRESSION_PASS" .lf_ci/db_candidate/candidate_rollback.log
+          fi
+
+          docker run --rm \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            psql -X -v ON_ERROR_STOP=1 -At -c \
+              "select count(*)::text||':'||coalesce(max(version),'') from supabase_migrations.schema_migrations" \
+            > .lf_ci/db_candidate/ledger_after.txt
+
+          cmp -s .lf_ci/db_candidate/ledger_before.txt .lf_ci/db_candidate/ledger_after.txt || {
+            echo "BLOCK_DB_CANDIDATE_LEDGER_RESIDUE" >&2
+            diff -u .lf_ci/db_candidate/ledger_before.txt .lf_ci/db_candidate/ledger_after.txt || true
+            exit 1
+          }
+          echo "DB_CANDIDATE_ALREADY_APPLIED_EXACT_POST_APPLY_PROBE_PASS"
+
       - name: Persist exact candidate rollback evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -543,6 +685,9 @@ jobs:
           name: lf-db-candidate-rollback-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             .lf_ci/db_candidate/candidate_manifest.json
+            .lf_ci/db_candidate/runtime_state.json
+            .lf_ci/db_candidate/live_changed_migrations.tsv
+            .lf_ci/db_candidate/post_apply_probe_rollback.sql
             .lf_ci/db_candidate/ledger_before.txt
             .lf_ci/db_candidate/ledger_after.txt
             .lf_ci/db_candidate/candidate_rollback.log
