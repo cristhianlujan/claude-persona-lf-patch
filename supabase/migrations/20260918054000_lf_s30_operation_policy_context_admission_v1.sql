@@ -1,5 +1,25 @@
 begin;
 
+do $execution_guard$
+declare
+  v_execution_id constant text := 'EXEC-S30-CONTEXT-ADMISSION-COMPACT-20260918-001';
+begin
+  if not exists (
+    select 1
+    from public.lf_operation_execution e
+    where e.execution_id=v_execution_id
+      and e.operation_code='ACTUALIZACION_DB_LF'
+      and e.target_type='MIGRATION'
+      and e.target_code='ROUTER_CONTEXT_ADMISSION_COMPACT_V1'
+      and e.target_repo='cristhianlujan/claude-persona-lf-patch'
+      and e.target_path='supabase/migrations/20260918054000_lf_s30_operation_policy_context_admission_v1.sql'
+      and e.status='IN_PROGRESS'
+  ) then
+    raise exception 'BLOCK_CONTEXT_ADMISSION_GOVERNED_EXECUTION_BINDING:%',v_execution_id;
+  end if;
+end
+$execution_guard$;
+
 -- S30 transversal operation policy + compact context admission v1.
 -- Fixes EKB: OPERATION-POLICY-CONTEXT-AMBIGUOUS-NONE-001 and ROUTER-CONTEXT-ADMISSION-INTEGRATION-GAP-001.
 --
