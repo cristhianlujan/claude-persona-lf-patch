@@ -328,8 +328,8 @@ jobs:
                   handle.write(f"- migration parity required: `{migration_required}`\n")
                   handle.write(f"- input governance parity required: `{input_gov_required}`\n")
                   handle.write(f"- CI router self-test required: `{selftest_required}`\n")
-                  handle.write(f"- required controls shadow: `{required_controls_json}`\n")
-                  handle.write("- required controls are shadow-only in this change; existing boolean outputs remain authoritative for execution\n")
+                  handle.write(f"- required controls: `{required_controls_json}`\n")
+                  handle.write("- MIGRATION_SOURCE_PARITY execution authority: required_controls -> LF_GATE_GROUP_ORCHESTRATOR_V1; legacy booleans remain compatibility outputs for other controls\n")
                   handle.write("- FAST scope: exact canonical P0 closure-evidence docs only\n")
                   handle.write("- specialized N/A is path-owned; unknown ownership remains fail-closed\n")
 
@@ -436,8 +436,8 @@ jobs:
                   handle.write("- `net` exposed: `false`\n")
           PY
 
-      - name: Enforce LF migration source parity after checkpoint
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.migration_parity_required == 'true'
+      - name: Prepare LF migration source parity frozen inputs
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && contains(fromJSON(steps.feedback_tier.outputs.required_controls_json), 'MIGRATION_SOURCE_PARITY')
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -517,21 +517,9 @@ jobs:
           cp "$RUNNER_TEMP/lf-legacy-checkpoint.csv" "$shadow_dir/lf-legacy-checkpoint.csv"
           cp "$RUNNER_TEMP/lf-migration-statement-counts.csv" "$shadow_dir/lf-migration-statement-counts.csv"
 
-          python3 sandbox/lf_contract_gate_test/lf_migration_source_parity.py \
-            supabase/migrations \
-            "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" \
-            "$RUNNER_TEMP/lf-grandfathered-migrations.csv" \
-            "$RUNNER_TEMP/lf-legacy-checkpoint.csv" \
-            > "$shadow_dir/legacy.stdout.log" \
-            2> "$shadow_dir/legacy.stderr.log"
-          cat "$shadow_dir/legacy.stdout.log"
-          cat "$shadow_dir/legacy.stderr.log" >&2
-
-      - name: Shadow declarative required_controls through existing gate orchestrator
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
-        continue-on-error: true
+      - name: Enforce required_controls through existing gate orchestrator
+        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && contains(fromJSON(steps.feedback_tier.outputs.required_controls_json), 'MIGRATION_SOURCE_PARITY')
         env:
-          LF_REQUIRED_CONTROLS_JSON: ${{ steps.feedback_tier.outputs.required_controls_json }}
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
           SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
@@ -542,16 +530,6 @@ jobs:
           LF_MIGRATION_STATEMENT_COUNTS_CSV: .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv
         run: |
           set -euo pipefail
-          selected="$(python3 - <<'PY'
-          import json, os
-          controls = json.loads(os.environ.get("LF_REQUIRED_CONTROLS_JSON") or "[]")
-          print("true" if "MIGRATION_SOURCE_PARITY" in controls else "false")
-          PY
-          )"
-          if [ "$selected" != "true" ]; then
-            echo "SHADOW_REQUIRED_CONTROL_NOT_APPLICABLE=MIGRATION_SOURCE_PARITY"
-            exit 0
-          fi
           for input in \
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-post-cutover-migrations-compact.csv \
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-grandfathered-migrations.csv \
@@ -559,7 +537,7 @@ jobs:
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv
           do
             if [ ! -s "$input" ]; then
-              echo "SHADOW_REQUIRED_CONTROL_INPUT_MISSING=$input"
+              echo "DECLARATIVE_REQUIRED_CONTROL_INPUT_MISSING=$input"
               exit 2
             fi
           done
@@ -568,40 +546,12 @@ jobs:
           export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
           export PGDATABASE=postgres
           export PGSSLMODE=require
-          rm -rf .lf_gate_diagnostics/lf_contract_check/declarative_controls_shadow
+          rm -rf .lf_gate_diagnostics/lf_contract_check/declarative_controls
           python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py \
             --manifest sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_control_manifest_v1.json \
-            --artifact-dir .lf_gate_diagnostics/lf_contract_check/declarative_controls_shadow \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/declarative_controls \
             --group MIGRATION_SOURCE_PARITY
-          echo "SHADOW_REQUIRED_CONTROL_EXECUTED=MIGRATION_SOURCE_PARITY"
-
-      - name: Verify legacy and declarative migration parity equivalence
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.migration_parity_required == 'true'
-        env:
-          LF_REQUIRED_CONTROLS_JSON: ${{ steps.feedback_tier.outputs.required_controls_json }}
-          LF_LEGACY_PARITY_REQUIRED: ${{ steps.feedback_tier.outputs.migration_parity_required }}
-          LF_PR_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: |
-          set -euo pipefail
-          source_head="$LF_PR_HEAD_SHA"
-          tested_head="$(git rev-parse HEAD)"
-          if [ -z "$source_head" ]; then
-            source_head="$tested_head"
-          fi
-          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_parity_equivalence_v1.py \
-            --required-controls-json "$LF_REQUIRED_CONTROLS_JSON" \
-            --legacy-required "$LF_LEGACY_PARITY_REQUIRED" \
-            --legacy-result PASS \
-            --legacy-stdout .lf_gate_runtime/lf_contract_check/migration_source_parity/legacy.stdout.log \
-            --legacy-stderr .lf_gate_runtime/lf_contract_check/migration_source_parity/legacy.stderr.log \
-            --shadow-summary .lf_gate_diagnostics/lf_contract_check/declarative_controls_shadow/lf_gate_group_summary_v1.json \
-            --input-pair "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv=.lf_gate_runtime/lf_contract_check/migration_source_parity/lf-post-cutover-migrations-compact.csv" \
-            --input-pair "$RUNNER_TEMP/lf-grandfathered-migrations.csv=.lf_gate_runtime/lf_contract_check/migration_source_parity/lf-grandfathered-migrations.csv" \
-            --input-pair "$RUNNER_TEMP/lf-legacy-checkpoint.csv=.lf_gate_runtime/lf_contract_check/migration_source_parity/lf-legacy-checkpoint.csv" \
-            --input-pair "$RUNNER_TEMP/lf-migration-statement-counts.csv=.lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv" \
-            --expected-source-head "$source_head" \
-            --expected-tested-head "$tested_head" \
-            --output .lf_gate_diagnostics/lf_contract_check/declarative_controls_shadow/migration_source_parity_equivalence_v1.json
+          echo "DECLARATIVE_REQUIRED_CONTROL_ENFORCED=MIGRATION_SOURCE_PARITY"
 
       - name: Enforce Input Governance migration source parity
         if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS' && steps.feedback_tier.outputs.input_governance_parity_required == 'true'

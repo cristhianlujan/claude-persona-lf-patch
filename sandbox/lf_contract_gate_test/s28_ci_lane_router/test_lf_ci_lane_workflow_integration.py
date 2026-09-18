@@ -217,23 +217,24 @@ def main() -> None:
     require(text, "migration_parity_required", "FAIL_MIGRATION_APPLICABILITY_OUTPUT_MISSING")
     require(text, "input_governance_parity_required", "FAIL_INPUT_GOV_APPLICABILITY_OUTPUT_MISSING")
     require(text, "ci_router_selftest_required", "FAIL_CI_ROUTER_SELFTEST_OUTPUT_MISSING")
-    require(text, "required_controls_json", "FAIL_REQUIRED_CONTROLS_SHADOW_OUTPUT_MISSING")
-    require(text, "required controls are shadow-only", "FAIL_REQUIRED_CONTROLS_SHADOW_MODE_MARKER_MISSING")
+    require(text, "required_controls_json", "FAIL_REQUIRED_CONTROLS_OUTPUT_MISSING")
+    require(text, "MIGRATION_SOURCE_PARITY execution authority: required_controls -> LF_GATE_GROUP_ORCHESTRATOR_V1", "FAIL_REQUIRED_CONTROLS_AUTHORITY_MARKER_MISSING")
     require(text, str(CONTROL_MANIFEST), "FAIL_DECLARATIVE_CONTROL_MANIFEST_NOT_WIRED")
     require(text, GROUP_ORCHESTRATOR, "FAIL_GATE_GROUP_ORCHESTRATOR_NOT_WIRED")
-    require(text, "Shadow declarative required_controls through existing gate orchestrator", "FAIL_DECLARATIVE_SHADOW_STEP_MISSING")
+    require(text, "Prepare LF migration source parity frozen inputs", "FAIL_DECLARATIVE_PARITY_INPUT_PREP_MISSING")
+    require(text, "Enforce required_controls through existing gate orchestrator", "FAIL_DECLARATIVE_PARITY_AUTHORITY_STEP_MISSING")
     require(text, "--group MIGRATION_SOURCE_PARITY", "FAIL_DECLARATIVE_PARITY_GROUP_NOT_SELECTED")
-    require(text, "LF_REQUIRED_CONTROLS_JSON", "FAIL_DECLARATIVE_REQUIRED_CONTROLS_INPUT_MISSING")
-    require(text, PARITY_EQUIVALENCE, "FAIL_PARITY_EQUIVALENCE_JUDGE_NOT_WIRED")
     require(text, PARITY_EQUIVALENCE_TEST, "FAIL_PARITY_EQUIVALENCE_TEST_NOT_WIRED")
-    require(text, "Verify legacy and declarative migration parity equivalence", "FAIL_PARITY_EQUIVALENCE_STEP_MISSING")
-    require(text, "migration_source_parity_equivalence_v1.json", "FAIL_PARITY_EQUIVALENCE_RECEIPT_MISSING")
+    if "Verify legacy and declarative migration parity equivalence" in text:
+        raise SystemExit("FAIL_RUNTIME_PARITY_EQUIVALENCE_STILL_ACTIVE_AFTER_PROMOTION")
     require(text, "lf-migration-statement-counts.csv", "FAIL_PARITY_EQUIVALENCE_FROZEN_COUNTS_MISSING")
     require(
         text,
-        "steps.feedback_tier.outputs.migration_parity_required == 'true'",
-        "FAIL_LF_MIGRATION_STEP_NOT_PATH_SCOPED",
+        "contains(fromJSON(steps.feedback_tier.outputs.required_controls_json), 'MIGRATION_SOURCE_PARITY')",
+        "FAIL_LF_MIGRATION_REQUIRED_CONTROLS_GUARD_MISSING",
     )
+    if "steps.feedback_tier.outputs.migration_parity_required == 'true'" in text:
+        raise SystemExit("FAIL_LEGACY_MIGRATION_BOOLEAN_STILL_EXECUTION_AUTHORITY")
     require(
         text,
         "steps.feedback_tier.outputs.input_governance_parity_required == 'true'",
@@ -249,6 +250,7 @@ def main() -> None:
 
     control_manifest = json.loads(CONTROL_MANIFEST.read_text(encoding="utf-8"))
     assert control_manifest["consumer_code"] == "LF_CONTRACT_CHECK", control_manifest
+    assert control_manifest["gate_id"] == "LF_CONTRACT_CHECK_DECLARATIVE_CONTROLS", control_manifest
     assert control_manifest["expected_total_checks"] == 1, control_manifest
     assert [g["group_id"] for g in control_manifest["groups"]] == ["MIGRATION_SOURCE_PARITY"], control_manifest
     parity_group = control_manifest["groups"][0]

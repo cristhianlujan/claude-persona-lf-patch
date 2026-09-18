@@ -78,7 +78,7 @@ Stable candidate identity is still useful for diagnostics and regression, but re
 
 ## Consumer example
 
-Profile Runtime V3 consumes this capability through `profile_runtime_v3_gate_manifest.json`. `lf-contract-check` may consume the same engine through a consumer manifest whose stable group IDs are selected by its Router `required_controls`; applicability remains Router-owned and must not be reimplemented in the manifest. Consumer manifests are declarations only; the grouping engine remains transversal and reusable by other LF gates.
+Profile Runtime V3 consumes this capability through `profile_runtime_v3_gate_manifest.json`. `lf-contract-check` consumes the same engine through `lf_contract_check_control_manifest_v1.json`; its first execution-authoritative declarative consumer is `MIGRATION_SOURCE_PARITY`, selected exclusively from Router `required_controls`. Applicability remains Router-owned and must not be reimplemented in the manifest. Consumer manifests are declarations only; the grouping engine remains transversal and reusable by other LF gates.
 
 ## Cuándo consumirlo
 
