@@ -45,6 +45,20 @@ Todo activo transversal documentable en estado `ACTIVE_SHARED_ENFORCEMENT` o `AC
 - `TYPED_EVIDENCE_REGISTRY` — `TRANSVERSAL_TYPED_EVIDENCE_REGISTRY` → `sandbox/lf_contract_gate_test/transversal_assets/typed_evidence_registry/README.md`
 - `VALIDATION_EXEMPTION_ONE_USE` — `TRANSVERSAL_VALIDATION_EXEMPTION_ONE_USE` → `sandbox/lf_contract_gate_test/transversal_assets/validation_exemption_one_use/README.md`
 
+- `OPERATION_LIFECYCLE_POLICY` — `TRANSVERSAL_OPERATION_LIFECYCLE_POLICY` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_operation_lifecycle/README.md`
+
+- `POL-LF-OPERATION-LIFECYCLE` — `POL_LF_OPERATION_LIFECYCLE` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_operation_lifecycle/README.md`
+
+- `POLICY_CONSUMPTION` — `TRANSVERSAL_POLICY_CONSUMPTION` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_policy_consumption/README.md`
+
+- `POL-LF-SOURCE-RESOLUTION` — `POL_LF_SOURCE_RESOLUTION` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_source_resolution/README.md`
+
+- `SOURCE_RESOLUTION_POLICY` — `TRANSVERSAL_SOURCE_RESOLUTION_POLICY` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_source_resolution/README.md`
+
+- `POL-LF-STATE-MODEL` — `POL_LF_STATE_MODEL` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_state_model/README.md`
+
+- `STATE_MODEL_POLICY` — `TRANSVERSAL_STATE_MODEL_POLICY` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_state_model/README.md`
+
 ## Campos mínimos del README
 
 Cada README debe explicar: propósito, cuándo consumirlo, cómo consumirlo, superficies canónicas, fail-closed/límites, validación/readback, no duplicación y currentness.
