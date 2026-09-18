@@ -74,7 +74,7 @@ begin
     'REGISTER_TRANSVERSAL_CONSUMER',
     'v0.4',
     '.github/workflows/lf-contract-check.yml',
-    'github://cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-contract-check.yml',
+    'supabase://public/lf_operation_registry/GITHUB_CONTRACT_GATE_LF',
     'LF_GOVERNANCE_S30',
     '2026-09-18',
     'Consumer/orchestrator transversal de contract-check; delega ejecución a engines compartidos y no duplica gates.',
