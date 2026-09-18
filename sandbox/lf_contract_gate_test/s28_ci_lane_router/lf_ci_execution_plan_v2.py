@@ -53,7 +53,7 @@ def _safe_path(value: str) -> bool:
     return bool(parts) and all(p not in {".", ".."} for p in parts)
 
 
-def load_registry(path: Path = REGISTRY_PATH) -> tuple[tuple[str, ...], tuple[ImpactControl, ...]]:
+def load_registry(path: Path = REGISTRY_PATH) -> tuple[tuple[str, ...], tuple[str, ...], tuple[ImpactControl, ...]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict) or data.get("schema_version") != REGISTRY_VERSION:
         raise PlanError("FAIL_CI_IMPACT_REGISTRY_SCHEMA")
@@ -109,7 +109,7 @@ def load_registry(path: Path = REGISTRY_PATH) -> tuple[tuple[str, ...], tuple[Im
         unknown = sorted(set(control.dependencies)-seen)
         if unknown:
             raise PlanError(f"FAIL_CI_IMPACT_UNKNOWN_DEPENDENCY:{control.control_id}:{unknown}")
-    return tuple(sorted(full)), tuple(controls)
+    return tuple(sorted(seen)), tuple(sorted(full)), tuple(controls)
 
 
 def _path_matches(path: str, matcher: Mapping[str,str]) -> bool:
@@ -163,14 +163,14 @@ def build_plan(
     force_full: bool = False,
     force_full_reason: str | None = None,
 ) -> dict[str,Any]:
-    full_universe, controls = load_registry()
+    control_universe, full_regression_controls, controls = load_registry()
     by_id = {c.control_id:c for c in controls}
     changed = tuple(sorted({p.strip() for p in changed_paths if isinstance(p,str) and p.strip()}))
     if not changed and not force_full:
         force_full = True
         force_full_reason = force_full_reason or "NO_CHANGED_PATHS_FAIL_CLOSED"
 
-    unknown_lane_control = sorted(set(lane_required_controls)-set(full_universe))
+    unknown_lane_control = sorted(set(lane_required_controls)-set(control_universe))
     if unknown_lane_control:
         raise PlanError(f"FAIL_CI_PLAN_UNKNOWN_LANE_CONTROL:{unknown_lane_control}")
 
@@ -193,9 +193,8 @@ def build_plan(
     handled_paths: set[str] = set()
 
     if full_regression:
-        full_controls, _ = load_registry()
-        required.update(full_controls)
-        for cid in full_controls:
+        required.update(full_regression_controls)
+        for cid in full_regression_controls:
             reason_map[cid].add(f"FULL_REGRESSION:{full_reason}")
         for path in changed:
             _, evidence = _read_material(repo_root,path)
@@ -247,7 +246,7 @@ def build_plan(
             "carrier": by_id[cid].carrier,
             "reason": "NO_TRIGGER_AND_NOT_IN_DEPENDENCY_CLOSURE",
         }
-        for cid in full_universe
+        for cid in control_universe
         if cid not in required
     ]
     carrier_controls: dict[str,list[str]] = {}
@@ -268,8 +267,9 @@ def build_plan(
         "required_control_reasons": {cid:sorted(reason_map[cid]) for cid in required_sorted},
         "not_applicable_controls": not_applicable,
         "carrier_controls": dict(sorted(carrier_controls.items())),
-        "control_universe": list(full_universe),
-        "coverage_complete": len(required_sorted)+len(not_applicable)==len(full_universe),
+        "control_universe": list(control_universe),
+        "full_regression_control_set": list(full_regression_controls),
+        "coverage_complete": len(required_sorted)+len(not_applicable)==len(control_universe),
     }
     if not plan["coverage_complete"]:
         raise PlanError("FAIL_CI_PLAN_COVERAGE_INCOMPLETE")
