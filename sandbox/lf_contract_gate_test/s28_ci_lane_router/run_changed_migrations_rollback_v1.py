@@ -131,6 +131,7 @@ def main() -> int:
     p.add_argument("--head", required=True)
     p.add_argument("--sql-out", required=True)
     p.add_argument("--manifest-out", required=True)
+    p.add_argument("--probe-sql", action="append", default=[])
     args = p.parse_args()
 
     repo = Path(args.repo_root).resolve()
@@ -157,6 +158,25 @@ def main() -> int:
             text,
             f"\\echo LF_DB_CANDIDATE_APPLIED {path} sha256={digest}",
         ])
+    probe_rows = []
+    for probe_rel in args.probe_sql:
+        probe_path = repo / probe_rel
+        if not probe_path.is_file():
+            raise ProbeError(f"FAIL_DB_CANDIDATE_PROBE_MISSING:{probe_rel}")
+        raw_probe = probe_path.read_bytes()
+        try:
+            probe_text = raw_probe.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ProbeError(f"FAIL_DB_CANDIDATE_PROBE_NON_UTF8:{probe_rel}") from exc
+        validate_transaction_safe(probe_rel, probe_text)
+        probe_digest = sha(raw_probe)
+        probe_rows.append({"path":probe_rel,"sha256":probe_digest,"bytes":len(raw_probe)})
+        chunks.extend([
+            f"\\echo LF_DB_CANDIDATE_PROBE_BEGIN {probe_rel} sha256={probe_digest}",
+            probe_text,
+            f"\\echo LF_DB_CANDIDATE_PROBE_PASS {probe_rel} sha256={probe_digest}",
+        ])
+
     chunks.extend([
         "SELECT 'LF_DB_CANDIDATE_ALL_APPLIED_BEFORE_ROLLBACK' AS probe_result;",
         "ROLLBACK;",
@@ -173,6 +193,7 @@ def main() -> int:
         "migrations":manifest_rows,
         "combined_sql_sha256":sha(sql_out.read_bytes()),
         "transaction_escape_scan":"PASS",
+        "post_apply_probes":probe_rows,
     }
     manifest_out = Path(args.manifest_out)
     manifest_out.parent.mkdir(parents=True,exist_ok=True)
