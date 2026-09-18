@@ -70,11 +70,14 @@ jobs:
           if [[ -n "$base" ]]; then
             git fetch --no-tags origin "$base" "$head"
           fi
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          authority_current="$(git rev-parse refs/remotes/origin/main)"
           mkdir -p .lf_ci
           args=(
             --repo-root .
             --base "$base"
             --head "$head"
+            --authority-current-revision "$authority_current"
             --event-name "${GITHUB_EVENT_NAME}"
             --event-action "${LF_PLAN_EVENT_ACTION:-}"
             --ref-name "${GITHUB_REF_NAME:-}"
@@ -91,7 +94,9 @@ jobs:
           p=json.loads(Path(".lf_ci/lf_ci_execution_plan_v2.json").read_text())
           with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as h:
               h.write("### Unified CI applicability plan\n")
-              h.write(f"- plan sha256: `{p['plan_sha256']}`\n")
+              h.write(f"- applicability sha256: `{p['applicability_sha256']}`\n")
+              h.write(f"- evidence sha256: `{p['evidence_sha256']}`\n")
+              h.write(f"- currentness: `{p['source_authority']['decision']}` -> `{p['source_authority']['resolved_revision']}`\n")
               h.write(f"- full regression: `{str(p['full_regression']).lower()}`\n")
               h.write(f"- Validate LF Packs controls: `{json.dumps(p.get('carrier_controls',{}).get('VALIDATE_LF_PACKS',[]),separators=(',',':'))}`\n")
           PY
