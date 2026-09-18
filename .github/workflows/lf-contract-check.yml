@@ -458,13 +458,13 @@ jobs:
           echo "Deep migration/runtime/visual/E.16 work skipped because the canonical preflight proved an exact regular P0-doc-only delta."
 
       - name: Validate declared governance paths
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'DECLARED_GOVERNANCE_PATHS')
         run: |
           pip install pyyaml
           python3 scripts/validate_declared_paths.py --repo-root .
 
       - name: Verify hosted Supabase Data API excludes net schema
-        if: steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'SUPABASE_CONTROL_PLANE_READBACK')
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
