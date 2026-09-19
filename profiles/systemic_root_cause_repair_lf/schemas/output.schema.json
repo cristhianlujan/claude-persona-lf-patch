@@ -12,6 +12,8 @@
     "first_bad_control",
     "escape_control",
     "recurrence_evidence",
+    "live_authority_packet",
+    "execution_effect_reconciliation",
     "authority_contradictions",
     "repair_level",
     "should_exist_assessment",
@@ -89,6 +91,118 @@
           "fact": {
             "type": "string",
             "minLength": 5
+          }
+        }
+      }
+    },
+    "live_authority_packet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "observed_at",
+        "applicable_surfaces",
+        "inspected_surfaces",
+        "evidence_refs",
+        "material_effects_observed",
+        "unavailable_sources"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "COMPLETE",
+            "PARTIAL",
+            "MISSING"
+          ]
+        },
+        "observed_at": {
+          "type": "string",
+          "minLength": 3
+        },
+        "applicable_surfaces": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "inspected_surfaces": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 5
+          }
+        },
+        "material_effects_observed": {
+          "type": "boolean"
+        },
+        "unavailable_sources": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      }
+    },
+    "execution_effect_reconciliation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "effect",
+          "observed_ref",
+          "declared_producer",
+          "observed_producer_refs",
+          "reconciliation_status",
+          "blocking"
+        ],
+        "properties": {
+          "effect": {
+            "type": "string",
+            "minLength": 3
+          },
+          "observed_ref": {
+            "type": "string",
+            "minLength": 5
+          },
+          "declared_producer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "observed_producer_refs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 5
+            }
+          },
+          "reconciliation_status": {
+            "enum": [
+              "MATCH",
+              "UNRESOLVED_PRODUCER",
+              "UNDECLARED_EXECUTION",
+              "SILENT_DROP",
+              "SOURCE_LIVE_DIVERGENCE",
+              "OTHER_CONTRADICTION"
+            ]
+          },
+          "blocking": {
+            "type": "boolean"
           }
         }
       }
@@ -285,7 +399,8 @@
         "required": [
           "case",
           "result",
-          "evidence_ref"
+          "evidence_ref",
+          "evidence_class"
         ],
         "properties": {
           "case": {
@@ -301,6 +416,15 @@
           },
           "evidence_ref": {
             "type": "string"
+          },
+          "evidence_class": {
+            "enum": [
+              "OBSERVED_TEST",
+              "OBSERVED_RUNTIME",
+              "OBSERVED_READBACK",
+              "DESIGN_ONLY",
+              "MISSING"
+            ]
           }
         }
       }
@@ -377,6 +501,7 @@
     },
     "blocking_codes": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string"
       }
