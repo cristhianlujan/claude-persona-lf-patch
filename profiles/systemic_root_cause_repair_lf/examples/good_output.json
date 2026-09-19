@@ -228,7 +228,19 @@
       "evidence_ref": "design://bypass",
       "evidence_class": "DESIGN_ONLY",
       "verification_method": "Execute the exact candidate repair against the bypass scenario before implementation closure.",
-      "expected_result": "The repair blocks or safely handles the bypass scenario without duplicate or unauthorized effect."
+      "expected_result": "The repair blocks or safely handles the bypass scenario without duplicate or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare the bypass fixture against the exact candidate boundary."
+        ],
+        "action": [
+          "Execute the exact candidate repair against the bypass scenario before implementation closure."
+        ],
+        "assertions": [
+          "The repair blocks or safely handles the bypass scenario without duplicate or unauthorized effect."
+        ],
+        "failure_signal": "BYPASS_FALSIFICATION_FAILED"
+      }
     },
     {
       "case": "retry",
@@ -236,7 +248,19 @@
       "evidence_ref": "design://retry",
       "evidence_class": "DESIGN_ONLY",
       "verification_method": "Execute the exact candidate repair against the retry scenario before implementation closure.",
-      "expected_result": "The repair blocks or safely handles the retry scenario without duplicate or unauthorized effect."
+      "expected_result": "The repair blocks or safely handles the retry scenario without duplicate or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare the retry fixture against the exact candidate boundary."
+        ],
+        "action": [
+          "Execute the exact candidate repair against the retry scenario before implementation closure."
+        ],
+        "assertions": [
+          "The repair blocks or safely handles the retry scenario without duplicate or unauthorized effect."
+        ],
+        "failure_signal": "RETRY_FALSIFICATION_FAILED"
+      }
     },
     {
       "case": "concurrency",
@@ -244,7 +268,19 @@
       "evidence_ref": "design://concurrency",
       "evidence_class": "DESIGN_ONLY",
       "verification_method": "Execute the exact candidate repair against the concurrency scenario before implementation closure.",
-      "expected_result": "The repair blocks or safely handles the concurrency scenario without duplicate or unauthorized effect."
+      "expected_result": "The repair blocks or safely handles the concurrency scenario without duplicate or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare the concurrency fixture against the exact candidate boundary."
+        ],
+        "action": [
+          "Execute the exact candidate repair against the concurrency scenario before implementation closure."
+        ],
+        "assertions": [
+          "The repair blocks or safely handles the concurrency scenario without duplicate or unauthorized effect."
+        ],
+        "failure_signal": "CONCURRENCY_FALSIFICATION_FAILED"
+      }
     },
     {
       "case": "partial_failure",
@@ -252,7 +288,19 @@
       "evidence_ref": "design://partial_failure",
       "evidence_class": "DESIGN_ONLY",
       "verification_method": "Execute the exact candidate repair against the partial_failure scenario before implementation closure.",
-      "expected_result": "The repair blocks or safely handles the partial_failure scenario without duplicate or unauthorized effect."
+      "expected_result": "The repair blocks or safely handles the partial_failure scenario without duplicate or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare the partial_failure fixture against the exact candidate boundary."
+        ],
+        "action": [
+          "Execute the exact candidate repair against the partial_failure scenario before implementation closure."
+        ],
+        "assertions": [
+          "The repair blocks or safely handles the partial_failure scenario without duplicate or unauthorized effect."
+        ],
+        "failure_signal": "PARTIAL_FAILURE_FALSIFICATION_FAILED"
+      }
     },
     {
       "case": "stale_state",
@@ -260,7 +308,19 @@
       "evidence_ref": "design://stale_state",
       "evidence_class": "DESIGN_ONLY",
       "verification_method": "Execute the exact candidate repair against the stale_state scenario before implementation closure.",
-      "expected_result": "The repair blocks or safely handles the stale_state scenario without duplicate or unauthorized effect."
+      "expected_result": "The repair blocks or safely handles the stale_state scenario without duplicate or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare the stale_state fixture against the exact candidate boundary."
+        ],
+        "action": [
+          "Execute the exact candidate repair against the stale_state scenario before implementation closure."
+        ],
+        "assertions": [
+          "The repair blocks or safely handles the stale_state scenario without duplicate or unauthorized effect."
+        ],
+        "failure_signal": "STALE_STATE_FALSIFICATION_FAILED"
+      }
     },
     {
       "case": "interrupted_execution",
@@ -268,7 +328,19 @@
       "evidence_ref": "design://interrupted_execution",
       "evidence_class": "DESIGN_ONLY",
       "verification_method": "Execute the exact candidate repair against the interrupted_execution scenario before implementation closure.",
-      "expected_result": "The repair blocks or safely handles the interrupted_execution scenario without duplicate or unauthorized effect."
+      "expected_result": "The repair blocks or safely handles the interrupted_execution scenario without duplicate or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare the interrupted_execution fixture against the exact candidate boundary."
+        ],
+        "action": [
+          "Execute the exact candidate repair against the interrupted_execution scenario before implementation closure."
+        ],
+        "assertions": [
+          "The repair blocks or safely handles the interrupted_execution scenario without duplicate or unauthorized effect."
+        ],
+        "failure_signal": "INTERRUPTED_EXECUTION_FALSIFICATION_FAILED"
+      }
     },
     {
       "case": "replay_or_duplicate",
@@ -276,7 +348,19 @@
       "evidence_ref": "design://replay_or_duplicate",
       "evidence_class": "DESIGN_ONLY",
       "verification_method": "Execute the exact candidate repair against the replay_or_duplicate scenario before implementation closure.",
-      "expected_result": "The repair blocks or safely handles the replay_or_duplicate scenario without duplicate or unauthorized effect."
+      "expected_result": "The repair blocks or safely handles the replay_or_duplicate scenario without duplicate or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare the replay_or_duplicate fixture against the exact candidate boundary."
+        ],
+        "action": [
+          "Execute the exact candidate repair against the replay_or_duplicate scenario before implementation closure."
+        ],
+        "assertions": [
+          "The repair blocks or safely handles the replay_or_duplicate scenario without duplicate or unauthorized effect."
+        ],
+        "failure_signal": "REPLAY_OR_DUPLICATE_FALSIFICATION_FAILED"
+      }
     },
     {
       "case": "undeclared_or_unversioned_caller",
@@ -284,7 +368,19 @@
       "evidence_ref": "design://undeclared_or_unversioned_caller",
       "evidence_class": "DESIGN_ONLY",
       "verification_method": "Execute the exact candidate repair against the undeclared_or_unversioned_caller scenario before implementation closure.",
-      "expected_result": "The repair blocks or safely handles the undeclared_or_unversioned_caller scenario without duplicate or unauthorized effect."
+      "expected_result": "The repair blocks or safely handles the undeclared_or_unversioned_caller scenario without duplicate or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare the undeclared_or_unversioned_caller fixture against the exact candidate boundary."
+        ],
+        "action": [
+          "Execute the exact candidate repair against the undeclared_or_unversioned_caller scenario before implementation closure."
+        ],
+        "assertions": [
+          "The repair blocks or safely handles the undeclared_or_unversioned_caller scenario without duplicate or unauthorized effect."
+        ],
+        "failure_signal": "UNDECLARED_OR_UNVERSIONED_CALLER_FALSIFICATION_FAILED"
+      }
     }
   ],
   "origin_asset": {
@@ -360,19 +456,55 @@
       "case_id": "REG-BYPASS",
       "scenario": "Attempt apply without a reserved exact source identity.",
       "verification_method": "Invoke the pre-apply boundary without the reservation receipt.",
-      "expected_result": "Block before effect."
+      "expected_result": "Block before effect.",
+      "test_protocol": {
+        "setup": [
+          "Materialize fixture REG-BYPASS on the exact candidate revision."
+        ],
+        "action": [
+          "Invoke the pre-apply boundary without the reservation receipt."
+        ],
+        "assertions": [
+          "Block before effect."
+        ],
+        "failure_signal": "REG-BYPASS_FAILED"
+      }
     },
     {
       "case_id": "REG-RETRY",
       "scenario": "Retry an already reserved migration request.",
       "verification_method": "Replay the same idempotency identity.",
-      "expected_result": "Reuse the same effective identity without duplicate apply."
+      "expected_result": "Reuse the same effective identity without duplicate apply.",
+      "test_protocol": {
+        "setup": [
+          "Materialize fixture REG-RETRY on the exact candidate revision."
+        ],
+        "action": [
+          "Replay the same idempotency identity."
+        ],
+        "assertions": [
+          "Reuse the same effective identity without duplicate apply."
+        ],
+        "failure_signal": "REG-RETRY_FAILED"
+      }
     },
     {
       "case_id": "REG-STALE",
       "scenario": "Use a stale source digest after reservation.",
       "verification_method": "Mutate the source head between reservation and apply.",
-      "expected_result": "Block with currentness mismatch."
+      "expected_result": "Block with currentness mismatch.",
+      "test_protocol": {
+        "setup": [
+          "Materialize fixture REG-STALE on the exact candidate revision."
+        ],
+        "action": [
+          "Mutate the source head between reservation and apply."
+        ],
+        "assertions": [
+          "Block with currentness mismatch."
+        ],
+        "failure_signal": "REG-STALE_FAILED"
+      }
     }
   ],
   "current_uncertainties": [
@@ -511,5 +643,342 @@
     "verification": [
       "Re-read exact function/contract identity and rerun parity/readback after rollback."
     ]
+  },
+  "solution_depth": {
+    "mode": "DEEP_ARCHITECTURE_RESEARCH",
+    "rationale": "The failure spans migration authority, pre-effect control, compatibility and replay semantics across governed consumers.",
+    "complexity_signals": [
+      "CROSS_OPERATION",
+      "AUTHORITY_CHANGE",
+      "POLICY_CONTRACT_CHANGE",
+      "MIGRATION_TRANSITION"
+    ]
+  },
+  "research_assurance": {
+    "research_complete": true,
+    "research_questions": [
+      "Which existing LF boundary can prevent source/live divergence before effect without creating a second engine?",
+      "Which current context and governance patterns preserve authority while keeping model context bounded?"
+    ],
+    "internal_evidence_refs": [
+      "gate://A2R_PARITY",
+      "contract://migration/pre-apply",
+      "policy://LF/context-admission"
+    ],
+    "current_practice_research_required": true,
+    "external_research_rationale": "The design touches agent context and governance patterns that evolve quickly; current practice can materially change transport and evaluation choices.",
+    "external_evidence_refs": [
+      "external://current-practice/jit-context",
+      "external://current-practice/agent-evals"
+    ],
+    "patterns_compared": [
+      {
+        "pattern": "JIT high-signal context",
+        "fit": "High for bounded policy/evidence transport.",
+        "tradeoff": "Requires reliable resolvers and durable references.",
+        "source_refs": [
+          "external://current-practice/jit-context",
+          "policy://LF/context-admission"
+        ]
+      },
+      {
+        "pattern": "Post-effect parity only",
+        "fit": "Low because it detects after the live effect.",
+        "tradeoff": "Simple but does not prevent recurrence.",
+        "source_refs": [
+          "gate://A2R_PARITY",
+          "run://migration-parity/failure-1"
+        ]
+      }
+    ],
+    "first_solution_disposition": "REVISED",
+    "context_strategy": "JIT_HIGH_SIGNAL"
+  },
+  "challenger_review": [
+    {
+      "challenge_id": "CH-1",
+      "challenge": "Could the repair remain post-effect and still prevent the failure class?",
+      "outcome": "DESIGN_CHANGED",
+      "resolution": "No. The guard moved to pre-apply reservation because post-effect parity is an escape control.",
+      "evidence_refs": [
+        "run://migration-parity/failure-1",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "challenge_id": "CH-2",
+      "challenge": "Would a new migration authority reduce ambiguity more than extending the existing boundary?",
+      "outcome": "SURVIVED",
+      "resolution": "No new authority is justified; existing governance and parity controls are sufficient when composed before effect.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "challenge_id": "CH-3",
+      "challenge": "Can caller adoption and enforcement be switched globally without breaking legacy consumers?",
+      "outcome": "DESIGN_CHANGED",
+      "resolution": "No. The rollout is bounded by consumer set and adoption precedes enforcement.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "ekb://CI-MIG-001"
+      ]
+    }
+  ],
+  "omission_discovery": [
+    {
+      "dimension": "ARCHITECTURE",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Move prevention to the pre-apply boundary while retaining the existing migration authority.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "CONTROLS",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Add exact source identity reservation as the first preventable control.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "POLICIES_CONTRACTS",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Require the reservation receipt in the governed migration contract before apply.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "CONTEXT_TRANSPORT",
+      "disposition": "REUSE_AS_IS",
+      "finding": "Reuse compact policy/evidence references and JIT detail rather than hydrating full governance payloads.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "WIRING",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Wire governed migration callers through reservation before the apply effect.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "COMPATIBILITY_TRANSITION",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Adopt then enforce per bounded consumer set.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "RECOVERY_TERMINALITY",
+      "disposition": "REUSE_AS_IS",
+      "finding": "Preserve existing idempotent reservation/retry and terminal readback semantics.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "OBSERVABILITY",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Expose pre-apply blocks and post-apply parity as separate signals.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "SECURITY_AUTHORITY",
+      "disposition": "REUSE_AS_IS",
+      "finding": "Retain existing migration governance authority; do not create a second writer.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "COST_PERFORMANCE",
+      "disposition": "REUSE_AS_IS",
+      "finding": "Use JIT references to avoid expanding model context for deterministic checks.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "TESTING_ASSURANCE",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Add executable bypass, retry, stale-state and transition falsification protocols.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "dimension": "OPERABILITY_MAINTENANCE",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Document exact consumer adoption and rollback receipts for each bounded stage.",
+      "evidence_refs": [
+        "contract://migration/apply",
+        "gate://A2R_PARITY"
+      ]
+    }
+  ],
+  "implementation_package": {
+    "architecture_decisions": [
+      {
+        "decision_id": "D1",
+        "question": "Where must source/live parity become preventive rather than detective?",
+        "decision": "At the existing governed pre-apply boundary before any live migration effect.",
+        "authority_ref": "contract://migration/pre-apply",
+        "rationale": "This is the first preventable boundary and reuses existing authority.",
+        "alternatives_considered": [
+          "post-effect-only parity",
+          "new migration authority"
+        ],
+        "evidence_refs": [
+          "run://migration-parity/failure-1",
+          "gate://A2R_PARITY"
+        ]
+      }
+    ],
+    "control_matrix": [
+      {
+        "control_id": "CTRL-SOURCE-IDENTITY",
+        "purpose": "Prevent a live apply when source identity or digest is not exactly reserved and current.",
+        "authority_ref": "contract://migration/pre-apply",
+        "applies_when": "Before every governed migration apply in an activated consumer set.",
+        "enforcement_point_ref": "contract://migration/pre-apply",
+        "input_contract": "Exact source identity, digest, consumer identity and reservation receipt.",
+        "blocking_code": "MIGRATION_SOURCE_IDENTITY_NOT_CURRENT",
+        "observable_result": "No live effect occurs and the deterministic block is durably observable.",
+        "verification_method": "Run the pre-apply gate with missing, stale and valid reservation receipts."
+      }
+    ],
+    "policy_contract_changes": [
+      {
+        "authority_ref": "contract://migration/pre-apply",
+        "change": "Require the exact reservation receipt before apply for each activated consumer set.",
+        "owner_ref": "registry://migration/owner",
+        "compatibility_rule": "Unadopted consumers keep baseline until their bounded adoption stage passes.",
+        "evidence_refs": [
+          "contract://migration/apply",
+          "gate://A2R_PARITY"
+        ]
+      }
+    ],
+    "context_transport": {
+      "status": "APPLIES",
+      "rationale": "Governance evidence is consumed during decisioning; full policy and EKB payloads are unnecessary.",
+      "compiler_ref": "policy://LF/context-admission",
+      "delivery_strategy": "Deliver compact immutable references and hydrate detail JIT only when a decision requires it.",
+      "deterministic_inputs": [
+        "operation_code",
+        "source_revision",
+        "policy_sha",
+        "reservation_identity"
+      ],
+      "jit_refs": [
+        "policy refs",
+        "EKB codes",
+        "exact source artifact refs"
+      ],
+      "excluded_payloads": [
+        "full policy documents",
+        "full EKB entries",
+        "unrelated READMEs"
+      ],
+      "token_budget": {
+        "soft_limit_tokens": 1500,
+        "hard_limit_tokens": 3000,
+        "measurement_method": "UTF8_BYTES_DIV_4"
+      },
+      "degradation_rule": "At hard limit, block or reduce context through JIT retrieval; never drop required authority evidence."
+    },
+    "wiring": [
+      {
+        "from_ref": "governed migration caller",
+        "to_ref": "contract://migration/pre-apply",
+        "contract_ref": "contract://migration/apply",
+        "data_carried": [
+          "operation identity",
+          "source identity",
+          "digest",
+          "idempotency identity"
+        ],
+        "precondition": "Caller belongs to the bounded adopted consumer set.",
+        "fail_closed_behavior": "Missing or stale reservation blocks before live apply."
+      },
+      {
+        "from_ref": "contract://migration/pre-apply",
+        "to_ref": "gate://A2R_PARITY",
+        "contract_ref": "contract://migration/apply",
+        "data_carried": [
+          "reserved identity",
+          "observed live identity"
+        ],
+        "precondition": "Apply completed through the governed boundary.",
+        "fail_closed_behavior": "Any post-apply divergence blocks closure and produces reconciliation evidence."
+      }
+    ],
+    "deliverables": [
+      {
+        "artifact_ref": "contract://migration/pre-apply",
+        "change_type": "MODIFY",
+        "exact_delta": "Require exact source identity and digest reservation before any live migration effect.",
+        "dependencies": [
+          "existing migration identity ledger",
+          "A2R parity gate"
+        ],
+        "acceptance_refs": [
+          "AC-1",
+          "REG-BYPASS"
+        ]
+      },
+      {
+        "artifact_ref": "governed migration apply caller set",
+        "change_type": "BIND",
+        "exact_delta": "Connect each bounded caller set to the reservation boundary before enabling enforcement.",
+        "dependencies": [
+          "consumer inventory"
+        ],
+        "acceptance_refs": [
+          "AC-1",
+          "REG-RETRY"
+        ]
+      }
+    ],
+    "observability_plan": [
+      {
+        "signal": "pre_apply_identity_block_count",
+        "source_ref": "contract://migration/pre-apply",
+        "expected_change": "Invalid or stale identities are blocked before live effect.",
+        "alert_or_gate": "Gate if any activated consumer bypasses the boundary."
+      },
+      {
+        "signal": "post_apply_parity_divergence",
+        "source_ref": "gate://A2R_PARITY",
+        "expected_change": "Zero divergence for applies that passed pre-apply reservation.",
+        "alert_or_gate": "Block closure on nonzero divergence."
+      }
+    ],
+    "decision_closure": {
+      "handoff_ready": true,
+      "open_design_decisions": [],
+      "implementation_preconditions": [],
+      "closure_statement": "The implementer may resolve fresh consumer inventory values, but no remaining choice can change authority, enforcement, wiring, transition, rollback or acceptance."
+    }
   }
 }
