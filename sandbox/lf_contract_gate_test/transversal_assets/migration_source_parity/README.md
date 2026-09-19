@@ -35,9 +35,27 @@ Antes de usarlo, resolver el activo en `public.lf_activos` y confirmar que no es
 
 Las superficies anteriores son referencias de consumo/implementación. Si existe discrepancia entre este README y el contrato/runtime vigente, prevalece la autoridad canónica y el README debe actualizarse.
 
+## Independencia entre owners
+
+Un `remote-only` no se atribuye automáticamente al PR que está siendo validado.
+
+Puede clasificarse como `EXTERNAL_OWNER_PENDING` únicamente cuando la evidencia current demuestra, para la misma identidad `version + name + path`:
+
+- exactamente una ejecución owner `ACTUALIZACION_DB_LF` en estado `IN_PROGRESS`;
+- exactamente un PR abierto del mismo repositorio que contiene ese path;
+- head SHA válido y distinto del exact-head que está siendo validado;
+- source del head owner accesible;
+- contenido del source owner equivalente al ledger remoto bajo el comparador de transporte vigente.
+
+Ese `remote-only` queda fuera de la paridad del PR ajeno porque pertenece a otro carril demostrado. No se copia su migration ni se absorbe su owner.
+
+Cuando el owner es ausente, múltiple, cerrado, ambiguo, de otro repositorio, el source no coincide con Supabase o la evidencia de PRs abiertos está incompleta, el resultado sigue siendo `FAIL`.
+
 ## Fail-closed / límites
 
 No aplicar DDL remoto para hacer verde el gate ni reconstruir source desde el ledger vivo.
+
+No hardcodear número de PR, migration version, filename, SHA u owner para exceptuar un `remote-only`. La clasificación se resuelve en cada corrida desde ejecución gobernada + PR abierto + source exacto + ledger.
 
 Si falta una dependencia, binding, currentness, permiso o evidencia requerida, el consumidor debe bloquear y reportar el primer punto no satisfecho.
 
