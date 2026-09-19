@@ -1,24 +1,105 @@
 {
   "status": "SYSTEMIC_REPAIR_SPEC",
   "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
-  "symptom": "Migration parity validator fails after a source-only restoration.",
-  "immediate_cause": "A live migration identity is not accepted by the current parity policy.",
-  "systemic_root_cause": "Migration identity is not reserved and validated atomically before any live apply, allowing source/live identity divergence to recur.",
+  "symptom": {
+    "statement": "Migration parity validator fails after a source-only restoration.",
+    "status": "OBSERVED",
+    "evidence_refs": [
+      "run://migration-parity/failure-1"
+    ],
+    "missing_evidence": []
+  },
+  "immediate_cause": {
+    "statement": "A live migration identity is not bound to the exact canonical source before apply.",
+    "status": "ESTABLISHED",
+    "evidence_refs": [
+      "run://migration-parity/failure-1",
+      "ledger://migration/identity-1"
+    ],
+    "missing_evidence": []
+  },
+  "systemic_root_cause": {
+    "statement": "Migration identity and source digest are not reserved atomically before live apply, allowing source/live divergence to recur.",
+    "status": "ESTABLISHED",
+    "evidence_refs": [
+      "ekb://CI-MIG-001",
+      "ledger://migration/identity-1",
+      "repo://migration/source-1"
+    ],
+    "missing_evidence": []
+  },
   "causal_chain": [
-    "candidate migration prepared",
-    "live identity can diverge before canonical source binding",
-    "post-cutover validator detects divergence after effect"
+    {
+      "statement": "A candidate migration is prepared.",
+      "status": "OBSERVED",
+      "evidence_refs": [
+        "repo://migration/source-1"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "statement": "Live apply can occur before exact source identity is reserved.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "ledger://migration/identity-1",
+        "run://migration-parity/failure-1"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "statement": "The post-cutover parity validator detects the divergence after the live effect.",
+      "status": "OBSERVED",
+      "evidence_refs": [
+        "run://migration-parity/failure-1"
+      ],
+      "missing_evidence": []
+    }
   ],
-  "first_bad_control": "pre-apply migration identity reservation",
-  "escape_control": "post-cutover parity validator",
+  "first_bad_control": {
+    "statement": "Pre-apply migration identity reservation does not enforce exact source identity before the effect.",
+    "status": "ESTABLISHED",
+    "evidence_refs": [
+      "contract://migration/pre-apply",
+      "run://migration-parity/failure-1"
+    ],
+    "missing_evidence": []
+  },
+  "escape_control": {
+    "statement": "The post-cutover migration parity validator detects divergence only after the live effect.",
+    "status": "ESTABLISHED",
+    "evidence_refs": [
+      "gate://A2R_PARITY",
+      "run://migration-parity/failure-1"
+    ],
+    "missing_evidence": []
+  },
   "recurrence_evidence": [
-    {"ref": "ekb://CI-MIG-001", "fact": "recurrence frequency > 1"}
+    {
+      "ref": "ekb://CI-MIG-001",
+      "fact": "The same source/live divergence class occurred more than once.",
+      "evidence_class": "OBSERVED_HISTORY",
+      "scope": "historical governed migration incidents"
+    },
+    {
+      "ref": "run://migration-parity/failure-1",
+      "fact": "The current parity validator observed the same divergence class.",
+      "evidence_class": "OBSERVED_LIVE",
+      "scope": "current governed migration run"
+    }
   ],
   "live_authority_packet": {
     "status": "COMPLETE",
     "observed_at": "2026-09-19T12:00:00Z",
-    "applicable_surfaces": ["SQL_FUNCTIONS", "REPOSITORY", "DEPLOYED_RUNTIME"],
-    "inspected_surfaces": ["SQL_FUNCTIONS", "REPOSITORY", "DEPLOYED_RUNTIME"],
+    "applicable_surfaces": [
+      "SQL_FUNCTIONS",
+      "REPOSITORY",
+      "DEPLOYED_RUNTIME"
+    ],
+    "inspected_surfaces": [
+      "SQL_FUNCTIONS",
+      "REPOSITORY",
+      "DEPLOYED_RUNTIME"
+    ],
     "evidence_refs": [
       "supabase://pg_proc/migration_apply_boundary",
       "github://repo/main/migration-apply-boundary",
@@ -32,7 +113,10 @@
       "effect": "migration apply effect",
       "observed_ref": "supabase://migration-ledger/current-effect",
       "declared_producer": "governed migration apply",
-      "observed_producer_refs": ["runtime://migration-worker/current"],
+      "declared_producer_ref": "contract://migration/apply-producer",
+      "observed_producer_refs": [
+        "runtime://migration-worker/current"
+      ],
       "reconciliation_status": "MATCH",
       "blocking": false
     }
@@ -42,44 +126,297 @@
   "should_exist_assessment": {
     "verdict": "SHOULD_EXIST",
     "subject": "migration parity control",
-    "real_consumers": ["governed migration apply", "post-merge parity verification"],
+    "real_consumers": [
+      {
+        "consumer": "governed migration apply",
+        "evidence_ref": "contract://migration/apply"
+      },
+      {
+        "consumer": "post-merge parity verification",
+        "evidence_ref": "gate://A2R_PARITY"
+      }
+    ],
     "elimination_impact": "Live/source drift could pass without a deterministic currentness check.",
     "native_or_existing_alternative": "Reuse the existing A2R parity boundary rather than create a second parity engine.",
-    "evidence_refs": ["gate://A2R_PARITY"]
+    "evidence_refs": [
+      "gate://A2R_PARITY",
+      "contract://migration/apply"
+    ],
+    "missing_evidence": []
   },
   "alternatives": [
-    {"id":"A","description":"restore source only","prevention":"low","complexity":"low","blast_radius":"low","reuse":"low","fail_closed":"partial","idempotency":"none","recoverability":"manual","operational_cost":"low"},
-    {"id":"B","description":"pre-apply identity reservation hard guard","prevention":"high","complexity":"medium","blast_radius":"medium","reuse":"high","fail_closed":"high","idempotency":"high","recoverability":"high","operational_cost":"medium"},
-    {"id":"C","description":"replace migration workflow","prevention":"high","complexity":"high","blast_radius":"high","reuse":"medium","fail_closed":"high","idempotency":"high","recoverability":"medium","operational_cost":"high"}
+    {
+      "id": "A",
+      "description": "Restore source only.",
+      "prevention": "Low; recurrence remains possible.",
+      "complexity": "Low.",
+      "blast_radius": "Low.",
+      "reuse": "Low.",
+      "fail_closed": "Partial.",
+      "idempotency": "No new guarantee.",
+      "recoverability": "Manual.",
+      "operational_cost": "Low.",
+      "basis_refs": [
+        "run://migration-parity/failure-1"
+      ]
+    },
+    {
+      "id": "B",
+      "description": "Add a pre-apply identity reservation hard guard.",
+      "prevention": "High; prevents divergence before effect.",
+      "complexity": "Medium.",
+      "blast_radius": "Medium.",
+      "reuse": "High.",
+      "fail_closed": "High.",
+      "idempotency": "High.",
+      "recoverability": "High.",
+      "operational_cost": "Medium.",
+      "basis_refs": [
+        "contract://migration/pre-apply",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "id": "C",
+      "description": "Replace the migration workflow.",
+      "prevention": "High.",
+      "complexity": "High.",
+      "blast_radius": "High.",
+      "reuse": "Medium.",
+      "fail_closed": "High.",
+      "idempotency": "High.",
+      "recoverability": "Medium.",
+      "operational_cost": "High.",
+      "basis_refs": [
+        "contract://migration/apply"
+      ]
+    }
   ],
+  "preferred_alternative": "B",
   "selected_alternative": "B",
   "rejected_alternatives": [
-    {"id":"A","reason":"does not prevent recurrence"},
-    {"id":"C","reason":"larger than minimum sufficient repair"}
+    {
+      "id": "A",
+      "reason": "It does not prevent recurrence at the origin boundary.",
+      "evidence_refs": [
+        "run://migration-parity/failure-1"
+      ]
+    },
+    {
+      "id": "C",
+      "reason": "It exceeds the minimum sufficient repair and increases blast radius.",
+      "evidence_refs": [
+        "contract://migration/apply"
+      ]
+    }
   ],
   "falsification_results": [
-    {"case":"bypass","result":"PASS","evidence_ref":"test://bypass/run-1","evidence_class":"OBSERVED_TEST"},
-    {"case":"retry","result":"PASS","evidence_ref":"test://retry/run-1","evidence_class":"OBSERVED_TEST"},
-    {"case":"concurrency","result":"PASS","evidence_ref":"test://concurrency/run-1","evidence_class":"OBSERVED_TEST"},
-    {"case":"partial_failure","result":"PASS","evidence_ref":"test://partial/run-1","evidence_class":"OBSERVED_TEST"},
-    {"case":"stale_state","result":"PASS","evidence_ref":"test://stale/run-1","evidence_class":"OBSERVED_TEST"},
-    {"case":"interrupted_execution","result":"PASS","evidence_ref":"test://interrupt/run-1","evidence_class":"OBSERVED_TEST"},
-    {"case":"replay_or_duplicate","result":"PASS","evidence_ref":"test://replay/run-1","evidence_class":"OBSERVED_TEST"},
-    {"case":"undeclared_or_unversioned_caller","result":"PASS","evidence_ref":"test://caller-provenance/run-1","evidence_class":"OBSERVED_TEST"}
+    {
+      "case": "bypass",
+      "result": "PASS",
+      "evidence_ref": "test://bypass/run-1",
+      "evidence_class": "OBSERVED_TEST"
+    },
+    {
+      "case": "retry",
+      "result": "PASS",
+      "evidence_ref": "test://retry/run-1",
+      "evidence_class": "OBSERVED_TEST"
+    },
+    {
+      "case": "concurrency",
+      "result": "PASS",
+      "evidence_ref": "test://concurrency/run-1",
+      "evidence_class": "OBSERVED_TEST"
+    },
+    {
+      "case": "partial_failure",
+      "result": "PASS",
+      "evidence_ref": "test://partial/run-1",
+      "evidence_class": "OBSERVED_TEST"
+    },
+    {
+      "case": "stale_state",
+      "result": "PASS",
+      "evidence_ref": "test://stale/run-1",
+      "evidence_class": "OBSERVED_TEST"
+    },
+    {
+      "case": "interrupted_execution",
+      "result": "PASS",
+      "evidence_ref": "test://interrupt/run-1",
+      "evidence_class": "OBSERVED_TEST"
+    },
+    {
+      "case": "replay_or_duplicate",
+      "result": "PASS",
+      "evidence_ref": "test://replay/run-1",
+      "evidence_class": "OBSERVED_TEST"
+    },
+    {
+      "case": "undeclared_or_unversioned_caller",
+      "result": "PASS",
+      "evidence_ref": "test://caller-provenance/run-1",
+      "evidence_class": "OBSERVED_TEST"
+    }
   ],
-  "origin_asset": "migration apply boundary",
-  "origin_operation": "governed migration apply",
-  "owner": "canonical owner operation",
-  "invariant": "A live migration may apply only after exact source identity and digest are reserved and current.",
-  "hard_guard": {
-    "control": "pre-apply reservation gate",
-    "fail_closed_condition": "identity or digest missing/mismatch",
-    "observable_result": "zero live effect and deterministic blocking code"
+  "origin_asset": {
+    "status": "RESOLVED",
+    "code": "MIGRATION_APPLY_BOUNDARY",
+    "evidence_ref": "contract://migration/apply",
+    "missing_evidence": []
   },
-  "acceptance_criteria": ["all historical parity cases pass", "current parity validator clean", "retry preserves reserved identity"],
-  "historical_regressions": ["source/live identity mismatch blocks", "live without canonical source blocks", "retry does not mint a new identity"],
-  "residual_risks": ["legacy migrations may require grandfathered classification"],
-  "evidence_map": ["ekb://CI-MIG-001", "gate://A2R_PARITY", "runtime://migration-worker/current"],
+  "origin_operation": {
+    "status": "RESOLVED",
+    "code": "GOVERNED_MIGRATION_APPLY",
+    "evidence_ref": "contract://migration/apply",
+    "missing_evidence": []
+  },
+  "owner": {
+    "status": "RESOLVED",
+    "code": "LF_MIGRATION_GOVERNANCE",
+    "evidence_ref": "registry://migration/owner",
+    "missing_evidence": []
+  },
+  "invariant": {
+    "statement": "A live migration may apply only after exact source identity and digest are reserved and current.",
+    "evidence_refs": [
+      "test://bypass/run-1",
+      "test://retry/run-1",
+      "gate://A2R_PARITY"
+    ],
+    "missing_evidence": [],
+    "validation_state": "VERIFIED"
+  },
+  "hard_guard": {
+    "control": "Pre-apply source identity reservation gate.",
+    "enforcement_point_ref": "contract://migration/pre-apply",
+    "fail_closed_condition": "Block when exact source identity or digest is missing or mismatched.",
+    "blocking_code": "MIGRATION_SOURCE_IDENTITY_NOT_CURRENT",
+    "observable_result": "No live migration effect occurs and a deterministic blocking code is emitted.",
+    "evidence_refs": [
+      "test://bypass/run-1",
+      "test://stale/run-1"
+    ],
+    "missing_evidence": [],
+    "validation_state": "VERIFIED"
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "Historical source/live divergence cases are rejected before effect.",
+      "verification_method": "Replay the historical divergence fixtures through the pre-apply gate.",
+      "expected_result": "All fixtures block before apply."
+    },
+    {
+      "criterion": "Current parity remains clean after a valid apply.",
+      "verification_method": "Run the canonical migration source parity validator on the exact candidate head.",
+      "expected_result": "PASS."
+    },
+    {
+      "criterion": "Retry preserves the reserved identity.",
+      "verification_method": "Execute the same governed request twice with the same idempotency identity.",
+      "expected_result": "No second effective apply identity is minted."
+    }
+  ],
+  "historical_regressions": [
+    {
+      "case_id": "HIST-MIG-001",
+      "occurrence_ref": "run://migration-parity/failure-1",
+      "observed_failure": "Live/source identity diverged before the parity gate detected it.",
+      "evidence_refs": [
+        "run://migration-parity/failure-1",
+        "ekb://CI-MIG-001"
+      ]
+    }
+  ],
+  "planned_regressions": [
+    {
+      "case_id": "REG-BYPASS",
+      "scenario": "Attempt apply without a reserved exact source identity.",
+      "verification_method": "Invoke the pre-apply boundary without the reservation receipt.",
+      "expected_result": "Block before effect."
+    },
+    {
+      "case_id": "REG-RETRY",
+      "scenario": "Retry an already reserved migration request.",
+      "verification_method": "Replay the same idempotency identity.",
+      "expected_result": "Reuse the same effective identity without duplicate apply."
+    },
+    {
+      "case_id": "REG-STALE",
+      "scenario": "Use a stale source digest after reservation.",
+      "verification_method": "Mutate the source head between reservation and apply.",
+      "expected_result": "Block with currentness mismatch."
+    }
+  ],
+  "current_uncertainties": [],
+  "residual_risks": [
+    {
+      "risk": "Legacy migrations may require grandfathered classification outside the repaired boundary.",
+      "evidence_refs": [
+        "ekb://CI-MIG-001"
+      ]
+    }
+  ],
+  "evidence_map": [
+    {
+      "claim_path": "$.symptom",
+      "evidence_refs": [
+        "run://migration-parity/failure-1"
+      ]
+    },
+    {
+      "claim_path": "$.immediate_cause",
+      "evidence_refs": [
+        "run://migration-parity/failure-1",
+        "ledger://migration/identity-1"
+      ]
+    },
+    {
+      "claim_path": "$.systemic_root_cause",
+      "evidence_refs": [
+        "ekb://CI-MIG-001",
+        "ledger://migration/identity-1",
+        "repo://migration/source-1"
+      ]
+    },
+    {
+      "claim_path": "$.first_bad_control",
+      "evidence_refs": [
+        "contract://migration/pre-apply",
+        "run://migration-parity/failure-1"
+      ]
+    },
+    {
+      "claim_path": "$.escape_control",
+      "evidence_refs": [
+        "gate://A2R_PARITY",
+        "run://migration-parity/failure-1"
+      ]
+    },
+    {
+      "claim_path": "$.origin_asset",
+      "evidence_refs": [
+        "contract://migration/apply"
+      ]
+    },
+    {
+      "claim_path": "$.origin_operation",
+      "evidence_refs": [
+        "contract://migration/apply"
+      ]
+    },
+    {
+      "claim_path": "$.owner",
+      "evidence_refs": [
+        "registry://migration/owner"
+      ]
+    }
+  ],
   "blocking_codes": [],
-  "next_gate": "OWNER_IMPLEMENTATION"
+  "next_gate": {
+    "gate": "OWNER_IMPLEMENTATION",
+    "entry_condition": "The systemic repair spec remains evidence-complete and all falsification cases stay PASS on the exact source revision.",
+    "exit_condition": "The owning implementation operation applies the bounded repair and passes its governed readback."
+  }
 }
