@@ -184,6 +184,40 @@ def evaluate(payload, contract_gate):
         if not isinstance(guard, dict) or guard.get("validation_state") not in {"SPECIFIED", "VERIFIED"}:
             codes.append("SYSTEMIC_SPEC_HARD_GUARD_NOT_SPECIFIED")
 
+        depth = payload.get("solution_depth") if isinstance(payload.get("solution_depth"), dict) else {}
+        research = payload.get("research_assurance") if isinstance(payload.get("research_assurance"), dict) else {}
+        challenges = payload.get("challenger_review") if isinstance(payload.get("challenger_review"), list) else []
+        omissions = payload.get("omission_discovery") if isinstance(payload.get("omission_discovery"), list) else []
+        package = payload.get("implementation_package") if isinstance(payload.get("implementation_package"), dict) else {}
+        closure = package.get("decision_closure") if isinstance(package.get("decision_closure"), dict) else {}
+        if research.get("research_complete") is not True:
+            codes.append("SYSTEMIC_SPEC_RESEARCH_NOT_COMPLETE")
+        if research.get("current_practice_research_required") is True and not research.get("external_evidence_refs"):
+            codes.append("CURRENT_PRACTICE_EVIDENCE_REQUIRED")
+        if not research.get("first_solution_disposition"):
+            codes.append("FIRST_SOLUTION_NOT_CHALLENGED")
+        if depth.get("mode") == "DEEP_ARCHITECTURE_RESEARCH" and len(challenges) < 3:
+            codes.append("DEEP_CHALLENGER_REVIEW_INSUFFICIENT")
+        if any(isinstance(x, dict) and x.get("outcome") == "BLOCKED" for x in challenges):
+            codes.append("SYSTEMIC_SPEC_WITH_UNRESOLVED_CHALLENGE")
+        required_omissions = {"ARCHITECTURE","CONTROLS","POLICIES_CONTRACTS","CONTEXT_TRANSPORT","WIRING","COMPATIBILITY_TRANSITION","RECOVERY_TERMINALITY","OBSERVABILITY","SECURITY_AUTHORITY","COST_PERFORMANCE","TESTING_ASSURANCE","OPERABILITY_MAINTENANCE"}
+        observed_omissions = {x.get("dimension") for x in omissions if isinstance(x, dict)}
+        if required_omissions - observed_omissions:
+            codes.append("SYSTEMIC_SPEC_OMISSION_DISCOVERY_INCOMPLETE")
+        if not package:
+            codes.append("SYSTEMIC_SPEC_IMPLEMENTATION_PACKAGE_REQUIRED")
+        if closure.get("open_design_decisions") != []:
+            codes.append("SYSTEMIC_SPEC_OPEN_DESIGN_DECISIONS")
+        if closure.get("handoff_ready") is not True:
+            codes.append("SYSTEMIC_SPEC_HANDOFF_NOT_READY")
+        for p in closure.get("implementation_preconditions") or []:
+            if not isinstance(p, dict) or p.get("design_effect") != "NONE" or not all(p.get(k) for k in ("resolver_ref","expected_shape","decision_rule","stage")):
+                codes.append("IMPLEMENTATION_PRECONDITION_NOT_MECHANICAL")
+                break
+        context_transport = package.get("context_transport") if isinstance(package.get("context_transport"), dict) else {}
+        if context_transport.get("status") == "APPLIES" and not all(context_transport.get(k) for k in ("compiler_ref","delivery_strategy","token_budget","degradation_rule")):
+            codes.append("CONTEXT_TRANSPORT_NOT_CLOSED")
+
         if not payload.get("implementation_delta"):
             codes.append("SYSTEMIC_SPEC_IMPLEMENTATION_DELTA_REQUIRED")
         if not isinstance(payload.get("transition_plan"), dict):
@@ -194,6 +228,20 @@ def evaluate(payload, contract_gate):
         if isinstance(falsifications, list):
             if any(isinstance(item, dict) and item.get("result") not in {"PASS", "PLANNED"} for item in falsifications):
                 codes.append("SYSTEMIC_SPEC_FALSIFICATION_NOT_SPECIFIED")
+            for item in falsifications:
+                if not isinstance(item, dict):
+                    continue
+                protocol = item.get("test_protocol")
+                if not isinstance(protocol, dict) or not all(isinstance(protocol.get(k), list) and len(protocol.get(k)) > 0 for k in ("setup", "action", "assertions")) or not protocol.get("failure_signal"):
+                    codes.append("EXECUTABLE_TEST_PROTOCOL_INCOMPLETE")
+                    break
+        for item in payload.get("planned_regressions") or []:
+            if not isinstance(item, dict):
+                continue
+            protocol = item.get("test_protocol")
+            if not isinstance(protocol, dict) or not all(isinstance(protocol.get(k), list) and len(protocol.get(k)) > 0 for k in ("setup", "action", "assertions")) or not protocol.get("failure_signal"):
+                codes.append("EXECUTABLE_TEST_PROTOCOL_INCOMPLETE")
+                break
 
     historical = payload.get("historical_regressions")
     if not isinstance(historical, list):
