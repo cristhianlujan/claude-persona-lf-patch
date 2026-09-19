@@ -327,9 +327,103 @@ def run():
     x = copy.deepcopy(GOOD)
     x["current_uncertainties"][0]["impact"] = "IMPLEMENTATION_PRECONDITION"
     x["current_uncertainties"][0]["design_consequence"] = "No architecture change; exact inventory is required before activating the bounded stage."
+    x["current_uncertainties"][0]["containment_ref"] = "$.implementation_package.decision_closure.implementation_preconditions[0]"
     x["execution_effect_reconciliation"][0]["impact"] = "IMPLEMENTATION_PRECONDITION"
     x["live_authority_packet"]["unavailable_source_assessments"][0]["impact"] = "IMPLEMENTATION_PRECONDITION"
+    x["implementation_package"]["decision_closure"]["implementation_preconditions"] = [{
+        "name": "exact implementation-stage inventory",
+        "resolver_ref": "resolver://exact-stage-inventory",
+        "expected_shape": "array<canonical_identity>",
+        "decision_rule": "Apply the already-selected bounded stage to every returned identity; unresolved currentness blocks the stage without selecting a different architecture.",
+        "stage": "ADOPT",
+        "design_effect": "NONE",
+    }]
     cases.append(evaluate_case("ready_spec_allows_implementation_precondition", x, True))
+
+
+    x = copy.deepcopy(GOOD)
+    x["implementation_package"]["decision_closure"]["open_design_decisions"] = ["Choose whether enforcement belongs in the recorder or wrapper."]
+    x["implementation_package"]["decision_closure"]["handoff_ready"] = False
+    cases.append(evaluate_case(
+        "ready_spec_rejects_open_design_decision", x, False,
+        ["SYSTEMIC_SPEC_OPEN_DESIGN_DECISIONS"],
+    ))
+
+    x = copy.deepcopy(GOOD)
+    x["implementation_package"]["context_transport"]["compiler_ref"] = None
+    cases.append(evaluate_case(
+        "ready_spec_requires_closed_context_transport", x, False,
+        ["CONTEXT_TRANSPORT_NOT_CLOSED"],
+    ))
+
+    x = copy.deepcopy(GOOD)
+    x["solution_depth"]["mode"] = "DEEP_ARCHITECTURE_RESEARCH"
+    x["challenger_review"] = x["challenger_review"][:1]
+    cases.append(evaluate_case(
+        "deep_architecture_requires_real_challenger", x, False,
+        ["CHALLENGER_REVIEW_INSUFFICIENT"],
+    ))
+
+    x = copy.deepcopy(GOOD)
+    x["omission_discovery"] = [d for d in x["omission_discovery"] if d["dimension"] != "COST_PERFORMANCE"]
+    cases.append(evaluate_case(
+        "ready_spec_requires_omission_discovery", x, False,
+        ["SYSTEMIC_SPEC_OMISSION_DIMENSIONS_MISSING"],
+    ))
+
+    x = copy.deepcopy(GOOD)
+    x["current_uncertainties"][0]["impact"] = "IMPLEMENTATION_PRECONDITION"
+    x["current_uncertainties"][0]["containment_ref"] = "$.implementation_package.decision_closure.implementation_preconditions[0]"
+    x["implementation_package"]["decision_closure"]["implementation_preconditions"] = [{
+        "name": "fresh caller inventory",
+        "resolver_ref": "resolver://exact-current-callers",
+        "expected_shape": "array<caller_identity>",
+        "decision_rule": "Apply the already-selected repair to every returned caller; empty inventory blocks that stage without changing architecture.",
+        "stage": "ADOPT",
+        "design_effect": "NONE",
+    }]
+    cases.append(evaluate_case("ready_spec_allows_mechanical_implementation_precondition", x, True))
+
+    x = copy.deepcopy(GOOD)
+    x["current_uncertainties"][0]["impact"] = "IMPLEMENTATION_PRECONDITION"
+    x["current_uncertainties"][0]["containment_ref"] = "$.implementation_package.decision_closure.implementation_preconditions[0]"
+    x["implementation_package"]["decision_closure"]["implementation_preconditions"] = [{
+        "name": "choose enforcement point",
+        "resolver_ref": "",
+        "expected_shape": "",
+        "decision_rule": "Decide what is best.",
+        "stage": "ADOPT",
+        "design_effect": "MAY_CHANGE",
+    }]
+    cases.append(evaluate_case(
+        "implementation_precondition_cannot_hide_design_work", x, False,
+        ["IMPLEMENTATION_PRECONDITION_NOT_MECHANICAL"],
+    ))
+
+    x = copy.deepcopy(GOOD)
+    x["falsification_results"][0]["test_protocol"]["action"] = []
+    cases.append(evaluate_case(
+        "falsification_requires_executable_protocol", x, False,
+        ["EXECUTABLE_TEST_PROTOCOL_INCOMPLETE"],
+    ))
+
+    x = copy.deepcopy(GOOD)
+    x["solution_depth"] = {
+        "mode": "LIGHTWEIGHT",
+        "rationale": "The defect is deterministic and already classified by a current canonical rule.",
+        "complexity_signals": ["NONE"],
+    }
+    x["research_assurance"]["current_practice_research_required"] = False
+    x["research_assurance"]["external_research_rationale"] = "External technique research cannot change this already-classified deterministic repair."
+    x["research_assurance"]["external_evidence_refs"] = []
+    x["research_assurance"]["patterns_compared"] = [{
+        "pattern": "existing canonical deterministic repair",
+        "fit": "Exact match to the classified defect.",
+        "tradeoff": "No new architecture is introduced.",
+        "source_refs": ["ekb://deterministic-rule"],
+    }]
+    x["challenger_review"] = [x["challenger_review"][0]]
+    cases.append(evaluate_case("lightweight_mode_does_not_require_external_research", x, True))
 
     malformed = [None, [], {}, {"status": "SYSTEMIC_REPAIR_SPEC"}]
     ok = all(validator.validate(item)["valid"] is False for item in malformed)
@@ -337,7 +431,7 @@ def run():
 
     passed = sum(1 for _, ok, _ in cases if ok)
     print(json.dumps({
-        "suite": "SYSTEMIC_ROOT_CAUSE_REPAIR_SPEC_READINESS_20260919",
+        "suite": "SYSTEMIC_ROOT_CAUSE_REPAIR_IMPLEMENTATION_CLOSURE_20260919",
         "evidence_class": "STRUCTURAL_AND_SEMANTIC_REGRESSION_NOT_LIVE_PROFILE_EXECUTION",
         "passed": passed,
         "total": len(cases),
