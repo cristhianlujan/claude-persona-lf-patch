@@ -33,7 +33,13 @@
     "qualification_suite": "TS-RUNTIME-OP-UPDATE-V1",
     "qualification_binding": "BIND-OP-RUNTIME-UPDATE-V1",
     "lifecycle_state": "OP_CANDIDATE",
-    "router_binding_status": "CANDIDATO_READ_ONLY"
+    "router_binding_status": "CANDIDATO_READ_ONLY",
+    "required_policy_roles": [
+      "GOVERNANCE_LIFECYCLE",
+      "POLICY_CONSUMPTION",
+      "SOURCE_RESOLUTION",
+      "STATE_MODEL"
+    ]
   },
   "promotion_gate": {
     "requires_qualification": true,
