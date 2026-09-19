@@ -2,38 +2,11 @@
   "execution_id": "EXEC-LF-SRCR-LIVE-AUTHORITY-RECONCILIATION-20260919-003",
   "steps": [
     {
-      "step_id": "router",
-      "evidence_ref": "supabase://public.lf_router_resolve_v1/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF/PROFILE_UPDATE",
+      "step_id": "github_write",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@8b4fd451c4312787962d01561e274f99ac1cac7d",
       "evidence_payload": {
-        "router_read": {
-          "router": "ACT-0001",
-          "status": "READY_TO_EXECUTE",
-          "operation_code": "ACTUALIZACION_PERFIL_LF",
-          "action_code": "PROFILE_UPDATE"
-        },
-        "action": "PROFILE_UPDATE",
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
-      "step_id": "profile_resolve",
-      "evidence_ref": "supabase://public.lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
-      "evidence_payload": {
-        "codigo_activo": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
-        "profile_slug": "systemic_root_cause_repair_lf",
-        "repo_path": "profiles/systemic_root_cause_repair_lf",
-        "exact_profile_resolved": true,
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
-      "step_id": "baseline_read",
-      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@a0f43576820eff8ffecf21a94dd38f612ec470ed/profiles/systemic_root_cause_repair_lf",
-      "evidence_payload": {
-        "baseline_revision": "a0f43576820eff8ffecf21a94dd38f612ec470ed",
-        "baseline_files": [
+        "branch": "lf/srcr-live-authority-reconciliation-20260919",
+        "written_files": [
           "profiles/systemic_root_cause_repair_lf/SKILL.md",
           "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
           "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
@@ -41,88 +14,31 @@
           "profiles/systemic_root_cause_repair_lf/evals/remediation_20260827/run_cases.py",
           "profiles/systemic_root_cause_repair_lf/examples/good_output.json"
         ],
-        "before_evidence": [
-          "MR02 native regression 83e6bf3a... omitted live authority packet/effect-producer reconciliation",
-          "Prior bad output 676258dd... could declare SYSTEMIC_REPAIR_SPEC without enforced live-authority reconciliation",
-          "Existing prose required live authority but schema/validators did not enforce it"
-        ],
+        "commit_sha": "8b4fd451c4312787962d01561e274f99ac1cac7d",
+        "identity_preserved": true,
+        "runtime_unchanged": true,
+        "automatic_promotion": false,
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
     },
     {
-      "step_id": "change_scope",
-      "evidence_ref": "governance://srcr-live-authority-effect-producer-v1",
+      "step_id": "github_readback",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@8b4fd451c4312787962d01561e274f99ac1cac7d/profiles/systemic_root_cause_repair_lf",
       "evidence_payload": {
-        "defect": "Critical live-authority and effect-producer reconciliation obligations are prose-only, so executors can omit or downgrade them.",
-        "root_cause": "The SRCR typed output contract and deterministic validators do not encode the mandatory live-authority trajectory as readiness invariants.",
-        "minimal_patch_scope": [
-          "profiles/systemic_root_cause_repair_lf/SKILL.md",
-          "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
-          "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
-          "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
-          "profiles/systemic_root_cause_repair_lf/evals/remediation_20260827/run_cases.py",
-          "profiles/systemic_root_cause_repair_lf/examples/good_output.json"
+        "exact_head": "8b4fd451c4312787962d01561e274f99ac1cac7d",
+        "readback_files": [
+          "SKILL.md@bdcae436bf3489b41242117b416044e0b0940200",
+          "schemas/output.schema.json@d0d235a0c6c71b7f2c838cb8b46454dcd4814f38",
+          "validators/runtime_validate.py@6d54856faafa336c24176c6720ecd670b82f6956",
+          "validators/runtime_semantic_utility.py@5336c5ba23ba038da2fc70b743c6dbf35fbc4375",
+          "evals/remediation_20260827/run_cases.py@a2e748680718480fa60b17704a0da8c17775ce5e",
+          "examples/good_output.json@7b9ebc6011ce5760605aae60982b822baaf1b860"
         ],
-        "preserved_constraints": [
-          "profile remains CANDIDATO/READ_ONLY",
-          "no runtime activation",
-          "no production activation",
-          "no second engine/table/runner/policy",
-          "same profile_pack_id SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2"
-        ],
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
-      "step_id": "regression_plan",
-      "evidence_ref": "governance://srcr-live-authority-effect-producer-v1/regression-plan",
-      "evidence_payload": {
-        "positive_cases": [
-          "complete live authority packet + all material effects MATCH may produce SYSTEMIC_REPAIR_SPEC",
-          "partial live authority may return NEEDS_MORE_EVIDENCE only with explicit blockers"
-        ],
-        "negative_cases": [
-          "83e6bf3a... rejected for missing live authority/effect reconciliation",
-          "676258dd... rejected for missing live authority/effect reconciliation",
-          "UNRESOLVED_PRODUCER blocks ready spec",
-          "design-only falsification PASS rejected"
-        ],
-        "adversarial_cases": [
-          "effect claims MATCH with empty producer refs",
-          "authority packet COMPLETE with unavailable required source",
-          "material authority contradiction moved to residual risk"
-        ],
-        "holdout": "fresh non-MR02 recurrent incident using the same generic authority/effect reconciliation contract",
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
-      "step_id": "pre_write_execution_binding_gate",
-      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@a0f43576820eff8ffecf21a94dd38f612ec470ed/profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
-      "evidence_payload": {
-        "execution_id": "EXEC-LF-SRCR-LIVE-AUTHORITY-RECONCILIATION-20260919-003",
-        "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
-        "target_path": "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
-        "write_plan": {
-          "branch": "lf/srcr-live-authority-reconciliation-20260919",
-          "base": "a0f43576820eff8ffecf21a94dd38f612ec470ed",
-          "scope": [
-            "profiles/systemic_root_cause_repair_lf/SKILL.md",
-            "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
-            "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
-            "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
-            "profiles/systemic_root_cause_repair_lf/evals/remediation_20260827/run_cases.py",
-            "profiles/systemic_root_cause_repair_lf/examples/good_output.json"
-          ]
-        },
-        "pre_write_gate_passed": true,
-        "bound_revision": {
-          "revision_sha": "a0f43576820eff8ffecf21a94dd38f612ec470ed"
-        },
-        "execution_bound_to_target_before_change": true,
+        "sha_match": true,
+        "identity_preserved": true,
+        "changed_files_exact_scope": true,
+        "main_base_sha": "a0f43576820eff8ffecf21a94dd38f612ec470ed",
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
