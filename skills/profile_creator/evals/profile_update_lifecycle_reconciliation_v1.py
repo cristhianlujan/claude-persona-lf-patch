@@ -6,12 +6,14 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 C=json.loads((ROOT/'contracts/profile_update_lifecycle_reconciliation_v1.json').read_text())
 M=(ROOT.parents[1]/'supabase/migrations/20260919065202_lf_profile_update_begin_reconcile_v1.sql').read_text()
+FIX=(ROOT.parents[1]/'supabase/migrations/20260919071053_fix_profile_update_begin_no_unbound_qualification_v1.sql').read_text()
 
 checks={
   'contract_schema':C.get('schema')=='LF_PROFILE_UPDATE_LIFECYCLE_RECONCILIATION_V1',
   'operation_exact':C.get('operation_code')=='ACTUALIZACION_PERFIL_LF',
   'begin_rpc_materialized':'create or replace function public.lf_profile_update_begin_v1' in M.lower(),
   'begin_calls_reservation':'fn_lf_operation_reserve_execution_v1' in M,
+  'begin_does_not_invent_qualification_dependency':'LF_PROFILE_UPDATE_UNBOUND_QUALIFICATION_GUARD_STILL_PRESENT' in FIX and 'v_def:=replace' in FIX and 'LF_PROFILE_UPDATE_QUALIFICATION_BINDING_NOW_EXISTS' in FIX,
   'begin_materializes_init':"'init_execution'" in M and 'Initialized transactionally by governed Profile Update begin RPC.' in M,
   'post_merge_step_materialized':"'post_merge_reconcile'" in M and '115' in M,
   'regression_routes_to_reconcile':"next_if_pass='post_merge_reconcile'" in M,

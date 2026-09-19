@@ -14,7 +14,8 @@
       "reserve_execution",
       "init_execution"
     ],
-    "replay": "IDEMPOTENT_ONLY_IF_SAME_EXECUTION_AND_CLEAN_INIT"
+    "replay": "IDEMPOTENT_ONLY_IF_SAME_EXECUTION_AND_CLEAN_INIT",
+    "qualification_dependency": "NOT_INVENTED_BY_BEGIN; governed by active operation contract/test bindings"
   },
   "post_merge_reconcile": {
     "step_id": "post_merge_reconcile",
