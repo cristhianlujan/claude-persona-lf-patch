@@ -64,6 +64,8 @@ MANAGED_EXACT_NAMES = {
     "profile_create_operation_qualification_v1",
     "fix_strategy_characteristics_seed_execution_id",
     "prepare_assurance_method_and_profile_top_tier_v1",
+    "fix_profile_update_begin_target_path_v1",
+    "fix_profile_update_begin_no_unbound_qualification_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -825,6 +827,10 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_PROGRAMACION_PRIVATE_RLS")
     if not managed("fix_profile_creator_init_no_close_compat_v1"):
         fail("FAIL_CI009_SELFTEST_PROFILE_CREATOR_INIT_COMPAT")
+    if not managed("fix_profile_update_begin_target_path_v1"):
+        fail("FAIL_CI009_SELFTEST_PROFILE_UPDATE_BEGIN_TARGET_PATH")
+    if not managed("fix_profile_update_begin_no_unbound_qualification_v1"):
+        fail("FAIL_CI009_SELFTEST_PROFILE_UPDATE_BEGIN_NO_UNBOUND_QUALIFICATION")
     if not managed("profile_creator_step_recorder_v1"):
         fail("FAIL_CI009_SELFTEST_PROFILE_CREATOR_STEP_RECORDER")
     if not managed("profile_creator_step_status_contract_fix"):
@@ -1035,7 +1041,7 @@ def main() -> int:
         )
     print("PASS_LF_MIGRATION_TRANSPORT_SELFTEST=3/3")
     print("PASS_LF_MIGRATION_EXTERNAL_OWNER_CURRENTNESS=ENFORCED")
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=30/30")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=32/32")
     return 0
 
 
