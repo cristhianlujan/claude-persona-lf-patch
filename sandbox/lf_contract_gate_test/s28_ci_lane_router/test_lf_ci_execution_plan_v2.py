@@ -54,6 +54,11 @@ def assert_not(got: dict, *controls: str) -> None:
     for control in controls:
         assert control not in actual, (control, sorted(actual))
 
+def full_controls_for_carrier(carrier: str) -> set[str]:
+    _, full, controls = P.load_registry()
+    by_id = {control.control_id: control for control in controls}
+    return {cid for cid in full if by_id[cid].carrier == carrier}
+
 
 def test_policy_resolver_migration_is_precise_and_candidate_bound() -> None:
     path = "supabase/migrations/20260918042000_s30_operation_policy_context_v1.sql"
@@ -117,6 +122,77 @@ def test_router_self_change_forces_full_regression() -> None:
     assert "P0_FAST_DOCS" not in got["required_controls"]
     assert len(got["required_controls"]) + len(got["not_applicable_controls"]) == len(got["control_universe"])
 
+def test_global_authority_change_dominates_carrier_regression() -> None:
+    router = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py"
+    workflow = ".github/workflows/validate-lf-packs.yml"
+    got = plan(
+        [router, workflow],
+        {router: "x", workflow: "name: validate-lf-packs\n"},
+        lane=("CI_ROUTER_SELFTEST",),
+        mode="CI_ROUTER_SELFTEST_ONLY",
+    )
+    assert got["full_regression"] is True
+    assert got["full_regression_reason"] == "CI_APPLICABILITY_AUTHORITY_SELF_CHANGE"
+    assert got["carrier_regression"] is False
+    assert got["carrier_regression_reason"] is None
+    assert got["carrier_regression_carriers"] == []
+
+
+def test_validate_packs_carrier_self_change_is_scoped() -> None:
+    path = ".github/workflows/validate-lf-packs.yml"
+    got = plan([path], {path: "name: validate-lf-packs\n"}, lane=("CI_ROUTER_SELFTEST",), mode="CI_ROUTER_SELFTEST_ONLY")
+    assert got["full_regression"] is False
+    assert got["carrier_regression"] is True
+    assert got["carrier_regression_reason"] == "CI_CARRIER_SELF_CHANGE"
+    assert got["carrier_regression_carriers"] == ["VALIDATE_LF_PACKS"]
+    expected = full_controls_for_carrier("VALIDATE_LF_PACKS")
+    assert set(got["carrier_controls"]["VALIDATE_LF_PACKS"]) == expected
+    assert got["carrier_controls"]["LF_CONTRACT_CHECK"] == [
+        "CI_ROUTER_SELFTEST",
+        "DECLARED_GOVERNANCE_PATHS",
+    ]
+    assert_has(
+        got,
+        *sorted(expected),
+        "CI_ROUTER_SELFTEST",
+        "DECLARED_GOVERNANCE_PATHS",
+    )
+    assert_not(
+        got,
+        "LF_CONTRACT_CORE",
+        "MIGRATION_SOURCE_PARITY",
+        "REMOTE_SCHEMA_REPRODUCIBILITY",
+        "V7_RUNTIME_REGRESSION",
+    )
+
+
+def test_contract_carrier_self_change_is_scoped() -> None:
+    path = ".github/workflows/lf-contract-check.yml"
+    got = plan([path], {path: "name: lf-contract-check\n"}, lane=("CI_ROUTER_SELFTEST",), mode="CI_ROUTER_SELFTEST_ONLY")
+    assert got["full_regression"] is False
+    assert got["carrier_regression"] is True
+    assert got["carrier_regression_carriers"] == ["LF_CONTRACT_CHECK"]
+    expected = full_controls_for_carrier("LF_CONTRACT_CHECK")
+    assert set(got["carrier_controls"]["LF_CONTRACT_CHECK"]) == expected
+    assert "VALIDATE_LF_PACKS" not in got["carrier_controls"]
+    assert "LF_BOOTSTRAP_REPRODUCIBILITY" not in got["carrier_controls"]
+
+
+def test_bootstrap_carrier_self_change_is_scoped() -> None:
+    path = ".github/workflows/lf-bootstrap-reproducibility.yml"
+    got = plan([path], {path: "name: bootstrap\n"}, lane=("CI_ROUTER_SELFTEST",), mode="CI_ROUTER_SELFTEST_ONLY")
+    assert got["full_regression"] is False
+    assert got["carrier_regression"] is True
+    assert got["carrier_regression_carriers"] == ["LF_BOOTSTRAP_REPRODUCIBILITY"]
+    expected = full_controls_for_carrier("LF_BOOTSTRAP_REPRODUCIBILITY")
+    assert set(got["carrier_controls"]["LF_BOOTSTRAP_REPRODUCIBILITY"]) == expected
+    assert got["carrier_controls"]["LF_CONTRACT_CHECK"] == [
+        "CI_ROUTER_SELFTEST",
+        "DECLARED_GOVERNANCE_PATHS",
+    ]
+    assert "VALIDATE_LF_PACKS" not in got["carrier_controls"]
+
+
 
 def test_dependency_closure_is_explicit() -> None:
     path = "supabase/migrations/20260918042000_policy.sql"
@@ -164,7 +240,7 @@ def test_material_evidence_reads_exact_source_ref_not_checkout_tree() -> None:
 
 
 
-def test_full_regression_keeps_candidate_bound_migration_controls() -> None:
+def test_carrier_regression_keeps_candidate_bound_migration_controls() -> None:
     workflow = ".github/workflows/lf-contract-check.yml"
     migration = "supabase/migrations/20260918042000_policy.sql"
     files = {
@@ -177,8 +253,9 @@ def test_full_regression_keeps_candidate_bound_migration_controls() -> None:
         lane=("CI_ROUTER_SELFTEST","MIGRATION_SOURCE_PARITY"),
         mode="SPECIALIZED_REQUIRED",
     )
-    assert got["full_regression"] is True
-    assert got["full_regression_reason"] == "CI_APPLICABILITY_AUTHORITY_SELF_CHANGE"
+    assert got["full_regression"] is False
+    assert got["carrier_regression"] is True
+    assert got["carrier_regression_carriers"] == ["LF_CONTRACT_CHECK"]
     assert_has(
         got,
         "CI_ROUTER_SELFTEST",
@@ -186,6 +263,8 @@ def test_full_regression_keeps_candidate_bound_migration_controls() -> None:
         "DB_CANDIDATE_APPLY_ROLLBACK",
         "POLICY_RESOLVER_REGRESSION",
     )
+    reasons = got["required_control_reasons"]
+    assert "DEPENDENCY_OF:DB_CANDIDATE_APPLY_ROLLBACK" in reasons["MIGRATION_SOURCE_PARITY"]
 
 
 def test_plan_replay_is_deterministic() -> None:
@@ -203,10 +282,14 @@ def main() -> None:
         test_profile_change_does_not_select_database_bootstrap,
         test_unknown_surface_fails_closed_to_full_regression,
         test_router_self_change_forces_full_regression,
+        test_global_authority_change_dominates_carrier_regression,
+        test_validate_packs_carrier_self_change_is_scoped,
+        test_contract_carrier_self_change_is_scoped,
+        test_bootstrap_carrier_self_change_is_scoped,
         test_dependency_closure_is_explicit,
         test_exact_p0_fast_doc_is_single_control,
         test_material_evidence_reads_exact_source_ref_not_checkout_tree,
-        test_full_regression_keeps_candidate_bound_migration_controls,
+        test_carrier_regression_keeps_candidate_bound_migration_controls,
         test_plan_replay_is_deterministic,
     ]
     for test in tests:

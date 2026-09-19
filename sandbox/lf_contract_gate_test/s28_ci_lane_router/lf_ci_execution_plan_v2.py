@@ -19,11 +19,11 @@ SCHEMA_VERSION = "lf-ci-execution-plan/v2"
 REGISTRY_VERSION = "lf-ci-control-impact-registry/v2"
 REGISTRY_PATH = Path(__file__).with_name("lf_ci_control_impact_registry_v2.json")
 SELF_PREFIX = "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
-CARRIER_SELF_PATHS = frozenset({
-    ".github/workflows/lf-contract-check.yml",
-    ".github/workflows/validate-lf-packs.yml",
-    ".github/workflows/lf-bootstrap-reproducibility.yml",
-})
+CARRIER_SELF_PATHS = {
+    ".github/workflows/lf-contract-check.yml": "LF_CONTRACT_CHECK",
+    ".github/workflows/validate-lf-packs.yml": "VALIDATE_LF_PACKS",
+    ".github/workflows/lf-bootstrap-reproducibility.yml": "LF_BOOTSTRAP_REPRODUCIBILITY",
+}
 
 
 class PlanError(ValueError):
@@ -188,18 +188,27 @@ def build_plan(
     if unknown_lane_control:
         raise PlanError(f"FAIL_CI_PLAN_UNKNOWN_LANE_CONTROL:{unknown_lane_control}")
 
-    self_change = any(p.startswith(SELF_PREFIX) or p in CARRIER_SELF_PATHS for p in changed)
+    authority_self_change = any(p.startswith(SELF_PREFIX) for p in changed)
+    carrier_self_changes = tuple(sorted({
+        CARRIER_SELF_PATHS[p]
+        for p in changed
+        if p in CARRIER_SELF_PATHS
+    }))
     unknown_lane = lane_mode.startswith("DEEP_SHARED_UNKNOWN")
-    full_regression = bool(force_full or self_change or unknown_lane)
+    full_regression = bool(force_full or authority_self_change or unknown_lane)
     full_reason = (
         force_full_reason
         if force_full
         else "CI_APPLICABILITY_AUTHORITY_SELF_CHANGE"
-        if self_change
+        if authority_self_change
         else "UNKNOWN_SCOPE_FAIL_CLOSED"
         if unknown_lane
         else None
     )
+    if full_regression:
+        carrier_self_changes = ()
+    carrier_regression = bool(carrier_self_changes)
+    carrier_regression_reason = "CI_CARRIER_SELF_CHANGE" if carrier_regression else None
 
     required: set[str] = set(lane_required_controls)
     reason_map: dict[str,set[str]] = {cid:set() for cid in control_universe}
@@ -230,10 +239,33 @@ def build_plan(
         for cid in full_regression_controls:
             reason_map[cid].add(f"FULL_REGRESSION:{full_reason}")
     else:
+        if carrier_regression:
+            carrier_full_controls = tuple(sorted(
+                cid
+                for cid in full_regression_controls
+                if by_id[cid].carrier in carrier_self_changes
+            ))
+            if not carrier_full_controls:
+                raise PlanError(
+                    "FAIL_CI_PLAN_CARRIER_REGRESSION_EMPTY:"
+                    + ",".join(carrier_self_changes)
+                )
+            required.update(carrier_full_controls)
+            for cid in carrier_full_controls:
+                reason_map[cid].add(
+                    f"CARRIER_REGRESSION:{by_id[cid].carrier}:{carrier_regression_reason}"
+                )
+
+        # Carrier scoping is allowed only when the changed workflow is still
+        # mapped by the declarative impact registry. If that mapping drifts,
+        # the path remains unhandled and the plan fails closed to global full.
         unhandled = sorted(set(changed)-handled_paths)
         if unhandled:
             full_regression = True
             full_reason = "UNMAPPED_CHANGED_PATH_FAIL_CLOSED"
+            carrier_regression = False
+            carrier_regression_reason = None
+            carrier_self_changes = ()
             required.update(full_regression_controls)
             for cid in full_regression_controls:
                 reason_map[cid].add(f"FULL_REGRESSION:{full_reason}")
@@ -274,6 +306,9 @@ def build_plan(
         "lane_mode": lane_mode,
         "full_regression": full_regression,
         "full_regression_reason": full_reason,
+        "carrier_regression": carrier_regression,
+        "carrier_regression_reason": carrier_regression_reason,
+        "carrier_regression_carriers": list(carrier_self_changes),
         "changed_paths": list(changed),
         "material_evidence": material_evidence,
         "required_controls": required_sorted,
