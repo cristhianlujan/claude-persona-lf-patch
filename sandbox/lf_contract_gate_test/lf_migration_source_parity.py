@@ -7,6 +7,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
+import json
 import os
 import pathlib
 import re
@@ -85,6 +86,9 @@ MARKER_RE = re.compile(
 SHA_PROOF_RE = re.compile(r"^sha256:([0-9a-f]{64})$")
 PG_ENV_NAMES = ("PGHOST", "PGPORT", "PGUSER", "PGPASSWORD", "PGDATABASE", "PGSSLMODE")
 POSTGRES_IMAGE = "postgres:17.6"
+EXTERNAL_OWNER_EVIDENCE_SCHEMA = "lf-migration-external-owner-currentness/v1"
+EXTERNAL_OWNER_EVIDENCE_ENV = "LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_JSON"
+SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 def managed(name: str) -> bool:
@@ -217,6 +221,237 @@ def _git_source_first_context(
         base_has_expected_path=base_has_expected_path,
         event_name=event_name,
     )
+
+
+def _read_external_owner_evidence() -> dict[str, object] | None:
+    raw_path = os.environ.get(EXTERNAL_OWNER_EVIDENCE_ENV, "").strip()
+    if not raw_path:
+        return None
+    path = pathlib.Path(raw_path)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_READ", type(exc).__name__)
+    if not isinstance(payload, dict) or payload.get("schema_version") != EXTERNAL_OWNER_EVIDENCE_SCHEMA:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_SCHEMA")
+    if payload.get("complete") is not True:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_INCOMPLETE")
+    owners = payload.get("owners")
+    if not isinstance(owners, list):
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_OWNERS")
+    return payload
+
+
+def _select_external_owner_record(
+    *,
+    version: str,
+    name: str,
+    evidence: dict[str, object] | None,
+    current_head: str,
+) -> dict[str, object]:
+    if evidence is None:
+        fail("FAIL_LF_MIGRATION_VERSION_PARITY", f"remote_only=['{version}'] external_owner_evidence=missing")
+    expected_path = f"supabase/migrations/{version}_{name}.sql"
+    owners = evidence.get("owners", [])
+    matches = [
+        row for row in owners
+        if isinstance(row, dict)
+        and row.get("version") == version
+        and row.get("name") == name
+        and row.get("path") == expected_path
+    ]
+    if len(matches) != 1:
+        fail(
+            "FAIL_LF_MIGRATION_EXTERNAL_OWNER_AMBIGUOUS",
+            f"version={version} name={name} matches={len(matches)}",
+        )
+    row = matches[0]
+    required = {
+        "execution_status": "IN_PROGRESS",
+        "operation_code": "ACTUALIZACION_DB_LF",
+        "pr_state": "OPEN",
+    }
+    for key, expected in required.items():
+        if row.get(key) != expected:
+            fail(
+                "FAIL_LF_MIGRATION_EXTERNAL_OWNER_NOT_ACTIVE",
+                f"version={version} field={key} observed={row.get(key)!r}",
+            )
+    repo = str(row.get("target_repo") or "")
+    evidence_repo = str(evidence.get("repository") or "")
+    expected_repo = os.environ.get("GITHUB_REPOSITORY", "").strip()
+    if not repo or repo != evidence_repo or (expected_repo and repo != expected_repo):
+        fail(
+            "FAIL_LF_MIGRATION_EXTERNAL_OWNER_REPOSITORY",
+            f"version={version} owner_repo={repo!r} evidence_repo={evidence_repo!r} expected_repo={expected_repo!r}",
+        )
+    head = str(row.get("pr_head_sha") or "").lower()
+    if SHA40_RE.fullmatch(head) is None:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_HEAD", f"version={version} head={head!r}")
+    if head == current_head:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_SAME_HEAD", f"version={version}")
+    return row
+
+
+def _git_external_owner_source(row: dict[str, object], *, version: str) -> tuple[str, str]:
+    head = str(row["pr_head_sha"])
+    path = str(row["path"])
+    try:
+        fetch = subprocess.run(
+            ["git", "fetch", "--no-tags", "origin", head],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=60,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_FETCH", f"version={version} error={type(exc).__name__}")
+    if fetch.returncode != 0:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_FETCH", f"version={version} rc={fetch.returncode}")
+    source = subprocess.run(
+        ["git", "show", f"{head}:{path}"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        timeout=30,
+    )
+    if source.returncode != 0:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_SOURCE", f"version={version} rc={source.returncode}")
+    blob = subprocess.run(
+        ["git", "rev-parse", f"{head}:{path}"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        timeout=30,
+    )
+    if blob.returncode != 0 or SHA40_RE.fullmatch(blob.stdout.strip().lower()) is None:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_BLOB", f"version={version}")
+    return source.stdout, blob.stdout.strip().lower()
+
+
+def classify_external_owner_pending(
+    *,
+    remote_only: list[str],
+    remote: dict[str, tuple[str, str]],
+    statement_counts: dict[str, int],
+) -> dict[str, dict[str, str]]:
+    if not remote_only:
+        return {}
+    evidence = _read_external_owner_evidence()
+    current_head_proc = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        timeout=20,
+    )
+    current_head = current_head_proc.stdout.strip().lower()
+    if current_head_proc.returncode != 0 or SHA40_RE.fullmatch(current_head) is None:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_CURRENT_HEAD")
+
+    verified: dict[str, dict[str, str]] = {}
+    for version in remote_only:
+        name, remote_sha = remote[version]
+        row = _select_external_owner_record(
+            version=version,
+            name=name,
+            evidence=evidence,
+            current_head=current_head,
+        )
+        if version not in statement_counts:
+            fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_STATEMENT_COUNT", f"version={version}")
+        source_sql, source_blob = _git_external_owner_source(row, version=version)
+        try:
+            comparison = transport.compare_exact_source(
+                version=version,
+                source_name=name,
+                source_sql=source_sql,
+                remote_name=name,
+                remote_sha256=remote_sha,
+                remote_statement_count=statement_counts[version],
+            )
+        except transport.TransportNormalizationError as exc:
+            fail(
+                "FAIL_LF_MIGRATION_EXTERNAL_OWNER_CONTENT",
+                f"version={version} error={exc}",
+            )
+        verified[version] = {
+            "name": name,
+            "path": str(row["path"]),
+            "execution_id": str(row.get("execution_id") or ""),
+            "pr_number": str(row.get("pr_number") or ""),
+            "pr_head_sha": str(row["pr_head_sha"]),
+            "source_blob": source_blob,
+            "representation": comparison.representation,
+        }
+    return verified
+
+
+def external_owner_self_test() -> None:
+    evidence = {
+        "schema_version": EXTERNAL_OWNER_EVIDENCE_SCHEMA,
+        "complete": True,
+        "repository": "o/r",
+        "owners": [
+            {
+                "version": "20260919010101",
+                "name": "lf_external_owner_probe",
+                "path": "supabase/migrations/20260919010101_lf_external_owner_probe.sql",
+                "execution_status": "IN_PROGRESS",
+                "operation_code": "ACTUALIZACION_DB_LF",
+                "target_repo": "o/r",
+                "pr_state": "OPEN",
+                "pr_head_sha": "a" * 40,
+            }
+        ],
+    }
+    old_repo = os.environ.get("GITHUB_REPOSITORY")
+    os.environ["GITHUB_REPOSITORY"] = "o/r"
+    try:
+        row = _select_external_owner_record(
+            version="20260919010101",
+            name="lf_external_owner_probe",
+            evidence=evidence,
+            current_head="b" * 40,
+        )
+        if row.get("pr_head_sha") != "a" * 40:
+            fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_SELFTEST_POSITIVE")
+        duplicate = dict(evidence)
+        duplicate["owners"] = list(evidence["owners"]) * 2
+        try:
+            _select_external_owner_record(
+                version="20260919010101",
+                name="lf_external_owner_probe",
+                evidence=duplicate,
+                current_head="b" * 40,
+            )
+        except SystemExit as exc:
+            if not str(exc).startswith("FAIL_LF_MIGRATION_EXTERNAL_OWNER_AMBIGUOUS"):
+                fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_SELFTEST_AMBIGUOUS", str(exc))
+        else:
+            fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_SELFTEST_AMBIGUOUS")
+        try:
+            _select_external_owner_record(
+                version="20260919010101",
+                name="lf_external_owner_probe",
+                evidence=evidence,
+                current_head="a" * 40,
+            )
+        except SystemExit as exc:
+            if not str(exc).startswith("FAIL_LF_MIGRATION_EXTERNAL_OWNER_SAME_HEAD"):
+                fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_SELFTEST_SAME_HEAD", str(exc))
+        else:
+            fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_SELFTEST_SAME_HEAD")
+    finally:
+        if old_repo is None:
+            os.environ.pop("GITHUB_REPOSITORY", None)
+        else:
+            os.environ["GITHUB_REPOSITORY"] = old_repo
+    print("PASS_LF_MIGRATION_EXTERNAL_OWNER_SELFTEST=3/3")
 
 
 def source_first_self_test() -> None:
@@ -472,6 +707,7 @@ def main() -> int:
         fail("FAIL_CI009_LEGACY_HEX_PARSER_SELFTEST")
     transport_self_test()
     source_first_self_test()
+    external_owner_self_test()
 
     if not managed("promote_router_compact_jit_v1"):
         fail("FAIL_CI009_SELFTEST_MANAGED_EXACT")
@@ -603,13 +839,6 @@ def main() -> int:
             continue
         remote[version] = (name, remote_content_sha256(content_proof, version))
 
-    pending_version = _git_source_first_context(
-        migrations=migrations,
-        local=local,
-        remote=remote,
-    )
-    shared_local = {version: local[version] for version in sorted(remote)}
-
     if inline_counts:
         if set(inline_counts) != set(remote):
             fail(
@@ -627,9 +856,41 @@ def main() -> int:
         else:
             statement_counts = query_remote_statement_counts(sorted(remote))
 
-    direct_count, cli_count, _comparisons = evaluate_managed_transport(
-        shared_local, remote, statement_counts
+    remote_only = sorted(set(remote) - set(local))
+    external_owner_pending = classify_external_owner_pending(
+        remote_only=remote_only,
+        remote=remote,
+        statement_counts=statement_counts,
     )
+    effective_remote = {
+        version: value
+        for version, value in remote.items()
+        if version not in external_owner_pending
+    }
+    effective_statement_counts = {
+        version: count
+        for version, count in statement_counts.items()
+        if version in effective_remote
+    }
+
+    pending_version = _git_source_first_context(
+        migrations=migrations,
+        local=local,
+        remote=effective_remote,
+    )
+    shared_local = {version: local[version] for version in sorted(effective_remote)}
+
+    direct_count, cli_count, _comparisons = evaluate_managed_transport(
+        shared_local, effective_remote, effective_statement_counts
+    )
+
+    for version, owner in sorted(external_owner_pending.items()):
+        print(
+            "PASS_LF_MIGRATION_EXTERNAL_OWNER_PENDING: "
+            f"version={version} name={owner['name']} pr={owner['pr_number']} "
+            f"head={owner['pr_head_sha']} blob={owner['source_blob']} "
+            f"representation={owner['representation']} owner_execution={owner['execution_id']}"
+        )
 
     if pending_version is not None:
         pending_name, pending_sha, _pending_sql = local[pending_version]
@@ -646,6 +907,7 @@ def main() -> int:
             f"cli_statement_storage={cli_count}"
         )
     print("PASS_LF_MIGRATION_TRANSPORT_SELFTEST=3/3")
+    print("PASS_LF_MIGRATION_EXTERNAL_OWNER_CURRENTNESS=ENFORCED")
     print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=30/30")
     return 0
 
