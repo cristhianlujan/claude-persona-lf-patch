@@ -563,11 +563,12 @@ jobs:
             case
               when m.version is null then 'UNAPPLIED'
               when g.receipt is not null then 'APPLIED_EXACT'
+              when r.receipt is not null then 'APPLIED_RECONCILED'
               else 'APPLIED_UNVERIFIED'
             end as source_state,
-            coalesce(g.execution_id,''),
-            coalesce(g.receipt->>'source_head',''),
-            coalesce(g.receipt->>'write_readback','')
+            coalesce(g.execution_id,r.execution_id,''),
+            coalesce(g.receipt->>'source_head',r.receipt->>'reconciled_source_head',''),
+            coalesce(g.receipt->>'write_readback',r.receipt->>'write_readback','')
           from expected e
           left join supabase_migrations.schema_migrations m
             on m.version=e.version
@@ -584,6 +585,21 @@ jobs:
             order by og.resolved_at desc nulls last
             limit 1
           ) g on true
+          left join lateral (
+            select og.execution_id,og.receipt
+            from public.lf_operation_effect_guard og
+            where og.effect_scope='SUPABASE_MIGRATION_RECONCILIATION:'||e.version
+              and og.state='SUCCEEDED'
+              and og.receipt->>'schema_version'='lf-db-applied-source-reconciliation/v1'
+              and og.receipt->>'migration_version'=e.version
+              and og.receipt->>'migration_name'=e.name
+              and og.receipt->>'source_blob'=e.git_blob
+              and og.receipt->>'write_readback'='PASS'
+              and og.receipt->>'ddl_replayed'='false'
+              and og.receipt->>'reconciliation_result'='EXACT_SOURCE_MATCHED_LIVE_NO_REPLAY'
+            order by og.resolved_at desc nulls last
+            limit 1
+          ) r on true
           order by e.version;
           """)
           PY
@@ -631,8 +647,8 @@ jobs:
 
           if states=={"UNAPPLIED"}:
               mode="PENDING"
-          elif states=={"APPLIED_EXACT"}:
-              mode="ALL_APPLIED_EXACT"
+          elif states and states <= {"APPLIED_EXACT","APPLIED_RECONCILED"}:
+              mode="ALL_APPLIED_VERIFIED"
           elif "APPLIED_UNVERIFIED" in states:
               raise SystemExit("BLOCK_DB_CANDIDATE_APPLIED_SOURCE_UNVERIFIED")
           else:
@@ -692,8 +708,8 @@ jobs:
           }
           echo "DB_CANDIDATE_APPLY_ROLLBACK_PASS"
 
-      - name: Validate already-applied exact migrations without replaying DDL
-        if: steps.runtime_state.outputs.mode == 'ALL_APPLIED_EXACT'
+      - name: Validate already-applied verified migrations without replaying DDL
+        if: steps.runtime_state.outputs.mode == 'ALL_APPLIED_VERIFIED'
         shell: bash
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
@@ -742,7 +758,7 @@ jobs:
             diff -u .lf_ci/db_candidate/ledger_before.txt .lf_ci/db_candidate/ledger_after.txt || true
             exit 1
           }
-          echo "DB_CANDIDATE_ALREADY_APPLIED_EXACT_POST_APPLY_PROBE_PASS"
+          echo "DB_CANDIDATE_ALREADY_APPLIED_VERIFIED_POST_APPLY_PROBE_PASS"
 
       - name: Persist exact candidate rollback evidence
         if: always()
