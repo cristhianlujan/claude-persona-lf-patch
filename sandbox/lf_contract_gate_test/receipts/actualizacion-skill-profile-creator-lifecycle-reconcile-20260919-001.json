@@ -10,8 +10,8 @@
   "contract_sha": "d809c50d4ab897d1d17ef0ad7f5c225f6b0c28580160b30b26f9b7a981536190",
   "judge_sha": "78f35aa9e2317c744ebd177c92051c06e033a728486c61675b1b53db4c14f551",
   "source_sha_list": [
-    "d9483b74dc5fcc81f0f3fd79212930f80f1fdc01",
-    "7cbef3da938eb755026e95abe455969604555f6e",
+    "00bcb2494ee5459c1b506b0d4bce3350ce5b7a82",
+    "eca07cc1f8d2f94dc90afa0d1595d5b7b3a214f4",
     "1bb003965f63e48b824c8a203f64cadad13126a6"
   ],
   "target_paths": [
@@ -24,17 +24,18 @@
   "target_path": "skills/profile_creator",
   "branch": "lf/profile-update-lifecycle-v1",
   "pr_number": 932,
-  "candidate_head_before_receipt": "d9483b74dc5fcc81f0f3fd79212930f80f1fdc01",
+  "candidate_head_before_receipt": "00bcb2494ee5459c1b506b0d4bce3350ce5b7a82",
   "base_main_sha": "1bb003965f63e48b824c8a203f64cadad13126a6",
-  "candidate_source_tree": "7cbef3da938eb755026e95abe455969604555f6e",
+  "candidate_source_tree": "eca07cc1f8d2f94dc90afa0d1595d5b7b3a214f4",
   "operation_contract_material_sha256": "d809c50d4ab897d1d17ef0ad7f5c225f6b0c28580160b30b26f9b7a981536190",
   "operation_judge_material_sha256": "78f35aa9e2317c744ebd177c92051c06e033a728486c61675b1b53db4c14f551",
   "deterministic_validation": {
-    "profile_update_lifecycle_reconciliation": "15/15_PASS",
+    "profile_update_lifecycle_reconciliation": "16/16_PASS",
     "profile_creator_validate_pack": "PASS",
     "git_diff_check": "PASS",
     "migration_20260919065202_live": "APPLIED_AND_READBACK",
-    "migration_20260919065900_live": "APPLIED_AND_READBACK"
+    "migration_20260919065425_live": "APPLIED_AND_READBACK",
+    "migration_20260919071053_live": "APPLIED_AND_READBACK"
   },
   "pre_receipt_repository_check": {
     "result": "FAIL_RECEIPT_MISSING",
