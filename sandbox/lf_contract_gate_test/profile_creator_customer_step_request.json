@@ -1,11 +1,26 @@
 {
-  "execution_id": "",
-  "step_id": "",
-  "evidence_ref": "",
+  "execution_id": "EXEC-LF-SRCR-SPEC-READINESS-20260919-002",
+  "step_id": "pre_write_execution_binding_gate",
+  "evidence_ref": "github-actions-oidc://srcr-spec-readiness-v3/pre-write",
   "evidence_payload": {
-    "step_result": "",
-    "blocking_codes": []
-  },
-  "template_only": true,
-  "note": "Populate only from current authoritative evidence. Router requires a real supabase:// evidence_ref and router_read payload."
+    "step_result": "STEP_PASS_WITH_EVIDENCE",
+    "blocking_codes": [],
+    "execution_id": "EXEC-LF-SRCR-SPEC-READINESS-20260919-002",
+    "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    "target_path": "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+    "write_plan": [
+      "profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+      "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+      "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
+      "profiles/systemic_root_cause_repair_lf/evals/remediation_20260827/run_cases.py",
+      "profiles/systemic_root_cause_repair_lf/examples/good_output.json"
+    ],
+    "pre_write_gate_passed": true,
+    "bound_revision": "c8418eb00f74c400eab15f419e619a98bf0074f5",
+    "execution_bound_to_target_before_change": true,
+    "candidate_semantic_suite": "21/21 PASS",
+    "adversarial_benchmark": "8/8 PASS",
+    "mr02_candidate_result": "SYSTEMIC_REPAIR_SPEC"
+  }
 }
