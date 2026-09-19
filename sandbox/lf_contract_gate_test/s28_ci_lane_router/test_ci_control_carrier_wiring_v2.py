@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
 REGISTRY = HERE / "lf_ci_control_impact_registry_v2.json"
+RUNTIME_CLASSIFIER = HERE / "classify_changed_migration_runtime_v1.py"
 WORKFLOWS = {
     "LF_CONTRACT_CHECK": ROOT / ".github/workflows/lf-contract-check.yml",
     "VALIDATE_LF_PACKS": ROOT / ".github/workflows/validate-lf-packs.yml",
@@ -82,9 +85,46 @@ def main() -> None:
     require(bootstrap, "policy_resolver_post_apply_probe_v1.sql", "FAIL_POLICY_RESOLVER_POST_APPLY_NOT_WIRED")
     require(bootstrap, "ledger_before.txt", "FAIL_CANDIDATE_LEDGER_PRESTATE_MISSING")
     require(bootstrap, "ledger_after.txt", "FAIL_CANDIDATE_LEDGER_POSTSTATE_MISSING")
-    require(bootstrap, "source_git_blob_sha1", "FAIL_CANDIDATE_EXACT_GIT_BLOB_NOT_BOUND")
-    require(bootstrap, "lf_operation_effect_guard", "FAIL_ALREADY_APPLIED_GOVERNED_PROVENANCE_NOT_REQUIRED")
-    require(bootstrap, "APPLIED_UNVERIFIED", "FAIL_ALREADY_APPLIED_UNVERIFIED_STATE_NOT_BLOCKED")
+
+    # Bootstrap owns only replay applicability. Exact content remains an
+    # independent MIGRATION_SOURCE_PARITY responsibility.
+    require(
+        bootstrap,
+        "classify_changed_migration_runtime_v1.py",
+        "FAIL_CANDIDATE_RUNTIME_CLASSIFIER_NOT_WIRED",
+    )
+    require(bootstrap, "emit-query", "FAIL_CANDIDATE_RUNTIME_QUERY_CONTRACT_NOT_WIRED")
+    require(bootstrap, "classify", "FAIL_CANDIDATE_RUNTIME_CLASSIFY_CONTRACT_NOT_WIRED")
+    assert "lf_operation_effect_guard" not in bootstrap, "FAIL_BOOTSTRAP_PROVENANCE_AUTHORITY_REINTRODUCED"
+    assert "APPLIED_UNVERIFIED" not in bootstrap, "FAIL_BOOTSTRAP_CONTENT_CLASSIFICATION_REINTRODUCED"
+
+    classifier_source = RUNTIME_CLASSIFIER.read_text(encoding="utf-8")
+    require(
+        classifier_source,
+        'CLASSIFICATION_AUTHORITY = "LIVE_LEDGER_VERSION_NAME"',
+        "FAIL_RUNTIME_CLASSIFIER_IDENTITY_AUTHORITY",
+    )
+    require(
+        classifier_source,
+        'CONTENT_AUTHORITY = "MIGRATION_SOURCE_PARITY"',
+        "FAIL_RUNTIME_CLASSIFIER_CONTENT_AUTHORITY",
+    )
+    classifier_test = subprocess.run(
+        [sys.executable, str(RUNTIME_CLASSIFIER), "self-test"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+        timeout=20,
+    )
+    assert classifier_test.returncode == 0, (
+        "FAIL_RUNTIME_CLASSIFIER_SELFTEST:" + classifier_test.stdout[-1000:]
+    )
+    require(
+        classifier_test.stdout,
+        "DB_CANDIDATE_RUNTIME_CLASSIFIER_SELFTEST_PASS",
+        "FAIL_RUNTIME_CLASSIFIER_SELFTEST_RECEIPT",
+    )
 
     contract = texts["LF_CONTRACT_CHECK"]
     contract_steps = {
