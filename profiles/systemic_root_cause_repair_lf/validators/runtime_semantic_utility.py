@@ -228,6 +228,20 @@ def evaluate(payload, contract_gate):
         if isinstance(falsifications, list):
             if any(isinstance(item, dict) and item.get("result") not in {"PASS", "PLANNED"} for item in falsifications):
                 codes.append("SYSTEMIC_SPEC_FALSIFICATION_NOT_SPECIFIED")
+            for item in falsifications:
+                if not isinstance(item, dict):
+                    continue
+                protocol = item.get("test_protocol")
+                if not isinstance(protocol, dict) or not all(isinstance(protocol.get(k), list) and len(protocol.get(k)) > 0 for k in ("setup", "action", "assertions")) or not protocol.get("failure_signal"):
+                    codes.append("EXECUTABLE_TEST_PROTOCOL_INCOMPLETE")
+                    break
+        for item in payload.get("planned_regressions") or []:
+            if not isinstance(item, dict):
+                continue
+            protocol = item.get("test_protocol")
+            if not isinstance(protocol, dict) or not all(isinstance(protocol.get(k), list) and len(protocol.get(k)) > 0 for k in ("setup", "action", "assertions")) or not protocol.get("failure_signal"):
+                codes.append("EXECUTABLE_TEST_PROTOCOL_INCOMPLETE")
+                break
 
     historical = payload.get("historical_regressions")
     if not isinstance(historical, list):
