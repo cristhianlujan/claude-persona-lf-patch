@@ -613,6 +613,7 @@ jobs:
           LF_MIGRATION_CLASSIFICATION_BASELINE_END: "20260822195004"
           LF_MIGRATION_GRANDFATHERED_COUNT: "154"
           LF_MIGRATION_GRANDFATHERED_SHA256: "f6694a57d984bb02266630c12151e6334ef40535d17f7986be6e1820956186a5"
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           if [ -z "${PGPASSWORD:-}" ]; then
@@ -676,6 +677,95 @@ jobs:
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(cardinality(statements),0)::text from supabase_migrations.schema_migrations where version=any('${LF_MANAGED_VERSIONS}'::text[]) order by version" > "$RUNNER_TEMP/lf-migration-statement-counts.csv"
           export LF_MIGRATION_STATEMENT_COUNTS_CSV="$RUNNER_TEMP/lf-migration-statement-counts.csv"
 
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select execution_id,status,operation_code,coalesce(target_repo,''),coalesce(target_path,''),coalesce(manifest #>> '{migration_target,version}',''),coalesce(manifest #>> '{migration_target,name}','') from public.lf_operation_execution where target_type='MIGRATION' and operation_code='ACTUALIZACION_DB_LF' and status='IN_PROGRESS' and target_repo='${GITHUB_REPOSITORY}' and target_path like 'supabase/migrations/%' order by target_path,execution_id" > "$RUNNER_TEMP/lf-migration-owner-executions.csv"
+
+          python3 - <<'PY' > "$RUNNER_TEMP/lf-migration-external-owner-currentness.json"
+          import csv
+          import json
+          import os
+          import urllib.request
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ.get("GITHUB_TOKEN", "").strip()
+          if not token:
+              raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_GITHUB_TOKEN_MISSING")
+          owner, name = repo.split("/", 1)
+          query = """
+          query($owner:String!,$name:String!) {
+            repository(owner:$owner,name:$name) {
+              pullRequests(states:OPEN,first:100,orderBy:{field:UPDATED_AT,direction:DESC}) {
+                totalCount
+                nodes {
+                  number
+                  headRefOid
+                  files(first:100) {
+                    totalCount
+                    nodes { path }
+                  }
+                }
+              }
+            }
+          }
+          """
+          payload = json.dumps({
+              "query": query,
+              "variables": {"owner": owner, "name": name},
+          }).encode("utf-8")
+          request = urllib.request.Request(
+              "https://api.github.com/graphql",
+              data=payload,
+              headers={
+                  "Authorization": f"Bearer {token}",
+                  "Content-Type": "application/json",
+                  "User-Agent": "lf-migration-owner-currentness-v1",
+              },
+          )
+          with urllib.request.urlopen(request, timeout=30) as response:
+              body = json.loads(response.read().decode("utf-8"))
+          if body.get("errors"):
+              raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_GITHUB_GRAPHQL")
+          prs = body["data"]["repository"]["pullRequests"]
+          complete = prs["totalCount"] <= 100
+          path_to_prs = {}
+          for pr in prs["nodes"]:
+              files = pr["files"]
+              if files["totalCount"] > 100:
+                  complete = False
+                  continue
+              for item in files["nodes"]:
+                  path_to_prs.setdefault(item["path"], []).append(pr)
+
+          owner_rows = []
+          with open(os.path.join(os.environ["RUNNER_TEMP"], "lf-migration-owner-executions.csv"), newline="", encoding="utf-8") as handle:
+              for row in csv.reader(handle):
+                  if not row:
+                      continue
+                  if len(row) != 7:
+                      raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_DB_ROW")
+                  execution_id,status,operation_code,target_repo,target_path,version,migration_name = row
+                  for pr in path_to_prs.get(target_path, []):
+                      owner_rows.append({
+                          "version": version,
+                          "name": migration_name,
+                          "path": target_path,
+                          "execution_id": execution_id,
+                          "execution_status": status,
+                          "operation_code": operation_code,
+                          "target_repo": target_repo,
+                          "pr_number": pr["number"],
+                          "pr_state": "OPEN",
+                          "pr_head_sha": pr["headRefOid"],
+                      })
+
+          print(json.dumps({
+              "schema_version": "lf-migration-external-owner-currentness/v1",
+              "repository": repo,
+              "complete": complete,
+              "open_pr_count": prs["totalCount"],
+              "owners": owner_rows,
+          }, sort_keys=True))
+          PY
+
           shadow_dir=".lf_gate_runtime/lf_contract_check/migration_source_parity"
           rm -rf "$shadow_dir"
           mkdir -p "$shadow_dir"
@@ -683,6 +773,7 @@ jobs:
           cp "$RUNNER_TEMP/lf-grandfathered-migrations.csv" "$shadow_dir/lf-grandfathered-migrations.csv"
           cp "$RUNNER_TEMP/lf-legacy-checkpoint.csv" "$shadow_dir/lf-legacy-checkpoint.csv"
           cp "$RUNNER_TEMP/lf-migration-statement-counts.csv" "$shadow_dir/lf-migration-statement-counts.csv"
+          cp "$RUNNER_TEMP/lf-migration-external-owner-currentness.json" "$shadow_dir/lf-migration-external-owner-currentness.json"
 
       - name: Enforce required_controls through existing gate orchestrator
         if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'MIGRATION_SOURCE_PARITY')
@@ -695,13 +786,15 @@ jobs:
           LF_MIGRATION_GRANDFATHERED_COUNT: "154"
           LF_MIGRATION_GRANDFATHERED_SHA256: "f6694a57d984bb02266630c12151e6334ef40535d17f7986be6e1820956186a5"
           LF_MIGRATION_STATEMENT_COUNTS_CSV: .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv
+          LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_JSON: .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-external-owner-currentness.json
         run: |
           set -euo pipefail
           for input in \
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-post-cutover-migrations-compact.csv \
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-grandfathered-migrations.csv \
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-legacy-checkpoint.csv \
-            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv \
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-external-owner-currentness.json
           do
             if [ ! -s "$input" ]; then
               echo "DECLARATIVE_REQUIRED_CONTROL_INPUT_MISSING=$input"
