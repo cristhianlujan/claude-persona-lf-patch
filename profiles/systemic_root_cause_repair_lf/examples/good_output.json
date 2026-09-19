@@ -12,9 +12,29 @@
   "first_bad_control": "pre-apply migration identity reservation",
   "escape_control": "post-cutover parity validator",
   "recurrence_evidence": [
+    {"ref": "ekb://CI-MIG-001", "fact": "recurrence frequency > 1"}
+  ],
+  "live_authority_packet": {
+    "status": "COMPLETE",
+    "observed_at": "2026-09-19T12:00:00Z",
+    "applicable_surfaces": ["SQL_FUNCTIONS", "REPOSITORY", "DEPLOYED_RUNTIME"],
+    "inspected_surfaces": ["SQL_FUNCTIONS", "REPOSITORY", "DEPLOYED_RUNTIME"],
+    "evidence_refs": [
+      "supabase://pg_proc/migration_apply_boundary",
+      "github://repo/main/migration-apply-boundary",
+      "runtime://migration-worker/current"
+    ],
+    "material_effects_observed": true,
+    "unavailable_sources": []
+  },
+  "execution_effect_reconciliation": [
     {
-      "ref": "ekb://CI-MIG-001",
-      "fact": "recurrence frequency > 1"
+      "effect": "migration apply effect",
+      "observed_ref": "supabase://migration-ledger/current-effect",
+      "declared_producer": "governed migration apply",
+      "observed_producer_refs": ["runtime://migration-worker/current"],
+      "reconciliation_status": "MATCH",
+      "blocking": false
     }
   ],
   "authority_contradictions": [],
@@ -22,106 +42,30 @@
   "should_exist_assessment": {
     "verdict": "SHOULD_EXIST",
     "subject": "migration parity control",
-    "real_consumers": [
-      "governed migration apply",
-      "post-merge parity verification"
-    ],
+    "real_consumers": ["governed migration apply", "post-merge parity verification"],
     "elimination_impact": "Live/source drift could pass without a deterministic currentness check.",
     "native_or_existing_alternative": "Reuse the existing A2R parity boundary rather than create a second parity engine.",
-    "evidence_refs": [
-      "gate://A2R_PARITY"
-    ]
+    "evidence_refs": ["gate://A2R_PARITY"]
   },
   "alternatives": [
-    {
-      "id": "A",
-      "description": "restore source only",
-      "prevention": "low",
-      "complexity": "low",
-      "blast_radius": "low",
-      "reuse": "low",
-      "fail_closed": "partial",
-      "idempotency": "none",
-      "recoverability": "manual",
-      "operational_cost": "low"
-    },
-    {
-      "id": "B",
-      "description": "pre-apply identity reservation hard guard",
-      "prevention": "high",
-      "complexity": "medium",
-      "blast_radius": "medium",
-      "reuse": "high",
-      "fail_closed": "high",
-      "idempotency": "high",
-      "recoverability": "high",
-      "operational_cost": "medium"
-    },
-    {
-      "id": "C",
-      "description": "replace migration workflow",
-      "prevention": "high",
-      "complexity": "high",
-      "blast_radius": "high",
-      "reuse": "medium",
-      "fail_closed": "high",
-      "idempotency": "high",
-      "recoverability": "medium",
-      "operational_cost": "high"
-    }
+    {"id":"A","description":"restore source only","prevention":"low","complexity":"low","blast_radius":"low","reuse":"low","fail_closed":"partial","idempotency":"none","recoverability":"manual","operational_cost":"low"},
+    {"id":"B","description":"pre-apply identity reservation hard guard","prevention":"high","complexity":"medium","blast_radius":"medium","reuse":"high","fail_closed":"high","idempotency":"high","recoverability":"high","operational_cost":"medium"},
+    {"id":"C","description":"replace migration workflow","prevention":"high","complexity":"high","blast_radius":"high","reuse":"medium","fail_closed":"high","idempotency":"high","recoverability":"medium","operational_cost":"high"}
   ],
   "selected_alternative": "B",
   "rejected_alternatives": [
-    {
-      "id": "A",
-      "reason": "does not prevent recurrence"
-    },
-    {
-      "id": "C",
-      "reason": "larger than minimum sufficient repair"
-    }
+    {"id":"A","reason":"does not prevent recurrence"},
+    {"id":"C","reason":"larger than minimum sufficient repair"}
   ],
   "falsification_results": [
-    {
-      "case": "bypass",
-      "result": "PASS",
-      "evidence_ref": "test://bypass"
-    },
-    {
-      "case": "retry",
-      "result": "PASS",
-      "evidence_ref": "test://retry"
-    },
-    {
-      "case": "concurrency",
-      "result": "PASS",
-      "evidence_ref": "test://concurrency"
-    },
-    {
-      "case": "partial_failure",
-      "result": "PASS",
-      "evidence_ref": "test://partial"
-    },
-    {
-      "case": "stale_state",
-      "result": "PASS",
-      "evidence_ref": "test://stale"
-    },
-    {
-      "case": "interrupted_execution",
-      "result": "PASS",
-      "evidence_ref": "test://interrupt"
-    },
-    {
-      "case": "replay_or_duplicate",
-      "result": "PASS",
-      "evidence_ref": "test://replay"
-    },
-    {
-      "case": "undeclared_or_unversioned_caller",
-      "result": "PASS",
-      "evidence_ref": "test://caller-provenance"
-    }
+    {"case":"bypass","result":"PASS","evidence_ref":"test://bypass/run-1","evidence_class":"OBSERVED_TEST"},
+    {"case":"retry","result":"PASS","evidence_ref":"test://retry/run-1","evidence_class":"OBSERVED_TEST"},
+    {"case":"concurrency","result":"PASS","evidence_ref":"test://concurrency/run-1","evidence_class":"OBSERVED_TEST"},
+    {"case":"partial_failure","result":"PASS","evidence_ref":"test://partial/run-1","evidence_class":"OBSERVED_TEST"},
+    {"case":"stale_state","result":"PASS","evidence_ref":"test://stale/run-1","evidence_class":"OBSERVED_TEST"},
+    {"case":"interrupted_execution","result":"PASS","evidence_ref":"test://interrupt/run-1","evidence_class":"OBSERVED_TEST"},
+    {"case":"replay_or_duplicate","result":"PASS","evidence_ref":"test://replay/run-1","evidence_class":"OBSERVED_TEST"},
+    {"case":"undeclared_or_unversioned_caller","result":"PASS","evidence_ref":"test://caller-provenance/run-1","evidence_class":"OBSERVED_TEST"}
   ],
   "origin_asset": "migration apply boundary",
   "origin_operation": "governed migration apply",
@@ -132,23 +76,10 @@
     "fail_closed_condition": "identity or digest missing/mismatch",
     "observable_result": "zero live effect and deterministic blocking code"
   },
-  "acceptance_criteria": [
-    "all historical parity cases pass",
-    "current parity validator clean",
-    "retry preserves reserved identity"
-  ],
-  "historical_regressions": [
-    "source/live identity mismatch blocks",
-    "live without canonical source blocks",
-    "retry does not mint a new identity"
-  ],
-  "residual_risks": [
-    "legacy migrations may require grandfathered classification"
-  ],
-  "evidence_map": [
-    "ekb://CI-MIG-001",
-    "gate://A2R_PARITY"
-  ],
+  "acceptance_criteria": ["all historical parity cases pass", "current parity validator clean", "retry preserves reserved identity"],
+  "historical_regressions": ["source/live identity mismatch blocks", "live without canonical source blocks", "retry does not mint a new identity"],
+  "residual_risks": ["legacy migrations may require grandfathered classification"],
+  "evidence_map": ["ekb://CI-MIG-001", "gate://A2R_PARITY", "runtime://migration-worker/current"],
   "blocking_codes": [],
   "next_gate": "OWNER_IMPLEMENTATION"
 }
