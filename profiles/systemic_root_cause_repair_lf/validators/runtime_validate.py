@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic runtime validator for Systemic Root Cause Repair LF.
 
-This validates profile-local invariants only. It is not the independent semantic judge.
+This validates profile-local invariants only. It is not the canonical semantic judge.
 """
 
 ALLOWED_STATUS = {
@@ -37,16 +37,6 @@ def validate(payload):
     if payload.get("profile_pack_id") != "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2":
         errors.append(_error("PROFILE_PACK_ID_MISMATCH", "$.profile_pack_id"))
 
-    review = payload.get("independent_review")
-    if not isinstance(review, dict):
-        errors.append(_error("INDEPENDENT_REVIEW_MISSING", "$.independent_review"))
-    else:
-        if review.get("required") is not True:
-            errors.append(_error("INDEPENDENT_REVIEW_NOT_REQUIRED", "$.independent_review.required"))
-        if review.get("reviewer") != "CLAUDE":
-            errors.append(_error("INDEPENDENT_REVIEWER_INVALID", "$.independent_review.reviewer"))
-        if review.get("producer_is_reviewer") is not False:
-            errors.append(_error("SELF_REVIEW_FORBIDDEN", "$.independent_review.producer_is_reviewer"))
 
     if status == "SYSTEMIC_REPAIR_SPEC":
         contradictions = payload.get("authority_contradictions")

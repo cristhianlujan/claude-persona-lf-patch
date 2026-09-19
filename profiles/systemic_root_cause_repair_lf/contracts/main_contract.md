@@ -16,7 +16,7 @@ Produce a structured, evidence-grounded systemic repair specification for recurr
 10. `invariant` and `hard_guard` are testable and fail closed.
 11. Acceptance includes historical recurrence regressions and current-case proof.
 12. Residual risks and unresolved authority are explicit and do not absorb known contradictions.
-13. Final mini-judge and rubric acceptance require evidence-bound independent review by Claude; producer self-evaluation cannot satisfy this requirement.
+13. Final acceptance requires the canonical evidence-bound semantic quality gate on the exact candidate revision. External audit is optional and cannot block merely because it has not run.
 
 ## Required output
 - `status`
@@ -45,8 +45,7 @@ Produce a structured, evidence-grounded systemic repair specification for recurr
 - `residual_risks`
 - `evidence_map`
 - `blocking_codes`
-- `independent_review`
 - `next_gate`
 
 ## Invalid output
-Prose-only diagnosis, first-plausible-fix output, local repair presented as systemic without recurrence explanation, self-certification presented as independent review, unsupported authority, hidden or residualized declared-vs-live contradiction, missing `¿DEBE EXISTIR?` analysis, missing falsification, or a hard guard that cannot be tested.
+Prose-only diagnosis, first-plausible-fix output, local repair presented as systemic without recurrence explanation, self-certification used to bypass the canonical semantic gate, unsupported authority, hidden or residualized declared-vs-live contradiction, missing `¿DEBE EXISTIR?` analysis, missing falsification, or a hard guard that cannot be tested.

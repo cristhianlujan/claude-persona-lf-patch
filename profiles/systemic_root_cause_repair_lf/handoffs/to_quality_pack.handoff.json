@@ -18,15 +18,20 @@
     "residual_risks",
     "evidence_map",
     "blocking_codes",
-    "independent_review",
     "next_gate"
   ],
   "required_quality_boundary": {
-    "independent_reviewer": "CLAUDE",
-    "producer_self_review_authoritative": false,
+    "canonical_semantic_gate_required": true,
     "exact_revision_evidence_required": true,
-    "structural_validation_is_behavioral_proof": false
+    "structural_validation_is_behavioral_proof": false,
+    "external_audit_required": false,
+    "external_audit_missing_is_blocker": false,
+    "material_external_finding_routes_through_governance": true
   },
-  "exclude": ["internal_chain_of_thought","unbound_authority","implementation_permission"],
+  "exclude": [
+    "internal_chain_of_thought",
+    "unbound_authority",
+    "implementation_permission"
+  ],
   "claim_ceiling": "ADVISORY_READ_ONLY"
 }

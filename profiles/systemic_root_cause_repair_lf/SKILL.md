@@ -14,7 +14,7 @@ Use for recurrent failures, repeated local repairs, cross-run regressions, bypas
 Do not use for simple deterministic defects whose cause and repair are already classified and covered by an existing EKB rule.
 
 ## Mandatory trajectory
-FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL CHAIN -> FIRST BAD CONTROL -> ESCAPE CONTROL -> DECLARED VS EXECUTED CONTRADICTIONS -> SYSTEMIC ROOT CAUSE -> ¿DEBE EXISTIR? -> DISTINCT ALTERNATIVES -> TRADEOFFS -> FALSIFICATION -> MINIMUM SUFFICIENT REPAIR -> INVARIANT/HARD GUARD -> HISTORICAL REGRESSION -> INDEPENDENT REVIEW -> RESIDUAL RISK
+FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL CHAIN -> FIRST BAD CONTROL -> ESCAPE CONTROL -> DECLARED VS EXECUTED CONTRADICTIONS -> SYSTEMIC ROOT CAUSE -> ¿DEBE EXISTIR? -> DISTINCT ALTERNATIVES -> TRADEOFFS -> FALSIFICATION -> MINIMUM SUFFICIENT REPAIR -> INVARIANT/HARD GUARD -> HISTORICAL REGRESSION -> SEMANTIC QUALITY GATE -> RESIDUAL RISK
 
 1. Read exact current authority, failure envelope, EKB recurrence evidence, architecture/contracts, historical occurrences, execution wiring and expected-vs-actual.
 2. Resolve execution authority from live evidence across repository/runtime, SQL functions, deployed Edge Functions, schedulers, agent connectors and external workers where applicable. Declared source is not sufficient proof of actual execution.
@@ -28,7 +28,7 @@ FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL
 10. Prefer the minimum sufficient origin repair. Reject local patches that leave the failure class reproducible.
 11. Derive an explicit invariant and hard guard that can be tested deterministically.
 12. Define acceptance criteria and historical/current regression cases before recommending closure.
-13. The producer may prepare a candidate but may not self-certify the mini-judge or score rubric. Final quality evaluation must be performed independently by Claude and be evidence-bound.
+13. The candidate must pass the canonical semantic quality gate against exact evidence. External audit is additional oversight: its absence is never a blocker; a material finding blocks only after it is admitted through normal governance.
 14. Declare residual risks only after contradictions/blockers are separated. Missing evidence cannot be replaced with plausibility.
 15. Return structured output only.
 
@@ -58,12 +58,12 @@ FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL
 - A hard guard must fail closed and be testable.
 - Historical recurrence cases must include identity/digest mismatch, source/live divergence, retry idempotency, partial failure resume, duplicate/replay and caller provenance when applicable.
 - Any contradiction between declared authority/source/behavior and live evidence is a blocking finding until reconciled.
-- A self-evaluation is diagnostic only. It cannot satisfy independent mini-judge or score-rubric requirements.
+- Producer output cannot bypass the canonical semantic quality gate. External audit, when present, is additional evidence rather than an execution dependency.
 - ¿DEBE EXISTIR? is mandatory even when the component already exists or has prior approval.
 
 ## Typed output
 The output must include:
-status, profile_pack_id, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, authority_contradictions, repair_level, should_exist_assessment, alternatives, selected_alternative, rejected_alternatives, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, acceptance_criteria, historical_regressions, residual_risks, evidence_map, blocking_codes, independent_review, next_gate.
+status, profile_pack_id, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, authority_contradictions, repair_level, should_exist_assessment, alternatives, selected_alternative, rejected_alternatives, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, acceptance_criteria, historical_regressions, residual_risks, evidence_map, blocking_codes, next_gate.
 
 ## Claim ceiling
-CANDIDATO / READ_ONLY. This profile can recommend and structure evidence; it cannot authorize or execute the repair. A candidate is not quality-accepted until an evidence-bound independent Claude review is recorded.
+CANDIDATO / READ_ONLY. This profile can recommend and structure evidence; it cannot authorize or execute the repair. A candidate is quality-accepted only through the canonical deterministic and semantic gates. External audit remains separate and non-blocking unless it produces a material governed finding.

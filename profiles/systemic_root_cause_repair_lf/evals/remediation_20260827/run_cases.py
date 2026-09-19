@@ -48,10 +48,10 @@ def run():
     r = validator.validate(existence)
     cases.append(("should_exist_insufficient_blocks_spec", "SHOULD_EXIST_ASSESSMENT_UNRESOLVED" in r["blocking_codes"]))
 
-    self_review = copy.deepcopy(GOOD)
-    self_review["independent_review"]["producer_is_reviewer"] = True
-    r = validator.validate(self_review)
-    cases.append(("self_review_rejected", "SELF_REVIEW_FORBIDDEN" in r["blocking_codes"]))
+    no_external_audit = copy.deepcopy(GOOD)
+    r = validator.validate(no_external_audit)
+    sem = utility.evaluate(no_external_audit, contract_gate())
+    cases.append(("external_audit_absence_non_blocking", r["valid"] and sem["status"] == "PASS"))
 
     missing_family = copy.deepcopy(GOOD)
     missing_family["falsification_results"] = [

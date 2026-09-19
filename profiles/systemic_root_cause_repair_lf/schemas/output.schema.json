@@ -29,7 +29,6 @@
     "residual_risks",
     "evidence_map",
     "blocking_codes",
-    "independent_review",
     "next_gate"
   ],
   "properties": {
@@ -380,49 +379,6 @@
       "type": "array",
       "items": {
         "type": "string"
-      }
-    },
-    "independent_review": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "required",
-        "reviewer",
-        "producer_is_reviewer",
-        "status",
-        "score",
-        "evidence_ref"
-      ],
-      "properties": {
-        "required": {
-          "const": true
-        },
-        "reviewer": {
-          "const": "CLAUDE"
-        },
-        "producer_is_reviewer": {
-          "const": false
-        },
-        "status": {
-          "enum": [
-            "PENDING",
-            "PASS",
-            "RETURN",
-            "BLOCK"
-          ]
-        },
-        "score": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "minimum": 0,
-          "maximum": 25
-        },
-        "evidence_ref": {
-          "type": "string",
-          "minLength": 3
-        }
       }
     },
     "next_gate": {

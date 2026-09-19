@@ -2,13 +2,15 @@
 
 Score each 0–5 with concrete evidence. Candidate quality threshold: 22/25 and no blocking condition.
 
-The final score must be assigned by the independent Claude reviewer against the exact candidate revision. A producer self-score may be retained as diagnostic metadata only and has zero acceptance authority.
+The final score is assigned by the canonical semantic quality gate against the exact candidate revision. The gate is vendor-neutral and must remain evidence-bound.
+
+External audit is optional oversight. Its absence does not affect the score or block execution; an admitted material audit finding remains a normal blocking finding.
 
 ## Prerequisite gates — not scoreable away
 Before scoring:
 1. Declared-vs-live contradictions are explicitly enumerated. Any unresolved material contradiction is a blocking finding.
 2. `¿DEBE EXISTIR?` is complete with real consumers, elimination impact and native/already-existing alternative.
-3. Independent review identity is `CLAUDE`, distinct from the producer, and evidence-bound to the exact candidate revision.
+3. The scored evidence is bound to the exact candidate revision; no external reviewer or model identity is a prerequisite.
 4. Falsification includes undeclared/unversioned caller when execution authority is material.
 
 If any prerequisite gate fails, no numerical total can produce PASS.

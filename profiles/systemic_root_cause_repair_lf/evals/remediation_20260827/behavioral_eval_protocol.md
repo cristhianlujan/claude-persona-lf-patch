@@ -16,7 +16,7 @@ A claim such as “the profile produced a SYSTEMIC_REPAIR_SPEC”, “the profil
 4. canonical profile execution receipt binding profile + input + RAW output;
 5. deterministic schema/profile-validator result over that RAW output;
 6. deterministic semantic-utility result over the same RAW output;
-7. independent Claude semantic review over RAW output plus actual current sources;
+7. canonical semantic-judge result over the RAW output plus actual current sources, bound to the exact candidate revision;
 8. at least one fresh external holdout not embedded in this profile pack or used to design the remediation;
 9. at least three fresh adversarial semantic challenges;
 10. Router/direct normalized comparison when both activation paths are exercised.
@@ -55,6 +55,9 @@ Do not label the profile behaviorally proven from validate_pack.py, run_cases.py
 
 Allowed evidence states:
 - STRUCTURALLY_HARDENED — deterministic/schema/S26 regressions pass;
-- BEHAVIORALLY_REMEDIATED — governed RAW execution + independent Claude review + external holdout/adversarials pass;
+- BEHAVIORALLY_REMEDIATED — governed RAW execution + canonical semantic judge + external holdout/adversarials pass;
 - GOVERNANCE_BLOCKED — behavior may pass but canonical closure requirements do not;
 - NOT_VERIFIED — required behavioral evidence is missing.
+
+## External audit policy
+External audit is outside the profile execution dependency chain. Its absence never blocks profile execution, merge readiness, or behavioral closure. A material external finding becomes blocking only after it is accepted and routed through the normal governance controls.

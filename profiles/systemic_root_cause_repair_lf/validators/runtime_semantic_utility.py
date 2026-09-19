@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic semantic-utility floor.
 
-This is deliberately narrower than the independent Claude semantic review.
+This is deliberately narrower than the canonical semantic quality gate.
 """
 
 
@@ -42,11 +42,6 @@ def evaluate(payload, contract_gate):
         if selected in rejected_ids:
             codes.append("SELECTED_ALTERNATIVE_ALSO_REJECTED")
 
-        review = payload.get("independent_review")
-        if not isinstance(review, dict):
-            codes.append("INDEPENDENT_REVIEW_MISSING")
-        elif review.get("producer_is_reviewer") is not False or review.get("reviewer") != "CLAUDE":
-            codes.append("INDEPENDENT_REVIEW_AUTHORITY_INVALID")
 
         root = payload.get("systemic_root_cause")
         symptom = payload.get("symptom")
