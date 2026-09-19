@@ -8,6 +8,7 @@ D = C["decision"]
 A = C["candidate_after_migration"]
 G = C["promotion_gate"]
 B = C["deployment_boundary"]
+E = C["governed_repair_execution"]
 
 checks = {
     "exact_operation": C["operation_code"] == "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
@@ -42,6 +43,10 @@ checks = {
     "profile_files_forbidden": B["profile_files_change_allowed"] is False,
     "adapter_contract_forbidden": B["adapter_contract_change_allowed"] is False,
     "production_promotion_forbidden": B["production_promotion_allowed"] is False,
+    "governed_canary_execution": E["execution_id"] == "EXEC-RUNTIME-UPDATE-CANARY-20260919-001",
+    "prewrite_revision_bound": E["prewrite_bound_revision"] == "b9b8e1f3dfdb4536e253de2232f0e34274d65fac",
+    "governed_target_exact": E["target_code"] == "EJECUCION_PERFIL_LF" and E["target_path"] == "skills/profile_creator/runtime_update_operation_governance",
+    "canary_runtime_not_activated": E["runtime_activation"] is False and E["production_activation"] is False,
 }
 
 failed = [k for k, v in checks.items() if not v]
