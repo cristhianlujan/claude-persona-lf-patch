@@ -1,0 +1,15 @@
+{
+  "experiment": "SRCR_SEMANTIC_JUDGE_B",
+  "case_id": "MR02_R2_N2_SCOPE_HOLDOUT",
+  "source_execution_id": "EXEC-SRCR-PILOT-SPEC-R2-20260919-001",
+  "candidate_sha256": "5f18b8c23bb439c3790c53c01099753f7f3d53cbe897b407f7da413b202827ff",
+  "scope_packet_sha256": "9650f84032a33667ecf0d80e17ee3386d5da1cfd4207b6df4abb4e0962a17e71",
+  "expected_semantic_verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "critical_expected_detection": {
+    "candidate_change": "CREATE FUNCTION public.lf_operation_lifecycle_readiness_v1(text,text)",
+    "candidate_path": "$.implementation_package.architecture_decisions[D3]",
+    "scope_basis": "CON-186-EXACT-FOOTPRINT",
+    "expected_disposition": "OUT_OF_SCOPE_DESIGN_DELTA"
+  },
+  "claim_boundary": "This sandbox replay demonstrates B's scope/change reconciliation on the recovered exact candidate and scope evidence. It is not production wiring or general promotion evidence."
+}
