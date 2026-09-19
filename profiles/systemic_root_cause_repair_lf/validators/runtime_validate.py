@@ -332,10 +332,10 @@ def _proposal_errors(payload):
     if not isinstance(invariant, dict):
         errors.append(_error("INVARIANT_INVALID", "$.invariant"))
     else:
-        status = invariant.get("status")
-        if status not in {"VALIDATED", "PROPOSED", "UNRESOLVED"}:
-            errors.append(_error("INVARIANT_STATUS_INVALID", "$.invariant.status"))
-        if status == "VALIDATED":
+        status = invariant.get("validation_state")
+        if status not in {"VERIFIED", "PROPOSED", "UNRESOLVED"}:
+            errors.append(_error("INVARIANT_STATUS_INVALID", "$.invariant.validation_state"))
+        if status == "VERIFIED":
             if not _nonempty_string(invariant.get("statement")) or not _string_list(invariant.get("evidence_refs"), allow_empty=False) or invariant.get("missing_evidence"):
                 errors.append(_error("VALIDATED_INVARIANT_EVIDENCE_INVALID", "$.invariant"))
         elif status in {"PROPOSED", "UNRESOLVED"} and not _string_list(invariant.get("missing_evidence"), allow_empty=False):
@@ -345,10 +345,10 @@ def _proposal_errors(payload):
     if not isinstance(guard, dict):
         errors.append(_error("HARD_GUARD_INVALID", "$.hard_guard"))
     else:
-        status = guard.get("status")
-        if status not in {"VALIDATED", "PROPOSED", "UNRESOLVED"}:
-            errors.append(_error("HARD_GUARD_STATUS_INVALID", "$.hard_guard.status"))
-        if status == "VALIDATED":
+        status = guard.get("validation_state")
+        if status not in {"VERIFIED", "PROPOSED", "UNRESOLVED"}:
+            errors.append(_error("HARD_GUARD_STATUS_INVALID", "$.hard_guard.validation_state"))
+        if status == "VERIFIED":
             required = ("control", "enforcement_point_ref", "fail_closed_condition", "blocking_code", "observable_result")
             if not all(_nonempty_string(guard.get(key)) for key in required):
                 errors.append(_error("VALIDATED_HARD_GUARD_NOT_EXECUTABLE", "$.hard_guard"))
@@ -495,10 +495,10 @@ def validate(payload):
             item = payload.get(field)
             if not isinstance(item, dict) or item.get("status") != "RESOLVED":
                 errors.append(_error("SYSTEMIC_SPEC_AUTHORITY_REF_UNRESOLVED", f"$.{field}.status"))
-        if not isinstance(payload.get("invariant"), dict) or payload["invariant"].get("status") != "VALIDATED":
-            errors.append(_error("SYSTEMIC_SPEC_INVARIANT_NOT_VALIDATED", "$.invariant.status"))
-        if not isinstance(payload.get("hard_guard"), dict) or payload["hard_guard"].get("status") != "VALIDATED":
-            errors.append(_error("SYSTEMIC_SPEC_HARD_GUARD_NOT_VALIDATED", "$.hard_guard.status"))
+        if not isinstance(payload.get("invariant"), dict) or payload["invariant"].get("validation_state") != "VERIFIED":
+            errors.append(_error("SYSTEMIC_SPEC_INVARIANT_NOT_VALIDATED", "$.invariant.validation_state"))
+        if not isinstance(payload.get("hard_guard"), dict) or payload["hard_guard"].get("validation_state") != "VERIFIED":
+            errors.append(_error("SYSTEMIC_SPEC_HARD_GUARD_NOT_VALIDATED", "$.hard_guard.validation_state"))
         if len(payload.get("historical_regressions") or []) < 1:
             errors.append(_error("SYSTEMIC_SPEC_HISTORICAL_REGRESSION_REQUIRED", "$.historical_regressions"))
         if len(payload.get("planned_regressions") or []) < 3:
