@@ -96,12 +96,12 @@ def make_needs_more():
     value["owner"] = copy.deepcopy(unresolved)
     value["invariant"] = {
         "statement": "Every material effect should be attributable to a governed producer before closure.",
-        "status": "PROPOSED",
+        "validation_state": "PROPOSED",
         "evidence_refs": ["contract://lifecycle/current"],
         "missing_evidence": ["observed falsification of the proposed invariant"],
     }
     value["hard_guard"] = {
-        "status": "PROPOSED",
+        "validation_state": "PROPOSED",
         "control": "Bind producer provenance before material effect.",
         "enforcement_point_ref": None,
         "fail_closed_condition": "Block when the producer cannot be verified.",
