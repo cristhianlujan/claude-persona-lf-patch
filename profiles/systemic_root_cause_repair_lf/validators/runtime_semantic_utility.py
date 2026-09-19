@@ -170,10 +170,10 @@ def evaluate(payload, contract_gate):
                 codes.append("SYSTEMIC_SPEC_AUTHORITY_REF_UNRESOLVED")
 
         invariant = payload.get("invariant")
-        if not isinstance(invariant, dict) or invariant.get("status") != "VALIDATED":
+        if not isinstance(invariant, dict) or invariant.get("validation_state") != "VERIFIED":
             codes.append("SYSTEMIC_SPEC_INVARIANT_NOT_VALIDATED")
         guard = payload.get("hard_guard")
-        if not isinstance(guard, dict) or guard.get("status") != "VALIDATED":
+        if not isinstance(guard, dict) or guard.get("validation_state") != "VERIFIED":
             codes.append("SYSTEMIC_SPEC_HARD_GUARD_NOT_VALIDATED")
 
     historical = payload.get("historical_regressions")
