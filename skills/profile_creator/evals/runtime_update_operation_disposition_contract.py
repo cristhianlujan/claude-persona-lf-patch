@@ -32,6 +32,7 @@ checks = {
     "qualification_binding": A["qualification_binding"] == "BIND-OP-RUNTIME-UPDATE-V1",
     "still_candidate_before_qualification": A["lifecycle_state"] == "OP_CANDIDATE",
     "candidate_router_not_active": A["router_binding_status"] == "CANDIDATO_READ_ONLY",
+    "transversal_policy_wiring": set(A["required_policy_roles"]) == {"GOVERNANCE_LIFECYCLE","POLICY_CONSUMPTION","SOURCE_RESOLUTION","STATE_MODEL"},
     "qualification_required": G["requires_qualification"] is True and G["qualification_currentness"] == "EXACT_REVISION",
     "router_activation_after_promotion": G["router_activation_after_promotion"] is True,
     "promotion_transition": G["transition_action"] == "PROMOTE_OPERATION" and G["target_lifecycle"] == "OP_OPERATIONAL",
