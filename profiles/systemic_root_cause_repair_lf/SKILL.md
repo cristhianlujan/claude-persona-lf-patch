@@ -14,23 +14,24 @@ Use for recurrent failures, repeated local repairs, cross-run regressions, bypas
 Do not use for simple deterministic defects whose cause and repair are already classified and covered by an existing EKB rule.
 
 ## Mandatory trajectory
-FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL CHAIN -> FIRST BAD CONTROL -> ESCAPE CONTROL -> DECLARED VS EXECUTED CONTRADICTIONS -> SYSTEMIC ROOT CAUSE -> ¿DEBE EXISTIR? -> DISTINCT ALTERNATIVES -> TRADEOFFS -> FALSIFICATION -> MINIMUM SUFFICIENT REPAIR -> INVARIANT/HARD GUARD -> HISTORICAL REGRESSION -> SEMANTIC QUALITY GATE -> RESIDUAL RISK
+FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> EFFECT/PRODUCER RECONCILIATION -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL CHAIN -> FIRST BAD CONTROL -> ESCAPE CONTROL -> DECLARED VS EXECUTED CONTRADICTIONS -> SYSTEMIC ROOT CAUSE -> ¿DEBE EXISTIR? -> DISTINCT ALTERNATIVES -> TRADEOFFS -> FALSIFICATION -> MINIMUM SUFFICIENT REPAIR -> INVARIANT/HARD GUARD -> HISTORICAL REGRESSION -> SEMANTIC QUALITY GATE -> RESIDUAL RISK
 
 1. Read exact current authority, failure envelope, EKB recurrence evidence, architecture/contracts, historical occurrences, execution wiring and expected-vs-actual.
-2. Resolve execution authority from live evidence across repository/runtime, SQL functions, deployed Edge Functions, schedulers, agent connectors and external workers where applicable. Declared source is not sufficient proof of actual execution.
-3. Separate symptom, immediate cause, systemic root cause and escape control. Never collapse them into one label.
-4. Identify the first control that should have prevented the class of failure, not merely the last component that reported it.
-5. Compare declared behavior/ownership/source with live observed effects. Any material contradiction is a blocking finding until reconciled; it may not be downgraded to residual risk.
-6. Classify declared-vs-executed contradictions at least as SILENT_DROP, UNDECLARED_EXECUTION, SOURCE_LIVE_DIVERGENCE or an explicit equivalent.
-7. Execute the mandatory ¿DEBE EXISTIR? assessment for the subject/control: identify real consumers, impact of removal, and a native or already-existing alternative. Do not assume an existing component deserves preservation.
-8. When the repair is materially ambiguous, compare at least 3 materially distinct alternatives across prevention, complexity, blast radius, reuse, fail-closed behavior, idempotency, recoverability and operational cost.
-9. Falsify the preferred alternative against bypass, retry, concurrency, partial failure, stale state, interrupted execution, replay/duplicate and unversioned/undeclared caller cases.
-10. Prefer the minimum sufficient origin repair. Reject local patches that leave the failure class reproducible.
-11. Derive an explicit invariant and hard guard that can be tested deterministically.
-12. Define acceptance criteria and historical/current regression cases before recommending closure.
-13. The candidate must pass the canonical semantic quality gate against exact evidence. External audit is additional oversight: its absence is never a blocker; a material finding blocks only after it is admitted through normal governance.
-14. Declare residual risks only after contradictions/blockers are separated. Missing evidence cannot be replaced with plausibility.
-15. Return structured output only.
+2. Resolve execution authority from **live evidence** across every applicable execution surface: repository/runtime, SQL functions, deployed Edge Functions, schedulers, agent connectors, runtime processes and external workers. Declared source is not sufficient proof of actual execution. Materialize `live_authority_packet` with the applicable surfaces, inspected surfaces, unavailable sources and resolvable evidence references. If the applicable live surface set cannot be inspected, the packet is `PARTIAL`/`MISSING` and a ready repair spec is forbidden.
+3. For every material live effect relevant to the causal claim, materialize one `execution_effect_reconciliation` row that binds the observed effect to its declared producer and observed producer evidence. An observed effect with no reconciled producer is `UNRESOLVED_PRODUCER`, not a residual risk. After the applicable live surfaces are complete, an effect with no declared/authorized producer becomes `UNDECLARED_EXECUTION` or another explicit blocking contradiction.
+4. Separate symptom, immediate cause, systemic root cause and escape control. Never collapse them into one label.
+5. Identify the first control that should have prevented the class of failure, not merely the last component that reported it.
+6. Compare declared behavior/ownership/source with live observed effects. Any material contradiction is a blocking finding until reconciled; it may not be downgraded to residual risk.
+7. Classify declared-vs-executed contradictions at least as SILENT_DROP, UNDECLARED_EXECUTION, SOURCE_LIVE_DIVERGENCE or an explicit equivalent.
+8. Execute the mandatory ¿DEBE EXISTIR? assessment for the subject/control: identify real consumers, impact of removal, and a native or already-existing alternative. Do not assume an existing component deserves preservation.
+9. When the repair is materially ambiguous, compare at least 3 materially distinct alternatives across prevention, complexity, blast radius, reuse, fail-closed behavior, idempotency, recoverability and operational cost.
+10. Falsify the preferred alternative against bypass, retry, concurrency, partial failure, stale state, interrupted execution, replay/duplicate and unversioned/undeclared caller cases. `PASS` is allowed only with observed test/runtime/readback evidence; a design, proposal, primitive definition or plausible argument is never falsification PASS.
+11. Prefer the minimum sufficient origin repair. Reject local patches that leave the failure class reproducible.
+12. Derive an explicit invariant and hard guard that can be tested deterministically.
+13. Define acceptance criteria and historical/current regression cases before recommending closure.
+14. The candidate must pass the canonical semantic quality gate against exact evidence. External audit is additional oversight: its absence is never a blocker; a material finding blocks only after it is admitted through normal governance.
+15. Declare residual risks only after contradictions/blockers are separated. Missing evidence cannot be replaced with plausibility.
+16. Return structured output only.
 
 ## Required inputs
 - exact_failure_envelope
@@ -41,6 +42,7 @@ FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL
 - gate_expected_vs_actual
 - execution_wiring_inventory
 - declared_vs_observed_evidence
+- live execution evidence sufficient to construct `live_authority_packet`, or an explicit inability to obtain it
 
 ## Output modes
 - SYSTEMIC_REPAIR_SPEC
@@ -58,12 +60,16 @@ FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL
 - A hard guard must fail closed and be testable.
 - Historical recurrence cases must include identity/digest mismatch, source/live divergence, retry idempotency, partial failure resume, duplicate/replay and caller provenance when applicable.
 - Any contradiction between declared authority/source/behavior and live evidence is a blocking finding until reconciled.
+- Any material observed effect whose producer cannot be reconciled is blocking evidence, never residual risk.
+- `SYSTEMIC_REPAIR_SPEC` requires `live_authority_packet.status=COMPLETE`, complete coverage of applicable live surfaces, and every material effect reconciliation at `MATCH`.
+- `NEEDS_MORE_EVIDENCE` with partial/missing live authority must carry the corresponding deterministic blocking code; absence of tools or authority is evidence limitation, not permission to infer.
+- Falsification `PASS` requires `evidence_class` OBSERVED_TEST, OBSERVED_RUNTIME or OBSERVED_READBACK.
 - Producer output cannot bypass the canonical semantic quality gate. External audit, when present, is additional evidence rather than an execution dependency.
 - ¿DEBE EXISTIR? is mandatory even when the component already exists or has prior approval.
 
 ## Typed output
 The output must include:
-status, profile_pack_id, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, authority_contradictions, repair_level, should_exist_assessment, alternatives, selected_alternative, rejected_alternatives, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, acceptance_criteria, historical_regressions, residual_risks, evidence_map, blocking_codes, next_gate.
+status, profile_pack_id, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, alternatives, selected_alternative, rejected_alternatives, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, acceptance_criteria, historical_regressions, residual_risks, evidence_map, blocking_codes, next_gate.
 
 ## Claim ceiling
 CANDIDATO / READ_ONLY. This profile can recommend and structure evidence; it cannot authorize or execute the repair. A candidate is quality-accepted only through the canonical deterministic and semantic gates. External audit remains separate and non-blocking unless it produces a material governed finding.
