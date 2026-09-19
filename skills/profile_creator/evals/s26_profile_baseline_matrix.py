@@ -30,7 +30,7 @@ def materialize(root: Path, *, complete: bool = True, ambiguous: bool = False, s
     (p / "contracts").mkdir(parents=True)
     (p / "schemas").mkdir()
     (p / "validators").mkdir()
-    (p / "SKILL.md").write_text("# Demo\nMaintenance: ACTUALIZACION_PERFIL_LF\n", encoding="utf-8")
+    (p / "SKILL.md").write_text("# Demo\nMaintenance: ACTUALIZACION_PERFIL_LF\n## Purpose\nAnswer demo questions.\n", encoding="utf-8")
     schema = {"type": "object", "properties": {"answer": {"type": "string"}}, "required": ["answer"]}
     (p / "schemas/output.schema.json").write_text(json.dumps(schema), encoding="utf-8")
     if ambiguous:
@@ -46,6 +46,9 @@ def materialize(root: Path, *, complete: bool = True, ambiguous: bool = False, s
             "canonical_validator": {"path": "validators/runtime_validate.py", "callable": "validate"},
             "semantic_utility": {"path": "validators/runtime_semantic_utility.py", "callable": "evaluate"},
             "governance": {"source_first_required": True, "schema_invention_allowed": False, "fail_closed": True, "exact_head_evidence_required": True, "post_update_baseline_required": True},
+            "model_context": {"full_source_to_model": False, "source_projection": {"mode": "MARKDOWN_SECTIONS", "include_sections": ["Purpose"], "max_chars": 2000}},
+            "execution_partition": {"schema": "LF_PROFILE_EXECUTION_PARTITION_V1", "field_classes": {"answer": "SEMANTIC"}, "deterministic_materialization": {}, "generation_limits": {"default_string_max_length": 160, "fields": {}}},
+            "execution_budget": {"resource_class": "STANDARD", "max_prompt_tokens": 2048, "max_output_tokens": 512, "min_available_memory_mb": 0, "max_swap_used_pct": 100},
         }
         (p / "contracts/runtime_binding.json").write_text(json.dumps(binding), encoding="utf-8")
 
@@ -55,7 +58,7 @@ def main() -> int:
     t, r = make_repo()
     try:
         materialize(r); x = mod.evaluate(r, "demo")
-        checks["complete_10_of_10"] = x["decision"] == "NO_UPDATE_REQUIRED" and x["score"] == 10
+        checks["complete_13_of_13"] = x["decision"] == "NO_UPDATE_REQUIRED" and x["score"] == 13
         checks["static_callable_discovery"] = x["callable_discovery_mode"] == "STATIC_AST_NO_IMPORT"
     finally: t.cleanup()
     t, r = make_repo()
@@ -72,7 +75,7 @@ def main() -> int:
     t, r = make_repo()
     try:
         marker = r / "IMPORT_SIDE_EFFECT"; materialize(r, side_effect_marker=marker); x = mod.evaluate(r, "demo")
-        checks["target_code_not_executed"] = x["score"] == 10 and x["target_code_execution_performed"] is False and not marker.exists()
+        checks["target_code_not_executed"] = x["score"] == 13 and x["target_code_execution_performed"] is False and not marker.exists()
     finally: t.cleanup()
     t, r = make_repo()
     try:
