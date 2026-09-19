@@ -1,0 +1,56 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "schema": "LF_GOVERNED_SKILL_UPDATE_RECEIPT_V1",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-S22-PL005-20260916-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "e3ae425c34f665db5546e1332c375dac923a4f9f898bf5d1d0ae3484f9b029f6",
+  "judge_sha": "a2ecfbb2af779c7156e829a095964f325a47dca774c60a1df50738342219debf",
+  "source_sha_list": [
+    "7d50aadea9dacd3b98df1a45358ba302e06afec5",
+    "a5ee061c8532664fbebfb944844b1d88f7959043",
+    "4697bc44015351a4cc5267fe4e9bddad8351b92a"
+  ],
+  "target_paths": [
+    "skills/profile_creator/contracts/profile_candidate_materialization_v1.json",
+    "skills/profile_creator/contracts/profile_candidate_materialization_v1.sql",
+    "skills/profile_creator/evals/profile_candidate_materialization_contract.py",
+    "skills/profile_creator/validators/validate_pack.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-16T19:57:00Z",
+  "target_type": "SKILL",
+  "target_code": "ACT-0045",
+  "target_path": "skills/profile_creator",
+  "branch": "s22/pl005-profile-candidate-materialization-v1",
+  "pr_number": 868,
+  "validated_substantive_head": "7d50aadea9dacd3b98df1a45358ba302e06afec5",
+  "base_main_sha": "a5ee061c8532664fbebfb944844b1d88f7959043",
+  "operation_contract_material_sha256": "e3ae425c34f665db5546e1332c375dac923a4f9f898bf5d1d0ae3484f9b029f6",
+  "operation_judge_material_sha256": "a2ecfbb2af779c7156e829a095964f325a47dca774c60a1df50738342219debf",
+  "scope_extension": {
+    "reason": "Link the already-created PROFILE_CANDIDATE_MATERIALIZATION_CONTRACT eval into the canonical Profile Creator validation runner.",
+    "newly_authorized_path": "skills/profile_creator/validators/validate_pack.py",
+    "new_operation": false,
+    "new_table": false,
+    "runtime_change": false,
+    "live_apply": false
+  },
+  "pre_receipt_evidence": {
+    "github_write_step": "STEP_PASS_WITH_EVIDENCE",
+    "github_readback_step": "STEP_PASS_WITH_EVIDENCE",
+    "prior_ci_run_id": 35138280870,
+    "prior_ci_result": "FAIL_RECEIPT_MISSING",
+    "runner_linkage_before": "MISSING",
+    "runner_linkage_after": "PRESENT_AT_SUBSTANTIVE_HEAD"
+  },
+  "runtime_unchanged": true,
+  "production_change": false,
+  "automatic_promotion": false,
+  "merge_authorized": false,
+  "state_ceiling": "SOURCE_BOUND_RECEIPT_MATERIALIZED_PENDING_EXACT_HEAD_CI",
+  "notes": "Source-bound governance sidecar for S22 PL-005 Profile Creator candidate materialization lifecycle work. This receipt covers the governed Profile Creator source paths and the minimal validator-runner linkage only. It does not declare operation closure, runtime enablement, production readiness, live Supabase apply, automatic promotion, or merge authorization. Exact-head CI after this receipt commit remains mandatory before retrying deterministic_validation."
+}

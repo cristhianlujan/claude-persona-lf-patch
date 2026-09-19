@@ -43,6 +43,7 @@ def main():
         ('RUNTIME_UPDATE_OPERATION_DISPOSITION',[sys.executable,str(root/'evals/runtime_update_operation_disposition_contract.py')]),
         ('S26_PROFILE_BASELINE_MATRIX',[sys.executable,str(root/'evals/s26_profile_baseline_matrix.py')]),
         ('S26_LEARNING_PREFLIGHT_MATRIX',[sys.executable,str(root/'evals/s26_learning_preflight_matrix.py')]),
+        ('PROFILE_CANDIDATE_MATERIALIZATION_CONTRACT',[sys.executable,str(root/'evals/profile_candidate_materialization_contract.py')]),
     ]
     specification_only=[
         'evals/existing_artifact_remediation_contract.py',
