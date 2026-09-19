@@ -112,6 +112,8 @@ Structural baseline rules:
 - `model_context.full_source_to_model` must be `false`; canonical full source remains authority/receipt evidence while the model sees only the declared bounded projection.
 - `execution_partition` must classify every canonical root output field as `DETERMINISTIC`, `SEMANTIC` or `HYBRID`. Every deterministic root field must have a declarative materialization source; callers and canaries must never reconstruct this split.
 - `execution_budget` must declare the bounded model input/output budget and resource class. Heavy semantic inference must fail closed before model invocation when the runtime host cannot satisfy its declared resource preflight.
+- `ACTUALIZACION_PERFIL_LF` must start through `lf_profile_update_begin_v1`, which reserves the execution and materializes immutable `init_execution` atomically. Ad-hoc reserve-then-init sequences are forbidden.
+- After merge, profile update must execute `post_merge_reconcile` before close. Reconciliation may refresh source currentness and route an already runtime-bound profile to `PROFILE_RUNTIME_REFRESH_REQUIRED`; an unbound profile routes to `PROFILE_RUNTIME_ACTIVATION_REQUIRED`. It must never promote runtime state or automatic impact by itself.
 - Profile-local specializations belong behind this common interface. Do not add new slug-specific branches to the shared runtime when the behavior can be expressed by the runtime binding.
 - The update route never activates runtime, production, automatic promotion or business effects. Those remain separate governed operations.
 
