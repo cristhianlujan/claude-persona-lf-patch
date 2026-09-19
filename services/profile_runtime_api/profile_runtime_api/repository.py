@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
 import json
 from dataclasses import dataclass
@@ -44,6 +45,9 @@ class RuntimeProfileBinding:
     semantic_utility_callable: str
     governance: dict[str, Any]
     source_ref: str
+    model_context: dict[str, Any] | None = None
+    execution_partition: dict[str, Any] | None = None
+    execution_budget: dict[str, Any] | None = None
 
 
 class RepositoryBindings:
@@ -127,6 +131,9 @@ class RepositoryBindings:
         canonical = payload.get("canonical_validator")
         semantic = payload.get("semantic_utility")
         governance = payload.get("governance")
+        model_context = payload.get("model_context")
+        execution_partition = payload.get("execution_partition")
+        execution_budget = payload.get("execution_budget")
         if not isinstance(profile_code, str) or not profile_code:
             raise RepositoryError("PROFILE_RUNTIME_BINDING_CODE_INVALID", profile_slug)
         if not isinstance(runtime_schema, dict) or not isinstance(runtime_schema.get("default"), str) or not isinstance(runtime_schema.get("output_modes"), dict):
@@ -146,6 +153,56 @@ class RepositoryBindings:
         }
         if any(governance.get(k) is not v for k, v in expected.items()):
             raise RepositoryError("PROFILE_RUNTIME_BINDING_GOVERNANCE_WEAK", profile_slug)
+        if model_context is not None:
+            projection = model_context.get("source_projection") if isinstance(model_context, dict) else None
+            if (
+                not isinstance(model_context, dict)
+                or model_context.get("full_source_to_model") is not False
+                or not isinstance(projection, dict)
+                or projection.get("mode") != "MARKDOWN_SECTIONS"
+                or not isinstance(projection.get("include_sections"), list)
+                or not projection["include_sections"]
+                or any(not isinstance(v, str) or not v.strip() for v in projection["include_sections"])
+                or not isinstance(projection.get("max_chars"), int)
+                or projection["max_chars"] < 256
+            ):
+                raise RepositoryError("PROFILE_RUNTIME_MODEL_CONTEXT_INVALID", profile_slug)
+        if execution_partition is not None:
+            classes = execution_partition.get("field_classes") if isinstance(execution_partition, dict) else None
+            materialization = execution_partition.get("deterministic_materialization") if isinstance(execution_partition, dict) else None
+            limits = execution_partition.get("generation_limits") if isinstance(execution_partition, dict) else None
+            if (
+                not isinstance(execution_partition, dict)
+                or execution_partition.get("schema") != "LF_PROFILE_EXECUTION_PARTITION_V1"
+                or not isinstance(classes, dict)
+                or not classes
+                or any(v not in {"DETERMINISTIC", "SEMANTIC", "HYBRID"} for v in classes.values())
+                or not isinstance(materialization, dict)
+                or not isinstance(limits, dict)
+            ):
+                raise RepositoryError("PROFILE_RUNTIME_EXECUTION_PARTITION_INVALID", profile_slug)
+            deterministic = {k for k, v in classes.items() if v == "DETERMINISTIC"}
+            if deterministic != set(materialization):
+                raise RepositoryError("PROFILE_RUNTIME_DETERMINISTIC_MATERIALIZATION_MISMATCH", profile_slug)
+            for field, spec in materialization.items():
+                if not isinstance(spec, dict) or spec.get("source") not in {"literal", "profile_code", "profile_slug"}:
+                    raise RepositoryError("PROFILE_RUNTIME_DETERMINISTIC_MATERIALIZATION_INVALID", field)
+                if spec.get("source") == "literal" and "value" not in spec:
+                    raise RepositoryError("PROFILE_RUNTIME_DETERMINISTIC_LITERAL_MISSING", field)
+        if execution_budget is not None:
+            if (
+                not isinstance(execution_budget, dict)
+                or execution_budget.get("resource_class") not in {"STANDARD", "HEAVY_SEMANTIC"}
+                or not isinstance(execution_budget.get("max_prompt_tokens"), int)
+                or execution_budget.get("max_prompt_tokens") <= 0
+                or not isinstance(execution_budget.get("max_output_tokens"), int)
+                or execution_budget.get("max_output_tokens") <= 0
+                or not isinstance(execution_budget.get("min_available_memory_mb"), int)
+                or execution_budget.get("min_available_memory_mb") < 0
+                or not isinstance(execution_budget.get("max_swap_used_pct"), (int, float))
+                or not 0 <= execution_budget.get("max_swap_used_pct") <= 100
+            ):
+                raise RepositoryError("PROFILE_RUNTIME_EXECUTION_BUDGET_INVALID", profile_slug)
         refs = [runtime_schema["default"], *runtime_schema["output_modes"].values(), canonical["path"], semantic["path"]]
         for rel in refs:
             if not isinstance(rel, str) or not rel or rel.startswith("/") or ".." in PurePosixPath(rel).parts:
@@ -165,7 +222,124 @@ class RepositoryBindings:
             semantic_utility_callable=semantic["callable"],
             governance=dict(governance),
             source_ref=str(path.relative_to(self.repo_root)),
+            model_context=dict(model_context) if isinstance(model_context, dict) else None,
+            execution_partition=dict(execution_partition) if isinstance(execution_partition, dict) else None,
+            execution_budget=dict(execution_budget) if isinstance(execution_budget, dict) else None,
         )
+
+
+
+    @staticmethod
+    def _markdown_section_projection(content: str, include_sections: list[str]) -> str:
+        wanted = {item.strip() for item in include_sections}
+        sections: dict[str, list[str]] = {}
+        current: str | None = None
+        for line in content.splitlines():
+            if line.startswith("## "):
+                current = line[3:].strip()
+                sections.setdefault(current, [line])
+            elif current is not None:
+                sections[current].append(line)
+        missing = [name for name in include_sections if name not in sections]
+        if missing:
+            raise RepositoryError("PROFILE_RUNTIME_MODEL_CONTEXT_SECTION_MISSING", ",".join(missing))
+        chunks = ["\n".join(sections[name]).strip() for name in include_sections]
+        return "\n\n".join(chunks).strip() + "\n"
+
+    def profile_model_sources(
+        self, profile_slug: str, canonical_sources: list[dict[str, str]]
+    ) -> list[dict[str, str]]:
+        binding = self.runtime_binding(profile_slug)
+        if binding is None or binding.model_context is None:
+            return [dict(item) for item in canonical_sources]
+        projection = binding.model_context["source_projection"]
+        out: list[dict[str, str]] = []
+        total_chars = 0
+        for item in canonical_sources:
+            content = item["content"]
+            if item["ref"].endswith("/SKILL.md"):
+                content = self._markdown_section_projection(
+                    content, list(projection["include_sections"])
+                )
+            total_chars += len(content)
+            if total_chars > int(projection["max_chars"]):
+                raise RepositoryError(
+                    "PROFILE_RUNTIME_MODEL_CONTEXT_BUDGET_EXCEEDED", str(total_chars)
+                )
+            out.append({"ref": item["ref"], "content": content})
+        return out
+
+    def model_generation_schema(
+        self, profile_slug: str, canonical_schema: dict[str, Any]
+    ) -> dict[str, Any]:
+        binding = self.runtime_binding(profile_slug)
+        if binding is None or binding.execution_partition is None:
+            return copy.deepcopy(canonical_schema)
+        partition = binding.execution_partition
+        classes = partition["field_classes"]
+        properties = canonical_schema.get("properties")
+        required = canonical_schema.get("required")
+        if not isinstance(properties, dict) or not isinstance(required, list):
+            raise RepositoryError("PROFILE_RUNTIME_CANONICAL_ROOT_SCHEMA_INVALID", profile_slug)
+        if set(classes) != set(properties):
+            raise RepositoryError("PROFILE_RUNTIME_PARTITION_SCHEMA_FIELD_MISMATCH", profile_slug)
+        model_fields = {k for k, v in classes.items() if v != "DETERMINISTIC"}
+        schema = copy.deepcopy(canonical_schema)
+        schema["properties"] = {k: v for k, v in schema["properties"].items() if k in model_fields}
+        schema["required"] = [k for k in required if k in model_fields]
+        limits = partition.get("generation_limits") or {}
+        default_max = limits.get("default_string_max_length")
+        if isinstance(default_max, int) and default_max > 0:
+            def apply_default(node: Any) -> None:
+                if isinstance(node, dict):
+                    if node.get("type") == "string" and "maxLength" not in node:
+                        node["maxLength"] = default_max
+                    for value in node.values():
+                        apply_default(value)
+                elif isinstance(node, list):
+                    for value in node:
+                        apply_default(value)
+            apply_default(schema)
+        field_limits = limits.get("fields") or {}
+        if not isinstance(field_limits, dict):
+            raise RepositoryError("PROFILE_RUNTIME_GENERATION_LIMITS_INVALID", profile_slug)
+        for field, cfg in field_limits.items():
+            if field not in schema["properties"] or not isinstance(cfg, dict):
+                raise RepositoryError("PROFILE_RUNTIME_GENERATION_LIMIT_FIELD_INVALID", str(field))
+            for key in ("maxItems", "maxLength"):
+                if key in cfg:
+                    value = cfg[key]
+                    if not isinstance(value, int) or value < 1:
+                        raise RepositoryError("PROFILE_RUNTIME_GENERATION_LIMIT_INVALID", f"{field}:{key}")
+                    schema["properties"][field][key] = value
+        return schema
+
+    def materialize_partitioned_output(
+        self, profile_slug: str, model_payload: dict[str, Any]
+    ) -> tuple[dict[str, Any], list[str]]:
+        binding = self.runtime_binding(profile_slug)
+        if binding is None or binding.execution_partition is None:
+            return dict(model_payload), []
+        classes = binding.execution_partition["field_classes"]
+        deterministic = {k for k, v in classes.items() if v == "DETERMINISTIC"}
+        leaked = sorted(deterministic & set(model_payload))
+        if leaked:
+            raise RepositoryError("PROFILE_RUNTIME_MODEL_EMITTED_DETERMINISTIC_FIELDS", ",".join(leaked))
+        out = dict(model_payload)
+        added: list[str] = []
+        for field, spec in binding.execution_partition["deterministic_materialization"].items():
+            source = spec["source"]
+            if source == "literal":
+                value = copy.deepcopy(spec["value"])
+            elif source == "profile_code":
+                value = binding.profile_code
+            elif source == "profile_slug":
+                value = binding.profile_slug
+            else:
+                raise RepositoryError("PROFILE_RUNTIME_DETERMINISTIC_MATERIALIZATION_INVALID", field)
+            out[field] = value
+            added.append(field)
+        return out, sorted(added)
 
     def validate_profile_identity(self, profile_slug: str, profile_code: str) -> None:
         binding = self.runtime_binding(profile_slug)

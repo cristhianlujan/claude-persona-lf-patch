@@ -7,6 +7,7 @@ import secrets
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from .hashing import canonical_json_sha256, sha256_text
@@ -1564,6 +1565,7 @@ class LlamaHTTPClient:
         acceptance: dict[str, Any] | None = None,
         image_bytes: bytes | None = None,
         image_media_type: str | None = None,
+        max_output_tokens_override: int | None = None,
     ) -> dict[str, Any]:
         user_content: Any = user_prompt
         if image_bytes is not None:
@@ -1602,7 +1604,9 @@ class LlamaHTTPClient:
             "top_p": 1.0 if deterministic_semantic else 0.9,
             "seed": 42,
             "max_tokens": (
-                self.settings.ui_production_semantic_max_output_tokens
+                max_output_tokens_override
+                if isinstance(max_output_tokens_override, int) and max_output_tokens_override > 0
+                else self.settings.ui_production_semantic_max_output_tokens
                 if generation_schema_policy == UI_PRODUCTION_SEMANTIC_GENERATION_POLICY
                 else self.settings.ui_production_max_output_tokens
                 if profile_slug == UI_ARCHITECT_PROFILE_SLUG and schema_mode == UI_PRODUCTION_SCHEMA_MODE
@@ -1717,6 +1721,43 @@ class LlamaHTTPClient:
             raise LlamaTransportError("LLAMA_RESPONSE_JSON_INVALID") from exc
 
 
+def _linux_memory_snapshot() -> dict[str, float] | None:
+    path = Path("/proc/meminfo")
+    try:
+        values: dict[str, float] = {}
+        for line in path.read_text(encoding="utf-8").splitlines():
+            key, raw = line.split(":", 1)
+            first = raw.strip().split()[0]
+            values[key] = float(first) / 1024.0
+        total_swap = values.get("SwapTotal", 0.0)
+        free_swap = values.get("SwapFree", 0.0)
+        used_pct = 0.0 if total_swap <= 0 else (total_swap - free_swap) * 100.0 / total_swap
+        return {
+            "available_memory_mb": values.get("MemAvailable", 0.0),
+            "swap_total_mb": total_swap,
+            "swap_used_pct": used_pct,
+        }
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+def resource_budget_block_code(
+    budget: dict[str, Any] | None, snapshot: dict[str, float] | None
+) -> str | None:
+    if not isinstance(budget, dict) or budget.get("resource_class") != "HEAVY_SEMANTIC":
+        return None
+    if snapshot is None:
+        return "PROFILE_RUNTIME_RESOURCE_PREFLIGHT_UNAVAILABLE"
+    min_available = float(budget.get("min_available_memory_mb", 0))
+    max_swap = float(budget.get("max_swap_used_pct", 100))
+    if (
+        snapshot.get("available_memory_mb", 0.0) < min_available
+        and snapshot.get("swap_used_pct", 0.0) >= max_swap
+    ):
+        return "PROFILE_RUNTIME_RESOURCE_PRESSURE_BLOCK"
+    return None
+
+
 class PersistentLlamaServerAdapter:
     adapter_id = "hetzner-local-llamacpp-http-v1"
     is_test_double = False
@@ -1730,17 +1771,28 @@ class PersistentLlamaServerAdapter:
         structural_context: dict[str, Any],
         image_bytes: bytes | None,
         image_media_type: str | None,
+        model_profile_sources: list[dict[str, str]] | None = None,
+        generation_schema: dict[str, Any] | None = None,
+        execution_budget: dict[str, Any] | None = None,
     ) -> None:
         self.settings = settings
         self.client = client
         self.schema = schema
         self.structural_context = structural_context
+        self.model_profile_sources = model_profile_sources
+        self.generation_schema = generation_schema
+        self.execution_budget = execution_budget
         self.image_bytes = image_bytes
         self.image_media_type = image_media_type
         self.last_health: dict[str, Any] = {}
         self.last_completion: dict[str, Any] = {}
 
     def execute(self, request: dict[str, Any]) -> dict[str, Any]:
+        resource_code = resource_budget_block_code(
+            self.execution_budget, _linux_memory_snapshot()
+        )
+        if resource_code is not None:
+            raise LlamaTransportError(resource_code)
         # Fail closed before inference when the variable user literal alone would
         # consume an unsafe share of the UI production context budget. This is a
         # conservative proxy guard; governed fixed context remains unchanged.
@@ -1766,6 +1818,14 @@ class PersistentLlamaServerAdapter:
         prompt_chars = len(system_prompt) + len(effective_user_prompt)
         if prompt_chars > self.settings.max_prompt_chars:
             raise LlamaTransportError("LLAMA_PROMPT_CONTEXT_BUDGET_EXCEEDED")
+        if isinstance(self.execution_budget, dict):
+            max_prompt_tokens = int(self.execution_budget.get("max_prompt_tokens", 0) or 0)
+            prompt_proxy_tokens = int((prompt_chars + 2) / 3.0)
+            if max_prompt_tokens > 0 and prompt_proxy_tokens > max_prompt_tokens:
+                raise LlamaTransportError(
+                    "PROFILE_RUNTIME_PROMPT_BUDGET_EXCEEDED",
+                    f"proxy_tokens={prompt_proxy_tokens};budget={max_prompt_tokens}",
+                )
         reserved_output_tokens = (
             self.settings.ui_production_semantic_max_output_tokens
             if self.schema.mode == UI_PRODUCTION_SCHEMA_MODE
@@ -1808,13 +1868,24 @@ class PersistentLlamaServerAdapter:
         self.last_completion = self.client.chat(
             system_prompt=system_prompt,
             user_prompt=effective_user_prompt,
-            schema=self.schema.payload,
+            schema=self.generation_schema or self.schema.payload,
             profile_slug=request["profile_slug"],
             schema_mode=self.schema.mode,
             acceptance=acceptance,
             image_bytes=self.image_bytes,
             image_media_type=self.image_media_type,
+            max_output_tokens_override=(
+                int(self.execution_budget["max_output_tokens"])
+                if isinstance(self.execution_budget, dict)
+                and isinstance(self.execution_budget.get("max_output_tokens"), int)
+                else None
+            ),
         )
+        model_sources = self.model_profile_sources or request["profile_sources"]
+        model_source_manifest = [
+            {"ref": item["ref"], "content_sha256": sha256_text(item["content"])}
+            for item in model_sources
+        ]
         attestation = {
             "provider": "local_llama_cpp_hetzner_persistent",
             "model_id": self.last_completion.get("model") or self.settings.llama_model,
@@ -1823,6 +1894,8 @@ class PersistentLlamaServerAdapter:
             "adapter_id": self.adapter_id,
             "request_sha256": request["request_sha256"],
             "profile_source_sha256": request["profile_source_sha256"],
+            "profile_model_source_sha256": canonical_json_sha256(model_source_manifest),
+            "profile_model_source_chars": sum(len(item["content"]) for item in model_sources),
             "input_sha256": request["input_sha256"],
             "operation_code": request["operation_code"],
             "profile_code": request["profile_code"],
@@ -1945,7 +2018,7 @@ class PersistentLlamaServerAdapter:
                         "",
                     ]
                 )
-        for source in request["profile_sources"]:
+        for source in (self.model_profile_sources or request["profile_sources"]):
             ref = source["ref"]
             if (
                 self.schema.mode == UI_FOCUSED_SCHEMA_MODE
@@ -2048,10 +2121,14 @@ class PersistentLlamaServerVerifier:
         settings: Settings,
         schema: SchemaBinding,
         structural_context: dict[str, Any],
+        model_profile_sources: list[dict[str, str]] | None = None,
+        generation_schema: dict[str, Any] | None = None,
     ) -> None:
         self.settings = settings
         self.schema = schema
         self.structural_context = structural_context
+        self.model_profile_sources = model_profile_sources
+        self.generation_schema = generation_schema
 
     def verify(
         self, *, request: dict[str, Any], response: dict[str, Any], adapter: Any
@@ -2067,6 +2144,15 @@ class PersistentLlamaServerVerifier:
             raise LlamaTransportError("LLAMA_VERIFIER_SCHEMA_MISMATCH")
         if attestation.get("structured_output_schema_mode") != self.schema.mode:
             raise LlamaTransportError("LLAMA_VERIFIER_SCHEMA_MODE_MISMATCH")
+        model_sources = self.model_profile_sources or request["profile_sources"]
+        expected_model_source_sha = canonical_json_sha256([
+            {"ref": item["ref"], "content_sha256": sha256_text(item["content"])}
+            for item in model_sources
+        ])
+        if attestation.get("profile_model_source_sha256") != expected_model_source_sha:
+            raise LlamaTransportError("LLAMA_VERIFIER_MODEL_SOURCE_MISMATCH")
+        if attestation.get("profile_model_source_chars") != sum(len(item["content"]) for item in model_sources):
+            raise LlamaTransportError("LLAMA_VERIFIER_MODEL_SOURCE_SIZE_MISMATCH")
 
         model_context = compact_model_context(self.structural_context)
         acceptance = None
@@ -2075,7 +2161,7 @@ class PersistentLlamaServerVerifier:
             if isinstance(fields, dict) and isinstance(fields.get("gate_f_acceptance"), dict):
                 acceptance = fields["gate_f_acceptance"]
         expected_generation_schema, expected_generation_policy = governed_generation_schema(
-            self.schema.payload,
+            self.generation_schema or self.schema.payload,
             profile_slug=request["profile_slug"],
             schema_mode=self.schema.mode,
             acceptance=acceptance,

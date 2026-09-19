@@ -15,6 +15,7 @@ class GenericRuntimeBindingTest(unittest.TestCase):
         (root/'profiles/p/contracts').mkdir(parents=True)
         (root/'profiles/p/schemas').mkdir(parents=True)
         (root/'profiles/p/validators').mkdir(parents=True)
+        (root/'profiles/p/SKILL.md').write_text('# P\n## Purpose\nVisible purpose.\n## Internal\nOMIT_ME\n')
         (root/'sandbox/lf_contract_gate_test/profile_execution_runtime').mkdir(parents=True)
         (root/'sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3').mkdir(parents=True)
         (root/'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py').write_text('x=1\n')
@@ -57,6 +58,41 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             semantic=gates.semantic_utility(profile_slug='p',payload=payload_short,contract_gate=contract_short)
             self.assertEqual(semantic['status'],'FAIL')
             self.assertIn('ANSWER_TOO_SHALLOW',semantic['blocking_codes'])
+        finally: tmp.cleanup()
+
+
+
+    def test_declared_model_context_partition_and_materialization(self):
+        tmp,root,repo=self._repo()
+        try:
+            path=root/'profiles/p/contracts/runtime_binding.json'
+            data=json.loads(path.read_text())
+            data['model_context']={
+                'full_source_to_model':False,
+                'source_projection':{'mode':'MARKDOWN_SECTIONS','include_sections':['Purpose'],'max_chars':1000},
+            }
+            data['execution_partition']={
+                'schema':'LF_PROFILE_EXECUTION_PARTITION_V1',
+                'field_classes':{'answer':'DETERMINISTIC'},
+                'deterministic_materialization':{'answer':{'source':'literal','value':'runtime-owned'}},
+                'generation_limits':{'default_string_max_length':80,'fields':{}},
+            }
+            data['execution_budget']={
+                'resource_class':'STANDARD','max_prompt_tokens':1024,'max_output_tokens':256,
+                'min_available_memory_mb':0,'max_swap_used_pct':100,
+            }
+            path.write_text(json.dumps(data))
+            canonical=repo.profile_sources('p',['profiles/p/SKILL.md'])
+            projected=repo.profile_model_sources('p',canonical)
+            self.assertIn('Visible purpose.',projected[0]['content'])
+            self.assertNotIn('OMIT_ME',projected[0]['content'])
+            schema=repo.runtime_schema('p')
+            generation=repo.model_generation_schema('p',schema.payload)
+            self.assertEqual(generation['properties'],{})
+            self.assertEqual(generation['required'],[])
+            materialized,added=repo.materialize_partitioned_output('p',{})
+            self.assertEqual(materialized,{'answer':'runtime-owned'})
+            self.assertEqual(added,['answer'])
         finally: tmp.cleanup()
 
     def test_weak_governance_fails_closed(self):

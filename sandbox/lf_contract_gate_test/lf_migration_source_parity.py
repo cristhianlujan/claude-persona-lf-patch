@@ -402,6 +402,77 @@ def classify_external_owner_pending(
     return verified
 
 
+def _unclassified_external_owner_candidates(
+    *,
+    remote_unclassified: dict[str, tuple[str, str]],
+    local_versions: set[str],
+    evidence: dict[str, object] | None,
+) -> list[str]:
+    """Return only remote-only unknown names that have material owner evidence.
+
+    Taxonomy/classification remains fail-closed. This helper only allows the
+    existing external-owner currentness path to run before the taxonomy failure
+    when another open governed PR owns the exact migration source.
+    """
+    if not remote_unclassified or evidence is None:
+        return []
+    owners = evidence.get("owners")
+    if not isinstance(owners, list):
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_OWNERS")
+
+    candidates: list[str] = []
+    for version, (name, _content_proof) in sorted(remote_unclassified.items()):
+        if version in local_versions:
+            continue
+        expected_path = f"supabase/migrations/{version}_{name}.sql"
+        if any(
+            isinstance(row, dict)
+            and row.get("version") == version
+            and row.get("name") == name
+            and row.get("path") == expected_path
+            for row in owners
+        ):
+            candidates.append(version)
+    return candidates
+
+
+def external_owner_classification_precedence_self_test() -> None:
+    version = "20260919065425"
+    name = "fix_profile_update_begin_target_path_v1"
+    remote = {version: (name, "")}
+    evidence = {
+        "schema_version": EXTERNAL_OWNER_EVIDENCE_SCHEMA,
+        "complete": True,
+        "repository": "o/r",
+        "owners": [
+            {
+                "version": version,
+                "name": name,
+                "path": f"supabase/migrations/{version}_{name}.sql",
+            }
+        ],
+    }
+    if _unclassified_external_owner_candidates(
+        remote_unclassified=remote,
+        local_versions=set(),
+        evidence=evidence,
+    ) != [version]:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_PRECEDENCE_SELFTEST_POSITIVE")
+    if _unclassified_external_owner_candidates(
+        remote_unclassified=remote,
+        local_versions={version},
+        evidence=evidence,
+    ):
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_PRECEDENCE_SELFTEST_LOCAL_COLLISION")
+    if _unclassified_external_owner_candidates(
+        remote_unclassified=remote,
+        local_versions=set(),
+        evidence=None,
+    ):
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_PRECEDENCE_SELFTEST_NO_EVIDENCE")
+    print("PASS_LF_MIGRATION_EXTERNAL_OWNER_PRECEDENCE_SELFTEST=3/3")
+
+
 def external_owner_self_test() -> None:
     evidence = {
         "schema_version": EXTERNAL_OWNER_EVIDENCE_SCHEMA,
@@ -725,6 +796,7 @@ def main() -> int:
         fail("FAIL_CI009_LEGACY_HEX_PARSER_SELFTEST")
     transport_self_test()
     source_first_self_test()
+    external_owner_classification_precedence_self_test()
     external_owner_self_test()
 
     if not managed("promote_router_compact_jit_v1"):
@@ -820,8 +892,6 @@ def main() -> int:
             if len(row) not in (3, 4):
                 fail("FAIL_LF_MIGRATION_LEDGER_ROW", repr(row))
             version, name, content_proof = row[:3]
-            if version > classification_baseline_end and not classified(name):
-                fail("FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION", f"remote={version}_{name}")
             remote_all[version] = (name, content_proof)
             if len(row) == 4 and managed(name):
                 try:
@@ -833,6 +903,7 @@ def main() -> int:
                 inline_counts[version] = count
 
     local: dict[str, tuple[str, str, str]] = {}
+    local_versions_all: set[str] = set()
     for path in sorted(migrations.glob("*.sql")):
         match = FILENAME_RE.fullmatch(path.name)
         if not match:
@@ -840,6 +911,7 @@ def main() -> int:
         version, name = match.groups()
         if version <= cutover:
             continue
+        local_versions_all.add(version)
         if not managed(name):
             if version > classification_baseline_end and not classified(name):
                 fail("FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION", f"git={path.name}")
@@ -850,6 +922,39 @@ def main() -> int:
             hashlib.sha256(canonical(source_sql)).hexdigest(),
             source_sql,
         )
+
+    remote_unclassified = {
+        version: value
+        for version, value in remote_all.items()
+        if version > classification_baseline_end and not classified(value[0])
+    }
+    external_unclassified_pending: dict[str, dict[str, str]] = {}
+    if remote_unclassified:
+        external_evidence = _read_external_owner_evidence()
+        candidate_versions = _unclassified_external_owner_candidates(
+            remote_unclassified=remote_unclassified,
+            local_versions=local_versions_all,
+            evidence=external_evidence,
+        )
+        if candidate_versions:
+            candidate_remote = {
+                version: remote_unclassified[version]
+                for version in candidate_versions
+            }
+            external_unclassified_pending = classify_external_owner_pending(
+                remote_only=candidate_versions,
+                remote=candidate_remote,
+                statement_counts={},
+            )
+        unresolved = sorted(
+            set(remote_unclassified) - set(external_unclassified_pending)
+        )
+        if unresolved:
+            detail = ",".join(
+                f"{version}_{remote_unclassified[version][0]}"
+                for version in unresolved
+            )
+            fail("FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION", f"remote={detail}")
 
     remote: dict[str, tuple[str, str]] = {}
     for version, (name, content_proof) in remote_all.items():
@@ -875,15 +980,19 @@ def main() -> int:
             statement_counts = query_remote_statement_counts(sorted(remote))
 
     remote_only = sorted(set(remote) - set(local))
-    external_owner_pending = classify_external_owner_pending(
+    managed_external_owner_pending = classify_external_owner_pending(
         remote_only=remote_only,
         remote=remote,
         statement_counts=statement_counts,
     )
+    external_owner_pending = {
+        **external_unclassified_pending,
+        **managed_external_owner_pending,
+    }
     effective_remote = {
         version: value
         for version, value in remote.items()
-        if version not in external_owner_pending
+        if version not in managed_external_owner_pending
     }
     effective_statement_counts = {
         version: count
