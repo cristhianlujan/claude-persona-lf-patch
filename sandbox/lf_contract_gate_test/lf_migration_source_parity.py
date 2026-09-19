@@ -267,9 +267,12 @@ def _select_external_owner_record(
         )
     row = matches[0]
     required = {
-        "execution_status": "IN_PROGRESS",
+        "currentness_execution_status": "COMPLETED",
         "operation_code": "ACTUALIZACION_DB_LF",
         "pr_state": "OPEN",
+        "write_readback": "PASS",
+        "currentness_result": "OWNER_PR_EXACT_OPEN",
+        "ddl_replayed": False,
     }
     for key, expected in required.items():
         if row.get(key) != expected:
@@ -382,7 +385,7 @@ def classify_external_owner_pending(
         verified[version] = {
             "name": name,
             "path": str(row["path"]),
-            "execution_id": str(row.get("execution_id") or ""),
+            "execution_id": str(row.get("currentness_execution_id") or ""),
             "pr_number": str(row.get("pr_number") or ""),
             "pr_head_sha": str(row["pr_head_sha"]),
             "source_blob": source_blob,
@@ -401,11 +404,16 @@ def external_owner_self_test() -> None:
                 "version": "20260919010101",
                 "name": "lf_external_owner_probe",
                 "path": "supabase/migrations/20260919010101_lf_external_owner_probe.sql",
-                "execution_status": "IN_PROGRESS",
+                "currentness_execution_id": "EXEC-CURRENTNESS-PROBE",
+                "currentness_execution_status": "COMPLETED",
                 "operation_code": "ACTUALIZACION_DB_LF",
                 "target_repo": "o/r",
                 "pr_state": "OPEN",
                 "pr_head_sha": "a" * 40,
+                "source_blob": "d" * 40,
+                "write_readback": "PASS",
+                "currentness_result": "OWNER_PR_EXACT_OPEN",
+                "ddl_replayed": False,
             }
         ],
     }
