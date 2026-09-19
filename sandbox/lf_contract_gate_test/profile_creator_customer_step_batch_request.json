@@ -1,30 +1,30 @@
 {
-  "execution_id": "EXEC-LF-SRCR-SEMANTIC-CONDITIONALITY-20260919-002",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-SRCR-CLOSURE-20260919-003",
   "steps": [
     {
       "step_id": "pre_write_execution_binding_gate",
-      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@eae3a9facbf242d99554b9968e76acdbe6a25967/profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+      "evidence_ref": "github-actions-oidc://srcr-producer-artifact-closure/pre-write",
       "evidence_payload": {
-        "execution_id": "EXEC-LF-SRCR-SEMANTIC-CONDITIONALITY-20260919-002",
+        "execution_id": "EXEC-ACTUALIZACION-PERFIL-SRCR-CLOSURE-20260919-003",
         "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
-        "target_path": "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+        "target_path": "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
         "write_plan": {
-          "branch": "lf/srcr-status-conditional-semantics-v2-20260919",
-          "base": "eae3a9facbf242d99554b9968e76acdbe6a25967",
+          "branch": "lf/srcr-producer-artifact-closure-20260919",
+          "base": "cfd906623388f508237dfc4f18c7255a126aa24a",
           "scope": [
             "profiles/systemic_root_cause_repair_lf/SKILL.md",
-            "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
-            "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
             "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
-            "profiles/systemic_root_cause_repair_lf/evals/remediation_20260827/run_cases.py",
+            "profiles/systemic_root_cause_repair_lf/evals/eval_matrix.json",
             "profiles/systemic_root_cause_repair_lf/examples/good_output.json"
           ]
         },
         "pre_write_gate_passed": true,
         "bound_revision": {
-          "revision_sha": "eae3a9facbf242d99554b9968e76acdbe6a25967"
+          "revision_sha": "cfd906623388f508237dfc4f18c7255a126aa24a"
         },
         "execution_bound_to_target_before_change": true,
+        "no_runtime_activation": true,
+        "no_profile_pack_identity_change": true,
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
