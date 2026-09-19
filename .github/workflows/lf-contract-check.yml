@@ -677,7 +677,1005 @@ jobs:
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(cardinality(statements),0)::text from supabase_migrations.schema_migrations where version=any('${LF_MANAGED_VERSIONS}'::text[]) order by version" > "$RUNNER_TEMP/lf-migration-statement-counts.csv"
           export LF_MIGRATION_STATEMENT_COUNTS_CSV="$RUNNER_TEMP/lf-migration-statement-counts.csv"
 
-          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select g.execution_id,e.status,e.operation_code,coalesce(g.receipt->>'repository',''),coalesce(g.receipt->>'target_path',''),coalesce(g.receipt->>'migration_version',''),coalesce(g.receipt->>'migration_name',''),coalesce(g.receipt->>'pr_number',''),coalesce(g.receipt->>'pr_head_sha',''),coalesce(g.receipt->>'source_blob',''),coalesce(g.receipt->>'write_readback',''),coalesce(g.receipt->>'currentness_result',''),coalesce(g.receipt->>'ddl_replayed','') from public.lf_operation_effect_guard g join public.lf_operation_execution e using(execution_id) where g.effect_scope like 'MIGRATION_OWNER_CURRENTNESS:%' and g.state='SUCCEEDED' and g.receipt->>'schema_version'='lf-migration-owner-currentness/v1' order by g.resolved_at desc nulls last,g.execution_id" > "$RUNNER_TEMP/lf-migration-owner-currentness.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select g.execution_id,e.status,e.operation_code,coalesce(g.receipt->>'repository',''),coalesce(g.receipt->>'target_path',''),coalesce(g.receipt->>'migration_version',''),coalesce(g.receipt->>'migration_name',''),coalesce(g.receipt->>'pr_number',''),coalesce(g.receipt->>'pr_head_sha',''),coalesce(g.receipt->>'source_blob',''),coalesce(g.receipt->>'write_readback',''),coalesce(g.receipt->>'currentness_result',''),coalesce(g.receipt->>'ddl_replayed',''),(select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\n' order by ord),''),E'\n+
+
+          python3 - <<'PY' > "$RUNNER_TEMP/lf-migration-external-owner-currentness.json"
+          import csv
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ.get("GITHUB_TOKEN", "").strip()
+          if not token:
+              raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_GITHUB_TOKEN_MISSING")
+
+          def github_json(path):
+              request = urllib.request.Request(
+                  f"https://api.github.com/repos/{repo}/{path}",
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {token}",
+                      "User-Agent": "lf-migration-owner-currentness-v1",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      return json.loads(response.read().decode("utf-8"))
+              except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                  raise SystemExit(
+                      f"FAIL_LF_MIGRATION_EXTERNAL_OWNER_GITHUB_READ:{path}:{type(exc).__name__}"
+                  ) from exc
+
+          owner_rows = []
+          seen = set()
+          with open(os.path.join(os.environ["RUNNER_TEMP"], "lf-migration-owner-currentness.csv"), newline="", encoding="utf-8") as handle:
+              for row in csv.reader(handle):
+                  if not row:
+                      continue
+                  if len(row) != 15:
+                      raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_DB_ROW")
+                  (
+                      execution_id,execution_status,operation_code,target_repo,target_path,
+                      version,migration_name,raw_pr_number,receipt_head,receipt_blob,
+                      write_readback,currentness_result,ddl_replayed,remote_sha256,
+                      raw_remote_statement_count
+                  ) = row
+                  if target_repo != repo:
+                      continue
+                  if not raw_pr_number.isdigit():
+                      continue
+                  if write_readback != "PASS" or currentness_result != "OWNER_PR_EXACT_OPEN" or ddl_replayed != "false":
+                      continue
+                  if len(remote_sha256) != 64 or not raw_remote_statement_count.isdigit() or int(raw_remote_statement_count) < 1:
+                      continue
+
+                  pr_number = int(raw_pr_number)
+                  pr = github_json(f"pulls/{pr_number}")
+                  if pr.get("state") != "open":
+                      continue
+                  live_head = str((pr.get("head") or {}).get("sha") or "")
+                  if live_head != receipt_head:
+                      continue
+
+                  files = []
+                  page = 1
+                  while True:
+                      chunk = github_json(f"pulls/{pr_number}/files?per_page=100&page={page}")
+                      if not isinstance(chunk, list):
+                          raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_GITHUB_FILES_SHAPE")
+                      files.extend(chunk)
+                      if len(chunk) < 100:
+                          break
+                      page += 1
+                      if page > 20:
+                          raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_GITHUB_FILES_PAGINATION")
+
+                  exact = [
+                      item for item in files
+                      if item.get("filename") == target_path
+                      and item.get("sha") == receipt_blob
+                  ]
+                  if len(exact) != 1:
+                      continue
+
+                  key = (version,migration_name,target_path,pr_number,receipt_head,receipt_blob)
+                  if key in seen:
+                      continue
+                  seen.add(key)
+                  owner_rows.append({
+                      "version": version,
+                      "name": migration_name,
+                      "path": target_path,
+                      "currentness_execution_id": execution_id,
+                      "currentness_execution_status": execution_status,
+                      "operation_code": operation_code,
+                      "target_repo": target_repo,
+                      "pr_number": pr_number,
+                      "pr_state": "OPEN",
+                      "pr_head_sha": receipt_head,
+                      "source_blob": receipt_blob,
+                      "write_readback": write_readback,
+                      "currentness_result": currentness_result,
+                      "ddl_replayed": False,
+                      "remote_sha256": remote_sha256,
+                      "remote_statement_count": int(raw_remote_statement_count),
+                  })
+
+          print(json.dumps({
+              "schema_version": "lf-migration-external-owner-currentness/v1",
+              "repository": repo,
+              "complete": True,
+              "owners": owner_rows,
+          }, sort_keys=True))
+          PY
+
+          shadow_dir=".lf_gate_runtime/lf_contract_check/migration_source_parity"
+          rm -rf "$shadow_dir"
+          mkdir -p "$shadow_dir"
+          cp "$RUNNER_TEMP/lf-post-cutover-migrations-compact.csv" "$shadow_dir/lf-post-cutover-migrations-compact.csv"
+          cp "$RUNNER_TEMP/lf-grandfathered-migrations.csv" "$shadow_dir/lf-grandfathered-migrations.csv"
+          cp "$RUNNER_TEMP/lf-legacy-checkpoint.csv" "$shadow_dir/lf-legacy-checkpoint.csv"
+          cp "$RUNNER_TEMP/lf-migration-statement-counts.csv" "$shadow_dir/lf-migration-statement-counts.csv"
+          cp "$RUNNER_TEMP/lf-migration-external-owner-currentness.json" "$shadow_dir/lf-migration-external-owner-currentness.json"
+
+      - name: Enforce required_controls through existing gate orchestrator
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'MIGRATION_SOURCE_PARITY')
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          LF_MIGRATION_CUTOVER: "20260808031006"
+          LF_MIGRATION_CLASSIFICATION_BASELINE_END: "20260822195004"
+          LF_MIGRATION_GRANDFATHERED_COUNT: "154"
+          LF_MIGRATION_GRANDFATHERED_SHA256: "f6694a57d984bb02266630c12151e6334ef40535d17f7986be6e1820956186a5"
+          LF_MIGRATION_STATEMENT_COUNTS_CSV: .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv
+          LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_JSON: .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-external-owner-currentness.json
+        run: |
+          set -euo pipefail
+          for input in \
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-post-cutover-migrations-compact.csv \
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-grandfathered-migrations.csv \
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-legacy-checkpoint.csv \
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv \
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-external-owner-currentness.json
+          do
+            if [ ! -s "$input" ]; then
+              echo "DECLARATIVE_REQUIRED_CONTROL_INPUT_MISSING=$input"
+              exit 2
+            fi
+          done
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          rm -rf .lf_gate_diagnostics/lf_contract_check/declarative_controls
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py \
+            --manifest sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_control_manifest_v1.json \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/declarative_controls \
+            --group MIGRATION_SOURCE_PARITY
+          echo "DECLARATIVE_REQUIRED_CONTROL_ENFORCED=MIGRATION_SOURCE_PARITY"
+
+      - name: Enforce Input Governance migration source parity
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'INPUT_GOVERNANCE_MIGRATION_PARITY')
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          INPUT_GOVERNANCE_CUTOVER: "20260818213426"
+        run: |
+          set -euo pipefail
+          if [ -z "${PGPASSWORD:-}" ]; then
+            echo "FAIL_INPUT_GOVERNANCE_MIGRATION_PARITY_DB_PASSWORD_MISSING"
+            exit 1
+          fi
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,''),'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\n' order by ord),''),E'\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\n'),''),E'\r\n',E'\n'),E'\r',E'\n'),E'\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') from supabase_migrations.schema_migrations sm where version >= '${INPUT_GOVERNANCE_CUTOVER}' and (name like 'input\_governance\_%' escape '\' or name like 'programacion\_input\_governance\_%' escape '\' or name = 'retire_b2b_auth005_legacy_totp_screen') order by version" > "$RUNNER_TEMP/input-governance-migrations-compact.csv"
+          input_migration_bytes="$(wc -c < "$RUNNER_TEMP/input-governance-migrations-compact.csv" | tr -d ' ')"
+          if [ "$input_migration_bytes" -gt 262144 ]; then
+            echo "FAIL_INPUT_GOVERNANCE_MIGRATION_PAYLOAD_BUDGET bytes=${input_migration_bytes} max=262144"
+            exit 1
+          fi
+          echo "PASS_INPUT_GOVERNANCE_MIGRATION_COMPACT_READ csv_bytes=${input_migration_bytes}"
+
+          python3 sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py \
+            --migrations supabase/migrations \
+            --remote "$RUNNER_TEMP/input-governance-migrations-compact.csv" \
+            --cutover "$INPUT_GOVERNANCE_CUTOVER"
+
+      - name: Install deterministic audit dependencies
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'P0_VISUAL_RUNTIME') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'S36_ASSURANCE') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'LF_CONTRACT_CORE') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_GOVERNANCE') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'LF_VALIDATION_ENGINE') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'NO_BYPASS_PROFILE_CARD_SKILL') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'PASS_EVIDENCE') || contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'R8_USER_STORY_AUDIT')
+        run: |
+          python3 -m pip install --disable-pip-version-check \
+            PyYAML==6.0.2 \
+            jsonschema==4.23.0
+
+      - name: Provision governed P0 visual runtime
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'P0_VISUAL_RUNTIME')
+        run: |
+          set -euo pipefail
+          if [ -n "${P0_CI_ENGINEERING_REGRESSION:-}" ]; then
+            echo "FAIL_P0_CI_ENGINEERING_REGRESSION_OVERRIDE_FORBIDDEN"
+            exit 1
+          fi
+          python3 -m pip install --disable-pip-version-check \
+            -r sandbox/story_creator_p0_visual/v1.1/requirements-p0-visual-quality.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa
+
+      - name: Run S36 assurance completeness gate self-test with deterministic diagnostics
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'S36_ASSURANCE')
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/s36_assurance_selftest
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_S36_ASSURANCE_SELFTEST \
+            --step-id s36_assurance_selftest \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/s36_assurance_selftest \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix S36 \
+            --owner S36_ASSURANCE \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact ASSURANCE \
+            --downstream-impact GOVERNANCE
+
+      - name: Enforce S36 assurance completeness debt monotonicity with deterministic diagnostics
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'S36_ASSURANCE')
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/s36_debt_monotonicity
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_S36_DEBT_MONOTONICITY \
+            --step-id s36_debt_monotonicity \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/s36_debt_monotonicity \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix S36D \
+            --owner S36_ASSURANCE \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact ASSURANCE \
+            --downstream-impact GOVERNANCE
+
+      - name: Validate LF contract
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'LF_CONTRACT_CORE')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          route="$(python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          expected = {
+              ".github/workflows/lf-contract-check.yml",
+              "gobernanza/contratos/contrato_perfil_lf.yaml",
+              "gobernanza/repositorios/matriz_repos_lf.yaml",
+              "scripts/validate_declared_paths.py",
+          }
+
+          def diff_names(base: str, head: str) -> set[str]:
+              raw = subprocess.check_output(
+                  ["git", "diff", "--name-only", "-z", base, head, "--"]
+              )
+              return {
+                  item.decode("utf-8", "strict")
+                  for item in raw.split(b"\0")
+                  if item
+              }
+
+          event = os.environ.get("GITHUB_EVENT_NAME", "")
+          changed: set[str] = set()
+          if event == "pull_request":
+              base_ref = os.environ.get("GITHUB_BASE_REF", "main")
+              subprocess.run(
+                  ["git", "fetch", "--no-tags", "origin", base_ref],
+                  check=True,
+                  stdout=subprocess.DEVNULL,
+              )
+              merge_base = subprocess.check_output(
+                  ["git", "merge-base", f"origin/{base_ref}", "HEAD"], text=True
+              ).strip()
+              changed = diff_names(merge_base, "HEAD")
+          elif event == "push":
+              event_path = Path(os.environ["GITHUB_EVENT_PATH"])
+              payload = json.loads(event_path.read_text(encoding="utf-8"))
+              before = payload.get("before", "")
+              after = payload.get("after") or os.environ.get("GITHUB_SHA", "HEAD")
+              if before and set(before) != {"0"}:
+                  probe = subprocess.run(
+                      ["git", "cat-file", "-e", f"{before}^{{commit}}"],
+                      stdout=subprocess.DEVNULL,
+                      stderr=subprocess.DEVNULL,
+                  )
+                  if probe.returncode != 0:
+                      subprocess.run(
+                          ["git", "fetch", "--no-tags", "origin", before],
+                          check=True,
+                          stdout=subprocess.DEVNULL,
+                      )
+                  changed = diff_names(before, after)
+              else:
+                  repository = payload.get("repository") or {}
+                  default_branch = repository.get("default_branch", "main")
+                  subprocess.run(
+                      ["git", "fetch", "--no-tags", "origin", default_branch],
+                      check=True,
+                      stdout=subprocess.DEVNULL,
+                  )
+                  merge_base = subprocess.check_output(
+                      ["git", "merge-base", f"origin/{default_branch}", after], text=True
+                  ).strip()
+                  changed = diff_names(merge_base, after)
+
+          def governed_scope(files: set[str]) -> bool:
+              return files == expected
+
+          if not governed_scope(expected):
+              raise SystemExit("FAIL_GOV017_SCOPE_ROUTER_POSITIVE_SELFTEST")
+          if governed_scope(expected - {"scripts/validate_declared_paths.py"}):
+              raise SystemExit("FAIL_GOV017_SCOPE_ROUTER_SUBSET_SELFTEST")
+          if governed_scope(expected | {"production/unexpected.txt"}):
+              raise SystemExit("FAIL_GOV017_SCOPE_ROUTER_MIXED_SELFTEST")
+
+          print("DECLARED_GOVERNANCE" if governed_scope(changed) else "LEGACY")
+          PY
+          )"
+
+          if [ "$route" = "DECLARED_GOVERNANCE" ]; then
+            echo "PASS_GOV017_SCOPE_ROUTING=4/4"
+            python3 scripts/validate_declared_paths.py --repo-root .
+            GITHUB_EVENT_NAME=workflow_dispatch \
+              python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
+          else
+            python3 sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py
+          fi
+
+          export LF_GOV017_ROUTE="$route"
+          python3 - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+
+          if os.environ["LF_GOV017_ROUTE"] == "DECLARED_GOVERNANCE":
+              validator_path = Path("scripts/lf_contract_check.py")
+              spec = importlib.util.spec_from_file_location("lf_contract_check_gov017_scan", validator_path)
+              if spec is None or spec.loader is None:
+                  raise SystemExit("FAIL_GOV017_FORBIDDEN_STATUS_SCANNER_LOAD")
+              module = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              module.validate_forbidden_terms([
+                  ".github/workflows/lf-contract-check.yml",
+                  "gobernanza/contratos/contrato_perfil_lf.yaml",
+                  "gobernanza/repositorios/matriz_repos_lf.yaml",
+                  "scripts/validate_declared_paths.py",
+              ])
+              print("PASS_GOV017_FORBIDDEN_STATUS_SCAN=4/4")
+          PY
+
+      - name: Run E.16 governance regression matrices with deterministic diagnostics
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_GOVERNANCE')
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/e16_regression_matrices
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_E16_REGRESSION_MATRICES \
+            --step-id e16_regression_matrices \
+            --mode COLLECT_ALL \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py","--validator","sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py"],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py","--inventory","sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py"],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py","--repo-root","."],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py","--candidate-root","."],"source_path":"sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py"}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py"],"source_path":"sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py"}' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/e16_regression_matrices \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix E16 \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_FAILED_E16_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact E16 \
+            --downstream-impact GOVERNANCE
+
+      - name: Run LF validation engine self-test with deterministic diagnostics
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'LF_VALIDATION_ENGINE')
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/validation_engine_selftest
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_VALIDATION_ENGINE_SELFTEST \
+            --step-id validation_engine_selftest \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/validation_engine_selftest \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix VAL \
+            --owner LF_VALIDATION_ENGINE \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact VALIDATION \
+            --downstream-impact GOVERNANCE
+
+      - name: Run NO BYPASS judge profile-card-skill self-test with deterministic diagnostics
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'NO_BYPASS_PROFILE_CARD_SKILL')
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/no_bypass_selftest
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_NO_BYPASS_SELFTEST \
+            --step-id no_bypass_selftest \
+            --mode COLLECT_ALL \
+            --glob 'sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py' \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/no_bypass_selftest \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix NOB \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_FAILED_CHECK_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact NO_BYPASS \
+            --downstream-impact GOVERNANCE
+
+      - name: Enforce merge and CI evidence for PASS candidates with deterministic diagnostics
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'PASS_EVIDENCE')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/pass_evidence
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_PASS_EVIDENCE \
+            --step-id pass_evidence \
+            --mode COLLECT_ALL \
+            --command-json "{\"argv\":[\"python3\",\"sandbox/lf_contract_gate_test/pass_evidence_gate.py\",\"--self-test\",\"--scan\",\"skills/creating-integral-user-stories/evidence/pass-candidates\",\"--repository\",\"$GITHUB_REPOSITORY\"],\"source_path\":\"sandbox/lf_contract_gate_test/pass_evidence_gate.py\"}" \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/pass_evidence \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix PASS \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_PASS_EVIDENCE_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact PASS_EVIDENCE \
+            --downstream-impact GOVERNANCE
+
+      - name: Audit creating-integral-user-stories A01-A62 with deterministic diagnostics
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'R8_USER_STORY_AUDIT')
+        run: |
+          set -euo pipefail
+          rm -rf .lf_gate_diagnostics/lf_contract_check/r8_audit
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py \
+            --gate-id LF_CONTRACT_CHECK_R8_CONTINUOUS_AUDIT \
+            --step-id r8_continuous_audit \
+            --mode COLLECT_ALL \
+            --command-json "{\"argv\":[\"python3\",\"sandbox/lf_contract_gate_test/r8_continuous_audit.py\",\"skills/creating-integral-user-stories\",\"--output\",\".audit-output/creating-integral-user-stories\",\"--commit-sha\",\"$GITHUB_SHA\"],\"source_path\":\"sandbox/lf_contract_gate_test/r8_continuous_audit.py\"}" \
+            --artifact-dir .lf_gate_diagnostics/lf_contract_check/r8_audit \
+            --artifact-name lf_gate_error_v1.json \
+            --check-prefix R8 \
+            --owner LF_CONTRACT_CHECK \
+            --next-action FIX_R8_AUDIT_AND_RERUN_LF_CONTRACT_CHECK \
+            --downstream-impact AUDIT \
+            --downstream-impact GOVERNANCE
+
+      - name: Detect deterministic LF contract gate diagnostics
+        id: deterministic_diagnostics
+        if: always() && steps.feedback_tier.outcome == 'success' && steps.feedback_tier.outputs.tier != 'FAST_P0_DOCS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=.lf_gate_diagnostics/lf_contract_check
+          if [ -d "$root" ] && find "$root" -type f -name 'lf_gate_error_v1.json' -print -quit | grep -q .; then
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+            echo "PASS_LF_DETERMINISTIC_DIAGNOSTICS_PRESENT"
+          else
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+            echo "INFO_LF_DETERMINISTIC_DIAGNOSTICS_NOT_REACHED: an earlier non-deterministic gate stopped the job before any deterministic producer ran"
+          fi
+
+      - name: Persist unified CI applicability plan
+        if: always() && steps.feedback_tier.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-ci-applicability-plan-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/lf_ci_execution_plan_v2.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Persist deterministic LF contract gate diagnostics
+        id: deterministic_diagnostics_artifact
+        if: always() && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-gate-diagnostics-lf-contract-check-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_gate_diagnostics/lf_contract_check
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE
+        if: always() && steps.feedback_tier.outcome == 'success' && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true' && steps.deterministic_diagnostics_artifact.outcome == 'success'
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+          LF_EXACT_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          LF_WORKFLOW_EVENT: ${{ github.event_name }}
+          LF_REPOSITORY: ${{ github.repository }}
+          LF_RUN_ID: ${{ github.run_id }}
+          LF_RUN_ATTEMPT: ${{ github.run_attempt }}
+          LF_JOB_ID: ${{ github.job }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${PGPASSWORD:-}" ]; then
+            echo "FAIL_LF_CONTRACT_PRE_EKB_DB_PASSWORD_MISSING"
+            exit 1
+          fi
+
+          binding="$(psql -X -v ON_ERROR_STOP=1 -At -c "select public.lf_pre_ekb_gate_consumer_v1('GITHUB_CONTRACT_GATE_LF')::text")"
+          if [ "$binding" != "true" ] && [ "$binding" != "t" ]; then
+            echo "FAIL_LF_CONTRACT_PRE_EKB_CONSUMER_NOT_BOUND"
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(".lf_gate_diagnostics/lf_contract_check")
+          exact_source = os.environ["LF_EXACT_SOURCE_SHA"].strip()
+          repository = os.environ["LF_REPOSITORY"].strip()
+          run_id = os.environ["LF_RUN_ID"].strip()
+          run_attempt = int(os.environ["LF_RUN_ATTEMPT"])
+          job_id = os.environ.get("LF_JOB_ID", "lf-contract-check").strip() or "lf-contract-check"
+          workflow_event = os.environ.get("LF_WORKFLOW_EVENT", "").strip()
+          artifact_name = f"lf-gate-diagnostics-lf-contract-check-{run_id}-{run_attempt}"
+          workflow_path = ".github/workflows/lf-contract-check.yml"
+
+          if len(exact_source) != 40 or any(ch not in "0123456789abcdef" for ch in exact_source.lower()):
+              raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_SOURCE_SHA_INVALID")
+
+          def load(path: Path) -> dict:
+              value = json.loads(path.read_text(encoding="utf-8"))
+              if not isinstance(value, dict):
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_REPORT_NOT_OBJECT:{path}")
+              if value.get("contract") != "LF_GATE_ERROR_V1":
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_REPORT_CONTRACT:{path}")
+              return value
+
+          def durable_ref(path: Path, check_id: str) -> str:
+              rel = path.relative_to(root).as_posix()
+              return (
+                  f"github-actions://{repository}/runs/{run_id}/artifacts/"
+                  f"{artifact_name}/{rel}#check={check_id}"
+              )
+
+          def transformed_check(report: dict, path: Path, raw: dict) -> dict:
+              status = str(raw.get("check_status") or raw.get("status") or "").upper()
+              check_id = str(raw.get("check_id") or "").strip()
+              if status not in {"PASS", "FAIL", "BLOCKED", "SKIPPED"} or not check_id:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_CHECK_ID_OR_STATUS:{path}")
+              condition = str(raw.get("condition") or "").strip()
+              producer = str(raw.get("producer") or raw.get("source_path") or report.get("producer") or "").strip()
+              owner = str(raw.get("owner") or report.get("owner") or "LF_CONTRACT_CHECK").strip()
+              next_action = str(raw.get("next_action") or report.get("next_action") or "FIX_FAILED_LF_CONTRACT_CHECK_AND_RERUN").strip()
+              error_class = raw.get("error_class")
+              if not condition or not producer or not owner or not next_action:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_CHECK_METADATA:{path}:{check_id}")
+              if status in {"FAIL", "BLOCKED"} and not str(error_class or "").strip():
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_ERROR_CLASS:{path}:{check_id}")
+              rc = raw.get("rc", raw.get("exit_code"))
+              if not isinstance(rc, int):
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_RC:{path}:{check_id}")
+              return {
+                  "check_id": check_id,
+                  "status": status,
+                  "critical": bool(raw.get("critical", False)),
+                  "error_class": error_class,
+                  "condition": condition,
+                  "expected": raw.get("expected"),
+                  "actual": raw.get("actual"),
+                  "input_ref": raw.get("input_ref"),
+                  "evidence_ref": durable_ref(path, check_id),
+                  "producer": producer,
+                  "rc": rc,
+                  "downstream_impact": raw.get("downstream_impact", report.get("downstream_impact", [])),
+                  "owner": owner,
+                  "next_action": next_action,
+              }
+
+          batches = []
+          seen_gate_ids = set()
+          for path in sorted(root.rglob("lf_gate_error_v1.json")):
+              report = load(path)
+              gate_result = str(report.get("gate_result") or "").upper()
+              if gate_result == "PASS":
+                  continue
+              if gate_result not in {"FAIL", "BLOCKED"}:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_GATE_RESULT:{path}:{gate_result}")
+
+              for key in ("source_commit", "tested_commit"):
+                  value = str(report.get(key) or "").strip()
+                  if value and value != exact_source:
+                      raise SystemExit(
+                          f"FAIL_LF_CONTRACT_PRE_EKB_EXACT_HEAD:{path}:{key}:"
+                          f"expected={exact_source}:actual={value}"
+                      )
+
+              gate_id = str(report.get("gate_id") or "").strip()
+              if not gate_id:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_GATE_ID:{path}")
+              if gate_id in seen_gate_ids:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_DUPLICATE_GATE_ID:{gate_id}")
+              seen_gate_ids.add(gate_id)
+
+              raw_checks = report.get("checks")
+              if raw_checks is None:
+                  raw_checks = []
+              if not isinstance(raw_checks, list):
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_CHECKS_NOT_ARRAY:{path}")
+
+              if raw_checks:
+                  checks = [transformed_check(report, path, x) for x in raw_checks if isinstance(x, dict)]
+                  expected_ids = report.get("expected_check_ids")
+                  if not isinstance(expected_ids, list) or not expected_ids:
+                      raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_EXPECTED_IDS:{path}")
+              else:
+                  synthetic_id = "GATE-BLOCKED" if gate_result == "BLOCKED" else "GATE-FAILED"
+                  synthetic = {
+                      "check_id": synthetic_id,
+                      "status": gate_result,
+                      "critical": True,
+                      "error_class": str(report.get("error_class") or f"GATE_{gate_result}"),
+                      "condition": str(report.get("condition") or "gate execution reaches PASS"),
+                      "expected": report.get("expected", {"gate_result": "PASS"}),
+                      "actual": report.get("actual", {"gate_result": gate_result}),
+                      "input_ref": workflow_path,
+                      "evidence_ref": durable_ref(path, synthetic_id),
+                      "producer": str(report.get("producer") or "GATE_CHECK_OBSERVABILITY"),
+                      "rc": int(report.get("rc", 2 if gate_result == "BLOCKED" else 1)),
+                      "downstream_impact": report.get("downstream_impact", ["CI_GOVERNANCE"]),
+                      "owner": str(report.get("owner") or "LF_CONTRACT_CHECK"),
+                      "next_action": str(report.get("next_action") or "FIX_FAILED_LF_CONTRACT_CHECK_AND_RERUN"),
+                  }
+                  checks = [synthetic]
+                  expected_ids = [synthetic_id]
+
+              if not checks:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_EMPTY_TRANSFORMED_CHECKS:{path}")
+
+              nonpass = sum(1 for item in checks if item["status"] in {"FAIL", "BLOCKED"})
+              if nonpass == 0:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_NONPASS_REPORT_WITHOUT_NONPASS_CHECK:{path}")
+
+              batches.append(
+                  {
+                      "gate_id": gate_id,
+                      "gate_mode": str(report.get("gate_mode") or "COLLECT_ALL"),
+                      "expected_check_ids": expected_ids,
+                      "checks": checks,
+                      "report_ref": durable_ref(path, "REPORT"),
+                  }
+              )
+
+          total_checks = sum(len(batch["checks"]) for batch in batches)
+          nonpass_checks = sum(
+              1
+              for batch in batches
+              for item in batch["checks"]
+              if item["status"] in {"FAIL", "BLOCKED"}
+          )
+          metadata = {
+              "schema_version": "lf-contract-check-pre-ekb-ingress/v1",
+              "operation_code": "GITHUB_CONTRACT_GATE_LF",
+              "canonical_step_id": "contract_judge",
+              "source_commit": exact_source,
+              "run_id": run_id,
+              "run_attempt": run_attempt,
+              "workflow_event": workflow_event,
+              "artifact_name": artifact_name,
+              "batch_count": len(batches),
+              "total_check_count": total_checks,
+              "nonpass_check_count": nonpass_checks,
+          }
+          Path("/tmp/lf_contract_pre_ekb_meta.json").write_text(
+              json.dumps(metadata, sort_keys=True) + "\n", encoding="utf-8"
+          )
+
+          if not batches:
+              Path("/tmp/lf_contract_pre_ekb.sql").write_text("", encoding="utf-8")
+              print("PASS_LF_CONTRACT_PRE_EKB_NO_NONPASS_DIAGNOSTICS")
+              raise SystemExit(0)
+
+          execution_id = f"EXEC-LF-CONTRACT-CHECK-{run_id}-{run_attempt}"
+          idempotency_key = f"LF-CONTRACT-CHECK:{run_id}:{run_attempt}:{exact_source}"
+          target_code = f"LF_CONTRACT_CHECK_RUN_{run_id}_{run_attempt}"
+          request_payload = {
+              "operation_code": "GITHUB_CONTRACT_GATE_LF",
+              "execution_id": execution_id,
+              "source_commit": exact_source,
+              "workflow_event": workflow_event,
+              "batches": batches,
+          }
+          request_sha = hashlib.sha256(
+              json.dumps(request_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+          ).hexdigest()
+
+          def sql_text(value: str) -> str:
+              encoded = base64.b64encode(value.encode("utf-8")).decode("ascii")
+              return f"convert_from(decode('{encoded}','base64'),'UTF8')"
+
+          def sql_json(value) -> str:
+              raw = json.dumps(value, sort_keys=True, separators=(",", ":"))
+              return f"{sql_text(raw)}::jsonb"
+
+          manifest = {
+              "scope": "LF_CONTRACT_CHECK_PRE_EKB_GATE_HANDOFF",
+              "source_commit": exact_source,
+              "github_run_id": run_id,
+              "github_run_attempt": run_attempt,
+              "workflow_event": workflow_event,
+              "diagnostic_artifact": artifact_name,
+              "canonical_step_id": "contract_judge",
+              "productive_ingress": "public.lf_record_gate_checks_v1",
+              "ekb_governance": "PRE_EKB_GATE",
+              "direct_ekb_write_allowed": False,
+          }
+
+          statements = ["\\set ON_ERROR_STOP on"]
+          statements.append(
+              "select public.fn_lf_operation_reserve_execution_v1("
+              f"{sql_text(execution_id)},"
+              "'GITHUB_CONTRACT_GATE_LF',"
+              "'REPOSITORY_GOVERNED_PATHS',"
+              f"{sql_text(target_code)},"
+              f"{sql_text(idempotency_key)},"
+              f"'{request_sha}',"
+              f"{sql_text(execution_id)},"
+              f"{sql_text(repository)},"
+              f"{sql_text(workflow_path)},"
+              f"{sql_json(manifest)}"
+              ")::text;"
+          )
+
+          for batch in batches:
+              context = {
+                  "source_commit": exact_source,
+                  "source_path": workflow_path,
+                  "run_id": run_id,
+                  "job_id": job_id,
+                  "owner": "GITHUB_CONTRACT_GATE_LF",
+                  "next_action": "FIX_FAILED_LF_CONTRACT_CHECK_AND_RERUN",
+                  "environment": "CANDIDATE" if workflow_event == "pull_request" else "CI",
+                  "attempt_no": run_attempt,
+                  "downstream_impact": ["CI_GOVERNANCE", "EKB"],
+              }
+              statements.append(
+                  "select public.lf_record_gate_checks_v1("
+                  f"{sql_text(execution_id)},"
+                  "'contract_judge',"
+                  f"{sql_text(batch['gate_id'])},"
+                  f"{sql_text(batch['gate_mode'])},"
+                  f"{sql_json(batch['expected_check_ids'])},"
+                  f"{sql_json(batch['checks'])},"
+                  f"{sql_json(context)},"
+                  f"{sql_text(execution_id)}"
+                  ")::text;"
+              )
+
+          statements.append(
+              f"""
+          do $verify$
+          declare
+            v_total integer;
+            v_nonpass integer;
+            v_missing integer;
+            v_blocked integer;
+            v_bad_child integer;
+          begin
+            select count(*) into v_total
+            from public.lf_operation_gate_check_results
+            where execution_id={sql_text(execution_id)};
+
+            if v_total<>{total_checks} then
+              raise exception 'LF_CONTRACT_PRE_EKB_TOTAL_CHECK_READBACK_MISMATCH expected={total_checks} actual=%',v_total;
+            end if;
+
+            select count(*) into v_nonpass
+            from public.lf_operation_gate_check_results
+            where execution_id={sql_text(execution_id)}
+              and check_status in ('FAIL','BLOCKED');
+
+            if v_nonpass<>{nonpass_checks} then
+              raise exception 'LF_CONTRACT_PRE_EKB_NONPASS_READBACK_MISMATCH expected={nonpass_checks} actual=%',v_nonpass;
+            end if;
+
+            select count(*) into v_missing
+            from public.lf_operation_gate_check_results g
+            where g.execution_id={sql_text(execution_id)}
+              and g.check_status in ('FAIL','BLOCKED')
+              and not exists (
+                select 1
+                from public.lf_eventos e
+                where e.created_by_execution_id=g.execution_id
+                  and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
+                  and e.payload->>'persistence_result'='EKB_PERSISTED'
+                  and e.payload->>'gate_check_result_id'=g.id::text
+              );
+
+            if v_missing<>0 then
+              raise exception 'LF_CONTRACT_PRE_EKB_RECEIPT_MISSING count=%',v_missing;
+            end if;
+
+            select count(*) into v_blocked
+            from public.lf_eventos e
+            where e.created_by_execution_id={sql_text(execution_id)}
+              and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
+              and e.payload->>'persistence_result'='BLOCKED_EKB_PERSISTENCE';
+
+            if v_blocked<>0 then
+              raise exception 'LF_CONTRACT_PRE_EKB_AUTOPERSIST_BLOCKED count=%',v_blocked;
+            end if;
+
+            select count(*) into v_bad_child
+            from public.lf_eventos e
+            left join public.lf_operation_execution child
+              on child.execution_id=e.payload->>'child_execution_id'
+            where e.created_by_execution_id={sql_text(execution_id)}
+              and e.origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1'
+              and e.payload->>'persistence_result'='EKB_PERSISTED'
+              and (
+                child.execution_id is null
+                or child.operation_code<>'EJECUCION_SKILL_LF'
+                or child.target_code<>'ACT-0057'
+                or child.status<>'COMPLETED'
+              );
+
+            if v_bad_child<>0 then
+              raise exception 'LF_CONTRACT_PRE_EKB_CHILD_READBACK_MISMATCH count=%',v_bad_child;
+            end if;
+
+            update public.lf_operation_execution
+            set status='BLOCKED',
+                completed_at=coalesce(completed_at,clock_timestamp()),
+                checkpoint_payload=jsonb_build_object(
+                  'lot_code','LF_CONTRACT_CHECK_PRE_EKB_HANDOFF',
+                  'source_commit',{sql_text(exact_source)},
+                  'github_run_id',{sql_text(run_id)},
+                  'github_run_attempt',{run_attempt},
+                  'batch_count',{len(batches)},
+                  'total_check_count',{total_checks},
+                  'nonpass_check_count',{nonpass_checks},
+                  'persistence_result','EKB_PERSISTED',
+                  'readback_result','PASS'
+                ),
+                updated_by_execution_id={sql_text(execution_id)},
+                updated_at=clock_timestamp()
+            where execution_id={sql_text(execution_id)}
+              and status='IN_PROGRESS';
+
+            if not found then
+              raise exception 'LF_CONTRACT_PRE_EKB_PARENT_FINALIZE_FAILED';
+            end if;
+          end
+          $verify$;
+          """
+          )
+          statements.append(
+              "select jsonb_build_object("
+              "'result','PASS_LF_CONTRACT_PRE_EKB_HANDOFF',"
+              "'execution_id'," + sql_text(execution_id) + ","
+              "'gate_rows',(select count(*) from public.lf_operation_gate_check_results where execution_id=" + sql_text(execution_id) + "),"
+              "'ekb_receipts',(select count(*) from public.lf_eventos where created_by_execution_id=" + sql_text(execution_id) + " and origen='LF_PRE_EKB_GATE_AUTOPERSIST_V1' and payload->>'persistence_result'='EKB_PERSISTED'),"
+              "'status',(select status from public.lf_operation_execution where execution_id=" + sql_text(execution_id) + ")"
+              ")::text;"
+          )
+
+          Path("/tmp/lf_contract_pre_ekb.sql").write_text("\n".join(statements) + "\n", encoding="utf-8")
+          print(
+              "LF_CONTRACT_PRE_EKB_PREPARED "
+              f"batches={len(batches)} total_checks={total_checks} nonpass_checks={nonpass_checks}"
+          )
+          PY
+
+          nonpass_count="$(python3 - <<'PY'
+          import json
+          print(json.load(open("/tmp/lf_contract_pre_ekb_meta.json", encoding="utf-8"))["nonpass_check_count"])
+          PY
+          )"
+          if [ "$nonpass_count" -eq 0 ]; then
+            echo "PASS_LF_CONTRACT_PRE_EKB_NOT_REQUIRED_ALL_DIAGNOSTICS_PASS"
+            exit 0
+          fi
+
+          psql -X -v ON_ERROR_STOP=1 -At -f /tmp/lf_contract_pre_ekb.sql
+          echo "PASS_LF_CONTRACT_PRE_EKB_CANONICAL_HANDOFF nonpass_checks=$nonpass_count"
+
+      - name: Capture authenticated E.16 Actions inventory
+        if: github.event_name == 'pull_request' && contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_ACTIONS_INVENTORY')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LF_FEEDBACK_TIER: ${{ steps.feedback_tier.outputs.tier }}
+        run: |
+          set -euo pipefail
+          if [ "$LF_FEEDBACK_TIER" = "FAST_P0_DOCS" ]; then
+            echo "PASS_E16_INVENTORY_SKIPPED_FAST_P0_DOCS"
+            exit 0
+          fi
+          python3 sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py \
+            --repository "$GITHUB_REPOSITORY" \
+            --head-sha "$E16_HEAD_SHA" \
+            --output .audit-output/creating-integral-user-stories/github-actions-inventory-e16.json
+
+      - name: Build authoritative reconciliation manifest
+        if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_GOVERNANCE')
+        env:
+          LF_WORKFLOW_EVENT: ${{ github.event_name }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import subprocess
+          from datetime import datetime, timezone
+
+          root = pathlib.Path.cwd()
+          output = root / ".audit-output" / "creating-integral-user-stories" / "reconciliation-manifest-v3.json"
+          output.parent.mkdir(parents=True, exist_ok=True)
+
+          tracked = subprocess.check_output(["git", "ls-files", "-z"]).split(b"\0")
+          files = {}
+          for raw_path in tracked:
+              if not raw_path:
+                  continue
+              relative_path = raw_path.decode("utf-8")
+              path = root / relative_path
+              if not path.is_file():
+                  continue
+              content = path.read_bytes()
+              git_blob = subprocess.check_output(["git", "hash-object", relative_path], text=True).strip()
+              files[relative_path] = {
+                  "sha256": hashlib.sha256(content).hexdigest(),
+                  "git_blob": git_blob,
+              }
+
+          manifest = {
+              "schema_version": "lf-reconciliation-manifest/v3",
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "workflow_name": "lf-contract-check",
+              "workflow_event": os.environ["LF_WORKFLOW_EVENT"],
+              "workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "workflow_run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+              "commit_sha": os.environ["GITHUB_SHA"],
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "validation_suite": [
+                  "scripts/lf_contract_check.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
+                  "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py",
+                  "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_SCOPE_TESTS.py",
+                  "sandbox/lf_contract_gate_test/functional_red_team_v1_regression.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py",
+                  "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py",
+                  "sandbox/lf_contract_gate_test/lf_validation_engine_v0_10_2_selftest.py",
+                  "sandbox/no_bypass_judge_profile_card_skill/no_bypass_judge_selftest.py",
+                  "sandbox/lf_contract_gate_test/pass_evidence_gate.py --self-test --scan",
+                  "sandbox/lf_contract_gate_test/r8_continuous_audit.py",
+                  "sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py",
+                  "sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py",
+              ],
+              "files": dict(sorted(files.items())),
+          }
+          output.write_text(json.dumps(manifest, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+          print(f"manifest={output} files={len(files)}")
+          PY
+
+      - name: Upload per-artifact audit evidence and canonical source snapshot
+        if: always() && steps.feedback_tier.outcome == 'success' && contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_GOVERNANCE')
+        uses: actions/upload-artifact@v4
+        with:
+          name: r8-continuous-audit-${{ github.run_id }}
+          path: |
+            .audit-output/creating-integral-user-stories
+            skills/creating-integral-user-stories
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7,''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(m.statements,E'\n'),''),E'\r\n',E'\n'),E'\r',E'\n'),E'\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--'),coalesce(cardinality(m.statements),0)::text from public.lf_operation_effect_guard g join public.lf_operation_execution e using(execution_id) join supabase_migrations.schema_migrations m on m.version=g.receipt->>'migration_version' and m.name=g.receipt->>'migration_name' where g.effect_scope like 'MIGRATION_OWNER_CURRENTNESS:%' and g.state='SUCCEEDED' and g.receipt->>'schema_version'='lf-migration-owner-currentness/v1' order by g.resolved_at desc nulls last,g.execution_id" > "$RUNNER_TEMP/lf-migration-owner-currentness.csv"
 
           python3 - <<'PY' > "$RUNNER_TEMP/lf-migration-external-owner-currentness.json"
           import csv
