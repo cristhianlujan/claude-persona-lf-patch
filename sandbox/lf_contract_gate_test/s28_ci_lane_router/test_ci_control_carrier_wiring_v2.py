@@ -85,6 +85,12 @@ def main() -> None:
     require(bootstrap, "source_git_blob_sha1", "FAIL_CANDIDATE_EXACT_GIT_BLOB_NOT_BOUND")
     require(bootstrap, "lf_operation_effect_guard", "FAIL_ALREADY_APPLIED_GOVERNED_PROVENANCE_NOT_REQUIRED")
     require(bootstrap, "APPLIED_UNVERIFIED", "FAIL_ALREADY_APPLIED_UNVERIFIED_STATE_NOT_BLOCKED")
+    require(bootstrap, "SUPABASE_MIGRATION_RECONCILIATION:", "FAIL_APPLIED_RECONCILIATION_SCOPE_NOT_BOUND")
+    require(bootstrap, "lf-db-applied-source-reconciliation/v1", "FAIL_APPLIED_RECONCILIATION_SCHEMA_NOT_BOUND")
+    require(bootstrap, "APPLIED_RECONCILED", "FAIL_APPLIED_RECONCILIATION_STATE_NOT_MODELED")
+    require(bootstrap, "EXACT_SOURCE_MATCHED_LIVE_NO_REPLAY", "FAIL_APPLIED_RECONCILIATION_EXACT_SOURCE_GUARD_MISSING")
+    require(bootstrap, "ddl_replayed", "FAIL_APPLIED_RECONCILIATION_NO_REPLAY_GUARD_MISSING")
+    require(bootstrap, "ALL_APPLIED_VERIFIED", "FAIL_APPLIED_VERIFIED_MODE_MISSING")
 
     contract = texts["LF_CONTRACT_CHECK"]
     contract_steps = {
