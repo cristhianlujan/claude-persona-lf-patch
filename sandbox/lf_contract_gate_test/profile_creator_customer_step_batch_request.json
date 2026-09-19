@@ -1,15 +1,15 @@
 {
-  "execution_id": "EXEC-LF-SRCR-SEMANTIC-CONDITIONALITY-20260919-001",
+  "execution_id": "EXEC-LF-SRCR-SEMANTIC-CONDITIONALITY-20260919-002",
   "steps": [
     {
       "step_id": "pre_write_execution_binding_gate",
       "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@eae3a9facbf242d99554b9968e76acdbe6a25967/profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
       "evidence_payload": {
-        "execution_id": "EXEC-LF-SRCR-SEMANTIC-CONDITIONALITY-20260919-001",
+        "execution_id": "EXEC-LF-SRCR-SEMANTIC-CONDITIONALITY-20260919-002",
         "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
         "target_path": "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
         "write_plan": {
-          "branch": "lf/srcr-status-conditional-semantics-20260919",
+          "branch": "lf/srcr-status-conditional-semantics-v2-20260919",
           "base": "eae3a9facbf242d99554b9968e76acdbe6a25967",
           "scope": [
             "profiles/systemic_root_cause_repair_lf/SKILL.md",
