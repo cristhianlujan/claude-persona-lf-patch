@@ -291,6 +291,10 @@ jobs:
         if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK')
         run: python skills/profile_creator/validators/validate_pack.py skills/profile_creator
 
+      - name: Validate pack validation harness v1 regressions
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK')
+        run: python sandbox/lf_contract_gate_test/pack_validation_harness/test_pack_validation_harness_v1.py
+
       - name: Validate learning engine pack
         if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'LEARNING_ENGINE_PACK')
         run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine

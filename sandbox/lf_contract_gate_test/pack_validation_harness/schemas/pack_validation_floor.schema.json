@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lf-pack-validation-floor/v1",
+  "title": "LF Pack Validation Floor V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "requirements", "profiles"],
+  "properties": {
+    "schema": {"const": "LF_PACK_VALIDATION_FLOOR_V1"},
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inventory_reconciliation_required",
+        "direct_suite_execution_required",
+        "external_holdout_required_for_enforced",
+        "hashes_computed_by_harness",
+        "producer_self_exclusion_forbidden",
+        "runtime_authorized_false",
+        "automatic_impact_authorized_false"
+      ],
+      "properties": {
+        "inventory_reconciliation_required": {"const": true},
+        "direct_suite_execution_required": {"const": true},
+        "external_holdout_required_for_enforced": {"const": true},
+        "hashes_computed_by_harness": {"const": true},
+        "producer_self_exclusion_forbidden": {"const": true},
+        "runtime_authorized_false": {"const": true},
+        "automatic_impact_authorized_false": {"const": true}
+      }
+    },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["enforcement_state", "reason", "allow_missing_materialization"],
+        "properties": {
+          "enforcement_state": {"enum": ["ENFORCED", "REPORT_ONLY", "NOT_ENFORCED"]},
+          "reason": {"type": "string", "minLength": 8},
+          "min_profile_cases": {"type": "integer", "minimum": 1},
+          "min_holdout_cases": {"type": "integer", "minimum": 1},
+          "holdout_path": {
+            "type": "string",
+            "pattern": "^sandbox/lf_contract_gate_test/pack_validation_harness/holdouts/"
+          },
+          "allow_missing_materialization": {"type": "boolean"}
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"enforcement_state": {"const": "ENFORCED"}}},
+            "then": {"required": ["min_profile_cases", "min_holdout_cases", "holdout_path"]}
+          }
+        ]
+      }
+    }
+  }
+}

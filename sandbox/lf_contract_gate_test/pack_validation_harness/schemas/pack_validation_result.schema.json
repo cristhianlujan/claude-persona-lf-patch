@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lf-pack-validation-result/v1",
+  "title": "LF Pack Validation Harness Result V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "tested_revision",
+    "policy",
+    "policy_snapshot_sha256",
+    "inventory_snapshot_sha256",
+    "profiles",
+    "blocking_codes",
+    "runtime_authorized",
+    "automatic_impact_authorized",
+    "result_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "LF_PACK_VALIDATION_RESULT_V1"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "tested_revision": {"type": "string", "minLength": 7},
+    "policy": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["policy_code", "policy_version", "policy_sha256"],
+      "properties": {
+        "policy_code": {"const": "POL-PACK-VALIDATION-FLOOR"},
+        "policy_version": {"type": "string", "minLength": 1},
+        "policy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "policy_snapshot_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "inventory_snapshot_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "profile_code",
+          "profile_slug",
+          "pack_id",
+          "enforcement_state",
+          "status",
+          "blocking_codes",
+          "warnings",
+          "thresholds_applied",
+          "validator_sha256",
+          "suite_sha256",
+          "holdout_sha256",
+          "case_count",
+          "holdout_case_count",
+          "results_sha256",
+          "runtime_authorized",
+          "automatic_impact_authorized"
+        ],
+        "properties": {
+          "profile_code": {"type": "string", "minLength": 1},
+          "profile_slug": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_]{0,79}$"},
+          "pack_id": {"type": ["string", "null"]},
+          "enforcement_state": {"enum": ["ENFORCED", "REPORT_ONLY", "NOT_ENFORCED"]},
+          "status": {"enum": ["PASS", "FAIL", "REPORT_ONLY", "NOT_ENFORCED"]},
+          "blocking_codes": {"type": "array", "items": {"type": "string"}},
+          "warnings": {"type": "array", "items": {"type": "string"}},
+          "thresholds_applied": {"type": "object"},
+          "validator_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+          "suite_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+          "holdout_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+          "case_count": {"type": ["integer", "null"], "minimum": 0},
+          "holdout_case_count": {"type": ["integer", "null"], "minimum": 0},
+          "results_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+          "runtime_authorized": {"const": false},
+          "automatic_impact_authorized": {"const": false}
+        }
+      }
+    },
+    "blocking_codes": {"type": "array", "items": {"type": "string"}},
+    "runtime_authorized": {"const": false},
+    "automatic_impact_authorized": {"const": false},
+    "result_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
