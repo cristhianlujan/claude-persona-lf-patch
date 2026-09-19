@@ -253,6 +253,16 @@ begin
         'blocking_codes','[]'::jsonb,
         'mini_judge_code',b.judge_code,
         'mini_judge_result',b.clean_result_value,
+        'assertions_checked',jsonb_build_array('server_validated'),
+        'hard_fails_checked','[]'::jsonb,
+        'blocking_findings','[]'::jsonb,
+        'return_to_worker_reasons','[]'::jsonb,
+        'trust_validation',jsonb_build_object(
+          'valid',true,
+          'code','RUNTIME_UPDATE_INIT_SERVER_VALIDATED',
+          'server_assertions',jsonb_build_array('server_validated'),
+          'server_hard_fails','[]'::jsonb
+        ),
         'recorded_by_rpc','lf_runtime_update_begin_v1'
       ),
       'Runtime update init materialized after canonical idempotent reserve.',
