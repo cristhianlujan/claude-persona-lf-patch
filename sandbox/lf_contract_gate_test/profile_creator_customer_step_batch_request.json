@@ -1,76 +1,30 @@
 {
-  "execution_id": "EXEC-LF-SRCR-LIVE-AUTHORITY-RECONCILIATION-20260919-003",
+  "execution_id": "EXEC-LF-SRCR-SEMANTIC-CONDITIONALITY-20260919-001",
   "steps": [
     {
-      "step_id": "deterministic_validation",
-      "evidence_ref": "candidate://8b4fd451c4312787962d01561e274f99ac1cac7d/srcr-regression-15-of-15",
+      "step_id": "pre_write_execution_binding_gate",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@eae3a9facbf242d99554b9968e76acdbe6a25967/profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
       "evidence_payload": {
-        "validator_result": {
-          "status": "PASS",
-          "suite": "SYSTEMIC_ROOT_CAUSE_REPAIR_LIVE_AUTHORITY_RECONCILIATION_20260919",
-          "passed": 15,
-          "total": 15,
-          "exact_candidate_head": "8b4fd451c4312787962d01561e274f99ac1cac7d"
+        "execution_id": "EXEC-LF-SRCR-SEMANTIC-CONDITIONALITY-20260919-001",
+        "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "target_path": "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+        "write_plan": {
+          "branch": "lf/srcr-status-conditional-semantics-20260919",
+          "base": "eae3a9facbf242d99554b9968e76acdbe6a25967",
+          "scope": [
+            "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+            "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+            "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
+            "profiles/systemic_root_cause_repair_lf/evals/remediation_20260827/run_cases.py",
+            "profiles/systemic_root_cause_repair_lf/examples/good_output.json"
+          ]
         },
-        "malformed_input_result": "PASS_FAIL_CLOSED_NO_CRASH",
-        "negative_regressions": [
-          {
-            "sha256": "83e6bf3ad8ba2438c32dc8f5eb88b0076936ecbb98bbe349b997995034bb212b",
-            "result": "REJECTED",
-            "blocking_codes": [
-              "LIVE_AUTHORITY_PACKET_MISSING",
-              "EXECUTION_EFFECT_RECONCILIATION_MISSING",
-              "FALSIFICATION_PASS_NOT_OBSERVED"
-            ]
-          },
-          {
-            "sha256": "676258dde653641178935b1ef951513694a273f5c67ef09461bfc4ae4a15e3c3",
-            "result": "REJECTED",
-            "blocking_codes": [
-              "LIVE_AUTHORITY_PACKET_MISSING",
-              "EXECUTION_EFFECT_RECONCILIATION_MISSING",
-              "FALSIFICATION_PASS_NOT_OBSERVED",
-              "SYSTEMIC_SPEC_WITHOUT_COMPLETE_LIVE_AUTHORITY"
-            ]
-          }
-        ],
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
-      "step_id": "semantic_judge",
-      "evidence_ref": "candidate://8b4fd451c4312787962d01561e274f99ac1cac7d/srcr-semantic-utility",
-      "evidence_payload": {
-        "semantic_judge_result": {
-          "positive_fixture": "PASS",
-          "regression_83e6bf3a": "FAIL_AS_REQUIRED",
-          "regression_676258dd": "FAIL_AS_REQUIRED"
+        "pre_write_gate_passed": true,
+        "bound_revision": {
+          "revision_sha": "eae3a9facbf242d99554b9968e76acdbe6a25967"
         },
-        "authority_checks": [
-          "SYSTEMIC_REPAIR_SPEC requires COMPLETE live authority",
-          "material effects require effect-producer reconciliation",
-          "UNRESOLVED_PRODUCER cannot be residual risk",
-          "falsification PASS requires observed evidence"
-        ],
-        "router_direct_consistency": true,
-        "step_result": "STEP_PASS_WITH_EVIDENCE",
-        "blocking_codes": []
-      }
-    },
-    {
-      "step_id": "regression_after",
-      "evidence_ref": "candidate://8b4fd451c4312787962d01561e274f99ac1cac7d/srcr-before-after",
-      "evidence_payload": {
-        "before_after_matrix": {
-          "run1_before": "could become SYSTEMIC_REPAIR_SPEC without enforced live authority",
-          "run1_after": "deterministically rejected without live_authority_packet/effect reconciliation",
-          "run2_before": "NEEDS_MORE_EVIDENCE but could omit live authority entirely",
-          "run2_after": "deterministically rejected for missing live authority/effect reconciliation",
-          "generic_behavior": "non-MR02 unresolved producer remains valid NEEDS_MORE_EVIDENCE only with explicit blocker"
-        },
-        "adversarial_result": "PASS: MATCH-without-producer, COMPLETE-with-unavailable-source, contradiction-as-ready-spec, and DESIGN_ONLY falsification PASS all reject",
-        "holdout_result": "PASS: non-MR02 notification-dispatch unresolved producer is handled generically and remains blocking",
+        "execution_bound_to_target_before_change": true,
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
