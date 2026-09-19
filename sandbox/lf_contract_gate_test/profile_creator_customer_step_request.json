@@ -17,7 +17,9 @@
       "profiles/systemic_root_cause_repair_lf/examples/good_output.json"
     ],
     "pre_write_gate_passed": true,
-    "bound_revision": "c8418eb00f74c400eab15f419e619a98bf0074f5",
+    "bound_revision": {
+      "revision_sha": "c8418eb00f74c400eab15f419e619a98bf0074f5"
+    },
     "execution_bound_to_target_before_change": true,
     "candidate_semantic_suite": "21/21 PASS",
     "adversarial_benchmark": "8/8 PASS",
