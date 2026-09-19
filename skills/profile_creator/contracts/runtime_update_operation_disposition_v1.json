@@ -32,7 +32,8 @@
     ],
     "qualification_suite": "TS-RUNTIME-OP-UPDATE-V1",
     "qualification_binding": "BIND-OP-RUNTIME-UPDATE-V1",
-    "lifecycle_state": "OP_CANDIDATE"
+    "lifecycle_state": "OP_CANDIDATE",
+    "router_binding_status": "CANDIDATO_READ_ONLY"
   },
   "promotion_gate": {
     "requires_qualification": true,
@@ -41,7 +42,8 @@
     "target_lifecycle": "OP_OPERATIONAL",
     "legacy_status": "PRODUCCION_CONTROLADA",
     "router_action": "RUNTIME_UPDATE",
-    "positive_governed_canary_required": true
+    "positive_governed_canary_required": true,
+    "router_activation_after_promotion": true
   },
   "deployment_boundary": {
     "source_update_operation": true,
