@@ -280,16 +280,15 @@
   },
   "invariant": {
     "statement": "A live migration may apply only after exact source identity and digest are reserved and current.",
-    "status": "VALIDATED",
     "evidence_refs": [
       "test://bypass/run-1",
       "test://retry/run-1",
       "gate://A2R_PARITY"
     ],
-    "missing_evidence": []
+    "missing_evidence": [],
+    "validation_state": "VERIFIED"
   },
   "hard_guard": {
-    "status": "VALIDATED",
     "control": "Pre-apply source identity reservation gate.",
     "enforcement_point_ref": "contract://migration/pre-apply",
     "fail_closed_condition": "Block when exact source identity or digest is missing or mismatched.",
@@ -299,7 +298,8 @@
       "test://bypass/run-1",
       "test://stale/run-1"
     ],
-    "missing_evidence": []
+    "missing_evidence": [],
+    "validation_state": "VERIFIED"
   },
   "acceptance_criteria": [
     {
