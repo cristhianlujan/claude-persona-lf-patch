@@ -2,43 +2,75 @@
   "execution_id": "EXEC-LF-SRCR-LIVE-AUTHORITY-RECONCILIATION-20260919-003",
   "steps": [
     {
-      "step_id": "github_write",
-      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@8b4fd451c4312787962d01561e274f99ac1cac7d",
+      "step_id": "deterministic_validation",
+      "evidence_ref": "candidate://8b4fd451c4312787962d01561e274f99ac1cac7d/srcr-regression-15-of-15",
       "evidence_payload": {
-        "branch": "lf/srcr-live-authority-reconciliation-20260919",
-        "written_files": [
-          "profiles/systemic_root_cause_repair_lf/SKILL.md",
-          "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
-          "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
-          "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
-          "profiles/systemic_root_cause_repair_lf/evals/remediation_20260827/run_cases.py",
-          "profiles/systemic_root_cause_repair_lf/examples/good_output.json"
+        "validator_result": {
+          "status": "PASS",
+          "suite": "SYSTEMIC_ROOT_CAUSE_REPAIR_LIVE_AUTHORITY_RECONCILIATION_20260919",
+          "passed": 15,
+          "total": 15,
+          "exact_candidate_head": "8b4fd451c4312787962d01561e274f99ac1cac7d"
+        },
+        "malformed_input_result": "PASS_FAIL_CLOSED_NO_CRASH",
+        "negative_regressions": [
+          {
+            "sha256": "83e6bf3ad8ba2438c32dc8f5eb88b0076936ecbb98bbe349b997995034bb212b",
+            "result": "REJECTED",
+            "blocking_codes": [
+              "LIVE_AUTHORITY_PACKET_MISSING",
+              "EXECUTION_EFFECT_RECONCILIATION_MISSING",
+              "FALSIFICATION_PASS_NOT_OBSERVED"
+            ]
+          },
+          {
+            "sha256": "676258dde653641178935b1ef951513694a273f5c67ef09461bfc4ae4a15e3c3",
+            "result": "REJECTED",
+            "blocking_codes": [
+              "LIVE_AUTHORITY_PACKET_MISSING",
+              "EXECUTION_EFFECT_RECONCILIATION_MISSING",
+              "FALSIFICATION_PASS_NOT_OBSERVED",
+              "SYSTEMIC_SPEC_WITHOUT_COMPLETE_LIVE_AUTHORITY"
+            ]
+          }
         ],
-        "commit_sha": "8b4fd451c4312787962d01561e274f99ac1cac7d",
-        "identity_preserved": true,
-        "runtime_unchanged": true,
-        "automatic_promotion": false,
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
     },
     {
-      "step_id": "github_readback",
-      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@8b4fd451c4312787962d01561e274f99ac1cac7d/profiles/systemic_root_cause_repair_lf",
+      "step_id": "semantic_judge",
+      "evidence_ref": "candidate://8b4fd451c4312787962d01561e274f99ac1cac7d/srcr-semantic-utility",
       "evidence_payload": {
-        "exact_head": "8b4fd451c4312787962d01561e274f99ac1cac7d",
-        "readback_files": [
-          "SKILL.md@bdcae436bf3489b41242117b416044e0b0940200",
-          "schemas/output.schema.json@d0d235a0c6c71b7f2c838cb8b46454dcd4814f38",
-          "validators/runtime_validate.py@6d54856faafa336c24176c6720ecd670b82f6956",
-          "validators/runtime_semantic_utility.py@5336c5ba23ba038da2fc70b743c6dbf35fbc4375",
-          "evals/remediation_20260827/run_cases.py@a2e748680718480fa60b17704a0da8c17775ce5e",
-          "examples/good_output.json@7b9ebc6011ce5760605aae60982b822baaf1b860"
+        "semantic_judge_result": {
+          "positive_fixture": "PASS",
+          "regression_83e6bf3a": "FAIL_AS_REQUIRED",
+          "regression_676258dd": "FAIL_AS_REQUIRED"
+        },
+        "authority_checks": [
+          "SYSTEMIC_REPAIR_SPEC requires COMPLETE live authority",
+          "material effects require effect-producer reconciliation",
+          "UNRESOLVED_PRODUCER cannot be residual risk",
+          "falsification PASS requires observed evidence"
         ],
-        "sha_match": true,
-        "identity_preserved": true,
-        "changed_files_exact_scope": true,
-        "main_base_sha": "a0f43576820eff8ffecf21a94dd38f612ec470ed",
+        "router_direct_consistency": true,
+        "step_result": "STEP_PASS_WITH_EVIDENCE",
+        "blocking_codes": []
+      }
+    },
+    {
+      "step_id": "regression_after",
+      "evidence_ref": "candidate://8b4fd451c4312787962d01561e274f99ac1cac7d/srcr-before-after",
+      "evidence_payload": {
+        "before_after_matrix": {
+          "run1_before": "could become SYSTEMIC_REPAIR_SPEC without enforced live authority",
+          "run1_after": "deterministically rejected without live_authority_packet/effect reconciliation",
+          "run2_before": "NEEDS_MORE_EVIDENCE but could omit live authority entirely",
+          "run2_after": "deterministically rejected for missing live authority/effect reconciliation",
+          "generic_behavior": "non-MR02 unresolved producer remains valid NEEDS_MORE_EVIDENCE only with explicit blocker"
+        },
+        "adversarial_result": "PASS: MATCH-without-producer, COMPLETE-with-unavailable-source, contradiction-as-ready-spec, and DESIGN_ONLY falsification PASS all reject",
+        "holdout_result": "PASS: non-MR02 notification-dispatch unresolved producer is handled generically and remains blocking",
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
