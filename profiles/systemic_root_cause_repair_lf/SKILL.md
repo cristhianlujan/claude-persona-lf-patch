@@ -16,7 +16,7 @@ Use for recurrent failures, repeated local repairs, cross-run regressions, bypas
 Do not use for simple deterministic defects whose cause and repair are already classified and covered by an existing EKB rule.
 
 ## Mandatory trajectory
-FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> EFFECT/PRODUCER RECONCILIATION -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL CHAIN -> FIRST BAD CONTROL -> ESCAPE CONTROL -> DECLARED VS EXECUTED CONTRADICTIONS -> SYSTEMIC ROOT CAUSE -> ¿DEBE EXISTIR? -> UNCERTAINTY IMPACT -> DISTINCT ALTERNATIVES -> TRADEOFFS -> MINIMUM SUFFICIENT REPAIR -> IMPLEMENTATION DELTA -> TRANSITION/COMPATIBILITY -> INVARIANT/HARD GUARD -> FALSIFICATION PLAN -> ROLLBACK -> HISTORICAL REGRESSION -> SEMANTIC QUALITY GATE -> RESIDUAL RISK
+FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> EFFECT/PRODUCER RECONCILIATION -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL CHAIN -> FIRST BAD CONTROL -> ESCAPE CONTROL -> DECLARED VS EXECUTED CONTRADICTIONS -> SYSTEMIC ROOT CAUSE -> ¿DEBE EXISTIR? -> UNCERTAINTY IMPACT -> SOLUTION DEPTH -> RESEARCH ASSURANCE -> DISTINCT ALTERNATIVES -> CHALLENGER -> OMISSION DISCOVERY -> TRADEOFFS -> MINIMUM SUFFICIENT REPAIR -> IMPLEMENTATION PACKAGE -> IMPLEMENTATION DECISION CLOSURE -> TRANSITION/COMPATIBILITY -> INVARIANT/HARD GUARD -> FALSIFICATION PLAN -> ROLLBACK -> HISTORICAL REGRESSION -> SEMANTIC QUALITY GATE -> RESIDUAL RISK
 
 1. Read exact current authority, failure envelope, EKB recurrence evidence, architecture/contracts, historical occurrences, execution wiring and expected-vs-actual.
 2. Resolve execution authority from live evidence across every applicable execution surface: repository/runtime, SQL functions, deployed Edge Functions, schedulers, agent connectors, runtime processes and external workers. Declared source is not sufficient proof of actual execution.
@@ -32,7 +32,15 @@ FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> EFFECT/PRODUCER RECONCILIATION -> SY
    - `DESIGN_BLOCKING`: missing evidence can change the repair architecture, selected alternative, enforcement point, transition, rollback or acceptance criteria. `SYSTEMIC_REPAIR_SPEC` is forbidden.
    - `IMPLEMENTATION_PRECONDITION`: the repair design is stable, but implementation/activation must resolve a named prerequisite before a bounded stage proceeds.
    - `NON_BLOCKING_HISTORICAL`: attribution/history remains incomplete but cannot change the selected repair because the repair explicitly contains the unknown path.
-12. When the repair is materially ambiguous, compare at least 3 materially distinct alternatives across prevention, complexity, blast radius, reuse, fail-closed behavior, idempotency, recoverability and operational cost. Each alternative must carry basis references.
+12. Classify solution depth before solution search:
+   - `LIGHTWEIGHT`: the failure class is already deterministically classified, no material architecture/control/authority/context decision is open, and current-practice research cannot change the repair.
+   - `BOUNDED`: a small number of local design decisions require focused investigation but the authority and architecture boundaries are stable.
+   - `DEEP_ARCHITECTURE_RESEARCH`: the repair can change cross-operation architecture, authority, policy/contract semantics, state/recovery, concurrency, context transport, security boundaries, runtime wiring, scale/cost or multiple consumers.
+   Do not force deep research onto simple defects, but do not downgrade an architectural case merely to save tokens.
+13. Materialize `research_assurance`. Internal canonical authority is always read first. When current external techniques or practices can materially improve the design, perform current-practice research and record exact external evidence references, patterns compared and how the research changed or confirmed the solution. External research may inform technique; it never replaces LF authority.
+14. The first plausible solution is not final. Record its disposition as retained-after-challenge, revised or rejected. Challenge the leading design against at least the material failure surfaces for the selected depth. `DEEP_ARCHITECTURE_RESEARCH` requires at least three evidence-bound challenges before final selection.
+15. Perform omission discovery across architecture, controls, policies/contracts, context transport, wiring, compatibility/transition, recovery/terminality, observability, security/authority, cost/performance, testing/assurance and operability/maintenance. Every dimension must be explicitly resolved as REQUIRED_CHANGE, REUSE_AS_IS or NOT_APPLICABLE with evidence/rationale; silence is not closure.
+16. When the repair is materially ambiguous, compare at least 3 materially distinct alternatives across prevention, complexity, blast radius, reuse, fail-closed behavior, idempotency, recoverability and operational cost. Each alternative must carry basis references. Cosmetic variants do not count as distinct alternatives.
 13. `preferred_alternative` is provisional while design-blocking uncertainty exists. `selected_alternative` is allowed for `SYSTEMIC_REPAIR_SPEC` only after no `DESIGN_BLOCKING` uncertainty remains and the alternative is evidence-bound.
 14. Falsify the selected/preferred design against bypass, retry, concurrency, partial failure, stale state, interrupted execution, replay/duplicate and unversioned/undeclared caller cases. At specification time each family must be either:
    - `PASS` with observed test/runtime/readback evidence; or
@@ -40,11 +48,21 @@ FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> EFFECT/PRODUCER RECONCILIATION -> SY
    A repair spec does not require future implementation tests to have already run.
 15. `repair_level` is determined from the established failure-class root cause. It is `UNDETERMINED` only while the root cause itself is not established, not merely because some historical evidence is unavailable.
 16. Derive an explicit invariant and hard guard. Use `validation_state=SPECIFIED` when the design is precise/testable but not yet implemented, `VERIFIED` only when observed post-implementation evidence exists, `PROPOSED` while still being designed, and `UNRESOLVED` when the control cannot yet be stated.
-17. A ready repair spec must materialize:
+21. A ready repair spec must materialize a structured `implementation_package`, not only implementation prose. It must close:
+   - architecture decisions and exact authority/reuse choices;
+   - control matrix with applicability, inputs, enforcement point, blocking behavior and verification;
+   - policy/contract changes and ownership;
+   - context transport, including compiler/resolver, JIT vs deterministic delivery, excluded payloads and token budget when applicable;
+   - end-to-end wiring with data carried and fail-closed behavior at each edge;
+   - exact deliverable footprint and dependencies;
+   - observability/readback signals;
+   - implementation decision closure.
+22. `implementation_package.decision_closure.open_design_decisions` must be empty for `SYSTEMIC_REPAIR_SPEC`. An implementer may retrieve fresh values; it may not choose architecture. Every `IMPLEMENTATION_PRECONDITION` must name an exact resolver, expected shape, deterministic decision rule and bounded stage, and must declare `design_effect=NONE`. If resolving it could change architecture, enforcement, authority, wiring, rollout, rollback or acceptance, reclassify it as `DESIGN_BLOCKING`.
+23. A ready repair spec must also materialize:
    - exact `implementation_delta` describing the bounded assets/contracts/functions or policy bindings to change;
    - `transition_plan` with staged compatibility/readiness where a direct cutover could break existing consumers;
    - `rollback_plan` with inverse actions and protected historical evidence;
-   - executable acceptance criteria and regression/falsification methods.
+   - executable acceptance criteria and regression/falsification methods with setup, action, assertions and failure signal.
 18. Prefer declarative/rules-as-data activation over per-caller if-chains when a shared boundary exists. Reuse canonical capabilities/policies before creating new engines, tables, runners or authorities.
 19. If enforcement would break unprepared callers, caller adoption/readiness must precede enforcement. Cross-cutting enforcement should be activated in bounded reversible stages, normally per canonical consumer/operation rather than with an unproven blanket switch.
 20. Historical cleanup/disposition is separate from proving the systemic repair. Do not mass force-close, rewrite history, or improve success indicators by mutating historical failures as part of the repair specification unless a separately governed disposition explicitly authorizes it.
@@ -75,6 +93,10 @@ Requires:
 - selected alternative declared among alternatives and at least two evidence-backed rejected alternatives;
 - invariant and hard guard at least `SPECIFIED` (or `VERIFIED` when observed evidence already exists);
 - all mandatory falsification families either observed `PASS` or executable `PLANNED`;
+- adaptive solution depth and research assurance completed for the materiality of the case;
+- leading solution challenged and omission discovery completed across all required dimensions;
+- structured implementation package with architecture, controls, policy/contracts, context transport, wiring, deliverables, observability and decision closure;
+- zero open design decisions; every implementation precondition is mechanically resolvable and cannot change the design;
 - non-empty implementation delta, transition plan and rollback plan;
 - observed historical recurrence when recurrence is part of the activation reason;
 - executable acceptance/planned regressions;
@@ -131,7 +153,7 @@ Must not present a final selected alternative or residual risk as if a repair sp
 
 ## Typed output
 The output must include:
-status, profile_pack_id, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, alternatives, preferred_alternative, selected_alternative, rejected_alternatives, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, implementation_delta, transition_plan, rollback_plan, acceptance_criteria, historical_regressions, planned_regressions, current_uncertainties, residual_risks, evidence_map, blocking_codes, next_gate.
+status, profile_pack_id, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, solution_depth, research_assurance, alternatives, preferred_alternative, selected_alternative, rejected_alternatives, challenger_review, omission_discovery, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, implementation_package, implementation_delta, transition_plan, rollback_plan, acceptance_criteria, historical_regressions, planned_regressions, current_uncertainties, residual_risks, evidence_map, blocking_codes, next_gate.
 
 ## Claim ceiling
 CANDIDATO / READ_ONLY. This profile can diagnose, compare and specify a repair; it cannot authorize or execute that repair. A repair specification is quality-accepted only through the canonical deterministic and semantic gates. Implementation and post-implementation verification remain separate governed operations.
