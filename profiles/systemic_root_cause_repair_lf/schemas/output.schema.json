@@ -12,7 +12,9 @@
     "first_bad_control",
     "escape_control",
     "recurrence_evidence",
+    "authority_contradictions",
     "repair_level",
+    "should_exist_assessment",
     "alternatives",
     "selected_alternative",
     "rejected_alternatives",
@@ -39,7 +41,7 @@
       ]
     },
     "profile_pack_id": {
-      "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_1"
+      "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2"
     },
     "symptom": {
       "type": "string",
@@ -91,12 +93,101 @@
         }
       }
     },
+    "authority_contradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "classification",
+          "declared",
+          "observed",
+          "blocking",
+          "evidence_ref"
+        ],
+        "properties": {
+          "classification": {
+            "enum": [
+              "SILENT_DROP",
+              "UNDECLARED_EXECUTION",
+              "SOURCE_LIVE_DIVERGENCE",
+              "DECLARED_VS_OBSERVED_CONTRADICTION",
+              "OTHER"
+            ]
+          },
+          "declared": {
+            "type": "string",
+            "minLength": 3
+          },
+          "observed": {
+            "type": "string",
+            "minLength": 3
+          },
+          "blocking": {
+            "const": true
+          },
+          "evidence_ref": {
+            "type": "string",
+            "minLength": 5
+          }
+        }
+      }
+    },
     "repair_level": {
       "enum": [
         "LOCAL",
         "SYSTEMIC_ORIGIN",
         "ARCHITECTURAL"
       ]
+    },
+    "should_exist_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verdict",
+        "subject",
+        "real_consumers",
+        "elimination_impact",
+        "native_or_existing_alternative",
+        "evidence_refs"
+      ],
+      "properties": {
+        "verdict": {
+          "enum": [
+            "SHOULD_EXIST",
+            "SHOULD_NOT_EXIST",
+            "CONDITIONAL",
+            "INSUFFICIENT_EVIDENCE"
+          ]
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 3
+        },
+        "real_consumers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "elimination_impact": {
+          "type": "string",
+          "minLength": 5
+        },
+        "native_or_existing_alternative": {
+          "type": "string",
+          "minLength": 3
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 5
+          }
+        }
+      }
     },
     "alternatives": {
       "type": "array",
@@ -117,45 +208,182 @@
           "operational_cost"
         ],
         "properties": {
-          "id": {"type":"string","minLength":1},
-          "description": {"type":"string","minLength":1},
-          "prevention": {"type":"string","minLength":1},
-          "complexity": {"type":"string","minLength":1},
-          "blast_radius": {"type":"string","minLength":1},
-          "reuse": {"type":"string","minLength":1},
-          "fail_closed": {"type":"string","minLength":1},
-          "idempotency": {"type":"string","minLength":1},
-          "recoverability": {"type":"string","minLength":1},
-          "operational_cost": {"type":"string","minLength":1}
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "prevention": {
+            "type": "string",
+            "minLength": 1
+          },
+          "complexity": {
+            "type": "string",
+            "minLength": 1
+          },
+          "blast_radius": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reuse": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fail_closed": {
+            "type": "string",
+            "minLength": 1
+          },
+          "idempotency": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recoverability": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operational_cost": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },
-    "selected_alternative": {"type":"string","minLength":1},
+    "selected_alternative": {
+      "type": "string",
+      "minLength": 1
+    },
     "rejected_alternatives": {
       "type": "array",
       "minItems": 2,
       "items": {
-        "type":"object",
-        "additionalProperties":false,
-        "required":["id","reason"],
-        "properties":{"id":{"type":"string"},"reason":{"type":"string","minLength":5}}
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5
+          }
+        }
       }
     },
     "falsification_results": {
-      "type":"array",
-      "minItems":7,
-      "items":{"type":"object","additionalProperties":false,"required":["case","result","evidence_ref"],"properties":{"case":{"type":"string"},"result":{"enum":["PASS","FAIL","NOT_COVERED","BLOCKED"]},"evidence_ref":{"type":"string"}}}
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case",
+          "result",
+          "evidence_ref"
+        ],
+        "properties": {
+          "case": {
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "NOT_COVERED",
+              "BLOCKED"
+            ]
+          },
+          "evidence_ref": {
+            "type": "string"
+          }
+        }
+      }
     },
-    "origin_asset":{"type":"string","minLength":3},
-    "origin_operation":{"type":"string","minLength":3},
-    "owner":{"type":"string","minLength":2},
-    "invariant":{"type":"string","minLength":8},
-    "hard_guard":{"type":"object","additionalProperties":false,"required":["control","fail_closed_condition","observable_result"],"properties":{"control":{"type":"string","minLength":5},"fail_closed_condition":{"type":"string","minLength":5},"observable_result":{"type":"string","minLength":5}}},
-    "acceptance_criteria":{"type":"array","minItems":3,"items":{"type":"string","minLength":5}},
-    "historical_regressions":{"type":"array","minItems":3,"items":{"type":"string","minLength":5}},
-    "residual_risks":{"type":"array","items":{"type":"string","minLength":3}},
-    "evidence_map":{"type":"array","minItems":1,"items":{"type":"string","minLength":5}},
-    "blocking_codes":{"type":"array","items":{"type":"string"}},
-    "next_gate":{"type":"string","minLength":2}
+    "origin_asset": {
+      "type": "string",
+      "minLength": 3
+    },
+    "origin_operation": {
+      "type": "string",
+      "minLength": 3
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 2
+    },
+    "invariant": {
+      "type": "string",
+      "minLength": 8
+    },
+    "hard_guard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "control",
+        "fail_closed_condition",
+        "observable_result"
+      ],
+      "properties": {
+        "control": {
+          "type": "string",
+          "minLength": 5
+        },
+        "fail_closed_condition": {
+          "type": "string",
+          "minLength": 5
+        },
+        "observable_result": {
+          "type": "string",
+          "minLength": 5
+        }
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "string",
+        "minLength": 5
+      }
+    },
+    "historical_regressions": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "string",
+        "minLength": 5
+      }
+    },
+    "residual_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "evidence_map": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 5
+      }
+    },
+    "blocking_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_gate": {
+      "type": "string",
+      "minLength": 2
+    }
   }
 }

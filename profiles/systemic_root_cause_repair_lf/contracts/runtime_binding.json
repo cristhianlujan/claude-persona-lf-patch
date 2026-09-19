@@ -1,0 +1,24 @@
+{
+  "schema": "LF_PROFILE_RUNTIME_BINDING_V1",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+  "runtime_schema": {
+    "default": "schemas/output.schema.json",
+    "output_modes": {}
+  },
+  "canonical_validator": {
+    "path": "validators/runtime_validate.py",
+    "callable": "validate"
+  },
+  "semantic_utility": {
+    "path": "validators/runtime_semantic_utility.py",
+    "callable": "evaluate"
+  },
+  "governance": {
+    "source_first_required": true,
+    "schema_invention_allowed": false,
+    "fail_closed": true,
+    "exact_head_evidence_required": true,
+    "post_update_baseline_required": true
+  }
+}

@@ -1,39 +1,154 @@
 {
-  "status":"SYSTEMIC_REPAIR_SPEC",
-  "profile_pack_id":"SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_1",
-  "symptom":"Migration parity validator fails after a source-only restoration.",
-  "immediate_cause":"A live migration identity is not accepted by the current parity policy.",
-  "systemic_root_cause":"Migration identity is not reserved and validated atomically before any live apply, allowing source/live identity divergence to recur.",
-  "causal_chain":["candidate migration prepared","live identity can diverge before canonical source binding","post-cutover validator detects divergence after effect"],
-  "first_bad_control":"pre-apply migration identity reservation",
-  "escape_control":"post-cutover parity validator",
-  "recurrence_evidence":[{"ref":"ekb://CI-MIG-001","fact":"recurrence frequency > 1"}],
-  "repair_level":"SYSTEMIC_ORIGIN",
-  "alternatives":[
-    {"id":"A","description":"restore source only","prevention":"low","complexity":"low","blast_radius":"low","reuse":"low","fail_closed":"partial","idempotency":"none","recoverability":"manual","operational_cost":"low"},
-    {"id":"B","description":"pre-apply identity reservation hard guard","prevention":"high","complexity":"medium","blast_radius":"medium","reuse":"high","fail_closed":"high","idempotency":"high","recoverability":"high","operational_cost":"medium"},
-    {"id":"C","description":"replace migration workflow","prevention":"high","complexity":"high","blast_radius":"high","reuse":"medium","fail_closed":"high","idempotency":"high","recoverability":"medium","operational_cost":"high"}
+  "status": "SYSTEMIC_REPAIR_SPEC",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
+  "symptom": "Migration parity validator fails after a source-only restoration.",
+  "immediate_cause": "A live migration identity is not accepted by the current parity policy.",
+  "systemic_root_cause": "Migration identity is not reserved and validated atomically before any live apply, allowing source/live identity divergence to recur.",
+  "causal_chain": [
+    "candidate migration prepared",
+    "live identity can diverge before canonical source binding",
+    "post-cutover validator detects divergence after effect"
   ],
-  "selected_alternative":"B",
-  "rejected_alternatives":[{"id":"A","reason":"does not prevent recurrence"},{"id":"C","reason":"larger than minimum sufficient repair"}],
-  "falsification_results":[
-    {"case":"bypass","result":"PASS","evidence_ref":"test://bypass"},
-    {"case":"retry","result":"PASS","evidence_ref":"test://retry"},
-    {"case":"concurrency","result":"PASS","evidence_ref":"test://concurrency"},
-    {"case":"partial_failure","result":"PASS","evidence_ref":"test://partial"},
-    {"case":"stale_state","result":"PASS","evidence_ref":"test://stale"},
-    {"case":"interrupted_execution","result":"PASS","evidence_ref":"test://interrupt"},
-    {"case":"replay_or_duplicate","result":"PASS","evidence_ref":"test://replay"}
+  "first_bad_control": "pre-apply migration identity reservation",
+  "escape_control": "post-cutover parity validator",
+  "recurrence_evidence": [
+    {
+      "ref": "ekb://CI-MIG-001",
+      "fact": "recurrence frequency > 1"
+    }
   ],
-  "origin_asset":"migration apply boundary",
-  "origin_operation":"governed migration apply",
-  "owner":"canonical owner operation",
-  "invariant":"A live migration may apply only after exact source identity and digest are reserved and current.",
-  "hard_guard":{"control":"pre-apply reservation gate","fail_closed_condition":"identity or digest missing/mismatch","observable_result":"zero live effect and deterministic blocking code"},
-  "acceptance_criteria":["all historical parity cases pass","current parity validator clean","retry preserves reserved identity"],
-  "historical_regressions":["source/live identity mismatch blocks","live without canonical source blocks","retry does not mint a new identity"],
-  "residual_risks":["legacy migrations may require grandfathered classification"],
-  "evidence_map":["ekb://CI-MIG-001","gate://A2R_PARITY"],
-  "blocking_codes":[],
-  "next_gate":"OWNER_IMPLEMENTATION"
+  "authority_contradictions": [],
+  "repair_level": "SYSTEMIC_ORIGIN",
+  "should_exist_assessment": {
+    "verdict": "SHOULD_EXIST",
+    "subject": "migration parity control",
+    "real_consumers": [
+      "governed migration apply",
+      "post-merge parity verification"
+    ],
+    "elimination_impact": "Live/source drift could pass without a deterministic currentness check.",
+    "native_or_existing_alternative": "Reuse the existing A2R parity boundary rather than create a second parity engine.",
+    "evidence_refs": [
+      "gate://A2R_PARITY"
+    ]
+  },
+  "alternatives": [
+    {
+      "id": "A",
+      "description": "restore source only",
+      "prevention": "low",
+      "complexity": "low",
+      "blast_radius": "low",
+      "reuse": "low",
+      "fail_closed": "partial",
+      "idempotency": "none",
+      "recoverability": "manual",
+      "operational_cost": "low"
+    },
+    {
+      "id": "B",
+      "description": "pre-apply identity reservation hard guard",
+      "prevention": "high",
+      "complexity": "medium",
+      "blast_radius": "medium",
+      "reuse": "high",
+      "fail_closed": "high",
+      "idempotency": "high",
+      "recoverability": "high",
+      "operational_cost": "medium"
+    },
+    {
+      "id": "C",
+      "description": "replace migration workflow",
+      "prevention": "high",
+      "complexity": "high",
+      "blast_radius": "high",
+      "reuse": "medium",
+      "fail_closed": "high",
+      "idempotency": "high",
+      "recoverability": "medium",
+      "operational_cost": "high"
+    }
+  ],
+  "selected_alternative": "B",
+  "rejected_alternatives": [
+    {
+      "id": "A",
+      "reason": "does not prevent recurrence"
+    },
+    {
+      "id": "C",
+      "reason": "larger than minimum sufficient repair"
+    }
+  ],
+  "falsification_results": [
+    {
+      "case": "bypass",
+      "result": "PASS",
+      "evidence_ref": "test://bypass"
+    },
+    {
+      "case": "retry",
+      "result": "PASS",
+      "evidence_ref": "test://retry"
+    },
+    {
+      "case": "concurrency",
+      "result": "PASS",
+      "evidence_ref": "test://concurrency"
+    },
+    {
+      "case": "partial_failure",
+      "result": "PASS",
+      "evidence_ref": "test://partial"
+    },
+    {
+      "case": "stale_state",
+      "result": "PASS",
+      "evidence_ref": "test://stale"
+    },
+    {
+      "case": "interrupted_execution",
+      "result": "PASS",
+      "evidence_ref": "test://interrupt"
+    },
+    {
+      "case": "replay_or_duplicate",
+      "result": "PASS",
+      "evidence_ref": "test://replay"
+    },
+    {
+      "case": "undeclared_or_unversioned_caller",
+      "result": "PASS",
+      "evidence_ref": "test://caller-provenance"
+    }
+  ],
+  "origin_asset": "migration apply boundary",
+  "origin_operation": "governed migration apply",
+  "owner": "canonical owner operation",
+  "invariant": "A live migration may apply only after exact source identity and digest are reserved and current.",
+  "hard_guard": {
+    "control": "pre-apply reservation gate",
+    "fail_closed_condition": "identity or digest missing/mismatch",
+    "observable_result": "zero live effect and deterministic blocking code"
+  },
+  "acceptance_criteria": [
+    "all historical parity cases pass",
+    "current parity validator clean",
+    "retry preserves reserved identity"
+  ],
+  "historical_regressions": [
+    "source/live identity mismatch blocks",
+    "live without canonical source blocks",
+    "retry does not mint a new identity"
+  ],
+  "residual_risks": [
+    "legacy migrations may require grandfathered classification"
+  ],
+  "evidence_map": [
+    "ekb://CI-MIG-001",
+    "gate://A2R_PARITY"
+  ],
+  "blocking_codes": [],
+  "next_gate": "OWNER_IMPLEMENTATION"
 }
