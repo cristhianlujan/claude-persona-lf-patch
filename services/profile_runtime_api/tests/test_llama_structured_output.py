@@ -15,6 +15,7 @@ from profile_runtime_api.llama import (
     LlamaHTTPClient,
     LlamaTransportError,
     PersistentLlamaServerAdapter,
+    resource_budget_block_code,
     ui_focused_profile_model_view,
     ui_focused_semantic_context_view,
     ui_focused_user_prompt_view,
@@ -592,6 +593,30 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
         self.assertNotIn("verbose-id", prompt)
         self.assertIn("compact semantic transport UICT1", prompt)
         self.assertIn("Use | only as list separator", prompt)
+
+
+    def test_heavy_resource_budget_blocks_only_under_combined_pressure(self):
+        budget={
+            "resource_class":"HEAVY_SEMANTIC",
+            "min_available_memory_mb":512,
+            "max_swap_used_pct":90,
+        }
+        self.assertEqual(
+            resource_budget_block_code(
+                budget, {"available_memory_mb":390.0,"swap_used_pct":100.0}
+            ),
+            "PROFILE_RUNTIME_RESOURCE_PRESSURE_BLOCK",
+        )
+        self.assertIsNone(
+            resource_budget_block_code(
+                budget, {"available_memory_mb":900.0,"swap_used_pct":100.0}
+            )
+        )
+        self.assertIsNone(
+            resource_budget_block_code(
+                {"resource_class":"STANDARD"}, {"available_memory_mb":10.0,"swap_used_pct":100.0}
+            )
+        )
 
 
 if __name__ == "__main__":

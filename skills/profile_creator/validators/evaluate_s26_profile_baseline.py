@@ -193,6 +193,71 @@ def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
     set_dim("B10_EVIDENCE_CLOSURE", ec, "PASS" if ec else "POST_UPDATE_EVIDENCE_CLOSURE_NOT_BOUND",
             gov if ec else None, "BIND_EXACT_HEAD_AND_POST_UPDATE_BASELINE")
 
+    model_context = binding.get("model_context") if isinstance(binding, dict) else None
+    projection = model_context.get("source_projection") if isinstance(model_context, dict) else None
+    declared_sections = projection.get("include_sections") if isinstance(projection, dict) else None
+    skill_sections = {
+        line[3:].strip()
+        for line in skill.read_text(encoding="utf-8").splitlines()
+        if skill.is_file() and line.startswith("## ")
+    } if skill.is_file() else set()
+    mc = bool(
+        isinstance(model_context, dict)
+        and model_context.get("full_source_to_model") is False
+        and isinstance(projection, dict)
+        and projection.get("mode") == "MARKDOWN_SECTIONS"
+        and isinstance(declared_sections, list)
+        and bool(declared_sections)
+        and all(isinstance(v, str) and v.strip() and v in skill_sections for v in declared_sections)
+        and isinstance(projection.get("max_chars"), int)
+        and projection.get("max_chars") >= 256
+    )
+    set_dim("B11_MODEL_CONTEXT_TRANSPORT", mc, "PASS" if mc else "MODEL_CONTEXT_TRANSPORT_NOT_BOUND",
+            model_context if mc else None, "BIND_MODEL_CONTEXT_TRANSPORT")
+
+    partition = binding.get("execution_partition") if isinstance(binding, dict) else None
+    partition_ok = False
+    partition_evidence = None
+    if isinstance(partition, dict) and partition.get("schema") == "LF_PROFILE_EXECUTION_PARTITION_V1":
+        classes = partition.get("field_classes")
+        materialization = partition.get("deterministic_materialization")
+        try:
+            rs = binding.get("runtime_schema") if isinstance(binding, dict) else None
+            default = rs.get("default") if isinstance(rs, dict) else None
+            canonical_path = _safe_profile_path(profile_dir, default, code="RUNTIME_SCHEMA_PATH_INVALID")
+            canonical_schema = _load_json(canonical_path)
+            properties = canonical_schema.get("properties")
+            deterministic = {k for k, v in (classes or {}).items() if v == "DETERMINISTIC"} if isinstance(classes, dict) else set()
+            partition_ok = bool(
+                isinstance(classes, dict)
+                and isinstance(properties, dict)
+                and set(classes) == set(properties)
+                and all(v in {"DETERMINISTIC", "SEMANTIC", "HYBRID"} for v in classes.values())
+                and isinstance(materialization, dict)
+                and deterministic == set(materialization)
+            )
+            if partition_ok:
+                partition_evidence = {
+                    "classified_fields": len(classes),
+                    "deterministic_fields": sorted(deterministic),
+                }
+        except Exception:
+            partition_ok = False
+    set_dim("B12_EXECUTION_PARTITION", partition_ok, "PASS" if partition_ok else "EXECUTION_PARTITION_NOT_BOUND",
+            partition_evidence, "BIND_EXECUTION_PARTITION")
+
+    budget = binding.get("execution_budget") if isinstance(binding, dict) else None
+    budget_ok = bool(
+        isinstance(budget, dict)
+        and budget.get("resource_class") in {"STANDARD", "HEAVY_SEMANTIC"}
+        and isinstance(budget.get("max_prompt_tokens"), int) and budget.get("max_prompt_tokens") > 0
+        and isinstance(budget.get("max_output_tokens"), int) and budget.get("max_output_tokens") > 0
+        and isinstance(budget.get("min_available_memory_mb"), int) and budget.get("min_available_memory_mb") >= 0
+        and isinstance(budget.get("max_swap_used_pct"), (int, float)) and 0 <= budget.get("max_swap_used_pct") <= 100
+    )
+    set_dim("B13_EXECUTION_BUDGET", budget_ok, "PASS" if budget_ok else "EXECUTION_BUDGET_NOT_BOUND",
+            budget if budget_ok else None, "BIND_EXECUTION_BUDGET")
+
     score = sum(1 for item in dimensions.values() if item["pass"])
     if score == len(baseline["dimensions"]):
         decision = "NO_UPDATE_REQUIRED"
@@ -206,7 +271,7 @@ def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
         "profile_slug": profile_slug, "decision": decision, "score": score, "required": len(baseline["dimensions"]),
         "compatibility_pct": round(score * 100 / len(baseline["dimensions"]), 1), "dimensions": dimensions,
         "repair_actions": repairs, "blocking_codes": sorted(set(blockers)),
-        "post_update_rule": "RERUN_AND_REQUIRE_10_OF_10_BEFORE_PROFILE_UPDATE_CLOSURE",
+        "post_update_rule": f"RERUN_AND_REQUIRE_{len(baseline['dimensions'])}_OF_{len(baseline['dimensions'])}_BEFORE_PROFILE_UPDATE_CLOSURE",
         "automatic_impact_authorized": False, "runtime_activation_authorized": False,
         "target_code_execution_performed": False,
         "callable_discovery_mode": "STATIC_AST_NO_IMPORT",

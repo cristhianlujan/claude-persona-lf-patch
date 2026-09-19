@@ -1,5 +1,5 @@
 {
   "status": "SYSTEMIC_REPAIR_SPEC",
-  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_1",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
   "recommendation": "Restore the missing file and rerun CI."
 }

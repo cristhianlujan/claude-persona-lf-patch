@@ -103,11 +103,15 @@ Learning Preflight rules:
 
 Structural baseline rules:
 
-- `NO_UPDATE_REQUIRED` means the profile already satisfies all 10 S26 architectural dimensions; do not rewrite it merely to create activity.
+- `NO_UPDATE_REQUIRED` means the profile already satisfies all 13 S26 architectural dimensions; do not rewrite it merely to create activity.
 - `UPDATE_REQUIRED` means apply only the reported `repair_actions`, preserving the profile's domain semantics and authority.
 - `BLOCKED_AUTHORITY_REQUIRED` means a canonical choice cannot be derived safely (for example, multiple schemas exist and no exact runtime schema is bound). Resolve authority before writing; filename similarity is not authority.
-- A profile update cannot close until the baseline is rerun on the post-write exact head and returns 10/10, in addition to the existing operation contract, validator, evidence, readback and semantic gates.
+- A profile update cannot close until the baseline is rerun on the post-write exact head and returns 13/13, in addition to the existing operation contract, validator, evidence, readback and semantic gates.
 - The standard runtime integration surface is `profiles/<slug>/contracts/runtime_binding.json` (`LF_PROFILE_RUNTIME_BINDING_V1`). It binds exact profile identity, canonical runtime schema, canonical validator, profile-local deterministic semantic utility, source-first/no-invention, fail-closed, exact-head evidence and post-update baseline requirements.
+- Every created or updated runtime-bound profile must also declare `model_context`, `execution_partition` and `execution_budget`. The profile owns the semantic classification; the shared Profile Runtime owns projection, transport, deterministic materialization and resource preflight.
+- `model_context.full_source_to_model` must be `false`; canonical full source remains authority/receipt evidence while the model sees only the declared bounded projection.
+- `execution_partition` must classify every canonical root output field as `DETERMINISTIC`, `SEMANTIC` or `HYBRID`. Every deterministic root field must have a declarative materialization source; callers and canaries must never reconstruct this split.
+- `execution_budget` must declare the bounded model input/output budget and resource class. Heavy semantic inference must fail closed before model invocation when the runtime host cannot satisfy its declared resource preflight.
 - Profile-local specializations belong behind this common interface. Do not add new slug-specific branches to the shared runtime when the behavior can be expressed by the runtime binding.
 - The update route never activates runtime, production, automatic promotion or business effects. Those remain separate governed operations.
 
