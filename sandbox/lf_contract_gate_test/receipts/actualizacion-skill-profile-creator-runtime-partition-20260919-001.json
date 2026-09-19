@@ -1,0 +1,51 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.2",
+  "issued_by": "operation_judge",
+  "schema": "LF_GOVERNED_SKILL_UPDATE_RECEIPT_V1",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-SKILL-PROFILE-CREATOR-RUNTIME-PARTITION-20260919-001",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_sha": "e3ae425c34f665db5546e1332c375dac923a4f9f898bf5d1d0ae3484f9b029f6",
+  "judge_sha": "a2ecfbb2af779c7156e829a095964f325a47dca774c60a1df50738342219debf",
+  "source_sha_list": [
+    "c4d7ef1adcb762eb9fb19cec70e6a60969658daf",
+    "3e1c978ab1790c01ff0ec23e13dece0d7ae4d5bc",
+    "cd65f3a09d600c41f0cc5f0f5775958a4f582280"
+  ],
+  "target_paths": [
+    "skills/profile_creator/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-19T06:06:00Z",
+  "target_type": "SKILL",
+  "target_code": "ACT-0045",
+  "target_path": "skills/profile_creator",
+  "branch": "lf/profile-runtime-partition-v1",
+  "pr_number": 930,
+  "candidate_head_before_receipt": "c4d7ef1adcb762eb9fb19cec70e6a60969658daf",
+  "base_main_sha": "cd65f3a09d600c41f0cc5f0f5775958a4f582280",
+  "candidate_source_tree": "3e1c978ab1790c01ff0ec23e13dece0d7ae4d5bc",
+  "operation_contract_material_sha256": "e3ae425c34f665db5546e1332c375dac923a4f9f898bf5d1d0ae3484f9b029f6",
+  "operation_judge_material_sha256": "a2ecfbb2af779c7156e829a095964f325a47dca774c60a1df50738342219debf",
+  "deterministic_validation": {
+    "profile_runtime_unittests": "150_PASS_5_SKIPPED",
+    "s26_profile_baseline_matrix": "7/7_PASS",
+    "validate_lf_packs_run_id": 35425570471,
+    "validate_lf_packs_result": "PASS",
+    "bootstrap_probe_run_id": 35425570481,
+    "bootstrap_probe_result": "PASS"
+  },
+  "pre_receipt_repository_ci": {
+    "lf_contract_check_run_id": 35425570476,
+    "result": "FAIL_RECEIPT_MISSING",
+    "classification": "EXPECTED_GOVERNANCE_RECEIPT_GATE",
+    "resolution": "THIS_RECEIPT_IS_THE_REQUIRED_SOURCE_BOUND_SIDECAR"
+  },
+  "runtime_activation": false,
+  "production_change": false,
+  "automatic_promotion": false,
+  "merge_authorized": false,
+  "notes": "Source-bound receipt for the Profile Creator portion of the transversal Profile Runtime partition contract. The candidate preserves legacy runtime-binding compatibility while requiring model_context, execution_partition and execution_budget for newly created or governed-updated profiles. Runtime service source in the same PR is allowed sandbox/service scope and is not covered by this SKILL receipt. This receipt does not authorize runtime deployment, production activation, automatic promotion or live profile execution."
+}
