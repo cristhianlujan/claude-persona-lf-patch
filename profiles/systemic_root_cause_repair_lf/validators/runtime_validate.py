@@ -476,6 +476,147 @@ def _implementation_plan_errors(payload, *, require_ready=False):
     return errors
 
 
+
+OMISSION_DIMENSIONS = {
+    "ARCHITECTURE", "CONTROLS", "POLICIES_CONTRACTS", "CONTEXT_TRANSPORT",
+    "WIRING", "COMPATIBILITY_TRANSITION", "RECOVERY_TERMINALITY", "OBSERVABILITY",
+    "SECURITY_AUTHORITY", "COST_PERFORMANCE", "TESTING_ASSURANCE", "OPERABILITY_MAINTENANCE",
+}
+
+def _test_protocol_errors(path, protocol):
+    errors = []
+    if not isinstance(protocol, dict):
+        return [_error("EXECUTABLE_TEST_PROTOCOL_REQUIRED", path)]
+    for key in ("setup", "action", "assertions"):
+        if not _string_list(protocol.get(key), allow_empty=False):
+            errors.append(_error("EXECUTABLE_TEST_PROTOCOL_INCOMPLETE", f"{path}.{key}"))
+    if not _nonempty_string(protocol.get("failure_signal")):
+        errors.append(_error("EXECUTABLE_TEST_FAILURE_SIGNAL_REQUIRED", f"{path}.failure_signal"))
+    return errors
+
+def _solution_assurance_errors(payload, *, require_ready=False):
+    errors = []
+    depth = payload.get("solution_depth")
+    if not isinstance(depth, dict) or depth.get("mode") not in {"LIGHTWEIGHT", "BOUNDED", "DEEP_ARCHITECTURE_RESEARCH"}:
+        errors.append(_error("SOLUTION_DEPTH_INVALID", "$.solution_depth"))
+        mode = None
+    else:
+        mode = depth.get("mode")
+        if not _nonempty_string(depth.get("rationale")):
+            errors.append(_error("SOLUTION_DEPTH_RATIONALE_REQUIRED", "$.solution_depth.rationale"))
+
+    research = payload.get("research_assurance")
+    if not isinstance(research, dict):
+        errors.append(_error("RESEARCH_ASSURANCE_REQUIRED", "$.research_assurance"))
+    else:
+        if require_ready and research.get("research_complete") is not True:
+            errors.append(_error("SYSTEMIC_SPEC_RESEARCH_NOT_COMPLETE", "$.research_assurance.research_complete"))
+        if not _string_list(research.get("research_questions"), allow_empty=False):
+            errors.append(_error("RESEARCH_QUESTIONS_REQUIRED", "$.research_assurance.research_questions"))
+        if not _string_list(research.get("internal_evidence_refs"), allow_empty=False):
+            errors.append(_error("RESEARCH_INTERNAL_EVIDENCE_REQUIRED", "$.research_assurance.internal_evidence_refs"))
+        if research.get("current_practice_research_required") is True and not _string_list(research.get("external_evidence_refs"), allow_empty=False):
+            errors.append(_error("CURRENT_PRACTICE_EVIDENCE_REQUIRED", "$.research_assurance.external_evidence_refs"))
+        patterns = research.get("patterns_compared")
+        if not isinstance(patterns, list) or not patterns:
+            errors.append(_error("RESEARCH_PATTERNS_REQUIRED", "$.research_assurance.patterns_compared"))
+        elif require_ready and mode == "DEEP_ARCHITECTURE_RESEARCH" and len(patterns) < 2:
+            errors.append(_error("DEEP_RESEARCH_PATTERN_COMPARISON_INSUFFICIENT", "$.research_assurance.patterns_compared"))
+        if research.get("first_solution_disposition") not in {"RETAINED_AFTER_CHALLENGE", "REVISED", "REJECTED"}:
+            errors.append(_error("FIRST_SOLUTION_NOT_CHALLENGED", "$.research_assurance.first_solution_disposition"))
+
+    challenges = payload.get("challenger_review")
+    min_challenges = 3 if mode == "DEEP_ARCHITECTURE_RESEARCH" else (2 if mode == "BOUNDED" else 1)
+    if not isinstance(challenges, list) or (require_ready and len(challenges) < min_challenges):
+        errors.append(_error("CHALLENGER_REVIEW_INSUFFICIENT", "$.challenger_review", str(min_challenges)))
+    elif isinstance(challenges, list):
+        for idx, row in enumerate(challenges):
+            if not isinstance(row, dict):
+                errors.append(_error("CHALLENGER_REVIEW_INVALID", f"$.challenger_review[{idx}]"))
+                continue
+            if require_ready and row.get("outcome") == "BLOCKED":
+                errors.append(_error("SYSTEMIC_SPEC_WITH_UNRESOLVED_CHALLENGE", f"$.challenger_review[{idx}].outcome"))
+            if not _nonempty_string(row.get("resolution")) or not _string_list(row.get("evidence_refs"), allow_empty=False):
+                errors.append(_error("CHALLENGER_REVIEW_NOT_EVIDENCE_BOUND", f"$.challenger_review[{idx}]"))
+
+    omissions = payload.get("omission_discovery")
+    if not isinstance(omissions, list):
+        errors.append(_error("OMISSION_DISCOVERY_REQUIRED", "$.omission_discovery"))
+    elif require_ready:
+        dims = [x.get("dimension") for x in omissions if isinstance(x, dict)]
+        missing = sorted(OMISSION_DIMENSIONS - set(dims))
+        dup = sorted({x for x in dims if dims.count(x) > 1})
+        if missing:
+            errors.append(_error("SYSTEMIC_SPEC_OMISSION_DIMENSIONS_MISSING", "$.omission_discovery", ",".join(missing)))
+        if dup:
+            errors.append(_error("SYSTEMIC_SPEC_OMISSION_DIMENSIONS_DUPLICATED", "$.omission_discovery", ",".join(dup)))
+
+    package = payload.get("implementation_package")
+    if require_ready and not isinstance(package, dict):
+        errors.append(_error("SYSTEMIC_SPEC_IMPLEMENTATION_PACKAGE_REQUIRED", "$.implementation_package"))
+        return errors
+    if not isinstance(package, dict):
+        return errors
+
+    for key in ("architecture_decisions", "control_matrix", "policy_contract_changes", "wiring", "deliverables", "observability_plan"):
+        if require_ready and (not isinstance(package.get(key), list) or not package.get(key)):
+            errors.append(_error("SYSTEMIC_SPEC_IMPLEMENTATION_PACKAGE_SECTION_REQUIRED", f"$.implementation_package.{key}"))
+
+    context = package.get("context_transport")
+    if not isinstance(context, dict):
+        errors.append(_error("CONTEXT_TRANSPORT_ASSESSMENT_REQUIRED", "$.implementation_package.context_transport"))
+    elif context.get("status") == "APPLIES":
+        for key in ("compiler_ref", "delivery_strategy", "degradation_rule"):
+            if not _nonempty_string(context.get(key)):
+                errors.append(_error("CONTEXT_TRANSPORT_NOT_CLOSED", f"$.implementation_package.context_transport.{key}"))
+        budget = context.get("token_budget")
+        if not isinstance(budget, dict):
+            errors.append(_error("CONTEXT_TOKEN_BUDGET_REQUIRED", "$.implementation_package.context_transport.token_budget"))
+        else:
+            soft, hard = budget.get("soft_limit_tokens"), budget.get("hard_limit_tokens")
+            if not isinstance(soft, int) or not isinstance(hard, int) or soft < 1 or hard < soft:
+                errors.append(_error("CONTEXT_TOKEN_BUDGET_INVALID", "$.implementation_package.context_transport.token_budget"))
+    elif context.get("status") == "NOT_APPLICABLE":
+        if not _nonempty_string(context.get("rationale")):
+            errors.append(_error("CONTEXT_TRANSPORT_NA_RATIONALE_REQUIRED", "$.implementation_package.context_transport.rationale"))
+    else:
+        errors.append(_error("CONTEXT_TRANSPORT_STATUS_INVALID", "$.implementation_package.context_transport.status"))
+
+    closure = package.get("decision_closure")
+    if not isinstance(closure, dict):
+        errors.append(_error("IMPLEMENTATION_DECISION_CLOSURE_REQUIRED", "$.implementation_package.decision_closure"))
+    else:
+        open_decisions = closure.get("open_design_decisions")
+        if require_ready and open_decisions != []:
+            errors.append(_error("SYSTEMIC_SPEC_OPEN_DESIGN_DECISIONS", "$.implementation_package.decision_closure.open_design_decisions"))
+        if require_ready and closure.get("handoff_ready") is not True:
+            errors.append(_error("SYSTEMIC_SPEC_HANDOFF_NOT_READY", "$.implementation_package.decision_closure.handoff_ready"))
+        preconditions = closure.get("implementation_preconditions")
+        if not isinstance(preconditions, list):
+            errors.append(_error("IMPLEMENTATION_PRECONDITIONS_INVALID", "$.implementation_package.decision_closure.implementation_preconditions"))
+            preconditions = []
+        for idx, p in enumerate(preconditions):
+            path = f"$.implementation_package.decision_closure.implementation_preconditions[{idx}]"
+            if not isinstance(p, dict):
+                errors.append(_error("IMPLEMENTATION_PRECONDITION_INVALID", path))
+                continue
+            for key in ("name", "resolver_ref", "expected_shape", "decision_rule", "stage"):
+                if not _nonempty_string(p.get(key)):
+                    errors.append(_error("IMPLEMENTATION_PRECONDITION_NOT_MECHANICAL", f"{path}.{key}"))
+            if p.get("design_effect") != "NONE":
+                errors.append(_error("IMPLEMENTATION_PRECONDITION_CAN_CHANGE_DESIGN", f"{path}.design_effect"))
+
+        uncertainties = payload.get("current_uncertainties") if isinstance(payload.get("current_uncertainties"), list) else []
+        implementation_uncertainties = [u for u in uncertainties if isinstance(u, dict) and u.get("impact") == "IMPLEMENTATION_PRECONDITION"]
+        if require_ready and len(preconditions) < len(implementation_uncertainties):
+            errors.append(_error("IMPLEMENTATION_PRECONDITION_NOT_MATERIALIZED", "$.implementation_package.decision_closure.implementation_preconditions"))
+        for idx, u in enumerate(implementation_uncertainties):
+            ref = u.get("containment_ref")
+            if require_ready and (not _nonempty_string(ref) or not ref.startswith("$.implementation_package.decision_closure.implementation_preconditions")):
+                errors.append(_error("IMPLEMENTATION_PRECONDITION_NOT_LINKED_TO_CLOSURE", f"$.current_uncertainties[{idx}].containment_ref"))
+
+    return errors
+
 def validate(payload):
     errors = []
     if not isinstance(payload, dict):
@@ -512,6 +653,7 @@ def validate(payload):
     errors.extend(_decision_errors(payload))
     errors.extend(_proposal_errors(payload))
     errors.extend(_implementation_plan_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
+    errors.extend(_solution_assurance_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
 
     contradictions = payload.get("authority_contradictions")
     if not isinstance(contradictions, list):
@@ -624,6 +766,12 @@ def validate(payload):
             errors.append(_error("SYSTEMIC_SPEC_PLANNED_REGRESSIONS_INSUFFICIENT", "$.planned_regressions"))
         if len(payload.get("acceptance_criteria") or []) < 3:
             errors.append(_error("SYSTEMIC_SPEC_ACCEPTANCE_CRITERIA_INSUFFICIENT", "$.acceptance_criteria"))
+        for idx, item in enumerate(payload.get("falsification_results") or []):
+            if isinstance(item, dict):
+                errors.extend(_test_protocol_errors(f"$.falsification_results[{idx}].test_protocol", item.get("test_protocol")))
+        for idx, item in enumerate(payload.get("planned_regressions") or []):
+            if isinstance(item, dict):
+                errors.extend(_test_protocol_errors(f"$.planned_regressions[{idx}].test_protocol", item.get("test_protocol")))
 
     next_gate = payload.get("next_gate")
     if not isinstance(next_gate, dict) or not all(_nonempty_string(next_gate.get(key)) for key in ("gate", "entry_condition", "exit_condition")):
