@@ -66,5 +66,18 @@
     "positive governed runtime-update canary reaches exact GitHub readback without bypass",
     "qualification is current for the exact operation revision before promotion",
     "runtime host deployment is exact-current-main and independently read back"
-  ]
+  ],
+  "governed_repair_execution": {
+    "execution_id": "EXEC-RUNTIME-UPDATE-CANARY-20260919-001",
+    "prewrite_bound_revision": "b9b8e1f3dfdb4536e253de2232f0e34274d65fac",
+    "target_code": "EJECUCION_PERFIL_LF",
+    "target_path": "skills/profile_creator/runtime_update_operation_governance",
+    "write_scope": [
+      "skills/profile_creator/contracts/runtime_update_operation_disposition_v1.json",
+      "skills/profile_creator/evals/runtime_update_operation_disposition_contract.py"
+    ],
+    "runtime_activation": false,
+    "production_activation": false,
+    "purpose": "Positive governed source-write/readback canary after exact execution binding."
+  }
 }
