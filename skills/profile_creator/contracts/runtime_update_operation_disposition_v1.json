@@ -1,38 +1,83 @@
 {
-  "contract_code": "RUNTIME_UPDATE_OPERATION_DISPOSITION_V1",
+  "contract_code": "RUNTIME_UPDATE_OPERATION_DISPOSITION_V2",
   "operation_code": "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
-  "observed_live_state": {
-    "registry_status": "PRODUCCION_CONTROLADA",
-    "active_steps": 14,
+  "pre_repair_state": {
+    "registry_status": "CANDIDATO_READ_ONLY",
+    "lifecycle_state": "OP_CANDIDATE",
+    "total_steps": 14,
+    "active_steps": 0,
     "active_step_contracts": 14,
     "active_bindings": 0,
-    "executions": 4,
-    "in_progress_executions": 2,
-    "historical_prewrite_steps": 4,
-    "historical_github_write_steps": 3
+    "open_legacy_executions": 0
   },
+  "root_cause": "The operation was safely neutralized after the zero-binding defect, but its canonical 14-step contracts and Router RUNTIME_UPDATE binding remained. The missing piece was a dedicated runtime-update enforcement topology, not a new operation or a clone of profile judges.",
   "decision": {
-    "classification": "FAIL_CLOSED_REQUIRED_BEFORE_FURTHER_EXECUTION",
+    "classification": "REENABLE_WITH_DEDICATED_PER_STEP_ENFORCEMENT",
     "retain_as_distinct_operation": true,
-    "reason": "This operation has a distinct runtime-maintenance purpose and should not be folded into ACTUALIZACION_PERFIL_LF, but PRODUCCION_CONTROLADA with zero ACTIVE_ENFORCEMENT bindings is inconsistent with governed writes.",
-    "preferred_live_disposition": "READ_ONLY_OR_INACTIVE_UNTIL_BINDINGS_EXIST",
-    "create_14_bindings_now": false,
-    "reason_not_to_clone_profile_bindings": "Its step set includes runtime_resolve and runtime-specific evidence. Reusing the shared profile judge would reproduce the one-judge-for-N-steps defect and step-60 semantic leakage."
+    "judge_topology": "14_DISTINCT_RUNTIME_STEP_JUDGES",
+    "server_validation": "public.lf_runtime_update_trust_validation_v1",
+    "recorder": "public.lf_record_runtime_update_operation_step_v1",
+    "begin": "public.lf_runtime_update_begin_v1",
+    "clone_profile_judges": false,
+    "reason": "Runtime maintenance has runtime-specific evidence and write boundaries. Dedicated step judges plus server-bound validation prevent generic-payload/self-certification bypass while preserving the existing operation identity."
   },
-  "preconditions_before_reenable": [
-    "define runtime-specific per-step judge topology or justified structural judge topology",
-    "materialize ACTIVE_ENFORCEMENT bindings for every active required step",
-    "step60 requires bound_revision and execution_bound_to_target_before_change",
-    "negative missing-binding test fails closed",
-    "positive governed runtime-update execution reaches github_readback without bypass",
-    "dispose or explicitly supersede the two IN_PROGRESS executions",
-    "exact-head CI green"
+  "candidate_after_migration": {
+    "active_steps": 14,
+    "active_bindings": 14,
+    "distinct_judges": 14,
+    "resolver_mode": "NATIVE_MODEL_RUNTIME_WITH_SUPABASE_CONTEXT",
+    "prewrite_required": [
+      "bound_revision",
+      "execution_bound_to_target_before_change"
+    ],
+    "qualification_suite": "TS-RUNTIME-OP-UPDATE-V1",
+    "qualification_binding": "BIND-OP-RUNTIME-UPDATE-V1",
+    "lifecycle_state": "OP_CANDIDATE",
+    "router_binding_status": "CANDIDATO_READ_ONLY",
+    "required_policy_roles": [
+      "GOVERNANCE_LIFECYCLE",
+      "POLICY_CONSUMPTION",
+      "SOURCE_RESOLUTION",
+      "STATE_MODEL"
+    ]
+  },
+  "promotion_gate": {
+    "requires_qualification": true,
+    "qualification_currentness": "EXACT_REVISION",
+    "transition_action": "PROMOTE_OPERATION",
+    "target_lifecycle": "OP_OPERATIONAL",
+    "legacy_status": "PRODUCCION_CONTROLADA",
+    "router_action": "RUNTIME_UPDATE",
+    "positive_governed_canary_required": true,
+    "router_activation_after_promotion": true
+  },
+  "deployment_boundary": {
+    "source_update_operation": true,
+    "runtime_host_deployment_separate": true,
+    "automatic_promotion": false,
+    "profile_files_change_allowed": false,
+    "adapter_contract_change_allowed": false,
+    "production_promotion_allowed": false
+  },
+  "regression_requirements": [
+    "missing or invalid server-bound prewrite evidence fails closed",
+    "bound_revision and execution_bound_to_target_before_change are mandatory before write",
+    "profile/** and adapters/** writes are rejected by runtime-update server validation",
+    "positive governed runtime-update canary reaches exact GitHub readback without bypass",
+    "qualification is current for the exact operation revision before promotion",
+    "runtime host deployment is exact-current-main and independently read back"
   ],
-  "activation": {
-    "source_only": true,
-    "live_registry_status_change_authorized": false,
-    "live_binding_creation_authorized": false,
-    "runtime_deployment_authorized": false,
-    "merge_authorized": false
+  "governed_repair_execution": {
+    "execution_id": "EXEC-RUNTIME-UPDATE-CANARY-20260919-001",
+    "prewrite_bound_revision": "b9b8e1f3dfdb4536e253de2232f0e34274d65fac",
+    "target_code": "EJECUCION_PERFIL_LF",
+    "target_path": "skills/profile_creator/runtime_update_operation_governance",
+    "write_scope": [
+      "skills/profile_creator/contracts/runtime_update_operation_disposition_v1.json",
+      "skills/profile_creator/evals/runtime_update_operation_disposition_contract.py"
+    ],
+    "runtime_activation": false,
+    "production_activation": false,
+    "purpose": "Positive governed source-write/readback canary after exact execution binding."
   }
 }

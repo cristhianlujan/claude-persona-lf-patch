@@ -1,29 +1,60 @@
 from pathlib import Path
 import json
-ROOT=Path(__file__).resolve().parents[1]
-C=json.loads((ROOT/'contracts/runtime_update_operation_disposition_v1.json').read_text())
-O=C['observed_live_state']; D=C['decision']; A=C['activation']
-checks={
- 'exact_operation': C['operation_code']=='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF',
- 'prod_controlled_observed': O['registry_status']=='PRODUCCION_CONTROLADA',
- 'steps_14': O['active_steps']==14,
- 'contracts_14': O['active_step_contracts']==14,
- 'bindings_zero': O['active_bindings']==0,
- 'writes_observed': O['historical_github_write_steps']==3,
- 'two_in_progress': O['in_progress_executions']==2,
- 'fail_closed': D['classification']=='FAIL_CLOSED_REQUIRED_BEFORE_FURTHER_EXECUTION',
- 'retain_distinct': D['retain_as_distinct_operation'] is True,
- 'no_clone_now': D['create_14_bindings_now'] is False,
- 'preferred_readonly_or_inactive': D['preferred_live_disposition']=='READ_ONLY_OR_INACTIVE_UNTIL_BINDINGS_EXIST',
- 'step60_revision_precondition': 'step60 requires bound_revision and execution_bound_to_target_before_change' in C['preconditions_before_reenable'],
- 'missing_binding_negative': 'negative missing-binding test fails closed' in C['preconditions_before_reenable'],
- 'dispose_open_runs': 'dispose or explicitly supersede the two IN_PROGRESS executions' in C['preconditions_before_reenable'],
- 'source_only': A['source_only'] is True,
- 'no_live_registry_mutation': A['live_registry_status_change_authorized'] is False,
- 'no_live_binding_creation': A['live_binding_creation_authorized'] is False,
+
+ROOT = Path(__file__).resolve().parents[1]
+C = json.loads((ROOT / "contracts/runtime_update_operation_disposition_v1.json").read_text())
+P = C["pre_repair_state"]
+D = C["decision"]
+A = C["candidate_after_migration"]
+G = C["promotion_gate"]
+B = C["deployment_boundary"]
+E = C["governed_repair_execution"]
+
+checks = {
+    "exact_operation": C["operation_code"] == "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+    "v2_contract": C["contract_code"] == "RUNTIME_UPDATE_OPERATION_DISPOSITION_V2",
+    "candidate_pre_state": P["registry_status"] == "CANDIDATO_READ_ONLY" and P["lifecycle_state"] == "OP_CANDIDATE",
+    "pre_steps_14": P["total_steps"] == 14 and P["active_steps"] == 0 and P["active_step_contracts"] == 14,
+    "pre_bindings_zero": P["active_bindings"] == 0,
+    "legacy_runs_disposed": P["open_legacy_executions"] == 0,
+    "reenable_classification": D["classification"] == "REENABLE_WITH_DEDICATED_PER_STEP_ENFORCEMENT",
+    "retain_distinct": D["retain_as_distinct_operation"] is True,
+    "per_step_topology": D["judge_topology"] == "14_DISTINCT_RUNTIME_STEP_JUDGES",
+    "server_validation_bound": D["server_validation"] == "public.lf_runtime_update_trust_validation_v1",
+    "recorder_bound": D["recorder"] == "public.lf_record_runtime_update_operation_step_v1",
+    "begin_bound": D["begin"] == "public.lf_runtime_update_begin_v1",
+    "no_profile_judge_clone": D["clone_profile_judges"] is False,
+    "candidate_active_steps_14": A["active_steps"] == 14,
+    "candidate_bindings_14": A["active_bindings"] == 14,
+    "candidate_distinct_judges_14": A["distinct_judges"] == 14,
+    "native_model_runtime": A["resolver_mode"] == "NATIVE_MODEL_RUNTIME_WITH_SUPABASE_CONTEXT",
+    "step60_revision_precondition": {"bound_revision", "execution_bound_to_target_before_change"}.issubset(set(A["prewrite_required"])),
+    "qualification_suite": A["qualification_suite"] == "TS-RUNTIME-OP-UPDATE-V1",
+    "qualification_binding": A["qualification_binding"] == "BIND-OP-RUNTIME-UPDATE-V1",
+    "still_candidate_before_qualification": A["lifecycle_state"] == "OP_CANDIDATE",
+    "candidate_router_not_active": A["router_binding_status"] == "CANDIDATO_READ_ONLY",
+    "transversal_policy_wiring": set(A["required_policy_roles"]) == {"GOVERNANCE_LIFECYCLE","POLICY_CONSUMPTION","SOURCE_RESOLUTION","STATE_MODEL"},
+    "qualification_required": G["requires_qualification"] is True and G["qualification_currentness"] == "EXACT_REVISION",
+    "router_activation_after_promotion": G["router_activation_after_promotion"] is True,
+    "promotion_transition": G["transition_action"] == "PROMOTE_OPERATION" and G["target_lifecycle"] == "OP_OPERATIONAL",
+    "positive_canary_required": G["positive_governed_canary_required"] is True,
+    "deployment_separate": B["runtime_host_deployment_separate"] is True,
+    "no_auto_promotion": B["automatic_promotion"] is False,
+    "profile_files_forbidden": B["profile_files_change_allowed"] is False,
+    "adapter_contract_forbidden": B["adapter_contract_change_allowed"] is False,
+    "production_promotion_forbidden": B["production_promotion_allowed"] is False,
+    "governed_canary_execution": E["execution_id"] == "EXEC-RUNTIME-UPDATE-CANARY-20260919-001",
+    "prewrite_revision_bound": E["prewrite_bound_revision"] == "b9b8e1f3dfdb4536e253de2232f0e34274d65fac",
+    "governed_target_exact": E["target_code"] == "EJECUCION_PERFIL_LF" and E["target_path"] == "skills/profile_creator/runtime_update_operation_governance",
+    "canary_runtime_not_activated": E["runtime_activation"] is False and E["production_activation"] is False,
 }
-failed=[k for k,v in checks.items() if not v]
-if failed: raise SystemExit('FAIL_RUNTIME_UPDATE_OPERATION_DISPOSITION:'+','.join(failed))
-print(f'PASS_RUNTIME_UPDATE_OPERATION_DISPOSITION={sum(checks.values())}/{len(checks)}')
-print('LIVE_BINDINGS_CREATED=false')
-print('LIVE_REGISTRY_STATUS_CHANGED=false')
+
+failed = [k for k, v in checks.items() if not v]
+if failed:
+    raise SystemExit("FAIL_RUNTIME_UPDATE_OPERATION_DISPOSITION:" + ",".join(failed))
+
+print(f"PASS_RUNTIME_UPDATE_OPERATION_DISPOSITION={sum(checks.values())}/{len(checks)}")
+print("REENABLE_TOPOLOGY=14_DISTINCT_RUNTIME_STEP_JUDGES")
+print("QUALIFICATION_REQUIRED=true")
+print("AUTOMATIC_PROMOTION=false")
+print("RUNTIME_HOST_DEPLOYMENT_SEPARATE=true")
