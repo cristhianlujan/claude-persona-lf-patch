@@ -8,6 +8,8 @@ const LEGACY_CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1";
 const LEGACY_WORKFLOW = `${REPOSITORY}/.github/workflows/lf-profiles-governance-caller.yml@refs/heads/governance/profiles-unblock-secure-caller-20260901`;
 const CUSTOMER_CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_CREATOR_CUSTOMER_V1";
 const CUSTOMER_WORKFLOW = `${REPOSITORY}/.github/workflows/lf-customer-profile-creator-governance-caller.yml@refs/heads/lf/profiles/profile-creator-customer-caller-20260902`;
+const UPDATE_CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_UPDATE_V1";
+const UPDATE_WORKFLOW = `${REPOSITORY}/.github/workflows/lf-customer-profile-creator-governance-caller.yml@refs/heads/main`;
 const PROFILE_OPERATIONS = new Set(["CREACION_PERFIL_LF", "ACTUALIZACION_PERFIL_LF"]);
 const SHA40 = /^[0-9a-f]{40}$/;
 const TRUST_FIELDS = new Set([
@@ -43,7 +45,11 @@ function validateCaller(value: unknown): { ok: true; caller: ValidCaller } | { o
   if (c.repository !== REPOSITORY) return { ok: false, code: "GOVERNED_CALLER_REPOSITORY_INVALID" };
   const method = typeof c.method === "string" ? c.method : "";
   const workflow = typeof c.workflow_ref === "string" ? c.workflow_ref : "";
-  if (!((method === LEGACY_CALLER_METHOD && workflow === LEGACY_WORKFLOW) || (method === CUSTOMER_CALLER_METHOD && workflow === CUSTOMER_WORKFLOW))) return { ok: false, code: "GOVERNED_CALLER_WORKFLOW_INVALID" };
+  if (!(
+    (method === LEGACY_CALLER_METHOD && workflow === LEGACY_WORKFLOW) ||
+    (method === CUSTOMER_CALLER_METHOD && workflow === CUSTOMER_WORKFLOW) ||
+    (method === UPDATE_CALLER_METHOD && workflow === UPDATE_WORKFLOW)
+  )) return { ok: false, code: "GOVERNED_CALLER_WORKFLOW_INVALID" };
   if (typeof c.run_id !== "string" || !/^\d+$/.test(c.run_id)) return { ok: false, code: "GOVERNED_CALLER_RUN_ID_INVALID" };
   if (typeof c.workflow_sha !== "string" || !SHA40.test(c.workflow_sha)) return { ok: false, code: "GOVERNED_CALLER_SHA_INVALID" };
   return { ok: true, caller: { method, repository: REPOSITORY, workflow_ref: workflow, run_id: c.run_id, workflow_sha: c.workflow_sha } };
@@ -120,6 +126,18 @@ async function githubJson(url: string, label: string): Promise<any> {
   if (!r.ok) throw new Error(`${label}_${r.status}`);
   return await r.json();
 }
+function safeUpdateTargetPath(value: unknown): string {
+  const path = typeof value === "string" ? value.trim().replace(/^\/+/, "") : "";
+  if (!path || path.length > 500 || path.includes("..") || path.includes("\\") || path.includes("\0") || path.includes(":") || !path.startsWith("profiles/")) {
+    throw new Error("PROFILE_UPDATE_TARGET_PATH_INVALID");
+  }
+  return path;
+}
+async function sha256Hex(value: string): Promise<string> {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 async function deriveServerTrust(ex: any, before: any, evidence: Record<string, unknown>): Promise<{ ok: true; evidence: Record<string, unknown> } | { ok: false; code: string }> {
   const baseline = typeof before?.baseline_observation?.baseline_revision === "string" ? before.baseline_observation.baseline_revision.trim().toLowerCase() : "";
   if (!SHA40.test(baseline)) return { ok: false, code: "PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED" };
@@ -167,6 +185,105 @@ Deno.serve(async (req: Request) => {
     try { body = await req.json(); } catch { return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "INVALID_JSON" }, 400); }
     const cv = validateCaller(body.caller); if (!cv.ok) return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: cv.code }, 403);
     const caller = cv.caller;
+
+    if (body.action === "initialize_profile_update_v1") {
+      if (caller.method !== UPDATE_CALLER_METHOD || caller.workflow_ref !== UPDATE_WORKFLOW) {
+        return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_UPDATE_CALLER_NOT_ALLOWED" }, 403);
+      }
+      const requestId = typeof body.caller_request_id === "string" ? body.caller_request_id.trim().toLowerCase() : "";
+      const targetCode = typeof body.target_code === "string" ? body.target_code.trim().toUpperCase() : "";
+      const targetRepo = typeof body.target_repo === "string" ? body.target_repo.trim() : "";
+      let targetPath = "";
+      try { targetPath = safeUpdateTargetPath(body.target_path); }
+      catch { return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_UPDATE_TARGET_PATH_INVALID" }, 400); }
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(requestId) || !/^PERFIL-[A-Z0-9][A-Z0-9-]{2,120}$/.test(targetCode) || targetRepo !== REPOSITORY) {
+        return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_UPDATE_INPUT_INVALID" }, 400);
+      }
+
+      const router = await rpc("lf_router_resolve_v1", {
+        p_request_text: `Actualizar perfil ${targetCode}`,
+        p_target_hint: targetCode,
+        p_action_hint: "PROFILE_UPDATE",
+        p_asset_type_hint: "PERFIL",
+        p_distribution_mode: "ROUTER",
+      });
+      if (router?.status !== "READY_TO_EXECUTE" || router?.operation_code !== "ACTUALIZACION_PERFIL_LF" || router?.action_code !== "PROFILE_UPDATE" || router?.next_step?.step_id !== "init_execution") {
+        return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "ROUTER_UPDATE_NOT_AUTHORIZED", router }, 409);
+      }
+
+      const asset = await one(
+        `/rest/v1/lf_activos?codigo_activo=eq.${encodeURIComponent(targetCode)}&select=codigo_activo,tipo_activo,ruta_esperada,archived_at&limit=1`,
+        "PROFILE_UPDATE_ASSET_READ",
+      );
+      const rootPath = typeof asset?.ruta_esperada === "string" ? asset.ruta_esperada.replace(/\/+$/, "") : "";
+      if (!asset || asset.tipo_activo !== "PERFIL" || asset.archived_at || !rootPath || !(targetPath === rootPath || targetPath.startsWith(`${rootPath}/`))) {
+        return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_UPDATE_TARGET_NOT_OWNED_BY_PROFILE" }, 409);
+      }
+      if (targetPath === rootPath) {
+        return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_UPDATE_EXACT_TARGET_FILE_REQUIRED" }, 409);
+      }
+
+      const mainRef = await githubJson(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/main`, "GITHUB_MAIN_REF");
+      const mainSha = typeof mainRef?.object?.sha === "string" ? mainRef.object.sha.toLowerCase() : "";
+      if (!SHA40.test(mainSha)) return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_UPDATE_CURRENT_REVISION_UNRESOLVED" }, 409);
+      const encodedTarget = targetPath.split("/").map(encodeURIComponent).join("/");
+      const target = await githubJson(`https://api.github.com/repos/${REPOSITORY}/contents/${encodedTarget}?ref=${mainSha}`, "GITHUB_TARGET_BLOB");
+      const targetBlobSha = !Array.isArray(target) && typeof target?.sha === "string" ? target.sha.toLowerCase() : "";
+      if (!SHA40.test(targetBlobSha)) return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_UPDATE_CURRENT_TARGET_BLOB_UNRESOLVED" }, 409);
+
+      const id = `EXEC-ACTUALIZACION-PERFIL-LF-OIDC-${requestId}`;
+      const manifest = {
+        schema_version: 1,
+        router: "ACT-0001",
+        governed_caller_method: caller.method,
+        caller_repository: caller.repository,
+        caller_workflow_ref: caller.workflow_ref,
+        caller_run_id: caller.run_id,
+        caller_workflow_sha: caller.workflow_sha,
+        runtime_write_executed: false,
+        github_write_executed: false,
+        production_authorized: false,
+        automatic_runtime_promotion: false,
+        target_root_path: rootPath,
+        initial_main_revision: mainSha,
+        initial_target_blob_sha: targetBlobSha,
+      };
+      const requestSha = await sha256Hex(JSON.stringify({
+        operation_code: "ACTUALIZACION_PERFIL_LF",
+        execution_id: id,
+        target_code: targetCode,
+        target_repo: REPOSITORY,
+        target_path: targetPath,
+        caller_method: caller.method,
+        caller_workflow_ref: caller.workflow_ref,
+      }));
+      const begun = await rpc("lf_profile_update_begin_v1", {
+        p_execution_id: id,
+        p_target_code: targetCode,
+        p_target_repo: REPOSITORY,
+        p_target_path: targetPath,
+        p_request_sha256: requestSha,
+        p_idempotency_key: `profile-update:${requestId}`,
+        p_actor_execution_id: id,
+        p_manifest: manifest,
+      });
+      const ex = await execution(id);
+      if (!ex || ex.operation_code !== "ACTUALIZACION_PERFIL_LF" || ex.target_code !== targetCode || ex.target_path !== targetPath || ex.status !== "IN_PROGRESS") {
+        return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_UPDATE_BEGIN_READBACK_FAILED", begun }, 409);
+      }
+      const snapshot = await operationSnapshot(ex);
+      return json({
+        outcome: "INITIALIZED",
+        endpoint_version: ENDPOINT_VERSION,
+        replay: begun?.result === "REPLAY_EXISTING_EXECUTION",
+        execution: ex,
+        snapshot,
+        begin_result: begun,
+        write_executed: false,
+        github_write_executed: false,
+        next_gate: snapshot?.next_step?.step_id ?? "router",
+      }, begun?.result === "REPLAY_EXISTING_EXECUTION" ? 200 : 201);
+    }
 
     if (body.action === "next_profile_operation_step_v1") {
       const id = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
