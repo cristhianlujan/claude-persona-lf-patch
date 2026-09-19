@@ -143,9 +143,9 @@ def main() -> int:
     workflow = (source / ".github/workflows/lf-contract-check.yml").read_text(encoding="utf-8")
     required_workflow_terms = (
         "actions: read",
-        "if: github.event_name == 'pull_request'",
+        "if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_ACTIONS_INVENTORY')",
         'PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}',
-        'E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}',
+        "E16_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}",
         '--head-sha "$E16_HEAD_SHA"',
         "PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
         "PR93_LOTE_E16_REGRESSION_TESTS.py",
@@ -164,12 +164,13 @@ def main() -> int:
     present_forbidden = [term for term in forbidden_workflow_terms if term in workflow]
     if present_forbidden:
         raise SystemExit(f"workflow binding contains forbidden legacy forms: {present_forbidden}")
-    if workflow.count('${{ github.event.pull_request.head.sha }}') != 2:
-        raise SystemExit("workflow must bind pull_request.head.sha exactly twice: router and E.16 inventory")
     if workflow.count('PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}') != 1:
         raise SystemExit("router must bind exact pull_request.head.sha exactly once")
-    if workflow.count('E16_HEAD_SHA: ${{ github.event.pull_request.head.sha }}') != 1:
-        raise SystemExit("E.16 inventory must bind exact pull_request.head.sha exactly once")
+    e16_head_binding = "E16_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+    if workflow.count(e16_head_binding) != 1:
+        raise SystemExit("E.16 current-carrier readback must bind PR head or push/workflow SHA exactly once")
+    if "if: github.event_name == 'pull_request' && contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'E16_ACTIONS_INVENTORY')" in workflow:
+        raise SystemExit("E.16 current-carrier readback must not be restricted to pull_request")
     print("PASS_E16_WORKFLOW_BINDING=15/15")
 
     with tempfile.TemporaryDirectory(prefix="pr93-e16-integration-") as temp:
@@ -196,26 +197,44 @@ def main() -> int:
             "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
             "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
             "scripts/lf_contract_check.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/run_lf_adapter_binding_tests.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_obligation_manifest.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py",
-            "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_judge.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GITHUB_INVENTORY.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INVENTORY_TESTS.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_RATIFICATION_TESTS.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py",
-            "sandbox/lf_contract_gate_test/PR93_LOTE_E16_GUARDS.md",
         ]
         for relative in files:
             destination = repo / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source / relative, destination)
+
+        runtime_relative = Path("sandbox/lf_contract_gate_test/profile_execution_runtime")
+        shutil.copytree(
+            source / runtime_relative,
+            repo / runtime_relative,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+        )
+
+        e16_root = source / "sandbox/lf_contract_gate_test"
+        e16_files = sorted(path for path in e16_root.glob("PR93_LOTE_E16_*") if path.is_file())
+        required_e16 = {
+            "PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
+            "PR93_LOTE_E16_GITHUB_INVENTORY.py",
+            "PR93_LOTE_E16_INVENTORY_TESTS.py",
+            "PR93_LOTE_E16_REGRESSION_TESTS.py",
+            "PR93_LOTE_E16_RATIFICATION_TESTS.py",
+            "PR93_LOTE_E16_INTEGRATION_TESTS.py",
+            "PR93_LOTE_E16_GUARDS.md",
+        }
+        observed_e16 = {path.name for path in e16_files}
+        missing_e16 = sorted(required_e16 - observed_e16)
+        if missing_e16:
+            raise SystemExit(f"E16 integration source closure missing required files: {missing_e16}")
+        for source_path in e16_files:
+            relative = source_path.relative_to(source)
+            destination = repo / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_path, destination)
+        print(
+            "PASS_E16_INTEGRATION_SOURCE_CLOSURE="
+            f"runtime_tree+e16_family:{len(e16_files)}"
+        )
         checked(["git", "add", "-A"], repo)
         checked(["git", "commit", "-m", "E16 candidate"], repo)
         head = checked(["git", "rev-parse", "HEAD"], repo)
