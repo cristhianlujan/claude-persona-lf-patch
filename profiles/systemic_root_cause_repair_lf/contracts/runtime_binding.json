@@ -20,5 +20,100 @@
     "fail_closed": true,
     "exact_head_evidence_required": true,
     "post_update_baseline_required": true
+  },
+  "model_context": {
+    "full_source_to_model": false,
+    "source_projection": {
+      "mode": "MARKDOWN_SECTIONS",
+      "include_sections": [
+        "Purpose",
+        "Mandatory trajectory",
+        "Non-negotiable rules"
+      ],
+      "max_chars": 5000
+    }
+  },
+  "execution_partition": {
+    "schema": "LF_PROFILE_EXECUTION_PARTITION_V1",
+    "field_classes": {
+      "profile_pack_id": "DETERMINISTIC",
+      "status": "SEMANTIC",
+      "symptom": "SEMANTIC",
+      "immediate_cause": "SEMANTIC",
+      "systemic_root_cause": "SEMANTIC",
+      "causal_chain": "SEMANTIC",
+      "first_bad_control": "SEMANTIC",
+      "escape_control": "SEMANTIC",
+      "repair_level": "SEMANTIC",
+      "alternatives": "SEMANTIC",
+      "selected_alternative": "SEMANTIC",
+      "rejected_alternatives": "SEMANTIC",
+      "origin_asset": "SEMANTIC",
+      "origin_operation": "SEMANTIC",
+      "owner": "SEMANTIC",
+      "invariant": "SEMANTIC",
+      "hard_guard": "SEMANTIC",
+      "acceptance_criteria": "SEMANTIC",
+      "residual_risks": "SEMANTIC",
+      "next_gate": "SEMANTIC",
+      "recurrence_evidence": "HYBRID",
+      "authority_contradictions": "HYBRID",
+      "should_exist_assessment": "HYBRID",
+      "falsification_results": "HYBRID",
+      "historical_regressions": "HYBRID",
+      "evidence_map": "HYBRID",
+      "blocking_codes": "HYBRID"
+    },
+    "deterministic_materialization": {
+      "profile_pack_id": {
+        "source": "literal",
+        "value": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2"
+      }
+    },
+    "generation_limits": {
+      "default_string_max_length": 320,
+      "fields": {
+        "causal_chain": {
+          "maxItems": 6
+        },
+        "recurrence_evidence": {
+          "maxItems": 6
+        },
+        "authority_contradictions": {
+          "maxItems": 6
+        },
+        "alternatives": {
+          "maxItems": 3
+        },
+        "rejected_alternatives": {
+          "maxItems": 2
+        },
+        "falsification_results": {
+          "maxItems": 8
+        },
+        "acceptance_criteria": {
+          "maxItems": 6
+        },
+        "historical_regressions": {
+          "maxItems": 8
+        },
+        "residual_risks": {
+          "maxItems": 8
+        },
+        "evidence_map": {
+          "maxItems": 16
+        },
+        "blocking_codes": {
+          "maxItems": 16
+        }
+      }
+    }
+  },
+  "execution_budget": {
+    "resource_class": "HEAVY_SEMANTIC",
+    "max_prompt_tokens": 4096,
+    "max_output_tokens": 1536,
+    "min_available_memory_mb": 512,
+    "max_swap_used_pct": 90
   }
 }
