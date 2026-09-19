@@ -1,8 +1,10 @@
 {
-  "handoff_version": "v1",
+  "handoff_version": "v2",
   "from_profile": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
   "to": "QUALITY_OR_ASSURANCE",
   "include": [
+    "authority_contradictions",
+    "should_exist_assessment",
     "selected_alternative",
     "rejected_alternatives",
     "falsification_results",
@@ -14,8 +16,17 @@
     "acceptance_criteria",
     "historical_regressions",
     "residual_risks",
-    "evidence_map"
+    "evidence_map",
+    "blocking_codes",
+    "independent_review",
+    "next_gate"
   ],
+  "required_quality_boundary": {
+    "independent_reviewer": "CLAUDE",
+    "producer_self_review_authoritative": false,
+    "exact_revision_evidence_required": true,
+    "structural_validation_is_behavioral_proof": false
+  },
   "exclude": ["internal_chain_of_thought","unbound_authority","implementation_permission"],
   "claim_ceiling": "ADVISORY_READ_ONLY"
 }
