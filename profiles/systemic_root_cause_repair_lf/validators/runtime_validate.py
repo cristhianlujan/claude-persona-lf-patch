@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Deterministic runtime validator for Systemic Root Cause Repair LF.
 
-The validator keeps causal claims, evidence gaps and final repair decisions
-separate. A non-ready output may preserve hypotheses, but it may not present
-unresolved causality as a final repair specification.
+A SYSTEMIC_REPAIR_SPEC means the repair design is ready for governed
+implementation. It does not require post-implementation evidence to exist.
+Evidence gaps are classified by whether they can still change the design.
 """
 
 ALLOWED_STATUS = {
@@ -15,6 +15,11 @@ ALLOWED_STATUS = {
 CLAIM_STATUS = {"OBSERVED", "ESTABLISHED", "HYPOTHESIS", "UNRESOLVED"}
 AUTHORITY_STATUS = {"RESOLVED", "UNRESOLVED"}
 REPAIR_LEVELS = {"UNDETERMINED", "LOCAL", "SYSTEMIC_ORIGIN", "ARCHITECTURAL"}
+IMPACTS = {
+    "DESIGN_BLOCKING",
+    "IMPLEMENTATION_PRECONDITION",
+    "NON_BLOCKING_HISTORICAL",
+}
 REQUIRED_FALSIFICATION_CASES = {
     "bypass",
     "retry",
@@ -112,8 +117,6 @@ def _authority_ref_errors(name, value):
     if not isinstance(value, dict):
         return [_error("AUTHORITY_REF_INVALID", path)]
     status = value.get("status")
-    code = value.get("code")
-    ref = value.get("evidence_ref")
     missing = value.get("missing_evidence")
     if status not in AUTHORITY_STATUS:
         errors.append(_error("AUTHORITY_REF_STATUS_INVALID", f"{path}.status"))
@@ -121,15 +124,39 @@ def _authority_ref_errors(name, value):
     if not _string_list(missing):
         errors.append(_error("AUTHORITY_REF_MISSING_EVIDENCE_INVALID", f"{path}.missing_evidence"))
     if status == "RESOLVED":
-        if not _nonempty_string(code):
+        if not _nonempty_string(value.get("code")):
             errors.append(_error("RESOLVED_AUTHORITY_CODE_REQUIRED", f"{path}.code"))
-        if not _nonempty_string(ref):
+        if not _nonempty_string(value.get("evidence_ref")):
             errors.append(_error("RESOLVED_AUTHORITY_EVIDENCE_REQUIRED", f"{path}.evidence_ref"))
         if missing:
             errors.append(_error("RESOLVED_AUTHORITY_WITH_MISSING_EVIDENCE", f"{path}.missing_evidence"))
-    else:
-        if not missing:
-            errors.append(_error("UNRESOLVED_AUTHORITY_MISSING_EVIDENCE_REQUIRED", f"{path}.missing_evidence"))
+    elif not missing:
+        errors.append(_error("UNRESOLVED_AUTHORITY_MISSING_EVIDENCE_REQUIRED", f"{path}.missing_evidence"))
+    return errors
+
+
+def _uncertainty_errors(payload):
+    errors = []
+    rows = payload.get("current_uncertainties")
+    if not isinstance(rows, list):
+        return [_error("CURRENT_UNCERTAINTIES_INVALID", "$.current_uncertainties")]
+    for idx, row in enumerate(rows):
+        path = f"$.current_uncertainties[{idx}]"
+        if not isinstance(row, dict):
+            errors.append(_error("CURRENT_UNCERTAINTY_INVALID", path))
+            continue
+        impact = row.get("impact")
+        if impact not in IMPACTS:
+            errors.append(_error("CURRENT_UNCERTAINTY_IMPACT_INVALID", f"{path}.impact"))
+        if not _nonempty_string(row.get("uncertainty")):
+            errors.append(_error("CURRENT_UNCERTAINTY_TEXT_REQUIRED", f"{path}.uncertainty"))
+        if not _string_list(row.get("evidence_needed"), allow_empty=False):
+            errors.append(_error("CURRENT_UNCERTAINTY_EVIDENCE_NEEDED_INVALID", f"{path}.evidence_needed"))
+        if not _nonempty_string(row.get("design_consequence")):
+            errors.append(_error("CURRENT_UNCERTAINTY_DESIGN_CONSEQUENCE_REQUIRED", f"{path}.design_consequence"))
+        containment = row.get("containment_ref")
+        if impact in {"IMPLEMENTATION_PRECONDITION", "NON_BLOCKING_HISTORICAL"} and not _nonempty_string(containment):
+            errors.append(_error("NONBLOCKING_UNCERTAINTY_CONTAINMENT_REQUIRED", f"{path}.containment_ref"))
     return errors
 
 
@@ -140,14 +167,15 @@ def _live_packet_errors(payload):
     if not isinstance(packet, dict):
         return [_error("LIVE_AUTHORITY_PACKET_MISSING", "$.live_authority_packet")]
 
-    packet_status = packet.get("status")
-    if packet_status not in LIVE_PACKET_STATUS:
+    status = packet.get("status")
+    if status not in LIVE_PACKET_STATUS:
         return [_error("LIVE_AUTHORITY_PACKET_STATUS_INVALID", "$.live_authority_packet.status")]
 
     applicable = packet.get("applicable_surfaces")
     inspected = packet.get("inspected_surfaces")
     evidence_refs = packet.get("evidence_refs")
     unavailable = packet.get("unavailable_sources")
+    assessments = packet.get("unavailable_source_assessments")
     if not _string_list(applicable, allow_empty=False):
         errors.append(_error("LIVE_AUTHORITY_APPLICABLE_SURFACES_MISSING", "$.live_authority_packet.applicable_surfaces"))
     if not _string_list(inspected):
@@ -156,18 +184,49 @@ def _live_packet_errors(payload):
         errors.append(_error("LIVE_AUTHORITY_EVIDENCE_REFS_INVALID", "$.live_authority_packet.evidence_refs"))
     if not _string_list(unavailable):
         errors.append(_error("LIVE_AUTHORITY_UNAVAILABLE_SOURCES_INVALID", "$.live_authority_packet.unavailable_sources"))
+    if not isinstance(assessments, list):
+        errors.append(_error("LIVE_AUTHORITY_UNAVAILABLE_ASSESSMENTS_INVALID", "$.live_authority_packet.unavailable_source_assessments"))
+        assessments = []
 
-    if packet_status == "COMPLETE":
+    assessed_sources = []
+    design_blocking = False
+    for idx, row in enumerate(assessments):
+        path = f"$.live_authority_packet.unavailable_source_assessments[{idx}]"
+        if not isinstance(row, dict):
+            errors.append(_error("LIVE_AUTHORITY_UNAVAILABLE_ASSESSMENT_INVALID", path))
+            continue
+        source = row.get("source")
+        impact = row.get("impact")
+        assessed_sources.append(source)
+        if not _nonempty_string(source):
+            errors.append(_error("LIVE_AUTHORITY_UNAVAILABLE_SOURCE_REQUIRED", f"{path}.source"))
+        if impact not in IMPACTS:
+            errors.append(_error("LIVE_AUTHORITY_UNAVAILABLE_IMPACT_INVALID", f"{path}.impact"))
+        if not _nonempty_string(row.get("rationale")):
+            errors.append(_error("LIVE_AUTHORITY_UNAVAILABLE_RATIONALE_REQUIRED", f"{path}.rationale"))
+        if impact == "DESIGN_BLOCKING":
+            design_blocking = True
+        elif not _nonempty_string(row.get("containment_ref")):
+            errors.append(_error("LIVE_AUTHORITY_NONBLOCKING_CONTAINMENT_REQUIRED", f"{path}.containment_ref"))
+
+    if isinstance(unavailable, list) and set(unavailable) != set(assessed_sources):
+        errors.append(_error("LIVE_AUTHORITY_UNAVAILABLE_ASSESSMENT_MISMATCH", "$.live_authority_packet.unavailable_source_assessments"))
+
+    if status == "COMPLETE":
         if not evidence_refs:
             errors.append(_error("LIVE_AUTHORITY_COMPLETE_WITHOUT_EVIDENCE", "$.live_authority_packet.evidence_refs"))
         if unavailable:
             errors.append(_error("LIVE_AUTHORITY_COMPLETE_WITH_UNAVAILABLE_SOURCE", "$.live_authority_packet.unavailable_sources"))
+        if assessments:
+            errors.append(_error("LIVE_AUTHORITY_COMPLETE_WITH_UNAVAILABLE_ASSESSMENT", "$.live_authority_packet.unavailable_source_assessments"))
         if isinstance(applicable, list) and isinstance(inspected, list) and set(applicable) != set(inspected):
             errors.append(_error("LIVE_AUTHORITY_SURFACE_COVERAGE_INCOMPLETE", "$.live_authority_packet"))
-    elif packet_status == "PARTIAL" and "LIVE_AUTHORITY_EVIDENCE_INCOMPLETE" not in blockers:
-        errors.append(_error("LIVE_AUTHORITY_PARTIAL_WITHOUT_BLOCKER", "$.blocking_codes"))
-    elif packet_status == "MISSING" and "LIVE_AUTHORITY_EVIDENCE_MISSING" not in blockers:
-        errors.append(_error("LIVE_AUTHORITY_MISSING_WITHOUT_BLOCKER", "$.blocking_codes"))
+    elif status == "PARTIAL":
+        if design_blocking and "LIVE_AUTHORITY_EVIDENCE_INCOMPLETE" not in blockers:
+            errors.append(_error("LIVE_AUTHORITY_DESIGN_BLOCKER_WITHOUT_CODE", "$.blocking_codes"))
+    elif status == "MISSING":
+        if "LIVE_AUTHORITY_EVIDENCE_MISSING" not in blockers:
+            errors.append(_error("LIVE_AUTHORITY_MISSING_WITHOUT_BLOCKER", "$.blocking_codes"))
     return errors
 
 
@@ -187,30 +246,50 @@ def _reconciliation_errors(payload):
             errors.append(_error("EXECUTION_EFFECT_RECONCILIATION_INVALID", path))
             continue
         status = row.get("reconciliation_status")
+        impact = row.get("impact")
         producer_refs = row.get("observed_producer_refs")
+        containment = row.get("containment_ref")
         if status not in RECONCILIATION_STATUS:
             errors.append(_error("EXECUTION_EFFECT_RECONCILIATION_STATUS_INVALID", f"{path}.reconciliation_status"))
             continue
+        if impact not in {"NONE"} | IMPACTS:
+            errors.append(_error("EXECUTION_EFFECT_IMPACT_INVALID", f"{path}.impact"))
         if not _nonempty_string(row.get("declared_producer_ref")):
             errors.append(_error("DECLARED_PRODUCER_AUTHORITY_REF_REQUIRED", f"{path}.declared_producer_ref"))
         if not _string_list(producer_refs):
             errors.append(_error("EXECUTION_EFFECT_PRODUCER_REFS_INVALID", f"{path}.observed_producer_refs"))
+
         if status == "MATCH":
             if row.get("blocking") is not False:
                 errors.append(_error("MATCH_RECONCILIATION_MUST_NOT_BLOCK", f"{path}.blocking"))
             if not producer_refs:
                 errors.append(_error("MATCH_REQUIRES_OBSERVED_PRODUCER", f"{path}.observed_producer_refs"))
+            if impact != "NONE":
+                errors.append(_error("MATCH_RECONCILIATION_IMPACT_MUST_BE_NONE", f"{path}.impact"))
+            if containment is not None:
+                errors.append(_error("MATCH_RECONCILIATION_CONTAINMENT_MUST_BE_NULL", f"{path}.containment_ref"))
         elif status == "UNRESOLVED_PRODUCER":
+            if impact == "DESIGN_BLOCKING":
+                if row.get("blocking") is not True:
+                    errors.append(_error("DESIGN_BLOCKING_UNRESOLVED_PRODUCER_MUST_BLOCK", f"{path}.blocking"))
+                if "EXECUTION_EFFECT_PRODUCER_UNRESOLVED" not in blockers:
+                    errors.append(_error("UNRESOLVED_PRODUCER_WITHOUT_BLOCKER", "$.blocking_codes"))
+            elif impact in {"IMPLEMENTATION_PRECONDITION", "NON_BLOCKING_HISTORICAL"}:
+                if row.get("blocking") is not False:
+                    errors.append(_error("CONTAINED_UNRESOLVED_PRODUCER_MUST_NOT_BLOCK_SPEC", f"{path}.blocking"))
+                if not _nonempty_string(containment):
+                    errors.append(_error("CONTAINED_UNRESOLVED_PRODUCER_REQUIRES_CONTAINMENT", f"{path}.containment_ref"))
+            else:
+                errors.append(_error("UNRESOLVED_PRODUCER_IMPACT_REQUIRED", f"{path}.impact"))
+        else:
             if row.get("blocking") is not True:
-                errors.append(_error("UNRESOLVED_PRODUCER_MUST_BLOCK", f"{path}.blocking"))
-            if "EXECUTION_EFFECT_PRODUCER_UNRESOLVED" not in blockers:
-                errors.append(_error("UNRESOLVED_PRODUCER_WITHOUT_BLOCKER", "$.blocking_codes"))
-        elif row.get("blocking") is not True:
-            errors.append(_error("AUTHORITY_CONTRADICTION_RECONCILIATION_MUST_BLOCK", f"{path}.blocking"))
+                errors.append(_error("AUTHORITY_CONTRADICTION_RECONCILIATION_MUST_BLOCK", f"{path}.blocking"))
+            if impact != "DESIGN_BLOCKING":
+                errors.append(_error("AUTHORITY_CONTRADICTION_MUST_BE_DESIGN_BLOCKING", f"{path}.impact"))
     return errors
 
 
-def _falsification_errors(payload, *, require_complete=False):
+def _falsification_errors(payload, *, require_ready=False):
     errors = []
     rows = payload.get("falsification_results")
     if not isinstance(rows, list):
@@ -223,17 +302,25 @@ def _falsification_errors(payload, *, require_complete=False):
     if duplicates:
         errors.append(_error("FALSIFICATION_FAMILIES_DUPLICATED", "$.falsification_results", ",".join(duplicates)))
     for idx, item in enumerate(rows):
+        path = f"$.falsification_results[{idx}]"
         if not isinstance(item, dict):
-            errors.append(_error("FALSIFICATION_RESULT_INVALID", f"$.falsification_results[{idx}]"))
+            errors.append(_error("FALSIFICATION_RESULT_INVALID", path))
             continue
+        case = item.get("case")
         result = item.get("result")
         evidence_class = item.get("evidence_class")
-        if item.get("case") not in REQUIRED_FALSIFICATION_CASES:
-            errors.append(_error("FALSIFICATION_CASE_UNKNOWN", f"$.falsification_results[{idx}].case"))
+        if case not in REQUIRED_FALSIFICATION_CASES:
+            errors.append(_error("FALSIFICATION_CASE_UNKNOWN", f"{path}.case"))
+        if not _nonempty_string(item.get("verification_method")):
+            errors.append(_error("FALSIFICATION_VERIFICATION_METHOD_REQUIRED", f"{path}.verification_method"))
+        if not _nonempty_string(item.get("expected_result")):
+            errors.append(_error("FALSIFICATION_EXPECTED_RESULT_REQUIRED", f"{path}.expected_result"))
         if result == "PASS" and evidence_class not in OBSERVED_FALSIFICATION_EVIDENCE:
-            errors.append(_error("FALSIFICATION_PASS_NOT_OBSERVED", f"$.falsification_results[{idx}].evidence_class"))
-        if require_complete and item.get("case") in REQUIRED_FALSIFICATION_CASES and result != "PASS":
-            errors.append(_error("SYSTEMIC_SPEC_FALSIFICATION_NOT_PASS", f"$.falsification_results[{idx}].result"))
+            errors.append(_error("FALSIFICATION_PASS_NOT_OBSERVED", f"{path}.evidence_class"))
+        if result == "PLANNED" and evidence_class != "DESIGN_ONLY":
+            errors.append(_error("FALSIFICATION_PLANNED_MUST_BE_DESIGN_ONLY", f"{path}.evidence_class"))
+        if require_ready and case in REQUIRED_FALSIFICATION_CASES and result not in {"PASS", "PLANNED"}:
+            errors.append(_error("SYSTEMIC_SPEC_FALSIFICATION_NOT_SPECIFIED", f"{path}.result"))
     return errors
 
 
@@ -264,7 +351,7 @@ def _evidence_map_errors(payload):
 
 def _structured_list_errors(payload):
     errors = []
-    for field in ("historical_regressions", "planned_regressions", "acceptance_criteria", "current_uncertainties", "residual_risks"):
+    for field in ("historical_regressions", "planned_regressions", "acceptance_criteria", "residual_risks", "implementation_delta"):
         if not isinstance(payload.get(field), list):
             errors.append(_error(f"{field.upper()}_INVALID", f"$.{field}"))
 
@@ -280,14 +367,15 @@ def _structured_list_errors(payload):
         path = f"$.acceptance_criteria[{idx}]"
         if not isinstance(row, dict) or not all(_nonempty_string(row.get(key)) for key in ("criterion", "verification_method", "expected_result")):
             errors.append(_error("ACCEPTANCE_CRITERION_NOT_EXECUTABLE", path))
-    for idx, row in enumerate(payload.get("current_uncertainties") or []):
-        path = f"$.current_uncertainties[{idx}]"
-        if not isinstance(row, dict) or not _nonempty_string(row.get("uncertainty")) or not _string_list(row.get("evidence_needed"), allow_empty=False):
-            errors.append(_error("CURRENT_UNCERTAINTY_INVALID", path))
     for idx, row in enumerate(payload.get("residual_risks") or []):
         path = f"$.residual_risks[{idx}]"
         if not isinstance(row, dict) or not _nonempty_string(row.get("risk")) or not _string_list(row.get("evidence_refs"), allow_empty=False):
             errors.append(_error("RESIDUAL_RISK_INVALID", path))
+    for idx, row in enumerate(payload.get("implementation_delta") or []):
+        path = f"$.implementation_delta[{idx}]"
+        if not isinstance(row, dict) or not all(_nonempty_string(row.get(key)) for key in ("target", "action", "rationale")) or not _string_list(row.get("evidence_refs"), allow_empty=False):
+            errors.append(_error("IMPLEMENTATION_DELTA_INVALID", path))
+    errors.extend(_uncertainty_errors(payload))
     return errors
 
 
@@ -332,30 +420,59 @@ def _proposal_errors(payload):
     if not isinstance(invariant, dict):
         errors.append(_error("INVARIANT_INVALID", "$.invariant"))
     else:
-        status = invariant.get("validation_state")
-        if status not in {"VERIFIED", "PROPOSED", "UNRESOLVED"}:
+        state = invariant.get("validation_state")
+        if state not in {"VERIFIED", "SPECIFIED", "PROPOSED", "UNRESOLVED"}:
             errors.append(_error("INVARIANT_STATUS_INVALID", "$.invariant.validation_state"))
-        if status == "VERIFIED":
+        if state in {"VERIFIED", "SPECIFIED"}:
             if not _nonempty_string(invariant.get("statement")) or not _string_list(invariant.get("evidence_refs"), allow_empty=False) or invariant.get("missing_evidence"):
-                errors.append(_error("VALIDATED_INVARIANT_EVIDENCE_INVALID", "$.invariant"))
-        elif status in {"PROPOSED", "UNRESOLVED"} and not _string_list(invariant.get("missing_evidence"), allow_empty=False):
+                errors.append(_error("FINAL_INVARIANT_EVIDENCE_INVALID", "$.invariant"))
+        elif state in {"PROPOSED", "UNRESOLVED"} and not _string_list(invariant.get("missing_evidence"), allow_empty=False):
             errors.append(_error("NONFINAL_INVARIANT_MISSING_EVIDENCE_REQUIRED", "$.invariant.missing_evidence"))
 
     guard = payload.get("hard_guard")
     if not isinstance(guard, dict):
         errors.append(_error("HARD_GUARD_INVALID", "$.hard_guard"))
     else:
-        status = guard.get("validation_state")
-        if status not in {"VERIFIED", "PROPOSED", "UNRESOLVED"}:
+        state = guard.get("validation_state")
+        if state not in {"VERIFIED", "SPECIFIED", "PROPOSED", "UNRESOLVED"}:
             errors.append(_error("HARD_GUARD_STATUS_INVALID", "$.hard_guard.validation_state"))
-        if status == "VERIFIED":
+        if state in {"VERIFIED", "SPECIFIED"}:
             required = ("control", "enforcement_point_ref", "fail_closed_condition", "blocking_code", "observable_result")
             if not all(_nonempty_string(guard.get(key)) for key in required):
-                errors.append(_error("VALIDATED_HARD_GUARD_NOT_EXECUTABLE", "$.hard_guard"))
+                errors.append(_error("FINAL_HARD_GUARD_NOT_EXECUTABLE", "$.hard_guard"))
             if not _string_list(guard.get("evidence_refs"), allow_empty=False) or guard.get("missing_evidence"):
-                errors.append(_error("VALIDATED_HARD_GUARD_EVIDENCE_INVALID", "$.hard_guard"))
-        elif status in {"PROPOSED", "UNRESOLVED"} and not _string_list(guard.get("missing_evidence"), allow_empty=False):
+                errors.append(_error("FINAL_HARD_GUARD_EVIDENCE_INVALID", "$.hard_guard"))
+        elif state in {"PROPOSED", "UNRESOLVED"} and not _string_list(guard.get("missing_evidence"), allow_empty=False):
             errors.append(_error("NONFINAL_HARD_GUARD_MISSING_EVIDENCE_REQUIRED", "$.hard_guard.missing_evidence"))
+    return errors
+
+
+def _implementation_plan_errors(payload, *, require_ready=False):
+    errors = []
+    delta = payload.get("implementation_delta")
+    transition = payload.get("transition_plan")
+    rollback = payload.get("rollback_plan")
+    if require_ready and (not isinstance(delta, list) or not delta):
+        errors.append(_error("SYSTEMIC_SPEC_IMPLEMENTATION_DELTA_REQUIRED", "$.implementation_delta"))
+    if transition is not None and not isinstance(transition, dict):
+        errors.append(_error("TRANSITION_PLAN_INVALID", "$.transition_plan"))
+    if rollback is not None and not isinstance(rollback, dict):
+        errors.append(_error("ROLLBACK_PLAN_INVALID", "$.rollback_plan"))
+    if require_ready:
+        if not isinstance(transition, dict):
+            errors.append(_error("SYSTEMIC_SPEC_TRANSITION_PLAN_REQUIRED", "$.transition_plan"))
+        else:
+            if not _nonempty_string(transition.get("strategy")) or not _nonempty_string(transition.get("compatibility_rule")):
+                errors.append(_error("SYSTEMIC_SPEC_TRANSITION_PLAN_NOT_EXECUTABLE", "$.transition_plan"))
+            stages = transition.get("stages")
+            if not isinstance(stages, list) or not stages:
+                errors.append(_error("SYSTEMIC_SPEC_TRANSITION_STAGES_REQUIRED", "$.transition_plan.stages"))
+        if not isinstance(rollback, dict):
+            errors.append(_error("SYSTEMIC_SPEC_ROLLBACK_PLAN_REQUIRED", "$.rollback_plan"))
+        else:
+            for key in ("trigger_conditions", "inverse_actions", "protected_history", "verification"):
+                if not _string_list(rollback.get(key), allow_empty=False):
+                    errors.append(_error("SYSTEMIC_SPEC_ROLLBACK_PLAN_NOT_EXECUTABLE", f"$.rollback_plan.{key}"))
     return errors
 
 
@@ -379,9 +496,7 @@ def validate(payload):
         errors.append(_error("CAUSAL_CHAIN_INSUFFICIENT", "$.causal_chain"))
     else:
         for idx, item in enumerate(chain):
-            for err in _claim_errors(f"causal_chain[{idx}]", item):
-                err["path"] = err["path"].replace("$.causal_chain[", "$.causal_chain[")
-                errors.append(err)
+            errors.extend(_claim_errors(f"causal_chain[{idx}]", item))
 
     for field in ("origin_asset", "origin_operation", "owner"):
         errors.extend(_authority_ref_errors(field, payload.get(field)))
@@ -391,11 +506,12 @@ def validate(payload):
 
     errors.extend(_live_packet_errors(payload))
     errors.extend(_reconciliation_errors(payload))
-    errors.extend(_falsification_errors(payload, require_complete=status == "SYSTEMIC_REPAIR_SPEC"))
+    errors.extend(_falsification_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
     errors.extend(_evidence_map_errors(payload))
     errors.extend(_structured_list_errors(payload))
     errors.extend(_decision_errors(payload))
     errors.extend(_proposal_errors(payload))
+    errors.extend(_implementation_plan_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
 
     contradictions = payload.get("authority_contradictions")
     if not isinstance(contradictions, list):
@@ -412,27 +528,21 @@ def validate(payload):
     existence = payload.get("should_exist_assessment")
     if not isinstance(existence, dict):
         errors.append(_error("SHOULD_EXIST_ASSESSMENT_MISSING", "$.should_exist_assessment"))
+    elif existence.get("verdict") == "INSUFFICIENT_EVIDENCE":
+        if not _string_list(existence.get("missing_evidence"), allow_empty=False):
+            errors.append(_error("SHOULD_EXIST_MISSING_EVIDENCE_REQUIRED", "$.should_exist_assessment.missing_evidence"))
     else:
-        if existence.get("verdict") == "INSUFFICIENT_EVIDENCE":
-            if not _string_list(existence.get("missing_evidence"), allow_empty=False):
-                errors.append(_error("SHOULD_EXIST_MISSING_EVIDENCE_REQUIRED", "$.should_exist_assessment.missing_evidence"))
+        if not _string_list(existence.get("evidence_refs"), allow_empty=False):
+            errors.append(_error("SHOULD_EXIST_EVIDENCE_REQUIRED", "$.should_exist_assessment.evidence_refs"))
+        consumers = existence.get("real_consumers")
+        if not isinstance(consumers, list):
+            errors.append(_error("SHOULD_EXIST_REAL_CONSUMERS_INVALID", "$.should_exist_assessment.real_consumers"))
         else:
-            if not _string_list(existence.get("evidence_refs"), allow_empty=False):
-                errors.append(_error("SHOULD_EXIST_EVIDENCE_REQUIRED", "$.should_exist_assessment.evidence_refs"))
-            consumers = existence.get("real_consumers")
-            if not isinstance(consumers, list):
-                errors.append(_error("SHOULD_EXIST_REAL_CONSUMERS_INVALID", "$.should_exist_assessment.real_consumers"))
-            else:
-                for idx, consumer in enumerate(consumers):
-                    if not isinstance(consumer, dict) or not _nonempty_string(consumer.get("consumer")) or not _nonempty_string(consumer.get("evidence_ref")):
-                        errors.append(_error("SHOULD_EXIST_CONSUMER_NOT_EVIDENCE_BOUND", f"$.should_exist_assessment.real_consumers[{idx}]"))
+            for idx, consumer in enumerate(consumers):
+                if not isinstance(consumer, dict) or not _nonempty_string(consumer.get("consumer")) or not _nonempty_string(consumer.get("evidence_ref")):
+                    errors.append(_error("SHOULD_EXIST_CONSUMER_NOT_EVIDENCE_BOUND", f"$.should_exist_assessment.real_consumers[{idx}]"))
 
     root = payload.get("systemic_root_cause") if isinstance(payload.get("systemic_root_cause"), dict) else {}
-    packet = payload.get("live_authority_packet") if isinstance(payload.get("live_authority_packet"), dict) else {}
-    reconciliations = payload.get("execution_effect_reconciliation") if isinstance(payload.get("execution_effect_reconciliation"), list) else []
-    authority_incomplete = packet.get("status") != "COMPLETE"
-    effect_incomplete = any(isinstance(row, dict) and row.get("reconciliation_status") != "MATCH" for row in reconciliations)
-
     if root.get("status") != "ESTABLISHED" and payload.get("repair_level") != "UNDETERMINED":
         errors.append(_error("REPAIR_LEVEL_PREMATURE", "$.repair_level"))
 
@@ -442,34 +552,43 @@ def validate(payload):
         if payload.get("residual_risks"):
             errors.append(_error("RESIDUAL_RISK_BEFORE_READY_SPEC", "$.residual_risks"))
 
+    uncertainties = payload.get("current_uncertainties") if isinstance(payload.get("current_uncertainties"), list) else []
+    design_uncertainties = [u for u in uncertainties if isinstance(u, dict) and u.get("impact") == "DESIGN_BLOCKING"]
+
     if status == "NEEDS_MORE_EVIDENCE":
-        blockers = payload.get("blocking_codes")
-        uncertainties = payload.get("current_uncertainties")
-        if not isinstance(blockers, list) or not blockers:
+        if not payload.get("blocking_codes"):
             errors.append(_error("NEEDS_MORE_EVIDENCE_WITHOUT_BLOCKER", "$.blocking_codes"))
-        if not isinstance(uncertainties, list) or not uncertainties:
-            errors.append(_error("NEEDS_MORE_EVIDENCE_WITHOUT_UNCERTAINTY", "$.current_uncertainties"))
-        elif not any(isinstance(item, dict) and item.get("blocking") is True for item in uncertainties):
-            errors.append(_error("NEEDS_MORE_EVIDENCE_WITHOUT_BLOCKING_UNCERTAINTY", "$.current_uncertainties"))
-        if authority_incomplete or effect_incomplete:
-            if root.get("status") == "ESTABLISHED":
-                errors.append(_error("PREMATURE_SYSTEMIC_ROOT_CAUSE", "$.systemic_root_cause.status"))
-            if payload.get("repair_level") != "UNDETERMINED":
-                errors.append(_error("PREMATURE_REPAIR_LEVEL", "$.repair_level"))
-            if payload.get("rejected_alternatives"):
-                errors.append(_error("PREMATURE_REJECTED_ALTERNATIVES", "$.rejected_alternatives"))
+        if not design_uncertainties:
+            errors.append(_error("NEEDS_MORE_EVIDENCE_WITHOUT_DESIGN_BLOCKER", "$.current_uncertainties"))
 
     if status == "SYSTEMIC_REPAIR_SPEC":
-        if authority_incomplete:
-            errors.append(_error("SYSTEMIC_SPEC_WITHOUT_COMPLETE_LIVE_AUTHORITY", "$.live_authority_packet.status"))
-        if effect_incomplete:
-            errors.append(_error("SYSTEMIC_SPEC_WITH_UNRESOLVED_EFFECT_RECONCILIATION", "$.execution_effect_reconciliation"))
-        if contradictions:
+        packet = payload.get("live_authority_packet") if isinstance(payload.get("live_authority_packet"), dict) else {}
+        if packet.get("status") == "MISSING":
+            errors.append(_error("SYSTEMIC_SPEC_WITH_MISSING_LIVE_AUTHORITY", "$.live_authority_packet.status"))
+        assessments = packet.get("unavailable_source_assessments") if isinstance(packet.get("unavailable_source_assessments"), list) else []
+        if any(isinstance(x, dict) and x.get("impact") == "DESIGN_BLOCKING" for x in assessments):
+            errors.append(_error("SYSTEMIC_SPEC_WITH_DESIGN_BLOCKING_LIVE_AUTHORITY_GAP", "$.live_authority_packet.unavailable_source_assessments"))
+
+        rows = payload.get("execution_effect_reconciliation") if isinstance(payload.get("execution_effect_reconciliation"), list) else []
+        for idx, row in enumerate(rows):
+            if not isinstance(row, dict):
+                continue
+            rstatus = row.get("reconciliation_status")
+            impact = row.get("impact")
+            if rstatus in {"UNDECLARED_EXECUTION", "SILENT_DROP", "SOURCE_LIVE_DIVERGENCE", "OTHER_CONTRADICTION"}:
+                errors.append(_error("SYSTEMIC_SPEC_WITH_EXECUTION_CONTRADICTION", f"$.execution_effect_reconciliation[{idx}]"))
+            if rstatus == "UNRESOLVED_PRODUCER" and impact == "DESIGN_BLOCKING":
+                errors.append(_error("SYSTEMIC_SPEC_WITH_DESIGN_BLOCKING_UNRESOLVED_PRODUCER", f"$.execution_effect_reconciliation[{idx}]"))
+
+        if payload.get("authority_contradictions"):
             errors.append(_error("UNRESOLVED_AUTHORITY_CONTRADICTION", "$.authority_contradictions"))
         if payload.get("blocking_codes"):
             errors.append(_error("SYSTEMIC_SPEC_WITH_BLOCKERS", "$.blocking_codes"))
-        if payload.get("current_uncertainties"):
-            errors.append(_error("SYSTEMIC_SPEC_WITH_CURRENT_UNCERTAINTIES", "$.current_uncertainties"))
+        if design_uncertainties:
+            errors.append(_error("SYSTEMIC_SPEC_WITH_DESIGN_BLOCKING_UNCERTAINTY", "$.current_uncertainties"))
+        if (packet.get("status") == "PARTIAL" or any(isinstance(x, dict) and x.get("reconciliation_status") != "MATCH" for x in rows)) and not uncertainties:
+            errors.append(_error("SYSTEMIC_SPEC_NONCOMPLETE_EVIDENCE_WITHOUT_CLASSIFIED_UNCERTAINTY", "$.current_uncertainties"))
+
         for field in ("immediate_cause", "systemic_root_cause", "first_bad_control", "escape_control"):
             item = payload.get(field)
             if not isinstance(item, dict) or item.get("status") != "ESTABLISHED":
@@ -495,10 +614,10 @@ def validate(payload):
             item = payload.get(field)
             if not isinstance(item, dict) or item.get("status") != "RESOLVED":
                 errors.append(_error("SYSTEMIC_SPEC_AUTHORITY_REF_UNRESOLVED", f"$.{field}.status"))
-        if not isinstance(payload.get("invariant"), dict) or payload["invariant"].get("validation_state") != "VERIFIED":
-            errors.append(_error("SYSTEMIC_SPEC_INVARIANT_NOT_VALIDATED", "$.invariant.validation_state"))
-        if not isinstance(payload.get("hard_guard"), dict) or payload["hard_guard"].get("validation_state") != "VERIFIED":
-            errors.append(_error("SYSTEMIC_SPEC_HARD_GUARD_NOT_VALIDATED", "$.hard_guard.validation_state"))
+        if not isinstance(payload.get("invariant"), dict) or payload["invariant"].get("validation_state") not in {"SPECIFIED", "VERIFIED"}:
+            errors.append(_error("SYSTEMIC_SPEC_INVARIANT_NOT_SPECIFIED", "$.invariant.validation_state"))
+        if not isinstance(payload.get("hard_guard"), dict) or payload["hard_guard"].get("validation_state") not in {"SPECIFIED", "VERIFIED"}:
+            errors.append(_error("SYSTEMIC_SPEC_HARD_GUARD_NOT_SPECIFIED", "$.hard_guard.validation_state"))
         if len(payload.get("historical_regressions") or []) < 1:
             errors.append(_error("SYSTEMIC_SPEC_HISTORICAL_REGRESSION_REQUIRED", "$.historical_regressions"))
         if len(payload.get("planned_regressions") or []) < 3:
@@ -517,7 +636,6 @@ def validate(payload):
 if __name__ == "__main__":
     import json
     import sys
-
     try:
         value = json.load(sys.stdin)
     except Exception:
