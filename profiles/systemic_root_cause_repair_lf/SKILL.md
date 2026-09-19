@@ -58,7 +58,12 @@ FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> EFFECT/PRODUCER RECONCILIATION -> SY
    - observability/readback signals;
    - implementation decision closure.
 22. `implementation_package.decision_closure.open_design_decisions` must be empty for `SYSTEMIC_REPAIR_SPEC`. An implementer may retrieve fresh values; it may not choose architecture. Every `IMPLEMENTATION_PRECONDITION` must name an exact resolver, expected shape, deterministic decision rule and bounded stage, and must declare `design_effect=NONE`. If resolving it could change architecture, enforcement, authority, wiring, rollout, rollback or acceptance, reclassify it as `DESIGN_BLOCKING`.
-23. A ready repair spec must also materialize:
+23. Before `handoff_ready=true`, close producer/caller coverage and new-artifact ownership deterministically:
+   - if `live_authority_packet.material_effects_observed=true`, `implementation_package.architecture_decisions` must contain exactly one decision with `decision_id=PRODUCER_COVERAGE`;
+   - that decision must enumerate every `live_authority_packet.applicable_surfaces` value verbatim and state how material producers from that surface are handled; a caller/producer model may not be narrower than live authority unless an omitted surface is explicitly `MIGRATE_BEFORE_ENFORCE` or `EXCLUDED_WITH_PROOF`;
+   - the same decision must state `UNKNOWN_PRODUCER=BLOCK` or `UNKNOWN_PRODUCER=MIGRATE_BEFORE_ENFORCE`. Unknown or unversioned material producers may not silently bypass enforcement;
+   - every `implementation_package.deliverables[*]` with `change_type=CREATE` must be assigned before handoff. Its `dependencies` must include exact `OWNER_REF=...`, `IMPLEMENTATION_LOT_REF=...` and `FOOTPRINT_REF=...` markers; its exact `artifact_ref` must also be an `implementation_delta.target`, and that delta must evidence-bind the lot and footprint refs. Missing ownership or footprint keeps the design open and forbids `SYSTEMIC_REPAIR_SPEC`.
+24. A ready repair spec must also materialize:
    - exact `implementation_delta` describing the bounded assets/contracts/functions or policy bindings to change;
    - `transition_plan` with staged compatibility/readiness where a direct cutover could break existing consumers;
    - `rollback_plan` with inverse actions and protected historical evidence;
