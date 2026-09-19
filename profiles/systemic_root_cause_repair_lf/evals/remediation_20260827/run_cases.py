@@ -4,296 +4,346 @@ import importlib.util
 import json
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-PROFILE = HERE.parents[1]
+import jsonschema
+
+ROOT = Path(__file__).resolve().parents[2]
+GOOD = json.loads((ROOT / "examples/good_output.json").read_text())
+SCHEMA = json.loads((ROOT / "schemas/output.schema.json").read_text())
 
 
 def load_module(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec and spec.loader
-    spec.loader.exec_module(module)
-    return module
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
-validator = load_module("srcr_runtime_validate", PROFILE / "validators/runtime_validate.py")
-utility = load_module("srcr_runtime_semantic", PROFILE / "validators/runtime_semantic_utility.py")
-GOOD = json.loads((PROFILE / "examples/good_output.json").read_text(encoding="utf-8"))
+validator = load_module("validator", ROOT / "validators/runtime_validate.py")
+utility = load_module("utility", ROOT / "validators/runtime_semantic_utility.py")
 
 
 def contract_gate():
     return {"status": "PASS"}
 
 
+def schema_pass(value):
+    try:
+        jsonschema.validate(value, SCHEMA)
+        return True
+    except Exception:
+        return False
+
+
 def has_code(result, code):
-    return code in result.get("blocking_codes", [])
+    return code in (result.get("blocking_codes") or [])
 
 
-def make_needs_more():
-    value = copy.deepcopy(GOOD)
-    value["status"] = "NEEDS_MORE_EVIDENCE"
-    value["immediate_cause"] = {
-        "statement": "The observed effect suggests a caller-provenance gap, but the executing identity is not fully recoverable.",
+def claim_hypothesis(statement, refs, missing):
+    return {
+        "statement": statement,
         "status": "HYPOTHESIS",
-        "evidence_refs": ["runtime://effect/current"],
-        "missing_evidence": ["historical caller identity"],
+        "evidence_refs": refs,
+        "missing_evidence": missing,
     }
-    value["systemic_root_cause"] = {
-        "statement": "A shared lifecycle boundary may be missing producer provenance enforcement.",
-        "status": "HYPOTHESIS",
-        "evidence_refs": ["runtime://effect/current", "contract://lifecycle/current"],
-        "missing_evidence": ["complete live authority", "producer identity for every material effect"],
-    }
-    value["first_bad_control"] = {
-        "statement": "The admission boundary may not bind caller provenance before the material effect.",
-        "status": "HYPOTHESIS",
-        "evidence_refs": ["contract://lifecycle/current"],
-        "missing_evidence": ["observed pre-effect execution trace"],
-    }
-    value["escape_control"] = {
-        "statement": "Post-effect telemetry reveals the effect but may not prove the originating caller.",
-        "status": "HYPOTHESIS",
-        "evidence_refs": ["runtime://effect/current"],
-        "missing_evidence": ["complete producer trace"],
-    }
-    value["causal_chain"][1] = {
-        "statement": "The effect may cross a boundary without complete producer provenance.",
-        "status": "HYPOTHESIS",
-        "evidence_refs": ["runtime://effect/current"],
-        "missing_evidence": ["historical caller identity"],
-    }
-    value["live_authority_packet"]["status"] = "PARTIAL"
-    value["live_authority_packet"]["inspected_surfaces"] = ["SQL_FUNCTIONS", "REPOSITORY"]
-    value["live_authority_packet"]["unavailable_sources"] = ["AGENT_CONNECTOR_IDENTITY"]
-    value["execution_effect_reconciliation"][0]["observed_producer_refs"] = []
-    value["execution_effect_reconciliation"][0]["reconciliation_status"] = "UNRESOLVED_PRODUCER"
-    value["execution_effect_reconciliation"][0]["blocking"] = True
-    value["repair_level"] = "UNDETERMINED"
-    value["should_exist_assessment"] = {
-        "verdict": "INSUFFICIENT_EVIDENCE",
-        "subject": "shared lifecycle provenance boundary",
-        "real_consumers": [],
-        "elimination_impact": "Cannot be concluded until actual consumers and producer identity are reconciled.",
-        "native_or_existing_alternative": "Reuse the existing lifecycle policy and reliability primitives if the missing boundary is confirmed.",
-        "evidence_refs": ["contract://lifecycle/current"],
-        "missing_evidence": ["actual consumer inventory", "complete producer provenance"],
-    }
-    value["preferred_alternative"] = "B"
-    value["selected_alternative"] = None
-    value["rejected_alternatives"] = []
-    for row in value["falsification_results"]:
-        row["result"] = "NOT_COVERED"
-        row["evidence_ref"] = f"missing:{row['case']}"
-        row["evidence_class"] = "MISSING"
-    unresolved = {
+
+
+def unresolved_authority(label):
+    return {
         "status": "UNRESOLVED",
         "code": None,
         "evidence_ref": None,
-        "missing_evidence": ["exact governed identity"],
+        "missing_evidence": [label],
     }
-    value["origin_asset"] = copy.deepcopy(unresolved)
-    value["origin_operation"] = copy.deepcopy(unresolved)
-    value["owner"] = copy.deepcopy(unresolved)
-    value["invariant"] = {
-        "statement": "Every material effect should be attributable to a governed producer before closure.",
-        "validation_state": "PROPOSED",
-        "evidence_refs": ["contract://lifecycle/current"],
-        "missing_evidence": ["observed falsification of the proposed invariant"],
-    }
-    value["hard_guard"] = {
-        "validation_state": "PROPOSED",
-        "control": "Bind producer provenance before material effect.",
-        "enforcement_point_ref": None,
-        "fail_closed_condition": "Block when the producer cannot be verified.",
-        "blocking_code": None,
-        "observable_result": "No new material effect is committed.",
-        "evidence_refs": ["contract://lifecycle/current"],
-        "missing_evidence": ["exact enforcement point", "observed blocking code", "falsification evidence"],
-    }
-    value["current_uncertainties"] = [{
-        "uncertainty": "The historical agent/connector identity that produced every observed effect is not recoverable from current evidence.",
-        "blocking": True,
-        "evidence_needed": ["historical caller identity", "producer-to-effect reconciliation"],
+
+
+def make_needs_more():
+    o = copy.deepcopy(GOOD)
+    o["status"] = "NEEDS_MORE_EVIDENCE"
+    o["systemic_root_cause"] = claim_hypothesis(
+        "The failure class may originate at one of two materially different enforcement boundaries.",
+        ["runtime://effect/current"],
+        ["exact boundary evidence that distinguishes the two repair designs"],
+    )
+    o["immediate_cause"] = claim_hypothesis(
+        "A material effect can occur before the responsible execution boundary is established.",
+        ["runtime://effect/current"],
+        ["pre-effect trace for the unresolved boundary"],
+    )
+    o["first_bad_control"] = claim_hypothesis(
+        "Admission may fail to bind the correct enforcement boundary before effect.",
+        ["contract://operation/admission"],
+        ["exact boundary selected by the live caller"],
+    )
+    o["escape_control"] = claim_hypothesis(
+        "Post-effect evidence detects the result after the unresolved boundary has already been crossed.",
+        ["runtime://effect/current"],
+        ["current escape-path identity"],
+    )
+    o["repair_level"] = "UNDETERMINED"
+    o["live_authority_packet"]["status"] = "PARTIAL"
+    o["live_authority_packet"]["unavailable_sources"] = ["CURRENT_EXECUTION_BOUNDARY_IDENTITY"]
+    o["live_authority_packet"]["unavailable_source_assessments"] = [{
+        "source": "CURRENT_EXECUTION_BOUNDARY_IDENTITY",
+        "impact": "DESIGN_BLOCKING",
+        "rationale": "The missing source determines which of two materially different enforcement points is correct.",
+        "containment_ref": None,
     }]
-    value["residual_risks"] = []
-    value["blocking_codes"] = [
+    rec = o["execution_effect_reconciliation"][0]
+    rec["reconciliation_status"] = "UNRESOLVED_PRODUCER"
+    rec["observed_producer_refs"] = []
+    rec["impact"] = "DESIGN_BLOCKING"
+    rec["blocking"] = True
+    rec["containment_ref"] = None
+    o["selected_alternative"] = None
+    o["rejected_alternatives"] = []
+    o["origin_asset"] = unresolved_authority("systemic origin asset")
+    o["origin_operation"] = unresolved_authority("systemic origin operation")
+    o["owner"] = unresolved_authority("systemic owner")
+    o["invariant"] = {
+        "statement": "The exact boundary must be resolved before a final invariant is accepted.",
+        "validation_state": "PROPOSED",
+        "evidence_refs": ["contract://operation/admission"],
+        "missing_evidence": ["exact live enforcement boundary"],
+    }
+    o["hard_guard"] = {
+        "validation_state": "PROPOSED",
+        "control": "Block at the unresolved common boundary.",
+        "enforcement_point_ref": None,
+        "fail_closed_condition": "Block if the required boundary cannot be resolved.",
+        "blocking_code": None,
+        "observable_result": "No material effect is accepted before boundary resolution.",
+        "evidence_refs": ["contract://operation/admission"],
+        "missing_evidence": ["exact enforcement point and blocking code"],
+    }
+    o["should_exist_assessment"] = {
+        "verdict": "INSUFFICIENT_EVIDENCE",
+        "subject": "candidate enforcement boundary",
+        "real_consumers": [],
+        "elimination_impact": "Cannot be determined until the live boundary is identified.",
+        "native_or_existing_alternative": "One of two existing boundaries may be sufficient.",
+        "evidence_refs": [],
+        "missing_evidence": ["exact live consumer/boundary mapping"],
+    }
+    for item in o["falsification_results"]:
+        item["result"] = "NOT_COVERED"
+        item["evidence_ref"] = "missing:" + item["case"]
+        item["evidence_class"] = "MISSING"
+    o["implementation_delta"] = []
+    o["transition_plan"] = None
+    o["rollback_plan"] = None
+    o["current_uncertainties"] = [{
+        "uncertainty": "The live execution boundary identity can change the selected repair design.",
+        "impact": "DESIGN_BLOCKING",
+        "evidence_needed": ["exact current producer-to-boundary trace"],
+        "design_consequence": "Different evidence selects a different enforcement point and implementation delta.",
+        "containment_ref": None,
+    }]
+    o["residual_risks"] = []
+    o["blocking_codes"] = [
         "LIVE_AUTHORITY_EVIDENCE_INCOMPLETE",
         "EXECUTION_EFFECT_PRODUCER_UNRESOLVED",
     ]
-    value["evidence_map"] = [
+    o["evidence_map"] = [
         {"claim_path": "$.symptom", "evidence_refs": ["run://migration-parity/failure-1"]},
         {"claim_path": "$.immediate_cause", "evidence_refs": ["runtime://effect/current"]},
-        {"claim_path": "$.systemic_root_cause", "evidence_refs": ["runtime://effect/current", "contract://lifecycle/current"]},
-        {"claim_path": "$.first_bad_control", "evidence_refs": ["contract://lifecycle/current"]},
+        {"claim_path": "$.systemic_root_cause", "evidence_refs": ["runtime://effect/current"]},
+        {"claim_path": "$.first_bad_control", "evidence_refs": ["contract://operation/admission"]},
         {"claim_path": "$.escape_control", "evidence_refs": ["runtime://effect/current"]},
-        {"claim_path": "$.origin_asset", "evidence_refs": ["missing://origin-asset-identity"]},
-        {"claim_path": "$.origin_operation", "evidence_refs": ["missing://origin-operation-identity"]},
-        {"claim_path": "$.owner", "evidence_refs": ["missing://owner-identity"]},
+        {"claim_path": "$.origin_asset", "evidence_refs": ["missing://systemic-origin-asset"]},
+        {"claim_path": "$.origin_operation", "evidence_refs": ["missing://systemic-origin-operation"]},
+        {"claim_path": "$.owner", "evidence_refs": ["missing://systemic-owner"]},
     ]
-    value["next_gate"] = {
-        "gate": "RESOLVE_LIVE_PRODUCER_PROVENANCE",
-        "entry_condition": "Current live-authority packet remains partial or an effect producer is unresolved.",
-        "exit_condition": "All applicable execution surfaces are inspected and every material effect producer is reconciled.",
+    o["next_gate"] = {
+        "gate": "RESOLVE_DESIGN_BOUNDARY",
+        "entry_condition": "A DESIGN_BLOCKING boundary uncertainty remains.",
+        "exit_condition": "Exact evidence selects one repair boundary and removes the design blocker.",
     }
-    return value
+    return o
+
+
+def evaluate_case(name, payload, expected_valid=True, expected_codes=()):
+    r = validator.validate(payload)
+    s = utility.evaluate(payload, contract_gate())
+    schema_ok = schema_pass(payload)
+    codes = set(r.get("blocking_codes") or []) | set(s.get("blocking_codes") or [])
+    ok = (r["valid"] is expected_valid) and ((s["status"] == "PASS") is expected_valid)
+    if expected_valid:
+        ok = ok and schema_ok
+    else:
+        ok = ok and all(code in codes for code in expected_codes)
+    return name, ok, {
+        "schema": schema_ok,
+        "validator": r["status"],
+        "semantic": s["status"],
+        "codes": sorted(codes),
+    }
 
 
 def run():
     cases = []
 
-    ready = copy.deepcopy(GOOD)
-    structural = validator.validate(ready)
-    semantic = utility.evaluate(ready, contract_gate())
-    cases.append(("ready_spec_positive", structural["valid"] and semantic["status"] == "PASS"))
+    cases.append(evaluate_case("ready_spec_with_contained_historical_unknown_passes", copy.deepcopy(GOOD), True))
 
-    needs_more = make_needs_more()
-    structural = validator.validate(needs_more)
-    semantic = utility.evaluate(needs_more, contract_gate())
-    cases.append(("honest_needs_more_positive", structural["valid"] and semantic["status"] == "PASS"))
+    nme = make_needs_more()
+    cases.append(evaluate_case("design_blocker_needs_more_passes", nme, True))
 
-    partial_without_blocker = make_needs_more()
-    partial_without_blocker["blocking_codes"] = ["EXECUTION_EFFECT_PRODUCER_UNRESOLVED"]
-    r = validator.validate(partial_without_blocker)
-    cases.append(("partial_authority_requires_explicit_blocker", has_code(r, "LIVE_AUTHORITY_PARTIAL_WITHOUT_BLOCKER")))
+    x = copy.deepcopy(GOOD)
+    x["current_uncertainties"][0]["impact"] = "DESIGN_BLOCKING"
+    x["current_uncertainties"][0]["containment_ref"] = None
+    cases.append(evaluate_case(
+        "ready_spec_rejects_design_blocking_uncertainty", x, False,
+        ["SYSTEMIC_SPEC_WITH_DESIGN_BLOCKING_UNCERTAINTY"],
+    ))
 
-    premature_root = make_needs_more()
-    premature_root["systemic_root_cause"] = copy.deepcopy(GOOD["systemic_root_cause"])
-    r = validator.validate(premature_root)
-    s = utility.evaluate(premature_root, contract_gate())
-    cases.append(("incomplete_authority_cannot_establish_root_cause", has_code(r, "PREMATURE_SYSTEMIC_ROOT_CAUSE") and has_code(s, "PREMATURE_SYSTEMIC_ROOT_CAUSE")))
+    x = copy.deepcopy(GOOD)
+    x["live_authority_packet"]["unavailable_source_assessments"][0]["impact"] = "DESIGN_BLOCKING"
+    x["live_authority_packet"]["unavailable_source_assessments"][0]["containment_ref"] = None
+    cases.append(evaluate_case(
+        "ready_spec_rejects_design_blocking_authority_gap", x, False,
+        ["SYSTEMIC_SPEC_WITH_DESIGN_BLOCKING_LIVE_AUTHORITY_GAP"],
+    ))
 
-    premature_repair = make_needs_more()
-    premature_repair["repair_level"] = "ARCHITECTURAL"
-    r = validator.validate(premature_repair)
-    cases.append(("unresolved_root_cause_forces_undetermined_repair_level", has_code(r, "REPAIR_LEVEL_PREMATURE") or has_code(r, "PREMATURE_REPAIR_LEVEL")))
+    x = copy.deepcopy(GOOD)
+    x["execution_effect_reconciliation"][0]["impact"] = "DESIGN_BLOCKING"
+    x["execution_effect_reconciliation"][0]["blocking"] = True
+    x["execution_effect_reconciliation"][0]["containment_ref"] = None
+    x["blocking_codes"] = ["EXECUTION_EFFECT_PRODUCER_UNRESOLVED"]
+    cases.append(evaluate_case(
+        "ready_spec_rejects_design_blocking_unresolved_producer", x, False,
+        ["SYSTEMIC_SPEC_WITH_DESIGN_BLOCKING_UNRESOLVED_PRODUCER"],
+    ))
 
-    premature_selection = make_needs_more()
-    premature_selection["selected_alternative"] = "B"
-    r = validator.validate(premature_selection)
-    s = utility.evaluate(premature_selection, contract_gate())
-    cases.append(("nonready_status_cannot_finalize_selected_alternative", has_code(r, "FINAL_SELECTION_NOT_ALLOWED_FOR_NONREADY_STATUS") and has_code(s, "FINAL_SELECTION_NOT_ALLOWED_FOR_NONREADY_STATUS")))
+    x = copy.deepcopy(GOOD)
+    x["execution_effect_reconciliation"][0]["containment_ref"] = None
+    cases.append(evaluate_case(
+        "contained_unresolved_producer_requires_containment", x, False,
+        ["CONTAINED_UNRESOLVED_PRODUCER_REQUIRES_CONTAINMENT"],
+    ))
 
-    premature_rejection = make_needs_more()
-    premature_rejection["rejected_alternatives"] = [{
-        "id": "A",
-        "reason": "Prematurely rejected before authority closure.",
-        "evidence_refs": ["design://comparison-only"],
-    }]
-    r = validator.validate(premature_rejection)
-    cases.append(("incomplete_authority_cannot_finalize_rejected_alternatives", has_code(r, "PREMATURE_REJECTED_ALTERNATIVES")))
+    x = copy.deepcopy(GOOD)
+    x["implementation_delta"] = []
+    cases.append(evaluate_case(
+        "ready_spec_requires_implementation_delta", x, False,
+        ["SYSTEMIC_SPEC_IMPLEMENTATION_DELTA_REQUIRED"],
+    ))
 
-    residual_before_ready = make_needs_more()
-    residual_before_ready["residual_risks"] = [{
-        "risk": "This is still a current uncertainty, not a residual risk.",
-        "evidence_refs": ["runtime://effect/current"],
-    }]
-    r = validator.validate(residual_before_ready)
-    s = utility.evaluate(residual_before_ready, contract_gate())
-    cases.append(("nonready_status_cannot_use_residual_risk_bucket", has_code(r, "RESIDUAL_RISK_BEFORE_READY_SPEC") and has_code(s, "RESIDUAL_RISK_BEFORE_READY_SPEC")))
+    x = copy.deepcopy(GOOD)
+    x["transition_plan"] = None
+    cases.append(evaluate_case(
+        "ready_spec_requires_transition_plan", x, False,
+        ["SYSTEMIC_SPEC_TRANSITION_PLAN_REQUIRED"],
+    ))
 
-    preferred_candidate = make_needs_more()
-    r = validator.validate(preferred_candidate)
-    cases.append(("nonready_status_can_keep_preferred_candidate", r["valid"] and preferred_candidate["preferred_alternative"] == "B" and preferred_candidate["selected_alternative"] is None))
+    x = copy.deepcopy(GOOD)
+    x["rollback_plan"] = None
+    cases.append(evaluate_case(
+        "ready_spec_requires_rollback_plan", x, False,
+        ["SYSTEMIC_SPEC_ROLLBACK_PLAN_REQUIRED"],
+    ))
 
-    old_historical_shape = make_needs_more()
-    old_historical_shape["historical_regressions"] = ["retry should not duplicate effect"]
-    r = validator.validate(old_historical_shape)
-    s = utility.evaluate(old_historical_shape, contract_gate())
-    cases.append(("planned_scenario_cannot_masquerade_as_historical_occurrence", has_code(r, "HISTORICAL_REGRESSION_REQUIRES_OBSERVED_OCCURRENCE") and has_code(s, "HISTORICAL_REGRESSION_NOT_OBSERVED")))
+    x = copy.deepcopy(GOOD)
+    x["invariant"]["validation_state"] = "PROPOSED"
+    x["invariant"]["missing_evidence"] = ["implementation not yet observed"]
+    cases.append(evaluate_case(
+        "ready_spec_requires_specified_invariant", x, False,
+        ["SYSTEMIC_SPEC_INVARIANT_NOT_SPECIFIED"],
+    ))
 
-    old_evidence_map = make_needs_more()
-    old_evidence_map["evidence_map"] = ["runtime://effect/current", "contract://lifecycle/current"]
-    r = validator.validate(old_evidence_map)
-    s = utility.evaluate(old_evidence_map, contract_gate())
-    cases.append(("global_reference_bag_is_not_claim_evidence_map", has_code(r, "EVIDENCE_MAP_ENTRY_INVALID") and has_code(s, "CLAIM_EVIDENCE_MAP_INVALID")))
+    x = copy.deepcopy(GOOD)
+    x["falsification_results"][0]["result"] = "PASS"
+    x["falsification_results"][0]["evidence_class"] = "DESIGN_ONLY"
+    cases.append(evaluate_case(
+        "design_only_falsification_cannot_pass", x, False,
+        ["FALSIFICATION_PASS_NOT_OBSERVED"],
+    ))
 
-    established_without_refs = copy.deepcopy(GOOD)
-    established_without_refs["systemic_root_cause"]["evidence_refs"] = []
-    r = validator.validate(established_without_refs)
-    cases.append(("established_root_cause_requires_exact_evidence", has_code(r, "SUPPORTED_CLAIM_EVIDENCE_REQUIRED")))
+    x = copy.deepcopy(GOOD)
+    x["falsification_results"][0]["evidence_class"] = "OBSERVED_TEST"
+    cases.append(evaluate_case(
+        "planned_falsification_must_remain_design_only", x, False,
+        ["FALSIFICATION_PLANNED_MUST_BE_DESIGN_ONLY"],
+    ))
 
-    resolved_owner_without_ref = copy.deepcopy(GOOD)
-    resolved_owner_without_ref["owner"]["evidence_ref"] = None
-    r = validator.validate(resolved_owner_without_ref)
-    cases.append(("resolved_owner_requires_authority_evidence", has_code(r, "RESOLVED_AUTHORITY_EVIDENCE_REQUIRED")))
+    x = make_needs_more()
+    x["selected_alternative"] = "B"
+    cases.append(evaluate_case(
+        "nonready_final_selection_rejected", x, False,
+        ["FINAL_SELECTION_NOT_ALLOWED_FOR_NONREADY_STATUS"],
+    ))
 
-    unknown_preferred = make_needs_more()
-    unknown_preferred["preferred_alternative"] = "NOT_DECLARED"
-    r = validator.validate(unknown_preferred)
-    s = utility.evaluate(unknown_preferred, contract_gate())
-    cases.append(("preferred_alternative_must_exist", has_code(r, "PREFERRED_ALTERNATIVE_NOT_DECLARED") and has_code(s, "PREFERRED_ALTERNATIVE_NOT_DECLARED")))
+    x = make_needs_more()
+    x["residual_risks"] = [{"risk": "premature risk", "evidence_refs": ["runtime://effect/current"]}]
+    cases.append(evaluate_case(
+        "nonready_residual_risk_rejected", x, False,
+        ["RESIDUAL_RISK_BEFORE_READY_SPEC"],
+    ))
 
-    design_pass = copy.deepcopy(GOOD)
-    design_pass["falsification_results"][0]["evidence_class"] = "DESIGN_ONLY"
-    design_pass["falsification_results"][0]["evidence_ref"] = "design://preferred-alternative"
-    r = validator.validate(design_pass)
-    s = utility.evaluate(design_pass, contract_gate())
-    cases.append(("design_only_falsification_cannot_pass", has_code(r, "FALSIFICATION_PASS_NOT_OBSERVED") and has_code(s, "FALSIFICATION_PASS_NOT_OBSERVED")))
+    x = make_needs_more()
+    x["current_uncertainties"][0]["impact"] = "NON_BLOCKING_HISTORICAL"
+    x["current_uncertainties"][0]["containment_ref"] = "$.hard_guard"
+    cases.append(evaluate_case(
+        "needs_more_requires_design_blocker", x, False,
+        ["NEEDS_MORE_EVIDENCE_WITHOUT_DESIGN_BLOCKER"],
+    ))
 
-    unresolved_ready = copy.deepcopy(GOOD)
-    unresolved_ready["execution_effect_reconciliation"][0]["observed_producer_refs"] = []
-    unresolved_ready["execution_effect_reconciliation"][0]["reconciliation_status"] = "UNRESOLVED_PRODUCER"
-    unresolved_ready["execution_effect_reconciliation"][0]["blocking"] = True
-    unresolved_ready["blocking_codes"] = ["EXECUTION_EFFECT_PRODUCER_UNRESOLVED"]
-    r = validator.validate(unresolved_ready)
-    cases.append(("ready_spec_with_unresolved_producer_rejected", has_code(r, "SYSTEMIC_SPEC_WITH_UNRESOLVED_EFFECT_RECONCILIATION")))
+    x = copy.deepcopy(GOOD)
+    x["live_authority_packet"]["unavailable_source_assessments"][0]["source"] = "DIFFERENT_SOURCE"
+    cases.append(evaluate_case(
+        "unavailable_source_assessments_must_match", x, False,
+        ["LIVE_AUTHORITY_UNAVAILABLE_ASSESSMENT_MISMATCH"],
+    ))
 
-    ready_with_uncertainty = copy.deepcopy(GOOD)
-    ready_with_uncertainty["current_uncertainties"] = [{
-        "uncertainty": "A material gap remains.",
-        "blocking": True,
-        "evidence_needed": ["missing evidence"],
-    }]
-    r = validator.validate(ready_with_uncertainty)
-    s = utility.evaluate(ready_with_uncertainty, contract_gate())
-    cases.append(("ready_spec_cannot_hide_current_uncertainty", has_code(r, "SYSTEMIC_SPEC_WITH_CURRENT_UNCERTAINTIES") and has_code(s, "SYSTEMIC_SPEC_WITH_CURRENT_UNCERTAINTIES")))
+    x = copy.deepcopy(GOOD)
+    x["execution_effect_reconciliation"][0]["reconciliation_status"] = "SOURCE_LIVE_DIVERGENCE"
+    x["execution_effect_reconciliation"][0]["impact"] = "DESIGN_BLOCKING"
+    x["execution_effect_reconciliation"][0]["blocking"] = True
+    x["authority_contradictions"] = [{"kind": "SOURCE_LIVE_DIVERGENCE"}]
+    cases.append(evaluate_case(
+        "current_authority_contradiction_blocks_ready_spec", x, False,
+        ["SYSTEMIC_SPEC_WITH_EXECUTION_CONTRADICTION"],
+    ))
 
-    non_mr02_holdout = make_needs_more()
-    non_mr02_holdout["symptom"] = {
-        "statement": "A scheduled notification was emitted but its executing worker cannot be identified.",
+    x = copy.deepcopy(GOOD)
+    x["systemic_root_cause"] = claim_hypothesis(
+        "The systemic boundary may still differ.",
+        ["runtime://effect/current"],
+        ["exact root boundary"],
+    )
+    x["repair_level"] = "SYSTEMIC_ORIGIN"
+    cases.append(evaluate_case(
+        "unestablished_root_cannot_have_final_repair_level", x, False,
+        ["REPAIR_LEVEL_PREMATURE"],
+    ))
+
+    holdout = make_needs_more()
+    holdout["symptom"] = {
+        "statement": "A scheduled notification was emitted but the current worker path cannot be resolved.",
         "status": "OBSERVED",
         "evidence_refs": ["runtime://notification-ledger/effect-42"],
         "missing_evidence": [],
     }
-    non_mr02_holdout["execution_effect_reconciliation"] = [{
-        "effect": "notification dispatch",
-        "observed_ref": "runtime://notification-ledger/effect-42",
-        "declared_producer": "notification scheduler",
-        "declared_producer_ref": "contract://notification/scheduler",
-        "observed_producer_refs": [],
-        "reconciliation_status": "UNRESOLVED_PRODUCER",
-        "blocking": True,
-    }]
-    r = validator.validate(non_mr02_holdout)
-    s = utility.evaluate(non_mr02_holdout, contract_gate())
-    cases.append(("non_mr02_holdout_remains_honest_without_final_decision", r["valid"] and s["status"] == "PASS"))
+    cases.append(evaluate_case("non_mr02_design_blocking_holdout_stays_needs_more", holdout, True))
 
-    legacy_mr02_semantics = make_needs_more()
-    legacy_mr02_semantics["systemic_root_cause"] = copy.deepcopy(GOOD["systemic_root_cause"])
-    legacy_mr02_semantics["repair_level"] = "ARCHITECTURAL"
-    legacy_mr02_semantics["selected_alternative"] = "B"
-    legacy_mr02_semantics["rejected_alternatives"] = copy.deepcopy(GOOD["rejected_alternatives"])
-    r = validator.validate(legacy_mr02_semantics)
-    cases.append((
-        "mr02_postfix_definitive_semantics_now_rejected",
-        has_code(r, "PREMATURE_SYSTEMIC_ROOT_CAUSE")
-        and (has_code(r, "PREMATURE_REPAIR_LEVEL") or has_code(r, "REPAIR_LEVEL_PREMATURE"))
-        and has_code(r, "FINAL_SELECTION_NOT_ALLOWED_FOR_NONREADY_STATUS")
-        and has_code(r, "PREMATURE_REJECTED_ALTERNATIVES"),
-    ))
+    x = copy.deepcopy(GOOD)
+    x["current_uncertainties"][0]["impact"] = "IMPLEMENTATION_PRECONDITION"
+    x["current_uncertainties"][0]["design_consequence"] = "No architecture change; exact inventory is required before activating the bounded stage."
+    x["execution_effect_reconciliation"][0]["impact"] = "IMPLEMENTATION_PRECONDITION"
+    x["live_authority_packet"]["unavailable_source_assessments"][0]["impact"] = "IMPLEMENTATION_PRECONDITION"
+    cases.append(evaluate_case("ready_spec_allows_implementation_precondition", x, True))
 
     malformed = [None, [], {}, {"status": "SYSTEMIC_REPAIR_SPEC"}]
-    cases.append(("malformed_fail_closed_no_crash", all(validator.validate(item)["valid"] is False for item in malformed)))
+    ok = all(validator.validate(item)["valid"] is False for item in malformed)
+    cases.append(("malformed_fail_closed_no_crash", ok, {}))
 
-    ok = all(value for _, value in cases)
+    passed = sum(1 for _, ok, _ in cases if ok)
     print(json.dumps({
-        "suite": "SYSTEMIC_ROOT_CAUSE_REPAIR_STATUS_CONDITIONAL_SEMANTICS_20260919",
+        "suite": "SYSTEMIC_ROOT_CAUSE_REPAIR_SPEC_READINESS_20260919",
         "evidence_class": "STRUCTURAL_AND_SEMANTIC_REGRESSION_NOT_LIVE_PROFILE_EXECUTION",
-        "passed": sum(1 for _, value in cases if value),
+        "passed": passed,
         "total": len(cases),
-        "cases": [{"case": name, "ok": value} for name, value in cases],
+        "cases": [{"case": n, "ok": ok, "details": d} for n, ok, d in cases],
     }, ensure_ascii=False, indent=2))
-    return 0 if ok else 1
+    return 0 if passed == len(cases) else 1
 
 
 if __name__ == "__main__":

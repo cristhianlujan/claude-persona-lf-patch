@@ -88,12 +88,13 @@
     }
   ],
   "live_authority_packet": {
-    "status": "COMPLETE",
+    "status": "PARTIAL",
     "observed_at": "2026-09-19T12:00:00Z",
     "applicable_surfaces": [
       "SQL_FUNCTIONS",
       "REPOSITORY",
-      "DEPLOYED_RUNTIME"
+      "DEPLOYED_RUNTIME",
+      "AGENT_CONNECTOR_IDENTITY"
     ],
     "inspected_surfaces": [
       "SQL_FUNCTIONS",
@@ -106,7 +107,17 @@
       "runtime://migration-worker/current"
     ],
     "material_effects_observed": true,
-    "unavailable_sources": []
+    "unavailable_sources": [
+      "HISTORICAL_AGENT_CONNECTOR_IDENTITY"
+    ],
+    "unavailable_source_assessments": [
+      {
+        "source": "HISTORICAL_AGENT_CONNECTOR_IDENTITY",
+        "impact": "NON_BLOCKING_HISTORICAL",
+        "rationale": "Historical caller attribution is incomplete, but the selected pre-apply boundary applies regardless of which historical caller produced the prior effect.",
+        "containment_ref": "$.hard_guard"
+      }
+    ]
   },
   "execution_effect_reconciliation": [
     {
@@ -114,11 +125,11 @@
       "observed_ref": "supabase://migration-ledger/current-effect",
       "declared_producer": "governed migration apply",
       "declared_producer_ref": "contract://migration/apply-producer",
-      "observed_producer_refs": [
-        "runtime://migration-worker/current"
-      ],
-      "reconciliation_status": "MATCH",
-      "blocking": false
+      "observed_producer_refs": [],
+      "reconciliation_status": "UNRESOLVED_PRODUCER",
+      "blocking": false,
+      "impact": "NON_BLOCKING_HISTORICAL",
+      "containment_ref": "$.hard_guard"
     }
   ],
   "authority_contradictions": [],
@@ -213,51 +224,67 @@
   "falsification_results": [
     {
       "case": "bypass",
-      "result": "PASS",
-      "evidence_ref": "test://bypass/run-1",
-      "evidence_class": "OBSERVED_TEST"
+      "result": "PLANNED",
+      "evidence_ref": "design://bypass",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute the exact candidate repair against the bypass scenario before implementation closure.",
+      "expected_result": "The repair blocks or safely handles the bypass scenario without duplicate or unauthorized effect."
     },
     {
       "case": "retry",
-      "result": "PASS",
-      "evidence_ref": "test://retry/run-1",
-      "evidence_class": "OBSERVED_TEST"
+      "result": "PLANNED",
+      "evidence_ref": "design://retry",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute the exact candidate repair against the retry scenario before implementation closure.",
+      "expected_result": "The repair blocks or safely handles the retry scenario without duplicate or unauthorized effect."
     },
     {
       "case": "concurrency",
-      "result": "PASS",
-      "evidence_ref": "test://concurrency/run-1",
-      "evidence_class": "OBSERVED_TEST"
+      "result": "PLANNED",
+      "evidence_ref": "design://concurrency",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute the exact candidate repair against the concurrency scenario before implementation closure.",
+      "expected_result": "The repair blocks or safely handles the concurrency scenario without duplicate or unauthorized effect."
     },
     {
       "case": "partial_failure",
-      "result": "PASS",
-      "evidence_ref": "test://partial/run-1",
-      "evidence_class": "OBSERVED_TEST"
+      "result": "PLANNED",
+      "evidence_ref": "design://partial_failure",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute the exact candidate repair against the partial_failure scenario before implementation closure.",
+      "expected_result": "The repair blocks or safely handles the partial_failure scenario without duplicate or unauthorized effect."
     },
     {
       "case": "stale_state",
-      "result": "PASS",
-      "evidence_ref": "test://stale/run-1",
-      "evidence_class": "OBSERVED_TEST"
+      "result": "PLANNED",
+      "evidence_ref": "design://stale_state",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute the exact candidate repair against the stale_state scenario before implementation closure.",
+      "expected_result": "The repair blocks or safely handles the stale_state scenario without duplicate or unauthorized effect."
     },
     {
       "case": "interrupted_execution",
-      "result": "PASS",
-      "evidence_ref": "test://interrupt/run-1",
-      "evidence_class": "OBSERVED_TEST"
+      "result": "PLANNED",
+      "evidence_ref": "design://interrupted_execution",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute the exact candidate repair against the interrupted_execution scenario before implementation closure.",
+      "expected_result": "The repair blocks or safely handles the interrupted_execution scenario without duplicate or unauthorized effect."
     },
     {
       "case": "replay_or_duplicate",
-      "result": "PASS",
-      "evidence_ref": "test://replay/run-1",
-      "evidence_class": "OBSERVED_TEST"
+      "result": "PLANNED",
+      "evidence_ref": "design://replay_or_duplicate",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute the exact candidate repair against the replay_or_duplicate scenario before implementation closure.",
+      "expected_result": "The repair blocks or safely handles the replay_or_duplicate scenario without duplicate or unauthorized effect."
     },
     {
       "case": "undeclared_or_unversioned_caller",
-      "result": "PASS",
-      "evidence_ref": "test://caller-provenance/run-1",
-      "evidence_class": "OBSERVED_TEST"
+      "result": "PLANNED",
+      "evidence_ref": "design://undeclared_or_unversioned_caller",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute the exact candidate repair against the undeclared_or_unversioned_caller scenario before implementation closure.",
+      "expected_result": "The repair blocks or safely handles the undeclared_or_unversioned_caller scenario without duplicate or unauthorized effect."
     }
   ],
   "origin_asset": {
@@ -281,12 +308,11 @@
   "invariant": {
     "statement": "A live migration may apply only after exact source identity and digest are reserved and current.",
     "evidence_refs": [
-      "test://bypass/run-1",
-      "test://retry/run-1",
+      "contract://migration/pre-apply",
       "gate://A2R_PARITY"
     ],
     "missing_evidence": [],
-    "validation_state": "VERIFIED"
+    "validation_state": "SPECIFIED"
   },
   "hard_guard": {
     "control": "Pre-apply source identity reservation gate.",
@@ -295,11 +321,11 @@
     "blocking_code": "MIGRATION_SOURCE_IDENTITY_NOT_CURRENT",
     "observable_result": "No live migration effect occurs and a deterministic blocking code is emitted.",
     "evidence_refs": [
-      "test://bypass/run-1",
-      "test://stale/run-1"
+      "contract://migration/pre-apply",
+      "gate://A2R_PARITY"
     ],
     "missing_evidence": [],
-    "validation_state": "VERIFIED"
+    "validation_state": "SPECIFIED"
   },
   "acceptance_criteria": [
     {
@@ -349,7 +375,17 @@
       "expected_result": "Block with currentness mismatch."
     }
   ],
-  "current_uncertainties": [],
+  "current_uncertainties": [
+    {
+      "uncertainty": "The exact historical agent or connector identity for one prior migration effect is no longer recoverable.",
+      "impact": "NON_BLOCKING_HISTORICAL",
+      "evidence_needed": [
+        "historical caller identity linked to the prior effect"
+      ],
+      "design_consequence": "No repair-design change: the selected boundary is caller-independent and contains any caller that reaches the apply path.",
+      "containment_ref": "$.hard_guard"
+    }
+  ],
   "residual_risks": [
     {
       "risk": "Legacy migrations may require grandfathered classification outside the repaired boundary.",
@@ -416,7 +452,64 @@
   "blocking_codes": [],
   "next_gate": {
     "gate": "OWNER_IMPLEMENTATION",
-    "entry_condition": "The systemic repair spec remains evidence-complete and all falsification cases stay PASS on the exact source revision.",
-    "exit_condition": "The owning implementation operation applies the bounded repair and passes its governed readback."
+    "entry_condition": "The systemic repair spec remains evidence-bound and no DESIGN_BLOCKING uncertainty appears.",
+    "exit_condition": "The owning implementation operation applies the bounded stages and converts planned falsifications into observed verification before closure."
+  },
+  "implementation_delta": [
+    {
+      "target": "contract://migration/pre-apply",
+      "action": "Require exact source identity and digest reservation before any live migration effect.",
+      "rationale": "Moves parity protection from post-effect detection to the first preventable boundary.",
+      "evidence_refs": [
+        "run://migration-parity/failure-1",
+        "gate://A2R_PARITY"
+      ]
+    },
+    {
+      "target": "governed migration apply caller set",
+      "action": "Connect callers to the existing reservation boundary before enforcement is activated for that caller set.",
+      "rationale": "Preserves compatibility while moving consumers onto the common guard.",
+      "evidence_refs": [
+        "contract://migration/apply"
+      ]
+    }
+  ],
+  "transition_plan": {
+    "strategy": "Adopt the common reservation boundary before enabling fail-closed enforcement for each bounded consumer set.",
+    "compatibility_rule": "Consumers not yet proven ready keep baseline behavior until their explicit adoption stage; no blanket switch is permitted.",
+    "stages": [
+      {
+        "stage_id": "ADOPT",
+        "entry_condition": "Exact consumer set and current source binding are known.",
+        "changes": [
+          "Connect the bounded consumer set to the existing source-identity reservation boundary."
+        ],
+        "exit_condition": "Consumer set demonstrates the reservation path without changing unrelated consumers.",
+        "rollback_scope": "Restore only the bounded consumer-set binding."
+      },
+      {
+        "stage_id": "ENFORCE",
+        "entry_condition": "The bounded consumer set passed adoption readback.",
+        "changes": [
+          "Enable fail-closed pre-apply enforcement for the bounded consumer set."
+        ],
+        "exit_condition": "Valid applies succeed and stale/missing identity attempts block deterministically.",
+        "rollback_scope": "Disable enforcement only for the bounded consumer set while preserving evidence."
+      }
+    ]
+  },
+  "rollback_plan": {
+    "trigger_conditions": [
+      "Valid governed applies are blocked or unrelated consumers change behavior."
+    ],
+    "inverse_actions": [
+      "Restore the prior consumer binding and pre-apply enforcement definition for the bounded stage."
+    ],
+    "protected_history": [
+      "Do not rewrite historical migration executions, parity failures or effect receipts."
+    ],
+    "verification": [
+      "Re-read exact function/contract identity and rerun parity/readback after rollback."
+    ]
   }
 }
