@@ -38,6 +38,18 @@ begin
   ) then raise exception 'RUNTIME_UPDATE_ROUTE_BINDING_MISSING'; end if;
 end $pre$;
 
+-- Candidate operations must not remain Router-active before exact-revision
+-- qualification. Preserve the canonical binding but make it non-routable
+-- until governed promotion completes.
+update public.lf_router_action_registry
+set status='CANDIDATO_READ_ONLY',
+    updated_at=now(),
+    updated_by_execution_id='EXEC-RUNTIME-UPDATE-REENABLE-20260919-001'
+where asset_type='OPERATION_CODE'
+  and action_code='RUNTIME_UPDATE'
+  and operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
+  and status='ACTIVE';
+
 update public.lf_operation_step_contracts
 set resolver_ref = case
       when step_id='router' then resolver_ref
