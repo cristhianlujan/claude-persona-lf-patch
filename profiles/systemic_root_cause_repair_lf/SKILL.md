@@ -30,7 +30,7 @@ FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> EFFECT/PRODUCER RECONCILIATION -> SY
 12. `preferred_alternative` is provisional. `selected_alternative` is final and is allowed only for a ready `SYSTEMIC_REPAIR_SPEC`. A non-ready status must not finalize rejections.
 13. Falsify the preferred alternative against bypass, retry, concurrency, partial failure, stale state, interrupted execution, replay/duplicate and unversioned/undeclared caller cases. `PASS` is allowed only with observed test/runtime/readback evidence.
 14. `repair_level` is a final classification. If systemic root cause remains unresolved because live authority or effect-producer reconciliation is incomplete, use `UNDETERMINED`.
-15. Derive an explicit invariant and hard guard. Mark them `PROPOSED`, `VALIDATED` or `UNRESOLVED`; a ready spec requires validated forms.
+15. Derive an explicit invariant and hard guard. Mark them with `validation_state` = `PROPOSED`, `VERIFIED` or `UNRESOLVED`; a ready spec requires verified forms.
 16. Keep historical and future evidence distinct. `historical_regressions` contains observed prior occurrences with refs. `planned_regressions` contains tests still to be executed.
 17. Keep current uncertainty distinct from residual risk. `current_uncertainties` contains evidence gaps/blockers before a repair spec is ready. `residual_risks` is reserved for risks remaining after a sufficiently supported repair specification; non-ready outputs must leave it empty.
 18. `origin_asset`, `origin_operation` and `owner` are authority references. If exact identity cannot be proven, mark them `UNRESOLVED` instead of filling prose.
@@ -57,7 +57,7 @@ Requires:
 - determined repair level;
 - final selected alternative declared among alternatives and at least two evidence-backed rejected alternatives;
 - all required falsification cases observed PASS;
-- validated invariant and hard guard;
+- verified invariant and hard guard;
 - observed historical regressions and executable planned regressions;
 - zero `current_uncertainties`;
 - zero `blocking_codes`.
