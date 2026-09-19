@@ -613,6 +613,7 @@ jobs:
           LF_MIGRATION_CLASSIFICATION_BASELINE_END: "20260822195004"
           LF_MIGRATION_GRANDFATHERED_COUNT: "154"
           LF_MIGRATION_GRANDFATHERED_SHA256: "f6694a57d984bb02266630c12151e6334ef40535d17f7986be6e1820956186a5"
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           if [ -z "${PGPASSWORD:-}" ]; then
@@ -676,6 +677,134 @@ jobs:
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(cardinality(statements),0)::text from supabase_migrations.schema_migrations where version=any('${LF_MANAGED_VERSIONS}'::text[]) order by version" > "$RUNNER_TEMP/lf-migration-statement-counts.csv"
           export LF_MIGRATION_STATEMENT_COUNTS_CSV="$RUNNER_TEMP/lf-migration-statement-counts.csv"
 
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select g.execution_id,e.status,e.operation_code,coalesce(g.receipt->>'repository',''),coalesce(g.receipt->>'target_path',''),coalesce(g.receipt->>'migration_version',''),coalesce(g.receipt->>'migration_name',''),coalesce(g.receipt->>'pr_number',''),coalesce(g.receipt->>'pr_head_sha',''),coalesce(g.receipt->>'source_blob',''),coalesce(g.receipt->>'write_readback',''),coalesce(g.receipt->>'currentness_result',''),coalesce(g.receipt->>'ddl_replayed',''),encode(convert_to(coalesce(array_to_string(m.statements,chr(10)),''),'UTF8'),'hex'),coalesce(cardinality(m.statements),0)::text from public.lf_operation_effect_guard g join public.lf_operation_execution e using(execution_id) join supabase_migrations.schema_migrations m on m.version=g.receipt->>'migration_version' and m.name=g.receipt->>'migration_name' where g.effect_scope like 'MIGRATION_OWNER_CURRENTNESS:%' and g.state='SUCCEEDED' and g.receipt->>'schema_version'='lf-migration-owner-currentness/v1' order by g.resolved_at desc nulls last,g.execution_id" > "$RUNNER_TEMP/lf-migration-owner-currentness.csv"
+
+          python3 - <<'PY' > "$RUNNER_TEMP/lf-migration-external-owner-currentness.json"
+          import csv
+          import hashlib
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ.get("GITHUB_TOKEN", "").strip()
+          if not token:
+              raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_GITHUB_TOKEN_MISSING")
+
+          def github_json(path):
+              request = urllib.request.Request(
+                  f"https://api.github.com/repos/{repo}/{path}",
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {token}",
+                      "User-Agent": "lf-migration-owner-currentness-v1",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      return json.loads(response.read().decode("utf-8"))
+              except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                  raise SystemExit(
+                      f"FAIL_LF_MIGRATION_EXTERNAL_OWNER_GITHUB_READ:{path}:{type(exc).__name__}"
+                  ) from exc
+
+          owner_rows = []
+          seen = set()
+          with open(os.path.join(os.environ["RUNNER_TEMP"], "lf-migration-owner-currentness.csv"), newline="", encoding="utf-8") as handle:
+              for row in csv.reader(handle):
+                  if not row:
+                      continue
+                  if len(row) != 15:
+                      raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_DB_ROW")
+                  (
+                      execution_id,execution_status,operation_code,target_repo,target_path,
+                      version,migration_name,raw_pr_number,receipt_head,receipt_blob,
+                      write_readback,currentness_result,ddl_replayed,remote_sql_hex,
+                      raw_remote_statement_count
+                  ) = row
+                  if target_repo != repo:
+                      continue
+                  if not raw_pr_number.isdigit():
+                      continue
+                  if write_readback != "PASS" or currentness_result != "OWNER_PR_EXACT_OPEN" or ddl_replayed != "false":
+                      continue
+                  if not raw_remote_statement_count.isdigit() or int(raw_remote_statement_count) < 1:
+                      continue
+                  try:
+                      remote_sql = bytes.fromhex(remote_sql_hex).decode("utf-8")
+                  except (ValueError, UnicodeDecodeError):
+                      continue
+                  remote_sql = remote_sql.replace("\r\n", "\n").replace("\r", "\n")
+                  remote_lines = [
+                      line for line in remote_sql.split("\n")
+                      if not line.lstrip().startswith("--")
+                  ]
+                  remote_sha256 = hashlib.sha256(
+                      "\n".join(remote_lines).rstrip("\n").encode("utf-8")
+                  ).hexdigest()
+
+                  pr_number = int(raw_pr_number)
+                  pr = github_json(f"pulls/{pr_number}")
+                  if pr.get("state") != "open":
+                      continue
+                  live_head = str((pr.get("head") or {}).get("sha") or "")
+                  if live_head != receipt_head:
+                      continue
+
+                  files = []
+                  page = 1
+                  while True:
+                      chunk = github_json(f"pulls/{pr_number}/files?per_page=100&page={page}")
+                      if not isinstance(chunk, list):
+                          raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_GITHUB_FILES_SHAPE")
+                      files.extend(chunk)
+                      if len(chunk) < 100:
+                          break
+                      page += 1
+                      if page > 20:
+                          raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_GITHUB_FILES_PAGINATION")
+
+                  exact = [
+                      item for item in files
+                      if item.get("filename") == target_path
+                      and item.get("sha") == receipt_blob
+                  ]
+                  if len(exact) != 1:
+                      continue
+
+                  key = (version,migration_name,target_path,pr_number,receipt_head,receipt_blob)
+                  if key in seen:
+                      continue
+                  seen.add(key)
+                  owner_rows.append({
+                      "version": version,
+                      "name": migration_name,
+                      "path": target_path,
+                      "currentness_execution_id": execution_id,
+                      "currentness_execution_status": execution_status,
+                      "operation_code": operation_code,
+                      "target_repo": target_repo,
+                      "pr_number": pr_number,
+                      "pr_state": "OPEN",
+                      "pr_head_sha": receipt_head,
+                      "source_blob": receipt_blob,
+                      "write_readback": write_readback,
+                      "currentness_result": currentness_result,
+                      "ddl_replayed": False,
+                      "remote_sha256": remote_sha256,
+                      "remote_statement_count": int(raw_remote_statement_count),
+                  })
+
+          print(json.dumps({
+              "schema_version": "lf-migration-external-owner-currentness/v1",
+              "repository": repo,
+              "complete": True,
+              "owners": owner_rows,
+          }, sort_keys=True))
+          PY
+
           shadow_dir=".lf_gate_runtime/lf_contract_check/migration_source_parity"
           rm -rf "$shadow_dir"
           mkdir -p "$shadow_dir"
@@ -683,6 +812,7 @@ jobs:
           cp "$RUNNER_TEMP/lf-grandfathered-migrations.csv" "$shadow_dir/lf-grandfathered-migrations.csv"
           cp "$RUNNER_TEMP/lf-legacy-checkpoint.csv" "$shadow_dir/lf-legacy-checkpoint.csv"
           cp "$RUNNER_TEMP/lf-migration-statement-counts.csv" "$shadow_dir/lf-migration-statement-counts.csv"
+          cp "$RUNNER_TEMP/lf-migration-external-owner-currentness.json" "$shadow_dir/lf-migration-external-owner-currentness.json"
 
       - name: Enforce required_controls through existing gate orchestrator
         if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'MIGRATION_SOURCE_PARITY')
@@ -695,13 +825,15 @@ jobs:
           LF_MIGRATION_GRANDFATHERED_COUNT: "154"
           LF_MIGRATION_GRANDFATHERED_SHA256: "f6694a57d984bb02266630c12151e6334ef40535d17f7986be6e1820956186a5"
           LF_MIGRATION_STATEMENT_COUNTS_CSV: .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv
+          LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_JSON: .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-external-owner-currentness.json
         run: |
           set -euo pipefail
           for input in \
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-post-cutover-migrations-compact.csv \
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-grandfathered-migrations.csv \
             .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-legacy-checkpoint.csv \
-            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-statement-counts.csv \
+            .lf_gate_runtime/lf_contract_check/migration_source_parity/lf-migration-external-owner-currentness.json
           do
             if [ ! -s "$input" ]; then
               echo "DECLARATIVE_REQUIRED_CONTROL_INPUT_MISSING=$input"
