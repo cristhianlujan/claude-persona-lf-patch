@@ -300,6 +300,7 @@ HUMAN_REVIEW_CONVERGENCE_HELPER = Path(__file__).with_name("P0_HUMAN_REVIEW_CONV
 DUAL_OCR_RECONCILIATION_HELPER = Path(__file__).with_name("P0_DUAL_OCR_RECONCILIATION_CONTRACT_V1.py")
 ICON_STRUCTURAL_ROLE_HELPER = Path(__file__).with_name("P0_ICON_STRUCTURAL_ROLE_REGRESSION_V1.py")
 MULTISCREEN_STRUCTURAL_GENERALIZATION_HELPER = Path(__file__).with_name("P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_REGRESSION_V3.py")
+CI_EXECUTION_PLAN_PATH = Path(".lf_ci/lf_ci_execution_plan_v2.json")
 
 
 def _runtime_extension_self_test() -> None:
@@ -525,6 +526,43 @@ def _run_multiscreen_structural_generalization_contract() -> None:
     print("PASS_P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_GATE=1/1")
 
 
+def _p0_visual_runtime_required(plan_path: Path = CI_EXECUTION_PLAN_PATH) -> bool:
+    """Resolve P0 visual applicability from the already-built unified CI plan.
+
+    Missing plan preserves the historical fail-closed behavior and runs the
+    visual contracts. A malformed plan blocks instead of silently skipping.
+    """
+    if not plan_path.exists():
+        print("P0_VISUAL_RUNTIME_APPLICABILITY=REQUIRED_FAIL_CLOSED:reason=PLAN_MISSING")
+        return True
+    try:
+        plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"FAIL_P0_VISUAL_APPLICABILITY_PLAN_INVALID:{type(exc).__name__}") from exc
+    if not isinstance(plan, dict):
+        raise SystemExit("FAIL_P0_VISUAL_APPLICABILITY_PLAN_NOT_OBJECT")
+    controls = plan.get("required_controls")
+    if not isinstance(controls, list) or any(not isinstance(item, str) for item in controls):
+        raise SystemExit("FAIL_P0_VISUAL_APPLICABILITY_REQUIRED_CONTROLS_INVALID")
+    required = "P0_VISUAL_RUNTIME" in controls
+    state = "REQUIRED" if required else "NOT_APPLICABLE"
+    print(f"P0_VISUAL_RUNTIME_APPLICABILITY={state}:source=UNIFIED_CI_PLAN")
+    return required
+
+
+def _run_p0_visual_runtime_contracts_if_required(
+    plan_path: Path = CI_EXECUTION_PLAN_PATH,
+) -> bool:
+    if not _p0_visual_runtime_required(plan_path):
+        print("PASS_P0_VISUAL_RUNTIME_NOT_APPLICABLE=4/4")
+        return False
+    _run_human_review_convergence_contract()
+    _run_dual_ocr_reconciliation_contract()
+    _run_icon_structural_role_contract()
+    _run_multiscreen_structural_generalization_contract()
+    return True
+
+
 def _p0_exact_head_external_required() -> bool:
     spec = importlib.util.spec_from_file_location("lf_ci_lane_router_runtime", CI_LANE_ROUTER)
     if spec is None or spec.loader is None:
@@ -560,10 +598,7 @@ def main() -> None:
     _runtime_extension_self_test()
     _canonical_human_review_runtime_self_test()
     _input_governance_runtime_self_test()
-    _run_human_review_convergence_contract()
-    _run_dual_ocr_reconciliation_contract()
-    _run_icon_structural_role_contract()
-    _run_multiscreen_structural_generalization_contract()
+    _run_p0_visual_runtime_contracts_if_required()
     _install_input_governance_scope_extension()
     original_pass_check = core.e16.base.pass_check
 
