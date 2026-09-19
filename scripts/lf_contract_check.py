@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.18
+LF Contract Check v0.19
 
 Sandbox validator for controlled LF governance gates.
+
+v0.19 changes:
+- Admits only the exact canonical Profile operation runtime Edge source path.
+- Keeps the broad supabase/functions/ prefix and sibling Edge Functions default-denied.
 
 v0.18 changes:
 - Admits only the exact Profile Creator governed caller Edge source path.
@@ -109,6 +113,13 @@ PROFILE_CREATOR_CALLER_EDGE_DENIED_LOOKALIKES = {
     "supabase/functions/lf-profile-creator-governance-caller-v1-copy/index.ts",
     "supabase/functions/lf-profile-creator-governance-caller-v1/child/index.ts",
 }
+PROFILE_OPERATION_RUNTIME_EDGE_PATH = "supabase/functions/run-creacion-perfil-lf/index.ts"
+PROFILE_OPERATION_RUNTIME_EDGE_DENIED_LOOKALIKES = {
+    "supabase/functions/run-creacion-perfil-lf/index.ts.bak",
+    "supabase/functions/run-creacion-perfil-lf/index-copy.ts",
+    "supabase/functions/run-creacion-perfil-lf-copy/index.ts",
+    "supabase/functions/run-creacion-perfil-lf/child/index.ts",
+}
 
 
 ALLOWED_GITHUB_EXACT = {
@@ -192,6 +203,7 @@ ALLOWED_EXACT = {
     *P0_PERSISTENCE_TEST_ALLOWED_EXACT,
     *RECONCILER_EDGE_ALLOWED_EXACT,
     PROFILE_CREATOR_CALLER_EDGE_PATH,
+    PROFILE_OPERATION_RUNTIME_EDGE_PATH,
 }
 ALLOWED_PREFIXES = [
     "sandbox/lf_contract_gate_test/",
@@ -374,6 +386,24 @@ def validate_profile_creator_edge_admission_scope() -> None:
     print(
         "PASS_PROFILE_CREATOR_EDGE_ADMISSION_SCOPE_INVARIANT: "
         f"approved=1 denied={len(PROFILE_CREATOR_CALLER_EDGE_DENIED_LOOKALIKES)} broad_prefix=denied"
+    )
+
+
+def validate_profile_operation_runtime_edge_admission_scope() -> None:
+    failures: list[str] = []
+    if "supabase/functions/" in ALLOWED_PREFIXES:
+        failures.append("supabase_functions_prefix_must_remain_denied")
+    if PROFILE_OPERATION_RUNTIME_EDGE_PATH not in ALLOWED_EXACT:
+        failures.append("profile_operation_runtime_edge_exact_missing")
+    for path in sorted(PROFILE_OPERATION_RUNTIME_EDGE_DENIED_LOOKALIKES):
+        statically_allowed = path in ALLOWED_EXACT or any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
+        if statically_allowed:
+            failures.append(f"lookalike_unexpectedly_allowed:{path}")
+    if failures:
+        fail("FAIL_PROFILE_OPERATION_RUNTIME_EDGE_ADMISSION_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_PROFILE_OPERATION_RUNTIME_EDGE_ADMISSION_SCOPE_INVARIANT: "
+        f"approved=1 denied={len(PROFILE_OPERATION_RUNTIME_EDGE_DENIED_LOOKALIKES)} broad_prefix=denied"
     )
 
 
@@ -622,6 +652,7 @@ def main() -> None:
     validate_contract()
     validate_profile_creator_workflow_admission_scope()
     validate_profile_creator_edge_admission_scope()
+    validate_profile_operation_runtime_edge_admission_scope()
     validate_operational_protocol_scope()
     validate_compact_protocol_contract()
     validate_p0_closure_evidence_scope()
