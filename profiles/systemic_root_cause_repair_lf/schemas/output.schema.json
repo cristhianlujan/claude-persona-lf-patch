@@ -757,7 +757,7 @@
       "additionalProperties": false,
       "required": [
         "statement",
-        "status",
+        "validation_state",
         "evidence_refs",
         "missing_evidence"
       ],
@@ -771,13 +771,6 @@
             {
               "type": "null"
             }
-          ]
-        },
-        "status": {
-          "enum": [
-            "VALIDATED",
-            "PROPOSED",
-            "UNRESOLVED"
           ]
         },
         "evidence_refs": {
@@ -795,6 +788,13 @@
             "type": "string",
             "minLength": 3
           }
+        },
+        "validation_state": {
+          "enum": [
+            "VERIFIED",
+            "PROPOSED",
+            "UNRESOLVED"
+          ]
         }
       }
     },
@@ -802,7 +802,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "status",
+        "validation_state",
         "control",
         "enforcement_point_ref",
         "fail_closed_condition",
@@ -812,13 +812,6 @@
         "missing_evidence"
       ],
       "properties": {
-        "status": {
-          "enum": [
-            "VALIDATED",
-            "PROPOSED",
-            "UNRESOLVED"
-          ]
-        },
         "control": {
           "anyOf": [
             {
@@ -889,6 +882,13 @@
             "type": "string",
             "minLength": 3
           }
+        },
+        "validation_state": {
+          "enum": [
+            "VERIFIED",
+            "PROPOSED",
+            "UNRESOLVED"
+          ]
         }
       }
     },
@@ -1193,15 +1193,15 @@
           },
           "invariant": {
             "properties": {
-              "status": {
-                "const": "VALIDATED"
+              "validation_state": {
+                "const": "VERIFIED"
               }
             }
           },
           "hard_guard": {
             "properties": {
-              "status": {
-                "const": "VALIDATED"
+              "validation_state": {
+                "const": "VERIFIED"
               }
             }
           },
