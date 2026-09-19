@@ -365,7 +365,15 @@ def classify_external_owner_pending(
             evidence=evidence,
             current_head=current_head,
         )
-        if version not in statement_counts:
+        raw_remote_sha = str(row.get("remote_sha256") or "").lower()
+        raw_remote_count = row.get("remote_statement_count")
+        if not re.fullmatch(r"[0-9a-f]{64}", raw_remote_sha):
+            fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_REMOTE_SHA", f"version={version}")
+        try:
+            remote_count = int(raw_remote_count)
+        except (TypeError, ValueError):
+            fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_STATEMENT_COUNT", f"version={version}")
+        if remote_count < 1:
             fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_STATEMENT_COUNT", f"version={version}")
         source_sql, source_blob = _git_external_owner_source(row, version=version)
         try:
@@ -374,8 +382,8 @@ def classify_external_owner_pending(
                 source_name=name,
                 source_sql=source_sql,
                 remote_name=name,
-                remote_sha256=remote_sha,
-                remote_statement_count=statement_counts[version],
+                remote_sha256=raw_remote_sha,
+                remote_statement_count=remote_count,
             )
         except transport.TransportNormalizationError as exc:
             fail(
@@ -414,6 +422,8 @@ def external_owner_self_test() -> None:
                 "write_readback": "PASS",
                 "currentness_result": "OWNER_PR_EXACT_OPEN",
                 "ddl_replayed": False,
+                "remote_sha256": "e" * 64,
+                "remote_statement_count": 1,
             }
         ],
     }
