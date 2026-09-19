@@ -1,0 +1,37 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.3",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+  "execution_id": "EXEC-RUNTIME-UPDATE-CANARY-20260919-001",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "contract_sha": "25d86e3914b46d8cd86d4f83a8a09cbc3ed315c6f87ab55b5c34fa42558a0ecb",
+  "judge_sha": "48d395a761a317dc22b088973e7a9fba57fe6d816f96c70402a6394e458bb645",
+  "source_sha_list": [
+    "f998f16b21c70ef5c2b92425a60863dd3b72bd33",
+    "fbc059a31d085628ee527af297548d869761d84b",
+    "f81c6b9aa4a879c42497a91bd9dba1239990eccf"
+  ],
+  "target_paths": [
+    "skills/profile_creator/contracts/runtime_update_operation_disposition_v1.json",
+    "skills/profile_creator/evals/runtime_update_operation_disposition_contract.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-19T20:31:07.304Z",
+  "operation_revision_sha256": "0cc155cce4aa8ea13e43bc167cf6a857f5e109a88b68d6513ffe55420975a9b0",
+  "evidence_refs": [
+    "supabase://public.lf_operation_execution/EXEC-RUNTIME-UPDATE-CANARY-20260919-001",
+    "supabase://public.lf_operation_execution_steps/EXEC-RUNTIME-UPDATE-CANARY-20260919-001",
+    "supabase://public.lf_operation_step_judge_bindings/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+    "github://cristhianlujan/claude-persona-lf-patch@f998f16b21c70ef5c2b92425a60863dd3b72bd33"
+  ],
+  "readback": {
+    "required_steps": 14,
+    "clean_steps": 14,
+    "runtime_route": "READY_TO_EXECUTE",
+    "qualification_current": true,
+    "runtime_activation": false,
+    "production_activation": false
+  }
+}
