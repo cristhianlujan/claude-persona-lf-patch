@@ -39,13 +39,26 @@ Antes de cualquier write:
 5. Definir rollback o fail-forward plan.
 6. No continuar si existe remote-only drift, source ambiguity, checksum mismatch o identidad no resuelta.
 
-## Uso del selector
+## Uso obligatorio del selector
+
+Antes de invocar cualquier transporte de escritura, el ejecutor debe declarar también el transporte que pretende usar. El selector valida que coincida con la decisión canónica; un mismatch bloquea antes del write.
 
 ```bash
 python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py \
   --target-type MIGRATION \
-  --migration-path supabase/migrations/20260917191749_lf_example_v1.sql
+  --migration-path supabase/migrations/20260917191749_lf_example_v1.sql \
+  --requested-executor SUPABASE_CLI_DB_PUSH_LINKED
 ```
+
+Para targets directos:
+
+```bash
+python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py \
+  --target-type FUNCTION \
+  --requested-executor SUPABASE_MCP
+```
+
+Para una `MIGRATION`, `SUPABASE_MCP`, `APPLY_MIGRATION` y cualquier executor no seleccionado deben terminar en `BLOCK_DB_WRITE_TRANSPORT_EXECUTOR_NOT_ALLOWED`. No se permite llamar al transporte primero y validar después.
 
 Salida relevante:
 
@@ -90,9 +103,20 @@ Después del write, `ACTUALIZACION_DB_LF` debe verificar:
 
 Un resultado funcional correcto con version/name distintos sigue siendo `RECONCILE_REQUIRED`, nunca `PASS_CLOSED`.
 
-## Reconciliaciones históricas
+## Reconciliación genérica de provenance
 
-Esta capacidad previene divergencias nuevas. Una migration ya aplicada bajo otra versión no se reaplica y no se corrige manipulando hashes. Se trata como reconciliación source-only del owner correspondiente, preservando el DDL ya ejecutado.
+La capacidad distingue estados de una migration ya seleccionada sin conocer ninguna identidad concreta:
+
+- `UNAPPLIED`: no existe en ledger.
+- `APPLIED_EXACT`: existe y tiene provenance gobernada exacta del write original.
+- `APPLIED_RECONCILED`: existe, no se reclama un receipt histórico, y existe una reconciliación gobernada separada.
+- `APPLIED_UNVERIFIED`: existe pero no tiene ninguna de las dos pruebas anteriores; debe bloquear.
+
+La reconciliación usa un scope dinámico `SUPABASE_MIGRATION_RECONCILIATION:<version>` y schema `lf-db-applied-source-reconciliation/v1`. Debe probar version, name y Git blob exactos, `write_readback=PASS`, `ddl_replayed=false`, `migration_source_parity=PASS` y que no se está reclamando el receipt del write original.
+
+Nunca se hardcodean PR, migration version, filename, SHA u owner dentro del mecanismo. Esos valores vienen del candidato exact-head y del readback vivo.
+
+Una migration ya aplicada bajo otra versión no se reaplica y no se corrige manipulando hashes. Se trata como reconciliación source-only del owner correspondiente, preservando el DDL ya ejecutado.
 
 ## Dependencias y activos relacionados
 
@@ -105,3 +129,5 @@ Esta capacidad previene divergencias nuevas. Una migration ya aplicada bajo otra
 ## Límites
 
 `DB_WRITE_TRANSPORT` no autoriza producción, merge, runtime activation ni bypass de parity. Toda autoridad permanece en Router, contratos/policies activos y la operación gobernada que lo consume.
+
+El selector es un pre-write guard obligatorio: si no fue invocado con el executor seleccionado, el write no debe comenzar. La reconciliación tampoco convierte un write histórico no gobernado en un write original gobernado; conserva explícitamente esa diferencia.
