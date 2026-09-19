@@ -54,6 +54,23 @@ Do not turn this soft guard into a broad deny-list. Existing hard boundaries for
 destructive actions, production, spend, irreversible effects, or explicit
 contract blocks remain unchanged.
 
+## Mandatory database-write transport guard
+
+Before any database write governed by `ACTUALIZACION_DB_LF`, resolve the active
+`DB_WRITE_TRANSPORT` capability and invoke its selector **before** calling the
+low-level transport. The executor the agent intends to use must be passed as
+`--requested-executor`; a selector mismatch is a hard block.
+
+For a migration, bind the exact `supabase/migrations/YYYYMMDDHHMMSS_name.sql`
+path. `apply_migration`, Management API timestamp minting, or any executor not
+selected by `DB_WRITE_TRANSPORT` must not be called first and reconciled later.
+
+If the live ledger already contains the migration but exact original-write
+provenance is absent, do not replay DDL and do not invent an original receipt.
+Use the generic governed reconciliation state/scope defined by
+`DB_WRITE_TRANSPORT`; migration identity, SHA, PR, owner and path come from the
+exact candidate and live readback, never from hardcoded exceptions.
+
 ## Governed profile updates
 
 When creating a patch that modifies an existing repository profile under `profiles/**`, route the operation as `ACTUALIZACION_PERFIL_LF` and apply section 15, **Protocolo de pase para actualización de perfiles**, in:

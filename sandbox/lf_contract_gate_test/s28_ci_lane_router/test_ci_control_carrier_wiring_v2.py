@@ -85,6 +85,21 @@ def main() -> None:
     require(bootstrap, "source_git_blob_sha1", "FAIL_CANDIDATE_EXACT_GIT_BLOB_NOT_BOUND")
     require(bootstrap, "lf_operation_effect_guard", "FAIL_ALREADY_APPLIED_GOVERNED_PROVENANCE_NOT_REQUIRED")
     require(bootstrap, "APPLIED_UNVERIFIED", "FAIL_ALREADY_APPLIED_UNVERIFIED_STATE_NOT_BLOCKED")
+    require(bootstrap, "SUPABASE_MIGRATION_RECONCILIATION:", "FAIL_APPLIED_RECONCILIATION_SCOPE_NOT_BOUND")
+    require(bootstrap, "lf-db-applied-source-reconciliation/v1", "FAIL_APPLIED_RECONCILIATION_SCHEMA_NOT_BOUND")
+    require(bootstrap, "APPLIED_RECONCILED", "FAIL_APPLIED_RECONCILIATION_STATE_NOT_MODELED")
+    require(bootstrap, "migration_source_parity", "FAIL_APPLIED_RECONCILIATION_PARITY_GUARD_MISSING")
+    require(bootstrap, "original_write_receipt_claimed", "FAIL_APPLIED_RECONCILIATION_ORIGINAL_RECEIPT_GUARD_MISSING")
+    require(bootstrap, "ALL_APPLIED_VERIFIED", "FAIL_APPLIED_VERIFIED_MODE_MISSING")
+
+    transport = (ROOT / "sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py").read_text(encoding="utf-8")
+    require(transport, "validate_requested_executor", "FAIL_DB_WRITE_TRANSPORT_EXECUTOR_GUARD_MISSING")
+    require(transport, "BLOCK_DB_WRITE_TRANSPORT_EXECUTOR_NOT_ALLOWED", "FAIL_DB_WRITE_TRANSPORT_WRONG_EXECUTOR_NOT_BLOCKED")
+    require(transport, "APPLIED_RECONCILED", "FAIL_DB_WRITE_TRANSPORT_RECONCILIATION_STATE_MISSING")
+
+    instructions = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    require(instructions, "Mandatory database-write transport guard", "FAIL_DB_WRITE_TRANSPORT_INVOCATION_POLICY_MISSING")
+    require(instructions, "--requested-executor", "FAIL_DB_WRITE_TRANSPORT_INVOCATION_ARGUMENT_MISSING")
 
     contract = texts["LF_CONTRACT_CHECK"]
     contract_steps = {
