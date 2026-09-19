@@ -1,21 +1,7 @@
 #!/usr/bin/env python3
-"""Deterministic semantic-utility floor for SRCR.
+"""Deterministic semantic-utility floor for SRCR specification readiness."""
 
-This layer rejects semantically premature conclusions even when the JSON shape is
-otherwise valid.
-"""
-
-CONTRADICTORY_RECONCILIATIONS = {
-    "UNDECLARED_EXECUTION",
-    "SILENT_DROP",
-    "SOURCE_LIVE_DIVERGENCE",
-    "OTHER_CONTRADICTION",
-}
-OBSERVED_FALSIFICATION_EVIDENCE = {
-    "OBSERVED_TEST",
-    "OBSERVED_RUNTIME",
-    "OBSERVED_READBACK",
-}
+OBSERVED_FALSIFICATION_EVIDENCE = {"OBSERVED_TEST", "OBSERVED_RUNTIME", "OBSERVED_READBACK"}
 CRITICAL_EVIDENCE_PATHS = {
     "$.symptom",
     "$.immediate_cause",
@@ -26,6 +12,7 @@ CRITICAL_EVIDENCE_PATHS = {
     "$.origin_operation",
     "$.owner",
 }
+CONTRADICTIONS = {"UNDECLARED_EXECUTION", "SILENT_DROP", "SOURCE_LIVE_DIVERGENCE", "OTHER_CONTRADICTION"}
 
 
 def _claim_status(payload, field):
@@ -56,30 +43,11 @@ def evaluate(payload, contract_gate):
         return {"status": "FAIL", "blocking_codes": sorted(set(codes))}
 
     status = payload.get("status")
-    packet = payload.get("live_authority_packet")
+    packet = payload.get("live_authority_packet") if isinstance(payload.get("live_authority_packet"), dict) else {}
     reconciliations = payload.get("execution_effect_reconciliation")
-    packet_status = packet.get("status") if isinstance(packet, dict) else None
-
-    if not isinstance(packet, dict):
-        codes.append("LIVE_AUTHORITY_PACKET_MISSING")
     if not isinstance(reconciliations, list):
-        codes.append("EXECUTION_EFFECT_RECONCILIATION_MISSING")
         reconciliations = []
-
-    unresolved_effects = [
-        item for item in reconciliations
-        if isinstance(item, dict) and item.get("reconciliation_status") != "MATCH"
-    ]
-    contradictions = [
-        item for item in reconciliations
-        if isinstance(item, dict) and item.get("reconciliation_status") in CONTRADICTORY_RECONCILIATIONS
-    ]
-
-    falsifications = payload.get("falsification_results")
-    if isinstance(falsifications, list):
-        for item in falsifications:
-            if isinstance(item, dict) and item.get("result") == "PASS" and item.get("evidence_class") not in OBSERVED_FALSIFICATION_EVIDENCE:
-                codes.append("FALSIFICATION_PASS_NOT_OBSERVED")
+        codes.append("EXECUTION_EFFECT_RECONCILIATION_MISSING")
 
     evidence_map = payload.get("evidence_map")
     if not isinstance(evidence_map, list) or any(not isinstance(item, dict) for item in evidence_map):
@@ -92,16 +60,61 @@ def evaluate(payload, contract_gate):
     selected = payload.get("selected_alternative")
     preferred = payload.get("preferred_alternative")
     alternative_ids = _alternative_ids(payload)
-
     if preferred is not None and preferred not in alternative_ids:
         codes.append("PREFERRED_ALTERNATIVE_NOT_DECLARED")
     if selected is not None and selected not in alternative_ids:
         codes.append("SELECTED_ALTERNATIVE_NOT_DECLARED")
 
-    root_status = _claim_status(payload, "systemic_root_cause")
-    authority_incomplete = packet_status != "COMPLETE"
-    effect_incomplete = bool(unresolved_effects)
+    falsifications = payload.get("falsification_results")
+    if isinstance(falsifications, list):
+        for item in falsifications:
+            if not isinstance(item, dict):
+                continue
+            if item.get("result") == "PASS" and item.get("evidence_class") not in OBSERVED_FALSIFICATION_EVIDENCE:
+                codes.append("FALSIFICATION_PASS_NOT_OBSERVED")
+            if item.get("result") == "PLANNED" and item.get("evidence_class") != "DESIGN_ONLY":
+                codes.append("FALSIFICATION_PLANNED_NOT_DESIGN_ONLY")
 
+    uncertainties = payload.get("current_uncertainties") if isinstance(payload.get("current_uncertainties"), list) else []
+    design_uncertainties = [
+        item for item in uncertainties
+        if isinstance(item, dict) and item.get("impact") == "DESIGN_BLOCKING"
+    ]
+    for item in uncertainties:
+        if not isinstance(item, dict):
+            continue
+        if item.get("impact") in {"IMPLEMENTATION_PRECONDITION", "NON_BLOCKING_HISTORICAL"} and not item.get("containment_ref"):
+            codes.append("NONBLOCKING_UNCERTAINTY_WITHOUT_CONTAINMENT")
+
+    assessments = packet.get("unavailable_source_assessments") if isinstance(packet.get("unavailable_source_assessments"), list) else []
+    unavailable = packet.get("unavailable_sources") if isinstance(packet.get("unavailable_sources"), list) else []
+    assessed_sources = [item.get("source") for item in assessments if isinstance(item, dict)]
+    if set(unavailable) != set(assessed_sources):
+        codes.append("LIVE_AUTHORITY_UNAVAILABLE_ASSESSMENT_MISMATCH")
+    design_authority_gaps = [
+        item for item in assessments
+        if isinstance(item, dict) and item.get("impact") == "DESIGN_BLOCKING"
+    ]
+
+    unresolved_design_effects = []
+    contained_unresolved_effects = []
+    contradictions = []
+    for item in reconciliations:
+        if not isinstance(item, dict):
+            continue
+        rstatus = item.get("reconciliation_status")
+        impact = item.get("impact")
+        if rstatus in CONTRADICTIONS:
+            contradictions.append(item)
+        elif rstatus == "UNRESOLVED_PRODUCER":
+            if impact == "DESIGN_BLOCKING":
+                unresolved_design_effects.append(item)
+            elif impact in {"IMPLEMENTATION_PRECONDITION", "NON_BLOCKING_HISTORICAL"}:
+                contained_unresolved_effects.append(item)
+                if not item.get("containment_ref"):
+                    codes.append("CONTAINED_UNRESOLVED_PRODUCER_WITHOUT_CONTAINMENT")
+
+    root_status = _claim_status(payload, "systemic_root_cause")
     if root_status != "ESTABLISHED" and payload.get("repair_level") != "UNDETERMINED":
         codes.append("PREMATURE_REPAIR_LEVEL")
 
@@ -112,35 +125,28 @@ def evaluate(payload, contract_gate):
             codes.append("RESIDUAL_RISK_BEFORE_READY_SPEC")
 
     if status == "NEEDS_MORE_EVIDENCE":
+        if not design_uncertainties:
+            codes.append("NEEDS_MORE_EVIDENCE_WITHOUT_DESIGN_BLOCKER")
         if not payload.get("blocking_codes"):
             codes.append("NEEDS_MORE_EVIDENCE_WITHOUT_BLOCKER")
-        uncertainties = payload.get("current_uncertainties")
-        if not isinstance(uncertainties, list) or not uncertainties:
-            codes.append("NEEDS_MORE_EVIDENCE_WITHOUT_UNCERTAINTY")
-        elif not any(isinstance(item, dict) and item.get("blocking") is True for item in uncertainties):
-            codes.append("NEEDS_MORE_EVIDENCE_WITHOUT_BLOCKING_UNCERTAINTY")
-
-        if authority_incomplete or effect_incomplete:
-            if root_status == "ESTABLISHED":
-                codes.append("PREMATURE_SYSTEMIC_ROOT_CAUSE")
-            if payload.get("repair_level") != "UNDETERMINED":
-                codes.append("PREMATURE_REPAIR_LEVEL")
-            if payload.get("rejected_alternatives"):
-                codes.append("PREMATURE_REJECTED_ALTERNATIVES")
 
     if status == "SYSTEMIC_REPAIR_SPEC":
-        if packet_status != "COMPLETE":
-            codes.append("SYSTEMIC_SPEC_WITHOUT_COMPLETE_LIVE_AUTHORITY")
-        if unresolved_effects:
-            codes.append("SYSTEMIC_SPEC_WITH_UNRESOLVED_EFFECT_RECONCILIATION")
+        if packet.get("status") == "MISSING":
+            codes.append("SYSTEMIC_SPEC_WITH_MISSING_LIVE_AUTHORITY")
+        if design_authority_gaps:
+            codes.append("SYSTEMIC_SPEC_WITH_DESIGN_BLOCKING_LIVE_AUTHORITY_GAP")
+        if unresolved_design_effects:
+            codes.append("SYSTEMIC_SPEC_WITH_DESIGN_BLOCKING_UNRESOLVED_PRODUCER")
         if contradictions:
             codes.append("SYSTEMIC_SPEC_WITH_EXECUTION_CONTRADICTION")
         if payload.get("authority_contradictions"):
             codes.append("UNRESOLVED_AUTHORITY_CONTRADICTION")
+        if design_uncertainties:
+            codes.append("SYSTEMIC_SPEC_WITH_DESIGN_BLOCKING_UNCERTAINTY")
         if payload.get("blocking_codes"):
             codes.append("SYSTEMIC_SPEC_WITH_BLOCKERS")
-        if payload.get("current_uncertainties"):
-            codes.append("SYSTEMIC_SPEC_WITH_CURRENT_UNCERTAINTIES")
+        if (packet.get("status") == "PARTIAL" or contained_unresolved_effects) and not uncertainties:
+            codes.append("SYSTEMIC_SPEC_NONCOMPLETE_EVIDENCE_WITHOUT_CLASSIFIED_UNCERTAINTY")
 
         for field in ("immediate_cause", "systemic_root_cause", "first_bad_control", "escape_control"):
             if _claim_status(payload, field) != "ESTABLISHED":
@@ -158,6 +164,8 @@ def evaluate(payload, contract_gate):
             for item in payload.get("rejected_alternatives") or []
             if isinstance(item, dict)
         }
+        if len(rejected_ids) < 2:
+            codes.append("REJECTED_ALTERNATIVES_INSUFFICIENT")
         if selected in rejected_ids:
             codes.append("SELECTED_ALTERNATIVE_ALSO_REJECTED")
 
@@ -170,19 +178,30 @@ def evaluate(payload, contract_gate):
                 codes.append("SYSTEMIC_SPEC_AUTHORITY_REF_UNRESOLVED")
 
         invariant = payload.get("invariant")
-        if not isinstance(invariant, dict) or invariant.get("validation_state") != "VERIFIED":
-            codes.append("SYSTEMIC_SPEC_INVARIANT_NOT_VALIDATED")
+        if not isinstance(invariant, dict) or invariant.get("validation_state") not in {"SPECIFIED", "VERIFIED"}:
+            codes.append("SYSTEMIC_SPEC_INVARIANT_NOT_SPECIFIED")
         guard = payload.get("hard_guard")
-        if not isinstance(guard, dict) or guard.get("validation_state") != "VERIFIED":
-            codes.append("SYSTEMIC_SPEC_HARD_GUARD_NOT_VALIDATED")
+        if not isinstance(guard, dict) or guard.get("validation_state") not in {"SPECIFIED", "VERIFIED"}:
+            codes.append("SYSTEMIC_SPEC_HARD_GUARD_NOT_SPECIFIED")
+
+        if not payload.get("implementation_delta"):
+            codes.append("SYSTEMIC_SPEC_IMPLEMENTATION_DELTA_REQUIRED")
+        if not isinstance(payload.get("transition_plan"), dict):
+            codes.append("SYSTEMIC_SPEC_TRANSITION_PLAN_REQUIRED")
+        if not isinstance(payload.get("rollback_plan"), dict):
+            codes.append("SYSTEMIC_SPEC_ROLLBACK_PLAN_REQUIRED")
+
+        if isinstance(falsifications, list):
+            if any(isinstance(item, dict) and item.get("result") not in {"PASS", "PLANNED"} for item in falsifications):
+                codes.append("SYSTEMIC_SPEC_FALSIFICATION_NOT_SPECIFIED")
 
     historical = payload.get("historical_regressions")
-    if isinstance(historical, list):
+    if not isinstance(historical, list):
+        codes.append("HISTORICAL_REGRESSIONS_INVALID")
+    else:
         for item in historical:
             if not isinstance(item, dict) or not item.get("occurrence_ref") or not item.get("evidence_refs"):
                 codes.append("HISTORICAL_REGRESSION_NOT_OBSERVED")
                 break
-    else:
-        codes.append("HISTORICAL_REGRESSIONS_INVALID")
 
     return {"status": "PASS" if not codes else "FAIL", "blocking_codes": sorted(set(codes))}
