@@ -41,11 +41,15 @@ Un `remote-only` no se atribuye automáticamente al PR que está siendo validado
 
 Puede clasificarse como `EXTERNAL_OWNER_PENDING` únicamente cuando la evidencia current demuestra, para la misma identidad `version + name + path`:
 
-- exactamente una ejecución owner `ACTUALIZACION_DB_LF` en estado `IN_PROGRESS`;
-- exactamente un PR abierto del mismo repositorio que contiene ese path;
-- head SHA válido y distinto del exact-head que está siendo validado;
+- exactamente un receipt durable `lf-migration-owner-currentness/v1` en `lf_operation_effect_guard`, emitido por `ACTUALIZACION_DB_LF`;
+- el receipt está `SUCCEEDED`, con `write_readback=PASS`, `currentness_result=OWNER_PR_EXACT_OPEN` y `ddl_replayed=false`;
+- el PR indicado por el receipt sigue abierto en GitHub y su head SHA sigue siendo exactamente el registrado;
+- ese PR contiene exactamente el path esperado con el Git blob registrado;
+- el head SHA es distinto del exact-head que está siendo validado;
 - source del head owner accesible;
 - contenido del source owner equivalente al ledger remoto bajo el comparador de transporte vigente.
+
+La búsqueda de ownership es dirigida por esos receipts; no se enumeran todos los PRs abiertos del repositorio.
 
 Ese `remote-only` queda fuera de la paridad del PR ajeno porque pertenece a otro carril demostrado. No se copia su migration ni se absorbe su owner.
 
