@@ -629,6 +629,33 @@ class ProfileRuntimeEngine:
     def _materialize_runtime_output(
         self, *, task: ProfileTask, model_raw_output: Any, governed_receipt: dict[str, Any]
     ) -> tuple[Any, dict[str, Any]]:
+        binding = self.repository.runtime_binding(task.profile_slug)
+        if binding is not None and binding.execution_partition is not None:
+            if not isinstance(model_raw_output, str):
+                raise LlamaTransportError("PARTITIONED_MODEL_RAW_NOT_STRING")
+            try:
+                model_payload = json.loads(model_raw_output)
+            except json.JSONDecodeError as exc:
+                raise LlamaTransportError("PARTITIONED_MODEL_RAW_JSON_INVALID") from exc
+            if not isinstance(model_payload, dict):
+                raise LlamaTransportError("PARTITIONED_MODEL_RAW_ROOT_NOT_OBJECT")
+            try:
+                materialized_payload, added = self.repository.materialize_partitioned_output(
+                    task.profile_slug, model_payload
+                )
+            except Exception as exc:
+                code = getattr(exc, "code", "PROFILE_RUNTIME_PARTITION_MATERIALIZATION_FAILED")
+                detail = getattr(exc, "detail", str(exc))
+                raise LlamaTransportError(code, detail) from exc
+            materialized = json.dumps(
+                materialized_payload, ensure_ascii=False, separators=(",", ":")
+            )
+            return materialized, {
+                "mode": "GENERIC_PARTITION_MATERIALIZATION_V1",
+                "model_raw_output_sha256": sha256_text(model_raw_output),
+                "materialized_output_sha256": sha256_text(materialized),
+                "deterministic_fields_added": added,
+            }
         if task.profile_slug != "ui_architect" or task.runtime_output_mode != "UI_PRODUCTION_SPEC":
             return model_raw_output, {
                 "mode": "MODEL_RAW_UNCHANGED",
@@ -782,9 +809,12 @@ class ProfileRuntimeEngine:
             if task.send_image_to_model: raise LlamaTransportError("QUEUE_NATIVE_IMAGE_REQUIRES_GOVERNED_ENVELOPE")
             self.repository.validate_profile_identity(task.profile_slug, task.profile_code)
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)
+            binding=self.repository.runtime_binding(task.profile_slug)
+            model_sources=self.repository.profile_model_sources(task.profile_slug,sources)
+            generation_schema=self.repository.model_generation_schema(task.profile_slug,schema.payload)
             governed_pack, governed_receipt = _governed_context(task, context_pack, profile_sources=sources, schema=schema)
-            adapter=PersistentLlamaServerAdapter(settings=self.settings,client=self.llama_client,schema=schema,structural_context=governed_pack,image_bytes=None,image_media_type=None)
-            verifier=PersistentLlamaServerVerifier(settings=self.settings,schema=schema,structural_context=governed_pack)
+            adapter=PersistentLlamaServerAdapter(settings=self.settings,client=self.llama_client,schema=schema,structural_context=governed_pack,image_bytes=None,image_media_type=None,model_profile_sources=model_sources,generation_schema=generation_schema,execution_budget=(binding.execution_budget if binding else None))
+            verifier=PersistentLlamaServerVerifier(settings=self.settings,schema=schema,structural_context=governed_pack,model_profile_sources=model_sources,generation_schema=generation_schema)
             runtime_package=self.runner.execute_profile_runtime(execution_id=f"EJECUCION_PERFIL_LF:{task.request_id}",profile_code=task.profile_code,profile_slug=task.profile_slug,profile_sources=sources,input_literal=task.input_literal,adapter=adapter,attestation_verifier=verifier,allow_test_doubles=False,lf_adapter_sources=[i.model_dump(mode="python") for i in task.lf_adapter_sources])
         except Exception as exc:
             code,detail=_failure(exc); return self._profile_failure(task=task,code=code,detail=detail,stage="RUNTIME_COMPLETION",started=started,context=context,runtime_diagnostics=_runtime_diagnostics(exc))
@@ -804,11 +834,14 @@ class ProfileRuntimeEngine:
         try:
             self.repository.validate_profile_identity(task.profile_slug, task.profile_code)
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)
+            binding=self.repository.runtime_binding(task.profile_slug)
+            model_sources=self.repository.profile_model_sources(task.profile_slug,sources)
+            generation_schema=self.repository.model_generation_schema(task.profile_slug,schema.payload)
             if task.send_image_to_model and not self.settings.allow_model_image: raise LlamaTransportError("FULL_IMAGE_MODEL_PATH_DISABLED")
             image_bytes=artifact.image_bytes() if task.send_image_to_model else None
             governed_pack, governed_receipt = _governed_context(task, prepared.pack, profile_sources=sources, schema=schema)
-            adapter=PersistentLlamaServerAdapter(settings=self.settings,client=self.llama_client,schema=schema,structural_context=governed_pack,image_bytes=image_bytes,image_media_type=artifact.image_media_type if image_bytes is not None else None)
-            verifier=PersistentLlamaServerVerifier(settings=self.settings,schema=schema,structural_context=governed_pack)
+            adapter=PersistentLlamaServerAdapter(settings=self.settings,client=self.llama_client,schema=schema,structural_context=governed_pack,image_bytes=image_bytes,image_media_type=artifact.image_media_type if image_bytes is not None else None,model_profile_sources=model_sources,generation_schema=generation_schema,execution_budget=(binding.execution_budget if binding else None))
+            verifier=PersistentLlamaServerVerifier(settings=self.settings,schema=schema,structural_context=governed_pack,model_profile_sources=model_sources,generation_schema=generation_schema)
             runtime_package=self.runner.execute_profile_runtime(execution_id=f"EJECUCION_PERFIL_LF:{task.request_id}",profile_code=task.profile_code,profile_slug=task.profile_slug,profile_sources=sources,input_literal=task.input_literal,adapter=adapter,attestation_verifier=verifier,allow_test_doubles=False,lf_adapter_sources=[i.model_dump(mode="python") for i in task.lf_adapter_sources])
         except Exception as exc:
             code,detail=_failure(exc); return self._profile_failure(task=task,code=code,detail=detail,stage="RUNTIME_COMPLETION",started=started,context=context,runtime_diagnostics=_runtime_diagnostics(exc))
