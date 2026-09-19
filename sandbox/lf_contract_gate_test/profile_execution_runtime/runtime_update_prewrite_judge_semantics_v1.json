@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "operation_code": "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+  "judge_code": "JUDGE-ACTUALIZACION-RUNTIME-EJECUCION-PERFIL-LF-PREWRITE-v1",
+  "scope": "PRE_WRITE_EXECUTION_BINDING",
+  "pass_if": [
+    "execution_id_matches_current_execution",
+    "target_type_is_operation_code",
+    "target_code_is_ejecucion_perfil_lf",
+    "target_path_matches_execution_target",
+    "execution_bound_to_target_before_change_is_true",
+    "bound_revision_is_structured",
+    "bound_revision_matches_current_resolved_revision"
+  ],
+  "fail_if": [
+    "execution_binding_missing_or_false",
+    "target_identity_mismatch",
+    "bound_revision_missing_or_unstructured",
+    "bound_revision_mismatch",
+    "target_path_mismatch",
+    "pre_write_gate_missing_or_false"
+  ],
+  "result_values": {
+    "pass": "STEP_PASS_WITH_EVIDENCE",
+    "blocked": "BLOCKED_STEP_NOT_CLEAN",
+    "return": "RETURN_TO_ROUTER"
+  },
+  "constraints": {
+    "server_assertions_required": true,
+    "caller_assertions_are_not_authority": true,
+    "no_runtime_activation": true,
+    "no_auto_promotion": true
+  }
+}
