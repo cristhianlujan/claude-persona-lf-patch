@@ -1,0 +1,18 @@
+{
+  "experiment": "SRCR_MR02_R2_ROUTE_A",
+  "source_candidate_sha256": "5f18b8c23bb439c3790c53c01099753f7f3d53cbe897b407f7da413b202827ff",
+  "repaired_candidate_sha256": "785673990b4df0ad078ebe1e44dcd0611c5ab9e3f1aa6137c9efa28aefe4c72d",
+  "scope_packet_sha256": "a83879ef5ecda695159b46123aae07275af329739584671485955ea94107dddc",
+  "producer_route": "A_NO_SCOPE_EXPANSION",
+  "prohibited_function_occurrences": 0,
+  "profile_runtime_validate": "PASS",
+  "profile_runtime_semantic_utility": "PASS",
+  "semantic_judge_b_expected_disposition": "RETURN_TO_ORCHESTRATOR",
+  "semantic_judge_b_reason": "N2 repaired; #189 remains DESIGN_BLOCKING and is inherited from #186 canonical authority.",
+  "evidence_ceiling": {
+    "canonical_ejecucion_perfil_lf": false,
+    "production_runtime_wired": false,
+    "merge_ready": false,
+    "production_verified": false
+  }
+}
