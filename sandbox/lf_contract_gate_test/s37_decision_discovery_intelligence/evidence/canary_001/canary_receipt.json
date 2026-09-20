@@ -1,0 +1,31 @@
+{
+  "schema": "s37-canary-receipt/v1",
+  "canary_id": "S37-CANARY-001",
+  "execution_date": "2026-09-13",
+  "runtime": {
+    "host": "scalora-vps",
+    "endpoint": "127.0.0.1:8080",
+    "model_path": "/opt/profile-runtime-benchmark/model/model.gguf",
+    "model_params_observed": 3085938688,
+    "quantization_observed": "Q4_K - Medium"
+  },
+  "source_facts": ["S1", "S2", "S3", "S4"],
+  "baseline_raw_sha256": "27df3c280d828a2ac3602b5a27ddc9cf9cf11236a16cd03d77ce52d0564c5a68",
+  "s37_single_prompt_raw_sha256": "804b14025419af8f5937ef43455e861f49b4be34e777ed6c0fecf3d94b82158b",
+  "observation_mode": "ORCHESTRATOR_OBSERVATION_NOT_INDEPENDENT_SEMANTIC_REVIEW",
+  "baseline_findings": [
+    "generic recommendation/personalization pattern",
+    "invented discounts/bonuses despite no authority",
+    "invented guarantees despite explicit prohibition"
+  ],
+  "single_prompt_s37_findings": [
+    "unsafe guarantee/discount inventions were not repeated",
+    "three hypotheses collapsed into variants of single-payment/segmentation",
+    "false variety remained",
+    "creditor/debtor role confusion remained",
+    "copyability claims were asserted rather than demonstrated"
+  ],
+  "verdict": "CANARY_FAIL_SINGLE_PROMPT_ARCHITECTURE_INSUFFICIENT",
+  "promotion_credit": "NONE",
+  "required_change": "use staged domain-discovery-critique-evolution architecture plus independent holdout"
+}

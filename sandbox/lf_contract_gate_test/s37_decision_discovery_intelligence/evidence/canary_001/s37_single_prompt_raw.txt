@@ -1,0 +1,45 @@
+```json
+{
+  "hypotheses": [
+    {
+      "statement": "LF puede ofrecer un plan de pago único para aumentar la recuperación de cartera.",
+      "lf_specific_sources": ["S1", "S2"],
+      "causal_mechanism": "LF ofrece un plan de pago único que permite a los acreedores recibir todo el pago en un solo pago, lo que puede aumentar la recuperación de cartera.",
+      "decision_improved": "Aumentar la recuperación de cartera.",
+      "economic_metric_to_measure": "Recaudación total.",
+      "smallest_experiment": "Ofrecer un plan de pago único a un grupo de acreedores seleccionados.",
+      "falsification_condition": "No se puede probar la hipótesis si no se ofrece un plan de pago único.",
+      "learning_loop": "Evaluar la reacción de los acreedores hacia el plan de pago único y ajustar la estrategia si es necesario.",
+      "why_not_generic": "La recuperación de cartera es un indicador específico de la estrategia de pago único.",
+      "copyability_barrier": "La implementación de un plan de pago único es difícil de copiar.",
+      "assumptions": "Los acreedores están dispuestos a pagar en un solo pago."
+    },
+    {
+      "statement": "LF puede utilizar segmentación de clientes para ofrecer un plan de pago único a los acreedores.",
+      "lf_specific_sources": ["S1", "S3"],
+      "causal_mechanism": "LF utiliza datos de clientes para segmentarlos y ofrecer un plan de pago único a los acreedores que se ajusten a la segmentación.",
+      "decision_improved": "Aumentar la recuperación de cartera y ofrecer un plan de pago único a los acreedores que se ajusten a la segmentación.",
+      "economic_metric_to_measure": "Recaudación total.",
+      "smallest_experiment": "Ofrecer un plan de pago único a un grupo de acreedores seleccionados que se ajusten a la segmentación.",
+      "falsification_condition": "No se puede probar la hipótesis si no se utiliza segmentación de clientes.",
+      "learning_loop": "Evaluar la reacción de los acreedores hacia el plan de pago único y ajustar la estrategia si es necesario.",
+      "why_not_generic": "La recuperación de cartera es un indicador específico de la estrategia de segmentación y pago único.",
+      "copyability_barrier": "La implementación de segmentación y pago único es difícil de copiar.",
+      "assumptions": "Los datos de clientes están disponibles y los acreedores se ajusten a la segmentación."
+    },
+    {
+      "statement": "LF puede ofrecer un plan de pago único a los acreedores que se ajusten a la propensión de recaudación.",
+      "lf_specific_sources": ["S1", "S3"],
+      "causal_mechanism": "LF utiliza datos de cartera para segmentar a los acreedores y ofrecer un plan de pago único a los acreedores que se ajusten a la propensión de recaudación.",
+      "decision_improved": "Aumentar la recuperación de cartera y ofrecer un plan de pago único a los acreedores que se ajusten a la propensión de recaudación.",
+      "economic_metric_to_measure": "Recaudación total.",
+      "smallest_experiment": "Ofrecer un plan de pago único a un grupo de acreedores seleccionados que se ajusten a la propensión de recaudación.",
+      "falsification_condition": "No se puede probar la hipótesis si no se utiliza propensión de recaudación.",
+      "learning_loop": "Evaluar la reacción de los acreedores hacia el plan de pago único y ajustar la estrategia si es necesario.",
+      "why_not_generic": "La recuperación de cartera es un indicador específico de la estrategia de propensión y pago único.",
+      "copyability_barrier": "La implementación de propensión y pago único es difícil de copiar.",
+      "assumptions": "Los datos de cartera están disponibles y los acreedores se ajusten a la propensión de recaudación."
+    }
+  ]
+}
+```
