@@ -4,13 +4,17 @@ import { batchOutcome, validateProfileOperationBatch } from "./batch.ts";
 
 const REPOSITORY = "cristhianlujan/claude-persona-lf-patch";
 const REPOSITORY_ID = "1244397752";
-const BRANCH = "lf/profiles/profile-creator-customer-caller-20260902";
-const REF = `refs/heads/${BRANCH}`;
+const CUSTOMER_BRANCH = "lf/profiles/profile-creator-customer-caller-20260902";
+const CUSTOMER_REF = `refs/heads/${CUSTOMER_BRANCH}`;
 const WORKFLOW_NAME = "LF Customer Profile Creator Governance Caller";
-const WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-customer-profile-creator-governance-caller.yml@${REF}`;
+const WORKFLOW_PATH = ".github/workflows/lf-customer-profile-creator-governance-caller.yml";
+const CUSTOMER_WORKFLOW_REF = `${REPOSITORY}/${WORKFLOW_PATH}@${CUSTOMER_REF}`;
+const UPDATE_REF = "refs/heads/main";
+const UPDATE_WORKFLOW_REF = `${REPOSITORY}/${WORKFLOW_PATH}@${UPDATE_REF}`;
 const AUDIENCE = "lf-profile-creator-governance-caller-v1";
 const ISSUER = "https://token.actions.githubusercontent.com";
-const CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_CREATOR_CUSTOMER_V1";
+const CUSTOMER_CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_CREATOR_CUSTOMER_V1";
+const UPDATE_CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_UPDATE_V1";
 const PROJECT_ID = "AGENTE_PROFILE_CREATOR";
 const OWNER_LANE = "CUSTOMER_PROFILES";
 const EXECUTION_ORIGIN = "AUTOMATION_PROFILE_CREATOR_DUAL_EXECUTOR";
@@ -34,7 +38,7 @@ function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
 }
 
-async function requireOidc(req: Request): Promise<JWTPayload> {
+async function requireOidc(req: Request): Promise<{ payload: JWTPayload; method: string; workflowRef: string }> {
   const authorization = req.headers.get("authorization") ?? "";
   if (!authorization.startsWith("Bearer ")) throw new Error("OIDC_BEARER_MISSING");
   const token = authorization.slice(7).trim();
@@ -43,11 +47,21 @@ async function requireOidc(req: Request): Promise<JWTPayload> {
   try { ({ payload } = await jwtVerify(token, JWKS, { issuer: ISSUER, audience: AUDIENCE, algorithms: ["RS256"] })); }
   catch { throw new Error("OIDC_TOKEN_INVALID"); }
   if (payload.repository !== REPOSITORY || String(payload.repository_id ?? "") !== REPOSITORY_ID) throw new Error("OIDC_REPOSITORY_MISMATCH");
-  if (payload.ref !== REF) throw new Error("OIDC_REF_MISMATCH");
-  if (payload.workflow_ref !== WORKFLOW_REF || payload.workflow !== WORKFLOW_NAME) throw new Error("OIDC_WORKFLOW_MISMATCH");
-  if (!new Set(["push", "workflow_dispatch"]).has(String(payload.event_name ?? ""))) throw new Error("OIDC_EVENT_MISMATCH");
+  if (payload.workflow !== WORKFLOW_NAME) throw new Error("OIDC_WORKFLOW_MISMATCH");
+  const ref = String(payload.ref ?? "");
+  const workflowRef = String(payload.workflow_ref ?? "");
+  const eventName = String(payload.event_name ?? "");
+  let method = "";
+  if (ref === CUSTOMER_REF && workflowRef === CUSTOMER_WORKFLOW_REF && new Set(["push", "workflow_dispatch"]).has(eventName)) {
+    method = CUSTOMER_CALLER_METHOD;
+  } else if (ref === UPDATE_REF && workflowRef === UPDATE_WORKFLOW_REF && eventName === "workflow_dispatch") {
+    method = UPDATE_CALLER_METHOD;
+  } else {
+    if (ref !== CUSTOMER_REF && ref !== UPDATE_REF) throw new Error("OIDC_REF_MISMATCH");
+    throw new Error("OIDC_WORKFLOW_MISMATCH");
+  }
   if (!payload.run_id || !payload.workflow_sha || !/^[0-9a-f]{40}$/.test(String(payload.workflow_sha))) throw new Error("OIDC_RUN_IDENTITY_INCOMPLETE");
-  return payload;
+  return { payload, method, workflowRef };
 }
 
 async function callRuntime(body: Record<string, unknown>): Promise<Record<string, any>> {
@@ -151,17 +165,38 @@ Deno.serve(async (req: Request) => {
   try {
     if (req.method !== "POST") return json({ outcome: "BLOCKED", code: "METHOD_NOT_ALLOWED" }, 405);
     if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return json({ outcome: "BLOCKED", code: "RUNTIME_CONFIG_MISSING" }, 500);
-    const claims = await requireOidc(req);
+    const identity = await requireOidc(req);
+    const claims = identity.payload;
     let body: Record<string, unknown>;
     try { body = await req.json(); } catch { return json({ outcome: "BLOCKED", code: "INVALID_JSON" }, 400); }
-    const caller = { method: CALLER_METHOD, repository: REPOSITORY, workflow_ref: WORKFLOW_REF, run_id: String(claims.run_id), workflow_sha: String(claims.workflow_sha), project_id: PROJECT_ID, owner_lane: OWNER_LANE, execution_origin: EXECUTION_ORIGIN, workstream_id: WORKSTREAM_ID };
+    const caller = { method: identity.method, repository: REPOSITORY, workflow_ref: identity.workflowRef, run_id: String(claims.run_id), workflow_sha: String(claims.workflow_sha), project_id: PROJECT_ID, owner_lane: OWNER_LANE, execution_origin: EXECUTION_ORIGIN, workstream_id: WORKSTREAM_ID };
 
     if (body.action === "profile_creator_init_v1") {
+      if (caller.method !== CUSTOMER_CALLER_METHOD) return json({ outcome: "BLOCKED", code: "PROFILE_CREATE_CALLER_NOT_ALLOWED", caller }, 403);
       const callerRequestId = typeof body.caller_request_id === "string" ? body.caller_request_id.trim() : "";
       const targetCode = typeof body.target_code === "string" ? body.target_code.trim() : "";
       const profileSlug = typeof body.profile_slug === "string" ? body.profile_slug.trim() : "";
       if (!callerRequestId || !TARGETS[targetCode] || TARGETS[targetCode] !== profileSlug) return json({ outcome: "BLOCKED", code: "CUSTOMER_PROFILE_TARGET_NOT_ALLOWED", caller }, 400);
       const result = await callRuntime({ action: "initialize_profile_creation_v1", caller_request_id: callerRequestId, target_code: targetCode, profile_slug: profileSlug, target_repo: REPOSITORY, caller });
+      return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "INITIALIZED" ? 201 : 409);
+    }
+
+    if (body.action === "profile_update_init_v1") {
+      if (caller.method !== UPDATE_CALLER_METHOD) return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_CALLER_NOT_ALLOWED", caller }, 403);
+      const callerRequestId = typeof body.caller_request_id === "string" ? body.caller_request_id.trim().toLowerCase() : "";
+      const targetCode = typeof body.target_code === "string" ? body.target_code.trim().toUpperCase() : "";
+      const targetPath = typeof body.target_path === "string" ? body.target_path.trim() : "";
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(callerRequestId) || !/^PERFIL-[A-Z0-9][A-Z0-9-]{2,120}$/.test(targetCode) || !targetPath) {
+        return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_INIT_INPUT_INVALID", caller }, 400);
+      }
+      const result = await callRuntime({
+        action: "initialize_profile_update_v1",
+        caller_request_id: callerRequestId,
+        target_code: targetCode,
+        target_path: targetPath,
+        target_repo: REPOSITORY,
+        caller,
+      });
       return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "INITIALIZED" ? 201 : 409);
     }
 
