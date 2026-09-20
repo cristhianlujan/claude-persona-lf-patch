@@ -1,30 +1,104 @@
 {
-  "execution_id": "EXEC-ACTUALIZACION-PERFIL-SRCR-CLOSURE-20260919-003",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-5f3f5a6c-9a8b-429d-a077-303a965374ec",
   "steps": [
     {
-      "step_id": "pre_write_execution_binding_gate",
-      "evidence_ref": "github-actions-oidc://srcr-producer-artifact-closure/pre-write",
+      "step_id": "router",
+      "evidence_ref": "supabase://public.lf_router_resolve_v1/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF/PROFILE_UPDATE",
       "evidence_payload": {
-        "execution_id": "EXEC-ACTUALIZACION-PERFIL-SRCR-CLOSURE-20260919-003",
-        "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
-        "target_path": "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
-        "write_plan": {
-          "branch": "lf/srcr-producer-artifact-closure-20260919",
-          "base": "cfd906623388f508237dfc4f18c7255a126aa24a",
-          "scope": [
-            "profiles/systemic_root_cause_repair_lf/SKILL.md",
-            "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
-            "profiles/systemic_root_cause_repair_lf/evals/eval_matrix.json",
-            "profiles/systemic_root_cause_repair_lf/examples/good_output.json"
-          ]
+        "action": "PROFILE_UPDATE",
+        "router_read": {
+          "router": "ACT-0001",
+          "status": "READY_TO_EXECUTE",
+          "action_code": "PROFILE_UPDATE",
+          "asset_version": "v0.2",
+          "operation_code": "ACTUALIZACION_PERFIL_LF"
         },
-        "pre_write_gate_passed": true,
-        "bound_revision": {
-          "revision_sha": "cfd906623388f508237dfc4f18c7255a126aa24a"
+        "step_result": "STEP_PASS_WITH_EVIDENCE",
+        "blocking_codes": []
+      }
+    },
+    {
+      "step_id": "profile_resolve",
+      "evidence_ref": "supabase://public.lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "evidence_payload": {
+        "codigo_activo": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_slug": "systemic_root_cause_repair_lf",
+        "repo_path": "profiles/systemic_root_cause_repair_lf",
+        "exact_profile_resolved": true,
+        "step_result": "STEP_PASS_WITH_EVIDENCE",
+        "blocking_codes": []
+      }
+    },
+    {
+      "step_id": "baseline_read",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@5015cb99c678dd9f5747b54b294dcbe54c46dd2e/profiles/systemic_root_cause_repair_lf",
+      "evidence_payload": {
+        "baseline_revision": "5015cb99c678dd9f5747b54b294dcbe54c46dd2e",
+        "baseline_files": [
+          "judges/mini_judge.md",
+          "SKILL.md",
+          "schemas/output.schema.json",
+          "validators/runtime_validate.py",
+          "validators/runtime_semantic_utility.py"
+        ],
+        "before_evidence": {
+          "independent_semantic_judge_wired": false,
+          "scope_authority_packet_materialized": false,
+          "semantic_result_shape_validator_present": false,
+          "absent_on_main": [
+            "contracts/scope_authority_packet.md",
+            "judges/systemic_root_cause_semantic_judge.md",
+            "validators/validate_semantic_judge_result.py"
+          ],
+          "existing_anchor_blob_sha": "c6a6dd294527335dd4a1cdcf9ecc5bcbfa2227f1"
         },
-        "execution_bound_to_target_before_change": true,
-        "no_runtime_activation": true,
-        "no_profile_pack_identity_change": true,
+        "step_result": "STEP_PASS_WITH_EVIDENCE",
+        "blocking_codes": []
+      }
+    },
+    {
+      "step_id": "change_scope",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch/pull/950",
+      "evidence_payload": {
+        "defect": "The profile can reach a semantic PASS while the producer still defines its own semantic closure surface; deterministic validation and producer-declared delta do not independently prove scope-complete closure.",
+        "root_cause": "The semantic stage lacks an independent full-candidate change extraction and reconciliation against a pre-resolved, hash-bound scope/authority packet; producer closure claims can therefore become part of their own proof.",
+        "minimal_patch_scope": [
+          "Wire an independent semantic judge into the existing semantic-judge stage; do not add a second agent or lifecycle layer.",
+          "Materialize a hash-bound scope_authority_packet as transport of already-resolved authority, not as new authority.",
+          "Reconcile 100% of material requirements/constraints, independently observed candidate changes, and scope conformance before semantic PASS.",
+          "Add a deterministic validator only for semantic-result shape/coverage.",
+          "Retain sandbox B and Route-A regressions as evidence; no MR02-specific production rule."
+        ],
+        "preserved_constraints": [
+          "No new table, authority, runner, or lifecycle engine.",
+          "External Claude audit remains oversight, not a runtime dependency or stopper.",
+          "Producer architecture and existing omission/falsification dimensions remain unchanged in this lot.",
+          "No automatic runtime promotion or production behavior activation.",
+          "No scope widening beyond the audited Semantic Judge B repair."
+        ],
+        "step_result": "STEP_PASS_WITH_EVIDENCE",
+        "blocking_codes": []
+      }
+    },
+    {
+      "step_id": "regression_plan",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch/pull/950#sandbox-b",
+      "evidence_payload": {
+        "positive_cases": [
+          "Audited Route-A candidate passes only when all scope items and independently observed changes reconcile and all seven semantic invariants pass.",
+          "A candidate with complete closure and no material scope contradiction remains eligible for PASS_INDEPENDENT_SEMANTIC."
+        ],
+        "negative_cases": [
+          "A material proposed change omitted from producer implementation_delta must not pass.",
+          "An out-of-scope selected implementation delta must return to worker or orchestrator rather than pass.",
+          "A producer handoff_ready/open_design_decisions assertion must not prove semantic closure by itself."
+        ],
+        "adversarial_cases": [
+          "A high-scoring candidate with one semantic hard fail must remain non-PASS.",
+          "Related parent context must not silently widen exact child scope.",
+          "Research URLs without demonstrated decision impact must not count as research assurance."
+        ],
+        "holdout": "Use at least one non-MR02 systemic-repair case to prove the seven invariants and scope reconciliation are generic rather than case-literal.",
         "step_result": "STEP_PASS_WITH_EVIDENCE",
         "blocking_codes": []
       }
