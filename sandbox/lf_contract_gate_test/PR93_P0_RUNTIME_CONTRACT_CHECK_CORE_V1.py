@@ -21,13 +21,13 @@ PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BLOBS={
 }
 PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PATHS=frozenset(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BLOBS)
 PROFILE_RUNTIME_MAINTENANCE_BRANCH="fix/profile-operation-blocked-retry-currentness-v3-20260920"
+PROFILE_RUNTIME_MAINTENANCE_RECEIPT_PATH="sandbox/lf_contract_gate_test/receipts/runtime-update-blocked-retry-cursor-final-20260920-001.json"
 PROFILE_RUNTIME_MAINTENANCE_BLOBS={
  "supabase/functions/run-creacion-perfil-lf/index.ts":"c75970cdec26cc001799b5bf04447747e764c373",
  "skills/profile_creator/evals/batch_resume_contract.py":"8d3e8f09936a27af5964d1b90cf8bc21bdd19be5",
  "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py":"3b6d7ac313622a79e5c00a4069a39ee78edcc36e",
- "sandbox/lf_contract_gate_test/receipts/runtime-update-blocked-retry-cursor-20260920-001.json":"a600b374c3a29b0151b1f39c48d519b58b85dea3",
 }
-PROFILE_RUNTIME_MAINTENANCE_PATHS=frozenset(PROFILE_RUNTIME_MAINTENANCE_BLOBS)
+PROFILE_RUNTIME_MAINTENANCE_PATHS=frozenset((*PROFILE_RUNTIME_MAINTENANCE_BLOBS,PROFILE_RUNTIME_MAINTENANCE_RECEIPT_PATH))
 PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH="lf/profile-update-caller-wiring-v2-20260920"
 PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS={
  CUSTOMER_PROFILE_CREATOR_WORKFLOW:"19644c9d7f4cdb950b88fb3686f0fbd80e9dd337",
@@ -101,6 +101,7 @@ def _evaluate_profile_runtime_maintenance_scope(changed_files:Sequence[str],*,br
   observed=blob_by_path.get(path)
   if observed!=expected_blob: raise RuntimeScopeError("FAIL_RUNTIME_BLOB_MISMATCH",f"Profile runtime maintenance blob mismatch for {path}: expected={expected_blob} observed={observed}")
   if mode_by_path is not None and mode_by_path.get(path)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Profile runtime maintenance path must be regular file 100644: {path}")
+ if mode_by_path is not None and mode_by_path.get(PROFILE_RUNTIME_MAINTENANCE_RECEIPT_PATH)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Profile runtime maintenance receipt must be regular file 100644: {PROFILE_RUNTIME_MAINTENANCE_RECEIPT_PATH}")
  return True
 def _evaluate_profile_update_caller_init_maintenance_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None)->bool:
  changed=set(changed_files)
@@ -146,7 +147,7 @@ def _customer_scope_self_test():
   except RuntimeScopeError: continue
   raise SystemExit(f"FAIL_PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_NEGATIVE_{label.upper()}")
  print("PASS_PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_SCOPE=4/4")
- runtime_init=dict(PROFILE_RUNTIME_MAINTENANCE_BLOBS); runtime_init_modes={path:"100644" for path in runtime_init}; runtime_init_paths=list(PROFILE_RUNTIME_MAINTENANCE_PATHS); assert _evaluate_profile_runtime_maintenance_scope(runtime_init_paths,branch=PROFILE_RUNTIME_MAINTENANCE_BRANCH,blob_by_path=runtime_init,mode_by_path=runtime_init_modes)
+ runtime_init=dict(PROFILE_RUNTIME_MAINTENANCE_BLOBS); runtime_init_paths=list(PROFILE_RUNTIME_MAINTENANCE_PATHS); runtime_init_modes={path:"100644" for path in runtime_init_paths}; assert _evaluate_profile_runtime_maintenance_scope(runtime_init_paths,branch=PROFILE_RUNTIME_MAINTENANCE_BRANCH,blob_by_path=runtime_init,mode_by_path=runtime_init_modes)
  for label,branch,blobs,changed in [("branch","feature/arbitrary",runtime_init,runtime_init_paths),("blob",PROFILE_RUNTIME_MAINTENANCE_BRANCH,{**runtime_init,"supabase/functions/run-creacion-perfil-lf/index.ts":"0"*40},runtime_init_paths),("extra",PROFILE_RUNTIME_MAINTENANCE_BRANCH,runtime_init,[*runtime_init_paths,"supabase/functions/arbitrary/index.ts"])]:
   try: _evaluate_profile_runtime_maintenance_scope(changed,branch=branch,blob_by_path=blobs,mode_by_path={path:"100644" for path in changed})
   except RuntimeScopeError: continue
@@ -209,7 +210,7 @@ def _customer_get_changed_files():
   changed_files=_profile_update_caller_init_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS}
   _base._runtime_scope_enabled=_evaluate_profile_update_caller_init_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); print(f"PASS_PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
  if branch==PROFILE_RUNTIME_MAINTENANCE_BRANCH:
-  changed_files=_profile_runtime_maintenance_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_RUNTIME_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_RUNTIME_MAINTENANCE_BLOBS}
+  changed_files=_profile_runtime_maintenance_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_RUNTIME_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_RUNTIME_MAINTENANCE_PATHS}
   _base._runtime_scope_enabled=_evaluate_profile_runtime_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_PROFILE_RUNTIME_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
  if branch==PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH:
   changed_files=_profile_update_bound_revision_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BLOBS}
