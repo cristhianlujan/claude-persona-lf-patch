@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lf.local/contracts/srcr/quality-receipt/v1",
+  "title": "SRCR Canonical Quality Receipt V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receipt_version",
+    "profile_pack_id",
+    "profile_code",
+    "decision",
+    "review_boundary",
+    "candidate_binding",
+    "evidence_binding",
+    "semantic_binding",
+    "proof_binding",
+    "blocking_codes",
+    "issued_at"
+  ],
+  "properties": {
+    "receipt_version": {
+      "const": "SRCR_QUALITY_RECEIPT_V1"
+    },
+    "profile_pack_id": {
+      "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+    },
+    "profile_code": {
+      "const": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+    },
+    "decision": {
+      "enum": [
+        "PASS_TO_QUALITY_PACK",
+        "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+        "RETURN_TO_ORCHESTRATOR",
+        "BLOCK_PIPELINE"
+      ]
+    },
+    "review_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issuer",
+        "execution_mode",
+        "reviewer_is_producer",
+        "producer_context_available",
+        "semantic_execution_receipt_ref"
+      ],
+      "properties": {
+        "issuer": {
+          "const": "CANONICAL_SRCR_MINI_JUDGE"
+        },
+        "execution_mode": {
+          "const": "INDEPENDENT_SEMANTIC_REVIEW"
+        },
+        "reviewer_is_producer": {
+          "const": false
+        },
+        "producer_context_available": {
+          "const": false
+        },
+        "semantic_execution_receipt_ref": {
+          "type": "string",
+          "minLength": 5
+        }
+      }
+    },
+    "candidate_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_revision",
+        "candidate_digest"
+      ],
+      "properties": {
+        "candidate_revision": {
+          "type": "string",
+          "minLength": 3
+        },
+        "candidate_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "evidence_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundle_id",
+        "bundle_digest"
+      ],
+      "properties": {
+        "bundle_id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "bundle_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "semantic_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "semantic_result_digest",
+        "semantic_verdict",
+        "candidate_sha256",
+        "scope_packet_sha256"
+      ],
+      "properties": {
+        "semantic_result_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "semantic_verdict": {
+          "enum": [
+            "PASS_INDEPENDENT_SEMANTIC",
+            "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+            "RETURN_TO_ORCHESTRATOR",
+            "BLOCK_PIPELINE"
+          ]
+        },
+        "candidate_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "scope_packet_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "proof_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_obligation_ids",
+        "closed_obligation_ids",
+        "open_obligation_ids"
+      ],
+      "properties": {
+        "required_obligation_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "closed_obligation_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "open_obligation_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      }
+    },
+    "blocking_codes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "issued_at": {
+      "type": "string",
+      "minLength": 8
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "PASS_TO_QUALITY_PACK"
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "then": {
+        "properties": {
+          "semantic_binding": {
+            "properties": {
+              "semantic_verdict": {
+                "const": "PASS_INDEPENDENT_SEMANTIC"
+              }
+            }
+          },
+          "proof_binding": {
+            "properties": {
+              "open_obligation_ids": {
+                "maxItems": 0
+              }
+            }
+          },
+          "blocking_codes": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
+}

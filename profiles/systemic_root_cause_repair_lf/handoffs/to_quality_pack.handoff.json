@@ -3,6 +3,7 @@
   "from_profile": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
   "to": "QUALITY_OR_ASSURANCE",
   "include": [
+    "closure_proof",
     "authority_contradictions",
     "should_exist_assessment",
     "selected_alternative",
@@ -26,7 +27,20 @@
     "structural_validation_is_behavioral_proof": false,
     "external_audit_required": false,
     "external_audit_missing_is_blocker": false,
-    "material_external_finding_routes_through_governance": true
+    "material_external_finding_routes_through_governance": true,
+    "v03_quality_receipt_required": true,
+    "v03_quality_receipt_schema": "schemas/quality_receipt.schema.json",
+    "v03_quality_receipt_validator": "validators/validate_quality_receipt.py",
+    "v03_external_evidence_manifest_required": true,
+    "v03_receipt_exact_bindings": [
+      "candidate_revision",
+      "candidate_digest",
+      "evidence_bundle_id",
+      "evidence_bundle_digest",
+      "semantic_result_digest",
+      "required_closed_open_proof_sets"
+    ],
+    "deterministic_floor_can_issue_quality_pass": false
   },
   "exclude": [
     "internal_chain_of_thought",

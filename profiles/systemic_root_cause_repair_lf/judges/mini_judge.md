@@ -51,3 +51,27 @@ Score never overrides a BLOCK condition.
 
 ## Experiment boundary
 Sandbox B does not yet alter the profile's existing 12 omission dimensions, 8 falsification families, or producer architecture. It changes only the semantic-judge contract and its independent scope/change reconciliation.
+
+## V0.3 canonical quality receipt
+
+For SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3, this same mini-judge remains the single canonical quality gate. No second judge is introduced.
+
+The independent semantic result is the semantic decision input. The final quality decision is materialized as SRCR_QUALITY_RECEIPT_V1 and is valid only when validators/validate_quality_receipt.py proves all exact bindings:
+
+- exact candidate revision and canonical candidate digest;
+- exact external evidence bundle ID and digest;
+- exact semantic-result digest, semantic verdict, candidate SHA-256 and scope-packet SHA-256;
+- exact required / closed / open proof-obligation sets derived by the deterministic closure floor;
+- independent review boundary metadata with reviewer_is_producer=false and producer_context_available=false.
+
+PASS_TO_QUALITY_PACK may be encoded only when:
+1. V0.3 deterministic structural closure passes for the exact candidate/evidence bundle;
+2. validate_semantic_judge_result.py passes for the exact semantic result;
+3. the semantic verdict is PASS_INDEPENDENT_SEMANTIC;
+4. the derived required proof set equals the closed proof set and the open set is empty;
+5. receipt blocking codes are empty;
+6. every digest/revision binding matches current supplied bytes.
+
+A changed candidate, evidence bundle, semantic result, proof set, or scope packet invalidates the receipt. Deterministic or semantic-utility PASS without this receipt remains pre-quality only.
+
+The profile output must never self-issue or embed the canonical quality receipt. The receipt is produced at the independent quality boundary after candidate generation.
