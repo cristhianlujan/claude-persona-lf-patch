@@ -81,6 +81,9 @@ checks = {
     "update_init_workflow_dispatch_exposed": "profile_update_init" in workflow and "GOVERNED_PROFILE_UPDATE_INITIALIZATION=PASS" in workflow,
     "update_init_oidc_identity_is_main_only": 'GITHUB_ACTIONS_OIDC_EXACT_PROFILE_UPDATE_V1' in caller and 'const UPDATE_REF = "refs/heads/main"' in caller,
     "update_init_governance_caller_delegates_to_runtime": 'body.action === "profile_update_init_v1"' in caller and 'action: "initialize_profile_update_v1"' in caller,
+    "update_batch_workflow_dispatch_exposed": "profile_update_record_batch" in workflow and "GOVERNED_PROFILE_UPDATE_BATCH=PASS" in workflow,
+    "update_batch_reuses_generic_operation_batch": "'action':'profile_operation_record_batch_v1'" in workflow and "steps_json" in workflow,
+    "update_batch_uses_same_main_oidc_identity": "inputs.action == 'profile_update_record_batch'" in workflow and 'GITHUB_ACTIONS_OIDC_EXACT_PROFILE_UPDATE_V1' in caller,
 
     # Deterministic UPDATE currentness is derived by the exact OIDC caller, not declared by the worker.
     "update_currentness_only_prewrite": 'snapshot.operation_code !== UPDATE_OPERATION || stepId !== PREWRITE_STEP' in caller,
