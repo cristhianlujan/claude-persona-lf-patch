@@ -9,6 +9,7 @@ RUNTIME = ROOT / "supabase/functions/run-creacion-perfil-lf/index.ts"
 WORKFLOW = ROOT / ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
 EXACT_TARGET = ROOT / "skills/profile_creator/contracts/existing_artifact_remediation_contract.json"
 JUDGE_BINDING = ROOT / "skills/profile_creator/contracts/update_judge_semantics_contract.json"
+COMMON_RECORDER = ROOT / "skills/profile_creator/contracts/profile_operation_common_recorder_v1.sql"
 UI_SKILL = ROOT / "profiles/ui_architect/SKILL.md"
 
 caller = CALLER.read_text(encoding="utf-8")
@@ -17,6 +18,7 @@ runtime = RUNTIME.read_text(encoding="utf-8")
 workflow = WORKFLOW.read_text(encoding="utf-8")
 exact_target = json.loads(EXACT_TARGET.read_text(encoding="utf-8"))
 judge_binding = json.loads(JUDGE_BINDING.read_text(encoding="utf-8"))
+common_recorder = COMMON_RECORDER.read_text(encoding="utf-8")
 ui_skill = UI_SKILL.read_text(encoding="utf-8")
 judge_source = ROOT / judge_binding['source_ref']
 judge_source_sha = hashlib.sha256(judge_source.read_bytes()).hexdigest() if judge_source.is_file() else None
@@ -59,7 +61,7 @@ checks = {
     "currentness_before_single_write": 'PROFILE_OPERATION_STEP_NOT_CURRENT' in caller and 'expectedStepId !== stepId' in caller,
     "currentness_before_batch_write": 'PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT' in caller and 'expectedStepId !== step.step_id' in caller,
     "currentness_inside_runtime": 'PROFILE_OPERATION_STEP_NOT_CURRENT' in runtime,
-    "update_fail_closed_without_recorder": 'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' in runtime,
+    "update_uses_common_canonical_recorder": 'lf_record_profile_operation_step_v1' in runtime and 'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' not in runtime,
     "creation_uses_canonical_recorder": 'lf_record_creacion_perfil_step_v1' in runtime,
     "router_owns_operation": 'String(ex.operation_code' in runtime and 'PROFILE_OPERATIONS' in runtime,
     "dynamic_contracts": 'lf_operation_step_contracts?operation_code=eq.' in runtime,
@@ -76,6 +78,9 @@ checks = {
     "workflow_step_envelope_gate": 'MISSING_STEP_RESULT' in workflow and 'MISSING_BLOCKING_CODES' in workflow,
     "workflow_accepts_canonical_v22_step_receipt": "result.get('step') or result.get('result')" in workflow and "status in ('STEP_CLEAN_PASS','STEP_PASS_WITH_EVIDENCE')" in workflow,
     "workflow_batch_binds_step_identity": "step.get('step_id')==item['step_id']" in workflow,
+    "update_init_workflow_dispatch_exposed": "profile_update_init" in workflow and "GOVERNED_PROFILE_UPDATE_INITIALIZATION=PASS" in workflow,
+    "update_init_oidc_identity_is_main_only": 'GITHUB_ACTIONS_OIDC_EXACT_PROFILE_UPDATE_V1' in caller and 'const UPDATE_REF = "refs/heads/main"' in caller,
+    "update_init_governance_caller_delegates_to_runtime": 'body.action === "profile_update_init_v1"' in caller and 'action: "initialize_profile_update_v1"' in caller,
 
     # Deterministic UPDATE currentness is derived by the exact OIDC caller, not declared by the worker.
     "update_currentness_only_prewrite": 'snapshot.operation_code !== UPDATE_OPERATION || stepId !== PREWRITE_STEP' in caller,
@@ -83,8 +88,8 @@ checks = {
     "trusted_currentness_reads_exact_target_blob": '/contents/${encodedPath}?ref=${revisionSha}' in caller and 'target_blob_sha' in caller,
     "trusted_currentness_target_from_runtime_snapshot": 'safeRepoPath(snapshot.target_path)' in caller,
     "trusted_currentness_declared_flag_rejected": 'declared_currentness_accepted: false' in caller and 'declared_current_revision_ignored: true' in caller,
-    "trusted_currentness_bound_revision_structured": 'PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED' in caller and 'boundRevisionSha(evidencePayload.bound_revision)' in caller,
-    "trusted_currentness_mismatch_blocks_rebind": 'PROFILE_UPDATE_BOUND_REVISION_STALE_REBIND_REQUIRED' in caller and 'boundSha !== observedSha' in caller,
+    "trusted_currentness_bound_revision_structured": 'PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED' in runtime and 'typeof evidence.bound_revision === "string"' in runtime,
+    "trusted_currentness_mismatch_blocks_rebind": all(code in runtime for code in ['PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH','PROFILE_UPDATE_STALE_REREAD_REQUIRED','PROFILE_UPDATE_STALE_REBIND_REQUIRED','PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH']),
     "trusted_currentness_persisted_in_evidence": all(token in caller for token in ['current_resolved_revision: observedSha','trusted_current_revision: trusted','current_revision_resolved_by_caller: true']),
     "trusted_currentness_no_request_target_path": 'resolveTrustedCurrentRevision(body.target_path)' not in caller,
 
@@ -115,7 +120,7 @@ checks = {
     "negative_duplicate_batch_step": 'PROFILE_OPERATION_BATCH_DUPLICATE_STEP' in batch,
     "negative_empty_batch": 'PROFILE_OPERATION_BATCH_EMPTY' in batch,
     "negative_stale_batch_cursor": 'PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT' in caller and 'expected_step_id: expectedStepId' in caller,
-    "negative_update_no_unproven_recorder": 'UPDATE_OPERATION_CANONICAL_RECORDER_REQUIRED' in runtime,
+    "negative_update_missing_server_trust_fails": 'server_trust_context_valid: true' in runtime and 'server_trust_context_source: "run-creacion-perfil-lf"' in runtime and 'PROFILE_UPDATE_SERVER_TRUST_CONTEXT_NOT_MATERIALIZED' in common_recorder,
 }
 
 failed = [name for name, ok in checks.items() if not ok]
