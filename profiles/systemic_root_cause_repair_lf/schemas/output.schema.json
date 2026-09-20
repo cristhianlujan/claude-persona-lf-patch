@@ -490,7 +490,9 @@
         "failure_behavior",
         "binding_kind",
         "binding_ref",
-        "evidence_ids"
+        "evidence_ids",
+        "obligation_ids",
+        "binding_state"
       ],
       "properties": {
         "edge_id": {
@@ -535,27 +537,64 @@
             "type": "string",
             "minLength": 3
           }
+        },
+        "obligation_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "binding_state": {
+          "enum": [
+            "OBSERVED_WIRED",
+            "PROPOSED_WIRING"
+          ]
         }
       },
       "allOf": [
         {
           "if": {
             "properties": {
+              "binding_state": {
+                "const": "OBSERVED_WIRED"
+              }
+            },
+            "required": [
+              "binding_state"
+            ]
+          },
+          "then": {
+            "properties": {
               "binding_kind": {
                 "enum": [
                   "EXISTING_AUTHORITY",
                   "EXISTING_REUSABLE_CAPABILITY"
                 ]
+              },
+              "evidence_ids": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "binding_state": {
+                "const": "PROPOSED_WIRING"
               }
             },
             "required": [
-              "binding_kind"
+              "binding_state"
             ]
           },
           "then": {
             "properties": {
-              "evidence_ids": {
-                "minItems": 1
+              "binding_kind": {
+                "const": "PROPOSED_DELIVERABLE"
               }
             }
           }
@@ -657,6 +696,7 @@
         "proof_obligations",
         "authority_bindings",
         "wiring_proofs",
+        "context_transport_proofs",
         "behavioral_proofs",
         "derived_decision_closure"
       ],
@@ -848,8 +888,129 @@
               }
             }
           ]
+        },
+        "context_transport_proofs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/context_transport_proof"
+          }
         }
       }
+    },
+    "context_transport_proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transport_id",
+        "obligation_ids",
+        "selection_ref",
+        "transport_contract_ref",
+        "consumer_ref",
+        "enforcement_point_ref",
+        "budget_guard_ref",
+        "hydration_mode",
+        "hydration_resolver_ref",
+        "failure_behavior",
+        "wiring_edge_ids",
+        "readback_evidence_ids"
+      ],
+      "properties": {
+        "transport_id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "obligation_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "selection_ref": {
+          "type": "string",
+          "minLength": 3
+        },
+        "transport_contract_ref": {
+          "type": "string",
+          "minLength": 3
+        },
+        "consumer_ref": {
+          "type": "string",
+          "minLength": 3
+        },
+        "enforcement_point_ref": {
+          "type": "string",
+          "minLength": 3
+        },
+        "budget_guard_ref": {
+          "type": "string",
+          "minLength": 3
+        },
+        "hydration_mode": {
+          "enum": [
+            "NONE_REQUIRED",
+            "JIT_BY_REF",
+            "BOUNDED_INLINE"
+          ]
+        },
+        "hydration_resolver_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 3
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "failure_behavior": {
+          "type": "string",
+          "minLength": 8
+        },
+        "wiring_edge_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "readback_evidence_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "hydration_mode": {
+                "const": "JIT_BY_REF"
+              }
+            },
+            "required": [
+              "hydration_mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "hydration_resolver_ref": {
+                "type": "string",
+                "minLength": 3
+              }
+            }
+          }
+        }
+      ]
     }
   },
   "required": [
