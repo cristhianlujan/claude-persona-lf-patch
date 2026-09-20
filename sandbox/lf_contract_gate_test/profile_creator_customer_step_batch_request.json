@@ -103,5 +103,7 @@
         "blocking_codes": []
       }
     }
-  ]
+  ],
+  "request_attempt": 2,
+  "retry_reason": "EXECUTION_ID_GRAMMAR_REPAIRED"
 }
