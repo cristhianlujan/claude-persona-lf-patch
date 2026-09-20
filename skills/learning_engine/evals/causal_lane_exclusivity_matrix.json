@@ -1,0 +1,103 @@
+{
+  "matrix_id": "MOTOR_CAUSAL_LANE_EXCLUSIVITY_V1",
+  "validation_scope": "DETERMINISTIC_CONTRACT_MECHANICS_ONLY",
+  "general_behavioral_claim": "NOT_CLAIMED",
+  "cases": [
+    {
+      "id": "writer_first_claim_allowed",
+      "input": {
+        "lane_contract": {"ekb_code":"SRC-011","target_asset":"ACT-0046","primary_gate":"CAUSAL_LANE_EXCLUSIVITY","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","role":"WRITER","execution_id":"EXEC-001","declared_lane_count":1,"declared_owner_count":1,"declared_primary_gate_count":1},
+        "write_intent": true,
+        "currentness": {"checked":true,"source":"GITHUB_PUBLIC_API_EXACT_REF_V1","base_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","current_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","stale_receipts_invalidated":true},
+        "active_writers": [],
+        "claim_readback": {"authority":"SUPABASE","result":"OWNERSHIP_ACQUIRED","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","execution_id":"EXEC-001","active":true}
+      },
+      "expected_status": "ALLOW_WRITER",
+      "expected_blocking_code": null
+    },
+    {
+      "id": "second_writer_same_chain_blocked",
+      "input": {
+        "lane_contract": {"ekb_code":"SRC-011","target_asset":"ACT-0046","primary_gate":"CAUSAL_LANE_EXCLUSIVITY","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"SECOND_WRITER","role":"WRITER","execution_id":"EXEC-002","declared_lane_count":1,"declared_owner_count":1,"declared_primary_gate_count":1},
+        "write_intent": true,
+        "currentness": {"checked":true,"source":"GITHUB_PUBLIC_API_EXACT_REF_V1","base_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","current_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","stale_receipts_invalidated":true},
+        "active_writers": [{"causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","execution_id":"EXEC-001","role":"WRITER","active":true}]
+      },
+      "expected_status": "BLOCK",
+      "expected_blocking_code": "BLOCK_CAUSAL_LANE_ALREADY_OWNED"
+    },
+    {
+      "id": "reviewer_parallel_allowed",
+      "input": {
+        "lane_contract": {"ekb_code":"SRC-011","target_asset":"ACT-0046","primary_gate":"CAUSAL_LANE_EXCLUSIVITY","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"ADVERSARIAL_REVIEWER","role":"REVIEWER_READ_ONLY","execution_id":"REV-001","declared_lane_count":1,"declared_owner_count":1,"declared_primary_gate_count":1},
+        "write_intent": false,
+        "active_writers": [{"causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","execution_id":"EXEC-001","role":"WRITER","active":true}]
+      },
+      "expected_status": "ALLOW_READ_ONLY_PARALLEL",
+      "expected_blocking_code": null
+    },
+    {
+      "id": "reviewer_write_forbidden",
+      "input": {
+        "lane_contract": {"ekb_code":"SRC-011","target_asset":"ACT-0046","primary_gate":"CAUSAL_LANE_EXCLUSIVITY","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"ADVERSARIAL_REVIEWER","role":"REVIEWER_READ_ONLY","execution_id":"REV-002","declared_lane_count":1,"declared_owner_count":1,"declared_primary_gate_count":1},
+        "write_intent": true
+      },
+      "expected_status": "BLOCK",
+      "expected_blocking_code": "BLOCK_REVIEWER_WRITE_FORBIDDEN"
+    },
+    {
+      "id": "different_primary_gate_is_different_chain",
+      "input": {
+        "lane_contract": {"ekb_code":"SRC-011","target_asset":"ACT-0046","primary_gate":"SECOND_GATE","causal_lane_key":"SRC-011|ACT-0046|SECOND_GATE","owner":"SECOND_GATE_OWNER","role":"WRITER","execution_id":"EXEC-003","declared_lane_count":1,"declared_owner_count":1,"declared_primary_gate_count":1},
+        "write_intent": true,
+        "currentness": {"checked":true,"source":"GITHUB_PUBLIC_API_EXACT_REF_V1","base_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","current_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","stale_receipts_invalidated":true},
+        "active_writers": [{"causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","execution_id":"EXEC-001","role":"WRITER","active":true}],
+        "claim_readback": {"authority":"SUPABASE","result":"OWNERSHIP_ACQUIRED","causal_lane_key":"SRC-011|ACT-0046|SECOND_GATE","owner":"SECOND_GATE_OWNER","execution_id":"EXEC-003","active":true}
+      },
+      "expected_status": "ALLOW_WRITER",
+      "expected_blocking_code": null
+    },
+    {
+      "id": "fresh_main_mismatch_blocks_successor",
+      "input": {
+        "lane_contract": {"ekb_code":"SRC-011","target_asset":"ACT-0046","primary_gate":"CAUSAL_LANE_EXCLUSIVITY","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"SUCCESSOR","role":"WRITER","execution_id":"EXEC-004","declared_lane_count":1,"declared_owner_count":1,"declared_primary_gate_count":1},
+        "write_intent": true,
+        "currentness": {"checked":true,"source":"GITHUB_PUBLIC_API_EXACT_REF_V1","base_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","current_main_sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","stale_receipts_invalidated":true}
+      },
+      "expected_status": "BLOCK",
+      "expected_blocking_code": "BLOCK_FRESH_MAIN_CURRENTNESS_REQUIRED"
+    },
+    {
+      "id": "closed_predecessor_requires_receipt_invalidation",
+      "input": {
+        "lane_contract": {"ekb_code":"SRC-011","target_asset":"ACT-0046","primary_gate":"CAUSAL_LANE_EXCLUSIVITY","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"SUCCESSOR","role":"WRITER","execution_id":"EXEC-005","declared_lane_count":1,"declared_owner_count":1,"declared_primary_gate_count":1},
+        "write_intent": true,
+        "currentness": {"checked":true,"source":"GITHUB_PUBLIC_API_EXACT_REF_V1","base_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","current_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","stale_receipts_invalidated":false},
+        "predecessor": {"exists":true,"same_key":true,"closed":true}
+      },
+      "expected_status": "BLOCK",
+      "expected_blocking_code": "BLOCK_STALE_RECEIPTS_NOT_INVALIDATED"
+    },
+    {
+      "id": "multi_lane_pr_blocked",
+      "input": {
+        "lane_contract": {"ekb_code":"SRC-011","target_asset":"ACT-0046","primary_gate":"CAUSAL_LANE_EXCLUSIVITY","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","role":"WRITER","execution_id":"EXEC-006","declared_lane_count":2,"declared_owner_count":1,"declared_primary_gate_count":2},
+        "write_intent": true
+      },
+      "expected_status": "BLOCK",
+      "expected_blocking_code": "BLOCK_PR_LANE_SCOPE_INVALID"
+    },
+    {
+      "id": "same_execution_idempotent_reuse_allowed",
+      "input": {
+        "lane_contract": {"ekb_code":"SRC-011","target_asset":"ACT-0046","primary_gate":"CAUSAL_LANE_EXCLUSIVITY","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","role":"WRITER","execution_id":"EXEC-001","declared_lane_count":1,"declared_owner_count":1,"declared_primary_gate_count":1},
+        "write_intent": true,
+        "currentness": {"checked":true,"source":"GITHUB_PUBLIC_API_EXACT_REF_V1","base_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","current_main_sha":"5f33c4ce25fca201c109d31be5c2e1e1ec465afc","stale_receipts_invalidated":true},
+        "active_writers": [{"causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","execution_id":"EXEC-001","role":"WRITER","active":true}],
+        "claim_readback": {"authority":"SUPABASE","result":"OWNERSHIP_REUSED_IDEMPOTENT","causal_lane_key":"SRC-011|ACT-0046|CAUSAL_LANE_EXCLUSIVITY","owner":"MOTOR_GOVERNANCE_INTEGRATOR","execution_id":"EXEC-001","active":true}
+      },
+      "expected_status": "ALLOW_EXISTING_WRITER",
+      "expected_blocking_code": null
+    }
+  ]
+}
