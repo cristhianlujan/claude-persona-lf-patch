@@ -1,0 +1,250 @@
+{
+  "verdict": "RETURN_TO_ORCHESTRATOR",
+  "candidate_sha256": "785673990b4df0ad078ebe1e44dcd0611c5ab9e3f1aa6137c9efa28aefe4c72d",
+  "scope_packet_sha256": "a83879ef5ecda695159b46123aae07275af329739584671485955ea94107dddc",
+  "source_refs_inspected": [
+    "supabase://public.lf_backlog_errores_operativos/186",
+    "supabase://public.lf_backlog_errores_operativos/187",
+    "supabase://public.lf_backlog_errores_operativos/188",
+    "supabase://public.lf_backlog_errores_operativos/189",
+    "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1",
+    "supabase://pg_proc/public.fn_lf_operation_checkpoint_v1",
+    "supabase://pg_proc/public.fn_lf_operation_release_lease_v1"
+  ],
+  "observed_candidate_changes": [
+    {
+      "change_id": "JCHG-A1",
+      "action_class": "MODIFY_CONTRACT_DATA",
+      "target": "public.lf_operation_step_contracts",
+      "candidate_paths": [
+        "$.implementation_package.architecture_decisions[D2]",
+        "$.implementation_package.deliverables[0]"
+      ],
+      "statement": "Materialize readiness/caller-manifest rules in existing step-contract JSON.",
+      "materiality": "MATERIAL",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/186"
+      ]
+    },
+    {
+      "change_id": "JCHG-A2",
+      "action_class": "MODIFY_AUTHORIZED_CALLERS",
+      "target": "#186 exact enumerated caller footprint",
+      "candidate_paths": [
+        "$.implementation_package.wiring[2]",
+        "$.implementation_delta[0]"
+      ],
+      "statement": "Connect only the bounded #186 caller functions directly to existing C05 primitives.",
+      "materiality": "MATERIAL",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/186"
+      ]
+    },
+    {
+      "change_id": "JCHG-A3",
+      "action_class": "PLAN_CHILD_ENFORCEMENT",
+      "target": "#187 one-operation sublot",
+      "candidate_paths": [
+        "$.implementation_package.wiring[3]",
+        "$.implementation_delta[1]"
+      ],
+      "statement": "Plan later one-operation enforcement only after #186 readback, #189 reconciliation and separate approval.",
+      "materiality": "MATERIAL",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/187"
+      ]
+    },
+    {
+      "change_id": "JCHG-A4",
+      "action_class": "SEPARATE_HISTORICAL_DISPOSITION",
+      "target": "#188 read-only classification/disposition lane",
+      "candidate_paths": [
+        "$.implementation_delta[2]"
+      ],
+      "statement": "Keep historical IN_PROGRESS classification/disposition separate from caller adoption/enforcement.",
+      "materiality": "MATERIAL",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/188"
+      ]
+    }
+  ],
+  "requirement_reconciliation": [
+    {
+      "scope_item_id": "REQ-186-CALLER-ADOPTION",
+      "disposition": "SATISFIED",
+      "reason": "Candidate preserves or addresses this exact authorized requirement/constraint without scope expansion."
+    },
+    {
+      "scope_item_id": "REQ-187-GRADUAL-ENFORCEMENT",
+      "disposition": "SATISFIED",
+      "reason": "Candidate preserves or addresses this exact authorized requirement/constraint without scope expansion."
+    },
+    {
+      "scope_item_id": "REQ-188-HISTORICAL-DISPOSITION",
+      "disposition": "SATISFIED",
+      "reason": "Candidate preserves or addresses this exact authorized requirement/constraint without scope expansion."
+    },
+    {
+      "scope_item_id": "CON-186-EXACT-FOOTPRINT",
+      "disposition": "SATISFIED",
+      "reason": "Candidate preserves or addresses this exact authorized requirement/constraint without scope expansion."
+    },
+    {
+      "scope_item_id": "CON-186-RULES-AS-DATA",
+      "disposition": "SATISFIED",
+      "reason": "Candidate preserves or addresses this exact authorized requirement/constraint without scope expansion."
+    },
+    {
+      "scope_item_id": "CON-187-ONE-OPERATION",
+      "disposition": "SATISFIED",
+      "reason": "Candidate preserves or addresses this exact authorized requirement/constraint without scope expansion."
+    },
+    {
+      "scope_item_id": "CON-188-READONLY-FIRST",
+      "disposition": "SATISFIED",
+      "reason": "Candidate preserves or addresses this exact authorized requirement/constraint without scope expansion."
+    },
+    {
+      "scope_item_id": "CON-186-BLOCK-189",
+      "disposition": "PRESERVED",
+      "reason": "Candidate is NEEDS_MORE_EVIDENCE, handoff_ready=false, and blocks #186/#187 until #189 is reconciled."
+    },
+    {
+      "scope_item_id": "FORBID-186-POLICY-BINDING-WRITE",
+      "disposition": "SATISFIED",
+      "reason": "Candidate preserves or addresses this exact authorized requirement/constraint without scope expansion."
+    },
+    {
+      "scope_item_id": "FORBID-187-BLANKET-ENABLE",
+      "disposition": "SATISFIED",
+      "reason": "Candidate preserves or addresses this exact authorized requirement/constraint without scope expansion."
+    },
+    {
+      "scope_item_id": "FORBID-188-MASS-FORCE-CLOSE",
+      "disposition": "SATISFIED",
+      "reason": "Candidate preserves or addresses this exact authorized requirement/constraint without scope expansion."
+    }
+  ],
+  "change_declaration_reconciliation": [
+    {
+      "change_id": "JCHG-A1",
+      "disposition": "DECLARED_EQUIVALENT",
+      "declared_ref": "$.implementation_delta[0]"
+    },
+    {
+      "change_id": "JCHG-A2",
+      "disposition": "DECLARED_EQUIVALENT",
+      "declared_ref": "$.implementation_delta[0]"
+    },
+    {
+      "change_id": "JCHG-A3",
+      "disposition": "DECLARED_EQUIVALENT",
+      "declared_ref": "$.implementation_delta[1]"
+    },
+    {
+      "change_id": "JCHG-A4",
+      "disposition": "DECLARED_EQUIVALENT",
+      "declared_ref": "$.implementation_delta[2]"
+    }
+  ],
+  "scope_conformance_reconciliation": [
+    {
+      "change_id": "JCHG-A1",
+      "disposition": "IN_SCOPE",
+      "basis_ref": "CON-186-EXACT-FOOTPRINT"
+    },
+    {
+      "change_id": "JCHG-A2",
+      "disposition": "IN_SCOPE",
+      "basis_ref": "REQ-186-CALLER-ADOPTION"
+    },
+    {
+      "change_id": "JCHG-A3",
+      "disposition": "IN_SCOPE",
+      "basis_ref": "REQ-187-GRADUAL-ENFORCEMENT"
+    },
+    {
+      "change_id": "JCHG-A4",
+      "disposition": "IN_SCOPE",
+      "basis_ref": "REQ-188-HISTORICAL-DISPOSITION"
+    }
+  ],
+  "invariant_results": [
+    {
+      "invariant": "SCOPE_AUTHORITY_INTEGRITY",
+      "result": "PASS",
+      "evidence_refs": [
+        "CON-186-EXACT-FOOTPRINT",
+        "CON-186-BLOCK-189"
+      ],
+      "reason": "No new persistent resolver remains; all selected implementation changes stay inside the exact child scopes and #189 is not bypassed."
+    },
+    {
+      "invariant": "EVIDENCE_INTEGRITY",
+      "result": "PASS",
+      "evidence_refs": [
+        "candidate_sha256",
+        "scope_packet_sha256",
+        "supabase://public.lf_backlog_errores_operativos/189"
+      ],
+      "reason": "Candidate distinguishes the scope repair from the unresolved caller-authority evidence and does not claim implementation readiness."
+    },
+    {
+      "invariant": "CAUSAL_CLOSURE",
+      "result": "PASS",
+      "evidence_refs": [
+        "$.systemic_root_cause",
+        "$.causal_chain"
+      ],
+      "reason": "The selected design still addresses heterogeneous lifecycle adoption using existing C05 primitives and operation contracts."
+    },
+    {
+      "invariant": "CONTRADICTION_INTEGRITY",
+      "result": "PASS",
+      "evidence_refs": [
+        "$.authority_contradictions[0]",
+        "supabase://public.lf_backlog_errores_operativos/189"
+      ],
+      "reason": "The undeclared execution/caller contradiction is promoted to DESIGN_BLOCKING rather than residual risk."
+    },
+    {
+      "invariant": "MINIMUM_SUFFICIENT_REUSE",
+      "result": "PASS",
+      "evidence_refs": [
+        "$.implementation_package.architecture_decisions[D1,D2,D3]"
+      ],
+      "reason": "Readiness uses existing step/contract data, exact caller footprint, existing C05 primitives and bounded direct readback; no new table, engine, policy or readiness function."
+    },
+    {
+      "invariant": "INDEPENDENT_DECISION_CLOSURE",
+      "result": "PASS",
+      "evidence_refs": [
+        "$.status",
+        "$.implementation_package.decision_closure",
+        "$.blocking_codes"
+      ],
+      "reason": "Candidate explicitly sets NEEDS_MORE_EVIDENCE and handoff_ready=false while #189 is unresolved; producer does not self-certify closure."
+    },
+    {
+      "invariant": "FALSIFIABILITY_REGRESSION",
+      "result": "PASS",
+      "evidence_refs": [
+        "$.falsification_results",
+        "$.planned_regressions",
+        "$.acceptance_criteria"
+      ],
+      "reason": "Existing falsification/regression protocols remain present and readiness verification is rewritten to direct bounded readback."
+    }
+  ],
+  "open_design_decisions_found": [],
+  "unsupported_claims": [],
+  "blocking_codes": [
+    "UNDECLARED_EXECUTION_CALLER_AUTHORITY_UNRESOLVED",
+    "LIVE_AUTHORITY_EVIDENCE_INCOMPLETE"
+  ],
+  "repair_instructions": [
+    "Resolve backlog #189 by identifying/reconciling the current caller/source authority responsible for observed lease mutations.",
+    "After #189 is no longer blocking, rematerialize the scope packet and rerun semantic judge B before any #186 implementation or #187 enforcement."
+  ],
+  "next_gate": "RESOLVE_BACKLOG_189_CALLER_AUTHORITY_THEN_REPLAY_B"
+}
