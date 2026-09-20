@@ -5,7 +5,7 @@
     "evidence_ref": "input:backlog_183.lane",
     "missing_evidence": []
   },
-  "status": "NEEDS_MORE_EVIDENCE",
+  "status": "SYSTEMIC_REPAIR_SPEC",
   "symptom": {
     "status": "OBSERVED",
     "statement": "MR02 still shows heterogeneous lifecycle adoption: one reproducible live snapshot has 459 governed executions in 7 days, 68 with lease_fence>0 and 391 with lease_fence=0; 76 executions are currently IN_PROGRESS. Shared C05 primitives exist, but readiness and enforcement are not represented and resolved uniformly per operation.",
@@ -27,9 +27,9 @@
     "validation_state": "SPECIFIED"
   },
   "next_gate": {
-    "gate": "RESOLVE_BACKLOG_189_CALLER_AUTHORITY_THEN_REPLAY_B",
-    "entry_condition": "Route-A candidate contains no new readiness function and deterministic validators accept its evidence/blocker semantics.",
-    "exit_condition": "Backlog #189 caller/source authority is reconciled with exact evidence; then rematerialize scope and rerun semantic judge B before any #186 implementation approval."
+    "gate": "INDEPENDENT_CLAUDE_R2A_AUDIT",
+    "entry_condition": "Route-A candidate is deterministic-validator clean, semantic-utility clean, contains no out-of-scope readiness function, and caller-authority finding #189 is RESUELTA with current evidence.",
+    "exit_condition": "Independent audit confirms all semantic-judge-B reconciliations/invariants and no new material blocker; only then may owner consider the separately governed #186 implementation approval."
   },
   "hard_guard": {
     "control": "Operation-neutral readiness/enforcement guard derived from existing operation contracts/policy bindings and enforced in the shared recorder/effect boundary only after caller adoption is proven.",
@@ -220,16 +220,10 @@
       ]
     },
     {
-      "claim_path": "$.authority_contradictions",
-      "evidence_refs": [
-        "supabase://public.lf_backlog_errores_operativos/189"
-      ]
-    },
-    {
       "claim_path": "$.current_uncertainties",
       "evidence_refs": [
         "supabase://public.lf_backlog_errores_operativos/186",
-        "supabase://public.lf_backlog_errores_operativos/189"
+        "supabase://public.lf_backlog_errores_operativos/189#resolution_20260919"
       ]
     }
   ],
@@ -254,10 +248,7 @@
       "A prepared operation's valid path is blocked, an unprepared operation changes behavior, stale writers are accepted, or retry/effect idempotency regresses."
     ]
   },
-  "blocking_codes": [
-    "LIVE_AUTHORITY_EVIDENCE_INCOMPLETE",
-    "UNDECLARED_EXECUTION_CALLER_AUTHORITY_UNRESOLVED"
-  ],
+  "blocking_codes": [],
   "escape_control": {
     "status": "ESTABLISHED",
     "statement": "The shared step recorder plus effect-reservation path do not form one transversal admission guard: step recording can be used without a current lease/fence, while the C05 effect primitives enforce fencing only for callers that actually enter those primitives.",
@@ -378,12 +369,14 @@
     },
     {
       "challenge_id": "CH-R2-189",
-      "challenge": "Can Route A be declared implementation-ready while the current lease caller authority remains unresolved in backlog #189?",
-      "outcome": "BLOCKED",
-      "resolution": "No. #189 remains a CRITICAL blocking authority contradiction and #186 itself requires implementation to remain blocked until the undeclared caller/source is reconciled.",
+      "challenge": "Did the previously unresolved caller-authority finding #189 prevent Route A from becoming implementation-ready?",
+      "outcome": "SURVIVED",
+      "resolution": "#189 was independently reconciled and is now RESUELTA: 72/72 leased executions have authority lineage, 0 live leases remain, and 20/20 post-finding mutations are attributable. The audit model now distinguishes static code callers from governed direct operational invocations.",
       "evidence_refs": [
-        "supabase://public.lf_backlog_errores_operativos/186",
-        "supabase://public.lf_backlog_errores_operativos/189"
+        "supabase://public.lf_backlog_errores_operativos/189#resolution_20260919",
+        "supabase://public.lf_operation_execution/EXEC-MR02-CALLER-AUTHORITY-RECON-20260919-001",
+        "supabase://public.lf_eventos/14627",
+        "supabase://public.lf_error_knowledge/AUDIT-DIRECT-CALLER-AUTHORITY-INVENTORY-GAP-001"
       ]
     }
   ],
@@ -749,9 +742,9 @@
       ]
     },
     {
-      "action": "After #186 readback and only after #189 authority is reconciled, allow a separately approved #187 sublot to enable shared fail-closed recorder/effect enforcement for exactly one operation; no blanket switch.",
+      "action": "After #186 readback and a fresh caller-authority currentness check, allow a separately approved #187 sublot to enable shared fail-closed recorder/effect enforcement for exactly one operation; no blanket switch.",
       "target": "SPEC-MR02-B-GRADUAL-ENFORCEMENT-V2 / backlog #187",
-      "rationale": "Preserves compatibility, keeps enforcement in its child owner, and blocks activation while caller authority is unresolved.",
+      "rationale": "Preserves compatibility, keeps enforcement in its child owner, and re-blocks if any new caller/authority contradiction appears.",
       "evidence_refs": [
         "supabase://public.lf_backlog_errores_operativos/187",
         "rollback-test://MR02-R2/AC-STALE-WRITER@2026-09-19T21:27:12.887121Z"
@@ -767,24 +760,15 @@
       ]
     }
   ],
-  "selected_alternative": null,
+  "selected_alternative": "ALT-A_STAGED_DECLARATIVE_LIFECYCLE_GUARD",
   "current_uncertainties": [
-    {
-      "uncertainty": "The current caller/source authority that produced observed lease_fence mutations remains unresolved under backlog #189.",
-      "impact": "DESIGN_BLOCKING",
-      "evidence_needed": [
-        "Exact current versioned/declarative caller identity and source authority that accounts for the observed acquire/release effects, or evidence that reconciles/supersedes backlog #189."
-      ],
-      "design_consequence": "Do not implement #186 or activate #187 while #189 remains blocking. The Route-A architecture stays within existing C05/step-contract surfaces but cannot be handed off as implementation-ready.",
-      "containment_ref": "$.authority_contradictions[0]"
-    },
     {
       "uncertainty": "Fresh operation/caller readiness evidence must be recomputed for each bounded #186/#187 sublot because operation contracts and caller sources can change.",
       "impact": "IMPLEMENTATION_PRECONDITION",
       "evidence_needed": [
         "Direct bounded readback of the exact caller manifest/source identities, lifecycle step/contract declarations, operation revision and required C05 controls for the target operation."
       ],
-      "design_consequence": "No new persistent readiness resolver is required. The bounded migration/test readback computes the evidence directly from existing authorized surfaces; any mismatch keeps the operation on baseline and blocks #187.",
+      "design_consequence": "No new persistent readiness resolver is required. The bounded migration/test readback computes evidence directly from existing authorized surfaces; any mismatch keeps the operation on baseline and blocks #187.",
       "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[0]"
     }
   ],
@@ -962,8 +946,8 @@
     }
   ],
   "live_authority_packet": {
-    "status": "PARTIAL",
-    "observed_at": "2026-09-19T21:27:20.577971+00:00",
+    "status": "COMPLETE",
+    "observed_at": "2026-09-20T00:29:39.890914+00:00",
     "evidence_refs": [
       "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
       "github://cristhianlujan/claude-persona-lf-patch@cfd906623388f508237dfc4f18c7255a126aa24a/profiles/systemic_root_cause_repair_lf",
@@ -973,13 +957,18 @@
       "supabase://public.lf_activos/POL-LF-OPERATION-LIFECYCLE",
       "supabase://public.lf_operation_step_contracts/output_payload",
       "supabase://pg_proc/public.lf_operation_revision_sha256_v1",
-      "supabase://public.lf_backlog_errores_operativos/189"
+      "supabase://public.lf_backlog_errores_operativos/189",
+      "supabase://public.lf_backlog_errores_operativos/189#resolution_20260919",
+      "supabase://public.lf_operation_execution/EXEC-MR02-CALLER-AUTHORITY-RECON-20260919-001",
+      "supabase://public.lf_eventos/14627",
+      "supabase://public.lf_error_knowledge/AUDIT-DIRECT-CALLER-AUTHORITY-INVENTORY-GAP-001"
     ],
     "inspected_surfaces": [
       "REPOSITORY_SOURCE",
       "SQL_FUNCTIONS",
       "OPERATION_POLICY",
-      "EXECUTION_LEDGER"
+      "EXECUTION_LEDGER",
+      "AGENT_CONNECTOR_IDENTITY"
     ],
     "applicable_surfaces": [
       "REPOSITORY_SOURCE",
@@ -988,18 +977,9 @@
       "EXECUTION_LEDGER",
       "AGENT_CONNECTOR_IDENTITY"
     ],
-    "unavailable_sources": [
-      "CURRENT_UNDECLARED_LEASE_CALLER_AUTHORITY_BACKLOG_189"
-    ],
+    "unavailable_sources": [],
     "material_effects_observed": true,
-    "unavailable_source_assessments": [
-      {
-        "source": "CURRENT_UNDECLARED_LEASE_CALLER_AUTHORITY_BACKLOG_189",
-        "impact": "DESIGN_BLOCKING",
-        "rationale": "Backlog #189 records live lease_fence mutations while no current versioned SQL/main-runtime/checked-edge/Hetzner caller of acquire/release is resolved. #186 explicitly blocks implementation until that authority is reconciled.",
-        "containment_ref": "$.authority_contradictions[0]"
-      }
-    ]
+    "unavailable_source_assessments": []
   },
   "preferred_alternative": "ALT-A_STAGED_DECLARATIVE_LIFECYCLE_GUARD",
   "rejected_alternatives": [
@@ -1073,7 +1053,7 @@
           "reserve/lease/checkpoint/effect/terminal evidence",
           "blocking findings"
         ],
-        "precondition": "#186 readback is current for the exact operation and backlog #189 caller authority is reconciled.",
+        "precondition": "#186 readback is current for the exact operation and the caller-authority currentness check has no unresolved mutation.",
         "fail_closed_behavior": "Any incomplete caller/control evidence or unresolved authority prevents the #187 sublot."
       },
       {
@@ -1102,7 +1082,7 @@
           "current fence",
           "step/evidence contract"
         ],
-        "precondition": "Exactly one operation has a separately approved #187 sublot after clean #186 readback and resolved #189 authority.",
+        "precondition": "Exactly one operation has a separately approved #187 sublot after clean #186 readback and a clean caller-authority currentness check.",
         "fail_closed_behavior": "Missing/stale lifecycle evidence rejects only the activated operation; others retain baseline."
       }
     ],
@@ -1138,7 +1118,7 @@
         "artifact_ref": "supabase://public.lf_backlog_errores_operativos/187",
         "dependencies": [
           "#186 readback",
-          "#186 bounded readiness readback clean + #189 authority reconciled"
+          "#186 bounded readiness readback clean + caller-authority currentness clean"
         ],
         "acceptance_refs": [
           "AC-STALE-WRITER",
@@ -1204,8 +1184,8 @@
       }
     ],
     "decision_closure": {
-      "handoff_ready": false,
-      "closure_statement": "Route A closes the N2 design defect without expanding #186: readiness uses existing step-contract rules, direct bounded readback and existing C05 primitives only. The candidate is intentionally not handoff-ready because backlog #189 remains a DESIGN_BLOCKING caller-authority contradiction.",
+      "handoff_ready": true,
+      "closure_statement": "Route A closes the N2 design defect without expanding #186: readiness uses existing step-contract rules, direct bounded readback and existing C05 primitives only. #189 caller authority is reconciled and RESUELTA. Remaining child approvals/readbacks are governed implementation gates, not open architecture decisions.",
       "open_design_decisions": [],
       "implementation_preconditions": [
         {
@@ -1214,14 +1194,6 @@
           "expected_shape": "Exact operation revision, exact bounded caller manifest/currentness, declared reserve/lease/checkpoint/effect/terminal obligations, and zero material readback mismatches.",
           "decision_rule": "Only a current #186 bounded readback with complete exact caller/control coverage may satisfy the readiness prerequisite; otherwise remain baseline. This is direct evidence computation, not a new persistent resolver.",
           "stage": "MR02_A_TO_MR02_B",
-          "design_effect": "NONE"
-        },
-        {
-          "name": "current caller authority reconciliation",
-          "resolver_ref": "supabase://public.lf_backlog_errores_operativos/189",
-          "expected_shape": "Exact versioned/declarative caller/source identity reconciles the observed lease mutations, and backlog #189 is no longer blocking.",
-          "decision_rule": "No #186 implementation approval and no #187 enforcement while backlog #189 remains ABIERTA with blocking=true.",
-          "stage": "PRE_MR02_A_IMPLEMENTATION",
           "design_effect": "NONE"
         }
       ]
@@ -1400,7 +1372,7 @@
           "supabase://public.lf_backlog_errores_operativos/186",
           "supabase://public.lf_backlog_errores_operativos/187"
         ],
-        "compatibility_rule": "During ADOPT, unprepared operations keep baseline; #187 may enforce only one exact operation after clean #186 bounded readback, resolved #189 caller authority and separate approval."
+        "compatibility_rule": "During ADOPT, unprepared operations keep baseline; #187 may enforce only one exact operation after clean #186 bounded readback, a clean caller-authority currentness check and separate approval."
       }
     ]
   },
@@ -1426,29 +1398,25 @@
     "elimination_impact": "Removing the shared reliability primitives would increase fragmentation and duplicate lifecycle logic; the defect is incomplete transversal adoption/enforcement, not the existence of C05.",
     "native_or_existing_alternative": "Reuse C05_GENERIC_EXECUTION_RELIABILITY, POL-LF-OPERATION-LIFECYCLE, existing operation steps/contracts, recorder and effect guard; do not create a second lifecycle engine, table, runner or policy."
   },
-  "authority_contradictions": [
-    {
-      "classification": "UNDECLARED_EXECUTION",
-      "declared": "Current checked SQL callers, main runtime source, checked unversioned Edge functions, current Hetzner runtime, cron and active n8n do not resolve an acquire/release caller.",
-      "observed": "Live executions contain lease_fence>0, proving lease mutation occurred through an unresolved caller/authority path.",
-      "blocking": true,
-      "evidence_ref": "supabase://public.lf_backlog_errores_operativos/189"
-    }
-  ],
+  "authority_contradictions": [],
   "execution_effect_reconciliation": [
     {
-      "effect": "Observed lease_fence state whose current invoking caller/source authority is not represented by the checked versioned execution surfaces.",
-      "observed_ref": "supabase://public.lf_backlog_errores_operativos/189",
-      "declared_producer": "C05 acquire/release primitives are the live lease mutation surface; the invoking caller authority is unresolved.",
+      "effect": "Observed lease_fence/effect history across governed operations where the original audit did not find static versioned acquire/release callers.",
+      "observed_ref": "supabase://public.lf_backlog_errores_operativos/189#resolution_20260919",
+      "declared_producer": "Existing C05 lifecycle primitives invoked through governed operation-bound or direct operational caller surfaces.",
       "declared_producer_ref": "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1+public.fn_lf_operation_release_lease_v1",
       "observed_producer_refs": [
-        "supabase://public.lf_backlog_errores_operativos/189",
-        "supabase://public.lf_operation_execution"
+        "supabase://public.lf_operation_execution/EXEC-MR02-CALLER-AUTHORITY-RECON-20260919-001",
+        "supabase://public.lf_eventos/14627",
+        "supabase://pg_stat_statements#c05_direct_calls_role_postgres",
+        "supabase://public.lf_capability_registry/DB_WRITE_TRANSPORT",
+        "supabase://public.lf_eventos/14220",
+        "supabase://public.lf_eventos/14221"
       ],
-      "reconciliation_status": "UNDECLARED_EXECUTION",
-      "blocking": true,
-      "impact": "DESIGN_BLOCKING",
-      "containment_ref": "$.authority_contradictions[0]"
+      "reconciliation_status": "MATCH",
+      "blocking": false,
+      "impact": "NONE",
+      "containment_ref": null
     }
   ]
 }
