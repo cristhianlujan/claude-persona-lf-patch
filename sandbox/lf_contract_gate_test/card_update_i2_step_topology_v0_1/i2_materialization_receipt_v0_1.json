@@ -1,0 +1,63 @@
+{
+  "schema": "LF_CARD_UPDATE_I2_MATERIALIZATION_RECEIPT_V0_1",
+  "status": "MATERIALIZED_CANDIDATE_READ_ONLY",
+  "operation_code": "ACTUALIZACION_CARD_LF",
+  "execution_id": "EXEC-CARD-UPDATE-I2-TOPOLOGY-REPAIR-20260912-001",
+  "bootstrap_operation": "VULNERABILITY_COVERAGE_REPAIR_LF",
+  "source_branch": "lf/card-update-i1-policy-rebase-v01",
+  "source_manifest_commit": "b7e090fa21493ad8f1f3b6a0ae5f76fabed17893",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "preflight": {
+    "ekb_completed": true,
+    "schema_first_completed": true,
+    "open_target_executions_before_mutation": 0,
+    "dry_run_transaction": "PASS_ROLLBACK",
+    "provenance_guard_enforced": true,
+    "bootstrap_step_1_judge_derived": true
+  },
+  "materialized": {
+    "registry_version": "v0.2-candidate",
+    "registry_status": "CANDIDATO_READ_ONLY",
+    "active_step_count": 16,
+    "change_scope_order": 60,
+    "regression_plan_order": 70,
+    "pre_write_execution_binding_gate_order": 80,
+    "step_contract_count_v0_2": 16,
+    "judge_binding_count": 16,
+    "bad_next_links": 0,
+    "bad_binding_evidence": 0,
+    "old_contract_status": "SUPERSEDED",
+    "new_contract_status": "CANDIDATO_READ_ONLY",
+    "old_judges_status": "SUPERSEDED",
+    "new_judges_status": "CANDIDATO_READ_ONLY"
+  },
+  "authority": {
+    "operational_authority": "SUPABASE_ONLY",
+    "source_policy_code": "POL-LF-SOURCE-RESOLUTION",
+    "source_policy_version": "v1.4-transversal-supabase-authority-visual-support",
+    "source_policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46",
+    "external_carrier_authority": false,
+    "external_carrier_role": "TRANSPORT_INTEGRITY_AND_CURRENTNESS_ONLY"
+  },
+  "safety_ceiling": {
+    "carrier_write_authorized": false,
+    "runtime_activation_authorized": false,
+    "production_authorized": false,
+    "automatic_promotion_authorized": false,
+    "golden_authorized": false,
+    "merge_authorized": false
+  },
+  "evidence": {
+    "level": "STRUCTURAL_PLUS_LIVE_SUPABASE_READBACK",
+    "independent_semantic_review_executed": false,
+    "negative_card_update_canaries_rerun": false,
+    "carrier_write_executed": false
+  },
+  "remaining_blockers": [
+    "I3_DURABLE_CARRIER_CURRENTNESS_BINDING_NOT_MATERIALIZED",
+    "I4_OPERATION_NEUTRAL_RECORDER_PLUS_CARD_TRUST_VALIDATOR_NOT_IMPLEMENTED",
+    "NEGATIVE_CARD_UPDATE_CANARIES_NOT_RERUN_ON_V0_2",
+    "INDEPENDENT_REVIEW_PENDING"
+  ],
+  "next_gate": "I3_DURABLE_CARRIER_CURRENTNESS_BINDING_CANDIDATE"
+}

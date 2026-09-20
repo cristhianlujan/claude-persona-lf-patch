@@ -1,0 +1,62 @@
+{
+  "schema": "LF_CARD_UPDATE_I3_MATERIALIZATION_RECEIPT_V0_1",
+  "status": "I3_DURABLE_BINDING_COMPLETE",
+  "operation_code": "ACTUALIZACION_CARD_LF",
+  "execution_id": "EXEC-CARD-UPDATE-I3-CARRIER-BINDING-20260912-001",
+  "source_branch": "lf/card-update-i1-policy-rebase-v01",
+  "binding_contract_commit": "52ea4e2e42a72d76d567221deb5672d6d41a6076",
+  "base_main_at_binding": "eba7d87b98b2a7c88252ced67d1c9a7ad05758c7",
+  "asset": {
+    "asset_id": 43,
+    "asset_code": "CARD-CAND-DASHBOARD-CLIENTE-LECTOR-LF-001",
+    "authority_ref": "supabase://public/lf_activos/CARD-CAND-DASHBOARD-CLIENTE-LECTOR-LF-001",
+    "metadata_md5_before": "65c74e23d753b1f2c79aebb02bba3ae4",
+    "metadata_md5_after": "c830827f8eab4ffb2a5634c5abd765ae"
+  },
+  "source_policy": {
+    "code": "POL-LF-SOURCE-RESOLUTION",
+    "version": "v1.4-transversal-supabase-authority-visual-support",
+    "sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46",
+    "authority": "SUPABASE_ONLY"
+  },
+  "carrier_binding": {
+    "schema": "LF_CARRIER_BINDING_V1",
+    "carrier_type": "GOOGLE_DOC_EMBEDDED_BLOCK",
+    "carrier_authority": false,
+    "carrier_role": "NON_AUTHORITATIVE_TRANSPORT_INTEGRITY_AND_CURRENTNESS_ONLY",
+    "document_id": "1DoT3rYFPAIbCQlYXID7PChmCk149tI13MOCYhmBZf1E",
+    "tab_id": "t.0",
+    "provider_revision_id": "ANLCKQncEv_OKZQB9C7sx2bT31soWvJQROT5ZhSXm_BcZChYHE29jk-0cRxsJZKLulDmZ1sVBWhKTi2d9AlKs8zYX2rAeTqVpQLgJzypPJQ",
+    "provider_write_guard": "requiredRevisionId",
+    "block_anchor": "CARD_CANDIDATA_DASHBOARD_CLIENTE_LECTOR_LF_001",
+    "anchor_start_index": 12976,
+    "anchor_end_index": 13022,
+    "next_anchor": "AUTO_SUMMARY_CLIENT_READER_LAYER_LF_001",
+    "next_anchor_start_index": 13811,
+    "last_bound_paragraph_end_index": 13809,
+    "content_sha256": "0401cea0e645f7910676839855e336ecdc1248bfc8cf388e7abe157992e19dab",
+    "content_hash_algorithm": "SHA256_CANONICAL_PARAGRAPHS_JOINED_LF_V1",
+    "provider_postread_revision_matches_binding": true
+  },
+  "readback": {
+    "binding_persisted_in": "public.lf_activos.metadata.carrier_binding_v1",
+    "source_governance_policy_updated_to_v1_4": true,
+    "source_governance_policy_sha_exact": true,
+    "storage_refs_google_drive_operational_read_allowed": false,
+    "runtime_estado": "PRODUCCION_CONTROLADA_READ_ONLY",
+    "impacto_automatico": "BLOQUEADO",
+    "carrier_write_executed": false
+  },
+  "claim_ceiling": "DURABLE_BINDING_PLUS_PROVIDER_CURRENTNESS_READBACK_NO_CARRIER_WRITE",
+  "not_proven": [
+    "CARD_UPDATE_PREWRITE_RECORDER_ENFORCEMENT",
+    "STALE_REVISION_NEGATIVE_ON_V0_2",
+    "POSITIVE_NO_WRITE_CANARY_ON_V0_2",
+    "INDEPENDENT_REVIEW",
+    "CARRIER_WRITE_READINESS",
+    "RUNTIME_OR_PRODUCTION_READINESS"
+  ],
+  "next_gate": "I4_OPERATION_NEUTRAL_RECORDER_PLUS_CARD_TRUST_VALIDATOR_CANDIDATE",
+  "merge_authorized": false,
+  "production_authorized": false
+}

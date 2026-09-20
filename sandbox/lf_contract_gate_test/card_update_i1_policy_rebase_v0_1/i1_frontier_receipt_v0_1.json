@@ -1,0 +1,61 @@
+{
+  "schema": "LF_CARD_UPDATE_I1_FRONTIER_RECEIPT_V0_1",
+  "status": "I1_CANDIDATE_DESIGN_COMPLETE",
+  "observed_at": "2026-09-13T01:41:34.168651+00:00",
+  "base_main_sha": "d4051d9c57fdfd09741da5ba2718c032eac56c92",
+  "branch": "lf/card-update-i1-policy-rebase-v01",
+  "artifacts": [
+    "i1_preflight_receipt_v0_1.json",
+    "i1_card_update_contract_v0_2_candidate.json",
+    "i1_step_topology_repair_plan_v0_1.json",
+    "i1_negative_acceptance_matrix_v0_1.json"
+  ],
+  "decisions": {
+    "operational_authority": "SUPABASE_ONLY",
+    "carrier_role": "NON_AUTHORITATIVE_TRANSPORT_INTEGRITY_AND_CURRENTNESS",
+    "candidate_contract_version": "v0.2",
+    "live_contract_version_unchanged": "v0.1",
+    "live_steps_unchanged": 14,
+    "candidate_steps_if_i2_authorized": 16,
+    "change_scope_first_class_gate_required": true,
+    "regression_plan_first_class_gate_required": true,
+    "stale_provider_revision_must_fail_prewrite": true
+  },
+  "verification": {
+    "branch_vs_main": "AHEAD_4_BEHIND_0_BEFORE_THIS_FRONTIER_COMMIT",
+    "changed_paths_before_this_frontier_commit": 4,
+    "all_changed_paths_in_isolated_sandbox_scope": true,
+    "supabase_operation_status": "CANDIDATO_READ_ONLY",
+    "supabase_operation_version": "v0.1",
+    "supabase_live_step_count": 14,
+    "supabase_change_scope_step_count": 0,
+    "supabase_regression_plan_step_count": 0,
+    "source_policy_version": "v1.4-transversal-supabase-authority-visual-support",
+    "source_policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46",
+    "supabase_mutation_performed": false,
+    "carrier_write_performed": false,
+    "runtime_or_production_activation": false
+  },
+  "evidence_ceiling": {
+    "level": "STRUCTURAL",
+    "negative_matrix_executed": false,
+    "ci_executed": false,
+    "independent_review_executed": false,
+    "semantic_or_behavioral_claim": false
+  },
+  "remaining_blockers": [
+    "I2_EXPLICIT_STEP_TOPOLOGY_REPAIR_NOT_MATERIALIZED",
+    "I3_DURABLE_CARRIER_CURRENTNESS_BINDING_NOT_MATERIALIZED",
+    "CARD_UPDATE_RECORDER_ENFORCEMENT_NOT_IMPLEMENTED",
+    "NEGATIVE_CANARIES_NOT_RERUN_ON_V0_2_TOPOLOGY",
+    "INDEPENDENT_REVIEW_PENDING"
+  ],
+  "close_guard": {
+    "i1_design_scope_remaining": 0,
+    "can_close_i1_candidate_design": true,
+    "can_mutate_supabase": false,
+    "can_enable_card_update_write": false,
+    "can_promote_operation": false,
+    "next_gate": "I2_EXPLICIT_STEP_TOPOLOGY_REPAIR_CANDIDATE"
+  }
+}

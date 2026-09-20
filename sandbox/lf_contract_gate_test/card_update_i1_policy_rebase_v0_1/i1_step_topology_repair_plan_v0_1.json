@@ -1,0 +1,76 @@
+{
+  "schema": "LF_CARD_UPDATE_I1_STEP_TOPOLOGY_REPAIR_PLAN_V0_1",
+  "status": "CANDIDATE_PLAN_ONLY",
+  "operation_code": "ACTUALIZACION_CARD_LF",
+  "live_version": "v0.1",
+  "candidate_contract": "LF_ACTUALIZACION_CARD_CONTRACT_V0_2_CANDIDATE",
+  "problem": {
+    "live_step_count": 14,
+    "top_level_contract_requires_change_scope": true,
+    "top_level_contract_requires_regression_plan": true,
+    "live_change_scope_step_present": false,
+    "live_regression_plan_step_present": false,
+    "contract_to_steps_consistent": false
+  },
+  "candidate_execution_order": [
+    {"order":0,"step_id":"init_execution","classification":"COMMON"},
+    {"order":10,"step_id":"router","classification":"COMMON"},
+    {"order":20,"step_id":"card_resolve","classification":"CARD_SPECIFIC"},
+    {"order":30,"step_id":"carrier_resolve","classification":"CARRIER_SPECIFIC","semantic_repair":"Resolve Supabase-authorized carrier binding; carrier itself is not authority"},
+    {"order":40,"step_id":"parent_source_read","classification":"CARRIER_SPECIFIC","semantic_repair":"Read exact bound carrier metadata/content for transport integrity/currentness only; do not derive operational authority"},
+    {"order":50,"step_id":"baseline_read","classification":"COMMON_PLUS_CARRIER"},
+    {"order":60,"step_id":"change_scope","classification":"COMMON_NEW_REQUIRED","purpose":"Define defect/root cause/minimal authorized delta and preserved identity/authority/parent boundaries","required_evidence_keys":["defect","root_cause","minimal_patch_scope","preserved_constraints","authority_boundaries_preserved","carrier_route_preserved"]},
+    {"order":70,"step_id":"regression_plan","classification":"COMMON_NEW_REQUIRED","purpose":"Define positive, negative, adversarial, stale-currentness and holdout cases before write","required_evidence_keys":["positive_cases","negative_cases","adversarial_cases","stale_revision_cases","wrong_carrier_cases","holdout"]},
+    {"order":80,"step_id":"pre_write_execution_binding_gate","classification":"COMMON_PLUS_CARRIER","semantic_repair":"Bind current source-policy snapshot, Supabase authority, exact carrier binding, fresh provider revision/hash, change scope and regression plan before write"},
+    {"order":90,"step_id":"carrier_write_dispatch","classification":"CARRIER_SPECIFIC"},
+    {"order":100,"step_id":"carrier_readback","classification":"CARRIER_SPECIFIC"},
+    {"order":110,"step_id":"deterministic_validation","classification":"COMMON_PLUS_CARRIER"},
+    {"order":120,"step_id":"semantic_judge","classification":"COMMON_SEMANTIC"},
+    {"order":130,"step_id":"regression_after","classification":"COMMON_PLUS_CARRIER"},
+    {"order":140,"step_id":"close","classification":"COMMON"},
+    {"order":150,"step_id":"report_output","classification":"COMMON"}
+  ],
+  "prewrite_candidate_required_evidence": [
+    "execution_id",
+    "card_code",
+    "current_source_policy_code",
+    "current_source_policy_version",
+    "current_source_policy_sha",
+    "supabase_authority_ref",
+    "carrier_binding_ref",
+    "carrier_type",
+    "carrier_ref",
+    "fresh_provider_revision_or_blob_sha",
+    "content_sha256",
+    "block_anchor_or_path",
+    "trusted_context_ref",
+    "change_scope_ref",
+    "regression_plan_ref",
+    "provider_write_guard",
+    "pre_write_gate_passed"
+  ],
+  "prewrite_candidate_blocking_codes": [
+    "CARD_UPDATE_POLICY_SNAPSHOT_STALE",
+    "CARD_UPDATE_SUPABASE_AUTHORITY_MISSING",
+    "CARD_UPDATE_CARRIER_BINDING_MISSING",
+    "CARD_UPDATE_CARRIER_ROUTE_MISMATCH",
+    "CARD_UPDATE_CHANGE_SCOPE_MISSING",
+    "CARD_UPDATE_REGRESSION_PLAN_MISSING",
+    "CARD_UPDATE_TRUST_CONTEXT_MISSING",
+    "CARD_UPDATE_PROVIDER_CURRENTNESS_MISSING",
+    "CARD_UPDATE_PROVIDER_REVISION_STALE",
+    "CARD_UPDATE_PROVIDER_WRITE_GUARD_MISSING"
+  ],
+  "renumbering_rule": "No live renumbering occurs in I1. If I2 is authorized, update steps, step contracts, judge bindings and next_if_pass links transactionally as one governed candidate change.",
+  "reuse": {
+    "profile_updater_reference": "ACTUALIZACION_PERFIL_LF change_scope + regression_plan semantics",
+    "profile_hardcodes_reused": false,
+    "common_recorder_target": "OPERATION_NEUTRAL_RECORDER_CORE_PLUS_CARD_TRUST_VALIDATOR"
+  },
+  "i1_disposition": {
+    "policy_semantics_rebased": true,
+    "topology_repair_defined": true,
+    "live_topology_mutated": false,
+    "next_gate": "I2_EXPLICIT_STEP_TOPOLOGY_REPAIR_CANDIDATE"
+  }
+}
