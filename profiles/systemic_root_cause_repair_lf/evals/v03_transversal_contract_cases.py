@@ -325,4 +325,16 @@ invalid_revision["origin_asset"]["observed_revision"] = "v1"
 assert schema_errors(invalid_revision)
 assert list(runtime_schema_validator.iter_errors(invalid_revision))
 
-print("PASS_SRCR_V03_TRANSVERSAL_CONTRACT=17/17")
+# 18. Every non-NONE depth signal is provider-constrained to matching materiality and obligation types.
+invalid_depth_closure = copy.deepcopy(source_recurrence)
+invalid_depth_closure["solution_depth"]["complexity_signals"] = ["CONCURRENCY", "COST_SCALE"]
+assert list(runtime_schema_validator.iter_errors(invalid_depth_closure))
+
+# 19. Origin authority subject must match the evidence-manifest subject exactly.
+subject_candidate, subject_manifest = to_v2(*valid_pair())
+subject_candidate["origin_asset"]["subject"] = "RELATED-BUT-DIFFERENT-SUBJECT"
+subject_candidate, subject_manifest = rebind(subject_candidate, subject_manifest)
+subject_result = runtime_validate.validate(subject_candidate, subject_manifest)
+assert_code(subject_result, "SRCR_EXISTING_AUTHORITY_SUBJECT_MISMATCH", "authority_subject_exact_match")
+
+print("PASS_SRCR_V03_TRANSVERSAL_CONTRACT=19/19")
