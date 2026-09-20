@@ -267,15 +267,7 @@
     ],
     "missing_evidence": []
   },
-  "residual_risks": [
-    {
-      "risk": "Historical executions may lack enough evidence for automated disposition; owner decision remains separate from systemic repair.",
-      "evidence_refs": [
-        "input://public.lf_backlog_errores_operativos/183",
-        "design://mr02/historical-disposition-separate"
-      ]
-    }
-  ],
+  "residual_risks": [],
   "solution_depth": {
     "mode": "DEEP_ARCHITECTURE_RESEARCH",
     "rationale": "The failure class spans cross-operation lifecycle authority, idempotency, fenced ownership, durable recovery, terminality, caller compatibility and shared enforcement boundaries.",
@@ -774,7 +766,7 @@
       ]
     }
   ],
-  "selected_alternative": "ALT-A_STAGED_DECLARATIVE_LIFECYCLE_GUARD",
+  "selected_alternative": null,
   "current_uncertainties": [
     {
       "uncertainty": "The current caller/source authority that produced observed lease_fence mutations remains unresolved under backlog #189.",
