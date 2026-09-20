@@ -1,7 +1,7 @@
 {
   "schema": "SRCR_MR02_R2_ROUTE_A_REPAIR_DIFF_V1",
   "source_candidate_sha256": "5f18b8c23bb439c3790c53c01099753f7f3d53cbe897b407f7da413b202827ff",
-  "repaired_candidate_sha256": "785673990b4df0ad078ebe1e44dcd0611c5ab9e3f1aa6137c9efa28aefe4c72d",
+  "repaired_candidate_sha256": "e6f75ba01ce159771e027c2ea16fcdc42f6467d7bfa2f66c8cd648fb533fc26e",
   "route": "A_PRODUCER_REPAIR_NO_SCOPE_EXPANSION",
   "p1": {
     "removed_change": "CREATE FUNCTION public.lf_operation_lifecycle_readiness_v1(text,text)",
@@ -13,8 +13,10 @@
   },
   "newly_exposed_blocker": {
     "backlog_id": 189,
-    "code": "UNDECLARED_EXECUTION_CALLER_AUTHORITY_UNRESOLVED",
-    "consequence": "Candidate must remain NEEDS_MORE_EVIDENCE and not handoff-ready until authority is reconciled."
+    "prior_state": "DESIGN_BLOCKING",
+    "current_state": "RESOLVED_EVIDENCE_RECONCILED",
+    "resolution_ref": "supabase://public.lf_backlog_errores_operativos/189#resolution_20260919",
+    "current_consequence": "No longer blocks candidate; any new unattributed lifecycle mutation re-blocks #186/#187."
   },
   "evidence_refs": [
     "supabase://public.lf_backlog_errores_operativos/186",
@@ -23,5 +25,14 @@
     "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1",
     "supabase://pg_proc/public.fn_lf_operation_checkpoint_v1",
     "supabase://pg_proc/public.fn_lf_operation_release_lease_v1"
-  ]
+  ],
+  "scope_packet_sha256": "08e248b5b819291b4b8bed75a259a7c157e1ede3773a7bb382222db4ac61ca34",
+  "p5_final_replay": {
+    "semantic_verdict": "PASS_INDEPENDENT_SEMANTIC",
+    "seven_invariants": "7/7_PASS",
+    "prohibited_function_occurrences": 0,
+    "backlog_189_state": "RESUELTA",
+    "caller_authority_reconciliation_execution": "EXEC-MR02-CALLER-AUTHORITY-RECON-20260919-001",
+    "next_gate": "INDEPENDENT_CLAUDE_R2A_AUDIT"
+  }
 }
