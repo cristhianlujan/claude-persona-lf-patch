@@ -107,15 +107,19 @@ async function operationSnapshot(ex: any): Promise<any> {
   const rec = new Map(recorded.map((r: any) => [r.step_id, r]));
   const contractsBy = new Map(contracts.map((r: any) => [r.step_id, r]));
   const bindingsBy = new Map(bindings.map((r: any) => [r.step_id, r]));
+  const recordedStepIsClean = (stepId: string): boolean => {
+    const row = rec.get(stepId), binding = bindingsBy.get(stepId);
+    return Boolean(row && binding && row.status === binding.clean_result_value);
+  };
   let next: any = null;
   for (const s of steps) {
-    if (!s.required || rec.has(s.step_id)) continue;
+    if (!s.required || recordedStepIsClean(s.step_id)) continue;
     const c = contractsBy.get(s.step_id), b = bindingsBy.get(s.step_id);
     if (!c || !b) throw new Error(`PROFILE_OPERATION_STEP_CONTRACT_OR_JUDGE_MISSING:${s.step_id}`);
     next = { step_id: s.step_id, step_order: s.step_order, execution_order: s.execution_order, resolver_ref: c.resolver_ref, required_evidence_keys: b.required_evidence_keys ?? c.required_evidence_keys ?? [], judge_code: b.judge_code, clean_result_value: b.clean_result_value, blocked_result_value: b.blocked_result_value, return_result_value: b.return_result_value, next_if_pass: c.next_if_pass, next_if_blocked: c.next_if_blocked };
     break;
   }
-  return { operation_code: op, target_code: ex.target_code, target_path: ex.target_path, execution_status: ex.status, execution_updated_at: ex.updated_at, declared_step_count: steps.length, recorded_step_count: recorded.length, remaining_required_count: steps.filter((s: any) => s.required && !rec.has(s.step_id)).length, baseline_observation: op === "ACTUALIZACION_PERFIL_LF" ? baselineObservation(recorded) : null, next_step: next, policies };
+  return { operation_code: op, target_code: ex.target_code, target_path: ex.target_path, execution_status: ex.status, execution_updated_at: ex.updated_at, declared_step_count: steps.length, recorded_step_count: recorded.length, remaining_required_count: steps.filter((s: any) => s.required && !recordedStepIsClean(s.step_id)).length, baseline_observation: op === "ACTUALIZACION_PERFIL_LF" ? baselineObservation(recorded) : null, next_step: next, policies };
 }
 
 function stripCallerTrust(evidence: Record<string, unknown>): Record<string, unknown> {
