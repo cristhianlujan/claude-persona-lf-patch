@@ -255,6 +255,7 @@
     ]
   },
   "blocking_codes": [
+    "LIVE_AUTHORITY_EVIDENCE_INCOMPLETE",
     "UNDECLARED_EXECUTION_CALLER_AUTHORITY_UNRESOLVED"
   ],
   "escape_control": {
