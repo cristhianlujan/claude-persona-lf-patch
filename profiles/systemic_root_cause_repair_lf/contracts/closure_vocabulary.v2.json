@@ -1,0 +1,192 @@
+{
+  "contract_version": "SRCR_CLOSURE_VOCABULARY_V2",
+  "proof_phases": [
+    "CURRENT_STATE",
+    "REPAIR_DESIGN",
+    "POST_IMPLEMENTATION"
+  ],
+  "spec_blocking_phases": [
+    "CURRENT_STATE",
+    "REPAIR_DESIGN"
+  ],
+  "solution_depth_signals": [
+    "CROSS_OPERATION",
+    "AUTHORITY_CHANGE",
+    "POLICY_CONTRACT_CHANGE",
+    "CONTEXT_TRANSPORT",
+    "STATE_RECOVERY",
+    "CONCURRENCY",
+    "MIGRATION_TRANSITION",
+    "SECURITY_BOUNDARY",
+    "MULTI_RUNTIME",
+    "COST_SCALE",
+    "NONE"
+  ],
+  "omission_dimensions": [
+    "ARCHITECTURE",
+    "CONTROLS",
+    "POLICIES_CONTRACTS",
+    "CONTEXT_TRANSPORT",
+    "WIRING",
+    "COMPATIBILITY_TRANSITION",
+    "RECOVERY_TERMINALITY",
+    "OBSERVABILITY",
+    "SECURITY_AUTHORITY",
+    "COST_PERFORMANCE",
+    "TESTING_ASSURANCE",
+    "OPERABILITY_MAINTENANCE"
+  ],
+  "closure_materiality_signals": [
+    "CROSS_OPERATION",
+    "AUTHORITY_CHANGE",
+    "POLICY_CONTRACT_CHANGE",
+    "CONTEXT_TRANSPORT",
+    "STATE_RECOVERY",
+    "CONCURRENCY",
+    "MIGRATION_TRANSITION",
+    "SECURITY_BOUNDARY",
+    "MULTI_RUNTIME",
+    "COST_SCALE",
+    "ARCHITECTURE",
+    "CONTROLS",
+    "POLICIES_CONTRACTS",
+    "WIRING",
+    "COMPATIBILITY_TRANSITION",
+    "RECOVERY_TERMINALITY",
+    "OBSERVABILITY",
+    "SECURITY_AUTHORITY",
+    "COST_PERFORMANCE",
+    "TESTING_ASSURANCE",
+    "OPERABILITY_MAINTENANCE",
+    "EVIDENCE_PROVENANCE",
+    "DECISION_CLOSURE"
+  ],
+  "proof_obligation_types": [
+    "AUTHORITY_EXISTENCE",
+    "WIRING_PHYSICALITY",
+    "STATE_RECOVERY_SEMANTICS",
+    "MIGRATION_TRANSITION",
+    "CONTEXT_TRANSPORT",
+    "SECURITY_BOUNDARY",
+    "CONCURRENCY",
+    "POLICY_CONTRACT",
+    "COMPATIBILITY",
+    "OBSERVABILITY",
+    "TEST_ASSURANCE",
+    "DECISION_CLOSURE",
+    "EVIDENCE_PROVENANCE",
+    "OTHER_MATERIAL"
+  ],
+  "recurrence_evidence_classes": [
+    "DECLARED_INPUT",
+    "OBSERVED_HISTORY",
+    "OBSERVED_SOURCE",
+    "OBSERVED_LIVE"
+  ],
+  "behavioral_proof_signals": [
+    "STATE_RECOVERY",
+    "MIGRATION_TRANSITION"
+  ],
+  "wiring_binding_states": [
+    "OBSERVED_WIRED",
+    "OBSERVED_NOT_WIRED",
+    "PROPOSED_WIRING"
+  ],
+  "wiring_binding_kinds": [
+    "EXISTING_AUTHORITY",
+    "EXISTING_REUSABLE_CAPABILITY",
+    "PROPOSED_DELIVERABLE",
+    "NO_BINDING"
+  ],
+  "current_authority_evidence_classes": [
+    "OBSERVED_LIVE",
+    "OBSERVED_READBACK",
+    "GOVERNED_RECEIPT",
+    "SOURCE_PROVENANCE"
+  ],
+  "current_wiring_evidence_classes": [
+    "OBSERVED_LIVE",
+    "OBSERVED_READBACK",
+    "GOVERNED_RECEIPT"
+  ],
+  "current_wiring_absence_evidence_classes": [
+    "OBSERVED_LIVE",
+    "OBSERVED_READBACK",
+    "GOVERNED_RECEIPT",
+    "SOURCE_PROVENANCE"
+  ],
+  "signal_to_obligation_types": {
+    "CROSS_OPERATION": [
+      "WIRING_PHYSICALITY"
+    ],
+    "AUTHORITY_CHANGE": [
+      "AUTHORITY_EXISTENCE"
+    ],
+    "POLICY_CONTRACT_CHANGE": [
+      "POLICY_CONTRACT"
+    ],
+    "CONTEXT_TRANSPORT": [
+      "CONTEXT_TRANSPORT",
+      "WIRING_PHYSICALITY"
+    ],
+    "STATE_RECOVERY": [
+      "STATE_RECOVERY_SEMANTICS"
+    ],
+    "CONCURRENCY": [
+      "CONCURRENCY"
+    ],
+    "MIGRATION_TRANSITION": [
+      "MIGRATION_TRANSITION"
+    ],
+    "SECURITY_BOUNDARY": [
+      "SECURITY_BOUNDARY",
+      "AUTHORITY_EXISTENCE"
+    ],
+    "MULTI_RUNTIME": [
+      "WIRING_PHYSICALITY",
+      "COMPATIBILITY"
+    ],
+    "COST_SCALE": [
+      "OTHER_MATERIAL"
+    ],
+    "ARCHITECTURE": [
+      "DECISION_CLOSURE"
+    ],
+    "CONTROLS": [
+      "DECISION_CLOSURE"
+    ],
+    "POLICIES_CONTRACTS": [
+      "POLICY_CONTRACT"
+    ],
+    "WIRING": [
+      "WIRING_PHYSICALITY"
+    ],
+    "COMPATIBILITY_TRANSITION": [
+      "COMPATIBILITY"
+    ],
+    "RECOVERY_TERMINALITY": [
+      "STATE_RECOVERY_SEMANTICS"
+    ],
+    "OBSERVABILITY": [
+      "OBSERVABILITY"
+    ],
+    "SECURITY_AUTHORITY": [
+      "AUTHORITY_EXISTENCE"
+    ],
+    "COST_PERFORMANCE": [
+      "OTHER_MATERIAL"
+    ],
+    "TESTING_ASSURANCE": [
+      "TEST_ASSURANCE"
+    ],
+    "OPERABILITY_MAINTENANCE": [
+      "OTHER_MATERIAL"
+    ],
+    "EVIDENCE_PROVENANCE": [
+      "EVIDENCE_PROVENANCE"
+    ],
+    "DECISION_CLOSURE": [
+      "DECISION_CLOSURE"
+    ]
+  }
+}

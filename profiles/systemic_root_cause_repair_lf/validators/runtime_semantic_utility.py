@@ -2,7 +2,7 @@
 """Deterministic semantic-utility floor for SRCR specification readiness."""
 
 try:
-    from .closure_proof import V03_PACK_ID, unwrap_runtime_input
+    from .closure_proof import OMISSION_DIMENSIONS, V03_PACK_ID, unwrap_runtime_input
 except (ImportError, ModuleNotFoundError):
     import importlib.util as _importlib_util
     from pathlib import Path as _Path
@@ -11,6 +11,7 @@ except (ImportError, ModuleNotFoundError):
     _closure_mod = _importlib_util.module_from_spec(_closure_spec)
     assert _closure_spec and _closure_spec.loader
     _closure_spec.loader.exec_module(_closure_mod)
+    OMISSION_DIMENSIONS = _closure_mod.OMISSION_DIMENSIONS
     V03_PACK_ID = _closure_mod.V03_PACK_ID
     unwrap_runtime_input = _closure_mod.unwrap_runtime_input
 
@@ -240,7 +241,7 @@ def evaluate(payload, contract_gate, evidence_manifest=None):
             codes.append("DEEP_CHALLENGER_REVIEW_INSUFFICIENT")
         if any(isinstance(x, dict) and x.get("outcome") == "BLOCKED" for x in challenges):
             codes.append("SYSTEMIC_SPEC_WITH_UNRESOLVED_CHALLENGE")
-        required_omissions = {"ARCHITECTURE","CONTROLS","POLICIES_CONTRACTS","CONTEXT_TRANSPORT","WIRING","COMPATIBILITY_TRANSITION","RECOVERY_TERMINALITY","OBSERVABILITY","SECURITY_AUTHORITY","COST_PERFORMANCE","TESTING_ASSURANCE","OPERABILITY_MAINTENANCE"}
+        required_omissions = set(OMISSION_DIMENSIONS)
         observed_omissions = {x.get("dimension") for x in omissions if isinstance(x, dict)}
         if required_omissions - observed_omissions:
             codes.append("SYSTEMIC_SPEC_OMISSION_DISCOVERY_INCOMPLETE")
