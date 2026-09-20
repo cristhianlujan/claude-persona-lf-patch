@@ -246,6 +246,55 @@ def evaluate(payload, contract_gate, evidence_manifest=None):
             codes.append("SYSTEMIC_SPEC_OMISSION_DISCOVERY_INCOMPLETE")
         if not package:
             codes.append("SYSTEMIC_SPEC_IMPLEMENTATION_PACKAGE_REQUIRED")
+
+        architecture_decisions = package.get("architecture_decisions") if isinstance(package.get("architecture_decisions"), list) else []
+        if packet.get("material_effects_observed") is True:
+            coverage_decisions = [
+                item for item in architecture_decisions
+                if isinstance(item, dict) and item.get("decision_id") == "PRODUCER_COVERAGE"
+            ]
+            if len(coverage_decisions) != 1:
+                codes.append("PRODUCER_COVERAGE_DECISION_REQUIRED")
+            else:
+                coverage = coverage_decisions[0]
+                coverage_text = " ".join(
+                    str(coverage.get(k) or "")
+                    for k in ("question", "decision", "rationale", "authority_ref")
+                )
+                coverage_text += " " + " ".join(str(x) for x in coverage.get("evidence_refs") or [])
+                applicable_surfaces = packet.get("applicable_surfaces") if isinstance(packet.get("applicable_surfaces"), list) else []
+                if any(isinstance(surface, str) and surface not in coverage_text for surface in applicable_surfaces):
+                    codes.append("PRODUCER_COVERAGE_SURFACE_INCOMPLETE")
+                if "UNKNOWN_PRODUCER=BLOCK" not in coverage_text and "UNKNOWN_PRODUCER=MIGRATE_BEFORE_ENFORCE" not in coverage_text:
+                    codes.append("UNKNOWN_PRODUCER_BEHAVIOR_NOT_FAIL_CLOSED")
+
+        implementation_delta = payload.get("implementation_delta") if isinstance(payload.get("implementation_delta"), list) else []
+        for deliverable in package.get("deliverables") or []:
+            if not isinstance(deliverable, dict) or deliverable.get("change_type") != "CREATE":
+                continue
+            artifact_ref = deliverable.get("artifact_ref")
+            dependencies = [str(x) for x in deliverable.get("dependencies") or []]
+            markers = {}
+            for prefix in ("OWNER_REF=", "IMPLEMENTATION_LOT_REF=", "FOOTPRINT_REF="):
+                value = next((x[len(prefix):] for x in dependencies if x.startswith(prefix) and len(x) > len(prefix)), None)
+                markers[prefix] = value
+            if not all(markers.values()):
+                codes.append("CREATE_ARTIFACT_OWNERSHIP_CLOSURE_MISSING")
+                continue
+            matching_delta = next(
+                (
+                    item for item in implementation_delta
+                    if isinstance(item, dict) and item.get("target") == artifact_ref
+                ),
+                None,
+            )
+            if matching_delta is None:
+                codes.append("CREATE_ARTIFACT_NOT_EXPLICIT_IMPLEMENTATION_DELTA")
+                continue
+            evidence_refs = matching_delta.get("evidence_refs") if isinstance(matching_delta.get("evidence_refs"), list) else []
+            if markers["IMPLEMENTATION_LOT_REF="] not in evidence_refs or markers["FOOTPRINT_REF="] not in evidence_refs:
+                codes.append("CREATE_ARTIFACT_OWNER_FOOTPRINT_NOT_EVIDENCE_BOUND")
+
         if closure.get("open_design_decisions") != []:
             codes.append("SYSTEMIC_SPEC_OPEN_DESIGN_DECISIONS")
         if closure.get("handoff_ready") is not True:

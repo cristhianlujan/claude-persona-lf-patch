@@ -852,6 +852,21 @@
           "run://migration-parity/failure-1",
           "gate://A2R_PARITY"
         ]
+      },
+      {
+        "decision_id": "PRODUCER_COVERAGE",
+        "question": "Which live authority surfaces can originate or execute the material migration effect?",
+        "decision": "SQL_FUNCTIONS=IN_SCOPE; REPOSITORY=IN_SCOPE as exact source authority; DEPLOYED_RUNTIME=IN_SCOPE; AGENT_CONNECTOR_IDENTITY=EXCLUDED_WITH_PROOF only for unresolved historical attribution because future calls remain contained by the pre-apply boundary; UNKNOWN_PRODUCER=BLOCK.",
+        "authority_ref": "contract://migration/pre-apply",
+        "rationale": "Every applicable live authority surface is explicit so a non-SQL or future producer cannot bypass the preventive boundary.",
+        "alternatives_considered": [
+          "SQL-only caller inventory",
+          "implicit transport coverage"
+        ],
+        "evidence_refs": [
+          "contract://migration/apply",
+          "gate://A2R_PARITY"
+        ]
       }
     ],
     "control_matrix": [

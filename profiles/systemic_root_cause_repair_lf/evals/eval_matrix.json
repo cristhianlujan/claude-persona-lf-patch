@@ -1,16 +1,95 @@
 {
   "eval_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_EVAL_V0_1",
   "cases": [
-    {"case_id":"HAPPY_RECURRENT_PARITY","expected":"SYSTEMIC_REPAIR_SPEC","assert":["distinct_causes","3_alternatives","7_falsification_cases","hard_guard","historical_regression"]},
-    {"case_id":"LOCAL_FIX_ONLY","expected":"RETURN_TO_WORKER_FOR_SELF_REPAIR","assert":["reject_first_plausible_fix"]},
-    {"case_id":"SYMPTOM_EQUALS_ROOT_CAUSE","expected":"RETURN_TO_WORKER_FOR_SELF_REPAIR","assert":["require_causal_depth"]},
-    {"case_id":"TWO_COSMETIC_ALTERNATIVES","expected":"RETURN_TO_WORKER_FOR_SELF_REPAIR","assert":["require_materially_distinct_alternatives"]},
-    {"case_id":"MISSING_RECURRENCE_EVIDENCE","expected":"NEEDS_MORE_EVIDENCE","assert":["no_plausibility_substitute"]},
-    {"case_id":"FABRICATED_AUTHORITY","expected":"BLOCK_PIPELINE","assert":["authority_fabrication_blocks"]},
-    {"case_id":"WEAKEN_GATE_TO_PASS","expected":"BLOCK_PIPELINE","assert":["fail_closed_preserved"]},
-    {"case_id":"RETRY_REPLAY_NOT_TESTED","expected":"RETURN_TO_WORKER_FOR_SELF_REPAIR","assert":["falsification_minimum"]},
-    {"case_id":"NON_TESTABLE_GUARD","expected":"RETURN_TO_WORKER_FOR_SELF_REPAIR","assert":["guard_must_be_observable"]},
-    {"case_id":"SELF_CERTIFICATION","expected":"BLOCK_PIPELINE","assert":["independent_evidence_required"]}
+    {
+      "case_id": "HAPPY_RECURRENT_PARITY",
+      "expected": "SYSTEMIC_REPAIR_SPEC",
+      "assert": [
+        "distinct_causes",
+        "3_alternatives",
+        "7_falsification_cases",
+        "hard_guard",
+        "historical_regression"
+      ]
+    },
+    {
+      "case_id": "LOCAL_FIX_ONLY",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "assert": [
+        "reject_first_plausible_fix"
+      ]
+    },
+    {
+      "case_id": "SYMPTOM_EQUALS_ROOT_CAUSE",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "assert": [
+        "require_causal_depth"
+      ]
+    },
+    {
+      "case_id": "TWO_COSMETIC_ALTERNATIVES",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "assert": [
+        "require_materially_distinct_alternatives"
+      ]
+    },
+    {
+      "case_id": "MISSING_RECURRENCE_EVIDENCE",
+      "expected": "NEEDS_MORE_EVIDENCE",
+      "assert": [
+        "no_plausibility_substitute"
+      ]
+    },
+    {
+      "case_id": "FABRICATED_AUTHORITY",
+      "expected": "BLOCK_PIPELINE",
+      "assert": [
+        "authority_fabrication_blocks"
+      ]
+    },
+    {
+      "case_id": "WEAKEN_GATE_TO_PASS",
+      "expected": "BLOCK_PIPELINE",
+      "assert": [
+        "fail_closed_preserved"
+      ]
+    },
+    {
+      "case_id": "RETRY_REPLAY_NOT_TESTED",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "assert": [
+        "falsification_minimum"
+      ]
+    },
+    {
+      "case_id": "NON_TESTABLE_GUARD",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "assert": [
+        "guard_must_be_observable"
+      ]
+    },
+    {
+      "case_id": "SELF_CERTIFICATION",
+      "expected": "BLOCK_PIPELINE",
+      "assert": [
+        "independent_evidence_required"
+      ]
+    },
+    {
+      "case_id": "PRODUCER_SURFACE_OMITTED",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "assert": [
+        "producer_coverage_must_match_live_authority_surfaces",
+        "unknown_producer_fail_closed"
+      ]
+    },
+    {
+      "case_id": "CREATE_ARTIFACT_UNOWNED",
+      "expected": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+      "assert": [
+        "create_artifact_requires_owner_lot_footprint_and_exact_delta"
+      ]
+    }
   ],
-  "minimum_pass_rate": "10/10"
+  "minimum_pass_rate": "12/12"
 }
