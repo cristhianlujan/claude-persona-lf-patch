@@ -1,0 +1,50 @@
+{
+  "contract_code": "PROFILE_EXECUTION_CONTEXT_ADMISSION_WIRING_V1",
+  "target_operation": "EJECUCION_PERFIL_LF",
+  "governed_by": "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+  "problem": "Context Admission, compact policy/EKB refs, budgets and JIT resolver assets existed but were not a mandatory physical predecessor of model dispatch.",
+  "before": {
+    "active_steps": 9,
+    "input_validate_next": "execute_profile",
+    "context_admission_step": false,
+    "prior_native_execution_context_receipt_events": 0
+  },
+  "after": {
+    "active_steps": 10,
+    "path": [
+      "input_validate",
+      "context_admission",
+      "execute_profile"
+    ],
+    "context_compiler": "public.fn_lf_router_preflight_v1",
+    "context_admission": "public.lf_profile_execution_context_admission_v1",
+    "execution_recorder": "public.lf_record_profile_execution_step_v1",
+    "trust_validator": "public.lf_profile_execution_trust_validation_v1",
+    "begin": "public.lf_profile_execution_begin_v1",
+    "profile_source_mode": "JIT_BY_REF",
+    "jit_resolver": "EVIDENCE_RESOLVER_REGISTRY",
+    "provenance_guard": "public.fn_lf_operation_provenance_guard_v1"
+  },
+  "hard_guards": [
+    "execute_profile requires clean context_admission predecessor",
+    "context receipt must be server-derived and event-bound to the same execution",
+    "context budget RED blocks dispatch",
+    "policy_payloads=false",
+    "full_ekb_entries=false",
+    "full_readmes=false",
+    "jit_only=true",
+    "full_prefetch_count=0",
+    "context receipt digest must match persisted server readback",
+    "another execution receipt cannot be replayed",
+    "cross-operation provenance is allowed only for the dedicated runtime-update operation while IN_PROGRESS, runtime_update_governed=true, and manifest.target_operation exactly matches the row operation_code"
+  ],
+  "preserved": [
+    "single existing Context Admission compiler",
+    "single existing profile execution operation",
+    "no profile or adapter mutation",
+    "read-only execution semantics",
+    "no automatic runtime or production promotion",
+    "all pre-existing same-operation and bootstrap provenance rules remain unchanged"
+  ],
+  "next_gate": "EXACT_SOURCE_CI_THEN_APPLY_MIGRATION_THEN_GOVERNED_NATIVE_BEHAVIORAL_CANARY"
+}
