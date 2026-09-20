@@ -6,6 +6,24 @@ implementation. It does not require post-implementation evidence to exist.
 Evidence gaps are classified by whether they can still change the design.
 """
 
+try:
+    from .closure_proof import unwrap_runtime_input, validate_v03_closure
+except (ImportError, ModuleNotFoundError):
+    import importlib.util as _importlib_util
+    from pathlib import Path as _Path
+    _closure_path = _Path(__file__).with_name("closure_proof.py")
+    _closure_spec = _importlib_util.spec_from_file_location("srcr_closure_proof", _closure_path)
+    _closure_mod = _importlib_util.module_from_spec(_closure_spec)
+    assert _closure_spec and _closure_spec.loader
+    _closure_spec.loader.exec_module(_closure_mod)
+    unwrap_runtime_input = _closure_mod.unwrap_runtime_input
+    validate_v03_closure = _closure_mod.validate_v03_closure
+
+ALLOWED_PROFILE_PACK_IDS = {
+    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
+    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+}
+
 ALLOWED_STATUS = {
     "SYSTEMIC_REPAIR_SPEC",
     "NEEDS_MORE_EVIDENCE",
@@ -617,15 +635,20 @@ def _solution_assurance_errors(payload, *, require_ready=False):
 
     return errors
 
-def validate(payload):
+def validate(payload, evidence_manifest=None):
+    if evidence_manifest is None:
+        candidate, embedded_manifest = unwrap_runtime_input(payload)
+        if embedded_manifest is not None:
+            payload, evidence_manifest = candidate, embedded_manifest
     errors = []
+    closure_summary = {"applies": False}
     if not isinstance(payload, dict):
         return {"valid": False, "status": "FAIL", "errors": [_error("NOT_OBJECT")], "blocking_codes": ["NOT_OBJECT"]}
 
     status = payload.get("status")
     if status not in ALLOWED_STATUS:
         errors.append(_error("STATUS_INVALID", "$.status"))
-    if payload.get("profile_pack_id") != "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2":
+    if payload.get("profile_pack_id") not in ALLOWED_PROFILE_PACK_IDS:
         errors.append(_error("PROFILE_PACK_ID_MISMATCH", "$.profile_pack_id"))
 
     errors.extend(_claim_errors("symptom", payload.get("symptom"), required_status="OBSERVED"))
@@ -653,6 +676,9 @@ def validate(payload):
     errors.extend(_decision_errors(payload))
     errors.extend(_proposal_errors(payload))
     errors.extend(_implementation_plan_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
+
+    closure_errors, closure_summary = validate_v03_closure(payload, evidence_manifest)
+    errors.extend(closure_errors)
     errors.extend(_solution_assurance_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
 
     contradictions = payload.get("authority_contradictions")
@@ -778,7 +804,17 @@ def validate(payload):
         errors.append(_error("NEXT_GATE_NOT_STRUCTURED", "$.next_gate"))
 
     codes = sorted({item["code"] for item in errors})
-    return {"valid": not errors, "status": "PASS" if not errors else "FAIL", "errors": errors, "blocking_codes": codes}
+    result = {
+        "valid": not errors,
+        "status": "PASS" if not errors else "FAIL",
+        "errors": errors,
+        "blocking_codes": codes,
+        "validation_role": "PRE_QUALITY_STRUCTURAL_FLOOR",
+        "canonical_quality_accepted": False,
+    }
+    if closure_summary.get("applies"):
+        result["closure_summary"] = closure_summary
+    return result
 
 
 if __name__ == "__main__":
