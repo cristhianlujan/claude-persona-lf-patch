@@ -1,0 +1,22 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: EKB_PROVENANCE_REPAIR_LF
+steps:
+  - {order: 1, id: router, evidence: ACT_0001_current_read}
+  - {order: 2, id: operational_source, evidence: v_lf_fuente_operativa_current_read}
+  - {order: 3, id: ekb_preflight, evidence: applicable_ekb_rules_read}
+  - {order: 4, id: target_bind, evidence: exact_ekb_codes_bound}
+  - {order: 5, id: currentness_recount, evidence: current_rows_and_missing_source_ref_count}
+  - {order: 6, id: self_evidence_gate, evidence: each_row_contains_exact_ref_token}
+  - {order: 7, id: independent_ref_resolution, evidence: exact_external_source_ref_readback}
+  - {order: 8, id: contradiction_check, evidence: raw_candidate_refs_checked_before_dedup}
+  - {order: 9, id: execution_provenance, evidence: scope_matched_operation_execution}
+  - {order: 10, id: patch_freeze, evidence: exact_patch_source_and_hash}
+  - {order: 11, id: rollback_canary, evidence: transaction_updates_exact_targets_then_rolls_back}
+  - {order: 12, id: negative_controls, evidence: fail_closed_mutation_suite}
+  - {order: 13, id: durable_write_gate, evidence: production_capable_route_or_explicit_approval}
+  - {order: 14, id: write_if_authorized, evidence: exact_write_receipt}
+  - {order: 15, id: independent_readback, evidence: second_statement_exact_source_ref_readback}
+  - {order: 16, id: no_content_drift, evidence: protected_columns_unchanged}
+  - {order: 17, id: unresolved_preservation, evidence: unresolved_rows_not_inferred_or_modified}
+  - {order: 18, id: close, evidence: provenance_repair_only_no_learning_promotion}

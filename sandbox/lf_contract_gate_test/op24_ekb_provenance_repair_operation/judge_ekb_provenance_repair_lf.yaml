@@ -1,0 +1,36 @@
+version: v0.1
+status: CANDIDATO_READ_ONLY
+operation: EKB_PROVENANCE_REPAIR_LF
+judge_code: JUDGE_EKB_PROVENANCE_REPAIR_LF_V01_CANDIDATE
+source_model: DETERMINISTIC_CONTRACT_JUDGE
+verdicts: [PASS, FAIL]
+required_assertions:
+  - {id: router_current, rule: ACT_0001_is_current_and_operational}
+  - {id: exact_targets, rule: target_codes_are_explicit_and_current}
+  - {id: self_evidence, rule: every_target_row_contains_exact_source_token_in_own_evidence}
+  - {id: independent_resolution, rule: source_ref_resolves_independently_outside_candidate_payload}
+  - {id: contradiction_first, rule: conflicting_source_candidates_block_before_dedup}
+  - {id: no_inference, rule: no_lote_or_sibling_inheritance_used}
+  - {id: null_only, rule: source_ref_must_be_null_before_repair}
+  - {id: execution_provenance, rule: mutation_execution_exists_and_scope_matches_operation}
+  - {id: protected_columns, rule: only_source_ref_updated_at_updated_by_execution_id_may_change}
+  - {id: exact_count, rule: updated_row_count_equals_frozen_target_count}
+  - {id: second_readback, rule: independent_second_statement_readback_required}
+  - {id: unresolved_preserved, rule: rows_without_sufficient_provenance_remain_unchanged}
+  - {id: no_promotion, rule: repair_does_not_change_learning_lifecycle_or_authority}
+  - {id: rollback, rule: rollback_or_reversal_path_is_observed_or_predeclared}
+fail_closed:
+  - missing_router_read
+  - missing_self_evidence
+  - unresolved_or_ambiguous_ref
+  - source_ref_already_present
+  - target_count_drift
+  - orphan_or_scope_mismatched_execution
+  - protected_content_change
+  - same_statement_only_readback
+  - inferred_provenance
+  - any_learning_promotion
+claim_ceiling: >-
+  PASS significa solamente que una reparación provenance exacta y no semántica está lista para una ruta
+  gobernada. No autoriza registro Router ACTIVE, escritura durable, cambio de contenido EKB, Card,
+  aprendizaje, runtime ni producción.
