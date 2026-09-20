@@ -653,7 +653,6 @@
       "additionalProperties": false,
       "required": [
         "contract_version",
-        "candidate_binding",
         "materiality",
         "proof_obligations",
         "authority_bindings",
@@ -664,34 +663,6 @@
       "properties": {
         "contract_version": {
           "const": "SRCR_CLOSURE_PROOF_V1"
-        },
-        "candidate_binding": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "candidate_revision",
-            "candidate_digest",
-            "evidence_bundle_id",
-            "evidence_bundle_digest"
-          ],
-          "properties": {
-            "candidate_revision": {
-              "type": "string",
-              "minLength": 3
-            },
-            "candidate_digest": {
-              "type": "string",
-              "minLength": 8
-            },
-            "evidence_bundle_id": {
-              "type": "string",
-              "minLength": 3
-            },
-            "evidence_bundle_digest": {
-              "type": "string",
-              "minLength": 8
-            }
-          }
         },
         "materiality": {
           "type": "array",

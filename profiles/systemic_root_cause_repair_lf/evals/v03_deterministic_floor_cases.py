@@ -19,8 +19,6 @@ def make_manifest():
         "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
         "bundle_id": "BUNDLE-1",
         "bundle_digest": "sha256:pending",
-        "candidate_revision": "candidate-rev-1",
-        "candidate_digest": "sha256:pending",
         "observed_at": "2026-09-20T04:30:00Z",
         "producer": {"kind": "TEST_FIXTURE", "resolver_ref": "fixture://v03-deterministic-floor"},
         "evidence": [
@@ -52,12 +50,6 @@ def make_candidate():
         x[field]["observed_revision"] = "rev-1"
     x["closure_proof"] = {
         "contract_version":"SRCR_CLOSURE_PROOF_V1",
-        "candidate_binding":{
-            "candidate_revision":"candidate-rev-1",
-            "candidate_digest":"sha256:pending",
-            "evidence_bundle_id":"BUNDLE-1",
-            "evidence_bundle_digest":"sha256:pending",
-        },
         "materiality":[
             {"signal":"DECISION_CLOSURE","material":True,"rationale":"Readiness must be derived from closed obligations.","obligation_ids":["PO-DECISION"]},
             {"signal":"EVIDENCE_PROVENANCE","material":True,"rationale":"Existing authority claims require external bound evidence.","obligation_ids":["PO-EVIDENCE"]},
@@ -89,17 +81,10 @@ def make_candidate():
     return x
 
 def rebind(candidate, manifest):
-    manifest["candidate_revision"] = candidate["closure_proof"]["candidate_binding"]["candidate_revision"]
+    # External evidence owns only its own bundle digest. Candidate identity is
+    # computed after producer output is final and is never written back by this helper.
     manifest["bundle_digest"] = "sha256:pending"
-    manifest["candidate_digest"] = "sha256:pending"
-    bundle_digest = closure_proof.canonical_evidence_bundle_digest(manifest)
-    manifest["bundle_digest"] = bundle_digest
-    candidate["closure_proof"]["candidate_binding"]["evidence_bundle_id"] = manifest["bundle_id"]
-    candidate["closure_proof"]["candidate_binding"]["evidence_bundle_digest"] = bundle_digest
-    candidate["closure_proof"]["candidate_binding"]["candidate_digest"] = "sha256:pending"
-    candidate_digest = closure_proof.canonical_candidate_digest(candidate)
-    candidate["closure_proof"]["candidate_binding"]["candidate_digest"] = candidate_digest
-    manifest["candidate_digest"] = candidate_digest
+    manifest["bundle_digest"] = closure_proof.canonical_evidence_bundle_digest(manifest)
     return candidate, manifest
 
 def valid_pair():
@@ -129,12 +114,18 @@ assert_code(runtime_validate.validate(candidate, manifest), "SRCR_EXISTING_AUTHO
 
 candidate_a, manifest_a = valid_pair()
 candidate_b = copy.deepcopy(candidate_a)
-candidate_b["closure_proof"]["candidate_binding"]["candidate_revision"] = "candidate-rev-2"
 candidate_b["symptom"]["statement"] += " Changed candidate."
-candidate_b["closure_proof"]["candidate_binding"]["candidate_digest"] = "sha256:pending"
-candidate_b["closure_proof"]["candidate_binding"]["candidate_digest"] = closure_proof.canonical_candidate_digest(candidate_b)
-assert_code(runtime_validate.validate(candidate_b, manifest_a), "SRCR_CANDIDATE_REVISION_EVIDENCE_MISMATCH", "replay_revision")
-assert "SRCR_CANDIDATE_DIGEST_EVIDENCE_MISMATCH" in runtime_validate.validate(candidate_b, manifest_a)["blocking_codes"]
+assert closure_proof.canonical_candidate_digest(candidate_b) != closure_proof.canonical_candidate_digest(candidate_a)
+assert runtime_validate.validate(candidate_b, manifest_a)["status"] == "PASS"
+
+candidate, manifest = valid_pair()
+manifest["candidate_digest"] = "sha256:producer-self-binding"
+candidate, manifest = rebind(candidate, manifest)
+assert_code(
+    runtime_validate.validate(candidate, manifest),
+    "SRCR_EVIDENCE_MANIFEST_CANDIDATE_SELF_BINDING_FORBIDDEN",
+    "producer_evidence_self_binding_forbidden",
+)
 
 candidate, manifest = valid_pair()
 candidate["closure_proof"]["proof_obligations"] = [x for x in candidate["closure_proof"]["proof_obligations"] if x["obligation_id"] != "PO-EVIDENCE"]

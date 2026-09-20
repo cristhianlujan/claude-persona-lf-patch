@@ -68,21 +68,15 @@ def _canonical_digest(value: Any) -> str:
 
 
 def canonical_candidate_digest(candidate: dict) -> str:
-    normalized = copy.deepcopy(candidate)
-    try:
-        normalized["closure_proof"]["candidate_binding"].pop("candidate_digest", None)
-    except Exception:
-        pass
-    return _canonical_digest(normalized)
+    # Exact identity is derived from final candidate bytes/structure by the
+    # deterministic quality boundary. The producer does not self-bind a digest.
+    return _canonical_digest(candidate)
 
 
 def canonical_evidence_bundle_digest(manifest: dict) -> str:
     normalized = copy.deepcopy(manifest)
     if isinstance(normalized, dict):
         normalized.pop("bundle_digest", None)
-        # Excluded to avoid a two-way digest cycle. Candidate digest is verified
-        # separately against the manifest after the bundle digest is fixed.
-        normalized.pop("candidate_digest", None)
     return _canonical_digest(normalized)
 
 
@@ -123,7 +117,20 @@ def _validate_manifest_shape(manifest: Any) -> tuple[list[dict], dict[str, dict]
     if manifest.get("manifest_version") != "SRCR_EVIDENCE_MANIFEST_V1":
         errors.append(_err("SRCR_EVIDENCE_MANIFEST_VERSION_INVALID", "$.evidence_manifest.manifest_version"))
 
-    for key in ("bundle_id", "bundle_digest", "candidate_revision", "candidate_digest", "observed_at"):
+    allowed_root = {
+        "manifest_version", "bundle_id", "bundle_digest", "observed_at", "producer", "evidence"
+    }
+    for forbidden in ("candidate_revision", "candidate_digest"):
+        if forbidden in manifest:
+            errors.append(
+                _err(
+                    "SRCR_EVIDENCE_MANIFEST_CANDIDATE_SELF_BINDING_FORBIDDEN",
+                    f"$.evidence_manifest.{forbidden}",
+                )
+            )
+    for extra in sorted(set(manifest) - allowed_root - {"candidate_revision", "candidate_digest"}):
+        errors.append(_err("SRCR_EVIDENCE_MANIFEST_FIELD_UNDECLARED", f"$.evidence_manifest.{extra}"))
+    for key in ("bundle_id", "bundle_digest", "observed_at"):
         if not isinstance(manifest.get(key), str) or not manifest.get(key).strip():
             errors.append(_err("SRCR_EVIDENCE_MANIFEST_FIELD_REQUIRED", f"$.evidence_manifest.{key}"))
 
@@ -170,24 +177,17 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         errors.append(_err("SRCR_CLOSURE_PROOF_REQUIRED", "$.closure_proof"))
         return errors, {"applies": True}
 
-    binding = proof.get("candidate_binding")
-    if not isinstance(binding, dict):
-        errors.append(_err("SRCR_CANDIDATE_BINDING_REQUIRED", "$.closure_proof.candidate_binding"))
-        return errors, {"applies": True}
+    # Candidate and evidence exact identity are external-boundary facts. A V0.3
+    # producer must not self-certify candidate/evidence digests inside its output.
+    if "candidate_binding" in proof:
+        errors.append(
+            _err(
+                "SRCR_CANDIDATE_SELF_BINDING_FORBIDDEN",
+                "$.closure_proof.candidate_binding",
+            )
+        )
 
     actual_candidate_digest = canonical_candidate_digest(candidate)
-    if binding.get("candidate_digest") != actual_candidate_digest:
-        errors.append(_err("SRCR_CANDIDATE_DIGEST_MISMATCH", "$.closure_proof.candidate_binding.candidate_digest", actual_candidate_digest))
-
-    if isinstance(evidence_manifest, dict):
-        if binding.get("candidate_revision") != evidence_manifest.get("candidate_revision"):
-            errors.append(_err("SRCR_CANDIDATE_REVISION_EVIDENCE_MISMATCH", "$.closure_proof.candidate_binding.candidate_revision"))
-        if binding.get("candidate_digest") != evidence_manifest.get("candidate_digest"):
-            errors.append(_err("SRCR_CANDIDATE_DIGEST_EVIDENCE_MISMATCH", "$.evidence_manifest.candidate_digest"))
-        if binding.get("evidence_bundle_id") != evidence_manifest.get("bundle_id"):
-            errors.append(_err("SRCR_EVIDENCE_BUNDLE_ID_MISMATCH", "$.closure_proof.candidate_binding.evidence_bundle_id"))
-        if binding.get("evidence_bundle_digest") != evidence_manifest.get("bundle_digest"):
-            errors.append(_err("SRCR_EVIDENCE_BUNDLE_BINDING_MISMATCH", "$.closure_proof.candidate_binding.evidence_bundle_digest"))
 
     required_types, system_material_signals = derive_required_obligation_types(candidate)
 
@@ -366,7 +366,12 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         "open_obligation_ids": sorted(open_ids | any_open_ids),
         "computed_handoff_ready": computed_ready,
         "candidate_digest": actual_candidate_digest,
-        "evidence_bundle_digest": evidence_manifest.get("bundle_digest") if isinstance(evidence_manifest, dict) else None,
+        "evidence_bundle_id": evidence_manifest.get("bundle_id") if isinstance(evidence_manifest, dict) else None,
+        "evidence_bundle_digest": (
+            canonical_evidence_bundle_digest(evidence_manifest)
+            if isinstance(evidence_manifest, dict)
+            else None
+        ),
         "evidence_refs_resolved": len(referenced_evidence),
         "canonical_quality_accepted": False,
         "quality_stage": "PRE_QUALITY_FLOOR",
