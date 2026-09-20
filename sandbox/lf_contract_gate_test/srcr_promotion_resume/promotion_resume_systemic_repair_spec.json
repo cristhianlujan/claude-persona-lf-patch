@@ -336,13 +336,14 @@
       "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
       "test_protocol": {
         "setup": [
-          "Prepare isolated bypass fixture."
+          "Prepare isolated bypass fixture bound to the exact candidate and parent execution."
         ],
         "action": [
           "Execute exact candidate against bypass."
         ],
         "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
+          "No stale, duplicate, skipped or unauthorized effect is credited.",
+          "PR dependency contamination, deploy mismatch, no-runtime classification and missing authorization remain covered by dedicated planned regressions where applicable."
         ],
         "failure_signal": "PROMOTION_RESUME_BYPASS_FAILED"
       }
@@ -356,115 +357,121 @@
       "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
       "test_protocol": {
         "setup": [
-          "Prepare isolated retry fixture."
+          "Prepare isolated retry fixture bound to the exact candidate and parent execution."
         ],
         "action": [
           "Execute exact candidate against retry."
         ],
         "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
+          "No stale, duplicate, skipped or unauthorized effect is credited.",
+          "PR dependency contamination, deploy mismatch, no-runtime classification and missing authorization remain covered by dedicated planned regressions where applicable."
         ],
         "failure_signal": "PROMOTION_RESUME_RETRY_FAILED"
       }
     },
     {
-      "case": "concurrency_same_target",
+      "case": "concurrency",
       "result": "PLANNED",
-      "evidence_ref": "design://promotion-resume/concurrency_same_target",
+      "evidence_ref": "design://promotion-resume/concurrency",
       "evidence_class": "DESIGN_ONLY",
-      "verification_method": "Execute exact Promotion/Resume candidate against concurrency_same_target.",
+      "verification_method": "Execute exact Promotion/Resume candidate against concurrency.",
       "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
       "test_protocol": {
         "setup": [
-          "Prepare isolated concurrency_same_target fixture."
+          "Prepare isolated concurrency fixture bound to the exact candidate and parent execution."
         ],
         "action": [
-          "Execute exact candidate against concurrency_same_target."
+          "Execute exact candidate against concurrency."
         ],
         "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
+          "No stale, duplicate, skipped or unauthorized effect is credited.",
+          "PR dependency contamination, deploy mismatch, no-runtime classification and missing authorization remain covered by dedicated planned regressions where applicable."
         ],
-        "failure_signal": "PROMOTION_RESUME_CONCURRENCY_SAME_TARGET_FAILED"
+        "failure_signal": "PROMOTION_RESUME_CONCURRENCY_FAILED"
       }
     },
     {
-      "case": "partial_failure_after_merge",
+      "case": "partial_failure",
       "result": "PLANNED",
-      "evidence_ref": "design://promotion-resume/partial_failure_after_merge",
+      "evidence_ref": "design://promotion-resume/partial_failure",
       "evidence_class": "DESIGN_ONLY",
-      "verification_method": "Execute exact Promotion/Resume candidate against partial_failure_after_merge.",
+      "verification_method": "Execute exact Promotion/Resume candidate against partial_failure.",
       "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
       "test_protocol": {
         "setup": [
-          "Prepare isolated partial_failure_after_merge fixture."
+          "Prepare isolated partial_failure fixture bound to the exact candidate and parent execution."
         ],
         "action": [
-          "Execute exact candidate against partial_failure_after_merge."
+          "Execute exact candidate against partial_failure."
         ],
         "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
+          "No stale, duplicate, skipped or unauthorized effect is credited.",
+          "PR dependency contamination, deploy mismatch, no-runtime classification and missing authorization remain covered by dedicated planned regressions where applicable."
         ],
-        "failure_signal": "PROMOTION_RESUME_PARTIAL_FAILURE_AFTER_MERGE_FAILED"
+        "failure_signal": "PROMOTION_RESUME_PARTIAL_FAILURE_FAILED"
       }
     },
     {
-      "case": "stale_state_after_merge",
+      "case": "stale_state",
       "result": "PLANNED",
-      "evidence_ref": "design://promotion-resume/stale_state_after_merge",
+      "evidence_ref": "design://promotion-resume/stale_state",
       "evidence_class": "DESIGN_ONLY",
-      "verification_method": "Execute exact Promotion/Resume candidate against stale_state_after_merge.",
+      "verification_method": "Execute exact Promotion/Resume candidate against stale_state.",
       "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
       "test_protocol": {
         "setup": [
-          "Prepare isolated stale_state_after_merge fixture."
+          "Prepare isolated stale_state fixture bound to the exact candidate and parent execution."
         ],
         "action": [
-          "Execute exact candidate against stale_state_after_merge."
+          "Execute exact candidate against stale_state."
         ],
         "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
+          "No stale, duplicate, skipped or unauthorized effect is credited.",
+          "PR dependency contamination, deploy mismatch, no-runtime classification and missing authorization remain covered by dedicated planned regressions where applicable."
         ],
-        "failure_signal": "PROMOTION_RESUME_STALE_STATE_AFTER_MERGE_FAILED"
+        "failure_signal": "PROMOTION_RESUME_STALE_STATE_FAILED"
       }
     },
     {
-      "case": "interrupted_after_deploy_before_readback",
+      "case": "interrupted_execution",
       "result": "PLANNED",
-      "evidence_ref": "design://promotion-resume/interrupted_after_deploy_before_readback",
+      "evidence_ref": "design://promotion-resume/interrupted_execution",
       "evidence_class": "DESIGN_ONLY",
-      "verification_method": "Execute exact Promotion/Resume candidate against interrupted_after_deploy_before_readback.",
+      "verification_method": "Execute exact Promotion/Resume candidate against interrupted_execution.",
       "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
       "test_protocol": {
         "setup": [
-          "Prepare isolated interrupted_after_deploy_before_readback fixture."
+          "Prepare isolated interrupted_execution fixture bound to the exact candidate and parent execution."
         ],
         "action": [
-          "Execute exact candidate against interrupted_after_deploy_before_readback."
+          "Execute exact candidate against interrupted_execution."
         ],
         "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
+          "No stale, duplicate, skipped or unauthorized effect is credited.",
+          "PR dependency contamination, deploy mismatch, no-runtime classification and missing authorization remain covered by dedicated planned regressions where applicable."
         ],
-        "failure_signal": "PROMOTION_RESUME_INTERRUPTED_AFTER_DEPLOY_BEFORE_READBACK_FAILED"
+        "failure_signal": "PROMOTION_RESUME_INTERRUPTED_EXECUTION_FAILED"
       }
     },
     {
-      "case": "replay_or_duplicate_dispatch",
+      "case": "replay_or_duplicate",
       "result": "PLANNED",
-      "evidence_ref": "design://promotion-resume/replay_or_duplicate_dispatch",
+      "evidence_ref": "design://promotion-resume/replay_or_duplicate",
       "evidence_class": "DESIGN_ONLY",
-      "verification_method": "Execute exact Promotion/Resume candidate against replay_or_duplicate_dispatch.",
+      "verification_method": "Execute exact Promotion/Resume candidate against replay_or_duplicate.",
       "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
       "test_protocol": {
         "setup": [
-          "Prepare isolated replay_or_duplicate_dispatch fixture."
+          "Prepare isolated replay_or_duplicate fixture bound to the exact candidate and parent execution."
         ],
         "action": [
-          "Execute exact candidate against replay_or_duplicate_dispatch."
+          "Execute exact candidate against replay_or_duplicate."
         ],
         "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
+          "No stale, duplicate, skipped or unauthorized effect is credited.",
+          "PR dependency contamination, deploy mismatch, no-runtime classification and missing authorization remain covered by dedicated planned regressions where applicable."
         ],
-        "failure_signal": "PROMOTION_RESUME_REPLAY_OR_DUPLICATE_DISPATCH_FAILED"
+        "failure_signal": "PROMOTION_RESUME_REPLAY_OR_DUPLICATE_FAILED"
       }
     },
     {
@@ -476,95 +483,16 @@
       "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
       "test_protocol": {
         "setup": [
-          "Prepare isolated undeclared_or_unversioned_caller fixture."
+          "Prepare isolated undeclared_or_unversioned_caller fixture bound to the exact candidate and parent execution."
         ],
         "action": [
           "Execute exact candidate against undeclared_or_unversioned_caller."
         ],
         "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
+          "No stale, duplicate, skipped or unauthorized effect is credited.",
+          "PR dependency contamination, deploy mismatch, no-runtime classification and missing authorization remain covered by dedicated planned regressions where applicable."
         ],
         "failure_signal": "PROMOTION_RESUME_UNDECLARED_OR_UNVERSIONED_CALLER_FAILED"
-      }
-    },
-    {
-      "case": "pr_dependency_contamination",
-      "result": "PLANNED",
-      "evidence_ref": "design://promotion-resume/pr_dependency_contamination",
-      "evidence_class": "DESIGN_ONLY",
-      "verification_method": "Execute exact Promotion/Resume candidate against pr_dependency_contamination.",
-      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
-      "test_protocol": {
-        "setup": [
-          "Prepare isolated pr_dependency_contamination fixture."
-        ],
-        "action": [
-          "Execute exact candidate against pr_dependency_contamination."
-        ],
-        "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
-        ],
-        "failure_signal": "PROMOTION_RESUME_PR_DEPENDENCY_CONTAMINATION_FAILED"
-      }
-    },
-    {
-      "case": "deploy_source_mismatch",
-      "result": "PLANNED",
-      "evidence_ref": "design://promotion-resume/deploy_source_mismatch",
-      "evidence_class": "DESIGN_ONLY",
-      "verification_method": "Execute exact Promotion/Resume candidate against deploy_source_mismatch.",
-      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
-      "test_protocol": {
-        "setup": [
-          "Prepare isolated deploy_source_mismatch fixture."
-        ],
-        "action": [
-          "Execute exact candidate against deploy_source_mismatch."
-        ],
-        "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
-        ],
-        "failure_signal": "PROMOTION_RESUME_DEPLOY_SOURCE_MISMATCH_FAILED"
-      }
-    },
-    {
-      "case": "runtime_not_applicable",
-      "result": "PLANNED",
-      "evidence_ref": "design://promotion-resume/runtime_not_applicable",
-      "evidence_class": "DESIGN_ONLY",
-      "verification_method": "Execute exact Promotion/Resume candidate against runtime_not_applicable.",
-      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
-      "test_protocol": {
-        "setup": [
-          "Prepare isolated runtime_not_applicable fixture."
-        ],
-        "action": [
-          "Execute exact candidate against runtime_not_applicable."
-        ],
-        "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
-        ],
-        "failure_signal": "PROMOTION_RESUME_RUNTIME_NOT_APPLICABLE_FAILED"
-      }
-    },
-    {
-      "case": "authorization_missing",
-      "result": "PLANNED",
-      "evidence_ref": "design://promotion-resume/authorization_missing",
-      "evidence_class": "DESIGN_ONLY",
-      "verification_method": "Execute exact Promotion/Resume candidate against authorization_missing.",
-      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
-      "test_protocol": {
-        "setup": [
-          "Prepare isolated authorization_missing fixture."
-        ],
-        "action": [
-          "Execute exact candidate against authorization_missing."
-        ],
-        "assertions": [
-          "No stale, duplicate, skipped or unauthorized effect is credited."
-        ],
-        "failure_signal": "PROMOTION_RESUME_AUTHORIZATION_MISSING_FAILED"
       }
     }
   ],
