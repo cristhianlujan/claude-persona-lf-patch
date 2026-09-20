@@ -15,13 +15,21 @@ on:
         description: "Governed Profile operation action"
         required: true
         type: choice
-        options: [source_canary_only, profile_update_init]
+        options: [source_canary_only, profile_update_init, profile_update_record_batch]
       target_code:
         description: "Exact existing profile code for profile_update_init"
         required: false
         type: string
       target_path:
         description: "Exact file path inside the profile package for profile_update_init"
+        required: false
+        type: string
+      execution_id:
+        description: "Existing governed Profile Update execution for profile_update_record_batch"
+        required: false
+        type: string
+      steps_json:
+        description: "JSON array of ordered governed step evidence for profile_update_record_batch"
         required: false
         type: string
 
@@ -115,7 +123,7 @@ jobs:
           print(f'GOVERNED_BATCH_REQUEST_PREFLIGHT=PASS:{len(steps)}')
           PY
       - name: Obtain exact GitHub OIDC identity
-        if: (github.event_name == 'push' && (steps.target.outputs.code != '' || steps.record.outputs.single == 'true' || steps.record.outputs.batch == 'true')) || (github.event_name == 'workflow_dispatch' && inputs.action == 'profile_update_init')
+        if: (github.event_name == 'push' && (steps.target.outputs.code != '' || steps.record.outputs.single == 'true' || steps.record.outputs.batch == 'true')) || (github.event_name == 'workflow_dispatch' && (inputs.action == 'profile_update_init' || inputs.action == 'profile_update_record_batch'))
         id: oidc
         uses: actions/github-script@v7
         with:
@@ -174,6 +182,57 @@ jobs:
           assert (result.get('snapshot') or {}).get('next_step',{}).get('step_id') == 'router', data
           print('GOVERNED_PROFILE_UPDATE_INITIALIZATION=PASS')
           print('EXECUTION_ID='+str(execution.get('execution_id')))
+          PY
+          echo 'GITHUB_WRITE_EXECUTED=false'
+          echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
+
+      - name: Record canonical existing Profile update batch through governed caller
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'profile_update_record_batch'
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          EXECUTION_ID: ${{ inputs.execution_id }}
+          STEPS_JSON: ${{ inputs.steps_json }}
+        run: |
+          set -euo pipefail
+          test -n "$EXECUTION_ID"
+          test -n "$STEPS_JSON"
+          python3 - "$EXECUTION_ID" "$STEPS_JSON" <<'PY' > governed-update-batch-request.json
+          import json,re,sys
+          execution_id,raw=sys.argv[1:]
+          assert re.fullmatch(r'EXEC-[A-Za-z0-9][A-Za-z0-9_-]{7,172}',execution_id), 'INVALID_EXECUTION_ID'
+          steps=json.loads(raw)
+          assert isinstance(steps,list) and 1 <= len(steps) <= 64, 'INVALID_BATCH_SIZE'
+          seen=set()
+          for i,item in enumerate(steps):
+              assert isinstance(item,dict), f'INVALID_STEP:{i}'
+              step_id=item.get('step_id','')
+              assert re.fullmatch(r'[a-z0-9_]{2,80}',step_id), f'INVALID_STEP_ID:{i}'
+              assert step_id not in seen, f'DUPLICATE_STEP:{step_id}'
+              seen.add(step_id)
+              assert item.get('evidence_ref'), f'MISSING_EVIDENCE_REF:{i}'
+              payload=item.get('evidence_payload')
+              assert isinstance(payload,dict), f'INVALID_EVIDENCE_PAYLOAD:{i}'
+              assert 'step_result' in payload, f'MISSING_STEP_RESULT:{i}'
+              assert 'blocking_codes' in payload, f'MISSING_BLOCKING_CODES:{i}'
+          print(json.dumps({'action':'profile_operation_record_batch_v1','execution_id':execution_id,'steps':steps},separators=(',',':')))
+          PY
+          code=$(curl --silent --show-error -o governed-update-batch.json -w '%{http_code}' \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data-binary @governed-update-batch-request.json \
+            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
+          cat governed-update-batch.json
+          test "$code" = "200"
+          python3 - <<'PY'
+          import json
+          data=json.load(open('governed-update-batch.json',encoding='utf-8'))
+          caller=data.get('caller') or {}
+          assert data.get('outcome') == 'BATCH_RECORDED', data
+          assert data.get('recorded_count') == data.get('requested_count') and (data.get('recorded_count') or 0) > 0, data
+          assert data.get('blocked_step_id') is None, data
+          assert caller.get('method') == 'GITHUB_ACTIONS_OIDC_EXACT_PROFILE_UPDATE_V1', data
+          print('GOVERNED_PROFILE_UPDATE_BATCH=PASS')
+          print('EXECUTION_ID='+str(data.get('execution_id')))
           PY
           echo 'GITHUB_WRITE_EXECUTED=false'
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
