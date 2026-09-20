@@ -1,0 +1,50 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.4-runtime-update",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+  "execution_id": "EXEC-RUNTIME-UPDATE-BLOCKED-RETRY-20260920-001",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "contract_sha": "4023d5d91e6634c7297498a0f49d9c74f37068363c4574667e7a4163e56a336e",
+  "judge_sha": "d0c51a76fd2fc20991d945c5f2f8d7615e2de9fb233a7f8c2b6c423fe9ea492a",
+  "source_sha_list": [
+    "38ceb43b5e983a966dca7cb5c0a9520e021213a0",
+    "c75970cdec26cc001799b5bf04447747e764c373",
+    "8d3e8f09936a27af5964d1b90cf8bc21bdd19be5",
+    "3b6d7ac313622a79e5c00a4069a39ee78edcc36e"
+  ],
+  "target_paths": [
+    "supabase/functions/run-creacion-perfil-lf/index.ts",
+    "skills/profile_creator/evals/batch_resume_contract.py",
+    "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-20T02:57:06.049299Z",
+  "operation_revision_sha256": "0cc155cce4aa8ea13e43bc167cf6a857f5e109a88b68d6513ffe55420975a9b0",
+  "fingerprint_sources": {
+    "contract_sha": "ACTIVE step-contract topology ordered by step_order",
+    "judge_sha": "ACTIVE judge+binding topology ordered by step_order"
+  },
+  "evidence_refs": [
+    "supabase://public.lf_operation_execution/EXEC-RUNTIME-UPDATE-BLOCKED-RETRY-20260920-001",
+    "supabase://public.lf_operation_execution_steps/EXEC-RUNTIME-UPDATE-BLOCKED-RETRY-20260920-001",
+    "github://cristhianlujan/claude-persona-lf-patch@38ceb43b5e983a966dca7cb5c0a9520e021213a0"
+  ],
+  "readback": {
+    "required_steps": 14,
+    "clean_steps": 14,
+    "candidate_exact_head": "38ceb43b5e983a966dca7cb5c0a9520e021213a0",
+    "pr_independence": {
+      "base_main_sha": "df40a6005e2f5e63087714687fe3d02b41e4c0c7",
+      "ahead_by": 1,
+      "behind_by": 0,
+      "candidate_commits": 1,
+      "unexpected_files": 0,
+      "supersedes_pr": 960
+    },
+    "runtime_activation": false,
+    "production_activation": false,
+    "automatic_promotion": false
+  }
+}
