@@ -1,0 +1,107 @@
+{
+  "verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+  "candidate_sha256": "5f18b8c23bb439c3790c53c01099753f7f3d53cbe897b407f7da413b202827ff",
+  "scope_packet_sha256": "9650f84032a33667ecf0d80e17ee3386d5da1cfd4207b6df4abb4e0962a17e71",
+  "source_refs_inspected": [
+    "supabase://public.lf_backlog_errores_operativos/186",
+    "supabase://public.lf_backlog_errores_operativos/187",
+    "supabase://public.lf_backlog_errores_operativos/188",
+    "supabase://public.lf_operation_execution_steps/EXEC-SRCR-PILOT-SPEC-R2-20260919-001/execute_profile"
+  ],
+  "observed_candidate_changes": [
+    {
+      "change_id": "JCHG-001",
+      "action_class": "MODIFY_CONTRACT_DATA",
+      "target": "public.lf_operation_step_contracts",
+      "candidate_paths": ["$.implementation_package.architecture_decisions[D2]", "$.implementation_package.deliverables[0]"],
+      "statement": "Store readiness contract and caller manifest in existing operation step-contract JSONB.",
+      "materiality": "MATERIAL",
+      "evidence_refs": ["supabase://public.lf_operation_execution_steps/EXEC-SRCR-PILOT-SPEC-R2-20260919-001/execute_profile"]
+    },
+    {
+      "change_id": "JCHG-002",
+      "action_class": "CREATE_RUNTIME_FUNCTION",
+      "target": "public.lf_operation_lifecycle_readiness_v1(text,text)",
+      "candidate_paths": ["$.implementation_package.architecture_decisions[D3]", "$.implementation_package.deliverables[1]", "$.implementation_package.decision_closure.implementation_preconditions[0]"],
+      "statement": "Create a new deterministic readiness SQL function and make it the implementation-precondition resolver.",
+      "materiality": "BLOCKING",
+      "evidence_refs": ["supabase://public.lf_operation_execution_steps/EXEC-SRCR-PILOT-SPEC-R2-20260919-001/execute_profile"]
+    },
+    {
+      "change_id": "JCHG-003",
+      "action_class": "MODIFY_CALLERS",
+      "target": "#186 bounded existing caller set + lf_operation_steps/lf_operation_step_contracts",
+      "candidate_paths": ["$.implementation_package.deliverables[2]", "$.implementation_delta[0]"],
+      "statement": "Adopt existing callers into the existing lifecycle chain inside #186.",
+      "materiality": "MATERIAL",
+      "evidence_refs": ["supabase://public.lf_backlog_errores_operativos/186"]
+    },
+    {
+      "change_id": "JCHG-004",
+      "action_class": "MODIFY_ENFORCEMENT",
+      "target": "#187 one-operation recorder/effect enforcement",
+      "candidate_paths": ["$.implementation_package.deliverables[3]", "$.implementation_delta[1]"],
+      "statement": "After #186 readback, enforce one operation at a time in separately approved #187 sublots.",
+      "materiality": "MATERIAL",
+      "evidence_refs": ["supabase://public.lf_backlog_errores_operativos/187"]
+    },
+    {
+      "change_id": "JCHG-005",
+      "action_class": "SEPARATE_HISTORICAL_DISPOSITION",
+      "target": "#188 IN_PROGRESS disposition lane",
+      "candidate_paths": ["$.implementation_package.deliverables[4]", "$.implementation_delta[2]"],
+      "statement": "Keep historical disposition separate and read-only until separately approved.",
+      "materiality": "MATERIAL",
+      "evidence_refs": ["supabase://public.lf_backlog_errores_operativos/188"]
+    }
+  ],
+  "requirement_reconciliation": [
+    {"scope_item_id": "REQ-186-CALLER-ADOPTION", "disposition": "SATISFIED", "reason": "covered by candidate"},
+    {"scope_item_id": "REQ-187-GRADUAL-ENFORCEMENT", "disposition": "SATISFIED", "reason": "covered by candidate"},
+    {"scope_item_id": "REQ-188-HISTORICAL-DISPOSITION", "disposition": "SATISFIED", "reason": "covered by candidate"},
+    {"scope_item_id": "CON-186-EXACT-FOOTPRINT", "disposition": "VIOLATED", "reason": "JCHG-002 creates a new pg_proc outside #186 exact footprint."},
+    {"scope_item_id": "CON-186-RULES-AS-DATA", "disposition": "PRESERVED", "reason": "existing contract data remains the declared readiness representation"},
+    {"scope_item_id": "CON-187-ONE-OPERATION", "disposition": "PRESERVED", "reason": "candidate keeps one-operation rollout"},
+    {"scope_item_id": "CON-188-READONLY-FIRST", "disposition": "PRESERVED", "reason": "candidate keeps historical lane separate"},
+    {"scope_item_id": "FORBID-186-POLICY-BINDING-WRITE", "disposition": "PRESERVED", "reason": "candidate removes policy-binding write"},
+    {"scope_item_id": "FORBID-187-BLANKET-ENABLE", "disposition": "PRESERVED", "reason": "candidate forbids blanket switch"},
+    {"scope_item_id": "FORBID-188-MASS-FORCE-CLOSE", "disposition": "PRESERVED", "reason": "candidate forbids mass force-close"}
+  ],
+  "change_declaration_reconciliation": [
+    {"change_id": "JCHG-001", "disposition": "DECLARED_EQUIVALENT", "declared_ref": "$.implementation_delta[0]"},
+    {"change_id": "JCHG-002", "disposition": "DECLARED_EQUIVALENT", "declared_ref": "$.implementation_delta[0]+$.implementation_package.deliverables[1]"},
+    {"change_id": "JCHG-003", "disposition": "DECLARED_EQUIVALENT", "declared_ref": "$.implementation_delta[0]"},
+    {"change_id": "JCHG-004", "disposition": "DECLARED_EQUIVALENT", "declared_ref": "$.implementation_delta[1]"},
+    {"change_id": "JCHG-005", "disposition": "DECLARED_EQUIVALENT", "declared_ref": "$.implementation_delta[2]"}
+  ],
+  "scope_conformance_reconciliation": [
+    {"change_id": "JCHG-001", "disposition": "IN_SCOPE", "basis_ref": "CON-186-EXACT-FOOTPRINT"},
+    {"change_id": "JCHG-002", "disposition": "OUT_OF_SCOPE_DESIGN_DELTA", "basis_ref": "CON-186-EXACT-FOOTPRINT", "reason": "New pg_proc function is not in the exact #186 write footprint but is embedded in D3/deliverables/decision closure."},
+    {"change_id": "JCHG-003", "disposition": "IN_SCOPE", "basis_ref": "REQ-186-CALLER-ADOPTION"},
+    {"change_id": "JCHG-004", "disposition": "IN_SCOPE", "basis_ref": "REQ-187-GRADUAL-ENFORCEMENT"},
+    {"change_id": "JCHG-005", "disposition": "IN_SCOPE", "basis_ref": "REQ-188-HISTORICAL-DISPOSITION"}
+  ],
+  "invariant_results": [
+    {"invariant": "SCOPE_AUTHORITY_INTEGRITY", "result": "FAIL", "evidence_refs": ["CON-186-EXACT-FOOTPRINT", "JCHG-002"], "reason": "Selected implementation includes an unauthorized new runtime function."},
+    {"invariant": "EVIDENCE_INTEGRITY", "result": "PASS", "evidence_refs": ["candidate_sha256", "scope_packet_sha256"], "reason": "Material finding is bound to exact candidate and canonical scope sources."},
+    {"invariant": "CAUSAL_CLOSURE", "result": "PASS", "evidence_refs": ["$.systemic_root_cause", "$.causal_chain"], "reason": "Candidate addresses the lifecycle-adoption failure class."},
+    {"invariant": "CONTRADICTION_INTEGRITY", "result": "PASS", "evidence_refs": ["$.execution_effect_reconciliation", "$.current_uncertainties"], "reason": "Known producer uncertainty is surfaced."},
+    {"invariant": "MINIMUM_SUFFICIENT_REUSE", "result": "PASS", "evidence_refs": ["$.implementation_package.architecture_decisions[D1,D2,D3]"], "reason": "Candidate reuses existing C05/contract surfaces; the scope defect is judged separately."},
+    {"invariant": "INDEPENDENT_DECISION_CLOSURE", "result": "FAIL", "evidence_refs": ["$.implementation_package.decision_closure", "JCHG-002"], "reason": "handoff_ready=true is contradicted by unresolved scope conformance."},
+    {"invariant": "FALSIFIABILITY_REGRESSION", "result": "PASS", "evidence_refs": ["$.falsification_results", "$.planned_regressions"], "reason": "Executable regression/falsification protocols are present."}
+  ],
+  "open_design_decisions_found": [
+    {"code": "SCOPE_DECISION_REQUIRED_FOR_JCHG_002", "reason": "Either remove/reclassify the new function or obtain explicit scope expansion."}
+  ],
+  "unsupported_claims": [],
+  "blocking_codes": [
+    "OUT_OF_SCOPE_DESIGN_DELTA",
+    "SCOPE_AUTHORITY_INTEGRITY_FAILED",
+    "INDEPENDENT_CLOSURE_FALSE_POSITIVE"
+  ],
+  "repair_instructions": [
+    "Remove JCHG-002 from the selected/required implementation and close readiness using authorized existing surfaces, or return for explicit scope expansion.",
+    "Do not keep handoff_ready=true while JCHG-002 remains unresolved."
+  ],
+  "next_gate": "PRODUCER_REPAIR_OR_SCOPE_AUTHORITY_RESOLUTION"
+}

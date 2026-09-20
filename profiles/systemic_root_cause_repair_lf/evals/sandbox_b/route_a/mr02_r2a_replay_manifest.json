@@ -1,0 +1,26 @@
+{
+  "experiment": "SRCR_MR02_R2_ROUTE_A_AFTER_CALLER_AUTHORITY_RECONCILIATION",
+  "source_candidate_sha256": "5f18b8c23bb439c3790c53c01099753f7f3d53cbe897b407f7da413b202827ff",
+  "prior_route_a_candidate_sha256": "785673990b4df0ad078ebe1e44dcd0611c5ab9e3f1aa6137c9efa28aefe4c72d",
+  "repaired_candidate_sha256": "e6f75ba01ce159771e027c2ea16fcdc42f6467d7bfa2f66c8cd648fb533fc26e",
+  "scope_packet_sha256": "08e248b5b819291b4b8bed75a259a7c157e1ede3773a7bb382222db4ac61ca34",
+  "producer_route": "A_NO_SCOPE_EXPANSION",
+  "prohibited_function_occurrences": 0,
+  "backlog_189_state": "RESUELTA",
+  "caller_authority_reconciliation_execution": "EXEC-MR02-CALLER-AUTHORITY-RECON-20260919-001",
+  "caller_authority_evidence_event": 14627,
+  "authority_coverage": "72/72",
+  "live_leases_now": 0,
+  "post_finding_attribution": "20/20",
+  "profile_runtime_validate": "PASS",
+  "profile_runtime_semantic_utility": "PASS",
+  "semantic_judge_b_expected_disposition": "PASS_INDEPENDENT_SEMANTIC",
+  "next_gate": "INDEPENDENT_CLAUDE_R2A_AUDIT",
+  "evidence_ceiling": {
+    "canonical_ejecucion_perfil_lf": false,
+    "production_runtime_wired": false,
+    "merge_ready": false,
+    "production_verified": false,
+    "child_186_implementation_authorized": false
+  }
+}
