@@ -41,6 +41,13 @@
             ]
           },
           "uniqueItems": true
+        },
+        "mode": {
+          "enum": [
+            "LIGHTWEIGHT",
+            "BOUNDED",
+            "DEEP_ARCHITECTURE_RESEARCH"
+          ]
         }
       }
     },
@@ -185,6 +192,47 @@
                 ]
               }
             }
+          }
+        },
+        "authority_bindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "authority_kind": {
+                "enum": [
+                  "EXISTING_AUTHORITY",
+                  "EXISTING_REUSABLE_CAPABILITY",
+                  "PROPOSED_DELIVERABLE",
+                  "UNKNOWN"
+                ]
+              },
+              "used_as_existing_authority": {
+                "type": "boolean"
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "used_as_existing_authority": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "used_as_existing_authority"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "authority_kind": {
+                      "const": "EXISTING_AUTHORITY"
+                    }
+                  }
+                }
+              }
+            ]
           }
         }
       }

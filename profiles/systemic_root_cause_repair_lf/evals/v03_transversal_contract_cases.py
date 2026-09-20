@@ -273,4 +273,16 @@ for rel in (
     text = (ROOT / rel).read_text(encoding="utf-8")
     assert not any(token in text for token in forbidden), (rel, forbidden)
 
-print("PASS_SRCR_V03_TRANSVERSAL_CONTRACT=10/10")
+# 11. Provider-side constraint blocks invalid solution-depth mode before canonical validation.
+invalid_mode = copy.deepcopy(source_recurrence)
+invalid_mode["solution_depth"]["mode"] = "SYSTEMIC"
+assert list(runtime_schema_validator.iter_errors(invalid_mode))
+
+# 12. A reusable capability cannot self-promote into an authority slot at provider boundary.
+invalid_authority = copy.deepcopy(source_recurrence)
+invalid_authority["closure_proof"]["authority_bindings"] = [
+    {"authority_kind": "EXISTING_REUSABLE_CAPABILITY", "used_as_existing_authority": True}
+]
+assert list(runtime_schema_validator.iter_errors(invalid_authority))
+
+print("PASS_SRCR_V03_TRANSVERSAL_CONTRACT=12/12")
