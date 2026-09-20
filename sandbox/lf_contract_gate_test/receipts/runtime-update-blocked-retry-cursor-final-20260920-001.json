@@ -1,0 +1,44 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.4-runtime-update",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+  "execution_id": "EXEC-RUNTIME-UPDATE-BLOCKED-RETRY-20260920-002",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "contract_sha": "4023d5d91e6634c7297498a0f49d9c74f37068363c4574667e7a4163e56a336e",
+  "judge_sha": "d0c51a76fd2fc20991d945c5f2f8d7615e2de9fb233a7f8c2b6c423fe9ea492a",
+  "source_sha_list": [
+    "0e5aaf4050f3136fc3b55e8f46a8faa7da93cc81",
+    "c75970cdec26cc001799b5bf04447747e764c373",
+    "8d3e8f09936a27af5964d1b90cf8bc21bdd19be5",
+    "3b6d7ac313622a79e5c00a4069a39ee78edcc36e"
+  ],
+  "target_paths": [
+    "supabase/functions/run-creacion-perfil-lf/index.ts",
+    "skills/profile_creator/evals/batch_resume_contract.py",
+    "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-20T03:21:22.732017Z",
+  "operation_revision_sha256": "0cc155cce4aa8ea13e43bc167cf6a857f5e109a88b68d6513ffe55420975a9b0",
+  "evidence_refs": [
+    "supabase://public.lf_operation_execution/EXEC-RUNTIME-UPDATE-BLOCKED-RETRY-20260920-002",
+    "supabase://public.lf_operation_execution_steps/EXEC-RUNTIME-UPDATE-BLOCKED-RETRY-20260920-002",
+    "github://cristhianlujan/claude-persona-lf-patch@0e5aaf4050f3136fc3b55e8f46a8faa7da93cc81",
+    "github://cristhianlujan/claude-persona-lf-patch/pull/962"
+  ],
+  "readback": {
+    "required_steps": 14,
+    "clean_steps": 14,
+    "candidate_code_head": "0e5aaf4050f3136fc3b55e8f46a8faa7da93cc81",
+    "base_main_sha": "39876bc2fe158034ed70f2b36ff28ebe0ecdadbc",
+    "admission_pr": 962,
+    "admission_merged_first": true,
+    "candidate_rematerialized_after_admission": true,
+    "unexpected_files": 0,
+    "runtime_activation": false,
+    "production_activation": false,
+    "automatic_promotion": false
+  }
+}
