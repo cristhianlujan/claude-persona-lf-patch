@@ -1,0 +1,43 @@
+{
+  "schema": "S26_F10_O5_PROVENANCE_RECONSTRUCTION_V1",
+  "final_candidate_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+  "request_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
+  "profile_source_manifest": [
+    {
+      "ref": "profiles/ui_architect/SKILL.md",
+      "immutable_ref": "github://cristhianlujan/claude-persona-lf-patch@77222b36028407659c3ff6f18e398ec77ec8fe46/profiles/ui_architect/SKILL.md",
+      "content_sha256": "b099944839af79cb97eac76f12ecf8bd38c39ea331224ee335ced32491f411c0",
+      "bytes": 14377
+    },
+    {
+      "ref": "profiles/ui_architect/contracts/composer_payload_boundary_v1.md",
+      "immutable_ref": "github://cristhianlujan/claude-persona-lf-patch@77222b36028407659c3ff6f18e398ec77ec8fe46/profiles/ui_architect/contracts/composer_payload_boundary_v1.md",
+      "content_sha256": "d2b55e3c29c45642ebe18084b23c1ae96064c8c0a6bd8ecb1f5910f2753bb617",
+      "bytes": 5583
+    }
+  ],
+  "runtime_profile_source_manifest": [
+    {
+      "ref": "profiles/ui_architect/SKILL.md",
+      "content_sha256": "b099944839af79cb97eac76f12ecf8bd38c39ea331224ee335ced32491f411c0"
+    },
+    {
+      "ref": "profiles/ui_architect/contracts/composer_payload_boundary_v1.md",
+      "content_sha256": "d2b55e3c29c45642ebe18084b23c1ae96064c8c0a6bd8ecb1f5910f2753bb617"
+    }
+  ],
+  "profile_source_aggregate_algorithm": "sha256(canonical_json(sorted([{ref,content_sha256}], key=ref)))",
+  "profile_source_aggregate_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658",
+  "declared_profile_source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658",
+  "profile_source_aggregate_match": true,
+  "raw_model_output": {
+    "exact_text_sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
+    "materializer_model_raw_output_sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
+    "receipt_canonical_json_string_sha256": "753ab756172d7b7a1f68fbfb8d8c74ae1e7e1722bf65305f9ae36a54de2d7a4e",
+    "receipt_raw_output_sha256": "753ab756172d7b7a1f68fbfb8d8c74ae1e7e1722bf65305f9ae36a54de2d7a4e",
+    "exact_text_match": true,
+    "receipt_hash_match": true
+  },
+  "receipt_internal_sha256": "75161a17fe6cf982b13f41badb85d9427b8ccf0f115b667320f9bcfe97f6938f",
+  "status": "PASS"
+}

@@ -1,0 +1,50 @@
+{
+  "downstream_authorized": false,
+  "execution_id": "EJECUCION_PERFIL_LF:S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
+  "execution_origin": "MODEL_RUNTIME",
+  "input_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
+  "operation_code": "EJECUCION_PERFIL_LF",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "profile_slug": "ui_architect",
+  "profile_source_refs": [
+    "profiles/ui_architect/SKILL.md",
+    "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+  ],
+  "profile_source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658",
+  "raw_output_captured": true,
+  "raw_output_sha256": "753ab756172d7b7a1f68fbfb8d8c74ae1e7e1722bf65305f9ae36a54de2d7a4e",
+  "receipt_sha256": "75161a17fe6cf982b13f41badb85d9427b8ccf0f115b667320f9bcfe97f6938f",
+  "receipt_type": "PROFILE_EXECUTION_RECEIPT_V1",
+  "runtime_attestation": {
+    "adapter_id": "hetzner-local-llamacpp-http-v1",
+    "attestation_evidence_sha256": "5c780e7769a1d8981d4f5d988d249d63472549c66a3c0a9f6a99774a0d6bbdbb",
+    "attestation_verifier": "hetzner-local-llamacpp-http-readback-v1",
+    "attested_at": "2026-09-13T18:16:15.870642Z",
+    "endpoint_scope": "LOOPBACK_ONLY",
+    "finish_reason": "stop",
+    "generation_schema_policy": "UI_PRODUCTION_SEMANTIC_TRANSPORT_UICT5",
+    "generation_schema_sha256": "6c6feaea1fa545aba4c0d475f57185efd4efb32fb6ae6f3f6039841e0cb59e3e",
+    "input_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
+    "llama_response_id": "chatcmpl-7pMvIKY1eDS6IA7h6sDrHlkDD8EZp38a",
+    "model_context_sha256": "faf03300cd04a4b609b1f4215c87fe1bdd3abacba15352f2a18071123f62f172",
+    "model_id": "/opt/profile-runtime-benchmark/model/model.gguf",
+    "model_user_prompt_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
+    "operation_code": "EJECUCION_PERFIL_LF",
+    "profile_code": "PERFIL-UI-ARCHITECT",
+    "profile_slug": "ui_architect",
+    "profile_source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658",
+    "provider": "local_llama_cpp_hetzner_persistent",
+    "request_sha256": "bdd124175a15a87f406cdfbfdd268b54a508c1503d3b95c3f35999be1159bb8e",
+    "run_id": "hetzner-api:647d92265aed765297d3f73b9d8bf97a",
+    "runtime_version": "hetzner-profile-runtime-api/0.1.0-candidate",
+    "source_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+    "structural_context_sha256": "40ce282866b0150508b62c7e602729ef79a069b4a3a706e8f7841bbfc15b967e",
+    "structured_output_schema_mode": "UI_PRODUCTION_SPEC",
+    "structured_output_schema_refs": [
+      "profiles/ui_architect/schemas/ui_production_spec.schema.json"
+    ],
+    "structured_output_schema_sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112",
+    "verified_request_sha256": "bdd124175a15a87f406cdfbfdd268b54a508c1503d3b95c3f35999be1159bb8e",
+    "verified_response_sha256": "3793397098a6ed303b949e0d178df4fdbb189050c7e89da4e3b81e81bdb88976"
+  }
+}

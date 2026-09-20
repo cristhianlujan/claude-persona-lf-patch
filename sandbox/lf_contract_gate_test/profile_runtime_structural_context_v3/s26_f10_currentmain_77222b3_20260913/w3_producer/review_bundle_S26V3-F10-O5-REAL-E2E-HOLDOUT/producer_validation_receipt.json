@@ -1,0 +1,62 @@
+{
+  "artifact_canonical_sha256": "896bb19200e418fdcfe18b5ea2a2de121df75032cbc1057ba1161e6025e8a4e5",
+  "claim_ceiling": "PRODUCER_COMPLETE_AWAITING_INDEPENDENT_REVIEW_NOT_GOLDEN_NOT_PRODUCTION",
+  "composer_boundary": "PASS",
+  "ekb_preflight": {
+    "required_codes": [
+      "AUD-025",
+      "CI-005",
+      "CI-007",
+      "CI-E16-001",
+      "CI-SUPABASE-CONTROL-PLANE-READBACK-001",
+      "DB-001",
+      "GOV-010",
+      "PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001",
+      "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+      "S26-MANIFEST-CANONICAL-CONTRACT-DIVERGENCE-001",
+      "S26-CANONICAL-DIRECT-ROUTER-SEMANTIC-FLOOR-VARIANCE-001"
+    ],
+    "required_codes_active": 11,
+    "source": "supabase://mhwmirqcgxxukpctffuv/public.lf_error_knowledge",
+    "status": "PASS"
+  },
+  "final_candidate_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+  "full_governed_pipeline_observed": true,
+  "golden_authorized": false,
+  "independent_semantic_review": {
+    "producer_must_not_self_review": true,
+    "reviewer_is_producer": false,
+    "status": "PENDING_INDEPENDENT_CHAT_CONTEXT"
+  },
+  "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+  "performance": {
+    "budget_ms": 120000,
+    "e2e_ms": 9875.542,
+    "profile_elapsed_ms": 9875.509,
+    "status": "PASS",
+    "within_budget": true
+  },
+  "producer_role": "PRODUCER_EXECUTION_AND_DETERMINISTIC_VALIDATION_ONLY",
+  "production_effect": false,
+  "profile_contract_valid": "PASS",
+  "quality_depth_producer_check": {
+    "depth": "PASS",
+    "quality": "PASS"
+  },
+  "regression_checks": {
+    "s26_w2_repairs": "4/4 PASS",
+    "total": "16/16 PASS",
+    "ui_production_semantic_repair": "9/9 PASS",
+    "ui_production_semantic_transport_v5": "3/3 PASS"
+  },
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-77222B3",
+  "runtime_completion": "PASS",
+  "runtime_typed_context_materialized_in_bundle": true,
+  "runtime_typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4",
+  "schema": "S26_F10_O5_PRODUCER_VALIDATION_RECEIPT_V1",
+  "semantic_transport": "UICT5",
+  "semantic_utility": "PASS",
+  "source_current_at_execution": true,
+  "typed_context_present": true,
+  "ui_validator": "PASS"
+}

@@ -1,0 +1,1105 @@
+{
+  "artifact": {
+    "composer_payload": {
+      "component_tree": [
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "header_search",
+          "component_type": "input",
+          "content": {
+            "binding": "USER_REQUIREMENT"
+          },
+          "role": "Support service comparison by narrowing only source-bound services; preserve the query and show source-backed results, empty, or error states without inventing items.",
+          "spacing": "compact",
+          "state": "default",
+          "typography": "body",
+          "visual_priority": "HIGH",
+          "zone_id": "header"
+        },
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "category_navigation",
+          "component_type": "navigation",
+          "content": {
+            "comparison_affordance": "SOURCE_DRIVEN_CATEGORY_FILTER_ONLY",
+            "item_structure": {
+              "label": "DATA_BOUND",
+              "selection_state": "SOURCE_DEFINED"
+            },
+            "items": "DATA_BOUND"
+          },
+          "role": "Filter or navigate the source-bound service set by source-defined categories so users can compare relevant services without invented classification.",
+          "spacing": "compact",
+          "state": "default",
+          "typography": "section_heading",
+          "visual_priority": "HIGH",
+          "zone_id": "categories"
+        },
+        {
+          "allowed_variants": [
+            "default",
+            "populated"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "featured_services",
+          "component_type": "section",
+          "content": {
+            "item_template_ref": "service_card_template",
+            "items": "DATA_BOUND",
+            "overlap_policy": "SOURCE_DESIGNATED_SUBSET_MAY_REPEAT_FROM_SERVICE_CARDS",
+            "selection_rule": "SOURCE_DESIGNATED_ONLY"
+          },
+          "role": "Present an optional source-designated subset of services using the same comparison card template; never infer featured status or create a separate service record.",
+          "spacing": "regular",
+          "state": "source_conditional",
+          "typography": "section_heading",
+          "visual_priority": "HIGH",
+          "zone_id": "featured_services"
+        },
+        {
+          "allowed_variants": [
+            "default",
+            "populated"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "service_cards",
+          "component_type": "collection",
+          "content": {
+            "comparison_affordance": "CONSISTENT_FIELD_ORDER_WITH_SOURCE_DRIVEN_FILTERING_OR_ORDERING_ONLY",
+            "item_template_ref": "service_card_template",
+            "items": "DATA_BOUND"
+          },
+          "role": "Present the primary source-bound service collection in a stable card field order so title, provider, price, and action can be scanned and compared consistently.",
+          "spacing": "regular",
+          "state": "populated",
+          "typography": "body",
+          "visual_priority": "HIGH",
+          "zone_id": "service_cards"
+        },
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "service_card_template",
+          "component_type": "template",
+          "content": {
+            "fields": [
+              "title",
+              "provider",
+              "price",
+              "call_to_action"
+            ],
+            "values": "DATA_BOUND"
+          },
+          "role": "Define the repeated comparison structure for every service card; preserve the same title, provider, price, and action field order across regular and featured presentation.",
+          "spacing": "regular",
+          "state": "default",
+          "typography": "body",
+          "visual_priority": "MEDIUM",
+          "zone_id": "service_cards"
+        },
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "service_title",
+          "component_type": "text",
+          "content": {
+            "value": "DATA_BOUND:title"
+          },
+          "role": "Expose the source-bound service title in the same card position so users can compare service identity consistently.",
+          "spacing": "compact",
+          "state": "default",
+          "typography": "body",
+          "visual_priority": "MEDIUM",
+          "zone_id": "service_cards"
+        },
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "service_provider",
+          "component_type": "text",
+          "content": {
+            "value": "DATA_BOUND:provider"
+          },
+          "role": "Expose the source-bound provider in the same card position so users can compare who offers each service.",
+          "spacing": "compact",
+          "state": "default",
+          "typography": "body",
+          "visual_priority": "MEDIUM",
+          "zone_id": "service_cards"
+        },
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "service_price",
+          "component_type": "value",
+          "content": {
+            "format": "SOURCE_DEFINED",
+            "value": "DATA_BOUND:price"
+          },
+          "role": "Expose only source-bound price data with SOURCE_DEFINED formatting in a consistent card position; never invent precision or discounts.",
+          "spacing": "compact",
+          "state": "default",
+          "typography": "body",
+          "visual_priority": "MEDIUM",
+          "zone_id": "service_cards"
+        },
+        {
+          "allowed_variants": [
+            "default",
+            "available"
+          ],
+          "blocked_variants": [
+            "invented_data",
+            "invented_route"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle",
+            "action_primary"
+          ],
+          "component_id": "service_cta",
+          "component_type": "action",
+          "content": {
+            "destination": "UNRESOLVED_UNTIL_SOURCE",
+            "label": "DATA_BOUND:call_to_action"
+          },
+          "role": "Expose the source-bound action label only when its source-backed destination exists; otherwise disable or omit the action without inventing a route.",
+          "spacing": "compact",
+          "state": "available",
+          "typography": "body",
+          "visual_priority": "HIGH",
+          "zone_id": "service_cards"
+        }
+      ],
+      "density_rules": [
+        "Keep search and navigation immediately discoverable.",
+        "Keep repeated content scannable without dropping required fields.",
+        "Prefer responsive reflow over reducing legibility."
+      ],
+      "layout_grid": {
+        "desktop": "source-designated featured services remain visually distinct before a responsive 2-3 column service-card grid; category navigation stays visible and columns collapse when card readability would be lost",
+        "flow": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards"
+        ],
+        "mobile": "single-column stack preserving search, category navigation, the distinct source-designated featured section, and stable service-card field order for comparison"
+      },
+      "risk_controls": [
+        "Preserve service_cta.destination as UNRESOLVED_UNTIL_SOURCE; do not invent or strengthen its value.",
+        "Preserve service_price.format as SOURCE_DEFINED; do not invent or strengthen its value.",
+        "Preserve service_cta.label as DATA_BOUND:call_to_action; do not invent or strengthen its value.",
+        "Preserve service_price.value as DATA_BOUND:price; do not invent or strengthen its value.",
+        "For featured_services, render items only when the source explicitly marks them featured; otherwise omit the section or use its empty state without inventing membership.",
+        "featured_services is a presentation subset of service_cards: the same source item may appear in both only when source-designated featured, and must not be duplicated as a new domain record.",
+        "Any service ordering, filtering, or comparison grouping must remain source-driven or explicit user interaction; do not invent rankings, recommendations, or domain fields.",
+        "Do not introduce pressure, shame, urgency, scarcity, countdowns, guaranteed outcomes, or eligibility claims.",
+        "Keep internal governance, provenance, scores, hashes, routing, and execution metadata out of user-visible UI."
+      ],
+      "screen_definition": {
+        "design_intent": [
+          "clear",
+          "professional",
+          "easy_to_navigate"
+        ],
+        "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+        "purpose": "Implement the governed GENERIC_SERVICE_MARKETPLACE screen with source-bound required sections and responsive behavior.",
+        "required_sections": [
+          "header",
+          "categories",
+          "featured_services",
+          "service_cards"
+        ],
+        "screen_type": "GENERIC_SERVICE_MARKETPLACE",
+        "task_mode": "CREATE_NEW"
+      },
+      "spacing_typography": {
+        "precision_mode": "RELATIVE_GUIDANCE",
+        "spacing": "compact=1u within component;regular=2u between related components;section=4u between major sections",
+        "typography": "body=content_or_metadata;section_heading=section_emphasis"
+      },
+      "state_map": {
+        "category_navigation": {
+          "default": "available",
+          "selected": "preserve_source_selected_category"
+        },
+        "featured_services": {
+          "empty": "render_no_invented_items",
+          "not_source_designated": "omit_or_render_empty_state_without_invented_items",
+          "populated": "render_source_items",
+          "source_designated": "render_only_source_marked_featured_items"
+        },
+        "header_search": {
+          "default": "enabled",
+          "error": "render_non_fabricated_error_state",
+          "no_results": "render_empty_result_without_invented_items",
+          "query_entered": "preserve_user_query",
+          "results_available": "render_source_results_only"
+        },
+        "service_cards": {
+          "empty": "render_empty_state_without_invented_items",
+          "populated": "render_source_items"
+        },
+        "service_cta": {
+          "available": "enabled_when_source_action_exists",
+          "missing_source_action": "disabled_or_omitted_without_inventing_destination"
+        }
+      },
+      "token_map": {
+        "action": [
+          "action_primary"
+        ],
+        "border": [
+          "border_subtle"
+        ],
+        "precision_mode": "SEMANTIC_ROLE_ONLY_NO_CANONICAL_COLOR_VALUES_INVENTED",
+        "surface": [
+          "surface_default"
+        ],
+        "text": [
+          "text_primary"
+        ]
+      },
+      "visual_hierarchy": [
+        {
+          "child_ids": [
+            "header_search",
+            "category_navigation",
+            "featured_services",
+            "service_cards"
+          ],
+          "parent_id": "screen"
+        },
+        {
+          "child_ids": [
+            "service_card_template"
+          ],
+          "parent_id": "service_cards"
+        },
+        {
+          "child_ids": [
+            "service_title",
+            "service_provider",
+            "service_price",
+            "service_cta"
+          ],
+          "parent_id": "service_card_template"
+        }
+      ]
+    },
+    "deliverable_created": {
+      "component_tree": [
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "header_search",
+          "component_type": "input",
+          "content": {
+            "binding": "USER_REQUIREMENT"
+          },
+          "role": "Support service comparison by narrowing only source-bound services; preserve the query and show source-backed results, empty, or error states without inventing items.",
+          "spacing": "compact",
+          "state": "default",
+          "typography": "body",
+          "visual_priority": "HIGH",
+          "zone_id": "header"
+        },
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "category_navigation",
+          "component_type": "navigation",
+          "content": {
+            "comparison_affordance": "SOURCE_DRIVEN_CATEGORY_FILTER_ONLY",
+            "item_structure": {
+              "label": "DATA_BOUND",
+              "selection_state": "SOURCE_DEFINED"
+            },
+            "items": "DATA_BOUND"
+          },
+          "role": "Filter or navigate the source-bound service set by source-defined categories so users can compare relevant services without invented classification.",
+          "spacing": "compact",
+          "state": "default",
+          "typography": "section_heading",
+          "visual_priority": "HIGH",
+          "zone_id": "categories"
+        },
+        {
+          "allowed_variants": [
+            "default",
+            "populated"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "featured_services",
+          "component_type": "section",
+          "content": {
+            "item_template_ref": "service_card_template",
+            "items": "DATA_BOUND",
+            "overlap_policy": "SOURCE_DESIGNATED_SUBSET_MAY_REPEAT_FROM_SERVICE_CARDS",
+            "selection_rule": "SOURCE_DESIGNATED_ONLY"
+          },
+          "role": "Present an optional source-designated subset of services using the same comparison card template; never infer featured status or create a separate service record.",
+          "spacing": "regular",
+          "state": "source_conditional",
+          "typography": "section_heading",
+          "visual_priority": "HIGH",
+          "zone_id": "featured_services"
+        },
+        {
+          "allowed_variants": [
+            "default",
+            "populated"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "service_cards",
+          "component_type": "collection",
+          "content": {
+            "comparison_affordance": "CONSISTENT_FIELD_ORDER_WITH_SOURCE_DRIVEN_FILTERING_OR_ORDERING_ONLY",
+            "item_template_ref": "service_card_template",
+            "items": "DATA_BOUND"
+          },
+          "role": "Present the primary source-bound service collection in a stable card field order so title, provider, price, and action can be scanned and compared consistently.",
+          "spacing": "regular",
+          "state": "populated",
+          "typography": "body",
+          "visual_priority": "HIGH",
+          "zone_id": "service_cards"
+        },
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "service_card_template",
+          "component_type": "template",
+          "content": {
+            "fields": [
+              "title",
+              "provider",
+              "price",
+              "call_to_action"
+            ],
+            "values": "DATA_BOUND"
+          },
+          "role": "Define the repeated comparison structure for every service card; preserve the same title, provider, price, and action field order across regular and featured presentation.",
+          "spacing": "regular",
+          "state": "default",
+          "typography": "body",
+          "visual_priority": "MEDIUM",
+          "zone_id": "service_cards"
+        },
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "service_title",
+          "component_type": "text",
+          "content": {
+            "value": "DATA_BOUND:title"
+          },
+          "role": "Expose the source-bound service title in the same card position so users can compare service identity consistently.",
+          "spacing": "compact",
+          "state": "default",
+          "typography": "body",
+          "visual_priority": "MEDIUM",
+          "zone_id": "service_cards"
+        },
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "service_provider",
+          "component_type": "text",
+          "content": {
+            "value": "DATA_BOUND:provider"
+          },
+          "role": "Expose the source-bound provider in the same card position so users can compare who offers each service.",
+          "spacing": "compact",
+          "state": "default",
+          "typography": "body",
+          "visual_priority": "MEDIUM",
+          "zone_id": "service_cards"
+        },
+        {
+          "allowed_variants": [
+            "default"
+          ],
+          "blocked_variants": [
+            "invented_data"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle"
+          ],
+          "component_id": "service_price",
+          "component_type": "value",
+          "content": {
+            "format": "SOURCE_DEFINED",
+            "value": "DATA_BOUND:price"
+          },
+          "role": "Expose only source-bound price data with SOURCE_DEFINED formatting in a consistent card position; never invent precision or discounts.",
+          "spacing": "compact",
+          "state": "default",
+          "typography": "body",
+          "visual_priority": "MEDIUM",
+          "zone_id": "service_cards"
+        },
+        {
+          "allowed_variants": [
+            "default",
+            "available"
+          ],
+          "blocked_variants": [
+            "invented_data",
+            "invented_route"
+          ],
+          "color_tokens": [
+            "surface_default",
+            "text_primary",
+            "border_subtle",
+            "action_primary"
+          ],
+          "component_id": "service_cta",
+          "component_type": "action",
+          "content": {
+            "destination": "UNRESOLVED_UNTIL_SOURCE",
+            "label": "DATA_BOUND:call_to_action"
+          },
+          "role": "Expose the source-bound action label only when its source-backed destination exists; otherwise disable or omit the action without inventing a route.",
+          "spacing": "compact",
+          "state": "available",
+          "typography": "body",
+          "visual_priority": "HIGH",
+          "zone_id": "service_cards"
+        }
+      ],
+      "density_rules": [
+        "Keep search and navigation immediately discoverable.",
+        "Keep repeated content scannable without dropping required fields.",
+        "Prefer responsive reflow over reducing legibility."
+      ],
+      "layout_grid": {
+        "desktop": "source-designated featured services remain visually distinct before a responsive 2-3 column service-card grid; category navigation stays visible and columns collapse when card readability would be lost",
+        "flow": [
+          "header_search",
+          "category_navigation",
+          "featured_services",
+          "service_cards"
+        ],
+        "mobile": "single-column stack preserving search, category navigation, the distinct source-designated featured section, and stable service-card field order for comparison"
+      },
+      "prompt_constraints": [
+        "Preserve every governed required component and source binding.",
+        "Keep desktop and mobile behavior explicit without inventing domain truth."
+      ],
+      "risk_controls": [
+        "Preserve service_cta.destination as UNRESOLVED_UNTIL_SOURCE; do not invent or strengthen its value.",
+        "Preserve service_price.format as SOURCE_DEFINED; do not invent or strengthen its value.",
+        "Preserve service_cta.label as DATA_BOUND:call_to_action; do not invent or strengthen its value.",
+        "Preserve service_price.value as DATA_BOUND:price; do not invent or strengthen its value.",
+        "For featured_services, render items only when the source explicitly marks them featured; otherwise omit the section or use its empty state without inventing membership.",
+        "featured_services is a presentation subset of service_cards: the same source item may appear in both only when source-designated featured, and must not be duplicated as a new domain record.",
+        "Any service ordering, filtering, or comparison grouping must remain source-driven or explicit user interaction; do not invent rankings, recommendations, or domain fields.",
+        "Do not introduce pressure, shame, urgency, scarcity, countdowns, guaranteed outcomes, or eligibility claims.",
+        "Keep internal governance, provenance, scores, hashes, routing, and execution metadata out of user-visible UI."
+      ],
+      "screen_definition": {
+        "design_intent": [
+          "clear",
+          "professional",
+          "easy_to_navigate"
+        ],
+        "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+        "purpose": "Implement the governed GENERIC_SERVICE_MARKETPLACE screen with source-bound required sections and responsive behavior.",
+        "required_sections": [
+          "header",
+          "categories",
+          "featured_services",
+          "service_cards"
+        ],
+        "screen_type": "GENERIC_SERVICE_MARKETPLACE",
+        "task_mode": "CREATE_NEW"
+      },
+      "spacing_typography": {
+        "precision_mode": "RELATIVE_GUIDANCE",
+        "spacing": "compact=1u within component;regular=2u between related components;section=4u between major sections",
+        "typography": "body=content_or_metadata;section_heading=section_emphasis"
+      },
+      "state_map": {
+        "category_navigation": {
+          "default": "available",
+          "selected": "preserve_source_selected_category"
+        },
+        "featured_services": {
+          "empty": "render_no_invented_items",
+          "not_source_designated": "omit_or_render_empty_state_without_invented_items",
+          "populated": "render_source_items",
+          "source_designated": "render_only_source_marked_featured_items"
+        },
+        "header_search": {
+          "default": "enabled",
+          "error": "render_non_fabricated_error_state",
+          "no_results": "render_empty_result_without_invented_items",
+          "query_entered": "preserve_user_query",
+          "results_available": "render_source_results_only"
+        },
+        "service_cards": {
+          "empty": "render_empty_state_without_invented_items",
+          "populated": "render_source_items"
+        },
+        "service_cta": {
+          "available": "enabled_when_source_action_exists",
+          "missing_source_action": "disabled_or_omitted_without_inventing_destination"
+        }
+      },
+      "token_map": {
+        "action": [
+          "action_primary"
+        ],
+        "border": [
+          "border_subtle"
+        ],
+        "precision_mode": "SEMANTIC_ROLE_ONLY_NO_CANONICAL_COLOR_VALUES_INVENTED",
+        "surface": [
+          "surface_default"
+        ],
+        "text": [
+          "text_primary"
+        ]
+      },
+      "visual_hierarchy": [
+        {
+          "child_ids": [
+            "header_search",
+            "category_navigation",
+            "featured_services",
+            "service_cards"
+          ],
+          "parent_id": "screen"
+        },
+        {
+          "child_ids": [
+            "service_card_template"
+          ],
+          "parent_id": "service_cards"
+        },
+        {
+          "child_ids": [
+            "service_title",
+            "service_provider",
+            "service_price",
+            "service_cta"
+          ],
+          "parent_id": "service_card_template"
+        }
+      ]
+    },
+    "governance_envelope": {
+      "context": {
+        "execution_mode": "SANDBOX",
+        "input_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
+        "request_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
+        "runtime_source_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+        "runtime_typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4"
+      },
+      "render_policy": "NON_RENDER",
+      "schema": "LF_UI_GOVERNANCE_ENVELOPE_V1"
+    },
+    "handoff_to_next": {
+      "payload_ref": "composer_payload",
+      "recipient": "frontend_or_composer_agent",
+      "status": "READY_FOR_DETERMINISTIC_AND_SEMANTIC_VALIDATION"
+    },
+    "output_contract_version": "UI_PRODUCTION_SPEC_V6",
+    "output_type": "PRODUCTION_UI_SPEC",
+    "score": {
+      "evidence_by_criterion": {
+        "handoff_quality": {
+          "observed": {
+            "component_tree_sha256": "c62a86c12b02e6163ef138d5e355a91e9c4b9e5bd6b66f922bb71ec3705ebf71",
+            "composer_payload_present": true,
+            "composer_payload_sha256": "a28c47428f4c768bb7692e48af9c41a8e4633bf3496377129782531724095d05",
+            "required_components_present": 9,
+            "required_components_total": 9,
+            "source_bindings_matched": true,
+            "variant_guards_present": true
+          },
+          "refs": [
+            "component_tree",
+            "handoff_to_next"
+          ],
+          "result": "PASS",
+          "rule": "5=components + variant guards + exact source bindings + composer payload; source-binding mismatch=0 fail-closed; 3/1 only for non-source-critical partial structure",
+          "summary": "PASS: score=5; observed={\"component_tree_sha256\":\"c62a86c12b02e6163ef138d5e355a91e9c4b9e5bd6b66f922bb71ec3705ebf71\",\"composer_payload_present\":true,\"composer_payload_sha256\":\"a28c47428f4c768bb7692e48af9c41a8e4633bf3496377129782531724095d05\",\"required_components_present\":9,\"required_components_total\":9,\"source_bindings_matched\":true,\"variant_guards_present\":true}"
+        },
+        "layout_precision": {
+          "observed": {
+            "layout_flow_matches_hierarchy": true,
+            "layout_grid_sha256": "815aa17eb61869228d37c921b8d2aa51606ba07bdd1fcae3d126a1c72143bb9d",
+            "responsive_modes_required": [
+              "desktop",
+              "mobile"
+            ],
+            "responsive_rules_present": true,
+            "spacing_typography_present": true,
+            "spacing_typography_sha256": "6728b1ad7a09fa40e521dd5591b0d0e0f868d3858298dead7ff64decef047010"
+          },
+          "refs": [
+            "layout_grid",
+            "spacing_typography"
+          ],
+          "result": "PASS",
+          "rule": "5=responsive modes + hierarchy-coherent flow + spacing/typography explicit; 3=responsive + spacing partial; 1=general layout evidence; 0=absent",
+          "summary": "PASS: score=5; observed={\"layout_flow_matches_hierarchy\":true,\"layout_grid_sha256\":\"815aa17eb61869228d37c921b8d2aa51606ba07bdd1fcae3d126a1c72143bb9d\",\"responsive_modes_required\":[\"desktop\",\"mobile\"],\"responsive_rules_present\":true,\"spacing_typography_present\":true,\"spacing_typography_sha256\":\"6728b1ad7a09fa40e521dd5591b0d0e0f868d3858298dead7ff64decef047010\"}"
+        },
+        "lf_system_fidelity": {
+          "observed": {
+            "lf_safety_explicit": true,
+            "risk_controls_observed": 9,
+            "risk_controls_required": 4,
+            "risk_controls_sha256": "3543ed4f89b0cda49dfc6ced31deb63fb6b209206ca92f6ea34a84e9db65c9d3",
+            "token_map_present": true,
+            "token_map_sha256": "d970c3ef1602ca9e8d9423b3f7ad2a0a7be3d039f33145e48b6695145de3827b"
+          },
+          "refs": [
+            "token_map",
+            "risk_controls"
+          ],
+          "result": "PASS",
+          "rule": "5=token map + minimum risk controls + explicit anti-invention/dark-pattern safety; 3=token+risk evidence partial; 1=generic fidelity evidence; 0=absent",
+          "summary": "PASS: score=5; observed={\"lf_safety_explicit\":true,\"risk_controls_observed\":9,\"risk_controls_required\":4,\"risk_controls_sha256\":\"3543ed4f89b0cda49dfc6ced31deb63fb6b209206ca92f6ea34a84e9db65c9d3\",\"token_map_present\":true,\"token_map_sha256\":\"d970c3ef1602ca9e8d9423b3f7ad2a0a7be3d039f33145e48b6695145de3827b\"}"
+        },
+        "state_mapping": {
+          "observed": {
+            "coverage_complete": true,
+            "present_state_components": [
+              "category_navigation",
+              "featured_services",
+              "header_search",
+              "service_cards",
+              "service_cta"
+            ],
+            "required_state_components": [
+              "category_navigation",
+              "featured_services",
+              "header_search",
+              "service_cards",
+              "service_cta"
+            ],
+            "required_state_semantics": true,
+            "state_map_sha256": "a7ec01a7024134afc4a50090e971e13fd9ee4ff98b07d21635635e5505186038"
+          },
+          "refs": [
+            "state_map"
+          ],
+          "result": "PASS",
+          "rule": "5=required state coverage + strict semantics when applicable; 3=coverage present but semantics partial; 1=generic state evidence; 0=absent",
+          "summary": "PASS: score=5; observed={\"coverage_complete\":true,\"present_state_components\":[\"category_navigation\",\"featured_services\",\"header_search\",\"service_cards\",\"service_cta\"],\"required_state_components\":[\"category_navigation\",\"featured_services\",\"header_search\",\"service_cards\",\"service_cta\"],\"required_state_semantics\":true,\"state_map_sha256\":\"a7ec01a7024134afc4a50090e971e13fd9ee4ff98b07d21635635e5505186038\"}"
+        },
+        "visual_hierarchy": {
+          "observed": {
+            "observed_depth_edges": 3,
+            "required_depth_edges": 3,
+            "visual_hierarchy_sha256": "19bda6960b722ddc91bba3af51bb7e83ae7664d1948c3441910e6b4496c22b10",
+            "visual_priority_and_roles_complete": true
+          },
+          "refs": [
+            "visual_hierarchy",
+            "component_tree"
+          ],
+          "result": "PASS",
+          "rule": "5=required hierarchy depth + explicit visual priority/role on every component; 3=explicit partial hierarchy; 1=generic hierarchy evidence; 0=absent",
+          "summary": "PASS: score=5; observed={\"observed_depth_edges\":3,\"required_depth_edges\":3,\"visual_hierarchy_sha256\":\"19bda6960b722ddc91bba3af51bb7e83ae7664d1948c3441910e6b4496c22b10\",\"visual_priority_and_roles_complete\":true}"
+        }
+      },
+      "handoff_quality": 5,
+      "layout_precision": 5,
+      "lf_system_fidelity": 5,
+      "state_mapping": 5,
+      "total": 25,
+      "visual_hierarchy": 5
+    },
+    "self_verdict": "PASS_TO_QUALITY_PACK_CANDIDATE",
+    "worker": "ui_architect"
+  },
+  "artifact_canonical_sha256": "896bb19200e418fdcfe18b5ea2a2de121df75032cbc1057ba1161e6025e8a4e5",
+  "case_context": {
+    "brand_new_case": true,
+    "domain": "HOME_HEALTH_SERVICES_MARKETPLACE",
+    "input_literal": "Diseña una pantalla para un marketplace de servicios de salud a domicilio. Debe incluir un encabezado con buscador, categorías como medicina general, enfermería y fisioterapia, una sección de servicios destacados y tarjetas de servicio con título, profesional o proveedor, precio y una llamada a la acción para reservar. El diseño debe ser claro, profesional y fácil de navegar en escritorio y móvil. Entrega una especificación estructurada lista para que otro agente implemente la pantalla; no inventes destinos, precios ni datos que no provengan de la fuente.",
+    "input_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
+    "not_hp001_replay": true,
+    "task_mode": "CREATE_NEW"
+  },
+  "claim_ceiling": "FROZEN_ARTIFACT_FOR_INDEPENDENT_REVIEW_NOT_SEMANTICALLY_CERTIFIED_NOT_GOLDEN_NOT_PRODUCTION",
+  "final_candidate_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+  "matrix_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT",
+  "review_case_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-77222B3",
+  "runtime_observation": {
+    "adapter_binding": [],
+    "authority_resolution": [
+      {
+        "authority_id": "PERFIL-UI-ARCHITECT",
+        "authority_type": "PROFILE_SOURCE",
+        "cross_run_declared": false,
+        "run_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
+        "source_refs": [
+          "profiles/ui_architect/SKILL.md",
+          "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+        ],
+        "source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658"
+      }
+    ],
+    "card_resolution": {
+      "mode": "NO_CARD_GOVERNED",
+      "reason": "NO_APPLICABLE_CARD_DECLARED",
+      "schema_invention_allowed": false,
+      "selected_card_refs": [],
+      "status": "FALLBACK"
+    },
+    "downstream_authorized": false,
+    "elapsed_ms": 9875.509,
+    "full_governed_pipeline_observed": true,
+    "llama_timings": {
+      "cache_n": 1334,
+      "predicted_ms": 1940.585,
+      "predicted_n": 27,
+      "predicted_per_second": 13.398021730560629,
+      "predicted_per_token_ms": 74.63788461538462,
+      "prompt_ms": 7899.888,
+      "prompt_n": 288,
+      "prompt_per_second": 36.45621305010906,
+      "prompt_per_token_ms": 27.430166666666665
+    },
+    "materialized_output_sha256": "896bb19200e418fdcfe18b5ea2a2de121df75032cbc1057ba1161e6025e8a4e5",
+    "model_raw_output_sha256": "45b130b396abb690095cb6b64c1bf23b4a046a49c904aee1436ff0a46b450b0b",
+    "pipeline_stage_evidence": {
+      "A_INPUT_ADMISSION": {
+        "byte_exact_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
+        "input_non_empty": true,
+        "input_present": true,
+        "status": "PASS",
+        "utf8": true
+      },
+      "B_EKB_GOVERNANCE": {
+        "evidence_mode": "LIVE_SUPABASE_CONTROL_PLANE_READBACK",
+        "required_codes": [
+          "AUD-025",
+          "CI-005",
+          "CI-007",
+          "CI-E16-001",
+          "CI-SUPABASE-CONTROL-PLANE-READBACK-001",
+          "DB-001",
+          "GOV-010",
+          "PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001",
+          "PROFILES-EKB-PREFLIGHT-OMISSION-001",
+          "S26-MANIFEST-CANONICAL-CONTRACT-DIVERGENCE-001",
+          "S26-CANONICAL-DIRECT-ROUTER-SEMANTIC-FLOOR-VARIANCE-001"
+        ],
+        "required_codes_active_count": 11,
+        "status": "PASS",
+        "table": "public.lf_error_knowledge"
+      },
+      "C_CARD_SELECTION": {
+        "decision": {
+          "mode": "NO_CARD_GOVERNED",
+          "reason": "NO_APPLICABLE_CARD_DECLARED",
+          "schema_invention_allowed": false,
+          "selected_card_refs": [],
+          "status": "FALLBACK"
+        },
+        "status": "PASS"
+      },
+      "D_AUTHORITY_RESOLUTION": {
+        "authority_resolution": [
+          {
+            "authority_id": "PERFIL-UI-ARCHITECT",
+            "authority_type": "PROFILE_SOURCE",
+            "cross_run_declared": false,
+            "run_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
+            "source_refs": [
+              "profiles/ui_architect/SKILL.md",
+              "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+            ],
+            "source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658"
+          }
+        ],
+        "cross_run_authority_observed": false,
+        "status": "PASS"
+      },
+      "E_TYPED_CONTEXT": {
+        "materialized_in_bundle": true,
+        "provenance_reconstructible": true,
+        "runtime_typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4",
+        "schema": "lf-runtime-typed-context/v1",
+        "status": "PASS"
+      },
+      "F_PROFILE_EXECUTION": {
+        "profile_contract_valid": "PASS",
+        "self_verdict": "PASS_TO_QUALITY_PACK_CANDIDATE",
+        "semantic_transport": "UICT5",
+        "semantic_utility": "PASS",
+        "status": "PASS",
+        "ui_score_total": 25
+      }
+    },
+    "request_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
+    "runtime_completion": "PASS",
+    "runtime_schema": {
+      "mode": "UI_PRODUCTION_SPEC",
+      "schema_invention_allowed": false,
+      "sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112",
+      "source_ref": "profiles/ui_architect/schemas/ui_production_spec.schema.json"
+    },
+    "runtime_typed_context": {
+      "adapter_binding": [],
+      "authority_resolution": [
+        {
+          "authority_id": "PERFIL-UI-ARCHITECT",
+          "authority_type": "PROFILE_SOURCE",
+          "cross_run_declared": false,
+          "run_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
+          "source_refs": [
+            "profiles/ui_architect/SKILL.md",
+            "profiles/ui_architect/contracts/composer_payload_boundary_v1.md"
+          ],
+          "source_sha256": "b65ab7beb8701ca95d1d9fdd51a82bd48f5382d87167cd0a148ae9fe7965f658"
+        }
+      ],
+      "card_resolution": {
+        "mode": "NO_CARD_GOVERNED",
+        "reason": "NO_APPLICABLE_CARD_DECLARED",
+        "schema_invention_allowed": false,
+        "selected_card_refs": [],
+        "status": "FALLBACK"
+      },
+      "classification": {
+        "surface_code": "PROFILE:ui_architect",
+        "task_code": "EJECUCION_PERFIL_LF:UI_PRODUCTION_SPEC"
+      },
+      "current_run_id": "S26V3-F10-O5-FRESH-77222B3-20260913T1810Z",
+      "input": {
+        "input_fields": {
+          "distribution_mode": "DIRECT",
+          "domain_scope": "GENERIC_SERVICE_MARKETPLACE",
+          "execution_mode": "SANDBOX",
+          "gate_f_acceptance": {
+            "implementation_readiness": "STRUCTURED_SPEC_READY_FOR_NEXT_AGENT",
+            "minimum_component_count": 9,
+            "minimum_hierarchy_depth_edges": 3,
+            "minimum_risk_control_count": 4,
+            "minimum_state_map_coverage_ratio": 1.0,
+            "minimum_variant_guard_coverage_ratio": 1.0,
+            "required_component_ids": [
+              "header_search",
+              "category_navigation",
+              "featured_services",
+              "service_cards",
+              "service_card_template",
+              "service_title",
+              "service_provider",
+              "service_price",
+              "service_cta"
+            ],
+            "required_design_intents": [
+              "clear",
+              "professional",
+              "easy_to_navigate"
+            ],
+            "required_responsive_modes": [
+              "desktop",
+              "mobile"
+            ],
+            "required_sections": [
+              "header",
+              "categories",
+              "featured_services",
+              "service_cards"
+            ],
+            "required_service_leaf_components": [
+              "service_title",
+              "service_provider",
+              "service_price",
+              "service_cta"
+            ],
+            "required_source_bindings": {
+              "category_navigation.items": "DATA_BOUND",
+              "featured_services.items": "DATA_BOUND",
+              "service_card_template.fields": "title|provider|price|call_to_action",
+              "service_card_template.values": "DATA_BOUND",
+              "service_cards.items": "DATA_BOUND",
+              "service_cta.destination": "UNRESOLVED_UNTIL_SOURCE",
+              "service_cta.label": "DATA_BOUND:call_to_action",
+              "service_price.format": "SOURCE_DEFINED",
+              "service_price.value": "DATA_BOUND:price",
+              "service_provider.value": "DATA_BOUND:provider",
+              "service_title.value": "DATA_BOUND:title"
+            },
+            "required_state_component_ids": [
+              "header_search",
+              "category_navigation",
+              "featured_services",
+              "service_cards",
+              "service_cta"
+            ],
+            "task_mode": "CREATE_NEW"
+          },
+          "gate_run_id": "S26V3-F10-O5-REAL-E2E-HOLDOUT-CURRENTMAIN-003",
+          "output_contract_version": "UI_PRODUCTION_SPEC_V6",
+          "project_id": "S26",
+          "task_mode": "CREATE_NEW"
+        },
+        "input_fields_sha256": "79e12bab520946897091edf7407021b8f9b702433abc4afd0e8548aa86271dfd",
+        "input_literal_sha256": "e18350ad4268292700636621b92294454c034ebb8f1377cd1cdf0b3510066a1e",
+        "profile_code": "PERFIL-UI-ARCHITECT",
+        "profile_slug": "ui_architect"
+      },
+      "provenance_reconstructible": true,
+      "runtime_schema": {
+        "mode": "UI_PRODUCTION_SPEC",
+        "schema_invention_allowed": false,
+        "sha256": "7f10c952796b045b99069b446f8dd7582d641d3514c25253fd27782045547112",
+        "source_ref": "profiles/ui_architect/schemas/ui_production_spec.schema.json"
+      },
+      "schema": "lf-runtime-typed-context/v1",
+      "typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4"
+    },
+    "runtime_typed_context_sha256": "0edbd213b583448aab29ac845d115cc628b76e43f116b4e6ffa94094bf5a54d4",
+    "semantic_transport": "UICT5",
+    "semantic_utility": "PASS",
+    "source_sha": "77222b36028407659c3ff6f18e398ec77ec8fe46",
+    "total_ms": 9875.542,
+    "transport_decoded": true,
+    "typed_context_present": true,
+    "typed_context_schema": "lf-runtime-typed-context/v1"
+  },
+  "schema": "S26_F10_O5_FRESH_ARTIFACT_PAYLOAD_V1"
+}
