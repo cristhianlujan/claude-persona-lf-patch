@@ -1,0 +1,59 @@
+{
+  "schema": "LF_LANGGRAPH_R02D_W0_HISTORICAL_MATRIX_V1",
+  "strategy": "LF_PLATFORM_ADOPT_FIRST_20260912",
+  "gate": "R02-D",
+  "mode": "W0_PREBUILD_NOW_HISTORICAL_REPLAY",
+  "final_certification": false,
+  "final_rerun_required": true,
+  "s26_matrix_ref": "794a86fc8ea7fe3921a17bb31b9087c097a01cef",
+  "s26_matrix_path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/s26_family_objective_matrix_v3/missing_objectives_plan.json",
+  "frozen_s26_ref": "48916fd36bcaff8eadd60944848e81adbea55c54",
+  "base_case": "S26-HP-001",
+  "profile": "ui_architect",
+  "cases": [
+    {
+      "case_id": "R02D-POSITIVE-ANCHOR",
+      "kind": "POSITIVE",
+      "mutation": "NONE",
+      "expected_codes": [],
+      "mapped_s26_objectives": ["F07-O1"]
+    },
+    {
+      "case_id": "R02D-MISSING-COMPOSER-PAYLOAD",
+      "kind": "NEGATIVE",
+      "mutation": "REMOVE_COMPOSER_PAYLOAD",
+      "expected_codes": ["COMPOSER_PAYLOAD_MISSING"],
+      "mapped_s26_objectives": ["F05-O3"]
+    },
+    {
+      "case_id": "R02D-PROJECTION-MISMATCH",
+      "kind": "NEGATIVE",
+      "mutation": "DIVERGE_COMPOSER_FROM_DETERMINISTIC_PROJECTION",
+      "expected_codes": ["COMPOSER_PAYLOAD_PROJECTION_MISMATCH"],
+      "mapped_s26_objectives": ["F05-O3"]
+    },
+    {
+      "case_id": "R02D-INTERNAL-VALUE-LEAK",
+      "kind": "ADVERSARIAL",
+      "mutation": "INJECT_GITHUB_REF_IN_COMPOSER_PAYLOAD",
+      "expected_codes": ["COMPOSER_PAYLOAD_PROJECTION_MISMATCH", "COMPOSER_INTERNAL_VALUE_LEAK"],
+      "mapped_s26_objectives": ["F07-O4"]
+    },
+    {
+      "case_id": "R02D-NESTED-GOVERNANCE",
+      "kind": "ADVERSARIAL",
+      "mutation": "REINSERT_GOVERNANCE_CONTEXT_IN_DELIVERABLE",
+      "expected_codes": ["DELIVERABLE_GOVERNANCE_CONTEXT_FORBIDDEN_V6"],
+      "mapped_s26_objectives": ["F07-O2", "F07-O4"]
+    },
+    {
+      "case_id": "R02D-BAD-HANDOFF",
+      "kind": "NEGATIVE",
+      "mutation": "POINT_HANDOFF_TO_DELIVERABLE_INSTEAD_OF_COMPOSER_PAYLOAD",
+      "expected_codes": ["COMPOSER_HANDOFF_PAYLOAD_REF_INVALID"],
+      "mapped_s26_objectives": ["F05-O3", "F07-O1"]
+    }
+  ],
+  "pass_rule": "FOR_EACH_CASE_DIRECT_RESULT_EQUALS_FUNCTIONAL_RESULT_AND_EXPECTED_CODES_MATCH_EXACTLY",
+  "claim_ceiling": "HISTORICAL_W0_PARITY_ENGINEERING_EVIDENCE_ONLY_NOT_FINAL_S26_CERTIFICATION_NOT_MIGRATION_AUTHORIZATION"
+}
