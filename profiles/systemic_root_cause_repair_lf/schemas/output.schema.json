@@ -168,6 +168,47 @@
             "type": "string",
             "minLength": 3
           }
+        },
+        "authority_kind": {
+          "enum": [
+            "EXISTING_AUTHORITY",
+            "EXISTING_REUSABLE_CAPABILITY",
+            "PROPOSED_DELIVERABLE",
+            "UNKNOWN"
+          ]
+        },
+        "evidence_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 3
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "subject": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 2
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observed_revision": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 3
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "allOf": [
@@ -218,6 +259,626 @@
           }
         }
       ]
+    },
+    "proof_obligation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "obligation_id",
+        "obligation_type",
+        "derived_from",
+        "status",
+        "evidence_ids",
+        "decision_refs",
+        "missing_requirements",
+        "closure_basis"
+      ],
+      "properties": {
+        "obligation_id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "obligation_type": {
+          "enum": [
+            "AUTHORITY_EXISTENCE",
+            "WIRING_PHYSICALITY",
+            "STATE_RECOVERY_SEMANTICS",
+            "MIGRATION_TRANSITION",
+            "CONTEXT_TRANSPORT",
+            "SECURITY_BOUNDARY",
+            "CONCURRENCY",
+            "POLICY_CONTRACT",
+            "COMPATIBILITY",
+            "OBSERVABILITY",
+            "TEST_ASSURANCE",
+            "DECISION_CLOSURE",
+            "EVIDENCE_PROVENANCE",
+            "OTHER_MATERIAL"
+          ]
+        },
+        "derived_from": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "status": {
+          "enum": [
+            "CLOSED",
+            "OPEN",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "decision_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "missing_requirements": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "closure_basis": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 8
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "CLOSED"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence_ids": {
+                "minItems": 1
+              },
+              "decision_refs": {
+                "minItems": 1
+              },
+              "missing_requirements": {
+                "maxItems": 0
+              },
+              "closure_basis": {
+                "type": "string",
+                "minLength": 8
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "OPEN"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "missing_requirements": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "NOT_APPLICABLE"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "closure_basis": {
+                "type": "string",
+                "minLength": 8
+              }
+            }
+          }
+        }
+      ]
+    },
+    "authority_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "authority_kind",
+        "used_as_existing_authority",
+        "evidence_ids"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 2
+        },
+        "authority_kind": {
+          "enum": [
+            "EXISTING_AUTHORITY",
+            "EXISTING_REUSABLE_CAPABILITY",
+            "PROPOSED_DELIVERABLE",
+            "UNKNOWN"
+          ]
+        },
+        "used_as_existing_authority": {
+          "type": "boolean"
+        },
+        "evidence_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "used_as_existing_authority": {
+                "const": true
+              }
+            },
+            "required": [
+              "used_as_existing_authority"
+            ]
+          },
+          "then": {
+            "properties": {
+              "authority_kind": {
+                "const": "EXISTING_AUTHORITY"
+              },
+              "evidence_ids": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "wiring_proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "edge_id",
+        "producer_ref",
+        "data_contract_ref",
+        "consumer_ref",
+        "enforcement_point_ref",
+        "failure_behavior",
+        "binding_kind",
+        "binding_ref",
+        "evidence_ids"
+      ],
+      "properties": {
+        "edge_id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "producer_ref": {
+          "type": "string",
+          "minLength": 3
+        },
+        "data_contract_ref": {
+          "type": "string",
+          "minLength": 3
+        },
+        "consumer_ref": {
+          "type": "string",
+          "minLength": 3
+        },
+        "enforcement_point_ref": {
+          "type": "string",
+          "minLength": 3
+        },
+        "failure_behavior": {
+          "type": "string",
+          "minLength": 8
+        },
+        "binding_kind": {
+          "enum": [
+            "EXISTING_AUTHORITY",
+            "EXISTING_REUSABLE_CAPABILITY",
+            "PROPOSED_DELIVERABLE"
+          ]
+        },
+        "binding_ref": {
+          "type": "string",
+          "minLength": 3
+        },
+        "evidence_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "binding_kind": {
+                "enum": [
+                  "EXISTING_AUTHORITY",
+                  "EXISTING_REUSABLE_CAPABILITY"
+                ]
+              }
+            },
+            "required": [
+              "binding_kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence_ids": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "behavioral_proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "behavior_id",
+        "materiality_signal",
+        "states_or_steps",
+        "entry_conditions",
+        "terminal_conditions",
+        "illegal_transitions",
+        "recovery_paths",
+        "decision_refs",
+        "evidence_ids"
+      ],
+      "properties": {
+        "behavior_id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "materiality_signal": {
+          "enum": [
+            "STATE_RECOVERY",
+            "MIGRATION_TRANSITION"
+          ]
+        },
+        "states_or_steps": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 2
+          }
+        },
+        "entry_conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "terminal_conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "illegal_transitions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "recovery_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "decision_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "evidence_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      }
+    },
+    "closure_proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "candidate_binding",
+        "materiality",
+        "proof_obligations",
+        "authority_bindings",
+        "wiring_proofs",
+        "behavioral_proofs",
+        "derived_decision_closure"
+      ],
+      "properties": {
+        "contract_version": {
+          "const": "SRCR_CLOSURE_PROOF_V1"
+        },
+        "candidate_binding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidate_revision",
+            "candidate_digest",
+            "evidence_bundle_id",
+            "evidence_bundle_digest"
+          ],
+          "properties": {
+            "candidate_revision": {
+              "type": "string",
+              "minLength": 3
+            },
+            "candidate_digest": {
+              "type": "string",
+              "minLength": 8
+            },
+            "evidence_bundle_id": {
+              "type": "string",
+              "minLength": 3
+            },
+            "evidence_bundle_digest": {
+              "type": "string",
+              "minLength": 8
+            }
+          }
+        },
+        "materiality": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "signal",
+              "material",
+              "rationale",
+              "obligation_ids"
+            ],
+            "properties": {
+              "signal": {
+                "enum": [
+                  "CROSS_OPERATION",
+                  "AUTHORITY_CHANGE",
+                  "POLICY_CONTRACT_CHANGE",
+                  "CONTEXT_TRANSPORT",
+                  "STATE_RECOVERY",
+                  "CONCURRENCY",
+                  "MIGRATION_TRANSITION",
+                  "SECURITY_BOUNDARY",
+                  "MULTI_RUNTIME",
+                  "COST_SCALE",
+                  "WIRING",
+                  "EVIDENCE_PROVENANCE",
+                  "DECISION_CLOSURE"
+                ]
+              },
+              "material": {
+                "type": "boolean"
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 8
+              },
+              "obligation_ids": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "material"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "obligation_ids": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "material": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "material"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "obligation_ids": {
+                      "maxItems": 0
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "proof_obligations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/proof_obligation"
+          }
+        },
+        "authority_bindings": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/authority_binding"
+          }
+        },
+        "wiring_proofs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/wiring_proof"
+          }
+        },
+        "behavioral_proofs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/behavioral_proof"
+          }
+        },
+        "derived_decision_closure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "required_obligation_ids",
+            "closed_obligation_ids",
+            "open_obligation_ids",
+            "handoff_ready",
+            "quality_state"
+          ],
+          "properties": {
+            "required_obligation_ids": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 3
+              }
+            },
+            "closed_obligation_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 3
+              }
+            },
+            "open_obligation_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 3
+              }
+            },
+            "handoff_ready": {
+              "type": "boolean"
+            },
+            "quality_state": {
+              "enum": [
+                "PRE_QUALITY",
+                "QUALITY_PENDING"
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "handoff_ready": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "handoff_ready"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "open_obligation_ids": {
+                    "maxItems": 0
+                  },
+                  "quality_state": {
+                    "const": "QUALITY_PENDING"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
     }
   },
   "required": [
@@ -272,7 +933,10 @@
       ]
     },
     "profile_pack_id": {
-      "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2"
+      "enum": [
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+      ]
     },
     "symptom": {
       "allOf": [
@@ -2163,6 +2827,9 @@
           }
         }
       ]
+    },
+    "closure_proof": {
+      "$ref": "#/$defs/closure_proof"
     }
   },
   "allOf": [
@@ -2330,6 +2997,198 @@
           },
           "blocking_codes": {
             "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+          }
+        },
+        "required": [
+          "profile_pack_id"
+        ]
+      },
+      "then": {
+        "required": [
+          "closure_proof"
+        ],
+        "properties": {
+          "origin_asset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/authority_ref"
+              },
+              {
+                "required": [
+                  "authority_kind",
+                  "evidence_id"
+                ],
+                "properties": {
+                  "authority_kind": {
+                    "const": "EXISTING_AUTHORITY"
+                  },
+                  "evidence_id": {
+                    "type": "string",
+                    "minLength": 3
+                  }
+                }
+              }
+            ]
+          },
+          "origin_operation": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/authority_ref"
+              },
+              {
+                "required": [
+                  "authority_kind",
+                  "evidence_id"
+                ],
+                "properties": {
+                  "authority_kind": {
+                    "const": "EXISTING_AUTHORITY"
+                  },
+                  "evidence_id": {
+                    "type": "string",
+                    "minLength": 3
+                  }
+                }
+              }
+            ]
+          },
+          "owner": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/authority_ref"
+              },
+              {
+                "required": [
+                  "authority_kind",
+                  "evidence_id"
+                ],
+                "properties": {
+                  "authority_kind": {
+                    "const": "EXISTING_AUTHORITY"
+                  },
+                  "evidence_id": {
+                    "type": "string",
+                    "minLength": 3
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+          },
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "STATE_RECOVERY"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "profile_pack_id",
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "behavioral_proofs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+          },
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "MIGRATION_TRANSITION"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "profile_pack_id",
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "behavioral_proofs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+          },
+          "omission_discovery": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "dimension": {
+                  "const": "WIRING"
+                },
+                "disposition": {
+                  "const": "REQUIRED_CHANGE"
+                }
+              },
+              "required": [
+                "dimension",
+                "disposition"
+              ]
+            }
+          }
+        },
+        "required": [
+          "profile_pack_id",
+          "omission_discovery"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "wiring_proofs": {
+                "minItems": 1
+              }
+            }
           }
         }
       }

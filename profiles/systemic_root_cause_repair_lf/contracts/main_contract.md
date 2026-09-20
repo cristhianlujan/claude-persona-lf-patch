@@ -49,3 +49,19 @@ Produce a structured, evidence-grounded systemic repair specification for recurr
 
 ## Invalid output
 Prose-only diagnosis, first-plausible-fix output, local repair presented as systemic without recurrence explanation, self-certification used to bypass the canonical semantic gate, unsupported authority, hidden or residualized declared-vs-live contradiction, missing `¿DEBE EXISTIR?` analysis, missing falsification, or a hard guard that cannot be tested.
+
+## V0.3 evidence-bound semantic closure
+
+For SYSTEMIC_REPAIR_SPEC under V0.3, closure is derived, not asserted.
+
+- solution_depth and material omission findings generate proof obligations.
+- Every required proof obligation must be represented and closed before handoff readiness can be true.
+- An authority used as current must be typed EXISTING_AUTHORITY and resolve to a current evidence-manifest entry bound to the evaluated candidate/evidence bundle.
+- PROPOSED_DELIVERABLE is future design and cannot satisfy existing-authority requirements.
+- Material wiring requires an implementable edge: producer, data/contract, consumer, enforcement point, failure behavior and physical existing/proposed binding.
+- Material state/recovery or migration/transition requires executable transition and recovery semantics; non-material cases must not be forced into those structures.
+- runtime_validate.py and runtime_semantic_utility.py are deterministic pre-quality floors only.
+- Accepted quality requires the canonical mini-judge receipt for the exact candidate revision/digest and evidence-bundle digest.
+- A changed candidate or evidence bundle invalidates any prior quality receipt.
+- Evidence manifests are resolved outside model output; the model references evidence IDs but is not the root of trust for them.
+- No V0.3 rule may depend on PROFILE_RELEASE, event 14701, a specific LF table, or another case keyword.

@@ -157,3 +157,25 @@ status, profile_pack_id, symptom, immediate_cause, systemic_root_cause, causal_c
 
 ## Claim ceiling
 CANDIDATO / READ_ONLY. This profile can diagnose, compare and specify a repair; it cannot authorize or execute that repair. A repair specification is quality-accepted only through the canonical deterministic and semantic gates. Implementation and post-implementation verification remain separate governed operations.
+
+## V0.3 closure-proof contract (compatibility candidate)
+
+V0.3 changes the source of truth for readiness. handoff_ready=true, an empty open_design_decisions, omission-dimension presence, or a nonempty evidence URI are not proof of closure.
+
+The trajectory is:
+
+materiality -> required proof obligations -> external evidence bindings -> closed/open obligation set -> derived handoff readiness -> canonical quality decision.
+
+Rules:
+1. Materiality is generic. Use structured signals such as AUTHORITY_CHANGE, POLICY_CONTRACT_CHANGE, CONTEXT_TRANSPORT, STATE_RECOVERY, CONCURRENCY, MIGRATION_TRANSITION, SECURITY_BOUNDARY, MULTI_RUNTIME, COST_SCALE, plus material WIRING. Never branch on a domain name, table name, incident ID, or known fixture.
+2. Every material signal must generate one or more finite proof obligations. A material obligation is CLOSED, OPEN, or explicitly NOT_APPLICABLE with a reason. SYSTEMIC_REPAIR_SPEC handoff readiness is derived only when all required obligations are closed.
+3. Authority references are typed as EXISTING_AUTHORITY, EXISTING_REUSABLE_CAPABILITY, PROPOSED_DELIVERABLE, or UNKNOWN. A proposed deliverable can never satisfy a slot that requires current authority.
+4. Existing authority is supported only by evidence IDs from a bounded evidence manifest assembled outside model-authored output. The output may reference evidence IDs; it must not manufacture the manifest that makes those IDs trustworthy.
+5. When STATE_RECOVERY or MIGRATION_TRANSITION is material, executable behavioral proof must cover states/steps, entry conditions, terminal conditions, illegal transitions and recovery paths. When those signals are not material, no state machine is required.
+6. When WIRING is material, each material edge must name producer, transported contract, consumer, enforcement point, failure behavior, and either an observed existing binding or an explicit proposed deliverable.
+7. Deterministic validation and semantic utility are pre-quality floors. They never mean canonical quality acceptance.
+8. Canonical quality acceptance is a separate receipt bound to the exact candidate digest/revision and evidence-bundle digest. Changing either invalidates the receipt.
+9. Implementation preconditions may resolve fresh values but may not hide an architecture, authority, enforcement, transition, rollback or acceptance decision.
+10. V0.2 historical outputs retain their historical receipts. V0.3 semantics are not applied retroactively.
+
+During S1 compatibility the repository may accept both V0.2 and V0.3 schema shapes, but only an explicitly V0.3 candidate may claim the strengthened closure semantics.
