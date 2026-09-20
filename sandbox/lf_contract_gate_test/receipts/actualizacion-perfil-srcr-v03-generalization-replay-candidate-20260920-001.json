@@ -1,0 +1,38 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-profile-update",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-109e1074-c947-4e3b-8c60-c933e0aac12f",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "regression_after",
+  "contract_sha": "7d8b6dff8e4273f182c1f7c3adca71532da3e060994bc3de7fa806710e668b49",
+  "judge_sha": "33faa108f295faaffa55285450e34328e3bd86d9007b8e8a64311211743329b7",
+  "source_sha_list": [
+    "6dee6caaa04d1bee36eb207b2d30941efd885d20",
+    "e80830f32a5fa52f95112fdd93b1ff84fa65bba9",
+    "7c9f9322f9f76cb3e1f0aae1ab6df80ec62a9b93",
+    "a68957814c606d7da88fbb35198adc62fa717160"
+  ],
+  "target_paths": [
+    "profiles/systemic_root_cause_repair_lf/evals/v03_generalization_property_cases.py",
+    "profiles/systemic_root_cause_repair_lf/evals/v03_original_escape_replay.py",
+    "profiles/systemic_root_cause_repair_lf/validators/validate_pack.py"
+  ],
+  "target_blob_sha_by_path": {
+    "profiles/systemic_root_cause_repair_lf/evals/v03_generalization_property_cases.py": "e80830f32a5fa52f95112fdd93b1ff84fa65bba9",
+    "profiles/systemic_root_cause_repair_lf/evals/v03_original_escape_replay.py": "7c9f9322f9f76cb3e1f0aae1ab6df80ec62a9b93",
+    "profiles/systemic_root_cause_repair_lf/validators/validate_pack.py": "a68957814c606d7da88fbb35198adc62fa717160"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-20T04:59:56.582320Z",
+  "candidate_code_head": "6dee6caaa04d1bee36eb207b2d30941efd885d20",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "MERGE_AND_POST_MERGE_RECONCILE",
+  "operation_revision_sha256": "a3820a7bd01757e9445dada84a34c5a18801e964decb380cb6062311d222c364",
+  "stage": "S4_GENERALIZATION_AND_ESCAPE_REPLAY",
+  "exact_historical_escape_sha256": "be4b61e7732a2e99ec68cba252b5c4626ba15a48d4e7d2df67fa93f8942e7a39",
+  "escape_prevention_proven": true,
+  "autonomous_same_input_producer_rerun_proven": false
+}

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -7,7 +8,13 @@ REQUIRED = [
     "README.md","SKILL.md","contracts/main_contract.md","schemas/output.schema.json",
     "judges/mini_judge.md","evals/eval_matrix.json","manifest.json",
     "judges/score_rubric.md","examples/good_output.json","examples/bad_output.json",
-    "validators/validate_pack.py","handoffs/to_quality_pack.handoff.json"
+    "validators/validate_pack.py","handoffs/to_quality_pack.handoff.json",
+    "contracts/evidence_manifest.schema.json","schemas/quality_receipt.schema.json",
+    "validators/closure_proof.py","validators/runtime_validate.py",
+    "validators/runtime_semantic_utility.py","validators/validate_quality_receipt.py",
+    "evals/v03_contract_schema_cases.py","evals/v03_deterministic_floor_cases.py",
+    "evals/v03_quality_receipt_cases.py","evals/v03_generalization_property_cases.py",
+    "evals/v03_original_escape_replay.py"
 ]
 
 def fail(code):
@@ -53,5 +60,32 @@ skill = (root/"SKILL.md").read_text()
 for token in ["FIRST BAD CONTROL","FALSIFICATION","minimum sufficient","fail closed","residual"]:
     if token.lower() not in skill.lower():
         fail("SKILL_RULE_MISSING:" + token)
+
+def run_assurance(rel):
+    script = root / rel
+    proc = subprocess.run(
+        [sys.executable, str(script)],
+        cwd=str(root.parent.parent),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        if proc.stdout:
+            print(proc.stdout.rstrip())
+        if proc.stderr:
+            print(proc.stderr.rstrip())
+        fail("V03_ASSURANCE_FAILED:" + rel)
+    lines = [line for line in proc.stdout.splitlines() if line.strip()]
+    if lines:
+        print(lines[-1])
+
+for rel in [
+    "evals/v03_contract_schema_cases.py",
+    "evals/v03_deterministic_floor_cases.py",
+    "evals/v03_quality_receipt_cases.py",
+    "evals/v03_generalization_property_cases.py",
+]:
+    run_assurance(rel)
 
 print("PASS_SYSTEMIC_ROOT_CAUSE_REPAIR_PACK")
