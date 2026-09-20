@@ -6,7 +6,7 @@ begin
     from public.lf_operation_registry
     where operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
       and lifecycle_state_code='OP_OPERATIONAL'
-      and status='PRODUCCION_CONTROLADA_READ_ONLY'
+      and status='PRODUCCION_CONTROLADA'
   ) then
     raise exception 'RUNTIME_CLOSE_EFFECT_PRE_OPERATION_STATE_DRIFT';
   end if;
