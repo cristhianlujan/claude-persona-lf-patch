@@ -25,6 +25,13 @@ PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_BLOBS={
  "supabase/functions/run-creacion-perfil-lf/index.ts":"17a9321684bad67d1627290ef58cf2e6c61c5cf2",
 }
 PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_PATHS=frozenset(PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_BLOBS)
+PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH="lf/profile-update-caller-wiring-v2-20260920"
+PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS={
+ CUSTOMER_PROFILE_CREATOR_WORKFLOW:"19644c9d7f4cdb950b88fb3686f0fbd80e9dd337",
+ "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts":"e20467e7205462bb1b3f0b30898f676540bafdfc",
+ "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py":"6bade3778ee6ff82f971d436534a6625964dcb7c",
+}
+PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PATHS=frozenset(PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS)
 CUSTOMER_PROFILE_CREATOR_BLOBS={
  CUSTOMER_PROFILE_CREATOR_WORKFLOW:"346fe830af781a304a74f10240c3e19f7a48eb23",
  "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts":"173b88ea3e123c962bea963666a59bbf0cc50a14",
@@ -86,7 +93,17 @@ def _evaluate_profile_update_runtime_init_maintenance_scope(changed_files:Sequen
   if observed!=expected_blob: raise RuntimeScopeError("FAIL_RUNTIME_BLOB_MISMATCH",f"Profile Update runtime-init blob mismatch for {path}: expected={expected_blob} observed={observed}")
   if mode_by_path is not None and mode_by_path.get(path)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Profile Update runtime-init path must be regular file 100644: {path}")
  return True
+def _evaluate_profile_update_caller_init_maintenance_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None)->bool:
+ changed=set(changed_files)
+ if changed!=set(PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PATHS): raise RuntimeScopeError("FAIL_RUNTIME_PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_SCOPE",f"exclusive Profile Update caller-init maintenance scope mismatch: unexpected={sorted(changed-set(PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PATHS))!r} missing={sorted(set(PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PATHS)-changed)!r}")
+ if branch!=PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH: raise RuntimeScopeError("FAIL_RUNTIME_BRANCH_MISMATCH",f"Profile Update caller-init maintenance requires {PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH!r}; got {branch!r}")
+ for path,expected_blob in PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS.items():
+  observed=blob_by_path.get(path)
+  if observed!=expected_blob: raise RuntimeScopeError("FAIL_RUNTIME_BLOB_MISMATCH",f"Profile Update caller-init blob mismatch for {path}: expected={expected_blob} observed={observed}")
+  if mode_by_path is not None and mode_by_path.get(path)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Profile Update caller-init path must be regular file 100644: {path}")
+ return True
 def evaluate_controlled_runtime_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None,main_merge_verified:bool=False)->bool:
+ if branch==PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PATHS): return _evaluate_profile_update_caller_init_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
  if branch==PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_PATHS): return _evaluate_profile_update_runtime_init_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
  if branch==PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PATHS): return _evaluate_profile_update_bound_revision_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
  if set(changed_files)&set(CUSTOMER_PROFILE_CREATOR_PATHS): return _evaluate_customer_profile_creator_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
@@ -116,6 +133,12 @@ def _customer_scope_self_test():
   except RuntimeScopeError: continue
   raise SystemExit(f"FAIL_PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_NEGATIVE_{label.upper()}")
  print("PASS_PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_SCOPE=4/4")
+ caller_init=dict(PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS); caller_init_modes={path:"100644" for path in caller_init}; caller_init_paths=list(PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PATHS); assert _evaluate_profile_update_caller_init_maintenance_scope(caller_init_paths,branch=PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH,blob_by_path=caller_init,mode_by_path=caller_init_modes)
+ for label,branch,blobs,changed in [("branch","feature/arbitrary",caller_init,caller_init_paths),("blob",PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH,{**caller_init,"supabase/functions/lf-profile-creator-governance-caller-v1/index.ts":"0"*40},caller_init_paths),("extra",PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH,caller_init,[*caller_init_paths,"supabase/functions/arbitrary/index.ts"])]:
+  try: _evaluate_profile_update_caller_init_maintenance_scope(changed,branch=branch,blob_by_path=blobs,mode_by_path={path:"100644" for path in changed})
+  except RuntimeScopeError: continue
+  raise SystemExit(f"FAIL_PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_NEGATIVE_{label.upper()}")
+ print("PASS_PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_SCOPE=4/4")
 _original_get_changed_files=_base.get_changed_files
 def _customer_branch_scope_for_push():
  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
@@ -139,8 +162,17 @@ def _profile_update_runtime_init_changed_files():
   if BLOB_RE.fullmatch(merge_base) is None: raise RuntimeScopeError("FAIL_RUNTIME_PROFILE_UPDATE_RUNTIME_INIT_BASE_UNRESOLVED","Profile Update runtime-init maintenance could not resolve merge-base with main")
   return _base.e16.git_changed_files(merge_base,"HEAD")
  return _base.e16.get_changed_files()
+def _profile_update_caller_init_changed_files():
+ if os.environ.get("GITHUB_EVENT_NAME")=="push":
+  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
+  if BLOB_RE.fullmatch(merge_base) is None: raise RuntimeScopeError("FAIL_RUNTIME_PROFILE_UPDATE_CALLER_INIT_BASE_UNRESOLVED","Profile Update caller-init maintenance could not resolve merge-base with main")
+  return _base.e16.git_changed_files(merge_base,"HEAD")
+ return _base.e16.get_changed_files()
 def _customer_get_changed_files():
  branch=current_event_branch()
+ if branch==PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH:
+  changed_files=_profile_update_caller_init_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS}
+  _base._runtime_scope_enabled=_evaluate_profile_update_caller_init_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); print(f"PASS_PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
  if branch==PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_BRANCH:
   changed_files=_profile_update_runtime_init_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_BLOBS}
   _base._runtime_scope_enabled=_evaluate_profile_update_runtime_init_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_PROFILE_UPDATE_RUNTIME_INIT_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
