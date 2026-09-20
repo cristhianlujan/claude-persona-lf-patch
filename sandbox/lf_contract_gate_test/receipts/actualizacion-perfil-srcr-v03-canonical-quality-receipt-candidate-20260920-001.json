@@ -1,0 +1,45 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-profile-update",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-69ade437-5a5a-4a47-abcc-ca794ac8079f",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "regression_after",
+  "contract_sha": "7d8b6dff8e4273f182c1f7c3adca71532da3e060994bc3de7fa806710e668b49",
+  "judge_sha": "33faa108f295faaffa55285450e34328e3bd86d9007b8e8a64311211743329b7",
+  "source_sha_list": [
+    "a5fa8f8ea57228062f5108a39dbe008a3207d13a",
+    "97248871e40d0f8906c4f20bcddf78a9b0be00d6",
+    "7093658b41888685c4034bc7a026f84fff0509fd",
+    "d4c5d5338d1168ea53629d664b04c0604251877b",
+    "a2bcf739380d9bf3e3768554e21ac649a8ea1d5f",
+    "d7d4cba1f2f69fb501798a5989108fa68d41dd8c",
+    "9f0a2b337d9d3015bf673737453150efb1aa07fa"
+  ],
+  "target_paths": [
+    "profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json",
+    "profiles/systemic_root_cause_repair_lf/evals/v03_quality_receipt_cases.py",
+    "profiles/systemic_root_cause_repair_lf/handoffs/to_quality_pack.handoff.json",
+    "profiles/systemic_root_cause_repair_lf/judges/mini_judge.md",
+    "profiles/systemic_root_cause_repair_lf/schemas/quality_receipt.schema.json",
+    "profiles/systemic_root_cause_repair_lf/validators/validate_quality_receipt.py"
+  ],
+  "target_blob_sha_by_path": {
+    "profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json": "97248871e40d0f8906c4f20bcddf78a9b0be00d6",
+    "profiles/systemic_root_cause_repair_lf/evals/v03_quality_receipt_cases.py": "7093658b41888685c4034bc7a026f84fff0509fd",
+    "profiles/systemic_root_cause_repair_lf/handoffs/to_quality_pack.handoff.json": "d4c5d5338d1168ea53629d664b04c0604251877b",
+    "profiles/systemic_root_cause_repair_lf/judges/mini_judge.md": "a2bcf739380d9bf3e3768554e21ac649a8ea1d5f",
+    "profiles/systemic_root_cause_repair_lf/schemas/quality_receipt.schema.json": "d7d4cba1f2f69fb501798a5989108fa68d41dd8c",
+    "profiles/systemic_root_cause_repair_lf/validators/validate_quality_receipt.py": "9f0a2b337d9d3015bf673737453150efb1aa07fa"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-20T04:48:35.524038Z",
+  "candidate_code_head": "a5fa8f8ea57228062f5108a39dbe008a3207d13a",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "MERGE_AND_POST_MERGE_RECONCILE",
+  "operation_revision_sha256": "a3820a7bd01757e9445dada84a34c5a18801e964decb380cb6062311d222c364",
+  "stage": "S3_CANONICAL_QUALITY_RECEIPT",
+  "actual_independent_quality_receipt_issued": false
+}
