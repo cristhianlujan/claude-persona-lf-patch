@@ -1,0 +1,1422 @@
+{
+  "owner": {
+    "code": "CARRIL_2_GOBERNANZA_LF",
+    "status": "RESOLVED",
+    "evidence_ref": "input:backlog_183.lane",
+    "missing_evidence": []
+  },
+  "status": "SYSTEMIC_REPAIR_SPEC",
+  "symptom": {
+    "status": "OBSERVED",
+    "statement": "MR02 still shows heterogeneous lifecycle adoption: one reproducible live snapshot has 459 governed executions in 7 days, 68 with lease_fence>0 and 391 with lease_fence=0; 76 executions are currently IN_PROGRESS. Shared C05 primitives exist, but readiness and enforcement are not represented and resolved uniformly per operation.",
+    "evidence_refs": [
+      "supabase://snapshot/MR02-R2@2026-09-19T21:27:20.577971+00:00:executions_7d=459,fenced_7d=68,unfenced_7d=391,in_progress=76",
+      "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+      "supabase://public.lf_operation_step_contracts"
+    ],
+    "missing_evidence": []
+  },
+  "invariant": {
+    "statement": "A lifecycle-ready governed operation may perform a material step/effect write or terminal close only after its declared C05 obligations are satisfied with current execution identity and, where required, valid fenced ownership and durable recovery state.",
+    "evidence_refs": [
+      "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+      "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+      "supabase://public.lf_activos/POL-LF-OPERATION-LIFECYCLE"
+    ],
+    "missing_evidence": [],
+    "validation_state": "SPECIFIED"
+  },
+  "next_gate": {
+    "gate": "INDEPENDENT_CLAUDE_R2A_AUDIT",
+    "entry_condition": "Route-A candidate is deterministic-validator clean, semantic-utility clean, contains no out-of-scope readiness function, and caller-authority finding #189 is RESUELTA with current evidence.",
+    "exit_condition": "Independent audit confirms all semantic-judge-B reconciliations/invariants and no new material blocker; only then may owner consider the separately governed #186 implementation approval."
+  },
+  "hard_guard": {
+    "control": "Operation-neutral readiness/enforcement guard derived from existing operation contracts/policy bindings and enforced in the shared recorder/effect boundary only after caller adoption is proven.",
+    "blocking_code": "OPERATION_LIFECYCLE_REQUIREMENT_NOT_SATISFIED",
+    "evidence_refs": [
+      "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+      "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1",
+      "supabase://pg_proc/public.fn_lf_operation_checkpoint_v1",
+      "supabase://pg_proc/public.fn_lf_operation_reserve_effect_v1",
+      "supabase://pg_proc/public.fn_lf_operation_mark_effect_succeeded_v1",
+      "supabase://pg_proc/public.lf_record_operation_step_core_v1"
+    ],
+    "missing_evidence": [],
+    "validation_state": "SPECIFIED",
+    "observable_result": "Unprepared operations remain on baseline until explicitly adopted; activated operations reject stale/missing lifecycle evidence and valid retries reuse durable identity without duplicating effects.",
+    "enforcement_point_ref": "supabase://pg_proc/public.lf_record_operation_step_core_v1+public.fn_lf_operation_reserve_effect_v1+public.fn_lf_operation_mark_effect_succeeded_v1",
+    "fail_closed_condition": "For an activated lifecycle-ready operation, block a material write/close when required lifecycle readiness, current owner/fence, checkpoint/terminal contract or exact producer authority is missing or stale."
+  },
+  "alternatives": [
+    {
+      "id": "ALT-A_STAGED_DECLARATIVE_LIFECYCLE_GUARD",
+      "reuse": "High; existing C05/policy/contracts/recorder/effect guard.",
+      "basis_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+        "supabase://public.lf_activos/POL-LF-OPERATION-LIFECYCLE"
+      ],
+      "complexity": "Medium.",
+      "prevention": "Eliminates distributed opt-in while avoiding premature blanket enforcement.",
+      "description": "Reuse C05 and lifecycle policy; declare operation readiness, connect callers, then enable one common fail-closed guard per bounded operation stage.",
+      "fail_closed": "Yes after readiness is proven for the activated operation.",
+      "idempotency": "Preserves reserve_execution identity.",
+      "blast_radius": "Bounded per operation/stage.",
+      "recoverability": "Uses checkpoint/fence only where declared applicable and verified before activation.",
+      "operational_cost": "Medium initial adoption, lower recurring drift."
+    },
+    {
+      "id": "ALT-B_GLOBAL_RECORDER_ENFORCEMENT_NOW",
+      "reuse": "High.",
+      "basis_refs": [
+        "supabase://public.lf_operation_execution/7d:executions=457,lease_fence_gt0=68,lease_fence_zero=389",
+        "supabase://public.lf_operation_step_contracts"
+      ],
+      "complexity": "Low code change.",
+      "prevention": "Strong for writes reaching the recorder.",
+      "description": "Require lease/fence globally in the shared recorder immediately.",
+      "fail_closed": "Yes but before compatibility is proven.",
+      "idempotency": "Does not by itself complete caller adoption/recovery.",
+      "blast_radius": "High; unprepared operations can fail in bulk.",
+      "recoverability": "Incomplete for unprepared callers.",
+      "operational_cost": "High incident/rollback risk."
+    },
+    {
+      "id": "ALT-C_PER_OPERATION_LOCAL_WRAPPERS",
+      "reuse": "Partial.",
+      "basis_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY"
+      ],
+      "complexity": "Grows linearly.",
+      "prevention": "Fixes known callers but permits recurrence in future callers.",
+      "description": "Patch each known operation/caller with local lifecycle wrappers.",
+      "fail_closed": "Inconsistent by caller.",
+      "idempotency": "Varies by wrapper.",
+      "blast_radius": "Low per patch, high cumulative drift.",
+      "recoverability": "Fragmented.",
+      "operational_cost": "High recurring maintenance."
+    },
+    {
+      "id": "ALT-D_NEW_LIFECYCLE_ENGINE",
+      "reuse": "Low.",
+      "basis_refs": [
+        "input:backlog_183.repair_spec"
+      ],
+      "complexity": "Very high.",
+      "prevention": "Could impose a new protocol after migration.",
+      "description": "Create a parallel lifecycle engine/table/runner.",
+      "fail_closed": "Potentially, after a risky migration.",
+      "idempotency": "Requires reconciling two identity systems.",
+      "blast_radius": "High due dual authority.",
+      "recoverability": "Adds a second state source.",
+      "operational_cost": "Very high."
+    }
+  ],
+  "causal_chain": [
+    {
+      "status": "OBSERVED",
+      "statement": "The shared C05 reserve, lease, checkpoint and release primitives exist and are active.",
+      "evidence_refs": [
+        "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+        "supabase://pg_proc/C05"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "status": "OBSERVED",
+      "statement": "The active policy-consumption snapshot distributes C05 through STRATEGY_EXECUTION_SET_V1 rather than as an operation-neutral obligation for every applicable governed operation.",
+      "evidence_refs": [
+        "supabase://public.v_lf_operation_policy_snapshot/POL-LF-POLICY-CONSUMPTION"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "status": "ESTABLISHED",
+      "statement": "Other operation callers therefore adopt reserve/recorder/lifecycle controls through heterogeneous contracts and caller wiring instead of one declarative readiness boundary.",
+      "evidence_refs": [
+        "input:evento_14383.verified_facts",
+        "input:backlog_183.repair_spec",
+        "supabase://public.lf_operation_step_contracts"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "status": "ESTABLISHED",
+      "statement": "The common recorder validates execution identity, contracts and step sequence but does not universally require current lease owner/fence or a complete lifecycle-readiness declaration before every material step/effect write.",
+      "evidence_refs": [
+        "supabase://pg_proc/public.lf_record_operation_step_core_v1",
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "status": "ESTABLISHED",
+      "statement": "This allows the same failure class to recur when new or changed callers omit part of the lifecycle protocol even though the primitives already exist.",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "input:evento_14383.verified_facts"
+      ],
+      "missing_evidence": []
+    }
+  ],
+  "evidence_map": [
+    {
+      "claim_path": "$.symptom",
+      "evidence_refs": [
+        "supabase://snapshot/MR02-R2@2026-09-19T21:27:20.577971+00:00:executions_7d=459,fenced_7d=68,unfenced_7d=391,in_progress=76",
+        "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY"
+      ]
+    },
+    {
+      "claim_path": "$.immediate_cause",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://pg_proc/public.lf_record_operation_step_core_v1"
+      ]
+    },
+    {
+      "claim_path": "$.systemic_root_cause",
+      "evidence_refs": [
+        "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+        "supabase://public.lf_activos/POL-LF-OPERATION-LIFECYCLE",
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280"
+      ]
+    },
+    {
+      "claim_path": "$.first_bad_control",
+      "evidence_refs": [
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.lf_operation_registry"
+      ]
+    },
+    {
+      "claim_path": "$.escape_control",
+      "evidence_refs": [
+        "supabase://pg_proc/public.lf_record_operation_step_core_v1",
+        "supabase://pg_proc/public.fn_lf_operation_reserve_effect_v1"
+      ]
+    },
+    {
+      "claim_path": "$.origin_asset",
+      "evidence_refs": [
+        "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+        "supabase://public.lf_activos/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    },
+    {
+      "claim_path": "$.origin_operation",
+      "evidence_refs": [
+        "supabase://public.lf_operation_registry",
+        "supabase://public.lf_operation_step_contracts"
+      ]
+    },
+    {
+      "claim_path": "$.owner",
+      "evidence_refs": [
+        "input:backlog_183.lane"
+      ]
+    },
+    {
+      "claim_path": "$.current_uncertainties",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/186",
+        "supabase://public.lf_backlog_errores_operativos/189#resolution_20260919"
+      ]
+    }
+  ],
+  "origin_asset": {
+    "code": "TRANSVERSAL_OPERATION_LIFECYCLE_BOUNDARY",
+    "status": "RESOLVED",
+    "evidence_ref": "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY+POL-LF-OPERATION-LIFECYCLE",
+    "missing_evidence": []
+  },
+  "repair_level": "SYSTEMIC_ORIGIN",
+  "rollback_plan": {
+    "verification": [
+      "Read back exact function/contract/policy identities after rollback and rerun the bounded operation baseline/retry checks."
+    ],
+    "inverse_actions": [
+      "Revert the exact operation's readiness/enforcement binding and caller changes; restore prior recorder/function/contract identities for the bounded sublot."
+    ],
+    "protected_history": [
+      "Do not rewrite historical lf_operation_execution rows, effect receipts, checkpoints or prior failure evidence as rollback."
+    ],
+    "trigger_conditions": [
+      "A prepared operation's valid path is blocked, an unprepared operation changes behavior, stale writers are accepted, or retry/effect idempotency regresses."
+    ]
+  },
+  "blocking_codes": [],
+  "escape_control": {
+    "status": "ESTABLISHED",
+    "statement": "The shared step recorder plus effect-reservation path do not form one transversal admission guard: step recording can be used without a current lease/fence, while the C05 effect primitives enforce fencing only for callers that actually enter those primitives.",
+    "evidence_refs": [
+      "supabase://pg_proc/public.lf_record_operation_step_core_v1",
+      "supabase://pg_proc/public.fn_lf_operation_reserve_effect_v1",
+      "supabase://pg_proc/public.fn_lf_operation_mark_effect_succeeded_v1"
+    ],
+    "missing_evidence": []
+  },
+  "residual_risks": [],
+  "solution_depth": {
+    "mode": "DEEP_ARCHITECTURE_RESEARCH",
+    "rationale": "The failure class spans cross-operation lifecycle authority, idempotency, fenced ownership, durable recovery, terminality, caller compatibility and shared enforcement boundaries.",
+    "complexity_signals": [
+      "CROSS_OPERATION",
+      "CONCURRENCY",
+      "RECOVERY",
+      "POLICY_CONTRACT_CHANGE",
+      "CALLER_ADOPTION",
+      "SHARED_ENFORCEMENT"
+    ]
+  },
+  "immediate_cause": {
+    "status": "ESTABLISHED",
+    "statement": "Governed operations can become executable with operation-specific step contracts without a single declarative readiness rule that proves the applicable C05 reserve, lease/fence, checkpoint, effect-idempotency and terminal obligations before material effects are allowed.",
+    "evidence_refs": [
+      "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+      "supabase://public.lf_operation_step_contracts",
+      "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY"
+    ],
+    "missing_evidence": []
+  },
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
+  "transition_plan": {
+    "stages": [
+      {
+        "changes": [
+          "Bind the operation to existing lifecycle steps/contracts and connect its callers to the applicable C05 chain without global recorder rejection."
+        ],
+        "stage_id": "CALLER_ADOPTION",
+        "exit_condition": "The bounded operation demonstrates reserve→applicable ownership/checkpoint→terminal path and retry identity without affecting unprepared operations.",
+        "rollback_scope": "Restore only the bounded operation's caller/contract changes.",
+        "entry_condition": "Exact operation_code and material callers are inventoried."
+      },
+      {
+        "changes": [
+          "Enable shared recorder/effect fail-closed enforcement for the exact ready operation_code."
+        ],
+        "stage_id": "PER_OPERATION_ENFORCEMENT",
+        "exit_condition": "Missing/stale lifecycle evidence blocks; valid current evidence succeeds; unrelated operations retain baseline.",
+        "rollback_scope": "Disable enforcement only for the activated operation_code and restore its prior binding.",
+        "entry_condition": "Caller adoption for the exact operation_code passed deterministic readback."
+      },
+      {
+        "changes": [
+          "Execute the eight mandatory falsification families and acceptance readbacks."
+        ],
+        "stage_id": "POST_IMPLEMENTATION_VERIFICATION",
+        "exit_condition": "All planned falsifications become observed PASS before any wider promotion.",
+        "rollback_scope": "Rollback only the latest bounded activation if verification fails.",
+        "entry_condition": "The bounded operation enforcement is active in the controlled environment."
+      }
+    ],
+    "strategy": "Adopt callers first, then activate fail-closed enforcement one canonical operation_code per bounded sublot; keep historical disposition outside the systemic repair lane.",
+    "compatibility_rule": "No operation is globally forced into lease/fence/checkpoint behavior until its callers and required lifecycle contract are proven ready; unprepared operations preserve baseline behavior."
+  },
+  "origin_operation": {
+    "code": "LF_GOVERNED_OPERATION_LIFECYCLE",
+    "status": "RESOLVED",
+    "evidence_ref": "supabase://public.v_lf_operation_policy_snapshot/POL-LF-OPERATION-LIFECYCLE",
+    "missing_evidence": []
+  },
+  "challenger_review": [
+    {
+      "outcome": "DESIGN_CHANGED",
+      "challenge": "Can #186 prove readiness without creating a new persistent resolver outside its exact footprint?",
+      "resolution": "Yes. Materialize readiness/caller-manifest rules in existing lf_operation_step_contracts, wire the exact authorized callers directly to existing C05 primitives, and use bounded deterministic migration/readback assertions over those existing surfaces. No new pg_proc object is needed.",
+      "challenge_id": "CH-R1-B1",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/186",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1",
+        "supabase://pg_proc/public.fn_lf_operation_checkpoint_v1",
+        "supabase://pg_proc/public.fn_lf_operation_release_lease_v1"
+      ]
+    },
+    {
+      "outcome": "DESIGN_CHANGED",
+      "challenge": "Can parent write policy bindings while #186 declares them read-only and children remain live?",
+      "resolution": "No. R2 is PARENT_OF #186/#187/#188, removes policy-binding mutation and delegates every write surface to one child.",
+      "challenge_id": "CH-R1-B2",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/186",
+        "supabase://public.lf_backlog_errores_operativos/187",
+        "supabase://public.lf_backlog_errores_operativos/188"
+      ]
+    },
+    {
+      "outcome": "SURVIVED",
+      "challenge": "Would global recorder enforcement be simpler?",
+      "resolution": "Rejected: adoption/currentness must be proven first and enforcement stays one operation per child sublot.",
+      "challenge_id": "CH-GLOBAL",
+      "evidence_refs": [
+        "supabase://snapshot/MR02-R2@2026-09-19T21:27:20.577971+00:00:executions_7d=459,fenced_7d=68,unfenced_7d=391,in_progress=76",
+        "supabase://public.lf_backlog_errores_operativos/187"
+      ]
+    },
+    {
+      "outcome": "SURVIVED",
+      "challenge": "Would a new lifecycle engine/table resolve readiness more cleanly?",
+      "resolution": "Rejected: existing step-contract JSON, the exact authorized caller footprint, existing C05 primitives and bounded direct readback provide readiness evidence without a second authority or persistent resolver.",
+      "challenge_id": "CH-ENGINE",
+      "evidence_refs": [
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY"
+      ]
+    },
+    {
+      "challenge_id": "CH-R2-189",
+      "challenge": "Did the previously unresolved caller-authority finding #189 prevent Route A from becoming implementation-ready?",
+      "outcome": "SURVIVED",
+      "resolution": "#189 was independently reconciled and is now RESUELTA: 72/72 leased executions have authority lineage, 0 live leases remain, and 20/20 post-finding mutations are attributable. The audit model now distinguishes static code callers from governed direct operational invocations.",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/189#resolution_20260919",
+        "supabase://public.lf_operation_execution/EXEC-MR02-CALLER-AUTHORITY-RECON-20260919-001",
+        "supabase://public.lf_eventos/14627",
+        "supabase://public.lf_error_knowledge/AUDIT-DIRECT-CALLER-AUTHORITY-INVENTORY-GAP-001"
+      ]
+    }
+  ],
+  "first_bad_control": {
+    "status": "ESTABLISHED",
+    "statement": "Operation admission/readiness is the first bad control: executable operation metadata does not itself prove that every material caller has adopted the exact lifecycle obligations needed before writes or external effects.",
+    "evidence_refs": [
+      "supabase://public.lf_operation_registry",
+      "supabase://public.lf_operation_step_contracts",
+      "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY"
+    ],
+    "missing_evidence": []
+  },
+  "omission_discovery": [
+    {
+      "finding": "Readiness is represented in existing step-contract JSON and proven with bounded direct readback plus caller adoption; no new table, engine or persistent resolver is required.",
+      "dimension": "ARCHITECTURE",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.lf_backlog_errores_operativos/186"
+      ]
+    },
+    {
+      "finding": "Require readiness and fenced ownership at the shared material-write/close boundary after bounded adoption.",
+      "dimension": "CONTROLS",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.v_lf_operation_policy_snapshot/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    },
+    {
+      "finding": "R2 changes operation step-contract JSON only; policy bindings and POL-LF-POLICY-CONSUMPTION stay read-only for MR02-a/b.",
+      "dimension": "POLICIES_CONTRACTS",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/186",
+        "supabase://public.lf_operation_policy_bindings"
+      ]
+    },
+    {
+      "finding": "Use compact policy snapshots, exact refs and JIT detail; deterministic lifecycle decisions remain outside the model.",
+      "dimension": "CONTEXT_TRANSPORT",
+      "disposition": "REUSE_AS_IS",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.v_lf_operation_policy_snapshot/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    },
+    {
+      "finding": "Connect each bounded caller through reserve, lease, checkpointed boundaries and terminal release before enforcement.",
+      "dimension": "WIRING",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.v_lf_operation_policy_snapshot/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    },
+    {
+      "finding": "Adopt and prove one bounded operation/caller set before enabling its fail-closed guard.",
+      "dimension": "COMPATIBILITY_TRANSITION",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.v_lf_operation_policy_snapshot/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    },
+    {
+      "finding": "Define monotonic checkpoint/resume and terminal close/release for each activated operation.",
+      "dimension": "RECOVERY_TERMINALITY",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.v_lf_operation_policy_snapshot/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    },
+    {
+      "finding": "Expose full-chain coverage, stale-writer rejects, checkpoint progression, effect reconciliation and terminal completion.",
+      "dimension": "OBSERVABILITY",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.v_lf_operation_policy_snapshot/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    },
+    {
+      "finding": "Keep Supabase/Router/operation contracts as authority; leases coordinate writers but do not create authority.",
+      "dimension": "SECURITY_AUTHORITY",
+      "disposition": "REUSE_AS_IS",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.v_lf_operation_policy_snapshot/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    },
+    {
+      "finding": "Keep lifecycle checks deterministic and use JIT evidence; do not send full policies/EKB/SKILL to the model.",
+      "dimension": "COST_PERFORMANCE",
+      "disposition": "REUSE_AS_IS",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.v_lf_operation_policy_snapshot/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    },
+    {
+      "finding": "AC-RETRY and AC-STALE-WRITER now have OBSERVED rollback evidence; remaining falsifications stay PLANNED until child implementation.",
+      "dimension": "TESTING_ASSURANCE",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "rollback-test://MR02-R2/AC-RETRY@2026-09-19T21:27:12.887095Z",
+        "rollback-test://MR02-R2/AC-STALE-WRITER@2026-09-19T21:27:12.887121Z"
+      ]
+    },
+    {
+      "finding": "Version caller adoption/readiness and rollback receipts so future operations join without bespoke logic.",
+      "dimension": "OPERABILITY_MAINTENANCE",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+        "supabase://public.lf_operation_step_contracts",
+        "supabase://public.v_lf_operation_policy_snapshot/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    }
+  ],
+  "research_assurance": {
+    "context_strategy": "JIT_HIGH_SIGNAL",
+    "patterns_compared": [
+      {
+        "fit": "High because LF already has reserve_execution plus request/target mismatch guards.",
+        "pattern": "Caller-provided idempotency identity with atomic durable reservation",
+        "tradeoff": "Every material caller must enter the same reservation path before effects.",
+        "source_refs": [
+          "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_mitigate_interaction_failure_limit_retries.html",
+          "supabase://pg_proc/public.fn_lf_operation_reserve_execution_v1"
+        ]
+      },
+      {
+        "fit": "High for interruption and partial failure because LF already has checkpoint/effect-guard primitives.",
+        "pattern": "Durable workflow state with checkpointed recovery and replay-safe activities",
+        "tradeoff": "Requires exact material boundaries and effect-receipt semantics; no second workflow engine is justified.",
+        "source_refs": [
+          "https://docs.aws.amazon.com/durable-execution/patterns/best-practices/idempotency/",
+          "supabase://pg_proc/public.fn_lf_operation_checkpoint_v1",
+          "supabase://pg_proc/public.fn_lf_operation_reserve_effect_v1"
+        ]
+      },
+      {
+        "fit": "High for stale-writer containment because LF already has lease_owner, lease_expires_at and lease_fence.",
+        "pattern": "Lease-based single active writer with explicit expiry",
+        "tradeoff": "Lease alone is insufficient; it must be combined with idempotent identity, recovery and terminality.",
+        "source_refs": [
+          "https://kubernetes.io/docs/concepts/architecture/leases/",
+          "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1"
+        ]
+      }
+    ],
+    "research_complete": true,
+    "research_questions": [
+      "How should retries remain safe without duplicating operation identity or effects?",
+      "How should durable recovery resume after partial failure without losing workflow state?",
+      "How should a shared writer boundary prevent concurrent stale writers while preserving bounded failover?"
+    ],
+    "external_evidence_refs": [
+      "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_mitigate_interaction_failure_limit_retries.html",
+      "https://docs.aws.amazon.com/durable-execution/patterns/best-practices/idempotency/",
+      "https://kubernetes.io/docs/concepts/architecture/leases/"
+    ],
+    "internal_evidence_refs": [
+      "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+      "supabase://public.lf_eventos/14382",
+      "supabase://public.lf_eventos/14383",
+      "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+      "supabase://public.lf_activos/POL-LF-OPERATION-LIFECYCLE",
+      "supabase://pg_proc/public.fn_lf_operation_reserve_execution_v1",
+      "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1",
+      "supabase://pg_proc/public.fn_lf_operation_checkpoint_v1",
+      "supabase://pg_proc/public.fn_lf_operation_reserve_effect_v1",
+      "supabase://pg_proc/public.fn_lf_operation_mark_effect_succeeded_v1",
+      "supabase://pg_proc/public.fn_lf_operation_release_lease_v1",
+      "supabase://pg_proc/public.lf_record_operation_step_core_v1"
+    ],
+    "first_solution_disposition": "REVISED",
+    "external_research_rationale": "Current distributed-systems practice can materially improve retry, recovery and ownership controls without replacing LF authority.",
+    "current_practice_research_required": true
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "AC-READINESS: existing step/contract rules plus direct bounded readback decide whether one operation is eligible for the later #187 sublot.",
+      "expected_result": "The exact operation can advance toward #187 only when its bounded caller set and all declared C05 lifecycle obligations are current and complete; otherwise baseline is preserved.",
+      "verification_method": "In #186, validate the exact readiness JSON/caller manifest, exact authorized caller definitions, lifecycle steps/contracts, operation revision and negative missing/stale/currentness cases using migration/test readback only; create no new readiness function."
+    },
+    {
+      "criterion": "AC-STALE-WRITER: stale ownership is rejected by existing C05 fencing.",
+      "expected_result": "Observed rollback PASS: fence 1→2; stale writer rejected; current writer checkpoint accepted.",
+      "verification_method": "rollback-test://MR02-R2/AC-STALE-WRITER@2026-09-19T21:27:12.887121Z; rerun for each #187 activation."
+    },
+    {
+      "criterion": "AC-RETRY: identical idempotent reservation reuses durable identity.",
+      "expected_result": "Observed rollback PASS: RESERVED_NEW_EXECUTION then REPLAY_EXISTING_EXECUTION, one row.",
+      "verification_method": "rollback-test://MR02-R2/AC-RETRY@2026-09-19T21:27:12.887095Z; rerun after each #186 caller adoption."
+    },
+    {
+      "criterion": "AC-RECOVERY: interruption resumes from monotonic checkpoint.",
+      "expected_result": "Resume starts after last durable boundary; prior SUCCEEDED effect is not reissued.",
+      "verification_method": "Interrupt after durable boundary, resume and compare effect receipts."
+    },
+    {
+      "criterion": "AC-BOUNDED-ROLLOUT: one activated operation does not alter unadopted operations.",
+      "expected_result": "Only explicitly activated operation changes enforcement.",
+      "verification_method": "Compare activated and unadopted operation behavior before/after stage."
+    }
+  ],
+  "planned_regressions": [
+    {
+      "case_id": "REG-BYPASS",
+      "scenario": "Material write without current readiness/fence.",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact operation/caller, function/contract identities and baseline rows."
+        ],
+        "action": [
+          "Run shared guard with missing readiness/fence."
+        ],
+        "assertions": [
+          "Block before material write.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "REG-BYPASS_FAILED"
+      },
+      "expected_result": "Block before material write.",
+      "verification_method": "Run shared guard with missing readiness/fence."
+    },
+    {
+      "case_id": "REG-RETRY",
+      "scenario": "Same idempotency identity retried.",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact operation/caller, function/contract identities and baseline rows."
+        ],
+        "action": [
+          "Replay identical request identity."
+        ],
+        "assertions": [
+          "Reuse one execution and no duplicate effects.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "REG-RETRY_FAILED"
+      },
+      "expected_result": "Reuse one execution and no duplicate effects.",
+      "verification_method": "Replay identical request identity."
+    },
+    {
+      "case_id": "REG-CONCURRENCY",
+      "scenario": "Stale writer after lease takeover.",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact operation/caller, function/contract identities and baseline rows."
+        ],
+        "action": [
+          "Write with prior fence after new fence acquired."
+        ],
+        "assertions": [
+          "Reject stale writer.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "REG-CONCURRENCY_FAILED"
+      },
+      "expected_result": "Reject stale writer.",
+      "verification_method": "Write with prior fence after new fence acquired."
+    },
+    {
+      "case_id": "REG-RECOVERY",
+      "scenario": "Interruption after durable checkpoint.",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact operation/caller, function/contract identities and baseline rows."
+        ],
+        "action": [
+          "Resume from persisted checkpoint."
+        ],
+        "assertions": [
+          "Continue after durable boundary without repeating succeeded effects.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "REG-RECOVERY_FAILED"
+      },
+      "expected_result": "Continue after durable boundary without repeating succeeded effects.",
+      "verification_method": "Resume from persisted checkpoint."
+    },
+    {
+      "case_id": "REG-TERMINAL",
+      "scenario": "Required steps clean at terminal boundary.",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact operation/caller, function/contract identities and baseline rows."
+        ],
+        "action": [
+          "Run terminal close then replay."
+        ],
+        "assertions": [
+          "Close deterministically and replay durable terminal state.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "REG-TERMINAL_FAILED"
+      },
+      "expected_result": "Close deterministically and replay durable terminal state.",
+      "verification_method": "Run terminal close then replay."
+    }
+  ],
+  "recurrence_evidence": [
+    {
+      "ref": "input:evento_14383.verified_facts",
+      "fact": "Frozen MR02 SPEC-FIRST evidence already showed heterogeneous reserve/lease adoption and returned MR02 to specification before implementation.",
+      "scope": "frozen MR02 pilot history",
+      "evidence_class": "DECLARED_INPUT"
+    },
+    {
+      "ref": "supabase://snapshot/MR02-R2@2026-09-19T21:27:20.577971+00:00:executions_7d=459,fenced_7d=68,unfenced_7d=391,in_progress=76",
+      "fact": "At the single R2 snapshot there are 459 executions in the last 7 days, 68 fenced and 391 unfenced; heterogeneous lifecycle adoption remains observable.",
+      "scope": "current governed operation ledger",
+      "evidence_class": "OBSERVED_LIVE"
+    },
+    {
+      "ref": "supabase://public.lf_operation_execution/EXEC-SRCR-PILOT-SPEC-R2-20260919-001",
+      "fact": "The R2 profile execution itself must acquire a C05 lease before profile work; final readback must retain lease_fence>0 after release.",
+      "scope": "R2 governed profile execution",
+      "evidence_class": "OBSERVED_LIVE"
+    },
+    {
+      "ref": "supabase://public.lf_backlog_errores_operativos/188",
+      "fact": "The current 76 IN_PROGRESS executions are routed to MR02-c for separate read-only classification/disposition; count reduction is not protocol-repair proof.",
+      "scope": "historical disposition boundary",
+      "evidence_class": "OBSERVED_LIVE"
+    }
+  ],
+  "systemic_root_cause": {
+    "status": "ESTABLISHED",
+    "statement": "The shared C05 primitives and operation-lifecycle policy already exist, but their consumption is not derived and enforced through one operation-neutral readiness boundary for every governed operation family; callers can therefore adopt only subsets of reserve, fencing, checkpoint, effect idempotency and terminal behavior.",
+    "evidence_refs": [
+      "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+      "supabase://public.lf_activos/POL-LF-OPERATION-LIFECYCLE",
+      "github://cristhianlujan/claude-persona-lf-patch@cfd906623388f508237dfc4f18c7255a126aa24a/supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
+      "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280"
+    ],
+    "missing_evidence": []
+  },
+  "implementation_delta": [
+    {
+      "action": "Materialize the exact readiness/caller-manifest contract in existing lf_operation_step_contracts and connect only the bounded #186 caller footprint directly to existing C05 reserve/acquire/checkpoint/release primitives; prove readiness through direct migration/test readback, with no new persistent resolver.",
+      "target": "SPEC-MR02-A-CONNECT-CALLERS-V2 / backlog #186",
+      "rationale": "Closes readiness and caller-adoption design inside #186 exact footprint without policy-binding expansion or a new pg_proc object.",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/186",
+        "supabase://public.lf_operation_step_contracts"
+      ]
+    },
+    {
+      "action": "After #186 readback and a fresh caller-authority currentness check, allow a separately approved #187 sublot to enable shared fail-closed recorder/effect enforcement for exactly one operation; no blanket switch.",
+      "target": "SPEC-MR02-B-GRADUAL-ENFORCEMENT-V2 / backlog #187",
+      "rationale": "Preserves compatibility, keeps enforcement in its child owner, and re-blocks if any new caller/authority contradiction appears.",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/187",
+        "rollback-test://MR02-R2/AC-STALE-WRITER@2026-09-19T21:27:12.887121Z"
+      ]
+    },
+    {
+      "action": "Keep IN_PROGRESS classification/disposition separate; route live count 76 to #188 and do not mutate history from parent.",
+      "target": "SPEC-MR02-C-INPROGRESS-DISPOSITION-V2 / backlog #188",
+      "rationale": "Separates cleanup from repair proof.",
+      "evidence_refs": [
+        "supabase://public.lf_backlog_errores_operativos/188",
+        "supabase://snapshot/MR02-R2@2026-09-19T21:27:20.577971+00:00:executions_7d=459,fenced_7d=68,unfenced_7d=391,in_progress=76"
+      ]
+    }
+  ],
+  "selected_alternative": "ALT-A_STAGED_DECLARATIVE_LIFECYCLE_GUARD",
+  "current_uncertainties": [
+    {
+      "uncertainty": "Fresh operation/caller readiness evidence must be recomputed for each bounded #186/#187 sublot because operation contracts and caller sources can change.",
+      "impact": "IMPLEMENTATION_PRECONDITION",
+      "evidence_needed": [
+        "Direct bounded readback of the exact caller manifest/source identities, lifecycle step/contract declarations, operation revision and required C05 controls for the target operation."
+      ],
+      "design_consequence": "No new persistent readiness resolver is required. The bounded migration/test readback computes evidence directly from existing authorized surfaces; any mismatch keeps the operation on baseline and blocks #187.",
+      "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[0]"
+    }
+  ],
+  "falsification_results": [
+    {
+      "case": "bypass",
+      "result": "PLANNED",
+      "evidence_ref": "design://mr02/bypass",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact current operation/caller set and lifecycle authority identities."
+        ],
+        "action": [
+          "Attempt material step/effect without current readiness or fence."
+        ],
+        "assertions": [
+          "Activated operation blocks before material write.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "MR02_BYPASS_FAILED"
+      },
+      "evidence_class": "DESIGN_ONLY",
+      "expected_result": "Activated operation blocks before material write.",
+      "verification_method": "Execute the exact bounded MR02 bypass protocol before enforcement closure."
+    },
+    {
+      "case": "retry",
+      "result": "PASS",
+      "evidence_ref": "rollback-test://MR02-R2/AC-RETRY@2026-09-19T21:27:12.887095Z",
+      "test_protocol": {
+        "setup": [
+          "BEGIN; reserve sandbox execution with fixed idempotency_key/request_sha256."
+        ],
+        "action": [
+          "Reserve again with another proposed execution_id but same operation/idempotency/request."
+        ],
+        "assertions": [
+          "First result RESERVED_NEW_EXECUTION.",
+          "Second result REPLAY_EXISTING_EXECUTION.",
+          "Replayed execution_id equals first.",
+          "Exactly one row before ROLLBACK."
+        ],
+        "failure_signal": "AC_RETRY_OBSERVED_TEST_FAILED"
+      },
+      "evidence_class": "OBSERVED_TEST",
+      "expected_result": "First reserve returns RESERVED_NEW_EXECUTION; identical retry returns REPLAY_EXISTING_EXECUTION; row_count remains 1.",
+      "verification_method": "Rollback fixture called fn_lf_operation_reserve_execution_v1 twice with same operation/idempotency/request identity."
+    },
+    {
+      "case": "concurrency",
+      "result": "PASS",
+      "evidence_ref": "rollback-test://MR02-R2/AC-STALE-WRITER@2026-09-19T21:27:12.887121Z",
+      "test_protocol": {
+        "setup": [
+          "BEGIN; reserve sandbox execution; acquire worker-A fence=1; expire fixture lease; acquire worker-B fence=2."
+        ],
+        "action": [
+          "Checkpoint with worker-A/fence=1 then worker-B/fence=2."
+        ],
+        "assertions": [
+          "Stale writer raises STALE_OR_MISSING_LEASE_FENCE.",
+          "Current writer returns CHECKPOINT_PERSISTED.",
+          "New fence > stale fence."
+        ],
+        "failure_signal": "AC_STALE_WRITER_OBSERVED_TEST_FAILED"
+      },
+      "evidence_class": "OBSERVED_TEST",
+      "expected_result": "Fence advances 1 to 2; stale writer gets STALE_OR_MISSING_LEASE_FENCE; current writer checkpoints.",
+      "verification_method": "Rollback fixture acquired worker-A, expired only fixture lease, acquired worker-B, tested stale/current checkpoint."
+    },
+    {
+      "case": "partial_failure",
+      "result": "PLANNED",
+      "evidence_ref": "design://mr02/partial_failure",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact current operation/caller set and lifecycle authority identities."
+        ],
+        "action": [
+          "Interrupt after a durable material boundary."
+        ],
+        "assertions": [
+          "Resume continues after the last durable boundary and does not repeat a SUCCEEDED effect.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "MR02_PARTIAL_FAILURE_FAILED"
+      },
+      "evidence_class": "DESIGN_ONLY",
+      "expected_result": "Resume continues after the last durable boundary and does not repeat a SUCCEEDED effect.",
+      "verification_method": "Execute the exact bounded MR02 partial_failure protocol before enforcement closure."
+    },
+    {
+      "case": "stale_state",
+      "result": "PLANNED",
+      "evidence_ref": "design://mr02/stale_state",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact current operation/caller set and lifecycle authority identities."
+        ],
+        "action": [
+          "Expire ownership with unresolved RESERVED effect."
+        ],
+        "assertions": [
+          "The path blocks for reconcile/authoritative receipt and never invents success.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "MR02_STALE_STATE_FAILED"
+      },
+      "evidence_class": "DESIGN_ONLY",
+      "expected_result": "The path blocks for reconcile/authoritative receipt and never invents success.",
+      "verification_method": "Execute the exact bounded MR02 stale_state protocol before enforcement closure."
+    },
+    {
+      "case": "interrupted_execution",
+      "result": "PLANNED",
+      "evidence_ref": "design://mr02/interrupted_execution",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact current operation/caller set and lifecycle authority identities."
+        ],
+        "action": [
+          "Stop after checkpoint and before terminal close."
+        ],
+        "assertions": [
+          "The operation resumes/reconciles from durable state and reaches terminality without replaying prior effects.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "MR02_INTERRUPTED_EXECUTION_FAILED"
+      },
+      "evidence_class": "DESIGN_ONLY",
+      "expected_result": "The operation resumes/reconciles from durable state and reaches terminality without replaying prior effects.",
+      "verification_method": "Execute the exact bounded MR02 interrupted_execution protocol before enforcement closure."
+    },
+    {
+      "case": "replay_or_duplicate",
+      "result": "PLANNED",
+      "evidence_ref": "design://mr02/replay_or_duplicate",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact current operation/caller set and lifecycle authority identities."
+        ],
+        "action": [
+          "Replay after terminal close with the same identity."
+        ],
+        "assertions": [
+          "Durable terminal state is returned and no second execution/effect is created.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "MR02_REPLAY_OR_DUPLICATE_FAILED"
+      },
+      "evidence_class": "DESIGN_ONLY",
+      "expected_result": "Durable terminal state is returned and no second execution/effect is created.",
+      "verification_method": "Execute the exact bounded MR02 replay_or_duplicate protocol before enforcement closure."
+    },
+    {
+      "case": "undeclared_or_unversioned_caller",
+      "result": "PLANNED",
+      "evidence_ref": "design://mr02/undeclared_or_unversioned_caller",
+      "test_protocol": {
+        "setup": [
+          "Freeze exact current operation/caller set and lifecycle authority identities."
+        ],
+        "action": [
+          "Invoke material path from caller absent from readiness inventory."
+        ],
+        "assertions": [
+          "Caller cannot bypass the shared lifecycle contract.",
+          "Unrelated operations retain baseline."
+        ],
+        "failure_signal": "MR02_UNDECLARED_OR_UNVERSIONED_CALLER_FAILED"
+      },
+      "evidence_class": "DESIGN_ONLY",
+      "expected_result": "Caller cannot bypass the shared lifecycle contract.",
+      "verification_method": "Execute the exact bounded MR02 undeclared_or_unversioned_caller protocol before enforcement closure."
+    }
+  ],
+  "live_authority_packet": {
+    "status": "COMPLETE",
+    "observed_at": "2026-09-20T00:29:39.890914+00:00",
+    "evidence_refs": [
+      "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+      "github://cristhianlujan/claude-persona-lf-patch@cfd906623388f508237dfc4f18c7255a126aa24a/profiles/systemic_root_cause_repair_lf",
+      "github://cristhianlujan/claude-persona-lf-patch@cfd906623388f508237dfc4f18c7255a126aa24a/supabase/migrations/20260911025454_s30_c05_generic_execution_reliability_v1.sql",
+      "supabase://snapshot/MR02-R2@2026-09-19T21:27:20.577971+00:00:executions_7d=459,fenced_7d=68,unfenced_7d=391,in_progress=76",
+      "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+      "supabase://public.lf_activos/POL-LF-OPERATION-LIFECYCLE",
+      "supabase://public.lf_operation_step_contracts/output_payload",
+      "supabase://pg_proc/public.lf_operation_revision_sha256_v1",
+      "supabase://public.lf_backlog_errores_operativos/189",
+      "supabase://public.lf_backlog_errores_operativos/189#resolution_20260919",
+      "supabase://public.lf_operation_execution/EXEC-MR02-CALLER-AUTHORITY-RECON-20260919-001",
+      "supabase://public.lf_eventos/14627",
+      "supabase://public.lf_error_knowledge/AUDIT-DIRECT-CALLER-AUTHORITY-INVENTORY-GAP-001"
+    ],
+    "inspected_surfaces": [
+      "REPOSITORY_SOURCE",
+      "SQL_FUNCTIONS",
+      "OPERATION_POLICY",
+      "EXECUTION_LEDGER",
+      "AGENT_CONNECTOR_IDENTITY"
+    ],
+    "applicable_surfaces": [
+      "REPOSITORY_SOURCE",
+      "SQL_FUNCTIONS",
+      "OPERATION_POLICY",
+      "EXECUTION_LEDGER",
+      "AGENT_CONNECTOR_IDENTITY"
+    ],
+    "unavailable_sources": [],
+    "material_effects_observed": true,
+    "unavailable_source_assessments": []
+  },
+  "preferred_alternative": "ALT-A_STAGED_DECLARATIVE_LIFECYCLE_GUARD",
+  "rejected_alternatives": [
+    {
+      "id": "ALT-B_GLOBAL_RECORDER_ENFORCEMENT_NOW",
+      "reason": "Enforcement before caller adoption can break operations that have not yet proven lifecycle readiness.",
+      "evidence_refs": [
+        "input:evento_14383.claude_review.mr02_183",
+        "input:evento_14383.reworked_specs"
+      ]
+    },
+    {
+      "id": "ALT-C_PER_OPERATION_LOCAL_WRAPPERS",
+      "reason": "Caller-local patches preserve the distributed opt-in failure class and do not prevent the next caller from omitting the protocol.",
+      "evidence_refs": [
+        "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280"
+      ]
+    },
+    {
+      "id": "ALT-D_NEW_LIFECYCLE_ENGINE",
+      "reason": "Duplicates existing C05/lifecycle authority and violates the explicit no-second-engine constraint.",
+      "evidence_refs": [
+        "input:backlog_183.repair_spec"
+      ]
+    }
+  ],
+  "historical_regressions": [
+    {
+      "case_id": "HIST-MR02-001",
+      "evidence_refs": [
+        "input://public.lf_eventos/14383",
+        "input://public.lf_backlog_errores_operativos/183"
+      ],
+      "occurrence_ref": "input://public.lf_eventos/14383",
+      "observed_failure": "Frozen SPEC-FIRST baseline showed heterogeneous reserve/recorder adoption and many executions without positive lease fencing."
+    },
+    {
+      "case_id": "HIST-MR02-002",
+      "evidence_refs": [
+        "input://public.lf_backlog_errores_operativos/183",
+        "input://public.lf_eventos/14383"
+      ],
+      "occurrence_ref": "input://public.lf_backlog_errores_operativos/183",
+      "observed_failure": "Parent MR02 design was returned because enforcement before caller adoption could break compatibility."
+    }
+  ],
+  "implementation_package": {
+    "wiring": [
+      {
+        "from_ref": "public.lf_operation_step_contracts.input_required.lifecycle_callers_v1",
+        "to_ref": "#186 bounded deterministic adoption/readback",
+        "contract_ref": "lf-operation-lifecycle-readiness/v1",
+        "data_carried": [
+          "operation_code",
+          "revision",
+          "caller_ref",
+          "source_sha256",
+          "required_controls",
+          "terminal_step_id"
+        ],
+        "precondition": "#186 materialized the exact bounded caller manifest and lifecycle rules in existing step/contract JSON.",
+        "fail_closed_behavior": "Missing/ambiguous contract, caller mismatch, stale operation revision or incomplete C05 obligation keeps the operation on baseline and blocks #187."
+      },
+      {
+        "from_ref": "#186 bounded deterministic adoption/readback",
+        "to_ref": "#187 per-operation enforcement gate",
+        "contract_ref": "supabase://public.lf_backlog_errores_operativos/186",
+        "data_carried": [
+          "exact operation revision",
+          "bounded caller coverage",
+          "reserve/lease/checkpoint/effect/terminal evidence",
+          "blocking findings"
+        ],
+        "precondition": "#186 readback is current for the exact operation and the caller-authority currentness check has no unresolved mutation.",
+        "fail_closed_behavior": "Any incomplete caller/control evidence or unresolved authority prevents the #187 sublot."
+      },
+      {
+        "from_ref": "governed caller set owned by #186",
+        "to_ref": "public.fn_lf_operation_reserve_execution_v1 -> public.fn_lf_operation_acquire_lease_v1 -> checkpoint/effect primitives -> public.fn_lf_operation_release_lease_v1",
+        "contract_ref": "supabase://public.lf_backlog_errores_operativos/186",
+        "data_carried": [
+          "execution_id",
+          "idempotency_key",
+          "request_sha256",
+          "lease_owner",
+          "lease_fence",
+          "checkpoint_seq",
+          "effect_scope"
+        ],
+        "precondition": "Caller is one of the exact #186 enumerated functions and its adoption/currentness has been read back in the bounded lot.",
+        "fail_closed_behavior": "Request/target mismatch, stale ownership or unresolved effect blocks the prepared material path; unprepared operations retain baseline."
+      },
+      {
+        "from_ref": "#187 exact operation enforcement",
+        "to_ref": "public.lf_record_operation_step_core_v1",
+        "contract_ref": "supabase://public.lf_backlog_errores_operativos/187",
+        "data_carried": [
+          "#186 adoption/readback evidence",
+          "execution identity",
+          "current fence",
+          "step/evidence contract"
+        ],
+        "precondition": "Exactly one operation has a separately approved #187 sublot after clean #186 readback and a clean caller-authority currentness check.",
+        "fail_closed_behavior": "Missing/stale lifecycle evidence rejects only the activated operation; others retain baseline."
+      }
+    ],
+    "deliverables": [
+      {
+        "change_type": "MODIFY",
+        "exact_delta": "#186 stores the exact readiness JSON contract and input_required.lifecycle_callers_v1 in the bounded operation contract. No ALTER TABLE and no policy-binding write.",
+        "artifact_ref": "supabase://public.lf_operation_step_contracts",
+        "dependencies": [
+          "#186 approval",
+          "exact bounded operation and caller list"
+        ],
+        "acceptance_refs": [
+          "AC-READINESS",
+          "REG-UNDECLARED"
+        ]
+      },
+      {
+        "change_type": "MODIFY",
+        "exact_delta": "Caller adoption only inside #186 existing footprint: caller functions plus lf_operation_steps/lf_operation_step_contracts; policy bindings remain read-only.",
+        "artifact_ref": "supabase://public.lf_backlog_errores_operativos/186",
+        "dependencies": [
+          "#186 readiness contract + exact caller inventory/readback"
+        ],
+        "acceptance_refs": [
+          "AC-RETRY",
+          "AC-READINESS"
+        ]
+      },
+      {
+        "change_type": "MODIFY",
+        "exact_delta": "After #186 passes, enforce readiness/fence one operation_code per separately approved sublot; no blanket switch.",
+        "artifact_ref": "supabase://public.lf_backlog_errores_operativos/187",
+        "dependencies": [
+          "#186 readback",
+          "#186 bounded readiness readback clean + caller-authority currentness clean"
+        ],
+        "acceptance_refs": [
+          "AC-STALE-WRITER",
+          "AC-BOUNDED-ROLLOUT"
+        ]
+      },
+      {
+        "change_type": "MODIFY",
+        "exact_delta": "Own current 76-IN_PROGRESS read-only classification/disposition lane. Parent does not mutate historical executions.",
+        "artifact_ref": "supabase://public.lf_backlog_errores_operativos/188",
+        "dependencies": [
+          "separate #188 approval for mutation"
+        ],
+        "acceptance_refs": [
+          "REG-HISTORICAL-DISPOSITION"
+        ]
+      }
+    ],
+    "control_matrix": [
+      {
+        "purpose": "Resolve exact operation/caller readiness before ENFORCE.",
+        "control_id": "CTRL-ADMISSION",
+        "applies_when": "Before #187 can activate one operation_code.",
+        "authority_ref": "supabase://public.lf_operation_step_contracts",
+        "blocking_code": "OPERATION_LIFECYCLE_READINESS_INCOMPLETE",
+        "input_contract": "operation_code + expected revision; readiness JSON contract and exact caller manifest from lf_operation_step_contracts.",
+        "observable_result": "Only an exact-current operation with complete bounded caller/control evidence can satisfy the #186 readback prerequisite for a later #187 sublot.",
+        "verification_method": "Directly compare existing readiness/manifest JSON, exact caller inventory/current definitions, operation revision and terminal contract during the bounded #186 migration/test readback.",
+        "enforcement_point_ref": "supabase://public.lf_operation_step_contracts+public.lf_operation_steps+public.lf_operation_revision_sha256_v1"
+      },
+      {
+        "purpose": "Reject stale/missing ownership after exact operation activation.",
+        "control_id": "CTRL-FENCE",
+        "applies_when": "Material writes for the one operation separately activated by #187 after clean #186 adoption/readback.",
+        "authority_ref": "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1",
+        "blocking_code": "OPERATION_LIFECYCLE_REQUIREMENT_NOT_SATISFIED",
+        "input_contract": "execution_id + current lease/fence/expiry + exact #186 adoption/readback evidence bound to current operation revision.",
+        "observable_result": "Current owner succeeds; stale owner/fence is rejected; unadopted operations keep baseline.",
+        "verification_method": "AC-STALE-WRITER rollback test is OBSERVED_TEST; rerun for each activated operation.",
+        "enforcement_point_ref": "supabase://pg_proc/public.lf_record_operation_step_core_v1+public.fn_lf_operation_reserve_effect_v1+public.fn_lf_operation_mark_effect_succeeded_v1"
+      },
+      {
+        "purpose": "Resume from durable checkpoint without replaying succeeded effects.",
+        "control_id": "CTRL-RECOVERY",
+        "applies_when": "Before/after declared material boundaries.",
+        "authority_ref": "supabase://pg_proc/public.fn_lf_operation_checkpoint_v1",
+        "blocking_code": "OPERATION_RECOVERY_STATE_NOT_DURABLE",
+        "input_contract": "monotonic checkpoint, current fence, effect reservation and authoritative receipt.",
+        "observable_result": "Resume advances after last durable boundary and never redispatches SUCCEEDED effect.",
+        "verification_method": "Run interruption/resume regression in the exact child operation before ENFORCE closure.",
+        "enforcement_point_ref": "supabase://pg_proc/public.fn_lf_operation_checkpoint_v1+public.fn_lf_operation_reserve_effect_v1+public.fn_lf_operation_mark_effect_succeeded_v1"
+      },
+      {
+        "purpose": "Prevent clean executions remaining IN_PROGRESS because terminal semantics are missing/bypassed.",
+        "control_id": "CTRL-TERMINAL",
+        "applies_when": "At terminal boundary declared by adopted operation contract.",
+        "authority_ref": "supabase://public.lf_operation_steps+public.lf_operation_step_contracts",
+        "blocking_code": "OPERATION_TERMINAL_CONTRACT_NOT_SATISFIED",
+        "input_contract": "declared terminal_step_id, required steps clean, current ownership and release semantics.",
+        "observable_result": "Activated operations close deterministically; historical 76 IN_PROGRESS are not mutated here.",
+        "verification_method": "Clean close/incomplete close/replay; historical disposition remains #188.",
+        "enforcement_point_ref": "supabase://pg_proc/public.lf_record_operation_step_core_v1"
+      }
+    ],
+    "decision_closure": {
+      "handoff_ready": true,
+      "closure_statement": "Route A closes the N2 design defect without expanding #186: readiness uses existing step-contract rules, direct bounded readback and existing C05 primitives only. #189 caller authority is reconciled and RESUELTA. Remaining child approvals/readbacks are governed implementation gates, not open architecture decisions.",
+      "open_design_decisions": [],
+      "implementation_preconditions": [
+        {
+          "name": "fresh bounded operation readiness readback",
+          "resolver_ref": "supabase://public.lf_operation_step_contracts+public.lf_operation_steps+public.lf_operation_revision_sha256_v1",
+          "expected_shape": "Exact operation revision, exact bounded caller manifest/currentness, declared reserve/lease/checkpoint/effect/terminal obligations, and zero material readback mismatches.",
+          "decision_rule": "Only a current #186 bounded readback with complete exact caller/control coverage may satisfy the readiness prerequisite; otherwise remain baseline. This is direct evidence computation, not a new persistent resolver.",
+          "stage": "MR02_A_TO_MR02_B",
+          "design_effect": "NONE"
+        }
+      ]
+    },
+    "context_transport": {
+      "status": "APPLIES",
+      "jit_refs": [
+        "EKB codes",
+        "exact function/contract refs",
+        "current caller-readiness rows",
+        "external technique refs"
+      ],
+      "rationale": "Governance/evidence context is needed for repair design; lifecycle admission, fencing, checkpoint and terminal decisions remain deterministic.",
+      "compiler_ref": "supabase://public.v_lf_operation_policy_snapshot/POL-LF-POLICY-CONSUMPTION#lf-context-admission/v1",
+      "token_budget": {
+        "hard_limit_tokens": 3000,
+        "soft_limit_tokens": 1500,
+        "measurement_method": "UTF8_BYTES_DIV_4"
+      },
+      "degradation_rule": "At hard limit, reduce through JIT retrieval and deterministic summaries; never drop authority/evidence or move lifecycle decisions into the model.",
+      "delivery_strategy": "Resolve compact immutable refs once; hydrate exact details JIT only for semantic design.",
+      "excluded_payloads": [
+        "full policy documents",
+        "full EKB entries",
+        "unrelated READMEs",
+        "full SKILL source when deterministic partition suffices"
+      ],
+      "deterministic_inputs": [
+        "operation_code",
+        "execution_id",
+        "idempotency_key",
+        "request_sha256",
+        "lease_owner",
+        "lease_fence",
+        "checkpoint_seq",
+        "step_contract_identity",
+        "policy_sha"
+      ]
+    },
+    "observability_plan": [
+      {
+        "signal": "lifecycle_full_chain_consumer_coverage",
+        "source_ref": "supabase://public.lf_operation_step_contracts+public.lf_operation_steps+public.lf_operation_revision_sha256_v1+#186-readback",
+        "alert_or_gate": "Block ENFORCE below 100% bounded caller coverage.",
+        "expected_change": "Reach 100% for the exact operation before ENFORCE."
+      },
+      {
+        "signal": "stale_writer_rejection",
+        "source_ref": "supabase://public.lf_operation_execution+step/effect guard evidence",
+        "alert_or_gate": "Any accepted stale writer fails the stage.",
+        "expected_change": "Stale/missing fence writes are rejected; accepted stale writers target zero."
+      },
+      {
+        "signal": "checkpoint_and_resume_evidence",
+        "source_ref": "supabase://public.lf_operation_execution.checkpoint_seq+checkpoint_payload",
+        "alert_or_gate": "Missing/non-monotonic required checkpoint blocks closure.",
+        "expected_change": "Activated material paths show monotonic durable boundaries and resume evidence."
+      },
+      {
+        "signal": "terminal_completion_consistency",
+        "source_ref": "supabase://public.lf_operation_execution+public.lf_operation_execution_steps",
+        "alert_or_gate": "Clean-but-nonterminal or bypass close fails the stage.",
+        "expected_change": "Required-clean activated executions reach declared terminal outcome without bypass."
+      }
+    ],
+    "architecture_decisions": [
+      {
+        "decision": "Reuse C05_GENERIC_EXECUTION_RELIABILITY, POL-LF-OPERATION-LIFECYCLE, existing operation execution/effect tables, step contracts and C05 functions; create no second engine, rollout table or policy.",
+        "question": "What lifecycle authority is reused?",
+        "rationale": "The defect is incomplete composition/adoption, not absence of reliability primitives.",
+        "decision_id": "D1",
+        "authority_ref": "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+        "evidence_refs": [
+          "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+          "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+          "supabase://public.lf_activos/POL-LF-OPERATION-LIFECYCLE"
+        ],
+        "alternatives_considered": [
+          "new lifecycle engine",
+          "new rollout table",
+          "per-caller local wrappers"
+        ]
+      },
+      {
+        "decision": "Use existing jsonb columns on public.lf_operation_step_contracts. output_payload.lifecycle_readiness_contract={\"schema_version\":\"lf-operation-lifecycle-readiness/v1\",\"stage_enum\":[\"ADOPT\",\"ENFORCE\"],\"required_output_fields\":[\"operation_code\",\"operation_revision_sha256\",\"contract_step_id\",\"stage\",\"caller_set_sha256\",\"caller_current\",\"reserve_ready\",\"lease_ready\",\"checkpoint_ready\",\"effect_idempotency_ready\",\"terminal_ready\",\"eligible_for_enforce\",\"blocking_codes\",\"evidence_refs\",\"observed_at\"],\"caller_manifest_location\":\"input_required.lifecycle_callers_v1\",\"caller_manifest_required_fields\":[\"caller_ref\",\"caller_kind\",\"source_sha256\",\"required_controls\"],\"caller_kind_enum\":[\"SQL_FUNCTION\"],\"required_controls_enum\":[\"RESERVE_EXECUTION\",\"LEASE_FENCE\",\"CHECKPOINT\",\"EFFECT_IDEMPOTENCY\",\"TERMINAL_CLOSE\"],\"eligible_rule\":\"stage=ENFORCE AND caller_current AND reserve_ready AND lease_ready AND checkpoint_ready AND effect_idempotency_ready AND terminal_ready AND blocking_codes=[]\"} The same contract stores input_required.lifecycle_callers_v1 as the exact caller/source manifest. No ALTER TABLE is required.",
+        "question": "How is readiness represented without schema columns?",
+        "rationale": "This is rules-as-data on the already authorized contract surface and aligns with #186 footprint.",
+        "decision_id": "D2",
+        "authority_ref": "supabase://public.lf_operation_step_contracts",
+        "evidence_refs": [
+          "supabase://information_schema/public.lf_operation_step_contracts",
+          "supabase://public.lf_backlog_errores_operativos/186"
+        ],
+        "alternatives_considered": [
+          "new readiness columns",
+          "new readiness table",
+          "implicit naming convention"
+        ]
+      },
+      {
+        "decision_id": "D3",
+        "question": "How is readiness computed without adding an out-of-scope persistent resolver?",
+        "decision": "Do not create a readiness function. #186 writes only the authorized readiness/caller-manifest rules to existing lf_operation_step_contracts and modifies only its enumerated caller functions. Its migration/test lane performs bounded direct readback of the exact manifest, caller definitions/source identities, lifecycle step/contract declarations and public.lf_operation_revision_sha256_v1. Prepared callers invoke existing C05 primitives directly. A failed or incomplete readback leaves the operation on baseline and prevents #187.",
+        "authority_ref": "supabase://public.lf_backlog_errores_operativos/186",
+        "rationale": "This obtains the same fail-closed readiness evidence using only already-authorized write surfaces and existing primitives; the readback is evidence, not a new runtime authority.",
+        "alternatives_considered": [
+          "new persistent readiness function",
+          "new rollout table/flag",
+          "model-derived readiness",
+          "caller-local duplicated readiness booleans"
+        ],
+        "evidence_refs": [
+          "supabase://public.lf_backlog_errores_operativos/186",
+          "supabase://public.lf_operation_step_contracts",
+          "supabase://pg_proc/public.lf_operation_revision_sha256_v1",
+          "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1",
+          "supabase://pg_proc/public.fn_lf_operation_checkpoint_v1",
+          "supabase://pg_proc/public.fn_lf_operation_release_lease_v1"
+        ]
+      },
+      {
+        "decision": "PARENT_OF #186: caller adoption + readiness contract/readback within its exact footprint. PARENT_OF #187: one-operation-at-a-time enforcement only after #186 evidence and caller-authority reconciliation. PARENT_OF #188: historical IN_PROGRESS classification/disposition only. The parent directly executes none of the child write footprints.",
+        "question": "How does this spec relate to #186, #187 and #188?",
+        "rationale": "Every write surface has one child owner and the existing SPEC-FIRST decomposition is preserved.",
+        "decision_id": "D4",
+        "authority_ref": "supabase://public.lf_backlog_errores_operativos/{186,187,188}",
+        "evidence_refs": [
+          "supabase://public.lf_backlog_errores_operativos/186",
+          "supabase://public.lf_backlog_errores_operativos/187",
+          "supabase://public.lf_backlog_errores_operativos/188"
+        ],
+        "alternatives_considered": [
+          "supersede all children",
+          "duplicate child changes in parent",
+          "merge historical cleanup into protocol rollout"
+        ]
+      },
+      {
+        "decision": "No. Remove the former parent delta that wrote public.lf_operation_policy_bindings or changed POL-LF-POLICY-CONSUMPTION. MR02-a/b consume existing deterministic C05 functions and operation contract data. Any future policy-distribution mutation is a separate owner-approved lot and is not required for this repair architecture.",
+        "question": "Does MR02 mutate policy bindings or POL-LF-POLICY-CONSUMPTION?",
+        "rationale": "#186 explicitly treats policy bindings/snapshot as read-only; deterministic C05 SQL controls do not require model-context policy distribution.",
+        "decision_id": "D5",
+        "authority_ref": "supabase://public.lf_backlog_errores_operativos/186",
+        "evidence_refs": [
+          "supabase://public.lf_backlog_errores_operativos/186",
+          "supabase://public.lf_operation_policy_bindings"
+        ],
+        "alternatives_considered": [
+          "write bindings in #186",
+          "change transversal policy in parent",
+          "new C05 policy"
+        ]
+      },
+      {
+        "decision": "Use LF_JSONB_TEXT_SHA256_V1: after execute_profile is stored as jsonb, compute encode(extensions.digest(convert_to((evidence_payload->'profile_output')::text,'UTF8'),'sha256'),'hex'). PostgreSQL jsonb textual serialization is the canonical byte source; no added newline. output_validate/report_output record this server-computed hash.",
+        "question": "How is profile_output SHA-256 reproduced?",
+        "rationale": "Third parties can reproduce the digest from persisted jsonb without guessing producer formatting.",
+        "decision_id": "D6",
+        "authority_ref": "supabase://public.lf_operation_execution_steps",
+        "evidence_refs": [
+          "supabase://public.lf_operation_execution_steps/EXEC-SRCR-PILOT-SPEC-R2-20260919-001/execute_profile"
+        ],
+        "alternatives_considered": [
+          "producer pretty-JSON hash",
+          "client-only canonicalization",
+          "undocumented jsonb::text hash"
+        ]
+      }
+    ],
+    "policy_contract_changes": [
+      {
+        "change": "Add lifecycle readiness/caller-manifest contract to existing step-contract JSON for the exact operation in #186; do not change lf_operation_policy_bindings or POL-LF-POLICY-CONSUMPTION in parent/#186/#187.",
+        "owner_ref": "supabase://public.lf_backlog_errores_operativos/186",
+        "authority_ref": "supabase://public.lf_operation_step_contracts",
+        "evidence_refs": [
+          "supabase://public.lf_backlog_errores_operativos/186",
+          "supabase://public.lf_backlog_errores_operativos/187"
+        ],
+        "compatibility_rule": "During ADOPT, unprepared operations keep baseline; #187 may enforce only one exact operation after clean #186 bounded readback, a clean caller-authority currentness check and separate approval."
+      }
+    ]
+  },
+  "should_exist_assessment": {
+    "subject": "shared operation lifecycle reliability boundary using existing C05 primitives",
+    "verdict": "SHOULD_EXIST",
+    "evidence_refs": [
+      "input:backlog_183.repair_spec",
+      "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY",
+      "supabase://public.lf_activos/POL-LF-OPERATION-LIFECYCLE"
+    ],
+    "real_consumers": [
+      {
+        "consumer": "EJECUCION_ESTRATEGIA_LF",
+        "evidence_ref": "supabase://public.lf_activos/C05_GENERIC_EXECUTION_RELIABILITY"
+      },
+      {
+        "consumer": "governed operations using reserve/recorder paths",
+        "evidence_ref": "input:evento_14383.verified_facts"
+      }
+    ],
+    "missing_evidence": [],
+    "elimination_impact": "Removing the shared reliability primitives would increase fragmentation and duplicate lifecycle logic; the defect is incomplete transversal adoption/enforcement, not the existence of C05.",
+    "native_or_existing_alternative": "Reuse C05_GENERIC_EXECUTION_RELIABILITY, POL-LF-OPERATION-LIFECYCLE, existing operation steps/contracts, recorder and effect guard; do not create a second lifecycle engine, table, runner or policy."
+  },
+  "authority_contradictions": [],
+  "execution_effect_reconciliation": [
+    {
+      "effect": "Observed lease_fence/effect history across governed operations where the original audit did not find static versioned acquire/release callers.",
+      "observed_ref": "supabase://public.lf_backlog_errores_operativos/189#resolution_20260919",
+      "declared_producer": "Existing C05 lifecycle primitives invoked through governed operation-bound or direct operational caller surfaces.",
+      "declared_producer_ref": "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1+public.fn_lf_operation_release_lease_v1",
+      "observed_producer_refs": [
+        "supabase://public.lf_operation_execution/EXEC-MR02-CALLER-AUTHORITY-RECON-20260919-001",
+        "supabase://public.lf_eventos/14627",
+        "supabase://pg_stat_statements#c05_direct_calls_role_postgres",
+        "supabase://public.lf_capability_registry/DB_WRITE_TRANSPORT",
+        "supabase://public.lf_eventos/14220",
+        "supabase://public.lf_eventos/14221"
+      ],
+      "reconciliation_status": "MATCH",
+      "blocking": false,
+      "impact": "NONE",
+      "containment_ref": null
+    }
+  ]
+}
