@@ -48,9 +48,9 @@
       "materiality": "BLOCKING"
     },
     {
-      "id": "CON-186-BLOCK-189",
-      "statement": "#186 implementation remains blocked while backlog #189 is unresolved; caller adoption cannot be declared complete until the undeclared live lease caller/source authority is reconciled.",
-      "source_ref": "supabase://public.lf_backlog_errores_operativos/186#metadata.profile_reaudit_20260918+supabase://public.lf_backlog_errores_operativos/189",
+      "id": "CON-186-CALLER-AUTHORITY-CURRENT",
+      "statement": "Caller-authority finding #189 is RESUELTA with 72/72 authority lineage, zero live leases and 20/20 post-finding mutations attributable. Any new lifecycle mutation lacking both versioned-caller authority and governed direct operational authority re-blocks #186/#187.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/189#resolution_20260919+supabase://public.lf_eventos/14627",
       "materiality": "BLOCKING"
     }
   ],
@@ -99,8 +99,11 @@
     "supabase://public.lf_backlog_errores_operativos/186",
     "supabase://public.lf_backlog_errores_operativos/187",
     "supabase://public.lf_backlog_errores_operativos/188",
-    "supabase://public.lf_backlog_errores_operativos/189"
+    "supabase://public.lf_backlog_errores_operativos/189",
+    "supabase://public.lf_eventos/14627",
+    "supabase://public.lf_operation_execution/EXEC-MR02-CALLER-AUTHORITY-RECON-20260919-001",
+    "supabase://public.lf_error_knowledge/AUDIT-DIRECT-CALLER-AUTHORITY-INVENTORY-GAP-001"
   ],
-  "compiled_at": "2026-09-19T23:44:52.868794+00:00",
+  "compiled_at": "2026-09-20T00:29:39.890914+00:00",
   "canonicalization": "SANDBOX_SORTED_JSON_UTF8_V1"
 }
