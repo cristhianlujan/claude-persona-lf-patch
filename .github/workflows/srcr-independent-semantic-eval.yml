@@ -27,7 +27,7 @@ jobs:
               with urllib.request.urlopen(req,timeout=30) as r:
                   return json.loads(r.read().decode())
           base=f'https://api.cloudflare.com/client/v4/accounts/{account}/ai'
-          data=get(base+'/models/search?task=text-generation&per_page=100')
+          data=get(base+'/models/search?per_page=100')
           print('MODELS_SEARCH_SUCCESS',data.get('success'))
           rows=data.get('result') or []
           names=[]
@@ -37,7 +37,7 @@ jobs:
                   names.append(name)
                   print('MODEL',name,'props=',json.dumps(row.get('properties') or {},sort_keys=True)[:800])
           preferred=['@cf/openai/gpt-oss-120b','@cf/qwen/qwen3-30b-a3b-fp8','@cf/meta/llama-3.3-70b-instruct-fp8-fast','@cf/meta/llama-3.1-8b-instruct-fast','@cf/meta/llama-3.1-8b-instruct']
-          candidates=[x for x in preferred if x in names] + [x for x in names if x not in preferred]
+          candidates=preferred + [x for x in names if x not in preferred]
           def run(model):
               url=base+'/run/'+model
               payload=json.dumps({'messages':[{'role':'user','content':'Reply exactly with JSON: {"probe":"PASS"}'}],'max_tokens':32,'temperature':0}).encode()
