@@ -238,6 +238,8 @@ FORBIDDEN_TERM_EXEMPT_PREFIXES = [
 
 VALID_RECEIPT_ISSUERS = {"contract_judge", "operation_judge"}
 VALID_RECEIPT_RESULTS = {"PASS", "PASS_SANDBOX"}
+CANDIDATE_RECEIPT_TYPE = "LF_OPERATION_CANDIDATE_RECEIPT"
+VALID_CANDIDATE_RECEIPT_RESULTS = {"PASS_CANDIDATE", "PASS_SANDBOX_CANDIDATE"}
 REQUIRED_RECEIPT_FIELDS = [
     "receipt_type",
     "receipt_version",
@@ -252,6 +254,26 @@ REQUIRED_RECEIPT_FIELDS = [
     "target_paths",
     "blocking_codes",
     "issued_at",
+]
+REQUIRED_CANDIDATE_RECEIPT_FIELDS = [
+    "receipt_type",
+    "receipt_version",
+    "issued_by",
+    "operation_code",
+    "execution_id",
+    "result",
+    "all_pre_merge_required_steps_pass",
+    "pre_merge_terminal_step",
+    "contract_sha",
+    "judge_sha",
+    "source_sha_list",
+    "target_paths",
+    "target_blob_sha_by_path",
+    "blocking_codes",
+    "issued_at",
+    "candidate_code_head",
+    "operation_status_at_issue",
+    "next_gate",
 ]
 
 FORBIDDEN_STATUS_ASSIGNMENT = re.compile(
@@ -586,6 +608,76 @@ def receipt_covers_file(receipt: dict, changed_file: str) -> bool:
     return any(fnmatch.fnmatch(changed_file, pattern) for pattern in target_paths)
 
 
+def _git_blob_sha(path: str) -> str:
+    raw = run_git(["ls-files", "-s", "--", path]).strip()
+    rows = [line for line in raw.splitlines() if line.strip()]
+    if len(rows) != 1:
+        fail("FAIL_CANDIDATE_RECEIPT_BLOB_UNRESOLVED", f"No se pudo resolver blob exacto para {path}")
+    parts = rows[0].split(None, 3)
+    if len(parts) < 4 or not re.fullmatch(r"[0-9a-f]{40}", parts[1]):
+        fail("FAIL_CANDIDATE_RECEIPT_BLOB_UNRESOLVED", f"Blob inválido para {path}")
+    return parts[1]
+
+
+def validate_candidate_receipt_shape(path: str, receipt: dict, governed_files: list[str]) -> None:
+    for field in REQUIRED_CANDIDATE_RECEIPT_FIELDS:
+        if field not in receipt:
+            fail("FAIL_CANDIDATE_RECEIPT_INVALID", f"Falta campo obligatorio {field} en {path}")
+
+    if receipt.get("receipt_type") != CANDIDATE_RECEIPT_TYPE:
+        fail("FAIL_CANDIDATE_RECEIPT_INVALID", f"receipt_type inválido en {path}")
+    if receipt.get("issued_by") not in VALID_RECEIPT_ISSUERS:
+        fail("FAIL_CANDIDATE_RECEIPT_INVALID_ISSUER", f"issued_by inválido en {path}")
+    if receipt.get("result") not in VALID_CANDIDATE_RECEIPT_RESULTS:
+        fail("FAIL_CANDIDATE_RECEIPT_RESULT_NOT_PASS", f"result inválido en {path}")
+    if receipt.get("all_pre_merge_required_steps_pass") is not True:
+        fail("FAIL_CANDIDATE_RECEIPT_INCOMPLETE_PRE_MERGE", f"all_pre_merge_required_steps_pass debe ser true en {path}")
+    if receipt.get("operation_status_at_issue") != "IN_PROGRESS":
+        fail("FAIL_CANDIDATE_RECEIPT_FINALITY_CONFUSION", f"candidate receipt debe preservar operation status IN_PROGRESS en {path}")
+    if receipt.get("blocking_codes") not in ([], None):
+        fail("FAIL_CANDIDATE_RECEIPT_BLOCKING_CODES", f"blocking_codes debe estar vacío en {path}")
+    if not receipt.get("contract_sha") or not receipt.get("judge_sha"):
+        fail("FAIL_CANDIDATE_RECEIPT_WEAK_EVIDENCE", f"contract_sha/judge_sha requeridos en {path}")
+    source_sha_list = receipt.get("source_sha_list")
+    if not isinstance(source_sha_list, list) or not source_sha_list:
+        fail("FAIL_CANDIDATE_RECEIPT_WEAK_EVIDENCE", f"source_sha_list requerido en {path}")
+    if not receipt.get("operation_code") or not receipt.get("execution_id"):
+        fail("FAIL_CANDIDATE_RECEIPT_INVALID", f"operation_code/execution_id requeridos en {path}")
+    if not isinstance(receipt.get("pre_merge_terminal_step"), str) or not receipt["pre_merge_terminal_step"].strip():
+        fail("FAIL_CANDIDATE_RECEIPT_INVALID", f"pre_merge_terminal_step requerido en {path}")
+    if not isinstance(receipt.get("next_gate"), str) or not receipt["next_gate"].strip():
+        fail("FAIL_CANDIDATE_RECEIPT_INVALID", f"next_gate requerido en {path}")
+
+    code_head = receipt.get("candidate_code_head")
+    if not isinstance(code_head, str) or not re.fullmatch(r"[0-9a-f]{40}", code_head):
+        fail("FAIL_CANDIDATE_RECEIPT_CODE_HEAD_INVALID", f"candidate_code_head inválido en {path}")
+    try:
+        run_git(["merge-base", "--is-ancestor", code_head, "HEAD"])
+    except subprocess.CalledProcessError:
+        fail("FAIL_CANDIDATE_RECEIPT_CODE_HEAD_NOT_ANCESTOR", f"candidate_code_head no es ancestro de HEAD en {path}")
+
+    receipt_only_delta = [line.strip() for line in run_git(["diff", "--name-only", code_head, "HEAD"]).splitlines() if line.strip()]
+    if not receipt_only_delta or path not in receipt_only_delta:
+        fail("FAIL_CANDIDATE_RECEIPT_NOT_POST_CODE_HEAD", f"El receipt debe materializarse después del code head en {path}")
+    illegal_delta = [p for p in receipt_only_delta if not (p.startswith(str(RECEIPT_DIR) + "/") and p.endswith(".json"))]
+    if illegal_delta:
+        fail("FAIL_CANDIDATE_RECEIPT_POST_HEAD_CONTAMINATION", f"Después de candidate_code_head sólo se permiten receipts: {illegal_delta}")
+
+    blob_map = receipt.get("target_blob_sha_by_path")
+    if not isinstance(blob_map, dict):
+        fail("FAIL_CANDIDATE_RECEIPT_BLOB_MAP_INVALID", f"target_blob_sha_by_path debe ser objeto en {path}")
+    covered = [p for p in governed_files if receipt_covers_file(receipt, p)]
+    if not covered:
+        fail("FAIL_CANDIDATE_RECEIPT_TARGET_MISMATCH", f"Candidate receipt no cubre ninguna ruta gobernada en {path}")
+    for governed_file in covered:
+        expected = blob_map.get(governed_file)
+        if not isinstance(expected, str) or not re.fullmatch(r"[0-9a-f]{40}", expected):
+            fail("FAIL_CANDIDATE_RECEIPT_BLOB_MAP_MISSING", f"Falta blob exacto para {governed_file} en {path}")
+        observed = _git_blob_sha(governed_file)
+        if observed != expected:
+            fail("FAIL_CANDIDATE_RECEIPT_BLOB_MISMATCH", f"{governed_file}: expected={expected} observed={observed}")
+
+
 def validate_receipt_shape(path: str, receipt: dict) -> None:
     for field in REQUIRED_RECEIPT_FIELDS:
         if field not in receipt:
@@ -620,7 +712,13 @@ def validate_governed_receipt(changed_files: list[str], governed_files: list[str
         fail("FAIL_RECEIPT_MISSING", "Ruta gobernada tocada sin LF_OPERATION_CONTRACT_RECEIPT")
 
     for receipt_path, receipt in receipts:
-        validate_receipt_shape(receipt_path, receipt)
+        receipt_type = receipt.get("receipt_type")
+        if receipt_type == "LF_OPERATION_CONTRACT_RECEIPT":
+            validate_receipt_shape(receipt_path, receipt)
+        elif receipt_type == CANDIDATE_RECEIPT_TYPE:
+            validate_candidate_receipt_shape(receipt_path, receipt, governed_files)
+        else:
+            fail("FAIL_RECEIPT_INVALID", f"receipt_type desconocido en {receipt_path}: {receipt_type}")
 
     for governed_file in governed_files:
         if not any(receipt_covers_file(receipt, governed_file) for _, receipt in receipts):
