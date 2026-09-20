@@ -1,0 +1,51 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v1",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_SKILL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-AUTODISC-REPAIR-20260910-003",
+  "target_code": "ACT-0046",
+  "result": "PASS_SANDBOX",
+  "all_required_steps_pass": true,
+  "contract_code": "CONTRACT-ACTUALIZACION-SKILL-LF-v0.1",
+  "contract_sha": "c6157dc43709a2c15952d3d7fdc9e0558c1904d102e495a58684a760adc0eb32",
+  "judge_code": "JUDGE-ACTUALIZACION-SKILL-LF-v0.1",
+  "judge_sha": "cbef2ae397edfdafa373a3ecb870e7a31797978ad0a9e4ebbd59271f66d6ef0d",
+  "hash_method": "jsonb_text_sha256_v1",
+  "contract_authority_ref": "supabase://public.lf_operation_contracts/ACTUALIZACION_SKILL_LF/CONTRACT-ACTUALIZACION-SKILL-LF-v0.1",
+  "judge_authority_ref": "supabase://public.lf_operation_judges/ACTUALIZACION_SKILL_LF/JUDGE-ACTUALIZACION-SKILL-LF-v0.1",
+  "source_head_sha": "de4958e98fb6921be93aed1b2800cd1a7a30d412",
+  "baseline_main_sha": "32639529357b0e2e6d7d63646d3426c342323639",
+  "source_sha_list": [
+    "ca8dc1336ba87556a03191b0ba8e80ae382145f5",
+    "cea79e7442ce16486b13ee1a08d788e2bbec5edf",
+    "b87c03a4e666821d95a925e08923e1835ca1b401",
+    "411d0430ae5e3c09c80ab9c081303d2c752494a5",
+    "ca04f37c0cc098d365f0b48f453f1a73d977c2b9",
+    "d17440f7c428688d126d9b4944bc0faa72b76e38",
+    "8bab9b3fe188f6cbf5a0eb626ffc4f15e6b2523b",
+    "68b456f323c998d190c237d52005cd144f741226"
+  ],
+  "target_paths": [
+    "skills/learning_engine/**"
+  ],
+  "steps_clean": 14,
+  "blocking_codes": [],
+  "behavioral_eval_status": "NOT_EXECUTED",
+  "semantic_judge_scope": "OPERATION_SEMANTIC_CONSISTENCY_CURRENT_EXECUTOR_NOT_INDEPENDENT",
+  "runtime_changed": false,
+  "automatic_promotion": false,
+  "merge_performed": false,
+  "evidence_refs": [
+    "supabase://public.lf_operation_execution/EXEC-ACTUALIZACION-SKILL-LEARNING-ENGINE-AUTODISC-REPAIR-20260910-003",
+    "github-actions://cristhianlujan/claude-persona-lf-patch/actions/runs/34456670453",
+    "github-actions://cristhianlujan/claude-persona-lf-patch/actions/runs/34456670437"
+  ],
+  "known_pre_receipt_ci_failure": {
+    "run_id": 34456670437,
+    "code": "FAIL_RECEIPT_MISSING",
+    "resolved_by_this_receipt": true
+  },
+  "claim_ceiling": "Candidate ACT-0046 update operation is structurally and operation-semantically clean. This receipt does not prove live Learning Engine behavior, independent semantic quality, merge, runtime enablement, production promotion, or automatic impact.",
+  "issued_at": "2026-09-10T09:00:40.707546+00:00"
+}
