@@ -20,5 +20,23 @@
     "fail_closed": true,
     "exact_head_evidence_required": true,
     "post_update_baseline_required": true
+  },
+  "canonical_quality": {
+    "required_for_profile_pack_ids": [
+      "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+    ],
+    "judge_path": "judges/mini_judge.md",
+    "semantic_judge_path": "judges/systemic_root_cause_semantic_judge.md",
+    "semantic_result_validator": {
+      "path": "validators/validate_semantic_judge_result.py",
+      "callable": "evaluate"
+    },
+    "quality_receipt_schema": "schemas/quality_receipt.schema.json",
+    "quality_receipt_validator": {
+      "path": "validators/validate_quality_receipt.py",
+      "callable": "validate_quality_receipt"
+    },
+    "deterministic_floors_can_accept_quality": false,
+    "receipt_required_for_pass_to_quality_pack": true
   }
 }
