@@ -285,4 +285,38 @@ invalid_authority["closure_proof"]["authority_bindings"] = [
 ]
 assert list(runtime_schema_validator.iter_errors(invalid_authority))
 
-print("PASS_SRCR_V03_TRANSVERSAL_CONTRACT=12/12")
+# 13. V0.3 origin authority slots cannot be filled by a reusable capability.
+invalid_origin = copy.deepcopy(source_recurrence)
+invalid_origin["origin_asset"]["authority_kind"] = "EXISTING_REUSABLE_CAPABILITY"
+assert schema_errors(invalid_origin)
+assert list(runtime_schema_validator.iter_errors(invalid_origin))
+
+# 14. Provider constraint rejects noncanonical deliverable change types.
+invalid_change = copy.deepcopy(source_recurrence)
+invalid_change["implementation_package"]["deliverables"][0]["change_type"] = "PROMOTE_OR_BIND"
+assert list(runtime_schema_validator.iter_errors(invalid_change))
+
+# 15. Provider constraint rejects free-text implementation preconditions.
+invalid_precondition = copy.deepcopy(source_recurrence)
+invalid_precondition["implementation_package"]["decision_closure"]["implementation_preconditions"] = [
+    "Resolve current authority before implementation."
+]
+assert list(runtime_schema_validator.iter_errors(invalid_precondition))
+
+# 16. MATCH reconciliation is neutral in both canonical and provider schemas.
+invalid_match = copy.deepcopy(source_recurrence)
+invalid_match["execution_effect_reconciliation"] = [{
+    "effect": "Observed effect matches declared producer.",
+    "observed_ref": "fixture://effect/readback",
+    "declared_producer": "fixture-producer",
+    "declared_producer_ref": "fixture://producer/current",
+    "observed_producer_refs": ["fixture://producer/current"],
+    "reconciliation_status": "MATCH",
+    "blocking": False,
+    "impact": "NON_BLOCKING_HISTORICAL",
+    "containment_ref": "fixture://containment"
+}]
+assert schema_errors(invalid_match)
+assert list(runtime_schema_validator.iter_errors(invalid_match))
+
+print("PASS_SRCR_V03_TRANSVERSAL_CONTRACT=16/16")

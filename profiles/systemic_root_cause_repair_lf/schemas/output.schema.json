@@ -1368,7 +1368,37 @@
               }
             ]
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "reconciliation_status": {
+                  "const": "MATCH"
+                }
+              },
+              "required": [
+                "reconciliation_status"
+              ]
+            },
+            "then": {
+              "properties": {
+                "blocking": {
+                  "const": false
+                },
+                "impact": {
+                  "const": "NONE"
+                },
+                "containment_ref": {
+                  "type": "null"
+                },
+                "observed_producer_refs": {
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ]
       }
     },
     "authority_contradictions": {
