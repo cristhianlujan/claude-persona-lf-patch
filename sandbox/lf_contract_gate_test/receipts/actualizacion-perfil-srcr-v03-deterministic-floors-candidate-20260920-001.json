@@ -1,0 +1,39 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-profile-update",
+  "issued_by": "operation_judge",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-774a218f-9e1f-49b7-8b84-0e14116c8d56",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "regression_after",
+  "contract_sha": "7d8b6dff8e4273f182c1f7c3adca71532da3e060994bc3de7fa806710e668b49",
+  "judge_sha": "33faa108f295faaffa55285450e34328e3bd86d9007b8e8a64311211743329b7",
+  "source_sha_list": [
+    "08f47fe69eb2f36128a41b7a409249bf9504c58f",
+    "238baf95da16eae408d6ea9dcaaec852e6c1277f",
+    "620a65299e68f695f73428fe6ffea0b904f77831",
+    "d818bbf739d4305974bcc18eecd32a96ae0de5bc",
+    "18588076fe21e9f30a0ae45bccaa1936c5e2204b"
+  ],
+  "target_paths": [
+    "profiles/systemic_root_cause_repair_lf/validators/closure_proof.py",
+    "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+    "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
+    "profiles/systemic_root_cause_repair_lf/evals/v03_deterministic_floor_cases.py"
+  ],
+  "target_blob_sha_by_path": {
+    "profiles/systemic_root_cause_repair_lf/validators/closure_proof.py": "620a65299e68f695f73428fe6ffea0b904f77831",
+    "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py": "18588076fe21e9f30a0ae45bccaa1936c5e2204b",
+    "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py": "d818bbf739d4305974bcc18eecd32a96ae0de5bc",
+    "profiles/systemic_root_cause_repair_lf/evals/v03_deterministic_floor_cases.py": "238baf95da16eae408d6ea9dcaaec852e6c1277f"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-20T04:34:41.372934Z",
+  "candidate_code_head": "08f47fe69eb2f36128a41b7a409249bf9504c58f",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "MERGE_AND_POST_MERGE_RECONCILE",
+  "operation_revision_sha256": "a3820a7bd01757e9445dada84a34c5a18801e964decb380cb6062311d222c364",
+  "stage": "S2_DETERMINISTIC_GATES",
+  "canonical_quality_accepted": false
+}

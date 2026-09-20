@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
 """Deterministic semantic-utility floor for SRCR specification readiness."""
 
+try:
+    from .closure_proof import V03_PACK_ID, unwrap_runtime_input
+except (ImportError, ModuleNotFoundError):
+    import importlib.util as _importlib_util
+    from pathlib import Path as _Path
+    _closure_path = _Path(__file__).with_name("closure_proof.py")
+    _closure_spec = _importlib_util.spec_from_file_location("srcr_closure_proof_semantic", _closure_path)
+    _closure_mod = _importlib_util.module_from_spec(_closure_spec)
+    assert _closure_spec and _closure_spec.loader
+    _closure_spec.loader.exec_module(_closure_mod)
+    V03_PACK_ID = _closure_mod.V03_PACK_ID
+    unwrap_runtime_input = _closure_mod.unwrap_runtime_input
+
 OBSERVED_FALSIFICATION_EVIDENCE = {"OBSERVED_TEST", "OBSERVED_RUNTIME", "OBSERVED_READBACK"}
 CRITICAL_EVIDENCE_PATHS = {
     "$.symptom",
@@ -33,7 +46,11 @@ def _alternative_ids(payload):
     }
 
 
-def evaluate(payload, contract_gate):
+def evaluate(payload, contract_gate, evidence_manifest=None):
+    if evidence_manifest is None:
+        candidate, embedded_manifest = unwrap_runtime_input(payload)
+        if embedded_manifest is not None:
+            payload, evidence_manifest = candidate, embedded_manifest
     codes = []
     if not isinstance(payload, dict):
         codes.append("PAYLOAD_NOT_OBJECT")
@@ -43,6 +60,29 @@ def evaluate(payload, contract_gate):
         return {"status": "FAIL", "blocking_codes": sorted(set(codes))}
 
     status = payload.get("status")
+    is_v03 = payload.get("profile_pack_id") == V03_PACK_ID
+    closure_summary = contract_gate.get("closure_summary") if isinstance(contract_gate, dict) else None
+    if is_v03:
+        if contract_gate.get("validation_role") != "PRE_QUALITY_STRUCTURAL_FLOOR":
+            codes.append("V03_STRUCTURAL_FLOOR_ROLE_MISSING")
+        if not isinstance(closure_summary, dict) or closure_summary.get("applies") is not True:
+            codes.append("V03_CLOSURE_SUMMARY_MISSING")
+        if contract_gate.get("canonical_quality_accepted") is not False:
+            codes.append("UTILITY_FLOOR_CANNOT_INHERIT_QUALITY_ACCEPTANCE")
+        proof = payload.get("closure_proof") if isinstance(payload.get("closure_proof"), dict) else {}
+        derived = proof.get("derived_decision_closure") if isinstance(proof.get("derived_decision_closure"), dict) else {}
+        if status == "SYSTEMIC_REPAIR_SPEC":
+            if derived.get("quality_state") != "QUALITY_PENDING":
+                codes.append("V03_QUALITY_STATE_MUST_BE_PENDING")
+            if not isinstance(closure_summary, dict) or closure_summary.get("computed_handoff_ready") is not True:
+                codes.append("V03_UTILITY_WITHOUT_DERIVED_READINESS")
+        for field in ("origin_asset", "origin_operation", "owner"):
+            value = payload.get(field)
+            if not isinstance(value, dict) or value.get("authority_kind") != "EXISTING_AUTHORITY":
+                codes.append("V03_EXISTING_AUTHORITY_KIND_REQUIRED")
+                break
+        if "quality_receipt" in payload:
+            codes.append("V03_CANDIDATE_MUST_NOT_SELF_ISSUE_QUALITY_RECEIPT")
     packet = payload.get("live_authority_packet") if isinstance(payload.get("live_authority_packet"), dict) else {}
     reconciliations = payload.get("execution_effect_reconciliation")
     if not isinstance(reconciliations, list):
@@ -252,4 +292,13 @@ def evaluate(payload, contract_gate):
                 codes.append("HISTORICAL_REGRESSION_NOT_OBSERVED")
                 break
 
-    return {"status": "PASS" if not codes else "FAIL", "blocking_codes": sorted(set(codes))}
+    result = {
+        "status": "PASS" if not codes else "FAIL",
+        "blocking_codes": sorted(set(codes)),
+        "semantic_role": "PRE_QUALITY_SEMANTIC_UTILITY_FLOOR",
+        "canonical_quality_accepted": False,
+        "canonical_quality_receipt_required": status == "SYSTEMIC_REPAIR_SPEC",
+    }
+    if is_v03 and isinstance(closure_summary, dict):
+        result["closure_summary"] = closure_summary
+    return result
