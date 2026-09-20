@@ -1,0 +1,106 @@
+{
+  "packet_version": "LF_SCOPE_AUTHORITY_PACKET_V1",
+  "execution_id": "EXEC-SRCR-PILOT-SPEC-R2-20260919-001",
+  "subject_ref": "input://SPEC-MR02-PROFILE-PILOT-V1@29108379905276d1112c1fca9ba2750fdfe4e47f91f3922b1c5512e73c467280",
+  "authorized_requirements": [
+    {
+      "id": "REQ-186-CALLER-ADOPTION",
+      "statement": "Connect current callers to acquire/checkpoint/release using existing C05/lifecycle while preserving unprepared-operation compatibility.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/186",
+      "materiality": "BLOCKING"
+    },
+    {
+      "id": "REQ-187-GRADUAL-ENFORCEMENT",
+      "statement": "Enable lease/fence enforcement gradually per operation only after complete adoption evidence; no blanket switch.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/187",
+      "materiality": "BLOCKING"
+    },
+    {
+      "id": "REQ-188-HISTORICAL-DISPOSITION",
+      "statement": "Keep historical IN_PROGRESS classification/disposition in a separate evidence-driven lot; no mass force-close.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/188",
+      "materiality": "MATERIAL"
+    }
+  ],
+  "constraints": [
+    {
+      "id": "CON-186-EXACT-FOOTPRINT",
+      "statement": "#186 exact write footprint is the enumerated existing caller functions plus public.lf_operation_steps and public.lf_operation_step_contracts; policy surfaces are read-only and no new pg_proc object is listed.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/186#metadata.repair_spec.exact_footprint",
+      "materiality": "BLOCKING"
+    },
+    {
+      "id": "CON-186-RULES-AS-DATA",
+      "statement": "Connection readiness is declared in existing operation step/contract data; operations without declared readiness keep baseline behavior.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/186#metadata.repair_spec.target_architecture_rules_as_data_generic_runner",
+      "materiality": "MATERIAL"
+    },
+    {
+      "id": "CON-187-ONE-OPERATION",
+      "statement": "Enforcement activation is one operation_code per separately approved sublot after #186 readback.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/187",
+      "materiality": "BLOCKING"
+    },
+    {
+      "id": "CON-188-READONLY-FIRST",
+      "statement": "Classification is read-only before any separately approved disposition mutation.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/188",
+      "materiality": "BLOCKING"
+    },
+    {
+      "id": "CON-186-BLOCK-189",
+      "statement": "#186 implementation remains blocked while backlog #189 is unresolved; caller adoption cannot be declared complete until the undeclared live lease caller/source authority is reconciled.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/186#metadata.profile_reaudit_20260918+supabase://public.lf_backlog_errores_operativos/189",
+      "materiality": "BLOCKING"
+    }
+  ],
+  "forbidden_changes": [
+    {
+      "id": "FORBID-186-POLICY-BINDING-WRITE",
+      "statement": "Do not write policy bindings in #186.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/186",
+      "materiality": "BLOCKING"
+    },
+    {
+      "id": "FORBID-187-BLANKET-ENABLE",
+      "statement": "Do not blanket-enable lifecycle enforcement.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/187",
+      "materiality": "BLOCKING"
+    },
+    {
+      "id": "FORBID-188-MASS-FORCE-CLOSE",
+      "statement": "Do not mass force-close historical IN_PROGRESS rows.",
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/188",
+      "materiality": "BLOCKING"
+    }
+  ],
+  "authority_precedence": [
+    {
+      "rank": 1,
+      "source_ref": "execution://explicit-authorization",
+      "reason": "exact run authorization"
+    },
+    {
+      "rank": 2,
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/{186,187,188}",
+      "reason": "exact child scopes"
+    },
+    {
+      "rank": 3,
+      "source_ref": "supabase://public.lf_backlog_errores_operativos/183",
+      "reason": "parent context"
+    }
+  ],
+  "related_context_refs": [
+    "supabase://public.lf_backlog_errores_operativos/183",
+    "supabase://public.lf_backlog_errores_operativos/189"
+  ],
+  "source_refs": [
+    "supabase://public.lf_backlog_errores_operativos/186",
+    "supabase://public.lf_backlog_errores_operativos/187",
+    "supabase://public.lf_backlog_errores_operativos/188",
+    "supabase://public.lf_backlog_errores_operativos/189"
+  ],
+  "compiled_at": "2026-09-19T23:44:52.868794+00:00",
+  "canonicalization": "SANDBOX_SORTED_JSON_UTF8_V1"
+}
