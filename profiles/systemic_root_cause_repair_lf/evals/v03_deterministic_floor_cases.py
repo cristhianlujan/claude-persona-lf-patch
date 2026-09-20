@@ -67,6 +67,7 @@ def make_candidate():
             {"subject":"PROFILE-OWNER","authority_kind":"EXISTING_AUTHORITY","used_as_existing_authority":True,"evidence_ids":["EV-OWNER"]},
         ],
         "wiring_proofs":[],
+        "context_transport_proofs":[],
         "behavioral_proofs":[],
         "derived_decision_closure":{
             "required_obligation_ids":["PO-AUTH","PO-DECISION","PO-EVIDENCE"],

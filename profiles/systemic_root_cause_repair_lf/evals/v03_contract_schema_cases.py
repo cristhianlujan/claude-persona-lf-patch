@@ -44,6 +44,7 @@ def v03_base():
         {"subject":x["owner"]["code"],"authority_kind":"EXISTING_AUTHORITY","used_as_existing_authority":True,"evidence_ids":["EV-W"]}
       ],
       "wiring_proofs":[],
+      "context_transport_proofs":[],
       "behavioral_proofs":[],
       "derived_decision_closure":{"required_obligation_ids":["PO-CLOSE"],"closed_obligation_ids":["PO-CLOSE"],"open_obligation_ids":[],"handoff_ready":True,"quality_state":"QUALITY_PENDING"}
     }

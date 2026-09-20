@@ -22,12 +22,17 @@ CURRENT_AUTHORITY_EVIDENCE_CLASSES = {
     "GOVERNED_RECEIPT",
     "SOURCE_PROVENANCE",
 }
+CURRENT_WIRING_EVIDENCE_CLASSES = {
+    "OBSERVED_LIVE",
+    "OBSERVED_READBACK",
+    "GOVERNED_RECEIPT",
+}
 
 SIGNAL_TO_OBLIGATION_TYPES = {
     "CROSS_OPERATION": {"WIRING_PHYSICALITY"},
     "AUTHORITY_CHANGE": {"AUTHORITY_EXISTENCE"},
     "POLICY_CONTRACT_CHANGE": {"POLICY_CONTRACT"},
-    "CONTEXT_TRANSPORT": {"CONTEXT_TRANSPORT"},
+    "CONTEXT_TRANSPORT": {"CONTEXT_TRANSPORT", "WIRING_PHYSICALITY"},
     "STATE_RECOVERY": {"STATE_RECOVERY_SEMANTICS"},
     "CONCURRENCY": {"CONCURRENCY"},
     "MIGRATION_TRANSITION": {"MIGRATION_TRANSITION"},
@@ -40,7 +45,7 @@ DIMENSION_TO_OBLIGATION_TYPES = {
     "ARCHITECTURE": {"DECISION_CLOSURE"},
     "CONTROLS": {"DECISION_CLOSURE"},
     "POLICIES_CONTRACTS": {"POLICY_CONTRACT"},
-    "CONTEXT_TRANSPORT": {"CONTEXT_TRANSPORT"},
+    "CONTEXT_TRANSPORT": {"CONTEXT_TRANSPORT", "WIRING_PHYSICALITY"},
     "WIRING": {"WIRING_PHYSICALITY"},
     "COMPATIBILITY_TRANSITION": {"COMPATIBILITY"},
     "RECOVERY_TERMINALITY": {"STATE_RECOVERY_SEMANTICS"},
@@ -304,13 +309,163 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         if signal in complexity and not any(isinstance(x, dict) and x.get("materiality_signal") == signal for x in behavior):
             errors.append(_err("SRCR_MATERIAL_BEHAVIOR_UNDERCLOSED", "$.closure_proof.behavioral_proofs", signal))
 
-    wiring_material = any(
-        isinstance(x, dict) and x.get("dimension") == "WIRING" and x.get("disposition") == "REQUIRED_CHANGE"
-        for x in (candidate.get("omission_discovery") or [])
-    )
     wiring = proof.get("wiring_proofs") if isinstance(proof.get("wiring_proofs"), list) else []
-    if wiring_material and not wiring:
+    wiring_by_obligation: dict[str, list[dict]] = {}
+    wiring_by_edge: dict[str, dict] = {}
+    for idx, row in enumerate(wiring):
+        path = f"$.closure_proof.wiring_proofs[{idx}]"
+        if not isinstance(row, dict):
+            errors.append(_err("SRCR_WIRING_PROOF_INVALID", path))
+            continue
+        edge_id = row.get("edge_id")
+        if isinstance(edge_id, str) and edge_id:
+            if edge_id in wiring_by_edge:
+                errors.append(_err("SRCR_WIRING_EDGE_ID_DUPLICATED", f"{path}.edge_id", edge_id))
+            else:
+                wiring_by_edge[edge_id] = row
+        for oid in row.get("obligation_ids") or []:
+            obligation = obligation_by_id.get(oid)
+            if not obligation:
+                errors.append(_err("SRCR_WIRING_OBLIGATION_REF_MISSING", f"{path}.obligation_ids", oid))
+                continue
+            if obligation.get("obligation_type") != "WIRING_PHYSICALITY":
+                errors.append(_err("SRCR_WIRING_OBLIGATION_TYPE_MISMATCH", f"{path}.obligation_ids", oid))
+                continue
+            wiring_by_obligation.setdefault(oid, []).append(row)
+        state = row.get("binding_state")
+        kind = row.get("binding_kind")
+        if state == "OBSERVED_WIRED" and kind not in {"EXISTING_AUTHORITY", "EXISTING_REUSABLE_CAPABILITY"}:
+            errors.append(_err("SRCR_OBSERVED_WIRING_KIND_INVALID", f"{path}.binding_kind"))
+        if state == "PROPOSED_WIRING" and kind != "PROPOSED_DELIVERABLE":
+            errors.append(_err("SRCR_PROPOSED_WIRING_KIND_INVALID", f"{path}.binding_kind"))
+        for eid in row.get("evidence_ids") or []:
+            referenced_evidence.add(eid)
+            entry = evidence_by_id.get(eid)
+            if not entry:
+                errors.append(_err("SRCR_WIRING_EVIDENCE_ID_UNRESOLVED", f"{path}.evidence_ids", eid))
+            elif entry.get("state") != "CURRENT":
+                errors.append(_err("SRCR_WIRING_EVIDENCE_STALE", f"{path}.evidence_ids", eid))
+            elif row.get("binding_state") == "OBSERVED_WIRED" and entry.get("evidence_class") not in CURRENT_WIRING_EVIDENCE_CLASSES:
+                errors.append(_err("SRCR_WIRING_EVIDENCE_CLASS_INSUFFICIENT", f"{path}.evidence_ids", eid))
+
+    wiring_required_ids = {
+        oid for oid, row in obligation_by_id.items()
+        if row.get("obligation_type") == "WIRING_PHYSICALITY"
+        and row.get("obligation_type") in required_types
+    }
+    if wiring_required_ids and not wiring:
         errors.append(_err("SRCR_MATERIAL_WIRING_UNDERCLOSED", "$.closure_proof.wiring_proofs"))
+    for oid in sorted(wiring_required_ids):
+        obligation = obligation_by_id[oid]
+        if obligation.get("status") != "CLOSED":
+            continue
+        rows = wiring_by_obligation.get(oid, [])
+        observed = [
+            row for row in rows
+            if row.get("binding_state") == "OBSERVED_WIRED"
+            and row.get("binding_kind") in {"EXISTING_AUTHORITY", "EXISTING_REUSABLE_CAPABILITY"}
+            and row.get("evidence_ids")
+            and all(
+                evidence_by_id.get(eid, {}).get("state") == "CURRENT"
+                and evidence_by_id.get(eid, {}).get("evidence_class") in CURRENT_WIRING_EVIDENCE_CLASSES
+                for eid in row.get("evidence_ids") or []
+            )
+        ]
+        if not observed:
+            errors.append(
+                _err(
+                    "SRCR_CLOSED_WIRING_NOT_OBSERVED",
+                    "$.closure_proof.wiring_proofs",
+                    oid,
+                )
+            )
+
+    transport = proof.get("context_transport_proofs") if isinstance(proof.get("context_transport_proofs"), list) else []
+    transport_by_obligation: dict[str, list[dict]] = {}
+    for idx, row in enumerate(transport):
+        path = f"$.closure_proof.context_transport_proofs[{idx}]"
+        if not isinstance(row, dict):
+            errors.append(_err("SRCR_CONTEXT_TRANSPORT_PROOF_INVALID", path))
+            continue
+        required_fields = (
+            "transport_id", "selection_ref", "transport_contract_ref", "consumer_ref",
+            "enforcement_point_ref", "budget_guard_ref", "failure_behavior"
+        )
+        for field in required_fields:
+            if not isinstance(row.get(field), str) or not row.get(field).strip():
+                errors.append(_err("SRCR_CONTEXT_TRANSPORT_FIELD_REQUIRED", f"{path}.{field}"))
+        if row.get("hydration_mode") == "JIT_BY_REF" and not (
+            isinstance(row.get("hydration_resolver_ref"), str)
+            and row.get("hydration_resolver_ref").strip()
+        ):
+            errors.append(_err("SRCR_CONTEXT_JIT_RESOLVER_MISSING", f"{path}.hydration_resolver_ref"))
+        for edge_id in row.get("wiring_edge_ids") or []:
+            edge = wiring_by_edge.get(edge_id)
+            if not edge:
+                errors.append(_err("SRCR_CONTEXT_WIRING_EDGE_UNRESOLVED", f"{path}.wiring_edge_ids", edge_id))
+            elif edge.get("binding_state") != "OBSERVED_WIRED":
+                errors.append(_err("SRCR_CONTEXT_WIRING_EDGE_NOT_OBSERVED", f"{path}.wiring_edge_ids", edge_id))
+        for oid in row.get("obligation_ids") or []:
+            obligation = obligation_by_id.get(oid)
+            if not obligation:
+                errors.append(_err("SRCR_CONTEXT_OBLIGATION_REF_MISSING", f"{path}.obligation_ids", oid))
+                continue
+            if obligation.get("obligation_type") != "CONTEXT_TRANSPORT":
+                errors.append(_err("SRCR_CONTEXT_OBLIGATION_TYPE_MISMATCH", f"{path}.obligation_ids", oid))
+                continue
+            transport_by_obligation.setdefault(oid, []).append(row)
+        for eid in row.get("readback_evidence_ids") or []:
+            referenced_evidence.add(eid)
+            entry = evidence_by_id.get(eid)
+            if not entry:
+                errors.append(_err("SRCR_CONTEXT_READBACK_EVIDENCE_UNRESOLVED", f"{path}.readback_evidence_ids", eid))
+            elif entry.get("state") != "CURRENT":
+                errors.append(_err("SRCR_CONTEXT_READBACK_EVIDENCE_STALE", f"{path}.readback_evidence_ids", eid))
+            elif entry.get("evidence_class") not in CURRENT_WIRING_EVIDENCE_CLASSES:
+                errors.append(_err("SRCR_CONTEXT_READBACK_EVIDENCE_CLASS_INSUFFICIENT", f"{path}.readback_evidence_ids", eid))
+
+    context_required_ids = {
+        oid for oid, row in obligation_by_id.items()
+        if row.get("obligation_type") == "CONTEXT_TRANSPORT"
+        and row.get("obligation_type") in required_types
+    }
+    for oid in sorted(context_required_ids):
+        obligation = obligation_by_id[oid]
+        if obligation.get("status") != "CLOSED":
+            continue
+        rows = transport_by_obligation.get(oid, [])
+        complete = [
+            row for row in rows
+            if row.get("selection_ref")
+            and row.get("transport_contract_ref")
+            and row.get("consumer_ref")
+            and row.get("enforcement_point_ref")
+            and row.get("budget_guard_ref")
+            and row.get("failure_behavior")
+            and row.get("wiring_edge_ids")
+            and row.get("readback_evidence_ids")
+            and all(
+                wiring_by_edge.get(edge_id, {}).get("binding_state") == "OBSERVED_WIRED"
+                for edge_id in row.get("wiring_edge_ids") or []
+            )
+            and all(
+                evidence_by_id.get(eid, {}).get("state") == "CURRENT"
+                and evidence_by_id.get(eid, {}).get("evidence_class") in CURRENT_WIRING_EVIDENCE_CLASSES
+                for eid in row.get("readback_evidence_ids") or []
+            )
+            and (
+                row.get("hydration_mode") != "JIT_BY_REF"
+                or bool(row.get("hydration_resolver_ref"))
+            )
+        ]
+        if not complete:
+            errors.append(
+                _err(
+                    "SRCR_CLOSED_CONTEXT_TRANSPORT_NOT_PROVEN",
+                    "$.closure_proof.context_transport_proofs",
+                    oid,
+                )
+            )
 
     required_ids = {
         oid for oid, row in obligation_by_id.items()
