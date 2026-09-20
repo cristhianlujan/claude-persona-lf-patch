@@ -1,0 +1,1850 @@
+{
+  "status": "SYSTEMIC_REPAIR_SPEC",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
+  "symptom": {
+    "statement": "Validated LF changes repeatedly require chat-managed merge, main readback, deployment, live readback, rebind/resume and retry; later gates discover defects and force rematerialization.",
+    "status": "OBSERVED",
+    "evidence_refs": [
+      "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+      "github-actions://cristhianlujan/claude-persona-lf-patch/runs/35483123734",
+      "github://cristhianlujan/claude-persona-lf-patch/pull/960",
+      "supabase://public.lf_operation_execution_steps/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-5f3f5a6c-9a8b-429d-a077-303a965374ec/deterministic_validation"
+    ],
+    "missing_evidence": []
+  },
+  "immediate_cause": {
+    "statement": "Candidate-to-live transition is split across manual actions that do not share one durable lineage/state binding independent PR identity, merge, deploy/readback and same-execution resume.",
+    "status": "ESTABLISHED",
+    "evidence_refs": [
+      "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF",
+      "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
+    ],
+    "missing_evidence": []
+  },
+  "systemic_root_cause": {
+    "statement": "LF has per-operation validation/write contracts but no canonical cross-boundary Promotion/Resume operation that owns PR independence, exact-head merge currentness, target-classified deployment, live readback and parent resumption as one fail-closed state machine.",
+    "status": "ESTABLISHED",
+    "evidence_refs": [
+      "supabase://public.lf_operation_registry/ACTUALIZACION_PERFIL_LF",
+      "supabase://public.lf_operation_registry/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+      "repo://skills/orquestador_pipeline_lf/SKILL.md@3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+      "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+    ],
+    "missing_evidence": []
+  },
+  "causal_chain": [
+    {
+      "statement": "Parent operation produces an exact candidate and validation evidence but has no single durable promotion continuation.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "statement": "Merge, deploy and resume are performed by separate callers/tools without one shared lineage tuple or dependency graph.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+        "github-actions://cristhianlujan/claude-persona-lf-patch/runs/35483123734"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "statement": "PR contamination, stale state, missing receipts or wrong caller identity can therefore survive until a later control detects them.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+        "github://cristhianlujan/claude-persona-lf-patch/pull/960"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "statement": "Deployment identity can also diverge from merged source unless exact live readback is mandatory before resume.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+      ],
+      "missing_evidence": []
+    },
+    {
+      "statement": "Late detection forces manual diagnosis/rematerialization instead of deterministic recovery from the first non-clean step.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution_steps/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-5f3f5a6c-9a8b-429d-a077-303a965374ec/deterministic_validation"
+      ],
+      "missing_evidence": []
+    }
+  ],
+  "first_bad_control": {
+    "statement": "The first missing control is a promotion admission gate after candidate assurance and before merge that binds parent execution, independent PR identity, exact candidate head, intended paths/blobs, dependency receipts, target class and authorization.",
+    "status": "ESTABLISHED",
+    "evidence_refs": [
+      "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+      "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+    ],
+    "missing_evidence": []
+  },
+  "escape_control": {
+    "statement": "lf-contract-check, exact-head/readback, caller-identity validation and operation judges are later escape controls because none owns the whole candidate-to-live continuation.",
+    "status": "ESTABLISHED",
+    "evidence_refs": [
+      "github://cristhianlujan/claude-persona-lf-patch/pull/960",
+      "github-actions://cristhianlujan/claude-persona-lf-patch/runs/35483123734",
+      "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+    ],
+    "missing_evidence": []
+  },
+  "recurrence_evidence": [
+    {
+      "ref": "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+      "fact": "update-branch created a two-parent candidate and exact SHA binding rejected it.",
+      "evidence_class": "OBSERVED_HISTORY",
+      "scope": "PR independence"
+    },
+    {
+      "ref": "github-actions://cristhianlujan/claude-persona-lf-patch/runs/35483123734",
+      "fact": "Profile Update continuation used Customer identity and runtime blocked STEP_EXECUTION_IDENTITY_MISMATCH.",
+      "evidence_class": "OBSERVED_HISTORY",
+      "scope": "resume identity"
+    },
+    {
+      "ref": "github://cristhianlujan/claude-persona-lf-patch/pull/960",
+      "fact": "Narrow tests passed but canonical contract check later blocked the missing operation receipt.",
+      "evidence_class": "OBSERVED_HISTORY",
+      "scope": "pre-merge completeness"
+    },
+    {
+      "ref": "supabase://public.lf_operation_execution_steps/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-5f3f5a6c-9a8b-429d-a077-303a965374ec/deterministic_validation",
+      "fact": "A blocked retryable row was persisted while row-presence snapshot semantics tried to advance.",
+      "evidence_class": "OBSERVED_LIVE",
+      "scope": "retry cursor"
+    },
+    {
+      "ref": "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001",
+      "fact": "Stale runtime cannot receive exact-head credit without deployed source SHA comparison.",
+      "evidence_class": "OBSERVED_HISTORY",
+      "scope": "deploy readback"
+    }
+  ],
+  "live_authority_packet": {
+    "status": "PARTIAL",
+    "observed_at": "2026-09-20",
+    "applicable_surfaces": [
+      "GITHUB_REPOSITORY",
+      "GITHUB_ACTIONS",
+      "SUPABASE_OPERATION_GOVERNANCE",
+      "SUPABASE_EDGE_RUNTIME",
+      "SENTINELX_GH_CALLER",
+      "EKB",
+      "GITHUB_RULESETS_ENVIRONMENTS"
+    ],
+    "inspected_surfaces": [
+      "GITHUB_REPOSITORY",
+      "GITHUB_ACTIONS",
+      "SUPABASE_OPERATION_GOVERNANCE",
+      "SUPABASE_EDGE_RUNTIME",
+      "SENTINELX_GH_CALLER",
+      "EKB"
+    ],
+    "evidence_refs": [
+      "github://cristhianlujan/claude-persona-lf-patch@df40a6005e2f5e63087714687fe3d02b41e4c0c7",
+      "github://cristhianlujan/claude-persona-lf-patch/pull/962",
+      "supabase://public.lf_operation_registry/ACTUALIZACION_PERFIL_LF",
+      "supabase://public.lf_operation_registry/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+      "supabase://edge/run-creacion-perfil-lf/v21/9d5f14f5a579ea978b5e1a2fdd737084d6c78559b9d4f11fcd377a1e71ddc7be",
+      "supabase://edge/lf-profile-creator-governance-caller-v1/v4/cb2e1920781190bd985048042f24fccbfb2d8a72b9887bab73a085af202ac862",
+      "sentinelx://scalora-vps/gh-authenticated"
+    ],
+    "material_effects_observed": true,
+    "unavailable_sources": [
+      "GITHUB_RULESETS_ENVIRONMENTS_EXACT_CURRENT_CONFIG"
+    ],
+    "unavailable_source_assessments": [
+      {
+        "source": "GITHUB_RULESETS_ENVIRONMENTS_EXACT_CURRENT_CONFIG",
+        "impact": "IMPLEMENTATION_PRECONDITION",
+        "rationale": "LF operation gates remain canonical even if merge queue/environments are unavailable; current settings only select defense-in-depth controls.",
+        "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[0]"
+      }
+    ]
+  },
+  "execution_effect_reconciliation": [
+    {
+      "effect": "PR candidate CI is produced by GitHub Actions.",
+      "observed_ref": "github://cristhianlujan/claude-persona-lf-patch/pull/962",
+      "declared_producer": "GitHub Actions required checks",
+      "declared_producer_ref": "github://cristhianlujan/claude-persona-lf-patch/.github/workflows",
+      "observed_producer_refs": [
+        "github-actions://cristhianlujan/claude-persona-lf-patch/pull/962"
+      ],
+      "reconciliation_status": "MATCH",
+      "blocking": false,
+      "impact": "NONE",
+      "containment_ref": null
+    },
+    {
+      "effect": "Profile continuation is recorded by main OIDC caller into shared Profile runtime recorder.",
+      "observed_ref": "supabase://public.lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-5f3f5a6c-9a8b-429d-a077-303a965374ec",
+      "declared_producer": "lf-profile-creator-governance-caller-v1 -> run-creacion-perfil-lf",
+      "declared_producer_ref": "github://cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-customer-profile-creator-governance-caller.yml",
+      "observed_producer_refs": [
+        "supabase://edge/lf-profile-creator-governance-caller-v1/v4",
+        "supabase://edge/run-creacion-perfil-lf/v21"
+      ],
+      "reconciliation_status": "MATCH",
+      "blocking": false,
+      "impact": "NONE",
+      "containment_ref": null
+    },
+    {
+      "effect": "Runtime Update uses its dedicated operation execution/step recorder.",
+      "observed_ref": "supabase://public.lf_operation_execution/EXEC-RUNTIME-UPDATE-BLOCKED-RETRY-20260920-001",
+      "declared_producer": "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+      "declared_producer_ref": "supabase://public.lf_operation_registry/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+      "observed_producer_refs": [
+        "supabase://public.lf_operation_execution_steps/EXEC-RUNTIME-UPDATE-BLOCKED-RETRY-20260920-001"
+      ],
+      "reconciliation_status": "MATCH",
+      "blocking": false,
+      "impact": "NONE",
+      "containment_ref": null
+    }
+  ],
+  "authority_contradictions": [],
+  "repair_level": "ARCHITECTURAL",
+  "should_exist_assessment": {
+    "verdict": "SHOULD_EXIST",
+    "subject": "Canonical Promotion/Resume operation on existing LF operation engine, not a second engine/table.",
+    "real_consumers": [
+      {
+        "consumer": "ACTUALIZACION_PERFIL_LF candidates requiring merge/post-merge reconciliation.",
+        "evidence_ref": "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      },
+      {
+        "consumer": "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF candidates requiring merge/deploy/live readback.",
+        "evidence_ref": "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
+      }
+    ],
+    "elimination_impact": "Without it, every repair reconstructs PR dependency, currentness, deploy/readback and retry semantics manually.",
+    "native_or_existing_alternative": "ORQUESTACION_PIPELINE_LF is URL-intelligence orchestration; existing operation execution/step storage, gate orchestrator and target-specific runtimes are reusable primitives but not the missing cross-boundary lifecycle.",
+    "evidence_refs": [
+      "repo://skills/orquestador_pipeline_lf/SKILL.md@3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+      "supabase://public.lf_operation_execution",
+      "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
+    ],
+    "missing_evidence": []
+  },
+  "alternatives": [
+    {
+      "id": "A",
+      "description": "Keep manual sequence and formalize a runbook.",
+      "prevention": "Low; no machine enforcement.",
+      "complexity": "Low.",
+      "blast_radius": "Low.",
+      "reuse": "Medium.",
+      "fail_closed": "Low.",
+      "idempotency": "Manual.",
+      "recoverability": "Operator/chat dependent.",
+      "operational_cost": "High recurring.",
+      "basis_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/954"
+      ]
+    },
+    {
+      "id": "B",
+      "description": "Create PROMOCION_REANUDACION_CAMBIO_LF as declarative child operation on existing LF operation engine.",
+      "prevention": "High; one durable candidate-to-live state machine.",
+      "complexity": "Medium.",
+      "blast_radius": "Bounded per parent execution/target.",
+      "reuse": "High.",
+      "fail_closed": "High.",
+      "idempotency": "High with promotion id + target key + lineage tuple.",
+      "recoverability": "High from first non-clean promotion/parent step.",
+      "operational_cost": "Low after implementation; deterministic.",
+      "basis_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF",
+        "https://docs.github.com/en/actions/concepts/workflows-and-actions/concurrency"
+      ]
+    },
+    {
+      "id": "C",
+      "description": "Create separate deployment service/database as new promotion authority.",
+      "prevention": "High.",
+      "complexity": "High.",
+      "blast_radius": "High due second state authority.",
+      "reuse": "High but duplicative.",
+      "fail_closed": "High but reconciliation-heavy.",
+      "idempotency": "Requires second ledger.",
+      "recoverability": "Cross-ledger.",
+      "operational_cost": "High.",
+      "basis_refs": [
+        "supabase://public.lf_operation_execution"
+      ]
+    },
+    {
+      "id": "D",
+      "description": "Embed merge/deploy/readback/resume independently inside every update operation.",
+      "prevention": "Medium-high per operation.",
+      "complexity": "Grows with every operation.",
+      "blast_radius": "Fragmented.",
+      "reuse": "Low.",
+      "fail_closed": "Drifts by operation.",
+      "idempotency": "Repeated implementation.",
+      "recoverability": "Inconsistent.",
+      "operational_cost": "High maintenance.",
+      "basis_refs": [
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
+      ]
+    }
+  ],
+  "preferred_alternative": "B",
+  "selected_alternative": "B",
+  "rejected_alternatives": [
+    {
+      "id": "A",
+      "reason": "Preserves human-memory state and cannot enforce concurrency/currentness/recovery.",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/954"
+      ]
+    },
+    {
+      "id": "C",
+      "reason": "Duplicates lf_operation_execution and creates a second authority/ledger.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution"
+      ]
+    },
+    {
+      "id": "D",
+      "reason": "Duplicates promotion semantics and recreates drift across operations.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
+      ]
+    }
+  ],
+  "falsification_results": [
+    {
+      "case": "bypass",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/bypass",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against bypass.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated bypass fixture."
+        ],
+        "action": [
+          "Execute exact candidate against bypass."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_BYPASS_FAILED"
+      }
+    },
+    {
+      "case": "retry",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/retry",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against retry.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated retry fixture."
+        ],
+        "action": [
+          "Execute exact candidate against retry."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_RETRY_FAILED"
+      }
+    },
+    {
+      "case": "concurrency_same_target",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/concurrency_same_target",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against concurrency_same_target.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated concurrency_same_target fixture."
+        ],
+        "action": [
+          "Execute exact candidate against concurrency_same_target."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_CONCURRENCY_SAME_TARGET_FAILED"
+      }
+    },
+    {
+      "case": "partial_failure_after_merge",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/partial_failure_after_merge",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against partial_failure_after_merge.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated partial_failure_after_merge fixture."
+        ],
+        "action": [
+          "Execute exact candidate against partial_failure_after_merge."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_PARTIAL_FAILURE_AFTER_MERGE_FAILED"
+      }
+    },
+    {
+      "case": "stale_state_after_merge",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/stale_state_after_merge",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against stale_state_after_merge.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated stale_state_after_merge fixture."
+        ],
+        "action": [
+          "Execute exact candidate against stale_state_after_merge."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_STALE_STATE_AFTER_MERGE_FAILED"
+      }
+    },
+    {
+      "case": "interrupted_after_deploy_before_readback",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/interrupted_after_deploy_before_readback",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against interrupted_after_deploy_before_readback.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated interrupted_after_deploy_before_readback fixture."
+        ],
+        "action": [
+          "Execute exact candidate against interrupted_after_deploy_before_readback."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_INTERRUPTED_AFTER_DEPLOY_BEFORE_READBACK_FAILED"
+      }
+    },
+    {
+      "case": "replay_or_duplicate_dispatch",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/replay_or_duplicate_dispatch",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against replay_or_duplicate_dispatch.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated replay_or_duplicate_dispatch fixture."
+        ],
+        "action": [
+          "Execute exact candidate against replay_or_duplicate_dispatch."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_REPLAY_OR_DUPLICATE_DISPATCH_FAILED"
+      }
+    },
+    {
+      "case": "undeclared_or_unversioned_caller",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/undeclared_or_unversioned_caller",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against undeclared_or_unversioned_caller.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated undeclared_or_unversioned_caller fixture."
+        ],
+        "action": [
+          "Execute exact candidate against undeclared_or_unversioned_caller."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_UNDECLARED_OR_UNVERSIONED_CALLER_FAILED"
+      }
+    },
+    {
+      "case": "pr_dependency_contamination",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/pr_dependency_contamination",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against pr_dependency_contamination.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated pr_dependency_contamination fixture."
+        ],
+        "action": [
+          "Execute exact candidate against pr_dependency_contamination."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_PR_DEPENDENCY_CONTAMINATION_FAILED"
+      }
+    },
+    {
+      "case": "deploy_source_mismatch",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/deploy_source_mismatch",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against deploy_source_mismatch.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated deploy_source_mismatch fixture."
+        ],
+        "action": [
+          "Execute exact candidate against deploy_source_mismatch."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_DEPLOY_SOURCE_MISMATCH_FAILED"
+      }
+    },
+    {
+      "case": "runtime_not_applicable",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/runtime_not_applicable",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against runtime_not_applicable.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated runtime_not_applicable fixture."
+        ],
+        "action": [
+          "Execute exact candidate against runtime_not_applicable."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_RUNTIME_NOT_APPLICABLE_FAILED"
+      }
+    },
+    {
+      "case": "authorization_missing",
+      "result": "PLANNED",
+      "evidence_ref": "design://promotion-resume/authorization_missing",
+      "evidence_class": "DESIGN_ONLY",
+      "verification_method": "Execute exact Promotion/Resume candidate against authorization_missing.",
+      "expected_result": "Fail closed or recover without stale, duplicate, skipped or unauthorized effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated authorization_missing fixture."
+        ],
+        "action": [
+          "Execute exact candidate against authorization_missing."
+        ],
+        "assertions": [
+          "No stale, duplicate, skipped or unauthorized effect is credited."
+        ],
+        "failure_signal": "PROMOTION_RESUME_AUTHORIZATION_MISSING_FAILED"
+      }
+    }
+  ],
+  "origin_asset": {
+    "status": "RESOLVED",
+    "code": "EJECUCION_PERFIL_LF",
+    "evidence_ref": "supabase://public.lf_router_resolve_v1/EJECUCION_PERFIL_LF/RUNTIME_UPDATE",
+    "missing_evidence": []
+  },
+  "origin_operation": {
+    "status": "RESOLVED",
+    "code": "ACTUALIZACION_PERFIL_LF",
+    "evidence_ref": "supabase://public.lf_operation_registry/ACTUALIZACION_PERFIL_LF",
+    "missing_evidence": []
+  },
+  "owner": {
+    "status": "RESOLVED",
+    "code": "LF_OPERATION_GOVERNANCE",
+    "evidence_ref": "supabase://public.lf_operation_registry/ACTUALIZACION_PERFIL_LF",
+    "missing_evidence": []
+  },
+  "invariant": {
+    "statement": "A governed change may close only when one promotion execution proves independent candidate head -> merge/main readback -> deploy or explicit NOT_APPLICABLE -> live readback -> same parent execution first non-clean step.",
+    "evidence_refs": [
+      "supabase://public.lf_operation_execution",
+      "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+      "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+    ],
+    "missing_evidence": [],
+    "validation_state": "SPECIFIED"
+  },
+  "hard_guard": {
+    "control": "Promotion/Resume lineage gate.",
+    "enforcement_point_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF/pre_effect_gate",
+    "fail_closed_condition": "Block before merge/deploy/resume when PR independence, exact-head currentness, dependency receipts, authorization, target classification, deploy identity, live readback or same-parent binding is missing/mismatched.",
+    "blocking_code": "BLOCK_PROMOTION_RESUME_LINEAGE_NOT_CLEAN",
+    "observable_result": "No unauthorized/stale effect is credited; state remains at first non-clean step.",
+    "evidence_refs": [
+      "supabase://public.lf_operation_execution",
+      "github://cristhianlujan/claude-persona-lf-patch/scripts/lf_contract_check.py"
+    ],
+    "missing_evidence": [],
+    "validation_state": "SPECIFIED"
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "Independent PR dependency cannot contaminate candidate.",
+      "verification_method": "Merge admission PR, require dependent rematerialization, then attempt update-branch/foreign commit contamination.",
+      "expected_result": "Only clean linear rematerialization is eligible."
+    },
+    {
+      "criterion": "Candidate-to-main-to-live lineage is machine-verifiable.",
+      "verification_method": "Run EDGE_RUNTIME canary and compare candidate blob, merge/main blob, deploy input and live hash/version.",
+      "expected_result": "All match or parent resume blocks."
+    },
+    {
+      "criterion": "SOURCE_ONLY does not fake deploy.",
+      "verification_method": "Run source-only Profile Update canary.",
+      "expected_result": "Deploy is NOT_APPLICABLE and parent resumes to post-merge reconcile."
+    },
+    {
+      "criterion": "Live effect requires authorization.",
+      "verification_method": "Replay missing/wrong/stale/valid authorization refs.",
+      "expected_result": "Only valid authorized target/scope deploys."
+    },
+    {
+      "criterion": "Same-target promotions serialize.",
+      "verification_method": "Start two valid promotions with same target key.",
+      "expected_result": "One effect at a time; second revalidates after lease."
+    },
+    {
+      "criterion": "Interrupted promotion resumes without chat memory.",
+      "verification_method": "Terminate after merge/deploy/readback in separate canaries and rerun.",
+      "expected_result": "Resume first non-clean promotion step without duplicate effective write."
+    },
+    {
+      "criterion": "Parent retry uses same execution/current step.",
+      "verification_method": "Seed BLOCKED/RETURN parent then complete promotion.",
+      "expected_result": "Same parent id and same row/attempt history are used."
+    },
+    {
+      "criterion": "Terminal close requires repo/runtime/parent reconciliation.",
+      "verification_method": "Inject one mismatch per surface.",
+      "expected_result": "Close blocked until all reconcile."
+    }
+  ],
+  "historical_regressions": [
+    {
+      "case_id": "HIST-PR-CONTAMINATION",
+      "occurrence_ref": "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+      "observed_failure": "update-branch created two-parent candidate and SHA binding failed.",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/954"
+      ]
+    },
+    {
+      "case_id": "HIST-CALLER-IDENTITY",
+      "occurrence_ref": "github-actions://cristhianlujan/claude-persona-lf-patch/runs/35483123734",
+      "observed_failure": "wrong continuation identity blocked Profile Update.",
+      "evidence_refs": [
+        "github-actions://cristhianlujan/claude-persona-lf-patch/runs/35483123734"
+      ]
+    },
+    {
+      "case_id": "HIST-RECEIPT-LATE",
+      "occurrence_ref": "github://cristhianlujan/claude-persona-lf-patch/pull/960",
+      "observed_failure": "missing operation receipt discovered after narrow tests.",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/960"
+      ]
+    },
+    {
+      "case_id": "HIST-RUNTIME-STALE",
+      "occurrence_ref": "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001",
+      "observed_failure": "stale runtime could not receive exact-head credit without source SHA comparison.",
+      "evidence_refs": [
+        "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+      ]
+    },
+    {
+      "case_id": "HIST-BLOCKED-STEP-SKIP",
+      "occurrence_ref": "supabase://public.lf_operation_execution_steps/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-5f3f5a6c-9a8b-429d-a077-303a965374ec/deterministic_validation",
+      "observed_failure": "blocked retryable row was treated as complete by row presence.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution_steps/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-5f3f5a6c-9a8b-429d-a077-303a965374ec/deterministic_validation"
+      ]
+    }
+  ],
+  "planned_regressions": [
+    {
+      "case_id": "REG-BYPASS",
+      "scenario": "Bypass promotion and invoke merge/resume directly.",
+      "verification_method": "Invoke transport without clean promotion receipt.",
+      "expected_result": "Block before effect/resume.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-BYPASS fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Invoke transport without clean promotion receipt."
+        ],
+        "assertions": [
+          "Block before effect/resume."
+        ],
+        "failure_signal": "REG_BYPASS_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-RETRY",
+      "scenario": "Retry after blocked deploy/readback.",
+      "verification_method": "Replay same promotion id after blocker repair.",
+      "expected_result": "Same promotion state; no duplicate effective merge/deploy.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-RETRY fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Replay same promotion id after blocker repair."
+        ],
+        "assertions": [
+          "Same promotion state; no duplicate effective merge/deploy."
+        ],
+        "failure_signal": "REG_RETRY_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-CONCURRENCY",
+      "scenario": "Two promotions target same runtime.",
+      "verification_method": "Launch both on same target key.",
+      "expected_result": "One lease owner; second waits/revalidates.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-CONCURRENCY fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Launch both on same target key."
+        ],
+        "assertions": [
+          "One lease owner; second waits/revalidates."
+        ],
+        "failure_signal": "REG_CONCURRENCY_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-PARTIAL",
+      "scenario": "Merge succeeds, deploy fails.",
+      "verification_method": "Force deploy adapter failure.",
+      "expected_result": "Parent stays open; no false live PASS.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-PARTIAL fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Force deploy adapter failure."
+        ],
+        "assertions": [
+          "Parent stays open; no false live PASS."
+        ],
+        "failure_signal": "REG_PARTIAL_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-STALE",
+      "scenario": "Target changes on main before deploy.",
+      "verification_method": "Advance main with conflicting target blob.",
+      "expected_result": "Block and require rebind/rematerialization.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-STALE fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Advance main with conflicting target blob."
+        ],
+        "assertions": [
+          "Block and require rebind/rematerialization."
+        ],
+        "failure_signal": "REG_STALE_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-INTERRUPT",
+      "scenario": "Controller stops after deploy before readback persistence.",
+      "verification_method": "Terminate then rerun.",
+      "expected_result": "Resume at live_readback; no blind redeploy.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-INTERRUPT fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Terminate then rerun."
+        ],
+        "assertions": [
+          "Resume at live_readback; no blind redeploy."
+        ],
+        "failure_signal": "REG_INTERRUPT_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-DUPLICATE",
+      "scenario": "Duplicate dispatch for same promotion.",
+      "verification_method": "Submit same idempotency identity twice.",
+      "expected_result": "One execution/effective path; duplicate is replay.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-DUPLICATE fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Submit same idempotency identity twice."
+        ],
+        "assertions": [
+          "One execution/effective path; duplicate is replay."
+        ],
+        "failure_signal": "REG_DUPLICATE_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-UNDECLARED",
+      "scenario": "Unbound caller tries deploy/resume.",
+      "verification_method": "Invoke without bound caller/authorization.",
+      "expected_result": "Block and persist provenance mismatch.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-UNDECLARED fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Invoke without bound caller/authorization."
+        ],
+        "assertions": [
+          "Block and persist provenance mismatch."
+        ],
+        "failure_signal": "REG_UNDECLARED_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-PR-DEPENDENCY",
+      "scenario": "Dependent PR receives foreign merge history.",
+      "verification_method": "Contaminate dependent branch after admission merge.",
+      "expected_result": "Block; require clean rematerialization.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-PR-DEPENDENCY fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Contaminate dependent branch after admission merge."
+        ],
+        "assertions": [
+          "Block; require clean rematerialization."
+        ],
+        "failure_signal": "REG_PR_DEPENDENCY_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-DEPLOY-MISMATCH",
+      "scenario": "Deployed bytes differ from merged target.",
+      "verification_method": "Return mismatched live hash fixture.",
+      "expected_result": "Block resume and rollback/contain.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-DEPLOY-MISMATCH fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Return mismatched live hash fixture."
+        ],
+        "assertions": [
+          "Block resume and rollback/contain."
+        ],
+        "failure_signal": "REG_DEPLOY_MISMATCH_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-NO-RUNTIME",
+      "scenario": "Source-only artifact enters promotion.",
+      "verification_method": "Classify source-only profile update.",
+      "expected_result": "Record NOT_APPLICABLE deploy and continue repo gates.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-NO-RUNTIME fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Classify source-only profile update."
+        ],
+        "assertions": [
+          "Record NOT_APPLICABLE deploy and continue repo gates."
+        ],
+        "failure_signal": "REG_NO_RUNTIME_FAILED"
+      }
+    },
+    {
+      "case_id": "REG-AUTH",
+      "scenario": "Runtime candidate lacks authorization.",
+      "verification_method": "Use missing/stale/wrong-target authorization.",
+      "expected_result": "Pause AWAITING_AUTHORIZATION with no live effect.",
+      "test_protocol": {
+        "setup": [
+          "Prepare isolated REG-AUTH fixture bound to exact candidate and parent execution."
+        ],
+        "action": [
+          "Use missing/stale/wrong-target authorization."
+        ],
+        "assertions": [
+          "Pause AWAITING_AUTHORIZATION with no live effect."
+        ],
+        "failure_signal": "REG_AUTH_FAILED"
+      }
+    }
+  ],
+  "current_uncertainties": [
+    {
+      "uncertainty": "Exact current GitHub ruleset/merge-queue/deployment-environment configuration was not read.",
+      "impact": "IMPLEMENTATION_PRECONDITION",
+      "evidence_needed": [
+        "GitHub ruleset/branch protection readback",
+        "GitHub environments readback"
+      ],
+      "design_consequence": "No design change; determines defense-in-depth controls only.",
+      "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[0]"
+    },
+    {
+      "uncertainty": "Not every LF asset type is inventoried against a deployment target class.",
+      "impact": "IMPLEMENTATION_PRECONDITION",
+      "evidence_needed": [
+        "current artifact destination/runtime registry inventory"
+      ],
+      "design_consequence": "No design change; unknown mappings fail closed until corrected.",
+      "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[1]"
+    }
+  ],
+  "residual_risks": [
+    {
+      "risk": "Target adapter may pass lineage but fail provider-specific health; live health/readback remains mandatory before parent resume.",
+      "evidence_refs": [
+        "ekb://S26-GATE-F-RESIDENT-RUNTIME-STRUCTURED-OUTPUT-FAIL-001"
+      ]
+    },
+    {
+      "risk": "Long-running required CI increases latency; controller must expose latency but never bypass pending required checks.",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/962"
+      ]
+    }
+  ],
+  "evidence_map": [
+    {
+      "claim_path": "$.symptom",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+        "github-actions://cristhianlujan/claude-persona-lf-patch/runs/35483123734",
+        "github://cristhianlujan/claude-persona-lf-patch/pull/960",
+        "supabase://public.lf_operation_execution_steps/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-5f3f5a6c-9a8b-429d-a077-303a965374ec/deterministic_validation"
+      ]
+    },
+    {
+      "claim_path": "$.immediate_cause",
+      "evidence_refs": [
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
+      ]
+    },
+    {
+      "claim_path": "$.systemic_root_cause",
+      "evidence_refs": [
+        "supabase://public.lf_operation_registry/ACTUALIZACION_PERFIL_LF",
+        "supabase://public.lf_operation_registry/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+        "repo://skills/orquestador_pipeline_lf/SKILL.md@3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+        "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+      ]
+    },
+    {
+      "claim_path": "$.first_bad_control",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "claim_path": "$.escape_control",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/960",
+        "github-actions://cristhianlujan/claude-persona-lf-patch/runs/35483123734",
+        "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+      ]
+    },
+    {
+      "claim_path": "$.should_exist_assessment",
+      "evidence_refs": [
+        "repo://skills/orquestador_pipeline_lf/SKILL.md@3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
+      ]
+    },
+    {
+      "claim_path": "$.origin_asset",
+      "evidence_refs": [
+        "supabase://public.lf_router_resolve_v1/EJECUCION_PERFIL_LF/RUNTIME_UPDATE"
+      ]
+    },
+    {
+      "claim_path": "$.origin_operation",
+      "evidence_refs": [
+        "supabase://public.lf_operation_registry/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "claim_path": "$.owner",
+      "evidence_refs": [
+        "supabase://public.lf_operation_registry/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "claim_path": "$.invariant",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+        "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+      ]
+    },
+    {
+      "claim_path": "$.hard_guard",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "github://cristhianlujan/claude-persona-lf-patch/scripts/lf_contract_check.py"
+      ]
+    },
+    {
+      "claim_path": "$.selected_alternative",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF",
+        "https://docs.github.com/en/actions/concepts/workflows-and-actions/concurrency"
+      ]
+    }
+  ],
+  "blocking_codes": [],
+  "next_gate": {
+    "gate": "OWNER_IMPLEMENTATION",
+    "entry_condition": "Exact SYSTEMIC_REPAIR_SPEC passes deterministic and semantic validation; remaining preconditions are mechanical only.",
+    "exit_condition": "Owner materializes operation/controller/tests, runs shadow canary, then activates one consumer at a time and converts planned falsifications to observed PASS."
+  },
+  "implementation_delta": [
+    {
+      "target": "operation://PROMOCION_REANUDACION_CAMBIO_LF",
+      "action": "Create declarative child operation and bindings on existing LF operation infrastructure; no new table/engine.",
+      "rationale": "Durable cross-boundary state eliminates chat-managed promotion and recovers after interruption.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution"
+      ]
+    },
+    {
+      "target": ".github/workflows/lf-promotion-resume.yml + scripts/lf_promotion_resume.py",
+      "action": "Materialize deterministic conductor for PR/currentness, target deploy/readback and parent resume; cannot self-certify or self-authorize.",
+      "rationale": "Centralizes one implementation instead of per-operation drift.",
+      "evidence_refs": [
+        "https://docs.github.com/en/actions/concepts/workflows-and-actions/concurrency"
+      ]
+    },
+    {
+      "target": "ACTUALIZACION_PERFIL_LF and ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+      "action": "Insert/bind promotion handoff before terminal close and require return receipt.",
+      "rationale": "Parent must remain open until candidate-to-live lineage is proven.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
+      ]
+    },
+    {
+      "target": "sandbox/lf_contract_gate_test/promotion_resume_pipeline",
+      "action": "Add all fail-closed historical/adversarial/holdout regressions.",
+      "rationale": "Failure spans multiple boundaries and cannot close on happy-path only.",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+        "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+      ]
+    }
+  ],
+  "transition_plan": {
+    "strategy": "Shadow against recent manual promotions, then activate one consumer at a time; never rewrite completed history.",
+    "compatibility_rule": "Only new parents after consumer activation must handoff; existing IN_PROGRESS may explicitly rebind if compatible, completed remain immutable.",
+    "stages": [
+      {
+        "stage_id": "S0-SHADOW",
+        "entry_condition": "Operation/workflow/tests exist but no parent routes to them.",
+        "changes": [
+          "Replay recent histories read-only and compare computed decisions."
+        ],
+        "exit_condition": "Historical decisions match with zero writes.",
+        "rollback_scope": "Disable shadow only."
+      },
+      {
+        "stage_id": "S1-PROFILE",
+        "entry_condition": "Shadow PASS and Profile Update handoff qualified.",
+        "changes": [
+          "Route new Profile Update after regression_after through promotion."
+        ],
+        "exit_condition": "SOURCE_ONLY canary merges, readbacks and resumes same parent.",
+        "rollback_scope": "Unbind Profile Update only."
+      },
+      {
+        "stage_id": "S2-RUNTIME",
+        "entry_condition": "S1 clean and runtime classification/authorization adapters pass.",
+        "changes": [
+          "Route new Runtime Update through merge -> deploy -> live readback -> same parent."
+        ],
+        "exit_condition": "Canary proves merged target equals live runtime and retry uses same parent.",
+        "rollback_scope": "Unbind Runtime Update and bounded rollback if needed."
+      },
+      {
+        "stage_id": "S3-EXPAND",
+        "entry_condition": "Profile/Runtime canaries clean under concurrency/interruption.",
+        "changes": [
+          "Adopt additional operations after deterministic classification/holdout."
+        ],
+        "exit_condition": "Each consumer has current binding and rollback adapter.",
+        "rollback_scope": "Disable affected consumer only."
+      }
+    ]
+  },
+  "rollback_plan": {
+    "trigger_conditions": [
+      "Lineage mismatch after merge.",
+      "Valid candidate blocked by controller defect.",
+      "Live readback/health fails after deployment.",
+      "Parent resume selects wrong execution/step."
+    ],
+    "inverse_actions": [
+      "Before live effect, block/rematerialize from current main without mutating parent.",
+      "After live effect, bounded target rollback to previous read-back version/hash and verify.",
+      "Disable only affected consumer binding; preserve histories.",
+      "Never force-close/rewrite historical failures."
+    ],
+    "protected_history": [
+      "Preserve operation executions/steps, receipts, PR heads, merge identities, deploy/readback evidence.",
+      "Preserve failed promotion and lease/authorization lineage."
+    ],
+    "verification": [
+      "Re-read main target blobs and live identity after rollback.",
+      "Verify parent remains at first non-clean step with no replacement execution.",
+      "Rerun consumer regression/readback before reactivation."
+    ]
+  },
+  "solution_depth": {
+    "mode": "DEEP_ARCHITECTURE_RESEARCH",
+    "rationale": "Cross-operation promotion spans PR independence, state recovery, concurrency, authorization and multiple runtime target types.",
+    "complexity_signals": [
+      "CROSS_OPERATION",
+      "POLICY_CONTRACT_CHANGE",
+      "STATE_RECOVERY",
+      "CONCURRENCY",
+      "MIGRATION_TRANSITION",
+      "SECURITY_BOUNDARY",
+      "MULTI_RUNTIME"
+    ]
+  },
+  "research_assurance": {
+    "research_complete": true,
+    "research_questions": [
+      "How should latest-base merge assurance coexist with independent PR identity?",
+      "How should deployments be serialized/protected while LF remains state authority?",
+      "How should automated readback/rollback drive continuation?"
+    ],
+    "internal_evidence_refs": [
+      "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF",
+      "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+      "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+    ],
+    "current_practice_research_required": true,
+    "external_research_rationale": "GitHub merge/deployment/concurrency controls evolve and materially affect defense-in-depth choices.",
+    "external_evidence_refs": [
+      "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+      "https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/control-deployments",
+      "https://docs.github.com/en/actions/concepts/workflows-and-actions/concurrency",
+      "https://argoproj.github.io/rollouts/"
+    ],
+    "patterns_compared": [
+      {
+        "pattern": "Merge queue/latest-base checks",
+        "fit": "High as defense-in-depth, not state authority.",
+        "tradeoff": "Merge-group/current-base identities must be explicitly bound.",
+        "source_refs": [
+          "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+          "github://cristhianlujan/claude-persona-lf-patch/pull/954"
+        ]
+      },
+      {
+        "pattern": "Protected deployment environments plus target-scoped concurrency",
+        "fit": "High for authorization separation and deploy serialization.",
+        "tradeoff": "Availability/configuration varies; LF authorization remains canonical.",
+        "source_refs": [
+          "https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/control-deployments",
+          "https://docs.github.com/en/actions/concepts/workflows-and-actions/concurrency"
+        ]
+      },
+      {
+        "pattern": "Progressive delivery verify/rollback",
+        "fit": "Use verification/rollback principle; do not add Kubernetes traffic controller.",
+        "tradeoff": "Target adapters need target-specific health/readback.",
+        "source_refs": [
+          "https://argoproj.github.io/rollouts/",
+          "supabase://edge/run-creacion-perfil-lf/v21"
+        ]
+      }
+    ],
+    "first_solution_disposition": "REVISED",
+    "context_strategy": "BOUNDED_PREFETCH"
+  },
+  "challenger_review": [
+    {
+      "challenge_id": "CH-1",
+      "challenge": "Can a runbook/checklist replace a governed operation?",
+      "outcome": "DESIGN_CHANGED",
+      "resolution": "No; it cannot durably serialize promotions or recover after interruption without chat memory.",
+      "evidence_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/954",
+        "supabase://public.lf_operation_execution"
+      ]
+    },
+    {
+      "challenge_id": "CH-2",
+      "challenge": "Can ORQUESTACION_PIPELINE_LF be reused to avoid a new operation identity?",
+      "outcome": "SURVIVED",
+      "resolution": "No; its authority is URL-intelligence ingestion. Reuse the engine, not that identity.",
+      "evidence_refs": [
+        "repo://skills/orquestador_pipeline_lf/SKILL.md@3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495"
+      ]
+    },
+    {
+      "challenge_id": "CH-3",
+      "challenge": "Should every successful merge deploy automatically?",
+      "outcome": "DESIGN_CHANGED",
+      "resolution": "No; classify SOURCE_ONLY/runtime and require current authorization before live effect.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_registry/ACTUALIZACION_PERFIL_LF",
+        "https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/control-deployments"
+      ]
+    },
+    {
+      "challenge_id": "CH-4",
+      "challenge": "Can GitHub protection become canonical state authority?",
+      "outcome": "SURVIVED",
+      "resolution": "No; GitHub protections are secondary. LF operation execution remains durable cross-system state.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "https://docs.github.com/en/repositories/configuring-branches-and-merges/in-your-repository/managing-protected-branches/about-protected-branches"
+      ]
+    }
+  ],
+  "omission_discovery": [
+    {
+      "dimension": "ARCHITECTURE",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Add one declarative Promotion/Resume child operation on the existing engine; no second engine/table.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "CONTROLS",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Bind PR independence, exact-head currentness, classification, authorization, live readback and same-parent resume.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "POLICIES_CONTRACTS",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Add promotion handoff/return contract and target-classification/authorization rules.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "CONTEXT_TRANSPORT",
+      "disposition": "NOT_APPLICABLE",
+      "finding": "Runtime promotion is deterministic and requires no model context.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "WIRING",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Wire parent -> promotion -> target adapter/readback -> same parent.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "COMPATIBILITY_TRANSITION",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Shadow first, then activate one consumer operation at a time.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "RECOVERY_TERMINALITY",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Persist first non-clean promotion step and parent execution id.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "OBSERVABILITY",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Expose stage latency, stale blocks, deploy/readback mismatch and retry count.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "SECURITY_AUTHORITY",
+      "disposition": "REUSE_AS_IS",
+      "finding": "Keep LF operation governance and explicit authorization as authority.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "COST_PERFORMANCE",
+      "disposition": "REUSE_AS_IS",
+      "finding": "Use deterministic metadata only; zero LLM calls.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "TESTING_ASSURANCE",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Add concurrency/stale/duplicate/partial/authorization/no-runtime regressions.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    },
+    {
+      "dimension": "OPERABILITY_MAINTENANCE",
+      "disposition": "REQUIRED_CHANGE",
+      "finding": "Centralize promotion semantics instead of per-operation copies.",
+      "evidence_refs": [
+        "supabase://public.lf_operation_execution",
+        "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+      ]
+    }
+  ],
+  "implementation_package": {
+    "architecture_decisions": [
+      {
+        "decision_id": "D1",
+        "question": "What owns promotion state?",
+        "decision": "PROMOCION_REANUDACION_CAMBIO_LF uses existing lf_operation_execution/steps; it orchestrates but is not a new domain authority or engine.",
+        "authority_ref": "supabase://public.lf_operation_execution",
+        "rationale": "Durable recovery/concurrency need first-class state and LF already has it.",
+        "alternatives_considered": [
+          "manual runbook",
+          "reuse ORQUESTACION_PIPELINE_LF",
+          "new deployment database"
+        ],
+        "evidence_refs": [
+          "supabase://public.lf_operation_execution",
+          "repo://skills/orquestador_pipeline_lf/SKILL.md@3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495"
+        ]
+      },
+      {
+        "decision_id": "D2",
+        "question": "How is PR independence enforced?",
+        "decision": "Bind base_main_sha, candidate_head, intended_paths/blobs and dependency_receipts; merge dependencies first and rematerialize candidate from new main; never import foreign commits with update-branch.",
+        "authority_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF/pr_independence_gate",
+        "rationale": "Eliminates PR #954 contamination class.",
+        "alternatives_considered": [
+          "update-branch",
+          "foreign merge commit",
+          "manual diff"
+        ],
+        "evidence_refs": [
+          "github://cristhianlujan/claude-persona-lf-patch/pull/954"
+        ]
+      },
+      {
+        "decision_id": "D3",
+        "question": "What lineage survives deploy?",
+        "decision": "Bind candidate -> merge/main target blob -> deploy input -> deployed version/hash -> live readback; target-path drift before deploy requires rebind.",
+        "authority_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF/lineage",
+        "rationale": "Prevents stale runtime/source mismatch.",
+        "alternatives_considered": [
+          "deploy current main blindly",
+          "deploy branch",
+          "global SHA equality only"
+        ],
+        "evidence_refs": [
+          "ekb://S26-GATE-F-EXACT-HEAD-RUNTIME-SOURCE-MISMATCH-001"
+        ]
+      },
+      {
+        "decision_id": "D4",
+        "question": "How are targets handled generically?",
+        "decision": "Classify SOURCE_ONLY, EDGE_RUNTIME, DB_RUNTIME, HETZNER_RUNTIME or EXTERNAL_RUNTIME from existing destination/runtime authority; unknown blocks.",
+        "authority_ref": "registry://artifact-destination-runtime",
+        "rationale": "Avoids per-profile hardcoding.",
+        "alternatives_considered": [
+          "always deploy",
+          "per-operation if chains",
+          "universal deploy command"
+        ],
+        "evidence_refs": [
+          "supabase://public.lf_operation_registry/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
+        ]
+      },
+      {
+        "decision_id": "D5",
+        "question": "How is deployment concurrency controlled?",
+        "decision": "Acquire one LF lease per deploy_target_key; GitHub concurrency may mirror it as defense-in-depth.",
+        "authority_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF/deploy_lease",
+        "rationale": "Prevents two valid promotions racing the same runtime.",
+        "alternatives_considered": [
+          "unbounded deploys",
+          "GitHub-only lock",
+          "global repo lock"
+        ],
+        "evidence_refs": [
+          "https://docs.github.com/en/actions/concepts/workflows-and-actions/concurrency",
+          "supabase://public.lf_operation_execution"
+        ]
+      },
+      {
+        "decision_id": "D6",
+        "question": "How is parent resumed?",
+        "decision": "Resume same parent_execution_id at first required step whose persisted status differs from active binding clean_result_value; retry same row/attempt history.",
+        "authority_ref": "supabase://public.lf_operation_execution_steps",
+        "rationale": "Preserves audit continuity and fixes skip/retry class.",
+        "alternatives_considered": [
+          "new execution",
+          "caller-selected step",
+          "reopen closed history"
+        ],
+        "evidence_refs": [
+          "supabase://public.lf_operation_execution_steps/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-5f3f5a6c-9a8b-429d-a077-303a965374ec/deterministic_validation"
+        ]
+      },
+      {
+        "decision_id": "D7",
+        "question": "How is live authorization separated from validation?",
+        "decision": "CI success never authorizes production; live effect requires current authorization_ref or promotion pauses AWAITING_AUTHORIZATION.",
+        "authority_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF/authorization_gate",
+        "rationale": "Automation must not create self-approval.",
+        "alternatives_considered": [
+          "auto deploy on merge",
+          "out-of-band manual state",
+          "GitHub environment sole authority"
+        ],
+        "evidence_refs": [
+          "supabase://public.lf_operation_registry/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+          "https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/control-deployments"
+        ]
+      }
+    ],
+    "control_matrix": [
+      {
+        "control_id": "CTRL-PR-INDEPENDENCE",
+        "purpose": "Prevent candidate contamination.",
+        "authority_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF/pr_independence_gate",
+        "applies_when": "Before merge eligibility.",
+        "enforcement_point_ref": "promotion://pr_independence",
+        "input_contract": "base_main_sha, candidate_head, intended paths/blobs, dependency receipts, parent count.",
+        "blocking_code": "BLOCK_PROMOTION_PR_SCOPE_CONTAMINATION",
+        "observable_result": "Foreign file/commit or stale dependency blocks.",
+        "verification_method": "Compare merge-base, diff, blobs and dependency receipts."
+      },
+      {
+        "control_id": "CTRL-EXACT-HEAD-CI",
+        "purpose": "Require current required checks on exact candidate.",
+        "authority_ref": "github://required-status-checks",
+        "applies_when": "Immediately before merge.",
+        "enforcement_point_ref": "promotion://exact_head_ci",
+        "input_contract": "candidate head/base plus required check conclusions.",
+        "blocking_code": "BLOCK_PROMOTION_EXACT_HEAD_CI_NOT_CURRENT",
+        "observable_result": "Changed head/base or pending/failed check blocks.",
+        "verification_method": "Re-read PR and checks at merge time."
+      },
+      {
+        "control_id": "CTRL-MERGE-READBACK",
+        "purpose": "Bind actual main target bytes to candidate.",
+        "authority_ref": "github://main",
+        "applies_when": "Immediately after merge.",
+        "enforcement_point_ref": "promotion://main_readback",
+        "input_contract": "merged PR, candidate head, merge/main target blobs.",
+        "blocking_code": "BLOCK_PROMOTION_MAIN_READBACK_MISMATCH",
+        "observable_result": "Mismatch prevents deploy.",
+        "verification_method": "Read merge/main and compare target blobs."
+      },
+      {
+        "control_id": "CTRL-TARGET-CLASSIFY",
+        "purpose": "Select deploy adapter or SOURCE_ONLY.",
+        "authority_ref": "registry://artifact-destination-runtime",
+        "applies_when": "After main readback.",
+        "enforcement_point_ref": "promotion://target_classify",
+        "input_contract": "asset, changed paths, destination/runtime registry.",
+        "blocking_code": "BLOCK_PROMOTION_TARGET_CLASSIFICATION_UNKNOWN",
+        "observable_result": "Unknown/ambiguous target blocks.",
+        "verification_method": "Classification matrix including no-runtime/multi-runtime."
+      },
+      {
+        "control_id": "CTRL-AUTHORIZATION",
+        "purpose": "Separate validation from live permission.",
+        "authority_ref": "operation://target-operation/authorization",
+        "applies_when": "Target needs live effect.",
+        "enforcement_point_ref": "promotion://authorization",
+        "input_contract": "authorization ref, target, scope/currentness.",
+        "blocking_code": "BLOCK_PROMOTION_LIVE_AUTHORIZATION_REQUIRED",
+        "observable_result": "Pause without deploy/close.",
+        "verification_method": "Replay valid/missing/stale/wrong-target refs."
+      },
+      {
+        "control_id": "CTRL-DEPLOY-LEASE",
+        "purpose": "Serialize live target changes.",
+        "authority_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF/deploy_lease",
+        "applies_when": "Before any runtime effect.",
+        "enforcement_point_ref": "promotion://deploy_lease",
+        "input_contract": "target key, promotion id, lease/fence.",
+        "blocking_code": "BLOCK_PROMOTION_TARGET_BUSY",
+        "observable_result": "One effect at a time; later work waits/revalidates.",
+        "verification_method": "Run two promotions on one target."
+      },
+      {
+        "control_id": "CTRL-LIVE-READBACK",
+        "purpose": "Prove live identity equals merged target.",
+        "authority_ref": "target-adapter://live-readback",
+        "applies_when": "After deploy/rollback.",
+        "enforcement_point_ref": "promotion://live_readback",
+        "input_contract": "expected merged blob/hash plus live identity.",
+        "blocking_code": "BLOCK_PROMOTION_LIVE_READBACK_MISMATCH",
+        "observable_result": "Mismatch blocks parent resume and rollback/containment.",
+        "verification_method": "Deploy mismatched fixture and assert block."
+      },
+      {
+        "control_id": "CTRL-SAME-PARENT-RESUME",
+        "purpose": "Resume exactly first non-clean parent step.",
+        "authority_ref": "supabase://public.lf_operation_execution_steps",
+        "applies_when": "Deploy/readback or SOURCE_ONLY skip is clean.",
+        "enforcement_point_ref": "promotion://parent_resume",
+        "input_contract": "parent id, contracts, active bindings, first non-clean step.",
+        "blocking_code": "BLOCK_PROMOTION_PARENT_RESUME_MISMATCH",
+        "observable_result": "No replacement parent or skipped step.",
+        "verification_method": "Seed blocked/return/clean rows and derive cursor."
+      },
+      {
+        "control_id": "CTRL-TERMINAL-RECONCILE",
+        "purpose": "Close only when repo/runtime/parent agree.",
+        "authority_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF/close",
+        "applies_when": "After parent continuation.",
+        "enforcement_point_ref": "promotion://close",
+        "input_contract": "main, deploy/readback or N/A, parent clean state, zero blockers.",
+        "blocking_code": "BLOCK_PROMOTION_TERMINAL_RECONCILIATION_NOT_CLEAN",
+        "observable_result": "Any mismatch leaves both open.",
+        "verification_method": "Inject one mismatch per surface."
+      }
+    ],
+    "policy_contract_changes": [
+      {
+        "authority_ref": "supabase://public.lf_operation_registry",
+        "change": "Register PROMOCION_REANUDACION_CAMBIO_LF on existing operation engine; it coordinates but cannot redefine domain validation or self-authorize deployment.",
+        "owner_ref": "LF_OPERATION_GOVERNANCE",
+        "compatibility_rule": "Only explicitly bound parent operations consume it.",
+        "evidence_refs": [
+          "supabase://public.lf_operation_registry/ACTUALIZACION_PERFIL_LF"
+        ]
+      },
+      {
+        "authority_ref": "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF",
+        "change": "Handoff after regression_after and require promotion receipt before existing post_merge_reconcile/close.",
+        "owner_ref": "LF_OPERATION_GOVERNANCE",
+        "compatibility_rule": "SOURCE_ONLY remains no-deploy unless registry says otherwise.",
+        "evidence_refs": [
+          "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF"
+        ]
+      },
+      {
+        "authority_ref": "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+        "change": "Add promotion handoff/post-merge reconcile before close.",
+        "owner_ref": "LF_OPERATION_GOVERNANCE",
+        "compatibility_rule": "Historical completed executions remain immutable; only new executions use it.",
+        "evidence_refs": [
+          "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"
+        ]
+      }
+    ],
+    "context_transport": {
+      "status": "NOT_APPLICABLE",
+      "rationale": "Promotion is deterministic over immutable refs/status/hash; no model context is required.",
+      "compiler_ref": null,
+      "delivery_strategy": null,
+      "deterministic_inputs": [
+        "parent_execution_id",
+        "candidate_pr",
+        "candidate_head",
+        "base_main_sha",
+        "intended_paths",
+        "intended_blobs",
+        "dependency_receipts",
+        "target_class",
+        "authorization_ref",
+        "deploy_target_key"
+      ],
+      "jit_refs": [],
+      "excluded_payloads": [
+        "profile prose",
+        "full EKB bodies",
+        "unrelated files",
+        "model prompts"
+      ],
+      "token_budget": null,
+      "degradation_rule": null
+    },
+    "wiring": [
+      {
+        "from_ref": "parent update operation",
+        "to_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF",
+        "contract_ref": "promotion-handoff-v1",
+        "data_carried": [
+          "parent execution",
+          "candidate PR/head",
+          "paths/blobs",
+          "dependency receipts",
+          "target",
+          "authorization"
+        ],
+        "precondition": "Parent assurance clean and parent not closed.",
+        "fail_closed_behavior": "Missing/inconsistent handoff blocks."
+      },
+      {
+        "from_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF",
+        "to_ref": "github://main",
+        "contract_ref": "promotion-pr-merge-v1",
+        "data_carried": [
+          "independent PR",
+          "exact-head CI",
+          "base identity"
+        ],
+        "precondition": "Independence and CI clean.",
+        "fail_closed_behavior": "No merge on stale/foreign/pending state."
+      },
+      {
+        "from_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF",
+        "to_ref": "target-adapter://classified-runtime",
+        "contract_ref": "promotion-deploy-v1",
+        "data_carried": [
+          "merge target blob/hash",
+          "target key",
+          "authorization",
+          "idempotency key"
+        ],
+        "precondition": "Deployment applies, authorization current and lease held.",
+        "fail_closed_behavior": "Unknown/stale/unauthorized/busy blocks before effect."
+      },
+      {
+        "from_ref": "target-adapter://classified-runtime",
+        "to_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF/live_readback",
+        "contract_ref": "promotion-readback-v1",
+        "data_carried": [
+          "deployed version/hash",
+          "health",
+          "rollback identity"
+        ],
+        "precondition": "Deploy returned target result.",
+        "fail_closed_behavior": "Mismatch blocks parent resume and triggers bounded rollback."
+      },
+      {
+        "from_ref": "operation://PROMOCION_REANUDACION_CAMBIO_LF",
+        "to_ref": "parent update operation",
+        "contract_ref": "promotion-resume-v1",
+        "data_carried": [
+          "parent id",
+          "promotion receipt",
+          "merge/live lineage",
+          "first non-clean step"
+        ],
+        "precondition": "SOURCE_ONLY skip or live readback clean.",
+        "fail_closed_behavior": "Resume same parent/derived step only."
+      }
+    ],
+    "deliverables": [
+      {
+        "artifact_ref": "supabase://public.lf_operation_registry/PROMOCION_REANUDACION_CAMBIO_LF",
+        "change_type": "CREATE",
+        "exact_delta": "Register transversal Promotion/Resume operation using existing execution/step infrastructure and parent_execution_id binding.",
+        "dependencies": [
+          "existing operation engine",
+          "router operation-code resolution"
+        ],
+        "acceptance_refs": [
+          "AC-PIPELINE-E2E",
+          "REG-CONCURRENCY"
+        ]
+      },
+      {
+        "artifact_ref": "supabase://public.lf_operation_step_contracts/PROMOCION_REANUDACION_CAMBIO_LF",
+        "change_type": "CREATE",
+        "exact_delta": "Materialize bind-parent, PR independence, exact-head CI, merge/main readback, classify, authorization, deploy/skip, live readback, parent resume, reconcile/report gates.",
+        "dependencies": [
+          "operation registry",
+          "target classification",
+          "lease primitives"
+        ],
+        "acceptance_refs": [
+          "AC-PIPELINE-E2E",
+          "REG-STALE"
+        ]
+      },
+      {
+        "artifact_ref": ".github/workflows/lf-promotion-resume.yml",
+        "change_type": "CREATE",
+        "exact_delta": "Reusable workflow/dispatcher executes operation steps and target adapters from immutable refs; not state authority.",
+        "dependencies": [
+          "GitHub OIDC/gh",
+          "LF operation APIs"
+        ],
+        "acceptance_refs": [
+          "AC-PR-INDEPENDENCE",
+          "AC-DEPLOY-LINEAGE"
+        ]
+      },
+      {
+        "artifact_ref": "scripts/lf_promotion_resume.py",
+        "change_type": "CREATE",
+        "exact_delta": "Deterministic planner/executor for lineage, classification, concurrency and resume requests; no model calls.",
+        "dependencies": [
+          "operation/registry APIs"
+        ],
+        "acceptance_refs": [
+          "REG-BYPASS",
+          "REG-DUPLICATE"
+        ]
+      },
+      {
+        "artifact_ref": "supabase://public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF",
+        "change_type": "MODIFY",
+        "exact_delta": "Bind regression_after to Promotion/Resume handoff and require return receipt before post_merge_reconcile/close.",
+        "dependencies": [
+          "PROMOCION_REANUDACION_CAMBIO_LF"
+        ],
+        "acceptance_refs": [
+          "AC-PARENT-RESUME"
+        ]
+      },
+      {
+        "artifact_ref": "supabase://public.lf_operation_step_contracts/ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+        "change_type": "MODIFY",
+        "exact_delta": "Add promotion handoff/post-merge reconcile before close.",
+        "dependencies": [
+          "PROMOCION_REANUDACION_CAMBIO_LF"
+        ],
+        "acceptance_refs": [
+          "AC-DEPLOY-LINEAGE",
+          "AC-PARENT-RESUME"
+        ]
+      },
+      {
+        "artifact_ref": "sandbox/lf_contract_gate_test/promotion_resume_pipeline",
+        "change_type": "CREATE",
+        "exact_delta": "Adversarial/holdout matrices for specified failure families and independent PR rematerialization.",
+        "dependencies": [
+          "operation contract",
+          "workflow/script"
+        ],
+        "acceptance_refs": [
+          "REG-BYPASS",
+          "REG-RETRY",
+          "REG-CONCURRENCY",
+          "REG-STALE",
+          "REG-INTERRUPT",
+          "REG-DUPLICATE",
+          "REG-UNDECLARED",
+          "REG-PR-DEPENDENCY"
+        ]
+      }
+    ],
+    "observability_plan": [
+      {
+        "signal": "promotion_current_stage",
+        "source_ref": "supabase://public.lf_operation_execution_steps/PROMOCION_REANUDACION_CAMBIO_LF",
+        "expected_change": "Exactly one first non-clean stage is derivable.",
+        "alert_or_gate": "Block on cursor/status disagreement."
+      },
+      {
+        "signal": "promotion_lineage_tuple",
+        "source_ref": "promotion://lineage",
+        "expected_change": "Candidate, merge/main, deploy and live identities are machine-readable.",
+        "alert_or_gate": "Block missing/mismatch."
+      },
+      {
+        "signal": "promotion_target_queue_age",
+        "source_ref": "promotion://deploy_lease",
+        "expected_change": "Same-target work queues rather than races.",
+        "alert_or_gate": "Alert excessive wait; never bypass."
+      },
+      {
+        "signal": "parent_resume_attempt_count",
+        "source_ref": "supabase://public.lf_operation_execution_steps",
+        "expected_change": "Retries remain same parent row/history.",
+        "alert_or_gate": "Block replacement parent."
+      },
+      {
+        "signal": "runtime_readback_mismatch",
+        "source_ref": "target-adapter://live-readback",
+        "expected_change": "Zero mismatch reaches parent resume.",
+        "alert_or_gate": "Block/rollback."
+      }
+    ],
+    "decision_closure": {
+      "handoff_ready": true,
+      "open_design_decisions": [],
+      "implementation_preconditions": [
+        {
+          "name": "Resolve GitHub protection capabilities",
+          "resolver_ref": "github://repository/rulesets+environments",
+          "expected_shape": "Current branch/ruleset, merge-queue and deployment-environment configuration.",
+          "decision_rule": "Enable available GitHub controls only as defense-in-depth; LF gates stay mandatory.",
+          "stage": "IMPLEMENTATION_PREFLIGHT",
+          "design_effect": "NONE"
+        },
+        {
+          "name": "Resolve target classification inventory",
+          "resolver_ref": "supabase://artifact-destination-runtime-registry",
+          "expected_shape": "Each adopted asset maps to exactly one supported target class.",
+          "decision_rule": "Adopt only unambiguous mappings; unknown/multiple mappings block.",
+          "stage": "CONSUMER_ADOPTION",
+          "design_effect": "NONE"
+        }
+      ],
+      "closure_statement": "Authority, state ownership, PR independence, lineage, target classification, authorization, concurrency, resume, transition and rollback are closed; remaining preconditions only resolve current configuration values."
+    }
+  }
+}
