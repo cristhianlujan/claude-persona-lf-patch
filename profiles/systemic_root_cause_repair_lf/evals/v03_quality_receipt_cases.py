@@ -35,7 +35,7 @@ INVARIANTS = [
 
 
 def make_semantic(candidate):
-    candidate_sha = candidate["closure_proof"]["candidate_binding"]["candidate_digest"].split(":", 1)[1]
+    candidate_sha = fixture_globals["closure_proof"].canonical_candidate_digest(candidate).split(":", 1)[1]
     return {
         "verdict": "PASS_INDEPENDENT_SEMANTIC",
         "candidate_sha256": candidate_sha,
@@ -73,8 +73,8 @@ def make_receipt(candidate, evidence, semantic):
             "semantic_execution_receipt_ref": "fixture://independent-semantic-execution/001",
         },
         "candidate_binding": {
-            "candidate_revision": candidate["closure_proof"]["candidate_binding"]["candidate_revision"],
-            "candidate_digest": candidate["closure_proof"]["candidate_binding"]["candidate_digest"],
+            "candidate_revision": "quality-boundary-candidate-rev-1",
+            "candidate_digest": fixture_globals["closure_proof"].canonical_candidate_digest(candidate),
         },
         "evidence_binding": {
             "bundle_id": evidence["bundle_id"],

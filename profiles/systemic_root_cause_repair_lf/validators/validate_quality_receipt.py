@@ -123,16 +123,11 @@ def validate_quality_receipt(
         errors.append(_err("SRCR_QUALITY_CANDIDATE_BINDING_MISSING", "$.receipt.candidate_binding"))
         candidate_binding = {}
 
-    proof = candidate.get("closure_proof") if isinstance(candidate, dict) and isinstance(candidate.get("closure_proof"), dict) else {}
-    proof_candidate_binding = proof.get("candidate_binding") if isinstance(proof.get("candidate_binding"), dict) else {}
-
     actual_candidate_digest = closure.canonical_candidate_digest(candidate) if isinstance(candidate, dict) else None
-    if candidate_binding.get("candidate_revision") != proof_candidate_binding.get("candidate_revision"):
-        errors.append(_err("SRCR_QUALITY_CANDIDATE_REVISION_MISMATCH", "$.receipt.candidate_binding.candidate_revision"))
+    if not _nonempty(candidate_binding.get("candidate_revision")):
+        errors.append(_err("SRCR_QUALITY_CANDIDATE_REVISION_MISSING", "$.receipt.candidate_binding.candidate_revision"))
     if candidate_binding.get("candidate_digest") != actual_candidate_digest:
         errors.append(_err("SRCR_QUALITY_CANDIDATE_DIGEST_MISMATCH", "$.receipt.candidate_binding.candidate_digest"))
-    if proof_candidate_binding.get("candidate_digest") != actual_candidate_digest:
-        errors.append(_err("SRCR_QUALITY_CANDIDATE_PROOF_DIGEST_MISMATCH", "$.candidate.closure_proof.candidate_binding.candidate_digest"))
 
     evidence_binding = receipt.get("evidence_binding")
     if not isinstance(evidence_binding, dict):
@@ -140,12 +135,11 @@ def validate_quality_receipt(
         evidence_binding = {}
 
     actual_bundle_digest = closure.canonical_evidence_bundle_digest(evidence_manifest) if isinstance(evidence_manifest, dict) else None
-    if evidence_binding.get("bundle_id") != proof_candidate_binding.get("evidence_bundle_id"):
+    actual_bundle_id = evidence_manifest.get("bundle_id") if isinstance(evidence_manifest, dict) else None
+    if evidence_binding.get("bundle_id") != actual_bundle_id:
         errors.append(_err("SRCR_QUALITY_EVIDENCE_BUNDLE_ID_MISMATCH", "$.receipt.evidence_binding.bundle_id"))
     if evidence_binding.get("bundle_digest") != actual_bundle_digest:
         errors.append(_err("SRCR_QUALITY_EVIDENCE_BUNDLE_DIGEST_MISMATCH", "$.receipt.evidence_binding.bundle_digest"))
-    if proof_candidate_binding.get("evidence_bundle_digest") != actual_bundle_digest:
-        errors.append(_err("SRCR_QUALITY_CANDIDATE_EVIDENCE_DIGEST_MISMATCH", "$.candidate.closure_proof.candidate_binding.evidence_bundle_digest"))
 
     semantic_binding = receipt.get("semantic_binding")
     if not isinstance(semantic_binding, dict):

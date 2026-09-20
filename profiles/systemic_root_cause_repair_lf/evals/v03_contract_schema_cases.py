@@ -32,7 +32,6 @@ def v03_base():
             row["finding"] = "No cross-component wiring is material to this lightweight fixture."
     x["closure_proof"] = {
       "contract_version":"SRCR_CLOSURE_PROOF_V1",
-      "candidate_binding":{"candidate_revision":"cand-1","candidate_digest":"sha256:candidate","evidence_bundle_id":"bundle-1","evidence_bundle_digest":"sha256:evidence"},
       "materiality":[
         {"signal":"DECISION_CLOSURE","material":True,"rationale":"Readiness must be derived from proof closure.","obligation_ids":["PO-CLOSE"]},
         {"signal":"STATE_RECOVERY","material":False,"rationale":"No stateful behavior exists in this fixture.","obligation_ids":[]},
@@ -80,4 +79,13 @@ open_claim = v03_base()
 open_claim["closure_proof"]["derived_decision_closure"]["open_obligation_ids"] = ["PO-CLOSE"]
 assert_invalid(open_claim, "handoff_ready_rejects_declared_open_ids")
 
-print("PASS_SRCR_V03_CONTRACT_SCHEMA=8/8")
+producer_self_binding = v03_base()
+producer_self_binding["closure_proof"]["candidate_binding"] = {
+    "candidate_revision":"producer-rev",
+    "candidate_digest":"sha256:producer",
+    "evidence_bundle_id":"producer-bundle",
+    "evidence_bundle_digest":"sha256:producer-evidence",
+}
+assert_invalid(producer_self_binding, "producer_candidate_self_binding_forbidden")
+
+print("PASS_SRCR_V03_CONTRACT_SCHEMA=9/9")

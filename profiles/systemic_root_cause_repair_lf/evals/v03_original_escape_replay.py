@@ -54,7 +54,7 @@ def parse_args():
 
 
 def semantic_pass(candidate):
-    candidate_sha = candidate["closure_proof"]["candidate_binding"]["candidate_digest"].split(":", 1)[1]
+    candidate_sha = closure_proof.canonical_candidate_digest(candidate).split(":", 1)[1]
     return {
         "verdict": "PASS_INDEPENDENT_SEMANTIC",
         "candidate_sha256": candidate_sha,
@@ -95,8 +95,8 @@ def make_pass_receipt(candidate, evidence, semantic, summary):
             "semantic_execution_receipt_ref": "replay://independent-semantic/escape-test",
         },
         "candidate_binding": {
-            "candidate_revision": candidate["closure_proof"]["candidate_binding"]["candidate_revision"],
-            "candidate_digest": candidate["closure_proof"]["candidate_binding"]["candidate_digest"],
+            "candidate_revision": "replay-quality-boundary-rev-1",
+            "candidate_digest": closure_proof.canonical_candidate_digest(candidate),
         },
         "evidence_binding": {
             "bundle_id": evidence["bundle_id"],

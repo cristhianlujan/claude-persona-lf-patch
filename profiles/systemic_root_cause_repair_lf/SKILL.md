@@ -174,7 +174,7 @@ Rules:
 5. When STATE_RECOVERY or MIGRATION_TRANSITION is material, executable behavioral proof must cover states/steps, entry conditions, terminal conditions, illegal transitions and recovery paths. When those signals are not material, no state machine is required.
 6. When WIRING is material, each material edge must name producer, transported contract, consumer, enforcement point, failure behavior, and either an observed existing binding or an explicit proposed deliverable.
 7. Deterministic validation and semantic utility are pre-quality floors. They never mean canonical quality acceptance.
-8. Canonical quality acceptance is a separate receipt bound to the exact candidate digest/revision and evidence-bundle digest. Changing either invalidates the receipt.
+8. Canonical quality acceptance is a separate receipt bound to the exact candidate digest/revision and evidence-bundle digest. Changing either invalidates the receipt. Candidate digest/revision and evidence-bundle digest are computed or assigned at the external quality boundary after producer output is final; the producer MUST NOT self-issue or embed a candidate/evidence digest binding as proof of itself.
 9. Implementation preconditions may resolve fresh values but may not hide an architecture, authority, enforcement, transition, rollback or acceptance decision.
 10. V0.2 historical outputs retain their historical receipts. V0.3 semantics are not applied retroactively.
 
