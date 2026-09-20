@@ -244,16 +244,43 @@
         "status": {
           "const": "RESOLVED"
         },
+        "code": {
+          "type": "string",
+          "minLength": 2
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 5
+        },
+        "missing_evidence": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
         "authority_kind": {
           "const": "EXISTING_AUTHORITY"
         },
         "evidence_id": {
           "type": "string",
           "minLength": 3
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 2
+        },
+        "observed_revision": {
+          "type": "string",
+          "minLength": 3
         }
       },
       "required": [
         "status",
+        "code",
+        "evidence_ref",
+        "missing_evidence",
         "authority_kind",
         "evidence_id"
       ]
@@ -265,16 +292,43 @@
         "status": {
           "const": "RESOLVED"
         },
+        "code": {
+          "type": "string",
+          "minLength": 2
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 5
+        },
+        "missing_evidence": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
         "authority_kind": {
           "const": "EXISTING_AUTHORITY"
         },
         "evidence_id": {
           "type": "string",
           "minLength": 3
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 2
+        },
+        "observed_revision": {
+          "type": "string",
+          "minLength": 3
         }
       },
       "required": [
         "status",
+        "code",
+        "evidence_ref",
+        "missing_evidence",
         "authority_kind",
         "evidence_id"
       ]
@@ -286,16 +340,43 @@
         "status": {
           "const": "RESOLVED"
         },
+        "code": {
+          "type": "string",
+          "minLength": 2
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 5
+        },
+        "missing_evidence": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
         "authority_kind": {
           "const": "EXISTING_AUTHORITY"
         },
         "evidence_id": {
           "type": "string",
           "minLength": 3
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 2
+        },
+        "observed_revision": {
+          "type": "string",
+          "minLength": 3
         }
       },
       "required": [
         "status",
+        "code",
+        "evidence_ref",
+        "missing_evidence",
         "authority_kind",
         "evidence_id"
       ]

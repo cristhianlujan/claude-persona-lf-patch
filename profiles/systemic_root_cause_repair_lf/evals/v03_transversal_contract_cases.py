@@ -319,4 +319,10 @@ invalid_match["execution_effect_reconciliation"] = [{
 assert schema_errors(invalid_match)
 assert list(runtime_schema_validator.iter_errors(invalid_match))
 
-print("PASS_SRCR_V03_TRANSVERSAL_CONTRACT=16/16")
+# 17. Provider constraint mirrors canonical minimum authority revision shape.
+invalid_revision = copy.deepcopy(source_recurrence)
+invalid_revision["origin_asset"]["observed_revision"] = "v1"
+assert schema_errors(invalid_revision)
+assert list(runtime_schema_validator.iter_errors(invalid_revision))
+
+print("PASS_SRCR_V03_TRANSVERSAL_CONTRACT=17/17")
