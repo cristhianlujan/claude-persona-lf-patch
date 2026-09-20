@@ -1,0 +1,27 @@
+{
+  "schema": "SRCR_MR02_R2_ROUTE_A_REPAIR_DIFF_V1",
+  "source_candidate_sha256": "5f18b8c23bb439c3790c53c01099753f7f3d53cbe897b407f7da413b202827ff",
+  "repaired_candidate_sha256": "b0a0c33cceeac15a838f631d969e20e84e96c54e02fad49f54598c4954af1da3",
+  "route": "A_PRODUCER_REPAIR_NO_SCOPE_EXPANSION",
+  "p1": {
+    "removed_change": "CREATE FUNCTION public.lf_operation_lifecycle_readiness_v1(text,text)",
+    "full_candidate_occurrences_after": 0
+  },
+  "p2": {
+    "authorized_primitive": "Existing lf_operation_step_contracts/lf_operation_steps rules-as-data + exact #186 caller footprint + existing C05 reserve/acquire/checkpoint/effect/release primitives + bounded direct migration/test readback.",
+    "persistent_new_resolver": false
+  },
+  "newly_exposed_blocker": {
+    "backlog_id": 189,
+    "code": "UNDECLARED_EXECUTION_CALLER_AUTHORITY_UNRESOLVED",
+    "consequence": "Candidate must remain NEEDS_MORE_EVIDENCE and not handoff-ready until authority is reconciled."
+  },
+  "evidence_refs": [
+    "supabase://public.lf_backlog_errores_operativos/186",
+    "supabase://public.lf_backlog_errores_operativos/189",
+    "supabase://pg_proc/public.fn_lf_operation_reserve_execution_v1",
+    "supabase://pg_proc/public.fn_lf_operation_acquire_lease_v1",
+    "supabase://pg_proc/public.fn_lf_operation_checkpoint_v1",
+    "supabase://pg_proc/public.fn_lf_operation_release_lease_v1"
+  ]
+}
