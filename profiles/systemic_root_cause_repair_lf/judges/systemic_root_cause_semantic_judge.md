@@ -143,7 +143,8 @@ These checks are generic and MUST be performed independently from producer decla
 Before accepting any proposed repair, independently determine whether the failure is still active/current and materially repair-worthy.
 - If current authority/readback proves the reported defect is already resolved, a proposed repair is an overrepair and must return to worker unless the candidate uses `NO_REPAIR_REQUIRED/ALREADY_RESOLVED`.
 - If evidence shows an observation/opportunity but not a material systemic failure, a proposed systemic repair is an overrepair and must return to worker unless the candidate uses `NO_REPAIR_REQUIRED/NOT_MATERIAL`.
-- `NO_REPAIR_REQUIRED` itself passes only with exact currentness/readback evidence and no hidden repair delta.
+- Every V0.4 disposition must include an executable verification whose method can be run independently and whose expected result directly tests the claimed current disposition; a prose assertion or future-only plan is not verification.
+- `NO_REPAIR_REQUIRED` itself passes only with exact currentness/readback evidence, a successfully evidenced executable disposition verification proving `ALREADY_RESOLVED` or `NOT_MATERIAL`, and no hidden repair delta.
 
 ### T2 — Quantitative policy grounding
 Independently extract every material numeric decision from the entire candidate, including prose: timeout, deadline, polling/backoff, retry limit, threshold, cutoff, sample size, quorum, tolerance, percentile/floor/ceiling or equivalent.
