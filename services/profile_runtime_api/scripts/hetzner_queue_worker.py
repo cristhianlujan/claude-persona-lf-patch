@@ -115,6 +115,92 @@ def _adapter_sources(cur: psycopg.Cursor, profile_code: str) -> list[dict[str, A
     return result
 
 
+def _reconcile_governed_pending(conn: psycopg.Connection) -> int:
+    """Promote queue rows only after canonical governed execution closure proves PASS."""
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            select q.request_id::text,
+                   e.execution_id,
+                   e.status,
+                   j.required_steps,
+                   j.required_steps_pass,
+                   j.fail_count,
+                   j.blocked_count,
+                   j.judge_result
+              from {TABLE} q
+              join public.lf_operation_execution e
+                on e.execution_id='EXEC-PROFILE-RUNTIME-'||q.request_id::text
+               and e.operation_code='EJECUCION_PERFIL_LF'
+              left join public.v_lf_operation_execution_judge j
+                on j.execution_id=e.execution_id
+             where q.runtime_target='HETZNER'
+               and q.status='BLOCKED'
+               and q.error_code='HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING'
+             order by q.updated_at, q.request_id
+             limit 100
+            """
+        )
+        rows = cur.fetchall()
+        reconciled = 0
+        for (
+            request_id,
+            execution_id,
+            execution_status,
+            required_steps,
+            required_steps_pass,
+            fail_count,
+            blocked_count,
+            judge_result,
+        ) in rows:
+            clean = (
+                execution_status == "COMPLETED"
+                and judge_result == "PASS"
+                and isinstance(required_steps, int)
+                and required_steps > 0
+                and required_steps_pass == required_steps
+                and fail_count == 0
+                and blocked_count == 0
+            )
+            if clean:
+                cur.execute(
+                    f"""
+                    update {TABLE}
+                       set status='SUCCEEDED',
+                           updated_at=now(),
+                           error_code=null,
+                           error_detail=null
+                     where request_id=%s::uuid
+                       and status='BLOCKED'
+                       and error_code='HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING'
+                    """,
+                    (request_id,),
+                )
+                reconciled += cur.rowcount
+            elif execution_status == "COMPLETED":
+                cur.execute(
+                    f"""
+                    update {TABLE}
+                       set updated_at=now(),
+                           error_code='HETZNER_GOVERNED_TERMINAL_JUDGE_FAILED',
+                           error_detail=%s
+                     where request_id=%s::uuid
+                       and status='BLOCKED'
+                    """,
+                    (
+                        (
+                            f"governed_execution={execution_id};"
+                            f"judge_result={judge_result};required_steps={required_steps};"
+                            f"required_steps_pass={required_steps_pass};fail_count={fail_count};"
+                            f"blocked_count={blocked_count}"
+                        )[:1500],
+                        request_id,
+                    ),
+                )
+        conn.commit()
+        return reconciled
+
+
 def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
     with conn.cursor() as cur:
         cur.execute(
@@ -208,6 +294,505 @@ def _api_json(method: str, path: str, payload: dict[str, Any] | None = None) -> 
 
 def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _canonical_json_sha256(value: Any) -> str:
+    raw = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _governed_execution_id(request_id: str) -> str:
+    if re.fullmatch(r"[0-9a-fA-F-]{36}", request_id or "") is None:
+        raise RuntimeError("HETZNER_GOVERNED_REQUEST_ID_INVALID")
+    return f"EXEC-PROFILE-RUNTIME-{request_id.lower()}"
+
+
+def _profile_source_identity(claimed: dict[str, Any]) -> dict[str, Any]:
+    profile_slug = str(claimed.get("profile_slug") or "")
+    raw_paths = claimed.get("profile_source_paths")
+    if not isinstance(raw_paths, list) or not raw_paths:
+        raise RuntimeError("HETZNER_GOVERNED_PROFILE_SOURCE_PATHS_INVALID")
+    manifest: list[dict[str, str]] = []
+    for raw in raw_paths:
+        if not isinstance(raw, str) or not raw:
+            raise RuntimeError("HETZNER_GOVERNED_PROFILE_SOURCE_PATH_INVALID")
+        rel = Path(raw)
+        if rel.is_absolute() or ".." in rel.parts or not raw.startswith(f"profiles/{profile_slug}/"):
+            raise RuntimeError(f"HETZNER_GOVERNED_PROFILE_SOURCE_PATH_ESCAPE:{raw}")
+        path = (REPO_ROOT / rel).resolve()
+        try:
+            path.relative_to(REPO_ROOT.resolve())
+        except ValueError as exc:
+            raise RuntimeError("HETZNER_GOVERNED_PROFILE_SOURCE_PATH_ESCAPE") from exc
+        if not path.is_file():
+            raise RuntimeError(f"HETZNER_GOVERNED_PROFILE_SOURCE_MISSING:{raw}")
+        content = path.read_text(encoding="utf-8")
+        manifest.append({"ref": raw, "content_sha256": _sha256_text(content)})
+    manifest.sort(key=lambda item: item["ref"])
+    source_sha = _env("PROFILE_RUNTIME_SOURCE_SHA")
+    if re.fullmatch(r"[0-9a-f]{40}", source_sha or "") is None:
+        raise RuntimeError("HETZNER_GOVERNED_RUNTIME_SOURCE_SHA_INVALID")
+    return {
+        "source_revision": source_sha,
+        "source_manifest": manifest,
+        "profile_source_digest": "sha256:" + _canonical_json_sha256(manifest),
+        "profile_source_ref": (
+            f"github://cristhianlujan/claude-persona-lf-patch@{source_sha}/"
+            f"profiles/{profile_slug}"
+        ),
+    }
+
+
+def _fetch_json_scalar(cur: psycopg.Cursor, query: str, params: tuple[Any, ...]) -> dict[str, Any]:
+    cur.execute(query, params)
+    row = cur.fetchone()
+    if row is None or not isinstance(row[0], dict):
+        raise RuntimeError("HETZNER_GOVERNED_RPC_RESULT_INVALID")
+    return dict(row[0])
+
+
+def _record_governed_step(
+    cur: psycopg.Cursor,
+    *,
+    execution_id: str,
+    step_id: str,
+    evidence_ref: str,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    existing = _read_governed_step(cur, execution_id, step_id)
+    if existing is not None and existing.get("status") == "STEP_PASS_WITH_EVIDENCE":
+        return {
+            "outcome": "STEP_RECORDED",
+            "replay": True,
+            "step_id": step_id,
+            "status": existing["status"],
+        }
+    result = _fetch_json_scalar(
+        cur,
+        "select public.lf_record_profile_execution_step_v1(%s,%s,%s,%s,%s)",
+        (execution_id, step_id, evidence_ref, Jsonb(payload), execution_id),
+    )
+    if result.get("outcome") != "STEP_RECORDED":
+        raise RuntimeError(
+            f"HETZNER_GOVERNED_STEP_NOT_CLEAN:{step_id}:{result.get('code') or result.get('outcome')}"
+        )
+    return result
+
+
+def _read_governed_step(
+    cur: psycopg.Cursor, execution_id: str, step_id: str
+) -> dict[str, Any] | None:
+    cur.execute(
+        """
+        select status,evidence_ref,evidence_payload
+          from public.lf_operation_execution_steps
+         where execution_id=%s and step_id=%s
+        """,
+        (execution_id, step_id),
+    )
+    row = cur.fetchone()
+    if row is None:
+        return None
+    return {
+        "status": row[0],
+        "evidence_ref": row[1],
+        "evidence_payload": row[2] if isinstance(row[2], dict) else {},
+    }
+
+
+def _begin_governed_pre_model(
+    conn: psycopg.Connection, claimed: dict[str, Any]
+) -> dict[str, Any]:
+    request_id = str(claimed["request_id"])
+    execution_id = _governed_execution_id(request_id)
+    source = _profile_source_identity(claimed)
+    input_sha = _sha256_text(str(claimed["input_literal"]))
+    input_digest = "sha256:" + input_sha
+    request_sha = _canonical_json_sha256(
+        {
+            "input_sha256": input_sha,
+            "profile_code": claimed["profile_code"],
+            "profile_slug": claimed["profile_slug"],
+            "profile_source_digest": source["profile_source_digest"],
+            "profile_source_revision": source["source_revision"],
+            "profile_source_paths": claimed["profile_source_paths"],
+        }
+    )
+    target_path = str(claimed["profile_source_paths"][0])
+    manifest = {
+        "queue_request_id": request_id,
+        "runtime_target": "HETZNER",
+        "runtime_provider": PROVIDER,
+        "runtime_source_revision": source["source_revision"],
+        "input_sha256": input_digest,
+        "profile_source_digest": source["profile_source_digest"],
+        "read_only": True,
+        "no_write": True,
+        "no_promotion": True,
+        "automatic_impact": False,
+    }
+    with conn.cursor() as cur:
+        begun = _fetch_json_scalar(
+            cur,
+            "select public.lf_profile_execution_begin_v1(%s,%s,%s,%s,%s,%s,%s,%s)",
+            (
+                execution_id,
+                f"profile-runtime-queue:{request_id}",
+                request_sha,
+                execution_id,
+                claimed["profile_code"],
+                "cristhianlujan/claude-persona-lf-patch",
+                target_path,
+                Jsonb(manifest),
+            ),
+        )
+        if begun.get("result") not in {"RESERVED_NEW_EXECUTION", "REPLAY_EXISTING_EXECUTION"}:
+            raise RuntimeError(
+                f"HETZNER_GOVERNED_BEGIN_FAILED:{begun.get('result')}"
+            )
+        cur.execute(
+            "select manifest from public.lf_operation_execution where execution_id=%s",
+            (execution_id,),
+        )
+        execution_row = cur.fetchone()
+        execution_manifest = (
+            execution_row[0] if execution_row and isinstance(execution_row[0], dict) else {}
+        )
+        if not execution_manifest:
+            raise RuntimeError("HETZNER_GOVERNED_EXECUTION_MANIFEST_MISSING")
+
+        cur.execute(
+            "select public.lf_router_resolve_v1(%s,%s,%s,%s,%s)",
+            (
+                claimed["input_literal"],
+                claimed["profile_code"],
+                "PROFILE_EXECUTION",
+                "PERFIL",
+                "ROUTER",
+            ),
+        )
+        row = cur.fetchone()
+        route = row[0] if row and isinstance(row[0], dict) else {}
+        if (
+            route.get("status") != "READY_TO_EXECUTE"
+            or route.get("operation_code") != "EJECUCION_PERFIL_LF"
+        ):
+            raise RuntimeError("HETZNER_GOVERNED_ROUTER_NOT_READY")
+        _record_governed_step(
+            cur,
+            execution_id=execution_id,
+            step_id="router",
+            evidence_ref=f"supabase://public.lf_router_resolve_v1/{claimed['profile_code']}/PROFILE_EXECUTION",
+            payload={"router_read": "READY_TO_EXECUTE", "action": "PROFILE_EXECUTION"},
+        )
+
+        cur.execute(
+            """
+            select codigo_activo,metadata->>'profile_slug',ruta_esperada
+              from public.lf_activos
+             where codigo_activo=%s and tipo_activo='PERFIL' and archived_at is null
+             limit 1
+            """,
+            (claimed["profile_code"],),
+        )
+        asset = cur.fetchone()
+        if asset is None or asset[1] != claimed["profile_slug"]:
+            raise RuntimeError("HETZNER_GOVERNED_PROFILE_RESOLUTION_MISMATCH")
+        _record_governed_step(
+            cur,
+            execution_id=execution_id,
+            step_id="profile_resolve",
+            evidence_ref=f"supabase://public/lf_activos/{claimed['profile_code']}",
+            payload={
+                "exact_profile_resolved": True,
+                "codigo_activo": claimed["profile_code"],
+                "profile_slug": claimed["profile_slug"],
+            },
+        )
+        _record_governed_step(
+            cur,
+            execution_id=execution_id,
+            step_id="profile_source_read",
+            evidence_ref=source["profile_source_ref"],
+            payload={
+                "profile_source_ref": source["profile_source_ref"],
+                "source_revision": source["source_revision"],
+                "profile_source_digest": source["profile_source_digest"],
+                "runtime_source_mode": "EXACT_DEPLOYED_GIT_REVISION",
+            },
+        )
+        _record_governed_step(
+            cur,
+            execution_id=execution_id,
+            step_id="input_validate",
+            evidence_ref=f"queue://private.lf_profile_runtime_queue_v1/{request_id}@{input_digest}",
+            payload={
+                "input_scope": f"QUEUE_REQUEST:{request_id}",
+                "activation_trigger_match": True,
+                "input_digest": input_digest,
+                "read_only": True,
+            },
+        )
+
+        context = _fetch_json_scalar(
+            cur,
+            "select public.lf_profile_execution_context_admission_v1(%s)",
+            (execution_id,),
+        )
+        if context.get("status") != "READY" or context.get("server_validated") is not True:
+            raise RuntimeError(
+                f"HETZNER_GOVERNED_CONTEXT_NOT_READY:{context.get('blocking_code')}"
+            )
+        _record_governed_step(
+            cur,
+            execution_id=execution_id,
+            step_id="context_admission",
+            evidence_ref=str(context["context_receipt_ref"]),
+            payload=context,
+        )
+
+        existing_baseline = _read_governed_step(
+            cur, execution_id, "research_baseline_freeze"
+        )
+        if (
+            existing_baseline is not None
+            and existing_baseline.get("status") == "STEP_PASS_WITH_EVIDENCE"
+        ):
+            baseline_first = {
+                "outcome": "STEP_RECORDED",
+                "replay": True,
+                "status": existing_baseline["status"],
+            }
+        else:
+            baseline_first = _fetch_json_scalar(
+                cur,
+                "select public.lf_profile_execution_research_baseline_v1(%s,%s,%s)",
+                (execution_id, None, execution_id),
+            )
+    conn.commit()
+    return {
+        "execution_id": execution_id,
+        "source": source,
+        "input_digest": input_digest,
+        "context": context,
+        "baseline_first": baseline_first,
+        "research_baseline_mode": execution_manifest.get("research_baseline_mode"),
+        "research_baseline_contract": execution_manifest.get("research_baseline_contract"),
+    }
+
+
+def _persist_required_baseline(
+    conn: psycopg.Connection,
+    governed: dict[str, Any],
+    baseline_envelope: dict[str, Any],
+) -> dict[str, Any]:
+    execution_id = governed["execution_id"]
+    with conn.cursor() as cur:
+        result = _fetch_json_scalar(
+            cur,
+            "select public.lf_profile_execution_research_baseline_v1(%s,%s,%s)",
+            (execution_id, Jsonb(baseline_envelope), execution_id),
+        )
+        if result.get("outcome") != "STEP_RECORDED":
+            raise RuntimeError(
+                f"HETZNER_GOVERNED_BASELINE_PERSIST_FAILED:{result.get('code') or result.get('outcome')}"
+            )
+    conn.commit()
+    return result
+
+
+def _read_model_governance(
+    conn: psycopg.Connection, governed: dict[str, Any]
+) -> dict[str, Any]:
+    execution_id = governed["execution_id"]
+    with conn.cursor() as cur:
+        context_step = _read_governed_step(cur, execution_id, "context_admission")
+        baseline_step = _read_governed_step(cur, execution_id, "research_baseline_freeze")
+    if context_step is None or baseline_step is None:
+        raise RuntimeError("HETZNER_GOVERNED_PRE_MODEL_STEP_MISSING")
+    context_payload = context_step["evidence_payload"]
+    baseline_payload = baseline_step["evidence_payload"]
+    binding = baseline_payload.get("research_baseline_binding")
+    if not isinstance(binding, dict):
+        raise RuntimeError("HETZNER_GOVERNED_BASELINE_BINDING_MISSING")
+    applicability = binding.get("applicability")
+    if applicability not in {"NOT_APPLICABLE", "REQUIRED"}:
+        raise RuntimeError("HETZNER_GOVERNED_BASELINE_APPLICABILITY_INVALID")
+    return {
+        "execution_id": execution_id,
+        "context_receipt_ref": context_payload.get("context_receipt_ref"),
+        "context_receipt_digest": context_payload.get("context_receipt_digest"),
+        "context_capsule": context_payload.get("context_capsule") or {},
+        "research_baseline": {
+            "applicability": applicability,
+            "baseline_receipt_ref": baseline_payload.get("baseline_receipt_ref"),
+            "baseline_digest": binding.get("baseline_digest"),
+            "baseline_snapshot": binding.get("baseline_snapshot") or {},
+            "research_baseline_contract": (
+                governed.get("research_baseline_contract")
+                if applicability == "REQUIRED"
+                else None
+            ),
+        },
+    }
+
+
+def _baseline_api_payload(
+    claimed: dict[str, Any], governed: dict[str, Any]
+) -> dict[str, Any]:
+    contract = governed.get("research_baseline_contract")
+    if not isinstance(contract, dict):
+        raise RuntimeError("HETZNER_GOVERNED_BASELINE_CONTRACT_MISSING")
+    return {
+        "request_id": str(claimed["request_id"]),
+        "operation_code": "EJECUCION_PERFIL_LF",
+        "profile_code": claimed["profile_code"],
+        "profile_slug": claimed["profile_slug"],
+        "profile_source_paths": claimed["profile_source_paths"],
+        "input_literal": claimed["input_literal"],
+        "input_digest": governed["input_digest"],
+        "profile_source_digest": governed["source"]["profile_source_digest"],
+        "research_baseline_contract": contract,
+    }
+
+
+def _baseline_envelope_from_job(job: dict[str, Any]) -> dict[str, Any]:
+    result = _profile_result(job)
+    if not isinstance(result, dict):
+        raise RuntimeError("HETZNER_BASELINE_API_RESULT_MISSING")
+    if result.get("status") != "PASS" or result.get("baseline_model_call_count") != 1:
+        codes = _gate_blocking_codes(result)
+        raise RuntimeError(
+            "HETZNER_BASELINE_API_FAILED:"
+            + (codes[0] if codes else str(result.get("status") or "UNKNOWN"))
+        )
+    envelope = result.get("baseline_envelope")
+    if not isinstance(envelope, dict):
+        raise RuntimeError("HETZNER_BASELINE_API_ENVELOPE_MISSING")
+    return envelope
+
+
+def _attach_governed_operation(
+    payload: dict[str, Any], model_governance: dict[str, Any]
+) -> dict[str, Any]:
+    profile = payload.get("profile")
+    if not isinstance(profile, dict):
+        raise RuntimeError("HETZNER_GOVERNED_PROFILE_PAYLOAD_MISSING")
+    profile["governed_operation"] = model_governance
+    return payload
+
+
+def _record_post_model_governance(
+    conn: psycopg.Connection,
+    *,
+    claimed: dict[str, Any],
+    governed: dict[str, Any],
+    job: dict[str, Any],
+) -> dict[str, Any]:
+    execution_id = governed["execution_id"]
+    profile = _profile_result(job)
+    if profile is None:
+        return {"status": "BLOCKED", "error_code": "HETZNER_API_RESULT_MISSING"}
+    completion = profile.get("runtime_completion")
+    raw_output = profile.get("raw_output")
+    if not isinstance(completion, dict) or completion.get("status") != "PASS":
+        return {
+            "status": "BLOCKED",
+            "error_code": (_gate_blocking_codes(completion or {}) or ["HETZNER_RUNTIME_COMPLETION_FAILED"])[0],
+        }
+    if not isinstance(raw_output, str):
+        return {"status": "BLOCKED", "error_code": "HETZNER_GOVERNED_RAW_OUTPUT_MISSING"}
+    try:
+        profile_output = json.loads(raw_output)
+    except json.JSONDecodeError:
+        return {"status": "BLOCKED", "error_code": "HETZNER_GOVERNED_RAW_OUTPUT_JSON_INVALID"}
+    if not isinstance(profile_output, dict):
+        return {"status": "BLOCKED", "error_code": "HETZNER_GOVERNED_RAW_OUTPUT_NOT_OBJECT"}
+
+    model_governance = _read_model_governance(conn, governed)
+    baseline = model_governance["research_baseline"]
+    context_transport = {
+        "profile_source_mode": "JIT_BY_REF",
+        "jit_resolver_ref": "supabase://public.v_lf_fuente_operativa/EVIDENCE_RESOLVER_REGISTRY",
+        "jit_only": True,
+        "policy_payloads": False,
+        "full_ekb_entries": False,
+        "full_readmes": False,
+        "full_prefetch_count": 0,
+        "hydrated_refs": [],
+    }
+    execute_payload = {
+        "profile_output": profile_output,
+        "source_refs": list(claimed["profile_source_paths"]),
+        "context_receipt_ref": model_governance["context_receipt_ref"],
+        "context_receipt_digest": model_governance["context_receipt_digest"],
+        "context_transport": context_transport,
+        "research_baseline_ref": baseline["baseline_receipt_ref"],
+        "research_baseline_digest": baseline["baseline_digest"],
+        "profile_source_digest": governed["source"]["profile_source_digest"],
+        "profile_source_revision": governed["source"]["source_revision"],
+        "producer_runtime": PROVIDER,
+        "queue_request_id": str(claimed["request_id"]),
+    }
+    with conn.cursor() as cur:
+        execute_result = _fetch_json_scalar(
+            cur,
+            "select public.lf_record_profile_execution_step_v1(%s,%s,%s,%s,%s)",
+            (
+                execution_id,
+                "execute_profile",
+                f"hetzner://profile-runtime/{claimed['request_id']}/execute",
+                Jsonb(execute_payload),
+                execution_id,
+            ),
+        )
+        if execute_result.get("outcome") != "STEP_RECORDED":
+            conn.commit()
+            return {
+                "status": "BLOCKED",
+                "error_code": execute_result.get("code") or "HETZNER_GOVERNED_EXECUTE_STEP_NOT_CLEAN",
+            }
+
+        contract_gate = profile.get("profile_contract_valid")
+        semantic_gate = profile.get("semantic_utility")
+        contract_codes = _gate_blocking_codes(contract_gate if isinstance(contract_gate, dict) else {})
+        output_payload = {
+            "output_contract_result": (
+                contract_gate.get("status") if isinstance(contract_gate, dict) else "MISSING"
+            ),
+            "deterministic_validation": {
+                "profile_contract_valid": contract_gate,
+                "runtime_semantic_utility": semantic_gate,
+            },
+            "blocking_codes": contract_codes,
+        }
+        output_result = _fetch_json_scalar(
+            cur,
+            "select public.lf_record_profile_execution_step_v1(%s,%s,%s,%s,%s)",
+            (
+                execution_id,
+                "output_validate",
+                f"hetzner://profile-runtime/{claimed['request_id']}/output-validation",
+                Jsonb(output_payload),
+                execution_id,
+            ),
+        )
+    conn.commit()
+    if output_result.get("outcome") != "STEP_RECORDED":
+        return {
+            "status": "BLOCKED",
+            "error_code": output_result.get("code") or "HETZNER_GOVERNED_OUTPUT_STEP_NOT_CLEAN",
+        }
+    return {
+        "status": "READY_FOR_SEMANTIC_JUDGE",
+        "error_code": None,
+        "execution_id": execution_id,
+        "next_gate": "semantic_judge",
+        "semantic_judge_auto_recorded": False,
+        "baseline_applicability": baseline["applicability"],
+    }
 
 
 def _validate_envelope(request_id: str, envelope: Any) -> dict[str, Any]:
@@ -495,15 +1080,59 @@ def _execution_queue_outcome(profile: dict[str, Any]) -> dict[str, str | None]:
     return {"status": "SUCCEEDED", "error_code": None, "error_detail": None}
 
 
-def _persist_success(conn: psycopg.Connection, request_id: str, job: dict[str, Any]) -> None:
+def _persist_success(
+    conn: psycopg.Connection,
+    request_id: str,
+    job: dict[str, Any],
+    *,
+    claimed: dict[str, Any],
+    governed: dict[str, Any],
+) -> None:
     profile = _profile_result(job)
     if profile is None:
         raise RuntimeError("HETZNER_API_RESULT_MISSING")
     completion = profile.get("runtime_completion") or {}
-    outcome = _execution_queue_outcome(profile)
-    status = str(outcome["status"])
-    error_code = outcome["error_code"]
-    error_detail = outcome["error_detail"]
+    runtime_outcome = _execution_queue_outcome(profile)
+    governed_outcome = _record_post_model_governance(
+        conn, claimed=claimed, governed=governed, job=job
+    )
+    profile["governed_operation"] = governed_outcome
+    governed_status = governed_outcome.get("status")
+    if governed_status == "BLOCKED":
+        status = "BLOCKED"
+        error_code = governed_outcome.get("error_code") or "HETZNER_GOVERNED_OPERATION_BLOCKED"
+        error_detail = (
+            f"governed_execution={governed.get('execution_id')};"
+            f"next_gate={governed_outcome.get('next_gate')};"
+            f"runtime_status={runtime_outcome.get('status')}"
+        )
+    elif governed_status == "READY_FOR_SEMANTIC_JUDGE":
+        status = "BLOCKED"
+        if runtime_outcome.get("status") == "SUCCEEDED":
+            error_code = "HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING"
+            error_detail = (
+                f"governed_execution={governed.get('execution_id')};"
+                "next_gate=semantic_judge;"
+                "runtime_status=SUCCEEDED"
+            )
+        else:
+            error_code = runtime_outcome.get("error_code") or "HETZNER_RUNTIME_GATES_NOT_CLEAN"
+            error_detail = runtime_outcome.get("error_detail") or (
+                f"governed_execution={governed.get('execution_id')};"
+                f"runtime_status={runtime_outcome.get('status')}"
+            )
+    elif governed_status == "COMPLETED":
+        status = str(runtime_outcome["status"])
+        error_code = runtime_outcome["error_code"]
+        error_detail = runtime_outcome["error_detail"]
+    else:
+        status = "BLOCKED"
+        error_code = "HETZNER_GOVERNED_OPERATION_STATE_INVALID"
+        error_detail = (
+            f"governed_execution={governed.get('execution_id')};"
+            f"governed_status={governed_status};"
+            f"runtime_status={runtime_outcome.get('status')}"
+        )
     receipt = completion.get("receipt") if isinstance(completion.get("receipt"), dict) else None
     attestation = None
     if receipt and isinstance(receipt.get("runtime_attestation"), dict):
@@ -580,10 +1209,30 @@ def run_once() -> bool:
     conn = _connect()
     request_id: str | None = None
     try:
+        _reconcile_governed_pending(conn)
         claimed = _claim(conn)
         if claimed is None:
             return False
         request_id = claimed["request_id"]
+        governed = _begin_governed_pre_model(conn, claimed)
+        baseline_first = governed.get("baseline_first") or {}
+        if baseline_first.get("outcome") == "BASELINE_REQUIRED":
+            baseline_accepted = _api_json(
+                "POST", "/v1/profile/research-baseline", _baseline_api_payload(claimed, governed)
+            )
+            baseline_job_id = baseline_accepted.get("job_id")
+            if not isinstance(baseline_job_id, str) or not baseline_job_id:
+                raise RuntimeError("HETZNER_BASELINE_API_JOB_ID_MISSING")
+            baseline_job = _wait_job(baseline_job_id)
+            baseline_envelope = _baseline_envelope_from_job(baseline_job)
+            _persist_required_baseline(conn, governed, baseline_envelope)
+        elif baseline_first.get("outcome") != "STEP_RECORDED":
+            raise RuntimeError(
+                "HETZNER_GOVERNED_BASELINE_HANDSHAKE_INVALID:"
+                + str(baseline_first.get("outcome") or baseline_first.get("code") or "UNKNOWN")
+            )
+
+        model_governance = _read_model_governance(conn, governed)
         envelope = claimed.get("runtime_request_envelope")
         if envelope is not None:
             envelope = materialize_router_advisory_envelope(
@@ -602,12 +1251,13 @@ def run_once() -> bool:
             payload = _queue_native_payload(claimed)
             endpoint = "/v1/profile/queue-execute"
             route = "QUEUE_NATIVE"
+        payload = _attach_governed_operation(payload, model_governance)
         accepted = _api_json("POST", endpoint, payload)
         job_id = accepted.get("job_id")
         if not isinstance(job_id, str) or not job_id:
             raise RuntimeError("HETZNER_API_JOB_ID_MISSING")
         job = _wait_job(job_id)
-        _persist_success(conn, request_id, job)
+        _persist_success(conn, request_id, job, claimed=claimed, governed=governed)
         print(f"HETZNER_QUEUE_REQUEST_ID={request_id}")
         print(f"HETZNER_QUEUE_ROUTE={route}")
         print(f"HETZNER_QUEUE_JOB_ID={job_id}")

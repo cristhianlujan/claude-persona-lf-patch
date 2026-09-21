@@ -4,6 +4,8 @@ import json
 import time
 from typing import Any
 
+from jsonschema import Draft202012Validator
+
 from .cache import StructuralCache
 from .deployment import deployment_state
 from .hashing import canonical_json_sha256, sha256_text
@@ -15,6 +17,7 @@ from .llama import (
     UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION,
     UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2,
     decode_ui_production_transport,
+    generate_research_baseline_snapshot,
 )
 from .models import (
     ArtifactSetExecuteRequest,
@@ -22,6 +25,7 @@ from .models import (
     ExecuteRequest,
     ProfileTask,
     QueueExecuteRequest,
+    ResearchBaselineRequest,
 )
 from .repository import RepositoryBindings
 from .runtime_authority import resolve_typed_runtime_context
@@ -50,6 +54,70 @@ def _failure(exc: BaseException) -> tuple[str, str | None]:
 
 def _not_evaluated(code: str) -> dict[str, Any]:
     return {"status": "NOT_EVALUATED", "blocking_codes": [code], "downstream_authorized": False}
+
+
+def _snapshot_binding_paths(contract: dict[str, Any]) -> dict[str, list[str]]:
+    raw = contract.get("snapshot_binding_paths") or {}
+    if not isinstance(raw, dict):
+        raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PATHS_INVALID")
+    result: dict[str, list[str]] = {}
+    for source, path in raw.items():
+        if source not in {"input_digest", "profile_source_digest", "evidence_refs", "capture_stage"}:
+            raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_SOURCE_INVALID")
+        if (
+            not isinstance(path, list)
+            or not path
+            or len(path) > 12
+            or any(not isinstance(item, str) or not item.strip() for item in path)
+        ):
+            raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PATH_INVALID")
+        normalized = [item.strip() for item in path]
+        if normalized in result.values():
+            raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PATH_DUPLICATE")
+        result[source] = normalized
+    return result
+
+
+def _schema_without_bound_paths(
+    snapshot_schema: dict[str, Any], binding_paths: dict[str, list[str]]
+) -> dict[str, Any]:
+    projected = json.loads(json.dumps(snapshot_schema))
+
+    def remove_leaf(node: dict[str, Any], path: list[str]) -> None:
+        current = node
+        for segment in path[:-1]:
+            properties = current.get("properties")
+            if not isinstance(properties, dict) or segment not in properties:
+                raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_SCHEMA_PATH_MISSING")
+            child = properties[segment]
+            if not isinstance(child, dict) or child.get("type") != "object":
+                raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_SCHEMA_PARENT_INVALID")
+            current = child
+        properties = current.get("properties")
+        leaf = path[-1]
+        if not isinstance(properties, dict) or leaf not in properties:
+            raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_SCHEMA_PATH_MISSING")
+        properties.pop(leaf)
+        required = current.get("required")
+        if isinstance(required, list):
+            current["required"] = [item for item in required if item != leaf]
+
+    for path in binding_paths.values():
+        remove_leaf(projected, path)
+    return projected
+
+
+def _inject_snapshot_binding(snapshot: dict[str, Any], path: list[str], value: Any) -> None:
+    current = snapshot
+    for segment in path[:-1]:
+        child = current.get(segment)
+        if child is None:
+            child = {}
+            current[segment] = child
+        if not isinstance(child, dict):
+            raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PARENT_INVALID")
+        current = child
+    current[path[-1]] = value
 
 
 def _runtime_diagnostics(exc: BaseException) -> dict[str, Any] | None:
@@ -424,6 +492,13 @@ def _governed_context(
     pack["lf_card_receipts"] = card_receipts
     pack["lf_adapter_receipts"] = adapter_receipts
     pack["runtime_typed_context"] = typed_context
+    governed_operation = (
+        task.governed_operation.model_dump(mode="python")
+        if task.governed_operation is not None
+        else None
+    )
+    if governed_operation is not None:
+        pack["governed_operation"] = governed_operation
     receipt = {
         "schema": "lf-governed-context-receipt/v2",
         "request_id": task.request_id,
@@ -436,6 +511,7 @@ def _governed_context(
         "authority_resolution": typed_context["authority_resolution"],
         "adapter_binding": typed_context["adapter_binding"],
         "runtime_schema": typed_context["runtime_schema"],
+        "governed_operation": governed_operation,
     }
     receipt["context_fingerprint"] = canonical_json_sha256({
         "request_id": task.request_id,
@@ -475,6 +551,112 @@ class ProfileRuntimeEngine:
         context_pack={"schema":"lf-profile-runtime-queue-context/v1","source":"QUEUE_NATIVE_TEXT_PROFILE","screen_governance_applicable":False,"downstream_authorized":False}
         result=self._execute_queue_profile(task=task,context_pack=context_pack)
         return {"schema":RESULT_SCHEMA,"kind":"queue_execute","request_id":task.request_id,"artifact_sha256":None,"result":result,"total_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
+
+    def run_research_baseline(self, request: ResearchBaselineRequest) -> dict[str, Any]:
+        started = time.perf_counter()
+        try:
+            self.repository.validate_profile_identity(request.profile_slug, request.profile_code)
+            sources = self.repository.profile_sources(
+                request.profile_slug, request.profile_source_paths
+            )
+            source_manifest = [
+                {"ref": item["ref"], "content_sha256": sha256_text(item["content"])}
+                for item in sources
+            ]
+            observed_source_digest = "sha256:" + canonical_json_sha256(source_manifest)
+            observed_input_digest = "sha256:" + sha256_text(request.input_literal)
+            if observed_source_digest != request.profile_source_digest:
+                raise LlamaTransportError(
+                    "RESEARCH_BASELINE_PROFILE_SOURCE_DIGEST_MISMATCH"
+                )
+            if observed_input_digest != request.input_digest:
+                raise LlamaTransportError("RESEARCH_BASELINE_INPUT_DIGEST_MISMATCH")
+            contract = request.research_baseline_contract
+            snapshot_schema = contract["snapshot_schema"]
+            Draft202012Validator.check_schema(snapshot_schema)
+            binding_paths = _snapshot_binding_paths(contract)
+            generation_snapshot_schema = _schema_without_bound_paths(
+                snapshot_schema, binding_paths
+            )
+            Draft202012Validator.check_schema(generation_snapshot_schema)
+            evidence_refs = [
+                "input:" + request.input_digest,
+                "profile-source-manifest:" + request.profile_source_digest,
+            ]
+            deterministic_values = {
+                "input_digest": request.input_digest,
+                "profile_source_digest": request.profile_source_digest,
+                "evidence_refs": evidence_refs,
+                "capture_stage": contract["capture_stage"],
+            }
+            binding = self.repository.runtime_binding(request.profile_slug)
+            model_sources = self.repository.profile_model_sources(request.profile_slug, sources)
+            max_output_tokens = None
+            if binding and isinstance(binding.execution_budget, dict):
+                candidate = binding.execution_budget.get("max_output_tokens")
+                if isinstance(candidate, int) and candidate > 0:
+                    max_output_tokens = candidate
+            generated = generate_research_baseline_snapshot(
+                settings=self.settings,
+                client=self.llama_client,
+                profile_slug=request.profile_slug,
+                profile_sources=model_sources,
+                input_literal=request.input_literal,
+                snapshot_schema=generation_snapshot_schema,
+                capture_stage=contract["capture_stage"],
+                max_output_tokens=max_output_tokens,
+            )
+            snapshot = generated["snapshot"]
+            for source, path in binding_paths.items():
+                _inject_snapshot_binding(snapshot, path, deterministic_values[source])
+            validation_errors = sorted(
+                Draft202012Validator(snapshot_schema).iter_errors(snapshot),
+                key=lambda item: list(item.absolute_path),
+            )
+            if validation_errors:
+                raise LlamaTransportError(
+                    "RESEARCH_BASELINE_SNAPSHOT_SCHEMA_INVALID",
+                    validation_errors[0].message[:300],
+                )
+            baseline_digest = "sha256:" + canonical_json_sha256(snapshot)
+            envelope = {
+                "snapshot": snapshot,
+                "baseline_digest": baseline_digest,
+                "capture_stage": contract["capture_stage"],
+                "input_digest": request.input_digest,
+                "profile_source_digest": request.profile_source_digest,
+                "evidence_refs": evidence_refs,
+            }
+            result = {
+                "status": "PASS",
+                "blocking_codes": [],
+                "baseline_envelope": envelope,
+                "runtime_model_id": generated["model_id"],
+                "usage": generated["usage"],
+                "timings": generated["timings"],
+                "finish_reason": generated["finish_reason"],
+                "generation_schema_sha256": generated["generation_schema_sha256"],
+                "generation_schema_policy": generated["generation_schema_policy"],
+                "baseline_model_call_count": 1,
+                "external_research_context_supplied": False,
+            }
+        except Exception as exc:
+            code, detail = _failure(exc)
+            result = {
+                "status": "FAIL",
+                "blocking_codes": [code],
+                "detail": detail,
+                "baseline_model_call_count": getattr(self.llama_client, "chat_calls", None),
+                "external_research_context_supplied": False,
+            }
+        return {
+            "schema": RESULT_SCHEMA,
+            "kind": "research_baseline",
+            "request_id": request.request_id,
+            "result": result,
+            "total_ms": round((time.perf_counter() - started) * 1000, 3),
+            "downstream_authorized": False,
+        }
 
     def run_artifact_set_execute(self, request: ArtifactSetExecuteRequest) -> dict[str, Any]:
         started = time.perf_counter()

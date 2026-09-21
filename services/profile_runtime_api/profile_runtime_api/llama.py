@@ -106,6 +106,7 @@ def _semantic_runtime_capsule(structural_context: dict[str, Any]) -> dict[str, A
         },
         "runtime_typed_context_sha256": typed.get("typed_context_sha256"),
         "lf_cards": structural_context.get("lf_cards") or [],
+        "governed_operation": structural_context.get("governed_operation"),
     }
 
 
@@ -1758,6 +1759,89 @@ def resource_budget_block_code(
     return None
 
 
+def generate_research_baseline_snapshot(
+    *,
+    settings: Settings,
+    client: LlamaHTTPClient,
+    profile_slug: str,
+    profile_sources: list[dict[str, str]],
+    input_literal: str,
+    snapshot_schema: dict[str, Any],
+    capture_stage: str,
+    max_output_tokens: int | None = None,
+) -> dict[str, Any]:
+    """Generate only the frozen pre-research snapshot using the selected persistent model.
+
+    This call intentionally receives no external/JIT research context. The runtime freezes
+    this result before the normal profile call is allowed to perform research/challenge work.
+    """
+    if not isinstance(snapshot_schema, dict) or not snapshot_schema:
+        raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_SCHEMA_REQUIRED")
+    if not isinstance(capture_stage, str) or not capture_stage.strip():
+        raise LlamaTransportError("RESEARCH_BASELINE_CAPTURE_STAGE_REQUIRED")
+    health = client.health()
+    if health.get("ready") is not True:
+        raise LlamaTransportError(
+            "LLAMA_SERVER_NOT_READY", str(health.get("error_code", ""))
+        )
+    parts = [
+        "Produce the governed pre-research solution baseline for the repository profile below.",
+        "Use ONLY the canonical profile sources and the literal input in this request.",
+        "Do not browse, use external research, infer later challenger findings, or rewrite a baseline after research.",
+        "Return exactly one JSON object with one root key: snapshot.",
+        "The snapshot must satisfy the bound profile-owned JSON schema.",
+        f"capture_stage={capture_stage}",
+        "",
+    ]
+    for source in profile_sources:
+        parts.extend(
+            [
+                f"--- BEGIN CANONICAL PROFILE SOURCE: {source['ref']} ---",
+                source["content"],
+                f"--- END CANONICAL PROFILE SOURCE: {source['ref']} ---",
+                "",
+            ]
+        )
+    system_prompt = "\n".join(parts)
+    if len(system_prompt) + len(input_literal) > settings.max_prompt_chars:
+        raise LlamaTransportError("RESEARCH_BASELINE_PROMPT_CONTEXT_BUDGET_EXCEEDED")
+    envelope_schema = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["snapshot"],
+        "properties": {"snapshot": snapshot_schema},
+    }
+    completion = client.chat(
+        system_prompt=system_prompt,
+        user_prompt=input_literal,
+        schema=envelope_schema,
+        profile_slug=profile_slug,
+        schema_mode="RESEARCH_BASELINE",
+        acceptance=None,
+        image_bytes=None,
+        image_media_type=None,
+        max_output_tokens_override=max_output_tokens,
+    )
+    raw = completion.get("content")
+    if not isinstance(raw, str):
+        raise LlamaTransportError("RESEARCH_BASELINE_MODEL_OUTPUT_MISSING")
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise LlamaTransportError("RESEARCH_BASELINE_MODEL_OUTPUT_JSON_INVALID") from exc
+    if not isinstance(payload, dict) or set(payload) != {"snapshot"} or not isinstance(payload.get("snapshot"), dict):
+        raise LlamaTransportError("RESEARCH_BASELINE_MODEL_OUTPUT_SHAPE_INVALID")
+    return {
+        "snapshot": payload["snapshot"],
+        "model_id": completion.get("model") or settings.llama_model,
+        "usage": completion.get("usage") if isinstance(completion.get("usage"), dict) else {},
+        "timings": completion.get("timings") if isinstance(completion.get("timings"), dict) else {},
+        "finish_reason": completion.get("finish_reason") or "UNAVAILABLE",
+        "generation_schema_sha256": completion.get("generation_schema_sha256"),
+        "generation_schema_policy": completion.get("generation_schema_policy"),
+    }
+
+
 class PersistentLlamaServerAdapter:
     adapter_id = "hetzner-local-llamacpp-http-v1"
     is_test_double = False
@@ -2018,6 +2102,27 @@ class PersistentLlamaServerAdapter:
                         "",
                     ]
                 )
+        governed_operation = (
+            model_context.get("governed_operation")
+            if isinstance(model_context, dict)
+            else None
+        )
+        frozen_baseline = (
+            governed_operation.get("research_baseline")
+            if isinstance(governed_operation, dict)
+            else None
+        )
+        if isinstance(frozen_baseline, dict) and frozen_baseline.get("applicability") == "REQUIRED":
+            parts.extend(
+                [
+                    "Governed pre-research baseline contract:",
+                    "- The observed context contains an externally frozen baseline created before research/challenge.",
+                    "- Preserve its baseline_snapshot and baseline_digest exactly at the output JSON paths declared by research_baseline_contract.",
+                    "- Never reconstruct, rewrite, or improve the frozen baseline after research.",
+                    "- Research/challenge may change the final solution and delta assessment, never the frozen BEFORE.",
+                    "",
+                ]
+            )
         for source in (self.model_profile_sources or request["profile_sources"]):
             ref = source["ref"]
             if (

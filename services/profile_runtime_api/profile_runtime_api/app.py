@@ -19,12 +19,13 @@ from .models import (
     ExecuteRequest,
     JobAccepted,
     QueueExecuteRequest,
+    ResearchBaselineRequest,
 )
 from .settings import Settings, SettingsError
 
 
 def _job_meta(
-    kind: str, payload: ExecuteRequest | ArtifactSetExecuteRequest | QueueExecuteRequest | BatchRequest
+    kind: str, payload: ExecuteRequest | ArtifactSetExecuteRequest | QueueExecuteRequest | ResearchBaselineRequest | BatchRequest
 ) -> dict[str, Any]:
     rendered = payload.model_dump(mode="json", by_alias=True)
     meta: dict[str, Any] = {
@@ -61,6 +62,16 @@ def _job_meta(
                 "screen_code": None,
                 "request_id": payload.profile.request_id,
                 "profiles": [payload.profile.profile_code],
+            }
+        )
+    elif isinstance(payload, ResearchBaselineRequest):
+        meta.update(
+            {
+                "artifact_sha256": None,
+                "screen_code": None,
+                "request_id": payload.request_id,
+                "profiles": [payload.profile_code],
+                "baseline_contract_version": payload.research_baseline_contract.get("contract_version"),
             }
         )
     else:
@@ -163,7 +174,7 @@ def create_app(
         *,
         kind: str,
         external_id: str,
-        payload: ExecuteRequest | ArtifactSetExecuteRequest | QueueExecuteRequest | BatchRequest,
+        payload: ExecuteRequest | ArtifactSetExecuteRequest | QueueExecuteRequest | ResearchBaselineRequest | BatchRequest,
         request: Request,
     ) -> JobAccepted:
         meta = _job_meta(kind, payload)
@@ -185,6 +196,8 @@ def create_app(
                         result = engine.run_artifact_set_execute(payload)
                     elif isinstance(payload, QueueExecuteRequest):
                         result = engine.run_queue_execute(payload)
+                    elif isinstance(payload, ResearchBaselineRequest):
+                        result = engine.run_research_baseline(payload)
                     else:
                         result = engine.run_batch(payload)
                     store.complete(job["job_id"], result)
@@ -263,6 +276,22 @@ def create_app(
         return submit_job(
             kind="queue_execute",
             external_id=payload.profile.request_id,
+            payload=payload,
+            request=request,
+        )
+
+    @app.post(
+        "/v1/profile/research-baseline",
+        response_model=JobAccepted,
+        status_code=status.HTTP_202_ACCEPTED,
+        dependencies=[Depends(authorize)],
+    )
+    def research_baseline(
+        payload: ResearchBaselineRequest, request: Request
+    ) -> JobAccepted:
+        return submit_job(
+            kind="research_baseline",
+            external_id=payload.request_id,
             payload=payload,
             request=request,
         )
