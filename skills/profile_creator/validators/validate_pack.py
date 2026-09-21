@@ -42,6 +42,7 @@ def main():
         ('PROFILE_OPERATION_BLOCKED_EVIDENCE',[sys.executable,str(root/'evals/profile_operation_blocked_evidence_contract.py')]),
         ('RUNTIME_UPDATE_OPERATION_DISPOSITION',[sys.executable,str(root/'evals/runtime_update_operation_disposition_contract.py')]),
         ('PROFILE_EXECUTION_RESEARCH_BASELINE',[sys.executable,str(root/'evals/profile_execution_research_baseline_contract.py')]),
+        ('PROFILE_EXECUTION_SEMANTIC_JUDGE_ENFORCEMENT',[sys.executable,str(root/'evals/profile_execution_semantic_judge_enforcement.py')]),
         ('S26_PROFILE_BASELINE_MATRIX',[sys.executable,str(root/'evals/s26_profile_baseline_matrix.py')]),
         ('S26_LEARNING_PREFLIGHT_MATRIX',[sys.executable,str(root/'evals/s26_learning_preflight_matrix.py')]),
     ]
