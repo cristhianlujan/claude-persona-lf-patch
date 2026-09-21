@@ -51,6 +51,7 @@
   "invariants": [
     "applicability_and_binding_contract_are_server_derived_from_profile_asset",
     "runtime_contains_no_profile_specific_snapshot_vocabulary",
+    "not_required_path_closes_before_any_baseline_model_dispatch",
     "baseline_step_is_durable_before_execute_profile",
     "clean_baseline_step_is_immutable_on_retry",
     "baseline_input_digest_matches_execution_input",
@@ -63,7 +64,8 @@
     "non_applicable_profiles_pay_no_model_baseline_cost",
     "same_profile_execution_authority_and_same_semantic_judge",
     "no_new_reasoning_engine_or_parallel_authority",
-    "production_migration_apply_requires_explicit_governed_authorization"
+    "production_migration_apply_requires_explicit_governed_authorization",
+    "in_flight_not_required_executions_are_bridged_without_retroactive_required_assurance"
   ],
   "fail_closed_codes": [
     "PROFILE_RESEARCH_BASELINE_MODE_INVALID",
@@ -73,7 +75,10 @@
     "PROFILE_RESEARCH_BASELINE_CAPTURE_STAGE_MISMATCH",
     "PROFILE_RESEARCH_BASELINE_INPUT_DIGEST_MISMATCH",
     "PROFILE_RESEARCH_BASELINE_SOURCE_DIGEST_MISMATCH",
-    "PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN"
+    "PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN",
+    "PROFILE_RESEARCH_BASELINE_UNEXPECTED_ENVELOPE",
+    "PROFILE_BASELINE_PRE_REQUIRED_MODE_INFLIGHT",
+    "PROFILE_BASELINE_COMPAT_BACKFILL_INCOMPLETE"
   ],
   "compatibility": {
     "legacy_profiles": "NOT_REQUIRED by default",
@@ -81,5 +86,19 @@
     "rollback": "Remove the profile metadata opt-in first, then revert the runtime step/function migration.",
     "production_apply": "Migration actor must carry production_apply_authorized=true; source-candidate executions cannot satisfy the apply precondition."
   },
-  "promotion": "forbidden_by_this_change"
+  "promotion": "forbidden_by_this_change",
+  "dispatch_protocol": {
+    "resolver": "public.lf_profile_execution_research_baseline_v1",
+    "first_call": "always deterministic with baseline_envelope=null",
+    "not_required": "records clean N/A step and dispatches no model",
+    "required": "returns BASELINE_REQUIRED with server-derived contract and does not record the step",
+    "required_followup": "invoke the same selected profile model only to produce the compact baseline envelope, then retry the same function",
+    "forbidden": "unconditional model dispatch before server applicability result"
+  },
+  "transition": {
+    "in_flight_policy": "Execution policy is snapshotted at begin. Pre-migration in-flight executions without research_baseline_mode are treated as NOT_REQUIRED.",
+    "compatibility_backfill": "After installing the new step contract, the migration calls the canonical baseline function with null envelope for each in-flight NOT_REQUIRED execution whose context_admission is already clean.",
+    "required_mode_inflight": "Fail migration if any pre-existing in-flight execution already claims PRE_RESEARCH_ALWAYS; no retroactive required baseline is fabricated.",
+    "historical_runs": "Completed executions are not rewritten."
+  }
 }

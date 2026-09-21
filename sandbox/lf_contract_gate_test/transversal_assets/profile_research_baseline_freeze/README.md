@@ -24,6 +24,10 @@ El step limpio queda en public.lf_operation_execution_steps; el recorder canóni
 
 No crea otro agente, judge, tabla ni autoridad. Reutiliza `EJECUCION_PERFIL_LF`, `lf_operation_execution_steps`, `lf_record_operation_step_core_v1` y el semantic judge existente. La fase de baseline usa el mismo runtime/model seleccionado para la ejecución del perfil; sólo cambia el orden y la evidencia persistida.
 
+## Dispatch determinista
+
+La primera llamada al step siempre es server-side con baseline_envelope=null. Si el asset indica NOT_REQUIRED, la función materializa N/A y termina sin llamada de modelo. Si indica PRE_RESEARCH_ALWAYS, devuelve BASELINE_REQUIRED sin cerrar el step; sólo entonces se invoca el mismo runtime/model seleccionado para producir el envelope compacto y se reintenta el mismo step.
+
 ## Performance/context
 
 Perfiles `NOT_REQUIRED` cierran el step como N/A de forma server-side y no generan baseline por modelo. En perfiles opt-in se transporta sólo snapshot compacto + digest + ref; la investigación completa sigue JIT por referencia.
@@ -31,6 +35,10 @@ Perfiles `NOT_REQUIRED` cierran el step como N/A de forma server-side y no gener
 ## Readback
 
 Verificar: step `research_baseline_freeze` limpio, `baseline_receipt_ref` exacto, digest persistido, igualdad entre el output resuelto por output_snapshot_path/output_digest_path y el baseline persistido, y ausencia de evidencia externa dentro del baseline.
+
+## Compatibilidad de ejecuciones en vuelo
+
+La política queda snapshotteada al crear cada ejecución. Durante la migración, ejecuciones antiguas IN_PROGRESS que ya pasaron context_admission y no conocían este control se materializan como NOT_REQUIRED mediante la misma función canónica; no se inventa un baseline requerido retroactivo. Si una ejecución preexistente ya declara PRE_RESEARCH_ALWAYS, la migración falla y exige resolverla antes del corte. Ejecuciones COMPLETED no se reescriben.
 
 ## Aplicación gobernada
 
@@ -43,6 +51,6 @@ Primero retirar el opt-in del perfil por reconciliación gobernada; luego revert
 ## Fuente
 
 - Contract: `sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json`
-- Contract SHA-256: 30ff1918b724847551cd32719b89936aac34ee1f2d1d951adaf191796c912160
+- Contract SHA-256: 6690f5ee2e0e265a130b71c21fa3ed5d7db8b3f9df3bd8bed14984602d84e30a
 - Operation: `public.lf_operation_registry/EJECUCION_PERFIL_LF`
 - Durable evidence: `public.lf_operation_execution_steps`

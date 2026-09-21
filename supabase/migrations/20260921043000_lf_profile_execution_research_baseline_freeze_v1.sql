@@ -35,6 +35,13 @@ begin
       and next_if_pass='execute_profile'
   ) then raise exception 'PROFILE_BASELINE_PRE_CONTEXT_EDGE_DRIFT'; end if;
 
+  if exists (
+    select 1 from public.lf_operation_execution
+    where operation_code='EJECUCION_PERFIL_LF'
+      and status='IN_PROGRESS'
+      and manifest->>'research_baseline_mode'='PRE_RESEARCH_ALWAYS'
+  ) then raise exception 'PROFILE_BASELINE_PRE_REQUIRED_MODE_INFLIGHT'; end if;
+
   if to_regprocedure('public.lf_record_operation_step_core_v1(text,text,text,jsonb,text,text,text,text,text,text,jsonb,boolean,text)') is null
      or to_regprocedure('public.lf_profile_execution_begin_v1(text,text,text,text,text,text,text,jsonb)') is null
      or to_regprocedure('public.lf_profile_execution_trust_validation_v1(text,text,jsonb)') is null
@@ -233,6 +240,9 @@ begin
   receipt_ref:='supabase://public.lf_operation_execution_steps/'||p_execution_id||'/research_baseline_freeze';
 
   if mode='NOT_REQUIRED' then
+    if p_baseline_envelope is not null then
+      raise exception 'PROFILE_RESEARCH_BASELINE_UNEXPECTED_ENVELOPE';
+    end if;
     binding:=jsonb_build_object(
       'applicability','NOT_APPLICABLE',
       'mode',mode,
@@ -251,8 +261,18 @@ begin
        or contract->>'profile_validator_binding'<>'PROFILE_OUTPUT_VALIDATOR_BOUND_V1' then
       raise exception 'PROFILE_RESEARCH_BASELINE_CONTRACT_INVALID';
     end if;
-    if p_baseline_envelope is null
-       or jsonb_typeof(p_baseline_envelope)<>'object'
+    if p_baseline_envelope is null then
+      return jsonb_build_object(
+        'outcome','BASELINE_REQUIRED',
+        'recorded',false,
+        'execution_id',p_execution_id,
+        'research_baseline_mode',mode,
+        'research_baseline_contract',contract,
+        'baseline_receipt_ref',receipt_ref,
+        'next_action','INVOKE_SAME_PROFILE_MODEL_FOR_BASELINE_THEN_RETRY'
+      );
+    end if;
+    if jsonb_typeof(p_baseline_envelope)<>'object'
        or jsonb_typeof(p_baseline_envelope->'snapshot')<>'object'
        or coalesce(p_baseline_envelope->>'baseline_digest','') !~ '^sha256:[0-9a-f]{64}$'
        or nullif(btrim(coalesce(p_baseline_envelope->>'capture_stage','')),'') is null
@@ -499,7 +519,7 @@ insert into public.lf_operation_steps(
 select 'EJECUCION_PERFIL_LF',47,'research_baseline_freeze',true,
   'research_baseline_binding; baseline_receipt_ref; server_validated',
   'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json',
-  '30ff1918b724847551cd32719b89936aac34ee1f2d1d951adaf191796c912160',true,47,e.execution_id,e.execution_id
+  '6690f5ee2e0e265a130b71c21fa3ed5d7db8b3f9df3bd8bed14984602d84e30a',true,47,e.execution_id,e.execution_id
 from public.lf_operation_execution e
 where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and e.status='IN_PROGRESS'
@@ -514,7 +534,7 @@ insert into public.lf_operation_judges(
 )
 select 'EJECUCION_PERFIL_LF','MINI_JUDGE_EJECUCION_PERFIL_RESEARCH_BASELINE_V1',
   'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json',
-  '30ff1918b724847551cd32719b89936aac34ee1f2d1d951adaf191796c912160','["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
+  '6690f5ee2e0e265a130b71c21fa3ed5d7db8b3f9df3bd8bed14984602d84e30a','["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
   '["STEP_PASS_WITH_EVIDENCE","BLOCKED_STEP_NOT_CLEAN","RETURN_TO_ROUTER"]'::jsonb,
   'ACTIVE_ENFORCEMENT',e.execution_id,e.execution_id
 from public.lf_operation_execution e
@@ -532,7 +552,7 @@ insert into public.lf_operation_step_contracts(
 )
 select 'EJECUCION_PERFIL_LF','research_baseline_freeze',47,47,'CONTRACT-EJECUCION-PERFIL-LF-v0.1',
   'Freeze a compact server-bound pre-research solution baseline when the canonical profile asset requires it; otherwise close as server-side N/A.',
-  '[]'::jsonb,'public.lf_profile_execution_research_baseline_v1 + NATIVE_MODEL_RUNTIME_WITH_SUPABASE_CONTEXT',
+  '[]'::jsonb,'public.lf_profile_execution_research_baseline_v1',
   '["research_baseline_binding","baseline_receipt_ref","server_validated"]'::jsonb,
   '{"server_validated":true,"applicability_source":"PROFILE_ASSET_METADATA","clean_step_immutable":true}'::jsonb,
   '{"missing_or_mutated_baseline":true,"external_pre_freeze_evidence":true,"binding_mismatch":true}'::jsonb,
@@ -540,7 +560,7 @@ select 'EJECUCION_PERFIL_LF','research_baseline_freeze',47,47,'CONTRACT-EJECUCIO
   'MINI_JUDGE_EJECUCION_PERFIL_RESEARCH_BASELINE_V1',
   '["research_baseline_binding","baseline_receipt_ref","server_validated"]'::jsonb,
   'execute_profile','RETURN_TO_ROUTER','ACTIVE_ENFORCEMENT',
-  'Transversal and profile-agnostic. PRE_RESEARCH_ALWAYS is opt-in from canonical profile asset metadata; NOT_REQUIRED costs no model baseline phase.',
+  'Deterministic-first handshake. NOT_REQUIRED closes server-side with null envelope. PRE_RESEARCH_ALWAYS returns BASELINE_REQUIRED without recording, then the same profile model generates the compact envelope and retries this exact step.',
   'public.lf_profile_execution_research_baseline_v1(text,jsonb,text)',
   '{"server_validation_failed":true}'::jsonb,e.execution_id,e.execution_id
 from public.lf_operation_execution e
@@ -566,6 +586,66 @@ where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
     and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
   and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF'
   and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql';
+
+do $compat$
+declare
+  r record;
+  v_actor text;
+  v_receipt jsonb;
+begin
+  select e.execution_id into v_actor
+  from public.lf_operation_execution e
+  where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
+    and e.status='IN_PROGRESS'
+    and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
+    and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF'
+    and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql';
+
+  for r in
+    select e.execution_id
+    from public.lf_operation_execution e
+    join public.lf_operation_execution_steps ca
+      on ca.execution_id=e.execution_id and ca.step_id='context_admission'
+    join public.lf_operation_step_judge_bindings cab
+      on cab.operation_code='EJECUCION_PERFIL_LF'
+     and cab.step_id='context_admission'
+     and cab.status='ACTIVE_ENFORCEMENT'
+    where e.operation_code='EJECUCION_PERFIL_LF'
+      and e.status='IN_PROGRESS'
+      and coalesce(nullif(e.manifest->>'research_baseline_mode',''),'NOT_REQUIRED')='NOT_REQUIRED'
+      and ca.status=cab.clean_result_value
+      and not exists (
+        select 1 from public.lf_operation_execution_steps x
+        where x.execution_id=e.execution_id and x.step_id='research_baseline_freeze'
+      )
+  loop
+    v_receipt:=public.lf_profile_execution_research_baseline_v1(r.execution_id,null,v_actor);
+    if v_receipt->>'outcome'<>'STEP_RECORDED' then
+      raise exception 'PROFILE_BASELINE_COMPAT_BACKFILL_NOT_RECORDED:%:%',r.execution_id,v_receipt;
+    end if;
+  end loop;
+
+  if exists (
+    select 1
+    from public.lf_operation_execution e
+    join public.lf_operation_execution_steps ca
+      on ca.execution_id=e.execution_id and ca.step_id='context_admission'
+    join public.lf_operation_step_judge_bindings cab
+      on cab.operation_code='EJECUCION_PERFIL_LF'
+     and cab.step_id='context_admission'
+     and cab.status='ACTIVE_ENFORCEMENT'
+    where e.operation_code='EJECUCION_PERFIL_LF'
+      and e.status='IN_PROGRESS'
+      and coalesce(nullif(e.manifest->>'research_baseline_mode',''),'NOT_REQUIRED')='NOT_REQUIRED'
+      and ca.status=cab.clean_result_value
+      and not exists (
+        select 1 from public.lf_operation_execution_steps x
+        where x.execution_id=e.execution_id and x.step_id='research_baseline_freeze'
+      )
+  ) then raise exception 'PROFILE_BASELINE_COMPAT_BACKFILL_INCOMPLETE'; end if;
+end
+$compat$;
 
 update public.lf_operation_step_contracts
 set next_if_pass='research_baseline_freeze',updated_at=now(),
@@ -662,7 +742,7 @@ select 'PROFILE_RESEARCH_BASELINE_FREEZE','PROFILE_RESEARCH_BASELINE_FREEZE','CA
     'step_id','research_baseline_freeze',
     'function','public.lf_profile_execution_research_baseline_v1',
     'binding_model','OPAQUE_SNAPSHOT_PLUS_DECLARATIVE_OUTPUT_PATHS',
-    'contract_sha256','30ff1918b724847551cd32719b89936aac34ee1f2d1d951adaf191796c912160'
+    'contract_sha256','6690f5ee2e0e265a130b71c21fa3ed5d7db8b3f9df3bd8bed14984602d84e30a'
   ),
   jsonb_build_object(
     'source_kind','GITHUB_SOURCE_PLUS_SUPABASE_REGISTRY',

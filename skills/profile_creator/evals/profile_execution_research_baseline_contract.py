@@ -20,6 +20,8 @@ assert contract['capability_code']=='PROFILE_RESEARCH_BASELINE_FREEZE'
 assert contract['applicability']['default']=='NOT_REQUIRED'
 assert set(contract['applicability']['modes'])=={'NOT_REQUIRED','PRE_RESEARCH_ALWAYS'}
 assert contract['applicability']['required_contract_version']=='PROFILE_RESEARCH_BASELINE_BINDING_V1'
+assert contract['dispatch_protocol']['resolver']=='public.lf_profile_execution_research_baseline_v1'
+assert contract['dispatch_protocol']['not_required']=='records clean N/A step and dispatches no model'
 assert contract_sha in sql
 assert "metadata->>'research_baseline_mode'" in sql
 assert "metadata->'research_baseline_contract'" in sql
@@ -40,6 +42,15 @@ for forbidden in (
     'baseline_solution_snapshot',
 ):
     assert forbidden not in sql, forbidden
+
+# Deterministic-first dispatch prevents a model call on NOT_REQUIRED profiles.
+assert "'public.lf_profile_execution_research_baseline_v1 + NATIVE_MODEL_RUNTIME_WITH_SUPABASE_CONTEXT'" not in sql
+assert "'[]'::jsonb,'public.lf_profile_execution_research_baseline_v1'," in sql
+assert "'outcome','BASELINE_REQUIRED'" in sql
+assert "'recorded',false" in sql
+assert "'next_action','INVOKE_SAME_PROFILE_MODEL_FOR_BASELINE_THEN_RETRY'" in sql
+assert "if p_baseline_envelope is not null then" in sql
+assert 'PROFILE_RESEARCH_BASELINE_UNEXPECTED_ENVELOPE' in sql
 
 # Temporal boundary is a durable operation step before execute_profile.
 assert "47,'research_baseline_freeze'" in sql
@@ -91,6 +102,13 @@ assert 'create table' not in sql.lower()
 assert 'MINI_JUDGE_EJECUCION_PERFIL_RESEARCH_BASELINE_V1' in sql
 assert 'lf_record_operation_step_core_v1' in sql
 assert "'CAPABILITY','TRANSVERSAL_RUNTIME_ASSURANCE'" in sql
+
+# In-flight compatibility is explicit: old executions are bridged as N/A, required-mode inflight blocks.
+assert 'PROFILE_BASELINE_PRE_REQUIRED_MODE_INFLIGHT' in sql
+assert 'PROFILE_BASELINE_COMPAT_BACKFILL_INCOMPLETE' in sql
+assert "coalesce(nullif(e.manifest->>'research_baseline_mode',''),'NOT_REQUIRED')='NOT_REQUIRED'" in sql
+assert "v_receipt:=public.lf_profile_execution_research_baseline_v1(r.execution_id,null,v_actor)" in sql
+assert "where e.operation_code='EJECUCION_PERFIL_LF'" in sql
 
 # Rollout remains isolated to governed runtime update and preserves runtime state.
 assert 'ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' in sql
