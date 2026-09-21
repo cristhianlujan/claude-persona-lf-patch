@@ -41,6 +41,14 @@ PROFILE_UPDATE_CALLER_MAINTENANCE_BLOBS={
  "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py":"9ef60d731228f05aa631e8783cef0daa97cfa9f2",
 }
 PROFILE_UPDATE_CALLER_MAINTENANCE_PATHS=frozenset(PROFILE_UPDATE_CALLER_MAINTENANCE_BLOBS)
+PROFILE_OPERATION_MAINTENANCE_SOURCE_TEST="sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py"
+PROFILE_OPERATION_MAINTENANCE_RUNTIME_PATHS=frozenset({
+ CUSTOMER_PROFILE_CREATOR_WORKFLOW,
+ "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts",
+ "supabase/functions/lf-profile-creator-governance-caller-v1/batch.ts",
+ "supabase/functions/run-creacion-perfil-lf/index.ts",
+})
+PROFILE_OPERATION_MAINTENANCE_SURFACE=frozenset((*PROFILE_OPERATION_MAINTENANCE_RUNTIME_PATHS,PROFILE_OPERATION_MAINTENANCE_SOURCE_TEST))
 CUSTOMER_PROFILE_CREATOR_BLOBS={
  CUSTOMER_PROFILE_CREATOR_WORKFLOW:"346fe830af781a304a74f10240c3e19f7a48eb23",
  "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts":"173b88ea3e123c962bea963666a59bbf0cc50a14",
@@ -121,11 +129,33 @@ def _evaluate_profile_update_caller_maintenance_scope(changed_files:Sequence[str
   if observed!=expected_blob: raise RuntimeScopeError("FAIL_RUNTIME_BLOB_MISMATCH",f"Profile Update caller maintenance blob mismatch for {path}: expected={expected_blob} observed={observed}")
   if mode_by_path is not None and mode_by_path.get(path)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Profile Update caller maintenance path must be regular file 100644: {path}")
  return True
+def _evaluate_profile_operation_generic_maintenance_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None)->bool:
+ changed=set(changed_files)
+ relevant=changed & set(PROFILE_OPERATION_MAINTENANCE_SURFACE)
+ if not relevant: return False
+ if branch==MAIN_BRANCH: raise RuntimeScopeError("FAIL_RUNTIME_GENERIC_MAINTENANCE_MAIN_DIRECT","generic Profile-operation maintenance must merge through governed PR; direct main source is not an admission path")
+ outside=sorted(changed-set(PROFILE_OPERATION_MAINTENANCE_SURFACE))
+ if outside: raise RuntimeScopeError("FAIL_RUNTIME_GENERIC_MAINTENANCE_SCOPE",f"Profile-operation maintenance contains paths outside canonical surface: {outside!r}")
+ runtime_changed=changed & set(PROFILE_OPERATION_MAINTENANCE_RUNTIME_PATHS)
+ if not runtime_changed: raise RuntimeScopeError("FAIL_RUNTIME_GENERIC_MAINTENANCE_NO_RUNTIME_CHANGE","source-test-only change is not runtime maintenance")
+ if PROFILE_OPERATION_MAINTENANCE_SOURCE_TEST not in changed:
+  raise RuntimeScopeError("FAIL_RUNTIME_GENERIC_MAINTENANCE_SOURCE_TEST_MISSING",f"runtime maintenance requires {PROFILE_OPERATION_MAINTENANCE_SOURCE_TEST}")
+ modes=mode_by_path or {}
+ for path in sorted(runtime_changed):
+  _base._validate_path(path)
+  observed=blob_by_path.get(path)
+  if not isinstance(observed,str) or BLOB_RE.fullmatch(observed) is None:
+   raise RuntimeScopeError("FAIL_RUNTIME_BLOB_UNRESOLVED",f"could not resolve a valid Git blob for changed runtime path {path}")
+  if modes.get(path,"100644")!="100644":
+   raise RuntimeScopeError("FAIL_RUNTIME_FILE_MODE",f"{path} must be regular file 100644")
+ return True
+
 def evaluate_controlled_runtime_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None,main_merge_verified:bool=False)->bool:
  if branch==PROFILE_UPDATE_CALLER_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_UPDATE_CALLER_MAINTENANCE_PATHS): return _evaluate_profile_update_caller_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
  if branch==PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PATHS): return _evaluate_profile_update_caller_init_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
  if branch==PROFILE_RUNTIME_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_RUNTIME_MAINTENANCE_PATHS): return _evaluate_profile_runtime_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
  if branch==PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PATHS): return _evaluate_profile_update_bound_revision_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
+ if set(changed_files)&set(PROFILE_OPERATION_MAINTENANCE_RUNTIME_PATHS) and set(changed_files)<=set(PROFILE_OPERATION_MAINTENANCE_SURFACE): return _evaluate_profile_operation_generic_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
  if set(changed_files)&set(CUSTOMER_PROFILE_CREATOR_PATHS): return _evaluate_customer_profile_creator_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
  _sync_base_extensions(); return _BASE_EVALUATE_CONTROLLED_RUNTIME_SCOPE(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
 def _customer_scope_self_test():
@@ -165,6 +195,22 @@ def _customer_scope_self_test():
   except RuntimeScopeError: continue
   raise SystemExit(f"FAIL_PROFILE_UPDATE_CALLER_MAINTENANCE_NEGATIVE_{label.upper()}")
  print("PASS_PROFILE_UPDATE_CALLER_MAINTENANCE_SCOPE=4/4")
+ generic_paths=[CUSTOMER_PROFILE_CREATOR_WORKFLOW,"supabase/functions/lf-profile-creator-governance-caller-v1/index.ts","supabase/functions/run-creacion-perfil-lf/index.ts",PROFILE_OPERATION_MAINTENANCE_SOURCE_TEST]
+ generic_blobs={path:(CUSTOMER_PROFILE_CREATOR_BLOBS.get(path) or "a"*40) for path in generic_paths if path in PROFILE_OPERATION_MAINTENANCE_RUNTIME_PATHS}
+ generic_modes={path:"100644" for path in generic_blobs}
+ assert _evaluate_profile_operation_generic_maintenance_scope(generic_paths,branch="fix/arbitrary-profile-operation-maintenance",blob_by_path=generic_blobs,mode_by_path=generic_modes)
+ generic_negatives=[
+  ("missing_test",generic_paths[:-1]),
+  ("outside",[*generic_paths,"supabase/functions/lookalike-profile-runtime/index.ts"]),
+ ]
+ for label,changed in generic_negatives:
+  try: _evaluate_profile_operation_generic_maintenance_scope(changed,branch="fix/arbitrary-profile-operation-maintenance",blob_by_path=generic_blobs,mode_by_path=generic_modes)
+  except RuntimeScopeError: continue
+  raise SystemExit(f"FAIL_PROFILE_OPERATION_GENERIC_MAINTENANCE_NEGATIVE_{label.upper()}")
+ try: _evaluate_profile_operation_generic_maintenance_scope(generic_paths,branch=MAIN_BRANCH,blob_by_path=generic_blobs,mode_by_path=generic_modes)
+ except RuntimeScopeError: pass
+ else: raise SystemExit("FAIL_PROFILE_OPERATION_GENERIC_MAINTENANCE_NEGATIVE_MAIN")
+ print("PASS_PROFILE_OPERATION_GENERIC_MAINTENANCE_SCOPE=4/4")
 _original_get_changed_files=_base.get_changed_files
 def _customer_branch_scope_for_push():
  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
