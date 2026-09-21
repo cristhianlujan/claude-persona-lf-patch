@@ -1,0 +1,33 @@
+name: GitHub Models Probe
+on:
+  push:
+    branches:
+      - eval/srcr-pre-research-baseline-v2-judge-20260921
+permissions:
+  contents: read
+  models: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe GitHub Models inference
+        env:
+          GH_MODELS_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,urllib.request,urllib.error
+          body={"model":"openai/gpt-4.1-mini","messages":[{"role":"user","content":"Return exactly the JSON object {\"ok\":true}."}],"temperature":0,"max_tokens":40}
+          req=urllib.request.Request("https://models.github.ai/inference/chat/completions",data=json.dumps(body).encode(),headers={"Authorization":"Bearer "+os.environ["GH_MODELS_TOKEN"],"Content-Type":"application/json"},method="POST")
+          try:
+            with urllib.request.urlopen(req,timeout=120) as resp:
+              obj=json.loads(resp.read().decode())
+          except urllib.error.HTTPError as exc:
+            print("HTTP_STATUS="+str(exc.code)); print(exc.read().decode(errors="replace")[:4000]); raise
+          print("MODEL="+str(obj.get("model")))
+          content=((obj.get("choices") or [{}])[0].get("message") or {}).get("content")
+          print("CONTENT="+str(content))
+          if content is None or '"ok"' not in content: raise SystemExit("GITHUB_MODELS_PROBE_INVALID")
+          print("GITHUB_MODELS_PROBE=PASS")
+          PY
