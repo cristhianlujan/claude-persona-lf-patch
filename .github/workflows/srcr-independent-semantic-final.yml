@@ -22,7 +22,7 @@ jobs:
           enc=pathlib.Path('.github/srcr-eval/payload.b64').read_text().strip()
           packet=json.loads(zlib.decompress(base64.b64decode(enc)))
           pathlib.Path('/tmp/scope.json').write_text(json.dumps(packet['scope_authority_packet'],ensure_ascii=False,indent=2)+'\n')
-          model='@cf/mistralai/mistral-small-3.1-24b-instruct'
+          model='@cf/nvidia/nemotron-3-120b-a12b'
           scope_ids=[]
           for key in ('authorized_requirements','constraints','forbidden_changes'):
             scope_ids += [x['id'] for x in packet['scope_authority_packet'][key]]
@@ -58,7 +58,22 @@ jobs:
             'All seven invariants required: SCOPE_AUTHORITY_INTEGRITY,EVIDENCE_INTEGRITY,CAUSAL_CLOSURE,CONTRADICTION_INTEGRITY,MINIMUM_SUFFICIENT_REUSE,INDEPENDENT_DECISION_CLOSURE,FALSIFIABILITY_REGRESSION. Check specifically that temporal baseline proof depends on durable pre-research runtime evidence, not a self-asserted field, and that incremental-value proof permits NO_MATERIAL_UPLIFT but rejects UNPROVEN for ready material-research closure. '+
             '\nPACKET:\n'+json.dumps(packet,ensure_ascii=False,separators=(',',':'))
           )
-          body={'messages':[{'role':'system','content':'Return strict JSON only. No markdown fences, no prose outside JSON.'},{'role':'user','content':prompt}],'temperature':0,'max_tokens':9000,'response_format':{'type':'json_object'}}
+          schema={
+            'type':'object','additionalProperties':False,
+            'properties':{
+              'verdict':{'type':'string','enum':['PASS_INDEPENDENT_SEMANTIC','RETURN_TO_WORKER_FOR_SELF_REPAIR','RETURN_TO_ORCHESTRATOR','BLOCK_PIPELINE']},
+              'candidate_sha256':{'type':'string'},'scope_packet_sha256':{'type':'string'},
+              'source_refs_inspected':{'type':'array','items':{'type':'string'}},
+              'observed_candidate_changes':{'type':'array','items':{'type':'object','additionalProperties':False,'properties':{'change_id':{'type':'string'},'action_class':{'type':'string'},'target':{'type':'string'},'candidate_paths':{'type':'array','items':{'type':'string'}},'statement':{'type':'string'},'materiality':{'type':'string'},'evidence_refs':{'type':'array','items':{'type':'string'}}},'required':['change_id','action_class','target','candidate_paths','statement','materiality','evidence_refs']}},
+              'requirement_reconciliation':{'type':'array','items':{'type':'object','additionalProperties':False,'properties':{'scope_item_id':{'type':'string'},'disposition':{'type':'string','enum':['SATISFIED','PRESERVED','NOT_APPLICABLE_WITH_EVIDENCE','VIOLATED','UNRESOLVED']},'evidence_refs':{'type':'array','items':{'type':'string'}}},'required':['scope_item_id','disposition','evidence_refs']}},
+              'change_declaration_reconciliation':{'type':'array','items':{'type':'object','additionalProperties':False,'properties':{'change_id':{'type':'string'},'disposition':{'type':'string','enum':['DECLARED_EQUIVALENT','DISCOVERY_ONLY_NOT_IN_SELECTED_REPAIR','UNDECLARED_PROPOSED_CHANGE']},'evidence_refs':{'type':'array','items':{'type':'string'}}},'required':['change_id','disposition','evidence_refs']}},
+              'scope_conformance_reconciliation':{'type':'array','items':{'type':'object','additionalProperties':False,'properties':{'change_id':{'type':'string'},'disposition':{'type':'string','enum':['IN_SCOPE','DISCOVERY_OUT_OF_SCOPE','OUT_OF_SCOPE_DESIGN_DELTA','UNRESOLVED_SCOPE']},'evidence_refs':{'type':'array','items':{'type':'string'}}},'required':['change_id','disposition','evidence_refs']}},
+              'invariant_results':{'type':'array','items':{'type':'object','additionalProperties':False,'properties':{'invariant':{'type':'string'},'result':{'type':'string','enum':['PASS','FAIL','BLOCKED']},'reason':{'type':'string'},'evidence_refs':{'type':'array','items':{'type':'string'}}},'required':['invariant','result','reason','evidence_refs']}},
+              'open_design_decisions_found':{'type':'array','items':{'type':'string'}},'unsupported_claims':{'type':'array','items':{'type':'string'}},'blocking_codes':{'type':'array','items':{'type':'string'}},'repair_instructions':{'type':'array','items':{'type':'string'}},'next_gate':{'type':'string'}
+            },
+            'required':['verdict','candidate_sha256','scope_packet_sha256','source_refs_inspected','observed_candidate_changes','requirement_reconciliation','change_declaration_reconciliation','scope_conformance_reconciliation','invariant_results','open_design_decisions_found','unsupported_claims','blocking_codes','repair_instructions','next_gate']
+          }
+          body={'messages':[{'role':'system','content':'Return strict JSON only. No markdown fences, no prose outside JSON.'},{'role':'user','content':prompt}],'temperature':0,'top_p':1,'seed':42,'max_completion_tokens':9000,'stream':False,'response_format':{'type':'json_schema','json_schema':schema}}
           url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{model}"
           req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['CF_TOKEN'],'Content-Type':'application/json'},method='POST')
           envelope=None
