@@ -1,0 +1,159 @@
+name: SRCR V04 R2 Independent Quality Review
+on:
+  push:
+    branches:
+      - eval/srcr-v04-r2-independent-quality-b22b5fe-20260921
+permissions:
+  contents: read
+jobs:
+  independent-quality-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run independent Quality Pack review
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, hashlib, json, os, pathlib, re, subprocess, urllib.request
+          REPO="cristhianlujan/claude-persona-lf-patch"
+          BASE="f5baa359bf22510af9961b151ab77e47c74bbcc5"
+          CANDIDATE="b22b5fe078cf2999f4592768cff9e41534d06ed4"
+          CASE="SRCR-V04-R2-INDEPENDENT-QUALITY-B22B5FE"
+          PROFILE="profiles/systemic_root_cause_repair_lf"
+          def git(*args):
+              return subprocess.check_output(["git",*args], text=True)
+          git("cat-file","-e",CANDIDATE+"^{commit}")
+          changed=[x for x in git("diff","--name-only",BASE,CANDIDATE,"--",PROFILE).splitlines() if x.strip()]
+          diff=git("diff","--no-ext-diff","--unified=60",BASE,CANDIDATE,"--",PROFILE)
+          artifact_digest=hashlib.sha256(diff.encode()).hexdigest()
+          quality_paths=[
+            "profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+            "profiles/quality_pack/contracts/quality_gate_contract.md",
+            "profiles/quality_pack/contracts/lf_quality_controls.md",
+            "profiles/quality_pack/judges/quality_pack_score_rubric.md",
+            "profiles/quality_pack/judges/quality_pack_mini_judge.md",
+            "profiles/quality_pack/schemas/quality_review.schema.json",
+            "profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
+          ]
+          quality={p:git("show",CANDIDATE+":"+p) for p in quality_paths}
+          critical=[
+            PROFILE+"/SKILL.md",
+            PROFILE+"/contracts/main_contract.md",
+            PROFILE+"/schemas/output.schema.json",
+            PROFILE+"/validators/runtime_validate.py",
+            PROFILE+"/validators/runtime_semantic_utility.py",
+            PROFILE+"/validators/validate_pack.py",
+            PROFILE+"/evals/v04_transversal_closure_cases.py",
+            PROFILE+"/judges/systemic_root_cause_semantic_judge.md",
+          ]
+          critical_content={p:git("show",CANDIDATE+":"+p) for p in critical}
+          skeleton={
+            "receipt_version":"v0.1",
+            "execution_mode":"INDEPENDENT_CHAT_CONTEXT",
+            "semantic_status":"EXECUTED_INDEPENDENT_CONTEXT",
+            "review_case_id":CASE,
+            "reviewer_is_producer":False,
+            "producer_context_available":False,
+            "external_paid_model_used":False,
+            "automated_semantic_judge_implemented":False,
+            "review_completed":True,
+            "source_bundle":{
+              "artifact_ref":f"github://{REPO}@{CANDIDATE}#diff={BASE}..{CANDIDATE}:{PROFILE}",
+              "artifact_sha_or_digest":"sha256:"+artifact_digest,
+              "upstream_worker_contract_ref":f"github://{REPO}@{CANDIDATE}/{PROFILE}/contracts/main_contract.md",
+              "quality_gate_contract_ref":f"github://{REPO}@{CANDIDATE}/profiles/quality_pack/contracts/quality_gate_contract.md",
+              "lf_quality_controls_ref":f"github://{REPO}@{CANDIDATE}/profiles/quality_pack/contracts/lf_quality_controls.md",
+              "score_rubric_ref":f"github://{REPO}@{CANDIDATE}/profiles/quality_pack/judges/quality_pack_score_rubric.md",
+              "mini_judge_ref":f"github://{REPO}@{CANDIDATE}/profiles/quality_pack/judges/quality_pack_mini_judge.md",
+              "quality_review_schema_ref":f"github://{REPO}@{CANDIDATE}/profiles/quality_pack/schemas/quality_review.schema.json"
+            },
+            "quality_review":{
+              "review_id":CASE+"-R1",
+              "reviewed_artifact":f"github://{REPO}@{CANDIDATE}#sha256={artifact_digest}",
+              "verdict":"RETURN_TO_WORKER_FOR_SELF_REPAIR",
+              "score_breakdown":{
+                "contract_schema_compliance":0,
+                "evidence_integrity":0,
+                "lf_safety_governance":0,
+                "handoff_readiness":0,
+                "leakage_scope_control":0,
+                "total":0
+              },
+              "evidence_map":[],
+              "blocking_codes":[],
+              "repair_actions":[],
+              "remaining_risks":[],
+              "next_gate":"RETURN_TO_WORKER_FOR_SELF_REPAIR"
+            },
+            "execution_blockers":[]
+          }
+          prompt=(
+            "Act as PERFIL-QUALITY-PACK in a clean independent reviewer context. "
+            "You did not produce this candidate. You have no producer conversation and MUST use ONLY this packet. "
+            "Do not infer desired PASS. Do not use or request any regression oracle. "
+            "Review the exact candidate diff and critical resulting files against the supplied Quality Pack contracts, controls, rubric, mini-judge and schemas. "
+            "Apply hard LF safety/governance failures regardless of score. Score each of the five criteria 0..5 and total exactly. "
+            "Return ONLY strict JSON matching the receipt skeleton top-level structure. "
+            "Keep reviewer_is_producer=false, producer_context_available=false, external_paid_model_used=false, automated_semantic_judge_implemented=false. "
+            "If review_completed=true, execution_blockers must be empty. "
+            "Use evidence_map entries with criterion, refs, observed. Every criterion must be covered. "
+            "Do not invent file refs: cite only paths supplied in the packet. "
+            "Verdict must follow the Quality Pack contract/rubric, not the skeleton placeholder. "
+            "Artifact digest and source_bundle values must be copied exactly from the skeleton. "
+            "\nSKELETON:\n"+json.dumps(skeleton,ensure_ascii=False,separators=(",",":"))+
+            "\nCHANGED_PATHS:\n"+json.dumps(changed,ensure_ascii=False)+
+            "\nEXACT_DIFF:\n"+diff+
+            "\nCRITICAL_RESULTING_FILES:\n"+json.dumps(critical_content,ensure_ascii=False,separators=(",",":"))+
+            "\nQUALITY_PACK_AUTHORITY:\n"+json.dumps(quality,ensure_ascii=False,separators=(",",":"))
+          )
+          model='@cf/mistralai/mistral-small-3.1-24b-instruct'
+          body={'messages':[{'role':'system','content':'Return strict JSON only. No markdown fences, no prose outside JSON.'},{'role':'user','content':prompt}],
+                'temperature':0,'max_tokens':9000,'response_format':{'type':'json_object'}}
+          url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{model}"
+          req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['CF_TOKEN'],'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=300) as resp:
+              envelope=json.loads(resp.read().decode())
+          if not envelope.get('success'):
+              raise SystemExit('CF_FAIL:'+json.dumps(envelope)[:2000])
+          result=envelope.get('result') or {}
+          choices=result.get('choices') if isinstance(result,dict) else None
+          content=((choices[0].get('message') or {}).get('content') if isinstance(choices,list) and choices else None) or (result.get('response') if isinstance(result,dict) else None)
+          if not isinstance(content,str) or not content.strip():
+              raise SystemExit('MODEL_EMPTY_CONTENT:'+json.dumps(result)[:3000])
+          s=content.strip()
+          s=re.sub(r'^~~~(?:json)?\s*','',s); s=re.sub(r'\s*~~~$','',s)
+          s=re.sub(r'^\`\`\`(?:json)?\s*','',s); s=re.sub(r'\s*\`\`\`$','',s)
+          obj=json.loads(s)
+          pathlib.Path('/tmp/independent_quality_receipt.json').write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
+          print('MODEL_ID='+model)
+          print('CANDIDATE_HEAD='+CANDIDATE)
+          print('ARTIFACT_SHA256='+artifact_digest)
+          print('VERDICT='+str((obj.get('quality_review') or {}).get('verdict')))
+          print('SCORE='+str(((obj.get('quality_review') or {}).get('score_breakdown') or {}).get('total')))
+          print('RECEIPT_B64='+base64.b64encode(json.dumps(obj,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).decode())
+          PY
+      - name: Validate independent receipt
+        run: |
+          set -euo pipefail
+          python3 profiles/quality_pack/validators/validate_independent_semantic_review.py /tmp/independent_quality_receipt.json
+          python3 - <<'PY'
+          import hashlib,json,subprocess
+          BASE="f5baa359bf22510af9961b151ab77e47c74bbcc5"
+          CANDIDATE="b22b5fe078cf2999f4592768cff9e41534d06ed4"
+          PROFILE="profiles/systemic_root_cause_repair_lf"
+          r=json.load(open('/tmp/independent_quality_receipt.json'))
+          diff=subprocess.check_output(["git","diff","--no-ext-diff","--unified=60",BASE,CANDIDATE,"--",PROFILE],text=True)
+          digest=hashlib.sha256(diff.encode()).hexdigest()
+          expected_ref=f"github://cristhianlujan/claude-persona-lf-patch@{CANDIDATE}#diff={BASE}..{CANDIDATE}:{PROFILE}"
+          assert r["review_case_id"]=="SRCR-V04-R2-INDEPENDENT-QUALITY-B22B5FE"
+          assert r["source_bundle"]["artifact_ref"]==expected_ref
+          assert r["source_bundle"]["artifact_sha_or_digest"]=="sha256:"+digest
+          assert r["quality_review"]["reviewed_artifact"]==f"github://cristhianlujan/claude-persona-lf-patch@{CANDIDATE}#sha256={digest}"
+          print("PASS_EXACT_CANDIDATE_BINDING")
+          PY
