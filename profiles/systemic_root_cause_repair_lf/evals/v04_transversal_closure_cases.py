@@ -2,6 +2,7 @@
 import copy
 import json
 import runpy
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -208,4 +209,83 @@ for token in (
 ):
     assert token in judge, ("judge_missing", token)
 
-print("PASS_SRCR_V04_TRANSVERSAL_CLOSURE=10/10")
+# V0.4 remains eligible for the same exact-bound canonical quality receipt.
+quality_spec = importlib.util.spec_from_file_location("srcr_v04_quality", VALIDATORS / "validate_quality_receipt.py")
+quality = importlib.util.module_from_spec(quality_spec)
+assert quality_spec and quality_spec.loader
+quality_spec.loader.exec_module(quality)
+quality_schema = json.loads((ROOT / "schemas" / "quality_receipt.schema.json").read_text())
+quality_schema_validator = Draft7Validator(quality_schema)
+
+qc, qe = v04_pair()
+candidate_sha = closure_proof.canonical_candidate_digest(qc).split(":", 1)[1]
+invariants = [
+    "SCOPE_AUTHORITY_INTEGRITY",
+    "EVIDENCE_INTEGRITY",
+    "CAUSAL_CLOSURE",
+    "CONTRADICTION_INTEGRITY",
+    "MINIMUM_SUFFICIENT_REUSE",
+    "INDEPENDENT_DECISION_CLOSURE",
+    "FALSIFIABILITY_REGRESSION",
+]
+semantic = {
+    "verdict": "PASS_INDEPENDENT_SEMANTIC",
+    "candidate_sha256": candidate_sha,
+    "scope_packet_sha256": "d" * 64,
+    "source_refs_inspected": ["fixture://v04/quality"],
+    "observed_candidate_changes": [],
+    "requirement_reconciliation": [],
+    "change_declaration_reconciliation": [],
+    "scope_conformance_reconciliation": [],
+    "invariant_results": [
+        {"invariant": name, "result": "PASS", "evidence_refs": ["fixture://v04/quality"], "reason": "Exact fixture condition."}
+        for name in invariants
+    ],
+    "open_design_decisions_found": [],
+    "unsupported_claims": [],
+    "blocking_codes": [],
+    "repair_instructions": [],
+    "next_gate": "QUALITY_RECEIPT",
+}
+summary_errors, summary = closure_proof.validate_v03_closure(qc, qe)
+assert not summary_errors, summary_errors
+receipt = {
+    "receipt_version": "SRCR_QUALITY_RECEIPT_V1",
+    "profile_pack_id": V04,
+    "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    "decision": "PASS_TO_QUALITY_PACK",
+    "review_boundary": {
+        "issuer": "CANONICAL_SRCR_MINI_JUDGE",
+        "execution_mode": "INDEPENDENT_SEMANTIC_REVIEW",
+        "reviewer_is_producer": False,
+        "producer_context_available": False,
+        "semantic_execution_receipt_ref": "fixture://v04/semantic/001",
+    },
+    "candidate_binding": {
+        "candidate_revision": "v04-fixture-rev-1",
+        "candidate_digest": closure_proof.canonical_candidate_digest(qc),
+    },
+    "evidence_binding": {
+        "bundle_id": qe["bundle_id"],
+        "bundle_digest": qe["bundle_digest"],
+    },
+    "semantic_binding": {
+        "semantic_result_digest": quality.canonical_semantic_result_digest(semantic),
+        "semantic_verdict": semantic["verdict"],
+        "candidate_sha256": semantic["candidate_sha256"],
+        "scope_packet_sha256": semantic["scope_packet_sha256"],
+    },
+    "proof_binding": {
+        "required_obligation_ids": summary["required_obligation_ids"],
+        "closed_obligation_ids": summary["closed_obligation_ids"],
+        "open_obligation_ids": summary["open_obligation_ids"],
+    },
+    "blocking_codes": [],
+    "issued_at": "2026-09-21T17:00:00Z",
+}
+assert not list(quality_schema_validator.iter_errors(receipt))
+quality_result = quality.validate_quality_receipt(receipt, qc, qe, semantic)
+assert quality_result["status"] == "PASS", quality_result
+assert quality_result["canonical_quality_accepted"] is True
+
+print("PASS_SRCR_V04_TRANSVERSAL_CLOSURE=11/11")
