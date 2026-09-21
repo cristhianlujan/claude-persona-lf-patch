@@ -343,4 +343,30 @@ quality_result = quality.validate_quality_receipt(receipt, qc, qe, semantic)
 assert quality_result["status"] == "PASS", quality_result
 assert quality_result["canonical_quality_accepted"] is True
 
-print("PASS_SRCR_V04_TRANSVERSAL_CLOSURE=14/14")
+
+contradictory_resolved = copy.deepcopy(no_repair)
+contradictory_resolved["repair_disposition"]["material_repair_justified"] = True
+assert_schema_invalid(contradictory_resolved, "v04_already_resolved_repair_justified_schema")
+assert_runtime_code(
+    contradictory_resolved, evidence,
+    "V04_ALREADY_RESOLVED_REPAIR_NOT_JUSTIFIED",
+    "already_resolved_cannot_still_justify_repair",
+)
+
+contradictory_nonready = copy.deepcopy(needs)
+contradictory_nonready["repair_disposition"] = {
+    "decision": "REPAIR_REQUIRED",
+    "rationale": "Intentional contradiction fixture: flags deny the claimed repair-required disposition.",
+    "evidence_refs": ["fixture://observation/cache"],
+    "currentness_refs": ["fixture://currentness/cache"],
+    "active_failure_present": False,
+    "material_repair_justified": False,
+}
+assert_schema_invalid(contradictory_nonready, "v04_nonready_repair_required_flags_schema")
+assert_runtime_code(
+    contradictory_nonready, needs_evidence,
+    "V04_NONREADY_REPAIR_REQUIRED_NEEDS_ACTIVE_FAILURE",
+    "nonready_repair_required_needs_consistent_flags",
+)
+
+print("PASS_SRCR_V04_TRANSVERSAL_CLOSURE=16/16")
