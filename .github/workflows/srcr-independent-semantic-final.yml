@@ -1,0 +1,76 @@
+name: SRCR Independent Semantic Final
+on:
+  push:
+    branches:
+      - eval/srcr-independent-semantic-final-20260921
+permissions:
+  contents: read
+jobs:
+  independent-semantic-judge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run independent semantic judge
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64,zlib,json,os,urllib.request,re,pathlib
+          enc=pathlib.Path('.github/srcr-eval/payload.b64').read_text().strip()
+          packet=json.loads(zlib.decompress(base64.b64decode(enc)))
+          pathlib.Path('/tmp/scope.json').write_text(json.dumps(packet['scope_authority_packet'],ensure_ascii=False,indent=2)+'\n')
+          model='@cf/meta/llama-4-scout-17b-16e-instruct'
+          scope_ids=[]
+          for key in ('authorized_requirements','constraints','forbidden_changes'):
+            scope_ids += [x['id'] for x in packet['scope_authority_packet'][key]]
+          canonical_contract = {
+            'verdict':'PASS_INDEPENDENT_SEMANTIC or RETURN_TO_WORKER_FOR_SELF_REPAIR or RETURN_TO_ORCHESTRATOR or BLOCK_PIPELINE',
+            'requirement_reconciliation':'EXACTLY one object for every scope ID; fields scope_item_id, disposition, evidence_refs. disposition in SATISFIED/PRESERVED/NOT_APPLICABLE_WITH_EVIDENCE/VIOLATED/UNRESOLVED',
+            'observed_candidate_changes':'independently enumerate every material proposed change; each needs unique change_id plus statement/target/candidate_paths/materiality/evidence_refs',
+            'change_declaration_reconciliation':'EXACTLY one row per observed change_id; fields change_id, disposition, evidence_refs; disposition in DECLARED_EQUIVALENT/DISCOVERY_ONLY_NOT_IN_SELECTED_REPAIR/UNDECLARED_PROPOSED_CHANGE',
+            'scope_conformance_reconciliation':'EXACTLY one row per observed change_id; fields change_id, disposition, evidence_refs; disposition in IN_SCOPE/DISCOVERY_OUT_OF_SCOPE/OUT_OF_SCOPE_DESIGN_DELTA/UNRESOLVED_SCOPE',
+            'invariant_results':'exactly the seven canonical invariants with invariant,result,reason,evidence_refs; result PASS/FAIL/BLOCKED',
+            'other_required_arrays':'source_refs_inspected,open_design_decisions_found,unsupported_claims,blocking_codes,repair_instructions',
+            'required_scalars':'candidate_sha256,scope_packet_sha256,next_gate'
+          }
+          prompt=(
+            'Act as the canonical INDEPENDENT Semantic Judge B. You are not the producer and have no producer context. '
+            'Use only this packet and independently inspect the ENTIRE exact_candidate. Do not trust producer declarations as proof. '
+            'Apply judge_instructions literally. Return ONLY strict JSON. '+
+            'The exact scope IDs that MUST EACH appear exactly once in requirement_reconciliation are: '+json.dumps(scope_ids)+'. '+
+            'Use these exact output field names/contracts: '+json.dumps(canonical_contract,separators=(',',':'))+'. '+
+            'candidate_sha256 must equal '+packet['candidate_sha256']+' and scope_packet_sha256 must equal '+packet['scope_packet_sha256']+'. '+
+            'All observed changes must have both declaration and scope-conformance rows. A material unsupported/out-of-scope/open issue forbids PASS. '+
+            'All seven invariants required: SCOPE_AUTHORITY_INTEGRITY,EVIDENCE_INTEGRITY,CAUSAL_CLOSURE,CONTRADICTION_INTEGRITY,MINIMUM_SUFFICIENT_REUSE,INDEPENDENT_DECISION_CLOSURE,FALSIFIABILITY_REGRESSION. '+
+            '\nPACKET:\n'+json.dumps(packet,ensure_ascii=False,separators=(',',':'))
+          )
+          body={'messages':[{'role':'system','content':'Return strict JSON only. No markdown fences, no prose outside JSON.'},{'role':'user','content':prompt}],'temperature':0,'max_tokens':9000,'response_format':{'type':'json_object'}}
+          url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{model}"
+          req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['CF_TOKEN'],'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=300) as resp:
+            envelope=json.loads(resp.read().decode())
+          if not envelope.get('success'): raise SystemExit('CF_FAIL:'+json.dumps(envelope)[:2000])
+          result=envelope.get('result') or {}
+          choices=result.get('choices') if isinstance(result,dict) else None
+          content=((choices[0].get('message') or {}).get('content') if isinstance(choices,list) and choices else None) or (result.get('response') if isinstance(result,dict) else None)
+          if not isinstance(content,str) or not content.strip(): raise SystemExit('MODEL_EMPTY_CONTENT:'+json.dumps(result)[:3000])
+          s=content.strip()
+          if s.startswith('```'):
+            s=re.sub(r'^```(?:json)?\s*','',s); s=re.sub(r'\s*```$','',s)
+          obj=json.loads(s)
+          pathlib.Path('/tmp/semantic_result.json').write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
+          print('MODEL_ID='+model)
+          print('VERDICT='+str(obj.get('verdict')))
+          print('RECONCILED_SCOPE_ITEMS='+str(len(obj.get('requirement_reconciliation') or [])))
+          print('OBSERVED_CHANGES='+str(len(obj.get('observed_candidate_changes') or [])))
+          print('JUDGE_RESULT_B64='+base64.b64encode(json.dumps(obj,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).decode())
+          PY
+      - name: Validate exact-bound semantic judge result
+        run: |
+          python3 profiles/systemic_root_cause_repair_lf/validators/validate_semantic_judge_result.py /tmp/semantic_result.json \
+            --scope-packet /tmp/scope.json \
+            --candidate-sha256 7c6caa55a1b8c694f8b8a722bdb24822859943befada6ed992e461db5bba61b2 \
+            --scope-packet-sha256 86a20c209aabd085d85628c1b55c6236fcb1fa0062c43cbec32131d962a0ab86
