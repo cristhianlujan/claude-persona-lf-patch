@@ -664,7 +664,7 @@ def _v04_transversal_errors(payload):
     decision = disposition.get("decision")
     evidence_refs = disposition.get("evidence_refs")
     currentness_refs = disposition.get("currentness_refs")
-    if decision not in {"REPAIR_REQUIRED", "ALREADY_RESOLVED", "NOT_MATERIAL"}:
+    if decision not in {"REPAIR_REQUIRED", "ALREADY_RESOLVED", "NOT_MATERIAL", "UNDETERMINED"}:
         errors.append(_error("V04_REPAIR_DISPOSITION_INVALID", "$.repair_disposition.decision"))
     if not _string_list(evidence_refs, allow_empty=False):
         errors.append(_error("V04_REPAIR_DISPOSITION_EVIDENCE_REQUIRED", "$.repair_disposition.evidence_refs"))
@@ -690,11 +690,16 @@ def _v04_transversal_errors(payload):
             errors.append(_error("V04_NO_REPAIR_REPAIR_LEVEL_MUST_BE_UNDETERMINED", "$.repair_level"))
         if payload.get("blocking_codes"):
             errors.append(_error("V04_NO_REPAIR_WITH_BLOCKERS", "$.blocking_codes"))
-    else:
+    elif status == "SYSTEMIC_REPAIR_SPEC":
         if decision != "REPAIR_REQUIRED":
-            errors.append(_error("V04_READY_OR_BLOCKED_REQUIRES_REPAIR_DISPOSITION", "$.repair_disposition.decision"))
+            errors.append(_error("V04_READY_SPEC_REQUIRES_REPAIR_DISPOSITION", "$.repair_disposition.decision"))
         if disposition.get("material_repair_justified") is not True:
             errors.append(_error("V04_REPAIR_NOT_JUSTIFIED", "$.repair_disposition.material_repair_justified"))
+        if disposition.get("active_failure_present") is not True:
+            errors.append(_error("V04_READY_SPEC_REQUIRES_ACTIVE_FAILURE", "$.repair_disposition.active_failure_present"))
+    else:
+        if decision not in {"REPAIR_REQUIRED", "UNDETERMINED"}:
+            errors.append(_error("V04_NONREADY_DISPOSITION_INVALID", "$.repair_disposition.decision"))
 
     quantitative = payload.get("quantitative_decisions")
     if not isinstance(quantitative, list):
@@ -788,7 +793,8 @@ def validate(payload, evidence_manifest=None):
         errors.extend(_claim_errors(field, payload.get(field)))
 
     chain = payload.get("causal_chain")
-    if not isinstance(chain, list) or len(chain) < 3:
+    min_chain = 0 if status == "NO_REPAIR_REQUIRED" else 3
+    if not isinstance(chain, list) or len(chain) < min_chain:
         errors.append(_error("CAUSAL_CHAIN_INSUFFICIENT", "$.causal_chain"))
     else:
         for idx, item in enumerate(chain):
@@ -821,7 +827,8 @@ def validate(payload, evidence_manifest=None):
         errors.append(_error("AUTHORITY_CONTRADICTIONS_INVALID", "$.authority_contradictions"))
 
     recurrence = payload.get("recurrence_evidence")
-    if not isinstance(recurrence, list) or not recurrence:
+    recurrence_required = status != "NO_REPAIR_REQUIRED"
+    if not isinstance(recurrence, list) or (recurrence_required and not recurrence):
         errors.append(_error("RECURRENCE_EVIDENCE_INVALID", "$.recurrence_evidence"))
     else:
         for idx, item in enumerate(recurrence):
@@ -831,6 +838,8 @@ def validate(payload, evidence_manifest=None):
     existence = payload.get("should_exist_assessment")
     if not isinstance(existence, dict):
         errors.append(_error("SHOULD_EXIST_ASSESSMENT_MISSING", "$.should_exist_assessment"))
+    elif status == "NO_REPAIR_REQUIRED":
+        pass
     elif existence.get("verdict") == "INSUFFICIENT_EVIDENCE":
         if not _string_list(existence.get("missing_evidence"), allow_empty=False):
             errors.append(_error("SHOULD_EXIST_MISSING_EVIDENCE_REQUIRED", "$.should_exist_assessment.missing_evidence"))
