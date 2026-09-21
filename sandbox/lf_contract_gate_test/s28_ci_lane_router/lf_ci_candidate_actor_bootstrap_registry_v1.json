@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF": {
+      "adapter": "RUNTIME_UPDATE_BEGIN_V1",
+      "begin_rpc": "public.lf_runtime_update_begin_v1",
+      "target_code": "EJECUCION_PERFIL_LF",
+      "target_repo": "cristhianlujan/claude-persona-lf-patch"
+    }
+  },
+  "schema_version": "lf-ci-candidate-actor-bootstrap-registry/v1"
+}

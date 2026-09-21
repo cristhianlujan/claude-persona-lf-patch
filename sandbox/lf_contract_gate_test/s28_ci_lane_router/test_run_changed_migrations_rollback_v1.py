@@ -165,6 +165,79 @@ def test_migration_identity_blocks_noncanonical_filename() -> None:
         raise AssertionError("expected noncanonical migration filename to block")
 
 
+
+def test_actor_registry_is_canonical_and_allowlisted() -> None:
+    repo = HERE.parents[2]
+    registry = M.load_actor_bootstrap_registry(repo)
+    entry = registry["ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF"]
+    assert entry["adapter"] == "RUNTIME_UPDATE_BEGIN_V1"
+    assert entry["begin_rpc"] == "public.lf_runtime_update_begin_v1"
+    assert entry["target_code"] == "EJECUCION_PERFIL_LF"
+
+
+def test_actor_marker_and_render_are_deterministic() -> None:
+    registry = {
+        "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF": {
+            "adapter": "RUNTIME_UPDATE_BEGIN_V1",
+            "begin_rpc": "public.lf_runtime_update_begin_v1",
+            "target_code": "EJECUCION_PERFIL_LF",
+            "target_repo": "cristhianlujan/claude-persona-lf-patch",
+        }
+    }
+    source = "-- LF_CI_ROLLBACK_GOVERNED_ACTOR_V1: ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF\nselect 1;\n"
+    marker = M.governed_actor_marker("supabase/migrations/20990101010101_x.sql", source, registry)
+    assert marker is not None
+    operation_code, entry = marker
+    sql1, row1 = M.render_governed_actor_bootstrap(
+        path="supabase/migrations/20990101010101_x.sql",
+        migration_version="20990101010101",
+        source_digest="a" * 64,
+        operation_code=operation_code,
+        entry=entry,
+    )
+    sql2, row2 = M.render_governed_actor_bootstrap(
+        path="supabase/migrations/20990101010101_x.sql",
+        migration_version="20990101010101",
+        source_digest="a" * 64,
+        operation_code=operation_code,
+        entry=entry,
+    )
+    assert sql1 == sql2
+    assert row1 == row2
+    assert "public.lf_runtime_update_begin_v1" in sql1
+    assert '"production_apply_authorized":true' in sql1
+    assert '"ci_candidate_rollback_actor":true' in sql1
+    assert row1["execution_id"].startswith("CI-DB-CANDIDATE-20990101010101-")
+    residue = M.render_actor_residue_check([row1])
+    assert residue is not None and "BLOCK_DB_CANDIDATE_ACTOR_RESIDUE" in residue
+
+
+def test_unknown_actor_marker_blocks() -> None:
+    try:
+        M.governed_actor_marker(
+            "x.sql",
+            "-- LF_CI_ROLLBACK_GOVERNED_ACTOR_V1: UNKNOWN_OPERATION\n",
+            {},
+        )
+    except M.ProbeError as exc:
+        assert "FAIL_DB_CANDIDATE_ACTOR_OPERATION_UNREGISTERED" in str(exc)
+    else:
+        raise AssertionError("expected unknown actor marker to block")
+
+
+def test_duplicate_actor_marker_blocks() -> None:
+    registry = {"OP_X": {}}
+    source = (
+        "-- LF_CI_ROLLBACK_GOVERNED_ACTOR_V1: OP_X\n"
+        "-- LF_CI_ROLLBACK_GOVERNED_ACTOR_V1: OP_X\n"
+    )
+    try:
+        M.governed_actor_marker("x.sql", source, registry)
+    except M.ProbeError as exc:
+        assert "FAIL_DB_CANDIDATE_ACTOR_MARKER_DUPLICATE" in str(exc)
+    else:
+        raise AssertionError("expected duplicate actor marker to block")
+
 def main() -> None:
     tests = [
         test_allows_plpgsql_begin_end_inside_dollar_body,
@@ -181,6 +254,10 @@ def main() -> None:
         test_start_transaction_outer_frame_is_supported,
         test_migration_identity_is_exact,
         test_migration_identity_blocks_noncanonical_filename,
+        test_actor_registry_is_canonical_and_allowlisted,
+        test_actor_marker_and_render_are_deterministic,
+        test_unknown_actor_marker_blocks,
+        test_duplicate_actor_marker_blocks,
     ]
     for test in tests:
         test()
