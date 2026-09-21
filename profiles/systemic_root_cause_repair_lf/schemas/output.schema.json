@@ -1145,7 +1145,6 @@
     },
     "causal_chain": {
       "type": "array",
-      "minItems": 3,
       "items": {
         "$ref": "#/$defs/claim"
       }
@@ -3210,7 +3209,8 @@
           "enum": [
             "REPAIR_REQUIRED",
             "ALREADY_RESOLVED",
-            "NOT_MATERIAL"
+            "NOT_MATERIAL",
+            "UNDETERMINED"
           ]
         },
         "rationale": {
@@ -3236,10 +3236,24 @@
           }
         },
         "active_failure_present": {
-          "type": "boolean"
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "material_repair_justified": {
-          "type": "boolean"
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
@@ -3964,6 +3978,30 @@
                 ]
               }
             }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "SYSTEMIC_REPAIR_SPEC",
+              "NEEDS_MORE_EVIDENCE",
+              "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+              "BLOCK_PIPELINE"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "causal_chain": {
+            "minItems": 3
           }
         }
       }
