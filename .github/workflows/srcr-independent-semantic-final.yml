@@ -18,7 +18,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import base64,zlib,json,os,urllib.request,re,pathlib
+          import base64,zlib,json,os,urllib.request,urllib.error,re,pathlib,time
           enc=pathlib.Path('.github/srcr-eval/payload.b64').read_text().strip()
           packet=json.loads(zlib.decompress(base64.b64decode(enc)))
           pathlib.Path('/tmp/scope.json').write_text(json.dumps(packet['scope_authority_packet'],ensure_ascii=False,indent=2)+'\n')
@@ -61,8 +61,17 @@ jobs:
           body={'messages':[{'role':'system','content':'Return strict JSON only. No markdown fences, no prose outside JSON.'},{'role':'user','content':prompt}],'temperature':0,'max_tokens':9000,'response_format':{'type':'json_object'}}
           url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{model}"
           req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['CF_TOKEN'],'Content-Type':'application/json'},method='POST')
-          with urllib.request.urlopen(req,timeout=300) as resp:
-            envelope=json.loads(resp.read().decode())
+          envelope=None
+          for attempt,delay in enumerate((0,20,40,80,120),start=1):
+            if delay: time.sleep(delay)
+            try:
+              with urllib.request.urlopen(req,timeout=300) as resp:
+                envelope=json.loads(resp.read().decode())
+              break
+            except urllib.error.HTTPError as exc:
+              if exc.code != 429 or attempt == 5: raise
+              print(f'CF_RATE_LIMIT_RETRY={attempt}')
+          if envelope is None: raise SystemExit('CF_NO_ENVELOPE')
           if not envelope.get('success'): raise SystemExit('CF_FAIL:'+json.dumps(envelope)[:2000])
           result=envelope.get('result') or {}
           choices=result.get('choices') if isinstance(result,dict) else None
