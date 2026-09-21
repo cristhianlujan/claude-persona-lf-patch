@@ -34,6 +34,7 @@ Todo activo transversal documentable en estado `ACTIVE_SHARED_ENFORCEMENT` o `AC
 - `OPERATION_NEUTRAL_STEP_RECORDER` — `TRANSVERSAL_OPERATION_NEUTRAL_STEP_RECORDER` → `sandbox/lf_contract_gate_test/transversal_assets/operation_neutral_step_recorder/README.md`
 - `OPERATION_STEP_CONTRACT_JUDGE_ENFORCEMENT` — `TRANSVERSAL_OPERATION_STEP_CONTRACT_JUDGE_ENFORCEMENT` → `sandbox/lf_contract_gate_test/transversal_assets/operation_step_contract_judge_enforcement/README.md`
 - `PRE_EKB_GATE` — `TRANSVERSAL_PRE_EKB_GATE` → `sandbox/lf_contract_gate_test/pre_ekb_gate/README.md`
+- `PROFILE_RUNTIME_SOURCE_REFRESH` — `TRANSVERSAL_PROFILE_RUNTIME_SOURCE_REFRESH` → `sandbox/lf_contract_gate_test/transversal_assets/profile_runtime_source_refresh/README.md`
 - `POL-LF-POLICY-CONSUMPTION` — `POL_LF_POLICY_CONSUMPTION` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_policy_consumption/README.md`
 - `QUALIFICATION_FRAMEWORK` — `TRANSVERSAL_QUALIFICATION_FRAMEWORK` → `sandbox/lf_contract_gate_test/transversal_assets/qualification_framework/README.md`
 - `QUALIFICATION_RECEIPTS` — `TRANSVERSAL_QUALIFICATION_RECEIPTS` → `sandbox/lf_contract_gate_test/transversal_assets/qualification_receipts/README.md`
