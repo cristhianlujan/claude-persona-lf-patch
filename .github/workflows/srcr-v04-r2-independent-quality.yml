@@ -20,7 +20,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import base64, hashlib, json, os, pathlib, re, subprocess, urllib.request
+          import base64, hashlib, json, os, pathlib, re, subprocess, urllib.request, urllib.error
           REPO="cristhianlujan/claude-persona-lf-patch"
           BASE="f5baa359bf22510af9961b151ab77e47c74bbcc5"
           CANDIDATE="b22b5fe078cf2999f4592768cff9e41534d06ed4"
@@ -106,8 +106,14 @@ jobs:
                 'temperature':0,'max_tokens':9000,'response_format':{'type':'json_object'}}
           url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{model}"
           req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['CF_TOKEN'],'Content-Type':'application/json'},method='POST')
-          with urllib.request.urlopen(req,timeout=300) as resp:
-              envelope=json.loads(resp.read().decode())
+          try:
+              with urllib.request.urlopen(req,timeout=300) as resp:
+                  envelope=json.loads(resp.read().decode())
+          except urllib.error.HTTPError as exc:
+              body=exc.read().decode("utf-8","replace")
+              print("HTTP_ERROR_STATUS="+str(exc.code))
+              print("HTTP_ERROR_BODY="+body[:5000])
+              raise
           if not envelope.get('success'):
               raise SystemExit('CF_FAIL:'+json.dumps(envelope)[:2000])
           result=envelope.get('result') or {}
