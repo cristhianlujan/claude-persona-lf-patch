@@ -12,7 +12,7 @@ Before scoring:
 2. `¿DEBE EXISTIR?` is complete with real consumers, elimination impact and native/already-existing alternative.
 3. The scored evidence is bound to the exact candidate revision; no external reviewer or model identity is a prerequisite.
 4. Falsification includes undeclared/unversioned caller when execution authority is material.
-5. V0.4 current repair disposition is independently currentness-bound; an already-resolved/non-material case is not forced into repair.
+5. V0.4 current repair disposition is independently currentness-bound and carries an executable verification of that disposition; an already-resolved/non-material case is not forced into repair, and a no-repair claim without executable verification is a hard fail.
 6. Every material quantitative policy decision is inventoried and independently grounded; incident-only numeric closure is a hard fail.
 7. Every applicable material process/lifecycle node is independently reconciled; nominal phase coverage is not closure.
 
