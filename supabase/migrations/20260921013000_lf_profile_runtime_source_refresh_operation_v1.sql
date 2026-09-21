@@ -22,6 +22,20 @@ begin
 end
 $pre$;
 
+insert into public.lf_operation_execution(
+  execution_id,operation_code,target_type,target_code,status,manifest,
+  created_by_execution_id,updated_by_execution_id
+) values (
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+  'VULNERABILITY_COVERAGE_REPAIR_LF',
+  'OPERATION_PROTOCOL_REPAIR',
+  'REFRESCO_RUNTIME_PERFIL_LF',
+  'IN_PROGRESS',
+  '{"mode":"PROFILE_RUNTIME_SOURCE_REFRESH_GOVERNANCE_BOOTSTRAP","governance_bootstrap":true,"bootstrap_operation_code":"REFRESCO_RUNTIME_PERFIL_LF","bootstrap_status_ceiling":"SANDBOX_ACTIVE","production_allowed":false,"runtime_activation":false,"profile_mutation_during_migration":false,"router_activation_during_migration":false}'::jsonb,
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
+);
+
 insert into public.lf_operation_registry(
   operation_code,version,status,source_model,source_repo,source_paths,notes,
   operation_family,operation_domain,operation_type,applies_to_asset_type,
@@ -38,8 +52,8 @@ insert into public.lf_operation_registry(
   ),
   'Transversal exact-main source refresh for an existing profile runtime. Blocks if runtime implementation code changed or another profile changed; preserves profile state and automatic impact; no automatic promotion.',
   'PROFILE_OPERATIONS','PROFILE_RUNTIME_SOURCE','RUNTIME_SOURCE_REFRESH','PERFIL',
-  'OP_CANDIDATE','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'
+  'OP_CANDIDATE','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
 );
 
 insert into public.lf_operation_contracts(
@@ -83,8 +97,8 @@ insert into public.lf_operation_contracts(
     'state_preservation_required',true
   ),
   'ACTIVE_ENFORCEMENT',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
 );
 
 insert into public.lf_router_action_registry(
@@ -95,37 +109,37 @@ insert into public.lf_router_action_registry(
   'PERFIL','PROFILE_RUNTIME_REFRESH','REFRESCO_RUNTIME_PERFIL_LF','STATIC',
   true,false,false,'CANDIDATO_READ_ONLY',
   'Pre-promotion route binding for exact profile runtime source refresh; activated only after exact-revision qualification and canonical operation promotion.',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
 );
 
 insert into public.lf_operation_policy_bindings(
   operation_code,policy_code,policy_role,required,distribution_modes,binding_status,
   created_by_execution_id,updated_by_execution_id
 ) values
-('REFRESCO_RUNTIME_PERFIL_LF','POL-LF-OPERATION-LIFECYCLE','GOVERNANCE_LIFECYCLE',true,array['ROUTER','DIRECT'],'ACTIVE','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF','POL-LF-POLICY-CONSUMPTION','POLICY_CONSUMPTION',true,array['ROUTER','DIRECT'],'ACTIVE','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF','POL-LF-SOURCE-RESOLUTION','SOURCE_RESOLUTION',true,array['ROUTER','DIRECT'],'ACTIVE','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF','POL-LF-STATE-MODEL','STATE_MODEL',true,array['ROUTER','DIRECT'],'ACTIVE','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001');
+('REFRESCO_RUNTIME_PERFIL_LF','POL-LF-OPERATION-LIFECYCLE','GOVERNANCE_LIFECYCLE',true,array['ROUTER','DIRECT'],'ACTIVE','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF','POL-LF-POLICY-CONSUMPTION','POLICY_CONSUMPTION',true,array['ROUTER','DIRECT'],'ACTIVE','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF','POL-LF-SOURCE-RESOLUTION','SOURCE_RESOLUTION',true,array['ROUTER','DIRECT'],'ACTIVE','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF','POL-LF-STATE-MODEL','STATE_MODEL',true,array['ROUTER','DIRECT'],'ACTIVE','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001');
 
 insert into public.lf_operation_steps(
   operation_code,step_order,step_id,required,evidence_required,source_path,source_sha,
   active,execution_order,created_by_execution_id,updated_by_execution_id
 ) values
-('REFRESCO_RUNTIME_PERFIL_LF',0,'init_execution',true,'execution_id_created,target_code,target_path','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,0,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',10,'router',true,'router_read,action','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,10,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',20,'profile_resolve',true,'profile_code,repo_path,entrypoint_sha,manifest_sha,exact_profile_resolved','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,20,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',30,'source_currentness',true,'main_sha,profile_source_merge_sha,expected_entrypoint_sha,expected_manifest_sha,source_current','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,30,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',40,'runtime_baseline',true,'runtime_source_sha_before,release_path_before,service_active_before,health_before,profile_entrypoint_sha_before,profile_manifest_sha_before,rollback_source_sha','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,40,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',50,'refresh_plan',true,'deploy_source_sha,install_script_ref,runtime_code_delta_count,other_profile_delta_count,rollback_source_sha,restart_required,no_auto_promotion','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,50,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',60,'pre_refresh_binding_gate',true,'execution_id,target_code,target_path,bound_main_sha,bound_runtime_source_sha,pre_refresh_gate_passed','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,60,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',70,'runtime_refresh',true,'deploy_source_sha,release_path_after,symlink_switched,service_restarted,install_exit_zero,rollback_performed,runtime_implementation_changed,other_profile_changed','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,70,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',80,'health_readback',true,'service_active_after,health_status,runtime_endpoint_source_sha,runtime_version,listener_loopback','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,80,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',90,'source_readback',true,'deployed_entrypoint_sha,deployed_manifest_sha,expected_entrypoint_sha,expected_manifest_sha,exact_source_match','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,90,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',100,'state_preservation',true,'runtime_estado_before,runtime_estado_after,estado_operativo_before,estado_operativo_after,impacto_automatico_before,impacto_automatico_after,no_auto_promotion','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,100,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',105,'asset_reconcile',true,'runtime_source_sha,runtime_release_ref,runtime_source_refresh_execution_id,post_refresh_next_gate,asset_readback_match','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,105,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',110,'close',true,'all_required_steps_clean,open_blockers,runtime_refresh_verified,rollback_ready,no_auto_promotion','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,110,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('REFRESCO_RUNTIME_PERFIL_LF',120,'report_output',true,'result,exact_head,runtime_source_sha,evidence_refs,open_blockers,next_gate','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,120,'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001');
+('REFRESCO_RUNTIME_PERFIL_LF',0,'init_execution',true,'execution_id_created,target_code,target_path','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,0,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',10,'router',true,'router_read,action','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,10,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',20,'profile_resolve',true,'profile_code,repo_path,entrypoint_sha,manifest_sha,exact_profile_resolved','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,20,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',30,'source_currentness',true,'main_sha,profile_source_merge_sha,expected_entrypoint_sha,expected_manifest_sha,source_current','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,30,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',40,'runtime_baseline',true,'runtime_source_sha_before,release_path_before,service_active_before,health_before,profile_entrypoint_sha_before,profile_manifest_sha_before,rollback_source_sha','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,40,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',50,'refresh_plan',true,'deploy_source_sha,install_script_ref,runtime_code_delta_count,other_profile_delta_count,rollback_source_sha,restart_required,no_auto_promotion','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,50,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',60,'pre_refresh_binding_gate',true,'execution_id,target_code,target_path,bound_main_sha,bound_runtime_source_sha,pre_refresh_gate_passed','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,60,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',70,'runtime_refresh',true,'deploy_source_sha,release_path_after,symlink_switched,service_restarted,install_exit_zero,rollback_performed,runtime_implementation_changed,other_profile_changed','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,70,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',80,'health_readback',true,'service_active_after,health_status,runtime_endpoint_source_sha,runtime_version,listener_loopback','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,80,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',90,'source_readback',true,'deployed_entrypoint_sha,deployed_manifest_sha,expected_entrypoint_sha,expected_manifest_sha,exact_source_match','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,90,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',100,'state_preservation',true,'runtime_estado_before,runtime_estado_after,estado_operativo_before,estado_operativo_after,impacto_automatico_before,impacto_automatico_after,no_auto_promotion','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,100,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',105,'asset_reconcile',true,'runtime_source_sha,runtime_release_ref,runtime_source_refresh_execution_id,post_refresh_next_gate,asset_readback_match','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,105,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',110,'close',true,'all_required_steps_clean,open_blockers,runtime_refresh_verified,rollback_ready,no_auto_promotion','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,110,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('REFRESCO_RUNTIME_PERFIL_LF',120,'report_output',true,'result,exact_head,runtime_source_sha,evidence_refs,open_blockers,next_gate','sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json','44f878fed208e8a2b8a64457da45452b1c54c8a227f9bc428d440839b974a665',true,120,'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001');
 
 insert into public.lf_operation_step_contracts(
   operation_code,step_id,step_order,execution_order,contract_code,purpose,input_required,resolver_ref,
@@ -145,8 +159,8 @@ select
   x.required_keys,
   x.next_if_pass,'RETURN_TO_ROUTER','ACTIVE_ENFORCEMENT',
   'Profile-agnostic deterministic runtime source refresh step.',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
 from (
   values
   (0,'init_execution','Create governed execution before any host mutation.','["execution_id_created","target_code","target_path"]'::jsonb,'router'),
@@ -188,8 +202,8 @@ begin
       '["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
       jsonb_build_array('STEP_PASS_WITH_EVIDENCE','BLOCKED_STEP_NOT_CLEAN','RETURN_TO_ROUTER'),
       'ACTIVE_ENFORCEMENT',
-      'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001',
-      'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'
+      'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+      'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
     );
     insert into public.lf_operation_step_judge_bindings(
       operation_code,step_order,step_id,judge_code,
@@ -199,8 +213,8 @@ begin
       'REFRESCO_RUNTIME_PERFIL_LF',s.step_order,s.step_id,jc,
       'STEP_PASS_WITH_EVIDENCE','BLOCKED_STEP_NOT_CLEAN','RETURN_TO_ROUTER',
       s.required_evidence_keys,'ACTIVE_ENFORCEMENT',
-      'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001',
-      'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'
+      'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+      'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
     );
   end loop;
 end
@@ -878,8 +892,8 @@ insert into public.lf_test_suites(
   'Profile Runtime Source Refresh Qualification Matrix','v1','CANDIDATO',
   '{"exact_revision":true,"deterministic_first":true,"false_pass_tolerance":0}'::jsonb,
   '{"matrix_family":"OPERATION_QUALIFICATION","operation_code":"REFRESCO_RUNTIME_PERFIL_LF","prepromotion":true}'::jsonb,
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
 );
 
 insert into public.lf_test_requirement_bindings(
@@ -891,8 +905,8 @@ insert into public.lf_test_requirement_bindings(
   'TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1',true,1.0,0,false,true,'EXACT_REVISION',
   '{"type":"ALWAYS","phase":"PREPROMOTION","router_not_required_pre_promotion":true}'::jsonb,
   now(),'ACTIVE',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
 );
 
 insert into public.lf_test_suite_cases(
@@ -900,18 +914,18 @@ insert into public.lf_test_suite_cases(
   preconditions,input_payload,expected_output,prohibited_output,status,
   created_by_execution_id,updated_by_execution_id
 ) values
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF01',10,'Operation lifecycle state is canonical','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"OP_REGISTRY_STATE_VALID"}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF02',20,'Active operation contract exists','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"ACTIVE_CONTRACT_PRESENT"}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF03',30,'Active step contracts exist','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"ACTIVE_STEPS_PRESENT"}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF04',40,'All active steps have active judges','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"ALL_ACTIVE_STEPS_JUDGED"}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF05',50,'Pre-refresh binding gate exists','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"STEP_PRESENT","step_id":"pre_refresh_binding_gate"}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF06',60,'Runtime refresh step exists','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"STEP_PRESENT","step_id":"runtime_refresh"}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF07',70,'Health readback step exists','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"STEP_PRESENT","step_id":"health_readback"}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF08',80,'Asset reconcile step exists','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"STEP_PRESENT","step_id":"asset_reconcile"}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF09',90,'Qualification binding is registered','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"QUALIFICATION_BINDING_PRESENT"}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF10',100,'Automatic promotion forbidden','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"OP_CONTRACT_BOOL","key":"automatic_promotion","expected":false}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF11',110,'Runtime implementation change forbidden','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"OP_CONTRACT_BOOL","key":"runtime_implementation_change_allowed","expected":false}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'),
-('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF12',120,'Profile state change forbidden','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"OP_CONTRACT_BOOL","key":"profile_state_change_allowed","expected":false}','{"passed":true}','{}','CANDIDATO','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001','EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001');
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF01',10,'Operation lifecycle state is canonical','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"OP_REGISTRY_STATE_VALID"}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF02',20,'Active operation contract exists','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"ACTIVE_CONTRACT_PRESENT"}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF03',30,'Active step contracts exist','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"ACTIVE_STEPS_PRESENT"}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF04',40,'All active steps have active judges','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"ALL_ACTIVE_STEPS_JUDGED"}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF05',50,'Pre-refresh binding gate exists','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"STEP_PRESENT","step_id":"pre_refresh_binding_gate"}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF06',60,'Runtime refresh step exists','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"STEP_PRESENT","step_id":"runtime_refresh"}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF07',70,'Health readback step exists','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"STEP_PRESENT","step_id":"health_readback"}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF08',80,'Asset reconcile step exists','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"STEP_PRESENT","step_id":"asset_reconcile"}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF09',90,'Qualification binding is registered','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"QUALIFICATION_BINDING_PRESENT"}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF10',100,'Automatic promotion forbidden','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"OP_CONTRACT_BOOL","key":"automatic_promotion","expected":false}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF11',110,'Runtime implementation change forbidden','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"OP_CONTRACT_BOOL","key":"runtime_implementation_change_allowed","expected":false}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'),
+('TS-PROFILE-RUNTIME-SOURCE-REFRESH-V1','PRF12',120,'Profile state change forbidden','DETERMINISTIC','AUTOMATED','CRITICAL','{}','{"probe_code":"OP_CONTRACT_BOOL","key":"profile_state_change_allowed","expected":false}','{"passed":true}','{}','CANDIDATO','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001','EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001');
 
 insert into public.lf_activos(
   codigo_activo,nombre_canonico,tipo_activo,subtipo_activo,
@@ -977,15 +991,15 @@ insert into public.lf_activos(
       'gap','PENDING_EXACT_REVISION_QUALIFICATION_AND_PROMOTION'
     )
   ),
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001',
-  'EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+  'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
 );
 
 update public.lf_operation_registry
 set notes=coalesce(notes,'')||
   ' | Runtime source refresh handoff is routed by PERFIL/PROFILE_RUNTIME_REFRESH -> REFRESCO_RUNTIME_PERFIL_LF; refresh is separate from source update and automatic promotion.',
     updated_at=now(),
-    updated_by_execution_id='EXEC-PROFILE-RUNTIME-REFRESH-TRANSVERSAL-20260921-001'
+    updated_by_execution_id='EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
 where operation_code='ACTUALIZACION_PERFIL_LF';
 
 do $post$
@@ -1062,5 +1076,34 @@ begin
   then raise exception 'PROFILE_RUNTIME_REFRESH_GOVERNED_FUNCTIONS_MISSING'; end if;
 end
 $post$;
+
+
+do $finalize$
+begin
+  update public.lf_operation_execution
+  set status='COMPLETED',
+      completed_at=clock_timestamp(),
+      updated_at=clock_timestamp(),
+      updated_by_execution_id='EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001',
+      manifest=manifest||jsonb_build_object(
+        'result','PROFILE_RUNTIME_SOURCE_REFRESH_OPERATION_MATERIALIZED_CANDIDATE',
+        'operation_code','REFRESCO_RUNTIME_PERFIL_LF',
+        'operation_lifecycle_state','OP_CANDIDATE',
+        'operation_status','CANDIDATO_READ_ONLY',
+        'router_status','CANDIDATO_READ_ONLY',
+        'router_write_allowed',false,
+        'qualification_required',true,
+        'automatic_promotion',false,
+        'profile_mutation_during_migration',false,
+        'runtime_activation',false
+      )
+  where execution_id='EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
+    and status='IN_PROGRESS';
+
+  if not found then
+    raise exception 'PROFILE_RUNTIME_REFRESH_BOOTSTRAP_FINALIZE_FAILED';
+  end if;
+end
+$finalize$;
 
 commit;
