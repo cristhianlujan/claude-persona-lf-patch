@@ -818,6 +818,9 @@ def validate(payload, evidence_manifest=None):
 
     closure_errors, closure_summary = validate_v03_closure(payload, evidence_manifest)
     errors.extend(closure_errors)
+    if payload.get("profile_pack_id") == V04_PACK_ID and status in {"NEEDS_MORE_EVIDENCE", "RETURN_TO_WORKER_FOR_SELF_REPAIR", "BLOCK_PIPELINE"}:
+        if closure_summary.get("applies") and closure_summary.get("computed_handoff_ready") is True:
+            errors.append(_error("V04_NONREADY_WITH_DERIVED_HANDOFF_READY", "$.closure_proof.derived_decision_closure.handoff_ready"))
     errors.extend(_solution_assurance_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
     incremental_errors, incremental_summary = validate_incremental_value(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC")
     errors.extend(incremental_errors)
