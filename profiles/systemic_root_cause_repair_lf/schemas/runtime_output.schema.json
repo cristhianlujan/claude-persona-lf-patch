@@ -14,10 +14,7 @@
       ]
     },
     "profile_pack_id": {
-      "enum": [
-        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
-        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
-      ]
+      "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
     },
     "solution_depth": {
       "type": "object",
@@ -528,6 +525,80 @@
               }
             }
           }
+        }
+      }
+    },
+    "falsification_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "evidence_class": {
+            "enum": [
+              "OBSERVED_TEST",
+              "OBSERVED_RUNTIME",
+              "OBSERVED_READBACK",
+              "DESIGN_ONLY",
+              "MISSING"
+            ]
+          }
+        }
+      }
+    },
+    "research_assurance": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "baseline_solution_snapshot": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "snapshot_version": {
+              "const": "SRCR_BASELINE_SOLUTION_V1"
+            },
+            "capture_stage": {
+              "const": "PRE_RESEARCH_CHALLENGER"
+            }
+          }
+        },
+        "baseline_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "discovery_deltas": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "category": {
+                "enum": [
+                  "EXISTING_CAPABILITY_REUSE",
+                  "DELETION_SIMPLIFICATION",
+                  "HIDDEN_RISK",
+                  "CONTEXT_PERFORMANCE",
+                  "OPERABILITY",
+                  "SECOND_ORDER_EFFECT",
+                  "OTHER_MATERIAL"
+                ]
+              },
+              "disposition": {
+                "enum": [
+                  "ADOPTED",
+                  "REJECTED"
+                ]
+              }
+            }
+          }
+        },
+        "incremental_value_outcome": {
+          "enum": [
+            "MATERIAL_UPLIFT",
+            "NO_MATERIAL_UPLIFT",
+            "UNPROVEN"
+          ]
         }
       }
     }

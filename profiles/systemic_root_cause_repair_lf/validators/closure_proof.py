@@ -29,6 +29,7 @@ CURRENT_AUTHORITY_EVIDENCE_CLASSES = set(_VOCAB["current_authority_evidence_clas
 CURRENT_WIRING_EVIDENCE_CLASSES = set(_VOCAB["current_wiring_evidence_classes"])
 CURRENT_WIRING_ABSENCE_EVIDENCE_CLASSES = set(_VOCAB["current_wiring_absence_evidence_classes"])
 RECURRENCE_EVIDENCE_CLASSES = set(_VOCAB["recurrence_evidence_classes"])
+FALSIFICATION_EVIDENCE_CLASSES = set(_VOCAB["falsification_evidence_classes"])
 OMISSION_DIMENSIONS = set(_VOCAB["omission_dimensions"])
 SOLUTION_DEPTH_SIGNALS = set(_VOCAB["solution_depth_signals"])
 CLOSURE_MATERIALITY_SIGNALS = set(_VOCAB["closure_materiality_signals"])

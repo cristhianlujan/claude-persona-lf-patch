@@ -2,7 +2,7 @@
 """Deterministic semantic-utility floor for SRCR specification readiness."""
 
 try:
-    from .closure_proof import OMISSION_DIMENSIONS, V03_PACK_ID, unwrap_runtime_input
+    from .closure_proof import FALSIFICATION_EVIDENCE_CLASSES, OMISSION_DIMENSIONS, V03_PACK_ID, unwrap_runtime_input
 except (ImportError, ModuleNotFoundError):
     import importlib.util as _importlib_util
     from pathlib import Path as _Path
@@ -12,10 +12,11 @@ except (ImportError, ModuleNotFoundError):
     assert _closure_spec and _closure_spec.loader
     _closure_spec.loader.exec_module(_closure_mod)
     OMISSION_DIMENSIONS = _closure_mod.OMISSION_DIMENSIONS
+    FALSIFICATION_EVIDENCE_CLASSES = _closure_mod.FALSIFICATION_EVIDENCE_CLASSES
     V03_PACK_ID = _closure_mod.V03_PACK_ID
     unwrap_runtime_input = _closure_mod.unwrap_runtime_input
 
-OBSERVED_FALSIFICATION_EVIDENCE = {"OBSERVED_TEST", "OBSERVED_RUNTIME", "OBSERVED_READBACK"}
+OBSERVED_FALSIFICATION_EVIDENCE = FALSIFICATION_EVIDENCE_CLASSES - {"DESIGN_ONLY", "MISSING"}
 CRITICAL_EVIDENCE_PATHS = {
     "$.symptom",
     "$.immediate_cause",
@@ -302,4 +303,7 @@ def evaluate(payload, contract_gate, evidence_manifest=None):
     }
     if is_v03 and isinstance(closure_summary, dict):
         result["closure_summary"] = closure_summary
+    incremental_summary = contract_gate.get("incremental_value_summary") if isinstance(contract_gate, dict) else None
+    if isinstance(incremental_summary, dict):
+        result["incremental_value_summary"] = incremental_summary
     return result
