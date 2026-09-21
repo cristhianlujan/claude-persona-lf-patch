@@ -161,6 +161,8 @@ no_repair["repair_disposition"] = {
 }
 no_repair["preferred_alternative"] = None
 no_repair["selected_alternative"] = None
+no_repair["causal_chain"] = []
+no_repair["recurrence_evidence"] = []
 no_repair["alternatives"] = []
 no_repair["rejected_alternatives"] = []
 no_repair["implementation_delta"] = []
@@ -175,6 +177,8 @@ for row in no_repair["closure_proof"]["proof_obligations"]:
         row["decision_refs"] = ["$.repair_disposition"]
 assert_schema_valid(no_repair, "v04_no_repair_schema")
 assert_runtime_pass(no_repair, evidence, "v04_no_repair_runtime")
+assert no_repair["causal_chain"] == []
+assert no_repair["recurrence_evidence"] == []
 
 hidden_delta = copy.deepcopy(no_repair)
 hidden_delta["implementation_delta"] = [{
@@ -288,4 +292,4 @@ quality_result = quality.validate_quality_receipt(receipt, qc, qe, semantic)
 assert quality_result["status"] == "PASS", quality_result
 assert quality_result["canonical_quality_accepted"] is True
 
-print("PASS_SRCR_V04_TRANSVERSAL_CLOSURE=11/11")
+print("PASS_SRCR_V04_TRANSVERSAL_CLOSURE=12/12")
