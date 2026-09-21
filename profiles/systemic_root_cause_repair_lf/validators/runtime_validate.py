@@ -33,12 +33,29 @@ except (ImportError, ModuleNotFoundError):
     _iv_spec.loader.exec_module(_iv_mod)
     validate_incremental_value = _iv_mod.validate_incremental_value
 
+try:
+    from .producer_depth import V05_PACK_ID, case_mode as _v05_case_mode, validate_producer_depth
+except (ImportError, ModuleNotFoundError):
+    import importlib.util as _pd_importlib_util
+    from pathlib import Path as _PDPath
+    _pd_path = _PDPath(__file__).with_name("producer_depth.py")
+    _pd_spec = _pd_importlib_util.spec_from_file_location("srcr_producer_depth", _pd_path)
+    _pd_mod = _pd_importlib_util.module_from_spec(_pd_spec)
+    assert _pd_spec and _pd_spec.loader
+    _pd_spec.loader.exec_module(_pd_mod)
+    V05_PACK_ID = _pd_mod.V05_PACK_ID
+    _v05_case_mode = _pd_mod.case_mode
+    validate_producer_depth = _pd_mod.validate_producer_depth
+
 V04_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+# V0.5 inherits every V0.4 transversal guard; it only adds the producer-depth floor.
+V04_FAMILY_PACK_IDS = {V04_PACK_ID, V05_PACK_ID}
 
 ALLOWED_PROFILE_PACK_IDS = {
     "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
     "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
     V04_PACK_ID,
+    V05_PACK_ID,
 }
 
 ALLOWED_STATUS = {
@@ -657,7 +674,7 @@ def _solution_assurance_errors(payload, *, require_ready=False):
 
 def _v04_transversal_errors(payload):
     """V0.4 guards for no-repair disposition, quantitative grounding, and process depth."""
-    if payload.get("profile_pack_id") != V04_PACK_ID:
+    if payload.get("profile_pack_id") not in V04_FAMILY_PACK_IDS:
         return []
 
     errors = []
@@ -820,7 +837,9 @@ def validate(payload, evidence_manifest=None):
         errors.extend(_claim_errors(field, payload.get(field)))
 
     chain = payload.get("causal_chain")
-    min_chain = 0 if status == "NO_REPAIR_REQUIRED" else 3
+    audit_mode = _v05_case_mode(payload) == "ARCHITECTURE_AUDIT"
+    # An architecture audit has no single incident to explain; one evidence-bound gap link is enough.
+    min_chain = 0 if status == "NO_REPAIR_REQUIRED" else (1 if audit_mode else 3)
     if not isinstance(chain, list) or len(chain) < min_chain:
         errors.append(_error("CAUSAL_CHAIN_INSUFFICIENT", "$.causal_chain"))
     else:
@@ -845,10 +864,11 @@ def validate(payload, evidence_manifest=None):
         errors.extend(_proposal_errors(payload))
         errors.extend(_implementation_plan_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
     errors.extend(_v04_transversal_errors(payload))
+    errors.extend(validate_producer_depth(payload, evidence_manifest))
 
     closure_errors, closure_summary = validate_v03_closure(payload, evidence_manifest)
     errors.extend(closure_errors)
-    if payload.get("profile_pack_id") == V04_PACK_ID and status in {"NEEDS_MORE_EVIDENCE", "RETURN_TO_WORKER_FOR_SELF_REPAIR", "BLOCK_PIPELINE"}:
+    if payload.get("profile_pack_id") in V04_FAMILY_PACK_IDS and status in {"NEEDS_MORE_EVIDENCE", "RETURN_TO_WORKER_FOR_SELF_REPAIR", "BLOCK_PIPELINE"}:
         if closure_summary.get("applies") and closure_summary.get("computed_handoff_ready") is True:
             errors.append(_error("V04_NONREADY_WITH_DERIVED_HANDOFF_READY", "$.closure_proof.derived_decision_closure.handoff_ready"))
     if repair_artifacts_required:
@@ -861,7 +881,8 @@ def validate(payload, evidence_manifest=None):
         errors.append(_error("AUTHORITY_CONTRADICTIONS_INVALID", "$.authority_contradictions"))
 
     recurrence = payload.get("recurrence_evidence")
-    recurrence_required = status != "NO_REPAIR_REQUIRED"
+    # Recurrence proves an incident class is systemic; an architecture audit is not triggered by recurrence.
+    recurrence_required = status != "NO_REPAIR_REQUIRED" and not audit_mode
     if not isinstance(recurrence, list) or (recurrence_required and not recurrence):
         errors.append(_error("RECURRENCE_EVIDENCE_INVALID", "$.recurrence_evidence"))
     else:
