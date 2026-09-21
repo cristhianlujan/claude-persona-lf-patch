@@ -40,6 +40,9 @@ class FakeConn:
     def rollback(self) -> None:
         return None
 
+    def commit(self) -> None:
+        return None
+
 
 def claimed() -> dict:
     return {
@@ -84,6 +87,7 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         job = {"status": "COMPLETED", "result": {"result": {}}}
         with (
             patch.object(worker, "_connect", return_value=FakeConn()),
+            patch.object(worker, "_reconcile_governed_pending", return_value=0),
             patch.object(worker, "_claim", return_value=claimed()),
             patch.object(worker, "_begin_governed_pre_model", return_value=governed),
             patch.object(worker, "_read_model_governance", return_value=model_governance()),
@@ -120,6 +124,7 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
 
         with (
             patch.object(worker, "_connect", return_value=FakeConn()),
+            patch.object(worker, "_reconcile_governed_pending", return_value=0),
             patch.object(worker, "_claim", return_value=claimed()),
             patch.object(worker, "_begin_governed_pre_model", return_value=governed),
             patch.object(worker, "_baseline_api_payload", return_value={"request_id": claimed()["request_id"]}),
@@ -137,6 +142,89 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         self.assertLess(events.index("/v1/profile/research-baseline"), events.index("baseline-persisted"))
         self.assertLess(events.index("baseline-persisted"), events.index("/v1/profile/queue-execute"))
         self.assertLess(events.index("/v1/profile/queue-execute"), events.index("main-persisted"))
+
+    def test_ready_for_semantic_judge_never_persists_queue_success(self) -> None:
+        runtime_profile = {
+            "runtime_completion": {"status": "PASS", "receipt": {}},
+            "profile_contract_valid": {"status": "PASS", "blocking_codes": []},
+            "semantic_utility": {"status": "PASS", "blocking_codes": []},
+            "raw_output": "{}",
+        }
+        job = {"result": {"result": runtime_profile}}
+        class Cursor:
+            rowcount = 1
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+            def execute(self, _query, params=None):
+                self.params = params
+        class Conn(FakeConn):
+            def __init__(self): self.cursor_obj = Cursor()
+            def cursor(self): return self.cursor_obj
+        conn = Conn()
+        with patch.object(
+            worker,
+            "_record_post_model_governance",
+            return_value={
+                "status": "READY_FOR_SEMANTIC_JUDGE",
+                "next_gate": "semantic_judge",
+                "execution_id": model_governance()["execution_id"],
+            },
+        ):
+            worker._persist_success(
+                conn,
+                claimed()["request_id"],
+                job,
+                claimed=claimed(),
+                governed={"execution_id": model_governance()["execution_id"]},
+            )
+        params = conn.cursor_obj.params
+        self.assertEqual(params[0], "BLOCKED")
+        self.assertEqual(params[7], "HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING")
+
+    def test_runtime_block_is_not_relabelled_as_semantic_pending(self) -> None:
+        profile = {
+            "runtime_completion": {"status": "PASS", "receipt": {}},
+            "profile_contract_valid": {
+                "status": "FAIL",
+                "blocking_codes": ["PROFILE_CONTRACT_FAILED"],
+            },
+            "semantic_utility": {"status": "PASS", "blocking_codes": []},
+            "raw_output": "{}",
+        }
+        job = {"result": {"result": profile}}
+        class Cursor:
+            rowcount = 1
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+            def execute(self, _query, params=None): self.params = params
+        class Conn(FakeConn):
+            def __init__(self): self.cursor_obj = Cursor()
+            def cursor(self): return self.cursor_obj
+        conn = Conn()
+        with patch.object(
+            worker,
+            "_record_post_model_governance",
+            return_value={
+                "status": "READY_FOR_SEMANTIC_JUDGE",
+                "next_gate": "semantic_judge",
+                "execution_id": model_governance()["execution_id"],
+            },
+        ):
+            worker._persist_success(
+                conn,
+                claimed()["request_id"],
+                job,
+                claimed=claimed(),
+                governed={"execution_id": model_governance()["execution_id"]},
+            )
+        self.assertEqual(conn.cursor_obj.params[0], "BLOCKED")
+        self.assertEqual(conn.cursor_obj.params[7], "PROFILE_CONTRACT_FAILED")
+
+    def test_reconcile_requires_exact_terminal_judge_pass(self) -> None:
+        self.assertIn("v_lf_operation_execution_judge", Path(worker.__file__).read_text())
+        self.assertIn("required_steps_pass == required_steps", Path(worker.__file__).read_text())
+        self.assertIn('judge_result == "PASS"', Path(worker.__file__).read_text())
+        self.assertIn('execution_status == "COMPLETED"', Path(worker.__file__).read_text())
 
     def test_execution_identity_is_stable(self) -> None:
         request_id = claimed()["request_id"]

@@ -115,6 +115,92 @@ def _adapter_sources(cur: psycopg.Cursor, profile_code: str) -> list[dict[str, A
     return result
 
 
+def _reconcile_governed_pending(conn: psycopg.Connection) -> int:
+    """Promote queue rows only after canonical governed execution closure proves PASS."""
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            select q.request_id::text,
+                   e.execution_id,
+                   e.status,
+                   j.required_steps,
+                   j.required_steps_pass,
+                   j.fail_count,
+                   j.blocked_count,
+                   j.judge_result
+              from {TABLE} q
+              join public.lf_operation_execution e
+                on e.execution_id='EXEC-PROFILE-RUNTIME-'||q.request_id::text
+               and e.operation_code='EJECUCION_PERFIL_LF'
+              left join public.v_lf_operation_execution_judge j
+                on j.execution_id=e.execution_id
+             where q.runtime_target='HETZNER'
+               and q.status='BLOCKED'
+               and q.error_code='HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING'
+             order by q.updated_at, q.request_id
+             limit 100
+            """
+        )
+        rows = cur.fetchall()
+        reconciled = 0
+        for (
+            request_id,
+            execution_id,
+            execution_status,
+            required_steps,
+            required_steps_pass,
+            fail_count,
+            blocked_count,
+            judge_result,
+        ) in rows:
+            clean = (
+                execution_status == "COMPLETED"
+                and judge_result == "PASS"
+                and isinstance(required_steps, int)
+                and required_steps > 0
+                and required_steps_pass == required_steps
+                and fail_count == 0
+                and blocked_count == 0
+            )
+            if clean:
+                cur.execute(
+                    f"""
+                    update {TABLE}
+                       set status='SUCCEEDED',
+                           updated_at=now(),
+                           error_code=null,
+                           error_detail=null
+                     where request_id=%s::uuid
+                       and status='BLOCKED'
+                       and error_code='HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING'
+                    """,
+                    (request_id,),
+                )
+                reconciled += cur.rowcount
+            elif execution_status == "COMPLETED":
+                cur.execute(
+                    f"""
+                    update {TABLE}
+                       set updated_at=now(),
+                           error_code='HETZNER_GOVERNED_TERMINAL_JUDGE_FAILED',
+                           error_detail=%s
+                     where request_id=%s::uuid
+                       and status='BLOCKED'
+                    """,
+                    (
+                        (
+                            f"governed_execution={execution_id};"
+                            f"judge_result={judge_result};required_steps={required_steps};"
+                            f"required_steps_pass={required_steps_pass};fail_count={fail_count};"
+                            f"blocked_count={blocked_count}"
+                        )[:1500],
+                        request_id,
+                    ),
+                )
+        conn.commit()
+        return reconciled
+
+
 def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
     with conn.cursor() as cur:
         cur.execute(
@@ -1011,7 +1097,8 @@ def _persist_success(
         conn, claimed=claimed, governed=governed, job=job
     )
     profile["governed_operation"] = governed_outcome
-    if governed_outcome.get("status") == "BLOCKED":
+    governed_status = governed_outcome.get("status")
+    if governed_status == "BLOCKED":
         status = "BLOCKED"
         error_code = governed_outcome.get("error_code") or "HETZNER_GOVERNED_OPERATION_BLOCKED"
         error_detail = (
@@ -1019,10 +1106,33 @@ def _persist_success(
             f"next_gate={governed_outcome.get('next_gate')};"
             f"runtime_status={runtime_outcome.get('status')}"
         )
-    else:
+    elif governed_status == "READY_FOR_SEMANTIC_JUDGE":
+        status = "BLOCKED"
+        if runtime_outcome.get("status") == "SUCCEEDED":
+            error_code = "HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING"
+            error_detail = (
+                f"governed_execution={governed.get('execution_id')};"
+                "next_gate=semantic_judge;"
+                "runtime_status=SUCCEEDED"
+            )
+        else:
+            error_code = runtime_outcome.get("error_code") or "HETZNER_RUNTIME_GATES_NOT_CLEAN"
+            error_detail = runtime_outcome.get("error_detail") or (
+                f"governed_execution={governed.get('execution_id')};"
+                f"runtime_status={runtime_outcome.get('status')}"
+            )
+    elif governed_status == "COMPLETED":
         status = str(runtime_outcome["status"])
         error_code = runtime_outcome["error_code"]
         error_detail = runtime_outcome["error_detail"]
+    else:
+        status = "BLOCKED"
+        error_code = "HETZNER_GOVERNED_OPERATION_STATE_INVALID"
+        error_detail = (
+            f"governed_execution={governed.get('execution_id')};"
+            f"governed_status={governed_status};"
+            f"runtime_status={runtime_outcome.get('status')}"
+        )
     receipt = completion.get("receipt") if isinstance(completion.get("receipt"), dict) else None
     attestation = None
     if receipt and isinstance(receipt.get("runtime_attestation"), dict):
@@ -1099,6 +1209,7 @@ def run_once() -> bool:
     conn = _connect()
     request_id: str | None = None
     try:
+        _reconcile_governed_pending(conn)
         claimed = _claim(conn)
         if claimed is None:
             return False
