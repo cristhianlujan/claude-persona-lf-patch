@@ -2,7 +2,7 @@
 """Deterministic semantic-utility floor for SRCR specification readiness."""
 
 try:
-    from .closure_proof import FALSIFICATION_EVIDENCE_CLASSES, OMISSION_DIMENSIONS, V03_PACK_ID, unwrap_runtime_input
+    from .closure_proof import CLOSURE_PACK_IDS, FALSIFICATION_EVIDENCE_CLASSES, OMISSION_DIMENSIONS, V03_PACK_ID, unwrap_runtime_input
 except (ImportError, ModuleNotFoundError):
     import importlib.util as _importlib_util
     from pathlib import Path as _Path
@@ -14,6 +14,7 @@ except (ImportError, ModuleNotFoundError):
     OMISSION_DIMENSIONS = _closure_mod.OMISSION_DIMENSIONS
     FALSIFICATION_EVIDENCE_CLASSES = _closure_mod.FALSIFICATION_EVIDENCE_CLASSES
     V03_PACK_ID = _closure_mod.V03_PACK_ID
+    CLOSURE_PACK_IDS = _closure_mod.CLOSURE_PACK_IDS
     unwrap_runtime_input = _closure_mod.unwrap_runtime_input
 
 OBSERVED_FALSIFICATION_EVIDENCE = FALSIFICATION_EVIDENCE_CLASSES - {"DESIGN_ONLY", "MISSING"}
@@ -62,9 +63,9 @@ def evaluate(payload, contract_gate, evidence_manifest=None):
         return {"status": "FAIL", "blocking_codes": sorted(set(codes))}
 
     status = payload.get("status")
-    is_v03 = payload.get("profile_pack_id") == V03_PACK_ID
+    is_closure_pack = payload.get("profile_pack_id") in CLOSURE_PACK_IDS
     closure_summary = contract_gate.get("closure_summary") if isinstance(contract_gate, dict) else None
-    if is_v03:
+    if is_closure_pack:
         if contract_gate.get("validation_role") != "PRE_QUALITY_STRUCTURAL_FLOOR":
             codes.append("V03_STRUCTURAL_FLOOR_ROLE_MISSING")
         if not isinstance(closure_summary, dict) or closure_summary.get("applies") is not True:
@@ -301,7 +302,7 @@ def evaluate(payload, contract_gate, evidence_manifest=None):
         "canonical_quality_accepted": False,
         "canonical_quality_receipt_required": status == "SYSTEMIC_REPAIR_SPEC",
     }
-    if is_v03 and isinstance(closure_summary, dict):
+    if is_closure_pack and isinstance(closure_summary, dict):
         result["closure_summary"] = closure_summary
     incremental_summary = contract_gate.get("incremental_value_summary") if isinstance(contract_gate, dict) else None
     if isinstance(incremental_summary, dict):
