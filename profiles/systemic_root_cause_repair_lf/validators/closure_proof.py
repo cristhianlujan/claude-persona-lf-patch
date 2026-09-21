@@ -16,6 +16,8 @@ from pathlib import Path
 from typing import Any
 
 V03_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+V04_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+CLOSURE_PACK_IDS = {V03_PACK_ID, V04_PACK_ID}
 EXISTING_AUTHORITY = "EXISTING_AUTHORITY"
 CLOSURE_V1 = "SRCR_CLOSURE_PROOF_V1"
 CLOSURE_V2 = "SRCR_CLOSURE_PROOF_V2"
@@ -214,7 +216,7 @@ def _validate_manifest_shape(manifest: Any) -> tuple[list[dict], dict[str, dict]
 
 def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[dict], dict]:
     """Validate V0.3 closure proof and return errors plus derived summary."""
-    if not isinstance(candidate, dict) or candidate.get("profile_pack_id") != V03_PACK_ID:
+    if not isinstance(candidate, dict) or candidate.get("profile_pack_id") not in CLOSURE_PACK_IDS:
         return [], {"applies": False}
 
     errors, evidence_by_id = _validate_manifest_shape(evidence_manifest)
