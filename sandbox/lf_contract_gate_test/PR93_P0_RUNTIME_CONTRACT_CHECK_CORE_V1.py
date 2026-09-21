@@ -129,11 +129,20 @@ def _evaluate_profile_update_caller_maintenance_scope(changed_files:Sequence[str
   if observed!=expected_blob: raise RuntimeScopeError("FAIL_RUNTIME_BLOB_MISMATCH",f"Profile Update caller maintenance blob mismatch for {path}: expected={expected_blob} observed={observed}")
   if mode_by_path is not None and mode_by_path.get(path)!="100644": raise RuntimeScopeError("FAIL_RUNTIME_MODE_MISMATCH",f"Profile Update caller maintenance path must be regular file 100644: {path}")
  return True
-def _evaluate_profile_operation_generic_maintenance_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None)->bool:
+def _verify_profile_operation_generic_main_merge_via_github()->bool:
+ if current_event_branch()!=MAIN_BRANCH or os.environ.get("GITHUB_EVENT_NAME")!="push" or os.environ.get("GITHUB_REPOSITORY")!=TARGET_REPOSITORY or os.environ.get("GITHUB_REF")!="refs/heads/main": return False
+ head_sha=os.environ.get("GITHUB_SHA",""); token=os.environ.get("GITHUB_TOKEN","").strip()
+ if BLOB_RE.fullmatch(head_sha) is None or not token: return False
+ try: payload=_base._github_json(f"https://api.github.com/repos/{TARGET_REPOSITORY}/commits/{head_sha}/pulls",token,"profile-operation-generic-maintenance-v1")
+ except (urllib.error.URLError,TimeoutError,UnicodeDecodeError,json.JSONDecodeError): return False
+ if not isinstance(payload,list): return False
+ return any(isinstance(pr,dict) and pr.get("merged_at") and pr.get("merge_commit_sha")==head_sha and (pr.get("base") or {}).get("ref")==MAIN_BRANCH for pr in payload)
+
+def _evaluate_profile_operation_generic_maintenance_scope(changed_files:Sequence[str],*,branch:str,blob_by_path:Mapping[str,str],mode_by_path:Mapping[str,str]|None=None,main_merge_verified:bool=False)->bool:
  changed=set(changed_files)
  relevant=changed & set(PROFILE_OPERATION_MAINTENANCE_SURFACE)
  if not relevant: return False
- if branch==MAIN_BRANCH: raise RuntimeScopeError("FAIL_RUNTIME_GENERIC_MAINTENANCE_MAIN_DIRECT","generic Profile-operation maintenance must merge through governed PR; direct main source is not an admission path")
+ if branch==MAIN_BRANCH and not main_merge_verified: raise RuntimeScopeError("FAIL_RUNTIME_GENERIC_MAINTENANCE_MAIN_NOT_MERGED","generic Profile-operation maintenance on main requires exact merged-PR evidence")
  outside=sorted(changed-set(PROFILE_OPERATION_MAINTENANCE_SURFACE))
  if outside: raise RuntimeScopeError("FAIL_RUNTIME_GENERIC_MAINTENANCE_SCOPE",f"Profile-operation maintenance contains paths outside canonical surface: {outside!r}")
  runtime_changed=changed & set(PROFILE_OPERATION_MAINTENANCE_RUNTIME_PATHS)
@@ -155,7 +164,9 @@ def evaluate_controlled_runtime_scope(changed_files:Sequence[str],*,branch:str,b
  if branch==PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PATHS): return _evaluate_profile_update_caller_init_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
  if branch==PROFILE_RUNTIME_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_RUNTIME_MAINTENANCE_PATHS): return _evaluate_profile_runtime_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
  if branch==PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_BRANCH and set(changed_files)&set(PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PATHS): return _evaluate_profile_update_bound_revision_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
- if set(changed_files)&set(PROFILE_OPERATION_MAINTENANCE_RUNTIME_PATHS) and set(changed_files)<=set(PROFILE_OPERATION_MAINTENANCE_SURFACE): return _evaluate_profile_operation_generic_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path)
+ if set(changed_files)&set(PROFILE_OPERATION_MAINTENANCE_RUNTIME_PATHS) and set(changed_files)<=set(PROFILE_OPERATION_MAINTENANCE_SURFACE):
+  generic_main_verified=main_merge_verified or (_verify_profile_operation_generic_main_merge_via_github() if branch==MAIN_BRANCH else False)
+  return _evaluate_profile_operation_generic_maintenance_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=generic_main_verified)
  if set(changed_files)&set(CUSTOMER_PROFILE_CREATOR_PATHS): return _evaluate_customer_profile_creator_scope(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
  _sync_base_extensions(); return _BASE_EVALUATE_CONTROLLED_RUNTIME_SCOPE(changed_files,branch=branch,blob_by_path=blob_by_path,mode_by_path=mode_by_path,main_merge_verified=main_merge_verified)
 def _customer_scope_self_test():
@@ -210,7 +221,17 @@ def _customer_scope_self_test():
  try: _evaluate_profile_operation_generic_maintenance_scope(generic_paths,branch=MAIN_BRANCH,blob_by_path=generic_blobs,mode_by_path=generic_modes)
  except RuntimeScopeError: pass
  else: raise SystemExit("FAIL_PROFILE_OPERATION_GENERIC_MAINTENANCE_NEGATIVE_MAIN")
- print("PASS_PROFILE_OPERATION_GENERIC_MAINTENANCE_SCOPE=4/4")
+ assert _evaluate_profile_operation_generic_maintenance_scope(generic_paths,branch=MAIN_BRANCH,blob_by_path=generic_blobs,mode_by_path=generic_modes,main_merge_verified=True)
+ print("PASS_PROFILE_OPERATION_GENERIC_MAINTENANCE_SCOPE=5/5")
+ previous_scope=_base._runtime_scope_enabled
+ try:
+  _base._runtime_scope_enabled=True; _admit_profile_operation_workflow_change([CUSTOMER_PROFILE_CREATOR_WORKFLOW])
+  _base._runtime_scope_enabled=False
+  try: _admit_profile_operation_workflow_change([CUSTOMER_PROFILE_CREATOR_WORKFLOW])
+  except RuntimeScopeError: pass
+  else: raise SystemExit("FAIL_PROFILE_OPERATION_WORKFLOW_ADMISSION_WITHOUT_SCOPE")
+ finally: _base._runtime_scope_enabled=previous_scope
+ print("PASS_PROFILE_OPERATION_WORKFLOW_ADMISSION_SCOPE=2/2")
 _original_get_changed_files=_base.get_changed_files
 def _customer_branch_scope_for_push():
  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
@@ -246,6 +267,11 @@ def _profile_update_caller_maintenance_changed_files():
   if BLOB_RE.fullmatch(merge_base) is None: raise RuntimeScopeError("FAIL_RUNTIME_PROFILE_UPDATE_CALLER_MAINTENANCE_BASE_UNRESOLVED","Profile Update caller maintenance could not resolve merge-base with main")
   return _base.e16.git_changed_files(merge_base,"HEAD")
  return _base.e16.get_changed_files()
+def _admit_profile_operation_workflow_change(changed_files:Sequence[str])->None:
+ if CUSTOMER_PROFILE_CREATOR_WORKFLOW not in set(changed_files): return
+ if not _base._runtime_scope_enabled: raise RuntimeScopeError("FAIL_RUNTIME_WORKFLOW_SCOPE_NOT_ESTABLISHED","Customer workflow admission requires an already-established controlled runtime scope")
+ _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW)
+
 def _customer_get_changed_files():
  branch=current_event_branch()
  if branch==PROFILE_UPDATE_CALLER_MAINTENANCE_BRANCH:
@@ -265,9 +291,7 @@ def _customer_get_changed_files():
   changed_files=_customer_maintenance_changed_files(); blobs={path:git_blob_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS}
   _base._runtime_scope_enabled=_evaluate_customer_profile_creator_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); print(f"PASS_CUSTOMER_PROFILE_CREATOR_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
  changed_files=_customer_branch_scope_for_push() if os.environ.get("GITHUB_EVENT_NAME")=="push" and branch==CUSTOMER_PROFILE_CREATOR_BRANCH else _original_get_changed_files()
- if CUSTOMER_PROFILE_CREATOR_WORKFLOW in set(changed_files):
-  if branch!=CUSTOMER_PROFILE_CREATOR_BRANCH: raise RuntimeScopeError("FAIL_RUNTIME_BRANCH_MISMATCH","Customer workflow admission requires exact governed branch")
-  _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW)
+ _admit_profile_operation_workflow_change(changed_files)
  return changed_files
 _BASE_RUNTIME_IS_ALLOWED_PATH=_base.is_allowed_path
 _BASE_STATIC_IS_ALLOWED_PATH=_base._original_is_allowed_path
