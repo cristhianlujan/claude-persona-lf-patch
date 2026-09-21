@@ -56,6 +56,70 @@ def _not_evaluated(code: str) -> dict[str, Any]:
     return {"status": "NOT_EVALUATED", "blocking_codes": [code], "downstream_authorized": False}
 
 
+def _snapshot_binding_paths(contract: dict[str, Any]) -> dict[str, list[str]]:
+    raw = contract.get("snapshot_binding_paths") or {}
+    if not isinstance(raw, dict):
+        raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PATHS_INVALID")
+    result: dict[str, list[str]] = {}
+    for source, path in raw.items():
+        if source not in {"input_digest", "profile_source_digest", "evidence_refs", "capture_stage"}:
+            raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_SOURCE_INVALID")
+        if (
+            not isinstance(path, list)
+            or not path
+            or len(path) > 12
+            or any(not isinstance(item, str) or not item.strip() for item in path)
+        ):
+            raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PATH_INVALID")
+        normalized = [item.strip() for item in path]
+        if normalized in result.values():
+            raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PATH_DUPLICATE")
+        result[source] = normalized
+    return result
+
+
+def _schema_without_bound_paths(
+    snapshot_schema: dict[str, Any], binding_paths: dict[str, list[str]]
+) -> dict[str, Any]:
+    projected = json.loads(json.dumps(snapshot_schema))
+
+    def remove_leaf(node: dict[str, Any], path: list[str]) -> None:
+        current = node
+        for segment in path[:-1]:
+            properties = current.get("properties")
+            if not isinstance(properties, dict) or segment not in properties:
+                raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_SCHEMA_PATH_MISSING")
+            child = properties[segment]
+            if not isinstance(child, dict) or child.get("type") != "object":
+                raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_SCHEMA_PARENT_INVALID")
+            current = child
+        properties = current.get("properties")
+        leaf = path[-1]
+        if not isinstance(properties, dict) or leaf not in properties:
+            raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_SCHEMA_PATH_MISSING")
+        properties.pop(leaf)
+        required = current.get("required")
+        if isinstance(required, list):
+            current["required"] = [item for item in required if item != leaf]
+
+    for path in binding_paths.values():
+        remove_leaf(projected, path)
+    return projected
+
+
+def _inject_snapshot_binding(snapshot: dict[str, Any], path: list[str], value: Any) -> None:
+    current = snapshot
+    for segment in path[:-1]:
+        child = current.get(segment)
+        if child is None:
+            child = {}
+            current[segment] = child
+        if not isinstance(child, dict):
+            raise LlamaTransportError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PARENT_INVALID")
+        current = child
+    current[path[-1]] = value
+
+
 def _runtime_diagnostics(exc: BaseException) -> dict[str, Any] | None:
     current: BaseException | None = exc
     seen: set[int] = set()
@@ -510,6 +574,21 @@ class ProfileRuntimeEngine:
             contract = request.research_baseline_contract
             snapshot_schema = contract["snapshot_schema"]
             Draft202012Validator.check_schema(snapshot_schema)
+            binding_paths = _snapshot_binding_paths(contract)
+            generation_snapshot_schema = _schema_without_bound_paths(
+                snapshot_schema, binding_paths
+            )
+            Draft202012Validator.check_schema(generation_snapshot_schema)
+            evidence_refs = [
+                "input:" + request.input_digest,
+                "profile-source-manifest:" + request.profile_source_digest,
+            ]
+            deterministic_values = {
+                "input_digest": request.input_digest,
+                "profile_source_digest": request.profile_source_digest,
+                "evidence_refs": evidence_refs,
+                "capture_stage": contract["capture_stage"],
+            }
             binding = self.repository.runtime_binding(request.profile_slug)
             model_sources = self.repository.profile_model_sources(request.profile_slug, sources)
             max_output_tokens = None
@@ -523,11 +602,13 @@ class ProfileRuntimeEngine:
                 profile_slug=request.profile_slug,
                 profile_sources=model_sources,
                 input_literal=request.input_literal,
-                snapshot_schema=snapshot_schema,
+                snapshot_schema=generation_snapshot_schema,
                 capture_stage=contract["capture_stage"],
                 max_output_tokens=max_output_tokens,
             )
             snapshot = generated["snapshot"]
+            for source, path in binding_paths.items():
+                _inject_snapshot_binding(snapshot, path, deterministic_values[source])
             validation_errors = sorted(
                 Draft202012Validator(snapshot_schema).iter_errors(snapshot),
                 key=lambda item: list(item.absolute_path),
@@ -538,10 +619,6 @@ class ProfileRuntimeEngine:
                     validation_errors[0].message[:300],
                 )
             baseline_digest = "sha256:" + canonical_json_sha256(snapshot)
-            evidence_refs = [
-                "input:" + request.input_digest,
-                "profile-source-manifest:" + request.profile_source_digest,
-            ]
             envelope = {
                 "snapshot": snapshot,
                 "baseline_digest": baseline_digest,

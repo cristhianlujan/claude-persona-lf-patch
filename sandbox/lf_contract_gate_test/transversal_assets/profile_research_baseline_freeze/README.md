@@ -16,6 +16,8 @@ La decide el servidor desde `public.lf_activos.metadata.research_baseline_mode`;
 
 Cuando aplica, el perfil declara en su asset un contrato PROFILE_RESEARCH_BASELINE_BINDING_V1 con capture_stage, snapshot_schema, output_snapshot_path, output_digest_path y profile_validator_binding=PROFILE_OUTPUT_VALIDATOR_BOUND_V1. El runtime no conoce el vocabulario interno del perfil; el schema del snapshot también pertenece al asset del perfil.
 
+El asset puede declarar snapshot_binding_paths para campos internos del snapshot que no deben ser inventados por el modelo. Las fuentes permitidas son input_digest, profile_source_digest, evidence_refs y capture_stage; cada una apunta a una ruta JSON arbitraria del snapshot. El runtime elimina esas hojas del schema de generación, las inyecta determinísticamente antes de validar/hash y el servidor vuelve a comprobarlas antes de persistir.
+
 El productor entrega un envelope genérico con snapshot opaco, baseline_digest, capture_stage, input_digest, profile_source_digest y evidence_refs. El servidor valida identidad/orden temporal, bloquea evidencia externa antes del freeze y persiste un server_snapshot_fingerprint independiente. Ese fingerprint no sustituye el digest canónico del perfil.
 
 El step limpio queda en public.lf_operation_execution_steps; el recorder canónico impide reemplazarlo con evidencia distinta. En execute_profile, el server usa las rutas declarativas del asset para extraer snapshot/digest del output y compararlos con lo congelado. La corrección del digest canónico sigue siendo responsabilidad del output validator enlazado del perfil.
@@ -57,6 +59,6 @@ Primero retirar el opt-in del perfil por reconciliación gobernada; luego revert
 ## Fuente
 
 - Contract: `sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json`
-- Contract SHA-256: 12f1a102b0d856decbee3a97cbc666562d4a0d26de7adb59cb4713b7e22138f1
+- Contract SHA-256: 4d2de745272a3d5b746deab20de182dc560798d031388aa7d7086de411537f35
 - Operation: `public.lf_operation_registry/EJECUCION_PERFIL_LF`
 - Durable evidence: `public.lf_operation_execution_steps`

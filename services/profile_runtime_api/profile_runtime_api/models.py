@@ -250,6 +250,32 @@ class ResearchBaselineRequest(StrictModel):
                 or any(not isinstance(item, str) or not item.strip() for item in path)
             ):
                 raise ValueError(f"RESEARCH_BASELINE_{key.upper()}_INVALID")
+        binding_paths = contract.get("snapshot_binding_paths")
+        if binding_paths is None:
+            binding_paths = {}
+        if not isinstance(binding_paths, dict):
+            raise ValueError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PATHS_INVALID")
+        allowed_sources = {
+            "input_digest",
+            "profile_source_digest",
+            "evidence_refs",
+            "capture_stage",
+        }
+        seen_paths: set[tuple[str, ...]] = set()
+        for source, path in binding_paths.items():
+            if source not in allowed_sources:
+                raise ValueError("RESEARCH_BASELINE_SNAPSHOT_BINDING_SOURCE_INVALID")
+            if (
+                not isinstance(path, list)
+                or not path
+                or len(path) > 12
+                or any(not isinstance(item, str) or not item.strip() for item in path)
+            ):
+                raise ValueError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PATH_INVALID")
+            normalized = tuple(item.strip() for item in path)
+            if normalized in seen_paths:
+                raise ValueError("RESEARCH_BASELINE_SNAPSHOT_BINDING_PATH_DUPLICATE")
+            seen_paths.add(normalized)
         return self
 
 

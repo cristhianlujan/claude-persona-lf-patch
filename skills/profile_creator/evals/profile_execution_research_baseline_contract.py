@@ -39,6 +39,9 @@ assert "metadata->>'research_baseline_mode'" in sql
 assert "metadata->'research_baseline_contract'" in sql
 assert "contract->>'contract_version'<>'PROFILE_RESEARCH_BASELINE_BINDING_V1'" in sql
 assert "contract->>'profile_validator_binding'<>'PROFILE_OUTPUT_VALIDATOR_BOUND_V1'" in sql
+assert "snapshot_binding_paths" in sql
+assert "PROFILE_RESEARCH_BASELINE_SNAPSHOT_BINDING_MISMATCH" in sql
+assert "source not in ('input_digest','profile_source_digest','evidence_refs','capture_stage')" in sql
 assert "jsonb_typeof(value)<>'string'" in sql
 
 # Runtime must stay profile-agnostic: profile-specific vocabulary belongs only in asset contract data.
@@ -93,6 +96,8 @@ for prefix in ('https?://','external://','web://'):
     assert prefix in sql, prefix
 assert "btrim(ref) ~* '^(https?://|external://|web://)'" in sql
 assert "baseline_digest:='sha256:'" not in sql
+assert "select key,value from jsonb_each(contract->'snapshot_binding_paths')" in sql
+assert "(p_baseline_envelope->'snapshot')#>binding_path is distinct from expected_bound_value" in sql
 
 # Final binding resolves profile-owned fields via declarative JSON paths.
 for token in (

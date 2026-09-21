@@ -28,7 +28,8 @@
       "output_snapshot_path": "non-empty JSON path array",
       "output_digest_path": "non-empty JSON path array",
       "profile_validator_binding": "PROFILE_OUTPUT_VALIDATOR_BOUND_V1",
-      "snapshot_schema": "profile-owned JSON Schema object, <=12000 serialized bytes"
+      "snapshot_schema": "profile-owned JSON Schema object, <=12000 serialized bytes",
+      "snapshot_binding_paths": "optional profile-owned mapping from runtime source keys to snapshot JSON paths; allowed keys input_digest/profile_source_digest/evidence_refs/capture_stage"
     },
     "runtime_envelope_required_fields": [
       "snapshot",
@@ -47,13 +48,16 @@
       "https://",
       "external://",
       "web://"
-    ]
+    ],
+    "runtime_injection_rule": "Model generation schema excludes all bound leaves; runtime injects deterministic values before full snapshot schema validation and canonical hashing."
   },
   "invariants": [
     "applicability_and_binding_contract_are_server_derived_from_profile_asset",
     "runtime_contains_no_profile_specific_snapshot_vocabulary",
     "baseline_snapshot_schema_is_profile_owned_declarative_contract_not_runtime_vocabulary",
     "not_required_path_closes_before_any_baseline_model_dispatch",
+    "model_never_authors_snapshot_fields_declared_in_snapshot_binding_paths",
+    "persisted_snapshot_bound_fields_equal_outer_server_bound_envelope_values",
     "baseline_step_is_durable_before_execute_profile",
     "clean_baseline_step_is_immutable_on_retry",
     "baseline_input_digest_matches_execution_input",
@@ -81,7 +85,8 @@
     "PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN",
     "PROFILE_RESEARCH_BASELINE_UNEXPECTED_ENVELOPE",
     "PROFILE_BASELINE_PRE_REQUIRED_MODE_INFLIGHT",
-    "PROFILE_BASELINE_COMPAT_BACKFILL_INCOMPLETE"
+    "PROFILE_BASELINE_COMPAT_BACKFILL_INCOMPLETE",
+    "PROFILE_RESEARCH_BASELINE_SNAPSHOT_BINDING_MISMATCH"
   ],
   "compatibility": {
     "legacy_profiles": "NOT_REQUIRED by default",

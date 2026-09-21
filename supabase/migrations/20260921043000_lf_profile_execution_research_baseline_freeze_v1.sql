@@ -105,6 +105,9 @@ begin
        or v_baseline_contract->>'profile_validator_binding'<>'PROFILE_OUTPUT_VALIDATOR_BOUND_V1'
        or jsonb_typeof(v_baseline_contract->'snapshot_schema')<>'object'
        or octet_length((v_baseline_contract->'snapshot_schema')::text)>12000
+       or jsonb_typeof(v_baseline_contract->'snapshot_binding_paths')<>'object'
+       or exists( select 1 from jsonb_each(v_baseline_contract->'snapshot_binding_paths') b(source,path) where source not in ('input_digest','profile_source_digest','evidence_refs','capture_stage') or jsonb_typeof(path)<>'array' or jsonb_array_length(path)=0 or jsonb_array_length(path)>12 or exists(select 1 from jsonb_array_elements(path) p(value) where jsonb_typeof(value)<>'string' or nullif(btrim(value#>>'{}'),'') is null) )
+       or (select count(*) from (select path::text from jsonb_each(v_baseline_contract->'snapshot_binding_paths') b(source,path) group by path::text having count(*)>1) d)>0
        or jsonb_typeof(v_baseline_contract->'output_snapshot_path')<>'array'
        or jsonb_array_length(v_baseline_contract->'output_snapshot_path')=0
        or jsonb_typeof(v_baseline_contract->'output_digest_path')<>'array'
@@ -197,6 +200,10 @@ declare
   payload jsonb;
   trust jsonb;
   ref text;
+  binding_source text;
+  binding_path_json jsonb;
+  binding_path text[];
+  expected_bound_value jsonb;
 begin
   if nullif(btrim(coalesce(p_execution_id,'')),'') is null then
     raise exception 'PROFILE_RESEARCH_BASELINE_EXECUTION_ID_REQUIRED';
@@ -306,6 +313,12 @@ begin
       if btrim(ref) ~* '^(https?://|external://|web://)' then
         raise exception 'PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN:%',ref;
       end if;
+    end loop;
+
+    for binding_source,binding_path_json in select key,value from jsonb_each(contract->'snapshot_binding_paths') loop
+      select array_agg(value order by ord) into binding_path from jsonb_array_elements_text(binding_path_json) with ordinality x(value,ord);
+      expected_bound_value:=case binding_source when 'input_digest' then to_jsonb(p_baseline_envelope->>'input_digest') when 'profile_source_digest' then to_jsonb(p_baseline_envelope->>'profile_source_digest') when 'evidence_refs' then p_baseline_envelope->'evidence_refs' when 'capture_stage' then to_jsonb(p_baseline_envelope->>'capture_stage') else null end;
+      if (p_baseline_envelope->'snapshot')#>binding_path is distinct from expected_bound_value then raise exception 'PROFILE_RESEARCH_BASELINE_SNAPSHOT_BINDING_MISMATCH:%',binding_source; end if;
     end loop;
 
     server_snapshot_fingerprint:='sha256:'||encode(
@@ -521,7 +534,7 @@ insert into public.lf_operation_steps(
 select 'EJECUCION_PERFIL_LF',47,'research_baseline_freeze',true,
   'research_baseline_binding; baseline_receipt_ref; server_validated',
   'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json',
-  '12f1a102b0d856decbee3a97cbc666562d4a0d26de7adb59cb4713b7e22138f1',true,47,e.execution_id,e.execution_id
+  '4d2de745272a3d5b746deab20de182dc560798d031388aa7d7086de411537f35',true,47,e.execution_id,e.execution_id
 from public.lf_operation_execution e
 where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and e.status='IN_PROGRESS'
@@ -536,7 +549,7 @@ insert into public.lf_operation_judges(
 )
 select 'EJECUCION_PERFIL_LF','MINI_JUDGE_EJECUCION_PERFIL_RESEARCH_BASELINE_V1',
   'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json',
-  '12f1a102b0d856decbee3a97cbc666562d4a0d26de7adb59cb4713b7e22138f1','["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
+  '4d2de745272a3d5b746deab20de182dc560798d031388aa7d7086de411537f35','["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
   '["STEP_PASS_WITH_EVIDENCE","BLOCKED_STEP_NOT_CLEAN","RETURN_TO_ROUTER"]'::jsonb,
   'ACTIVE_ENFORCEMENT',e.execution_id,e.execution_id
 from public.lf_operation_execution e
@@ -778,7 +791,7 @@ select 'PROFILE_RESEARCH_BASELINE_FREEZE','PROFILE_RESEARCH_BASELINE_FREEZE','CA
     'step_id','research_baseline_freeze',
     'function','public.lf_profile_execution_research_baseline_v1',
     'binding_model','OPAQUE_SNAPSHOT_PLUS_DECLARATIVE_OUTPUT_PATHS',
-    'contract_sha256','12f1a102b0d856decbee3a97cbc666562d4a0d26de7adb59cb4713b7e22138f1'
+    'contract_sha256','4d2de745272a3d5b746deab20de182dc560798d031388aa7d7086de411537f35'
   ),
   jsonb_build_object(
     'source_kind','GITHUB_SOURCE_PLUS_SUPABASE_REGISTRY',

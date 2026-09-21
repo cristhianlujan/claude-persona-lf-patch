@@ -66,8 +66,30 @@ class ResearchBaselineEndpointTest(unittest.TestCase):
             "snapshot_schema": {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["leading_solution"],
-                "properties": {"leading_solution": {"type": "string", "minLength": 1}},
+                "required": [
+                    "leading_solution",
+                    "input_digest",
+                    "profile_source_digest",
+                    "evidence_refs",
+                    "capture_stage",
+                ],
+                "properties": {
+                    "leading_solution": {"type": "string", "minLength": 1},
+                    "input_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+                    "profile_source_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+                    "evidence_refs": {
+                        "type": "array",
+                        "minItems": 2,
+                        "items": {"type": "string", "minLength": 5},
+                    },
+                    "capture_stage": {"const": "PROFILE_DEFINED_PRE_RESEARCH"},
+                },
+            },
+            "snapshot_binding_paths": {
+                "input_digest": ["input_digest"],
+                "profile_source_digest": ["profile_source_digest"],
+                "evidence_refs": ["evidence_refs"],
+                "capture_stage": ["capture_stage"],
             },
             "output_snapshot_path": ["research_assurance", "baseline_solution_snapshot"],
             "output_digest_path": ["research_assurance", "baseline_digest"],
@@ -102,7 +124,39 @@ class ResearchBaselineEndpointTest(unittest.TestCase):
             "sha256:" + canonical_json_sha256(snapshot),
         )
         self.assertEqual(inner["runtime_model_id"], "same-selected-model")
+        self.assertEqual(snapshot["input_digest"], self.input_digest)
+        self.assertEqual(snapshot["profile_source_digest"], self.source_digest)
+        self.assertEqual(snapshot["capture_stage"], "PROFILE_DEFINED_PRE_RESEARCH")
+        self.assertEqual(
+            snapshot["evidence_refs"],
+            ["input:" + self.input_digest, "profile-source-manifest:" + self.source_digest],
+        )
+        generation_schema = (self.client.last_kwargs or {}).get("schema", {})
+        generated_snapshot_schema = generation_schema.get("properties", {}).get("snapshot", {})
+        generated_properties = generated_snapshot_schema.get("properties", {})
+        self.assertNotIn("input_digest", generated_properties)
+        self.assertNotIn("profile_source_digest", generated_properties)
+        self.assertNotIn("evidence_refs", generated_properties)
+        self.assertNotIn("capture_stage", generated_properties)
         self.assertNotIn("governed_operation", self.client.last_kwargs or {})
+
+    def test_duplicate_snapshot_binding_path_is_rejected_before_model(self) -> None:
+        bad = dict(self.contract)
+        bad["snapshot_binding_paths"] = {
+            "input_digest": ["input_digest"],
+            "profile_source_digest": ["input_digest"],
+        }
+        with self.assertRaises(ValueError):
+            ResearchBaselineRequest(
+                request_id="11111111-2222-3333-4444-555555555555",
+                profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+                profile_slug="systemic_root_cause_repair_lf",
+                profile_source_paths=[self.path],
+                input_literal=self.literal,
+                input_digest=self.input_digest,
+                profile_source_digest=self.source_digest,
+                research_baseline_contract=bad,
+            )
 
     def test_source_digest_mismatch_fails_before_model(self) -> None:
         request = self.request().model_copy(
