@@ -1,6 +1,6 @@
 {
   "schema_version": "lf-profile-pack-manifest/v1",
-  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
   "profile_slug": "systemic_root_cause_repair_lf",
   "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
   "operation": "CREACION_PERFIL_LF",
@@ -17,6 +17,7 @@
   "files": [
     "README.md",
     "SKILL.md",
+    "contracts/closure_proof_v2.md",
     "contracts/closure_vocabulary.v2.json",
     "contracts/incremental_value.v1.json",
     "contracts/main_contract.md",
@@ -26,6 +27,7 @@
     "evals/remediation_20260827/run_cases.py",
     "evals/v03_incremental_value_cases.py",
     "evals/v03_transversal_contract_cases.py",
+    "evals/v05_producer_depth_cases.py",
     "examples/bad_output.json",
     "examples/good_output.json",
     "handoffs/to_quality_pack.handoff.json",
@@ -35,6 +37,7 @@
     "schemas/output.schema.json",
     "schemas/runtime_output.schema.json",
     "validators/incremental_value.py",
+    "validators/producer_depth.py",
     "validators/runtime_semantic_utility.py",
     "validators/runtime_validate.py",
     "validators/validate_pack.py"
