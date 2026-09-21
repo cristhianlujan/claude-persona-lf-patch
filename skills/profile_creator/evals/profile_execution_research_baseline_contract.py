@@ -7,10 +7,20 @@ ROOT=Path(__file__).resolve().parents[3]
 MIG=ROOT/'supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql'
 CONTRACT=ROOT/'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json'
 README=ROOT/'sandbox/lf_contract_gate_test/transversal_assets/profile_research_baseline_freeze/README.md'
+WORKER=ROOT/'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
+ENGINE=ROOT/'services/profile_runtime_api/profile_runtime_api/engine.py'
+LLAMA=ROOT/'services/profile_runtime_api/profile_runtime_api/llama.py'
+APP=ROOT/'services/profile_runtime_api/profile_runtime_api/app.py'
+MODELS=ROOT/'services/profile_runtime_api/profile_runtime_api/models.py'
 
-for path in (MIG,CONTRACT,README):
+for path in (MIG,CONTRACT,README,WORKER,ENGINE,LLAMA,APP,MODELS):
     assert path.is_file(), path
 sql=MIG.read_text()
+worker=WORKER.read_text()
+engine=ENGINE.read_text()
+llama=LLAMA.read_text()
+app=APP.read_text()
+models=MODELS.read_text()
 contract=json.loads(CONTRACT.read_text())
 contract_sha=hashlib.sha256(CONTRACT.read_bytes()).hexdigest()
 
@@ -20,6 +30,8 @@ assert contract['capability_code']=='PROFILE_RESEARCH_BASELINE_FREEZE'
 assert contract['applicability']['default']=='NOT_REQUIRED'
 assert set(contract['applicability']['modes'])=={'NOT_REQUIRED','PRE_RESEARCH_ALWAYS'}
 assert contract['applicability']['required_contract_version']=='PROFILE_RESEARCH_BASELINE_BINDING_V1'
+assert 'snapshot_schema' in contract['baseline_contract']['profile_asset_contract_shape']
+assert contract['runtime_bridge']['consumer']=='services/profile_runtime_api/scripts/hetzner_queue_worker.py'
 assert contract['dispatch_protocol']['resolver']=='public.lf_profile_execution_research_baseline_v1'
 assert contract['dispatch_protocol']['not_required']=='records clean N/A step and dispatches no model'
 assert contract_sha in sql
@@ -103,6 +115,25 @@ assert 'MINI_JUDGE_EJECUCION_PERFIL_RESEARCH_BASELINE_V1' in sql
 assert 'lf_record_operation_step_core_v1' in sql
 assert "'CAPABILITY','TRANSVERSAL_RUNTIME_ASSURANCE'" in sql
 
+# The actual Hetzner queue path must consume the same governed operation before inference.
+for token in (
+    'lf_profile_execution_begin_v1',
+    'lf_profile_execution_context_admission_v1',
+    'lf_record_profile_execution_step_v1',
+    'lf_profile_execution_research_baseline_v1',
+    '/v1/profile/research-baseline',
+    '_begin_governed_pre_model',
+    '_record_post_model_governance',
+):
+    assert token in worker, token
+assert worker.index('_begin_governed_pre_model(conn, claimed)') < worker.index('_api_json("POST", endpoint, payload)')
+assert 'def run_research_baseline' in engine
+assert 'generate_research_baseline_snapshot' in llama
+assert '/v1/profile/research-baseline' in app
+assert 'class GovernedOperationContext' in models
+assert 'class ResearchBaselineRequest' in models
+assert 'governed_operation' in engine and 'governed_operation' in llama
+
 # In-flight compatibility is explicit: old executions are bridged as N/A, required-mode inflight blocks.
 assert 'PROFILE_BASELINE_PRE_REQUIRED_MODE_INFLIGHT' in sql
 assert 'PROFILE_BASELINE_COMPAT_BACKFILL_INCOMPLETE' in sql
@@ -115,6 +146,21 @@ assert 'ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' in sql
 assert "production_apply_authorized')::boolean,false)=true" in sql
 assert "status='PRODUCCION_CONTROLADA_READ_ONLY'" in sql
 assert 'PROFILE_BASELINE_POST_OPERATION_STATE_CHANGED' in sql
+assert 'PROFILE_BASELINE_POST_PREMODEL_RESOLVER_NOT_DETERMINISTIC' in sql
+for resolver in (
+    "public.lf_profile_execution_begin_v1",
+    "public.lf_router_resolve_v1",
+    "CANONICAL_PROFILE_ASSET_RESOLUTION",
+    "EXACT_PROFILE_SOURCE_READBACK",
+    "BOUND_INPUT_VALIDATION",
+    "public.lf_profile_execution_context_admission_v1",
+    "public.lf_profile_execution_research_baseline_v1",
+    "public.lf_record_profile_execution_step_v1 + SELECTED_PROFILE_MODEL_RUNTIME",
+    "BOUND_PROFILE_OUTPUT_VALIDATOR",
+    "BOUND_SEMANTIC_JUDGE",
+    "DETERMINISTIC_REPORT_OUTPUT",
+):
+    assert resolver in sql, resolver
 assert sql.strip().startswith('begin;') and sql.strip().endswith('commit;')
 
 print('PASS_PROFILE_EXECUTION_RESEARCH_BASELINE_CONTRACT')

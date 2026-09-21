@@ -103,6 +103,8 @@ begin
        or v_baseline_contract->>'contract_version'<>'PROFILE_RESEARCH_BASELINE_BINDING_V1'
        or nullif(btrim(coalesce(v_baseline_contract->>'capture_stage','')),'') is null
        or v_baseline_contract->>'profile_validator_binding'<>'PROFILE_OUTPUT_VALIDATOR_BOUND_V1'
+       or jsonb_typeof(v_baseline_contract->'snapshot_schema')<>'object'
+       or octet_length((v_baseline_contract->'snapshot_schema')::text)>12000
        or jsonb_typeof(v_baseline_contract->'output_snapshot_path')<>'array'
        or jsonb_array_length(v_baseline_contract->'output_snapshot_path')=0
        or jsonb_typeof(v_baseline_contract->'output_digest_path')<>'array'
@@ -519,7 +521,7 @@ insert into public.lf_operation_steps(
 select 'EJECUCION_PERFIL_LF',47,'research_baseline_freeze',true,
   'research_baseline_binding; baseline_receipt_ref; server_validated',
   'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json',
-  '6690f5ee2e0e265a130b71c21fa3ed5d7db8b3f9df3bd8bed14984602d84e30a',true,47,e.execution_id,e.execution_id
+  '12f1a102b0d856decbee3a97cbc666562d4a0d26de7adb59cb4713b7e22138f1',true,47,e.execution_id,e.execution_id
 from public.lf_operation_execution e
 where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and e.status='IN_PROGRESS'
@@ -534,7 +536,7 @@ insert into public.lf_operation_judges(
 )
 select 'EJECUCION_PERFIL_LF','MINI_JUDGE_EJECUCION_PERFIL_RESEARCH_BASELINE_V1',
   'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json',
-  '6690f5ee2e0e265a130b71c21fa3ed5d7db8b3f9df3bd8bed14984602d84e30a','["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
+  '12f1a102b0d856decbee3a97cbc666562d4a0d26de7adb59cb4713b7e22138f1','["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
   '["STEP_PASS_WITH_EVIDENCE","BLOCKED_STEP_NOT_CLEAN","RETURN_TO_ROUTER"]'::jsonb,
   'ACTIVE_ENFORCEMENT',e.execution_id,e.execution_id
 from public.lf_operation_execution e
@@ -657,6 +659,35 @@ set next_if_pass='research_baseline_freeze',updated_at=now(),
 where operation_code='EJECUCION_PERFIL_LF' and step_id='context_admission' and status='ACTIVE_ENFORCEMENT';
 
 update public.lf_operation_step_contracts
+set resolver_ref=case step_id
+      when 'init_execution' then 'public.lf_profile_execution_begin_v1'
+      when 'router' then 'public.lf_router_resolve_v1'
+      when 'profile_resolve' then 'CANONICAL_PROFILE_ASSET_RESOLUTION'
+      when 'profile_source_read' then 'EXACT_PROFILE_SOURCE_READBACK'
+      when 'input_validate' then 'BOUND_INPUT_VALIDATION'
+      when 'context_admission' then 'public.lf_profile_execution_context_admission_v1'
+      when 'research_baseline_freeze' then 'public.lf_profile_execution_research_baseline_v1'
+      when 'execute_profile' then 'public.lf_record_profile_execution_step_v1 + SELECTED_PROFILE_MODEL_RUNTIME'
+      when 'output_validate' then 'BOUND_PROFILE_OUTPUT_VALIDATOR'
+      when 'semantic_judge' then 'BOUND_SEMANTIC_JUDGE'
+      when 'report_output' then 'DETERMINISTIC_REPORT_OUTPUT'
+      else resolver_ref
+    end,
+    updated_at=now(),
+    updated_by_execution_id=(select e.execution_id from public.lf_operation_execution e
+      where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and e.status='IN_PROGRESS'
+        and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+        and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
+        and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF' and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql')
+where operation_code='EJECUCION_PERFIL_LF'
+  and status='ACTIVE_ENFORCEMENT'
+  and step_id in (
+    'init_execution','router','profile_resolve','profile_source_read','input_validate',
+    'context_admission','research_baseline_freeze','execute_profile','output_validate',
+    'semantic_judge','report_output'
+  );
+
+update public.lf_operation_step_contracts
 set required_evidence_keys=(
       select jsonb_agg(distinct x order by x)
       from jsonb_array_elements_text(required_evidence_keys||'["research_baseline_ref","research_baseline_digest"]'::jsonb) x
@@ -709,7 +740,12 @@ set required_before_write=case when required_before_write @> '["research_baselin
       'research_baseline_modes',jsonb_build_array('NOT_REQUIRED','PRE_RESEARCH_ALWAYS'),
       'research_baseline_default','NOT_REQUIRED',
       'research_baseline_external_refs_before_freeze',false,
-      'research_baseline_contract_version','PROFILE_RESEARCH_BASELINE_BINDING_V1'
+      'research_baseline_contract_version','PROFILE_RESEARCH_BASELINE_BINDING_V1',
+      'execution_transport','GOVERNED_STEP_SEQUENCE_REQUIRED',
+      'pre_model_deterministic_steps',jsonb_build_array(
+        'init_execution','router','profile_resolve','profile_source_read',
+        'input_validate','context_admission','research_baseline_freeze'
+      )
     ),
     blocked=blocked
       ||case when blocked @> '["research_baseline_missing"]'::jsonb then '[]'::jsonb else '["research_baseline_missing"]'::jsonb end
@@ -742,7 +778,7 @@ select 'PROFILE_RESEARCH_BASELINE_FREEZE','PROFILE_RESEARCH_BASELINE_FREEZE','CA
     'step_id','research_baseline_freeze',
     'function','public.lf_profile_execution_research_baseline_v1',
     'binding_model','OPAQUE_SNAPSHOT_PLUS_DECLARATIVE_OUTPUT_PATHS',
-    'contract_sha256','6690f5ee2e0e265a130b71c21fa3ed5d7db8b3f9df3bd8bed14984602d84e30a'
+    'contract_sha256','12f1a102b0d856decbee3a97cbc666562d4a0d26de7adb59cb4713b7e22138f1'
   ),
   jsonb_build_object(
     'source_kind','GITHUB_SOURCE_PLUS_SUPABASE_REGISTRY',
@@ -822,6 +858,17 @@ begin
     where operation_code='EJECUCION_PERFIL_LF' and step_id='execute_profile' and status='ACTIVE_ENFORCEMENT'
       and required_evidence_keys @> '["research_baseline_ref","research_baseline_digest"]'::jsonb
   ) then raise exception 'PROFILE_BASELINE_POST_EXECUTE_BINDING_MISSING'; end if;
+
+  if exists (
+    select 1 from public.lf_operation_step_contracts
+    where operation_code='EJECUCION_PERFIL_LF'
+      and status='ACTIVE_ENFORCEMENT'
+      and step_id in (
+        'init_execution','router','profile_resolve','profile_source_read',
+        'input_validate','context_admission','research_baseline_freeze'
+      )
+      and resolver_ref ilike '%MODEL%'
+  ) then raise exception 'PROFILE_BASELINE_POST_PREMODEL_RESOLVER_NOT_DETERMINISTIC'; end if;
 
   if to_regprocedure('public.lf_profile_execution_research_baseline_v1(text,jsonb,text)') is null
      or to_regprocedure('public.lf_profile_execution_trust_validation_v1(text,text,jsonb)') is null

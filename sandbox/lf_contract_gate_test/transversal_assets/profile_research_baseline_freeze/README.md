@@ -14,7 +14,7 @@ La decide el servidor desde `public.lf_activos.metadata.research_baseline_mode`;
 
 ## Contrato de freeze
 
-Cuando aplica, el perfil declara en su asset un contrato PROFILE_RESEARCH_BASELINE_BINDING_V1 con capture_stage, output_snapshot_path, output_digest_path y profile_validator_binding=PROFILE_OUTPUT_VALIDATOR_BOUND_V1. El runtime no conoce el vocabulario interno del perfil.
+Cuando aplica, el perfil declara en su asset un contrato PROFILE_RESEARCH_BASELINE_BINDING_V1 con capture_stage, snapshot_schema, output_snapshot_path, output_digest_path y profile_validator_binding=PROFILE_OUTPUT_VALIDATOR_BOUND_V1. El runtime no conoce el vocabulario interno del perfil; el schema del snapshot también pertenece al asset del perfil.
 
 El productor entrega un envelope genérico con snapshot opaco, baseline_digest, capture_stage, input_digest, profile_source_digest y evidence_refs. El servidor valida identidad/orden temporal, bloquea evidencia externa antes del freeze y persiste un server_snapshot_fingerprint independiente. Ese fingerprint no sustituye el digest canónico del perfil.
 
@@ -23,6 +23,12 @@ El step limpio queda en public.lf_operation_execution_steps; el recorder canóni
 ## No duplicación
 
 No crea otro agente, judge, tabla ni autoridad. Reutiliza `EJECUCION_PERFIL_LF`, `lf_operation_execution_steps`, `lf_record_operation_step_core_v1` y el semantic judge existente. La fase de baseline usa el mismo runtime/model seleccionado para la ejecución del perfil; sólo cambia el orden y la evidencia persistida.
+
+## Cableado runtime
+
+El consumidor operativo es el worker Hetzner existente. Cada queue request materializa/reanuda la misma EJECUCION_PERFIL_LF antes del primer model call, registra context_admission, ejecuta el handshake research_baseline_freeze y sólo después despacha el endpoint principal. Si requiere baseline, usa /v1/profile/research-baseline con el mismo runtime/model persistente. El worker registra execute_profile y output_validate en la misma ejecución; semantic_judge no se auto-certifica.
+
+Los steps previos al modelo tienen resolver determinista explícito. Sólo execute_profile delega al modelo seleccionado; output_validate vuelve al validator enlazado y semantic_judge conserva su autoridad separada.
 
 ## Dispatch determinista
 
@@ -51,6 +57,6 @@ Primero retirar el opt-in del perfil por reconciliación gobernada; luego revert
 ## Fuente
 
 - Contract: `sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json`
-- Contract SHA-256: 6690f5ee2e0e265a130b71c21fa3ed5d7db8b3f9df3bd8bed14984602d84e30a
+- Contract SHA-256: 12f1a102b0d856decbee3a97cbc666562d4a0d26de7adb59cb4713b7e22138f1
 - Operation: `public.lf_operation_registry/EJECUCION_PERFIL_LF`
 - Durable evidence: `public.lf_operation_execution_steps`

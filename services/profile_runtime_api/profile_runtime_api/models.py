@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import json
 import re
 from typing import Any, Literal
 
@@ -178,6 +179,80 @@ class CardSource(StrictModel):
         return self
 
 
+class ResearchBaselineBinding(StrictModel):
+    applicability: Literal["NOT_APPLICABLE", "REQUIRED"]
+    baseline_receipt_ref: str = Field(min_length=1, max_length=800)
+    baseline_digest: str = Field(min_length=14, max_length=80)
+    baseline_snapshot: dict[str, Any]
+    research_baseline_contract: dict[str, Any] | None = None
+
+    @model_validator(mode="after")
+    def validate_binding(self) -> "ResearchBaselineBinding":
+        if self.applicability == "REQUIRED":
+            if re.fullmatch(r"sha256:[0-9a-f]{64}", self.baseline_digest) is None:
+                raise ValueError("RESEARCH_BASELINE_DIGEST_INVALID")
+            if not self.baseline_snapshot or not isinstance(self.research_baseline_contract, dict):
+                raise ValueError("RESEARCH_BASELINE_REQUIRED_BINDING_INCOMPLETE")
+        else:
+            if (
+                self.baseline_digest != "NOT_APPLICABLE"
+                or self.baseline_snapshot
+                or self.research_baseline_contract is not None
+            ):
+                raise ValueError("RESEARCH_BASELINE_NA_BINDING_INVALID")
+        if len(json.dumps(self.baseline_snapshot, ensure_ascii=False)) > 12_000:
+            raise ValueError("RESEARCH_BASELINE_SNAPSHOT_BUDGET_EXCEEDED")
+        return self
+
+
+class GovernedOperationContext(StrictModel):
+    execution_id: str = Field(min_length=1, max_length=240)
+    context_receipt_ref: str = Field(min_length=1, max_length=800)
+    context_receipt_digest: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    context_capsule: dict[str, Any]
+    research_baseline: ResearchBaselineBinding
+
+    @model_validator(mode="after")
+    def validate_budget(self) -> "GovernedOperationContext":
+        if len(json.dumps(self.context_capsule, ensure_ascii=False)) > 16_000:
+            raise ValueError("GOVERNED_OPERATION_CONTEXT_BUDGET_EXCEEDED")
+        return self
+
+
+class ResearchBaselineRequest(StrictModel):
+    request_id: str = Field(min_length=1, max_length=200)
+    operation_code: Literal["EJECUCION_PERFIL_LF"] = "EJECUCION_PERFIL_LF"
+    profile_code: str = Field(pattern=CODE_RE.pattern)
+    profile_slug: str = Field(pattern=SLUG_RE.pattern)
+    profile_source_paths: list[str] = Field(min_length=1, max_length=20)
+    input_literal: str = Field(min_length=1, max_length=100_000)
+    input_digest: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    profile_source_digest: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    research_baseline_contract: dict[str, Any]
+
+    @model_validator(mode="after")
+    def validate_contract(self) -> "ResearchBaselineRequest":
+        contract = self.research_baseline_contract
+        if contract.get("contract_version") != "PROFILE_RESEARCH_BASELINE_BINDING_V1":
+            raise ValueError("RESEARCH_BASELINE_CONTRACT_VERSION_INVALID")
+        if contract.get("profile_validator_binding") != "PROFILE_OUTPUT_VALIDATOR_BOUND_V1":
+            raise ValueError("RESEARCH_BASELINE_VALIDATOR_BINDING_INVALID")
+        if not isinstance(contract.get("capture_stage"), str) or not contract["capture_stage"].strip():
+            raise ValueError("RESEARCH_BASELINE_CAPTURE_STAGE_INVALID")
+        snapshot_schema = contract.get("snapshot_schema")
+        if not isinstance(snapshot_schema, dict) or not snapshot_schema:
+            raise ValueError("RESEARCH_BASELINE_SNAPSHOT_SCHEMA_REQUIRED")
+        for key in ("output_snapshot_path", "output_digest_path"):
+            path = contract.get(key)
+            if (
+                not isinstance(path, list)
+                or not path
+                or any(not isinstance(item, str) or not item.strip() for item in path)
+            ):
+                raise ValueError(f"RESEARCH_BASELINE_{key.upper()}_INVALID")
+        return self
+
+
 class ProfileTask(StrictModel):
     request_id: str = Field(min_length=1, max_length=200)
     operation_code: Literal["EJECUCION_PERFIL_LF"] = "EJECUCION_PERFIL_LF"
@@ -192,6 +267,7 @@ class ProfileTask(StrictModel):
     lf_card_sources: list[CardSource] = Field(default_factory=list, max_length=4)
     required_card_refs: list[str] = Field(default_factory=list, max_length=4)
     send_image_to_model: bool = False
+    governed_operation: GovernedOperationContext | None = None
 
     @model_validator(mode="after")
     def validate_bound_sources(self) -> "ProfileTask":
