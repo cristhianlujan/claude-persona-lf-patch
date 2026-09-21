@@ -226,6 +226,98 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         self.assertIn('judge_result == "PASS"', Path(worker.__file__).read_text())
         self.assertIn('execution_status == "COMPLETED"', Path(worker.__file__).read_text())
 
+    def test_reconcile_promotes_only_completed_canonical_pass(self) -> None:
+        class Cursor:
+            def __init__(self):
+                self.rowcount = 0
+                self.calls = []
+                self._rows = [(
+                    claimed()["request_id"],
+                    model_governance()["execution_id"],
+                    "COMPLETED",
+                    11,
+                    11,
+                    0,
+                    0,
+                    "PASS",
+                )]
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+            def execute(self, query, params=None):
+                self.calls.append((query, params))
+                if "select q.request_id" in query:
+                    self.rowcount = len(self._rows)
+                elif "set status='SUCCEEDED'" in query:
+                    self.rowcount = 1
+                else:
+                    self.rowcount = 0
+            def fetchall(self): return list(self._rows)
+        class Conn(FakeConn):
+            def __init__(self):
+                self.cursor_obj = Cursor()
+                self.commits = 0
+            def cursor(self): return self.cursor_obj
+            def commit(self): self.commits += 1
+        conn = Conn()
+        self.assertEqual(worker._reconcile_governed_pending(conn), 1)
+        self.assertTrue(
+            any("set status='SUCCEEDED'" in query for query, _params in conn.cursor_obj.calls)
+        )
+        self.assertEqual(conn.commits, 1)
+
+    def test_reconcile_never_promotes_in_progress_or_failed_judge(self) -> None:
+        class Cursor:
+            def __init__(self, rows):
+                self.rowcount = 0
+                self.calls = []
+                self._rows = rows
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+            def execute(self, query, params=None):
+                self.calls.append((query, params))
+                self.rowcount = 1 if "error_code='HETZNER_GOVERNED_TERMINAL_JUDGE_FAILED'" in query else 0
+            def fetchall(self): return list(self._rows)
+        class Conn(FakeConn):
+            def __init__(self, rows):
+                self.cursor_obj = Cursor(rows)
+            def cursor(self): return self.cursor_obj
+            def commit(self): return None
+
+        in_progress = [(
+            claimed()["request_id"],
+            model_governance()["execution_id"],
+            "IN_PROGRESS",
+            11,
+            9,
+            0,
+            0,
+            "FAIL",
+        )]
+        conn = Conn(in_progress)
+        self.assertEqual(worker._reconcile_governed_pending(conn), 0)
+        self.assertFalse(
+            any("set status='SUCCEEDED'" in query for query, _params in conn.cursor_obj.calls)
+        )
+
+        failed_terminal = [(
+            claimed()["request_id"],
+            model_governance()["execution_id"],
+            "COMPLETED",
+            11,
+            10,
+            1,
+            0,
+            "FAIL",
+        )]
+        conn = Conn(failed_terminal)
+        self.assertEqual(worker._reconcile_governed_pending(conn), 0)
+        self.assertFalse(
+            any("set status='SUCCEEDED'" in query for query, _params in conn.cursor_obj.calls)
+        )
+        self.assertTrue(
+            any("HETZNER_GOVERNED_TERMINAL_JUDGE_FAILED" in query for query, _params in conn.cursor_obj.calls)
+        )
+
     def test_execution_identity_is_stable(self) -> None:
         request_id = claimed()["request_id"]
         self.assertEqual(
