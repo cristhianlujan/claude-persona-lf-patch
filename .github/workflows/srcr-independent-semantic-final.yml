@@ -26,23 +26,34 @@ jobs:
           scope_ids=[]
           for key in ('authorized_requirements','constraints','forbidden_changes'):
             scope_ids += [x['id'] for x in packet['scope_authority_packet'][key]]
-          canonical_contract = {
-            'verdict':'PASS_INDEPENDENT_SEMANTIC or RETURN_TO_WORKER_FOR_SELF_REPAIR or RETURN_TO_ORCHESTRATOR or BLOCK_PIPELINE',
-            'requirement_reconciliation':'EXACTLY one object for every scope ID; fields scope_item_id, disposition, evidence_refs. disposition in SATISFIED/PRESERVED/NOT_APPLICABLE_WITH_EVIDENCE/VIOLATED/UNRESOLVED',
-            'observed_candidate_changes':'independently enumerate every material proposed change; each needs unique change_id plus statement/target/candidate_paths/materiality/evidence_refs',
-            'change_declaration_reconciliation':'EXACTLY one row per observed change_id; fields change_id, disposition, evidence_refs; disposition in DECLARED_EQUIVALENT/DISCOVERY_ONLY_NOT_IN_SELECTED_REPAIR/UNDECLARED_PROPOSED_CHANGE',
-            'scope_conformance_reconciliation':'EXACTLY one row per observed change_id; fields change_id, disposition, evidence_refs; disposition in IN_SCOPE/DISCOVERY_OUT_OF_SCOPE/OUT_OF_SCOPE_DESIGN_DELTA/UNRESOLVED_SCOPE',
-            'invariant_results':'exactly the seven canonical invariants with invariant,result,reason,evidence_refs; result PASS/FAIL/BLOCKED',
-            'other_required_arrays':'source_refs_inspected,open_design_decisions_found,unsupported_claims,blocking_codes,repair_instructions',
-            'required_scalars':'candidate_sha256,scope_packet_sha256,next_gate'
+          skeleton={
+            'verdict':'PASS_INDEPENDENT_SEMANTIC',
+            'candidate_sha256':packet['candidate_sha256'],
+            'scope_packet_sha256':packet['scope_packet_sha256'],
+            'source_refs_inspected':[],
+            'observed_candidate_changes':[],
+            'requirement_reconciliation':[],
+            'change_declaration_reconciliation':[],
+            'scope_conformance_reconciliation':[],
+            'invariant_results':[],
+            'open_design_decisions_found':[],
+            'unsupported_claims':[],
+            'blocking_codes':[],
+            'repair_instructions':[],
+            'next_gate':'OWNER_IMPLEMENTATION'
           }
           prompt=(
             'Act as the canonical INDEPENDENT Semantic Judge B. You are not the producer and have no producer context. '
             'Use only this packet and independently inspect the ENTIRE exact_candidate. Do not trust producer declarations as proof. '
             'Apply judge_instructions literally. Return ONLY strict JSON. '+
             'The exact scope IDs that MUST EACH appear exactly once in requirement_reconciliation are: '+json.dumps(scope_ids)+'. '+
-            'Use these exact output field names/contracts: '+json.dumps(canonical_contract,separators=(',',':'))+'. '+
-            'candidate_sha256 must equal '+packet['candidate_sha256']+' and scope_packet_sha256 must equal '+packet['scope_packet_sha256']+'. '+
+            'OUTPUT EXACTLY these 14 TOP-LEVEL keys and no wrapper keys: '+json.dumps(skeleton,separators=(',',':'))+'. '+
+            'Do NOT emit required_scalars, other_required_arrays, or any wrapper object. candidate_sha256 and scope_packet_sha256 are top-level strings exactly as shown. '+
+            'requirement_reconciliation: one row per listed scope ID with fields scope_item_id,disposition,evidence_refs and disposition SATISFIED/PRESERVED/NOT_APPLICABLE_WITH_EVIDENCE/VIOLATED/UNRESOLVED. '+
+            'observed_candidate_changes: independently enumerate each material proposed change with change_id,action_class,target,candidate_paths,statement,materiality,evidence_refs. '+
+            'change_declaration_reconciliation: one row per observed change_id with change_id,disposition,evidence_refs; disposition DECLARED_EQUIVALENT/DISCOVERY_ONLY_NOT_IN_SELECTED_REPAIR/UNDECLARED_PROPOSED_CHANGE. '+
+            'scope_conformance_reconciliation: one row per observed change_id with change_id,disposition,evidence_refs; disposition IN_SCOPE/DISCOVERY_OUT_OF_SCOPE/OUT_OF_SCOPE_DESIGN_DELTA/UNRESOLVED_SCOPE. '+
+            'invariant_results: all seven rows with invariant,result,reason,evidence_refs. '+
             'All observed changes must have both declaration and scope-conformance rows. A material unsupported/out-of-scope/open issue forbids PASS. '+
             'All seven invariants required: SCOPE_AUTHORITY_INTEGRITY,EVIDENCE_INTEGRITY,CAUSAL_CLOSURE,CONTRADICTION_INTEGRITY,MINIMUM_SUFFICIENT_REUSE,INDEPENDENT_DECISION_CLOSURE,FALSIFIABILITY_REGRESSION. '+
             '\nPACKET:\n'+json.dumps(packet,ensure_ascii=False,separators=(',',':'))
