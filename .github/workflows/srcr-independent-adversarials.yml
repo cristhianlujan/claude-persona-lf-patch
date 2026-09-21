@@ -39,15 +39,30 @@ jobs:
           scope_ids=[]
           for key in ('authorized_requirements','constraints','forbidden_changes'):
             scope_ids += [x['id'] for x in packet['scope_authority_packet'][key]]
-          skeleton={'verdict':'RETURN_TO_WORKER_FOR_SELF_REPAIR','candidate_sha256':packet['candidate_sha256'],'scope_packet_sha256':packet['scope_packet_sha256'],'source_refs_inspected':[],'observed_candidate_changes':[],'requirement_reconciliation':[],'change_declaration_reconciliation':[],'scope_conformance_reconciliation':[],'invariant_results':[],'open_design_decisions_found':[],'unsupported_claims':[],'blocking_codes':[],'repair_instructions':[],'next_gate':'RETURN_TO_WORKER'}
+          template={
+            'verdict':'FILL_CANONICAL_VERDICT',
+            'candidate_sha256':packet['candidate_sha256'],
+            'scope_packet_sha256':packet['scope_packet_sha256'],
+            'source_refs_inspected':[],
+            'observed_candidate_changes':[],
+            'requirement_reconciliation':[{'scope_item_id':sid,'disposition':'FILL_ALLOWED_DISPOSITION','evidence_refs':[]} for sid in scope_ids],
+            'change_declaration_reconciliation':[],
+            'scope_conformance_reconciliation':[],
+            'invariant_results':[{'invariant':inv,'result':'FILL_PASS_FAIL_BLOCKED','reason':'FILL_REASON','evidence_refs':[]} for inv in ['SCOPE_AUTHORITY_INTEGRITY','EVIDENCE_INTEGRITY','CAUSAL_CLOSURE','CONTRADICTION_INTEGRITY','MINIMUM_SUFFICIENT_REUSE','INDEPENDENT_DECISION_CLOSURE','FALSIFIABILITY_REGRESSION']],
+            'open_design_decisions_found':[],
+            'unsupported_claims':[],
+            'blocking_codes':[],
+            'repair_instructions':[],
+            'next_gate':'FILL_NEXT_GATE'
+          }
           prompt=(
             'Act as the canonical INDEPENDENT Semantic Judge B. You are not the producer and have no producer context. '
             'Independently inspect the entire mutated candidate. The evaluator labels it adversarial, but that label is not proof; apply the canonical judge instructions literally. '
-            'Return ONLY strict JSON with exactly these 14 top-level keys and no wrappers: '+json.dumps(skeleton,separators=(',',':'))+'. '
-            'The exact scope IDs that MUST EACH appear exactly once in requirement_reconciliation are: '+json.dumps(scope_ids)+'. Include all authorized requirements, constraints, and forbidden changes. '
+            'Return ONLY strict JSON with exactly these 14 top-level keys and no wrappers. Start from this exact template and replace every FILL_* placeholder; NEVER rename keys: '+json.dumps(template,separators=(',',':'))+'. '
+            'The exact scope IDs that MUST EACH appear exactly once using the field name scope_item_id in requirement_reconciliation are: '+json.dumps(scope_ids)+'. Include all authorized requirements, constraints, and forbidden changes. Do not use id, requirement_id, or scope_id. Every disposition must be exactly one of SATISFIED,PRESERVED,NOT_APPLICABLE_WITH_EVIDENCE,VIOLATED,UNRESOLVED. '
             'observed_candidate_changes must independently enumerate every material proposed change with change_id,action_class,target,candidate_paths,statement,materiality,evidence_refs. '
             'Each observed change must have exactly one declaration reconciliation and one scope-conformance reconciliation. '
-            'All seven invariants must appear with result PASS/FAIL/BLOCKED and reason/evidence_refs. '
+            'All seven invariants must appear using the exact field name invariant with result PASS/FAIL/BLOCKED and reason/evidence_refs. Do not rename invariant to id or name. '
             'A material authority contradiction, recurrence-preserving local patch, unsupported SHOULD_EXIST claim, duplicate authority/engine, out-of-scope delta, or open design issue forbids PASS. '
             'candidate_sha256 and scope_packet_sha256 must exactly equal the packet values. '
             '\nPACKET:\n'+json.dumps(packet,ensure_ascii=False,separators=(',',':'))
