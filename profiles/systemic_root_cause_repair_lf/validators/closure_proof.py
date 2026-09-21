@@ -12,48 +12,31 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+from pathlib import Path
 from typing import Any
 
 V03_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
 EXISTING_AUTHORITY = "EXISTING_AUTHORITY"
-CURRENT_AUTHORITY_EVIDENCE_CLASSES = {
-    "OBSERVED_LIVE",
-    "OBSERVED_READBACK",
-    "GOVERNED_RECEIPT",
-    "SOURCE_PROVENANCE",
-}
-CURRENT_WIRING_EVIDENCE_CLASSES = {
-    "OBSERVED_LIVE",
-    "OBSERVED_READBACK",
-    "GOVERNED_RECEIPT",
-}
+CLOSURE_V1 = "SRCR_CLOSURE_PROOF_V1"
+CLOSURE_V2 = "SRCR_CLOSURE_PROOF_V2"
 
+_VOCAB_PATH = Path(__file__).resolve().parents[1] / "contracts" / "closure_vocabulary.v2.json"
+_VOCAB = json.loads(_VOCAB_PATH.read_text(encoding="utf-8"))
+
+PROOF_PHASES = set(_VOCAB["proof_phases"])
+SPEC_BLOCKING_PHASES = set(_VOCAB["spec_blocking_phases"])
+CURRENT_AUTHORITY_EVIDENCE_CLASSES = set(_VOCAB["current_authority_evidence_classes"])
+CURRENT_WIRING_EVIDENCE_CLASSES = set(_VOCAB["current_wiring_evidence_classes"])
+CURRENT_WIRING_ABSENCE_EVIDENCE_CLASSES = set(_VOCAB["current_wiring_absence_evidence_classes"])
+RECURRENCE_EVIDENCE_CLASSES = set(_VOCAB["recurrence_evidence_classes"])
+OMISSION_DIMENSIONS = set(_VOCAB["omission_dimensions"])
+SOLUTION_DEPTH_SIGNALS = set(_VOCAB["solution_depth_signals"])
+CLOSURE_MATERIALITY_SIGNALS = set(_VOCAB["closure_materiality_signals"])
 SIGNAL_TO_OBLIGATION_TYPES = {
-    "CROSS_OPERATION": {"WIRING_PHYSICALITY"},
-    "AUTHORITY_CHANGE": {"AUTHORITY_EXISTENCE"},
-    "POLICY_CONTRACT_CHANGE": {"POLICY_CONTRACT"},
-    "CONTEXT_TRANSPORT": {"CONTEXT_TRANSPORT", "WIRING_PHYSICALITY"},
-    "STATE_RECOVERY": {"STATE_RECOVERY_SEMANTICS"},
-    "CONCURRENCY": {"CONCURRENCY"},
-    "MIGRATION_TRANSITION": {"MIGRATION_TRANSITION"},
-    "SECURITY_BOUNDARY": {"SECURITY_BOUNDARY", "AUTHORITY_EXISTENCE"},
-    "MULTI_RUNTIME": {"WIRING_PHYSICALITY", "COMPATIBILITY"},
-    "COST_SCALE": {"OTHER_MATERIAL"},
+    key: set(values) for key, values in _VOCAB["signal_to_obligation_types"].items()
 }
-
 DIMENSION_TO_OBLIGATION_TYPES = {
-    "ARCHITECTURE": {"DECISION_CLOSURE"},
-    "CONTROLS": {"DECISION_CLOSURE"},
-    "POLICIES_CONTRACTS": {"POLICY_CONTRACT"},
-    "CONTEXT_TRANSPORT": {"CONTEXT_TRANSPORT", "WIRING_PHYSICALITY"},
-    "WIRING": {"WIRING_PHYSICALITY"},
-    "COMPATIBILITY_TRANSITION": {"COMPATIBILITY"},
-    "RECOVERY_TERMINALITY": {"STATE_RECOVERY_SEMANTICS"},
-    "OBSERVABILITY": {"OBSERVABILITY"},
-    "SECURITY_AUTHORITY": {"AUTHORITY_EXISTENCE"},
-    "COST_PERFORMANCE": {"OTHER_MATERIAL"},
-    "TESTING_ASSURANCE": {"TEST_ASSURANCE"},
-    "OPERABILITY_MAINTENANCE": {"OTHER_MATERIAL"},
+    key: set(SIGNAL_TO_OBLIGATION_TYPES[key]) for key in _VOCAB["omission_dimensions"]
 }
 
 BASELINE_REQUIRED_TYPES = {
@@ -86,9 +69,11 @@ def canonical_evidence_bundle_digest(manifest: dict) -> str:
 
 
 def derive_required_obligation_types(candidate: dict) -> tuple[set[str], set[str]]:
-    """Return required obligation types and generic material signals."""
+    """Derive generic proof requirements from materiality, never from domain literals."""
     required = set(BASELINE_REQUIRED_TYPES)
     material_signals = {"DECISION_CLOSURE", "EVIDENCE_PROVENANCE"}
+    proof = candidate.get("closure_proof") if isinstance(candidate, dict) else {}
+    is_v2 = isinstance(proof, dict) and proof.get("contract_version") == CLOSURE_V2
 
     depth = candidate.get("solution_depth")
     signals = depth.get("complexity_signals") if isinstance(depth, dict) else []
@@ -107,10 +92,65 @@ def derive_required_obligation_types(candidate: dict) -> tuple[set[str], set[str
                 continue
             dimension = row.get("dimension")
             required.update(DIMENSION_TO_OBLIGATION_TYPES.get(dimension, {"OTHER_MATERIAL"}))
-            if dimension == "WIRING":
+            # V2 makes every REQUIRED_CHANGE dimension explicit materiality.
+            # V1 keeps its historical contract, where only WIRING was promoted.
+            if is_v2 and dimension in CLOSURE_MATERIALITY_SIGNALS:
+                material_signals.add(dimension)
+            elif dimension == "WIRING":
                 material_signals.add("WIRING")
 
     return required, material_signals
+
+
+def _current_evidence_ok(evidence_by_id: dict[str, dict], evidence_ids: list[str], allowed_classes: set[str]) -> bool:
+    return bool(evidence_ids) and all(
+        evidence_by_id.get(eid, {}).get("state") == "CURRENT"
+        and evidence_by_id.get(eid, {}).get("evidence_class") in allowed_classes
+        for eid in evidence_ids
+    )
+
+
+def _wiring_current_state_complete(row: dict, evidence_by_id: dict[str, dict]) -> bool:
+    state = row.get("binding_state")
+    if state == "OBSERVED_WIRED":
+        return (
+            row.get("binding_kind") in {"EXISTING_AUTHORITY", "EXISTING_REUSABLE_CAPABILITY"}
+            and _current_evidence_ok(
+                evidence_by_id,
+                row.get("evidence_ids") or [],
+                CURRENT_WIRING_EVIDENCE_CLASSES,
+            )
+        )
+    if state == "OBSERVED_NOT_WIRED":
+        return (
+            row.get("binding_kind") == "NO_BINDING"
+            and _current_evidence_ok(
+                evidence_by_id,
+                row.get("evidence_ids") or [],
+                CURRENT_WIRING_ABSENCE_EVIDENCE_CLASSES,
+            )
+        )
+    return False
+
+
+def _wiring_design_complete(row: dict, evidence_by_id: dict[str, dict]) -> bool:
+    if row.get("binding_state") == "PROPOSED_WIRING":
+        return (
+            row.get("binding_kind") == "PROPOSED_DELIVERABLE"
+            and all(
+                isinstance(row.get(key), str) and row.get(key).strip()
+                for key in (
+                    "producer_ref",
+                    "data_contract_ref",
+                    "consumer_ref",
+                    "enforcement_point_ref",
+                    "failure_behavior",
+                    "binding_ref",
+                )
+            )
+        )
+    # Reusing a physically observed current edge is also a closed repair-design choice.
+    return _wiring_current_state_complete(row, evidence_by_id) and row.get("binding_state") == "OBSERVED_WIRED"
 
 
 def _validate_manifest_shape(manifest: Any) -> tuple[list[dict], dict[str, dict]]:
@@ -182,6 +222,11 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         errors.append(_err("SRCR_CLOSURE_PROOF_REQUIRED", "$.closure_proof"))
         return errors, {"applies": True}
 
+    contract_version = proof.get("contract_version")
+    if contract_version not in {CLOSURE_V1, CLOSURE_V2}:
+        errors.append(_err("SRCR_CLOSURE_CONTRACT_VERSION_INVALID", "$.closure_proof.contract_version"))
+    is_v2 = contract_version == CLOSURE_V2
+
     # Candidate and evidence exact identity are external-boundary facts. A V0.3
     # producer must not self-certify candidate/evidence digests inside its output.
     if "candidate_binding" in proof:
@@ -211,12 +256,20 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         if not isinstance(oid, str) or not oid.strip():
             errors.append(_err("SRCR_PROOF_OBLIGATION_ID_REQUIRED", f"{path}.obligation_id"))
             continue
+        if is_v2:
+            phase = row.get("proof_phase")
+            if phase not in PROOF_PHASES:
+                errors.append(_err("SRCR_PROOF_PHASE_REQUIRED", f"{path}.proof_phase"))
         if oid in obligation_by_id:
             errors.append(_err("SRCR_PROOF_OBLIGATION_ID_DUPLICATED", f"{path}.obligation_id", oid))
         else:
             obligation_by_id[oid] = row
 
-    present_types = {row.get("obligation_type") for row in obligation_by_id.values()}
+    present_types = {
+        row.get("obligation_type")
+        for row in obligation_by_id.values()
+        if not is_v2 or row.get("proof_phase") in SPEC_BLOCKING_PHASES
+    }
     for required_type in sorted(required_types - present_types):
         errors.append(_err("SRCR_REQUIRED_PROOF_OBLIGATION_MISSING", "$.closure_proof.proof_obligations", required_type))
 
@@ -336,6 +389,8 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         kind = row.get("binding_kind")
         if state == "OBSERVED_WIRED" and kind not in {"EXISTING_AUTHORITY", "EXISTING_REUSABLE_CAPABILITY"}:
             errors.append(_err("SRCR_OBSERVED_WIRING_KIND_INVALID", f"{path}.binding_kind"))
+        if state == "OBSERVED_NOT_WIRED" and kind != "NO_BINDING":
+            errors.append(_err("SRCR_OBSERVED_WIRING_ABSENCE_KIND_INVALID", f"{path}.binding_kind"))
         if state == "PROPOSED_WIRING" and kind != "PROPOSED_DELIVERABLE":
             errors.append(_err("SRCR_PROPOSED_WIRING_KIND_INVALID", f"{path}.binding_kind"))
         for eid in row.get("evidence_ids") or []:
@@ -345,40 +400,66 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
                 errors.append(_err("SRCR_WIRING_EVIDENCE_ID_UNRESOLVED", f"{path}.evidence_ids", eid))
             elif entry.get("state") != "CURRENT":
                 errors.append(_err("SRCR_WIRING_EVIDENCE_STALE", f"{path}.evidence_ids", eid))
-            elif row.get("binding_state") == "OBSERVED_WIRED" and entry.get("evidence_class") not in CURRENT_WIRING_EVIDENCE_CLASSES:
+            elif state == "OBSERVED_WIRED" and entry.get("evidence_class") not in CURRENT_WIRING_EVIDENCE_CLASSES:
                 errors.append(_err("SRCR_WIRING_EVIDENCE_CLASS_INSUFFICIENT", f"{path}.evidence_ids", eid))
+            elif state == "OBSERVED_NOT_WIRED" and entry.get("evidence_class") not in CURRENT_WIRING_ABSENCE_EVIDENCE_CLASSES:
+                errors.append(_err("SRCR_WIRING_ABSENCE_EVIDENCE_CLASS_INSUFFICIENT", f"{path}.evidence_ids", eid))
 
     wiring_required_ids = {
         oid for oid, row in obligation_by_id.items()
         if row.get("obligation_type") == "WIRING_PHYSICALITY"
         and row.get("obligation_type") in required_types
+        and (not is_v2 or row.get("proof_phase") in SPEC_BLOCKING_PHASES)
+    }
+    wiring_closed_post_ids = {
+        oid for oid, row in obligation_by_id.items()
+        if is_v2
+        and row.get("obligation_type") == "WIRING_PHYSICALITY"
+        and row.get("proof_phase") == "POST_IMPLEMENTATION"
+        and row.get("status") == "CLOSED"
     }
     if wiring_required_ids and not wiring:
         errors.append(_err("SRCR_MATERIAL_WIRING_UNDERCLOSED", "$.closure_proof.wiring_proofs"))
-    for oid in sorted(wiring_required_ids):
+    for oid in sorted(wiring_required_ids | wiring_closed_post_ids):
         obligation = obligation_by_id[oid]
         if obligation.get("status") != "CLOSED":
             continue
         rows = wiring_by_obligation.get(oid, [])
-        observed = [
-            row for row in rows
-            if row.get("binding_state") == "OBSERVED_WIRED"
-            and row.get("binding_kind") in {"EXISTING_AUTHORITY", "EXISTING_REUSABLE_CAPABILITY"}
-            and row.get("evidence_ids")
-            and all(
-                evidence_by_id.get(eid, {}).get("state") == "CURRENT"
-                and evidence_by_id.get(eid, {}).get("evidence_class") in CURRENT_WIRING_EVIDENCE_CLASSES
-                for eid in row.get("evidence_ids") or []
+
+        if not is_v2:
+            complete = any(
+                row.get("binding_state") == "OBSERVED_WIRED"
+                and _wiring_current_state_complete(row, evidence_by_id)
+                for row in rows
             )
-        ]
-        if not observed:
-            errors.append(
-                _err(
-                    "SRCR_CLOSED_WIRING_NOT_OBSERVED",
-                    "$.closure_proof.wiring_proofs",
-                    oid,
+            if not complete:
+                errors.append(
+                    _err(
+                        "SRCR_CLOSED_WIRING_NOT_OBSERVED",
+                        "$.closure_proof.wiring_proofs",
+                        oid,
+                    )
                 )
+            continue
+
+        phase = obligation.get("proof_phase")
+        if phase == "CURRENT_STATE":
+            complete = any(_wiring_current_state_complete(row, evidence_by_id) for row in rows)
+            code = "SRCR_CURRENT_STATE_WIRING_NOT_PROVEN"
+        elif phase == "REPAIR_DESIGN":
+            complete = any(_wiring_design_complete(row, evidence_by_id) for row in rows)
+            code = "SRCR_REPAIR_DESIGN_WIRING_NOT_CLOSED"
+        else:
+            # POST_IMPLEMENTATION may remain OPEN without blocking the repair spec.
+            complete = any(
+                row.get("binding_state") == "OBSERVED_WIRED"
+                and _wiring_current_state_complete(row, evidence_by_id)
+                for row in rows
             )
+            code = "SRCR_POST_IMPLEMENTATION_WIRING_NOT_OBSERVED"
+
+        if not complete:
+            errors.append(_err(code, "$.closure_proof.wiring_proofs", oid))
 
     transport = proof.get("context_transport_proofs") if isinstance(proof.get("context_transport_proofs"), list) else []
     transport_by_obligation: dict[str, list[dict]] = {}
@@ -400,11 +481,8 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         ):
             errors.append(_err("SRCR_CONTEXT_JIT_RESOLVER_MISSING", f"{path}.hydration_resolver_ref"))
         for edge_id in row.get("wiring_edge_ids") or []:
-            edge = wiring_by_edge.get(edge_id)
-            if not edge:
+            if edge_id not in wiring_by_edge:
                 errors.append(_err("SRCR_CONTEXT_WIRING_EDGE_UNRESOLVED", f"{path}.wiring_edge_ids", edge_id))
-            elif edge.get("binding_state") != "OBSERVED_WIRED":
-                errors.append(_err("SRCR_CONTEXT_WIRING_EDGE_NOT_OBSERVED", f"{path}.wiring_edge_ids", edge_id))
         for oid in row.get("obligation_ids") or []:
             obligation = obligation_by_id.get(oid)
             if not obligation:
@@ -428,54 +506,100 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         oid for oid, row in obligation_by_id.items()
         if row.get("obligation_type") == "CONTEXT_TRANSPORT"
         and row.get("obligation_type") in required_types
+        and (not is_v2 or row.get("proof_phase") in SPEC_BLOCKING_PHASES)
     }
-    for oid in sorted(context_required_ids):
-        obligation = obligation_by_id[oid]
-        if obligation.get("status") != "CLOSED":
-            continue
-        rows = transport_by_obligation.get(oid, [])
-        complete = [
-            row for row in rows
-            if row.get("selection_ref")
-            and row.get("transport_contract_ref")
-            and row.get("consumer_ref")
-            and row.get("enforcement_point_ref")
-            and row.get("budget_guard_ref")
-            and row.get("failure_behavior")
-            and row.get("wiring_edge_ids")
-            and row.get("readback_evidence_ids")
-            and all(
-                wiring_by_edge.get(edge_id, {}).get("binding_state") == "OBSERVED_WIRED"
-                for edge_id in row.get("wiring_edge_ids") or []
-            )
-            and all(
-                evidence_by_id.get(eid, {}).get("state") == "CURRENT"
-                and evidence_by_id.get(eid, {}).get("evidence_class") in CURRENT_WIRING_EVIDENCE_CLASSES
-                for eid in row.get("readback_evidence_ids") or []
-            )
+    context_closed_post_ids = {
+        oid for oid, row in obligation_by_id.items()
+        if is_v2
+        and row.get("obligation_type") == "CONTEXT_TRANSPORT"
+        and row.get("proof_phase") == "POST_IMPLEMENTATION"
+        and row.get("status") == "CLOSED"
+    }
+
+    def _transport_shape_complete(row: dict) -> bool:
+        return (
+            bool(row.get("selection_ref"))
+            and bool(row.get("transport_contract_ref"))
+            and bool(row.get("consumer_ref"))
+            and bool(row.get("enforcement_point_ref"))
+            and bool(row.get("budget_guard_ref"))
+            and bool(row.get("failure_behavior"))
+            and bool(row.get("wiring_edge_ids"))
             and (
                 row.get("hydration_mode") != "JIT_BY_REF"
                 or bool(row.get("hydration_resolver_ref"))
             )
-        ]
-        if not complete:
-            errors.append(
-                _err(
-                    "SRCR_CLOSED_CONTEXT_TRANSPORT_NOT_PROVEN",
-                    "$.closure_proof.context_transport_proofs",
-                    oid,
-                )
+        )
+
+    def _transport_current_complete(row: dict) -> bool:
+        return (
+            _transport_shape_complete(row)
+            and bool(row.get("readback_evidence_ids"))
+            and all(
+                wiring_by_edge.get(edge_id, {}).get("binding_state") == "OBSERVED_WIRED"
+                and _wiring_current_state_complete(wiring_by_edge.get(edge_id, {}), evidence_by_id)
+                for edge_id in row.get("wiring_edge_ids") or []
             )
+            and _current_evidence_ok(
+                evidence_by_id,
+                row.get("readback_evidence_ids") or [],
+                CURRENT_WIRING_EVIDENCE_CLASSES,
+            )
+        )
+
+    def _transport_design_complete(row: dict) -> bool:
+        return (
+            _transport_shape_complete(row)
+            and all(
+                wiring_by_edge.get(edge_id, {}).get("binding_state") in {"OBSERVED_WIRED", "PROPOSED_WIRING"}
+                and (
+                    _wiring_design_complete(wiring_by_edge.get(edge_id, {}), evidence_by_id)
+                    or _wiring_current_state_complete(wiring_by_edge.get(edge_id, {}), evidence_by_id)
+                )
+                for edge_id in row.get("wiring_edge_ids") or []
+            )
+        )
+
+    for oid in sorted(context_required_ids | context_closed_post_ids):
+        obligation = obligation_by_id[oid]
+        if obligation.get("status") != "CLOSED":
+            continue
+        rows = transport_by_obligation.get(oid, [])
+
+        if not is_v2:
+            complete = any(_transport_current_complete(row) for row in rows)
+            code = "SRCR_CLOSED_CONTEXT_TRANSPORT_NOT_PROVEN"
+        elif obligation.get("proof_phase") == "CURRENT_STATE":
+            complete = any(_transport_current_complete(row) for row in rows)
+            code = "SRCR_CURRENT_CONTEXT_TRANSPORT_NOT_PROVEN"
+        elif obligation.get("proof_phase") == "REPAIR_DESIGN":
+            complete = any(_transport_design_complete(row) for row in rows)
+            code = "SRCR_REPAIR_DESIGN_CONTEXT_TRANSPORT_NOT_CLOSED"
+        else:
+            complete = any(_transport_current_complete(row) for row in rows)
+            code = "SRCR_POST_IMPLEMENTATION_CONTEXT_TRANSPORT_NOT_OBSERVED"
+
+        if not complete:
+            errors.append(_err(code, "$.closure_proof.context_transport_proofs", oid))
 
     required_ids = {
         oid for oid, row in obligation_by_id.items()
         if row.get("obligation_type") in required_types
+        and (not is_v2 or row.get("proof_phase") in SPEC_BLOCKING_PHASES)
+    }
+    post_implementation_ids = {
+        oid for oid, row in obligation_by_id.items()
+        if is_v2 and row.get("proof_phase") == "POST_IMPLEMENTATION"
     }
     closed_ids = {oid for oid in required_ids if obligation_by_id[oid].get("status") == "CLOSED"}
     open_ids = required_ids - closed_ids
 
-    # Any explicitly open obligation is incompatible with ready SYSTEMIC_REPAIR_SPEC.
-    any_open_ids = {oid for oid, row in obligation_by_id.items() if row.get("status") == "OPEN"}
+    # V2 explicitly separates post-implementation verification from spec readiness.
+    any_open_ids = {
+        oid for oid, row in obligation_by_id.items()
+        if row.get("status") == "OPEN"
+        and (not is_v2 or row.get("proof_phase") in SPEC_BLOCKING_PHASES)
+    }
 
     derived = proof.get("derived_decision_closure")
     if not isinstance(derived, dict):
@@ -492,6 +616,11 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         errors.append(_err("SRCR_DERIVED_CLOSED_SET_MISMATCH", "$.closure_proof.derived_decision_closure.closed_obligation_ids"))
     if declared_open != open_ids:
         errors.append(_err("SRCR_DERIVED_OPEN_SET_MISMATCH", "$.closure_proof.derived_decision_closure.open_obligation_ids"))
+
+    if is_v2:
+        declared_post = set(derived.get("post_implementation_obligation_ids") or [])
+        if declared_post != post_implementation_ids:
+            errors.append(_err("SRCR_DERIVED_POST_IMPLEMENTATION_SET_MISMATCH", "$.closure_proof.derived_decision_closure.post_implementation_obligation_ids"))
 
     computed_ready = bool(required_ids) and not open_ids and not any_open_ids
     if derived.get("handoff_ready") is not computed_ready:
@@ -519,6 +648,8 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         "required_obligation_ids": sorted(required_ids),
         "closed_obligation_ids": sorted(closed_ids),
         "open_obligation_ids": sorted(open_ids | any_open_ids),
+        "post_implementation_obligation_ids": sorted(post_implementation_ids),
+        "closure_contract_version": contract_version,
         "computed_handoff_ready": computed_ready,
         "candidate_digest": actual_candidate_digest,
         "evidence_bundle_id": evidence_manifest.get("bundle_id") if isinstance(evidence_manifest, dict) else None,

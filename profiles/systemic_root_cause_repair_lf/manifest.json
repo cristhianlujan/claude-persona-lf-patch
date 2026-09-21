@@ -8,15 +8,22 @@
   "operational_status": "READ_ONLY",
   "runtime": "NO_HABILITADO",
   "automatic_impact": "BLOQUEADO",
-  "source_authority": ["ACT-0045","gobernanza/contratos/contrato_perfil_lf.yaml","public.lf_artifact_destination_registry","S30:LF_ASSURANCE_METHOD_V1:A2R_PARITY"],
+  "source_authority": [
+    "ACT-0045",
+    "gobernanza/contratos/contrato_perfil_lf.yaml",
+    "public.lf_artifact_destination_registry",
+    "S30:LF_ASSURANCE_METHOD_V1:A2R_PARITY"
+  ],
   "files": [
     "README.md",
     "SKILL.md",
+    "contracts/closure_vocabulary.v2.json",
     "contracts/main_contract.md",
     "contracts/runtime_binding.json",
     "evals/eval_matrix.json",
     "evals/remediation_20260827/behavioral_eval_protocol.md",
     "evals/remediation_20260827/run_cases.py",
+    "evals/v03_transversal_contract_cases.py",
     "examples/bad_output.json",
     "examples/good_output.json",
     "handoffs/to_quality_pack.handoff.json",
@@ -24,6 +31,7 @@
     "judges/score_rubric.md",
     "manifest.json",
     "schemas/output.schema.json",
+    "schemas/runtime_output.schema.json",
     "validators/runtime_semantic_utility.py",
     "validators/runtime_validate.py",
     "validators/validate_pack.py"

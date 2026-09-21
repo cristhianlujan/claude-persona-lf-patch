@@ -7,7 +7,7 @@ Evidence gaps are classified by whether they can still change the design.
 """
 
 try:
-    from .closure_proof import unwrap_runtime_input, validate_v03_closure
+    from .closure_proof import RECURRENCE_EVIDENCE_CLASSES, unwrap_runtime_input, validate_v03_closure
 except (ImportError, ModuleNotFoundError):
     import importlib.util as _importlib_util
     from pathlib import Path as _Path
@@ -16,6 +16,7 @@ except (ImportError, ModuleNotFoundError):
     _closure_mod = _importlib_util.module_from_spec(_closure_spec)
     assert _closure_spec and _closure_spec.loader
     _closure_spec.loader.exec_module(_closure_mod)
+    RECURRENCE_EVIDENCE_CLASSES = _closure_mod.RECURRENCE_EVIDENCE_CLASSES
     unwrap_runtime_input = _closure_mod.unwrap_runtime_input
     validate_v03_closure = _closure_mod.validate_v03_closure
 
@@ -690,7 +691,7 @@ def validate(payload, evidence_manifest=None):
         errors.append(_error("RECURRENCE_EVIDENCE_INVALID", "$.recurrence_evidence"))
     else:
         for idx, item in enumerate(recurrence):
-            if not isinstance(item, dict) or item.get("evidence_class") not in {"DECLARED_INPUT", "OBSERVED_HISTORY", "OBSERVED_LIVE"} or not _nonempty_string(item.get("scope")):
+            if not isinstance(item, dict) or item.get("evidence_class") not in RECURRENCE_EVIDENCE_CLASSES or not _nonempty_string(item.get("scope")):
                 errors.append(_error("RECURRENCE_EVIDENCE_NOT_TYPED", f"$.recurrence_evidence[{idx}]"))
 
     existence = payload.get("should_exist_assessment")

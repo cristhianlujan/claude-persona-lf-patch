@@ -9,12 +9,13 @@ REQUIRED = [
     "judges/mini_judge.md","evals/eval_matrix.json","manifest.json",
     "judges/score_rubric.md","examples/good_output.json","examples/bad_output.json",
     "validators/validate_pack.py","handoffs/to_quality_pack.handoff.json",
-    "contracts/evidence_manifest.schema.json","schemas/quality_receipt.schema.json",
+    "contracts/evidence_manifest.schema.json","contracts/closure_vocabulary.v2.json",
+    "schemas/quality_receipt.schema.json","schemas/runtime_output.schema.json",
     "validators/closure_proof.py","validators/runtime_validate.py",
     "validators/runtime_semantic_utility.py","validators/validate_quality_receipt.py",
     "evals/v03_contract_schema_cases.py","evals/v03_deterministic_floor_cases.py",
     "evals/v03_quality_receipt_cases.py","evals/v03_generalization_property_cases.py",
-    "evals/v03_original_escape_replay.py"
+    "evals/v03_original_escape_replay.py","evals/v03_transversal_contract_cases.py"
 ]
 
 def fail(code):
@@ -85,6 +86,8 @@ for rel in [
     "evals/v03_deterministic_floor_cases.py",
     "evals/v03_quality_receipt_cases.py",
     "evals/v03_generalization_property_cases.py",
+    "evals/v03_transversal_contract_cases.py",
+    "evals/sandbox_b/run_cases.py",
 ]:
     run_assurance(rel)
 

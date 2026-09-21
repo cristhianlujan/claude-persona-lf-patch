@@ -1,0 +1,1377 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SRCR bounded runtime output constraint",
+  "description": "Compact provider-side structural constraint. Canonical output.schema.json and deterministic validators remain authoritative.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "status": {
+      "enum": [
+        "SYSTEMIC_REPAIR_SPEC",
+        "NEEDS_MORE_EVIDENCE",
+        "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+        "BLOCK_PIPELINE"
+      ]
+    },
+    "profile_pack_id": {
+      "enum": [
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+      ]
+    },
+    "solution_depth": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "complexity_signals": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "CROSS_OPERATION",
+              "AUTHORITY_CHANGE",
+              "POLICY_CONTRACT_CHANGE",
+              "CONTEXT_TRANSPORT",
+              "STATE_RECOVERY",
+              "CONCURRENCY",
+              "MIGRATION_TRANSITION",
+              "SECURITY_BOUNDARY",
+              "MULTI_RUNTIME",
+              "COST_SCALE",
+              "NONE"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "mode": {
+          "enum": [
+            "LIGHTWEIGHT",
+            "BOUNDED",
+            "DEEP_ARCHITECTURE_RESEARCH"
+          ]
+        }
+      }
+    },
+    "recurrence_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "evidence_class": {
+            "enum": [
+              "DECLARED_INPUT",
+              "OBSERVED_HISTORY",
+              "OBSERVED_SOURCE",
+              "OBSERVED_LIVE"
+            ]
+          }
+        }
+      }
+    },
+    "closure_proof": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "contract_version": {
+          "enum": [
+            "SRCR_CLOSURE_PROOF_V1",
+            "SRCR_CLOSURE_PROOF_V2"
+          ]
+        },
+        "materiality": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "signal": {
+                "enum": [
+                  "CROSS_OPERATION",
+                  "AUTHORITY_CHANGE",
+                  "POLICY_CONTRACT_CHANGE",
+                  "CONTEXT_TRANSPORT",
+                  "STATE_RECOVERY",
+                  "CONCURRENCY",
+                  "MIGRATION_TRANSITION",
+                  "SECURITY_BOUNDARY",
+                  "MULTI_RUNTIME",
+                  "COST_SCALE",
+                  "ARCHITECTURE",
+                  "CONTROLS",
+                  "POLICIES_CONTRACTS",
+                  "WIRING",
+                  "COMPATIBILITY_TRANSITION",
+                  "RECOVERY_TERMINALITY",
+                  "OBSERVABILITY",
+                  "SECURITY_AUTHORITY",
+                  "COST_PERFORMANCE",
+                  "TESTING_ASSURANCE",
+                  "OPERABILITY_MAINTENANCE",
+                  "EVIDENCE_PROVENANCE",
+                  "DECISION_CLOSURE"
+                ]
+              }
+            }
+          }
+        },
+        "proof_obligations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "obligation_type": {
+                "enum": [
+                  "AUTHORITY_EXISTENCE",
+                  "WIRING_PHYSICALITY",
+                  "STATE_RECOVERY_SEMANTICS",
+                  "MIGRATION_TRANSITION",
+                  "CONTEXT_TRANSPORT",
+                  "SECURITY_BOUNDARY",
+                  "CONCURRENCY",
+                  "POLICY_CONTRACT",
+                  "COMPATIBILITY",
+                  "OBSERVABILITY",
+                  "TEST_ASSURANCE",
+                  "DECISION_CLOSURE",
+                  "EVIDENCE_PROVENANCE",
+                  "OTHER_MATERIAL"
+                ]
+              },
+              "proof_phase": {
+                "enum": [
+                  "CURRENT_STATE",
+                  "REPAIR_DESIGN",
+                  "POST_IMPLEMENTATION"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "CLOSED",
+                  "OPEN",
+                  "NOT_APPLICABLE"
+                ]
+              }
+            }
+          }
+        },
+        "wiring_proofs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "binding_state": {
+                "enum": [
+                  "OBSERVED_WIRED",
+                  "OBSERVED_NOT_WIRED",
+                  "PROPOSED_WIRING"
+                ]
+              },
+              "binding_kind": {
+                "enum": [
+                  "EXISTING_AUTHORITY",
+                  "EXISTING_REUSABLE_CAPABILITY",
+                  "PROPOSED_DELIVERABLE",
+                  "NO_BINDING"
+                ]
+              }
+            }
+          }
+        },
+        "behavioral_proofs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "materiality_signal": {
+                "enum": [
+                  "STATE_RECOVERY",
+                  "MIGRATION_TRANSITION"
+                ]
+              }
+            }
+          }
+        },
+        "authority_bindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "authority_kind": {
+                "enum": [
+                  "EXISTING_AUTHORITY",
+                  "EXISTING_REUSABLE_CAPABILITY",
+                  "PROPOSED_DELIVERABLE",
+                  "UNKNOWN"
+                ]
+              },
+              "used_as_existing_authority": {
+                "type": "boolean"
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "used_as_existing_authority": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "used_as_existing_authority"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "authority_kind": {
+                      "const": "EXISTING_AUTHORITY"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "origin_asset": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "status": {
+          "const": "RESOLVED"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 2
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 5
+        },
+        "missing_evidence": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "authority_kind": {
+          "const": "EXISTING_AUTHORITY"
+        },
+        "evidence_id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 2
+        },
+        "observed_revision": {
+          "type": "string",
+          "minLength": 3
+        }
+      },
+      "required": [
+        "status",
+        "code",
+        "evidence_ref",
+        "missing_evidence",
+        "authority_kind",
+        "evidence_id"
+      ]
+    },
+    "origin_operation": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "status": {
+          "const": "RESOLVED"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 2
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 5
+        },
+        "missing_evidence": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "authority_kind": {
+          "const": "EXISTING_AUTHORITY"
+        },
+        "evidence_id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 2
+        },
+        "observed_revision": {
+          "type": "string",
+          "minLength": 3
+        }
+      },
+      "required": [
+        "status",
+        "code",
+        "evidence_ref",
+        "missing_evidence",
+        "authority_kind",
+        "evidence_id"
+      ]
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "status": {
+          "const": "RESOLVED"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 2
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 5
+        },
+        "missing_evidence": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "authority_kind": {
+          "const": "EXISTING_AUTHORITY"
+        },
+        "evidence_id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 2
+        },
+        "observed_revision": {
+          "type": "string",
+          "minLength": 3
+        }
+      },
+      "required": [
+        "status",
+        "code",
+        "evidence_ref",
+        "missing_evidence",
+        "authority_kind",
+        "evidence_id"
+      ]
+    },
+    "execution_effect_reconciliation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "reconciliation_status": {
+            "enum": [
+              "MATCH",
+              "UNRESOLVED_PRODUCER",
+              "UNDECLARED_EXECUTION",
+              "SILENT_DROP",
+              "SOURCE_LIVE_DIVERGENCE",
+              "OTHER_CONTRADICTION"
+            ]
+          },
+          "blocking": {
+            "type": "boolean"
+          },
+          "impact": {
+            "enum": [
+              "NONE",
+              "DESIGN_BLOCKING",
+              "IMPLEMENTATION_PRECONDITION",
+              "NON_BLOCKING_HISTORICAL"
+            ]
+          },
+          "containment_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "observed_producer_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 5
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "reconciliation_status": {
+                  "const": "MATCH"
+                }
+              },
+              "required": [
+                "reconciliation_status"
+              ]
+            },
+            "then": {
+              "properties": {
+                "blocking": {
+                  "const": false
+                },
+                "impact": {
+                  "const": "NONE"
+                },
+                "containment_ref": {
+                  "type": "null"
+                },
+                "observed_producer_refs": {
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "blocking",
+                "impact",
+                "containment_ref",
+                "observed_producer_refs"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "implementation_package": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "deliverables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "change_type": {
+                "enum": [
+                  "CREATE",
+                  "MODIFY",
+                  "REMOVE",
+                  "BIND",
+                  "UNBIND",
+                  "NO_CHANGE"
+                ]
+              }
+            }
+          }
+        },
+        "decision_closure": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "implementation_preconditions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "resolver_ref": {
+                    "type": "string",
+                    "minLength": 5
+                  },
+                  "expected_shape": {
+                    "type": "string",
+                    "minLength": 5
+                  },
+                  "decision_rule": {
+                    "type": "string",
+                    "minLength": 8
+                  },
+                  "stage": {
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  "design_effect": {
+                    "const": "NONE"
+                  }
+                },
+                "required": [
+                  "name",
+                  "resolver_ref",
+                  "expected_shape",
+                  "decision_rule",
+                  "stage",
+                  "design_effect"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "SRCR_DEPTH_SIGNAL_CLOSURE_PARITY:CROSS_OPERATION",
+      "if": {
+        "properties": {
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "CROSS_OPERATION"
+                }
+              }
+            },
+            "required": [
+              "complexity_signals"
+            ]
+          }
+        },
+        "required": [
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "materiality": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "CROSS_OPERATION"
+                    },
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "signal",
+                    "material"
+                  ]
+                }
+              },
+              "proof_obligations": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "WIRING_PHYSICALITY"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "materiality",
+              "proof_obligations"
+            ]
+          }
+        },
+        "required": [
+          "closure_proof"
+        ]
+      }
+    },
+    {
+      "$comment": "SRCR_DEPTH_SIGNAL_CLOSURE_PARITY:AUTHORITY_CHANGE",
+      "if": {
+        "properties": {
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "AUTHORITY_CHANGE"
+                }
+              }
+            },
+            "required": [
+              "complexity_signals"
+            ]
+          }
+        },
+        "required": [
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "materiality": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "AUTHORITY_CHANGE"
+                    },
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "signal",
+                    "material"
+                  ]
+                }
+              },
+              "proof_obligations": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "AUTHORITY_EXISTENCE"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "materiality",
+              "proof_obligations"
+            ]
+          }
+        },
+        "required": [
+          "closure_proof"
+        ]
+      }
+    },
+    {
+      "$comment": "SRCR_DEPTH_SIGNAL_CLOSURE_PARITY:POLICY_CONTRACT_CHANGE",
+      "if": {
+        "properties": {
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "POLICY_CONTRACT_CHANGE"
+                }
+              }
+            },
+            "required": [
+              "complexity_signals"
+            ]
+          }
+        },
+        "required": [
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "materiality": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "POLICY_CONTRACT_CHANGE"
+                    },
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "signal",
+                    "material"
+                  ]
+                }
+              },
+              "proof_obligations": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "POLICY_CONTRACT"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "materiality",
+              "proof_obligations"
+            ]
+          }
+        },
+        "required": [
+          "closure_proof"
+        ]
+      }
+    },
+    {
+      "$comment": "SRCR_DEPTH_SIGNAL_CLOSURE_PARITY:CONTEXT_TRANSPORT",
+      "if": {
+        "properties": {
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "CONTEXT_TRANSPORT"
+                }
+              }
+            },
+            "required": [
+              "complexity_signals"
+            ]
+          }
+        },
+        "required": [
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "materiality": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "CONTEXT_TRANSPORT"
+                    },
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "signal",
+                    "material"
+                  ]
+                }
+              },
+              "proof_obligations": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "CONTEXT_TRANSPORT"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  },
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "WIRING_PHYSICALITY"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "materiality",
+              "proof_obligations"
+            ]
+          }
+        },
+        "required": [
+          "closure_proof"
+        ]
+      }
+    },
+    {
+      "$comment": "SRCR_DEPTH_SIGNAL_CLOSURE_PARITY:STATE_RECOVERY",
+      "if": {
+        "properties": {
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "STATE_RECOVERY"
+                }
+              }
+            },
+            "required": [
+              "complexity_signals"
+            ]
+          }
+        },
+        "required": [
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "materiality": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "STATE_RECOVERY"
+                    },
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "signal",
+                    "material"
+                  ]
+                }
+              },
+              "proof_obligations": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "STATE_RECOVERY_SEMANTICS"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "materiality",
+              "proof_obligations"
+            ]
+          }
+        },
+        "required": [
+          "closure_proof"
+        ]
+      }
+    },
+    {
+      "$comment": "SRCR_DEPTH_SIGNAL_CLOSURE_PARITY:CONCURRENCY",
+      "if": {
+        "properties": {
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "CONCURRENCY"
+                }
+              }
+            },
+            "required": [
+              "complexity_signals"
+            ]
+          }
+        },
+        "required": [
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "materiality": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "CONCURRENCY"
+                    },
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "signal",
+                    "material"
+                  ]
+                }
+              },
+              "proof_obligations": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "CONCURRENCY"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "materiality",
+              "proof_obligations"
+            ]
+          }
+        },
+        "required": [
+          "closure_proof"
+        ]
+      }
+    },
+    {
+      "$comment": "SRCR_DEPTH_SIGNAL_CLOSURE_PARITY:MIGRATION_TRANSITION",
+      "if": {
+        "properties": {
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "MIGRATION_TRANSITION"
+                }
+              }
+            },
+            "required": [
+              "complexity_signals"
+            ]
+          }
+        },
+        "required": [
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "materiality": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "MIGRATION_TRANSITION"
+                    },
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "signal",
+                    "material"
+                  ]
+                }
+              },
+              "proof_obligations": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "MIGRATION_TRANSITION"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "materiality",
+              "proof_obligations"
+            ]
+          }
+        },
+        "required": [
+          "closure_proof"
+        ]
+      }
+    },
+    {
+      "$comment": "SRCR_DEPTH_SIGNAL_CLOSURE_PARITY:SECURITY_BOUNDARY",
+      "if": {
+        "properties": {
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "SECURITY_BOUNDARY"
+                }
+              }
+            },
+            "required": [
+              "complexity_signals"
+            ]
+          }
+        },
+        "required": [
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "materiality": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "SECURITY_BOUNDARY"
+                    },
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "signal",
+                    "material"
+                  ]
+                }
+              },
+              "proof_obligations": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "SECURITY_BOUNDARY"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  },
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "AUTHORITY_EXISTENCE"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "materiality",
+              "proof_obligations"
+            ]
+          }
+        },
+        "required": [
+          "closure_proof"
+        ]
+      }
+    },
+    {
+      "$comment": "SRCR_DEPTH_SIGNAL_CLOSURE_PARITY:MULTI_RUNTIME",
+      "if": {
+        "properties": {
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "MULTI_RUNTIME"
+                }
+              }
+            },
+            "required": [
+              "complexity_signals"
+            ]
+          }
+        },
+        "required": [
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "materiality": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "MULTI_RUNTIME"
+                    },
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "signal",
+                    "material"
+                  ]
+                }
+              },
+              "proof_obligations": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "WIRING_PHYSICALITY"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  },
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "COMPATIBILITY"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "materiality",
+              "proof_obligations"
+            ]
+          }
+        },
+        "required": [
+          "closure_proof"
+        ]
+      }
+    },
+    {
+      "$comment": "SRCR_DEPTH_SIGNAL_CLOSURE_PARITY:COST_SCALE",
+      "if": {
+        "properties": {
+          "solution_depth": {
+            "properties": {
+              "complexity_signals": {
+                "contains": {
+                  "const": "COST_SCALE"
+                }
+              }
+            },
+            "required": [
+              "complexity_signals"
+            ]
+          }
+        },
+        "required": [
+          "solution_depth"
+        ]
+      },
+      "then": {
+        "properties": {
+          "closure_proof": {
+            "properties": {
+              "materiality": {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "signal": {
+                      "const": "COST_SCALE"
+                    },
+                    "material": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "signal",
+                    "material"
+                  ]
+                }
+              },
+              "proof_obligations": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "type": "object",
+                      "properties": {
+                        "obligation_type": {
+                          "const": "OTHER_MATERIAL"
+                        },
+                        "proof_phase": {
+                          "enum": [
+                            "CURRENT_STATE",
+                            "REPAIR_DESIGN"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "obligation_type",
+                        "proof_phase"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "materiality",
+              "proof_obligations"
+            ]
+          }
+        },
+        "required": [
+          "closure_proof"
+        ]
+      }
+    }
+  ]
+}

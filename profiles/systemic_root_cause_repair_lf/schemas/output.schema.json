@@ -346,6 +346,13 @@
               "type": "null"
             }
           ]
+        },
+        "proof_phase": {
+          "enum": [
+            "CURRENT_STATE",
+            "REPAIR_DESIGN",
+            "POST_IMPLEMENTATION"
+          ]
         }
       },
       "allOf": [
@@ -523,7 +530,8 @@
           "enum": [
             "EXISTING_AUTHORITY",
             "EXISTING_REUSABLE_CAPABILITY",
-            "PROPOSED_DELIVERABLE"
+            "PROPOSED_DELIVERABLE",
+            "NO_BINDING"
           ]
         },
         "binding_ref": {
@@ -550,6 +558,7 @@
         "binding_state": {
           "enum": [
             "OBSERVED_WIRED",
+            "OBSERVED_NOT_WIRED",
             "PROPOSED_WIRING"
           ]
         }
@@ -595,6 +604,28 @@
             "properties": {
               "binding_kind": {
                 "const": "PROPOSED_DELIVERABLE"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "binding_state": {
+                "const": "OBSERVED_NOT_WIRED"
+              }
+            },
+            "required": [
+              "binding_state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "binding_kind": {
+                "const": "NO_BINDING"
+              },
+              "evidence_ids": {
+                "minItems": 1
               }
             }
           }
@@ -702,7 +733,10 @@
       ],
       "properties": {
         "contract_version": {
-          "const": "SRCR_CLOSURE_PROOF_V1"
+          "enum": [
+            "SRCR_CLOSURE_PROOF_V1",
+            "SRCR_CLOSURE_PROOF_V2"
+          ]
         },
         "materiality": {
           "type": "array",
@@ -729,7 +763,17 @@
                   "SECURITY_BOUNDARY",
                   "MULTI_RUNTIME",
                   "COST_SCALE",
+                  "ARCHITECTURE",
+                  "CONTROLS",
+                  "POLICIES_CONTRACTS",
                   "WIRING",
+                  "COMPATIBILITY_TRANSITION",
+                  "RECOVERY_TERMINALITY",
+                  "OBSERVABILITY",
+                  "SECURITY_AUTHORITY",
+                  "COST_PERFORMANCE",
+                  "TESTING_ASSURANCE",
+                  "OPERABILITY_MAINTENANCE",
                   "EVIDENCE_PROVENANCE",
                   "DECISION_CLOSURE"
                 ]
@@ -862,6 +906,14 @@
                 "PRE_QUALITY",
                 "QUALITY_PENDING"
               ]
+            },
+            "post_implementation_obligation_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 3
+              }
             }
           },
           "allOf": [
@@ -981,7 +1033,6 @@
         },
         "readback_evidence_ids": {
           "type": "array",
-          "minItems": 1,
           "uniqueItems": true,
           "items": {
             "type": "string",
@@ -1128,6 +1179,7 @@
             "enum": [
               "DECLARED_INPUT",
               "OBSERVED_HISTORY",
+              "OBSERVED_SOURCE",
               "OBSERVED_LIVE"
             ]
           },
@@ -1316,7 +1368,37 @@
               }
             ]
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "reconciliation_status": {
+                  "const": "MATCH"
+                }
+              },
+              "required": [
+                "reconciliation_status"
+              ]
+            },
+            "then": {
+              "properties": {
+                "blocking": {
+                  "const": false
+                },
+                "impact": {
+                  "const": "NONE"
+                },
+                "containment_ref": {
+                  "type": "null"
+                },
+                "observed_producer_refs": {
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ]
       }
     },
     "authority_contradictions": {

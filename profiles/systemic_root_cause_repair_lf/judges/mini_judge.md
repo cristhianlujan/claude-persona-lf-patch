@@ -11,7 +11,7 @@ External audit is a separate oversight lane. Missing external audit is never a b
    - exact candidate + SHA;
    - hash-bound `scope_authority_packet` produced before worker execution;
    - raw/resolved run context and exact upstream authority needed by material checks.
-3. Validate only the semantic-result structure/coverage with `validators/validate_semantic_judge_result.py`.
+3. Validate the semantic-result structure/coverage with `validators/validate_semantic_judge_result.py` bound to the exact pre-producer `scope_authority_packet`, candidate SHA-256, and scope-packet SHA-256. The validator must prove exact coverage of every `authorized_requirements[]`, `constraints[]`, and `forbidden_changes[]` ID; a shape-valid result that omits scope items is not a semantic PASS.
 4. Only then apply any score/rubric. A score can never override a semantic hard fail.
 
 ## PASS
@@ -66,7 +66,7 @@ The independent semantic result is the semantic decision input. The final qualit
 
 PASS_TO_QUALITY_PACK may be encoded only when:
 1. V0.3 deterministic structural closure passes for the exact candidate/evidence bundle;
-2. validate_semantic_judge_result.py passes for the exact semantic result;
+2. validate_semantic_judge_result.py passes for the exact semantic result while bound to the exact scope packet and candidate/scope digests;
 3. the semantic verdict is PASS_INDEPENDENT_SEMANTIC;
 4. the derived required proof set equals the closed proof set and the open set is empty;
 5. receipt blocking codes are empty;
