@@ -18,21 +18,31 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import base64,zlib,json,os,urllib.request,re,pathlib
+          import base64,zlib,json,os,urllib.request,urllib.error,re,pathlib,time
           enc=pathlib.Path('.github/srcr-eval/payload.b64').read_text().strip()
           packet=json.loads(zlib.decompress(base64.b64decode(enc)))
           pathlib.Path('/tmp/scope.json').write_text(json.dumps(packet['scope_authority_packet'],ensure_ascii=False,indent=2)+'\n')
-          model='@cf/mistralai/mistral-small-3.1-24b-instruct'
+          models=['@cf/mistralai/mistral-small-3.1-24b-instruct','@cf/nvidia/nemotron-3-120b-a12b']
           scope_ids=[]
           for key in ('authorized_requirements','constraints','forbidden_changes'):
             scope_ids += [x['id'] for x in packet['scope_authority_packet'][key]]
           skeleton={'verdict':'PASS_INDEPENDENT_SEMANTIC','candidate_sha256':packet['candidate_sha256'],'scope_packet_sha256':packet['scope_packet_sha256'],'source_refs_inspected':[],'observed_candidate_changes':[],'requirement_reconciliation':[],'change_declaration_reconciliation':[],'scope_conformance_reconciliation':[],'invariant_results':[],'open_design_decisions_found':[],'unsupported_claims':[],'blocking_codes':[],'repair_instructions':[],'next_gate':'REGRESSION_AFTER'}
           prompt=('Act as canonical Independent Semantic Judge B. You are not the producer and have no producer context. Use only this packet and independently inspect the ENTIRE exact_candidate. Do not trust producer declarations or deterministic test PASS as semantic proof. Apply judge_instructions literally. Return ONLY strict JSON. The exact scope IDs that MUST EACH appear exactly once in requirement_reconciliation are: '+json.dumps(scope_ids)+'. requirement_reconciliation MUST include all requirement, constraint, and forbidden-change IDs. OUTPUT EXACTLY these top-level keys and no wrapper: '+json.dumps(skeleton,separators=(',',':'))+'. requirement_reconciliation rows: scope_item_id,disposition,evidence_refs; disposition SATISFIED/PRESERVED/NOT_APPLICABLE_WITH_EVIDENCE/VIOLATED/UNRESOLVED. observed_candidate_changes: independently enumerate every material change with change_id,action_class,target,candidate_paths,statement,materiality,evidence_refs. change_declaration_reconciliation rows: change_id,disposition,evidence_refs with DECLARED_EQUIVALENT/DISCOVERY_ONLY_NOT_IN_SELECTED_REPAIR/UNDECLARED_PROPOSED_CHANGE. scope_conformance_reconciliation rows: change_id,disposition,evidence_refs with IN_SCOPE/DISCOVERY_OUT_OF_SCOPE/OUT_OF_SCOPE_DESIGN_DELTA/UNRESOLVED_SCOPE. invariant_results must contain all seven: SCOPE_AUTHORITY_INTEGRITY,EVIDENCE_INTEGRITY,CAUSAL_CLOSURE,CONTRADICTION_INTEGRITY,MINIMUM_SUFFICIENT_REUSE,INDEPENDENT_DECISION_CLOSURE,FALSIFIABILITY_REGRESSION. Any material unsupported/out-of-scope/open design issue forbids PASS. PACKET:\n'+json.dumps(packet,ensure_ascii=False,separators=(',',':')))
           body={'messages':[{'role':'system','content':'Return strict JSON only. No markdown fences or prose outside JSON.'},{'role':'user','content':prompt}],'temperature':0,'max_tokens':9000,'response_format':{'type':'json_object'}}
-          url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{model}"
-          req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['CF_TOKEN'],'Content-Type':'application/json'},method='POST')
-          with urllib.request.urlopen(req,timeout=300) as resp: envelope=json.loads(resp.read().decode())
-          if not envelope.get('success'): raise SystemExit('CF_FAIL:'+json.dumps(envelope)[:2000])
+          envelope=None; model=None
+          for idx,candidate_model in enumerate(models):
+            url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{candidate_model}"
+            req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['CF_TOKEN'],'Content-Type':'application/json'},method='POST')
+            try:
+              with urllib.request.urlopen(req,timeout=300) as resp: envelope=json.loads(resp.read().decode())
+              model=candidate_model
+              break
+            except urllib.error.HTTPError as exc:
+              detail=exc.read().decode(errors='replace')[:3000]
+              print(f'PROVIDER_HTTP_ERROR model={candidate_model} status={exc.code} body={detail}')
+              if exc.code != 429 or idx == len(models)-1: raise
+              time.sleep(20)
+          if not isinstance(envelope,dict) or not envelope.get('success'): raise SystemExit('CF_FAIL:'+json.dumps(envelope)[:2000])
           result=envelope.get('result') or {}; choices=result.get('choices') if isinstance(result,dict) else None
           content=((choices[0].get('message') or {}).get('content') if isinstance(choices,list) and choices else None) or (result.get('response') if isinstance(result,dict) else None)
           if not isinstance(content,str) or not content.strip(): raise SystemExit('MODEL_EMPTY_CONTENT:'+json.dumps(result)[:3000])
