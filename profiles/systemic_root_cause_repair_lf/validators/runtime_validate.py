@@ -677,6 +677,19 @@ def _v04_transversal_errors(payload):
     if not _string_list(currentness_refs, allow_empty=False):
         errors.append(_error("V04_REPAIR_DISPOSITION_CURRENTNESS_REQUIRED", "$.repair_disposition.currentness_refs"))
 
+    verification = disposition.get("verification")
+    if not isinstance(verification, dict):
+        errors.append(_error("V04_REPAIR_DISPOSITION_VERIFICATION_REQUIRED", "$.repair_disposition.verification"))
+    else:
+        if verification.get("executable") is not True:
+            errors.append(_error("V04_REPAIR_DISPOSITION_VERIFICATION_NOT_EXECUTABLE", "$.repair_disposition.verification.executable"))
+        if not _nonempty_string(verification.get("method")):
+            errors.append(_error("V04_REPAIR_DISPOSITION_VERIFICATION_METHOD_REQUIRED", "$.repair_disposition.verification.method"))
+        if not _nonempty_string(verification.get("expected_result")):
+            errors.append(_error("V04_REPAIR_DISPOSITION_VERIFICATION_EXPECTED_RESULT_REQUIRED", "$.repair_disposition.verification.expected_result"))
+        if not _string_list(verification.get("evidence_refs"), allow_empty=False):
+            errors.append(_error("V04_REPAIR_DISPOSITION_VERIFICATION_EVIDENCE_REQUIRED", "$.repair_disposition.verification.evidence_refs"))
+
     if status == "NO_REPAIR_REQUIRED":
         if decision not in {"ALREADY_RESOLVED", "NOT_MATERIAL"}:
             errors.append(_error("V04_NO_REPAIR_DISPOSITION_MISMATCH", "$.repair_disposition.decision"))
