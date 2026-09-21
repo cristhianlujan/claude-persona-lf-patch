@@ -186,20 +186,26 @@ Deno.serve(async (req: Request) => {
       const callerRequestId = typeof body.caller_request_id === "string" ? body.caller_request_id.trim().toLowerCase() : "";
       const targetCode = typeof body.target_code === "string" ? body.target_code.trim().toUpperCase() : "";
       const targetPath = typeof body.target_path === "string" ? body.target_path.trim() : "";
+      const researchBaselineMode = typeof body.research_baseline_mode === "string" && body.research_baseline_mode.trim() ? body.research_baseline_mode.trim() : "NOT_REQUIRED";
+      const researchBaselineContract = body.research_baseline_contract ?? null;
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(callerRequestId) || !/^PERFIL-[A-Z0-9][A-Z0-9-]{2,120}$/.test(targetCode) || !targetPath) {
         return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_INIT_INPUT_INVALID", caller }, 400);
       }
+      if (!new Set(["NOT_REQUIRED", "PRE_RESEARCH_ALWAYS"]).has(researchBaselineMode)) return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_RESEARCH_BASELINE_MODE_INVALID", caller }, 400);
+      if (researchBaselineMode === "PRE_RESEARCH_ALWAYS" && (!researchBaselineContract || typeof researchBaselineContract !== "object" || Array.isArray(researchBaselineContract))) return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_RESEARCH_BASELINE_CONTRACT_REQUIRED", caller }, 400);
+      if (researchBaselineMode === "NOT_REQUIRED" && researchBaselineContract !== null) return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_RESEARCH_BASELINE_CONTRACT_FORBIDDEN", caller }, 400);
       const result = await callRuntime({
         action: "initialize_profile_update_v1",
         caller_request_id: callerRequestId,
         target_code: targetCode,
         target_path: targetPath,
         target_repo: REPOSITORY,
+        research_baseline_mode: researchBaselineMode,
+        research_baseline_contract: researchBaselineContract,
         caller,
       });
       return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "INITIALIZED" ? 201 : 409);
     }
-
     if (body.action === "profile_operation_next_step_v1") {
       const executionId = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
       if (!executionId) return json({ outcome: "BLOCKED", code: "PROFILE_OPERATION_EXECUTION_ID_INVALID", caller }, 400);
