@@ -101,6 +101,8 @@ Cuando el plan contiene `DB_CANDIDATE_APPLY_ROLLBACK`:
 8. verificar que el ledger durable permanezca idéntico antes/después;
 9. persistir manifest y log, incluyendo un manifest BLOCKED aun cuando la preparación falle.
 
+Si una migración exige un actor operativo gobernado para provenance/apply, puede declarar una única línea `LF_CI_ROLLBACK_GOVERNED_ACTOR_V1`. El harness resuelve ese operation code contra `lf_ci_candidate_actor_bootstrap_registry_v1.json`, materializa el actor mediante el **begin RPC canónico** dentro del mismo `BEGIN/ROLLBACK`, ejecuta después los bytes del candidato y verifica explícitamente que el actor no exista tras el rollback. Operación desconocida, marker duplicado, adapter no allowlisted o residuo del actor bloquean. El harness no relaja el guard de producción de la migración ni usa un GUC como bypass.
+
 Antes de ejecutar DDL, el carrier refina la aplicabilidad contra el ledger remoto y la provenance gobernada de las migraciones ya seleccionadas por el plan:
 
 - ninguna aplicada → `PENDING`: ejecutar candidate apply/rollback;

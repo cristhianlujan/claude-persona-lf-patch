@@ -17,8 +17,16 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "lf-db-candidate-rollback-probe/v2"
+SCHEMA_VERSION = "lf-db-candidate-rollback-probe/v3"
 MIGRATION_PREFIX = "supabase/migrations/"
+ACTOR_BOOTSTRAP_REGISTRY_PATH = Path(
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
+    "lf_ci_candidate_actor_bootstrap_registry_v1.json"
+)
+ACTOR_MARKER_RE = re.compile(
+    r"(?m)^--[ \t]*LF_CI_ROLLBACK_GOVERNED_ACTOR_V1:[ \t]*"
+    r"([A-Z0-9][A-Z0-9_-]{2,119})[ \t]*$"
+)
 
 TX_STMT = re.compile(
     r"(?im)^[ \t]*(BEGIN(?:[ \t]+TRANSACTION)?|START[ \t]+TRANSACTION|COMMIT|ROLLBACK)[ \t]*;"
@@ -233,6 +241,154 @@ def validate_transaction_safe(path: str, text: str) -> None:
     prepare_transaction_payload(path, text)
 
 
+
+def load_actor_bootstrap_registry(repo: Path) -> dict[str, dict[str, Any]]:
+    path = repo / ACTOR_BOOTSTRAP_REGISTRY_PATH
+    if not path.is_file():
+        raise ProbeError(
+            f"FAIL_DB_CANDIDATE_ACTOR_REGISTRY_MISSING:{ACTOR_BOOTSTRAP_REGISTRY_PATH}"
+        )
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise ProbeError("FAIL_DB_CANDIDATE_ACTOR_REGISTRY_INVALID") from exc
+    if raw.get("schema_version") != "lf-ci-candidate-actor-bootstrap-registry/v1":
+        raise ProbeError("FAIL_DB_CANDIDATE_ACTOR_REGISTRY_VERSION")
+    entries = raw.get("entries")
+    if not isinstance(entries, dict):
+        raise ProbeError("FAIL_DB_CANDIDATE_ACTOR_REGISTRY_ENTRIES")
+    normalized: dict[str, dict[str, Any]] = {}
+    for operation_code, entry in entries.items():
+        if not isinstance(operation_code, str) or not re.fullmatch(
+            r"[A-Z0-9][A-Z0-9_-]{2,119}", operation_code
+        ):
+            raise ProbeError("FAIL_DB_CANDIDATE_ACTOR_REGISTRY_OPERATION_CODE")
+        if not isinstance(entry, dict):
+            raise ProbeError(
+                f"FAIL_DB_CANDIDATE_ACTOR_REGISTRY_ENTRY:{operation_code}"
+            )
+        if entry.get("adapter") != "RUNTIME_UPDATE_BEGIN_V1":
+            raise ProbeError(
+                f"FAIL_DB_CANDIDATE_ACTOR_ADAPTER_UNSUPPORTED:{operation_code}"
+            )
+        if entry.get("begin_rpc") != "public.lf_runtime_update_begin_v1":
+            raise ProbeError(
+                f"FAIL_DB_CANDIDATE_ACTOR_RPC_UNSUPPORTED:{operation_code}"
+            )
+        target_code = entry.get("target_code")
+        target_repo = entry.get("target_repo")
+        if not isinstance(target_code, str) or not re.fullmatch(
+            r"[A-Z0-9][A-Z0-9_-]{2,119}", target_code
+        ):
+            raise ProbeError(
+                f"FAIL_DB_CANDIDATE_ACTOR_TARGET_CODE:{operation_code}"
+            )
+        if not isinstance(target_repo, str) or not target_repo.strip():
+            raise ProbeError(
+                f"FAIL_DB_CANDIDATE_ACTOR_TARGET_REPO:{operation_code}"
+            )
+        normalized[operation_code] = dict(entry)
+    return normalized
+
+
+def governed_actor_marker(
+    path: str, text: str, registry: dict[str, dict[str, Any]]
+) -> tuple[str, dict[str, Any]] | None:
+    matches = ACTOR_MARKER_RE.findall(text)
+    if not matches:
+        return None
+    if len(matches) != 1:
+        raise ProbeError(f"FAIL_DB_CANDIDATE_ACTOR_MARKER_DUPLICATE:{path}")
+    operation_code = matches[0]
+    entry = registry.get(operation_code)
+    if entry is None:
+        raise ProbeError(
+            f"FAIL_DB_CANDIDATE_ACTOR_OPERATION_UNREGISTERED:{path}:{operation_code}"
+        )
+    return operation_code, entry
+
+
+def _sql_literal(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"
+
+
+def render_governed_actor_bootstrap(
+    *,
+    path: str,
+    migration_version: str,
+    source_digest: str,
+    operation_code: str,
+    entry: dict[str, Any],
+) -> tuple[str, dict[str, Any]]:
+    if entry.get("adapter") != "RUNTIME_UPDATE_BEGIN_V1":
+        raise ProbeError(
+            f"FAIL_DB_CANDIDATE_ACTOR_ADAPTER_UNSUPPORTED:{operation_code}"
+        )
+    execution_id = (
+        f"CI-DB-CANDIDATE-{migration_version}-{source_digest[:16]}"
+    )
+    idempotency_key = (
+        f"ci-db-candidate:{migration_version}:{source_digest[:16]}"
+    )
+    manifest = {
+        "ci_candidate_rollback_actor": True,
+        "production_apply_authorized": True,
+        "runtime_activation_authorized": False,
+        "source_candidate_only": False,
+        "candidate_source_sha256": source_digest,
+    }
+    manifest_sql = _sql_literal(
+        json.dumps(manifest, sort_keys=True, separators=(",", ":"))
+    )
+    sql = f"""\echo LF_DB_CANDIDATE_ACTOR_BEGIN {operation_code} execution_id={execution_id}
+DO $lf_ci_actor$
+DECLARE
+  r jsonb;
+BEGIN
+  r:=public.lf_runtime_update_begin_v1(
+    {_sql_literal(execution_id)},
+    {_sql_literal(idempotency_key)},
+    {_sql_literal(source_digest)},
+    {_sql_literal(execution_id)},
+    {_sql_literal(str(entry['target_repo']))},
+    {_sql_literal(path)},
+    {manifest_sql}::jsonb
+  );
+  IF r->>'result' NOT IN ('RESERVED_NEW_EXECUTION','REPLAY_EXISTING_EXECUTION') THEN
+    RAISE EXCEPTION 'BLOCK_DB_CANDIDATE_ACTOR_BEGIN_FAILED:%:%',
+      {_sql_literal(operation_code)},coalesce(r->>'result','NULL');
+  END IF;
+END
+$lf_ci_actor$;
+\echo LF_DB_CANDIDATE_ACTOR_READY {operation_code} execution_id={execution_id}"""
+    return sql, {
+        "operation_code": operation_code,
+        "adapter": entry["adapter"],
+        "begin_rpc": entry["begin_rpc"],
+        "target_code": entry["target_code"],
+        "target_repo": entry["target_repo"],
+        "target_path": path,
+        "execution_id": execution_id,
+        "request_sha256": source_digest,
+    }
+
+
+def render_actor_residue_check(actor_rows: list[dict[str, Any]]) -> str | None:
+    if not actor_rows:
+        return None
+    ids = ",".join(_sql_literal(str(row["execution_id"])) for row in actor_rows)
+    return f"""DO $lf_ci_actor_residue$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM public.lf_operation_execution
+    WHERE execution_id IN ({ids})
+  ) THEN
+    RAISE EXCEPTION 'BLOCK_DB_CANDIDATE_ACTOR_RESIDUE';
+  END IF;
+END
+$lf_ci_actor_residue$;"""
+
 def _failure_manifest(args: argparse.Namespace, exc: ProbeError) -> None:
     manifest_out = Path(args.manifest_out)
     manifest_out.parent.mkdir(parents=True, exist_ok=True)
@@ -255,6 +411,8 @@ def _failure_manifest(args: argparse.Namespace, exc: ProbeError) -> None:
 def _build(args: argparse.Namespace) -> dict[str, Any]:
     repo = Path(args.repo_root).resolve()
     rows = changed_migrations(repo, args.base, args.head)
+    actor_registry = load_actor_bootstrap_registry(repo)
+    actor_rows: list[dict[str, Any]] = []
     manifest_rows = []
     chunks = [
         "\\set ON_ERROR_STOP on",
@@ -280,6 +438,19 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
             raise ProbeError(f"FAIL_DB_CANDIDATE_PAYLOAD_DIGEST_INTERNAL:{path}")
 
         migration_version, migration_name = migration_identity(path)
+        actor_marker = governed_actor_marker(path, text, actor_registry)
+        actor_row = None
+        if actor_marker is not None:
+            operation_code, actor_entry = actor_marker
+            actor_sql, actor_row = render_governed_actor_bootstrap(
+                path=path,
+                migration_version=migration_version,
+                source_digest=source_digest,
+                operation_code=operation_code,
+                entry=actor_entry,
+            )
+            chunks.append(actor_sql)
+            actor_rows.append(actor_row)
         manifest_rows.append(
             {
                 "status": status,
@@ -291,6 +462,7 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
                 "source_bytes": len(raw),
                 "execution_payload_sha256": payload_digest,
                 "transaction_frame": frame,
+                "governed_actor_bootstrap": actor_row,
             }
         )
         chunks.extend(
@@ -360,6 +532,12 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
             "SELECT 'LF_DB_CANDIDATE_ROLLBACK_COMPLETE' AS probe_result;",
         ]
     )
+    residue_check = render_actor_residue_check(actor_rows)
+    if residue_check is not None:
+        chunks.append(residue_check)
+        chunks.append(
+            "SELECT 'LF_DB_CANDIDATE_ACTOR_ROLLBACK_CLEAN' AS probe_result;"
+        )
     sql_out = Path(args.sql_out)
     sql_out.parent.mkdir(parents=True, exist_ok=True)
     sql_out.write_text("\n".join(chunks) + "\n", encoding="utf-8")
@@ -389,6 +567,8 @@ def _build(args: argparse.Namespace) -> dict[str, Any]:
         "probe_only_sql_sha256": probe_only_sha,
         "transaction_escape_scan": "PASS",
         "post_apply_probes": probe_rows,
+        "governed_actor_bootstraps": actor_rows,
+        "actor_bootstrap_registry": str(ACTOR_BOOTSTRAP_REGISTRY_PATH),
         "source_material_binding": "EXACT_SOURCE_SHA_WITH_EXPLICIT_OUTER_FRAME_NORMALIZATION",
     }
     manifest_out = Path(args.manifest_out)

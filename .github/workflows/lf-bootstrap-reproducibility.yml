@@ -513,7 +513,13 @@ jobs:
           m=json.loads(Path(".lf_ci/db_candidate/candidate_manifest.json").read_text())
           if m["migration_count"] < 1 or m["transaction_escape_scan"] != "PASS":
               raise SystemExit("BLOCK_DB_CANDIDATE_MANIFEST_INVALID")
-          print("DB_CANDIDATE_MANIFEST_PASS", m["migration_count"], m["combined_sql_sha256"])
+          actors=m.get("governed_actor_bootstraps")
+          if not isinstance(actors,list):
+              raise SystemExit("BLOCK_DB_CANDIDATE_ACTOR_MANIFEST_INVALID")
+          for actor in actors:
+              if not isinstance(actor,dict) or actor.get("adapter") != "RUNTIME_UPDATE_BEGIN_V1" or not actor.get("execution_id"):
+                  raise SystemExit("BLOCK_DB_CANDIDATE_ACTOR_MANIFEST_INVALID")
+          print("DB_CANDIDATE_MANIFEST_PASS", m["migration_count"], m["combined_sql_sha256"], "actors="+str(len(actors)))
           PY
 
       - name: Classify exact changed migrations against live ledger identity
@@ -574,6 +580,9 @@ jobs:
 
           grep -q "LF_DB_CANDIDATE_ALL_APPLIED_BEFORE_ROLLBACK" .lf_ci/db_candidate/candidate_rollback.log
           grep -q "LF_DB_CANDIDATE_ROLLBACK_COMPLETE" .lf_ci/db_candidate/candidate_rollback.log
+          if python3 -c 'import json,sys; m=json.load(open(sys.argv[1])); raise SystemExit(0 if m.get("governed_actor_bootstraps") else 1)' .lf_ci/db_candidate/candidate_manifest.json; then
+            grep -q "LF_DB_CANDIDATE_ACTOR_ROLLBACK_CLEAN" .lf_ci/db_candidate/candidate_rollback.log
+          fi
           controls='${{ needs.feedback-tier-router.outputs.bootstrap_controls_json }}'
           if python3 -c 'import json,sys; raise SystemExit(0 if "POLICY_RESOLVER_REGRESSION" in json.loads(sys.argv[1]) else 1)' "$controls"; then
             grep -q "POLICY_RESOLVER_REGRESSION_PASS" .lf_ci/db_candidate/candidate_rollback.log
