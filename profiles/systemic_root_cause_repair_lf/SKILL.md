@@ -1,7 +1,7 @@
 # PROFILE — Systemic Root Cause Repair LF
 
 Status: CANDIDATO / READ_ONLY
-Profile Pack ID: SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4
+Profile Pack ID: SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5
 Target code: PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF
 Maintenance operation: ACTUALIZACION_PERFIL_LF
 
@@ -13,9 +13,35 @@ The profile designs and specifies the repair. It does not implement it, activate
 ## Activation
 Use for recurrent failures, repeated local repairs, cross-run regressions, bypasses, replay/duplicate failures, partial-failure recovery defects, stale-state defects, authority/source contradictions, or incidents whose immediate cause is not sufficient to explain recurrence.
 
+Also use for architecture/lifecycle audits of a governed process when the request is to find material gaps and design the repair (`case_mode=ARCHITECTURE_AUDIT`).
+
 Do not use for simple deterministic defects whose cause and repair are already classified and covered by an existing EKB rule.
 
-## Mandatory trajectory
+## Case mode (V0.5)
+Declare `case_mode` first:
+- `INCIDENT_REPAIR`: a failure happened; explain the failure class, its recurrence and the first bad control.
+- `ARCHITECTURE_AUDIT`: no single triggering incident; map the real process, find material gaps and design the repair. Audit mode relaxes only two incident-specific requirements: `recurrence_evidence` may be empty and one evidence-bound causal link per gap is enough. It does **not** remove systemic causality or controls; read the causal fields as:
+  - `symptom` = observed structural gap;
+  - `immediate_cause` = mechanism that directly produces the gap;
+  - `systemic_root_cause` = architectural cause that allows the gap to exist;
+  - `first_bad_control` = first design/governance control that should have prevented it;
+  - `escape_control` = later control that should have detected it.
+  A ready audit spec still requires all four `ESTABLISHED`. Every other rule still applies.
+
+## Working method (do this first; the rules below are how the result is checked)
+The rules and typed output are acceptance checks, not the method. Quality comes from the investigation:
+
+1. **Build the real graph before judging it.** From live authority, enumerate the process nodes and edges that actually exist: operation definitions and their steps, contracts, functions/workers, runtime bindings, and the execution receipts those operations already produced. Start from what executed, not from the phase names in the request.
+2. **Walk every material edge.** For each edge record producer -> transported data/contract -> consumer -> enforcement point -> failure behavior -> readback, and look for it in every applicable surface: source at the exact revision, operation definitions, execution receipts/manifests, runtime readback, EKB. Mark each edge OBSERVED, ABSENT (proved by a query that returned nothing) or UNREACHABLE (surface not accessible).
+3. **Form a working solution early.** After the first pass, state the leading hypothesis and design. Use each remaining unknown to test it: which query would confirm or break it? Run that query next. Unknowns are a search queue, not a stopping point.
+4. **Chase before you stop.** Before classifying any gap as `DESIGN_BLOCKING`, consult every accessible surface that could close it and record each attempt in `attempted_sources` (surface, exact locator, result, observation, evidence_id). The `locator` must be exactly the one recorded for that `evidence_id` in the evidence manifest: evidence produced by another query cannot stand in for this attempt. Give each design-blocking uncertainty an `uncertainty_id`, and point every `DESIGN_BLOCKING` process node at it with `blocking_uncertainty_id`. A gap with no recorded attempt is not a blocker; it is unfinished work.
+5. **Separate test context from system facts.** The profile revision under test, the harness and the requested scope are inputs, not defects of the audited system. Report a legitimate currentness observation, but never turn the test setup into a blocker.
+6. **Cite only what you read.** Every reference must be something you actually retrieved in this run. A plausible identifier that was not read is a fabricated reference.
+7. **Then compare and falsify.** Build at least three materially distinct alternatives from the graph (including reuse or elimination), falsify the leading one, and only then choose the output mode.
+
+`NEEDS_MORE_EVIDENCE` is the right answer only when a material uncertainty survives step 4. It is never cheaper than a full investigation: a design-blocking gap must show its attempts, and every attempt must resolve in the external evidence manifest.
+
+## Output trajectory (field order for the typed output)
 FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> CURRENT REPAIR DISPOSITION -> EFFECT/PRODUCER RECONCILIATION -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL CHAIN -> FIRST BAD CONTROL -> ESCAPE CONTROL -> DECLARED VS EXECUTED CONTRADICTIONS -> SYSTEMIC ROOT CAUSE -> ¿DEBE EXISTIR? -> UNCERTAINTY IMPACT -> SOLUTION DEPTH -> PRE-RESEARCH BASELINE FREEZE -> RESEARCH ASSURANCE -> INCREMENTAL VALUE DELTA -> DISTINCT ALTERNATIVES -> CHALLENGER -> OMISSION DISCOVERY -> TRADEOFFS -> MINIMUM SUFFICIENT REPAIR -> IMPLEMENTATION PACKAGE -> IMPLEMENTATION DECISION CLOSURE -> TRANSITION/COMPATIBILITY -> INVARIANT/HARD GUARD -> FALSIFICATION PLAN -> ROLLBACK -> HISTORICAL REGRESSION -> SEMANTIC QUALITY GATE -> RESIDUAL RISK
 
 1. Read exact current authority, failure envelope, EKB recurrence evidence, architecture/contracts, historical occurrences, execution wiring and expected-vs-actual.
@@ -30,7 +56,7 @@ FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> CURRENT REPAIR DISPOSITION -> EFFECT
 9. Compare declared behavior/ownership/source with live observed effects. A current authority contradiction such as SILENT_DROP, UNDECLARED_EXECUTION or SOURCE_LIVE_DIVERGENCE is design-blocking until reconciled. Historical producer attribution may remain unresolved only if the selected repair contains every plausible producer path and the uncertainty is explicitly classified as non-design-blocking.
 10. Execute the mandatory ¿DEBE EXISTIR? assessment for the subject/control: identify real consumers with evidence references, impact of removal, and a native or already-existing alternative. Do not assume an existing component deserves preservation.
 11. Classify every current uncertainty as exactly one of:
-   - `DESIGN_BLOCKING`: missing evidence can change the repair architecture, selected alternative, enforcement point, transition, rollback or acceptance criteria. `SYSTEMIC_REPAIR_SPEC` is forbidden.
+   - `DESIGN_BLOCKING`: missing evidence can change the repair architecture, selected alternative, enforcement point, transition, rollback or acceptance criteria, and the accessible surfaces were consulted without closing it (V0.5: `attempted_sources` required, each resolving in the evidence manifest). `SYSTEMIC_REPAIR_SPEC` is forbidden.
    - `IMPLEMENTATION_PRECONDITION`: the repair design is stable, but implementation/activation must resolve a named prerequisite before a bounded stage proceeds.
    - `NON_BLOCKING_HISTORICAL`: attribution/history remains incomplete but cannot change the selected repair because the repair explicitly contains the unknown path.
 12. Classify solution depth before solution search:
@@ -175,41 +201,10 @@ Must not present a final selected alternative or residual risk as if a repair sp
 
 ## Typed output
 The output must include:
-status, profile_pack_id, repair_disposition, quantitative_decisions, material_process_graph, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, solution_depth, research_assurance, alternatives, preferred_alternative, selected_alternative, rejected_alternatives, challenger_review, omission_discovery, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, implementation_package, implementation_delta, transition_plan, rollback_plan, acceptance_criteria, historical_regressions, planned_regressions, current_uncertainties, residual_risks, evidence_map, blocking_codes, next_gate.
+status, profile_pack_id, case_mode, repair_disposition, quantitative_decisions, material_process_graph, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, solution_depth, research_assurance, alternatives, preferred_alternative, selected_alternative, rejected_alternatives, challenger_review, omission_discovery, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, implementation_package, implementation_delta, transition_plan, rollback_plan, acceptance_criteria, historical_regressions, planned_regressions, current_uncertainties, residual_risks, evidence_map, blocking_codes, next_gate.
 
 ## Claim ceiling
 CANDIDATO / READ_ONLY. This profile can diagnose, compare and specify a repair; it cannot authorize or execute that repair. A repair specification is quality-accepted only through the canonical deterministic and semantic gates. Implementation and post-implementation verification remain separate governed operations.
 
-## V0.3 closure-proof contract (V2 transversal proof phases)
-
-V0.3 changes the source of truth for readiness. handoff_ready=true, an empty open_design_decisions, omission-dimension presence, or a nonempty evidence URI are not proof of closure.
-
-The trajectory is:
-
-materiality -> required proof obligations -> external evidence bindings -> closed/open obligation set -> derived handoff readiness -> canonical quality decision.
-
-Rules:
-1. Materiality is generic. Use structured signals such as AUTHORITY_CHANGE, POLICY_CONTRACT_CHANGE, CONTEXT_TRANSPORT, STATE_RECOVERY, CONCURRENCY, MIGRATION_TRANSITION, SECURITY_BOUNDARY, MULTI_RUNTIME, COST_SCALE, plus material WIRING. Never branch on a domain name, table name, incident ID, or known fixture.
-2. Every material signal must generate one or more finite proof obligations. A material obligation is CLOSED, OPEN, or explicitly NOT_APPLICABLE with a reason. SYSTEMIC_REPAIR_SPEC handoff readiness is derived only when all required obligations are closed.
-3. Authority references are typed as EXISTING_AUTHORITY, EXISTING_REUSABLE_CAPABILITY, PROPOSED_DELIVERABLE, or UNKNOWN. A proposed deliverable can never satisfy a slot that requires current authority. `used_as_existing_authority=true` is reserved strictly for `EXISTING_AUTHORITY`; a reusable capability may be current and valid without becoming the governing authority for that slot.
-4. Existing authority is supported only by evidence IDs from a bounded evidence manifest assembled outside model-authored output. The output may reference evidence IDs; it must not manufacture the manifest that makes those IDs trustworthy.
-5. When STATE_RECOVERY or MIGRATION_TRANSITION is material, executable behavioral proof must cover states/steps, entry conditions, terminal conditions, illegal transitions and recovery paths. When those signals are not material, no state machine is required.
-6. New V0.3 outputs use `SRCR_CLOSURE_PROOF_V2` and phase every proof obligation as exactly `CURRENT_STATE`, `REPAIR_DESIGN`, or `POST_IMPLEMENTATION`. `CURRENT_STATE` proves what exists or is absent now; `REPAIR_DESIGN` proves the selected repair is fully specified; `POST_IMPLEMENTATION` contains future verification and is never allowed to masquerade as already observed. A ready repair specification requires all material `CURRENT_STATE` and `REPAIR_DESIGN` obligations closed. `POST_IMPLEMENTATION` obligations may remain open and must be listed separately; they do not block specification handoff.
-6a. When `WIRING_PHYSICALITY` is material, every material edge names producer, transported contract, consumer, enforcement point, failure behavior, exact obligation IDs and binding state. `CURRENT_STATE` may close with `OBSERVED_WIRED` or `OBSERVED_NOT_WIRED` only with current external evidence. `REPAIR_DESIGN` may close with an exact `PROPOSED_WIRING` / `PROPOSED_DELIVERABLE` edge and executable acceptance evidence, without pretending that future wiring already exists. `POST_IMPLEMENTATION` can close only after observed wired readback. Component existence never proves physical consumption.
-6b. When `CONTEXT_TRANSPORT` is material, apply the same proof phases. Current reuse requires observed consumer/wiring/readback. A repair design may close with exact selection, contract, consumer, enforcement point, budget guard, hydration mode/JIT resolver when applicable, failure behavior and proposed/observed wiring. Post-implementation closure requires actual current readback. Describing a compact capsule, resolver, Card, budget or policy without the phase-appropriate proof is not closure.
-6c. Keep the generic vocabularies separate. `solution_depth.complexity_signals` uses only the canonical depth signals; omission dimensions such as `WIRING`, `COMPATIBILITY_TRANSITION`, `OBSERVABILITY` and `TESTING_ASSURANCE` stay in `omission_discovery` and may also appear as V2 closure materiality signals. `behavioral_proofs.materiality_signal` is reserved for `STATE_RECOVERY` or `MIGRATION_TRANSITION`. Never invent near-synonyms or incident-specific enum values.
-6d. For V0.3, `origin_asset`, `origin_operation`, and `owner` are authority slots, not generic dependency slots: a ready spec binds each to a current `EXISTING_AUTHORITY` with external evidence. Reusable capabilities belong in authority/wiring bindings and may be selected for reuse without being promoted into these authority slots.
-6e. `execution_effect_reconciliation.reconciliation_status=MATCH` is semantically neutral: `blocking=false`, `impact=NONE`, `containment_ref=null`, and at least one observed producer ref. Containment/impact classifications are reserved for unresolved or contradictory effects.
-6f. Implementation deliverables use only the canonical change types `CREATE`, `MODIFY`, `REMOVE`, `BIND`, `UNBIND`, or `NO_CHANGE`. Implementation preconditions are mechanical resolver objects (`name`, `resolver_ref`, `expected_shape`, `decision_rule`, `stage`, `design_effect=NONE`); they cannot hide a design decision in free text.
-6g. Closure materiality is derived, not optional bookkeeping. Every non-`NONE` `solution_depth.complexity_signals[]` item MUST appear as `closure_proof.materiality[].signal` with `material=true` and MUST have all obligation types required by the canonical closure vocabulary in `CURRENT_STATE` or `REPAIR_DESIGN`. Every omission dimension marked `REQUIRED_CHANGE` follows the same derivation rule. Do not emit the candidate until this parity holds.
-6h. For `origin_asset`, `origin_operation`, `owner`, and any `authority_bindings[]` entry using external evidence, `subject` MUST exactly match the referenced evidence-manifest entry's `subject` for its `evidence_id`. A name, alias, display label, component name, or related asset is not interchangeable with the evidence subject.
-
-
-7. Deterministic validation and semantic utility are pre-quality floors. They never mean canonical quality acceptance.
-8. Canonical quality acceptance is a separate receipt bound to the exact candidate digest/revision and evidence-bundle digest. Changing either invalidates the receipt. Candidate digest/revision and evidence-bundle digest are computed or assigned at the external quality boundary after producer output is final; the producer MUST NOT self-issue or embed a candidate/evidence digest binding as proof of itself.
-9. Implementation preconditions may resolve fresh values but may not hide an architecture, authority, enforcement, transition, rollback or acceptance decision.
-10. V0.2 historical outputs retain their historical receipts. V0.3 semantics are not applied retroactively.
-
-`SRCR_CLOSURE_PROOF_V1` remains accepted only for historical V0.3 compatibility/replay. Fresh producer outputs must use V2 so specification readiness never depends on pretending that a proposed repair is already implemented.
-
-During S1 compatibility the repository may accept both V0.2 and V0.3 schema shapes, but only an explicitly V0.3 candidate with the applicable closure contract may claim the strengthened closure semantics.
+## Closure-proof contract
+The V2 closure-proof rules (materiality -> obligations -> external evidence bindings -> derived readiness) live in `contracts/closure_proof_v2.md` and are unchanged. Fill `closure_proof` from that contract after the investigation below is done.
