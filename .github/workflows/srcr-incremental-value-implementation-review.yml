@@ -1,0 +1,121 @@
+name: SRCR Incremental Value Implementation Independent Review
+on:
+  push:
+    branches:
+      - eval/srcr-incremental-value-impl-a5ab-20260921
+permissions:
+  contents: read
+jobs:
+  judge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Verify exact implementation target
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "a5ab605d15bfabd16a8453a787980c4f39a3add0"
+          test "$(git rev-parse HEAD^:profiles/systemic_root_cause_repair_lf)" = "417496fc6a292572d807e46acaf6a9a9986b048b"
+          PYTHONDONTWRITEBYTECODE=1 python3 profiles/systemic_root_cause_repair_lf/validators/validate_pack.py profiles/systemic_root_cause_repair_lf | tee /tmp/pack.log
+          grep -q '^PASS_SYSTEMIC_ROOT_CAUSE_REPAIR_PACK$' /tmp/pack.log
+      - name: Independent implementation semantic review
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64,hashlib,json,os,pathlib,re,urllib.request
+          root=pathlib.Path('.github/srcr-eval-incremental-value-impl')
+          packet=json.load(open(root/'implementation_review_packet.json'))
+          scope=json.load(open(root/'scope_authority_packet.json'))
+          det=json.load(open(root/'deterministic_result.json'))
+          spec=json.load(open(root/'accepted_spec.json'))
+          semantic=json.load(open(root/'spec_semantic_result.json'))
+          target='a5ab605d15bfabd16a8453a787980c4f39a3add0'
+          assert packet['target_commit_sha']==target
+          accepted_intent={
+            'systemic_root_cause':spec.get('systemic_root_cause'),
+            'selected_alternative':spec.get('selected_alternative'),
+            'implementation_delta':spec.get('implementation_delta'),
+            'transition_plan':spec.get('transition_plan'),
+            'rollback_plan':spec.get('rollback_plan'),
+            'acceptance_criteria':spec.get('acceptance_criteria'),
+            'research_assurance':spec.get('research_assurance'),
+            'implementation_package':spec.get('implementation_package'),
+          }
+          template={
+            'verdict':'FILL',
+            'target_commit_sha':target,
+            'inspected_files':[],
+            'requirement_results':[],
+            'invariant_results':[],
+            'open_design_issues':[],
+            'out_of_scope_changes':[],
+            'unsupported_claims':[],
+            'blocking_codes':[],
+            'next_gate':'FILL'
+          }
+          prompt=(
+            'You are Independent Implementation Reviewer B. Review exact source implementation target '+target+' against the already independently accepted SRCR repair specification. You are not the producer. '
+            'Treat deterministic PASS as structural evidence only. Read the entire profile diff in implementation_review_packet.profile_diff and compare it with accepted_intent and scope. '
+            'The user specifically required the observed OBSERVED_TEST recurrence-vocabulary error to be fixed at the generic producer-contract origin, not merely patched in one output. '
+            'Check these properties independently: (1) field-specific evidence vocabularies have one canonical source and cannot cross-use recurrence/falsification values; (2) current generation is V0.3 while V0.2 remains historical replay only; (3) material research freezes an internal-only pre-research baseline before research/challenger, binds a digest, records evidence-triggered final-minus-baseline deltas, permits honest NO_MATERIAL_UPLIFT and blocks UNPROVEN ready closure; (4) no producer WOW/novelty score or forced novelty; (5) independent semantic review remains materiality authority; (6) no second reasoning engine/authority/table/lifecycle layer; (7) compact proof transport and hard context budget are real deterministic controls; (8) implementation stays inside profile source scope; (9) local llama structured-output canary is NOT a PASS: both structured and control completions were empty, so the source change must not claim local llama runtime readiness or activation. CANDIDATE_READ_ONLY/no-auto-promotion may remain a separate runtime activation blocker without failing a source-only implementation if no activation is claimed. '
+            'Reject if any accepted requirement is only prose but not enforced where enforcement is required, if the origin vocabulary defect can recur through another same-named field, if NO_MATERIAL_UPLIFT can be gamed, if baseline can be rewritten/contaminated, if current V0.2 generation bypass remains, or if new source exceeds accepted scope. '
+            'Return ONLY strict JSON using exactly these top-level keys: '+json.dumps(list(template))+'. '
+            'verdict must be PASS_INDEPENDENT_IMPLEMENTATION, RETURN_TO_WORKER_FOR_SELF_REPAIR, RETURN_TO_ORCHESTRATOR, or BLOCK_PIPELINE. '
+            'requirement_results must contain exactly one item for each review requirement in packet.review_requirements, with fields requirement,result(PASS/FAIL/BLOCKED),reason,evidence_paths. '
+            'invariant_results must cover exactly ORIGIN_VOCABULARY_FIX, BASELINE_IMMUTABILITY, INCREMENTAL_VALUE_ANTI_GAMING, NO_FORCED_NOVELTY, INDEPENDENT_MATERIALITY, HISTORICAL_COMPAT_CURRENT_V03, CONTEXT_BUDGET, NO_SECOND_ENGINE, RUNTIME_NONPROMOTION. Each has invariant,result(PASS/FAIL/BLOCKED),reason,evidence_paths. '
+            'PASS only if all requirements and invariants PASS, no material out-of-scope delta, no unsupported material claim, no open source-design issue, and no blockers. '
+            'PACKET='+json.dumps(packet,ensure_ascii=False,separators=(',',':'))+
+            '\nACCEPTED_INTENT='+json.dumps(accepted_intent,ensure_ascii=False,separators=(',',':'))+
+            '\nSCOPE='+json.dumps(scope,ensure_ascii=False,separators=(',',':'))+
+            '\nDETERMINISTIC='+json.dumps(det,ensure_ascii=False,separators=(',',':'))+
+            '\nSPEC_REVIEW_VERDICT='+str(semantic.get('verdict'))
+          )
+          model='@cf/mistralai/mistral-small-3.1-24b-instruct'
+          body={'messages':[{'role':'system','content':'Independent source implementation reviewer. Return strict JSON only.'},{'role':'user','content':prompt}],'temperature':0,'max_tokens':6000,'response_format':{'type':'json_object'}}
+          url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{model}"
+          req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['CF_TOKEN'],'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=420) as resp: env=json.loads(resp.read().decode())
+          if not env.get('success'): raise SystemExit('CF_FAIL:'+json.dumps(env)[:2000])
+          result=env.get('result') or {}
+          choices=result.get('choices') if isinstance(result,dict) else None
+          content=((choices[0].get('message') or {}).get('content') if isinstance(choices,list) and choices else None) or (result.get('response') if isinstance(result,dict) else None)
+          if not isinstance(content,str) or not content.strip(): raise SystemExit('MODEL_EMPTY')
+          s=content.strip()
+          if s.startswith('```'): s=re.sub(r'^```(?:json)?\s*','',s); s=re.sub(r'\s*```$','',s)
+          obj=json.loads(s)
+          required_keys=set(template)
+          if set(obj)!=required_keys: raise SystemExit('TOP_LEVEL_KEYS_MISMATCH:'+str(sorted(set(obj)^required_keys)))
+          if obj.get('target_commit_sha')!=target: raise SystemExit('TARGET_SHA_MISMATCH')
+          reqs=packet['review_requirements']
+          rows=obj.get('requirement_results') or []
+          if len(rows)!=len(reqs) or {r.get('requirement') for r in rows}!=set(reqs): raise SystemExit('REQUIREMENT_COVERAGE_MISMATCH')
+          invariants={'ORIGIN_VOCABULARY_FIX','BASELINE_IMMUTABILITY','INCREMENTAL_VALUE_ANTI_GAMING','NO_FORCED_NOVELTY','INDEPENDENT_MATERIALITY','HISTORICAL_COMPAT_CURRENT_V03','CONTEXT_BUDGET','NO_SECOND_ENGINE','RUNTIME_NONPROMOTION'}
+          inv=obj.get('invariant_results') or []
+          if len(inv)!=len(invariants) or {x.get('invariant') for x in inv}!=invariants: raise SystemExit('INVARIANT_COVERAGE_MISMATCH')
+          for row in rows+inv:
+            if row.get('result') not in {'PASS','FAIL','BLOCKED'} or not row.get('reason'): raise SystemExit('REVIEW_ROW_INVALID')
+          pathlib.Path('/tmp/impl_review.json').write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
+          raw=json.dumps(obj,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()
+          print('MODEL_ID='+model)
+          print('VERDICT='+str(obj.get('verdict')))
+          print('RESULT_SHA256='+hashlib.sha256(raw).hexdigest())
+          print('REVIEW_RESULT_B64='+base64.b64encode(raw).decode())
+          PY
+      - name: Require independent source acceptance
+        run: |
+          python3 - <<'PY'
+          import json
+          x=json.load(open('/tmp/impl_review.json'))
+          if x.get('verdict')!='PASS_INDEPENDENT_IMPLEMENTATION':
+            print(json.dumps(x,indent=2))
+            raise SystemExit('IMPLEMENTATION_NOT_ACCEPTED:'+str(x.get('blocking_codes')))
+          assert all(r.get('result')=='PASS' for r in x['requirement_results'])
+          assert all(r.get('result')=='PASS' for r in x['invariant_results'])
+          assert not x['open_design_issues'] and not x['out_of_scope_changes'] and not x['unsupported_claims'] and not x['blocking_codes']
+          print('PASS_INDEPENDENT_IMPLEMENTATION')
+          PY

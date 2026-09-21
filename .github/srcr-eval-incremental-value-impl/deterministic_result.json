@@ -1,0 +1,56 @@
+{
+  "exact_head": "a5ab605d15bfabd16a8453a787980c4f39a3add0",
+  "pack_log_sha256": "a6ebfd4c3a22dd5b0ee06190ba0b10bd431150fb03c2aa2f0553674f3449e932",
+  "validator_result": {
+    "status": "PASS",
+    "pack": "PASS_SYSTEMIC_ROOT_CAUSE_REPAIR_PACK",
+    "v03_incremental_value": "15/15",
+    "v03_transversal": "23/23"
+  },
+  "malformed_input_result": {
+    "status": "PASS",
+    "assertion": "malformed payload fails closed",
+    "blocking_codes": [
+      "ACCEPTANCE_CRITERIA_INVALID",
+      "ALTERNATIVES_INVALID",
+      "AUTHORITY_CONTRADICTIONS_INVALID",
+      "AUTHORITY_REF_INVALID",
+      "CAUSAL_CHAIN_INSUFFICIENT",
+      "CHALLENGER_REVIEW_INSUFFICIENT",
+      "CLAIM_INVALID",
+      "CURRENT_UNCERTAINTIES_INVALID",
+      "EVIDENCE_MAP_EMPTY",
+      "EXECUTION_EFFECT_RECONCILIATION_MISSING",
+      "FALSIFICATION_RESULTS_INVALID",
+      "HARD_GUARD_INVALID",
+      "HISTORICAL_REGRESSIONS_INVALID",
+      "IMPLEMENTATION_DELTA_INVALID",
+      "INVARIANT_INVALID",
+      "LIVE_AUTHORITY_PACKET_MISSING",
+      "NEXT_GATE_NOT_STRUCTURED",
+      "OMISSION_DISCOVERY_REQUIRED",
+      "PLANNED_REGRESSIONS_INVALID",
+      "PROFILE_PACK_ID_MISMATCH",
+      "RECURRENCE_EVIDENCE_INVALID",
+      "REPAIR_LEVEL_INVALID",
+      "REPAIR_LEVEL_PREMATURE",
+      "RESEARCH_ASSURANCE_REQUIRED",
+      "RESIDUAL_RISKS_INVALID",
+      "SHOULD_EXIST_ASSESSMENT_MISSING",
+      "SOLUTION_DEPTH_INVALID",
+      "STATUS_INVALID"
+    ]
+  },
+  "negative_regressions": {
+    "status": "PASS",
+    "vocabulary_cross_namespace": {
+      "bad_value": "OBSERVED_TEST in recurrence_evidence",
+      "observed": "FAIL",
+      "blocking_code": "RECURRENCE_EVIDENCE_NOT_TYPED",
+      "canonical_value": "OBSERVED_HISTORY",
+      "canonical_observed": "PASS"
+    },
+    "incremental_value_negative_cases": 13,
+    "provider_current_pack_downgrade_blocked": true
+  }
+}
