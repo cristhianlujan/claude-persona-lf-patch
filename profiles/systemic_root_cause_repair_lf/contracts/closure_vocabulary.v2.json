@@ -188,5 +188,16 @@
     "DECISION_CLOSURE": [
       "DECISION_CLOSURE"
     ]
+  },
+  "falsification_evidence_classes": [
+    "OBSERVED_TEST",
+    "OBSERVED_RUNTIME",
+    "OBSERVED_READBACK",
+    "DESIGN_ONLY",
+    "MISSING"
+  ],
+  "evidence_class_namespaces": {
+    "recurrence_evidence.evidence_class": "recurrence_evidence_classes",
+    "falsification_results.evidence_class": "falsification_evidence_classes"
   }
 }
