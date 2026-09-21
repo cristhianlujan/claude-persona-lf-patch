@@ -20,10 +20,14 @@ assert contract['capability_code']=='PROFILE_RESEARCH_BASELINE_FREEZE'
 assert contract['applicability']['authority']=='public.lf_activos.metadata.research_baseline_mode'
 assert contract['applicability']['default']=='NOT_REQUIRED'
 assert set(contract['applicability']['modes'])=={'NOT_REQUIRED','PRE_RESEARCH_ALWAYS'}
+assert contract['applicability']['required_opt_in_contract']=='PROFILE_OUTPUT_VALIDATOR_BOUND_V1'
+assert contract['baseline_contract']['canonical_digest_source']=='producer_supplied_then_required_profile_output_validator'
 assert contract_sha in sql
 
 # Generic applicability: runtime derives it from canonical asset metadata; no SRCR/profile-code case split.
 assert "metadata->>'research_baseline_mode'" in sql
+assert "metadata->>'research_baseline_contract'" in sql
+assert 'PROFILE_RESEARCH_BASELINE_CONTRACT_INVALID' in sql
 assert "mode not in ('NOT_REQUIRED','PRE_RESEARCH_ALWAYS')" in sql
 assert 'PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF' not in sql
 assert 'SYSTEMIC_ROOT_CAUSE_REPAIR_LF' not in sql
@@ -40,6 +44,7 @@ for token in [
     'PROFILE_RESEARCH_BASELINE_INPUT_DIGEST_MISMATCH',
     'PROFILE_RESEARCH_BASELINE_SOURCE_DIGEST_MISMATCH',
     'PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN',
+    'PROFILE_RESEARCH_BASELINE_DIGEST_INVALID',
     "'PRE_RESEARCH_CHALLENGER'",
     "'SRCR_BASELINE_SOLUTION_V1'",
     "existing.status=step_binding.clean_result_value",
@@ -47,6 +52,13 @@ for token in [
     assert token in sql, token
 for prefix in ['https?://','external://','web://']:
     assert prefix in sql, prefix
+
+# Runtime freezes exact snapshot identity but deliberately does not reimplement the profile canonical digest.
+assert 'p_baseline_digest text' in sql
+assert "'baseline_digest',p_baseline_digest" in sql
+assert "'digest_verification','PROFILE_OUTPUT_VALIDATOR_BOUND_V1'" in sql
+assert "'server_snapshot_fingerprint',server_snapshot_fingerprint" in sql
+assert "baseline_digest:='sha256:'" not in sql
 
 # Execute phase is rebound to the exact persisted receipt and snapshot/digest.
 for token in [
@@ -77,4 +89,4 @@ assert "status='PRODUCCION_CONTROLADA_READ_ONLY'" in sql
 assert 'PROFILE_BASELINE_POST_OPERATION_STATE_CHANGED' in sql
 assert sql.strip().startswith('begin;') and sql.strip().endswith('commit;')
 
-print('PASS_PROFILE_EXECUTION_RESEARCH_BASELINE_CONTRACT=24/24')
+print('PASS_PROFILE_EXECUTION_RESEARCH_BASELINE_CONTRACT')

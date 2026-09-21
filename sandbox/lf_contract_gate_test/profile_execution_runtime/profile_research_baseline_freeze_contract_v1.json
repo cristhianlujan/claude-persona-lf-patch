@@ -10,7 +10,8 @@
       "PRE_RESEARCH_ALWAYS"
     ],
     "default": "NOT_REQUIRED",
-    "rule": "The server derives applicability from the canonical profile asset; caller payload cannot opt in/out."
+    "rule": "The server derives applicability from the canonical profile asset; caller payload cannot opt in/out.",
+    "required_opt_in_contract": "PROFILE_OUTPUT_VALIDATOR_BOUND_V1"
   },
   "phase_order": [
     "context_admission",
@@ -40,7 +41,9 @@
       "external://",
       "web://"
     ],
-    "digest": "SHA256(jsonb_text(snapshot))"
+    "digest": "SHA256(jsonb_text(snapshot))",
+    "canonical_digest_source": "producer_supplied_then_required_profile_output_validator",
+    "server_snapshot_fingerprint": "SHA256(jsonb_text(snapshot)); identity/readback only, not canonical value digest"
   },
   "invariants": [
     "applicability_is_server_derived_from_profile_asset",
@@ -49,18 +52,22 @@
     "baseline_input_digest_matches_execution_input",
     "baseline_profile_source_digest_matches_execution_source",
     "baseline_contains_no_external_research_refs",
+    "required_mode_declares_profile_output_validator_digest_contract",
     "execute_profile_references_exact_persisted_baseline_receipt",
     "profile_output_baseline_snapshot_and_digest_match_persisted_baseline",
+    "canonical_digest_is_verified_by_profile_output_validator_not_reimplemented_by_runtime",
     "non_applicable_profiles_pay_no_model_baseline_cost",
     "same_profile_execution_authority_and_same_semantic_judge",
     "no_new_reasoning_engine_or_parallel_authority"
   ],
   "fail_closed_codes": [
     "PROFILE_RESEARCH_BASELINE_MODE_INVALID",
+    "PROFILE_RESEARCH_BASELINE_CONTRACT_INVALID",
     "PROFILE_RESEARCH_BASELINE_CONTEXT_NOT_CLEAN",
     "PROFILE_RESEARCH_BASELINE_REQUIRED",
     "PROFILE_RESEARCH_BASELINE_SHAPE_INVALID",
     "PROFILE_RESEARCH_BASELINE_INPUT_DIGEST_MISMATCH",
+    "PROFILE_RESEARCH_BASELINE_DIGEST_INVALID",
     "PROFILE_RESEARCH_BASELINE_SOURCE_DIGEST_MISMATCH",
     "PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN",
     "PROFILE_RESEARCH_BASELINE_EXECUTE_BINDING_MISMATCH",

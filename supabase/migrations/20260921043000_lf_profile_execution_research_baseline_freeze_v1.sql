@@ -68,6 +68,7 @@ declare
   r jsonb;
   b public.lf_operation_step_judge_bindings%rowtype;
   v_baseline_mode text;
+  v_baseline_contract text;
 begin
   if nullif(btrim(coalesce(p_profile_code,'')),'') is null
      or nullif(btrim(coalesce(p_target_repo,'')),'') is null
@@ -75,8 +76,9 @@ begin
     raise exception 'PROFILE_EXECUTION_BEGIN_TARGET_REQUIRED';
   end if;
 
-  select coalesce(nullif(metadata->>'research_baseline_mode',''),'NOT_REQUIRED')
-    into v_baseline_mode
+  select coalesce(nullif(metadata->>'research_baseline_mode',''),'NOT_REQUIRED'),
+         nullif(metadata->>'research_baseline_contract','')
+    into v_baseline_mode,v_baseline_contract
   from public.lf_activos
   where codigo_activo=p_profile_code
     and tipo_activo='PERFIL'
@@ -87,6 +89,10 @@ begin
   end if;
   if v_baseline_mode not in ('NOT_REQUIRED','PRE_RESEARCH_ALWAYS') then
     raise exception 'PROFILE_RESEARCH_BASELINE_MODE_INVALID:%',v_baseline_mode;
+  end if;
+  if v_baseline_mode='PRE_RESEARCH_ALWAYS'
+     and v_baseline_contract is distinct from 'PROFILE_OUTPUT_VALIDATOR_BOUND_V1' then
+    raise exception 'PROFILE_RESEARCH_BASELINE_CONTRACT_INVALID:%',coalesce(v_baseline_contract,'NULL');
   end if;
 
   r:=public.fn_lf_operation_reserve_execution_v1(
@@ -100,6 +106,7 @@ begin
       'context_delivery','COMPACT_JIT_ONLY',
       'profile_source_mode','JIT_BY_REF',
       'research_baseline_mode',v_baseline_mode,
+      'research_baseline_contract',coalesce(v_baseline_contract,'NOT_APPLICABLE'),
       'automatic_impact',false
     )
   );
@@ -121,6 +128,7 @@ begin
         'profile_code',p_profile_code,
         'context_admission_required',true,
         'research_baseline_mode',v_baseline_mode,
+        'research_baseline_contract',coalesce(v_baseline_contract,'NOT_APPLICABLE'),
         'step_result',b.clean_result_value,
         'blocking_codes','[]'::jsonb,
         'mini_judge_code',b.judge_code,
@@ -135,7 +143,8 @@ begin
   return r||jsonb_build_object(
     'init_materialized',true,
     'context_admission_required',true,
-    'research_baseline_mode',v_baseline_mode
+    'research_baseline_mode',v_baseline_mode,
+    'research_baseline_contract',coalesce(v_baseline_contract,'NOT_APPLICABLE')
   );
 end
 $fn$;
@@ -143,6 +152,7 @@ $fn$;
 create or replace function public.lf_profile_execution_research_baseline_v1(
   p_execution_id text,
   p_baseline_snapshot jsonb,
+  p_baseline_digest text,
   p_actor_execution_id text
 ) returns jsonb
 language plpgsql
@@ -158,7 +168,7 @@ declare
   mode text;
   expected_input text;
   expected_source text;
-  baseline_digest text;
+  server_snapshot_fingerprint text;
   receipt_ref text;
   binding jsonb;
   payload jsonb;
@@ -213,6 +223,8 @@ begin
       'mode',mode,
       'capture_stage','NOT_APPLICABLE',
       'baseline_digest','NOT_APPLICABLE',
+      'server_snapshot_fingerprint','NOT_APPLICABLE',
+      'digest_verification','NOT_APPLICABLE',
       'baseline_snapshot','{}'::jsonb
     );
   else
@@ -250,14 +262,19 @@ begin
       end if;
     end loop;
 
-    baseline_digest:='sha256:'||encode(
+    if coalesce(p_baseline_digest,'') !~ '^sha256:[0-9a-f]{64}$' then
+      raise exception 'PROFILE_RESEARCH_BASELINE_DIGEST_INVALID';
+    end if;
+    server_snapshot_fingerprint:='sha256:'||encode(
       extensions.digest(convert_to(p_baseline_snapshot::text,'UTF8'),'sha256'),'hex'
     );
     binding:=jsonb_build_object(
       'applicability','REQUIRED',
       'mode',mode,
       'capture_stage','PRE_RESEARCH_CHALLENGER',
-      'baseline_digest',baseline_digest,
+      'baseline_digest',p_baseline_digest,
+      'server_snapshot_fingerprint',server_snapshot_fingerprint,
+      'digest_verification','PROFILE_OUTPUT_VALIDATOR_BOUND_V1',
       'baseline_snapshot',p_baseline_snapshot
     );
   end if;
@@ -422,8 +439,8 @@ begin
 end
 $fn$;
 
-revoke all on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text) from public,anon,authenticated;
-grant execute on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text) to service_role;
+revoke all on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text,text) from public,anon,authenticated;
+grant execute on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text,text) to service_role;
 
 insert into public.lf_operation_steps(
   operation_code,step_order,step_id,required,evidence_required,source_path,source_sha,active,
@@ -432,7 +449,7 @@ insert into public.lf_operation_steps(
 select 'EJECUCION_PERFIL_LF',47,'research_baseline_freeze',true,
   'research_baseline_binding; baseline_receipt_ref; server_validated',
   'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json',
-  'e64b38a85e7f3dd347b3979258287ecd047f46549522ba15935f8c9eeea11aef',true,47,e.execution_id,e.execution_id
+  'df9a62eedf7168fad10f71af9f7026a1300396b506fd498a6563a21e7140702b',true,47,e.execution_id,e.execution_id
 from public.lf_operation_execution e
 where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and e.status='IN_PROGRESS'
@@ -446,7 +463,7 @@ insert into public.lf_operation_judges(
 )
 select 'EJECUCION_PERFIL_LF','MINI_JUDGE_EJECUCION_PERFIL_RESEARCH_BASELINE_V1',
   'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json',
-  'e64b38a85e7f3dd347b3979258287ecd047f46549522ba15935f8c9eeea11aef','["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
+  'df9a62eedf7168fad10f71af9f7026a1300396b506fd498a6563a21e7140702b','["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
   '["STEP_PASS_WITH_EVIDENCE","BLOCKED_STEP_NOT_CLEAN","RETURN_TO_ROUTER"]'::jsonb,
   'ACTIVE_ENFORCEMENT',e.execution_id,e.execution_id
 from public.lf_operation_execution e
@@ -472,7 +489,7 @@ select 'EJECUCION_PERFIL_LF','research_baseline_freeze',47,47,'CONTRACT-EJECUCIO
   '["research_baseline_binding","baseline_receipt_ref","server_validated"]'::jsonb,
   'execute_profile','RETURN_TO_ROUTER','ACTIVE_ENFORCEMENT',
   'Transversal and profile-agnostic. PRE_RESEARCH_ALWAYS is opt-in from canonical profile asset metadata; NOT_REQUIRED costs no model baseline phase.',
-  'public.lf_profile_execution_research_baseline_v1(text,jsonb,text)',
+  'public.lf_profile_execution_research_baseline_v1(text,jsonb,text,text)',
   '{"server_validation_failed":true}'::jsonb,e.execution_id,e.execution_id
 from public.lf_operation_execution e
 where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
@@ -553,7 +570,8 @@ set required_before_write=case when required_before_write @> '["research_baselin
       'research_baseline_applicability_authority','public.lf_activos.metadata.research_baseline_mode',
       'research_baseline_modes',jsonb_build_array('NOT_REQUIRED','PRE_RESEARCH_ALWAYS'),
       'research_baseline_default','NOT_REQUIRED',
-      'research_baseline_external_refs_before_freeze',false
+      'research_baseline_external_refs_before_freeze',false,
+      'research_baseline_digest_contract','PROFILE_OUTPUT_VALIDATOR_BOUND_V1'
     ),
     blocked=blocked
       ||case when blocked @> '["research_baseline_missing"]'::jsonb then '[]'::jsonb else '["research_baseline_missing"]'::jsonb end
@@ -584,7 +602,8 @@ select 'PROFILE_RESEARCH_BASELINE_FREEZE','PROFILE_RESEARCH_BASELINE_FREEZE','CA
     'operation_code','EJECUCION_PERFIL_LF',
     'step_id','research_baseline_freeze',
     'function','public.lf_profile_execution_research_baseline_v1',
-    'contract_sha256','e64b38a85e7f3dd347b3979258287ecd047f46549522ba15935f8c9eeea11aef'
+    'digest_model','TEMPORAL_SNAPSHOT_EXACT_PLUS_PROFILE_VALIDATOR_CANONICAL_DIGEST',
+    'contract_sha256','df9a62eedf7168fad10f71af9f7026a1300396b506fd498a6563a21e7140702b'
   ),
   jsonb_build_object(
     'source_kind','GITHUB_SOURCE_PLUS_SUPABASE_REGISTRY',
@@ -627,8 +646,8 @@ set notes=coalesce(notes,'')||
         and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF' and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql')
 where operation_code='EJECUCION_PERFIL_LF';
 
-comment on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text)
-is 'Transversal fail-closed pre-research baseline freeze for EJECUCION_PERFIL_LF. Applicability comes from canonical profile asset metadata; required baselines are persisted before execute_profile and cannot be replaced after a clean step.';
+comment on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text,text)
+is 'Transversal fail-closed pre-research baseline freeze for EJECUCION_PERFIL_LF. Applicability comes from canonical profile asset metadata; required snapshots are persisted before execute_profile and cannot be replaced after a clean step. Canonical baseline digest semantics remain owned by the profile output validator; the server additionally stores an independent snapshot fingerprint.';
 
 comment on function public.lf_profile_execution_trust_validation_v1(text,text,jsonb)
 is 'Server trust boundary for EJECUCION_PERFIL_LF. Enforces context transport and exact persisted pre-research baseline binding when the profile asset opts into research baseline assurance.';
@@ -663,7 +682,7 @@ begin
       and required_evidence_keys @> '["research_baseline_ref","research_baseline_digest"]'::jsonb
   ) then raise exception 'PROFILE_BASELINE_POST_EXECUTE_BINDING_MISSING'; end if;
 
-  if to_regprocedure('public.lf_profile_execution_research_baseline_v1(text,jsonb,text)') is null
+  if to_regprocedure('public.lf_profile_execution_research_baseline_v1(text,jsonb,text,text)') is null
      or to_regprocedure('public.lf_profile_execution_trust_validation_v1(text,text,jsonb)') is null
   then raise exception 'PROFILE_BASELINE_POST_FUNCTIONS_MISSING'; end if;
 

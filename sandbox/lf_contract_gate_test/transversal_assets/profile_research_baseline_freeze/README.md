@@ -14,9 +14,9 @@ La decide el servidor desde `public.lf_activos.metadata.research_baseline_mode`;
 
 ## Contrato de freeze
 
-Cuando aplica, el baseline debe usar `capture_stage=PRE_RESEARCH_CHALLENGER`, quedar ligado al digest del input y a la revisión exacta de fuente del perfil, y referenciar sólo evidencia interna disponible antes de research. Se rechazan refs `http://`, `https://`, `external://` y `web://` dentro del baseline congelado.
+Cuando aplica, el perfil debe declarar `research_baseline_contract=PROFILE_OUTPUT_VALIDATOR_BOUND_V1`. El baseline usa `capture_stage=PRE_RESEARCH_CHALLENGER`, queda ligado al digest del input y a la revisión exacta de fuente, y referencia sólo evidencia interna disponible antes de research. Se rechazan refs `http://`, `https://`, `external://` y `web://` dentro del baseline congelado.
 
-El step limpio queda en `public.lf_operation_execution_steps`; el recorder canónico impide reemplazarlo con evidencia distinta. `execute_profile` debe transportar `research_baseline_ref` + `research_baseline_digest`, y el server compara además el snapshot/digest del output con el snapshot persistido.
+El step limpio queda en `public.lf_operation_execution_steps`; el recorder canónico impide reemplazarlo con evidencia distinta. Se persisten el snapshot exacto, el digest canónico declarado y un `server_snapshot_fingerprint` independiente. El runtime **no reimplementa** la canonicalización del perfil: `execute_profile` debe transportar `research_baseline_ref` + `research_baseline_digest`, el server compara el snapshot/digest final contra lo persistido y el output validator del perfil verifica que el digest canónico corresponda al snapshot.
 
 ## No duplicación
 
@@ -37,6 +37,6 @@ Primero retirar el opt-in del perfil por reconciliación gobernada; luego revert
 ## Fuente
 
 - Contract: `sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json`
-- Contract SHA-256: `e64b38a85e7f3dd347b3979258287ecd047f46549522ba15935f8c9eeea11aef`
+- Contract SHA-256: `df9a62eedf7168fad10f71af9f7026a1300396b506fd498a6563a21e7140702b`
 - Operation: `public.lf_operation_registry/EJECUCION_PERFIL_LF`
 - Durable evidence: `public.lf_operation_execution_steps`
