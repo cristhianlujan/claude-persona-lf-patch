@@ -2,8 +2,20 @@ begin;
 -- LF_CI_ROLLBACK_GOVERNED_ACTOR_V1: ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF
 
 do $pre$
-declare c int;
+declare c int; v_ci_actor boolean;
 begin
+  select exists (
+    select 1
+    from public.lf_operation_execution e
+    where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
+      and e.status='IN_PROGRESS'
+      and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+      and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
+      and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF'
+      and e.target_path='supabase/migrations/20260921062500_lf_profile_execution_semantic_judge_enforcement_v1.sql'
+      and coalesce((e.manifest->>'ci_candidate_rollback_actor')::boolean,false)=true
+  ) into v_ci_actor;
+
   select count(*) into c
   from public.lf_operation_execution e
   where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
@@ -11,8 +23,9 @@ begin
     and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
     and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
     and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF'
-    and e.target_path='supabase/migrations/20260921062500_lf_profile_execution_semantic_judge_enforcement_v1.sql';
-  if c<>1 then raise exception 'PROFILE_SEMANTIC_JUDGE_PRE_RUNTIME_UPDATE_ACTOR_COUNT:%',c; end if;
+    and e.target_path='supabase/migrations/20260921062500_lf_profile_execution_semantic_judge_enforcement_v1.sql'
+    and coalesce((e.manifest->>'ci_candidate_rollback_actor')::boolean,false)=v_ci_actor;
+  if c<>1 then raise exception 'PROFILE_SEMANTIC_JUDGE_PRE_RUNTIME_UPDATE_ACTOR_COUNT:%:ci=%',c,v_ci_actor; end if;
   if not exists (select 1 from public.lf_operation_step_contracts where operation_code='EJECUCION_PERFIL_LF' and step_id='semantic_judge' and status='ACTIVE_ENFORCEMENT') then
     raise exception 'PROFILE_SEMANTIC_JUDGE_STEP_MISSING';
   end if;
@@ -173,8 +186,11 @@ begin
     end if;
     if jsonb_typeof(p_evidence_payload->'semantic_judge_result')<>'object'
        or p_evidence_payload#>>'{semantic_judge_result,status}' is distinct from 'PASS'
-       or jsonb_typeof(p_evidence_payload->'unsupported_claims')<>'array'
-       or jsonb_array_length(p_evidence_payload->'unsupported_claims')<>0 then
+       or case
+            when jsonb_typeof(p_evidence_payload->'unsupported_claims')='array'
+              then jsonb_array_length(p_evidence_payload->'unsupported_claims')<>0
+            else true
+          end then
       hard:=hard||jsonb_build_array('semantic_judge_not_pass');
     end if;
   end if;
