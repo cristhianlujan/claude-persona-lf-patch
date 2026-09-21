@@ -120,9 +120,9 @@ jobs:
       - name: Validate exact-bound judge result
         run: |
           set -euo pipefail
-          python3 profiles/systemic_root_cause_repair_lf/validators/validate_semantic_judge_result.py /tmp/semantic_result.json \\
-            --scope-packet .github/srcr-eval-incremental-value/scope_authority_packet.json \\
-            --candidate-sha256 396b01b39a52861cacb7488dbaa68a25fc4f45c552c6717df6bc6b52d717888a \\
+          python3 profiles/systemic_root_cause_repair_lf/validators/validate_semantic_judge_result.py /tmp/semantic_result.json \
+            --scope-packet .github/srcr-eval-incremental-value/scope_authority_packet.json \
+            --candidate-sha256 396b01b39a52861cacb7488dbaa68a25fc4f45c552c6717df6bc6b52d717888a \
             --scope-packet-sha256 941b6f759879d4e857d755b6efeccd2bba0068d61d56fe0186f92d83503b9c43
       - name: Require independent semantic acceptance
         run: |
