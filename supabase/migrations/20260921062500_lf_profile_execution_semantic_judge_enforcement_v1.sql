@@ -186,11 +186,13 @@ begin
     end if;
     if jsonb_typeof(p_evidence_payload->'semantic_judge_result')<>'object'
        or p_evidence_payload#>>'{semantic_judge_result,status}' is distinct from 'PASS'
-       or case
-            when jsonb_typeof(p_evidence_payload->'unsupported_claims')='array'
-              then jsonb_array_length(p_evidence_payload->'unsupported_claims')<>0
-            else true
-          end then
+       or jsonb_array_length(
+            case
+              when jsonb_typeof(p_evidence_payload->'unsupported_claims')='array'
+                then p_evidence_payload->'unsupported_claims'
+              else '["__invalid__"]'::jsonb
+            end
+          )<>0 then
       hard:=hard||jsonb_build_array('semantic_judge_not_pass');
     end if;
   end if;
