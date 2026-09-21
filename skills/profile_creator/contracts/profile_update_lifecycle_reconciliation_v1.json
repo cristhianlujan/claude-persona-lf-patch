@@ -1,0 +1,67 @@
+{
+  "schema": "LF_PROFILE_UPDATE_LIFECYCLE_RECONCILIATION_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "purpose": "Make profile update initialization transactional and make post-merge reconciliation mandatory before close.",
+  "ownership": {
+    "profile": "declares semantic/runtime contract",
+    "update_operation": "owns source update lifecycle and post-merge routing",
+    "runtime": "owns deployment/execution",
+    "canary": "verifies behavior; never mutates lifecycle state"
+  },
+  "begin": {
+    "rpc": "public.lf_profile_update_begin_v1",
+    "atomic": [
+      "reserve_execution",
+      "init_execution"
+    ],
+    "replay": "IDEMPOTENT_ONLY_IF_SAME_EXECUTION_AND_CLEAN_INIT",
+    "qualification_dependency": "NOT_INVENTED_BY_BEGIN; governed by active operation contract/test bindings"
+  },
+  "post_merge_reconcile": {
+    "step_id": "post_merge_reconcile",
+    "execution_order": 115,
+    "rpc": "public.lf_profile_update_post_merge_reconcile_v1",
+    "preserves": [
+      "estado_documental",
+      "estado_operativo",
+      "runtime_estado",
+      "impacto_automatico"
+    ],
+    "dispositions": {
+      "runtime_bound": "SOURCE_RECONCILED_RUNTIME_REFRESH_REQUIRED",
+      "runtime_unbound": "SOURCE_RECONCILED_ACTIVATION_REQUIRED"
+    },
+    "forbidden": [
+      "automatic runtime promotion",
+      "automatic operational-state promotion",
+      "automatic impact enablement"
+    ],
+    "required_identity": [
+      "merge_sha",
+      "last_governed_pr",
+      "entrypoint_sha",
+      "manifest_sha",
+      "profile_pack_id"
+    ],
+    "runtime_effect": "ROUTE_ONLY_NO_AUTOMATIC_PROMOTION"
+  },
+  "lifecycle": [
+    "init_execution",
+    "router",
+    "profile_resolve",
+    "baseline_read",
+    "change_scope",
+    "regression_plan",
+    "pre_write_execution_binding_gate",
+    "github_write",
+    "github_readback",
+    "deterministic_validation",
+    "semantic_judge",
+    "regression_after",
+    "post_merge_reconcile",
+    "close",
+    "report_output"
+  ],
+  "canary_rule": "Only after post-merge source reconciliation and the returned runtime next_gate has been satisfied may EJECUCION_PERFIL_LF canary evidence be considered current.",
+  "policy_version": "v1.1"
+}
