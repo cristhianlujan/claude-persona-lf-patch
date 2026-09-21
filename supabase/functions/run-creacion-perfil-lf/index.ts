@@ -142,6 +142,44 @@ async function sha256Hex(value: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+type ResearchBaselinePolicy = { mode: "NOT_REQUIRED" | "PRE_RESEARCH_ALWAYS"; contract: Record<string, unknown> | null };
+
+function canonicalJson(value: unknown): string {
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return "[" + value.map((item) => canonicalJson(item)).join(",") + "]";
+  const obj = value as Record<string, unknown>;
+  return "{" + Object.keys(obj).sort().map((key) => JSON.stringify(key) + ":" + canonicalJson(obj[key])).join(",") + "}";
+}
+
+function nonEmptyStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === "string" && item.trim().length > 0);
+}
+
+function validateResearchBaselinePolicy(modeValue: unknown, contractValue: unknown): ResearchBaselinePolicy {
+  const mode = typeof modeValue === "string" && modeValue.trim() ? modeValue.trim() : "NOT_REQUIRED";
+  if (mode !== "NOT_REQUIRED" && mode !== "PRE_RESEARCH_ALWAYS") throw new Error("PROFILE_UPDATE_RESEARCH_BASELINE_MODE_INVALID");
+  if (mode === "NOT_REQUIRED") {
+    if (contractValue !== undefined && contractValue !== null) throw new Error("PROFILE_UPDATE_RESEARCH_BASELINE_CONTRACT_FORBIDDEN");
+    return { mode, contract: null };
+  }
+  if (!contractValue || typeof contractValue !== "object" || Array.isArray(contractValue)) throw new Error("PROFILE_UPDATE_RESEARCH_BASELINE_CONTRACT_REQUIRED");
+  const contract = contractValue as Record<string, unknown>;
+  if (contract.contract_version !== "PROFILE_RESEARCH_BASELINE_BINDING_V1" || typeof contract.capture_stage !== "string" || !contract.capture_stage.trim() || contract.profile_validator_binding !== "PROFILE_OUTPUT_VALIDATOR_BOUND_V1") throw new Error("PROFILE_UPDATE_RESEARCH_BASELINE_CONTRACT_INVALID");
+  const snapshotSchema = contract.snapshot_schema;
+  if (!snapshotSchema || typeof snapshotSchema !== "object" || Array.isArray(snapshotSchema) || new TextEncoder().encode(JSON.stringify(snapshotSchema)).length > 12000) throw new Error("PROFILE_UPDATE_RESEARCH_BASELINE_SNAPSHOT_SCHEMA_INVALID");
+  const bindings = contract.snapshot_binding_paths;
+  if (!bindings || typeof bindings !== "object" || Array.isArray(bindings)) throw new Error("PROFILE_UPDATE_RESEARCH_BASELINE_BINDINGS_INVALID");
+  const allowed = new Set(["input_digest", "profile_source_digest", "evidence_refs", "capture_stage"]);
+  const seenPaths = new Set<string>();
+  for (const [source, rawPath] of Object.entries(bindings as Record<string, unknown>)) {
+    if (!allowed.has(source) || !nonEmptyStringArray(rawPath) || rawPath.length > 12) throw new Error("PROFILE_UPDATE_RESEARCH_BASELINE_BINDINGS_INVALID");
+    const key = canonicalJson(rawPath);
+    if (seenPaths.has(key)) throw new Error("PROFILE_UPDATE_RESEARCH_BASELINE_BINDING_PATH_DUPLICATE");
+    seenPaths.add(key);
+  }
+  if (!nonEmptyStringArray(contract.output_snapshot_path) || !nonEmptyStringArray(contract.output_digest_path)) throw new Error("PROFILE_UPDATE_RESEARCH_BASELINE_OUTPUT_PATH_INVALID");
+  return { mode: "PRE_RESEARCH_ALWAYS", contract };
+}
 async function deriveServerTrust(ex: any, before: any, evidence: Record<string, unknown>): Promise<{ ok: true; evidence: Record<string, unknown> } | { ok: false; code: string }> {
   const baseline = typeof before?.baseline_observation?.baseline_revision === "string" ? before.baseline_observation.baseline_revision.trim().toLowerCase() : "";
   if (!SHA40.test(baseline)) return { ok: false, code: "PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED" };
@@ -204,6 +242,13 @@ Deno.serve(async (req: Request) => {
         return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "PROFILE_UPDATE_INPUT_INVALID" }, 400);
       }
 
+      let researchBaselinePolicy: ResearchBaselinePolicy;
+      try {
+        researchBaselinePolicy = validateResearchBaselinePolicy(body.research_baseline_mode, body.research_baseline_contract);
+      } catch (error) {
+        const code = error instanceof Error ? error.message : "PROFILE_UPDATE_RESEARCH_BASELINE_POLICY_INVALID";
+        return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code }, 400);
+      }
       const router = await rpc("lf_router_resolve_v1", {
         p_request_text: `Actualizar perfil ${targetCode}`,
         p_target_hint: targetCode,
@@ -251,8 +296,10 @@ Deno.serve(async (req: Request) => {
         target_root_path: rootPath,
         initial_main_revision: mainSha,
         initial_target_blob_sha: targetBlobSha,
+        research_baseline_mode: researchBaselinePolicy.mode,
+        ...(researchBaselinePolicy.contract ? { research_baseline_contract: researchBaselinePolicy.contract } : {}),
       };
-      const requestSha = await sha256Hex(JSON.stringify({
+      const requestSha = await sha256Hex(canonicalJson({
         operation_code: "ACTUALIZACION_PERFIL_LF",
         execution_id: id,
         target_code: targetCode,
@@ -260,6 +307,8 @@ Deno.serve(async (req: Request) => {
         target_path: targetPath,
         caller_method: caller.method,
         caller_workflow_ref: caller.workflow_ref,
+        research_baseline_mode: researchBaselinePolicy.mode,
+        research_baseline_contract: researchBaselinePolicy.contract,
       }));
       const begun = await rpc("lf_profile_update_begin_v1", {
         p_execution_id: id,
@@ -286,6 +335,8 @@ Deno.serve(async (req: Request) => {
         write_executed: false,
         github_write_executed: false,
         next_gate: snapshot?.next_step?.step_id ?? "router",
+        research_baseline_mode: researchBaselinePolicy.mode,
+        research_baseline_contract: researchBaselinePolicy.contract,
       }, begun?.result === "REPLAY_EXISTING_EXECUTION" ? 200 : 201);
     }
 

@@ -24,6 +24,16 @@ on:
         description: "Exact file path inside the profile package for profile_update_init"
         required: false
         type: string
+      research_baseline_mode:
+        description: "Generic research baseline mode for profile_update_init"
+        required: false
+        type: choice
+        default: NOT_REQUIRED
+        options: [NOT_REQUIRED, PRE_RESEARCH_ALWAYS]
+      research_baseline_contract_json:
+        description: "PROFILE_RESEARCH_BASELINE_BINDING_V1 JSON object when PRE_RESEARCH_ALWAYS"
+        required: false
+        type: string
       execution_id:
         description: "Existing governed Profile Update execution for profile_update_record_batch"
         required: false
@@ -144,6 +154,8 @@ jobs:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
           TARGET_CODE: ${{ inputs.target_code }}
           TARGET_PATH: ${{ inputs.target_path }}
+          RESEARCH_BASELINE_MODE: ${{ inputs.research_baseline_mode }}
+          RESEARCH_BASELINE_CONTRACT_JSON: ${{ inputs.research_baseline_contract_json }}
         run: |
           set -euo pipefail
           test -n "$TARGET_CODE"
@@ -153,14 +165,25 @@ jobs:
           print(uuid.uuid4())
           PY
           )
-          python3 - "$CALLER_REQUEST_ID" "$TARGET_CODE" "$TARGET_PATH" <<'PY' > governed-update-init-request.json
+          python3 - "$CALLER_REQUEST_ID" "$TARGET_CODE" "$TARGET_PATH" "$RESEARCH_BASELINE_MODE" "$RESEARCH_BASELINE_CONTRACT_JSON" <<'PY' > governed-update-init-request.json
           import json,sys
-          request_id,target_code,target_path=sys.argv[1:]
+          request_id,target_code,target_path,mode,raw_contract=sys.argv[1:]
+          mode=(mode or "NOT_REQUIRED").strip()
+          assert mode in {"NOT_REQUIRED","PRE_RESEARCH_ALWAYS"}, "INVALID_RESEARCH_BASELINE_MODE"
+          if mode=="PRE_RESEARCH_ALWAYS":
+              assert raw_contract.strip(), "RESEARCH_BASELINE_CONTRACT_REQUIRED"
+              contract=json.loads(raw_contract)
+              assert isinstance(contract,dict), "RESEARCH_BASELINE_CONTRACT_OBJECT_REQUIRED"
+          else:
+              assert not raw_contract.strip(), "RESEARCH_BASELINE_CONTRACT_FORBIDDEN_FOR_NOT_REQUIRED"
+              contract=None
           print(json.dumps({
               "action":"profile_update_init_v1",
               "caller_request_id":request_id,
               "target_code":target_code,
               "target_path":target_path,
+              "research_baseline_mode":mode,
+              "research_baseline_contract":contract,
           },separators=(",",":")))
           PY
           code=$(curl --silent --show-error -o governed-update-init.json -w '%{http_code}' \
@@ -175,11 +198,18 @@ jobs:
           data=json.load(open('governed-update-init.json',encoding='utf-8'))
           result=data.get('result') or {}
           execution=result.get('execution') or {}
+          manifest=execution.get('manifest') or {}
           assert data.get('outcome') == 'INITIALIZED', data
           assert result.get('outcome') == 'INITIALIZED', data
           assert execution.get('operation_code') == 'ACTUALIZACION_PERFIL_LF', data
           assert execution.get('status') == 'IN_PROGRESS', data
           assert (result.get('snapshot') or {}).get('next_step',{}).get('step_id') == 'router', data
+          assert manifest.get('research_baseline_mode') == result.get('research_baseline_mode'), data
+          if result.get('research_baseline_mode') == 'PRE_RESEARCH_ALWAYS':
+              assert isinstance(manifest.get('research_baseline_contract'),dict), data
+              assert manifest['research_baseline_contract'].get('contract_version') == 'PROFILE_RESEARCH_BASELINE_BINDING_V1', data
+          else:
+              assert 'research_baseline_contract' not in manifest, data
           print('GOVERNED_PROFILE_UPDATE_INITIALIZATION=PASS')
           print('EXECUTION_ID='+str(execution.get('execution_id')))
           PY
