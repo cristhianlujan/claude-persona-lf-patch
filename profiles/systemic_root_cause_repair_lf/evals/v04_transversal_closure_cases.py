@@ -107,13 +107,20 @@ needs["implementation_package"]["decision_closure"]["open_design_decisions"] = [
 assert_schema_valid(needs, "v04_needs_more_evidence_schema")
 assert_runtime_pass(needs, needs_evidence, "v04_needs_more_evidence_runtime")
 
-bad_needs = copy.deepcopy(needs)
-bad_needs["closure_proof"]["derived_decision_closure"]["handoff_ready"] = True
-bad_needs["implementation_package"]["decision_closure"]["handoff_ready"] = True
+bad_needs, bad_needs_evidence = v04_pair()
+bad_needs["status"] = "NEEDS_MORE_EVIDENCE"
+bad_needs["repair_disposition"] = copy.deepcopy(needs["repair_disposition"])
+bad_needs["preferred_alternative"] = None
+bad_needs["selected_alternative"] = None
+bad_needs["residual_risks"] = []
+bad_needs["blocking_codes"] = ["NEED_CONTROLLED_MEASUREMENT"]
+bad_needs["current_uncertainties"] = copy.deepcopy(needs["current_uncertainties"])
+# Intentional escape: the DESIGN_BLOCKING uncertainty was not translated into
+# an open closure obligation, so the generic proof engine would otherwise derive ready.
 assert_runtime_code(
-    bad_needs, needs_evidence,
+    bad_needs, bad_needs_evidence,
     "V04_NONREADY_WITH_DERIVED_HANDOFF_READY",
-    "nonready_cannot_claim_handoff_ready",
+    "nonready_uncertainty_cannot_escape_closure_obligations",
 )
 
 grounded = copy.deepcopy(candidate)
