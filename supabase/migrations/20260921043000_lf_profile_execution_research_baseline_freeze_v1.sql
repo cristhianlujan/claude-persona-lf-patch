@@ -1,5 +1,6 @@
 begin;
 
+-- LF_CI_ROLLBACK_GOVERNED_ACTOR_V1: ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF
 -- Transversal pre-research baseline freeze for governed profile execution.
 -- Applicability is derived from canonical profile asset metadata; legacy profiles default to NOT_REQUIRED.
 -- The durable baseline step precedes execute_profile and the final profile output is bound back to that exact step.
