@@ -1,0 +1,75 @@
+{
+  "schema_version": "LF_PROFILE_RESEARCH_BASELINE_FREEZE_CONTRACT_V1",
+  "capability_code": "PROFILE_RESEARCH_BASELINE_FREEZE",
+  "operation_code": "EJECUCION_PERFIL_LF",
+  "purpose": "Bind a model-authored pre-research solution baseline to durable runtime evidence before the governed profile enters research/challenger execution, without creating a second reasoning authority.",
+  "applicability": {
+    "authority": "public.lf_activos.metadata.research_baseline_mode",
+    "modes": [
+      "NOT_REQUIRED",
+      "PRE_RESEARCH_ALWAYS"
+    ],
+    "default": "NOT_REQUIRED",
+    "rule": "The server derives applicability from the canonical profile asset; caller payload cannot opt in/out."
+  },
+  "phase_order": [
+    "context_admission",
+    "research_baseline_freeze",
+    "execute_profile",
+    "output_validate",
+    "semantic_judge",
+    "report_output"
+  ],
+  "baseline_contract": {
+    "snapshot_version": "SRCR_BASELINE_SOLUTION_V1",
+    "capture_stage": "PRE_RESEARCH_CHALLENGER",
+    "required_fields": [
+      "snapshot_version",
+      "capture_stage",
+      "input_digest",
+      "profile_source_digest",
+      "evidence_refs",
+      "leading_solution_summary",
+      "known_gaps",
+      "assumptions"
+    ],
+    "internal_evidence_only_before_freeze": true,
+    "forbidden_pre_freeze_ref_prefixes": [
+      "http://",
+      "https://",
+      "external://",
+      "web://"
+    ],
+    "digest": "SHA256(jsonb_text(snapshot))"
+  },
+  "invariants": [
+    "applicability_is_server_derived_from_profile_asset",
+    "baseline_step_is_durable_before_execute_profile",
+    "clean_baseline_step_is_immutable_on_retry",
+    "baseline_input_digest_matches_execution_input",
+    "baseline_profile_source_digest_matches_execution_source",
+    "baseline_contains_no_external_research_refs",
+    "execute_profile_references_exact_persisted_baseline_receipt",
+    "profile_output_baseline_snapshot_and_digest_match_persisted_baseline",
+    "non_applicable_profiles_pay_no_model_baseline_cost",
+    "same_profile_execution_authority_and_same_semantic_judge",
+    "no_new_reasoning_engine_or_parallel_authority"
+  ],
+  "fail_closed_codes": [
+    "PROFILE_RESEARCH_BASELINE_MODE_INVALID",
+    "PROFILE_RESEARCH_BASELINE_CONTEXT_NOT_CLEAN",
+    "PROFILE_RESEARCH_BASELINE_REQUIRED",
+    "PROFILE_RESEARCH_BASELINE_SHAPE_INVALID",
+    "PROFILE_RESEARCH_BASELINE_INPUT_DIGEST_MISMATCH",
+    "PROFILE_RESEARCH_BASELINE_SOURCE_DIGEST_MISMATCH",
+    "PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN",
+    "PROFILE_RESEARCH_BASELINE_EXECUTE_BINDING_MISMATCH",
+    "PROFILE_RESEARCH_BASELINE_OUTPUT_MUTATED"
+  ],
+  "compatibility": {
+    "legacy_profiles": "NOT_REQUIRED by default",
+    "opt_in": "Set canonical profile asset metadata.research_baseline_mode=PRE_RESEARCH_ALWAYS through governed profile reconciliation.",
+    "rollback": "Remove the profile metadata opt-in first, then revert the runtime step/function migration."
+  },
+  "promotion": "forbidden_by_this_change"
+}
