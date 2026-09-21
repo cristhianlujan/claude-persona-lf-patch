@@ -17,6 +17,9 @@ Produce a structured, evidence-grounded systemic repair specification for recurr
 11. Acceptance includes historical recurrence regressions and current-case proof.
 12. Residual risks and unresolved authority are explicit and do not absorb known contradictions.
 13. Final acceptance requires the canonical evidence-bound semantic quality gate on the exact candidate revision. External audit is optional and cannot block merely because it has not run.
+14. Evidence-class vocabularies are namespaced by field: recurrence provenance and falsification execution state are distinct contracts and may not borrow each other's enum values.
+15. When material research is required, incremental value must be measured against a digest-bound pre-research solution baseline. The producer may report MATERIAL_UPLIFT or NO_MATERIAL_UPLIFT, but semantic materiality is accepted only by the independent quality boundary; UNPROVEN cannot close a ready material-research specification.
+16. Current provider-side generation is pinned to SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3. V0.2 remains validator-readable only for historical compatibility and cannot be newly generated to bypass V0.3 closure/value obligations.
 
 ## Required output
 - `status`

@@ -1,0 +1,62 @@
+{
+  "contract_version": "SRCR_INCREMENTAL_VALUE_PROOF_V1",
+  "applies_to_profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+  "applicability": {
+    "required_for_ready": [
+      {
+        "solution_depth_mode": "DEEP_ARCHITECTURE_RESEARCH"
+      },
+      {
+        "solution_depth_mode": "BOUNDED",
+        "current_practice_research_required": true
+      }
+    ],
+    "exempt": [
+      {
+        "solution_depth_mode": "LIGHTWEIGHT"
+      }
+    ]
+  },
+  "baseline": {
+    "snapshot_version": "SRCR_BASELINE_SOLUTION_V1",
+    "capture_stage": "PRE_RESEARCH_CHALLENGER",
+    "digest_algorithm": "CANONICAL_JSON_SHA256",
+    "external_research_refs_allowed_at_capture": false
+  },
+  "delta_categories": [
+    "EXISTING_CAPABILITY_REUSE",
+    "DELETION_SIMPLIFICATION",
+    "HIDDEN_RISK",
+    "CONTEXT_PERFORMANCE",
+    "OPERABILITY",
+    "SECOND_ORDER_EFFECT",
+    "OTHER_MATERIAL"
+  ],
+  "delta_dispositions": [
+    "ADOPTED",
+    "REJECTED"
+  ],
+  "outcomes": [
+    "MATERIAL_UPLIFT",
+    "NO_MATERIAL_UPLIFT",
+    "UNPROVEN"
+  ],
+  "semantics": {
+    "MATERIAL_UPLIFT": "At least one evidence-triggered ADOPTED delta materially improves prevention, risk, reuse, simplicity, cost/performance or operability relative to the frozen baseline. Producer declaration is not quality proof.",
+    "NO_MATERIAL_UPLIFT": "Required research/challenge completed but no independently supportable material improvement over the frozen baseline was found. This is valid and must not be converted into novelty theater.",
+    "UNPROVEN": "Incremental utility cannot be established. A ready material-research specification cannot receive canonical quality acceptance in this state."
+  },
+  "context_budget": {
+    "soft_limit_tokens": 1200,
+    "hard_limit_tokens": 2400,
+    "estimator": "UTF8_BYTES_DIV_4"
+  },
+  "anti_gaming": [
+    "NO_PRODUCER_WOW_OR_NOVELTY_SCORE",
+    "NO_FORCED_MATERIAL_UPLIFT",
+    "BASELINE_DIGEST_MUST_MATCH_CANONICAL_SNAPSHOT",
+    "ADOPTED_DELTA_REQUIRES_POST_BASELINE_TRIGGER",
+    "INDEPENDENT_SEMANTIC_BOUNDARY_OWNS_MATERIALITY",
+    "PARAPHRASE_OR_DECORATIVE_CHANGE_DOES_NOT_COUNT_AS_DISTINCT_VALUE"
+  ]
+}

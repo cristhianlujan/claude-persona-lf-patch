@@ -7,7 +7,7 @@ Evidence gaps are classified by whether they can still change the design.
 """
 
 try:
-    from .closure_proof import RECURRENCE_EVIDENCE_CLASSES, unwrap_runtime_input, validate_v03_closure
+    from .closure_proof import FALSIFICATION_EVIDENCE_CLASSES, RECURRENCE_EVIDENCE_CLASSES, unwrap_runtime_input, validate_v03_closure
 except (ImportError, ModuleNotFoundError):
     import importlib.util as _importlib_util
     from pathlib import Path as _Path
@@ -17,8 +17,21 @@ except (ImportError, ModuleNotFoundError):
     assert _closure_spec and _closure_spec.loader
     _closure_spec.loader.exec_module(_closure_mod)
     RECURRENCE_EVIDENCE_CLASSES = _closure_mod.RECURRENCE_EVIDENCE_CLASSES
+    FALSIFICATION_EVIDENCE_CLASSES = _closure_mod.FALSIFICATION_EVIDENCE_CLASSES
     unwrap_runtime_input = _closure_mod.unwrap_runtime_input
     validate_v03_closure = _closure_mod.validate_v03_closure
+
+try:
+    from .incremental_value import validate_incremental_value
+except (ImportError, ModuleNotFoundError):
+    import importlib.util as _iv_importlib_util
+    from pathlib import Path as _IVPath
+    _iv_path = _IVPath(__file__).with_name("incremental_value.py")
+    _iv_spec = _iv_importlib_util.spec_from_file_location("srcr_incremental_value", _iv_path)
+    _iv_mod = _iv_importlib_util.module_from_spec(_iv_spec)
+    assert _iv_spec and _iv_spec.loader
+    _iv_spec.loader.exec_module(_iv_mod)
+    validate_incremental_value = _iv_mod.validate_incremental_value
 
 ALLOWED_PROFILE_PACK_IDS = {
     "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
@@ -58,11 +71,7 @@ RECONCILIATION_STATUS = {
     "SOURCE_LIVE_DIVERGENCE",
     "OTHER_CONTRADICTION",
 }
-OBSERVED_FALSIFICATION_EVIDENCE = {
-    "OBSERVED_TEST",
-    "OBSERVED_RUNTIME",
-    "OBSERVED_READBACK",
-}
+OBSERVED_FALSIFICATION_EVIDENCE = FALSIFICATION_EVIDENCE_CLASSES - {"DESIGN_ONLY", "MISSING"}
 CRITICAL_EVIDENCE_PATHS = {
     "$.symptom",
     "$.immediate_cause",
@@ -681,6 +690,8 @@ def validate(payload, evidence_manifest=None):
     closure_errors, closure_summary = validate_v03_closure(payload, evidence_manifest)
     errors.extend(closure_errors)
     errors.extend(_solution_assurance_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
+    incremental_errors, incremental_summary = validate_incremental_value(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC")
+    errors.extend(incremental_errors)
 
     contradictions = payload.get("authority_contradictions")
     if not isinstance(contradictions, list):
@@ -815,6 +826,7 @@ def validate(payload, evidence_manifest=None):
     }
     if closure_summary.get("applies"):
         result["closure_summary"] = closure_summary
+    result["incremental_value_summary"] = incremental_summary
     return result
 
 
