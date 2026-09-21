@@ -72,6 +72,50 @@ missing.pop("repair_disposition")
 assert_schema_invalid(missing, "v04_disposition_schema_required")
 assert_runtime_code(missing, evidence, "V04_REPAIR_DISPOSITION_REQUIRED", "v04_disposition_runtime_required")
 
+needs, needs_evidence = v04_pair()
+needs["status"] = "NEEDS_MORE_EVIDENCE"
+needs["repair_disposition"] = {
+    "decision": "UNDETERMINED",
+    "rationale": "Current evidence is insufficient to decide whether the observed condition justifies systemic repair.",
+    "evidence_refs": ["fixture://observation/cache"],
+    "currentness_refs": ["fixture://currentness/cache"],
+    "active_failure_present": None,
+    "material_repair_justified": None,
+}
+needs["preferred_alternative"] = None
+needs["selected_alternative"] = None
+needs["residual_risks"] = []
+needs["blocking_codes"] = ["NEED_CONTROLLED_MEASUREMENT"]
+needs["current_uncertainties"] = [{
+    "uncertainty": "Material performance impact is not established.",
+    "impact": "DESIGN_BLOCKING",
+    "evidence_needed": ["controlled hit/miss benchmark"],
+    "design_consequence": "Cannot choose systemic repair until causal/material impact is measured.",
+    "containment_ref": None,
+}]
+for row in needs["closure_proof"]["proof_obligations"]:
+    if row["obligation_id"] == "PO-DECISION":
+        row["status"] = "OPEN"
+        row["evidence_ids"] = []
+        row["missing_requirements"] = ["Controlled measurement required before repair disposition."]
+        row["closure_basis"] = None
+needs["closure_proof"]["derived_decision_closure"]["closed_obligation_ids"] = ["PO-AUTH", "PO-EVIDENCE"]
+needs["closure_proof"]["derived_decision_closure"]["open_obligation_ids"] = ["PO-DECISION"]
+needs["closure_proof"]["derived_decision_closure"]["handoff_ready"] = False
+needs["implementation_package"]["decision_closure"]["handoff_ready"] = False
+needs["implementation_package"]["decision_closure"]["open_design_decisions"] = ["Material repair disposition is unresolved."]
+assert_schema_valid(needs, "v04_needs_more_evidence_schema")
+assert_runtime_pass(needs, needs_evidence, "v04_needs_more_evidence_runtime")
+
+bad_needs = copy.deepcopy(needs)
+bad_needs["closure_proof"]["derived_decision_closure"]["handoff_ready"] = True
+bad_needs["implementation_package"]["decision_closure"]["handoff_ready"] = True
+assert_runtime_code(
+    bad_needs, needs_evidence,
+    "V04_NONREADY_WITH_DERIVED_HANDOFF_READY",
+    "nonready_cannot_claim_handoff_ready",
+)
+
 grounded = copy.deepcopy(candidate)
 grounded["quantitative_decisions"] = [{
     "decision_id": "QD-1",
@@ -292,4 +336,4 @@ quality_result = quality.validate_quality_receipt(receipt, qc, qe, semantic)
 assert quality_result["status"] == "PASS", quality_result
 assert quality_result["canonical_quality_accepted"] is True
 
-print("PASS_SRCR_V04_TRANSVERSAL_CLOSURE=12/12")
+print("PASS_SRCR_V04_TRANSVERSAL_CLOSURE=14/14")
