@@ -12,6 +12,9 @@ Before scoring:
 2. `¿DEBE EXISTIR?` is complete with real consumers, elimination impact and native/already-existing alternative.
 3. The scored evidence is bound to the exact candidate revision; no external reviewer or model identity is a prerequisite.
 4. Falsification includes undeclared/unversioned caller when execution authority is material.
+5. V0.4 current repair disposition is independently currentness-bound; an already-resolved/non-material case is not forced into repair.
+6. Every material quantitative policy decision is inventoried and independently grounded; incident-only numeric closure is a hard fail.
+7. Every applicable material process/lifecycle node is independently reconciled; nominal phase coverage is not closure.
 
 If any prerequisite gate fails, no numerical total can produce PASS.
 
@@ -20,6 +23,6 @@ If any prerequisite gate fails, no numerical total can produce PASS.
 2. Recurrence explanation — explains historical recurrence, escape control and declared-vs-executed contradictions.
 3. Alternative quality — materially distinct options, explicit tradeoffs and `¿DEBE EXISTIR?` implications.
 4. Falsification/guard quality — adversarial cases, caller provenance, invariant and fail-closed hard guard.
-5. Actionability/evidence — origin owner, acceptance, regressions, residual risks and revision/run/row-bound evidence.
+5. Actionability/evidence — origin owner, acceptance, regressions, residual risks, process-node closure, quantitative grounding and revision/run/row-bound evidence.
 
 No-average-escape: any score <4 in causal depth or falsification/guard quality prevents PASS.
