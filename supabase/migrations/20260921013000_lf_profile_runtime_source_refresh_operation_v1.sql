@@ -995,13 +995,6 @@ insert into public.lf_activos(
   'EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
 );
 
-update public.lf_operation_registry
-set notes=coalesce(notes,'')||
-  ' | Runtime source refresh handoff is routed by PERFIL/PROFILE_RUNTIME_REFRESH -> REFRESCO_RUNTIME_PERFIL_LF; refresh is separate from source update and automatic promotion.',
-    updated_at=now(),
-    updated_by_execution_id='EXEC-BOOTSTRAP-REFRESCO-RUNTIME-PERFIL-LF-20260921-001'
-where operation_code='ACTUALIZACION_PERFIL_LF';
-
 do $post$
 declare c int;
 begin
