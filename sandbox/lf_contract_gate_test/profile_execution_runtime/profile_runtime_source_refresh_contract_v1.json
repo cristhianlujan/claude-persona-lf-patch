@@ -1,0 +1,94 @@
+{
+  "schema_version": "LF_PROFILE_RUNTIME_SOURCE_REFRESH_CONTRACT_V1",
+  "operation_code": "REFRESCO_RUNTIME_PERFIL_LF",
+  "asset_type": "PERFIL",
+  "router_action": "PROFILE_RUNTIME_REFRESH",
+  "purpose": "Refresh the deployed profile runtime source from exact canonical main without changing profile authority, runtime implementation code, state, or automatic impact.",
+  "invariants": [
+    "exact_existing_profile",
+    "source_currentness_bound_to_main",
+    "runtime_implementation_delta_zero",
+    "other_profile_delta_zero",
+    "atomic_release_switch",
+    "service_restart_and_health_readback",
+    "exact_profile_source_hash_readback",
+    "state_and_automatic_impact_preserved",
+    "rollback_release_captured",
+    "no_automatic_promotion",
+    "runtime_source_metadata_reconciled"
+  ],
+  "steps": [
+    {
+      "order": 0,
+      "id": "init_execution"
+    },
+    {
+      "order": 10,
+      "id": "router"
+    },
+    {
+      "order": 20,
+      "id": "profile_resolve"
+    },
+    {
+      "order": 30,
+      "id": "source_currentness"
+    },
+    {
+      "order": 40,
+      "id": "runtime_baseline"
+    },
+    {
+      "order": 50,
+      "id": "refresh_plan"
+    },
+    {
+      "order": 60,
+      "id": "pre_refresh_binding_gate"
+    },
+    {
+      "order": 70,
+      "id": "runtime_refresh"
+    },
+    {
+      "order": 80,
+      "id": "health_readback"
+    },
+    {
+      "order": 90,
+      "id": "source_readback"
+    },
+    {
+      "order": 100,
+      "id": "state_preservation"
+    },
+    {
+      "order": 105,
+      "id": "asset_reconcile"
+    },
+    {
+      "order": 110,
+      "id": "close"
+    },
+    {
+      "order": 120,
+      "id": "report_output"
+    }
+  ],
+  "blocked_if": [
+    "profile_missing_or_ambiguous",
+    "profile_source_not_current",
+    "runtime_implementation_code_changed_since_deployed_release",
+    "another_profile_changed_since_deployed_release",
+    "deployment_source_not_exact_main",
+    "install_script_not_canonical",
+    "service_health_not_green",
+    "deployed_profile_hash_mismatch",
+    "profile_state_or_automatic_impact_changed",
+    "rollback_target_missing",
+    "asset_runtime_source_readback_mismatch"
+  ],
+  "canonical_deploy_surface": "services/profile_runtime_api/scripts/install.sh --source-dir <exact-main-checkout> --source-sha <main_sha> --require-main --start",
+  "rollback_surface": "same install.sh using captured previous release and source SHA",
+  "promotion": "forbidden"
+}
