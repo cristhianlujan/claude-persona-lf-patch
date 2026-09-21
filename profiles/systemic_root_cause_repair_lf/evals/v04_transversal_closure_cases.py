@@ -14,6 +14,7 @@ sys.path.insert(0, str(VALIDATORS))
 
 fixture = runpy.run_path(str(ROOT / "evals" / "v03_deterministic_floor_cases.py"))
 runtime_validate = fixture["runtime_validate"]
+runtime_semantic_utility = fixture["runtime_semantic_utility"]
 closure_proof = fixture["closure_proof"]
 valid_pair = fixture["valid_pair"]
 
@@ -200,7 +201,22 @@ assert_runtime_code(
     "blocked_process_node_prevents_ready_spec",
 )
 
-no_repair = copy.deepcopy(candidate)
+NO_REPAIR_SHARED_FIELDS = (
+    "status", "profile_pack_id", "symptom", "immediate_cause", "systemic_root_cause",
+    "causal_chain", "first_bad_control", "escape_control", "recurrence_evidence",
+    "live_authority_packet", "execution_effect_reconciliation", "authority_contradictions",
+    "repair_level", "origin_asset", "origin_operation", "owner", "current_uncertainties",
+    "residual_risks", "evidence_map", "blocking_codes", "next_gate", "closure_proof",
+    "repair_disposition", "quantitative_decisions", "material_process_graph",
+)
+REPAIR_ONLY_FIELDS = {
+    "should_exist_assessment", "solution_depth", "research_assurance", "challenger_review",
+    "omission_discovery", "implementation_package", "alternatives", "preferred_alternative",
+    "selected_alternative", "rejected_alternatives", "falsification_results", "invariant",
+    "hard_guard", "implementation_delta", "transition_plan", "rollback_plan",
+    "acceptance_criteria", "historical_regressions", "planned_regressions",
+}
+no_repair = {key: copy.deepcopy(candidate[key]) for key in NO_REPAIR_SHARED_FIELDS}
 no_repair["status"] = "NO_REPAIR_REQUIRED"
 no_repair["repair_disposition"] = {
     "decision": "ALREADY_RESOLVED",
@@ -210,24 +226,20 @@ no_repair["repair_disposition"] = {
     "active_failure_present": False,
     "material_repair_justified": False,
 }
-no_repair["preferred_alternative"] = None
-no_repair["selected_alternative"] = None
 no_repair["causal_chain"] = []
 no_repair["recurrence_evidence"] = []
-no_repair["alternatives"] = []
-no_repair["rejected_alternatives"] = []
-no_repair["implementation_delta"] = []
-no_repair["implementation_package"] = None
-no_repair["transition_plan"] = None
-no_repair["rollback_plan"] = None
 no_repair["residual_risks"] = []
 no_repair["blocking_codes"] = []
 no_repair["repair_level"] = "UNDETERMINED"
 for row in no_repair["closure_proof"]["proof_obligations"]:
     if row["obligation_id"] == "PO-DECISION":
         row["decision_refs"] = ["$.repair_disposition"]
+assert not (REPAIR_ONLY_FIELDS & set(no_repair)), sorted(REPAIR_ONLY_FIELDS & set(no_repair))
 assert_schema_valid(no_repair, "v04_no_repair_schema")
-assert_runtime_pass(no_repair, evidence, "v04_no_repair_runtime")
+no_repair_gate = runtime_validate.validate(no_repair, evidence)
+assert no_repair_gate["status"] == "PASS", ("v04_no_repair_runtime", no_repair_gate)
+no_repair_utility = runtime_semantic_utility.evaluate(no_repair, no_repair_gate, evidence)
+assert no_repair_utility["status"] == "PASS", ("v04_no_repair_semantic_utility", no_repair_utility)
 assert no_repair["causal_chain"] == []
 assert no_repair["recurrence_evidence"] == []
 

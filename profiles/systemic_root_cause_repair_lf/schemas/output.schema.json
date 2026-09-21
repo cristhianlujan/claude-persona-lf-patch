@@ -1078,28 +1078,9 @@
     "execution_effect_reconciliation",
     "authority_contradictions",
     "repair_level",
-    "should_exist_assessment",
-    "solution_depth",
-    "research_assurance",
-    "challenger_review",
-    "omission_discovery",
-    "implementation_package",
-    "alternatives",
-    "preferred_alternative",
-    "selected_alternative",
-    "rejected_alternatives",
-    "falsification_results",
     "origin_asset",
     "origin_operation",
     "owner",
-    "invariant",
-    "hard_guard",
-    "implementation_delta",
-    "transition_plan",
-    "rollback_plan",
-    "acceptance_criteria",
-    "historical_regressions",
-    "planned_regressions",
     "current_uncertainties",
     "residual_risks",
     "evidence_map",
@@ -4002,7 +3983,28 @@
           "causal_chain": {
             "minItems": 3
           }
-        }
+        },
+        "required": [
+          "should_exist_assessment",
+          "solution_depth",
+          "research_assurance",
+          "challenger_review",
+          "omission_discovery",
+          "implementation_package",
+          "alternatives",
+          "preferred_alternative",
+          "selected_alternative",
+          "rejected_alternatives",
+          "falsification_results",
+          "invariant",
+          "hard_guard",
+          "implementation_delta",
+          "transition_plan",
+          "rollback_plan",
+          "acceptance_criteria",
+          "historical_regressions",
+          "planned_regressions"
+        ]
       }
     },
     {

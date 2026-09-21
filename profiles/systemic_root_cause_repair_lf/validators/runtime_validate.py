@@ -381,11 +381,17 @@ def _evidence_map_errors(payload):
     return errors
 
 
-def _structured_list_errors(payload):
+def _structured_list_errors(payload, *, require_repair_artifacts=True):
     errors = []
-    for field in ("historical_regressions", "planned_regressions", "acceptance_criteria", "residual_risks", "implementation_delta"):
+    repair_fields = ("historical_regressions", "planned_regressions", "acceptance_criteria", "implementation_delta")
+    required_fields = ("residual_risks",) + (repair_fields if require_repair_artifacts else ())
+    for field in required_fields:
         if not isinstance(payload.get(field), list):
             errors.append(_error(f"{field.upper()}_INVALID", f"$.{field}"))
+    if not require_repair_artifacts:
+        for field in repair_fields:
+            if field in payload and not isinstance(payload.get(field), list):
+                errors.append(_error(f"{field.upper()}_INVALID", f"$.{field}"))
 
     for idx, row in enumerate(payload.get("historical_regressions") or []):
         path = f"$.historical_regressions[{idx}]"
@@ -816,12 +822,15 @@ def validate(payload, evidence_manifest=None):
 
     errors.extend(_live_packet_errors(payload))
     errors.extend(_reconciliation_errors(payload))
-    errors.extend(_falsification_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
+    repair_artifacts_required = status != "NO_REPAIR_REQUIRED"
+    if repair_artifacts_required:
+        errors.extend(_falsification_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
     errors.extend(_evidence_map_errors(payload))
-    errors.extend(_structured_list_errors(payload))
-    errors.extend(_decision_errors(payload))
-    errors.extend(_proposal_errors(payload))
-    errors.extend(_implementation_plan_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
+    errors.extend(_structured_list_errors(payload, require_repair_artifacts=repair_artifacts_required))
+    if repair_artifacts_required:
+        errors.extend(_decision_errors(payload))
+        errors.extend(_proposal_errors(payload))
+        errors.extend(_implementation_plan_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
     errors.extend(_v04_transversal_errors(payload))
 
     closure_errors, closure_summary = validate_v03_closure(payload, evidence_manifest)
@@ -829,7 +838,8 @@ def validate(payload, evidence_manifest=None):
     if payload.get("profile_pack_id") == V04_PACK_ID and status in {"NEEDS_MORE_EVIDENCE", "RETURN_TO_WORKER_FOR_SELF_REPAIR", "BLOCK_PIPELINE"}:
         if closure_summary.get("applies") and closure_summary.get("computed_handoff_ready") is True:
             errors.append(_error("V04_NONREADY_WITH_DERIVED_HANDOFF_READY", "$.closure_proof.derived_decision_closure.handoff_ready"))
-    errors.extend(_solution_assurance_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
+    if repair_artifacts_required:
+        errors.extend(_solution_assurance_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
     incremental_errors, incremental_summary = validate_incremental_value(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC")
     errors.extend(incremental_errors)
 
@@ -847,10 +857,10 @@ def validate(payload, evidence_manifest=None):
                 errors.append(_error("RECURRENCE_EVIDENCE_NOT_TYPED", f"$.recurrence_evidence[{idx}]"))
 
     existence = payload.get("should_exist_assessment")
-    if not isinstance(existence, dict):
-        errors.append(_error("SHOULD_EXIST_ASSESSMENT_MISSING", "$.should_exist_assessment"))
-    elif status == "NO_REPAIR_REQUIRED":
+    if status == "NO_REPAIR_REQUIRED":
         pass
+    elif not isinstance(existence, dict):
+        errors.append(_error("SHOULD_EXIST_ASSESSMENT_MISSING", "$.should_exist_assessment"))
     elif existence.get("verdict") == "INSUFFICIENT_EVIDENCE":
         if not _string_list(existence.get("missing_evidence"), allow_empty=False):
             errors.append(_error("SHOULD_EXIST_MISSING_EVIDENCE_REQUIRED", "$.should_exist_assessment.missing_evidence"))

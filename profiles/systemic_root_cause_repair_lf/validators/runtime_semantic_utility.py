@@ -287,7 +287,10 @@ def evaluate(payload, contract_gate, evidence_manifest=None):
                 break
 
     historical = payload.get("historical_regressions")
-    if not isinstance(historical, list):
+    if historical is None:
+        if status != "NO_REPAIR_REQUIRED":
+            codes.append("HISTORICAL_REGRESSIONS_INVALID")
+    elif not isinstance(historical, list):
         codes.append("HISTORICAL_REGRESSIONS_INVALID")
     else:
         for item in historical:
