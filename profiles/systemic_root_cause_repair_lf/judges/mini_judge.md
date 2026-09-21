@@ -24,6 +24,7 @@ Return `PASS_TO_QUALITY_PACK` only when:
 - all independently observed candidate changes are reconciled against both producer-declared delta and authorized scope;
 - no material open design decision remains;
 - no blocking condition remains.
+- when material research is applicable, the digest-bound pre-research baseline and incremental-value delta have passed independent semantic review; MATERIAL_UPLIFT is independently substantiated or NO_MATERIAL_UPLIFT is accepted without forcing novelty, and UNPROVEN is absent.
 
 Producer assertions such as `handoff_ready=true`, `open_design_decisions=[]`, selected alternative, declared implementation delta or research URLs are inputs to review, never proof of closure.
 

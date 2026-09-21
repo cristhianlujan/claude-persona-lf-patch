@@ -692,7 +692,62 @@
       }
     ],
     "first_solution_disposition": "REVISED",
-    "context_strategy": "JIT_HIGH_SIGNAL"
+    "context_strategy": "JIT_HIGH_SIGNAL",
+    "baseline_solution_snapshot": {
+      "snapshot_version": "SRCR_BASELINE_SOLUTION_V1",
+      "capture_stage": "PRE_RESEARCH_CHALLENGER",
+      "input_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "profile_source_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "evidence_refs": [
+        "gate://A2R_PARITY",
+        "contract://migration/pre-apply",
+        "policy://LF/context-admission"
+      ],
+      "leading_solution_summary": "Reuse the existing pre-apply governance boundary with fail-closed parity before any live effect.",
+      "known_gaps": [
+        "Context transport had not yet been selected.",
+        "Semantic quality closure still required independent verification."
+      ],
+      "assumptions": [
+        "Existing source-of-truth authority remains Supabase.",
+        "No second validation engine is required."
+      ]
+    },
+    "baseline_digest": "sha256:5723e28f8745b052a694dcc5d92637e9daab75e3f91fccba9dfaa1111f72ff54",
+    "discovery_deltas": [
+      {
+        "delta_id": "DELTA-JIT-CONTEXT",
+        "category": "CONTEXT_PERFORMANCE",
+        "disposition": "ADOPTED",
+        "trigger_evidence_refs": [
+          "external://current-practice/jit-context",
+          "policy://LF/context-admission"
+        ],
+        "baseline_gap": "The baseline did not yet choose a bounded transport mechanism for supporting context.",
+        "material_effect": "Adopts JIT high-signal transport so evidence can be hydrated by reference without full-document prefetch.",
+        "tradeoff": "Requires reliable resolvers and durable source references.",
+        "final_design_refs": [
+          "$.implementation_package.context_transport"
+        ]
+      },
+      {
+        "delta_id": "DELTA-INDEPENDENT-EVAL",
+        "category": "HIDDEN_RISK",
+        "disposition": "ADOPTED",
+        "trigger_evidence_refs": [
+          "external://current-practice/agent-evals"
+        ],
+        "baseline_gap": "The baseline had deterministic controls but had not yet closed semantic quality independently of the producer.",
+        "material_effect": "Makes independent semantic review part of acceptance so producer assertions cannot certify their own quality.",
+        "tradeoff": "Adds an independent quality call while preserving deterministic pre-quality floors.",
+        "final_design_refs": [
+          "$.acceptance_criteria",
+          "$.implementation_package.control_matrix"
+        ]
+      }
+    ],
+    "incremental_value_outcome": "MATERIAL_UPLIFT",
+    "incremental_value_rationale": "Current-practice research materially improved context transport and independent quality closure relative to the frozen internal-only baseline."
   },
   "challenger_review": [
     {

@@ -124,6 +124,17 @@ However adaptive applicability cannot be used to evade coverage. The judge must 
 ## Research assurance
 A URL/reference is not proof of research impact. When current-practice research is claimed material, check whether the inspected source supports the pattern and whether the candidate explains how it changed, confirmed, or rejected a design choice.
 
+For `DEEP_ARCHITECTURE_RESEARCH`, and for `BOUNDED` when current-practice research is required, independently review the incremental-value proof:
+- verify the pre-research baseline is internally evidence-bound, digest-coherent and not contaminated with the later external-research refs used to justify deltas;
+- compare the final selected design against the frozen baseline rather than against a strawman or a rewritten baseline;
+- require each ADOPTED delta to be triggered by post-baseline evidence and to map to an actual final design path;
+- reject paraphrase, extra prose, cosmetic complexity, novelty theater, or a claim already present in the baseline as material uplift;
+- accept `NO_MATERIAL_UPLIFT` when research/challenge was sufficient and the final baseline-quality solution genuinely remains the minimum sufficient design; do not force novelty;
+- treat `UNPROVEN` as non-closure for a ready material-research specification;
+- the producer's `MATERIAL_UPLIFT` label is a claim to verify, never evidence of quality.
+
+The compact baseline/delta packet is evidence transport, not a second authority. Full research transcripts are not required when exact source refs can be hydrated JIT.
+
 ## Verdict rules
 Return `PASS_INDEPENDENT_SEMANTIC` only when:
 - deterministic validation passed;
@@ -133,6 +144,7 @@ Return `PASS_INDEPENDENT_SEMANTIC` only when:
 - R3 has no OUT_OF_SCOPE_DESIGN_DELTA or UNRESOLVED_SCOPE;
 - no material contradiction/blocker remains;
 - independent closure review finds no material open design decision.
+- when incremental-value proof is applicable, its baseline is coherent and the reported MATERIAL_UPLIFT or NO_MATERIAL_UPLIFT disposition is independently supported; UNPROVEN is not acceptable for ready closure.
 
 Return `RETURN_TO_WORKER_FOR_SELF_REPAIR` when candidate quality can be repaired without changing authorized scope, including undeclared change, incomplete closure, unsupported research impact, weak falsification, or a selected repair that contains an out-of-scope delta which can be removed/reclassified as discovery.
 
