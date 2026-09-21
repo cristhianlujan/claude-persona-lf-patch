@@ -34,7 +34,7 @@ jobs:
             'For every observed change include exactly one change_declaration_reconciliation and one scope_conformance_reconciliation row. '
             'All seven invariants must be present. If a material issue exists, do not PASS.\n\nPACKET:\n'+json.dumps(packet,ensure_ascii=False,separators=(',',':'))
           )
-          body={'messages':[{'role':'system','content':'Return strict JSON only. No markdown fences, no prose outside JSON.'},{'role':'user','content':prompt}],'temperature':0,'max_tokens':7000,'response_format':{'type':'json_object'}}
+          body={'messages':[{'role':'system','content':'Return strict JSON only. No markdown fences, no prose outside JSON.'},{'role':'user','content':prompt}],'temperature':0,'max_tokens':7000,'reasoning_effort':'none','response_format':{'type':'json_object'}}
           url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{model}"
           req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['CF_TOKEN'],'Content-Type':'application/json'},method='POST')
           with urllib.request.urlopen(req,timeout=300) as resp:
