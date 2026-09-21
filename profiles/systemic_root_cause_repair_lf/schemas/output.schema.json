@@ -1157,7 +1157,6 @@
     },
     "recurrence_evidence": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -4002,6 +4001,30 @@
         "properties": {
           "causal_chain": {
             "minItems": 3
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "SYSTEMIC_REPAIR_SPEC",
+              "NEEDS_MORE_EVIDENCE",
+              "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+              "BLOCK_PIPELINE"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "recurrence_evidence": {
+            "minItems": 1
           }
         }
       }
