@@ -674,8 +674,11 @@ def _v04_transversal_errors(payload):
     if status == "NO_REPAIR_REQUIRED":
         if decision not in {"ALREADY_RESOLVED", "NOT_MATERIAL"}:
             errors.append(_error("V04_NO_REPAIR_DISPOSITION_MISMATCH", "$.repair_disposition.decision"))
-        if decision == "ALREADY_RESOLVED" and disposition.get("active_failure_present") is not False:
-            errors.append(_error("V04_ALREADY_RESOLVED_WITH_ACTIVE_FAILURE", "$.repair_disposition.active_failure_present"))
+        if decision == "ALREADY_RESOLVED":
+            if disposition.get("active_failure_present") is not False:
+                errors.append(_error("V04_ALREADY_RESOLVED_WITH_ACTIVE_FAILURE", "$.repair_disposition.active_failure_present"))
+            if disposition.get("material_repair_justified") is not False:
+                errors.append(_error("V04_ALREADY_RESOLVED_REPAIR_NOT_JUSTIFIED", "$.repair_disposition.material_repair_justified"))
         if decision == "NOT_MATERIAL" and disposition.get("material_repair_justified") is not False:
             errors.append(_error("V04_NOT_MATERIAL_BUT_REPAIR_JUSTIFIED", "$.repair_disposition.material_repair_justified"))
         if payload.get("selected_alternative") is not None or payload.get("preferred_alternative") is not None:
@@ -700,6 +703,11 @@ def _v04_transversal_errors(payload):
     else:
         if decision not in {"REPAIR_REQUIRED", "UNDETERMINED"}:
             errors.append(_error("V04_NONREADY_DISPOSITION_INVALID", "$.repair_disposition.decision"))
+        if decision == "REPAIR_REQUIRED":
+            if disposition.get("active_failure_present") is not True:
+                errors.append(_error("V04_NONREADY_REPAIR_REQUIRED_NEEDS_ACTIVE_FAILURE", "$.repair_disposition.active_failure_present"))
+            if disposition.get("material_repair_justified") is not True:
+                errors.append(_error("V04_NONREADY_REPAIR_REQUIRED_NEEDS_MATERIALITY", "$.repair_disposition.material_repair_justified"))
 
     quantitative = payload.get("quantitative_decisions")
     if not isinstance(quantitative, list):
