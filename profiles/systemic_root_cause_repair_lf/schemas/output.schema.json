@@ -1101,7 +1101,8 @@
       "enum": [
         "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
         "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
-        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
       ]
     },
     "symptom": {
@@ -2062,6 +2063,61 @@
                 "type": "null"
               }
             ]
+          },
+          "attempted_sources": {
+            "type": "array",
+            "description": "V0.5: accessible surfaces actually consulted before declaring the gap. Each evidence_id must resolve in the external evidence manifest.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "surface",
+                "locator",
+                "result",
+                "observation",
+                "evidence_id"
+              ],
+              "properties": {
+                "surface": {
+                  "enum": [
+                    "GITHUB_SOURCE",
+                    "SUPABASE_TABLE_OR_VIEW",
+                    "SUPABASE_FUNCTION",
+                    "OPERATION_DEFINITION",
+                    "OPERATION_EXECUTION_RECEIPT",
+                    "RUNTIME_READBACK",
+                    "EDGE_FUNCTION",
+                    "EKB",
+                    "OTHER_GOVERNED_SOURCE"
+                  ]
+                },
+                "locator": {
+                  "type": "string",
+                  "minLength": 5
+                },
+                "result": {
+                  "enum": [
+                    "ABSENT",
+                    "UNREACHABLE",
+                    "ACCESS_DENIED",
+                    "FOUND_INSUFFICIENT"
+                  ]
+                },
+                "observation": {
+                  "type": "string",
+                  "minLength": 8
+                },
+                "evidence_id": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              }
+            }
+          },
+          "uncertainty_id": {
+            "type": "string",
+            "minLength": 2,
+            "description": "V0.5: required for DESIGN_BLOCKING rows; referenced by blocked material_process_graph nodes."
           }
         }
       }
@@ -3516,6 +3572,11 @@
                   "type": "string",
                   "minLength": 3
                 }
+              },
+              "blocking_uncertainty_id": {
+                "type": "string",
+                "minLength": 2,
+                "description": "V0.5: required when disposition=DESIGN_BLOCKING; names the DESIGN_BLOCKING current_uncertainty (and so its attempted_sources)."
               }
             }
           }
@@ -3542,6 +3603,13 @@
           }
         }
       ]
+    },
+    "case_mode": {
+      "enum": [
+        "INCIDENT_REPAIR",
+        "ARCHITECTURE_AUDIT"
+      ],
+      "description": "V0.5: INCIDENT_REPAIR explains a recurring failure class; ARCHITECTURE_AUDIT maps and repairs a process/lifecycle without a triggering incident. Audit mode relaxes only recurrence evidence and the incident-length causal chain; systemic causality and controls (immediate_cause, systemic_root_cause, first_bad_control, escape_control) remain mandatory."
     }
   },
   "allOf": [
@@ -3719,7 +3787,8 @@
           "profile_pack_id": {
             "enum": [
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
-              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
             ]
           }
         },
@@ -3807,7 +3876,8 @@
           "profile_pack_id": {
             "enum": [
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
-              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
             ]
           },
           "solution_depth": {
@@ -3843,7 +3913,8 @@
           "profile_pack_id": {
             "enum": [
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
-              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
             ]
           },
           "solution_depth": {
@@ -3879,7 +3950,8 @@
           "profile_pack_id": {
             "enum": [
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
-              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
             ]
           },
           "omission_discovery": {
@@ -3921,7 +3993,10 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+            ]
           }
         },
         "required": [
@@ -4140,6 +4215,23 @@
             }
           }
         }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+          }
+        },
+        "required": [
+          "profile_pack_id"
+        ]
+      },
+      "then": {
+        "required": [
+          "case_mode"
+        ]
       }
     }
   ]
