@@ -59,7 +59,7 @@
   "issued_at": "2026-09-21T00:47:53Z",
   "candidate_code_head": "b4d5cc1e6a2adb35b5e72fcd5ceed0f9ad91c0e4",
   "operation_status_at_issue": "IN_PROGRESS",
-  "next_gate": "MERGE_AND_POST_MERGE_RECONCILE",
+  "next_gate": "POST_MERGE_RECONCILE",
   "operation_revision_sha256": "a3820a7bd01757e9445dada84a34c5a18801e964decb380cb6062311d222c364",
   "stage": "V03_FINAL_BEHAVIORAL_CLOSURE",
   "canonical_quality_accepted": true,
@@ -70,5 +70,14 @@
   "independent_semantic_run_id": 35547296170,
   "adversarial_semantic_run_id": 35547952603,
   "profile_bytes_written_by_receipt_commit": false,
-  "runtime_promotion_claimed": false
+  "runtime_promotion_claimed": false,
+  "history_reconciliation": {
+    "reason": "PR_978_SQUASH_MERGE_REMOVED_CANDIDATE_GIT_ANCESTRY",
+    "content_tree_changed": false,
+    "original_candidate_branch_head": "725af4c3122f8c2855960cdd1290a7a7092fc140",
+    "original_squash_merge_sha": "94a6662199c15ee093520139728d214d0411307a",
+    "ancestry_merge_commit": "316e2abb60a31c79e8657d627376870fade53a37",
+    "repair_pr": 979,
+    "candidate_code_head_preserved": "b4d5cc1e6a2adb35b5e72fcd5ceed0f9ad91c0e4"
+  }
 }
