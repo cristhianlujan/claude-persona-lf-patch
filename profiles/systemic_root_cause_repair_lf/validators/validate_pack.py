@@ -87,6 +87,7 @@ for rel in [
     "evals/v03_quality_receipt_cases.py",
     "evals/v03_generalization_property_cases.py",
     "evals/v03_transversal_contract_cases.py",
+    "evals/sandbox_b/run_cases.py",
 ]:
     run_assurance(rel)
 

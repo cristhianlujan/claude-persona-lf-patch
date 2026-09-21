@@ -13,11 +13,14 @@ def canonical_sha(payload: dict) -> str:
     raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
 
-def run(payload: dict, name: str) -> tuple[str, dict]:
+def run(payload: dict, name: str, bind_scope: bool = True) -> tuple[str, dict]:
     tmp = HERE / (".tmp_" + name + ".json")
     try:
         tmp.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True), encoding="utf-8")
-        proc = subprocess.run([sys.executable, str(VALIDATOR), str(tmp)], text=True, capture_output=True)
+        cmd = [sys.executable, str(VALIDATOR), str(tmp)]
+        if bind_scope:
+            cmd += ["--scope-packet", str(SCOPE), "--candidate-sha256", payload.get("candidate_sha256", ""), "--scope-packet-sha256", payload.get("scope_packet_sha256", "")]
+        proc = subprocess.run(cmd, text=True, capture_output=True)
         data = json.loads(proc.stdout)
         return ("PASS" if proc.returncode == 0 else "FAIL", data)
     finally:
@@ -55,6 +58,15 @@ bad["blocking_codes"] = []
 bad["open_design_decisions_found"] = []
 state, data = run(bad, "malicious_pass")
 out["malicious_pass_fail_closed"] = {"observed": state, "detail": data, "expected": "FAIL"}
+
+
+missing_scope_item = copy.deepcopy(base)
+missing_scope_item["requirement_reconciliation"] = [
+    x for x in missing_scope_item["requirement_reconciliation"]
+    if x.get("scope_item_id") != scope["constraints"][0]["id"]
+]
+state, data = run(missing_scope_item, "missing_scope_item")
+out["missing_scope_item_fail_closed"] = {"observed": state, "detail": data, "expected": "FAIL"}
 
 missing = copy.deepcopy(base)
 missing["scope_conformance_reconciliation"] = [
