@@ -23,6 +23,15 @@ schema_validator = Draft7Validator(schema)
 V04 = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
 
 
+def disposition_verification(expected_result):
+    return {
+        "executable": True,
+        "method": "Run exact-current authority and readback verification against the governed subject.",
+        "expected_result": expected_result,
+        "evidence_refs": ["fixture://verification/authority"],
+    }
+
+
 def v04_pair():
     candidate, evidence = valid_pair()
     candidate["profile_pack_id"] = V04
@@ -33,6 +42,7 @@ def v04_pair():
         "currentness_refs": ["fixture://v04/currentness"],
         "active_failure_present": True,
         "material_repair_justified": True,
+        "verification": disposition_verification("Exact-current readback confirms the active material failure remains present."),
     }
     candidate["quantitative_decisions"] = []
     candidate["material_process_graph"] = {
@@ -82,6 +92,7 @@ needs["repair_disposition"] = {
     "currentness_refs": ["fixture://currentness/cache"],
     "active_failure_present": None,
     "material_repair_justified": None,
+    "verification": disposition_verification("Controlled measurement resolves whether an active material failure exists and justifies repair."),
 }
 needs["preferred_alternative"] = None
 needs["selected_alternative"] = None
@@ -225,6 +236,7 @@ no_repair["repair_disposition"] = {
     "currentness_refs": ["fixture://current/readback"],
     "active_failure_present": False,
     "material_repair_justified": False,
+    "verification": disposition_verification("Exact-current readback continues to prove the historical defect is absent and no repair is justified."),
 }
 no_repair["causal_chain"] = []
 no_repair["recurrence_evidence"] = []
@@ -242,6 +254,24 @@ no_repair_utility = runtime_semantic_utility.evaluate(no_repair, no_repair_gate,
 assert no_repair_utility["status"] == "PASS", ("v04_no_repair_semantic_utility", no_repair_utility)
 assert no_repair["causal_chain"] == []
 assert no_repair["recurrence_evidence"] == []
+
+missing_verification = copy.deepcopy(no_repair)
+missing_verification["repair_disposition"].pop("verification")
+assert_schema_invalid(missing_verification, "v04_no_repair_verification_schema_required")
+assert_runtime_code(
+    missing_verification, evidence,
+    "V04_REPAIR_DISPOSITION_VERIFICATION_REQUIRED",
+    "v04_no_repair_verification_runtime_required",
+)
+
+nonexecutable_verification = copy.deepcopy(no_repair)
+nonexecutable_verification["repair_disposition"]["verification"]["executable"] = False
+assert_schema_invalid(nonexecutable_verification, "v04_no_repair_verification_must_be_executable_schema")
+assert_runtime_code(
+    nonexecutable_verification, evidence,
+    "V04_REPAIR_DISPOSITION_VERIFICATION_NOT_EXECUTABLE",
+    "v04_no_repair_verification_must_be_executable_runtime",
+)
 
 hidden_delta = copy.deepcopy(no_repair)
 hidden_delta["implementation_delta"] = [{
@@ -373,6 +403,7 @@ contradictory_nonready["repair_disposition"] = {
     "currentness_refs": ["fixture://currentness/cache"],
     "active_failure_present": False,
     "material_repair_justified": False,
+    "verification": disposition_verification("Exact-current verification resolves the claimed repair-required disposition."),
 }
 assert_schema_invalid(contradictory_nonready, "v04_nonready_repair_required_flags_schema")
 assert_runtime_code(
@@ -381,4 +412,4 @@ assert_runtime_code(
     "nonready_repair_required_needs_consistent_flags",
 )
 
-print("PASS_SRCR_V04_TRANSVERSAL_CLOSURE=16/16")
+print("PASS_SRCR_V04_TRANSVERSAL_CLOSURE=18/18")
