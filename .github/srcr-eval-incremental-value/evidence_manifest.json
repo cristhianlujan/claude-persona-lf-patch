@@ -1,0 +1,120 @@
+{
+  "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+  "bundle_id": "SRCR-SELF-EVAL-INCREMENTAL-VALUE-20260920",
+  "bundle_digest": "sha256:29331df9f521b4f73362720440a0d1ff20a39bd6b96835252611994981655071",
+  "observed_at": "2026-09-20T23:55:00-05:00",
+  "producer": {
+    "kind": "SOURCE_FIRST_RESOLVER",
+    "resolver_ref": "source-only SRCR self-evaluation evidence assembler"
+  },
+  "evidence": [
+    {
+      "evidence_id": "EV-PROFILE-ASSET",
+      "subject": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "supabase://public.lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "revision_or_observed_at": "2026-09-20T23:55:00-05:00",
+      "digest": "sha256:a2bfaf377837427c6f55b42b18b6a93e00d50b580ff46379c24c1c97fcf6eda9",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-UPDATE-OP",
+      "subject": "ACTUALIZACION_PERFIL_LF",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "supabase://public.lf_operation_registry/ACTUALIZACION_PERFIL_LF",
+      "revision_or_observed_at": "2026-09-20T23:55:00-05:00",
+      "digest": "sha256:c9605b4dcea7b246bcbde532f24502ff21fbd217a4f72bf66b0761a8638c4a4d",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-ACT0045",
+      "subject": "ACT-0045",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "supabase://public.lf_activos/ACT-0045",
+      "revision_or_observed_at": "2026-09-20T23:55:00-05:00",
+      "digest": "sha256:66b38ef6ec8a73bd3fa41b0d23cc196d6cfaa67440243d6ed58c82f85bb341ae",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-SKILL-SOURCE",
+      "subject": "SRCR-SKILL",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@d5544f3de7a941488670a5f664d2423b51c0949a/profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "revision_or_observed_at": "d5544f3de7a941488670a5f664d2423b51c0949a",
+      "digest": "sha256:234acef449571807ac70e5f0b64bd8ceed7a10ed5672232b06ff0cfd369d4f8b",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-SEMANTIC-SOURCE",
+      "subject": "SRCR-SEMANTIC-UTILITY",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@d5544f3de7a941488670a5f664d2423b51c0949a/profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
+      "revision_or_observed_at": "d5544f3de7a941488670a5f664d2423b51c0949a",
+      "digest": "sha256:c911f1c6c801a2baa76ba9309eb0963710c54534be2b7a0d132efe5e2a4645b1",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-SCHEMA-SOURCE",
+      "subject": "SRCR-OUTPUT-SCHEMA",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@d5544f3de7a941488670a5f664d2423b51c0949a/profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+      "revision_or_observed_at": "d5544f3de7a941488670a5f664d2423b51c0949a",
+      "digest": "sha256:a1513631f426fb17f0f833180c7aa54816093c0f87051e5fad01321b21740e7a",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-RAW-OUTPUT",
+      "subject": "SRCR-LIFECYCLE-BLIND-OUTPUT",
+      "evidence_class": "OBSERVED_TEST",
+      "source_locator": "sandbox://srcr-lifecycle-blind-run/produced_spec.json#sha256:8567b9d67d8c286a792abd153e58ccb88c96b2575e05d3e1510025b51fb74f9c",
+      "revision_or_observed_at": "8567b9d67d8c286a792abd153e58ccb88c96b2575e05d3e1510025b51fb74f9c",
+      "digest": "sha256:2f2a4434ebac18f86fe9e0b62bf062c0c243e6d8a8ac4b77632f823faef00666",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-VALIDATION-READBACK",
+      "subject": "SRCR-LIFECYCLE-BLIND-VALIDATION",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sentinelx://source-only-validation/8567b9d67d8c286a792abd153e58ccb88c96b2575e05d3e1510025b51fb74f9c/runtime_validate+runtime_semantic_utility",
+      "revision_or_observed_at": "2026-09-20T23:50:00-05:00",
+      "digest": "sha256:313801b2e61b901365d22d75dbb69c5cd993aaec49ca97d1513cd09a9a5882c6",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-USER-VALUE-OBJECTIVE",
+      "subject": "SRCR-VALUE-BEYOND-FIRST-SOLUTION",
+      "evidence_class": "OBSERVED_HISTORY",
+      "source_locator": "conversation://LF/SRCR/requirement/value-beyond-first-plausible-solution",
+      "revision_or_observed_at": "2026-09-20",
+      "digest": "sha256:7a0a0505849cb4008ea452c59b4a374cc9e25302d227e640040c869acf856c9b",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-ANTH-EVALS",
+      "subject": "AGENT-EVAL-DESIGN",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+      "revision_or_observed_at": "2026-01-09",
+      "digest": "sha256:ce7cda4acdf0940d79aa872662cba59f42afd8c45c8980aa3d5418eae1ef27ba",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-OPENAI-EVALS",
+      "subject": "THIRD-PARTY-EVAL-DESIGN",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "https://openai.com/index/trustworthy-third-party-evaluations-foundations/",
+      "revision_or_observed_at": "2026-05-29",
+      "digest": "sha256:acb863800f6ecb829688e61feee5b1bc38f47d8db8c6562f69d913bc743f4700",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-ANTH-REWARD",
+      "subject": "GRADER-GAMING-RISK",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "https://alignment.anthropic.com/2026/reward-seeker/",
+      "revision_or_observed_at": "2026-08",
+      "digest": "sha256:dafe2a5223a9bc749d14ef0c19b38f886d39a82e42551d952769c385c69e0017",
+      "state": "CURRENT"
+    }
+  ]
+}

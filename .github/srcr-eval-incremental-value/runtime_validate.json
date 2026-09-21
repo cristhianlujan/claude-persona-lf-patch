@@ -1,0 +1,62 @@
+{
+  "valid": true,
+  "status": "PASS",
+  "errors": [],
+  "blocking_codes": [],
+  "validation_role": "PRE_QUALITY_STRUCTURAL_FLOOR",
+  "canonical_quality_accepted": false,
+  "closure_summary": {
+    "applies": true,
+    "required_obligation_types": [
+      "AUTHORITY_EXISTENCE",
+      "COMPATIBILITY",
+      "DECISION_CLOSURE",
+      "EVIDENCE_PROVENANCE",
+      "MIGRATION_TRANSITION",
+      "OBSERVABILITY",
+      "OTHER_MATERIAL",
+      "POLICY_CONTRACT",
+      "TEST_ASSURANCE",
+      "WIRING_PHYSICALITY"
+    ],
+    "required_obligation_ids": [
+      "PO-AUTH",
+      "PO-COMPAT",
+      "PO-COST",
+      "PO-DECISION",
+      "PO-MIGRATION",
+      "PO-OBS",
+      "PO-OPERABILITY",
+      "PO-POLICY",
+      "PO-PROVENANCE",
+      "PO-TEST",
+      "PO-WIRING"
+    ],
+    "closed_obligation_ids": [
+      "PO-AUTH",
+      "PO-COMPAT",
+      "PO-COST",
+      "PO-DECISION",
+      "PO-MIGRATION",
+      "PO-OBS",
+      "PO-OPERABILITY",
+      "PO-POLICY",
+      "PO-PROVENANCE",
+      "PO-TEST",
+      "PO-WIRING"
+    ],
+    "open_obligation_ids": [],
+    "post_implementation_obligation_ids": [
+      "PO-POST-HOLDOUT",
+      "PO-POST-RERUN"
+    ],
+    "closure_contract_version": "SRCR_CLOSURE_PROOF_V2",
+    "computed_handoff_ready": true,
+    "candidate_digest": "sha256:72e5857fb26cbb282c7c4de2a4c73df5cc0483c6fd757889d56f82d3b55a0a9e",
+    "evidence_bundle_id": "SRCR-SELF-EVAL-INCREMENTAL-VALUE-20260920",
+    "evidence_bundle_digest": "sha256:29331df9f521b4f73362720440a0d1ff20a39bd6b96835252611994981655071",
+    "evidence_refs_resolved": 11,
+    "canonical_quality_accepted": false,
+    "quality_stage": "PRE_QUALITY_FLOOR"
+  }
+}

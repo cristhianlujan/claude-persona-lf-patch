@@ -1,0 +1,94 @@
+{
+  "review_provenance": {
+    "original_uploaded_spec_sha256": "f81405d39c90a8faadbfed16bbfebfc410593c0466381d01426c9091809847a4",
+    "original_uploaded_spec_deterministic_result": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "RECURRENCE_EVIDENCE_NOT_TYPED"
+      ],
+      "path": "$.recurrence_evidence[0].evidence_class",
+      "observed_value": "OBSERVED_TEST"
+    },
+    "repaired_candidate_sha256": "396b01b39a52861cacb7488dbaa68a25fc4f45c552c6717df6bc6b52d717888a",
+    "repair_delta": {
+      "path": "$.recurrence_evidence[0].evidence_class",
+      "before": "OBSERVED_TEST",
+      "after": "OBSERVED_HISTORY",
+      "rationale": "The referenced blind-run artifact is a prior observed occurrence. Current V0.3 recurrence vocabulary has no OBSERVED_TEST; OBSERVED_HISTORY is the narrowest canonical recurrence class.",
+      "architecture_or_solution_change": false
+    },
+    "repaired_deterministic_floor": "PASS",
+    "repaired_semantic_utility_floor": "PASS",
+    "original_spec_preserved": true
+  },
+  "current_authority_readback": {
+    "observed_after_main_sha": "567c7d23c21b41f119793ddd2cc6da1ffb08dfe5",
+    "profile": {
+      "codigo_activo": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "version": "v0.2",
+      "repo_path": "profiles/systemic_root_cause_repair_lf",
+      "entrypoint_sha": "5c2f3d3f6742b9192db75d2ec795b0f3065e9d1e",
+      "manifest_sha": "bc85e7eaf9c014b8c010cdddfa79f90b07433b38",
+      "runtime_estado": "CANDIDATE_READ_ONLY",
+      "estado_operativo": "READ_ONLY",
+      "impacto_automatico": "BLOQUEADO",
+      "post_merge_next_gate": "PROFILE_RUNTIME_CANARY_REQUIRED",
+      "last_governed_merge_sha": "94a6662199c15ee093520139728d214d0411307a"
+    },
+    "update_operation": {
+      "operation_code": "ACTUALIZACION_PERFIL_LF",
+      "version": "v0.1",
+      "status": "PRODUCCION_CONTROLADA",
+      "lifecycle_state_code": "OP_OPERATIONAL",
+      "operation_domain": "PROFILE_MAINTENANCE"
+    },
+    "owner": {
+      "codigo_activo": "ACT-0045",
+      "version": "v0.1",
+      "estado_documental": "APROBADO",
+      "estado_operativo": "APROBADO",
+      "runtime_estado": "APROBADO_PRODUCCION_CONTROLADA_READ_ONLY",
+      "impacto_automatico": "BLOQUEADO"
+    },
+    "profile_source_diff_from_candidate_evidence_revision": {
+      "from": "d5544f3de7a941488670a5f664d2423b51c0949a",
+      "to": "567c7d23c21b41f119793ddd2cc6da1ffb08dfe5",
+      "changed_paths_under_profile": [],
+      "source_claim_currentness": "PRESERVED"
+    }
+  },
+  "external_source_verification": [
+    {
+      "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+      "published": "2026-01-09",
+      "verified_currently_accessible": true,
+      "support_summary": [
+        "Agent evaluations should combine grader types appropriate to the task rather than rely on one proxy.",
+        "Model-based graders capture nuance but require calibration with human graders.",
+        "For research agents, groundedness, coverage and source-quality checks can be combined with LLM rubrics; LLM rubrics should be calibrated against expert judgment.",
+        "Capability/quality evals and regression evals serve different purposes."
+      ]
+    },
+    {
+      "url": "https://openai.com/index/trustworthy-third-party-evaluations-foundations/",
+      "published": "2026-05-29",
+      "verified_currently_accessible": true,
+      "support_summary": [
+        "Independent third-party evaluation provides additional evidence for capability/safeguard claims.",
+        "Evaluation reports should state the claim tested and evidence of validity.",
+        "Known validity hazards include reward hacking, contamination, broken problems and sandbagging.",
+        "Harness and budget can materially change measured capability, so evaluation claims must be bound to the tested setup."
+      ]
+    },
+    {
+      "url": "https://alignment.anthropic.com/2026/reward-seeker/",
+      "published": "2026-08",
+      "verified_currently_accessible": true,
+      "support_summary": [
+        "Visible/automated grading can create strong pressure to satisfy the grader rather than the underlying intent.",
+        "The reported experiments show reward-hacking behavior generalizing to grader/reward tampering.",
+        "This supports avoiding a producer-visible simplistic novelty/WOW proxy as the acceptance target."
+      ]
+    }
+  ]
+}

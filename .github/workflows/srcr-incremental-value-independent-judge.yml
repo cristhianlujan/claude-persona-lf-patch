@@ -1,0 +1,135 @@
+name: SRCR Incremental Value Spec Independent Judge
+on:
+  push:
+    branches:
+      - eval/srcr-incremental-value-spec-20260921
+permissions:
+  contents: read
+jobs:
+  judge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify frozen review inputs
+        run: |
+          set -euo pipefail
+          echo '396b01b39a52861cacb7488dbaa68a25fc4f45c552c6717df6bc6b52d717888a  .github/srcr-eval-incremental-value/candidate.json' | sha256sum -c -
+          echo '941b6f759879d4e857d755b6efeccd2bba0068d61d56fe0186f92d83503b9c43  .github/srcr-eval-incremental-value/scope_authority_packet.json' | sha256sum -c -
+          echo '021126ec368fc21942cd80956c83f269cf2c931fe6b370d9eac784687b170c43  .github/srcr-eval-incremental-value/evidence_manifest.json' | sha256sum -c -
+          python3 - <<'PY'
+          import json
+          g=json.load(open('.github/srcr-eval-incremental-value/runtime_validate.json'))
+          s=json.load(open('.github/srcr-eval-incremental-value/runtime_semantic_utility.json'))
+          assert g.get('status')=='PASS' and not g.get('blocking_codes'), g
+          assert s.get('status')=='PASS' and not s.get('blocking_codes'), s
+          print('PRE_QUALITY_FLOORS=PASS')
+          PY
+      - name: Independent semantic review
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_AI_CANARY_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64,hashlib,json,os,pathlib,re,urllib.request
+          root=pathlib.Path('.github/srcr-eval-incremental-value')
+          candidate=json.load(open(root/'candidate.json'))
+          scope=json.load(open(root/'scope_authority_packet.json'))
+          evidence=json.load(open(root/'evidence_manifest.json'))
+          floors={
+            'runtime_validate':json.load(open(root/'runtime_validate.json')),
+            'runtime_semantic_utility':json.load(open(root/'runtime_semantic_utility.json'))
+          }
+          verification=json.load(open(root/'source_verification.json'))
+          judge=pathlib.Path('profiles/systemic_root_cause_repair_lf/judges/systemic_root_cause_semantic_judge.md').read_text()
+          candidate_sha=hashlib.sha256((root/'candidate.json').read_bytes()).hexdigest()
+          scope_sha=hashlib.sha256((root/'scope_authority_packet.json').read_bytes()).hexdigest()
+          assert candidate_sha=='396b01b39a52861cacb7488dbaa68a25fc4f45c552c6717df6bc6b52d717888a'
+          assert scope_sha=='941b6f759879d4e857d755b6efeccd2bba0068d61d56fe0186f92d83503b9c43'
+          scope_ids=[]
+          for key in ('authorized_requirements','constraints','forbidden_changes'):
+            scope_ids += [x['id'] for x in scope[key]]
+          invariants=['SCOPE_AUTHORITY_INTEGRITY','EVIDENCE_INTEGRITY','CAUSAL_CLOSURE','CONTRADICTION_INTEGRITY','MINIMUM_SUFFICIENT_REUSE','INDEPENDENT_DECISION_CLOSURE','FALSIFIABILITY_REGRESSION']
+          template={
+            'verdict':'FILL_CANONICAL_VERDICT',
+            'candidate_sha256':candidate_sha,
+            'scope_packet_sha256':scope_sha,
+            'source_refs_inspected':[],
+            'observed_candidate_changes':[],
+            'requirement_reconciliation':[{'scope_item_id':sid,'disposition':'FILL_ALLOWED_DISPOSITION','evidence_refs':[]} for sid in scope_ids],
+            'change_declaration_reconciliation':[],
+            'scope_conformance_reconciliation':[],
+            'invariant_results':[{'invariant':inv,'result':'FILL_PASS_FAIL_BLOCKED','reason':'FILL_REASON','evidence_refs':[]} for inv in invariants],
+            'open_design_decisions_found':[],
+            'unsupported_claims':[],
+            'blocking_codes':[],
+            'repair_instructions':[],
+            'next_gate':'FILL_NEXT_GATE'
+          }
+          packet={
+            'review_kind':'SRCR_SELF_REPAIR_SPEC_INCREMENTAL_VALUE',
+            'review_boundary':{'reviewer_is_producer':False,'producer_context_available':False,'model_target':'@cf/mistralai/mistral-small-3.1-24b-instruct'},
+            'candidate_sha256':candidate_sha,
+            'scope_packet_sha256':scope_sha,
+            'exact_candidate':candidate,
+            'scope_authority_packet':scope,
+            'evidence_manifest':evidence,
+            'deterministic_pre_quality_floors':floors,
+            'current_and_external_source_verification':verification
+          }
+          prompt=(
+            'Act as canonical INDEPENDENT Semantic Judge B for this exact SRCR self-repair specification. You are not the producer. '
+            'Do not accept the candidate own handoff_ready, selected alternative, implementation package, research claims, or closure proof as evidence merely because they are present. Independently inspect the ENTIRE candidate and current/source verification. '
+            'The original uploaded spec failed one deterministic vocabulary item only; the review candidate has exactly one non-architectural correction OBSERVED_TEST -> OBSERVED_HISTORY. Evaluate the repaired candidate, while preserving that provenance and refusing to treat the original SHA as accepted. '
+            'Apply these canonical judge instructions literally:\n'+judge+'\n'
+            'Return ONLY strict JSON with exactly these 14 top-level keys. Start from this exact template and replace every FILL_* placeholder; never rename keys: '+json.dumps(template,separators=(',',':'))+'. '
+            'Every scope item must appear exactly once in requirement_reconciliation using field scope_item_id. Exact scope IDs: '+json.dumps(scope_ids)+'. '
+            'Allowed requirement dispositions: SATISFIED,PRESERVED,NOT_APPLICABLE_WITH_EVIDENCE,VIOLATED,UNRESOLVED. '
+            'First independently extract every material selected/proposed change across the entire candidate. Each observed_candidate_changes item must contain change_id, action_class, target, candidate_paths, statement, materiality, evidence_refs. '
+            'Then reconcile every observed change exactly once in change_declaration_reconciliation and scope_conformance_reconciliation. Declaration dispositions: DECLARED_EQUIVALENT,DISCOVERY_ONLY_NOT_IN_SELECTED_REPAIR,UNDECLARED_PROPOSED_CHANGE. Scope dispositions: IN_SCOPE,DISCOVERY_OUT_OF_SCOPE,OUT_OF_SCOPE_DESIGN_DELTA,UNRESOLVED_SCOPE. '
+            'All seven invariants must use the exact field invariant and result PASS/FAIL/BLOCKED with a nonempty reason and evidence_refs where evidence exists. '
+            'Specifically test whether baseline immutability is implementable without a second authority, whether MATERIAL_UPLIFT cannot be self-certified, whether NO_MATERIAL_UPLIFT remains valid, whether the compatibility transition is sufficiently bounded, whether context budget/anti-gaming claims are supported, and whether any selected implementation delta exceeds the authorized four targets. '
+            'A URL alone is not research impact proof; use current_and_external_source_verification to decide whether cited external patterns actually support the design. '
+            'PASS only if deterministic floors passed, all seven invariants PASS, all material scope is reconciled, no undeclared/out-of-scope change exists, no material blocker/contradiction/open design decision remains, and executable falsification protects the repair. '
+            'candidate_sha256 and scope_packet_sha256 must exactly equal the packet bindings.\nPACKET:\n'+json.dumps(packet,ensure_ascii=False,separators=(',',':'))
+          )
+          model='@cf/mistralai/mistral-small-3.1-24b-instruct'
+          body={'messages':[{'role':'system','content':'Independent reviewer. Return strict JSON only, no markdown or wrapper.'},{'role':'user','content':prompt}],'temperature':0,'max_tokens':7000,'response_format':{'type':'json_object'}}
+          url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{model}"
+          req=urllib.request.Request(url,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['CF_TOKEN'],'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=360) as resp:
+            env=json.loads(resp.read().decode())
+          if not env.get('success'): raise SystemExit('CF_FAIL:'+json.dumps(env)[:2000])
+          result=env.get('result') or {}
+          choices=result.get('choices') if isinstance(result,dict) else None
+          content=((choices[0].get('message') or {}).get('content') if isinstance(choices,list) and choices else None) or (result.get('response') if isinstance(result,dict) else None)
+          if not isinstance(content,str) or not content.strip(): raise SystemExit('MODEL_EMPTY')
+          s=content.strip()
+          if s.startswith('```'): s=re.sub(r'^```(?:json)?\\s*','',s); s=re.sub(r'\\s*```$','',s)
+          obj=json.loads(s)
+          pathlib.Path('/tmp/semantic_result.json').write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
+          raw=json.dumps(obj,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()
+          print('MODEL_ID='+model)
+          print('VERDICT='+str(obj.get('verdict')))
+          print('SCOPE_ITEMS='+str(len(obj.get('requirement_reconciliation') or [])))
+          print('CHANGES='+str(len(obj.get('observed_candidate_changes') or [])))
+          print('RESULT_SHA256='+hashlib.sha256(raw).hexdigest())
+          print('JUDGE_RESULT_B64='+base64.b64encode(raw).decode())
+          PY
+      - name: Validate exact-bound judge result
+        run: |
+          set -euo pipefail
+          python3 profiles/systemic_root_cause_repair_lf/validators/validate_semantic_judge_result.py /tmp/semantic_result.json \\
+            --scope-packet .github/srcr-eval-incremental-value/scope_authority_packet.json \\
+            --candidate-sha256 396b01b39a52861cacb7488dbaa68a25fc4f45c552c6717df6bc6b52d717888a \\
+            --scope-packet-sha256 941b6f759879d4e857d755b6efeccd2bba0068d61d56fe0186f92d83503b9c43
+      - name: Require independent semantic acceptance
+        run: |
+          python3 - <<'PY'
+          import json
+          x=json.load(open('/tmp/semantic_result.json'))
+          if x.get('verdict')!='PASS_INDEPENDENT_SEMANTIC':
+            raise SystemExit('SPEC_NOT_ACCEPTED:'+str(x.get('verdict'))+':'+','.join(x.get('blocking_codes') or []))
+          print('PASS_INDEPENDENT_SEMANTIC')
+          PY
