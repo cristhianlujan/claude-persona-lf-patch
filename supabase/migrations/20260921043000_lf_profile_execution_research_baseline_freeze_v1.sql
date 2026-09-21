@@ -45,6 +45,7 @@ begin
   where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
     and e.status='IN_PROGRESS'
     and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
     and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF'
     and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql';
   if c<>1 then raise exception 'PROFILE_BASELINE_PRE_RUNTIME_UPDATE_ACTOR_COUNT:%',c; end if;
@@ -68,7 +69,7 @@ declare
   r jsonb;
   b public.lf_operation_step_judge_bindings%rowtype;
   v_baseline_mode text;
-  v_baseline_contract text;
+  v_baseline_contract jsonb;
 begin
   if nullif(btrim(coalesce(p_profile_code,'')),'') is null
      or nullif(btrim(coalesce(p_target_repo,'')),'') is null
@@ -77,7 +78,7 @@ begin
   end if;
 
   select coalesce(nullif(metadata->>'research_baseline_mode',''),'NOT_REQUIRED'),
-         nullif(metadata->>'research_baseline_contract','')
+         metadata->'research_baseline_contract'
     into v_baseline_mode,v_baseline_contract
   from public.lf_activos
   where codigo_activo=p_profile_code
@@ -90,9 +91,22 @@ begin
   if v_baseline_mode not in ('NOT_REQUIRED','PRE_RESEARCH_ALWAYS') then
     raise exception 'PROFILE_RESEARCH_BASELINE_MODE_INVALID:%',v_baseline_mode;
   end if;
-  if v_baseline_mode='PRE_RESEARCH_ALWAYS'
-     and v_baseline_contract is distinct from 'PROFILE_OUTPUT_VALIDATOR_BOUND_V1' then
-    raise exception 'PROFILE_RESEARCH_BASELINE_CONTRACT_INVALID:%',coalesce(v_baseline_contract,'NULL');
+  if v_baseline_mode='PRE_RESEARCH_ALWAYS' then
+    if jsonb_typeof(v_baseline_contract)<>'object'
+       or v_baseline_contract->>'contract_version'<>'PROFILE_RESEARCH_BASELINE_BINDING_V1'
+       or nullif(btrim(coalesce(v_baseline_contract->>'capture_stage','')),'') is null
+       or v_baseline_contract->>'profile_validator_binding'<>'PROFILE_OUTPUT_VALIDATOR_BOUND_V1'
+       or jsonb_typeof(v_baseline_contract->'output_snapshot_path')<>'array'
+       or jsonb_array_length(v_baseline_contract->'output_snapshot_path')=0
+       or jsonb_typeof(v_baseline_contract->'output_digest_path')<>'array'
+       or jsonb_array_length(v_baseline_contract->'output_digest_path')=0
+       or exists(select 1 from jsonb_array_elements(v_baseline_contract->'output_snapshot_path') x(value) where jsonb_typeof(value)<>'string' or nullif(btrim(value#>>'{}'),'') is null)
+       or exists(select 1 from jsonb_array_elements(v_baseline_contract->'output_digest_path') x(value) where jsonb_typeof(value)<>'string' or nullif(btrim(value#>>'{}'),'') is null)
+    then
+      raise exception 'PROFILE_RESEARCH_BASELINE_CONTRACT_INVALID';
+    end if;
+  else
+    v_baseline_contract:=null;
   end if;
 
   r:=public.fn_lf_operation_reserve_execution_v1(
@@ -106,7 +120,7 @@ begin
       'context_delivery','COMPACT_JIT_ONLY',
       'profile_source_mode','JIT_BY_REF',
       'research_baseline_mode',v_baseline_mode,
-      'research_baseline_contract',coalesce(v_baseline_contract,'NOT_APPLICABLE'),
+      'research_baseline_contract',v_baseline_contract,
       'automatic_impact',false
     )
   );
@@ -128,7 +142,7 @@ begin
         'profile_code',p_profile_code,
         'context_admission_required',true,
         'research_baseline_mode',v_baseline_mode,
-        'research_baseline_contract',coalesce(v_baseline_contract,'NOT_APPLICABLE'),
+        'research_baseline_contract',v_baseline_contract,
         'step_result',b.clean_result_value,
         'blocking_codes','[]'::jsonb,
         'mini_judge_code',b.judge_code,
@@ -144,15 +158,14 @@ begin
     'init_materialized',true,
     'context_admission_required',true,
     'research_baseline_mode',v_baseline_mode,
-    'research_baseline_contract',coalesce(v_baseline_contract,'NOT_APPLICABLE')
+    'research_baseline_contract',v_baseline_contract
   );
 end
 $fn$;
 
 create or replace function public.lf_profile_execution_research_baseline_v1(
   p_execution_id text,
-  p_baseline_snapshot jsonb,
-  p_baseline_digest text,
+  p_baseline_envelope jsonb,
   p_actor_execution_id text
 ) returns jsonb
 language plpgsql
@@ -166,6 +179,7 @@ declare
   existing public.lf_operation_execution_steps%rowtype;
   step_binding public.lf_operation_step_judge_bindings%rowtype;
   mode text;
+  contract jsonb;
   expected_input text;
   expected_source text;
   server_snapshot_fingerprint text;
@@ -185,6 +199,7 @@ begin
   end if;
 
   mode:=coalesce(nullif(e.manifest->>'research_baseline_mode',''),'NOT_REQUIRED');
+  contract:=e.manifest->'research_baseline_contract';
   if mode not in ('NOT_REQUIRED','PRE_RESEARCH_ALWAYS') then
     raise exception 'PROFILE_RESEARCH_BASELINE_MODE_INVALID:%',mode;
   end if;
@@ -221,26 +236,35 @@ begin
     binding:=jsonb_build_object(
       'applicability','NOT_APPLICABLE',
       'mode',mode,
+      'contract_version','NOT_APPLICABLE',
       'capture_stage','NOT_APPLICABLE',
       'baseline_digest','NOT_APPLICABLE',
       'server_snapshot_fingerprint','NOT_APPLICABLE',
-      'digest_verification','NOT_APPLICABLE',
-      'baseline_snapshot','{}'::jsonb
+      'baseline_snapshot','{}'::jsonb,
+      'input_digest','NOT_APPLICABLE',
+      'profile_source_digest','NOT_APPLICABLE',
+      'evidence_refs','[]'::jsonb
     );
   else
-    if p_baseline_snapshot is null or jsonb_typeof(p_baseline_snapshot)<>'object' then
-      raise exception 'PROFILE_RESEARCH_BASELINE_REQUIRED';
+    if jsonb_typeof(contract)<>'object'
+       or contract->>'contract_version'<>'PROFILE_RESEARCH_BASELINE_BINDING_V1'
+       or contract->>'profile_validator_binding'<>'PROFILE_OUTPUT_VALIDATOR_BOUND_V1' then
+      raise exception 'PROFILE_RESEARCH_BASELINE_CONTRACT_INVALID';
     end if;
-    if p_baseline_snapshot->>'snapshot_version'<>'SRCR_BASELINE_SOLUTION_V1'
-       or p_baseline_snapshot->>'capture_stage'<>'PRE_RESEARCH_CHALLENGER'
-       or nullif(btrim(coalesce(p_baseline_snapshot->>'input_digest','')),'') is null
-       or nullif(btrim(coalesce(p_baseline_snapshot->>'profile_source_digest','')),'') is null
-       or jsonb_typeof(p_baseline_snapshot->'evidence_refs')<>'array'
-       or jsonb_array_length(p_baseline_snapshot->'evidence_refs')=0
-       or nullif(btrim(coalesce(p_baseline_snapshot->>'leading_solution_summary','')),'') is null
-       or jsonb_typeof(p_baseline_snapshot->'known_gaps')<>'array'
-       or jsonb_typeof(p_baseline_snapshot->'assumptions')<>'array'
-    then raise exception 'PROFILE_RESEARCH_BASELINE_SHAPE_INVALID'; end if;
+    if p_baseline_envelope is null
+       or jsonb_typeof(p_baseline_envelope)<>'object'
+       or jsonb_typeof(p_baseline_envelope->'snapshot')<>'object'
+       or coalesce(p_baseline_envelope->>'baseline_digest','') !~ '^sha256:[0-9a-f]{64}$'
+       or nullif(btrim(coalesce(p_baseline_envelope->>'capture_stage','')),'') is null
+       or nullif(btrim(coalesce(p_baseline_envelope->>'input_digest','')),'') is null
+       or nullif(btrim(coalesce(p_baseline_envelope->>'profile_source_digest','')),'') is null
+       or jsonb_typeof(p_baseline_envelope->'evidence_refs')<>'array'
+       or jsonb_array_length(p_baseline_envelope->'evidence_refs')=0
+    then raise exception 'PROFILE_RESEARCH_BASELINE_ENVELOPE_INVALID'; end if;
+
+    if p_baseline_envelope->>'capture_stage' is distinct from contract->>'capture_stage' then
+      raise exception 'PROFILE_RESEARCH_BASELINE_CAPTURE_STAGE_MISMATCH';
+    end if;
 
     expected_input:=e.manifest->>'input_sha256';
     if expected_input ~ '^[0-9a-f]{64}$' then expected_input:='sha256:'||expected_input; end if;
@@ -248,34 +272,35 @@ begin
     if expected_source ~ '^[0-9a-f]{64}$' then expected_source:='sha256:'||expected_source; end if;
 
     if coalesce(expected_input,'') !~ '^sha256:[0-9a-f]{64}$'
-       or p_baseline_snapshot->>'input_digest' is distinct from expected_input then
+       or p_baseline_envelope->>'input_digest' is distinct from expected_input then
       raise exception 'PROFILE_RESEARCH_BASELINE_INPUT_DIGEST_MISMATCH';
     end if;
     if coalesce(expected_source,'') !~ '^sha256:[0-9a-f]{64}$'
-       or p_baseline_snapshot->>'profile_source_digest' is distinct from expected_source then
+       or p_baseline_envelope->>'profile_source_digest' is distinct from expected_source then
       raise exception 'PROFILE_RESEARCH_BASELINE_SOURCE_DIGEST_MISMATCH';
     end if;
 
-    for ref in select jsonb_array_elements_text(p_baseline_snapshot->'evidence_refs') loop
-      if ref ~* '^(https?://|external://|web://)' then
+    for ref in select jsonb_array_elements_text(p_baseline_envelope->'evidence_refs') loop
+      if btrim(ref) ~* '^(https?://|external://|web://)' then
         raise exception 'PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN:%',ref;
       end if;
     end loop;
 
-    if coalesce(p_baseline_digest,'') !~ '^sha256:[0-9a-f]{64}$' then
-      raise exception 'PROFILE_RESEARCH_BASELINE_DIGEST_INVALID';
-    end if;
     server_snapshot_fingerprint:='sha256:'||encode(
-      extensions.digest(convert_to(p_baseline_snapshot::text,'UTF8'),'sha256'),'hex'
+      extensions.digest(convert_to((p_baseline_envelope->'snapshot')::text,'UTF8'),'sha256'),'hex'
     );
     binding:=jsonb_build_object(
       'applicability','REQUIRED',
       'mode',mode,
-      'capture_stage','PRE_RESEARCH_CHALLENGER',
-      'baseline_digest',p_baseline_digest,
+      'contract_version',contract->>'contract_version',
+      'capture_stage',p_baseline_envelope->>'capture_stage',
+      'baseline_digest',p_baseline_envelope->>'baseline_digest',
       'server_snapshot_fingerprint',server_snapshot_fingerprint,
-      'digest_verification','PROFILE_OUTPUT_VALIDATOR_BOUND_V1',
-      'baseline_snapshot',p_baseline_snapshot
+      'baseline_snapshot',p_baseline_envelope->'snapshot',
+      'input_digest',p_baseline_envelope->>'input_digest',
+      'profile_source_digest',p_baseline_envelope->>'profile_source_digest',
+      'evidence_refs',p_baseline_envelope->'evidence_refs',
+      'profile_validator_binding',contract->>'profile_validator_binding'
     );
   end if;
 
@@ -321,6 +346,11 @@ declare
   baseline_step public.lf_operation_execution_steps%rowtype;
   baseline_binding public.lf_operation_step_judge_bindings%rowtype;
   baseline jsonb;
+  contract jsonb;
+  snapshot_path text[];
+  digest_path text[];
+  output_snapshot jsonb;
+  output_digest text;
   transport jsonb;
   hard jsonb := '[]'::jsonb;
 begin
@@ -352,7 +382,8 @@ begin
        or p_evidence_payload->>'context_budget_status' not in ('GREEN','YELLOW')
        or jsonb_typeof(p_evidence_payload->'delivery')<>'object'
        or jsonb_typeof(p_evidence_payload->'lazy_refs')<>'object'
-    then hard:=hard||jsonb_build_array('context_admission_shape_invalid');
+    then
+      hard:=hard||jsonb_build_array('context_admission_shape_invalid');
     else
       event_id:=(p_evidence_payload->>'context_event_id')::bigint;
       budget_event_id:=(p_evidence_payload->>'context_budget_event_id')::bigint;
@@ -413,10 +444,29 @@ begin
         hard:=hard||jsonb_build_array('research_baseline_execute_binding_mismatch');
       end if;
       if baseline->>'applicability'='REQUIRED' then
-        if jsonb_typeof(p_evidence_payload->'profile_output')<>'object'
-           or p_evidence_payload#>>'{profile_output,research_assurance,baseline_digest}' is distinct from baseline->>'baseline_digest'
-           or p_evidence_payload#>'{profile_output,research_assurance,baseline_solution_snapshot}' is distinct from baseline->'baseline_snapshot'
-        then hard:=hard||jsonb_build_array('research_baseline_output_mutated'); end if;
+        contract:=e.manifest->'research_baseline_contract';
+        if jsonb_typeof(contract)<>'object'
+           or jsonb_typeof(contract->'output_snapshot_path')<>'array'
+           or jsonb_typeof(contract->'output_digest_path')<>'array' then
+          hard:=hard||jsonb_build_array('research_baseline_contract_missing');
+        else
+          select array_agg(value order by ord)
+            into snapshot_path
+          from jsonb_array_elements_text(contract->'output_snapshot_path') with ordinality x(value,ord);
+          select array_agg(value order by ord)
+            into digest_path
+          from jsonb_array_elements_text(contract->'output_digest_path') with ordinality x(value,ord);
+          if jsonb_typeof(p_evidence_payload->'profile_output')<>'object' then
+            hard:=hard||jsonb_build_array('research_baseline_output_missing');
+          else
+            output_snapshot:=(p_evidence_payload->'profile_output')#>snapshot_path;
+            output_digest:=(p_evidence_payload->'profile_output')#>>digest_path;
+            if output_snapshot is distinct from baseline->'baseline_snapshot'
+               or output_digest is distinct from baseline->>'baseline_digest' then
+              hard:=hard||jsonb_build_array('research_baseline_output_mutated');
+            end if;
+          end if;
+        end if;
       end if;
     end if;
   end if;
@@ -439,8 +489,8 @@ begin
 end
 $fn$;
 
-revoke all on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text,text) from public,anon,authenticated;
-grant execute on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text,text) to service_role;
+revoke all on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text) from public,anon,authenticated;
+grant execute on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text) to service_role;
 
 insert into public.lf_operation_steps(
   operation_code,step_order,step_id,required,evidence_required,source_path,source_sha,active,
@@ -449,11 +499,12 @@ insert into public.lf_operation_steps(
 select 'EJECUCION_PERFIL_LF',47,'research_baseline_freeze',true,
   'research_baseline_binding; baseline_receipt_ref; server_validated',
   'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json',
-  'df9a62eedf7168fad10f71af9f7026a1300396b506fd498a6563a21e7140702b',true,47,e.execution_id,e.execution_id
+  '30ff1918b724847551cd32719b89936aac34ee1f2d1d951adaf191796c912160',true,47,e.execution_id,e.execution_id
 from public.lf_operation_execution e
 where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and e.status='IN_PROGRESS'
   and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
   and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF'
   and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql';
 
@@ -463,13 +514,14 @@ insert into public.lf_operation_judges(
 )
 select 'EJECUCION_PERFIL_LF','MINI_JUDGE_EJECUCION_PERFIL_RESEARCH_BASELINE_V1',
   'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json',
-  'df9a62eedf7168fad10f71af9f7026a1300396b506fd498a6563a21e7140702b','["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
+  '30ff1918b724847551cd32719b89936aac34ee1f2d1d951adaf191796c912160','["server_validated"]'::jsonb,'["server_validation_failed"]'::jsonb,
   '["STEP_PASS_WITH_EVIDENCE","BLOCKED_STEP_NOT_CLEAN","RETURN_TO_ROUTER"]'::jsonb,
   'ACTIVE_ENFORCEMENT',e.execution_id,e.execution_id
 from public.lf_operation_execution e
 where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and e.status='IN_PROGRESS'
   and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
   and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF'
   and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql';
 
@@ -489,12 +541,13 @@ select 'EJECUCION_PERFIL_LF','research_baseline_freeze',47,47,'CONTRACT-EJECUCIO
   '["research_baseline_binding","baseline_receipt_ref","server_validated"]'::jsonb,
   'execute_profile','RETURN_TO_ROUTER','ACTIVE_ENFORCEMENT',
   'Transversal and profile-agnostic. PRE_RESEARCH_ALWAYS is opt-in from canonical profile asset metadata; NOT_REQUIRED costs no model baseline phase.',
-  'public.lf_profile_execution_research_baseline_v1(text,jsonb,text,text)',
+  'public.lf_profile_execution_research_baseline_v1(text,jsonb,text)',
   '{"server_validation_failed":true}'::jsonb,e.execution_id,e.execution_id
 from public.lf_operation_execution e
 where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and e.status='IN_PROGRESS'
   and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
   and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF'
   and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql';
 
@@ -510,6 +563,7 @@ from public.lf_operation_execution e
 where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and e.status='IN_PROGRESS'
   and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
   and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF'
   and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql';
 
@@ -518,6 +572,7 @@ set next_if_pass='research_baseline_freeze',updated_at=now(),
     updated_by_execution_id=(select e.execution_id from public.lf_operation_execution e
       where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and e.status='IN_PROGRESS'
         and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
         and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF' and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql')
 where operation_code='EJECUCION_PERFIL_LF' and step_id='context_admission' and status='ACTIVE_ENFORCEMENT';
 
@@ -539,6 +594,7 @@ set required_evidence_keys=(
     updated_by_execution_id=(select e.execution_id from public.lf_operation_execution e
       where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and e.status='IN_PROGRESS'
         and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
         and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF' and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql')
 where operation_code='EJECUCION_PERFIL_LF' and step_id='execute_profile' and status='ACTIVE_ENFORCEMENT';
 
@@ -551,6 +607,7 @@ set required_evidence_keys=(
     updated_by_execution_id=(select e.execution_id from public.lf_operation_execution e
       where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and e.status='IN_PROGRESS'
         and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
         and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF' and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql')
 where operation_code='EJECUCION_PERFIL_LF' and step_id='execute_profile' and status='ACTIVE_ENFORCEMENT';
 
@@ -560,6 +617,7 @@ set evidence_required='profile_output; source_refs; context_receipt_ref; context
     updated_by_execution_id=(select e.execution_id from public.lf_operation_execution e
       where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and e.status='IN_PROGRESS'
         and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
         and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF' and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql')
 where operation_code='EJECUCION_PERFIL_LF' and step_id='execute_profile';
 
@@ -571,7 +629,7 @@ set required_before_write=case when required_before_write @> '["research_baselin
       'research_baseline_modes',jsonb_build_array('NOT_REQUIRED','PRE_RESEARCH_ALWAYS'),
       'research_baseline_default','NOT_REQUIRED',
       'research_baseline_external_refs_before_freeze',false,
-      'research_baseline_digest_contract','PROFILE_OUTPUT_VALIDATOR_BOUND_V1'
+      'research_baseline_contract_version','PROFILE_RESEARCH_BASELINE_BINDING_V1'
     ),
     blocked=blocked
       ||case when blocked @> '["research_baseline_missing"]'::jsonb then '[]'::jsonb else '["research_baseline_missing"]'::jsonb end
@@ -581,6 +639,7 @@ set required_before_write=case when required_before_write @> '["research_baselin
     updated_by_execution_id=(select e.execution_id from public.lf_operation_execution e
       where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and e.status='IN_PROGRESS'
         and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
         and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF' and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql')
 where operation_code='EJECUCION_PERFIL_LF' and status='ACTIVE_ENFORCEMENT';
 
@@ -602,8 +661,8 @@ select 'PROFILE_RESEARCH_BASELINE_FREEZE','PROFILE_RESEARCH_BASELINE_FREEZE','CA
     'operation_code','EJECUCION_PERFIL_LF',
     'step_id','research_baseline_freeze',
     'function','public.lf_profile_execution_research_baseline_v1',
-    'digest_model','TEMPORAL_SNAPSHOT_EXACT_PLUS_PROFILE_VALIDATOR_CANONICAL_DIGEST',
-    'contract_sha256','df9a62eedf7168fad10f71af9f7026a1300396b506fd498a6563a21e7140702b'
+    'binding_model','OPAQUE_SNAPSHOT_PLUS_DECLARATIVE_OUTPUT_PATHS',
+    'contract_sha256','30ff1918b724847551cd32719b89936aac34ee1f2d1d951adaf191796c912160'
   ),
   jsonb_build_object(
     'source_kind','GITHUB_SOURCE_PLUS_SUPABASE_REGISTRY',
@@ -632,6 +691,7 @@ from public.lf_operation_execution e
 where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
   and e.status='IN_PROGRESS'
   and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
   and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF'
   and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql'
   and not exists(select 1 from public.lf_activos where codigo_activo='PROFILE_RESEARCH_BASELINE_FREEZE' and archived_at is null);
@@ -643,11 +703,12 @@ set notes=coalesce(notes,'')||
     updated_by_execution_id=(select e.execution_id from public.lf_operation_execution e
       where e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' and e.status='IN_PROGRESS'
         and coalesce((e.manifest->>'runtime_update_governed')::boolean,false)=true
+    and coalesce((e.manifest->>'production_apply_authorized')::boolean,false)=true
         and e.manifest->>'target_operation'='EJECUCION_PERFIL_LF' and e.target_path='supabase/migrations/20260921043000_lf_profile_execution_research_baseline_freeze_v1.sql')
 where operation_code='EJECUCION_PERFIL_LF';
 
-comment on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text,text)
-is 'Transversal fail-closed pre-research baseline freeze for EJECUCION_PERFIL_LF. Applicability comes from canonical profile asset metadata; required snapshots are persisted before execute_profile and cannot be replaced after a clean step. Canonical baseline digest semantics remain owned by the profile output validator; the server additionally stores an independent snapshot fingerprint.';
+comment on function public.lf_profile_execution_research_baseline_v1(text,jsonb,text)
+is 'Transversal fail-closed pre-research baseline freeze for EJECUCION_PERFIL_LF. Applicability and profile-specific output paths come from canonical profile asset metadata; the runtime freezes an opaque snapshot before execute_profile, validates generic envelope identity, and uses declarative JSON paths for exact final binding without embedding profile vocabulary.';
 
 comment on function public.lf_profile_execution_trust_validation_v1(text,text,jsonb)
 is 'Server trust boundary for EJECUCION_PERFIL_LF. Enforces context transport and exact persisted pre-research baseline binding when the profile asset opts into research baseline assurance.';
@@ -682,7 +743,7 @@ begin
       and required_evidence_keys @> '["research_baseline_ref","research_baseline_digest"]'::jsonb
   ) then raise exception 'PROFILE_BASELINE_POST_EXECUTE_BINDING_MISSING'; end if;
 
-  if to_regprocedure('public.lf_profile_execution_research_baseline_v1(text,jsonb,text,text)') is null
+  if to_regprocedure('public.lf_profile_execution_research_baseline_v1(text,jsonb,text)') is null
      or to_regprocedure('public.lf_profile_execution_trust_validation_v1(text,text,jsonb)') is null
   then raise exception 'PROFILE_BASELINE_POST_FUNCTIONS_MISSING'; end if;
 

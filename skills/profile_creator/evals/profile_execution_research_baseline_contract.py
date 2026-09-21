@@ -8,83 +8,93 @@ MIG=ROOT/'supabase/migrations/20260921043000_lf_profile_execution_research_basel
 CONTRACT=ROOT/'sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json'
 README=ROOT/'sandbox/lf_contract_gate_test/transversal_assets/profile_research_baseline_freeze/README.md'
 
-assert MIG.is_file(), MIG
-assert CONTRACT.is_file(), CONTRACT
-assert README.is_file(), README
+for path in (MIG,CONTRACT,README):
+    assert path.is_file(), path
 sql=MIG.read_text()
 contract=json.loads(CONTRACT.read_text())
 contract_sha=hashlib.sha256(CONTRACT.read_bytes()).hexdigest()
 
+# Canonical capability identity and server-derived applicability.
 assert contract['schema_version']=='LF_PROFILE_RESEARCH_BASELINE_FREEZE_CONTRACT_V1'
 assert contract['capability_code']=='PROFILE_RESEARCH_BASELINE_FREEZE'
-assert contract['applicability']['authority']=='public.lf_activos.metadata.research_baseline_mode'
 assert contract['applicability']['default']=='NOT_REQUIRED'
 assert set(contract['applicability']['modes'])=={'NOT_REQUIRED','PRE_RESEARCH_ALWAYS'}
-assert contract['applicability']['required_opt_in_contract']=='PROFILE_OUTPUT_VALIDATOR_BOUND_V1'
-assert contract['baseline_contract']['canonical_digest_source']=='producer_supplied_then_required_profile_output_validator'
+assert contract['applicability']['required_contract_version']=='PROFILE_RESEARCH_BASELINE_BINDING_V1'
 assert contract_sha in sql
-
-# Generic applicability: runtime derives it from canonical asset metadata; no SRCR/profile-code case split.
 assert "metadata->>'research_baseline_mode'" in sql
-assert "metadata->>'research_baseline_contract'" in sql
-assert 'PROFILE_RESEARCH_BASELINE_CONTRACT_INVALID' in sql
-assert "mode not in ('NOT_REQUIRED','PRE_RESEARCH_ALWAYS')" in sql
-assert 'PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF' not in sql
-assert 'SYSTEMIC_ROOT_CAUSE_REPAIR_LF' not in sql
+assert "metadata->'research_baseline_contract'" in sql
+assert "contract->>'contract_version'<>'PROFILE_RESEARCH_BASELINE_BINDING_V1'" in sql
+assert "contract->>'profile_validator_binding'<>'PROFILE_OUTPUT_VALIDATOR_BOUND_V1'" in sql
+assert "jsonb_typeof(value)<>'string'" in sql
 
-# Temporal boundary is a real operation step between context admission and model execution.
+# Runtime must stay profile-agnostic: profile-specific vocabulary belongs only in asset contract data.
+for forbidden in (
+    'PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF',
+    'SYSTEMIC_ROOT_CAUSE_REPAIR_LF',
+    'SRCR_BASELINE_SOLUTION_V1',
+    'PRE_RESEARCH_CHALLENGER',
+    'leading_solution_summary',
+    'known_gaps',
+    'assumptions',
+    'research_assurance',
+    'baseline_solution_snapshot',
+):
+    assert forbidden not in sql, forbidden
+
+# Temporal boundary is a durable operation step before execute_profile.
 assert "47,'research_baseline_freeze'" in sql
 assert "step_id='context_admission'" in sql and "next_if_pass='research_baseline_freeze'" in sql
 assert "'research_baseline_freeze',47,47" in sql
-assert "'execute_profile'" in sql
+assert "next_if_pass='execute_profile'" in sql
+assert "existing.status=step_binding.clean_result_value" in sql
 assert sql.index("create or replace function public.lf_profile_execution_research_baseline_v1") < sql.index("insert into public.lf_operation_steps")
 
-# Freeze binds internal-only baseline to exact input/source identities and blocks retrospective replacement.
-for token in [
-    'PROFILE_RESEARCH_BASELINE_INPUT_DIGEST_MISMATCH',
-    'PROFILE_RESEARCH_BASELINE_SOURCE_DIGEST_MISMATCH',
-    'PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN',
-    'PROFILE_RESEARCH_BASELINE_DIGEST_INVALID',
-    "'PRE_RESEARCH_CHALLENGER'",
-    "'SRCR_BASELINE_SOLUTION_V1'",
-    "existing.status=step_binding.clean_result_value",
-]:
+# Generic envelope binds temporal identity without duplicating profile digest semantics.
+for token in (
+    "p_baseline_envelope jsonb",
+    "p_baseline_envelope->'snapshot'",
+    "p_baseline_envelope->>'baseline_digest'",
+    "p_baseline_envelope->>'capture_stage'",
+    "p_baseline_envelope->>'input_digest'",
+    "p_baseline_envelope->>'profile_source_digest'",
+    "p_baseline_envelope->'evidence_refs'",
+    "PROFILE_RESEARCH_BASELINE_ENVELOPE_INVALID",
+    "PROFILE_RESEARCH_BASELINE_CAPTURE_STAGE_MISMATCH",
+    "PROFILE_RESEARCH_BASELINE_INPUT_DIGEST_MISMATCH",
+    "PROFILE_RESEARCH_BASELINE_SOURCE_DIGEST_MISMATCH",
+    "PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN",
+    "'server_snapshot_fingerprint',server_snapshot_fingerprint",
+):
     assert token in sql, token
-for prefix in ['https?://','external://','web://']:
+for prefix in ('https?://','external://','web://'):
     assert prefix in sql, prefix
-
-# Runtime freezes exact snapshot identity but deliberately does not reimplement the profile canonical digest.
-assert 'p_baseline_digest text' in sql
-assert "'baseline_digest',p_baseline_digest" in sql
-assert "'digest_verification','PROFILE_OUTPUT_VALIDATOR_BOUND_V1'" in sql
-assert "'server_snapshot_fingerprint',server_snapshot_fingerprint" in sql
+assert "btrim(ref) ~* '^(https?://|external://|web://)'" in sql
 assert "baseline_digest:='sha256:'" not in sql
 
-# Execute phase is rebound to the exact persisted receipt and snapshot/digest.
-for token in [
-    'research_baseline_predecessor_not_clean',
-    'research_baseline_execute_binding_mismatch',
-    'research_baseline_output_mutated',
-    "research_baseline_ref",
-    "research_baseline_digest",
-    "baseline_solution_snapshot",
-]:
+# Final binding resolves profile-owned fields via declarative JSON paths.
+for token in (
+    "output_snapshot_path",
+    "output_digest_path",
+    "jsonb_array_elements_text(contract->'output_snapshot_path')",
+    "jsonb_array_elements_text(contract->'output_digest_path')",
+    "output_snapshot:=(p_evidence_payload->'profile_output')#>snapshot_path",
+    "output_digest:=(p_evidence_payload->'profile_output')#>>digest_path",
+    "research_baseline_execute_binding_mismatch",
+    "research_baseline_output_mutated",
+):
     assert token in sql, token
 
-# Legacy/non-applicable profiles have a server-side N/A path; no baseline model payload is required.
+# Legacy profiles are a server-side N/A path; no second model/engine/table is introduced.
 assert "if mode='NOT_REQUIRED' then" in sql
 assert "'applicability','NOT_APPLICABLE'" in sql
-assert "'baseline_digest','NOT_APPLICABLE'" in sql
-
-# No parallel table/engine/semantic authority introduced.
 assert 'create table' not in sql.lower()
 assert 'MINI_JUDGE_EJECUCION_PERFIL_RESEARCH_BASELINE_V1' in sql
 assert 'lf_record_operation_step_core_v1' in sql
-assert 'PROFILE_RESEARCH_BASELINE_FREEZE' in sql
 assert "'CAPABILITY','TRANSVERSAL_RUNTIME_ASSURANCE'" in sql
 
-# Rollout is source/runtime-operation scoped and keeps EJECUCION_PERFIL_LF operational read-only.
+# Rollout remains isolated to governed runtime update and preserves runtime state.
 assert 'ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF' in sql
+assert "production_apply_authorized')::boolean,false)=true" in sql
 assert "status='PRODUCCION_CONTROLADA_READ_ONLY'" in sql
 assert 'PROFILE_BASELINE_POST_OPERATION_STATE_CHANGED' in sql
 assert sql.strip().startswith('begin;') and sql.strip().endswith('commit;')

@@ -14,9 +14,11 @@ La decide el servidor desde `public.lf_activos.metadata.research_baseline_mode`;
 
 ## Contrato de freeze
 
-Cuando aplica, el perfil debe declarar `research_baseline_contract=PROFILE_OUTPUT_VALIDATOR_BOUND_V1`. El baseline usa `capture_stage=PRE_RESEARCH_CHALLENGER`, queda ligado al digest del input y a la revisión exacta de fuente, y referencia sólo evidencia interna disponible antes de research. Se rechazan refs `http://`, `https://`, `external://` y `web://` dentro del baseline congelado.
+Cuando aplica, el perfil declara en su asset un contrato PROFILE_RESEARCH_BASELINE_BINDING_V1 con capture_stage, output_snapshot_path, output_digest_path y profile_validator_binding=PROFILE_OUTPUT_VALIDATOR_BOUND_V1. El runtime no conoce el vocabulario interno del perfil.
 
-El step limpio queda en `public.lf_operation_execution_steps`; el recorder canónico impide reemplazarlo con evidencia distinta. Se persisten el snapshot exacto, el digest canónico declarado y un `server_snapshot_fingerprint` independiente. El runtime **no reimplementa** la canonicalización del perfil: `execute_profile` debe transportar `research_baseline_ref` + `research_baseline_digest`, el server compara el snapshot/digest final contra lo persistido y el output validator del perfil verifica que el digest canónico corresponda al snapshot.
+El productor entrega un envelope genérico con snapshot opaco, baseline_digest, capture_stage, input_digest, profile_source_digest y evidence_refs. El servidor valida identidad/orden temporal, bloquea evidencia externa antes del freeze y persiste un server_snapshot_fingerprint independiente. Ese fingerprint no sustituye el digest canónico del perfil.
+
+El step limpio queda en public.lf_operation_execution_steps; el recorder canónico impide reemplazarlo con evidencia distinta. En execute_profile, el server usa las rutas declarativas del asset para extraer snapshot/digest del output y compararlos con lo congelado. La corrección del digest canónico sigue siendo responsabilidad del output validator enlazado del perfil.
 
 ## No duplicación
 
@@ -28,7 +30,11 @@ Perfiles `NOT_REQUIRED` cierran el step como N/A de forma server-side y no gener
 
 ## Readback
 
-Verificar: step `research_baseline_freeze` limpio, `baseline_receipt_ref` exacto, digest persistido, igualdad con `profile_output.research_assurance.baseline_solution_snapshot/baseline_digest`, y ausencia de evidencia externa dentro del baseline.
+Verificar: step `research_baseline_freeze` limpio, `baseline_receipt_ref` exacto, digest persistido, igualdad entre el output resuelto por output_snapshot_path/output_digest_path y el baseline persistido, y ausencia de evidencia externa dentro del baseline.
+
+## Aplicación gobernada
+
+La migración sólo reconoce como actor una ejecución de actualización runtime con production_apply_authorized=true. Los intentos source-only o bloqueados no pueden aplicar el cambio live.
 
 ## Rollback
 
@@ -37,6 +43,6 @@ Primero retirar el opt-in del perfil por reconciliación gobernada; luego revert
 ## Fuente
 
 - Contract: `sandbox/lf_contract_gate_test/profile_execution_runtime/profile_research_baseline_freeze_contract_v1.json`
-- Contract SHA-256: `df9a62eedf7168fad10f71af9f7026a1300396b506fd498a6563a21e7140702b`
+- Contract SHA-256: 30ff1918b724847551cd32719b89936aac34ee1f2d1d951adaf191796c912160
 - Operation: `public.lf_operation_registry/EJECUCION_PERFIL_LF`
 - Durable evidence: `public.lf_operation_execution_steps`

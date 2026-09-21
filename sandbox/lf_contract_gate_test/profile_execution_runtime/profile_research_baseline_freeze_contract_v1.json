@@ -4,14 +4,14 @@
   "operation_code": "EJECUCION_PERFIL_LF",
   "purpose": "Bind a model-authored pre-research solution baseline to durable runtime evidence before the governed profile enters research/challenger execution, without creating a second reasoning authority.",
   "applicability": {
-    "authority": "public.lf_activos.metadata.research_baseline_mode",
+    "authority": "public.lf_activos.metadata.research_baseline_mode + metadata.research_baseline_contract",
     "modes": [
       "NOT_REQUIRED",
       "PRE_RESEARCH_ALWAYS"
     ],
     "default": "NOT_REQUIRED",
-    "rule": "The server derives applicability from the canonical profile asset; caller payload cannot opt in/out.",
-    "required_opt_in_contract": "PROFILE_OUTPUT_VALIDATOR_BOUND_V1"
+    "rule": "Server derives mode and declarative binding contract from the canonical profile asset; caller cannot opt in/out or supply output paths.",
+    "required_contract_version": "PROFILE_RESEARCH_BASELINE_BINDING_V1"
   },
   "phase_order": [
     "context_admission",
@@ -22,61 +22,64 @@
     "report_output"
   ],
   "baseline_contract": {
-    "snapshot_version": "SRCR_BASELINE_SOLUTION_V1",
-    "capture_stage": "PRE_RESEARCH_CHALLENGER",
-    "required_fields": [
-      "snapshot_version",
+    "profile_asset_contract_shape": {
+      "contract_version": "PROFILE_RESEARCH_BASELINE_BINDING_V1",
+      "capture_stage": "non-empty profile-defined stage identifier",
+      "output_snapshot_path": "non-empty JSON path array",
+      "output_digest_path": "non-empty JSON path array",
+      "profile_validator_binding": "PROFILE_OUTPUT_VALIDATOR_BOUND_V1"
+    },
+    "runtime_envelope_required_fields": [
+      "snapshot",
+      "baseline_digest",
       "capture_stage",
       "input_digest",
       "profile_source_digest",
-      "evidence_refs",
-      "leading_solution_summary",
-      "known_gaps",
-      "assumptions"
+      "evidence_refs"
     ],
+    "snapshot": "opaque profile-owned JSON object",
+    "baseline_digest": "profile-owned canonical sha256 validated by the bound profile output validator",
+    "server_snapshot_fingerprint": "SHA256(jsonb_text(snapshot)); temporal identity/readback only, never canonical value authority",
     "internal_evidence_only_before_freeze": true,
     "forbidden_pre_freeze_ref_prefixes": [
       "http://",
       "https://",
       "external://",
       "web://"
-    ],
-    "digest": "SHA256(jsonb_text(snapshot))",
-    "canonical_digest_source": "producer_supplied_then_required_profile_output_validator",
-    "server_snapshot_fingerprint": "SHA256(jsonb_text(snapshot)); identity/readback only, not canonical value digest"
+    ]
   },
   "invariants": [
-    "applicability_is_server_derived_from_profile_asset",
+    "applicability_and_binding_contract_are_server_derived_from_profile_asset",
+    "runtime_contains_no_profile_specific_snapshot_vocabulary",
     "baseline_step_is_durable_before_execute_profile",
     "clean_baseline_step_is_immutable_on_retry",
     "baseline_input_digest_matches_execution_input",
     "baseline_profile_source_digest_matches_execution_source",
+    "baseline_capture_stage_matches_profile_asset_contract",
     "baseline_contains_no_external_research_refs",
-    "required_mode_declares_profile_output_validator_digest_contract",
     "execute_profile_references_exact_persisted_baseline_receipt",
-    "profile_output_baseline_snapshot_and_digest_match_persisted_baseline",
-    "canonical_digest_is_verified_by_profile_output_validator_not_reimplemented_by_runtime",
+    "profile_output_snapshot_and_digest_are_resolved_by_declarative_paths_and_match_persisted_baseline",
+    "canonical_digest_is_verified_by_bound_profile_output_validator_not_reimplemented_by_runtime",
     "non_applicable_profiles_pay_no_model_baseline_cost",
     "same_profile_execution_authority_and_same_semantic_judge",
-    "no_new_reasoning_engine_or_parallel_authority"
+    "no_new_reasoning_engine_or_parallel_authority",
+    "production_migration_apply_requires_explicit_governed_authorization"
   ],
   "fail_closed_codes": [
     "PROFILE_RESEARCH_BASELINE_MODE_INVALID",
     "PROFILE_RESEARCH_BASELINE_CONTRACT_INVALID",
     "PROFILE_RESEARCH_BASELINE_CONTEXT_NOT_CLEAN",
-    "PROFILE_RESEARCH_BASELINE_REQUIRED",
-    "PROFILE_RESEARCH_BASELINE_SHAPE_INVALID",
+    "PROFILE_RESEARCH_BASELINE_ENVELOPE_INVALID",
+    "PROFILE_RESEARCH_BASELINE_CAPTURE_STAGE_MISMATCH",
     "PROFILE_RESEARCH_BASELINE_INPUT_DIGEST_MISMATCH",
-    "PROFILE_RESEARCH_BASELINE_DIGEST_INVALID",
     "PROFILE_RESEARCH_BASELINE_SOURCE_DIGEST_MISMATCH",
-    "PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN",
-    "PROFILE_RESEARCH_BASELINE_EXECUTE_BINDING_MISMATCH",
-    "PROFILE_RESEARCH_BASELINE_OUTPUT_MUTATED"
+    "PROFILE_RESEARCH_BASELINE_EXTERNAL_REF_FORBIDDEN"
   ],
   "compatibility": {
     "legacy_profiles": "NOT_REQUIRED by default",
-    "opt_in": "Set canonical profile asset metadata.research_baseline_mode=PRE_RESEARCH_ALWAYS through governed profile reconciliation.",
-    "rollback": "Remove the profile metadata opt-in first, then revert the runtime step/function migration."
+    "opt_in": "Set canonical profile asset metadata.research_baseline_mode=PRE_RESEARCH_ALWAYS and a PROFILE_RESEARCH_BASELINE_BINDING_V1 contract through governed profile reconciliation.",
+    "rollback": "Remove the profile metadata opt-in first, then revert the runtime step/function migration.",
+    "production_apply": "Migration actor must carry production_apply_authorized=true; source-candidate executions cannot satisfy the apply precondition."
   },
   "promotion": "forbidden_by_this_change"
 }
