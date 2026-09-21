@@ -171,6 +171,17 @@ For every material node verify:
 
 Listing phase names or describing a high-level flow is not coverage. Missing material nodes, nominal-only wiring, or a `DESIGN_BLOCKING` node in a ready spec fails semantic closure.
 
+### T4 — V0.5 premature-stop verification
+For V0.5 non-ready candidates and every V0.5 `DESIGN_BLOCKING` uncertainty/process node, independently verify whether the producer stopped while accessible evidence could still close the gap.
+- Confirm `attempted_sources` covers the material surfaces that could plausibly resolve the uncertainty.
+- Hydrate each attempt's `evidence_id` and verify that the evidence at the bound locator supports the declared attempt result; otherwise add `ATTEMPT_RESULT_NOT_SUPPORTED` and return to worker.
+- When multiple blocked process nodes share one uncertainty, verify that its attempts materially cover every referenced node; a generic uncertainty spanning unrelated phases is `PREMATURE_DESIGN_BLOCKING`.
+- Probe at least one material accessible surface omitted from the attempts when such a surface exists. If it closes or materially narrows the gap, add `PREMATURE_DESIGN_BLOCKING` and return to worker, naming the omitted surface rather than supplying the answer.
+- If a blocker is derived from the test harness, requested profile revision, or another execution-context fact rather than the audited system, add `TEST_CONTEXT_AS_BLOCKER` and return to worker.
+- If a cited reference cannot be resolved in live authority, add `EVIDENCE_REFERENCE_NOT_FOUND`; fabricated evidence remains a BLOCK condition.
+
+For a semantic PASS, these checks are part of `EVIDENCE_INTEGRITY`; the invariant cannot PASS while any T4 blocking code remains. A legitimate `NEEDS_MORE_EVIDENCE` with supported attempts and no omitted closing surface is valid and must not be penalized.
+
 ## Verdict rules
 Return `PASS_INDEPENDENT_SEMANTIC` only when:
 - deterministic validation passed;
