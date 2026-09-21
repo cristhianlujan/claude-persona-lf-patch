@@ -30,7 +30,7 @@ jobs:
               return subprocess.check_output(["git",*args], text=True)
           git("cat-file","-e",CANDIDATE+"^{commit}")
           changed=[x for x in git("diff","--name-only",BASE,CANDIDATE,"--",PROFILE).splitlines() if x.strip()]
-          diff=git("diff","--no-ext-diff","--unified=60",BASE,CANDIDATE,"--",PROFILE)
+          diff=git("diff","--no-ext-diff","--unified=1",BASE,CANDIDATE,"--",PROFILE)
           artifact_digest=hashlib.sha256(diff.encode()).hexdigest()
           quality_paths=[
             "profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
@@ -42,17 +42,6 @@ jobs:
             "profiles/quality_pack/schemas/independent_semantic_review_receipt.schema.json",
           ]
           quality={p:git("show",CANDIDATE+":"+p) for p in quality_paths}
-          critical=[
-            PROFILE+"/SKILL.md",
-            PROFILE+"/contracts/main_contract.md",
-            PROFILE+"/schemas/output.schema.json",
-            PROFILE+"/validators/runtime_validate.py",
-            PROFILE+"/validators/runtime_semantic_utility.py",
-            PROFILE+"/validators/validate_pack.py",
-            PROFILE+"/evals/v04_transversal_closure_cases.py",
-            PROFILE+"/judges/systemic_root_cause_semantic_judge.md",
-          ]
-          critical_content={p:git("show",CANDIDATE+":"+p) for p in critical}
           skeleton={
             "receipt_version":"v0.1",
             "execution_mode":"INDEPENDENT_CHAT_CONTEXT",
@@ -109,10 +98,10 @@ jobs:
             "\nSKELETON:\n"+json.dumps(skeleton,ensure_ascii=False,separators=(",",":"))+
             "\nCHANGED_PATHS:\n"+json.dumps(changed,ensure_ascii=False)+
             "\nEXACT_DIFF:\n"+diff+
-            "\nCRITICAL_RESULTING_FILES:\n"+json.dumps(critical_content,ensure_ascii=False,separators=(",",":"))+
             "\nQUALITY_PACK_AUTHORITY:\n"+json.dumps(quality,ensure_ascii=False,separators=(",",":"))
           )
           model='@cf/mistralai/mistral-small-3.1-24b-instruct'
+          print('PROMPT_BYTES='+str(len(prompt.encode())))
           body={'messages':[{'role':'system','content':'Return strict JSON only. No markdown fences, no prose outside JSON.'},{'role':'user','content':prompt}],
                 'temperature':0,'max_tokens':9000,'response_format':{'type':'json_object'}}
           url=f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CF_ACCOUNT_ID']}/ai/run/{model}"
@@ -148,7 +137,7 @@ jobs:
           CANDIDATE="b22b5fe078cf2999f4592768cff9e41534d06ed4"
           PROFILE="profiles/systemic_root_cause_repair_lf"
           r=json.load(open('/tmp/independent_quality_receipt.json'))
-          diff=subprocess.check_output(["git","diff","--no-ext-diff","--unified=60",BASE,CANDIDATE,"--",PROFILE],text=True)
+          diff=subprocess.check_output(["git","diff","--no-ext-diff","--unified=1",BASE,CANDIDATE,"--",PROFILE],text=True)
           digest=hashlib.sha256(diff.encode()).hexdigest()
           expected_ref=f"github://cristhianlujan/claude-persona-lf-patch@{CANDIDATE}#diff={BASE}..{CANDIDATE}:{PROFILE}"
           assert r["review_case_id"]=="SRCR-V04-R2-INDEPENDENT-QUALITY-B22B5FE"
