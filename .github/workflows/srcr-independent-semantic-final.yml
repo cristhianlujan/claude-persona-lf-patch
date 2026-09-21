@@ -22,7 +22,7 @@ jobs:
           enc=pathlib.Path('.github/srcr-eval/payload.b64').read_text().strip()
           packet=json.loads(zlib.decompress(base64.b64decode(enc)))
           pathlib.Path('/tmp/scope.json').write_text(json.dumps(packet['scope_authority_packet'],ensure_ascii=False,indent=2)+'\n')
-          model='@cf/meta/llama-4-scout-17b-16e-instruct'
+          model='@cf/mistralai/mistral-small-3.1-24b-instruct'
           scope_ids=[]
           for key in ('authorized_requirements','constraints','forbidden_changes'):
             scope_ids += [x['id'] for x in packet['scope_authority_packet'][key]]
@@ -46,7 +46,7 @@ jobs:
             'Act as the canonical INDEPENDENT Semantic Judge B. You are not the producer and have no producer context. '
             'Use only this packet and independently inspect the ENTIRE exact_candidate. Do not trust producer declarations as proof. '
             'Apply judge_instructions literally. Return ONLY strict JSON. '+
-            'The exact scope IDs that MUST EACH appear exactly once in requirement_reconciliation are: '+json.dumps(scope_ids)+'. '+
+            'The exact scope IDs that MUST EACH appear exactly once in requirement_reconciliation are: '+json.dumps(scope_ids)+'. IMPORTANT: requirement_reconciliation is a legacy name; it MUST include ALL 11 IDs across authorized_requirements, constraints, AND forbidden_changes, not just the 4 REQ-* rows. Copy every ID from this exact list once. '+
             'OUTPUT EXACTLY these 14 TOP-LEVEL keys and no wrapper keys: '+json.dumps(skeleton,separators=(',',':'))+'. '+
             'Do NOT emit required_scalars, other_required_arrays, or any wrapper object. candidate_sha256 and scope_packet_sha256 are top-level strings exactly as shown. '+
             'requirement_reconciliation: one row per listed scope ID with fields scope_item_id,disposition,evidence_refs and disposition SATISFIED/PRESERVED/NOT_APPLICABLE_WITH_EVIDENCE/VIOLATED/UNRESOLVED. '+
