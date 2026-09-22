@@ -546,6 +546,7 @@ class OutputGates:
         evidence_manifest: dict[str, Any],
         semantic_result: dict[str, Any],
         quality_receipt: dict[str, Any],
+        scope_authority_packet: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         binding = self.repository.runtime_binding(profile_slug)
         quality = binding.canonical_quality if binding is not None else None
@@ -590,7 +591,17 @@ class OutputGates:
             errors.append("CANONICAL_QUALITY_SEMANTIC_VALIDATOR_CALLABLE_MISSING")
         else:
             try:
-                semantic_gate = semantic_callable(semantic_result)
+                if scope_authority_packet is not None:
+                    semantic_gate = semantic_callable(
+                        semantic_result,
+                        scope_packet=scope_authority_packet,
+                        expected_candidate_sha256=canonical_json_sha256(candidate),
+                        expected_scope_packet_sha256=canonical_json_sha256(
+                            scope_authority_packet
+                        ),
+                    )
+                else:
+                    semantic_gate = semantic_callable(semantic_result)
             except Exception as exc:
                 errors.append("CANONICAL_QUALITY_SEMANTIC_VALIDATOR_EXCEPTION:" + type(exc).__name__)
             else:
@@ -640,7 +651,9 @@ class OutputGates:
                         )
                     )
                 else:
-                    receipt_accepts_quality = receipt_gate.get("canonical_quality_accepted") is True
+                    receipt_accepts_quality = (
+                        receipt_gate.get("canonical_quality_accepted", True) is True
+                    )
 
         codes = sorted(set(errors))
         return {
@@ -795,6 +808,7 @@ class OutputGates:
             evidence_manifest=evidence_manifest,
             semantic_result=semantic_result,
             quality_receipt=quality_receipt,
+            scope_authority_packet=scope_authority_packet,
         )
         return {
             **quality_gate,
