@@ -8,7 +8,7 @@ Purpose: close the gap between protocol definition, construction/execution, and 
 - `gobernanza/contratos/work_protocol_manifest_v1.schema.json`: machine-readable shape.
 - `gobernanza/judges/validate_work_protocol_manifest_v1.py`: deterministic reconciliation and progress derivation.
 - `test_work_protocol_manifest_v1.py`: positive and adversarial self-tests.
-- `supabase/migrations/20260922144000_lf_work_protocol_manifest_v1.sql`: canonical source-first migration candidate. Storing the source does not by itself apply DDL.
+- `sandbox/lf_contract_gate_test/work_protocol_manifest_v1/candidate_work_protocol_manifest_v1.sql`: canonical deployable SQL candidate isolated from `supabase/migrations`. G12 must materialize these exact bytes in its own migration-only PR before any governed apply.
 
 ## Adoption model
 
