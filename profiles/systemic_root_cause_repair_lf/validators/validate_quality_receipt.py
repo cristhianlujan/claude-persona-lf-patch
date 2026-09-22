@@ -53,6 +53,13 @@ def canonical_semantic_result_digest(value: Any) -> str:
     return "sha256:" + hashlib.sha256(raw).hexdigest()
 
 
+def canonical_evidence_manifest_sha256(value: Any) -> str:
+    raw = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
 def _nonempty(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
@@ -150,7 +157,15 @@ def validate_quality_receipt(
             )
         )
 
-    semantic_gate = semantic_validator.evaluate(semantic_result)
+    expected_evidence_manifest_sha256 = (
+        canonical_evidence_manifest_sha256(evidence_manifest)
+        if isinstance(evidence_manifest, dict) and candidate_pack == V06
+        else None
+    )
+    semantic_gate = semantic_validator.evaluate(
+        semantic_result,
+        expected_evidence_manifest_sha256=expected_evidence_manifest_sha256,
+    )
     if semantic_gate.get("status") != "PASS":
         errors.append(
             _err(
@@ -182,6 +197,21 @@ def validate_quality_receipt(
         errors.append(_err("SRCR_QUALITY_EVIDENCE_BUNDLE_ID_MISMATCH", "$.receipt.evidence_binding.bundle_id"))
     if evidence_binding.get("bundle_digest") != actual_bundle_digest:
         errors.append(_err("SRCR_QUALITY_EVIDENCE_BUNDLE_DIGEST_MISMATCH", "$.receipt.evidence_binding.bundle_digest"))
+    if candidate_pack == V06:
+        if evidence_binding.get("evidence_manifest_sha256") != expected_evidence_manifest_sha256:
+            errors.append(_err(
+                "SRCR_V06_QUALITY_EVIDENCE_MANIFEST_SHA_MISMATCH",
+                "$.receipt.evidence_binding.evidence_manifest_sha256",
+            ))
+        if (
+            isinstance(semantic_result, dict)
+            and semantic_result.get("evidence_manifest_sha256")
+            != expected_evidence_manifest_sha256
+        ):
+            errors.append(_err(
+                "SRCR_V06_SEMANTIC_EVIDENCE_MANIFEST_SHA_MISMATCH",
+                "$.semantic_result.evidence_manifest_sha256",
+            ))
 
     semantic_binding = receipt.get("semantic_binding")
     if not isinstance(semantic_binding, dict):
@@ -253,6 +283,7 @@ def validate_quality_receipt(
         "decision": decision,
         "candidate_digest": actual_candidate_digest,
         "evidence_bundle_digest": actual_bundle_digest,
+        "evidence_manifest_sha256": expected_evidence_manifest_sha256,
         "semantic_result_digest": semantic_digest,
     }
 
