@@ -49,8 +49,8 @@
     ]
   },
   "global_closure_rule": {
-    "expression": "EVERY mandatory_closure obligation MUST equal READBACK_CLOSED",
-    "handoff_ready_rule": "handoff_ready_for_profile_update = true only when every mandatory closure is READBACK_CLOSED, all required negative tests reject, all positive tests pass, and the exact revision is bound to readback evidence.",
+    "expression": "EVERY mandatory_closure obligation MC-01..MC-13 MUST equal READBACK_CLOSED",
+    "handoff_ready_rule": "handoff_ready_for_profile_update = true only when every mandatory closure MC-01..MC-13 is READBACK_CLOSED, MC-13 full step-by-step replay is clean with zero open observations, all required negative tests reject, all positive tests pass, and the exact revision is bound to readback evidence.",
     "fail_closed": true,
     "partial_is_closed": false,
     "declaration_is_proof": false,
@@ -305,11 +305,57 @@
         "SRCR_UNDECLARED_SELECTED_REPAIR_CHANGE",
         "SRCR_IMPLEMENTATION_FOOTPRINT_INCOMPLETE"
       ]
+    },
+    {
+      "obligation_id": "MC-13",
+      "title": "Full step-by-step closure replay",
+      "issue": "A grouped or summary validation can hide defects that become visible only when producer investigation, transport, each deterministic check, every judge input and repeated controls are traced individually.",
+      "required_behavior": "After MC-01..MC-12 are implemented, replay the same step-by-step methodology used by the 247-step SRCR V0.5 Lifecycle trace on the current exact revision and current exact candidate. Do not group checks. Trace every producer investigation item and live lookup, every transport hop, every deterministic/schema/subvalidator check separately, every required judge input and invocation, and every rule-ownership/deduplication check. Verify every cited live evidence reference against current authority. The replay may contain more than 247 rows when the current version adds material steps, but it may not omit any baseline category or collapse multiple controls into one row.",
+      "implementation_targets": [
+        "post-change behavioral verification harness",
+        "query/evidence trace bundle",
+        "transport trace",
+        "deterministic/schema validator trace",
+        "semantic judge and quality receipt trace",
+        "rule ownership and finding-dedup trace"
+      ],
+      "close_evidence": [
+        "exact profile/source revision, candidate digest, evidence-manifest digest and scope digest frozen before replay",
+        "one row per individual step with input received, output produced, expected output, input completeness, output correctness, evidence refs and note",
+        "100% of live evidence references independently resolve or are exact evidence-bound absence results",
+        "0 incomplete required inputs",
+        "0 unexpected/incorrect outputs",
+        "0 unresolved or fabricated evidence references",
+        "0 missing transport hops",
+        "0 missing semantic-judge/quality-receipt invocations when applicable",
+        "0 duplicated structural-rule ownership",
+        "0 duplicated logical findings after canonical deduplication",
+        "0 open material observations or blockers",
+        "all NOT_APPLICABLE rows carry an explicit evidence/rationale and are not used to hide an applicable check"
+      ],
+      "acceptance_rule": "CLOSED only when the complete ungrouped replay returns zero open observations, zero failed applicable steps and zero unresolved mandatory inputs. Any observation reopens the owning MC obligation(s) and MC-13 remains open until repaired and replayed clean.",
+      "blocking_codes": [
+        "SRCR_FULL_TRACE_REPLAY_NOT_RUN",
+        "SRCR_FULL_TRACE_REPLAY_HAS_OBSERVATIONS",
+        "SRCR_FULL_TRACE_REPLAY_INCOMPLETE"
+      ],
+      "baseline_reference": {
+        "trace_name": "TRAZA_PASO_A_PASO_SRCR_V05_LIFECYCLE.md",
+        "baseline_steps": 247,
+        "preserved_phases": [
+          "Entrada",
+          "Investigacion",
+          "Transporte",
+          "Determinista",
+          "Jueces",
+          "Repeticiones"
+        ]
+      }
     }
   ],
   "acceptance_matrix": {
     "required_for_close": [
-      "12/12 obligations READBACK_CLOSED",
+      "13/13 obligations READBACK_CLOSED",
       "0 unresolved blocking codes",
       "0 duplicate structural rule owners",
       "0 logical duplicate findings",
@@ -318,7 +364,8 @@
       "100% live research lookups traceable when live research applies",
       "producer_execution_id != reviewer_execution_id",
       "same candidate/evidence/scope digests across semantic result and quality receipt",
-      "no merge/runtime activation/production mutation is implied by this specification"
+      "no merge/runtime activation/production mutation is implied by this specification",
+      "MC-13 complete ungrouped replay: 0 open observations, 0 failed applicable steps, 0 unresolved mandatory inputs"
     ],
     "ready_result": "SELF_REPAIR_SPEC_CLOSED",
     "otherwise": "SELF_REPAIR_SPEC_OPEN"
@@ -338,7 +385,8 @@
     "judge-not-called",
     "next-gate-without-consumer",
     "terminal-worker-failure-not-reconciled",
-    "undeclared-selected-repair-change"
+    "undeclared-selected-repair-change",
+    "full-ungrouped-trace-replay"
   ],
   "scope_guard": {
     "generic_only": true,
