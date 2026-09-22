@@ -523,16 +523,33 @@ def _begin_governed_pre_model(
                 "runtime_source_mode": "EXACT_DEPLOYED_GIT_REVISION",
             },
         )
+        input_source_ref = f"queue://private.lf_profile_runtime_queue_v1/{request_id}@{input_digest}"
+        scope = _fetch_json_scalar(
+            cur,
+            "select public.lf_profile_execution_scope_authority_packet_v1(%s,%s,%s)",
+            (execution_id, str(claimed["input_literal"]), input_source_ref),
+        )
+        if (
+            scope.get("status") != "READY"
+            or not isinstance(scope.get("scope_authority_packet"), dict)
+            or not isinstance(scope.get("scope_packet_sha256"), str)
+        ):
+            raise RuntimeError(
+                "HETZNER_GOVERNED_SCOPE_PACKET_NOT_READY:"
+                + str(scope.get("code") or scope.get("status") or "UNKNOWN")
+            )
         _record_governed_step(
             cur,
             execution_id=execution_id,
             step_id="input_validate",
-            evidence_ref=f"queue://private.lf_profile_runtime_queue_v1/{request_id}@{input_digest}",
+            evidence_ref=input_source_ref,
             payload={
                 "input_scope": f"QUEUE_REQUEST:{request_id}",
                 "activation_trigger_match": True,
                 "input_digest": input_digest,
                 "read_only": True,
+                "scope_authority_packet": scope["scope_authority_packet"],
+                "scope_authority_packet_sha256": scope["scope_packet_sha256"],
             },
         )
 
@@ -723,8 +740,10 @@ def _record_post_model_governance(
         "full_prefetch_count": 0,
         "hydrated_refs": [],
     }
+    candidate_digest = "sha256:" + _canonical_json_sha256(profile_output)
     execute_payload = {
         "profile_output": profile_output,
+        "candidate_digest": candidate_digest,
         "source_refs": list(claimed["profile_source_paths"]),
         "context_receipt_ref": model_governance["context_receipt_ref"],
         "context_receipt_digest": model_governance["context_receipt_digest"],
@@ -1021,6 +1040,186 @@ def _gate_blocking_codes(gate: dict[str, Any]) -> list[str]:
     return sorted({str(code) for code in raw if str(code).strip()})
 
 
+def _run_bound_semantic_judge(
+    conn: psycopg.Connection,
+    *,
+    claimed: dict[str, Any],
+    governed: dict[str, Any],
+) -> dict[str, Any]:
+    execution_id = governed["execution_id"]
+    with conn.cursor() as cur:
+        input_step = _read_governed_step(cur, execution_id, "input_validate")
+        execute_step = _read_governed_step(cur, execution_id, "execute_profile")
+        output_step = _read_governed_step(cur, execution_id, "output_validate")
+    if not all(isinstance(item, dict) for item in (input_step, execute_step, output_step)):
+        return {"status": "BLOCKED", "error_code": "HETZNER_SEMANTIC_JUDGE_PREDECESSOR_MISSING"}
+    if any(item.get("status") != "STEP_PASS_WITH_EVIDENCE" for item in (input_step, execute_step, output_step)):
+        return {"status": "BLOCKED", "error_code": "HETZNER_SEMANTIC_JUDGE_PREDECESSOR_NOT_CLEAN"}
+
+    input_payload = input_step["evidence_payload"]
+    execute_payload = execute_step["evidence_payload"]
+    output_payload = output_step["evidence_payload"]
+    scope_packet = input_payload.get("scope_authority_packet")
+    scope_digest = input_payload.get("scope_authority_packet_sha256")
+    candidate = execute_payload.get("profile_output")
+    candidate_digest = execute_payload.get("candidate_digest")
+    if (
+        not isinstance(scope_packet, dict)
+        or not isinstance(scope_digest, str)
+        or re.fullmatch(r"sha256:[0-9a-f]{64}", scope_digest) is None
+        or not isinstance(candidate, dict)
+        or not isinstance(candidate_digest, str)
+        or re.fullmatch(r"sha256:[0-9a-f]{64}", candidate_digest) is None
+    ):
+        return {"status": "BLOCKED", "error_code": "HETZNER_SEMANTIC_JUDGE_BINDING_MISSING"}
+
+    deterministic_validation = {
+        "status": "PASS",
+        "output_contract_result": output_payload.get("output_contract_result"),
+        "details": output_payload.get("deterministic_validation") or {},
+    }
+    evidence_manifest = execute_payload.get("evidence_manifest")
+    request_payload = {
+        "request_id": str(claimed["request_id"]),
+        "operation_code": "EJECUCION_PERFIL_LF",
+        "execution_id": execution_id,
+        "profile_code": claimed["profile_code"],
+        "profile_slug": claimed["profile_slug"],
+        "profile_source_paths": claimed["profile_source_paths"],
+        "profile_source_digest": governed["source"]["profile_source_digest"],
+        "input_literal": claimed["input_literal"],
+        "exact_candidate": candidate,
+        "candidate_sha256": candidate_digest.removeprefix("sha256:"),
+        "scope_authority_packet": scope_packet,
+        "scope_packet_sha256": scope_digest.removeprefix("sha256:"),
+        "deterministic_validation": deterministic_validation,
+        "evidence_manifest": evidence_manifest if isinstance(evidence_manifest, dict) else None,
+    }
+    accepted = _api_json("POST", "/v1/profile/semantic-judge", request_payload)
+    job_id = accepted.get("job_id")
+    if not isinstance(job_id, str) or not job_id:
+        return {"status": "BLOCKED", "error_code": "HETZNER_SEMANTIC_JUDGE_JOB_ID_MISSING"}
+    semantic_job = _wait_job(job_id)
+    semantic_runtime = _profile_result(semantic_job)
+    if not isinstance(semantic_runtime, dict):
+        return {"status": "BLOCKED", "error_code": "HETZNER_SEMANTIC_JUDGE_RESULT_MISSING"}
+    semantic_raw = semantic_runtime.get("semantic_judge_result")
+    validation = semantic_runtime.get("semantic_result_validation")
+    clean = (
+        semantic_runtime.get("status") == "PASS"
+        and semantic_runtime.get("canonical_quality_accepted") is True
+        and semantic_runtime.get("producer_independence_proven") is True
+        and semantic_runtime.get("semantic_model_call_count") == 1
+        and isinstance(validation, dict)
+        and validation.get("status") == "PASS"
+        and isinstance(semantic_raw, dict)
+        and semantic_raw.get("verdict") == "PASS_INDEPENDENT_SEMANTIC"
+        and not semantic_raw.get("unsupported_claims")
+        and not semantic_raw.get("blocking_codes")
+    )
+    semantic_evidence = {
+        "semantic_judge_result": {
+            "status": "PASS" if clean else "FAIL",
+            "verdict": semantic_raw.get("verdict") if isinstance(semantic_raw, dict) else None,
+            "candidate_sha256": request_payload["candidate_sha256"],
+            "scope_packet_sha256": request_payload["scope_packet_sha256"],
+            "validator_status": validation.get("status") if isinstance(validation, dict) else "FAIL",
+            "producer_independence_proven": semantic_runtime.get("producer_independence_proven") is True,
+            "model_call_count": semantic_runtime.get("semantic_model_call_count"),
+            "runtime_model_id": semantic_runtime.get("runtime_model_id"),
+            "judge_ref": semantic_runtime.get("judge_ref"),
+            "result": semantic_raw if isinstance(semantic_raw, dict) else {},
+        },
+        "unsupported_claims": (
+            semantic_raw.get("unsupported_claims")
+            if isinstance(semantic_raw, dict) and isinstance(semantic_raw.get("unsupported_claims"), list)
+            else ["SEMANTIC_JUDGE_RESULT_UNAVAILABLE"]
+        ),
+        "blocking_codes": (
+            []
+            if clean
+            else _gate_blocking_codes(semantic_runtime)
+            or (semantic_raw.get("blocking_codes") if isinstance(semantic_raw, dict) and isinstance(semantic_raw.get("blocking_codes"), list) else [])
+            or ["INDEPENDENT_SEMANTIC_JUDGE_NOT_PASS"]
+        ),
+    }
+    with conn.cursor() as cur:
+        semantic_record = _fetch_json_scalar(
+            cur,
+            "select public.lf_record_profile_execution_step_v1(%s,%s,%s,%s,%s)",
+            (
+                execution_id,
+                "semantic_judge",
+                f"hetzner://profile-runtime/{claimed['request_id']}/semantic-judge/{job_id}",
+                Jsonb(semantic_evidence),
+                execution_id,
+            ),
+        )
+    conn.commit()
+    if not clean or semantic_record.get("outcome") != "STEP_RECORDED":
+        return {
+            "status": "BLOCKED",
+            "error_code": semantic_record.get("code") or "HETZNER_INDEPENDENT_SEMANTIC_JUDGE_NOT_PASS",
+            "semantic_verdict": semantic_raw.get("verdict") if isinstance(semantic_raw, dict) else None,
+        }
+
+    report_payload = {
+        "result": "PASS_INDEPENDENT_SEMANTIC",
+        "profile_code": claimed["profile_code"],
+        "execution_id": execution_id,
+        "no_write_performed": True,
+        "candidate_sha256": request_payload["candidate_sha256"],
+        "scope_packet_sha256": request_payload["scope_packet_sha256"],
+        "semantic_judge_job_id": job_id,
+        "next_gate": semantic_raw.get("next_gate") if isinstance(semantic_raw, dict) else None,
+        "blocking_codes": [],
+    }
+    with conn.cursor() as cur:
+        report_record = _fetch_json_scalar(
+            cur,
+            "select public.lf_record_profile_execution_step_v1(%s,%s,%s,%s,%s)",
+            (
+                execution_id,
+                "report_output",
+                f"hetzner://profile-runtime/{claimed['request_id']}/report-output",
+                Jsonb(report_payload),
+                execution_id,
+            ),
+        )
+        cur.execute(
+            """
+            select e.status,j.judge_result,j.required_steps,j.required_steps_pass,j.fail_count,j.blocked_count
+              from public.lf_operation_execution e
+              left join public.v_lf_operation_execution_judge j on j.execution_id=e.execution_id
+             where e.execution_id=%s
+            """,
+            (execution_id,),
+        )
+        closure = cur.fetchone()
+    conn.commit()
+    canonical_closed = (
+        report_record.get("outcome") == "STEP_RECORDED"
+        and closure is not None
+        and closure[0] == "COMPLETED"
+        and closure[1] == "PASS"
+        and isinstance(closure[2], int)
+        and closure[2] > 0
+        and closure[3] == closure[2]
+        and closure[4] == 0
+        and closure[5] == 0
+    )
+    if not canonical_closed:
+        return {"status": "BLOCKED", "error_code": "HETZNER_GOVERNED_SEMANTIC_CLOSURE_NOT_CLEAN"}
+    return {
+        "status": "COMPLETED",
+        "error_code": None,
+        "execution_id": execution_id,
+        "semantic_judge_job_id": job_id,
+        "semantic_verdict": "PASS_INDEPENDENT_SEMANTIC",
+        "canonical_execution_closed": True,
+    }
+
+
 def _execution_queue_outcome(profile: dict[str, Any]) -> dict[str, str | None]:
     """Project runtime + contract + deterministic utility into the queue terminal state.
 
@@ -1096,6 +1295,13 @@ def _persist_success(
     governed_outcome = _record_post_model_governance(
         conn, claimed=claimed, governed=governed, job=job
     )
+    if (
+        governed_outcome.get("status") == "READY_FOR_SEMANTIC_JUDGE"
+        and runtime_outcome.get("status") == "SUCCEEDED"
+    ):
+        governed_outcome = _run_bound_semantic_judge(
+            conn, claimed=claimed, governed=governed
+        )
     profile["governed_operation"] = governed_outcome
     governed_status = governed_outcome.get("status")
     if governed_status == "BLOCKED":
