@@ -41,7 +41,8 @@
             "GOVERNED_RUNTIME",
             "SOURCE_FIRST_RESOLVER",
             "QUALITY_BOUNDARY",
-            "TEST_FIXTURE"
+            "TEST_FIXTURE",
+            "READ_ONLY_CURRENT_AUTHORITY_RESOLVER"
           ]
         },
         "resolver_ref": {
@@ -100,6 +101,98 @@
             "enum": [
               "CURRENT",
               "SUPERSEDED"
+            ]
+          }
+        }
+      }
+    },
+    "query_trace": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sequence",
+          "tool_permission",
+          "resolver_id",
+          "provider",
+          "query_locator",
+          "request_digest",
+          "result_digest",
+          "observed_at",
+          "evidence_id",
+          "consumer"
+        ],
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "tool_permission": {
+            "enum": [
+              "READ_GITHUB",
+              "READ_SUPABASE",
+              "READ_WEB"
+            ]
+          },
+          "resolver_id": {
+            "enum": [
+              "LF_GITHUB_SOURCE_READBACK_V1",
+              "LF_SUPABASE_READBACK_V1",
+              "LF_WEB_RESEARCH_READBACK_V1"
+            ]
+          },
+          "provider": {
+            "enum": [
+              "GITHUB",
+              "SUPABASE",
+              "WEB"
+            ]
+          },
+          "query_locator": {
+            "type": "string",
+            "minLength": 3
+          },
+          "request_digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "result_digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "observed_at": {
+            "type": "string",
+            "minLength": 8
+          },
+          "evidence_id": {
+            "type": "string",
+            "minLength": 3
+          },
+          "consumer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result_status": {
+            "enum": [
+              "FOUND",
+              "EMPTY",
+              "NOT_FOUND",
+              "UNREACHABLE",
+              "ACCESS_DENIED",
+              "ERROR"
+            ]
+          },
+          "result_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "claim_support": {
+            "enum": [
+              "PRESENCE",
+              "ABSENCE",
+              "CONTENT"
             ]
           }
         }

@@ -1,6 +1,6 @@
 {
   "contract_version": "SRCR_INCREMENTAL_VALUE_PROOF_V1",
-  "applies_to_profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+  "applies_to_profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
   "applicability": {
     "required_for_ready": [
       {
