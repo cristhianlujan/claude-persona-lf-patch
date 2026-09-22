@@ -51,7 +51,7 @@ def edge(
     identity=None,
     rollback=None,
 ):
-    return {
+    row = {
         "edge_id": edge_id,
         "from_node": from_node,
         "to_node": to_node,
@@ -66,7 +66,6 @@ def edge(
         "gap_evidence_refs": list(gap_refs or []),
         "next_gate": next_gate,
         "next_gate_consumer_evidence_refs": list(next_refs or []),
-        "proposed_next_gate_consumer_ref": proposed_next_consumer,
         "canonical_route_consistency": route or proof("PROPOSED_ONLY"),
         "post_transition_currentness": currentness or proof("PROPOSED_ONLY"),
         "terminality": terminality or proof("PROPOSED_ONLY"),
@@ -75,6 +74,12 @@ def edge(
         "proposed_change_ref": proposed_change_ref,
         "blocking_uncertainty_id": None,
     }
+    # Keep deterministic regeneration byte/canonical-stable for edges that do
+    # not need a future next-gate consumer. Absence and explicit null are not
+    # interchangeable once the candidate has already been frozen.
+    if proposed_next_consumer is not None:
+        row["proposed_next_gate_consumer_ref"] = proposed_next_consumer
+    return row
 
 
 def add_unique(rows, key, row):
