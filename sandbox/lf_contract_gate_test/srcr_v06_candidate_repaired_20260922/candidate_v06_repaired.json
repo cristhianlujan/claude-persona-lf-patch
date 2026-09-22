@@ -2086,7 +2086,7 @@
       "supabase://public/lf_artifact_destination_registry/DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT",
       "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
       "supabase://public/lf_activo_relaciones/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
-      "supabase://public/lf_error_knowledge?profile_runtime_lifecycle_currentness=2026-09-21",
+      "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z",
       "github://cristhianlujan/claude-persona-lf-patch@37eeb13e980b1729350428caa8d2d55a8de21246/profiles/systemic_root_cause_repair_lf"
     ],
     "inspected_surfaces": [
@@ -3111,7 +3111,7 @@
         "disposition": "REUSE_AS_IS",
         "evidence_refs": [
           "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
-          "supabase://public/lf_error_knowledge?profile_runtime_lifecycle_currentness=2026-09-21"
+          "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z"
         ],
         "failure_recovery": "On terminal refresh/readback failure, restore prior release; readiness transient is retried/bounded before terminal rollback decision.",
         "inputs": [
@@ -3429,7 +3429,7 @@
       "evidence_refs": [
         "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
         "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
-        "supabase://public/lf_error_knowledge?profile_runtime_lifecycle_currentness=2026-09-21"
+        "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z"
       ],
       "finding": "Specify exact rollback to prior release and terminal retirement only after consumer/readback proof."
     },
@@ -3457,7 +3457,7 @@
       "dimension": "COST_PERFORMANCE",
       "disposition": "NOT_APPLICABLE",
       "evidence_refs": [
-        "supabase://public/lf_error_knowledge?profile_runtime_lifecycle_currentness=2026-09-21",
+        "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z",
         "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
       ],
       "finding": "No reusable numeric timeout/threshold is fixed by this design; readiness timing remains separately calibrated."
@@ -3885,7 +3885,7 @@
     },
     {
       "evidence_refs": [
-        "supabase://public/lf_error_knowledge?profile_runtime_lifecycle_currentness=2026-09-21",
+        "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z",
         "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
       ],
       "risk": "Readiness de runtime puede ser transitoria después de restart; rollback no debe dispararse por el primer fallo de health."
