@@ -1,0 +1,118 @@
+{
+  "schema": "SRCR_V05_LIFECYCLE_NATIVE_TRACE_PHASE4_V1",
+  "run_id": "EXEC-SRCR-V05-NATIVE-LIFECYCLE-REGRESSION-20260921-001",
+  "mode": "READ_ONLY_NONBLIND_REGRESSION",
+  "trace": [
+    {
+      "sequence": 1,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/validate_pack.py",
+      "request_digest": "sha256:e2f6e434e85f87113cb17655e338fd960233eb1bdc45e6d3b7e927c53ccfc20d",
+      "result_digest": "sha256:833d25b3a5700f3802b7b9e7054614ddbd4e52fe1955bf25cb0ae241b505be12",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-037",
+      "consumer": "$.profile_pack_validation.self_validator"
+    },
+    {
+      "sequence": 2,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+      "request_digest": "sha256:f05eb3f84a6b1d04cb453d0eff4bbb5234bf7ed5e900a941e1d9b07b902e8bbb",
+      "result_digest": "sha256:20976ea82219d55f394c8183c038778ae8bb26c0e72bcccc744db184e862a94a",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-038",
+      "consumer": "$.profile_pack_validation.output_schema"
+    },
+    {
+      "sequence": 3,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github-actions://cristhianlujan/claude-persona-lf-patch/jobs/106607329745",
+      "request_digest": "sha256:877b1527985570507ef249fe2f2ae990bd5a69a2b2675273554ab9379651b856",
+      "result_digest": "sha256:02a185c9f238343c245eabd457450af139a4d20f93c895c05208ffa88a657e51",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-039",
+      "consumer": "$.historical_regressions.deep_pack_validation"
+    },
+    {
+      "sequence": 4,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/.github/workflows/validate-lf-packs.yml",
+      "request_digest": "sha256:1bf55cff79fec410525610f768567a687935011ddf026992ec090470affdfd14",
+      "result_digest": "sha256:7d514e85717df9a4447d9cb0b30c4eba27d528b08696e038d963d18e25915f96",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-040",
+      "consumer": "$.ci_applicability.validate_lf_packs"
+    },
+    {
+      "sequence": 5,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/.github/workflows/lf-contract-check.yml",
+      "request_digest": "sha256:2fb00969bf54835e30885284e3fed15ed6173dd3005e5fc4a2923167cbaef97e",
+      "result_digest": "sha256:621162f34c7c5a376ddd9876a285c4b04741fcfcf01ab194a8c6f1281d2a16c7",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-041",
+      "consumer": "$.ci_applicability.lf_contract_check"
+    },
+    {
+      "sequence": 6,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github-actions://cristhianlujan/claude-persona-lf-patch/jobs/106601722653",
+      "request_digest": "sha256:aba97af517ec8d4a625eb04095f38a73ca9a33acddfbf1f90b066b3507e46221",
+      "result_digest": "sha256:889c5d936d43f56a4f2544c7b7dd5edb4b7afa8e9c3796cc9c19494ac597f62b",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-042",
+      "consumer": "$.historical_regressions.new_branch_push_validate"
+    },
+    {
+      "sequence": 7,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github-actions://cristhianlujan/claude-persona-lf-patch/jobs/106601741367",
+      "request_digest": "sha256:b8297a96f74932390a70c69d8bdd648fcd969daf26b93bd335eda50be2847b01",
+      "result_digest": "sha256:d7f77c903577cbf53d05aa8b626b5b736bec46053991a1169f48548cb4bd25d5",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-043",
+      "consumer": "$.historical_regressions.new_branch_push_contract"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "LC-F11",
+      "class": "PACK_SELF_VALIDATOR_SCHEMA_CONDITIONALITY_DRIFT",
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-037",
+        "EV-LC-038",
+        "EV-LC-039"
+      ],
+      "observation": "output.schema.json explicitly exempts V0.5 ARCHITECTURE_AUDIT from the incident-oriented repair package via a nested if.allOf/not condition. validate_pack.py only recognizes flat if.properties.status.enum branches when deriving conditionally required repair fields, then fails with SCHEMA_REQUIRED_KEY_MISSING:alternatives.",
+      "impact": "The pack's own validator rejects a schema contract that the same V0.5 source intentionally defines, blocking full-deep validation independently of candidate quality."
+    },
+    {
+      "finding_id": "LC-F12",
+      "class": "NEW_BRANCH_PUSH_ZERO_BASE_SHA_NOT_NORMALIZED",
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-040",
+        "EV-LC-041",
+        "EV-LC-042",
+        "EV-LC-043"
+      ],
+      "observation": "On the first push that creates a branch, github.event.before is 40 zeroes. Validate LF Packs fetches any non-empty base and lf-contract-check requires/fetches any non-empty exact_base, so both attempt git fetch of 000...000 and fail before material validation. A separate bootstrap workflow already guards this zero sentinel, proving a repository-local handling pattern exists.",
+      "impact": "Initial branch pushes can report red checks for CI transport/currentness mechanics before the candidate is evaluated; this can mask the first substantive failure."
+    }
+  ]
+}
