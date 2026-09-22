@@ -264,6 +264,7 @@ class OutputGates:
         errors: list[dict[str, Any]] = [
             {"code": code, "path": "$", "detector": "JSON_PARSE"} for code in parse_errors
         ]
+        canonical_metadata: dict[str, Any] = {}
         if payload is not None:
             try:
                 Draft202012Validator.check_schema(schema.payload)
@@ -296,7 +297,7 @@ class OutputGates:
             if not (
                 profile_slug == "ui_architect" and schema.mode in UI_SCHEMA_ONLY_MODES
             ):
-                canonical_errors = self._canonical_errors(
+                canonical_errors, canonical_metadata = self._canonical_validation(
                     profile_slug, payload, evidence_manifest=evidence_manifest
                 )
                 for item in canonical_errors:
@@ -318,6 +319,7 @@ class OutputGates:
                 "errors": errors,
                 "logical_findings": logical_findings,
                 "finding_count": len(logical_findings),
+                **canonical_metadata,
             },
             payload,
         )
@@ -970,22 +972,22 @@ class OutputGates:
             "downstream_authorized": False,
         }
 
-    def _canonical_errors(
+    def _canonical_validation(
         self,
         profile_slug: str,
         payload: dict[str, Any],
         *,
         evidence_manifest: dict[str, Any] | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         module = self.repository.load_validator(profile_slug)
         if module is None:
-            return []
+            return [], {}
         try:
             callable_name = self.repository.validator_callable_name(profile_slug)
             if callable_name is not None:
                 validator = getattr(module, callable_name, None)
                 if not callable(validator):
-                    return [{"code": "CANONICAL_PROFILE_VALIDATOR_CALLABLE_MISSING", "path": "$"}]
+                    return [{"code": "CANONICAL_PROFILE_VALIDATOR_CALLABLE_MISSING", "path": "$"}], {}
                 if self._supports_evidence_manifest(validator):
                     result = validator(payload, evidence_manifest=evidence_manifest)
                 else:
@@ -1029,7 +1031,7 @@ class OutputGates:
                     "path": "$",
                     "message": type(exc).__name__,
                 }
-            ]
+            ], {}
         normalized: list[dict[str, Any]] = []
         for item in raw_errors or []:
             if isinstance(item, dict):
@@ -1042,4 +1044,14 @@ class OutputGates:
                 )
             else:
                 normalized.append({"code": str(item), "path": "$"})
-        return normalized
+        metadata: dict[str, Any] = {}
+        if isinstance(result, dict):
+            for key in (
+                "validation_role",
+                "canonical_quality_accepted",
+                "closure_summary",
+                "incremental_value_summary",
+            ):
+                if key in result:
+                    metadata[key] = result[key]
+        return normalized, metadata
