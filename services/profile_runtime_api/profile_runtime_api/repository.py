@@ -48,6 +48,7 @@ class RuntimeProfileBinding:
     model_context: dict[str, Any] | None = None
     execution_partition: dict[str, Any] | None = None
     execution_budget: dict[str, Any] | None = None
+    canonical_quality: dict[str, Any] | None = None
 
 
 class RepositoryBindings:
@@ -134,6 +135,7 @@ class RepositoryBindings:
         model_context = payload.get("model_context")
         execution_partition = payload.get("execution_partition")
         execution_budget = payload.get("execution_budget")
+        canonical_quality = payload.get("canonical_quality")
         if not isinstance(profile_code, str) or not profile_code:
             raise RepositoryError("PROFILE_RUNTIME_BINDING_CODE_INVALID", profile_slug)
         if not isinstance(runtime_schema, dict) or not isinstance(runtime_schema.get("default"), str) or not isinstance(runtime_schema.get("output_modes"), dict):
@@ -189,6 +191,41 @@ class RepositoryBindings:
                     raise RepositoryError("PROFILE_RUNTIME_DETERMINISTIC_MATERIALIZATION_INVALID", field)
                 if spec.get("source") == "literal" and "value" not in spec:
                     raise RepositoryError("PROFILE_RUNTIME_DETERMINISTIC_LITERAL_MISSING", field)
+        if canonical_quality is not None:
+            if not isinstance(canonical_quality, dict):
+                raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_INVALID", profile_slug)
+            required_packs = canonical_quality.get("required_for_profile_pack_ids")
+            semantic_result_validator = canonical_quality.get("semantic_result_validator")
+            quality_receipt_validator = canonical_quality.get("quality_receipt_validator")
+            quality_refs = (
+                canonical_quality.get("judge_path"),
+                canonical_quality.get("semantic_judge_path"),
+                canonical_quality.get("quality_receipt_schema"),
+                semantic_result_validator.get("path") if isinstance(semantic_result_validator, dict) else None,
+                quality_receipt_validator.get("path") if isinstance(quality_receipt_validator, dict) else None,
+            )
+            if (
+                not isinstance(required_packs, list)
+                or not required_packs
+                or any(not isinstance(value, str) or not value.strip() for value in required_packs)
+                or len(required_packs) != len(set(required_packs))
+                or canonical_quality.get("deterministic_floors_can_accept_quality") is not False
+                or canonical_quality.get("receipt_required_for_pass_to_quality_pack") is not True
+                or not isinstance(semantic_result_validator, dict)
+                or not all(
+                    isinstance(semantic_result_validator.get(key), str)
+                    and semantic_result_validator.get(key)
+                    for key in ("path", "callable")
+                )
+                or not isinstance(quality_receipt_validator, dict)
+                or not all(
+                    isinstance(quality_receipt_validator.get(key), str)
+                    and quality_receipt_validator.get(key)
+                    for key in ("path", "callable")
+                )
+                or any(not isinstance(value, str) or not value for value in quality_refs)
+            ):
+                raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_INVALID", profile_slug)
         if execution_budget is not None:
             if (
                 not isinstance(execution_budget, dict)
@@ -204,6 +241,14 @@ class RepositoryBindings:
             ):
                 raise RepositoryError("PROFILE_RUNTIME_EXECUTION_BUDGET_INVALID", profile_slug)
         refs = [runtime_schema["default"], *runtime_schema["output_modes"].values(), canonical["path"], semantic["path"]]
+        if isinstance(canonical_quality, dict):
+            refs.extend([
+                canonical_quality["judge_path"],
+                canonical_quality["semantic_judge_path"],
+                canonical_quality["semantic_result_validator"]["path"],
+                canonical_quality["quality_receipt_schema"],
+                canonical_quality["quality_receipt_validator"]["path"],
+            ])
         for rel in refs:
             if not isinstance(rel, str) or not rel or rel.startswith("/") or ".." in PurePosixPath(rel).parts:
                 raise RepositoryError("PROFILE_RUNTIME_BINDING_REF_INVALID", str(rel))
@@ -225,6 +270,7 @@ class RepositoryBindings:
             model_context=dict(model_context) if isinstance(model_context, dict) else None,
             execution_partition=dict(execution_partition) if isinstance(execution_partition, dict) else None,
             execution_budget=dict(execution_budget) if isinstance(execution_budget, dict) else None,
+            canonical_quality=copy.deepcopy(canonical_quality) if isinstance(canonical_quality, dict) else None,
         )
 
 
