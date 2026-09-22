@@ -810,6 +810,85 @@ def test_v06_implementable_edge_change_must_be_declared_in_delta() -> None:
 
 
 
+def test_v06_full_candidate_selected_repair_refs_are_declared() -> None:
+    candidate_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_repaired_20260922" / "candidate_v06_repaired.json"
+    )
+    manifest_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922" / "evidence_manifest_v06_merged.json"
+    )
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    result = harness.runtime_validate.validate(candidate, evidence_manifest=manifest)
+    assert result["status"] == "PASS", result
+    assert "V06_SELECTED_REPAIR_CHANGE_UNDECLARED" not in result["blocking_codes"], result
+
+
+def test_v06_undeclared_material_ref_outside_graph_fails_closed() -> None:
+    candidate_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_repaired_20260922" / "candidate_v06_repaired.json"
+    )
+    manifest_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922" / "evidence_manifest_v06_merged.json"
+    )
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    candidate["hard_guard"]["enforcement_point_ref"] = (
+        "proposed://UNDECLARED_MATERIAL_MECHANISM_V1/enforce"
+    )
+
+    result = harness.runtime_validate.validate(candidate, evidence_manifest=manifest)
+    assert result["status"] == "FAIL", result
+    assert "V06_SELECTED_REPAIR_CHANGE_UNDECLARED" in result["blocking_codes"], result
+
+
+def test_v06_queue_terminal_bridge_cannot_disappear_from_declared_footprint() -> None:
+    candidate_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_repaired_20260922" / "candidate_v06_repaired.json"
+    )
+    manifest_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922" / "evidence_manifest_v06_merged.json"
+    )
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    candidate["implementation_delta"] = [
+        row for row in candidate["implementation_delta"]
+        if row.get("target") != "supabase://proposed/EJECUCION_PERFIL_LF/queue_terminal_bridge"
+    ]
+
+    result = harness.runtime_validate.validate(candidate, evidence_manifest=manifest)
+    assert result["status"] == "FAIL", result
+    assert result["closure_summary"]["computed_handoff_ready"] is True, result
+    assert "V06_SELECTED_REPAIR_CHANGE_UNDECLARED" in result["blocking_codes"], result
+
+
+def test_v06_declared_change_requires_action_and_evidence() -> None:
+    candidate_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_repaired_20260922" / "candidate_v06_repaired.json"
+    )
+    manifest_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922" / "evidence_manifest_v06_merged.json"
+    )
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    candidate["implementation_delta"][0]["action"] = ""
+    candidate["implementation_delta"][0]["evidence_refs"] = []
+
+    result = harness.runtime_validate.validate(candidate, evidence_manifest=manifest)
+    assert result["status"] == "FAIL", result
+    assert "V06_IMPLEMENTATION_DELTA_ACTION_REQUIRED" in result["blocking_codes"], result
+    assert "V06_IMPLEMENTATION_DELTA_EVIDENCE_REQUIRED" in result["blocking_codes"], result
+
+
 def test_srcr_output_gates_preserve_structural_metadata_and_manifest_transport() -> None:
     candidate_path = (
         ROOT / "sandbox" / "lf_contract_gate_test"
