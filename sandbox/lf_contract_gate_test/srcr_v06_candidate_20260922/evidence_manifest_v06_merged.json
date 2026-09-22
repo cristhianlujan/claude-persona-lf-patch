@@ -1,5 +1,5 @@
 {
-  "bundle_digest": "sha256:fc4c452e7b2e299276a96cb555f4513d0638e2a3cb8329b8a92e294792c2036e",
+  "bundle_digest": "sha256:92e40a3e6d6642f34b77acdaee2e395e4ab457b85c1134d8dc91797641412b11",
   "bundle_id": "SRCR-V06-LIFECYCLE-MERGED-EVIDENCE-20260922",
   "evidence": [
     {
@@ -559,10 +559,37 @@
       "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/evals/v05_producer_depth_cases.py",
       "state": "CURRENT",
       "subject": "V0.5 producer-depth eval contract for ARCHITECTURE_AUDIT relaxation"
+    },
+    {
+      "evidence_id": "EV-WEB-OPENGITOPS",
+      "subject": "OpenGitOps GitOps Principles v1.0.0",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "https://opengitops.dev/",
+      "revision_or_observed_at": "2026-09-22T14:28:56.706776+00:00",
+      "digest": "sha256:afac35b419ce0c447584baf12fcedfe778d62ee29b5ad9744bfdb4eb6f2932fd",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-WEB-K8S-CONTROLLERS",
+      "subject": "Kubernetes Controllers",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "https://kubernetes.io/docs/concepts/architecture/controller/",
+      "revision_or_observed_at": "2026-09-22T14:28:56.706776+00:00",
+      "digest": "sha256:ca5018ccc3ef70ccbe88b65674ff8fd8c2184c582c50d0922feba38a85a531bb",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-WEB-SLSA-PROVENANCE",
+      "subject": "SLSA Provenance v1.2",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "https://slsa.dev/spec/v1.2/provenance",
+      "revision_or_observed_at": "2026-09-22T14:28:56.706776+00:00",
+      "digest": "sha256:9a176a8193aff28144dbab80584f0e9dd707a7c24f98c436349674a4a0e51e44",
+      "state": "CURRENT"
     }
   ],
   "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
-  "observed_at": "2026-09-21T23:02:00-05:00",
+  "observed_at": "2026-09-22T14:28:56.706776+00:00",
   "producer": {
     "kind": "READ_ONLY_CURRENT_AUTHORITY_RESOLVER",
     "resolver_ref": "supabase://public/lf_eventos/14795#CASE_PACKET"
