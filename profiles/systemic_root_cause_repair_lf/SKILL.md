@@ -210,3 +210,15 @@ CANDIDATO / READ_ONLY. This profile can diagnose, compare and specify a repair; 
 
 ## Closure-proof contract
 The V2 closure-proof rules (materiality -> obligations -> external evidence bindings -> derived readiness) live in `contracts/closure_proof_v2.md` and are unchanged. Fill `closure_proof` from that contract after the investigation below is done.
+
+
+## Mandatory self-repair closure contract
+
+Profile-maintenance work that changes SRCR's own producer, transport, evidence, validation, semantic-quality, or closure path MUST satisfy `profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json`.
+
+- The contract contains 12 mandatory closure obligations (MC-01..MC-12).
+- Progress is evidence-derived only: NOT_STARTED=0, SPECIFIED=25, IMPLEMENTED=50, TESTED=75, READBACK_CLOSED=100.
+- A point below READBACK_CLOSED remains open. Partial implementation, CI green, utility PASS, component existence, or producer-authored readiness cannot close it.
+- The profile self-repair/update is not handoff-ready while any mandatory closure is open.
+- Every status report for this work MUST report each obligation's state, percentage, evidence refs, blocking codes and remaining requirements.
+- This contract is generic. Do not add lifecycle-case names, incident IDs or one-off rules to satisfy it.
