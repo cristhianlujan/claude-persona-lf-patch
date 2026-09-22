@@ -333,6 +333,21 @@ class OutputGates:
         evidence_manifest: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         manifest_sha256 = canonical_json_sha256(evidence_manifest) if isinstance(evidence_manifest, dict) else None
+        binding = self.repository.runtime_binding(profile_slug)
+        research_execution = binding.research_execution if binding is not None else None
+        if (
+            isinstance(research_execution, dict)
+            and research_execution.get("requires_evidence_manifest") is True
+            and not isinstance(evidence_manifest, dict)
+        ):
+            return {
+                "status": "FAIL",
+                "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
+                "blocking_codes": ["PROFILE_SEMANTIC_UTILITY_EVIDENCE_MANIFEST_REQUIRED"],
+                "independent_semantic_judge": "NOT_EXECUTED",
+                "evidence_manifest_sha256": None,
+                "downstream_authorized": False,
+            }
         if contract_gate.get("status") != "PASS" or payload is None:
             return {
                 "status": "NOT_EVALUATED",
