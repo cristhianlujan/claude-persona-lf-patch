@@ -273,9 +273,14 @@ class OutputGates:
                     validator.iter_errors(payload), key=lambda error: list(error.path)
                 )
                 for item in validation_errors[:50]:
+                    path_parts = list(item.path)
+                    if item.validator == "required":
+                        missing = re.fullmatch(r"'([^']+)' is a required property", item.message)
+                        if missing:
+                            path_parts.append(missing.group(1))
                     path = "$" + "".join(
                         f"[{part}]" if isinstance(part, int) else f".{part}"
-                        for part in item.path
+                        for part in path_parts
                     )
                     errors.append(
                         {
@@ -1010,8 +1015,9 @@ class OutputGates:
                     result = validator(payload)
                 if isinstance(result, dict):
                     raw_errors = result.get("errors")
+                    declared_codes = result.get("blocking_codes", [])
                     if raw_errors is None:
-                        raw_errors = result.get("blocking_codes")
+                        raw_errors = declared_codes
                     if raw_errors is None:
                         explicitly_clean = result.get("status") == "PASS" or result.get("valid") is True
                         raw_errors = [] if explicitly_clean else ["CANONICAL_PROFILE_VALIDATOR_RESULT_INVALID"]
@@ -1019,11 +1025,20 @@ class OutputGates:
                         raw_errors = ["CANONICAL_PROFILE_VALIDATOR_RESULT_INVALID"]
                     else:
                         raw_errors = list(raw_errors)
-                    declared_codes = result.get("blocking_codes", [])
                     if not isinstance(declared_codes, list):
                         raw_errors.append("CANONICAL_PROFILE_VALIDATOR_RESULT_INVALID")
                     else:
-                        raw_errors.extend(declared_codes)
+                        represented_codes = {
+                            str(item.get("code", "PROFILE_VALIDATOR_ERROR"))
+                            if isinstance(item, dict)
+                            else str(item)
+                            for item in raw_errors
+                        }
+                        for code in declared_codes:
+                            code_text = str(code)
+                            if code_text not in represented_codes:
+                                raw_errors.append(code_text)
+                                represented_codes.add(code_text)
                     if result.get("valid") is False or ("status" in result and result["status"] != "PASS"):
                         if not raw_errors:
                             raw_errors.append("CANONICAL_PROFILE_VALIDATOR_NOT_PASS")
