@@ -1,0 +1,46 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-work-protocol-g11-cross-gate",
+  "issued_by": "operation_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-WORK-PROTOCOL-G11-PR999-20260922-007",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "contract_judge",
+  "contract_sha": "b10ccc8527bc2499775559635fb59736744e46f3ca5e150cf4644cd4c491d7e8",
+  "judge_sha": "MIGRATION_20260531_GITHUB_CONTRACT_GATE_LF_PROTOCOL",
+  "source_sha_list": [
+    "4579de20bbb4202ad170a50f2e367fc828269fba",
+    "fe620412e296555431b47f9621d2381550b58690",
+    "575f3605a511575e3c13fa557664f266bae8b119",
+    "d5bc47b0de303cf7a7bc180f0caf81a3f1166c91",
+    "dfd102c8bf88a2c9b82f76a3a21b5d741d3c711fd1ab31ddbb7f6eb5fe391acd"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/work_protocol_manifest_v1.md",
+    "gobernanza/contratos/work_protocol_manifest_v1.schema.json",
+    "gobernanza/judges/validate_work_protocol_manifest_v1.py"
+  ],
+  "target_blob_sha_by_path": {
+    "gobernanza/contratos/work_protocol_manifest_v1.md": "fe620412e296555431b47f9621d2381550b58690",
+    "gobernanza/contratos/work_protocol_manifest_v1.schema.json": "575f3605a511575e3c13fa557664f266bae8b119",
+    "gobernanza/judges/validate_work_protocol_manifest_v1.py": "d5bc47b0de303cf7a7bc180f0caf81a3f1166c91"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-22T21:58:46.984159Z",
+  "candidate_code_head": "4579de20bbb4202ad170a50f2e367fc828269fba",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "POST_RECEIPT_EXACT_HEAD_CI_THEN_CLOSE_G11",
+  "stage": "CODE_ONLY_GOVERNANCE_QUALIFICATION",
+  "pr_number": 999,
+  "authority_current_revision": "cd8546d3f6beca16bc1160e92b67b29f929ec12e",
+  "currentness_decision": "CURRENT",
+  "g10_package_sha256": "1963ad75017318136e969365b6bb4c6043deb9fb7c7ffc308bfb508f8f1062f2",
+  "g10_output_digest": "dfd102c8bf88a2c9b82f76a3a21b5d741d3c711fd1ab31ddbb7f6eb5fe391acd",
+  "cross_gate_lineage_root_sha256": "8e5b567c6eab85777a3ed8b82e3e073ba44d8827014eb828008dc989331854b4",
+  "validate_lf_packs_pre_receipt_run_id": 35789435955,
+  "bootstrap_pre_receipt_run_id": 35789435966,
+  "lf_contract_check_pre_receipt_run_id": 35789435961,
+  "runtime_activation": false,
+  "production_applied": false
+}
