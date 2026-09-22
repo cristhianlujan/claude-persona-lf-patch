@@ -698,6 +698,30 @@ def test_v06_builder_declares_canary_consumer_and_queue_terminal_bridge() -> Non
     assert "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge" in deliverables
 
 
+def test_v06_implementable_next_gate_requires_real_or_proposed_consumer() -> None:
+    candidate_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_repaired_20260922" / "candidate_v06_repaired.json"
+    )
+    manifest_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922" / "evidence_manifest_v06_merged.json"
+    )
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    refresh = next(
+        edge for edge in candidate["material_process_graph"]["edges"]
+        if edge["edge_id"] == "EDGE-REFRESH-VERIFY"
+    )
+    assert refresh["next_gate"] == "PROFILE_RUNTIME_CANARY_REQUIRED"
+    refresh["next_gate_consumer_evidence_refs"] = []
+    refresh.pop("proposed_next_gate_consumer_ref", None)
+
+    result = harness.runtime_validate.validate(candidate, evidence_manifest=manifest)
+    assert result["status"] == "FAIL", result
+    assert "V06_IMPLEMENTABLE_NEXT_GATE_CONSUMER_REQUIRED" in result["blocking_codes"], result
+
+
 def test_v06_implementable_edge_change_must_be_declared_in_delta() -> None:
     payload = {
         "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
