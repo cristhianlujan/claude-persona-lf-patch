@@ -4,20 +4,22 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 71.15384615384616,
+  "overall_percent": 73.07692307692308,
   "points": [
     {
       "obligation_id": "MC-01",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "runtime_binding requires EXTERNAL_AUTHORITY_RESOLVER with manifest/query-trace/resolved-authority context",
-        "engine fails closed before model execution when the research bundle is missing or unbound",
-        "Validate LF Packs run 35736254524 PASS on exact code head 848bcbd024a5de1309bdefc1e3f046a089f6fea0"
+        "runtime_binding declares EXTERNAL_AUTHORITY_RESOLVER and requires evidence_manifest + query_trace + resolved_authority_context",
+        "queue-native SRCR path now transports an exact research envelope through the existing runtime queue and preserves hydrated resolved_authority_context into governed_operation/model context",
+        "canonical research_trace validator binds resolved authority IDs, locators, digests, result semantics and resolved values to the exact manifest/query trace",
+        "fresh live readback on source revision d0306fb1ae01443d370d1d77b21e9537f48ed0a0 consumed 2 live queries (GitHub + Supabase), 2 evidence rows and 2 hydrated authority values; model-context delivery digest was retained",
+        "negative worker and engine tests both returned SRCR_LIVE_RESEARCH_EXECUTION_PATH_MISSING when no executable research capability was present",
+        "Validate LF Packs run 35744244255 PASS with 236 runtime/API tests; LF Bootstrap Reproducibility Probe run 35744244227 PASS",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc01_live_research_readback.json"
       ],
-      "remaining_requirements": [
-        "Run one real SRCR research execution and retain readback proving the resolver path, query trace and authority context were consumed."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-02",
@@ -176,8 +178,8 @@
       ]
     }
   ],
-  "closed_count": 1,
-  "open_count": 12,
+  "closed_count": 2,
+  "open_count": 11,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -190,12 +192,14 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "ec81f80e72e391bcd6b56b66f8dea494cfaae987",
+  "current_exact_code_head": "d0306fb1ae01443d370d1d77b21e9537f48ed0a0",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
-    "run_id": 35742637295,
+    "run_id": 35744244255,
     "conclusion": "success",
-    "source_revision": "ec81f80e72e391bcd6b56b66f8dea494cfaae987",
-    "runtime_api_tests": "233 passed"
+    "source_revision": "d0306fb1ae01443d370d1d77b21e9537f48ed0a0",
+    "runtime_api_tests": "236 passed",
+    "bootstrap_run_id": 35744244227,
+    "bootstrap_conclusion": "success"
   }
 }
