@@ -809,6 +809,116 @@ def _record_post_model_governance(
     }
 
 
+def _record_semantic_quality_result(
+    conn: psycopg.Connection,
+    *,
+    execution_id: str,
+    profile_code: str,
+    semantic_execution_receipt_ref: str,
+    semantic_result: dict[str, Any],
+    finalize_result: dict[str, Any],
+) -> dict[str, Any]:
+    """Persist only a fully validated independent semantic PASS and canonical receipt.
+
+    The independent semantic reviewer remains external to this worker. This function
+    is the deterministic consumer after the review has been validated and the
+    canonical quality receipt has been materialized.
+    """
+    if finalize_result.get("status") != "PASS":
+        return {
+            "status": "BLOCKED",
+            "error_code": "CANONICAL_QUALITY_FINALIZE_NOT_PASS",
+        }
+    if finalize_result.get("canonical_quality_accepted") is not True:
+        return {
+            "status": "BLOCKED",
+            "error_code": "CANONICAL_QUALITY_NOT_ACCEPTED",
+        }
+    receipt = finalize_result.get("quality_receipt")
+    if not isinstance(receipt, dict):
+        return {
+            "status": "BLOCKED",
+            "error_code": "CANONICAL_QUALITY_RECEIPT_MISSING",
+        }
+    unsupported_claims = semantic_result.get("unsupported_claims")
+    if unsupported_claims is None:
+        unsupported_claims = []
+    if not isinstance(unsupported_claims, list) or unsupported_claims:
+        return {
+            "status": "BLOCKED",
+            "error_code": "SEMANTIC_REVIEW_UNSUPPORTED_CLAIMS_PRESENT",
+        }
+    if semantic_result.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
+        return {
+            "status": "BLOCKED",
+            "error_code": "SEMANTIC_REVIEW_VERDICT_NOT_PASS",
+        }
+
+    semantic_payload = {
+        "semantic_judge_result": {
+            "status": "PASS",
+            "verdict": semantic_result.get("verdict"),
+            "candidate_sha256": semantic_result.get("candidate_sha256"),
+            "scope_packet_sha256": semantic_result.get("scope_packet_sha256"),
+            "canonical_quality_accepted": True,
+            "quality_receipt": receipt,
+        },
+        "unsupported_claims": [],
+    }
+    with conn.cursor() as cur:
+        semantic_step = _fetch_json_scalar(
+            cur,
+            "select public.lf_record_profile_execution_step_v1(%s,%s,%s,%s,%s)",
+            (
+                execution_id,
+                "semantic_judge",
+                semantic_execution_receipt_ref,
+                Jsonb(semantic_payload),
+                execution_id,
+            ),
+        )
+        if semantic_step.get("outcome") != "STEP_RECORDED":
+            conn.commit()
+            return {
+                "status": "BLOCKED",
+                "error_code": semantic_step.get("code")
+                or "SEMANTIC_JUDGE_STEP_NOT_CLEAN",
+            }
+
+        report_payload = {
+            "result": "PASS_TO_QUALITY_PACK",
+            "profile_code": profile_code,
+            "execution_id": execution_id,
+            "no_write_performed": True,
+            "canonical_quality_accepted": True,
+            "quality_receipt": receipt,
+        }
+        report_step = _fetch_json_scalar(
+            cur,
+            "select public.lf_record_profile_execution_step_v1(%s,%s,%s,%s,%s)",
+            (
+                execution_id,
+                "report_output",
+                f"{semantic_execution_receipt_ref}#quality-report",
+                Jsonb(report_payload),
+                execution_id,
+            ),
+        )
+    conn.commit()
+    if report_step.get("outcome") != "STEP_RECORDED":
+        return {
+            "status": "BLOCKED",
+            "error_code": report_step.get("code") or "REPORT_OUTPUT_STEP_NOT_CLEAN",
+        }
+    return {
+        "status": "COMPLETED",
+        "error_code": None,
+        "execution_id": execution_id,
+        "canonical_quality_accepted": True,
+        "quality_receipt": receipt,
+    }
+
+
 def _validate_envelope(request_id: str, envelope: Any) -> dict[str, Any]:
     if not isinstance(envelope, dict):
         raise RuntimeError("HETZNER_REQUEST_ENVELOPE_NOT_OBJECT")
