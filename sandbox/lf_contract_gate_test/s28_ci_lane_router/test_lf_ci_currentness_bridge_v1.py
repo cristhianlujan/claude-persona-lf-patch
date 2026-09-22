@@ -100,6 +100,83 @@ def test_same_revision_is_current() -> None:
 
 
 
+def test_pr_that_contains_current_main_binds_current_authority() -> None:
+    repo, base = setup_repo()
+    p = repo / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
+    p.write_text("print('router v2')\n", encoding="utf-8")
+    current = commit_all(repo, "main authority update")
+    sh(repo, "checkout", "-b", "feature")
+    (repo / "unrelated/readme.md").write_text("feature after current main\n", encoding="utf-8")
+    feature = commit_all(repo, "feature after current main")
+    bound = M.resolve_authority_evidence_revision(
+        repo=repo,
+        event_name="pull_request",
+        ref_name="feature",
+        diff_base_revision=base,
+        candidate_head_revision=feature,
+        current_revision=current,
+    )
+    assert bound == current
+    r = M.evaluate_ci_authority_currentness(
+        repo=repo, bound_revision=bound, current_revision=current
+    )
+    assert r["decision"] == "CURRENT", r
+    assert r["ready"] is True, r
+
+
+def test_pr_that_does_not_contain_current_main_keeps_historical_evidence() -> None:
+    repo, base = setup_repo()
+    sh(repo, "checkout", "-b", "feature")
+    (repo / "unrelated/readme.md").write_text("feature\n", encoding="utf-8")
+    feature = commit_all(repo, "feature")
+    sh(repo, "checkout", "master")
+    p = repo / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
+    p.write_text("print('router v2')\n", encoding="utf-8")
+    current = commit_all(repo, "main authority update")
+    bound = M.resolve_authority_evidence_revision(
+        repo=repo,
+        event_name="pull_request",
+        ref_name="feature",
+        diff_base_revision=base,
+        candidate_head_revision=feature,
+        current_revision=current,
+    )
+    assert bound == base
+    r = M.evaluate_ci_authority_currentness(
+        repo=repo, bound_revision=bound, current_revision=current
+    )
+    assert r["decision"] == "UNKNOWN_FAIL_CLOSED", r
+    assert r["reason"] == "COMPATIBILITY_ASSESSMENT_MISSING", r
+
+
+def test_pr_uses_live_merge_base_not_stale_event_base() -> None:
+    repo, event_base = setup_repo()
+    p = repo / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
+    p.write_text("print('router v2')\n", encoding="utf-8")
+    main_at_branch = commit_all(repo, "authority update before branch")
+    sh(repo, "checkout", "-b", "feature")
+    (repo / "unrelated/readme.md").write_text("feature\n", encoding="utf-8")
+    feature = commit_all(repo, "feature")
+    sh(repo, "checkout", "master")
+    (repo / "unrelated/readme.md").write_text("main unrelated after branch\n", encoding="utf-8")
+    current = commit_all(repo, "unrelated main advance")
+    bound = M.resolve_authority_evidence_revision(
+        repo=repo,
+        event_name="pull_request",
+        ref_name="feature",
+        diff_base_revision=event_base,
+        candidate_head_revision=feature,
+        current_revision=current,
+    )
+    assert bound == main_at_branch, (bound, main_at_branch)
+    r = M.evaluate_ci_authority_currentness(
+        repo=repo, bound_revision=bound, current_revision=current
+    )
+    assert r["decision"] == "CURRENT_REBOUND", r
+    assert r["ready"] is True, r
+    assert r["rebind_allowed"] is True, r
+
+
 def test_push_to_main_binds_new_evidence_to_current_main() -> None:
     repo, base = setup_repo()
     p = repo / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
@@ -150,6 +227,9 @@ def main() -> None:
         test_unrelated_main_change_is_current_rebound,
         test_ci_authority_change_blocks_without_compatibility_proof,
         test_same_revision_is_current,
+        test_pr_that_contains_current_main_binds_current_authority,
+        test_pr_that_does_not_contain_current_main_keeps_historical_evidence,
+        test_pr_uses_live_merge_base_not_stale_event_base,
         test_push_to_main_binds_new_evidence_to_current_main,
         test_feature_push_uses_merge_base_not_diff_base_as_authority,
     ]
