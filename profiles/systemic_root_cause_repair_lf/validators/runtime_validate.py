@@ -866,6 +866,51 @@ def _normalize_change_ref(value):
     return text.strip("/")
 
 
+def _is_proposed_change_ref(value):
+    if not _nonempty_string(value):
+        return False
+    text = value.strip()
+    return text.startswith((
+        "supabase://proposed/",
+        "proposed://",
+        "github://proposed/",
+        "artifact://proposed/",
+    ))
+
+
+def _collect_v06_candidate_change_refs(value, path="$"):
+    """Extract proposed material-change refs without seeding from implementation_delta.
+
+    This is deliberately structural and case-agnostic: any proposed ref that appears
+    anywhere else in the exact candidate is independently observable and therefore
+    must reconcile to the producer-declared implementation delta.
+    """
+    out = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            child = f"{path}.{key}"
+            if path == "$" and key == "implementation_delta":
+                continue
+            out.extend(_collect_v06_candidate_change_refs(item, child))
+    elif isinstance(value, list):
+        for idx, item in enumerate(value):
+            out.extend(_collect_v06_candidate_change_refs(item, f"{path}[{idx}]"))
+    elif _is_proposed_change_ref(value):
+        out.append((path, _normalize_change_ref(value)))
+    return out
+
+
+def _change_ref_is_declared(ref, declared_targets):
+    if not ref:
+        return False
+    return any(
+        ref == target
+        or ref.startswith(target + "/")
+        or ref.startswith(target + "->")
+        for target, _ in declared_targets
+    )
+
+
 def _v06_selected_change_errors(payload):
     if payload.get("profile_pack_id") != V06_PACK_ID:
         return []
@@ -882,11 +927,39 @@ def _v06_selected_change_errors(payload):
 
     declared_targets = []
     for idx, row in enumerate(delta):
+        path = f"$.implementation_delta[{idx}]"
         if not isinstance(row, dict):
+            errors.append(_error("V06_IMPLEMENTATION_DELTA_ROW_INVALID", path))
             continue
         normalized = _normalize_change_ref(row.get("target"))
-        if normalized:
-            declared_targets.append((normalized, idx))
+        if not normalized:
+            errors.append(_error("V06_IMPLEMENTATION_DELTA_TARGET_REQUIRED", f"{path}.target"))
+            continue
+        if not _nonempty_string(row.get("action")):
+            errors.append(_error("V06_IMPLEMENTATION_DELTA_ACTION_REQUIRED", f"{path}.action"))
+        refs = row.get("evidence_refs")
+        if not isinstance(refs, list) or not refs or any(not _nonempty_string(x) for x in refs):
+            errors.append(_error("V06_IMPLEMENTATION_DELTA_EVIDENCE_REQUIRED", f"{path}.evidence_refs"))
+        declared_targets.append((normalized, idx))
+
+    # Independent structural extraction from the entire candidate except the
+    # declaration itself. This catches a proposed mechanism introduced in a hard
+    # guard, policy/control, wiring/deliverable, observability, closure proof or
+    # material graph even when the graph-only reconciliation would miss it.
+    seen = set()
+    for candidate_path, ref in _collect_v06_candidate_change_refs(payload):
+        if not ref:
+            continue
+        key = (candidate_path, ref)
+        if key in seen:
+            continue
+        seen.add(key)
+        if not _change_ref_is_declared(ref, declared_targets):
+            errors.append(_error(
+                "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+                candidate_path,
+                ref,
+            ))
 
     graph = payload.get("material_process_graph")
     edges = graph.get("edges") if isinstance(graph, dict) else []
@@ -911,16 +984,14 @@ def _v06_selected_change_errors(payload):
                     f"$.material_process_graph.edges[{idx}].{field}",
                 ))
                 continue
-            covered = any(
-                ref == target or ref.startswith(target + "/")
-                for target, _ in declared_targets
-            )
-            if not covered:
-                errors.append(_error(
+            if not _change_ref_is_declared(ref, declared_targets):
+                error = _error(
                     "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
                     f"$.material_process_graph.edges[{idx}].{field}",
                     ref,
-                ))
+                )
+                if error not in errors:
+                    errors.append(error)
     return errors
 
 def validate(payload, evidence_manifest=None):
