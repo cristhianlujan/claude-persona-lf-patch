@@ -161,14 +161,24 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
             def __init__(self): self.cursor_obj = Cursor()
             def cursor(self): return self.cursor_obj
         conn = Conn()
-        with patch.object(
-            worker,
-            "_record_post_model_governance",
-            return_value={
-                "status": "READY_FOR_SEMANTIC_JUDGE",
-                "next_gate": "semantic_judge",
-                "execution_id": model_governance()["execution_id"],
-            },
+        with (
+            patch.object(
+                worker,
+                "_record_post_model_governance",
+                return_value={
+                    "status": "READY_FOR_SEMANTIC_JUDGE",
+                    "next_gate": "semantic_judge",
+                    "execution_id": model_governance()["execution_id"],
+                },
+            ),
+            patch.object(
+                worker,
+                "_run_bound_semantic_judge",
+                return_value={
+                    "status": "BLOCKED",
+                    "error_code": "SEMANTIC_TEST_BLOCK",
+                },
+            ) as semantic_judge,
         ):
             worker._persist_success(
                 conn,
@@ -177,9 +187,10 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
                 claimed=claimed(),
                 governed={"execution_id": model_governance()["execution_id"]},
             )
+        semantic_judge.assert_called_once()
         params = conn.cursor_obj.params
         self.assertEqual(params[0], "BLOCKED")
-        self.assertEqual(params[7], "HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING")
+        self.assertEqual(params[7], "SEMANTIC_TEST_BLOCK")
 
     def test_runtime_block_is_not_relabelled_as_semantic_pending(self) -> None:
         profile = {
