@@ -1842,6 +1842,187 @@ def generate_research_baseline_snapshot(
     }
 
 
+def generate_independent_semantic_judge(
+    *,
+    settings: Settings,
+    client: LlamaHTTPClient,
+    profile_slug: str,
+    judge_text: str,
+    input_literal: str,
+    exact_candidate: dict[str, Any],
+    scope_authority_packet: dict[str, Any],
+    deterministic_validation: dict[str, Any],
+    evidence_manifest: dict[str, Any] | None,
+    candidate_sha256: str,
+    scope_packet_sha256: str,
+    max_output_tokens: int | None = None,
+) -> dict[str, Any]:
+    """Execute the bound semantic judge as a separate model call.
+
+    This is intentionally isolated from producer prompt/context. Candidate identity and
+    scope identity are fixed by deterministic hashes supplied by the governed runtime.
+    """
+    health = client.health()
+    if health.get("ready") is not True:
+        raise LlamaTransportError(
+            "SEMANTIC_JUDGE_MODEL_NOT_READY", str(health.get("error_code", ""))
+        )
+    if not isinstance(judge_text, str) or not judge_text.strip():
+        raise LlamaTransportError("SEMANTIC_JUDGE_BOUND_INSTRUCTIONS_MISSING")
+    invariant_names = [
+        "SCOPE_AUTHORITY_INTEGRITY",
+        "EVIDENCE_INTEGRITY",
+        "CAUSAL_CLOSURE",
+        "CONTRADICTION_INTEGRITY",
+        "MINIMUM_SUFFICIENT_REUSE",
+        "INDEPENDENT_DECISION_CLOSURE",
+        "FALSIFIABILITY_REGRESSION",
+    ]
+    result_schema = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": [
+            "verdict", "candidate_sha256", "scope_packet_sha256",
+            "source_refs_inspected", "observed_candidate_changes",
+            "requirement_reconciliation", "change_declaration_reconciliation",
+            "scope_conformance_reconciliation", "invariant_results",
+            "open_design_decisions_found", "unsupported_claims", "blocking_codes",
+            "repair_instructions", "next_gate",
+        ],
+        "properties": {
+            "verdict": {"enum": [
+                "PASS_INDEPENDENT_SEMANTIC", "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+                "RETURN_TO_ORCHESTRATOR", "BLOCK_PIPELINE",
+            ]},
+            "candidate_sha256": {"const": candidate_sha256},
+            "scope_packet_sha256": {"const": scope_packet_sha256},
+            "source_refs_inspected": {"type": "array", "items": {"type": "string", "minLength": 3}, "maxItems": 80},
+            "observed_candidate_changes": {
+                "type": "array", "maxItems": 80,
+                "items": {
+                    "type": "object", "additionalProperties": False,
+                    "required": ["change_id", "action_class", "target", "candidate_paths", "statement", "materiality", "evidence_refs"],
+                    "properties": {
+                        "change_id": {"type": "string", "minLength": 2, "maxLength": 120},
+                        "action_class": {"type": "string", "minLength": 2, "maxLength": 80},
+                        "target": {"type": "string", "minLength": 2, "maxLength": 500},
+                        "candidate_paths": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 2}, "maxItems": 20},
+                        "statement": {"type": "string", "minLength": 4, "maxLength": 1200},
+                        "materiality": {"type": "string", "minLength": 2, "maxLength": 80},
+                        "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 3}, "maxItems": 30},
+                    },
+                },
+            },
+            "requirement_reconciliation": {
+                "type": "array", "maxItems": 120,
+                "items": {
+                    "type": "object", "additionalProperties": False,
+                    "required": ["scope_item_id", "disposition", "reason", "evidence_refs"],
+                    "properties": {
+                        "scope_item_id": {"type": "string", "minLength": 2, "maxLength": 120},
+                        "disposition": {"enum": ["SATISFIED", "PRESERVED", "NOT_APPLICABLE_WITH_EVIDENCE", "VIOLATED", "UNRESOLVED"]},
+                        "reason": {"type": "string", "minLength": 3, "maxLength": 1200},
+                        "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 3}, "maxItems": 30},
+                    },
+                },
+            },
+            "change_declaration_reconciliation": {
+                "type": "array", "maxItems": 80,
+                "items": {
+                    "type": "object", "additionalProperties": False,
+                    "required": ["change_id", "disposition", "reason", "evidence_refs"],
+                    "properties": {
+                        "change_id": {"type": "string", "minLength": 2, "maxLength": 120},
+                        "disposition": {"enum": ["DECLARED_EQUIVALENT", "DISCOVERY_ONLY_NOT_IN_SELECTED_REPAIR", "UNDECLARED_PROPOSED_CHANGE"]},
+                        "reason": {"type": "string", "minLength": 3, "maxLength": 1200},
+                        "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 3}, "maxItems": 30},
+                    },
+                },
+            },
+            "scope_conformance_reconciliation": {
+                "type": "array", "maxItems": 80,
+                "items": {
+                    "type": "object", "additionalProperties": False,
+                    "required": ["change_id", "disposition", "reason", "evidence_refs"],
+                    "properties": {
+                        "change_id": {"type": "string", "minLength": 2, "maxLength": 120},
+                        "disposition": {"enum": ["IN_SCOPE", "DISCOVERY_OUT_OF_SCOPE", "OUT_OF_SCOPE_DESIGN_DELTA", "UNRESOLVED_SCOPE"]},
+                        "reason": {"type": "string", "minLength": 3, "maxLength": 1200},
+                        "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 3}, "maxItems": 30},
+                    },
+                },
+            },
+            "invariant_results": {
+                "type": "array", "minItems": 7, "maxItems": 7,
+                "items": {
+                    "type": "object", "additionalProperties": False,
+                    "required": ["invariant", "result", "reason", "evidence_refs"],
+                    "properties": {
+                        "invariant": {"enum": invariant_names},
+                        "result": {"enum": ["PASS", "FAIL", "BLOCKED"]},
+                        "reason": {"type": "string", "minLength": 3, "maxLength": 1200},
+                        "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 3}, "maxItems": 40},
+                    },
+                },
+            },
+            "open_design_decisions_found": {"type": "array", "items": {"type": "string", "minLength": 3}, "maxItems": 40},
+            "unsupported_claims": {"type": "array", "items": {"type": "string", "minLength": 3}, "maxItems": 80},
+            "blocking_codes": {"type": "array", "items": {"type": "string", "minLength": 3}, "maxItems": 80},
+            "repair_instructions": {"type": "array", "items": {"type": "string", "minLength": 3}, "maxItems": 40},
+            "next_gate": {"type": "string", "minLength": 2, "maxLength": 160},
+        },
+    }
+    system_prompt = "\n".join([
+        "You are the bound independent semantic judge for a governed LF profile execution.",
+        "This is a separate inference call. Do not trust producer self-certification as evidence.",
+        "Independently inspect the entire exact candidate before reconciling implementation_delta.",
+        "If supplied authority context is insufficient for a material conclusion, return a non-PASS verdict.",
+        "Never treat a source reference alone as proof of source contents you were not given.",
+        "Return only JSON satisfying the provided schema.",
+        "",
+        judge_text,
+    ])
+    judge_input = {
+        "literal_request": input_literal,
+        "exact_candidate": exact_candidate,
+        "scope_authority_packet": scope_authority_packet,
+        "deterministic_validation": deterministic_validation,
+        "evidence_manifest": evidence_manifest,
+    }
+    user_prompt = json.dumps(judge_input, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    if len(system_prompt) + len(user_prompt) > settings.max_prompt_chars:
+        raise LlamaTransportError("SEMANTIC_JUDGE_PROMPT_CONTEXT_BUDGET_EXCEEDED")
+    completion = client.chat(
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        schema=result_schema,
+        profile_slug=profile_slug,
+        schema_mode="INDEPENDENT_SEMANTIC_JUDGE",
+        acceptance=None,
+        image_bytes=None,
+        image_media_type=None,
+        max_output_tokens_override=max_output_tokens,
+    )
+    raw = completion.get("content")
+    if not isinstance(raw, str):
+        raise LlamaTransportError("SEMANTIC_JUDGE_MODEL_OUTPUT_MISSING")
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise LlamaTransportError("SEMANTIC_JUDGE_MODEL_OUTPUT_JSON_INVALID") from exc
+    if not isinstance(payload, dict):
+        raise LlamaTransportError("SEMANTIC_JUDGE_MODEL_OUTPUT_NOT_OBJECT")
+    return {
+        "semantic_judge_result": payload,
+        "model_id": completion.get("model") or settings.llama_model,
+        "usage": completion.get("usage") if isinstance(completion.get("usage"), dict) else {},
+        "timings": completion.get("timings") if isinstance(completion.get("timings"), dict) else {},
+        "finish_reason": completion.get("finish_reason") or "UNAVAILABLE",
+        "generation_schema_sha256": completion.get("generation_schema_sha256"),
+        "generation_schema_policy": completion.get("generation_schema_policy"),
+    }
+
+
 class PersistentLlamaServerAdapter:
     adapter_id = "hetzner-local-llamacpp-http-v1"
     is_test_double = False
