@@ -23,6 +23,27 @@ assert spec and spec.loader
 harness = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(harness)
 
+BUILDER_PATH = (
+    ROOT
+    / "sandbox"
+    / "lf_contract_gate_test"
+    / "srcr_v06_native_harness"
+    / "build_candidate_from_v05.py"
+)
+builder_spec = importlib.util.spec_from_file_location("srcr_v06_builder_tested", BUILDER_PATH)
+assert builder_spec and builder_spec.loader
+builder = importlib.util.module_from_spec(builder_spec)
+builder_spec.loader.exec_module(builder)
+
+V05_EVAL = (
+    ROOT
+    / "profiles"
+    / "systemic_root_cause_repair_lf"
+    / "evals"
+    / "v05_producer_depth_cases.py"
+)
+v05_fixture = __import__("runpy").run_path(str(V05_EVAL), run_name="srcr_v06_builder_fixture")
+
 
 def sha(value: str) -> str:
     return "sha256:" + hashlib.sha256(value.encode("utf-8")).hexdigest()
@@ -385,6 +406,55 @@ def test_prefreeze_rejects_malformed_test_protocol_before_candidate_receipt() ->
         assert str(exc).startswith("PREFREEZE_VALIDATION_NOT_CLEAN:OUTPUT_SCHEMA")
     else:
         raise AssertionError("schema-invalid candidate must never materialize a freeze receipt")
+
+
+def test_v06_builder_declares_canary_consumer_and_queue_terminal_bridge() -> None:
+    base_candidate, _ = v05_fixture["v05_pair"]("ARCHITECTURE_AUDIT")
+    candidate = builder.build_candidate(base_candidate)
+
+    edges = {
+        item["edge_id"]: item
+        for item in candidate["material_process_graph"]["edges"]
+    }
+    refresh = edges["EDGE-REFRESH-VERIFY"]
+    terminal = edges["EDGE-EXECUTE-TERMINAL-READBACK"]
+
+    assert refresh["next_gate"] == "PROFILE_RUNTIME_CANARY_REQUIRED"
+    assert (
+        refresh["proposed_next_gate_consumer_ref"]
+        == "proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer"
+    )
+    assert terminal["proposed_change_ref"] == (
+        "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge"
+    )
+
+    targets = {
+        row["target"]
+        for row in candidate["implementation_delta"]
+        if isinstance(row, dict)
+    }
+    assert (
+        "supabase://proposed/GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer"
+        in targets
+    )
+    assert (
+        "supabase://proposed/EJECUCION_PERFIL_LF/queue_terminal_bridge"
+        in targets
+    )
+
+    selected_errors = harness.runtime_validate._v06_selected_change_errors(candidate)
+    assert not any(
+        item["code"] == "V06_SELECTED_REPAIR_CHANGE_UNDECLARED"
+        for item in selected_errors
+    ), selected_errors
+
+    deliverables = {
+        row["artifact_ref"]
+        for row in candidate["implementation_package"]["deliverables"]
+        if isinstance(row, dict)
+    }
+    assert "proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer" in deliverables
+    assert "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge" in deliverables
 
 
 def test_v06_implementable_edge_change_must_be_declared_in_delta() -> None:
