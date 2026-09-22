@@ -1,0 +1,75 @@
+{
+  "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+  "bundle_id": "BUNDLE-SRCR-V05-LIFECYCLE-NATIVE-PHASE4-20260921",
+  "bundle_digest": "sha256:606861ea28811420546fc0a1188de1b96b0c186cea5f93f6bd842841dc88ba14",
+  "observed_at": "2026-09-21T22:55:00-05:00",
+  "producer": {
+    "kind": "SOURCE_FIRST_RESOLVER",
+    "resolver_ref": "supabase://private.lf_evidence_resolver_registry_v1/LF_GITHUB_SOURCE_READBACK_V1"
+  },
+  "evidence": [
+    {
+      "evidence_id": "EV-LC-037",
+      "subject": "SRCR pack self-validator source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/validate_pack.py",
+      "revision_or_observed_at": "gitblob:df02c772d28609ee6f427424808a432c8d2165d3",
+      "digest": "sha256:833d25b3a5700f3802b7b9e7054614ddbd4e52fe1955bf25cb0ae241b505be12",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-038",
+      "subject": "SRCR output schema V0.5 architecture-audit conditional source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+      "revision_or_observed_at": "gitblob:e3943180f5e5a2dde19693a6f39d6b75c3b20697",
+      "digest": "sha256:20976ea82219d55f394c8183c038778ae8bb26c0e72bcccc744db184e862a94a",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-039",
+      "subject": "full deep regression log exposing schema/self-validator drift",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "github-actions://cristhianlujan/claude-persona-lf-patch/jobs/106607329745",
+      "revision_or_observed_at": "run:35684161556",
+      "digest": "sha256:02a185c9f238343c245eabd457450af139a4d20f93c895c05208ffa88a657e51",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-040",
+      "subject": "Validate LF Packs workflow source handling push base SHA",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/.github/workflows/validate-lf-packs.yml",
+      "revision_or_observed_at": "gitblob:d02f6f603516962f7c288122c2dfbbcbb39e3111",
+      "digest": "sha256:7d514e85717df9a4447d9cb0b30c4eba27d528b08696e038d963d18e25915f96",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-041",
+      "subject": "lf-contract-check workflow source handling push base SHA",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/.github/workflows/lf-contract-check.yml",
+      "revision_or_observed_at": "gitblob:53bd414917e6522e42abf6cd6492f49a702e7fd9",
+      "digest": "sha256:621162f34c7c5a376ddd9876a285c4b04741fcfcf01ab194a8c6f1281d2a16c7",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-042",
+      "subject": "new-branch push Validate LF Packs zero-SHA failure log",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "github-actions://cristhianlujan/claude-persona-lf-patch/jobs/106601722653",
+      "revision_or_observed_at": "run:35682323915",
+      "digest": "sha256:889c5d936d43f56a4f2544c7b7dd5edb4b7afa8e9c3796cc9c19494ac597f62b",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-043",
+      "subject": "new-branch push lf-contract-check zero-SHA failure log",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "github-actions://cristhianlujan/claude-persona-lf-patch/jobs/106601741367",
+      "revision_or_observed_at": "run:35682323913",
+      "digest": "sha256:d7f77c903577cbf53d05aa8b626b5b736bec46053991a1169f48548cb4bd25d5",
+      "state": "CURRENT"
+    }
+  ]
+}
