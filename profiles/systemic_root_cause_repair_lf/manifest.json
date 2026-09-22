@@ -42,6 +42,7 @@
     "validators/runtime_validate.py",
     "validators/validate_pack.py",
     "evals/v06_edge_closure_cases.py",
-    "validators/edge_closure.py"
+    "validators/edge_closure.py",
+    "evals/v06_control_ownership_cases.py"
   ]
 }
