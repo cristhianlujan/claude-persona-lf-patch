@@ -54,6 +54,41 @@ class LfMigrationTransportParityTests(unittest.TestCase):
         self.assertEqual((direct_count, cli_count), (1, 0))
         self.assertEqual(comparisons[version].representation, "DIRECT_SOURCE")
 
+    def test_reconciliation_marker_is_exact_version_name_and_owner_bound(self):
+        version = "20260922142522"
+        name = "create_engineering_backlog_and_progress_tracking"
+        sql = (
+            "-- LF_MIGRATION_RECONCILIATION_SOURCE_V1\n"
+            "-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY\n"
+            "-- owner_binding_required=true\n"
+            "-- source_authority=supabase_migrations.schema_migrations\n"
+            f"-- source_version={version}\n"
+            f"-- source_name={name}\n"
+            "select 1;\n"
+        )
+        self.assertTrue(
+            subject.reconciliation_source_metadata(sql, version=version, name=name)
+        )
+        self.assertFalse(
+            subject.reconciliation_source_metadata(
+                sql, version="20260922142523", name=name
+            )
+        )
+        self.assertFalse(
+            subject.reconciliation_source_metadata(
+                sql.replace("owner_binding_required=true", "owner_binding_required=false"),
+                version=version,
+                name=name,
+            )
+        )
+        self.assertFalse(
+            subject.reconciliation_source_metadata(
+                sql.replace(f"source_name={name}", "source_name=other"),
+                version=version,
+                name=name,
+            )
+        )
+
     def test_direct_and_cli_representations_pass(self):
         v1 = "20260907010101"
         v2 = "20260907010102"
