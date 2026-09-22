@@ -1,0 +1,70 @@
+{
+  "schema": "SRCR_MC12_SELECTED_REPAIR_COMPLETENESS_READBACK_V1",
+  "status": "READBACK_CLOSED",
+  "observed_at": "2026-09-22T16:51:16.278457+00:00",
+  "source_revision": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+  "candidate": {
+    "path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/candidate_v06_repaired.json",
+    "canonical_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16"
+  },
+  "deterministic_completeness": {
+    "owner": "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+    "baseline_status": "PASS",
+    "baseline_blocking_codes": [],
+    "computed_handoff_ready": true,
+    "coverage": "entire candidate except implementation_delta declaration itself",
+    "authority_anchor_behavior": "A proposed authority_ref in a structured object binds its concrete enforcement_point_ref to the same declared mechanism.",
+    "negative_tests": [
+      {
+        "mutation": "hard_guard.enforcement_point_ref -> proposed://UNDECLARED_MATERIAL_MECHANISM_V1/enforce",
+        "status": "FAIL",
+        "expected_code": "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+        "observed": true
+      },
+      {
+        "mutation": "remove supabase://proposed/EJECUCION_PERFIL_LF/queue_terminal_bridge from implementation_delta",
+        "status": "FAIL",
+        "expected_code": "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+        "observed": true
+      }
+    ]
+  },
+  "fresh_surface_reconciliation": {
+    "declared_material_changes": 10,
+    "selected_repair_ref_occurrences": 41,
+    "selected_repair_unique_refs": 27,
+    "uncovered_after_authority_anchor_reconciliation": 0,
+    "explicit_alias": {
+      "path": "$.implementation_package.control_matrix[7].enforcement_point_ref",
+      "physical_ref": "proposed://EJECUCION_PERFIL_LF/reconcile_queue_terminal",
+      "declared_mechanism": "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge",
+      "binding_path": "$.implementation_package.control_matrix[7].authority_ref",
+      "disposition": "DECLARED_SUBCONTROL"
+    }
+  },
+  "independent_r2": {
+    "reviewer_execution_id": "EXEC-MC11-T5-INDEPENDENT-REVIEW-20260922-001",
+    "review_source_revision": "d4540020144323a7a36b8266f890dd8850d8dbc5",
+    "reviewer_context_mode": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT",
+    "verdict": "PASS_INDEPENDENT_SEMANTIC",
+    "observed_candidate_change_count": 10,
+    "change_declaration_reconciliation_count": 10,
+    "undeclared_proposed_change_count": 0,
+    "blocking_codes": [],
+    "deterministic_semantic_result_validation": "PASS",
+    "candidate_unchanged_since_review": true,
+    "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40"
+  },
+  "closure_assertions": {
+    "all_selected_repair_refs_reconciled": true,
+    "all_material_changes_declared": true,
+    "r2_zero_undeclared_changes": true,
+    "discovery_only_items_not_promoted_into_selected_repair": true,
+    "production_mutation": false,
+    "runtime_activation": false,
+    "merge": false
+  }
+}
