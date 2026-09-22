@@ -183,7 +183,7 @@ def validate_manifest(m: Any) -> list[str]:
         return ["MANIFEST_NOT_OBJECT"]
     required = {
         "manifest_version", "manifest_id", "execution_id", "operation_code", "work_owner", "request_sha256", "target", "frozen_at",
-        "authority_snapshot", "authorized_scope", "execution_policy", "evidence_policy", "control_policy",
+        "authority_snapshot", "authorized_scope", "execution_policy", "evidence_policy", "solution_isolation_policy", "control_policy",
         "controller_policy", "closure_controller_policy", "waivers", "irreversible_approvals", "supersession", "obligations", "closure_policy", "manifest_digest",
     }
     missing = sorted(required - set(m))
@@ -278,6 +278,21 @@ def validate_manifest(m: Any) -> list[str]:
         future_clock_skew_seconds = evidence_policy.get("future_clock_skew_seconds")
         if not isinstance(future_clock_skew_seconds, int) or isinstance(future_clock_skew_seconds, bool) or not (0 <= future_clock_skew_seconds <= 300):
             e.append("EVIDENCE_POLICY_INVALID:future_clock_skew_seconds")
+
+    solution_isolation_policy = m.get("solution_isolation_policy")
+    if not isinstance(solution_isolation_policy, dict):
+        e.append("SOLUTION_ISOLATION_POLICY_INVALID")
+    else:
+        expected_solution_isolation = {
+            "unit_mode": "ONE_SOLUTION_PER_PR",
+            "mixed_solution_pr_allowed": False,
+            "scope_expansion_requires_new_pr": True,
+            "migration_apply_requires_separate_pr": True,
+            "receipt_must_bind_exact_pr_scope": True,
+        }
+        for k, v in expected_solution_isolation.items():
+            if solution_isolation_policy.get(k) != v:
+                e.append(f"SOLUTION_ISOLATION_POLICY_INVALID:{k}")
 
     control_policy = m.get("control_policy")
     if not isinstance(control_policy, dict):
@@ -1216,6 +1231,13 @@ def valid_fixture() -> dict[str, Any]:
             "future_clock_skew_seconds": 300,
             "ledger_receipt_kind": "WORK_PROTOCOL_GATE_EVIDENCE",
         },
+        "solution_isolation_policy": {
+            "unit_mode": "ONE_SOLUTION_PER_PR",
+            "mixed_solution_pr_allowed": False,
+            "scope_expansion_requires_new_pr": True,
+            "migration_apply_requires_separate_pr": True,
+            "receipt_must_bind_exact_pr_scope": True,
+        },
         "control_policy": {
             "scope_change_mode": "SUPERSEDE_NEW_EXECUTION_FULL_REVALIDATION",
             "authorization_rebind_required": True,
@@ -1709,6 +1731,15 @@ def self_test() -> dict[str, str]:
     refresh_closure_receipts(x)
     r = evaluate(x); assert r["result"] == "PASS_WITH_EVIDENCE" and r["active_waiver_count"] == 1, r
     out["positive_optional_waiver_with_human_readback"] = "PASS"
+
+    x = copy.deepcopy(p)
+    x["manifest"]["solution_isolation_policy"]["mixed_solution_pr_allowed"] = True
+    x["manifest"]["manifest_digest"] = digest_without_self(x["manifest"])
+    x["manifest_readback"] = copy.deepcopy(x["manifest"])
+    x["persisted_manifest_digest"] = x["manifest"]["manifest_digest"]
+    r = evaluate(x)
+    assert r["result"] == "BLOCKED" and "SOLUTION_ISOLATION_POLICY_INVALID:mixed_solution_pr_allowed" in r["errors"], r
+    out["negative_mixed_solution_pr_forbidden"] = "PASS"
 
     x = copy.deepcopy(p)
     x["manifest"]["waivers"] = [{
