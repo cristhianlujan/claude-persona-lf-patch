@@ -468,6 +468,40 @@ def test_prefreeze_rejects_malformed_test_protocol_before_candidate_receipt() ->
         raise AssertionError("schema-invalid candidate must never materialize a freeze receipt")
 
 
+def test_repaired_v06_candidate_passes_governed_prequality_freeze() -> None:
+    candidate_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_repaired_20260922" / "candidate_v06_repaired.json"
+    )
+    manifest_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922" / "evidence_manifest_v06_merged.json"
+    )
+    trace_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922" / "lifecycle_trace_v06_resequenced.json"
+    )
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    trace_doc = json.loads(trace_path.read_text(encoding="utf-8"))
+    query_trace = trace_doc["trace"]
+
+    receipt = harness.materialize_prequality_freeze(
+        candidate=candidate,
+        evidence_manifest=manifest,
+        query_trace=query_trace,
+    )
+    assert receipt["pre_quality_status"] == "PASS_PRE_QUALITY", receipt
+    assert receipt["schema_error_count"] == 0, receipt
+    assert receipt["deterministic_status"] == "PASS", receipt
+    assert receipt["semantic_utility_status"] == "PASS", receipt
+    assert receipt["independent_quality"] == "PENDING_INDEPENDENT_REVIEW", receipt
+    assert receipt["canonical_quality_accepted"] is False
+    assert receipt["candidate_sha256"] == (
+        "805e2d2c30f8909926b5c4f8e646e614456f4bd57b308260e17c62fa6e50929f"
+    )
+
+
 def test_v06_builder_declares_canary_consumer_and_queue_terminal_bridge() -> None:
     base_candidate, _ = v05_fixture["v05_pair"]("ARCHITECTURE_AUDIT")
     candidate = builder.build_candidate(base_candidate)
