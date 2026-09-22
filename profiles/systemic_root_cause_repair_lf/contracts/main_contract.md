@@ -108,3 +108,8 @@ V0.6 preserves V0.5 investigation-depth requirements and closes the distinction 
 ## V0.6 control ownership
 
 Deterministic validation exclusively owns structural blocking codes. The pre-quality semantic utility runs only after the deterministic contract gate passes and MUST NOT re-emit those structural codes. It may add only distinct utility checks. The independent semantic judge remains a separate final semantic authority and cannot be replaced by either deterministic layer.
+
+
+## V0.6 pre-freeze schema discipline
+
+The producer must validate the complete candidate against the exact current `schemas/output.schema.json` before candidate freeze/digest. A schema-invalid draft is not a frozen candidate. Typed test protocols must preserve the declared collection types for setup, action and assertions. Downstream schema validation remains an independent fail-closed control; it is not the first place an avoidable producer shape error should be discovered.
