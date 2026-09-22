@@ -197,12 +197,14 @@ class RepositoryBindings:
             required_packs = canonical_quality.get("required_for_profile_pack_ids")
             semantic_result_validator = canonical_quality.get("semantic_result_validator")
             quality_receipt_validator = canonical_quality.get("quality_receipt_validator")
+            quality_receipt_materializer = canonical_quality.get("quality_receipt_materializer")
             quality_refs = (
                 canonical_quality.get("judge_path"),
                 canonical_quality.get("semantic_judge_path"),
                 canonical_quality.get("quality_receipt_schema"),
                 semantic_result_validator.get("path") if isinstance(semantic_result_validator, dict) else None,
                 quality_receipt_validator.get("path") if isinstance(quality_receipt_validator, dict) else None,
+                quality_receipt_materializer.get("path") if isinstance(quality_receipt_materializer, dict) else None,
             )
             if (
                 not isinstance(required_packs, list)
@@ -221,6 +223,12 @@ class RepositoryBindings:
                 or not all(
                     isinstance(quality_receipt_validator.get(key), str)
                     and quality_receipt_validator.get(key)
+                    for key in ("path", "callable")
+                )
+                or not isinstance(quality_receipt_materializer, dict)
+                or not all(
+                    isinstance(quality_receipt_materializer.get(key), str)
+                    and quality_receipt_materializer.get(key)
                     for key in ("path", "callable")
                 )
                 or any(not isinstance(value, str) or not value for value in quality_refs)
@@ -248,6 +256,7 @@ class RepositoryBindings:
                 canonical_quality["semantic_result_validator"]["path"],
                 canonical_quality["quality_receipt_schema"],
                 canonical_quality["quality_receipt_validator"]["path"],
+                canonical_quality["quality_receipt_materializer"]["path"],
             ])
         for rel in refs:
             if not isinstance(rel, str) or not rel or rel.startswith("/") or ".." in PurePosixPath(rel).parts:
@@ -500,7 +509,7 @@ class RepositoryBindings:
         quality = binding.canonical_quality if binding is not None else None
         if not isinstance(quality, dict):
             return None
-        if component not in {"semantic_result_validator", "quality_receipt_validator"}:
+        if component not in {"semantic_result_validator", "quality_receipt_validator", "quality_receipt_materializer"}:
             raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_COMPONENT_INVALID", component)
         spec = quality.get(component)
         if not isinstance(spec, dict):
