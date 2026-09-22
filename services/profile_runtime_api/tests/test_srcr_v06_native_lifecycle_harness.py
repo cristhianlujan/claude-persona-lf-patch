@@ -345,3 +345,43 @@ def test_runtime_and_native_harness_delegate_research_trace_to_single_owner() ->
     assert "research_trace.validate_manifest_trace_binding(manifest, trace)" in inspect.getsource(harness.validate_manifest_trace_binding)
     assert "research_trace.validate_query_trace(trace)" in harness_source
     assert "research_trace.validate_manifest_trace_binding(manifest, trace)" in harness_source
+
+
+def test_prefreeze_rejects_malformed_test_protocol_before_candidate_receipt() -> None:
+    candidate_path = (
+        ROOT
+        / "sandbox"
+        / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922"
+        / "candidate_v06.json.gz.b64"
+    )
+    manifest_path = (
+        ROOT
+        / "sandbox"
+        / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922"
+        / "evidence_manifest_v06_merged.json"
+    )
+    trace_path = (
+        ROOT
+        / "sandbox"
+        / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922"
+        / "lifecycle_trace_v06_resequenced.json"
+    )
+    candidate = json.loads(
+        gzip.decompress(base64.b64decode(candidate_path.read_bytes())).decode("utf-8")
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    trace = json.loads(trace_path.read_text(encoding="utf-8"))["trace"]
+    candidate["planned_regressions"][0]["test_protocol"]["setup"] = "invalid-string"
+    try:
+        harness.materialize_prequality_freeze(
+            candidate=candidate,
+            evidence_manifest=manifest,
+            query_trace=trace,
+        )
+    except RuntimeError as exc:
+        assert str(exc).startswith("PREFREEZE_VALIDATION_NOT_CLEAN:OUTPUT_SCHEMA")
+    else:
+        raise AssertionError("schema-invalid candidate must never materialize a freeze receipt")
