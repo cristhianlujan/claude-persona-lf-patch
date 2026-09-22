@@ -997,6 +997,7 @@ class OutputGates:
         module = self.repository.load_validator(profile_slug)
         if module is None:
             return [], {}
+        result: Any = None
         try:
             callable_name = self.repository.validator_callable_name(profile_slug)
             if callable_name is not None:
