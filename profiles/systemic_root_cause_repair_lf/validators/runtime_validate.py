@@ -878,25 +878,28 @@ def _is_proposed_change_ref(value):
     ))
 
 
-def _collect_v06_candidate_change_refs(value, path="$"):
+def _collect_v06_candidate_change_refs(value, path="$", authority_anchor=None):
     """Extract proposed material-change refs without seeding from implementation_delta.
 
-    This is deliberately structural and case-agnostic: any proposed ref that appears
-    anywhere else in the exact candidate is independently observable and therefore
-    must reconcile to the producer-declared implementation delta.
+    A proposed authority_ref in the same structured object is carried as an anchor
+    for its concrete enforcement point. This keeps the rule generic while allowing
+    one declared mechanism to own a differently named physical method below it.
     """
     out = []
     if isinstance(value, dict):
+        local_anchor = authority_anchor
+        if _is_proposed_change_ref(value.get("authority_ref")):
+            local_anchor = _normalize_change_ref(value.get("authority_ref"))
         for key, item in value.items():
             child = f"{path}.{key}"
             if path == "$" and key == "implementation_delta":
                 continue
-            out.extend(_collect_v06_candidate_change_refs(item, child))
+            out.extend(_collect_v06_candidate_change_refs(item, child, local_anchor))
     elif isinstance(value, list):
         for idx, item in enumerate(value):
-            out.extend(_collect_v06_candidate_change_refs(item, f"{path}[{idx}]"))
+            out.extend(_collect_v06_candidate_change_refs(item, f"{path}[{idx}]", authority_anchor))
     elif _is_proposed_change_ref(value):
-        out.append((path, _normalize_change_ref(value)))
+        out.append((path, _normalize_change_ref(value), authority_anchor))
     return out
 
 
@@ -947,14 +950,17 @@ def _v06_selected_change_errors(payload):
     # guard, policy/control, wiring/deliverable, observability, closure proof or
     # material graph even when the graph-only reconciliation would miss it.
     seen = set()
-    for candidate_path, ref in _collect_v06_candidate_change_refs(payload):
+    for candidate_path, ref, authority_anchor in _collect_v06_candidate_change_refs(payload):
         if not ref:
             continue
         key = (candidate_path, ref)
         if key in seen:
             continue
         seen.add(key)
-        if not _change_ref_is_declared(ref, declared_targets):
+        covered = _change_ref_is_declared(ref, declared_targets)
+        if not covered and authority_anchor:
+            covered = _change_ref_is_declared(authority_anchor, declared_targets)
+        if not covered:
             errors.append(_error(
                 "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
                 candidate_path,
