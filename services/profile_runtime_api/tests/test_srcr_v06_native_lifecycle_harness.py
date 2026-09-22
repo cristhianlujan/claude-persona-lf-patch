@@ -491,6 +491,10 @@ def test_repaired_v06_candidate_passes_governed_prequality_freeze() -> None:
         evidence_manifest=manifest,
         query_trace=query_trace,
     )
+    runtime_gate = validation.get("runtime_validate")
+    assert isinstance(runtime_gate, dict), validation
+    assert runtime_gate.get("blocking_codes") == [], runtime_gate.get("blocking_codes")
+    assert validation.get("manifest_trace_binding_errors") == [], validation.get("manifest_trace_binding_errors")
     assert validation["status"] == "PASS_PRE_QUALITY", validation
     receipt = harness.materialize_prequality_freeze(
         candidate=candidate,
