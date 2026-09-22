@@ -1,9 +1,9 @@
 name: SRCR V0.6 Lifecycle Candidate Freeze
 
 on:
-  push:
+  pull_request:
     branches:
-      - lf/srcr-v06-lifecycle-regression-sandbox-20260922
+      - main
     paths:
       - sandbox/lf_contract_gate_test/srcr_v06_native_harness/build_candidate_from_v05.py
       - .github/workflows/srcr-v06-lifecycle-candidate-freeze.yml
