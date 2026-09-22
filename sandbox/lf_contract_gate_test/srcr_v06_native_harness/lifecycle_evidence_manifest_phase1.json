@@ -1,0 +1,147 @@
+{
+  "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+  "bundle_id": "BUNDLE-SRCR-V06-LIFECYCLE-NATIVE-PHASE1-20260921",
+  "bundle_digest": "sha256:a89c1a6f6f32aa80166f5d1897b7a24d796ff76f50ab2f73e302557c303e9e5c",
+  "observed_at": "2026-09-21T22:15:00-05:00",
+  "producer": {
+    "kind": "SOURCE_FIRST_RESOLVER",
+    "resolver_ref": "supabase://private.lf_evidence_resolver_registry_v1/LF_SUPABASE_READBACK_V1"
+  },
+  "evidence": [
+    {
+      "evidence_id": "EV-LC-001",
+      "subject": "exact SRCR profile operational asset and lifecycle state",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q5_profile_asset_exact",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:7a35a3f993e7b3bb3eb4bb5555d40f6865948486e4114a5148a59e831bb9133f",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-002",
+      "subject": "profile lifecycle operation inventory",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q6_profile_phase_operation_codes",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:68ad29b4ea3b24df5d9d5feb82b4a5fa89b658c9d5e8a7c401fb0a27c109c2da",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-003",
+      "subject": "profile operation step contract and judge coverage counts",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q7_step_counts_by_profile_operation",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:8bb5802122924bf66619c005ebddb64bf265444c88da23474c3d72465d0cef43",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-004",
+      "subject": "create and update operation edge definitions",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q8_create_update_step_ids",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:a34855ad7f884ca583e977a5521f22023960e521999ae2496937752887c31567",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-005",
+      "subject": "generic asset retirement operation steps",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q9_retiro_activo_steps",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:dfab57fd7767a67aadfed6b0a0b6dc6bcb0ba0345e16729d439f97b0e9a62897",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-006",
+      "subject": "explicit profile lifecycle operation coverage for register wire publish promote verify deprecate rollback",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q10_profile_publish_promote_rollback_absence",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:03e140fadf94e0f7ca5376bc9316bd2d04f202bbf43396c46ed29b9f1b80a7ad",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-007",
+      "subject": "profile router action inventory",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q11_profile_router_actions",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:7071c640e8c59132c0b670e0bd721391a751ece8623a23af5b35217b278374cc",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-008",
+      "subject": "SRCR creation execution terminal summary",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q12_creation_execution_summary",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:411b4f7bc417690dfcaaa7c8f8995ad2ec592ec09305cf74dfe9a29e90d174fe",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-009",
+      "subject": "SRCR creation execution missing active step",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q13_creation_missing_step",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:42f6565c8e73c1821cb94f431dccfb2b89eb8e00f1a68e58b3450b0b613eecff",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-010",
+      "subject": "SRCR operational asset creation provenance",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q14_creation_asset_provenance",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:01399e6b5d9a075cda355307d588284bc9ab96fe3090c7ea2902bc1a337b5915",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-011",
+      "subject": "profile runtime activation and canary router actions",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q15_activation_canary_actions_absent",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-012",
+      "subject": "profile update post-regression merge reconciliation edge",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q16_update_merge_edge",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:fe5f440a53482265933a3a253bad5d7e9259531879e56d0eeae149a03e5aff30",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-013",
+      "subject": "profile execution runtime step chain",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q17_execution_profile_step_chain",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:4b4081763c79633e4cec688e3a71676b63e44734cb2cd649f890c875dccf2a09",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-014",
+      "subject": "recent SRCR profile execution histories",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q18_latest_srcr_profile_executions",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:4582efe8da9bdb4eed8cd7c1f86fa44f5b0639d196c153d0d5430616a29797ae",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-015",
+      "subject": "SRCR runtime source refresh execution and next gate",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q19_runtime_refresh_execution",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:4eab2f8c1bdd6e819d32be002b792019137e37005376854d9e5932a815394ac9",
+      "state": "CURRENT"
+    }
+  ]
+}
