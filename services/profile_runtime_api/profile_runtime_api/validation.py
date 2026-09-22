@@ -470,6 +470,73 @@ class OutputGates:
             )
         )
 
+    def canonical_quality_boundary(
+        self,
+        *,
+        profile_slug: str,
+        candidate: dict[str, Any] | None,
+        contract_gate: dict[str, Any],
+        semantic_gate: dict[str, Any],
+    ) -> dict[str, Any]:
+        binding = self.repository.runtime_binding(profile_slug)
+        quality = binding.canonical_quality if binding is not None else None
+        if not isinstance(quality, dict):
+            return {
+                "applicability": "NOT_APPLICABLE",
+                "status": "NOT_BOUND",
+                "deterministic_floors_can_accept_quality": False,
+                "receipt_required_for_pass_to_quality_pack": False,
+                "blocking_codes": ["CANONICAL_QUALITY_NOT_BOUND"],
+                "canonical_quality_accepted": False,
+                "downstream_authorized": False,
+            }
+        pack_id = candidate.get("profile_pack_id") if isinstance(candidate, dict) else None
+        required = pack_id in set(quality.get("required_for_profile_pack_ids") or [])
+        if not required:
+            return {
+                "applicability": "NOT_APPLICABLE",
+                "status": "NOT_REQUIRED_FOR_PROFILE_PACK",
+                "deterministic_floors_can_accept_quality": False,
+                "receipt_required_for_pass_to_quality_pack": bool(
+                    quality.get("receipt_required_for_pass_to_quality_pack")
+                ),
+                "blocking_codes": [],
+                "canonical_quality_accepted": False,
+                "downstream_authorized": False,
+            }
+
+        floors_clean = (
+            contract_gate.get("status") == "PASS"
+            and semantic_gate.get("status") == "PASS"
+            and not contract_gate.get("blocking_codes")
+            and not semantic_gate.get("blocking_codes")
+        )
+        return {
+            "applicability": "REQUIRED",
+            "status": (
+                "PENDING_INDEPENDENT_SEMANTIC_REVIEW"
+                if floors_clean
+                else "BLOCKED_BY_DETERMINISTIC_FLOORS"
+            ),
+            "deterministic_floors_can_accept_quality": False,
+            "receipt_required_for_pass_to_quality_pack": True,
+            "blocking_codes": (
+                []
+                if floors_clean
+                else sorted(
+                    {
+                        str(code)
+                        for code in (
+                            list(contract_gate.get("blocking_codes") or [])
+                            + list(semantic_gate.get("blocking_codes") or [])
+                        )
+                    }
+                )
+            ),
+            "canonical_quality_accepted": False,
+            "downstream_authorized": False,
+        }
+
     def canonical_quality(
         self,
         *,
