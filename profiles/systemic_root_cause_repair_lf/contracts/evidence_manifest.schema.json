@@ -41,7 +41,8 @@
             "GOVERNED_RUNTIME",
             "SOURCE_FIRST_RESOLVER",
             "QUALITY_BOUNDARY",
-            "TEST_FIXTURE"
+            "TEST_FIXTURE",
+            "READ_ONLY_CURRENT_AUTHORITY_RESOLVER"
           ]
         },
         "resolver_ref": {
