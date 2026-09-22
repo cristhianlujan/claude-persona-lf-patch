@@ -667,6 +667,76 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
             any("HETZNER_GOVERNED_TERMINAL_JUDGE_FAILED" in query for query, _params in conn.cursor_obj.calls)
         )
 
+    def test_failure_persistence_reconciles_queue_terminal_to_canonical_execution(self) -> None:
+        class Cursor:
+            def __init__(self):
+                self.rowcount = 0
+                self.calls = []
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+            def execute(self, query, params=None):
+                self.calls.append((query, params))
+                if "set status='FAILED'" in query:
+                    self.rowcount = 1
+                else:
+                    self.rowcount = 1
+        class Conn(FakeConn):
+            def __init__(self):
+                self.cursor_obj = Cursor()
+                self.commits = 0
+            def cursor(self): return self.cursor_obj
+            def commit(self): self.commits += 1
+
+        conn = Conn()
+        request_id = claimed()["request_id"]
+        terminal = {
+            "result": "CANONICAL_TERMINAL_RECONCILED",
+            "queue_status": "FAILED",
+            "canonical_status_after": "BLOCKED",
+        }
+        with patch.object(worker, "_reconcile_queue_terminal", return_value=terminal) as reconcile:
+            result = worker._persist_failure(
+                conn, request_id, RuntimeError("HETZNER_BASELINE_API_FAILED:fixture")
+            )
+        self.assertEqual(result, terminal)
+        reconcile.assert_called_once_with(conn.cursor_obj, request_id)
+        self.assertEqual(conn.commits, 1)
+        self.assertTrue(
+            any("set status='FAILED'" in query for query, _params in conn.cursor_obj.calls)
+        )
+
+    def test_queue_terminal_helper_calls_single_canonical_reconciler_rpc(self) -> None:
+        request_id = claimed()["request_id"]
+        expected = {
+            "result": "CANONICAL_TERMINAL_RECONCILED",
+            "canonical_status_after": "BLOCKED",
+        }
+        cursor = object()
+        with patch.object(worker, "_fetch_json_scalar", return_value=expected) as fetch:
+            result = worker._reconcile_queue_terminal(cursor, request_id)
+        self.assertEqual(result, expected)
+        fetch.assert_called_once_with(
+            cursor,
+            "select public.lf_profile_execution_reconcile_queue_terminal_v1(%s::uuid,%s)",
+            (request_id, worker._governed_execution_id(request_id)),
+        )
+
+    def test_terminal_reconciler_source_is_fail_closed_and_semantic_pending_is_nonterminal(self) -> None:
+        sql = (
+            ROOT / "supabase" / "migrations"
+            / "20260922162500_lf_profile_execution_queue_terminal_reconcile_v1.sql"
+        ).read_text(encoding="utf-8")
+        self.assertIn("q.status='FAILED'", sql)
+        self.assertIn("target_status := 'BLOCKED'", sql)
+        self.assertIn("q.status='CANCELLED'", sql)
+        self.assertIn("target_status := 'CANCELLED'", sql)
+        self.assertIn("HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING", sql)
+        self.assertIn("NON_TERMINAL_SEMANTIC_REVIEW_PENDING", sql)
+        self.assertIn("QUEUE_SUCCESS_CANONICAL_NOT_COMPLETED", sql)
+        self.assertIn("CANONICAL_TERMINAL_CONFLICT", sql)
+        self.assertIn("and status='IN_PROGRESS'", sql)
+        self.assertIn("PROFILE_RUNTIME_QUEUE_TERMINAL_RECONCILIATION_V1", sql)
+
     def test_execution_identity_is_stable(self) -> None:
         request_id = claimed()["request_id"]
         self.assertEqual(
