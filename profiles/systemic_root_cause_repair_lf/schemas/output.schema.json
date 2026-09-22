@@ -3906,6 +3906,17 @@
                     "type": "null"
                   }
                 ]
+              },
+              "proposed_next_gate_consumer_ref": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             }
           }
