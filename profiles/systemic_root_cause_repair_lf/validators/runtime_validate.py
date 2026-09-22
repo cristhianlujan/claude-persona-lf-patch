@@ -409,6 +409,21 @@ def _evidence_map_errors(payload):
     missing = sorted(CRITICAL_EVIDENCE_PATHS - paths)
     if missing:
         errors.append(_error("EVIDENCE_MAP_CRITICAL_CLAIMS_MISSING", "$.evidence_map", ",".join(missing)))
+    uncertainties = payload.get("current_uncertainties")
+    if isinstance(uncertainties, list) and uncertainties:
+        has_uncertainty_evidence = (
+            "$.current_uncertainties" in paths
+            or all(
+                f"$.current_uncertainties[{idx}]" in paths
+                for idx in range(len(uncertainties))
+            )
+        )
+        if not has_uncertainty_evidence:
+            errors.append(_error(
+                "CURRENT_UNCERTAINTY_EVIDENCE_MAP_REQUIRED",
+                "$.evidence_map",
+                "Material current uncertainties must be bound to exact evidence.",
+            ))
     return errors
 
 
