@@ -175,6 +175,49 @@ def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
     return sorted(set(errors))
 
 
+def _logical_failure_class(error: dict[str, Any]) -> str:
+    code = str(error.get("code") or "UNKNOWN")
+    path = str(error.get("path") or "$")
+    if code == "JSON_SCHEMA_VALIDATION_FAILED":
+        if any(path.endswith(f".test_protocol.{field}") for field in ("setup", "action", "assertions")):
+            return "EXECUTABLE_TEST_PROTOCOL_INCOMPLETE"
+        if path.endswith(".test_protocol.failure_signal"):
+            return "EXECUTABLE_TEST_FAILURE_SIGNAL_REQUIRED"
+    return code
+
+
+def canonical_logical_findings(errors: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[str, dict[str, Any]] = {}
+    for raw in errors:
+        if not isinstance(raw, dict):
+            continue
+        path = str(raw.get("path") or "$")
+        failure_class = _logical_failure_class(raw)
+        fingerprint = canonical_json_sha256(
+            {"failure_class": failure_class, "candidate_path": path}
+        )
+        detector = str(raw.get("detector") or "UNKNOWN")
+        item = grouped.setdefault(
+            fingerprint,
+            {
+                "finding_id": "sha256:" + fingerprint,
+                "failure_class": failure_class,
+                "candidate_path": path,
+                "detectors": [],
+                "raw_codes": [],
+            },
+        )
+        if detector not in item["detectors"]:
+            item["detectors"].append(detector)
+        code = str(raw.get("code") or "UNKNOWN")
+        if code not in item["raw_codes"]:
+            item["raw_codes"].append(code)
+    for item in grouped.values():
+        item["detectors"].sort()
+        item["raw_codes"].sort()
+    return sorted(grouped.values(), key=lambda row: (row["candidate_path"], row["failure_class"]))
+
+
 class OutputGates:
     def __init__(self, repository: RepositoryBindings) -> None:
         self.repository = repository
@@ -189,7 +232,7 @@ class OutputGates:
     ) -> tuple[dict[str, Any], dict[str, Any] | None]:
         payload, parse_errors = strict_json_object(raw_output)
         errors: list[dict[str, Any]] = [
-            {"code": code, "path": "$"} for code in parse_errors
+            {"code": code, "path": "$", "detector": "JSON_PARSE"} for code in parse_errors
         ]
         if payload is not None:
             try:
@@ -208,6 +251,7 @@ class OutputGates:
                             "code": "JSON_SCHEMA_VALIDATION_FAILED",
                             "path": path,
                             "message": item.message[:500],
+                            "detector": "JSON_SCHEMA",
                         }
                     )
             except SchemaError as exc:
@@ -216,16 +260,21 @@ class OutputGates:
                         "code": "CANONICAL_JSON_SCHEMA_INVALID",
                         "path": "$schema",
                         "message": str(exc)[:500],
+                        "detector": "JSON_SCHEMA",
                     }
                 )
             if not (
                 profile_slug == "ui_architect" and schema.mode in UI_SCHEMA_ONLY_MODES
             ):
-                errors.extend(
-                    self._canonical_errors(
-                        profile_slug, payload, evidence_manifest=evidence_manifest
-                    )
+                canonical_errors = self._canonical_errors(
+                    profile_slug, payload, evidence_manifest=evidence_manifest
                 )
+                for item in canonical_errors:
+                    if isinstance(item, dict):
+                        item = dict(item)
+                        item.setdefault("detector", "PROFILE_VALIDATOR")
+                    errors.append(item)
+        logical_findings = canonical_logical_findings(errors)
         blocking = sorted({str(item.get("code")) for item in errors})
         return (
             {
@@ -237,6 +286,8 @@ class OutputGates:
                 "evidence_manifest_sha256": (canonical_json_sha256(evidence_manifest) if isinstance(evidence_manifest, dict) else None),
                 "blocking_codes": blocking,
                 "errors": errors,
+                "logical_findings": logical_findings,
+                "finding_count": len(logical_findings),
             },
             payload,
         )
