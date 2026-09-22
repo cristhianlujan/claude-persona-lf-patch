@@ -164,10 +164,12 @@
       "evidence": [
         "builder now declares proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer for PROFILE_RUNTIME_CANARY_REQUIRED",
         "builder declares queue terminal reconciliation control/wiring/deliverable",
-        "builder regression verifies canary consumer and terminality footprint; Validate LF Packs 35736254524 PASS"
+        "builder regression verifies canary consumer and terminality footprint; Validate LF Packs 35736254524 PASS",
+        "MC-10 negative producer probe EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000010 remains IN_PROGRESS after execute_profile server validation failed; this is an exact terminality/reconciliation case owned by MC-11 and is not used as MC-10 closure evidence."
       ],
       "remaining_requirements": [
-        "Regenerate/freeze the candidate from the repaired builder and obtain clean independent T5 semantic readback."
+        "Regenerate/freeze the candidate from the repaired builder and obtain clean independent T5 semantic readback.",
+        "Reconcile the failed MC-10 probe execution EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000010 to a governed terminal outcome or prove the canonical non-authoritative exception; retain readback."
       ]
     },
     {
@@ -209,7 +211,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "bc6cc407131f684623176bb95e94dc13044a0917",
+  "current_exact_code_head": "d8e408a5247a69cc761e531189ebaa8b7d3f88ad",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
