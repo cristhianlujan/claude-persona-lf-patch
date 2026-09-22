@@ -59,9 +59,15 @@ def v06_pair():
     evidence = copy.deepcopy(evidence)
     candidate["profile_pack_id"] = V06
 
-    node_ids = [x["node_id"] for x in candidate["material_process_graph"]["nodes"]]
-    if len(node_ids) < 2:
-        raise AssertionError("fixture requires >=2 material nodes")
+    nodes = candidate["material_process_graph"]["nodes"]
+    if not nodes:
+        raise AssertionError("fixture requires >=1 material node")
+    if len(nodes) == 1:
+        second = copy.deepcopy(nodes[0])
+        second["node_id"] = "NODE-V06-B"
+        second["phase"] = "GENERIC_DOWNSTREAM_STAGE"
+        nodes.append(second)
+    node_ids = [x["node_id"] for x in nodes]
 
     ids = [
         "EV-E-PRODUCER","EV-E-TRANSPORT","EV-E-CONSUMER","EV-E-ENFORCEMENT",
