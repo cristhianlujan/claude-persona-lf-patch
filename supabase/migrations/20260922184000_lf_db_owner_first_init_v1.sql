@@ -290,6 +290,89 @@ ON public.lf_operation_execution
 FOR EACH ROW
 EXECUTE FUNCTION private.fn_lf_db_owner_binding_guard_v1();
 
+CREATE OR REPLACE FUNCTION private.fn_lf_db_owner_init_step_v1()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $fn$
+DECLARE
+  v_binding jsonb := new.manifest->'owner_binding';
+  v_binding_sha text;
+  v_receipt jsonb;
+BEGIN
+  IF new.operation_code <> 'ACTUALIZACION_DB_LF' THEN
+    RETURN new;
+  END IF;
+
+  v_binding_sha := encode(
+    extensions.digest(convert_to(v_binding::text,'UTF8'),'sha256'),
+    'hex'
+  );
+  v_receipt := jsonb_build_object(
+    'schema_version','LF_DB_OWNER_BINDING_RECEIPT_V1',
+    'execution_id',new.execution_id,
+    'operation_code','ACTUALIZACION_DB_LF',
+    'owner_binding_sha256',v_binding_sha,
+    'owner_binding_at_init',true,
+    'owner_binding_immutable',true,
+    'handoff_policy','NEW_EXECUTION_WITH_EXPLICIT_RECEIPT_ONLY',
+    'status','PASS_CLEAN'
+  );
+
+  INSERT INTO public.lf_operation_execution_steps(
+    execution_id,step_order,step_id,status,evidence_ref,evidence_payload,notes,
+    created_by_execution_id,updated_by_execution_id,updated_at
+  ) VALUES (
+    new.execution_id,5,'init_execution','PASS_CLEAN',
+    format('supabase://public/lf_operation_execution/%s#owner_binding',new.execution_id),
+    jsonb_build_object(
+      'owner_binding',v_binding,
+      'owner_binding_receipt',v_receipt,
+      'owner_binding_at_init',true,
+      'owner_binding_immutable',true,
+      'source_binding_required_at_init',new.target_type='MIGRATION',
+      'recorded_by_trigger','fn_lf_db_owner_init_step_v1'
+    ),
+    'Owner and exact target were bound atomically with execution creation.',
+    new.execution_id,new.execution_id,clock_timestamp()
+  );
+
+  RETURN new;
+END
+$fn$;
+
+DROP TRIGGER IF EXISTS trg_lf_db_owner_init_step_v1 ON public.lf_operation_execution;
+CREATE TRIGGER trg_lf_db_owner_init_step_v1
+AFTER INSERT ON public.lf_operation_execution
+FOR EACH ROW
+EXECUTE FUNCTION private.fn_lf_db_owner_init_step_v1();
+
+CREATE OR REPLACE FUNCTION private.fn_lf_db_owner_init_step_guard_v1()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $fn$
+DECLARE
+  v_execution_id text := CASE WHEN TG_OP='DELETE' THEN old.execution_id ELSE new.execution_id END;
+  v_step_id text := CASE WHEN TG_OP='DELETE' THEN old.step_id ELSE new.step_id END;
+BEGIN
+  IF v_step_id='init_execution'
+     AND EXISTS (
+       SELECT 1
+       FROM public.lf_operation_execution e
+       WHERE e.execution_id=v_execution_id
+         AND e.operation_code='ACTUALIZACION_DB_LF'
+     ) THEN
+    RAISE EXCEPTION 'LF_DB_OWNER_INIT_STEP_IMMUTABLE';
+  END IF;
+  RETURN CASE WHEN TG_OP='DELETE' THEN old ELSE new END;
+END
+$fn$;
+
+DROP TRIGGER IF EXISTS trg_lf_db_owner_init_step_guard_v1 ON public.lf_operation_execution_steps;
+CREATE TRIGGER trg_lf_db_owner_init_step_guard_v1
+BEFORE UPDATE OR DELETE ON public.lf_operation_execution_steps
+FOR EACH ROW
+EXECUTE FUNCTION private.fn_lf_db_owner_init_step_guard_v1();
+
 CREATE OR REPLACE FUNCTION public.lf_db_operation_begin_v1(
   p_execution_id text,
   p_target_type text,
@@ -397,9 +480,11 @@ BEGIN
        OR v_existing.target_code <> p_target_code
        OR coalesce(v_existing.target_repo,'') <> coalesce(p_target_repo,'')
        OR coalesce(v_existing.target_path,'') <> p_target_path
-       OR v_existing.manifest->'owner_binding' IS DISTINCT FROM v_binding THEN
+       OR (v_existing.manifest->'owner_binding' - 'bound_at')
+          IS DISTINCT FROM (v_binding - 'bound_at') THEN
       RAISE EXCEPTION 'LF_DB_OWNER_BEGIN_EXECUTION_ID_COLLISION';
     END IF;
+    v_binding := v_existing.manifest->'owner_binding';
   ELSE
     INSERT INTO public.lf_operation_execution(
       execution_id,operation_code,target_type,target_code,target_repo,target_path,
@@ -409,22 +494,22 @@ BEGIN
       'IN_PROGRESS',v_manifest,p_execution_id,p_execution_id
     );
 
-    INSERT INTO public.lf_operation_execution_steps(
-      execution_id,step_order,step_id,status,evidence_ref,evidence_payload,notes,
-      created_by_execution_id,updated_by_execution_id,updated_at
-    ) VALUES (
-      p_execution_id,5,'init_execution','PASS_CLEAN',
-      format('supabase://public/lf_operation_execution/%s#owner_binding',p_execution_id),
-      jsonb_build_object(
-        'owner_binding',v_binding,
-        'owner_binding_at_init',true,
-        'owner_binding_immutable',true,
-        'source_binding_required_at_init',v_type='MIGRATION',
-        'recorded_by_rpc','lf_db_operation_begin_v1'
-      ),
-      'Owner and exact target are bound before preflight/write.',
-      p_execution_id,p_execution_id,clock_timestamp()
-    );
+    SELECT manifest->'owner_binding' INTO v_binding
+    FROM public.lf_operation_execution
+    WHERE execution_id=p_execution_id;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.lf_operation_execution_steps s
+    WHERE s.execution_id=p_execution_id
+      AND s.step_order=5
+      AND s.step_id='init_execution'
+      AND s.status='PASS_CLEAN'
+      AND s.evidence_payload->'owner_binding' = v_binding
+      AND s.evidence_payload->>'recorded_by_trigger'='fn_lf_db_owner_init_step_v1'
+  ) THEN
+    RAISE EXCEPTION 'LF_DB_OWNER_BEGIN_INIT_STEP_NOT_MATERIALIZED';
   END IF;
 
   v_binding_sha := encode(
@@ -457,20 +542,26 @@ DECLARE
   v_contract public.lf_operation_contracts%rowtype;
 BEGIN
   IF to_regprocedure('public.lf_db_operation_begin_v1(text,text,text,text,text,text,text,text,text,text,jsonb,text,jsonb)') IS NULL
-     OR to_regprocedure('private.fn_lf_db_owner_binding_guard_v1()') IS NULL THEN
+     OR to_regprocedure('private.fn_lf_db_owner_binding_guard_v1()') IS NULL
+     OR to_regprocedure('private.fn_lf_db_owner_init_step_v1()') IS NULL
+     OR to_regprocedure('private.fn_lf_db_owner_init_step_guard_v1()') IS NULL THEN
     RAISE EXCEPTION 'BLOCK_DB_OWNER_FIRST_FUNCTION_READBACK';
   END IF;
 
-  IF NOT EXISTS (
-    SELECT 1
+  IF (
+    SELECT count(*)
     FROM pg_trigger t
     JOIN pg_class c ON c.oid=t.tgrelid
     JOIN pg_namespace n ON n.oid=c.relnamespace
-    WHERE n.nspname='public'
-      AND c.relname='lf_operation_execution'
-      AND t.tgname='trg_lf_db_owner_binding_guard_v1'
-      AND NOT t.tgisinternal
-  ) THEN
+    WHERE NOT t.tgisinternal
+      AND (
+        (n.nspname='public' AND c.relname='lf_operation_execution'
+          AND t.tgname IN ('trg_lf_db_owner_binding_guard_v1','trg_lf_db_owner_init_step_v1'))
+        OR
+        (n.nspname='public' AND c.relname='lf_operation_execution_steps'
+          AND t.tgname='trg_lf_db_owner_init_step_guard_v1')
+      )
+  ) <> 3 THEN
     RAISE EXCEPTION 'BLOCK_DB_OWNER_FIRST_TRIGGER_READBACK';
   END IF;
 
