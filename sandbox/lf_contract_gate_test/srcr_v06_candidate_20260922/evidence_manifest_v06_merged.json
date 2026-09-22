@@ -1,5 +1,5 @@
 {
-  "bundle_digest": "sha256:92e40a3e6d6642f34b77acdaee2e395e4ab457b85c1134d8dc91797641412b11",
+  "bundle_digest": "sha256:38527cfb43f1f06b713582c079a7b4a27e6828f2ef4796978d3f00e097cc1f7b",
   "bundle_id": "SRCR-V06-LIFECYCLE-MERGED-EVIDENCE-20260922",
   "evidence": [
     {
@@ -129,11 +129,11 @@
       "subject": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
     },
     {
-      "digest": "sha256:1f4c6e85976a793e511cf91e11008e50280b29cf88556abf6f11e74a1acea738",
+      "digest": "sha256:d6a62e93ccb0cabcfe72c389d0eb95a14144fcbeb48af09b34620eb39ded00d1",
       "evidence_class": "OBSERVED_LIVE",
       "evidence_id": "EV-EKB",
-      "revision_or_observed_at": "2026-09-22T00:00:00Z",
-      "source_locator": "supabase://public/lf_error_knowledge?profile_runtime_lifecycle_currentness=2026-09-21",
+      "revision_or_observed_at": "2026-09-22T14:36:05.625019+00:00",
+      "source_locator": "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z",
       "state": "CURRENT",
       "subject": "PROFILE_LIFECYCLE_EKB_SET"
     },
@@ -589,7 +589,7 @@
     }
   ],
   "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
-  "observed_at": "2026-09-22T14:28:56.706776+00:00",
+  "observed_at": "2026-09-22T14:36:05.625019+00:00",
   "producer": {
     "kind": "READ_ONLY_CURRENT_AUTHORITY_RESOLVER",
     "resolver_ref": "supabase://public/lf_eventos/14795#CASE_PACKET"
