@@ -1,0 +1,270 @@
+{
+  "schema": "SRCR_V06_LIFECYCLE_NATIVE_TRACE_PHASE1_V1",
+  "run_id": "EXEC-SRCR-V06-NATIVE-LIFECYCLE-REGRESSION-20260921-001",
+  "mode": "READ_ONLY_NONBLIND_REGRESSION",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+  "case_code": "SRCR-LIFECYCLE-DEEP-BLIND-001",
+  "note": "Non-blind regression: oracle is already known in this conversation. This trace is diagnostic, not blind acceptance.",
+  "request_digest_scheme": "sha256(query_locator UTF-8); exact query definitions are preserved in the chat/tool execution history for this diagnostic lot.",
+  "trace": [
+    {
+      "sequence": 1,
+      "query_id": "Q5_profile_asset_exact",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q5_profile_asset_exact",
+      "request_digest": "sha256:2894cb604ab97c8142fc056a478f1b9cdc3a0feae3c1cb0c4851548e62f07e29",
+      "result_digest": "sha256:7a35a3f993e7b3bb3eb4bb5555d40f6865948486e4114a5148a59e831bb9133f",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-001",
+      "consumer": "$.live_authority_packet.profile_asset"
+    },
+    {
+      "sequence": 2,
+      "query_id": "Q6_profile_phase_operation_codes",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q6_profile_phase_operation_codes",
+      "request_digest": "sha256:50d8e443bec317475dcf77c75c1158eee83f953213360940aeba734fe6f3e124",
+      "result_digest": "sha256:68ad29b4ea3b24df5d9d5feb82b4a5fa89b658c9d5e8a7c401fb0a27c109c2da",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-002",
+      "consumer": "$.material_process_graph.lifecycle_operations"
+    },
+    {
+      "sequence": 3,
+      "query_id": "Q7_step_counts_by_profile_operation",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q7_step_counts_by_profile_operation",
+      "request_digest": "sha256:4bbe77d094124a0bc76878b3020f6dbcd518121d5c32f327b5b3030d06c9716d",
+      "result_digest": "sha256:8bb5802122924bf66619c005ebddb64bf265444c88da23474c3d72465d0cef43",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-003",
+      "consumer": "$.material_process_graph.operation_step_coverage"
+    },
+    {
+      "sequence": 4,
+      "query_id": "Q8_create_update_step_ids",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q8_create_update_step_ids",
+      "request_digest": "sha256:3faee60a1a4f274c6c20043078963965e5ea5e716044d0c841250b5a3e239600",
+      "result_digest": "sha256:a34855ad7f884ca583e977a5521f22023960e521999ae2496937752887c31567",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-004",
+      "consumer": "$.material_process_graph.create_update_edges"
+    },
+    {
+      "sequence": 5,
+      "query_id": "Q9_retiro_activo_steps",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q9_retiro_activo_steps",
+      "request_digest": "sha256:ac03f6adb829d33a57ccb351578aea011f9430b86cf335ea502105c0d897949e",
+      "result_digest": "sha256:dfab57fd7767a67aadfed6b0a0b6dc6bcb0ba0345e16729d439f97b0e9a62897",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-005",
+      "consumer": "$.material_process_graph.deprecate_retire"
+    },
+    {
+      "sequence": 6,
+      "query_id": "Q10_profile_publish_promote_rollback_absence",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q10_profile_publish_promote_rollback_absence",
+      "request_digest": "sha256:adeeb981ce23b8c415609a99dcfe7df21f077394158c9cc7783d151934d67d8a",
+      "result_digest": "sha256:03e140fadf94e0f7ca5376bc9316bd2d04f202bbf43396c46ed29b9f1b80a7ad",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-006",
+      "consumer": "$.omission_discovery.lifecycle_named_operations"
+    },
+    {
+      "sequence": 7,
+      "query_id": "Q11_profile_router_actions",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q11_profile_router_actions",
+      "request_digest": "sha256:87a1bd8df3b50331dd934bd3587a18e04e56850e68c715eed101e2d37f0e618e",
+      "result_digest": "sha256:7071c640e8c59132c0b670e0bd721391a751ece8623a23af5b35217b278374cc",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-007",
+      "consumer": "$.material_process_graph.router_actions"
+    },
+    {
+      "sequence": 8,
+      "query_id": "Q12_creation_execution_summary",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q12_creation_execution_summary",
+      "request_digest": "sha256:7b786ff969d12c925ed2567e715283cac842e26093ac6757348564833455d9a8",
+      "result_digest": "sha256:411b4f7bc417690dfcaaa7c8f8995ad2ec592ec09305cf74dfe9a29e90d174fe",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-008",
+      "consumer": "$.historical_regressions.creation_execution"
+    },
+    {
+      "sequence": 9,
+      "query_id": "Q13_creation_missing_step",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q13_creation_missing_step",
+      "request_digest": "sha256:16eb8aa4ca1b90a883e2a0cbef06d48de0cfbd11a4b0754b54ebc3ed3f47cd62",
+      "result_digest": "sha256:42f6565c8e73c1821cb94f431dccfb2b89eb8e00f1a68e58b3450b0b613eecff",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-009",
+      "consumer": "$.material_process_graph.creation_terminal_step"
+    },
+    {
+      "sequence": 10,
+      "query_id": "Q14_creation_asset_provenance",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q14_creation_asset_provenance",
+      "request_digest": "sha256:26e5dc9431e13ead7cc97784fce8f23b319181752f05c36a424ae35a0ec75c24",
+      "result_digest": "sha256:01399e6b5d9a075cda355307d588284bc9ab96fe3090c7ea2902bc1a337b5915",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-010",
+      "consumer": "$.execution_effect_reconciliation.asset_registration"
+    },
+    {
+      "sequence": 11,
+      "query_id": "Q15_activation_canary_actions_absent",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q15_activation_canary_actions_absent",
+      "request_digest": "sha256:495d76d7ef1453cb10d5ed22ff7fd43ae1e5b9c95c4de99d001aeaf985f694e4",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-011",
+      "consumer": "$.material_process_graph.activation_canary"
+    },
+    {
+      "sequence": 12,
+      "query_id": "Q16_update_merge_edge",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q16_update_merge_edge",
+      "request_digest": "sha256:0f62bbe69aed4cba523d1977efa183920dc029a8bd6c2e6053cb7acc1becac71",
+      "result_digest": "sha256:fe5f440a53482265933a3a253bad5d7e9259531879e56d0eeae149a03e5aff30",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-012",
+      "consumer": "$.material_process_graph.publish_promote_edge"
+    },
+    {
+      "sequence": 13,
+      "query_id": "Q17_execution_profile_step_chain",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q17_execution_profile_step_chain",
+      "request_digest": "sha256:6e7f01b93b8f7b36128271f031ebd691568619083f02716ebcd84f811dcb6891",
+      "result_digest": "sha256:4b4081763c79633e4cec688e3a71676b63e44734cb2cd649f890c875dccf2a09",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-013",
+      "consumer": "$.material_process_graph.runtime_verify_chain"
+    },
+    {
+      "sequence": 14,
+      "query_id": "Q18_latest_srcr_profile_executions",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q18_latest_srcr_profile_executions",
+      "request_digest": "sha256:d8c3d1b6aff757c0e1e3ee1f798014a0dd4c8d571bb65cd5dfa82c3ede41bcb7",
+      "result_digest": "sha256:4582efe8da9bdb4eed8cd7c1f86fa44f5b0639d196c153d0d5430616a29797ae",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-014",
+      "consumer": "$.historical_regressions.runtime_executions"
+    },
+    {
+      "sequence": 15,
+      "query_id": "Q19_runtime_refresh_execution",
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q19_runtime_refresh_execution",
+      "request_digest": "sha256:7f94e4e4068ec802b4a2c2ca3991438725693c2a5f2209071296e005911b04db",
+      "result_digest": "sha256:4eab2f8c1bdd6e819d32be002b792019137e37005376854d9e5932a815394ac9",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "evidence_id": "EV-LC-015",
+      "consumer": "$.material_process_graph.runtime_refresh"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "LC-F01",
+      "class": "CREATE_REGISTER_EDGE_OUT_OF_BAND",
+      "status": "CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-004",
+        "EV-LC-010"
+      ],
+      "github_evidence": [
+        "supabase/migrations/20260917025332_lf_systemic_root_cause_profile_asset_binding_v1.sql@blob:1b77652d1ff8e74d345e74a95cbeee80adfedd27",
+        "supabase/migrations/20260917025714_lf_systemic_root_cause_profile_state_alignment_v1.sql@blob:af33c2ef7fd2ff23a4127b67f960ceac0b4b0a48"
+      ],
+      "observation": "CREACION_PERFIL_LF has no explicit register/wire step. The SRCR profile asset was inserted later by a profile-specific migration hard-coded to this profile while preserving the creation execution id as provenance.",
+      "impact": "Creation can PASS while operational registration/wiring is performed by an out-of-band artifact not represented as a creation lifecycle edge."
+    },
+    {
+      "finding_id": "LC-F02",
+      "class": "PUBLISH_PROMOTE_EDGE_IMPLICIT",
+      "status": "CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-004",
+        "EV-LC-006",
+        "EV-LC-012"
+      ],
+      "observation": "ACTUALIZACION_PERFIL_LF moves directly from regression_after to post_merge_reconcile. The observed post_merge step contains merge_sha, but there is no governed merge/publish/promote step or profile router action between them.",
+      "impact": "Promotion/merge is an implicit external event rather than an explicit governed lifecycle transition."
+    },
+    {
+      "finding_id": "LC-F03",
+      "class": "NEXT_GATE_WITHOUT_OPERATIONAL_CONSUMER",
+      "status": "CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-007",
+        "EV-LC-011",
+        "EV-LC-015"
+      ],
+      "observation": "REFRESCO_RUNTIME_PERFIL_LF closes with post_refresh_next_gate=PROFILE_RUNTIME_CANARY_REQUIRED, but router/operation authority contains no PROFILE_RUNTIME_CANARY or PROFILE_RUNTIME_ACTIVATION action/operation.",
+      "impact": "The lifecycle emits a mandatory next gate that has no governed operational consumer."
+    },
+    {
+      "finding_id": "LC-F04",
+      "class": "DEPRECATE_ROLLBACK_NOT_OPERATIONAL",
+      "status": "CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-005",
+        "EV-LC-006",
+        "EV-LC-007"
+      ],
+      "observation": "The only retirement path is RETIRO_ACTIVO_LF and its router action RETIRE, both CANDIDATO_READ_ONLY. No dedicated profile rollback operation/action exists.",
+      "impact": "Deprecation/retirement and rollback are not available as an operational end-to-end profile lifecycle."
+    },
+    {
+      "finding_id": "LC-F05",
+      "class": "VERIFY_RUNTIME_TERMINALITY_INCONSISTENT",
+      "status": "CONFIRMED_OBSERVATION",
+      "evidence_ids": [
+        "EV-LC-013",
+        "EV-LC-014"
+      ],
+      "observation": "Recent SRCR executions show mixed terminal behavior: one latest run remains IN_PROGRESS after context_admission, another remains IN_PROGRESS after semantic_judge blocked, while a prior run completed the full chain.",
+      "impact": "Terminality/recovery behavior must be reconciled before claiming lifecycle closure; this finding does not yet assign a single root cause."
+    }
+  ]
+}
