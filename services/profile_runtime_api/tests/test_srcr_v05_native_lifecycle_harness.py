@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -133,3 +134,33 @@ def test_manifest_trace_rejects_borrowed_locator_or_digest() -> None:
     errors = harness.validate_manifest_trace_binding(manifest, trace)
     assert "trace[0]:EVIDENCE_LOCATOR_MISMATCH" in errors
     assert "trace[0]:EVIDENCE_DIGEST_MISMATCH" in errors
+
+
+def test_persisted_lifecycle_phase1_trace_and_manifest_are_exactly_bound() -> None:
+    base = ROOT / "sandbox" / "lf_contract_gate_test" / "srcr_v05_native_harness"
+    trace_payload = json.loads((base / "lifecycle_trace_phase1.json").read_text(encoding="utf-8"))
+    manifest = json.loads((base / "lifecycle_evidence_manifest_phase1.json").read_text(encoding="utf-8"))
+    trace = trace_payload["trace"]
+
+    assert len(trace) == 15
+    assert harness.validate_query_trace(trace) == []
+    assert harness.validate_manifest_trace_binding(manifest, trace) == []
+
+    normalized = dict(manifest)
+    normalized.pop("bundle_digest", None)
+    raw = json.dumps(
+        normalized,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    expected_bundle_digest = "sha256:" + hashlib.sha256(raw).hexdigest()
+    assert manifest["bundle_digest"] == expected_bundle_digest
+
+    assert [item["finding_id"] for item in trace_payload["findings"]] == [
+        "LC-F01",
+        "LC-F02",
+        "LC-F03",
+        "LC-F04",
+        "LC-F05",
+    ]
