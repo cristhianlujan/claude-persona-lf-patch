@@ -7,7 +7,7 @@ from pathlib import Path
 def main() -> None:
 
     ROOT = Path(__file__).resolve().parents[3]
-    PATCH = ROOT / "supabase/migrations/20260922214500_lf_profile_baseline_digest_parity_guard_v1.sql"
+    PATCH = ROOT / "supabase/migrations/20260922215336_lf_profile_baseline_digest_parity_guard_v1.sql"
     ENGINE = ROOT / "services/profile_runtime_api/profile_runtime_api/engine.py"
     VALIDATOR = ROOT / "profiles/systemic_root_cause_repair_lf/validators/incremental_value.py"
 
