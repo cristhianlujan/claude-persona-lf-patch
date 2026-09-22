@@ -182,13 +182,17 @@
       "state": "READBACK_CLOSED",
       "percent": 100,
       "evidence": [
-        "runtime_validate now extracts proposed selected-repair refs from the entire exact candidate, excluding only implementation_delta itself, and reconciles them against declared targets",
-        "fresh exact-head baseline on 1e5dad487c30a37b68120940a3ecc3518f733a84 PASS with zero V06_SELECTED_REPAIR_CHANGE_UNDECLARED and computed_handoff_ready=true",
-        "fresh surface scan: 41 selected-repair ref occurrences / 27 unique refs / 10 declared material changes / 0 uncovered after same-object authority_ref -> enforcement_point_ref binding",
+        "runtime_validate independently traverses the entire exact candidate for proposed material-change refs, excluding implementation_delta as the extraction seed, and reconciles them against declared implementation targets",
+        "exact candidate 6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16 regenerates byte/semantic-equal and remains PASS_PRE_QUALITY with validation sha256 bf7671f727efb361de6be2385a237ab07a3ab1dae7d12d61222adb32d7b1b7de",
+        "fresh whole-candidate structural scan on source revision c8d0016df30a2480b2770604e047546415da5de5 found 47 selected-repair ref occurrences / 29 unique refs / 0 uncovered",
         "negative undeclared hard-guard mechanism fails closed with V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
-        "negative removal of EJECUCION_PERFIL_LF queue_terminal_bridge delta fails closed with V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
-        "independent reviewer EXEC-MC11-T5-INDEPENDENT-REVIEW-20260922-001 re-extracted 10 material candidate changes and R2 reconciled 10/10 as declared-equivalent, undeclared_count=0, blocking_codes=[]",
-        "semantic-result validator PASS against exact candidate/evidence/scope/review-input digests; candidate digest remains 6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+        "negative removal of EJECUCION_PERFIL_LF queue_terminal_bridge from implementation_delta fails closed with V06_SELECTED_REPAIR_CHANGE_UNDECLARED even though producer computed_handoff_ready remains true",
+        "negative implementation_delta action/evidence omission fails closed with V06_IMPLEMENTATION_DELTA_ACTION_REQUIRED and V06_IMPLEMENTATION_DELTA_EVIDENCE_REQUIRED",
+        "independent reviewer EXEC-MC12-INDEPENDENT-R2-20260922-001 extracted 12 changes without seeding from implementation_delta: 11 selected material changes DECLARED_EQUIVALENT, 1 discovery-only retire-authority precondition, 0 UNDECLARED_PROPOSED_CHANGE",
+        "R2 explicitly observed REFRESCO_RUNTIME exact desired/observed release wiring as a material implementation-package change even though it is not a standalone implementation_delta row",
+        "RETIRO_ACTIVO_LF operational readiness is DISCOVERY_ONLY_NOT_IN_SELECTED_REPAIR / DISCOVERY_OUT_OF_SCOPE and remains an implementation precondition rather than silently widening the selected repair",
+        "semantic-result validator PASS against exact candidate/evidence/scope/review-input digests with blocking_codes=[]",
+        "independent R2: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc12_independent_r2_review.json",
         "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc12_selected_repair_completeness_readback.json"
       ],
       "remaining_requirements": []
@@ -201,7 +205,7 @@
         "Mandatory closure contract requires the complete ungrouped replay across Entrada, Investigacion, Transporte, Determinista, Jueces and Repeticiones."
       ],
       "remaining_requirements": [
-        "Finish MC-01..MC-12 readback closures, then run the full replay on the final exact revision and repair every observation until zero remain."
+        "Run the full ungrouped replay on the final exact revision across Entrada, Investigacion, Transporte, Determinista, Jueces and Repeticiones; repair every observation until zero remain."
       ]
     }
   ],
@@ -219,7 +223,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+  "current_exact_code_head": "c8d0016df30a2480b2770604e047546415da5de5",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -288,14 +292,22 @@
     "mc11_t5_result": "PASS",
     "mc11_t5_edge_count": 13,
     "mc11_t5_blocking_findings": 0,
-    "mc12_source_revision": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+    "mc12_source_revision": "c8d0016df30a2480b2770604e047546415da5de5",
     "mc12_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
-    "mc12_selected_ref_occurrences": 41,
-    "mc12_selected_unique_refs": 27,
+    "mc12_selected_ref_occurrences": 47,
+    "mc12_selected_unique_refs": 29,
     "mc12_declared_material_changes": 10,
     "mc12_uncovered_selected_refs": 0,
-    "mc12_independent_reviewer_execution_id": "EXEC-MC11-T5-INDEPENDENT-REVIEW-20260922-001",
+    "mc12_independent_reviewer_execution_id": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
     "mc12_r2_undeclared_count": 0,
-    "mc12_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc12_selected_repair_completeness_readback.json"
+    "mc12_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc12_selected_repair_completeness_readback.json",
+    "mc12_validation_sha256": "bf7671f727efb361de6be2385a237ab07a3ab1dae7d12d61222adb32d7b1b7de",
+    "mc12_selected_material_changes": 11,
+    "mc12_discovery_only_changes": 1,
+    "mc12_r2_observed_change_count": 12,
+    "mc12_r2_declared_equivalent_count": 11,
+    "mc12_r2_discovery_only_count": 1,
+    "mc12_semantic_result_validation": "PASS",
+    "mc12_independent_r2_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc12_independent_r2_review.json"
   }
 }
