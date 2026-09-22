@@ -186,7 +186,7 @@
       "required": ["path","git_blob_sha1","source_sha256"],
       "properties": {
         "path": {
-          "const": "supabase/migrations/20260922144000_work_protocol_manifest_v1.sql"
+          "const": "supabase/migrations/20260922144000_lf_work_protocol_manifest_v1.sql"
         },
         "git_blob_sha1": {
           "type": "string",
