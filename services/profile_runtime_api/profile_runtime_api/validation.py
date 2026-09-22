@@ -839,6 +839,7 @@ class OutputGates:
                 scope_packet=scope_authority_packet,
                 expected_candidate_sha256=expected_candidate_sha256,
                 expected_scope_packet_sha256=expected_scope_packet_sha256,
+                expected_evidence_manifest_sha256=expected_evidence_manifest_sha256,
             )
         except Exception as exc:
             return {
