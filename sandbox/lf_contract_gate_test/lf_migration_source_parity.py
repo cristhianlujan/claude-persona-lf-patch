@@ -90,6 +90,12 @@ PG_ENV_NAMES = ("PGHOST", "PGPORT", "PGUSER", "PGPASSWORD", "PGDATABASE", "PGSSL
 POSTGRES_IMAGE = "postgres:17.6"
 EXTERNAL_OWNER_EVIDENCE_SCHEMA = "lf-migration-external-owner-currentness/v1"
 EXTERNAL_OWNER_EVIDENCE_ENV = "LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_JSON"
+NORMAL_OWNER_MODE = "NORMAL_SOURCE_OWNER"
+FORENSIC_RECOVERY_OWNER_MODE = "FORENSIC_RECOVERY_OWNER"
+FORENSIC_RECOVERY_RECEIPT_SCHEMA = "lf-migration-source-recovery-currentness/v1"
+FORENSIC_RECOVERY_RESULT = "FORENSIC_RECOVERY_PR_EXACT_OPEN"
+FORENSIC_RECOVERY_BASIS = "SINGLE_STATEMENT_SOURCE_PRESERVING_LEDGER_MIRROR"
+FORENSIC_SOURCE_MODE = "FORENSIC_LEDGER_MIRROR_NOT_ORIGINAL_SOURCE"
 SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -244,6 +250,33 @@ def _read_external_owner_evidence() -> dict[str, object] | None:
     return payload
 
 
+def _owner_mode(row: dict[str, object]) -> str:
+    mode = str(row.get("ownership_mode") or NORMAL_OWNER_MODE).strip()
+    if mode not in {NORMAL_OWNER_MODE, FORENSIC_RECOVERY_OWNER_MODE}:
+        fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_MODE", mode)
+    return mode
+
+
+def _validate_owner_transport_constraints(
+    row: dict[str, object],
+    *,
+    remote_statement_count: int,
+    representation: str,
+) -> None:
+    if _owner_mode(row) != FORENSIC_RECOVERY_OWNER_MODE:
+        return
+    if remote_statement_count != 1:
+        fail(
+            "FAIL_LF_MIGRATION_FORENSIC_RECOVERY_STATEMENT_COUNT",
+            f"remote_statement_count={remote_statement_count}",
+        )
+    if representation != "DIRECT_SOURCE":
+        fail(
+            "FAIL_LF_MIGRATION_FORENSIC_RECOVERY_REPRESENTATION",
+            f"representation={representation}",
+        )
+
+
 def _select_external_owner_record(
     *,
     version: str,
@@ -268,20 +301,38 @@ def _select_external_owner_record(
             f"version={version} name={name} matches={len(matches)}",
         )
     row = matches[0]
+    mode = _owner_mode(row)
     required = {
         "currentness_execution_status": "COMPLETED",
         "operation_code": "ACTUALIZACION_DB_LF",
         "pr_state": "OPEN",
         "write_readback": "PASS",
-        "currentness_result": "OWNER_PR_EXACT_OPEN",
         "ddl_replayed": False,
     }
+    if mode == NORMAL_OWNER_MODE:
+        required["currentness_result"] = "OWNER_PR_EXACT_OPEN"
+    else:
+        required.update({
+            "currentness_result": FORENSIC_RECOVERY_RESULT,
+            "owner_receipt_schema": FORENSIC_RECOVERY_RECEIPT_SCHEMA,
+            "source_recovery_basis": FORENSIC_RECOVERY_BASIS,
+            "source_materialization_mode": FORENSIC_SOURCE_MODE,
+            "original_source_search_complete": True,
+            "original_source_found": False,
+        })
     for key, expected in required.items():
         if row.get(key) != expected:
-            fail(
-                "FAIL_LF_MIGRATION_EXTERNAL_OWNER_NOT_ACTIVE",
-                f"version={version} field={key} observed={row.get(key)!r}",
+            code = (
+                "FAIL_LF_MIGRATION_FORENSIC_RECOVERY_EVIDENCE"
+                if mode == FORENSIC_RECOVERY_OWNER_MODE
+                else "FAIL_LF_MIGRATION_EXTERNAL_OWNER_NOT_ACTIVE"
             )
+            fail(code, f"version={version} field={key} observed={row.get(key)!r}")
+    if mode == FORENSIC_RECOVERY_OWNER_MODE:
+        if not str(row.get("provenance_gap_ekb_code") or "").strip():
+            fail("FAIL_LF_MIGRATION_FORENSIC_RECOVERY_EKB_MISSING", f"version={version}")
+        if not str(row.get("source_search_evidence_ref") or "").strip():
+            fail("FAIL_LF_MIGRATION_FORENSIC_RECOVERY_SEARCH_EVIDENCE_MISSING", f"version={version}")
     repo = str(row.get("target_repo") or "")
     evidence_repo = str(evidence.get("repository") or "")
     expected_repo = os.environ.get("GITHUB_REPOSITORY", "").strip()
@@ -296,7 +347,6 @@ def _select_external_owner_record(
     if head == current_head:
         fail("FAIL_LF_MIGRATION_EXTERNAL_OWNER_SAME_HEAD", f"version={version}")
     return row
-
 
 def _git_external_owner_source(row: dict[str, object], *, version: str) -> tuple[str, str]:
     head = str(row["pr_head_sha"])
@@ -392,6 +442,11 @@ def classify_external_owner_pending(
                 "FAIL_LF_MIGRATION_EXTERNAL_OWNER_CONTENT",
                 f"version={version} error={exc}",
             )
+        _validate_owner_transport_constraints(
+            row,
+            remote_statement_count=remote_count,
+            representation=comparison.representation,
+        )
         verified[version] = {
             "name": name,
             "path": str(row["path"]),
@@ -400,6 +455,7 @@ def classify_external_owner_pending(
             "pr_head_sha": str(row["pr_head_sha"]),
             "source_blob": source_blob,
             "representation": comparison.representation,
+            "ownership_mode": _owner_mode(row),
         }
     return verified
 
@@ -1018,8 +1074,13 @@ def main() -> int:
     )
 
     for version, owner in sorted(external_owner_pending.items()):
+        marker = (
+            "PASS_LF_MIGRATION_FORENSIC_RECOVERY_PENDING"
+            if owner.get("ownership_mode") == FORENSIC_RECOVERY_OWNER_MODE
+            else "PASS_LF_MIGRATION_EXTERNAL_OWNER_PENDING"
+        )
         print(
-            "PASS_LF_MIGRATION_EXTERNAL_OWNER_PENDING: "
+            f"{marker}: "
             f"version={version} name={owner['name']} pr={owner['pr_number']} "
             f"head={owner['pr_head_sha']} blob={owner['source_blob']} "
             f"representation={owner['representation']} owner_execution={owner['execution_id']}"
@@ -1041,6 +1102,7 @@ def main() -> int:
         )
     print("PASS_LF_MIGRATION_TRANSPORT_SELFTEST=3/3")
     print("PASS_LF_MIGRATION_EXTERNAL_OWNER_CURRENTNESS=ENFORCED")
+    print("PASS_LF_MIGRATION_FORENSIC_RECOVERY_CURRENTNESS=ENFORCED")
     print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=32/32")
     return 0
 

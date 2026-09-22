@@ -55,11 +55,31 @@ Ese `remote-only` queda fuera de la paridad del PR ajeno porque pertenece a otro
 
 Cuando el owner es ausente, múltiple, cerrado, ambiguo, de otro repositorio, el source no coincide con Supabase o la evidencia de PRs abiertos está incompleta, el resultado sigue siendo `FAIL`.
 
+## Recuperación forense de source huérfano
+
+El carril normal sigue siendo `source-first` y un `remote-only` sin owner continúa bloqueando.
+
+Solo cuando una búsqueda exhaustiva demuestra que el source original no existe en `main`, ramas remotas, refs de PR, commits recuperables ni artefactos privados, puede abrirse `FORENSIC_RECOVERY_OWNER`. Este modo no declara que el archivo recuperado sea el source original: materializa un mirror forense explícito para restaurar trazabilidad y source parity sin reejecutar DDL.
+
+Requiere simultáneamente:
+
+- receipt durable `lf-migration-source-recovery-currentness/v1` bajo `ACTUALIZACION_DB_LF`;
+- `ownership_mode=FORENSIC_RECOVERY_OWNER` y `currentness_result=FORENSIC_RECOVERY_PR_EXACT_OPEN`;
+- búsqueda original completa y negativa con `source_search_evidence_ref`;
+- EKB del gap de procedencia mediante `provenance_gap_ekb_code`;
+- `ddl_replayed=false`;
+- PR recovery abierto, head exacto y blob exacto;
+- ledger con exactamente un statement y comparación `DIRECT_SOURCE`;
+- `source_recovery_basis=SINGLE_STATEMENT_SOURCE_PRESERVING_LEDGER_MIRROR`;
+- `source_materialization_mode=FORENSIC_LEDGER_MIRROR_NOT_ORIGINAL_SOURCE`.
+
+Cualquier migration multi-statement, representación transformada, source original encontrado, evidencia incompleta, receipt stale, PR cerrado, blob distinto o intento de replay sigue fallando.
+
 ## Fail-closed / límites
 
-No aplicar DDL remoto para hacer verde el gate ni reconstruir source desde el ledger vivo.
+No aplicar DDL remoto para hacer verde el gate. No reconstruir source desde el ledger vivo fuera del carril forense gobernado anterior, y nunca presentar un mirror forense como source original.
 
-No hardcodear número de PR, migration version, filename, SHA u owner para exceptuar un `remote-only`. La clasificación se resuelve en cada corrida desde ejecución gobernada + PR abierto + source exacto + ledger.
+No hardcodear número de PR, migration version, filename, SHA u owner para exceptuar un `remote-only`. La clasificación se resuelve en cada corrida desde ejecución gobernada + PR abierto + source exacto/forense explícito + ledger.
 
 Si falta una dependencia, binding, currentness, permiso o evidencia requerida, el consumidor debe bloquear y reportar el primer punto no satisfecho.
 
