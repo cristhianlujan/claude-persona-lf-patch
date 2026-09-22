@@ -1,0 +1,111 @@
+{
+  "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+  "bundle_id": "BUNDLE-SRCR-V05-LIFECYCLE-NATIVE-PHASE3-20260921",
+  "bundle_digest": "sha256:0a933b2a5fe9d884f8464b9cca48bcbb3ac68738af27f8d3e3689ef018c54e23",
+  "observed_at": "2026-09-21T22:45:00-05:00",
+  "producer": {
+    "kind": "SOURCE_FIRST_RESOLVER",
+    "resolver_ref": "supabase://private.lf_evidence_resolver_registry_v1/LF_SUPABASE_READBACK_V1+LF_GITHUB_SOURCE_READBACK_V1"
+  },
+  "evidence": [
+    {
+      "evidence_id": "EV-LC-026",
+      "subject": "runtime ProfileTask transport model source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/models.py",
+      "revision_or_observed_at": "gitblob:db3db9b9d88edffb5c0e1163332023003d71c43a",
+      "digest": "gitblob:db3db9b9d88edffb5c0e1163332023003d71c43a",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-027",
+      "subject": "runtime binding parser source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/repository.py",
+      "revision_or_observed_at": "gitblob:f41f1123412b36827cc44e460ab89d15f915795f",
+      "digest": "gitblob:f41f1123412b36827cc44e460ab89d15f915795f",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-028",
+      "subject": "runtime contract and semantic gate invocation source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/validation.py",
+      "revision_or_observed_at": "gitblob:6663597322fbff0715efa0314f369ab88df040e1",
+      "digest": "gitblob:6663597322fbff0715efa0314f369ab88df040e1",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-029",
+      "subject": "runtime engine downstream authorization source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/engine.py",
+      "revision_or_observed_at": "gitblob:a557646c9bdfa516474a5eccf008545be3a1fe8a",
+      "digest": "gitblob:a557646c9bdfa516474a5eccf008545be3a1fe8a",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-030",
+      "subject": "SRCR V0.5 raw runtime binding including canonical quality",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json",
+      "revision_or_observed_at": "gitblob:479fd31233b98f1b132561e31738e4a49ba740aa",
+      "digest": "gitblob:479fd31233b98f1b132561e31738e4a49ba740aa",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-031",
+      "subject": "SRCR runtime validator evidence manifest signature",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+      "revision_or_observed_at": "gitblob:497404772632214998e5448374c158613f3bd0aa",
+      "digest": "gitblob:497404772632214998e5448374c158613f3bd0aa",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-032",
+      "subject": "SRCR semantic utility evidence manifest signature",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
+      "revision_or_observed_at": "gitblob:e60388b2b4ef891066ed20362169b052c1050210",
+      "digest": "gitblob:e60388b2b4ef891066ed20362169b052c1050210",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-033",
+      "subject": "SRCR canonical quality receipt validator source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/validate_quality_receipt.py",
+      "revision_or_observed_at": "gitblob:be63f0cf7c8461021e83d145c7261ae146345c54",
+      "digest": "gitblob:be63f0cf7c8461021e83d145c7261ae146345c54",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-034",
+      "subject": "Hetzner governed runtime semantic judge handoff source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "revision_or_observed_at": "gitblob:31b72db3b835f88f0fabb86e3dd5b3a7e6ff1b97",
+      "digest": "gitblob:31b72db3b835f88f0fabb86e3dd5b3a7e6ff1b97",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-035",
+      "subject": "persisted SRCR semantic and canonical quality receipt inventory under exact receipt types",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q26_srcr_quality_receipt_rows",
+      "revision_or_observed_at": "2026-09-21T22:45:00-05:00",
+      "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-036",
+      "subject": "EJECUCION_PERFIL_LF semantic judge active contract and judge binding",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q27_srcr_semantic_judge_operation_binding",
+      "revision_or_observed_at": "2026-09-21T22:45:00-05:00",
+      "digest": "sha256:05fc474e6995043e08322d6ddb6a00ed029999e260a6d108bf50eedef0768621",
+      "state": "CURRENT"
+    }
+  ]
+}
