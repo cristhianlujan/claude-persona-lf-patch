@@ -5,4 +5,4 @@
 -- This file intentionally contains no executable SQL.
 -- The canonical migration was materialized byte-identical to the SQL rehearsed
 -- transactionally against LF Supabase and then rolled back with zero residue.
--- Proven source Git blob SHA: eaa0aae1bd97314de22265323edd71ef79933537
+-- Proven source Git blob SHA: 7f555f45a5131c2976b54d4ca2e7c9fa2ac608fd
