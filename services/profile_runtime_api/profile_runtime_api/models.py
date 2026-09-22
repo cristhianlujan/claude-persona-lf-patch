@@ -346,6 +346,40 @@ class ProfileTask(StrictModel):
         return self
 
 
+class SemanticQualityFinalizeRequest(StrictModel):
+    """Deterministic consumer of an already-independent semantic review.
+
+    This request never asks the runtime model to judge its own output. The semantic
+    result and its independent execution identity are supplied by the external
+    reviewer boundary; the runtime only validates bindings and materializes the
+    canonical quality receipt.
+    """
+
+    request_id: str = Field(min_length=1, max_length=200)
+    profile_code: str = Field(pattern=CODE_RE.pattern)
+    profile_slug: str = Field(pattern=SLUG_RE.pattern)
+    candidate: dict[str, Any]
+    evidence_manifest: dict[str, Any]
+    scope_authority_packet: dict[str, Any]
+    semantic_result: dict[str, Any]
+    candidate_revision: str = Field(min_length=3, max_length=200)
+    semantic_execution_receipt_ref: str = Field(min_length=5, max_length=800)
+    producer_execution_id: str = Field(min_length=8, max_length=240)
+    reviewer_execution_id: str = Field(min_length=8, max_length=240)
+    producer_execution_receipt_ref: str = Field(min_length=5, max_length=800)
+    issued_at: str = Field(min_length=8, max_length=120)
+
+    @model_validator(mode="after")
+    def validate_independent_boundary(self) -> "SemanticQualityFinalizeRequest":
+        if self.producer_execution_id == self.reviewer_execution_id:
+            raise ValueError("SEMANTIC_REVIEWER_EXECUTION_MUST_DIFFER_FROM_PRODUCER")
+        if self.producer_execution_receipt_ref == self.semantic_execution_receipt_ref:
+            raise ValueError("SEMANTIC_REVIEWER_RECEIPT_MUST_DIFFER_FROM_PRODUCER")
+        if not self.candidate or not self.evidence_manifest or not self.scope_authority_packet:
+            raise ValueError("SEMANTIC_QUALITY_FINALIZE_BINDINGS_REQUIRED")
+        return self
+
+
 class NonCanonicalArtifactBinding(StrictModel):
     artifact_ref: str = Field(min_length=1, max_length=500)
     artifact: Artifact
