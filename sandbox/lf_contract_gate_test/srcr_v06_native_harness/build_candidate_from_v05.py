@@ -44,6 +44,7 @@ def edge(
     readback_refs=None,
     next_gate=None,
     next_refs=None,
+    proposed_next_consumer=None,
     route=None,
     currentness=None,
     terminality=None,
@@ -65,6 +66,7 @@ def edge(
         "gap_evidence_refs": list(gap_refs or []),
         "next_gate": next_gate,
         "next_gate_consumer_evidence_refs": list(next_refs or []),
+        "proposed_next_gate_consumer_ref": proposed_next_consumer,
         "canonical_route_consistency": route or proof("PROPOSED_ONLY"),
         "post_transition_currentness": currentness or proof("PROPOSED_ONLY"),
         "terminality": terminality or proof("PROPOSED_ONLY"),
@@ -93,6 +95,20 @@ def build_candidate(base):
         for k in ("setup", "action"):
             if isinstance(tp.get(k), str):
                 tp[k] = [tp[k]]
+
+    delta = c.setdefault("implementation_delta", [])
+    add_unique(delta, "target", {
+        "target": "supabase://proposed/GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
+        "action": "bind PROFILE_RUNTIME_CANARY_REQUIRED to a governed verify-runtime-canary consumer",
+        "rationale": "The current refresh path emits a canary-required gate without an operational consumer; the selected repair must name and wire the future consumer.",
+        "evidence_refs": ["EV-LC-018", "EV-LC-025"],
+    })
+    add_unique(delta, "target", {
+        "target": "supabase://proposed/EJECUCION_PERFIL_LF/queue_terminal_bridge",
+        "action": "reconcile terminal queue outcomes into the canonical execution state",
+        "rationale": "A failed runtime queue request can remain disconnected from the canonical execution terminal state; the selected repair requires deterministic propagation and readback.",
+        "evidence_refs": ["EV-LC-019", "EV-LC-020", "EV-LC-023"],
+    })
 
     pkg = c.get("implementation_package")
     if not isinstance(pkg, dict):
@@ -184,6 +200,29 @@ def build_candidate(base):
         "verification_method": "Active-consumer, zero-consumer and replay cases over the governed retirement check.",
     })
 
+    add_unique(controls, "control_id", {
+        "control_id": "CTL-RUNTIME-CANARY-CONSUMER",
+        "purpose": "Guarantee that PROFILE_RUNTIME_CANARY_REQUIRED is consumed by a governed lifecycle action rather than remaining a label-only gate.",
+        "authority_ref": "proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
+        "applies_when": "REFRESCO_RUNTIME has applied a desired release and post-refresh verification is required.",
+        "enforcement_point_ref": "proposed://GESTION_RELEASE_PERFIL_LF/verify_runtime_canary",
+        "input_contract": "Exact release identity + refresh readback + PROFILE_RUNTIME_CANARY_REQUIRED gate.",
+        "blocking_code": "PROFILE_RUNTIME_CANARY_CONSUMER_MISSING",
+        "observable_result": "Canary result and observed release state are recorded against the exact release before execution authorization.",
+        "verification_method": "Negative no-consumer case must fail; positive consumer path must show producer, transport, consumer, enforcement and readback.",
+    })
+    add_unique(controls, "control_id", {
+        "control_id": "CTL-QUEUE-CANONICAL-TERMINALITY",
+        "purpose": "Keep runtime queue terminal outcome and canonical EJECUCION_PERFIL_LF terminal state consistent.",
+        "authority_ref": "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge",
+        "applies_when": "A runtime queue request reaches SUCCEEDED, FAILED or CANCELLED for a governed profile execution.",
+        "enforcement_point_ref": "proposed://EJECUCION_PERFIL_LF/reconcile_queue_terminal",
+        "input_contract": "Queue request identity + producer execution identity + terminal queue state + failure/success evidence.",
+        "blocking_code": "PROFILE_EXECUTION_TERMINALITY_RECONCILIATION_FAILED",
+        "observable_result": "Canonical execution reaches the corresponding terminal state or the reconciliation fails closed with explicit evidence.",
+        "verification_method": "Inject terminal success/failure/cancelled queue outcomes and read back canonical execution state for the same identity.",
+    })
+
     policies = pkg.setdefault("policy_contract_changes", [])
     add_unique(policies, "authority_ref", {
         "authority_ref": "proposed://PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
@@ -256,6 +295,44 @@ def build_candidate(base):
     }
     if not any(isinstance(x, dict) and x.get("from_ref") == auth_wire["from_ref"] for x in wiring):
         wiring.append(auth_wire)
+
+    canary_wire = {
+        "from_ref": "REFRESCO_RUNTIME.post_refresh",
+        "to_ref": "GESTION_RELEASE_PERFIL_LF.verify_runtime_canary",
+        "contract_ref": "PROFILE_RUNTIME_CANARY_REQUIRED",
+        "data_carried": ["release_id", "desired_release_id", "refresh readback", "runtime binding identity"],
+        "precondition": "Refresh completed for the exact desired release and canary verification is required.",
+        "fail_closed_behavior": "Do not mark observed release verified and do not authorize execution while the canary consumer/result is absent.",
+    }
+    if not any(isinstance(x, dict) and x.get("to_ref") == canary_wire["to_ref"] for x in wiring):
+        wiring.append(canary_wire)
+
+    terminal_wire = {
+        "from_ref": "private.lf_profile_runtime_queue_v1.terminal_outcome",
+        "to_ref": "EJECUCION_PERFIL_LF.reconcile_queue_terminal",
+        "contract_ref": "PROFILE_EXECUTION_QUEUE_TERMINALITY_V1",
+        "data_carried": ["queue_request_id", "producer_execution_id", "terminal_status", "error_code", "terminal evidence ref"],
+        "precondition": "Queue request is terminal and is bound to one canonical profile execution identity.",
+        "fail_closed_behavior": "Do not leave the canonical execution IN_PROGRESS after an authoritative terminal queue outcome; reconciliation mismatch is an explicit blocker.",
+    }
+    if not any(isinstance(x, dict) and x.get("to_ref") == terminal_wire["to_ref"] for x in wiring):
+        wiring.append(terminal_wire)
+
+    deliverables = pkg.setdefault("deliverables", [])
+    add_unique(deliverables, "artifact_ref", {
+        "artifact_ref": "proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
+        "change_type": "BIND",
+        "exact_delta": "Bind PROFILE_RUNTIME_CANARY_REQUIRED to verify_runtime_canary and persist exact-release canary/readback before execution authorization.",
+        "dependencies": ["PROFILE_RELEASE_CONTRACT_V1", "REFRESCO_RUNTIME", "PROFILE_RUNTIME_CANARY_REQUIRED"],
+        "acceptance_refs": ["CTL-RUNTIME-CANARY-CONSUMER", "EDGE-REFRESH-VERIFY"],
+    })
+    add_unique(deliverables, "artifact_ref", {
+        "artifact_ref": "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge",
+        "change_type": "MODIFY",
+        "exact_delta": "Add idempotent terminal queue reconciliation so SUCCEEDED/FAILED/CANCELLED outcomes update or explicitly reconcile the canonical execution state with exact identity and readback.",
+        "dependencies": ["private.lf_profile_runtime_queue_v1", "lf_operation_execution", "EJECUCION_PERFIL_LF"],
+        "acceptance_refs": ["CTL-QUEUE-CANONICAL-TERMINALITY", "EDGE-EXECUTE-TERMINAL-READBACK"],
+    })
 
     obs = pkg.setdefault("observability_plan", [])
     add_unique(obs, "signal", {
@@ -401,6 +478,7 @@ def build_candidate(base):
             ["EV-LC-018","EV-LC-025"],
             producer_refs=["EV-LC-025"], consumer_refs=["EV-LC-018"],
             next_gate="PROFILE_RUNTIME_CANARY_REQUIRED",
+            proposed_next_consumer="proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
             currentness=proof("OBSERVED_FAIL", ["EV-LC-018","EV-LC-025"]),
             terminality=proof("OBSERVED_FAIL", ["EV-LC-018"]),
         ),
