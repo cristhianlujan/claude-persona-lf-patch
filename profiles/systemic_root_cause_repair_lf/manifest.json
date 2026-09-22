@@ -43,6 +43,7 @@
     "validators/validate_pack.py",
     "evals/v06_edge_closure_cases.py",
     "validators/edge_closure.py",
-    "evals/v06_control_ownership_cases.py"
+    "evals/v06_control_ownership_cases.py",
+    "validators/materialize_quality_receipt.py"
   ]
 }
