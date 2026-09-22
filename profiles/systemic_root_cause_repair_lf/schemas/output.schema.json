@@ -4072,18 +4072,38 @@
     },
     {
       "if": {
-        "properties": {
-          "status": {
-            "enum": [
-              "SYSTEMIC_REPAIR_SPEC",
-              "NEEDS_MORE_EVIDENCE",
-              "RETURN_TO_WORKER_FOR_SELF_REPAIR",
-              "BLOCK_PIPELINE"
+        "allOf": [
+          {
+            "properties": {
+              "status": {
+                "enum": [
+                  "SYSTEMIC_REPAIR_SPEC",
+                  "NEEDS_MORE_EVIDENCE",
+                  "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+                  "BLOCK_PIPELINE"
+                ]
+              }
+            },
+            "required": [
+              "status"
             ]
+          },
+          {
+            "not": {
+              "properties": {
+                "profile_pack_id": {
+                  "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+                },
+                "case_mode": {
+                  "const": "ARCHITECTURE_AUDIT"
+                }
+              },
+              "required": [
+                "profile_pack_id",
+                "case_mode"
+              ]
+            }
           }
-        },
-        "required": [
-          "status"
         ]
       },
       "then": {
@@ -4117,18 +4137,38 @@
     },
     {
       "if": {
-        "properties": {
-          "status": {
-            "enum": [
-              "SYSTEMIC_REPAIR_SPEC",
-              "NEEDS_MORE_EVIDENCE",
-              "RETURN_TO_WORKER_FOR_SELF_REPAIR",
-              "BLOCK_PIPELINE"
+        "allOf": [
+          {
+            "properties": {
+              "status": {
+                "enum": [
+                  "SYSTEMIC_REPAIR_SPEC",
+                  "NEEDS_MORE_EVIDENCE",
+                  "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+                  "BLOCK_PIPELINE"
+                ]
+              }
+            },
+            "required": [
+              "status"
             ]
+          },
+          {
+            "not": {
+              "properties": {
+                "profile_pack_id": {
+                  "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+                },
+                "case_mode": {
+                  "const": "ARCHITECTURE_AUDIT"
+                }
+              },
+              "required": [
+                "profile_pack_id",
+                "case_mode"
+              ]
+            }
           }
-        },
-        "required": [
-          "status"
         ]
       },
       "then": {
@@ -4232,6 +4272,38 @@
         "required": [
           "case_mode"
         ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+          },
+          "case_mode": {
+            "const": "ARCHITECTURE_AUDIT"
+          },
+          "status": {
+            "enum": [
+              "SYSTEMIC_REPAIR_SPEC",
+              "NEEDS_MORE_EVIDENCE",
+              "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+              "BLOCK_PIPELINE"
+            ]
+          }
+        },
+        "required": [
+          "profile_pack_id",
+          "case_mode",
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "causal_chain": {
+            "minItems": 1
+          }
+        }
       }
     }
   ]

@@ -157,11 +157,34 @@ ca["recurrence_evidence"] = []
 ca["causal_chain"] = ca["causal_chain"][:1]
 r = runtime_validate.validate(ca, ea)
 check("V05_AUDIT_WITHOUT_RECURRENCE_ACCEPTED", r["valid"], r["errors"][:3])
+audit_schema_errors = list(schema_validator.iter_errors(ca))
+check(
+    "V05_AUDIT_SCHEMA_WITHOUT_RECURRENCE_ACCEPTED",
+    not audit_schema_errors,
+    [x.message for x in audit_schema_errors][:3],
+)
 
 # 10. Incident mode keeps requiring recurrence and a three-link chain.
 ci = copy.deepcopy(ca); ci["case_mode"] = "INCIDENT_REPAIR"
 r = runtime_validate.validate(ci, ea)
 check("V05_INCIDENT_STILL_REQUIRES_RECURRENCE", {"RECURRENCE_EVIDENCE_INVALID", "CAUSAL_CHAIN_INSUFFICIENT"} <= codes(r), codes(r))
+incident_schema_errors = list(schema_validator.iter_errors(ci))
+check(
+    "V05_INCIDENT_SCHEMA_STILL_REQUIRES_RECURRENCE_AND_CHAIN",
+    bool(incident_schema_errors),
+    [x.message for x in incident_schema_errors][:3],
+)
+
+# 10b. V0.4 keeps the legacy incident-oriented schema contract.
+cv4, ev4 = v04_pair()
+cv4["recurrence_evidence"] = []
+cv4["causal_chain"] = cv4["causal_chain"][:1]
+v04_schema_errors = list(schema_validator.iter_errors(cv4))
+check(
+    "V04_SCHEMA_BEHAVIOR_UNCHANGED",
+    bool(v04_schema_errors),
+    [x.message for x in v04_schema_errors][:3],
+)
 
 # 11. Audit mode does not relax the stop exit.
 r = runtime_validate.validate(to_nonready(ca), ea)
