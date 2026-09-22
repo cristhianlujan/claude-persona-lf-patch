@@ -1038,7 +1038,7 @@ class ProfileRuntimeEngine:
         model_raw_output=runtime_package.get("raw_output")
         try:
             materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
-            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest)
+            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest); canonical_quality=self.gates.canonical_quality_boundary(profile_slug=task.profile_slug,candidate=payload,contract_gate=contract,semantic_gate=semantic)
             canonical_quality=_canonical_quality_state(binding,payload)
         except Exception as exc:
             code,detail=_failure(exc)
@@ -1066,7 +1066,7 @@ class ProfileRuntimeEngine:
         model_raw_output=runtime_package.get("raw_output")
         try:
             materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
-            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest)
+            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest); canonical_quality=self.gates.canonical_quality_boundary(profile_slug=task.profile_slug,candidate=payload,contract_gate=contract,semantic_gate=semantic)
             canonical_quality=_canonical_quality_state(binding,payload)
         except Exception as exc:
             code,detail=_failure(exc)
