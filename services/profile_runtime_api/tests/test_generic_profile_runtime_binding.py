@@ -149,6 +149,27 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             'EXECUTABLE_TEST_PROTOCOL_INCOMPLETE',
         )
 
+    def test_logical_findings_keep_distinct_failure_classes_on_same_path(self):
+        errors=[
+            {
+                'code':'EXECUTABLE_TEST_PROTOCOL_INCOMPLETE',
+                'path':'$.planned_regressions[0].test_protocol.setup',
+                'detector':'PROFILE_VALIDATOR',
+            },
+            {
+                'code':'ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT',
+                'path':'$.planned_regressions[0].test_protocol.setup',
+                'detector':'EVIDENCE_VALIDATOR',
+            },
+        ]
+        findings=canonical_logical_findings(errors)
+        self.assertEqual(len(findings),2)
+        self.assertEqual(
+            {item['failure_class'] for item in findings},
+            {'EXECUTABLE_TEST_PROTOCOL_INCOMPLETE','ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT'},
+        )
+        self.assertEqual(len({item['finding_id'] for item in findings}),2)
+
     def test_manifest_digest_is_observable_at_validator_and_utility(self):
         tmp,root,repo=self._repo()
         try:
