@@ -38,6 +38,7 @@ candidate, evidence = valid_pair()
 candidate = copy.deepcopy(candidate)
 candidate["profile_pack_id"] = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
 semantic = base["make_semantic"](candidate)
+semantic["evidence_manifest_sha256"] = materializer._canonical_json_sha256(evidence)
 
 receipt = materializer.materialize_quality_receipt(
     candidate,
