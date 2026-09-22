@@ -1,0 +1,59 @@
+name: SRCR V0.5 Lifecycle Regression
+
+on:
+  push:
+    branches:
+      - "lf/srcr-v05-lifecycle-regression-20260921"
+
+permissions:
+  contents: read
+
+jobs:
+  lifecycle-v05-first-pass:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install schema validator
+        run: python -m pip install --quiet jsonschema
+      - name: Validate frozen first-pass candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import base64, gzip, hashlib, json, sys
+          from pathlib import Path
+          from jsonschema import Draft7Validator
+
+          root=Path('profiles/systemic_root_cause_repair_lf')
+          td=Path('sandbox/lf_contract_gate_test/srcr_v05_lifecycle_regression')
+          candidate_bytes=gzip.decompress(base64.b64decode((td/'candidate.json.gz.b64').read_text().strip()))
+          manifest_bytes=gzip.decompress(base64.b64decode((td/'evidence_manifest.json.gz.b64').read_text().strip()))
+          candidate=json.loads(candidate_bytes)
+          manifest=json.loads(manifest_bytes)
+          sha=hashlib.sha256(candidate_bytes).hexdigest()
+          expected='5236f4fa746290ee75b8d3892fa9a970b2e13adf9b3bf38e3b2d9352dac13c05'
+          print('CANDIDATE_SHA256='+sha)
+          if sha != expected:
+              raise SystemExit('FAIL_CANDIDATE_SHA_MISMATCH')
+
+          schema=json.loads((root/'schemas/output.schema.json').read_text())
+          errs=sorted(Draft7Validator(schema).iter_errors(candidate), key=lambda e:list(e.path))
+          print('SCHEMA_ERRORS='+str(len(errs)))
+          for e in errs[:30]: print('SCHEMA_ERROR', list(e.path), e.message)
+          if errs: raise SystemExit('FAIL_OUTPUT_SCHEMA')
+
+          sys.path.insert(0,str(root))
+          from validators import runtime_validate, runtime_semantic_utility
+          structural=runtime_validate.validate(candidate, manifest)
+          print('RUNTIME_VALIDATE='+json.dumps(structural,sort_keys=True,separators=(',',':')))
+          if structural.get('status') != 'PASS': raise SystemExit('FAIL_RUNTIME_VALIDATE')
+          semantic=runtime_semantic_utility.evaluate(candidate, structural, manifest)
+          print('RUNTIME_SEMANTIC_UTILITY='+json.dumps(semantic,sort_keys=True,separators=(',',':')))
+          if semantic.get('status') != 'PASS': raise SystemExit('FAIL_RUNTIME_SEMANTIC_UTILITY')
+          print('PASS_SRCR_V05_LIFECYCLE_FIRST_PASS')
+          PY
