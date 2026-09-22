@@ -115,8 +115,9 @@ def _validate_proof(
     _validate_refs(errors, refs, f"{path}.evidence_refs", evidence_ids, require_nonempty=observed)
 
     if disposition == "REUSE_AS_IS" and status != "OBSERVED_PASS":
+        field_code = path.rsplit(".", 1)[-1].upper()
         errors.append(_err(
-            "V06_REUSE_EDGE_PROOF_NOT_OBSERVED_PASS",
+            f"V06_REUSE_EDGE_{field_code}_NOT_OBSERVED_PASS",
             f"{path}.status",
             "A reused current edge must be proven on the live path; proposal/unresolved state is not closure.",
         ))
