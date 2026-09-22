@@ -479,7 +479,7 @@ def test_repaired_v06_candidate_passes_governed_prequality_freeze() -> None:
     )
     trace_path = (
         ROOT / "sandbox" / "lf_contract_gate_test"
-        / "srcr_v06_candidate_20260922" / "lifecycle_trace_v06_resequenced.json"
+        / "srcr_v06_candidate_repaired_20260922" / "query_trace_prefreeze.json"
     )
     candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
