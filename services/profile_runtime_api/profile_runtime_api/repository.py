@@ -49,6 +49,7 @@ class RuntimeProfileBinding:
     execution_partition: dict[str, Any] | None = None
     execution_budget: dict[str, Any] | None = None
     canonical_quality: dict[str, Any] | None = None
+    research_execution: dict[str, Any] | None = None
 
 
 class RepositoryBindings:
@@ -151,6 +152,7 @@ class RepositoryBindings:
         execution_partition = payload.get("execution_partition")
         execution_budget = payload.get("execution_budget")
         canonical_quality = payload.get("canonical_quality")
+        research_execution = payload.get("research_execution")
         if not isinstance(profile_code, str) or not profile_code:
             raise RepositoryError("PROFILE_RUNTIME_BINDING_CODE_INVALID", profile_slug)
         if not isinstance(runtime_schema, dict) or not isinstance(runtime_schema.get("default"), str) or not isinstance(runtime_schema.get("output_modes"), dict):
@@ -269,6 +271,17 @@ class RepositoryBindings:
                 or any(not isinstance(value, str) or not value for value in quality_refs)
             ):
                 raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_INVALID", profile_slug)
+        if research_execution is not None:
+            if (
+                not isinstance(research_execution, dict)
+                or research_execution.get("mode") != "EXTERNAL_AUTHORITY_RESOLVER"
+                or research_execution.get("requires_evidence_manifest") is not True
+                or research_execution.get("requires_query_trace") is not True
+                or research_execution.get("requires_resolved_authority_context") is not True
+                or not isinstance(research_execution.get("resolver_ref"), str)
+                or not research_execution.get("resolver_ref")
+            ):
+                raise RepositoryError("PROFILE_RUNTIME_RESEARCH_EXECUTION_INVALID", profile_slug)
         if execution_budget is not None:
             if (
                 not isinstance(execution_budget, dict)
@@ -315,6 +328,7 @@ class RepositoryBindings:
             execution_partition=dict(execution_partition) if isinstance(execution_partition, dict) else None,
             execution_budget=dict(execution_budget) if isinstance(execution_budget, dict) else None,
             canonical_quality=copy.deepcopy(canonical_quality) if isinstance(canonical_quality, dict) else None,
+            research_execution=copy.deepcopy(research_execution) if isinstance(research_execution, dict) else None,
         )
 
 
