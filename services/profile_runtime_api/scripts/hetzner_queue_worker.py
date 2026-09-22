@@ -757,6 +757,18 @@ def _record_post_model_governance(
 
         contract_gate = profile.get("profile_contract_valid")
         semantic_gate = profile.get("semantic_utility")
+        canonical_quality = profile.get("canonical_quality")
+        if isinstance(canonical_quality, dict) and canonical_quality.get("applicability") == "REQUIRED":
+            if (
+                canonical_quality.get("status") != "PENDING_INDEPENDENT_SEMANTIC_REVIEW"
+                or canonical_quality.get("deterministic_floors_can_accept_quality") is not False
+                or canonical_quality.get("receipt_required_for_pass_to_quality_pack") is not True
+            ):
+                conn.commit()
+                return {
+                    "status": "BLOCKED",
+                    "error_code": "HETZNER_CANONICAL_QUALITY_BOUNDARY_INVALID",
+                }
         contract_codes = _gate_blocking_codes(contract_gate if isinstance(contract_gate, dict) else {})
         output_payload = {
             "output_contract_result": (
@@ -766,6 +778,7 @@ def _record_post_model_governance(
                 "profile_contract_valid": contract_gate,
                 "runtime_semantic_utility": semantic_gate,
             },
+            "canonical_quality": canonical_quality,
             "blocking_codes": contract_codes,
         }
         output_result = _fetch_json_scalar(
@@ -792,6 +805,7 @@ def _record_post_model_governance(
         "next_gate": "semantic_judge",
         "semantic_judge_auto_recorded": False,
         "baseline_applicability": baseline["applicability"],
+        "canonical_quality": canonical_quality,
     }
 
 
