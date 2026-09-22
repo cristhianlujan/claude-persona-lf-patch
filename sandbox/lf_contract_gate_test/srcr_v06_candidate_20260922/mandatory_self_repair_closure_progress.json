@@ -4,112 +4,124 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 42.30769230769231,
+  "overall_percent": 69.23076923076923,
   "points": [
     {
       "obligation_id": "MC-01",
-      "state": "SPECIFIED",
-      "percent": 25,
+      "state": "TESTED",
+      "percent": 75,
       "evidence": [
-        "Current Llama transport has no tool/function-calling surface in llama.py",
-        "Mandatory closure contract now defines tool-capable producer OR external resolver path"
+        "runtime_binding requires EXTERNAL_AUTHORITY_RESOLVER with manifest/query-trace/resolved-authority context",
+        "engine fails closed before model execution when the research bundle is missing or unbound",
+        "Validate LF Packs run 35736254524 PASS on exact code head 848bcbd024a5de1309bdefc1e3f046a089f6fea0"
       ],
       "remaining_requirements": [
-        "Need executable live-research path + negative test"
+        "Run one real SRCR research execution and retain readback proving the resolver path, query trace and authority context were consumed."
       ]
     },
     {
       "obligation_id": "MC-02",
-      "state": "IMPLEMENTED",
-      "percent": 50,
+      "state": "TESTED",
+      "percent": 75,
       "evidence": [
-        "runtime_binding.json now has non-null model_context, required_source_refs, section projection and max_chars"
+        "model_context is canonical in runtime_binding and model_context_readback records exact source digests/character budget",
+        "positive projection/readback and source-budget regressions passed in Validate LF Packs 35736254524"
       ],
       "remaining_requirements": [
-        "Need execution receipt/readback proving exact context delivered + budget tests"
+        "Retain a real execution receipt/readback proving the exact context manifest delivered to the model."
       ]
     },
     {
       "obligation_id": "MC-03",
-      "state": "IMPLEMENTED",
-      "percent": 50,
+      "state": "TESTED",
+      "percent": 75,
       "evidence": [
-        "engine.py passes task.evidence_manifest to contract and semantic_utility and passes request.evidence_manifest to canonical_quality_finalize"
+        "evidence_manifest_sha256 is observable across contract/utility/canonical-quality finalization",
+        "semantic result and quality receipt now bind the exact evidence manifest digest",
+        "tampered/different manifest is rejected by regression; Validate LF Packs 35736254524 PASS"
       ],
       "remaining_requirements": [
-        "Need one end-to-end run proving identical manifest digest at every hop including independent judge/receipt"
+        "Complete one independent semantic review and canonical quality receipt on the same candidate/evidence/scope digests."
       ]
     },
     {
       "obligation_id": "MC-04",
-      "state": "SPECIFIED",
-      "percent": 25,
+      "state": "TESTED",
+      "percent": 75,
       "evidence": [
-        "V0.5 trace proved generic EKB ref/zero-row and uncited material claim escapes",
-        "Mandatory closure contract now requires exact resolution semantics"
+        "runtime research bundle requires result_status, result_count and claim_support",
+        "EMPTY/NOT_FOUND can support only ABSENCE; positive zero-row evidence is rejected",
+        "current uncertainty without evidence-map binding is rejected; exact locator/digest lineage is enforced",
+        "Validate LF Packs 35736254524 PASS"
       ],
       "remaining_requirements": [
-        "Implement generic exact-ref/zero-row/uncited-claim checks + regressions"
+        "Replay against live EKB/current authority and retain readback showing every material claim resolves exactly, including zero-row absence evidence."
       ]
     },
     {
       "obligation_id": "MC-05",
-      "state": "SPECIFIED",
-      "percent": 25,
+      "state": "TESTED",
+      "percent": 75,
       "evidence": [
-        "V0.5 trace cannot reconstruct all intermediate research queries",
-        "Mandatory closure contract now defines query_trace lineage"
+        "research_trace.py is the single query-trace owner",
+        "runtime requires query_trace before model execution and rejects evidence without recorded retrieval",
+        "persisted phase traces and manifest bindings are regression-tested; Validate LF Packs 35736254524 PASS"
       ],
       "remaining_requirements": [
-        "Implement query recording and reconstruction test"
+        "Run a fresh live investigation and prove every emitted evidence ID is reconstructable from the complete query trace."
       ]
     },
     {
       "obligation_id": "MC-06",
-      "state": "SPECIFIED",
-      "percent": 25,
+      "state": "TESTED",
+      "percent": 75,
       "evidence": [
-        "V0.6 SKILL contains pre-freeze schema discipline",
-        "Current candidate passed pre-quality after repair"
+        "materialize_prequality_freeze rejects malformed test_protocol before freeze",
+        "malformed setup/action regression expects PREFREEZE_VALIDATION_NOT_CLEAN:OUTPUT_SCHEMA",
+        "Validate LF Packs 35736254524 PASS"
       ],
       "remaining_requirements": [
-        "Prove freeze is mechanically impossible before exact schema PASS; add malformed setup/action pre-freeze regression"
+        "Freeze the repaired candidate through the governed pre-freeze path and retain the successful schema/validator receipt."
       ]
     },
     {
       "obligation_id": "MC-07",
-      "state": "IMPLEMENTED",
-      "percent": 50,
+      "state": "TESTED",
+      "percent": 75,
       "evidence": [
-        "V0.6 contract states deterministic validation owns structural invariants and utility must not reimplement them",
-        "runtime_semantic_utility.py is materially smaller than runtime_validate.py"
+        "rule_ownership.v1.json assigns structural/utility/research-trace/independent-semantic owners",
+        "V0.6 control ownership regression reports deterministic/semantic overlap=0",
+        "runtime and native harness delegate query-trace validation to one owner",
+        "Validate LF Packs 35736254524 PASS"
       ],
       "remaining_requirements": [
-        "Add machine-readable rule ownership catalog + static zero-duplicate structural rule test"
+        "Retain mutation/negative evidence on the final exact-head and confirm no duplicate owner is reintroduced by later repairs."
       ]
     },
     {
       "obligation_id": "MC-08",
-      "state": "SPECIFIED",
-      "percent": 25,
+      "state": "TESTED",
+      "percent": 75,
       "evidence": [
-        "V0.5 trace counted setup/action in schema and another layer",
-        "Mandatory closure contract now requires canonical finding fingerprint"
+        "canonical_logical_findings fingerprints failure_class + candidate_path and preserves detector lineage",
+        "schema + profile-validator duplicate defect regression collapses to one logical finding per field",
+        "Validate LF Packs 35736254524 PASS"
       ],
       "remaining_requirements": [
-        "Implement aggregator and duplicate-vs-distinct regression"
+        "Exercise the final repaired candidate and retain finding_count readback proving no logical duplicate findings end-to-end."
       ]
     },
     {
       "obligation_id": "MC-09",
-      "state": "IMPLEMENTED",
-      "percent": 50,
+      "state": "TESTED",
+      "percent": 75,
       "evidence": [
-        "materialize_quality_receipt.py rejects producer_execution_id == reviewer_execution_id",
-        "validate_quality_receipt.py requires distinct IDs and independence evidence refs"
+        "materializer and validator reject producer_execution_id == reviewer_execution_id and shared receipt identity",
+        "semantic review relay has positive/negative independence tests and never runs producer during reviewer entrypoint",
+        "Validate LF Packs 35736254524 PASS"
       ],
       "remaining_requirements": [
-        "Run/retain positive and same-execution negative tests on exact branch"
+        "Obtain one actual independent reviewer execution receipt on the repaired frozen candidate."
       ]
     },
     {
@@ -117,11 +129,12 @@
       "state": "IMPLEMENTED",
       "percent": 50,
       "evidence": [
-        "runtime has canonical_quality_finalize path and quality materializer/validator",
-        "V0.6 review still required external independent judge production"
+        "canonical_quality_finalize, receipt materializer/validator and governed semantic-review relay exist",
+        "live EJECUCION_PERFIL_LF step 70 semantic_judge is ACTIVE_ENFORCEMENT",
+        "current relay consumes an externally produced semantic_result; it does not itself invoke the SRCR semantic judge"
       ],
       "remaining_requirements": [
-        "Prove physical caller invokes semantic judge and binds exact candidate/evidence/scope before receipt"
+        "Execute the SRCR semantic judge in a distinct reviewer execution over exact candidate/evidence/scope, then pass it through finalizer and governed persistence readback."
       ]
     },
     {
@@ -129,11 +142,12 @@
       "state": "TESTED",
       "percent": 75,
       "evidence": [
-        "Independent V0.6 semantic review detected PROFILE_RUNTIME_CANARY_REQUIRED without operational consumer",
-        "Quality receipt was not materialized because T5 remained open"
+        "builder now declares proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer for PROFILE_RUNTIME_CANARY_REQUIRED",
+        "builder declares queue terminal reconciliation control/wiring/deliverable",
+        "builder regression verifies canary consumer and terminality footprint; Validate LF Packs 35736254524 PASS"
       ],
       "remaining_requirements": [
-        "Repair/declare physical consumer and terminality propagation, rerun to clean semantic result"
+        "Regenerate/freeze the candidate from the repaired builder and obtain clean independent T5 semantic readback."
       ]
     },
     {
@@ -141,11 +155,12 @@
       "state": "TESTED",
       "percent": 75,
       "evidence": [
-        "Independent V0.6 R2 detected queue_terminal_bridge as UNDECLARED_PROPOSED_CHANGE",
-        "Quality receipt was not materialized"
+        "runtime_validate reconciles every IMPLEMENTABLE proposed_change_ref/proposed_next_gate_consumer_ref against implementation_delta",
+        "builder now declares parent lifecycle artifact families plus canary consumer and queue terminal bridge",
+        "exact-head builder regression has passed Validate LF Packs 35736254524"
       ],
       "remaining_requirements": [
-        "Add producer pre-freeze graph-to-delta reconciliation and rerun negative/positive tests"
+        "Regenerate/freeze candidate and independently re-extract observed changes; R2 must return zero undeclared selected-repair changes."
       ]
     },
     {
@@ -153,13 +168,10 @@
       "state": "SPECIFIED",
       "percent": 25,
       "evidence": [
-        "Mandatory closure contract now requires the full ungrouped replay of the six trace phases used in the 247-step V0.5 Lifecycle analysis.",
-        "Acceptance requires zero open observations, zero failed applicable steps and zero unresolved mandatory inputs."
+        "Mandatory closure contract requires the complete ungrouped replay across Entrada, Investigacion, Transporte, Determinista, Jueces and Repeticiones."
       ],
       "remaining_requirements": [
-        "Implement/finish MC-01..MC-12 changes.",
-        "Run the complete ungrouped replay on the exact revised profile/candidate.",
-        "Repair every observation and rerun until clean."
+        "Finish MC-01..MC-12 readback closures, then run the full replay on the final exact revision and repair every observation until zero remain."
       ]
     }
   ],
@@ -176,5 +188,11 @@
     "include_all_mc_rows": true,
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
+  },
+  "current_exact_code_head": "848bcbd024a5de1309bdefc1e3f046a089f6fea0",
+  "validation_evidence": {
+    "workflow": "Validate LF Packs",
+    "run_id": 35736254524,
+    "conclusion": "success"
   }
 }
