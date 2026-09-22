@@ -645,7 +645,7 @@ jobs:
               if not match:
                   continue
               version, name = match.groups()
-              if version > cutover and module.managed(name):
+              if version > cutover and module.managed_source(path, version, name):
                   versions.append(version)
           if not versions or len(versions) != len(set(versions)):
               raise SystemExit("FAIL_S28_MIGRATION_MANAGED_VERSION_SET")
