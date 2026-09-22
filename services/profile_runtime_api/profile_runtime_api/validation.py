@@ -470,6 +470,116 @@ class OutputGates:
             )
         )
 
+    def canonical_quality(
+        self,
+        *,
+        profile_slug: str,
+        candidate: dict[str, Any],
+        evidence_manifest: dict[str, Any],
+        semantic_result: dict[str, Any],
+        quality_receipt: dict[str, Any],
+    ) -> dict[str, Any]:
+        binding = self.repository.runtime_binding(profile_slug)
+        quality = binding.canonical_quality if binding is not None else None
+        if not isinstance(quality, dict):
+            return {
+                "status": "NOT_EVALUATED",
+                "blocking_codes": ["CANONICAL_QUALITY_NOT_BOUND"],
+                "canonical_quality_accepted": False,
+                "downstream_authorized": False,
+            }
+
+        pack_id = candidate.get("profile_pack_id")
+        required = pack_id in set(quality.get("required_for_profile_pack_ids") or [])
+        if not required:
+            return {
+                "status": "NOT_APPLICABLE",
+                "blocking_codes": [],
+                "canonical_quality_accepted": False,
+                "downstream_authorized": False,
+            }
+
+        errors: list[str] = []
+        semantic_binding = self.repository.load_canonical_quality_validator(
+            profile_slug, "semantic_result_validator"
+        )
+        receipt_binding = self.repository.load_canonical_quality_validator(
+            profile_slug, "quality_receipt_validator"
+        )
+        receipt_schema = self.repository.canonical_quality_receipt_schema(profile_slug)
+        if semantic_binding is None or receipt_binding is None or receipt_schema is None:
+            return {
+                "status": "FAIL",
+                "blocking_codes": ["CANONICAL_QUALITY_BINDING_INCOMPLETE"],
+                "canonical_quality_accepted": False,
+                "downstream_authorized": False,
+            }
+
+        semantic_module, semantic_callable_name = semantic_binding
+        semantic_callable = getattr(semantic_module, semantic_callable_name, None)
+        if not callable(semantic_callable):
+            errors.append("CANONICAL_QUALITY_SEMANTIC_VALIDATOR_CALLABLE_MISSING")
+        else:
+            try:
+                semantic_gate = semantic_callable(semantic_result)
+            except Exception as exc:
+                errors.append("CANONICAL_QUALITY_SEMANTIC_VALIDATOR_EXCEPTION:" + type(exc).__name__)
+            else:
+                if not isinstance(semantic_gate, dict) or semantic_gate.get("status") != "PASS":
+                    errors.extend(
+                        str(code)
+                        for code in (
+                            semantic_gate.get("blocking_codes", [])
+                            if isinstance(semantic_gate, dict)
+                            else ["CANONICAL_QUALITY_SEMANTIC_VALIDATOR_RESULT_INVALID"]
+                        )
+                    )
+
+        try:
+            Draft202012Validator.check_schema(receipt_schema.payload)
+            receipt_schema_errors = list(
+                Draft202012Validator(receipt_schema.payload).iter_errors(quality_receipt)
+            )
+        except SchemaError:
+            errors.append("CANONICAL_QUALITY_RECEIPT_SCHEMA_INVALID")
+        else:
+            if receipt_schema_errors:
+                errors.append("CANONICAL_QUALITY_RECEIPT_SCHEMA_FAILED")
+
+        receipt_module, receipt_callable_name = receipt_binding
+        receipt_callable = getattr(receipt_module, receipt_callable_name, None)
+        if not callable(receipt_callable):
+            errors.append("CANONICAL_QUALITY_RECEIPT_VALIDATOR_CALLABLE_MISSING")
+        else:
+            try:
+                receipt_gate = receipt_callable(
+                    quality_receipt,
+                    candidate,
+                    evidence_manifest,
+                    semantic_result,
+                )
+            except Exception as exc:
+                errors.append("CANONICAL_QUALITY_RECEIPT_VALIDATOR_EXCEPTION:" + type(exc).__name__)
+            else:
+                if not isinstance(receipt_gate, dict) or receipt_gate.get("status") != "PASS":
+                    errors.extend(
+                        str(code)
+                        for code in (
+                            receipt_gate.get("blocking_codes", [])
+                            if isinstance(receipt_gate, dict)
+                            else ["CANONICAL_QUALITY_RECEIPT_VALIDATOR_RESULT_INVALID"]
+                        )
+                    )
+
+        codes = sorted(set(errors))
+        return {
+            "status": "PASS" if not codes else "FAIL",
+            "blocking_codes": codes,
+            "canonical_quality_accepted": not codes,
+            "receipt_schema_sha256": receipt_schema.sha256,
+            "downstream_authorized": False,
+        }
+
     def _canonical_errors(
         self,
         profile_slug: str,
