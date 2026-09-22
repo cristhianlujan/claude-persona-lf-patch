@@ -62,7 +62,7 @@
         "query_locator": "github://cristhianlujan/claude-persona-lf-patch@9b9a41da6635a47cefe293ae15b021e9fa89aa3f/profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
         "request_digest": "sha256:d7d6b898d21c865e9d9a00e37c63a8e43bbe685561136447fd343f873f3255f1",
         "result_digest": "sha256:df400e01c27aff202ee9d30bed0cf10309dcccafddb3d336e045c25262b703be",
-        "observed_at": "2026-09-22T15:39:00Z",
+        "observed_at": "2026-09-22T15:39:43.747804Z",
         "evidence_id": "EV-MC05-GITHUB-001",
         "consumer": "$.mc05_reconstruction.github",
         "result_status": "FOUND",
@@ -131,7 +131,7 @@
     "status": "PASS",
     "blocking_codes": [],
     "readback": {
-      "evidence_manifest_sha256": "sha256:c53cdd58d65fdf742850ad6c69e08e0e2ec2807915841690674369e454acb5c5",
+      "evidence_manifest_sha256": "sha256:369846e21d79c3f6ca69a83d8f78a2a4f45d51d8a422ce80b61825d90d4c8fb8",
       "query_count": 2,
       "evidence_count": 2,
       "resolved_authority_context_sha256": "8148390bfec2bac60cf2a1499a291f14b598fa6754011e23346c2d3ceace4f46",
@@ -186,5 +186,6 @@
     "blocking_codes": [],
     "database_write": false,
     "production_mutation": false
-  }
+  },
+  "observed_at_semantics": "closure_bundle_clock_from_supabase_after_live_reads"
 }
