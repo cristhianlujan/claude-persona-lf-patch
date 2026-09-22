@@ -4,8 +4,8 @@
   "source_candidate_file_sha256": "cbc05a3445ef27cfdca34a4103d79e640264e142efae3abae0cda253264e80cb",
   "repair_builder_code_head": "f776511512133006cbf1d068a3479c7cd7347345",
   "repaired_candidate_path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/candidate_v06_repaired.json",
-  "repaired_candidate_file_sha256": "afdc8517f79eec87d2042f7680b9a95621e83d8c2511fd85b2dc8f1712baae52",
-  "repaired_candidate_canonical_sha256": "126ca5dd7be63f582536fa0662dd1dde488e3b908dfa5dbbafb3ccd50f588e01",
+  "repaired_candidate_file_sha256": "c1ec9d20976ff373591fa5cda893e404b34e674ff091234a40e9c455ae915648",
+  "repaired_candidate_canonical_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
   "delta_targets_added": [
     "supabase://proposed/PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
     "supabase://proposed/PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
