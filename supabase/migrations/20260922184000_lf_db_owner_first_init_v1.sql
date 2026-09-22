@@ -32,7 +32,7 @@ BEGIN
      OR coalesce(v_binding->>'target_type','') <> 'MIGRATION'
      OR coalesce(v_binding->>'target_repo','') <> 'cristhianlujan/claude-persona-lf-patch'
      OR coalesce(v_binding->>'target_path','') <> 'supabase/migrations/20260922184000_lf_db_owner_first_init_v1.sql'
-     OR btrim(coalesce(v_binding->>'authority_ref','')) = ''
+     OR coalesce(v_binding->>'authority_ref','') <> 'ROUTER_DOWNSTREAM_AUTHORITY'
      OR btrim(coalesce(v_binding->>'source_ref','')) = ''
      OR coalesce(v_binding->>'source_revision','') !~ '^[0-9a-f]{40}$'
      OR coalesce(v_binding->>'source_blob_sha','') !~ '^[0-9a-f]{40}$'
@@ -227,6 +227,24 @@ BEGIN
     RETURN NEW;
   END IF;
 
+  -- Pre-cutover executions are not retrofitted with invented ownership.
+  -- They may finish with the same identity, but cannot mutate identity or acquire
+  -- a post-hoc owner binding inside the same execution.
+  IF TG_OP='UPDATE'
+     AND OLD.operation_code='ACTUALIZACION_DB_LF'
+     AND NOT (coalesce(OLD.manifest,'{}'::jsonb) ? 'owner_binding') THEN
+    IF NEW.target_type IS DISTINCT FROM OLD.target_type
+       OR NEW.target_code IS DISTINCT FROM OLD.target_code
+       OR NEW.target_repo IS DISTINCT FROM OLD.target_repo
+       OR NEW.target_path IS DISTINCT FROM OLD.target_path THEN
+      RAISE EXCEPTION 'LF_DB_HISTORICAL_EXECUTION_IDENTITY_IMMUTABLE';
+    END IF;
+    IF coalesce(NEW.manifest,'{}'::jsonb) ? 'owner_binding' THEN
+      RAISE EXCEPTION 'LF_DB_HISTORICAL_OWNER_RETROFIT_FORBIDDEN_START_NEW_EXECUTION';
+    END IF;
+    RETURN NEW;
+  END IF;
+
   v_binding := NEW.manifest->'owner_binding';
 
   IF jsonb_typeof(v_binding) IS DISTINCT FROM 'object'
@@ -237,7 +255,7 @@ BEGIN
      OR coalesce(v_binding->>'target_type','') <> NEW.target_type
      OR coalesce(v_binding->>'target_path','') <> coalesce(NEW.target_path,'')
      OR coalesce(v_binding->>'target_repo','') <> coalesce(NEW.target_repo,'')
-     OR btrim(coalesce(v_binding->>'authority_ref','')) = ''
+     OR coalesce(v_binding->>'authority_ref','') <> 'ROUTER_DOWNSTREAM_AUTHORITY'
      OR coalesce(v_binding->>'handoff_policy','') <> 'NEW_EXECUTION_WITH_EXPLICIT_RECEIPT_ONLY'
      OR btrim(coalesce(v_binding->>'bound_at','')) = '' THEN
     RAISE EXCEPTION 'LF_DB_OWNER_BINDING_REQUIRED_AT_INIT';
@@ -407,6 +425,10 @@ BEGIN
      OR btrim(coalesce(p_owner_ref,''))=''
      OR btrim(coalesce(p_authority_ref,''))='' THEN
     RAISE EXCEPTION 'LF_DB_OWNER_BEGIN_REQUIRED_FIELD_MISSING';
+  END IF;
+
+  IF p_authority_ref <> 'ROUTER_DOWNSTREAM_AUTHORITY' THEN
+    RAISE EXCEPTION 'LF_DB_OWNER_BEGIN_AUTHORITY_REF_INVALID';
   END IF;
 
   IF v_type NOT IN ('DB','MIGRATION','FUNCTION','TRIGGER') THEN
