@@ -8,7 +8,7 @@ Purpose: close the gap between protocol definition, construction/execution, and 
 - `gobernanza/contratos/work_protocol_manifest_v1.schema.json`: machine-readable shape.
 - `gobernanza/judges/validate_work_protocol_manifest_v1.py`: deterministic reconciliation and progress derivation.
 - `test_work_protocol_manifest_v1.py`: positive and adversarial self-tests.
-- `supabase/migrations/20260922144000_work_protocol_manifest_v1.sql`: source-only opt-in Postgres wiring; not a migration and not applied by this file.
+- `supabase/migrations/20260922144000_lf_work_protocol_manifest_v1.sql`: canonical source-first migration candidate. Storing the source does not by itself apply DDL.
 
 ## Adoption model
 
