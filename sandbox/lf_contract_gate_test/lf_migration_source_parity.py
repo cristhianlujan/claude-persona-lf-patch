@@ -96,8 +96,11 @@ RECONCILIATION_MARKER = "LF_MIGRATION_RECONCILIATION_SOURCE_V1"
 RECONCILIATION_REQUIRED_FIELDS = {
     "reconciliation_mode": "SOURCE_ONLY_NO_DDL_REPLAY",
     "owner_binding_required": "true",
+    "reconciliation_owner_operation_code": "ACTUALIZACION_DB_LF",
+    "historical_origin_owner_status": "UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER",
     "source_authority": "supabase_migrations.schema_migrations",
 }
+RECONCILIATION_OWNER_EXECUTION_RE = re.compile(r"^EXEC-[A-Z0-9_-]+$")
 
 
 def managed(name: str) -> bool:
@@ -132,6 +135,9 @@ def reconciliation_source_metadata(sql: str, *, version: str, name: str) -> bool
     if not marker:
         return False
     if any(fields.get(key) != expected for key, expected in RECONCILIATION_REQUIRED_FIELDS.items()):
+        return False
+    owner_execution_id = fields.get("reconciliation_owner_execution_id", "")
+    if RECONCILIATION_OWNER_EXECUTION_RE.fullmatch(owner_execution_id) is None:
         return False
     return fields.get("source_version") == version and fields.get("source_name") == name
 
@@ -911,6 +917,9 @@ def main() -> int:
         "-- LF_MIGRATION_RECONCILIATION_SOURCE_V1\n"
         "-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY\n"
         "-- owner_binding_required=true\n"
+        "-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF\n"
+        "-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-20260922142522-20260922-001\n"
+        "-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER\n"
         "-- source_authority=supabase_migrations.schema_migrations\n"
         "-- source_version=20260922142522\n"
         "-- source_name=create_engineering_backlog_and_progress_tracking\n"
@@ -934,6 +943,15 @@ def main() -> int:
         name="create_engineering_backlog_and_progress_tracking",
     ):
         fail("FAIL_CI009_SELFTEST_RECONCILIATION_OWNER_BINDING_BYPASS")
+    if reconciliation_source_metadata(
+        reconciliation_probe.replace(
+            "reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-20260922142522-20260922-001",
+            "reconciliation_owner_execution_id=UNKNOWN",
+        ),
+        version="20260922142522",
+        name="create_engineering_backlog_and_progress_tracking",
+    ):
+        fail("FAIL_CI009_SELFTEST_RECONCILIATION_OWNER_EXECUTION_INVALID")
     markers: list[tuple[pathlib.Path, re.Match[str]]] = []
     for path in sorted(migrations.glob("*.sql")):
         first = path.read_text(encoding="utf-8").splitlines()[0] if path.stat().st_size else ""
@@ -1117,7 +1135,7 @@ def main() -> int:
         )
     print("PASS_LF_MIGRATION_TRANSPORT_SELFTEST=3/3")
     print("PASS_LF_MIGRATION_EXTERNAL_OWNER_CURRENTNESS=ENFORCED")
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=35/35")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=36/36")
     return 0
 
 
