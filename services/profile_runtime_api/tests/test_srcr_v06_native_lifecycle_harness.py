@@ -508,7 +508,7 @@ def test_repaired_v06_candidate_passes_governed_prequality_freeze() -> None:
     assert receipt["independent_quality"] == "PENDING_INDEPENDENT_REVIEW", receipt
     assert receipt["canonical_quality_accepted"] is False
     assert receipt["candidate_sha256"] == (
-        "805e2d2c30f8909926b5c4f8e646e614456f4bd57b308260e17c62fa6e50929f"
+        "a92f719ede6b30621f4e5c57c4c7fbe69dace6390b2185c0e717ecba259e41d1"
     )
 
 
