@@ -169,6 +169,45 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             self.assertEqual(added,['answer'])
         finally: tmp.cleanup()
 
+
+    def test_canonical_quality_binding_is_exposed_and_fail_closed(self):
+        tmp,root,repo=self._repo()
+        try:
+            profile_root=root/'profiles/p'
+            (profile_root/'judges').mkdir(parents=True)
+            (profile_root/'judges/mini.md').write_text('# judge\n')
+            (profile_root/'judges/semantic.md').write_text('# semantic\n')
+            (profile_root/'schemas/quality.json').write_text('{"type":"object"}')
+            (profile_root/'validators/semantic_result.py').write_text('def evaluate(payload):\n    return {"status":"PASS","blocking_codes":[]}\n')
+            (profile_root/'validators/quality_receipt.py').write_text('def validate_quality_receipt(*args):\n    return {"status":"PASS","blocking_codes":[]}\n')
+            path=profile_root/'contracts/runtime_binding.json'
+            data=json.loads(path.read_text())
+            data['canonical_quality']={
+                'required_for_profile_pack_ids':['PACK-V1'],
+                'judge_path':'judges/mini.md',
+                'semantic_judge_path':'judges/semantic.md',
+                'semantic_result_validator':{'path':'validators/semantic_result.py','callable':'evaluate'},
+                'quality_receipt_schema':'schemas/quality.json',
+                'quality_receipt_validator':{'path':'validators/quality_receipt.py','callable':'validate_quality_receipt'},
+                'deterministic_floors_can_accept_quality':False,
+                'receipt_required_for_pass_to_quality_pack':True,
+            }
+            path.write_text(json.dumps(data))
+            binding=repo.runtime_binding('p')
+            self.assertIsNotNone(binding)
+            self.assertEqual(binding.canonical_quality['required_for_profile_pack_ids'],['PACK-V1'])
+            self.assertFalse(binding.canonical_quality['deterministic_floors_can_accept_quality'])
+            self.assertTrue(binding.canonical_quality['receipt_required_for_pass_to_quality_pack'])
+
+            data['canonical_quality']['deterministic_floors_can_accept_quality']=True
+            path.write_text(json.dumps(data))
+            with self.assertRaises(RepositoryError) as cm:
+                repo.runtime_binding('p')
+            self.assertEqual(cm.exception.code,'PROFILE_RUNTIME_CANONICAL_QUALITY_INVALID')
+        finally:
+            tmp.cleanup()
+
+
     def test_weak_governance_fails_closed(self):
         tmp,root,repo=self._repo()
         try:
