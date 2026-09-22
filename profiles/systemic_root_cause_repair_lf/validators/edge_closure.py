@@ -212,6 +212,23 @@ def validate_edge_closure(payload: Any, evidence_manifest: Any = None) -> list[d
         )
         if next_gate is not None and disposition == "REUSE_AS_IS" and not next_refs:
             errors.append(_err("V06_NEXT_GATE_CONSUMER_UNRESOLVED", f"{path}.next_gate_consumer_evidence_refs"))
+        proposed_next_consumer = edge.get("proposed_next_gate_consumer_ref")
+        if (
+            next_gate is not None
+            and disposition == "IMPLEMENTABLE"
+            and not next_refs
+            and not _nonempty(proposed_next_consumer)
+        ):
+            errors.append(_err(
+                "V06_IMPLEMENTABLE_NEXT_GATE_CONSUMER_REQUIRED",
+                f"{path}.proposed_next_gate_consumer_ref",
+                "A selected repair must name the future consumer when the current next-gate consumer is absent.",
+            ))
+        if proposed_next_consumer is not None and not _nonempty(proposed_next_consumer):
+            errors.append(_err(
+                "V06_PROPOSED_NEXT_GATE_CONSUMER_REF_INVALID",
+                f"{path}.proposed_next_gate_consumer_ref",
+            ))
 
         for proof_field in PROOF_FIELDS:
             _validate_proof(
