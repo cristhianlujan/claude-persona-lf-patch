@@ -78,6 +78,12 @@ Evidence date: 2026-09-22.
 
 ### G06 Change / Waiver / Irreversibility — READBACK_CLOSED
 
+- Git materialization is isolated by solution: `ONE_SOLUTION_PER_PR`; mixed independent solutions in one PR are forbidden.
+- Scope expansion into a second solution requires a new PR/execution boundary.
+- Deployable migration materialization/apply is separated into its own migration-only PR after candidate qualification.
+- G09 exercises a negative bypass case proving `mixed_solution_pr_allowed=true` is rejected.
+
+
 - Scope change is not an in-place manifest edit. A changed scope requires a new execution that binds the exact predecessor execution, predecessor persisted manifest digest, previous/new scope digests and a new authorization digest.
 - V1 uses `FULL_REQUIRED` revalidation and forbids carrying verified progress into the successor. The predecessor is derived as `SUPERSEDED_SCOPE_CHANGE` once the valid successor exists.
 - Required obligations cannot be waived. Only optional obligations whose canonical step authority has `waiver_allowed=true` may be waived.
