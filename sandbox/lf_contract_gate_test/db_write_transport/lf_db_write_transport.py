@@ -60,9 +60,12 @@ def select_transport(target_type: str, migration_path: str | None = None) -> Dec
                 "MIGRATION_PARITY_BYPASS",
             ),
             required_preconditions=(
+                "OWNER_BINDING_AT_INIT",
+                "OWNER_BINDING_RECEIPT",
                 "ROUTER_BINDING_ACTUALIZACION_DB_LF",
                 "EKB_READBACK",
                 "EXACT_SOURCE_PATH_BOUND",
+                "SOURCE_BINDING_AT_INIT",
                 "MIGRATION_SOURCE_PARITY_PRECHECK",
                 "ROLLBACK_OR_FAIL_FORWARD_PLAN",
             ),
@@ -84,7 +87,13 @@ def select_transport(target_type: str, migration_path: str | None = None) -> Dec
             migration_name=None,
             fail_closed=True,
             forbidden=("UNSCOPED_DDL", "WRITE_WITHOUT_EXACT_TARGET", "WRITE_WITHOUT_READBACK"),
-            required_preconditions=("ROUTER_BINDING_ACTUALIZACION_DB_LF", "EKB_READBACK", "EXACT_TARGET_BOUND"),
+            required_preconditions=(
+                "OWNER_BINDING_AT_INIT",
+                "OWNER_BINDING_RECEIPT",
+                "ROUTER_BINDING_ACTUALIZACION_DB_LF",
+                "EKB_READBACK",
+                "EXACT_TARGET_BOUND",
+            ),
             required_postconditions=("EXACT_TARGET_READBACK", "REGRESSION_OR_PARITY_RETEST", "EKB_CLOSEOUT"),
         )
     raise ValueError(f"UNSUPPORTED_TARGET_TYPE:{target or 'EMPTY'}")
@@ -96,6 +105,9 @@ def self_test() -> None:
     assert m.executor == MIGRATION_PRIMARY
     assert m.migration_version == "20260917191749"
     assert m.migration_name == "lf_example_v1"
+    assert "OWNER_BINDING_AT_INIT" in m.required_preconditions
+    assert "OWNER_BINDING_RECEIPT" in m.required_preconditions
+    assert "SOURCE_BINDING_AT_INIT" in m.required_preconditions
     for target in sorted(DIRECT_TYPES):
         d = select_transport(target)
         assert d.executor == DIRECT_MODE
