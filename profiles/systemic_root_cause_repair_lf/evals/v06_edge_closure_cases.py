@@ -186,17 +186,28 @@ edge["post_transition_currentness"] = proof("EV-E-CURRENTNESS", "OBSERVED_FAIL")
 edge["terminality"] = proof("EV-E-TERMINALITY", "OBSERVED_FAIL")
 edge["identity_consistency"] = proof("EV-E-IDENTITY", "OBSERVED_FAIL")
 edge["rollback_executability"] = proof("EV-E-ROLLBACK", "PROPOSED_ONLY")
-edge["proposed_change_ref"] = "$.implementation_delta[0]"
+edge["proposed_change_ref"] = x["implementation_delta"][0]["target"]
+edge["proposed_next_gate_consumer_ref"] = x["implementation_delta"][0]["target"] + "/next-gate-consumer"
 r = runtime_validate.validate(x, e)
 check("V06_OPEN_EDGE_WITH_IMPLEMENTABLE_REPAIR_ACCEPTED", r["valid"], r["errors"][:5])
 
-# 12. Implementable future edge must bind to the implementation delta.
+# 12. Implementable next-gate repair must name its future consumer.
+y = copy.deepcopy(x)
+y["material_process_graph"]["edges"][0]["proposed_next_gate_consumer_ref"] = None
+r = runtime_validate.validate(y, e)
+check(
+    "V06_IMPLEMENTABLE_NEXT_GATE_CONSUMER_REQUIRED",
+    "V06_IMPLEMENTABLE_NEXT_GATE_CONSUMER_REQUIRED" in codes(r),
+    codes(r),
+)
+
+# 13. Implementable future edge must bind to the implementation delta.
 y = copy.deepcopy(x)
 y["material_process_graph"]["edges"][0]["proposed_change_ref"] = None
 r = runtime_validate.validate(y, e)
 check("V06_IMPLEMENTABLE_EDGE_CHANGE_REF_REQUIRED", "V06_IMPLEMENTABLE_EDGE_CHANGE_REF_REQUIRED" in codes(r), codes(r))
 
-# 13. Current edge evidence must resolve in the external manifest.
+# 14. Current edge evidence must resolve in the external manifest.
 x = copy.deepcopy(c)
 x["material_process_graph"]["edges"][0]["producer_evidence_refs"] = ["EV-NOT-OBSERVED"]
 r = runtime_validate.validate(x, e)
