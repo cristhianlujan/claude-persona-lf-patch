@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 75,
+  "overall_percent": 76.92307692307692,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -64,16 +64,18 @@
     },
     {
       "obligation_id": "MC-05",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "research_trace.py is the single query-trace owner",
-        "runtime requires query_trace before model execution and rejects evidence without recorded retrieval",
-        "persisted phase traces and manifest bindings are regression-tested; Validate LF Packs 35736254524 PASS"
+        "research_trace.py remains the single query-trace owner on exact source revision 9b9a41da6635a47cefe293ae15b021e9fa89aa3f",
+        "fresh closure investigation recorded 2 live queries (GitHub + Supabase), 2 evidence IDs and 2 resolved authority snapshots with exact request/result digests",
+        "canonical runtime research-bundle validation returned PASS with query_count=2, evidence_count=2, resolved_authority_count=2 and zero blocking codes",
+        "both evidence IDs were reconstructed from their trace rows and persisted snapshots with locator_match=true, digest_match=true and snapshot_rehash_match=true",
+        "negative mutation removing a query row failed closed with EVIDENCE_WITHOUT_RECORDED_RETRIEVAL; digest tampering failed closed with EVIDENCE_DIGEST_MISMATCH",
+        "live preflight corrected the stale lf_error_knowledge.code assumption to the actual codigo column before closure",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc05_query_trace_readback.json"
       ],
-      "remaining_requirements": [
-        "Run a fresh live investigation and prove every emitted evidence ID is reconstructable from the complete query trace."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-06",
@@ -180,8 +182,8 @@
       ]
     }
   ],
-  "closed_count": 3,
-  "open_count": 10,
+  "closed_count": 4,
+  "open_count": 9,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -207,6 +209,10 @@
     "mc02_context_manifest_sha256": "7c948c7efb1b83b854f51145398c8f8f4b96bab37b4cb95dc148f10236071297",
     "mc02_execution_receipt_sha256": "8aa8cd60bc9c669b286ac0e023478d38b1ff060acee1a8abd8283a9371481028",
     "mc02_provider": "OPENAI_CHATGPT_NATIVE",
-    "mc02_model_id": "GPT-5.6 Sol"
+    "mc02_model_id": "GPT-5.6 Sol",
+    "mc05_investigation_id": "EXEC-SRCR-MC05-TRACE-20260922-001",
+    "mc05_evidence_manifest_sha256": "c53cdd58d65fdf742850ad6c69e08e0e2ec2807915841690674369e454acb5c5",
+    "mc05_resolved_authority_context_sha256": "8148390bfec2bac60cf2a1499a291f14b598fa6754011e23346c2d3ceace4f46",
+    "mc05_readback_sha256": "4dd11f3ed1b4de7db79e79a4aa8d7f9dd4f3dad65cc3112d675997ee1b951c0c"
   }
 }
