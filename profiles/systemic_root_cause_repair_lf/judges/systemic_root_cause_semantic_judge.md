@@ -182,6 +182,24 @@ For V0.5 non-ready candidates and every V0.5 `DESIGN_BLOCKING` uncertainty/proce
 
 For a semantic PASS, these checks are part of `EVIDENCE_INTEGRITY`; the invariant cannot PASS while any T4 blocking code remains. A legitimate `NEEDS_MORE_EVIDENCE` with supported attempts and no omitted closing surface is valid and must not be penalized.
 
+
+### T5 — V0.6 physical edge closure
+For V0.6, independently derive the material edges between the reconciled process nodes and compare them against `material_process_graph.edges[]`. Do not accept component existence as wiring.
+
+For every material edge:
+- hydrate the producer, transport, consumer, enforcement and effect/readback evidence;
+- verify that the evidence describes the same physical path and exact current revision/state, not merely nearby components;
+- when `next_gate` is present, independently resolve that gate to its real consumer; a textual next-gate label with no consumer is an open edge;
+- when canonical routing/authority applies, compare the canonical resolved route with the route actually consumed by the executor;
+- when the edge mutates state/version/binding, re-read currentness after the transition and verify that the transition did not invalidate its own qualification/receipt;
+- verify terminal behavior for success, blocked, return/retry and interruption paths when applicable;
+- verify release/asset/runtime identity consistency when more than one identity projection is exposed;
+- when rollback applies, require an executable inverse path and readback; a declaration such as `reversible=true` is not proof;
+- reject any `REUSE_AS_IS` edge whose evidence proves an open/unresolved path;
+- reject any candidate that uses a proposed implementation edge as evidence that the current AS-IS path is already closed.
+
+A material edge omitted from the graph, an unsupported OBSERVED_CLOSED classification, or evidence that resolves to a different producer/consumer/route/currentness boundary fails semantic closure.
+
 ## Verdict rules
 Return `PASS_INDEPENDENT_SEMANTIC` only when:
 - deterministic validation passed;
@@ -194,7 +212,8 @@ Return `PASS_INDEPENDENT_SEMANTIC` only when:
 - when incremental-value proof is applicable, its baseline is coherent and the reported MATERIAL_UPLIFT or NO_MATERIAL_UPLIFT disposition is independently supported; UNPROVEN is not acceptable for ready closure;
 - V0.4 repair disposition is currentness-bound and does not overrepair an already-resolved/non-material case;
 - every material quantitative decision is independently reconciled and sufficiently grounded;
-- every applicable material-process node is independently reconciled and semantically closed.
+- every applicable material-process node is independently reconciled and semantically closed;
+- for V0.6, every applicable material edge is independently reconciled through the physical producer→transport→consumer→authority/enforcement→effect/readback path, with next-gate/currentness/terminality/identity/rollback proofs where applicable.
 
 Return `RETURN_TO_WORKER_FOR_SELF_REPAIR` when candidate quality can be repaired without changing authorized scope, including undeclared change, incomplete closure, unsupported research impact, weak falsification, or a selected repair that contains an out-of-scope delta which can be removed/reclassified as discovery.
 
