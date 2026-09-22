@@ -28,16 +28,30 @@ Orden preferido:
 
 No usar `apply_migration`/Management API cuando el gate exige exact-version: ese canal puede acuñar un timestamp remoto distinto del filename y producir `RECONCILE_REQUIRED`.
 
+## Owner-first obligatorio
+
+Toda ejecución nueva de `ACTUALIZACION_DB_LF` debe nacer mediante el contrato owner-first antes del preflight:
+
+```text
+INIT(owner + authority + exact target + exact source if MIGRATION)
+  -> PREFLIGHT
+  -> PATCH
+  -> VERIFY
+```
+
+El owner no se infiere después del write. El binding de owner es inmutable durante la ejecución. Un cambio de owner requiere una ejecución nueva y un handoff receipt explícito. Para `MIGRATION`, el INIT liga además `target_repo`, `target_path`, `source_revision` y `source_blob_sha`; sin ese binding no existe una ruta válida de escritura.
+
 ## Preflight obligatorio
 
 Antes de cualquier write:
 
-1. Resolver Router: `MIGRATION + UPDATE -> ACTUALIZACION_DB_LF`.
-2. Leer EKB aplicable, como mínimo `CI-MIGRATION-SOURCE-PARITY-001`, `PROGRAMMING-E2E-MIGRATION-PARITY-001`, `CI-MIG-001` y `GOV-010` cuando correspondan.
-3. Fijar `target_path`, `version`, `name` y source revision exactos.
-4. Ejecutar migration source parity precheck.
-5. Definir rollback o fail-forward plan.
-6. No continuar si existe remote-only drift, source ambiguity, checksum mismatch o identidad no resuelta.
+1. Crear/reservar la ejecución con owner binding y exact target en INIT; para `MIGRATION`, ligar también source revision + source blob.
+2. Resolver Router: `MIGRATION + UPDATE -> ACTUALIZACION_DB_LF`.
+3. Leer EKB aplicable, como mínimo `CI-MIGRATION-SOURCE-PARITY-001`, `PROGRAMMING-E2E-MIGRATION-PARITY-001`, `CI-MIG-001` y `GOV-010` cuando correspondan.
+4. Fijar `target_path`, `version`, `name` y source revision exactos.
+5. Ejecutar migration source parity precheck.
+6. Definir rollback o fail-forward plan.
+7. No continuar si falta owner/source binding, existe remote-only drift, source ambiguity, checksum mismatch o identidad no resuelta.
 
 ## Uso del selector
 
