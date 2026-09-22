@@ -341,6 +341,7 @@ def test_runtime_and_native_harness_delegate_research_trace_to_single_owner() ->
     engine_source = engine_path.read_text(encoding="utf-8")
     harness_source = HARNESS_PATH.read_text(encoding="utf-8")
     assert "load_research_trace_validator" in engine_source
-    assert "validator(" in inspect.getsource(harness.research_trace.validate_runtime_research_bundle)
+    assert "research_trace.validate_query_trace(trace)" in inspect.getsource(harness.validate_query_trace)
+    assert "research_trace.validate_manifest_trace_binding(manifest, trace)" in inspect.getsource(harness.validate_manifest_trace_binding)
     assert "research_trace.validate_query_trace(trace)" in harness_source
     assert "research_trace.validate_manifest_trace_binding(manifest, trace)" in harness_source
