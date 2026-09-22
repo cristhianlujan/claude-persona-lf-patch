@@ -1099,6 +1099,13 @@
         "web://kubernetes.io/docs/concepts/architecture/controller/",
         "web://slsa.dev/spec/v1.2/provenance"
       ]
+    },
+    {
+      "claim_path": "$.current_uncertainties",
+      "evidence_refs": [
+        "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL"
+      ]
     }
   ],
   "execution_effect_reconciliation": [
@@ -2277,7 +2284,8 @@
           "status": "PROPOSED_ONLY"
         },
         "to_node": "LC04",
-        "transport_evidence_refs": []
+        "transport_evidence_refs": [],
+        "proposed_next_gate_consumer_ref": "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1/QUALIFICATION_LIFECYCLE"
       },
       {
         "blocking_uncertainty_id": null,
