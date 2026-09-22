@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 69.23076923076923,
+  "overall_percent": 71.15384615384616,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -113,16 +113,17 @@
     },
     {
       "obligation_id": "MC-09",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "materializer and validator reject producer_execution_id == reviewer_execution_id and shared receipt identity",
-        "semantic review relay has positive/negative independence tests and never runs producer during reviewer entrypoint",
-        "Validate LF Packs 35736254524 PASS"
+        "review input boundary is mechanically derived from exact candidate + evidence_manifest + scope_authority_packet and exposes only CURRENT_AUTHORITY_REFS, EVIDENCE_MANIFEST, EXACT_CANDIDATE and SCOPE_AUTHORITY_PACKET",
+        "producer private reasoning/chat/hidden context is forbidden at the strict semantic-quality request boundary",
+        "semantic result and canonical quality receipt bind reviewer_execution_id + review_input_sha256; producer/reviewer execution collision and receipt collision fail closed",
+        "post-review candidate mutation invalidates candidate digest / semantic binding / persisted producer readback",
+        "separate --semantic-review relay path does not run the producer; exact-head persistent runtime suite passed 233 tests in Validate LF Packs run 35742637295",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc09_independent_review_readback.json"
       ],
-      "remaining_requirements": [
-        "Obtain one actual independent reviewer execution receipt on the repaired frozen candidate."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-10",
@@ -175,8 +176,8 @@
       ]
     }
   ],
-  "closed_count": 0,
-  "open_count": 13,
+  "closed_count": 1,
+  "open_count": 12,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -189,10 +190,12 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "848bcbd024a5de1309bdefc1e3f046a089f6fea0",
+  "current_exact_code_head": "ec81f80e72e391bcd6b56b66f8dea494cfaae987",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
-    "run_id": 35736254524,
-    "conclusion": "success"
+    "run_id": 35742637295,
+    "conclusion": "success",
+    "source_revision": "ec81f80e72e391bcd6b56b66f8dea494cfaae987",
+    "runtime_api_tests": "233 passed"
   }
 }
