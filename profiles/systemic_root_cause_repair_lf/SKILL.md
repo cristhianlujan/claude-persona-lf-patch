@@ -224,3 +224,16 @@ Profile-maintenance work that changes SRCR's own producer, transport, evidence, 
 - This contract is generic. Do not add lifecycle-case names, incident IDs or one-off rules to satisfy it.
 
 - MC-13 full step-by-step replay is the final behavioral closure proof: reproduce the ungrouped trace methodology across Entrada, Investigacion, Transporte, Determinista, Jueces and Repeticiones on the exact current revision. Any open observation reopens the owning obligation and blocks self-repair closure.
+
+
+## Mandatory per-run progress table
+
+Every SRCR self-repair execution or repair iteration MUST end with the complete MC-01..MC-13 progress table derived from the exact current progress artifact/readback. The table MUST contain exactly these user-facing columns: `Punto obligatorio | Avance | Estado actual | Qué falta para 100%`.
+
+Rules:
+- Show all MC rows, including unchanged, completed, blocked or reopened points.
+- Do not replace the table with prose, group rows, omit unchanged rows, or estimate progress conversationally.
+- Percentages are evidence-derived only from NOT_STARTED=0, SPECIFIED=25, IMPLEMENTED=50, TESTED=75, READBACK_CLOSED=100.
+- Report global progress as the arithmetic mean plus closed/total and open/total.
+- If evidence is missing, keep the row open and state the missing evidence under `Qué falta para 100%`.
+- If MC-13 reopens another obligation, reflect the reopened state in the same report.
