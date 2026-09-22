@@ -1,6 +1,6 @@
 {
-  "schema": "SRCR_V06_LIFECYCLE_NATIVE_TRACE_PHASE4_V1",
-  "run_id": "EXEC-SRCR-V06-NATIVE-LIFECYCLE-REGRESSION-20260921-001",
+  "schema": "SRCR_V05_LIFECYCLE_NATIVE_TRACE_PHASE4_V1",
+  "run_id": "EXEC-SRCR-V05-NATIVE-LIFECYCLE-REGRESSION-20260921-001",
   "mode": "READ_ONLY_NONBLIND_REGRESSION",
   "trace": [
     {
@@ -92,12 +92,12 @@
       "tool_permission": "READ_GITHUB",
       "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
       "provider": "GITHUB",
-      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/evals/v06_producer_depth_cases.py",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/evals/v05_producer_depth_cases.py",
       "request_digest": "sha256:f2784825a8c41017b4a099ae1a8fdd8980e4a85619c70a97d4f2aea846612b67",
       "result_digest": "sha256:9a874c4f24fd2b47a28d151df3c50bbe37509f4858989460b74746e3a13df4d5",
       "observed_at": "2026-09-21T22:58:00-05:00",
       "evidence_id": "EV-LC-044",
-      "consumer": "$.profile_pack_validation.v06_architecture_audit_contract"
+      "consumer": "$.profile_pack_validation.v05_architecture_audit_contract"
     }
   ],
   "findings": [
@@ -111,7 +111,7 @@
         "EV-LC-039",
         "EV-LC-044"
       ],
-      "observation": "V0.6 explicitly says ARCHITECTURE_AUDIT relaxes only incident-specific recurrence/chain requirements, and runtime_validate still requires alternatives, falsification, implementation package and regression artifacts for SYSTEMIC_REPAIR_SPEC. Commit 4ca changed output.schema.json so V0.6 ARCHITECTURE_AUDIT is exempted from the entire repair-artifact requirement block. validate_pack detects the resulting contract divergence as SCHEMA_REQUIRED_KEY_MISSING:alternatives.",
+      "observation": "V0.5 explicitly says ARCHITECTURE_AUDIT relaxes only incident-specific recurrence/chain requirements, and runtime_validate still requires alternatives, falsification, implementation package and regression artifacts for SYSTEMIC_REPAIR_SPEC. Commit 4ca changed output.schema.json so V0.5 ARCHITECTURE_AUDIT is exempted from the entire repair-artifact requirement block. validate_pack detects the resulting contract divergence as SCHEMA_REQUIRED_KEY_MISSING:alternatives.",
       "impact": "Schema can accept an architecture-audit candidate that runtime_validate rejects, while the pack self-validator fails the pack itself. The repair is to align the schema with the intended narrow relaxation, not to weaken validate_pack."
     },
     {
