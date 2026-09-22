@@ -869,15 +869,23 @@ class OutputGates:
             }
 
         try:
-            semantic_gate = semantic_callable(
-                semantic_result,
-                scope_packet=scope_authority_packet,
-                expected_candidate_sha256=expected_candidate_sha256,
-                expected_scope_packet_sha256=expected_scope_packet_sha256,
-                expected_evidence_manifest_sha256=expected_evidence_manifest_sha256,
-                expected_reviewer_execution_id=reviewer_execution_id,
-                expected_review_input_sha256=expected_review_input_sha256,
+            semantic_kwargs = {
+                "scope_packet": scope_authority_packet,
+                "expected_candidate_sha256": expected_candidate_sha256,
+                "expected_scope_packet_sha256": expected_scope_packet_sha256,
+                "expected_evidence_manifest_sha256": expected_evidence_manifest_sha256,
+            }
+            semantic_signature = inspect.signature(semantic_callable)
+            semantic_params = semantic_signature.parameters
+            accepts_kwargs = any(
+                param.kind == inspect.Parameter.VAR_KEYWORD
+                for param in semantic_params.values()
             )
+            if accepts_kwargs or "expected_reviewer_execution_id" in semantic_params:
+                semantic_kwargs["expected_reviewer_execution_id"] = reviewer_execution_id
+            if accepts_kwargs or "expected_review_input_sha256" in semantic_params:
+                semantic_kwargs["expected_review_input_sha256"] = expected_review_input_sha256
+            semantic_gate = semantic_callable(semantic_result, **semantic_kwargs)
         except Exception as exc:
             return {
                 "status": "FAIL",
