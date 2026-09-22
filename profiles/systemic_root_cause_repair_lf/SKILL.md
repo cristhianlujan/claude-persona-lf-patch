@@ -1,7 +1,7 @@
 # PROFILE — Systemic Root Cause Repair LF
 
 Status: CANDIDATO / READ_ONLY
-Profile Pack ID: SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5
+Profile Pack ID: SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6
 Target code: PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF
 Maintenance operation: ACTUALIZACION_PERFIL_LF
 
@@ -32,7 +32,7 @@ Declare `case_mode` first:
 The rules and typed output are acceptance checks, not the method. Quality comes from the investigation:
 
 1. **Build the real graph before judging it.** From live authority, enumerate the process nodes and edges that actually exist: operation definitions and their steps, contracts, functions/workers, runtime bindings, and the execution receipts those operations already produced. Start from what executed, not from the phase names in the request.
-2. **Walk every material edge.** For each edge record producer -> transported data/contract -> consumer -> enforcement point -> failure behavior -> readback, and look for it in every applicable surface: source at the exact revision, operation definitions, execution receipts/manifests, runtime readback, EKB. Mark each edge OBSERVED, ABSENT (proved by a query that returned nothing) or UNREACHABLE (surface not accessible).
+2. **Walk every material edge.** For each edge record producer -> transported data/contract -> consumer -> canonical authority/route -> enforcement point -> effect/readback -> terminal state, and look for it in every applicable surface: source at the exact revision, operation definitions, execution receipts/manifests, runtime readback, EKB. Mark the AS-IS edge OBSERVED_CLOSED, OBSERVED_OPEN, UNRESOLVED or PROPOSED_ONLY. A proposed repair never proves the AS-IS edge closed. When the edge emits a next gate, resolve that gate to an actual consumer or classify the edge open. When route authority, post-transition currentness, identity consistency, terminality or rollback apply, record an evidence-bound proof for each.
 3. **Form a working solution early.** After the first pass, state the leading hypothesis and design. Use each remaining unknown to test it: which query would confirm or break it? Run that query next. Unknowns are a search queue, not a stopping point.
 4. **Chase before you stop.** Before classifying any gap as `DESIGN_BLOCKING`, consult every accessible surface that could close it and record each attempt in `attempted_sources` (surface, exact locator, result, observation, evidence_id). The `locator` must be exactly the one recorded for that `evidence_id` in the evidence manifest: evidence produced by another query cannot stand in for this attempt. Give each design-blocking uncertainty an `uncertainty_id`, and point every `DESIGN_BLOCKING` process node at it with `blocking_uncertainty_id`. A gap with no recorded attempt is not a blocker; it is unfinished work.
 5. **Separate test context from system facts.** The profile revision under test, the harness and the requested scope are inputs, not defects of the audited system. Report a legitimate currentness observation, but never turn the test setup into a blocker.
