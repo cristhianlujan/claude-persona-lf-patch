@@ -4,12 +4,16 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import subprocess
+import sys
 from typing import Any
 
+ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
 CASE = HERE / "cross_gate_external_case_input_governance_v1.json"
+G09 = HERE / "g09_cold_replay_v1.py"
 
-GATES = [f"G{i:02d}" for i in range(12)]
+GATES = [f"G{i:02d}" for i in range(10)]
 
 
 def canonical_sha(value: Any) -> str:
@@ -19,7 +23,11 @@ def canonical_sha(value: Any) -> str:
 
 def resolve_dep(nodes: list[dict[str, Any]], dep: str) -> dict[str, Any]:
     matches = [n for n in nodes if str(n["key"]).startswith(dep + "-") or n["key"] == dep]
-    assert len(matches) == 1, {"code": "EXTERNAL_DEPENDENCY_NOT_UNIQUE", "dep": dep, "matches": [m["key"] for m in matches]}
+    assert len(matches) == 1, {
+        "code": "EXTERNAL_DEPENDENCY_NOT_UNIQUE",
+        "dep": dep,
+        "matches": [m["key"] for m in matches],
+    }
     return matches[0]
 
 
@@ -46,12 +54,11 @@ def validate_external_case(case: dict[str, Any]) -> dict[str, Any]:
 
     critical = [n for n in nodes if n["priority"] == "CRITICA"]
     assert len(critical) == 1
-    assert critical[0]["id"] == 201
     assert critical[0]["depends_on"] == []
 
     expected = case["expected_invariants"]
-    chain = [resolve_dep(nodes, key)["id"] for key in expected["ordered_dependency_chain"]]
-    assert chain == [193, 194, 195]
+    chain_ids = [resolve_dep(nodes, key)["id"] for key in expected["ordered_dependency_chain"]]
+    assert chain_ids == [193, 194, 195]
     assert expected["dependent_cannot_close_before_predecessor"] is True
     assert expected["case_specific_ids_must_not_enter_protocol_branching_logic"] is True
 
@@ -59,38 +66,105 @@ def validate_external_case(case: dict[str, Any]) -> dict[str, Any]:
         "status": "PASS",
         "node_count": len(nodes),
         "edge_count": len(edges),
-        "critical_independent_id": critical[0]["id"],
+        "critical_independent_count": len(critical),
         "fixture_sha256": canonical_sha(case),
     }
 
 
-def build_lineage(seed_sha256: str) -> list[dict[str, Any]]:
+def run_g09() -> dict[str, Any]:
+    proc = subprocess.run(
+        [sys.executable, str(G09)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        timeout=120,
+        check=False,
+    )
+    assert proc.returncode == 0, {
+        "code": "CROSS_GATE_G09_EXECUTION_FAILED",
+        "returncode": proc.returncode,
+        "stdout": proc.stdout[-4000:],
+        "stderr": proc.stderr[-4000:],
+    }
+    payload = json.loads(proc.stdout)
+    assert payload["status"] == "PASS", payload
+    assert payload["gate_count"] == 9, payload
+    assert payload["dimension_count"] == 5, payload
+    assert payload["matrix_case_count"] == 45, payload
+    assert payload["cold_replay"]["status"] == "PASS", payload
+    assert payload["cold_replay"]["byte_equivalent_canonical_json"] is True, payload
+    return payload
+
+
+def build_real_lineage(seed_sha256: str, g09: dict[str, Any]) -> list[dict[str, Any]]:
     assert len(seed_sha256) == 64
     previous = seed_sha256
-    out: list[dict[str, Any]] = []
-    for gate in GATES:
-        evidence_sha = canonical_sha({"gate": gate, "fixture": seed_sha256})
+    chain: list[dict[str, Any]] = []
+
+    for idx in range(9):
+        gate = f"G{idx:02d}"
+        row = g09["matrix_results"][gate]
+        assert row == {
+            "positive": "PASS",
+            "negative": "PASS",
+            "drift": "PASS",
+            "bypass": "PASS",
+            "timeout": "PASS",
+        }, (gate, row)
+        evidence = {
+            "gate": gate,
+            "matrix_row": row,
+            "matrix_sha256": g09["matrix_sha256"],
+            "validator_self_test_sha256": g09["validator_self_test_sha256"],
+        }
+        evidence_sha = canonical_sha(evidence)
         output_sha = canonical_sha({
             "gate": gate,
             "input_digest": previous,
             "evidence_digest": evidence_sha,
             "status": "PASS",
         })
-        out.append({
+        chain.append({
             "gate": gate,
             "status": "PASS",
+            "evidence_source": "G09_EXECUTED_MATRIX",
             "input_digest": previous,
             "evidence_digest": evidence_sha,
             "output_digest": output_sha,
         })
         previous = output_sha
-    return out
+
+    g09_evidence = {
+        "gate": "G09",
+        "matrix_sha256": g09["matrix_sha256"],
+        "validator_self_test_sha256": g09["validator_self_test_sha256"],
+        "cold_replay": g09["cold_replay"],
+    }
+    evidence_sha = canonical_sha(g09_evidence)
+    output_sha = canonical_sha({
+        "gate": "G09",
+        "input_digest": previous,
+        "evidence_digest": evidence_sha,
+        "status": "PASS",
+    })
+    chain.append({
+        "gate": "G09",
+        "status": "PASS",
+        "evidence_source": "G09_COLD_REPLAY",
+        "input_digest": previous,
+        "evidence_digest": evidence_sha,
+        "output_digest": output_sha,
+    })
+    return chain
 
 
 def validate_lineage(chain: list[dict[str, Any]]) -> None:
     assert [x["gate"] for x in chain] == GATES
     for idx, gate in enumerate(chain):
-        assert gate["status"] == "PASS", {"code": "UPSTREAM_GATE_NOT_PASS", "gate": gate["gate"]}
+        assert gate["status"] == "PASS", {
+            "code": "UPSTREAM_GATE_NOT_PASS",
+            "gate": gate["gate"],
+        }
         if idx:
             assert gate["input_digest"] == chain[idx - 1]["output_digest"], {
                 "code": "CROSS_GATE_DIGEST_LINK_BROKEN",
@@ -134,16 +208,19 @@ def negative_probes(chain: list[dict[str, Any]]) -> dict[str, str]:
 def main() -> int:
     case = json.loads(CASE.read_text(encoding="utf-8"))
     case_result = validate_external_case(case)
-    chain = build_lineage(case_result["fixture_sha256"])
+    g09 = run_g09()
+    chain = build_real_lineage(case_result["fixture_sha256"], g09)
     validate_lineage(chain)
     probes = negative_probes(chain)
 
+    gate_status = {row["gate"]: "READBACK_CLOSED" for row in chain}
     result = {
         "schema_version": "LF_WORK_PROTOCOL_CROSS_GATE_INTEGRATION_V1",
         "status": "PASS",
         "gate_count": len(chain),
         "link_count": len(chain) - 1,
         "external_case": case_result,
+        "gate_status": gate_status,
         "lineage_root_sha256": chain[-1]["output_digest"],
         "chain": chain,
         "negative_probes": probes,
