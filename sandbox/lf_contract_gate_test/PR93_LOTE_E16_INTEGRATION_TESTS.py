@@ -197,6 +197,7 @@ def main() -> int:
             "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
             "scripts/lf_contract_check.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py",
+            "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_execution_research_baseline_digest_parity.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/run_lf_adapter_binding_tests.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py",
