@@ -1,0 +1,30 @@
+{
+  "lock_version": "S30_PR_SCOPE_LOCK_V1",
+  "owner": "S30",
+  "scope": "EKB_PREFLIGHT_LF",
+  "mode": "EXACT_FILE_ALLOWLIST_FAIL_CLOSED",
+  "head_branch": "s30-ekb-preflight-lf-20260914",
+  "scope_anchor_revision": "92e426157141839c6149837381784b8b49be8027",
+  "cross_owner_changes_allowed": false,
+  "allowed_paths": [
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/LF_EKB_PREFLIGHT_CONTRACT_V1.json",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/README.md",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/S30_PR_SCOPE_LOCK_V1.json",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/ekb_control_coverage.schema.json",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/ekb_preflight_request.schema.json",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/ekb_preflight_source_candidate_v1.sql",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/first_real_case_20260914.json",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/lf_ekb_preflight_validator_v1.py",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/live_ekb_inventory_20260914.json",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/test_lf_ekb_preflight_source_contract_v1.py",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/test_lf_ekb_preflight_validator_v1.py",
+    "sandbox/lf_contract_gate_test/s30_ekb_preflight/test_s30_pr_scope_lock_v1.py"
+  ],
+  "forbidden_effects": [
+    "SUPABASE_LIVE_MUTATION",
+    "MAIN_MERGE",
+    "RUNTIME_ACTIVATION",
+    "PRODUCTION_ACTIVATION",
+    "CROSS_OWNER_REPAIR"
+  ]
+}

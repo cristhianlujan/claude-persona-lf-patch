@@ -1,0 +1,64 @@
+{
+  "contract_code": "LF_EKB_PREFLIGHT_CONTRACT_V1",
+  "owner": "S30",
+  "claim_ceiling": "SOURCE_CANDIDATE_NO_LIVE_MUTATION",
+  "purpose": "Resolve applicable operational learnings before mutation and require explicit control coverage without converting EKB prose into declarative PASS.",
+  "authorities": {
+    "error_catalog": "public.lf_error_knowledge",
+    "prevention_rules": "public.lf_prevention_rules",
+    "best_practices": "public.lf_best_practices"
+  },
+  "applicability": {
+    "active_error_identity": "codigo",
+    "context_source": "lf_error_knowledge.lifecycle_phase + consumer_role",
+    "matching": "CASE_INSENSITIVE_EXACT_PHASE_AND_ROLE_INTERSECTION",
+    "fuzzy_matching": false,
+    "explicit_required_codes_supported": true,
+    "prevention_rule_inheritance": "After error codes are selected, load every active lf_prevention_rules row for those codes even when legacy rule phase/role metadata is null.",
+    "best_practice_inheritance": "Supplement only by exact categoria of already-selected errors; best practices never create applicability by themselves."
+  },
+  "resolution_invariants": [
+    "Caller declares non-empty lifecycle_phases and consumer_roles; operation-name heuristics are forbidden.",
+    "Every explicit required code must resolve to exactly one active error row.",
+    "Duplicate active error codes block.",
+    "Every selected High/Critical/ALTA error must have inline prevencion or at least one active prevention rule.",
+    "Matched errors, prevention rules, best practices, phases, roles, operation and execution are fingerprinted together.",
+    "EKB resolution never means the preventive control was executed."
+  ],
+  "control_modes": [
+    "DETERMINISTIC_CHECK",
+    "PROCESS_EVIDENCE",
+    "HUMAN_REVIEW"
+  ],
+  "control_invariants": [
+    "Every selected High/Critical/ALTA error and every explicit required code must have exactly one control binding.",
+    "DETERMINISTIC_CHECK and PROCESS_EVIDENCE require an execution receipt with executed=true and a passing outcome before mutation.",
+    "HUMAN_REVIEW requires an explicit reviewed PASS receipt before mutation; REVIEW_REQUIRED is not PASS.",
+    "A control_ref without execution evidence is coverage metadata only and produces CONTROLS_PENDING.",
+    "Unknown or duplicate control bindings block.",
+    "No PASS may be synthesized from detectability, prevention text, or validation text."
+  ],
+  "result_vocabulary": [
+    "PASS_EKB_PREFLIGHT_CONTROLS_BOUND",
+    "EKB_RESOLVED_CONTROLS_PENDING",
+    "BLOCK_EKB_REQUIRED_CODE_MISSING",
+    "BLOCK_EKB_DUPLICATE_ACTIVE_CODE",
+    "BLOCK_EKB_UNHANDLED_HIGH_CRITICAL",
+    "BLOCK_EKB_CONTROL_COVERAGE_INCOMPLETE",
+    "BLOCK_EKB_CONTROL_EVIDENCE_INVALID"
+  ],
+  "compatibility": {
+    "input_governance_checkpoint": "Reuse semantics of programacion.fn_input_governance_ekb_checkpoint without copying its hardcoded phase-code arrays.",
+    "operation_contracts": "Existing required_before_write EKB declarations remain consumer obligations; this capability supplies a common resolver/coverage receipt, not semantic ownership of each operation.",
+    "legacy_rules": "121 active prevention rules with null phase/role remain reachable through selected error_codigo."
+  },
+  "forbidden": [
+    "new parallel knowledge base",
+    "operation-name phase inference",
+    "fuzzy role matching",
+    "treating EKB read as control execution",
+    "automatic mutation authorization from prose",
+    "dropping legacy prevention rules because their own metadata is null",
+    "live DDL/apply from this PR"
+  ]
+}
