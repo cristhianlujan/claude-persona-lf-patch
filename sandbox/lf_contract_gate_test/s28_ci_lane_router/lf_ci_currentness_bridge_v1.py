@@ -80,7 +80,39 @@ def resolve_authority_evidence_revision(
     if event_name == "pull_request":
         if not HEX40.fullmatch(diff_base_revision or ""):
             raise ValueError("FAIL_CI_CURRENTNESS_PR_DIFF_BASE")
-        return str(diff_base_revision)
+        if not HEX40.fullmatch(candidate_head_revision or ""):
+            raise ValueError("FAIL_CI_CURRENTNESS_PR_HEAD")
+        try:
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repo),
+                    "merge-base",
+                    "--is-ancestor",
+                    current_revision,
+                    str(candidate_head_revision),
+                ],
+                check=True,
+                text=True,
+                capture_output=True,
+            )
+            return current_revision
+        except subprocess.CalledProcessError:
+            merge_base = subprocess.check_output(
+                [
+                    "git",
+                    "-C",
+                    str(repo),
+                    "merge-base",
+                    str(candidate_head_revision),
+                    current_revision,
+                ],
+                text=True,
+            ).strip()
+            if not HEX40.fullmatch(merge_base):
+                raise ValueError("FAIL_CI_CURRENTNESS_PR_MERGE_BASE")
+            return merge_base
 
     if event_name == "push" and ref_name == "main":
         return current_revision

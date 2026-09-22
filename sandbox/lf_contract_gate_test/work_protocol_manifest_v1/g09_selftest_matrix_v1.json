@@ -1,0 +1,78 @@
+{
+  "schema_version": "LF_WORK_PROTOCOL_G09_SELFTEST_MATRIX_V1",
+  "required_dimensions": ["positive", "negative", "drift", "bypass", "timeout"],
+  "gates": {
+    "G00": {
+      "name": "Owner-first Entry",
+      "positive": "integrated_pass",
+      "negative": "negative_owner_missing_fails_closed",
+      "drift": "negative_owner_must_bind_exact_request",
+      "bypass": "negative_owner_reassignment_requires_new_execution",
+      "timeout": "probe_g00_timeout_overlay"
+    },
+    "G01": {
+      "name": "Authority / Scope",
+      "positive": "integrated_pass",
+      "negative": "negative_scope_deviation",
+      "drift": "negative_authority_drift",
+      "bypass": "probe_g01_scope_bypass",
+      "timeout": "probe_g01_timeout_overlay"
+    },
+    "G02": {
+      "name": "Freeze / Manifest",
+      "positive": "integrated_pass",
+      "negative": "negative_bad_manifest_digest",
+      "drift": "negative_manifest_readback_mutation",
+      "bypass": "negative_self_reported_progress_policy",
+      "timeout": "probe_g02_timeout_overlay"
+    },
+    "G03": {
+      "name": "Gate Contract",
+      "positive": "integrated_pass",
+      "negative": "negative_gate_packet_missing_fails_closed",
+      "drift": "negative_gate_contract_digest_mismatch",
+      "bypass": "negative_judge_after_deterministic_fail_forbidden",
+      "timeout": "probe_g03_timeout_overlay"
+    },
+    "G04": {
+      "name": "Evidence / Independent Verification",
+      "positive": "integrated_pass",
+      "negative": "negative_missing_evidence",
+      "drift": "negative_evidence_reproduction_digest_mismatch",
+      "bypass": "negative_independent_evidence_forbids_producer_actor",
+      "timeout": "probe_g04_timeout_overlay"
+    },
+    "G05": {
+      "name": "Adaptive Execution / Timeout",
+      "positive": "positive_timeout_recovery_preserves_progress",
+      "negative": "negative_timeout_recovery_requires_smaller_unit",
+      "drift": "probe_g05_policy_drift",
+      "bypass": "probe_g05_verified_step_timeout_bypass",
+      "timeout": "negative_timeout_recovery_exhaustion_blocks_operationally"
+    },
+    "G06": {
+      "name": "Change / Waiver / Irreversibility",
+      "positive": "positive_scope_change_supersession_full_revalidation",
+      "negative": "negative_required_obligation_waiver_forbidden",
+      "drift": "negative_scope_change_requires_new_verified_authorization",
+      "bypass": "negative_irreversible_action_missing_human_readback",
+      "timeout": "probe_g06_timeout_overlay"
+    },
+    "G07": {
+      "name": "Execution Controller",
+      "positive": "positive_controller_initial_frontier",
+      "negative": "negative_controller_failed_predecessor_blocks_dependent",
+      "drift": "probe_g07_controller_authority_drift",
+      "bypass": "negative_controller_parallel_mutation_forbidden",
+      "timeout": "probe_g07_timeout_overlay"
+    },
+    "G08": {
+      "name": "Closure Controller",
+      "positive": "positive_zero_debt_allows_global_close",
+      "negative": "negative_closure_before_next_required",
+      "drift": "negative_closed_unit_digest_change_reopens",
+      "bypass": "negative_closure_receipt_chain_break_reopens_downstream",
+      "timeout": "probe_g08_timeout_overlay"
+    }
+  }
+}

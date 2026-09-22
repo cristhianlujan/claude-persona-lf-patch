@@ -1,0 +1,8 @@
+-- LF_WORK_PROTOCOL_MANIFEST_V1 sandbox locator.
+-- Canonical deployable candidate:
+-- supabase/migrations/20260922144000_work_protocol_manifest_v1.sql
+--
+-- This file intentionally contains no executable SQL.
+-- The canonical migration was materialized byte-identical to the SQL rehearsed
+-- transactionally against LF Supabase and then rolled back with zero residue.
+-- Proven source Git blob SHA: eaa0aae1bd97314de22265323edd71ef79933537
