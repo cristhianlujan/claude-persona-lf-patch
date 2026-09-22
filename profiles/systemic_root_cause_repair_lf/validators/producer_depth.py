@@ -20,6 +20,8 @@ from __future__ import annotations
 from typing import Any
 
 V05_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+V06_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+V05_FAMILY_PACK_IDS = {V05_PACK_ID, V06_PACK_ID}
 
 CASE_MODES = {"INCIDENT_REPAIR", "ARCHITECTURE_AUDIT"}
 ATTEMPT_SURFACES = {
@@ -45,7 +47,7 @@ def _nonempty(value: Any) -> bool:
 
 
 def applies(payload: Any) -> bool:
-    return isinstance(payload, dict) and payload.get("profile_pack_id") == V05_PACK_ID
+    return isinstance(payload, dict) and payload.get("profile_pack_id") in V05_FAMILY_PACK_IDS
 
 
 def case_mode(payload: Any) -> str | None:
