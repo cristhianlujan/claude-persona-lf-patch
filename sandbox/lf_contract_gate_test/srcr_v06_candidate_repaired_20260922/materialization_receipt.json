@@ -2,10 +2,10 @@
   "schema": "SRCR_V06_REPAIRED_CANDIDATE_MATERIALIZATION_V1",
   "source_candidate_path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_20260922/candidate_v06.json.gz.b64",
   "source_candidate_file_sha256": "cbc05a3445ef27cfdca34a4103d79e640264e142efae3abae0cda253264e80cb",
-  "repair_builder_code_head": "848bcbd024a5de1309bdefc1e3f046a089f6fea0",
+  "repair_builder_code_head": "f776511512133006cbf1d068a3479c7cd7347345",
   "repaired_candidate_path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/candidate_v06_repaired.json",
-  "repaired_candidate_file_sha256": "eb7a22c7e3e011f153b538e2435ac3528bf7e54891aea186d007d7631623de07",
-  "repaired_candidate_canonical_sha256": "805e2d2c30f8909926b5c4f8e646e614456f4bd57b308260e17c62fa6e50929f",
+  "repaired_candidate_file_sha256": "634b5def0e20ef298474f801476dce7cd0c170bc3d6453d1f079393c7527f1ec",
+  "repaired_candidate_canonical_sha256": "a92f719ede6b30621f4e5c57c4c7fbe69dace6390b2185c0e717ecba259e41d1",
   "delta_targets_added": [
     "supabase://proposed/PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
     "supabase://proposed/PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
@@ -19,5 +19,7 @@
   "generated_from_frozen_candidate": true,
   "merge_performed": false,
   "runtime_activation": false,
-  "production_mutation": false
+  "production_mutation": false,
+  "current_uncertainty_evidence_map_added": true,
+  "qualification_next_gate_consumer_ref": "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1/QUALIFICATION_LIFECYCLE"
 }
