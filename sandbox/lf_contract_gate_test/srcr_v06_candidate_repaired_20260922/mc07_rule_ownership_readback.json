@@ -40,5 +40,17 @@
     "database_write": false,
     "runtime_activation": false,
     "merge": false
+  },
+  "post_persistence_exact_head_scan": {
+    "source_revision": "f9cd0f172a14c2384e3e395a4f945a2926eefd2c",
+    "structural_code_count_ast": 234,
+    "semantic_utility_code_count_ast": 19,
+    "structural_utility_overlap": [],
+    "owner_paths_unique": true
+  },
+  "utility_emission_scan": {
+    "method": "AST scan of every literal codes.append(...) in runtime_semantic_utility.py against every literal _error(...) structural blocking code in runtime_validate.py",
+    "result": "PASS",
+    "overlap": []
   }
 }
