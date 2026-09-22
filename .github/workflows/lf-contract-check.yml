@@ -677,7 +677,7 @@ jobs:
           docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(cardinality(statements),0)::text from supabase_migrations.schema_migrations where version=any('${LF_MANAGED_VERSIONS}'::text[]) order by version" > "$RUNNER_TEMP/lf-migration-statement-counts.csv"
           export LF_MIGRATION_STATEMENT_COUNTS_CSV="$RUNNER_TEMP/lf-migration-statement-counts.csv"
 
-          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select g.execution_id,e.status,e.operation_code,coalesce(g.receipt->>'repository',''),coalesce(g.receipt->>'target_path',''),coalesce(g.receipt->>'migration_version',''),coalesce(g.receipt->>'migration_name',''),coalesce(g.receipt->>'pr_number',''),coalesce(g.receipt->>'pr_head_sha',''),coalesce(g.receipt->>'source_blob',''),coalesce(g.receipt->>'write_readback',''),coalesce(g.receipt->>'currentness_result',''),coalesce(g.receipt->>'ddl_replayed',''),encode(convert_to(coalesce(array_to_string(m.statements,chr(10)),''),'UTF8'),'hex'),coalesce(cardinality(m.statements),0)::text from public.lf_operation_effect_guard g join public.lf_operation_execution e using(execution_id) join supabase_migrations.schema_migrations m on m.version=g.receipt->>'migration_version' and m.name=g.receipt->>'migration_name' where g.effect_scope like 'MIGRATION_OWNER_CURRENTNESS:%' and g.state='SUCCEEDED' and g.receipt->>'schema_version'='lf-migration-owner-currentness/v1' order by g.resolved_at desc nulls last,g.execution_id" > "$RUNNER_TEMP/lf-migration-owner-currentness.csv"
+          docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 psql -X -v ON_ERROR_STOP=1 --csv -t -c "select g.execution_id,e.status,e.operation_code,coalesce(g.receipt->>'repository',''),coalesce(g.receipt->>'target_path',''),coalesce(g.receipt->>'migration_version',''),coalesce(g.receipt->>'migration_name',''),coalesce(g.receipt->>'pr_number',''),coalesce(g.receipt->>'pr_head_sha',''),coalesce(g.receipt->>'source_blob',''),coalesce(g.receipt->>'write_readback',''),coalesce(g.receipt->>'currentness_result',''),coalesce(g.receipt->>'ddl_replayed',''),coalesce(g.receipt->>'schema_version',''),coalesce(g.receipt->>'ownership_mode',''),coalesce(g.receipt->>'source_recovery_basis',''),coalesce(g.receipt->>'original_source_search_complete',''),coalesce(g.receipt->>'original_source_found',''),coalesce(g.receipt->>'source_materialization_mode',''),coalesce(g.receipt->>'provenance_gap_ekb_code',''),coalesce(g.receipt->>'source_search_evidence_ref',''),encode(convert_to(coalesce(array_to_string(m.statements,chr(10)),''),'UTF8'),'hex'),coalesce(cardinality(m.statements),0)::text from public.lf_operation_effect_guard g join public.lf_operation_execution e using(execution_id) join supabase_migrations.schema_migrations m on m.version=g.receipt->>'migration_version' and m.name=g.receipt->>'migration_name' where g.effect_scope like 'MIGRATION_OWNER_CURRENTNESS:%' and g.state='SUCCEEDED' and g.receipt->>'schema_version' in ('lf-migration-owner-currentness/v1','lf-migration-source-recovery-currentness/v1') order by g.resolved_at desc nulls last,g.execution_id" > "$RUNNER_TEMP/lf-migration-owner-currentness.csv"
 
           python3 - <<'PY' > "$RUNNER_TEMP/lf-migration-external-owner-currentness.json"
           import csv
@@ -716,19 +716,38 @@ jobs:
               for row in csv.reader(handle):
                   if not row:
                       continue
-                  if len(row) != 15:
+                  if len(row) != 23:
                       raise SystemExit("FAIL_LF_MIGRATION_EXTERNAL_OWNER_DB_ROW")
                   (
                       execution_id,execution_status,operation_code,target_repo,target_path,
                       version,migration_name,raw_pr_number,receipt_head,receipt_blob,
-                      write_readback,currentness_result,ddl_replayed,remote_sql_hex,
-                      raw_remote_statement_count
+                      write_readback,currentness_result,ddl_replayed,owner_receipt_schema,
+                      ownership_mode,source_recovery_basis,original_source_search_complete,
+                      original_source_found,source_materialization_mode,provenance_gap_ekb_code,
+                      source_search_evidence_ref,remote_sql_hex,raw_remote_statement_count
                   ) = row
                   if target_repo != repo:
                       continue
                   if not raw_pr_number.isdigit():
                       continue
-                  if write_readback != "PASS" or currentness_result != "OWNER_PR_EXACT_OPEN" or ddl_replayed != "false":
+                  if write_readback != "PASS" or ddl_replayed != "false":
+                      continue
+                  if owner_receipt_schema == "lf-migration-owner-currentness/v1":
+                      ownership_mode = ownership_mode or "NORMAL_SOURCE_OWNER"
+                      if ownership_mode != "NORMAL_SOURCE_OWNER" or currentness_result != "OWNER_PR_EXACT_OPEN":
+                          continue
+                  elif owner_receipt_schema == "lf-migration-source-recovery-currentness/v1":
+                      if ownership_mode != "FORENSIC_RECOVERY_OWNER" or currentness_result != "FORENSIC_RECOVERY_PR_EXACT_OPEN":
+                          continue
+                      if source_recovery_basis != "SINGLE_STATEMENT_SOURCE_PRESERVING_LEDGER_MIRROR":
+                          continue
+                      if original_source_search_complete != "true" or original_source_found != "false":
+                          continue
+                      if source_materialization_mode != "FORENSIC_LEDGER_MIRROR_NOT_ORIGINAL_SOURCE":
+                          continue
+                      if not provenance_gap_ekb_code or not source_search_evidence_ref:
+                          continue
+                  else:
                       continue
                   if not raw_remote_statement_count.isdigit() or int(raw_remote_statement_count) < 1:
                       continue
@@ -795,6 +814,14 @@ jobs:
                       "ddl_replayed": False,
                       "remote_sha256": remote_sha256,
                       "remote_statement_count": int(raw_remote_statement_count),
+                      "ownership_mode": ownership_mode,
+                      "owner_receipt_schema": owner_receipt_schema,
+                      "source_recovery_basis": source_recovery_basis,
+                      "original_source_search_complete": original_source_search_complete == "true",
+                      "original_source_found": original_source_found == "true",
+                      "source_materialization_mode": source_materialization_mode,
+                      "provenance_gap_ekb_code": provenance_gap_ekb_code,
+                      "source_search_evidence_ref": source_search_evidence_ref,
                   })
 
           print(json.dumps({
