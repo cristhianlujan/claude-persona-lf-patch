@@ -1,0 +1,20 @@
+{
+  "allowed_paths": [
+    "sandbox/lf_contract_gate_test/s30_qualification/LF_QUALIFICATION_CONTRACT_V1.json",
+    "sandbox/lf_contract_gate_test/s30_qualification/README.md",
+    "sandbox/lf_contract_gate_test/s30_qualification/S30_PR_SCOPE_LOCK_V1.json",
+    "sandbox/lf_contract_gate_test/s30_qualification/live_independent_review_inventory_20260914.json",
+    "sandbox/lf_contract_gate_test/s30_qualification/lf_independent_review_binding_analyzer_v1.py",
+    "sandbox/lf_contract_gate_test/s30_qualification/qualification_source_candidate_v2.sql",
+    "sandbox/lf_contract_gate_test/s30_qualification/test_lf_independent_review_binding_v1.py",
+    "sandbox/lf_contract_gate_test/s30_qualification/test_qualification_source_contract_v2.py",
+    "sandbox/lf_contract_gate_test/s30_qualification/test_s30_pr_scope_lock_v1.py"
+  ],
+  "cross_owner_changes_allowed": false,
+  "head_branch": "s30-qualification-lf-20260914",
+  "mode": "EXACT_FILE_ALLOWLIST_FAIL_CLOSED",
+  "owner": "S30",
+  "pr_number": null,
+  "scope_anchor_revision": "18784e12ae4e4b8c7c48ae4004011444deb1fbeb",
+  "scope_lock_version": "S30_PR_SCOPE_LOCK_V1"
+}
