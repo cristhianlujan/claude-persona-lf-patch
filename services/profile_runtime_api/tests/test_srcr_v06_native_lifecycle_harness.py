@@ -372,7 +372,14 @@ def test_runtime_research_bundle_requires_result_semantics_for_every_live_query(
     manifest_sha = "sha256:" + harness.canonical_sha256(manifest)
     result = harness.research_trace.validate_runtime_research_bundle(
         manifest,
-        resolved_authority_context={"EV-1": {"fact": "x"}},
+        resolved_authority_context={"EV-1": {
+            "source_locator": locator,
+            "digest": digest,
+            "result_status": None,
+            "result_count": None,
+            "claim_support": None,
+            "resolved_value": {"fact": "x"},
+        }},
         expected_manifest_sha256=manifest_sha,
     )
     assert result["status"] == "FAIL"
@@ -388,7 +395,14 @@ def test_runtime_research_bundle_requires_result_semantics_for_every_live_query(
     manifest_sha = "sha256:" + harness.canonical_sha256(manifest)
     positive_zero = harness.research_trace.validate_runtime_research_bundle(
         manifest,
-        resolved_authority_context={"EV-1": {"fact": "x"}},
+        resolved_authority_context={"EV-1": {
+            "source_locator": locator,
+            "digest": digest,
+            "result_status": "EMPTY",
+            "result_count": 0,
+            "claim_support": "PRESENCE",
+            "resolved_value": [],
+        }},
         expected_manifest_sha256=manifest_sha,
     )
     assert positive_zero["status"] == "FAIL"
@@ -401,10 +415,73 @@ def test_runtime_research_bundle_requires_result_semantics_for_every_live_query(
     manifest_sha = "sha256:" + harness.canonical_sha256(manifest)
     absence = harness.research_trace.validate_runtime_research_bundle(
         manifest,
-        resolved_authority_context={"EV-1": {"fact": "x"}},
+        resolved_authority_context={"EV-1": {
+            "source_locator": locator,
+            "digest": digest,
+            "result_status": "EMPTY",
+            "result_count": 0,
+            "claim_support": "ABSENCE",
+            "resolved_value": [],
+        }},
         expected_manifest_sha256=manifest_sha,
     )
     assert absence["status"] == "PASS", absence
+
+
+def test_runtime_research_bundle_rejects_unhydrated_or_mismatched_authority() -> None:
+    digest = sha("live")
+    locator = "github://repo@head/path#section"
+    manifest = {
+        "evidence": [{
+            "evidence_id": "EV-LIVE",
+            "source_locator": locator,
+            "digest": digest,
+        }],
+        "query_trace": [{
+            "sequence": 1,
+            "tool_permission": "READ_GITHUB",
+            "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+            "provider": "GITHUB",
+            "query_locator": locator,
+            "request_digest": sha("request-live"),
+            "result_digest": digest,
+            "observed_at": "2026-09-22T15:00:00Z",
+            "evidence_id": "EV-LIVE",
+            "consumer": "$.live_authority_packet",
+            "result_status": "FOUND",
+            "result_count": 1,
+            "claim_support": "CONTENT",
+        }],
+    }
+    manifest_sha = "sha256:" + harness.canonical_sha256(manifest)
+    missing_value = {"EV-LIVE": {
+        "source_locator": locator,
+        "digest": digest,
+        "result_status": "FOUND",
+        "result_count": 1,
+        "claim_support": "CONTENT",
+    }}
+    out = harness.research_trace.validate_runtime_research_bundle(
+        manifest,
+        resolved_authority_context=missing_value,
+        expected_manifest_sha256=manifest_sha,
+    )
+    assert "RESOLVED_AUTHORITY_VALUE_MISSING:EV-LIVE" in out["blocking_codes"]
+
+    wrong_digest = {"EV-LIVE": {
+        "source_locator": locator,
+        "digest": sha("other"),
+        "result_status": "FOUND",
+        "result_count": 1,
+        "claim_support": "CONTENT",
+        "resolved_value": {"mode": "EXTERNAL_AUTHORITY_RESOLVER"},
+    }}
+    out = harness.research_trace.validate_runtime_research_bundle(
+        manifest,
+        resolved_authority_context=wrong_digest,
+        expected_manifest_sha256=manifest_sha,
+    )
+    assert "RESOLVED_AUTHORITY_DIGEST_MISMATCH:EV-LIVE" in out["blocking_codes"]
 
 
 def test_current_uncertainty_without_evidence_map_is_rejected() -> None:
