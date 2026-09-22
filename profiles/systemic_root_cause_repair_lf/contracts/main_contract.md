@@ -103,3 +103,8 @@ V0.6 preserves V0.5 investigation-depth requirements and closes the distinction 
 - Canonical-route consistency, post-transition currentness, terminality, identity consistency and rollback executability are typed proof objects with explicit applicability.
 - An observed failure may be paired with an `IMPLEMENTABLE` future repair, but future wiring cannot be cited as evidence that the current edge is closed.
 - Deterministic validation owns these structural invariants. Semantic utility consumes the deterministic gate and does not re-implement the same structural rules.
+
+
+## V0.6 control ownership
+
+Deterministic validation exclusively owns structural blocking codes. The pre-quality semantic utility runs only after the deterministic contract gate passes and MUST NOT re-emit those structural codes. It may add only distinct utility checks. The independent semantic judge remains a separate final semantic authority and cannot be replaced by either deterministic layer.
