@@ -202,19 +202,26 @@
       "state": "REPLAY_BLOCKED",
       "percent": 75,
       "evidence": [
-        "full ungrouped replay executed and persisted with exactly 247 rows: Entrada=3, Investigacion=132, Transporte=7, Determinista=45, Jueces=18, Repeticiones=42",
-        "246/247 applicable rows PASS; incomplete_input_rows=0, unresolved_evidence_ids=0, fabricated_evidence_ids=0, missing_transport_hops=0",
-        "all 65 frozen evidence IDs were re-resolved against current authority: Supabase 39/39, GitHub 23/23, Web 3/3",
-        "semantic judge and quality receipt are both present; duplicate structural ownership=0 and duplicate logical findings=0",
-        "Validate LF Packs exact material code head 1e5dad487c30a37b68120940a3ecc3518f733a84 run 35756765086 SUCCESS with 247 persistent runtime tests passed",
-        "sole failed row D45_LF_CONTRACT_CHECK_EXACT_HEAD: run 35756765026 failed preflight with FAIL_RECEIPT_MISSING",
-        "live Supabase search found zero ACTUALIZACION_PERFIL_LF executions for the SRCR profile created before the September 22 governed writes; a receipt now would be retroactive and is prohibited",
-        "branch remains 308 commits ahead of main with 109 changed files, 53 governed, so integrating current main does not remove the governance violation",
-        "replay: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_full_ungrouped_replay.json",
-        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_full_replay_readback.json"
+        "full ungrouped MC-13 replay remains 247 rows: 246 PASS / 1 external governance blocker",
+        "original FAIL_RECEIPT_MISSING was repaired legitimately by a fresh governed ACTUALIZACION_PERFIL_LF execution created before the first write",
+        "governed execution EXEC-ACTUALIZACION-PERFIL-LF-OIDC-7ba517b6-85ee-43bb-b4a0-57b6112f8b15 has PASS steps 0,10,20,30,40,50,60,70,80,90,100,110 and remains IN_PROGRESS because merge is not authorized",
+        "pre-write trust was server-derived by run-creacion-perfil-lf: CURRENT_BOUND to main f5baa359bf22510af9961b151ab77e47c74bbcc5 / target blob 937052915872a145d47c204e78fd9ec9766d45a2",
+        "fresh isolated branch lf/srcr-v06-mc13-governed-rebuild-20260922 contains exactly 34 changed files, all under profiles/systemic_root_cause_repair_lf/**; candidate code head e31bfe6c319e852e9cc083dbc611f3a5acbb4d2c",
+        "fresh profile tree 2fe4d62429176c8a80e3ec8bed5f25a9501efba2 is byte-identical to the independently reviewed material tree",
+        "candidate receipt head 2566bb239e362efc27e6f118f92caff66ed65bd7; LF_OPERATION_CANDIDATE_RECEIPT covers all 34 exact blobs and is the only post-code-head change",
+        "candidate receipt contract 7/7 PASS and local full lf_contract_check PASS on the real main diff",
+        "Validate LF Packs run 35761541182 on receipt head SUCCESS; SRCR pack PASS including V06 ownership overlap=0 and quality receipt materialization 9/9",
+        "lf-contract-check run 35761541366 passes receipt preflight, CI router selftests 7/7 and declared governance paths, then fails only MIGRATION_SOURCE_PARITY",
+        "current blocker: FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION for remote-only 20260922142522_create_engineering_backlog_and_progress_tracking and 20260922142548_fix_engineering_progress_view_aggregation_v2",
+        "no source for those two migrations exists in main, any remote branch or PR; no durable migration owner receipt was found",
+        "MIGRATION_SOURCE_PARITY contract explicitly prohibits reconstructing source from the live ledger or hardcoding migration/version/SHA/owner exceptions",
+        "blocker was auto-persisted through PRE_EKB_GATE: gate execution EXEC-LF-CONTRACT-CHECK-35761541366-1, gate result 225, events 14885/14886, EKB id dc9c07ef-67a5-49e9-a80b-4df201e29e1e",
+        "governed rebuild readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_governed_rebuild_readback.json"
       ],
       "remaining_requirements": [
-        "Reconstruct the branch changes under a canonical pre-write ACTUALIZACION_PERFIL_LF execution and legitimate governed receipt, then rerun all 247 MC-13 rows on the final exact revision until failed_applicable_rows=0 and open_material_observation_count=0."
+        "Recover the original source/provenance for migrations 20260922142522 and 20260922142548 through a legitimate migration owner and establish durable ACTUALIZACION_DB_LF external-owner currentness, or repair MIGRATION_SOURCE_PARITY through its canonical owner without reconstructing source from the live ledger.",
+        "Rerun exact-head lf-contract-check until all required controls PASS.",
+        "Rerun the complete 247-row MC-13 replay on the final exact revision and require failed_applicable_rows=0/open_material_observation_count=0."
       ]
     }
   ],
@@ -232,7 +239,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+  "current_exact_code_head": "e31bfe6c319e852e9cc083dbc611f3a5acbb4d2c",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -323,10 +330,19 @@
     "mc13_passed_rows": 246,
     "mc13_failed_rows": 1,
     "mc13_live_authority_verified": "65/65",
-    "mc13_validate_lf_packs_run_id": 35756765086,
-    "mc13_lf_contract_check_run_id": 35756765026,
+    "mc13_validate_lf_packs_run_id": 35761541182,
+    "mc13_lf_contract_check_run_id": 35761541366,
     "mc13_blocking_code": "FAIL_RECEIPT_MISSING",
     "mc13_replay_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_full_ungrouped_replay.json",
-    "mc13_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_full_replay_readback.json"
+    "mc13_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_full_replay_readback.json",
+    "mc13_governed_execution_id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-7ba517b6-85ee-43bb-b4a0-57b6112f8b15",
+    "mc13_governed_branch": "lf/srcr-v06-mc13-governed-rebuild-20260922",
+    "mc13_governed_code_head": "e31bfe6c319e852e9cc083dbc611f3a5acbb4d2c",
+    "mc13_candidate_receipt_head": "2566bb239e362efc27e6f118f92caff66ed65bd7",
+    "mc13_original_receipt_blocker_resolved": true,
+    "mc13_current_blocking_code": "FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION",
+    "mc13_current_blocking_group": "MIGRATION_SOURCE_PARITY",
+    "mc13_ekb_id": "dc9c07ef-67a5-49e9-a80b-4df201e29e1e",
+    "mc13_governed_rebuild_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_governed_rebuild_readback.json"
   }
 }
