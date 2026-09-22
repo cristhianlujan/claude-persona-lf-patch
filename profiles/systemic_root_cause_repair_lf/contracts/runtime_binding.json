@@ -40,6 +40,10 @@
       "callable": "validate_quality_receipt"
     },
     "deterministic_floors_can_accept_quality": false,
-    "receipt_required_for_pass_to_quality_pack": true
+    "receipt_required_for_pass_to_quality_pack": true,
+    "quality_receipt_materializer": {
+      "path": "validators/materialize_quality_receipt.py",
+      "callable": "materialize_quality_receipt"
+    }
   }
 }
