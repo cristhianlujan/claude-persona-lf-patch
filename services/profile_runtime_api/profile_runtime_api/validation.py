@@ -14,6 +14,36 @@ PASS_QUALITY_VERDICTS = {"PASS_TO_COMPOSER", "PASS_WITH_RESTRICTIONS"}
 NOMINAL_EVIDENCE = {"ok", "pass", "passed", "valid", "done", "complete", "yes"}
 UI_SCHEMA_ONLY_MODES = {"UI_FOCUSED_DECISION", "UI_MISSING_INPUT"}
 
+REVIEWER_CONTEXT_MODE = "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT"
+REVIEW_INPUT_CLASSES = (
+    "CURRENT_AUTHORITY_REFS",
+    "EVIDENCE_MANIFEST",
+    "EXACT_CANDIDATE",
+    "SCOPE_AUTHORITY_PACKET",
+)
+
+
+def independent_review_input_binding(
+    candidate: dict[str, Any],
+    evidence_manifest: dict[str, Any],
+    scope_authority_packet: dict[str, Any],
+) -> dict[str, Any]:
+    binding = {
+        "schema": "SRCR_INDEPENDENT_REVIEW_INPUT_V1",
+        "candidate_sha256": canonical_json_sha256(candidate),
+        "evidence_manifest_sha256": canonical_json_sha256(evidence_manifest),
+        "scope_packet_sha256": canonical_json_sha256(scope_authority_packet),
+        "reviewer_context_mode": REVIEWER_CONTEXT_MODE,
+        "review_input_classes": list(REVIEW_INPUT_CLASSES),
+        "forbidden_input_classes": [
+            "PRODUCER_PRIVATE_REASONING",
+            "PRODUCER_CHAT_TRANSCRIPT",
+            "PRODUCER_HIDDEN_CONTEXT",
+        ],
+    }
+    binding["review_input_sha256"] = canonical_json_sha256(binding)
+    return binding
+
 
 def strict_json_object(raw_output: Any) -> tuple[dict[str, Any] | None, list[str]]:
     if not isinstance(raw_output, str):
@@ -823,6 +853,10 @@ class OutputGates:
 
         expected_candidate_sha256 = canonical_json_sha256(candidate)
         expected_scope_packet_sha256 = canonical_json_sha256(scope_authority_packet)
+        review_input_binding = independent_review_input_binding(
+            candidate, evidence_manifest, scope_authority_packet
+        )
+        expected_review_input_sha256 = review_input_binding["review_input_sha256"]
         semantic_module, semantic_callable_name = semantic_binding
         semantic_callable = getattr(semantic_module, semantic_callable_name, None)
         if not callable(semantic_callable):
@@ -841,6 +875,8 @@ class OutputGates:
                 expected_candidate_sha256=expected_candidate_sha256,
                 expected_scope_packet_sha256=expected_scope_packet_sha256,
                 expected_evidence_manifest_sha256=expected_evidence_manifest_sha256,
+                expected_reviewer_execution_id=reviewer_execution_id,
+                expected_review_input_sha256=expected_review_input_sha256,
             )
         except Exception as exc:
             return {
@@ -890,6 +926,7 @@ class OutputGates:
                 producer_execution_id=producer_execution_id,
                 reviewer_execution_id=reviewer_execution_id,
                 producer_execution_receipt_ref=producer_execution_receipt_ref,
+                review_input_sha256=expected_review_input_sha256,
             )
         except Exception as exc:
             return {
@@ -920,6 +957,8 @@ class OutputGates:
             "expected_candidate_sha256": expected_candidate_sha256,
             "expected_scope_packet_sha256": expected_scope_packet_sha256,
             "expected_evidence_manifest_sha256": expected_evidence_manifest_sha256,
+            "review_input_binding": review_input_binding,
+            "expected_review_input_sha256": expected_review_input_sha256,
             "downstream_authorized": False,
         }
 
