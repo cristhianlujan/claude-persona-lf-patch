@@ -143,63 +143,81 @@ class GenericRuntimeBindingTest(unittest.TestCase):
         self.assertEqual(len(readback['source_manifest']),2)
         self.assertEqual(readback['source_manifest_sha256'],canonical_json_sha256(readback['source_manifest']))
 
-    def test_external_research_resolver_fails_closed_without_trace_or_context_binding(self):
+    def test_external_research_resolver_delegates_and_fails_closed_on_context_binding(self):
         binding=SimpleNamespace(research_execution={
             'mode':'EXTERNAL_AUTHORITY_RESOLVER','resolver_ref':'contracts/evidence_manifest.schema.json',
             'requires_evidence_manifest':True,'requires_query_trace':True,'requires_resolved_authority_context':True,
         })
-        base_manifest={
-            'evidence':[{'evidence_id':'EV-1'}],
-            'query_trace':[{
-                'query_id':'Q1','emitted_evidence_ids':['EV-1']
-            }],
-        }
-        manifest_sha='sha256:'+canonical_json_sha256(base_manifest)
+        manifest={'evidence':[{'evidence_id':'EV-1'}],'query_trace':[{'sequence':1}]}
+        manifest_sha='sha256:'+canonical_json_sha256(manifest)
+        observed_calls=[]
+
+        def canonical_validator(evidence_manifest, *, resolved_authority_context, expected_manifest_sha256):
+            observed_calls.append({
+                'manifest':evidence_manifest,
+                'resolved':resolved_authority_context,
+                'expected':expected_manifest_sha256,
+            })
+            return {
+                'status':'PASS',
+                'blocking_codes':[],
+                'readback':{
+                    'evidence_manifest_sha256':expected_manifest_sha256,
+                    'query_count':1,
+                    'evidence_count':1,
+                    'resolved_authority_context_sha256':'abc',
+                },
+            }
+
+        validator_module=SimpleNamespace(validate_runtime_research_bundle=canonical_validator)
+        validator_binding=(validator_module,'validate_runtime_research_bundle')
         good_task=SimpleNamespace(
-            evidence_manifest=base_manifest,
+            evidence_manifest=manifest,
             governed_operation=SimpleNamespace(context_capsule={
                 'resolved_authority_context':{'EV-1':{'fact':'x'}},
                 'evidence_manifest_sha256':manifest_sha,
             }),
         )
-        readback=_validate_research_execution(good_task,binding)
+        readback=_validate_research_execution(good_task,binding,validator_binding)
         self.assertEqual(readback['query_count'],1)
-        self.assertEqual(readback['evidence_count'],1)
         self.assertEqual(readback['evidence_manifest_sha256'],manifest_sha)
+        self.assertEqual(len(observed_calls),1)
+        self.assertIs(observed_calls[0]['manifest'],manifest)
 
-        no_trace=SimpleNamespace(
-            evidence_manifest={'evidence':[{'evidence_id':'EV-1'}]},
+        no_manifest=SimpleNamespace(
+            evidence_manifest=None,
             governed_operation=good_task.governed_operation,
         )
         with self.assertRaises(Exception) as cm:
-            _validate_research_execution(no_trace,binding)
-        self.assertEqual(getattr(cm.exception,'code',None),'SRCR_QUERY_TRACE_REQUIRED_BEFORE_MODEL')
+            _validate_research_execution(no_manifest,binding,validator_binding)
+        self.assertEqual(getattr(cm.exception,'code',None),'SRCR_EVIDENCE_MANIFEST_REQUIRED_BEFORE_MODEL')
 
-        orphan_manifest={
-            'evidence':[{'evidence_id':'EV-1'},{'evidence_id':'EV-2'}],
-            'query_trace':[{'query_id':'Q1','emitted_evidence_ids':['EV-1']}],
-        }
-        orphan=SimpleNamespace(
-            evidence_manifest=orphan_manifest,
-            governed_operation=SimpleNamespace(context_capsule={
-                'resolved_authority_context':{'EV-1':{'fact':'x'}},
-                'evidence_manifest_sha256':'sha256:'+canonical_json_sha256(orphan_manifest),
-            }),
-        )
+        no_context=SimpleNamespace(evidence_manifest=manifest,governed_operation=None)
         with self.assertRaises(Exception) as cm2:
-            _validate_research_execution(orphan,binding)
-        self.assertEqual(getattr(cm2.exception,'code',None),'SRCR_EVIDENCE_WITHOUT_RECORDED_RETRIEVAL')
+            _validate_research_execution(no_context,binding,validator_binding)
+        self.assertEqual(getattr(cm2.exception,'code',None),'SRCR_RESOLVED_AUTHORITY_CONTEXT_REQUIRED')
 
         bad_digest=SimpleNamespace(
-            evidence_manifest=base_manifest,
+            evidence_manifest=manifest,
             governed_operation=SimpleNamespace(context_capsule={
                 'resolved_authority_context':{'EV-1':{'fact':'x'}},
                 'evidence_manifest_sha256':'sha256:'+'0'*64,
             }),
         )
         with self.assertRaises(Exception) as cm3:
-            _validate_research_execution(bad_digest,binding)
+            _validate_research_execution(bad_digest,binding,validator_binding)
         self.assertEqual(getattr(cm3.exception,'code',None),'SRCR_RESOLVED_AUTHORITY_MANIFEST_DIGEST_MISMATCH')
+
+        failing_module=SimpleNamespace(
+            validate_runtime_research_bundle=lambda *args,**kwargs:{
+                'status':'FAIL','blocking_codes':['QUERY_TRACE_REQUIRED'],'readback':{}
+            }
+        )
+        with self.assertRaises(Exception) as cm4:
+            _validate_research_execution(
+                good_task,binding,(failing_module,'validate_runtime_research_bundle')
+            )
+        self.assertEqual(getattr(cm4.exception,'code',None),'SRCR_RESEARCH_TRACE_INVALID')
 
     def test_profile_task_carries_external_manifest_but_rejects_empty_manifest(self):
         task=ProfileTask(
