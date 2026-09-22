@@ -121,9 +121,11 @@ The normative self-repair closure contract is `profiles/systemic_root_cause_repa
 
 For any SRCR self-maintenance that touches research execution, context transport, evidence resolution/transport, deterministic rules, finding aggregation, independent semantic review, quality receipts, physical wiring/terminality, or implementation-footprint closure:
 
-1. all applicable MC-01..MC-12 obligations are mandatory;
+1. all applicable MC-01..MC-13 obligations are mandatory;
 2. only READBACK_CLOSED counts as closed;
 3. overall closure is the logical AND of all mandatory obligations;
 4. no deterministic/utility/CI PASS or producer assertion can override an open obligation;
 5. exact negative and positive evidence required by each obligation must be bound to the exact profile revision under review;
 6. the profile update cannot be represented as ready for governed update while any obligation remains below READBACK_CLOSED.
+
+- MC-13 complete replay MUST be clean: zero open observations, zero failed applicable steps and zero unresolved mandatory inputs. NOT_APPLICABLE requires explicit evidence/rationale and cannot hide an applicable check.
