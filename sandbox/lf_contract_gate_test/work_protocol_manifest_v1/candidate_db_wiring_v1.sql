@@ -1,6 +1,6 @@
 -- LF_WORK_PROTOCOL_MANIFEST_V1 sandbox locator.
 -- Canonical deployable candidate:
--- supabase/migrations/20260922144000_work_protocol_manifest_v1.sql
+-- supabase/migrations/20260922144000_lf_work_protocol_manifest_v1.sql
 --
 -- This file intentionally contains no executable SQL.
 -- The canonical migration was materialized byte-identical to the SQL rehearsed
