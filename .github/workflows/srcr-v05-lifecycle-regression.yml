@@ -18,31 +18,79 @@ jobs:
           python-version: "3.11"
       - name: Install schema validator
         run: python -m pip install --quiet jsonschema
-      - name: Diagnose frozen candidate schema
+      - name: Validate frozen first-pass candidate
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
-          import base64,gzip,hashlib,json
+          import base64, gzip, hashlib, json, sys
           from pathlib import Path
           from jsonschema import Draft7Validator
-          root=Path('profiles/systemic_root_cause_repair_lf')
-          td=Path('sandbox/lf_contract_gate_test/srcr_v05_lifecycle_regression')
-          names=['candidate.part1.b64','candidate.part2.b64','candidate.part3.b64','candidate.part4a.b64','candidate.part4b.b64','candidate.part5.b64','candidate.part6.b64','candidate.part7.b64','candidate.part8.b64']
-          raw=gzip.decompress(base64.b64decode(''.join((td/n).read_text().strip() for n in names)))
-          sha=hashlib.sha256(raw).hexdigest()
-          print('CANDIDATE_SHA256='+sha)
-          if sha!='5236f4fa746290ee75b8d3892fa9a970b2e13adf9b3bf38e3b2d9352dac13c05': raise SystemExit(2)
-          candidate=json.loads(raw)
-          schema=json.loads((root/'schemas/output.schema.json').read_text())
-          errs=sorted(Draft7Validator(schema).iter_errors(candidate),key=lambda e:list(e.path))
-          print('SCHEMA_ERRORS='+str(len(errs)))
-          def walk(e,depth=0):
-              print('SUBERR depth='+str(depth)+' path='+json.dumps(list(e.absolute_path))+' schema_path='+json.dumps(list(e.absolute_schema_path))+' msg='+e.message)
-              for x in e.context:
-                  walk(x,depth+1)
-          for e in errs:
-              if list(e.path)==['implementation_package']:
-                  walk(e)
-          raise SystemExit('EXPECTED_SCHEMA_DIAGNOSTIC')
+
+          root = Path('profiles/systemic_root_cause_repair_lf')
+          td = Path('sandbox/lf_contract_gate_test/srcr_v05_lifecycle_regression')
+          names = [
+              'candidate.part1.b64','candidate.part2.b64','candidate.part3.b64',
+              'candidate.part4a.b64','candidate.part4b.b64','candidate.part5.b64',
+              'candidate.part6.b64','candidate.part7.b64','candidate.part8.b64'
+          ]
+
+          candidate_raw = gzip.decompress(base64.b64decode(''.join((td/n).read_text().strip() for n in names)))
+          candidate_sha = hashlib.sha256(candidate_raw).hexdigest()
+          expected_candidate_sha = '5236f4fa746290ee75b8d3892fa9a970b2e13adf9b3bf38e3b2d9352dac13c05'
+          print('CANDIDATE_SHA256=' + candidate_sha)
+          if candidate_sha != expected_candidate_sha:
+              print('CANDIDATE_SHA_MISMATCH')
+              raise SystemExit(2)
+          candidate = json.loads(candidate_raw)
+
+          manifest_raw = gzip.decompress(base64.b64decode((td/'evidence_manifest.json.gz.b64').read_text().strip()))
+          manifest_sha = hashlib.sha256(manifest_raw).hexdigest()
+          print('EVIDENCE_MANIFEST_SHA256=' + manifest_sha)
+          manifest = json.loads(manifest_raw)
+
+          schema = json.loads((root/'schemas/output.schema.json').read_text())
+          schema_errors = sorted(
+              Draft7Validator(schema).iter_errors(candidate),
+              key=lambda e: (list(e.path), list(e.schema_path))
+          )
+
+          def leaves(err):
+              if err.context:
+                  out = []
+                  for child in err.context:
+                      out.extend(leaves(child))
+                  return out
+              return [err]
+
+          leaf_errors = []
+          for e in schema_errors:
+              leaf_errors.extend(leaves(e))
+
+          print('SCHEMA_ERRORS_TOP=' + str(len(schema_errors)))
+          print('SCHEMA_ERRORS_LEAF=' + str(len(leaf_errors)))
+          for i, e in enumerate(leaf_errors, 1):
+              msg = ' '.join(str(e.message).split())
+              if len(msg) > 320:
+                  msg = msg[:317] + '...'
+              print('SCHEMA_LEAF_%02d=' % i + json.dumps({
+                  'path': list(e.absolute_path),
+                  'schema_path': list(e.absolute_schema_path),
+                  'validator': e.validator,
+                  'message': msg,
+              }, ensure_ascii=False, sort_keys=True))
+
+          sys.path.insert(0, str(root/'validators'))
+          import runtime_validate
+          import runtime_semantic_utility
+
+          structural = runtime_validate.validate(candidate, manifest)
+          print('RUNTIME_VALIDATE=' + json.dumps(structural, ensure_ascii=False, sort_keys=True))
+
+          semantic = runtime_semantic_utility.evaluate(candidate, structural, manifest)
+          print('RUNTIME_SEMANTIC_UTILITY=' + json.dumps(semantic, ensure_ascii=False, sort_keys=True))
+
+          ok = (not schema_errors and structural.get('status') == 'PASS' and semantic.get('status') == 'PASS')
+          print('FIRST_PASS_VALIDATION=' + ('PASS' if ok else 'FAIL'))
+          raise SystemExit(0 if ok else 1)
           PY
