@@ -1466,7 +1466,20 @@ def _persist_success(
         conn.commit()
 
 
-def _persist_failure(conn: psycopg.Connection, request_id: str, exc: BaseException) -> None:
+def _reconcile_queue_terminal(
+    cur: psycopg.Cursor, request_id: str
+) -> dict[str, Any]:
+    """Reconcile an auxiliary queue terminal state to the exact canonical execution."""
+    return _fetch_json_scalar(
+        cur,
+        "select public.lf_profile_execution_reconcile_queue_terminal_v1(%s::uuid,%s)",
+        (request_id, _governed_execution_id(request_id)),
+    )
+
+
+def _persist_failure(
+    conn: psycopg.Connection, request_id: str, exc: BaseException
+) -> dict[str, Any]:
     raw = str(exc)
     candidate = raw.split(":", 1)[0]
     error_code = (
@@ -1491,7 +1504,38 @@ def _persist_failure(conn: psycopg.Connection, request_id: str, exc: BaseExcepti
             """,
             (PROVIDER, error_code, detail, request_id),
         )
+        if cur.rowcount != 1:
+            conn.commit()
+            return {
+                "result": "QUEUE_FAILURE_NOT_PERSISTED",
+                "blocking_code": "PROFILE_EXECUTION_TERMINALITY_RECONCILIATION_FAILED",
+            }
+
+        terminal = _reconcile_queue_terminal(cur, request_id)
+        terminal_result = terminal.get("result")
+        accepted = {
+            "CANONICAL_TERMINAL_RECONCILED",
+            "TERMINAL_PAIR_ALREADY_RECONCILED",
+            "NO_CANONICAL_EXECUTION",
+        }
+        if terminal_result not in accepted:
+            detail_with_terminal = (
+                f"{detail};terminal_reconciliation={terminal_result or 'UNKNOWN'};"
+                f"terminal_blocking_code={terminal.get('blocking_code') or 'PROFILE_EXECUTION_TERMINALITY_RECONCILIATION_FAILED'}"
+            )[:1500]
+            cur.execute(
+                f"""
+                update {TABLE}
+                   set error_detail=%s,
+                       updated_at=now()
+                 where request_id=%s::uuid
+                   and status='FAILED'
+                   and runtime_target='HETZNER'
+                """,
+                (detail_with_terminal, request_id),
+            )
         conn.commit()
+        return terminal
 
 
 def run_once() -> bool:
