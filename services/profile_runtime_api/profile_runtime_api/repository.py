@@ -224,9 +224,17 @@ class RepositoryBindings:
                 or any(not isinstance(item, str) or not item for item in required_pack_ids)
             ):
                 raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_BINDING_INVALID", profile_slug)
-        refs = [runtime_schema["default"
-            *([canonical_quality["semantic_judge_path"], canonical_quality["semantic_result_validator"]["path"]] if isinstance(canonical_quality, dict) else []),
-        ], *runtime_schema["output_modes"].values(), canonical["path"], semantic["path"]]
+        refs = [
+            runtime_schema["default"],
+            *runtime_schema["output_modes"].values(),
+            canonical["path"],
+            semantic["path"],
+        ]
+        if isinstance(canonical_quality, dict):
+            refs.extend([
+                canonical_quality["semantic_judge_path"],
+                canonical_quality["semantic_result_validator"]["path"],
+            ])
         for rel in refs:
             if not isinstance(rel, str) or not rel or rel.startswith("/") or ".." in PurePosixPath(rel).parts:
                 raise RepositoryError("PROFILE_RUNTIME_BINDING_REF_INVALID", str(rel))
