@@ -12,7 +12,7 @@ REQUIRED = [
     "contracts/evidence_manifest.schema.json","contracts/closure_vocabulary.v2.json","contracts/incremental_value.v1.json",
     "schemas/quality_receipt.schema.json","schemas/runtime_output.schema.json",
     "validators/closure_proof.py","validators/incremental_value.py","validators/runtime_validate.py",
-    "validators/runtime_semantic_utility.py","validators/validate_quality_receipt.py","validators/producer_depth.py","validators/edge_closure.py",
+    "validators/runtime_semantic_utility.py","validators/validate_quality_receipt.py","validators/materialize_quality_receipt.py","validators/producer_depth.py","validators/edge_closure.py",
     "evals/v03_contract_schema_cases.py","evals/v03_deterministic_floor_cases.py",
     "evals/v03_quality_receipt_cases.py","evals/v03_generalization_property_cases.py",
     "evals/v03_original_escape_replay.py","evals/v03_transversal_contract_cases.py","evals/v03_incremental_value_cases.py",
