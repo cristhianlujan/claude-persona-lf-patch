@@ -1,6 +1,6 @@
 {
   "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
-  "bundle_id": "BUNDLE-SRCR-V06-LIFECYCLE-NATIVE-PHASE2-20260921",
+  "bundle_id": "BUNDLE-SRCR-V05-LIFECYCLE-NATIVE-PHASE2-20260921",
   "bundle_digest": "sha256:1d3fa528dfe53427f7f1efc12952ad6ae00911b005139dd0bd651f4bac1f70ac",
   "observed_at": "2026-09-21T22:35:00-05:00",
   "producer": {
