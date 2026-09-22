@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import inspect
+import ast
 import base64
 import gzip
 import importlib.util
@@ -300,3 +302,45 @@ def test_current_uncertainty_without_evidence_map_is_rejected() -> None:
     ]
     result = harness.runtime_validate.validate(candidate, manifest)
     assert "CURRENT_UNCERTAINTY_EVIDENCE_MAP_REQUIRED" in result["blocking_codes"]
+
+
+def _emitted_codes(path: Path) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    result: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        if isinstance(node.func, ast.Name) and node.func.id == "_error" and node.args:
+            arg = node.args[0]
+            if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                result.add(arg.value)
+        if isinstance(node.func, ast.Attribute) and node.func.attr == "append" and node.args:
+            arg = node.args[0]
+            if isinstance(arg, ast.Constant) and isinstance(arg.value, str) and arg.value.isupper():
+                result.add(arg.value)
+    return result
+
+
+def test_rule_ownership_catalog_has_zero_structural_utility_code_overlap() -> None:
+    catalog_path = (
+        ROOT / "profiles" / "systemic_root_cause_repair_lf" / "contracts" / "rule_ownership.v1.json"
+    )
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    structural = ROOT / catalog["owners"]["STRUCTURAL"]["path"]
+    utility = ROOT / catalog["owners"]["SEMANTIC_UTILITY"]["path"]
+    structural_codes = _emitted_codes(structural)
+    utility_codes = _emitted_codes(utility)
+    assert structural_codes
+    assert utility_codes
+    assert structural_codes.isdisjoint(utility_codes)
+    assert catalog["static_test"]["structural_utility_overlap_expected"] == 0
+
+
+def test_runtime_and_native_harness_delegate_research_trace_to_single_owner() -> None:
+    engine_path = ROOT / "services" / "profile_runtime_api" / "profile_runtime_api" / "engine.py"
+    engine_source = engine_path.read_text(encoding="utf-8")
+    harness_source = HARNESS_PATH.read_text(encoding="utf-8")
+    assert "load_research_trace_validator" in engine_source
+    assert "validator(" in inspect.getsource(harness.research_trace.validate_runtime_research_bundle)
+    assert "research_trace.validate_query_trace(trace)" in harness_source
+    assert "research_trace.validate_manifest_trace_binding(manifest, trace)" in harness_source
