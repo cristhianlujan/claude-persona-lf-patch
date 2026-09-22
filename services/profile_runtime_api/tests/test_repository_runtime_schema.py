@@ -32,5 +32,19 @@ class RepositoryRuntimeSchemaTest(unittest.TestCase):
         self.assertEqual(schema.raw, (self.repo / schema.source_refs[0]).read_bytes())
 
 
+    def test_srcr_v06_canonical_quality_binding_is_runtime_visible(self) -> None:
+        binding = self.bindings.runtime_binding("systemic_root_cause_repair_lf")
+        self.assertIsNotNone(binding)
+        quality = binding.canonical_quality
+        self.assertIsInstance(quality, dict)
+        self.assertIn(
+            "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+            quality["required_for_profile_pack_ids"],
+        )
+        self.assertFalse(quality["deterministic_floors_can_accept_quality"])
+        self.assertTrue(quality["receipt_required_for_pass_to_quality_pack"])
+
+
+
 if __name__ == "__main__":
     unittest.main()

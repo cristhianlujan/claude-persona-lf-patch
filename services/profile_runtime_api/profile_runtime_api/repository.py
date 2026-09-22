@@ -48,6 +48,7 @@ class RuntimeProfileBinding:
     model_context: dict[str, Any] | None = None
     execution_partition: dict[str, Any] | None = None
     execution_budget: dict[str, Any] | None = None
+    canonical_quality: dict[str, Any] | None = None
 
 
 class RepositoryBindings:
@@ -76,6 +77,21 @@ class RepositoryBindings:
     ) -> list[dict[str, str]]:
         if not paths:
             raise RepositoryError("PROFILE_SOURCE_PATHS_MISSING")
+        binding = self.runtime_binding(profile_slug)
+        if binding is not None and isinstance(binding.model_context, dict):
+            required_refs = set(binding.model_context.get("required_source_refs") or [])
+            supplied_refs = set(paths)
+            missing = sorted(required_refs - supplied_refs)
+            if missing:
+                raise RepositoryError(
+                    "PROFILE_RUNTIME_REQUIRED_SOURCE_MISSING", ",".join(missing)
+                )
+            if binding.model_context.get("allow_additional_sources") is False:
+                extra = sorted(supplied_refs - required_refs)
+                if extra:
+                    raise RepositoryError(
+                        "PROFILE_RUNTIME_UNDECLARED_SOURCE_FORBIDDEN", ",".join(extra)
+                    )
         profile_root = (self.profiles_root / profile_slug).resolve()
         self._within(profile_root, self.profiles_root, "PROFILE_ROOT_PATH_ESCAPE")
         if not profile_root.is_dir():
@@ -134,6 +150,7 @@ class RepositoryBindings:
         model_context = payload.get("model_context")
         execution_partition = payload.get("execution_partition")
         execution_budget = payload.get("execution_budget")
+        canonical_quality = payload.get("canonical_quality")
         if not isinstance(profile_code, str) or not profile_code:
             raise RepositoryError("PROFILE_RUNTIME_BINDING_CODE_INVALID", profile_slug)
         if not isinstance(runtime_schema, dict) or not isinstance(runtime_schema.get("default"), str) or not isinstance(runtime_schema.get("output_modes"), dict):
@@ -155,9 +172,29 @@ class RepositoryBindings:
             raise RepositoryError("PROFILE_RUNTIME_BINDING_GOVERNANCE_WEAK", profile_slug)
         if model_context is not None:
             projection = model_context.get("source_projection") if isinstance(model_context, dict) else None
+            required_source_refs = (
+                model_context.get("required_source_refs")
+                if isinstance(model_context, dict)
+                else None
+            )
+            allow_additional_sources = (
+                model_context.get("allow_additional_sources")
+                if isinstance(model_context, dict)
+                else None
+            )
             if (
                 not isinstance(model_context, dict)
                 or model_context.get("full_source_to_model") is not False
+                or not isinstance(required_source_refs, list)
+                or not required_source_refs
+                or len(required_source_refs) != len(set(required_source_refs))
+                or any(
+                    not isinstance(value, str)
+                    or not value.startswith(f"profiles/{profile_slug}/")
+                    or ".." in PurePosixPath(value).parts
+                    for value in required_source_refs
+                )
+                or not isinstance(allow_additional_sources, bool)
                 or not isinstance(projection, dict)
                 or projection.get("mode") != "MARKDOWN_SECTIONS"
                 or not isinstance(projection.get("include_sections"), list)
@@ -189,6 +226,49 @@ class RepositoryBindings:
                     raise RepositoryError("PROFILE_RUNTIME_DETERMINISTIC_MATERIALIZATION_INVALID", field)
                 if spec.get("source") == "literal" and "value" not in spec:
                     raise RepositoryError("PROFILE_RUNTIME_DETERMINISTIC_LITERAL_MISSING", field)
+        if canonical_quality is not None:
+            if not isinstance(canonical_quality, dict):
+                raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_INVALID", profile_slug)
+            required_packs = canonical_quality.get("required_for_profile_pack_ids")
+            semantic_result_validator = canonical_quality.get("semantic_result_validator")
+            quality_receipt_validator = canonical_quality.get("quality_receipt_validator")
+            quality_receipt_materializer = canonical_quality.get("quality_receipt_materializer")
+            quality_refs = (
+                canonical_quality.get("judge_path"),
+                canonical_quality.get("semantic_judge_path"),
+                canonical_quality.get("quality_receipt_schema"),
+                semantic_result_validator.get("path") if isinstance(semantic_result_validator, dict) else None,
+                quality_receipt_validator.get("path") if isinstance(quality_receipt_validator, dict) else None,
+                quality_receipt_materializer.get("path") if isinstance(quality_receipt_materializer, dict) else None,
+            )
+            if (
+                not isinstance(required_packs, list)
+                or not required_packs
+                or any(not isinstance(value, str) or not value.strip() for value in required_packs)
+                or len(required_packs) != len(set(required_packs))
+                or canonical_quality.get("deterministic_floors_can_accept_quality") is not False
+                or canonical_quality.get("receipt_required_for_pass_to_quality_pack") is not True
+                or not isinstance(semantic_result_validator, dict)
+                or not all(
+                    isinstance(semantic_result_validator.get(key), str)
+                    and semantic_result_validator.get(key)
+                    for key in ("path", "callable")
+                )
+                or not isinstance(quality_receipt_validator, dict)
+                or not all(
+                    isinstance(quality_receipt_validator.get(key), str)
+                    and quality_receipt_validator.get(key)
+                    for key in ("path", "callable")
+                )
+                or not isinstance(quality_receipt_materializer, dict)
+                or not all(
+                    isinstance(quality_receipt_materializer.get(key), str)
+                    and quality_receipt_materializer.get(key)
+                    for key in ("path", "callable")
+                )
+                or any(not isinstance(value, str) or not value for value in quality_refs)
+            ):
+                raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_INVALID", profile_slug)
         if execution_budget is not None:
             if (
                 not isinstance(execution_budget, dict)
@@ -204,6 +284,15 @@ class RepositoryBindings:
             ):
                 raise RepositoryError("PROFILE_RUNTIME_EXECUTION_BUDGET_INVALID", profile_slug)
         refs = [runtime_schema["default"], *runtime_schema["output_modes"].values(), canonical["path"], semantic["path"]]
+        if isinstance(canonical_quality, dict):
+            refs.extend([
+                canonical_quality["judge_path"],
+                canonical_quality["semantic_judge_path"],
+                canonical_quality["semantic_result_validator"]["path"],
+                canonical_quality["quality_receipt_schema"],
+                canonical_quality["quality_receipt_validator"]["path"],
+                canonical_quality["quality_receipt_materializer"]["path"],
+            ])
         for rel in refs:
             if not isinstance(rel, str) or not rel or rel.startswith("/") or ".." in PurePosixPath(rel).parts:
                 raise RepositoryError("PROFILE_RUNTIME_BINDING_REF_INVALID", str(rel))
@@ -225,6 +314,7 @@ class RepositoryBindings:
             model_context=dict(model_context) if isinstance(model_context, dict) else None,
             execution_partition=dict(execution_partition) if isinstance(execution_partition, dict) else None,
             execution_budget=dict(execution_budget) if isinstance(execution_budget, dict) else None,
+            canonical_quality=copy.deepcopy(canonical_quality) if isinstance(canonical_quality, dict) else None,
         )
 
 
@@ -446,6 +536,41 @@ class RepositoryBindings:
             f"lf_profile_semantic_utility_{profile_slug}",
         )
         return module, binding.semantic_utility_callable
+
+    def load_canonical_quality_validator(
+        self, profile_slug: str, component: str
+    ) -> tuple[ModuleType, str] | None:
+        binding = self.runtime_binding(profile_slug)
+        quality = binding.canonical_quality if binding is not None else None
+        if not isinstance(quality, dict):
+            return None
+        if component not in {"semantic_result_validator", "quality_receipt_validator", "quality_receipt_materializer"}:
+            raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_COMPONENT_INVALID", component)
+        spec = quality.get(component)
+        if not isinstance(spec, dict):
+            raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_COMPONENT_MISSING", component)
+        module = self._load_file(
+            self.profiles_root / profile_slug / spec["path"],
+            f"lf_profile_{component}_{profile_slug}",
+        )
+        return module, spec["callable"]
+
+    def canonical_quality_receipt_schema(self, profile_slug: str) -> SchemaBinding | None:
+        binding = self.runtime_binding(profile_slug)
+        quality = binding.canonical_quality if binding is not None else None
+        if not isinstance(quality, dict):
+            return None
+        profile_root = (self.profiles_root / profile_slug).resolve()
+        selected = (profile_root / quality["quality_receipt_schema"]).resolve()
+        self._within(selected, profile_root, "PROFILE_RUNTIME_CANONICAL_QUALITY_SCHEMA_ESCAPE")
+        payload, raw = self._read_schema(selected, profile_root)
+        return SchemaBinding(
+            payload=payload,
+            raw=raw,
+            sha256=sha256_bytes(raw),
+            source_refs=(str(selected.relative_to(self.repo_root)),),
+            mode="CANONICAL_QUALITY_RECEIPT",
+        )
 
     @staticmethod
     def _load_file(path: Path, module_name: str) -> ModuleType:

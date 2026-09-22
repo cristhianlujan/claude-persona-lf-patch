@@ -143,6 +143,194 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         self.assertLess(events.index("baseline-persisted"), events.index("/v1/profile/queue-execute"))
         self.assertLess(events.index("/v1/profile/queue-execute"), events.index("main-persisted"))
 
+
+    def test_output_validate_persists_required_canonical_quality_boundary(self) -> None:
+        profile = {
+            "runtime_completion": {"status": "PASS", "receipt": {}},
+            "profile_contract_valid": {"status": "PASS", "blocking_codes": []},
+            "semantic_utility": {"status": "PASS", "blocking_codes": []},
+            "canonical_quality": {
+                "applicability": "REQUIRED",
+                "status": "PENDING_INDEPENDENT_SEMANTIC_REVIEW",
+                "deterministic_floors_can_accept_quality": False,
+                "receipt_required_for_pass_to_quality_pack": True,
+            },
+            "raw_output": '{"profile_pack_id":"SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"}',
+        }
+        job = {"result": {"result": profile}}
+        captured: dict[str, dict] = {}
+
+        class Cursor:
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+
+        class Conn(FakeConn):
+            def cursor(self): return Cursor()
+
+        def fetch(_cur, _query, params):
+            step_id = params[1]
+            payload = params[3].obj
+            captured[step_id] = payload
+            return {"outcome": "STEP_RECORDED"}
+
+        governed = {
+            "execution_id": model_governance()["execution_id"],
+            "source": {
+                "profile_source_digest": "sha256:" + "b" * 64,
+                "source_revision": "c" * 40,
+            },
+        }
+        with (
+            patch.object(worker, "_profile_result", return_value=profile),
+            patch.object(worker, "_read_model_governance", return_value=model_governance()),
+            patch.object(worker, "_fetch_json_scalar", side_effect=fetch),
+        ):
+            result = worker._record_post_model_governance(
+                Conn(),
+                claimed=claimed(),
+                governed=governed,
+                job=job,
+            )
+        self.assertEqual(result["status"], "READY_FOR_SEMANTIC_JUDGE")
+        self.assertEqual(result["canonical_quality"]["applicability"], "REQUIRED")
+        self.assertEqual(
+            captured["output_validate"]["canonical_quality"]["status"],
+            "PENDING_INDEPENDENT_SEMANTIC_REVIEW",
+        )
+
+    def test_invalid_required_canonical_quality_boundary_blocks(self) -> None:
+        profile = {
+            "runtime_completion": {"status": "PASS", "receipt": {}},
+            "profile_contract_valid": {"status": "PASS", "blocking_codes": []},
+            "semantic_utility": {"status": "PASS", "blocking_codes": []},
+            "canonical_quality": {
+                "applicability": "REQUIRED",
+                "status": "PASS",
+                "deterministic_floors_can_accept_quality": True,
+                "receipt_required_for_pass_to_quality_pack": False,
+            },
+            "raw_output": '{}',
+        }
+        job = {"result": {"result": profile}}
+        class Cursor:
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+        class Conn(FakeConn):
+            def cursor(self): return Cursor()
+        governed = {
+            "execution_id": model_governance()["execution_id"],
+            "source": {
+                "profile_source_digest": "sha256:" + "b" * 64,
+                "source_revision": "c" * 40,
+            },
+        }
+        with (
+            patch.object(worker, "_profile_result", return_value=profile),
+            patch.object(worker, "_read_model_governance", return_value=model_governance()),
+            patch.object(worker, "_fetch_json_scalar", return_value={"outcome": "STEP_RECORDED"}),
+        ):
+            result = worker._record_post_model_governance(
+                Conn(), claimed=claimed(), governed=governed, job=job
+            )
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(
+            result["error_code"],
+            "HETZNER_CANONICAL_QUALITY_BOUNDARY_INVALID",
+        )
+
+
+
+    def test_validated_semantic_quality_records_judge_then_report_output(self) -> None:
+        captured: list[tuple[str, dict]] = []
+
+        class Cursor:
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+
+        class Conn(FakeConn):
+            def __init__(self): self.commits = 0
+            def cursor(self): return Cursor()
+            def commit(self): self.commits += 1
+
+        def fetch(_cur, _query, params):
+            step_id = params[1]
+            payload = params[3].obj
+            captured.append((step_id, payload))
+            return {"outcome": "STEP_RECORDED"}
+
+        finalize = {
+            "status": "PASS",
+            "canonical_quality_accepted": True,
+            "quality_receipt": {"decision": "PASS_TO_QUALITY_PACK"},
+        }
+        semantic = {
+            "verdict": "PASS_INDEPENDENT_SEMANTIC",
+            "candidate_sha256": "a" * 64,
+            "scope_packet_sha256": "b" * 64,
+            "blocking_codes": [],
+            "unsupported_claims": [],
+        }
+        conn = Conn()
+        with patch.object(worker, "_fetch_json_scalar", side_effect=fetch):
+            result = worker._record_semantic_quality_result(
+                conn,
+                execution_id=model_governance()["execution_id"],
+                profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+                semantic_execution_receipt_ref="native-review://receipt/1",
+                semantic_result=semantic,
+                finalize_result=finalize,
+            )
+
+        self.assertEqual(result["status"], "COMPLETED")
+        self.assertEqual([step for step, _payload in captured], ["semantic_judge", "report_output"])
+        self.assertEqual(captured[0][1]["semantic_judge_result"]["status"], "PASS")
+        self.assertEqual(captured[0][1]["unsupported_claims"], [])
+        self.assertTrue(captured[1][1]["no_write_performed"])
+        self.assertTrue(captured[1][1]["canonical_quality_accepted"])
+        self.assertEqual(conn.commits, 1)
+
+    def test_semantic_quality_never_records_when_review_is_not_independent_pass(self) -> None:
+        class Conn(FakeConn):
+            def cursor(self):
+                raise AssertionError("DB must not be touched for rejected review")
+
+        base = {
+            "status": "PASS",
+            "canonical_quality_accepted": True,
+            "quality_receipt": {"decision": "PASS_TO_QUALITY_PACK"},
+        }
+        rejected = worker._record_semantic_quality_result(
+            Conn(),
+            execution_id=model_governance()["execution_id"],
+            profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            semantic_execution_receipt_ref="native-review://receipt/1",
+            semantic_result={
+                "verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+                "unsupported_claims": [],
+            },
+            finalize_result=base,
+        )
+        self.assertEqual(rejected["status"], "BLOCKED")
+        self.assertEqual(rejected["error_code"], "SEMANTIC_REVIEW_VERDICT_NOT_PASS")
+
+        rejected_claim = worker._record_semantic_quality_result(
+            Conn(),
+            execution_id=model_governance()["execution_id"],
+            profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            semantic_execution_receipt_ref="native-review://receipt/1",
+            semantic_result={
+                "verdict": "PASS_INDEPENDENT_SEMANTIC",
+                "unsupported_claims": [{"claim": "unresolved"}],
+            },
+            finalize_result=base,
+        )
+        self.assertEqual(rejected_claim["status"], "BLOCKED")
+        self.assertEqual(
+            rejected_claim["error_code"],
+            "SEMANTIC_REVIEW_UNSUPPORTED_CLAIMS_PRESENT",
+        )
+
+
     def test_ready_for_semantic_judge_never_persists_queue_success(self) -> None:
         runtime_profile = {
             "runtime_completion": {"status": "PASS", "receipt": {}},

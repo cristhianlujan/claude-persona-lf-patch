@@ -16,6 +16,10 @@ from pathlib import Path
 from typing import Any
 
 V03_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+V04_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+V05_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+V06_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+CLOSURE_PACK_IDS = {V03_PACK_ID, V04_PACK_ID, V05_PACK_ID, V06_PACK_ID}
 EXISTING_AUTHORITY = "EXISTING_AUTHORITY"
 CLOSURE_V1 = "SRCR_CLOSURE_PROOF_V1"
 CLOSURE_V2 = "SRCR_CLOSURE_PROOF_V2"
@@ -214,7 +218,7 @@ def _validate_manifest_shape(manifest: Any) -> tuple[list[dict], dict[str, dict]
 
 def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[dict], dict]:
     """Validate V0.3 closure proof and return errors plus derived summary."""
-    if not isinstance(candidate, dict) or candidate.get("profile_pack_id") != V03_PACK_ID:
+    if not isinstance(candidate, dict) or candidate.get("profile_pack_id") not in CLOSURE_PACK_IDS:
         return [], {"applies": False}
 
     errors, evidence_by_id = _validate_manifest_shape(evidence_manifest)
@@ -628,12 +632,17 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         errors.append(_err("SRCR_HANDOFF_READY_NOT_DERIVED", "$.closure_proof.derived_decision_closure.handoff_ready"))
 
     package = candidate.get("implementation_package")
-    decision_closure = package.get("decision_closure") if isinstance(package, dict) else {}
-    if isinstance(decision_closure, dict):
-        if decision_closure.get("handoff_ready") is not computed_ready:
-            errors.append(_err("SRCR_IMPLEMENTATION_HANDOFF_READY_NOT_DERIVED", "$.implementation_package.decision_closure.handoff_ready"))
-        if computed_ready and decision_closure.get("open_design_decisions") != []:
-            errors.append(_err("SRCR_READY_WITH_OPEN_DESIGN_DECISIONS", "$.implementation_package.decision_closure.open_design_decisions"))
+    if isinstance(package, dict):
+        decision_closure = package.get("decision_closure")
+        if not isinstance(decision_closure, dict):
+            errors.append(_err("SRCR_IMPLEMENTATION_DECISION_CLOSURE_REQUIRED", "$.implementation_package.decision_closure"))
+        else:
+            if decision_closure.get("handoff_ready") is not computed_ready:
+                errors.append(_err("SRCR_IMPLEMENTATION_HANDOFF_READY_NOT_DERIVED", "$.implementation_package.decision_closure.handoff_ready"))
+            if computed_ready and decision_closure.get("open_design_decisions") != []:
+                errors.append(_err("SRCR_READY_WITH_OPEN_DESIGN_DECISIONS", "$.implementation_package.decision_closure.open_design_decisions"))
+    elif candidate.get("status") == "SYSTEMIC_REPAIR_SPEC":
+        errors.append(_err("SRCR_SYSTEMIC_SPEC_IMPLEMENTATION_PACKAGE_REQUIRED", "$.implementation_package"))
 
     if candidate.get("status") == "SYSTEMIC_REPAIR_SPEC":
         if open_ids or any_open_ids:

@@ -1,0 +1,144 @@
+name: SRCR V0.6 Lifecycle Candidate Freeze
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - sandbox/lf_contract_gate_test/srcr_v06_native_harness/build_candidate_from_v05.py
+      - .github/workflows/srcr-v06-lifecycle-candidate-freeze.yml
+
+permissions:
+  contents: write
+
+jobs:
+  build-validate-freeze:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deterministic dependencies
+        run: python -m pip install --quiet jsonschema
+
+      - name: Reconstruct exact frozen V0.5 candidate and evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          work=/tmp/srcr_v06
+          mkdir -p "$work"
+          git fetch origin lf/srcr-v05-lifecycle-regression-20260921:refs/remotes/origin/lf/srcr-v05-lifecycle-regression-20260921 --force
+          ref=origin/lf/srcr-v05-lifecycle-regression-20260921
+          base=sandbox/lf_contract_gate_test/srcr_v05_lifecycle_regression
+          : > "$work/candidate.b64"
+          for n in candidate.part1.b64 candidate.part2.b64 candidate.part3.b64 candidate.part4a.b64 candidate.part4b.b64 candidate.part5.b64 candidate.part6.b64 candidate.part7.b64 candidate.part8.b64; do
+            git show "$ref:$base/$n" | tr -d '\n\r' >> "$work/candidate.b64"
+          done
+          base64 -d "$work/candidate.b64" | gzip -dc > "$work/candidate_v05.json"
+          git show "$ref:$base/evidence_manifest.json.gz.b64" | tr -d '\n\r' | base64 -d | gzip -dc > "$work/evidence_manifest_v05.json"
+          actual="$(sha256sum "$work/candidate_v05.json" | awk '{print $1}')"
+          expected="5236f4fa746290ee75b8d3892fa9a970b2e13adf9b3bf38e3b2d9352dac13c05"
+          test "$actual" = "$expected"
+          echo "PASS_V05_EXACT_IDENTITY=$actual"
+
+      - name: Build V0.6 candidate, merged manifest and globally sequenced trace
+        env:
+          PYTHONPATH: .
+        run: |
+          set -euo pipefail
+          work=/tmp/srcr_v06
+          python sandbox/lf_contract_gate_test/srcr_v06_native_harness/build_candidate_from_v05.py \
+            --base-candidate "$work/candidate_v05.json" \
+            --base-manifest "$work/evidence_manifest_v05.json" \
+            --observed-manifest sandbox/lf_contract_gate_test/srcr_v06_native_harness/lifecycle_evidence_manifest_combined.json \
+            --trace sandbox/lf_contract_gate_test/srcr_v06_native_harness/lifecycle_trace_combined.json \
+            --out-candidate "$work/candidate_v06.json" \
+            --out-manifest "$work/evidence_manifest_v06.json" \
+            --out-trace "$work/trace_v06_envelope.json"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          work=Path('/tmp/srcr_v06')
+          payload=json.loads((work/'trace_v06_envelope.json').read_text())
+          (work/'trace_v06_rows.json').write_text(
+              json.dumps(payload['trace'],ensure_ascii=False,indent=2,sort_keys=True)+'\n'
+          )
+          PY
+
+      - name: Validate canonical pre-quality pipeline
+        env:
+          PYTHONPATH: .
+        run: |
+          set -euo pipefail
+          work=/tmp/srcr_v06
+          python sandbox/lf_contract_gate_test/srcr_v06_native_harness/native_lifecycle_harness.py post \
+            --candidate "$work/candidate_v06.json" \
+            --manifest "$work/evidence_manifest_v06.json" \
+            --trace "$work/trace_v06_rows.json" \
+            | tee "$work/pre_quality_validation.json"
+          grep -q '"status": "PASS_PRE_QUALITY"' "$work/pre_quality_validation.json"
+          grep -q '"independent_quality": "PENDING_INDEPENDENT_REVIEW"' "$work/pre_quality_validation.json"
+
+      - name: Freeze exact candidate and non-acceptance receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          work=/tmp/srcr_v06
+          out=sandbox/lf_contract_gate_test/srcr_v06_candidate_20260922
+          mkdir -p "$out"
+          gzip -n -c "$work/candidate_v06.json" | base64 -w0 > "$out/candidate_v06.json.gz.b64"
+          sha256sum "$work/candidate_v06.json" | awk '{print $1}' > "$out/candidate_v06.file.sha256"
+          cp "$work/evidence_manifest_v06.json" "$out/evidence_manifest_v06_merged.json"
+          cp "$work/trace_v06_envelope.json" "$out/lifecycle_trace_v06_resequenced.json"
+          cp "$work/pre_quality_validation.json" "$out/pre_quality_validation.json"
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          work=Path('/tmp/srcr_v06')
+          out=Path('sandbox/lf_contract_gate_test/srcr_v06_candidate_20260922')
+          candidate=work.joinpath('candidate_v06.json').read_bytes()
+          manifest=json.loads(work.joinpath('evidence_manifest_v06.json').read_text())
+          trace=json.loads(work.joinpath('trace_v06_envelope.json').read_text())
+          validation=json.loads(work.joinpath('pre_quality_validation.json').read_text())
+          receipt={
+            'schema':'SRCR_V06_LIFECYCLE_FROZEN_CANDIDATE_RECEIPT_V1',
+            'receipt_kind':'NON_ACCEPTANCE_PRE_QUALITY_FREEZE',
+            'candidate_file_sha256':hashlib.sha256(candidate).hexdigest(),
+            'candidate_bytes':len(candidate),
+            'source_v05_candidate_sha256':'5236f4fa746290ee75b8d3892fa9a970b2e13adf9b3bf38e3b2d9352dac13c05',
+            'profile_pack_id':'SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6',
+            'manifest_bundle_digest':manifest['bundle_digest'],
+            'trace_count':len(trace['trace']),
+            'pre_quality_status':validation['status'],
+            'canonical_quality_accepted':False,
+            'independent_quality':validation['independent_quality'],
+            'oracle_evaluation_performed_in_this_run':False,
+            'runtime_activation':False,
+            'production_mutation':False,
+            'merge_performed':False,
+          }
+          out.joinpath('candidate_receipt.json').write_text(
+              json.dumps(receipt,ensure_ascii=False,indent=2,sort_keys=True)+'\n'
+          )
+          print(json.dumps(receipt,sort_keys=True))
+          PY
+
+      - name: Persist frozen sandbox evidence on branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "LF SRCR Sandbox"
+          git config user.email "srcr-sandbox@users.noreply.github.com"
+          git add sandbox/lf_contract_gate_test/srcr_v06_candidate_20260922/
+          if git diff --cached --quiet; then
+            echo "NO_FREEZE_DIFF"
+            exit 0
+          fi
+          git commit -m "test(srcr): freeze V0.6 Lifecycle pre-quality candidate"
+          git push origin HEAD:lf/srcr-v06-lifecycle-regression-sandbox-20260922

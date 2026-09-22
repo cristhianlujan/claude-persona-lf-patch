@@ -47,6 +47,19 @@ class FakeAPIEngine:
             "downstream_authorized": False,
         }
 
+    def run_semantic_quality_finalize(self, payload: Any) -> dict[str, Any]:
+        return {
+            "kind": "semantic_quality_finalize",
+            "request_id": payload.request_id,
+            "profile_code": payload.profile_code,
+            "result": {
+                "status": "PASS",
+                "canonical_quality_accepted": True,
+                "downstream_authorized": False,
+            },
+            "downstream_authorized": False,
+        }
+
     def runtime_snapshot(self) -> dict[str, Any]:
         return {
             "deployment_classification": "INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY",
@@ -180,6 +193,28 @@ class APITest(unittest.TestCase):
             },
         }
 
+    @staticmethod
+    def semantic_quality_payload(request_id: str = "semantic-finalize-1") -> dict[str, Any]:
+        return {
+            "request_id": request_id,
+            "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            "profile_slug": "systemic_root_cause_repair_lf",
+            "candidate": {"profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"},
+            "evidence_manifest": {"bundle_id": "BUNDLE-1", "evidence": [{"evidence_id": "EV-1"}]},
+            "scope_authority_packet": {"packet_version": "LF_SCOPE_AUTHORITY_PACKET_V1"},
+            "semantic_result": {
+                "verdict": "PASS_INDEPENDENT_SEMANTIC",
+                "candidate_sha256": "a" * 64,
+                "scope_packet_sha256": "b" * 64,
+            },
+            "candidate_revision": "candidate-revision-1",
+            "semantic_execution_receipt_ref": "native-review://receipt/1",
+            "producer_execution_id": "EXEC-PRODUCER-001",
+            "reviewer_execution_id": "EXEC-REVIEWER-001",
+            "producer_execution_receipt_ref": "native-producer://receipt/1",
+            "issued_at": "2026-09-22T05:35:00Z",
+        }
+
     def auth(self) -> dict[str, str]:
         return {"Authorization": "Bearer secret-test-token"}
 
@@ -278,6 +313,32 @@ class APITest(unittest.TestCase):
         ).json()
         self.assertTrue(repeated["reused"])
         self.assertEqual(repeated["job_id"], accepted["job_id"])
+
+    def test_semantic_quality_finalize_is_authenticated_and_requires_independence(self) -> None:
+        payload = self.semantic_quality_payload()
+        self.assertEqual(
+            self.client.post("/v1/profile/semantic-quality-finalize", json=payload).status_code,
+            401,
+        )
+        response = self.client.post(
+            "/v1/profile/semantic-quality-finalize",
+            json=payload,
+            headers=self.auth(),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["kind"], "semantic_quality_finalize")
+        self.assertTrue(response.json()["result"]["canonical_quality_accepted"])
+        self.assertFalse(response.json()["downstream_authorized"])
+
+        invalid = self.semantic_quality_payload("semantic-finalize-2")
+        invalid["reviewer_execution_id"] = invalid["producer_execution_id"]
+        invalid_response = self.client.post(
+            "/v1/profile/semantic-quality-finalize",
+            json=invalid,
+            headers=self.auth(),
+        )
+        self.assertEqual(invalid_response.status_code, 422)
+        self.assertEqual(invalid_response.json()["detail"], "REQUEST_VALIDATION_FAILED")
 
     def test_validation_error_does_not_echo_literal_input(self) -> None:
         invalid = self.payload("api-invalid-1")

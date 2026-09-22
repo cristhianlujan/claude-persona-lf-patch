@@ -30,6 +30,10 @@ closure = _load_local("srcr_quality_closure", "closure_proof.py")
 semantic_validator = _load_local("srcr_quality_semantic_result", "validate_semantic_judge_result.py")
 
 V03 = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+V04 = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+V05 = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+V06 = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+QUALITY_PACK_IDS = {V03, V04, V05, V06}
 PASS_SEMANTIC = "PASS_INDEPENDENT_SEMANTIC"
 PASS_DECISION = "PASS_TO_QUALITY_PACK"
 VERDICT_TO_DECISION = {
@@ -69,14 +73,15 @@ def validate_quality_receipt(
             "canonical_quality_accepted": False,
         }
 
-    if not isinstance(candidate, dict) or candidate.get("profile_pack_id") != V03:
-        errors.append(_err("SRCR_QUALITY_RECEIPT_REQUIRES_V03", "$.candidate.profile_pack_id"))
+    candidate_pack = candidate.get("profile_pack_id") if isinstance(candidate, dict) else None
+    if candidate_pack not in QUALITY_PACK_IDS:
+        errors.append(_err("SRCR_QUALITY_RECEIPT_REQUIRES_CLOSURE_PACK", "$.candidate.profile_pack_id"))
     if isinstance(candidate, dict) and "quality_receipt" in candidate:
         errors.append(_err("SRCR_CANDIDATE_SELF_ISSUED_QUALITY_RECEIPT", "$.candidate.quality_receipt"))
 
     expected_constants = {
         "receipt_version": "SRCR_QUALITY_RECEIPT_V1",
-        "profile_pack_id": V03,
+        "profile_pack_id": candidate_pack,
         "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
     }
     for field, expected in expected_constants.items():
@@ -97,6 +102,43 @@ def validate_quality_receipt(
         errors.append(_err("SRCR_QUALITY_PRODUCER_CONTEXT_AVAILABLE", "$.receipt.review_boundary.producer_context_available"))
     if not _nonempty(boundary.get("semantic_execution_receipt_ref")):
         errors.append(_err("SRCR_SEMANTIC_EXECUTION_RECEIPT_REF_REQUIRED", "$.receipt.review_boundary.semantic_execution_receipt_ref"))
+
+    if candidate_pack == V06:
+        producer_execution_id = boundary.get("producer_execution_id")
+        reviewer_execution_id = boundary.get("reviewer_execution_id")
+        producer_receipt_ref = boundary.get("producer_execution_receipt_ref")
+        semantic_receipt_ref = boundary.get("semantic_execution_receipt_ref")
+        independence_refs = boundary.get("independence_evidence_refs")
+        if not _nonempty(producer_execution_id):
+            errors.append(_err("SRCR_V06_PRODUCER_EXECUTION_ID_REQUIRED", "$.receipt.review_boundary.producer_execution_id"))
+        if not _nonempty(reviewer_execution_id):
+            errors.append(_err("SRCR_V06_REVIEWER_EXECUTION_ID_REQUIRED", "$.receipt.review_boundary.reviewer_execution_id"))
+        if (
+            _nonempty(producer_execution_id)
+            and _nonempty(reviewer_execution_id)
+            and producer_execution_id == reviewer_execution_id
+        ):
+            errors.append(_err("SRCR_V06_REVIEW_EXECUTION_NOT_INDEPENDENT", "$.receipt.review_boundary.reviewer_execution_id"))
+        if not _nonempty(producer_receipt_ref):
+            errors.append(_err("SRCR_V06_PRODUCER_EXECUTION_RECEIPT_REF_REQUIRED", "$.receipt.review_boundary.producer_execution_receipt_ref"))
+        if (
+            _nonempty(producer_receipt_ref)
+            and _nonempty(semantic_receipt_ref)
+            and producer_receipt_ref == semantic_receipt_ref
+        ):
+            errors.append(_err("SRCR_V06_REVIEW_RECEIPT_NOT_INDEPENDENT", "$.receipt.review_boundary.semantic_execution_receipt_ref"))
+        if (
+            not isinstance(independence_refs, list)
+            or len(independence_refs) < 2
+            or any(not _nonempty(ref) for ref in independence_refs)
+            or len(independence_refs) != len(set(independence_refs))
+        ):
+            errors.append(_err("SRCR_V06_INDEPENDENCE_EVIDENCE_REFS_REQUIRED", "$.receipt.review_boundary.independence_evidence_refs"))
+        elif (
+            producer_receipt_ref not in independence_refs
+            or semantic_receipt_ref not in independence_refs
+        ):
+            errors.append(_err("SRCR_V06_INDEPENDENCE_EVIDENCE_REFS_INCOMPLETE", "$.receipt.review_boundary.independence_evidence_refs"))
 
     closure_errors, summary = closure.validate_v03_closure(candidate, evidence_manifest)
     if closure_errors:

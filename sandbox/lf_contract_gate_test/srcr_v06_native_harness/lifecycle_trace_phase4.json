@@ -1,0 +1,131 @@
+{
+  "schema": "SRCR_V05_LIFECYCLE_NATIVE_TRACE_PHASE4_V1",
+  "run_id": "EXEC-SRCR-V05-NATIVE-LIFECYCLE-REGRESSION-20260921-001",
+  "mode": "READ_ONLY_NONBLIND_REGRESSION",
+  "trace": [
+    {
+      "sequence": 1,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/validate_pack.py",
+      "request_digest": "sha256:e2f6e434e85f87113cb17655e338fd960233eb1bdc45e6d3b7e927c53ccfc20d",
+      "result_digest": "sha256:833d25b3a5700f3802b7b9e7054614ddbd4e52fe1955bf25cb0ae241b505be12",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-037",
+      "consumer": "$.profile_pack_validation.self_validator"
+    },
+    {
+      "sequence": 2,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+      "request_digest": "sha256:f05eb3f84a6b1d04cb453d0eff4bbb5234bf7ed5e900a941e1d9b07b902e8bbb",
+      "result_digest": "sha256:20976ea82219d55f394c8183c038778ae8bb26c0e72bcccc744db184e862a94a",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-038",
+      "consumer": "$.profile_pack_validation.output_schema"
+    },
+    {
+      "sequence": 3,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106607329745/logs",
+      "request_digest": "sha256:b8e7fb3fc41dd974952832eab3b207d60489c9e2c26b178c9198c782d554e75f",
+      "result_digest": "sha256:02a185c9f238343c245eabd457450af139a4d20f93c895c05208ffa88a657e51",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-039",
+      "consumer": "$.historical_regressions.deep_pack_validation"
+    },
+    {
+      "sequence": 4,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/.github/workflows/validate-lf-packs.yml",
+      "request_digest": "sha256:1bf55cff79fec410525610f768567a687935011ddf026992ec090470affdfd14",
+      "result_digest": "sha256:7d514e85717df9a4447d9cb0b30c4eba27d528b08696e038d963d18e25915f96",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-040",
+      "consumer": "$.ci_applicability.validate_lf_packs"
+    },
+    {
+      "sequence": 5,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/.github/workflows/lf-contract-check.yml",
+      "request_digest": "sha256:2fb00969bf54835e30885284e3fed15ed6173dd3005e5fc4a2923167cbaef97e",
+      "result_digest": "sha256:621162f34c7c5a376ddd9876a285c4b04741fcfcf01ab194a8c6f1281d2a16c7",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-041",
+      "consumer": "$.ci_applicability.lf_contract_check"
+    },
+    {
+      "sequence": 6,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106601722653/logs",
+      "request_digest": "sha256:fa54489c97ddd51dae024ccbe00fa4049cdb4bd8b80888bafe0eca1a95483450",
+      "result_digest": "sha256:889c5d936d43f56a4f2544c7b7dd5edb4b7afa8e9c3796cc9c19494ac597f62b",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-042",
+      "consumer": "$.historical_regressions.new_branch_push_validate"
+    },
+    {
+      "sequence": 7,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106601741367/logs",
+      "request_digest": "sha256:eebe82ced6fd976c481ea439c26d26bdbd3154923491273b6f459631dea9e45b",
+      "result_digest": "sha256:d7f77c903577cbf53d05aa8b626b5b736bec46053991a1169f48548cb4bd25d5",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "evidence_id": "EV-LC-043",
+      "consumer": "$.historical_regressions.new_branch_push_contract"
+    },
+    {
+      "sequence": 8,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/evals/v05_producer_depth_cases.py",
+      "request_digest": "sha256:f2784825a8c41017b4a099ae1a8fdd8980e4a85619c70a97d4f2aea846612b67",
+      "result_digest": "sha256:9a874c4f24fd2b47a28d151df3c50bbe37509f4858989460b74746e3a13df4d5",
+      "observed_at": "2026-09-21T22:58:00-05:00",
+      "evidence_id": "EV-LC-044",
+      "consumer": "$.profile_pack_validation.v05_architecture_audit_contract"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "LC-F11",
+      "class": "ARCHITECTURE_AUDIT_SCHEMA_RUNTIME_REQUIREMENT_DIVERGENCE",
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-037",
+        "EV-LC-038",
+        "EV-LC-039",
+        "EV-LC-044"
+      ],
+      "observation": "V0.5 explicitly says ARCHITECTURE_AUDIT relaxes only incident-specific recurrence/chain requirements, and runtime_validate still requires alternatives, falsification, implementation package and regression artifacts for SYSTEMIC_REPAIR_SPEC. Commit 4ca changed output.schema.json so V0.5 ARCHITECTURE_AUDIT is exempted from the entire repair-artifact requirement block. validate_pack detects the resulting contract divergence as SCHEMA_REQUIRED_KEY_MISSING:alternatives.",
+      "impact": "Schema can accept an architecture-audit candidate that runtime_validate rejects, while the pack self-validator fails the pack itself. The repair is to align the schema with the intended narrow relaxation, not to weaken validate_pack."
+    },
+    {
+      "finding_id": "LC-F12",
+      "class": "NEW_BRANCH_PUSH_ZERO_BASE_SHA_NOT_NORMALIZED",
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-040",
+        "EV-LC-041",
+        "EV-LC-042",
+        "EV-LC-043"
+      ],
+      "observation": "On the first push that creates a branch, github.event.before is 40 zeroes. Validate LF Packs fetches any non-empty base and lf-contract-check requires/fetches any non-empty exact_base, so both attempt git fetch of 000...000 and fail before material validation. A separate bootstrap workflow already guards this zero sentinel, proving a repository-local handling pattern exists.",
+      "impact": "Initial branch pushes can report red checks for CI transport/currentness mechanics before the candidate is evaluated; this can mask the first substantive failure."
+    }
+  ]
+}
