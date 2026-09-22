@@ -20,6 +20,7 @@ from .models import (
     JobAccepted,
     QueueExecuteRequest,
     ResearchBaselineRequest,
+    SemanticQualityFinalizeRequest,
 )
 from .settings import Settings, SettingsError
 
@@ -295,6 +296,16 @@ def create_app(
             payload=payload,
             request=request,
         )
+
+    @app.post(
+        "/v1/profile/semantic-quality-finalize",
+        dependencies=[Depends(authorize)],
+    )
+    def semantic_quality_finalize(
+        payload: SemanticQualityFinalizeRequest, request: Request
+    ) -> dict[str, Any]:
+        engine: ProfileRuntimeEngine = request.app.state.engine
+        return engine.run_semantic_quality_finalize(payload)
 
     @app.post(
         "/v1/profile/batch",
