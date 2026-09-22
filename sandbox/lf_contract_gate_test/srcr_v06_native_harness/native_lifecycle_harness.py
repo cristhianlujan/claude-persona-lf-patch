@@ -35,6 +35,7 @@ EXECUTION_CONTRACT_PATH = (
 RUNTIME_VALIDATE_PATH = PROFILE_ROOT / "validators" / "runtime_validate.py"
 SEMANTIC_UTILITY_PATH = PROFILE_ROOT / "validators" / "runtime_semantic_utility.py"
 OUTPUT_SCHEMA_PATH = PROFILE_ROOT / "schemas" / "output.schema.json"
+RESEARCH_TRACE_PATH = PROFILE_ROOT / "validators" / "research_trace.py"
 
 PROFILE_CODE = "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
 PROFILE_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
@@ -79,6 +80,7 @@ def _load(name: str, path: Path):
 execution_contract = _load("srcr_v06_execution_contract", EXECUTION_CONTRACT_PATH)
 runtime_validate = _load("srcr_v06_runtime_validate", RUNTIME_VALIDATE_PATH)
 runtime_semantic_utility = _load("srcr_v06_runtime_semantic_utility", SEMANTIC_UTILITY_PATH)
+research_trace = _load("srcr_v06_research_trace", RESEARCH_TRACE_PATH)
 output_schema = json.loads(OUTPUT_SCHEMA_PATH.read_text(encoding="utf-8"))
 schema_validator = Draft7Validator(output_schema)
 
@@ -178,111 +180,11 @@ def build_native_execution_contract(
 
 
 def validate_query_trace(trace: Any) -> list[str]:
-    errors: list[str] = []
-    if not isinstance(trace, list) or not trace:
-        return ["QUERY_TRACE_REQUIRED"]
-
-    expected_seq = 1
-    seen_evidence: set[str] = set()
-    allowed_resolver_ids = {
-        item["resolver_id"] for item in EVIDENCE_RESOLVERS.values()
-    }
-
-    for idx, row in enumerate(trace):
-        path = f"trace[{idx}]"
-        if not isinstance(row, dict):
-            errors.append(f"{path}:NOT_OBJECT")
-            continue
-        missing = sorted(TRACE_REQUIRED_FIELDS - set(row))
-        if missing:
-            errors.append(f"{path}:MISSING:{','.join(missing)}")
-            continue
-        if row.get("sequence") != expected_seq:
-            errors.append(f"{path}:SEQUENCE_MISMATCH")
-        expected_seq += 1
-
-        tool = row.get("tool_permission")
-        if tool not in REQUIRED_TOOL_PERMISSIONS:
-            errors.append(f"{path}:TOOL_PERMISSION_INVALID")
-        if isinstance(tool, str) and tool.startswith(FORBIDDEN_WRITE_PREFIXES):
-            errors.append(f"{path}:WRITE_TOOL_FORBIDDEN")
-
-        resolver_id = row.get("resolver_id")
-        provider = row.get("provider")
-        if resolver_id not in allowed_resolver_ids:
-            errors.append(f"{path}:RESOLVER_NOT_CANONICAL")
-        else:
-            expected_provider = next(
-                item["provider"]
-                for item in EVIDENCE_RESOLVERS.values()
-                if item["resolver_id"] == resolver_id
-            )
-            if provider != expected_provider:
-                errors.append(f"{path}:RESOLVER_PROVIDER_MISMATCH")
-
-        if not isinstance(row.get("query_locator"), str) or not row["query_locator"].strip():
-            errors.append(f"{path}:QUERY_LOCATOR_REQUIRED")
-        if not _sha_ok(row.get("request_digest")):
-            errors.append(f"{path}:REQUEST_DIGEST_INVALID")
-        if not _sha_ok(row.get("result_digest")):
-            errors.append(f"{path}:RESULT_DIGEST_INVALID")
-
-        evidence_id = row.get("evidence_id")
-        if not isinstance(evidence_id, str) or len(evidence_id.strip()) < 3:
-            errors.append(f"{path}:EVIDENCE_ID_INVALID")
-        elif evidence_id in seen_evidence:
-            errors.append(f"{path}:EVIDENCE_ID_DUPLICATE")
-        else:
-            seen_evidence.add(evidence_id)
-
-        if not isinstance(row.get("consumer"), str) or not row["consumer"].strip():
-            errors.append(f"{path}:CONSUMER_REQUIRED")
-
-    return sorted(set(errors))
+    return research_trace.validate_query_trace(trace)
 
 
 def validate_manifest_trace_binding(manifest: Any, trace: Any) -> list[str]:
-    errors: list[str] = []
-    if not isinstance(manifest, dict):
-        return ["EVIDENCE_MANIFEST_REQUIRED"]
-    if not isinstance(trace, list):
-        return ["QUERY_TRACE_REQUIRED"]
-
-    evidence_rows = manifest.get("evidence")
-    if not isinstance(evidence_rows, list):
-        return ["EVIDENCE_MANIFEST_EVIDENCE_REQUIRED"]
-
-    by_id = {
-        row.get("evidence_id"): row
-        for row in evidence_rows
-        if isinstance(row, dict) and isinstance(row.get("evidence_id"), str)
-    }
-    for idx, row in enumerate(trace):
-        if not isinstance(row, dict):
-            continue
-        evidence_id = row.get("evidence_id")
-        evidence = by_id.get(evidence_id)
-        if evidence is None:
-            errors.append(f"trace[{idx}]:EVIDENCE_NOT_IN_MANIFEST")
-            continue
-        if evidence.get("source_locator") != row.get("query_locator"):
-            errors.append(f"trace[{idx}]:EVIDENCE_LOCATOR_MISMATCH")
-        if evidence.get("digest") != row.get("result_digest"):
-            errors.append(f"trace[{idx}]:EVIDENCE_DIGEST_MISMATCH")
-        provider = row.get("provider")
-        locator = str(row.get("query_locator") or "").lower()
-        if provider == "GITHUB" and not (
-            locator.startswith("github://")
-            or locator.startswith("https://api.github.com/")
-            or locator.startswith("git:")
-        ):
-            errors.append(f"trace[{idx}]:GITHUB_LOCATOR_CLASS_MISMATCH")
-        if provider == "SUPABASE" and not (
-            locator.startswith("supabase://")
-            or locator.startswith("sql:")
-        ):
-            errors.append(f"trace[{idx}]:SUPABASE_LOCATOR_CLASS_MISMATCH")
-    return sorted(set(errors))
+    return research_trace.validate_manifest_trace_binding(manifest, trace)
 
 
 def post_producer_validation(
