@@ -7,31 +7,49 @@
 - E.16 modifica únicamente el validador LF, su workflow autorizado y los artefactos de prueba/gobernanza E.16 bajo `sandbox/lf_contract_gate_test/`.
 - No autoriza Supabase, PostgreSQL real, Edge, `main`, merge ni despliegue.
 
-## CA-N93 · inventario canónico de GitHub Actions
+## CA-N93 · readback exacto del carrier actual de GitHub Actions
 
 ### Enunciado
 
-La configuración YAML describe disparadores, pero no demuestra qué ejecuciones existieron. Para un head de una rama `lf/**`, el inventario mínimo esperado es:
+E.16 no mantiene una segunda autoridad sobre qué workflows deben aplicar. La aplicabilidad de controles y carriers pertenece a `CI_FAST_DEEP_LANE_ROUTER` y a su `lf-ci-execution-plan/v2`.
 
-1. `lf-contract-check` · `push`;
-2. `lf-contract-check` · `pull_request`;
-3. `Validate LF Packs` · `push`;
-4. `Validate LF Packs` · `pull_request`.
+Cada carrier requerido demuestra únicamente su propia ejecución exact-head. Ningún carrier espera, encuesta ni decide el estado de otro carrier.
 
 ### Criterio de aceptación
 
-`PR93_LOTE_E16_GITHUB_INVENTORY.py` debe consultar la API REST autenticada de Actions, filtrar por el SHA exacto `github.event.pull_request.head.sha` —no por el merge ref temporal—, paginar hasta el final y seleccionar la ejecución más reciente de cada par workflow/evento. Falla cuando falta un par, el head difiere, la respuesta no es íntegra o la ejecución seleccionada terminó sin `success`.
+`PR93_LOTE_E16_GITHUB_INVENTORY.py` debe consultar por API REST autenticada el **run actual** usando `GITHUB_RUN_ID` y comprobar:
 
-El registro generado declara:
+1. repository válido;
+2. workflow observado = `GITHUB_WORKFLOW`;
+3. event observado = `GITHUB_EVENT_NAME`;
+4. `head_sha` observado = exact-head esperado;
+5. run id exacto;
+6. estado dentro del vocabulario permitido;
+7. si el run ya terminó, conclusión = `success`;
+8. cualquier conclusión terminal negativa falla cerrada.
+
+Durante la ejecución se acepta `queued/in_progress` porque el carrier no puede demostrar su propia conclusión futura. El artifact deja explícito:
 
 ```text
-MEASURED_AUTHENTICATED_API
-pagination_complete=true
-matrix_complete=true
+schema_version=pr93-e16-actions-inventory/v3
+applicability_authority=CI_FAST_DEEP_LANE_ROUTER
+carrier_scope=CURRENT_CARRIER_ONLY
+cross_carrier_wait_required=false
+runtime_or_merge_claimed=false
 ```
 
-Durante la propia ejecución PR se permite que el run actual esté `queued` o `in_progress`; esos estados se registran mediante `selected_pending_present`, `selected_pending_count` y `selected_pending_runs`; el cierre CA-N93 exige readback independiente posterior que confirme los cuatro runs y sus conclusiones finales. El resultado sintético `10/10` valida la herramienta, no sustituye el inventario remoto.
+La conclusión final del carrier pertenece a GitHub Actions/branch protection y no se fabrica dentro de este readback.
 
+### Regla de no duplicación
+
+E.16 no puede volver a introducir:
+
+- una matriz propia de nombres de workflows;
+- polling entre workflows hermanos;
+- un timeout usado como sustituto de sincronización;
+- una segunda decisión de aplicabilidad de carriers.
+
+La prueba sintética valida el readback del carrier actual. La cobertura global del candidato se obtiene del plan CI canónico y de los resultados independientes de los carriers requeridos.
 ## CA-N96 · `payload.before` inalcanzable
 
 ### Enunciado
