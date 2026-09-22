@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 86.53846153846153,
+  "overall_percent": 90.38461538461539,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -142,16 +142,20 @@
     },
     {
       "obligation_id": "MC-10",
-      "state": "IMPLEMENTED",
-      "percent": 50,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "canonical_quality_finalize, receipt materializer/validator and governed semantic-review relay exist",
-        "live EJECUCION_PERFIL_LF step 70 semantic_judge is ACTIVE_ENFORCEMENT",
-        "current relay consumes an externally produced semantic_result; it does not itself invoke the SRCR semantic judge"
+        "governed producer execution EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000011 completed with execute_profile and output_validate STEP_PASS_WITH_EVIDENCE over candidate 6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+        "independent GPT_NATIVE reviewer execution EXEC-MC10-INDEPENDENT-REVIEW-20260922-001 returned PASS_INDEPENDENT_SEMANTIC over exact candidate/evidence/scope digests with review_input_sha256 c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+        "physical caller path executed deterministic contract gate -> semantic utility -> semantic result validator -> quality receipt materializer -> quality receipt validator",
+        "canonical quality PASS produced SRCR_QUALITY_RECEIPT_V1 decision PASS_TO_QUALITY_PACK; receipt sha256 68311064c73ae1bf9732b07a4784eb0e668b4c13ad90a24aa3d9bf350be486f9",
+        "governed recorder persisted semantic_judge and report_output; independent Supabase readback shows both STEP_PASS_WITH_EVIDENCE and the exact same quality receipt; canonical execution status COMPLETED",
+        "negative: contract+utility PASS with missing semantic result ends finalizer FAIL and canonical_quality_accepted=false",
+        "negative: semantic candidate digest mutation fails with SEMANTIC_JUDGE_CANDIDATE_SHA_MISMATCH",
+        "semantic review: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc10_semantic_review_result.json",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc10_semantic_quality_readback.json"
       ],
-      "remaining_requirements": [
-        "Execute the SRCR semantic judge in a distinct reviewer execution over exact candidate/evidence/scope, then pass it through finalizer and governed persistence readback."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-11",
@@ -191,8 +195,8 @@
       ]
     }
   ],
-  "closed_count": 9,
-  "open_count": 4,
+  "closed_count": 10,
+  "open_count": 3,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -205,7 +209,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "0b028df79435e7016ca2326884535a97fc400298",
+  "current_exact_code_head": "bc6cc407131f684623176bb95e94dc13044a0917",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -256,6 +260,15 @@
     "mc08_runtime_api_tests": "238 passed",
     "mc08_contract_check_run_id": 35751931908,
     "mc08_contract_check_blocker": "FAIL_RECEIPT_MISSING",
-    "mc08_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc08_finding_dedup_readback.json"
+    "mc08_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc08_finding_dedup_readback.json",
+    "mc10_producer_execution_id": "EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000011",
+    "mc10_reviewer_execution_id": "EXEC-MC10-INDEPENDENT-REVIEW-20260922-001",
+    "mc10_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "mc10_evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "mc10_scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "mc10_review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+    "mc10_quality_receipt_sha256": "68311064c73ae1bf9732b07a4784eb0e668b4c13ad90a24aa3d9bf350be486f9",
+    "mc10_execution_status": "COMPLETED",
+    "mc10_quality_decision": "PASS_TO_QUALITY_PACK"
   }
 }
