@@ -107,46 +107,68 @@
     },
     "query_trace": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "query_id",
-          "actor",
-          "execution_id",
-          "surface",
-          "source_locator",
-          "input_digest",
-          "result_status",
-          "result_count",
+          "sequence",
+          "tool_permission",
+          "resolver_id",
+          "provider",
+          "query_locator",
+          "request_digest",
           "result_digest",
           "observed_at",
-          "emitted_evidence_ids"
+          "evidence_id",
+          "consumer"
         ],
         "properties": {
-          "query_id": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "tool_permission": {
+            "enum": [
+              "READ_GITHUB",
+              "READ_SUPABASE"
+            ]
+          },
+          "resolver_id": {
+            "enum": [
+              "LF_GITHUB_SOURCE_READBACK_V1",
+              "LF_SUPABASE_READBACK_V1"
+            ]
+          },
+          "provider": {
+            "enum": [
+              "GITHUB",
+              "SUPABASE"
+            ]
+          },
+          "query_locator": {
             "type": "string",
             "minLength": 3
           },
-          "actor": {
+          "request_digest": {
             "type": "string",
-            "minLength": 2
+            "pattern": "^sha256:[0-9a-f]{64}$"
           },
-          "execution_id": {
+          "result_digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "observed_at": {
+            "type": "string",
+            "minLength": 8
+          },
+          "evidence_id": {
             "type": "string",
             "minLength": 3
           },
-          "surface": {
+          "consumer": {
             "type": "string",
-            "minLength": 2
-          },
-          "source_locator": {
-            "type": "string",
-            "minLength": 5
-          },
-          "input_digest": {
-            "type": "string",
-            "pattern": "^(sha256:)?[0-9a-f]{64}$"
+            "minLength": 1
           },
           "result_status": {
             "enum": [
@@ -161,22 +183,6 @@
           "result_count": {
             "type": "integer",
             "minimum": 0
-          },
-          "result_digest": {
-            "type": "string",
-            "pattern": "^(sha256:)?[0-9a-f]{64}$"
-          },
-          "observed_at": {
-            "type": "string",
-            "minLength": 8
-          },
-          "emitted_evidence_ids": {
-            "type": "array",
-            "uniqueItems": true,
-            "items": {
-              "type": "string",
-              "minLength": 3
-            }
           }
         }
       }
