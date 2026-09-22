@@ -216,9 +216,11 @@ The V2 closure-proof rules (materiality -> obligations -> external evidence bind
 
 Profile-maintenance work that changes SRCR's own producer, transport, evidence, validation, semantic-quality, or closure path MUST satisfy `profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json`.
 
-- The contract contains 12 mandatory closure obligations (MC-01..MC-12).
+- The contract contains 13 mandatory closure obligations (MC-01..MC-13).
 - Progress is evidence-derived only: NOT_STARTED=0, SPECIFIED=25, IMPLEMENTED=50, TESTED=75, READBACK_CLOSED=100.
 - A point below READBACK_CLOSED remains open. Partial implementation, CI green, utility PASS, component existence, or producer-authored readiness cannot close it.
 - The profile self-repair/update is not handoff-ready while any mandatory closure is open.
 - Every status report for this work MUST report each obligation's state, percentage, evidence refs, blocking codes and remaining requirements.
 - This contract is generic. Do not add lifecycle-case names, incident IDs or one-off rules to satisfy it.
+
+- MC-13 full step-by-step replay is the final behavioral closure proof: reproduce the ungrouped trace methodology across Entrada, Investigacion, Transporte, Determinista, Jueces and Repeticiones on the exact current revision. Any open observation reopens the owning obligation and blocks self-repair closure.
