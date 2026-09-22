@@ -39,6 +39,16 @@ candidate = copy.deepcopy(candidate)
 candidate["profile_pack_id"] = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
 semantic = base["make_semantic"](candidate)
 semantic["evidence_manifest_sha256"] = materializer._canonical_json_sha256(evidence)
+review_input_sha256 = "c" * 64
+semantic["reviewer_execution_id"] = "EXEC-REVIEW-001"
+semantic["review_input_sha256"] = review_input_sha256
+semantic["reviewer_context_mode"] = "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT"
+semantic["review_input_classes"] = [
+    "CURRENT_AUTHORITY_REFS",
+    "EVIDENCE_MANIFEST",
+    "EXACT_CANDIDATE",
+    "SCOPE_AUTHORITY_PACKET",
+]
 
 receipt = materializer.materialize_quality_receipt(
     candidate,
@@ -50,6 +60,7 @@ receipt = materializer.materialize_quality_receipt(
     producer_execution_id="EXEC-PRODUCER-001",
     reviewer_execution_id="EXEC-REVIEW-001",
     producer_execution_receipt_ref="supabase://producer/EXEC-PRODUCER-001",
+    review_input_sha256=review_input_sha256,
 )
 
 errors = list(schema_validator.iter_errors(receipt))
@@ -74,6 +85,7 @@ try:
         producer_execution_id="EXEC-SAME",
         reviewer_execution_id="EXEC-SAME",
         producer_execution_receipt_ref="supabase://producer/EXEC-SAME",
+        review_input_sha256=review_input_sha256,
     )
 except materializer.QualityReceiptMaterializationError as exc:
     assert "REVIEWER_EXECUTION_MUST_DIFFER_FROM_PRODUCER" in str(exc)
@@ -93,4 +105,34 @@ bad["review_boundary"]["independence_evidence_refs"] = [
 blocked = quality.validate_quality_receipt(bad, candidate, evidence, semantic)
 assert "SRCR_V06_INDEPENDENCE_EVIDENCE_REFS_INCOMPLETE" in blocked["blocking_codes"], blocked
 
-print("SRCR_V06_QUALITY_RECEIPT_MATERIALIZATION=4/4")
+bad = copy.deepcopy(receipt)
+bad["review_boundary"]["reviewer_context_mode"] = "PRODUCER_CONTEXT_REUSED"
+blocked = quality.validate_quality_receipt(bad, candidate, evidence, semantic)
+assert "SRCR_V06_REVIEWER_CONTEXT_NOT_ISOLATED" in blocked["blocking_codes"], blocked
+
+bad = copy.deepcopy(receipt)
+bad["review_boundary"]["review_input_classes"] = [
+    "EXACT_CANDIDATE",
+    "EVIDENCE_MANIFEST",
+    "SCOPE_AUTHORITY_PACKET",
+    "PRODUCER_PRIVATE_REASONING",
+]
+blocked = quality.validate_quality_receipt(bad, candidate, evidence, semantic)
+assert "SRCR_V06_REVIEW_INPUT_CLASS_BOUNDARY_INVALID" in blocked["blocking_codes"], blocked
+
+semantic_bad = copy.deepcopy(semantic)
+semantic_bad["reviewer_execution_id"] = "EXEC-REVIEW-OTHER"
+blocked = quality.validate_quality_receipt(receipt, candidate, evidence, semantic_bad)
+assert "SRCR_V06_SEMANTIC_REVIEWER_EXECUTION_ID_MISMATCH" in blocked["blocking_codes"], blocked
+
+semantic_bad = copy.deepcopy(semantic)
+semantic_bad["review_input_sha256"] = "d" * 64
+blocked = quality.validate_quality_receipt(receipt, candidate, evidence, semantic_bad)
+assert "SRCR_V06_SEMANTIC_REVIEW_INPUT_SHA_MISMATCH" in blocked["blocking_codes"], blocked
+
+candidate_bad = copy.deepcopy(candidate)
+candidate_bad["symptom"]["statement"] += " post-review mutation"
+blocked = quality.validate_quality_receipt(receipt, candidate_bad, evidence, semantic)
+assert "SRCR_QUALITY_CANDIDATE_DIGEST_MISMATCH" in blocked["blocking_codes"], blocked
+
+print("SRCR_V06_QUALITY_RECEIPT_MATERIALIZATION=9/9")
