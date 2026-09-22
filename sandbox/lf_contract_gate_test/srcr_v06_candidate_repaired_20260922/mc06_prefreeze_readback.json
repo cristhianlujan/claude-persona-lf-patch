@@ -1,0 +1,23 @@
+{
+  "execution_surface": "SENTINELX_EPHEMERAL_READ_ONLY",
+  "observed_at": "2026-09-22T14:23:40.569545+00:00",
+  "receipt": {
+    "candidate_bytes": 144162,
+    "candidate_sha256": "85aa2e43bab34b9d815a418bdf11c6947a4bfc6623916c68dfba3794cf925b2b",
+    "canonical_quality_accepted": false,
+    "deterministic_status": "PASS",
+    "independent_quality": "PENDING_INDEPENDENT_REVIEW",
+    "manifest_bundle_digest": "sha256:fc4c452e7b2e299276a96cb555f4513d0638e2a3cb8329b8a92e294792c2036e",
+    "output_schema_file_sha256": "a1f642e9ecae259869e311c75a793635a37b95f68db2ec9c55488ca682658430",
+    "output_schema_path": "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+    "pre_quality_status": "PASS_PRE_QUALITY",
+    "receipt_kind": "NON_ACCEPTANCE_PRE_QUALITY_FREEZE",
+    "schema": "SRCR_PREQUALITY_FREEZE_V1",
+    "schema_error_count": 0,
+    "semantic_utility_status": "PASS",
+    "trace_count": 62,
+    "validation_sha256": "77450c838cbb6499f67aa7c86ed4ff10645d05762035de6df82f2f2bf2c455bd"
+  },
+  "schema": "SRCR_MC06_PREFREEZE_READBACK_V1",
+  "source_revision": "8cf6d00c7f707127c9e23f21c748f02e18f1ec26"
+}
