@@ -9,12 +9,13 @@ This judge evaluates the exact candidate after deterministic validation. It MUST
 The judge receives the same run authority resolved before producer execution. The producer cannot expand that authority by writing new claims into its output.
 
 ## Required inputs
+The reviewer input boundary is fail-closed and contains only:
 1. `exact_candidate` plus `candidate_sha256`.
 2. Exact `evidence_manifest` plus `evidence_manifest_sha256`; the reviewer must bind its result to the exact manifest bytes it consumed.
 3. `scope_authority_packet` plus `scope_packet_sha256`, materialized by `input_validate` before profile execution.
-3. Exact current upstream sources referenced by material scope/authority items when needed to interpret them.
-4. Literal request/failure envelope and resolved run context.
-5. Deterministic validator result for the exact candidate.
+4. Exact current authority refs hydrated from the evidence bundle only when needed to verify those three inputs.
+
+The orchestrator may require deterministic validation to PASS before opening review, but producer private reasoning, producer chat transcript, hidden producer context, or any other undeclared context MUST NOT be delivered to the reviewer. The review execution must use a distinct `reviewer_execution_id` from the producer and bind its output to `review_input_sha256`, the canonical digest of this exact allowed-input packet.
 
 The scope packet is a transport object, not a new canonical authority. It must preserve source refs and authority precedence.
 
@@ -227,6 +228,10 @@ Return `BLOCK_PIPELINE` for fabricated authority/evidence, unauthorized mutation
 - `candidate_sha256`
 - `scope_packet_sha256`
 - `evidence_manifest_sha256`
+- `reviewer_execution_id`
+- `review_input_sha256`
+- `reviewer_context_mode=ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT`
+- `review_input_classes[]` exactly `SCOPE_AUTHORITY_PACKET|EXACT_CANDIDATE|EVIDENCE_MANIFEST|CURRENT_AUTHORITY_REFS`
 - `source_refs_inspected[]`
 - `observed_candidate_changes[]`
 - `requirement_reconciliation[]`
