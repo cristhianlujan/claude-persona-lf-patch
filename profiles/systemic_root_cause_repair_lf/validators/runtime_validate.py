@@ -896,23 +896,31 @@ def _v06_selected_change_errors(payload):
     for idx, edge in enumerate(edges):
         if not isinstance(edge, dict) or edge.get("disposition") != "IMPLEMENTABLE":
             continue
-        ref = _normalize_change_ref(edge.get("proposed_change_ref"))
-        if not ref:
-            errors.append(_error(
-                "V06_IMPLEMENTABLE_EDGE_CHANGE_REF_REQUIRED",
-                f"$.material_process_graph.edges[{idx}].proposed_change_ref",
+        refs_to_reconcile = [
+            ("proposed_change_ref", _normalize_change_ref(edge.get("proposed_change_ref")))
+        ]
+        if edge.get("proposed_next_gate_consumer_ref") is not None:
+            refs_to_reconcile.append((
+                "proposed_next_gate_consumer_ref",
+                _normalize_change_ref(edge.get("proposed_next_gate_consumer_ref")),
             ))
-            continue
-        covered = any(
-            ref == target or ref.startswith(target + "/")
-            for target, _ in declared_targets
-        )
-        if not covered:
-            errors.append(_error(
-                "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
-                f"$.material_process_graph.edges[{idx}].proposed_change_ref",
-                ref,
-            ))
+        for field, ref in refs_to_reconcile:
+            if not ref:
+                errors.append(_error(
+                    "V06_IMPLEMENTABLE_EDGE_CHANGE_REF_REQUIRED",
+                    f"$.material_process_graph.edges[{idx}].{field}",
+                ))
+                continue
+            covered = any(
+                ref == target or ref.startswith(target + "/")
+                for target, _ in declared_targets
+            )
+            if not covered:
+                errors.append(_error(
+                    "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+                    f"$.material_process_graph.edges[{idx}].{field}",
+                    ref,
+                ))
     return errors
 
 def validate(payload, evidence_manifest=None):
