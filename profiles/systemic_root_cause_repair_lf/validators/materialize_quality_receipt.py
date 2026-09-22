@@ -8,7 +8,9 @@ validator. The emitted receipt is immediately revalidated before return.
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
+import json
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +46,13 @@ class QualityReceiptMaterializationError(ValueError):
     pass
 
 
+def _canonical_json_sha256(value: Any) -> str:
+    raw = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
 def _text(value: Any, name: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise QualityReceiptMaterializationError(name + "_REQUIRED")
@@ -69,7 +78,14 @@ def materialize_quality_receipt(
     if not isinstance(semantic_result, dict):
         raise QualityReceiptMaterializationError("SEMANTIC_RESULT_NOT_OBJECT")
 
-    semantic_gate = semantic_validator.evaluate(semantic_result)
+    pack_id = candidate.get("profile_pack_id")
+    evidence_manifest_sha256 = _canonical_json_sha256(evidence_manifest)
+    semantic_gate = semantic_validator.evaluate(
+        semantic_result,
+        expected_evidence_manifest_sha256=(
+            evidence_manifest_sha256 if pack_id == V06 else None
+        ),
+    )
     if semantic_gate.get("status") != "PASS":
         raise QualityReceiptMaterializationError(
             "SEMANTIC_RESULT_INVALID:"
@@ -83,7 +99,6 @@ def materialize_quality_receipt(
             + ",".join(sorted({item["code"] for item in closure_errors}))
         )
 
-    pack_id = candidate.get("profile_pack_id")
     semantic_verdict = semantic_result.get("verdict")
     decision = VERDICT_TO_DECISION.get(semantic_verdict)
     if decision is None:
@@ -141,6 +156,11 @@ def materialize_quality_receipt(
         "evidence_binding": {
             "bundle_id": evidence_manifest.get("bundle_id"),
             "bundle_digest": closure.canonical_evidence_bundle_digest(evidence_manifest),
+            **(
+                {"evidence_manifest_sha256": evidence_manifest_sha256}
+                if pack_id == V06
+                else {}
+            ),
         },
         "semantic_binding": {
             "semantic_result_digest": quality_validator.canonical_semantic_result_digest(
