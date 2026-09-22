@@ -20,6 +20,7 @@
     "obligations",
     "closure_policy",
     "manifest_digest",
+    "solution_isolation_policy",
     "control_policy",
     "waivers",
     "irreversible_approvals",
@@ -707,6 +708,34 @@
           "const": true
         },
         "global_close_requires_zero_debt": {
+          "const": true
+        }
+      }
+    },
+    "solution_isolation_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unit_mode",
+        "mixed_solution_pr_allowed",
+        "scope_expansion_requires_new_pr",
+        "migration_apply_requires_separate_pr",
+        "receipt_must_bind_exact_pr_scope"
+      ],
+      "properties": {
+        "unit_mode": {
+          "const": "ONE_SOLUTION_PER_PR"
+        },
+        "mixed_solution_pr_allowed": {
+          "const": false
+        },
+        "scope_expansion_requires_new_pr": {
+          "const": true
+        },
+        "migration_apply_requires_separate_pr": {
+          "const": true
+        },
+        "receipt_must_bind_exact_pr_scope": {
           "const": true
         }
       }
