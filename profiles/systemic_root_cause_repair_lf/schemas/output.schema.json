@@ -1102,7 +1102,8 @@
         "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
         "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
         "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
-        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
       ]
     },
     "symptom": {
@@ -3580,6 +3581,334 @@
               }
             }
           }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "edge_id",
+              "from_node",
+              "to_node",
+              "edge_kind",
+              "observation_status",
+              "disposition",
+              "producer_evidence_refs",
+              "transport_evidence_refs",
+              "consumer_evidence_refs",
+              "enforcement_evidence_refs",
+              "effect_readback_evidence_refs",
+              "gap_evidence_refs",
+              "next_gate",
+              "next_gate_consumer_evidence_refs",
+              "canonical_route_consistency",
+              "post_transition_currentness",
+              "terminality",
+              "identity_consistency",
+              "rollback_executability",
+              "proposed_change_ref",
+              "blocking_uncertainty_id"
+            ],
+            "properties": {
+              "edge_id": {
+                "type": "string",
+                "minLength": 2
+              },
+              "from_node": {
+                "type": "string",
+                "minLength": 2
+              },
+              "to_node": {
+                "type": "string",
+                "minLength": 2
+              },
+              "edge_kind": {
+                "enum": [
+                  "CONTROL_FLOW",
+                  "DATA_CONTRACT",
+                  "STATE_TRANSITION",
+                  "AUTHORITY",
+                  "RUNTIME_BINDING",
+                  "RECOVERY"
+                ]
+              },
+              "observation_status": {
+                "enum": [
+                  "OBSERVED_CLOSED",
+                  "OBSERVED_OPEN",
+                  "UNRESOLVED",
+                  "PROPOSED_ONLY"
+                ]
+              },
+              "disposition": {
+                "enum": [
+                  "REUSE_AS_IS",
+                  "IMPLEMENTABLE",
+                  "DESIGN_BLOCKING"
+                ]
+              },
+              "producer_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "transport_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "consumer_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "enforcement_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "effect_readback_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "gap_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "next_gate": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "next_gate_consumer_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "canonical_route_consistency": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applicability",
+                  "status",
+                  "evidence_refs"
+                ],
+                "properties": {
+                  "applicability": {
+                    "enum": [
+                      "REQUIRED",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "OBSERVED_PASS",
+                      "OBSERVED_FAIL",
+                      "UNRESOLVED",
+                      "PROPOSED_ONLY",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    }
+                  }
+                }
+              },
+              "post_transition_currentness": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applicability",
+                  "status",
+                  "evidence_refs"
+                ],
+                "properties": {
+                  "applicability": {
+                    "enum": [
+                      "REQUIRED",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "OBSERVED_PASS",
+                      "OBSERVED_FAIL",
+                      "UNRESOLVED",
+                      "PROPOSED_ONLY",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    }
+                  }
+                }
+              },
+              "terminality": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applicability",
+                  "status",
+                  "evidence_refs"
+                ],
+                "properties": {
+                  "applicability": {
+                    "enum": [
+                      "REQUIRED",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "OBSERVED_PASS",
+                      "OBSERVED_FAIL",
+                      "UNRESOLVED",
+                      "PROPOSED_ONLY",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    }
+                  }
+                }
+              },
+              "identity_consistency": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applicability",
+                  "status",
+                  "evidence_refs"
+                ],
+                "properties": {
+                  "applicability": {
+                    "enum": [
+                      "REQUIRED",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "OBSERVED_PASS",
+                      "OBSERVED_FAIL",
+                      "UNRESOLVED",
+                      "PROPOSED_ONLY",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    }
+                  }
+                }
+              },
+              "rollback_executability": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applicability",
+                  "status",
+                  "evidence_refs"
+                ],
+                "properties": {
+                  "applicability": {
+                    "enum": [
+                      "REQUIRED",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "OBSERVED_PASS",
+                      "OBSERVED_FAIL",
+                      "UNRESOLVED",
+                      "PROPOSED_ONLY",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    }
+                  }
+                }
+              },
+              "proposed_change_ref": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "blocking_uncertainty_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
         }
       },
       "allOf": [
@@ -3788,7 +4117,8 @@
             "enum": [
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
-              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
             ]
           }
         },
@@ -3877,7 +4207,8 @@
             "enum": [
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
-              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
             ]
           },
           "solution_depth": {
@@ -3914,7 +4245,8 @@
             "enum": [
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
-              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
             ]
           },
           "solution_depth": {
@@ -3951,7 +4283,8 @@
             "enum": [
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
-              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
             ]
           },
           "omission_discovery": {
@@ -3995,7 +4328,8 @@
           "profile_pack_id": {
             "enum": [
               "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
-              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
             ]
           }
         },
@@ -4092,7 +4426,10 @@
             "not": {
               "properties": {
                 "profile_pack_id": {
-                  "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+                  "enum": [
+                    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+                    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+                  ]
                 },
                 "case_mode": {
                   "const": "ARCHITECTURE_AUDIT"
@@ -4157,7 +4494,10 @@
             "not": {
               "properties": {
                 "profile_pack_id": {
-                  "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+                  "enum": [
+                    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+                    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+                  ]
                 },
                 "case_mode": {
                   "const": "ARCHITECTURE_AUDIT"
@@ -4261,7 +4601,10 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+            ]
           }
         },
         "required": [
@@ -4278,7 +4621,10 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+            ]
           },
           "case_mode": {
             "const": "ARCHITECTURE_AUDIT"
@@ -4302,6 +4648,43 @@
         "properties": {
           "causal_chain": {
             "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+          },
+          "material_process_graph": {
+            "properties": {
+              "applies": {
+                "const": true
+              }
+            },
+            "required": [
+              "applies"
+            ]
+          }
+        },
+        "required": [
+          "profile_pack_id",
+          "material_process_graph"
+        ]
+      },
+      "then": {
+        "properties": {
+          "material_process_graph": {
+            "required": [
+              "edges"
+            ],
+            "properties": {
+              "edges": {
+                "minItems": 1
+              }
+            }
           }
         }
       }
