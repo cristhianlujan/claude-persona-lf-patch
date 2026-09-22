@@ -43,12 +43,24 @@ required_for_repair_paths = set()
 for rule in schema.get("allOf", []):
     if not isinstance(rule, dict):
         continue
+    condition = rule.get("if", {})
     status_rule = (
-        rule.get("if", {})
+        condition
         .get("properties", {})
         .get("status", {})
         .get("enum")
     )
+    if not isinstance(status_rule, list):
+        for subcondition in condition.get("allOf", []) if isinstance(condition, dict) else []:
+            candidate = (
+                subcondition
+                .get("properties", {})
+                .get("status", {})
+                .get("enum")
+            ) if isinstance(subcondition, dict) else None
+            if isinstance(candidate, list):
+                status_rule = candidate
+                break
     branch_required = rule.get("then", {}).get("required", [])
     if isinstance(status_rule, list) and repair_statuses.issubset(set(status_rule)) and isinstance(branch_required, list):
         required_for_repair_paths.update(branch_required)
