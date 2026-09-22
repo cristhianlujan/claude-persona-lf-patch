@@ -85,7 +85,7 @@ schema_validator = Draft7Validator(output_schema)
 
 def canonical_sha256(value: Any) -> str:
     raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return "sha256:" + hashlib.sha256(raw).hexdigest()
+    return hashlib.sha256(raw).hexdigest()
 
 
 def _sha_ok(value: Any) -> bool:
@@ -153,6 +153,16 @@ def build_native_execution_contract(
         input_governance_ref="supabase://public/lf_eventos/CASE_PACKET",
         card_refs_and_hashes=[],
         adapter_ref="chatgpt-native-current-context-v1",
+        card_resolution={
+            "mode": "GENERIC_SAFE",
+            "critical_authority_missing": False,
+            "unresolved_capabilities": [],
+            "core_policy_ref": "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md",
+            "core_policy_sha256": hashlib.sha256(
+                (PROFILE_ROOT / "contracts" / "main_contract.md").read_bytes()
+            ).hexdigest(),
+            "fallback_reason": "SRCR evaluation has no Card dependency; use the profile contract as the bounded generic-safe authority.",
+        },
         context_fingerprint=context_fingerprint,
         tool_permissions=list(REQUIRED_TOOL_PERMISSIONS),
         executor_mode=EXECUTOR_MODE,
