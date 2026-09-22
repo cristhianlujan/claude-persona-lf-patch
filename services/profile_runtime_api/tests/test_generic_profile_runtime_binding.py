@@ -515,8 +515,8 @@ class GenericRuntimeBindingTest(unittest.TestCase):
                 'additionalProperties':True,
             }))
             (root/'profiles/p/validators/semantic_result.py').write_text(
-                'def evaluate(payload, scope_packet=None, expected_candidate_sha256=None, expected_scope_packet_sha256=None):\n'
-                '    ok = payload.get("candidate_sha256")==expected_candidate_sha256 and payload.get("scope_packet_sha256")==expected_scope_packet_sha256 and isinstance(scope_packet, dict)\n'
+                'def evaluate(payload, scope_packet=None, expected_candidate_sha256=None, expected_scope_packet_sha256=None, expected_evidence_manifest_sha256=None):\n'
+                '    ok = payload.get("candidate_sha256")==expected_candidate_sha256 and payload.get("scope_packet_sha256")==expected_scope_packet_sha256 and payload.get("evidence_manifest_sha256")==expected_evidence_manifest_sha256 and isinstance(scope_packet, dict)\n'
                 '    return {"status":"PASS" if ok else "FAIL","blocking_codes":[] if ok else ["BINDING_MISMATCH"]}\n'
             )
             (root/'profiles/p/validators/quality_receipt.py').write_text(
@@ -552,14 +552,16 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             candidate={'profile_pack_id':'PACK-V1','answer':'good'}
             scope={'packet_version':'TEST','authorized_requirements':[]}
             from profile_runtime_api.hashing import canonical_json_sha256
+            evidence_manifest={'bundle_id':'B','evidence':[{'evidence_id':'EV-1'}]}
             semantic={
                 'candidate_sha256':canonical_json_sha256(candidate),
                 'scope_packet_sha256':canonical_json_sha256(scope),
+                'evidence_manifest_sha256':canonical_json_sha256(evidence_manifest),
             }
             result=OutputGates(repo).canonical_quality_finalize(
                 profile_slug='p',
                 candidate=candidate,
-                evidence_manifest={'bundle_id':'B','evidence':[{'evidence_id':'EV-1'}]},
+                evidence_manifest=evidence_manifest,
                 scope_authority_packet=scope,
                 semantic_result=semantic,
                 candidate_revision='rev-1',
@@ -577,7 +579,7 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             rejected=OutputGates(repo).canonical_quality_finalize(
                 profile_slug='p',
                 candidate=candidate,
-                evidence_manifest={'bundle_id':'B','evidence':[{'evidence_id':'EV-1'}]},
+                evidence_manifest=evidence_manifest,
                 scope_authority_packet=scope,
                 semantic_result=tampered,
                 candidate_revision='rev-1',
@@ -589,6 +591,23 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             )
             self.assertEqual(rejected['status'],'FAIL')
             self.assertIn('BINDING_MISMATCH',rejected['blocking_codes'])
+
+            tampered_manifest={'bundle_id':'B2','evidence':[{'evidence_id':'EV-1'}]}
+            rejected_manifest=OutputGates(repo).canonical_quality_finalize(
+                profile_slug='p',
+                candidate=candidate,
+                evidence_manifest=tampered_manifest,
+                scope_authority_packet=scope,
+                semantic_result=semantic,
+                candidate_revision='rev-1',
+                semantic_execution_receipt_ref='review://receipt/1',
+                producer_execution_id='EXEC-PRODUCER-1',
+                reviewer_execution_id='EXEC-REVIEWER-1',
+                producer_execution_receipt_ref='producer://receipt/1',
+                issued_at='2026-09-22T05:30:00Z',
+            )
+            self.assertEqual(rejected_manifest['status'],'FAIL')
+            self.assertIn('BINDING_MISMATCH',rejected_manifest['blocking_codes'])
         finally:
             tmp.cleanup()
 
