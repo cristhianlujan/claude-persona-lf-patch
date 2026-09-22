@@ -191,3 +191,32 @@ def test_persisted_lifecycle_phase2_trace_and_manifest_are_exactly_bound() -> No
     assert findings["LC-F01"]["status"] == "CONFIRMED_STRENGTHENED"
     assert findings["LC-F03"]["status"] == "CONFIRMED_STRENGTHENED"
     assert findings["LC-F05"]["status"] == "ROOT_CAUSE_CONFIRMED"
+
+
+def test_persisted_lifecycle_phase3_trace_and_manifest_are_exactly_bound() -> None:
+    base = ROOT / "sandbox" / "lf_contract_gate_test" / "srcr_v05_native_harness"
+    trace_payload = json.loads((base / "lifecycle_trace_phase3.json").read_text(encoding="utf-8"))
+    manifest = json.loads((base / "lifecycle_evidence_manifest_phase3.json").read_text(encoding="utf-8"))
+    trace = trace_payload["trace"]
+
+    assert len(trace) == 11
+    assert harness.validate_query_trace(trace) == []
+    assert harness.validate_manifest_trace_binding(manifest, trace) == []
+
+    normalized = dict(manifest)
+    normalized.pop("bundle_digest", None)
+    raw = json.dumps(
+        normalized,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    expected_bundle_digest = "sha256:" + hashlib.sha256(raw).hexdigest()
+    assert manifest["bundle_digest"] == expected_bundle_digest
+
+    findings = {item["finding_id"]: item for item in trace_payload["findings"]}
+    assert findings["LC-F06"]["status"] == "ROOT_CAUSE_CONFIRMED"
+    assert findings["LC-F07"]["status"] == "ROOT_CAUSE_CONFIRMED"
+    assert findings["LC-F08"]["status"] == "ROOT_CAUSE_CONFIRMED"
+    assert findings["LC-F09"]["status"] == "CONFIRMED_CONSEQUENCE"
+    assert findings["LC-F10"]["status"] == "CONFIRMED_CONSEQUENCE"
