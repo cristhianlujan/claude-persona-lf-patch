@@ -1,8 +1,8 @@
 {
   "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
   "bundle_id": "BUNDLE-SRCR-V05-LIFECYCLE-NATIVE-COMBINED-20260921",
-  "bundle_digest": "sha256:4ed61257cf01465b2b5b15c15e824c322ca096cf63482a5a18b03ceed259a284",
-  "observed_at": "2026-09-21T23:00:00-05:00",
+  "bundle_digest": "sha256:2b3055458fe7cb2e4a0da058af20fefa0f95f33b896a4677bcead5dd86d91109",
+  "observed_at": "2026-09-21T23:02:00-05:00",
   "producer": {
     "kind": "SOURCE_FIRST_RESOLVER",
     "resolver_ref": "supabase://private.lf_evidence_resolver_registry_v1/LF_SUPABASE_READBACK_V1+LF_GITHUB_SOURCE_READBACK_V1"
@@ -393,6 +393,15 @@
       "source_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106601741367/logs",
       "revision_or_observed_at": "run:35682323913",
       "digest": "sha256:d7f77c903577cbf53d05aa8b626b5b736bec46053991a1169f48548cb4bd25d5",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-044",
+      "subject": "V0.5 producer-depth eval contract for ARCHITECTURE_AUDIT relaxation",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/evals/v05_producer_depth_cases.py",
+      "revision_or_observed_at": "gitblob:5f03d484bb8dfea7df8b792a5d0c0d9366939193",
+      "digest": "sha256:9a874c4f24fd2b47a28d151df3c50bbe37509f4858989460b74746e3a13df4d5",
       "state": "CURRENT"
     }
   ]
