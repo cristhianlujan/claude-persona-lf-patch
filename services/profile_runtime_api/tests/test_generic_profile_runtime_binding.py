@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import inspect
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
+from profile_runtime_api.engine import ProfileRuntimeEngine
+from profile_runtime_api.models import ProfileTask
 from profile_runtime_api.repository import RepositoryBindings, RepositoryError
 from profile_runtime_api.validation import OutputGates
 
@@ -60,6 +63,77 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             self.assertIn('ANSWER_TOO_SHALLOW',semantic['blocking_codes'])
         finally: tmp.cleanup()
 
+
+
+
+    def test_external_evidence_manifest_is_forwarded_to_validator_and_utility(self):
+        tmp,root,repo=self._repo()
+        try:
+            (root/'profiles/p/validators/runtime_validate.py').write_text(
+                'def validate(payload, evidence_manifest=None):\n'
+                '    if not isinstance(evidence_manifest, dict) or evidence_manifest.get("marker") != "trusted":\n'
+                '        return ["MANIFEST_NOT_DELIVERED_TO_VALIDATOR"]\n'
+                '    return []\n'
+            )
+            (root/'profiles/p/validators/runtime_semantic_utility.py').write_text(
+                'def evaluate(payload, contract_gate, evidence_manifest=None):\n'
+                '    ok = isinstance(evidence_manifest, dict) and evidence_manifest.get("marker") == "trusted"\n'
+                '    return {"status":"PASS" if ok else "FAIL","blocking_codes":[] if ok else ["MANIFEST_NOT_DELIVERED_TO_UTILITY"]}\n'
+            )
+            gates=OutputGates(repo)
+            schema=repo.runtime_schema('p')
+            manifest={'marker':'trusted','evidence':[{'evidence_id':'EV-1'}]}
+            contract,payload=gates.contract(
+                profile_slug='p',
+                raw_output='{"answer":"good"}',
+                schema=schema,
+                evidence_manifest=manifest,
+            )
+            self.assertEqual(contract['status'],'PASS')
+            semantic=gates.semantic_utility(
+                profile_slug='p',
+                payload=payload,
+                contract_gate=contract,
+                evidence_manifest=manifest,
+            )
+            self.assertEqual(semantic['status'],'PASS')
+
+            missing,_=gates.contract(
+                profile_slug='p',
+                raw_output='{"answer":"good"}',
+                schema=schema,
+            )
+            self.assertEqual(missing['status'],'FAIL')
+            self.assertIn('MANIFEST_NOT_DELIVERED_TO_VALIDATOR',missing['blocking_codes'])
+        finally:
+            tmp.cleanup()
+
+    def test_profile_task_carries_external_manifest_but_rejects_empty_manifest(self):
+        task=ProfileTask(
+            request_id='REQ-1',
+            profile_code='PERFIL-P',
+            profile_slug='p',
+            profile_source_paths=['profiles/p/SKILL.md'],
+            input_literal='test',
+            evidence_manifest={'manifest_version':'TEST','evidence':[]},
+        )
+        self.assertEqual(task.evidence_manifest['manifest_version'],'TEST')
+        with self.assertRaises(ValueError):
+            ProfileTask(
+                request_id='REQ-2',
+                profile_code='PERFIL-P',
+                profile_slug='p',
+                profile_source_paths=['profiles/p/SKILL.md'],
+                input_literal='test',
+                evidence_manifest={},
+            )
+
+    def test_engine_forwards_profile_task_manifest_to_both_output_gates(self):
+        queue_source=inspect.getsource(ProfileRuntimeEngine._execute_queue_profile)
+        artifact_source=inspect.getsource(ProfileRuntimeEngine._execute_profile)
+        for source in (queue_source,artifact_source):
+            self.assertIn('evidence_manifest=task.evidence_manifest',source)
+            self.assertGreaterEqual(source.count('evidence_manifest=task.evidence_manifest'),2)
 
 
     def test_declared_model_context_partition_and_materialization(self):
