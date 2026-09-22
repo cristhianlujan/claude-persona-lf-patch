@@ -686,6 +686,7 @@ class OutputGates:
                         expected_scope_packet_sha256=canonical_json_sha256(
                             scope_authority_packet
                         ),
+                        expected_evidence_manifest_sha256=manifest_sha256,
                     )
                 else:
                     semantic_gate = semantic_callable(semantic_result)
