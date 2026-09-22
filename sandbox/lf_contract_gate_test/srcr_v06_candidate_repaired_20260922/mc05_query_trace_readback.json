@@ -1,0 +1,190 @@
+{
+  "schema": "SRCR_MC05_QUERY_TRACE_READBACK_V1",
+  "status": "READBACK_CLOSED",
+  "investigation_id": "EXEC-SRCR-MC05-TRACE-20260922-001",
+  "scope": "MC-05_ONLY",
+  "source_revision": "9b9a41da6635a47cefe293ae15b021e9fa89aa3f",
+  "canonical_owner": {
+    "path": "profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
+    "blob_sha": "af643b05ada2822099399c0f50a5d7455470a525"
+  },
+  "preflight_schema_correction": {
+    "initial_assumption": "public.lf_error_knowledge.code",
+    "live_error": "42703 column code does not exist",
+    "live_schema_readback": "public.lf_error_knowledge.codigo",
+    "closure_run_uses_corrected_authority": true
+  },
+  "request_material": {
+    "github": {
+      "repository_full_name": "cristhianlujan/claude-persona-lf-patch",
+      "path": "profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
+      "ref": "9b9a41da6635a47cefe293ae15b021e9fa89aa3f"
+    },
+    "supabase": {
+      "project_id": "mhwmirqcgxxukpctffuv",
+      "query": "select codigo, estado, updated_at, clock_timestamp() as observed_at from public.lf_error_knowledge where codigo in ('PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001','PROFILE-RUNTIME-GOVERNED-STEP-BYPASS-001','PROFILE-RUNTIME-RESEARCH-BASELINE-TEMPORAL-BINDING-001') order by codigo;"
+    }
+  },
+  "evidence_manifest": {
+    "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+    "bundle_id": "BUNDLE-SRCR-MC05-20260922-001",
+    "observed_at": "2026-09-22T15:39:43.747804Z",
+    "producer": {
+      "kind": "SOURCE_FIRST_RESOLVER",
+      "resolver_ref": "profiles/systemic_root_cause_repair_lf/validators/research_trace.py"
+    },
+    "evidence": [
+      {
+        "evidence_id": "EV-MC05-GITHUB-001",
+        "subject": "canonical query trace validator exact source",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "github://cristhianlujan/claude-persona-lf-patch@9b9a41da6635a47cefe293ae15b021e9fa89aa3f/profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
+        "revision_or_observed_at": "9b9a41da6635a47cefe293ae15b021e9fa89aa3f",
+        "digest": "sha256:df400e01c27aff202ee9d30bed0cf10309dcccafddb3d336e045c25262b703be",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-MC05-SUPABASE-001",
+        "subject": "live EKB authority rows",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase-sql://public.lf_error_knowledge?query_sha256=9e2dc3c33d4798c1be01a363ad5713c65847a9709b4f0ba8cc74a690867b7ca4",
+        "revision_or_observed_at": "2026-09-22T15:39:43.747804Z",
+        "digest": "sha256:eb8949d2170b89f358007d68540dd4907dc5039dc181605b06d8e9de1d638923",
+        "state": "CURRENT"
+      }
+    ],
+    "query_trace": [
+      {
+        "sequence": 1,
+        "tool_permission": "READ_GITHUB",
+        "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+        "provider": "GITHUB",
+        "query_locator": "github://cristhianlujan/claude-persona-lf-patch@9b9a41da6635a47cefe293ae15b021e9fa89aa3f/profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
+        "request_digest": "sha256:d7d6b898d21c865e9d9a00e37c63a8e43bbe685561136447fd343f873f3255f1",
+        "result_digest": "sha256:df400e01c27aff202ee9d30bed0cf10309dcccafddb3d336e045c25262b703be",
+        "observed_at": "2026-09-22T15:39:00Z",
+        "evidence_id": "EV-MC05-GITHUB-001",
+        "consumer": "$.mc05_reconstruction.github",
+        "result_status": "FOUND",
+        "result_count": 1,
+        "claim_support": "CONTENT"
+      },
+      {
+        "sequence": 2,
+        "tool_permission": "READ_SUPABASE",
+        "resolver_id": "LF_SUPABASE_READBACK_V1",
+        "provider": "SUPABASE",
+        "query_locator": "supabase-sql://public.lf_error_knowledge?query_sha256=9e2dc3c33d4798c1be01a363ad5713c65847a9709b4f0ba8cc74a690867b7ca4",
+        "request_digest": "sha256:9e2dc3c33d4798c1be01a363ad5713c65847a9709b4f0ba8cc74a690867b7ca4",
+        "result_digest": "sha256:eb8949d2170b89f358007d68540dd4907dc5039dc181605b06d8e9de1d638923",
+        "observed_at": "2026-09-22T15:39:43.747804Z",
+        "evidence_id": "EV-MC05-SUPABASE-001",
+        "consumer": "$.mc05_reconstruction.supabase",
+        "result_status": "FOUND",
+        "result_count": 3,
+        "claim_support": "CONTENT"
+      }
+    ]
+  },
+  "resolved_authority_context": {
+    "EV-MC05-GITHUB-001": {
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@9b9a41da6635a47cefe293ae15b021e9fa89aa3f/profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
+      "digest": "sha256:df400e01c27aff202ee9d30bed0cf10309dcccafddb3d336e045c25262b703be",
+      "result_status": "FOUND",
+      "result_count": 1,
+      "claim_support": "CONTENT",
+      "resolved_value": {
+        "content_sha": "af643b05ada2822099399c0f50a5d7455470a525",
+        "path": "profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
+        "ref": "9b9a41da6635a47cefe293ae15b021e9fa89aa3f"
+      }
+    },
+    "EV-MC05-SUPABASE-001": {
+      "source_locator": "supabase-sql://public.lf_error_knowledge?query_sha256=9e2dc3c33d4798c1be01a363ad5713c65847a9709b4f0ba8cc74a690867b7ca4",
+      "digest": "sha256:eb8949d2170b89f358007d68540dd4907dc5039dc181605b06d8e9de1d638923",
+      "result_status": "FOUND",
+      "result_count": 3,
+      "claim_support": "CONTENT",
+      "resolved_value": [
+        {
+          "codigo": "PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001",
+          "estado": "activo",
+          "updated_at": "2026-09-07 02:04:23.904827+00",
+          "observed_at": "2026-09-22 15:39:43.747774+00"
+        },
+        {
+          "codigo": "PROFILE-RUNTIME-GOVERNED-STEP-BYPASS-001",
+          "estado": "activo",
+          "updated_at": "2026-09-21 04:34:37.360096+00",
+          "observed_at": "2026-09-22 15:39:43.747795+00"
+        },
+        {
+          "codigo": "PROFILE-RUNTIME-RESEARCH-BASELINE-TEMPORAL-BINDING-001",
+          "estado": "ACTIVE_REMEDIATION",
+          "updated_at": "2026-09-21 08:22:21.214514+00",
+          "observed_at": "2026-09-22 15:39:43.747804+00"
+        }
+      ]
+    }
+  },
+  "canonical_validator_readback": {
+    "status": "PASS",
+    "blocking_codes": [],
+    "readback": {
+      "evidence_manifest_sha256": "sha256:c53cdd58d65fdf742850ad6c69e08e0e2ec2807915841690674369e454acb5c5",
+      "query_count": 2,
+      "evidence_count": 2,
+      "resolved_authority_context_sha256": "8148390bfec2bac60cf2a1499a291f14b598fa6754011e23346c2d3ceace4f46",
+      "resolved_authority_count": 2
+    }
+  },
+  "reconstruction": [
+    {
+      "evidence_id": "EV-MC05-GITHUB-001",
+      "trace_sequence": 1,
+      "request_digest_recomputed": "sha256:d7d6b898d21c865e9d9a00e37c63a8e43bbe685561136447fd343f873f3255f1",
+      "result_digest_recomputed": "sha256:df400e01c27aff202ee9d30bed0cf10309dcccafddb3d336e045c25262b703be",
+      "locator_match": true,
+      "digest_match": true,
+      "snapshot_rehash_match": true,
+      "reconstructable": true
+    },
+    {
+      "evidence_id": "EV-MC05-SUPABASE-001",
+      "trace_sequence": 2,
+      "request_digest_recomputed": "sha256:9e2dc3c33d4798c1be01a363ad5713c65847a9709b4f0ba8cc74a690867b7ca4",
+      "result_digest_recomputed": "sha256:eb8949d2170b89f358007d68540dd4907dc5039dc181605b06d8e9de1d638923",
+      "locator_match": true,
+      "digest_match": true,
+      "snapshot_rehash_match": true,
+      "reconstructable": true
+    }
+  ],
+  "negative_mutations": {
+    "drop_query_trace_row": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "EVIDENCE_WITHOUT_RECORDED_RETRIEVAL:EV-MC05-SUPABASE-001",
+        "RESOLVED_AUTHORITY_TRACE_METADATA_MISMATCH:EV-MC05-SUPABASE-001:claim_support",
+        "RESOLVED_AUTHORITY_TRACE_METADATA_MISMATCH:EV-MC05-SUPABASE-001:result_count",
+        "RESOLVED_AUTHORITY_TRACE_METADATA_MISMATCH:EV-MC05-SUPABASE-001:result_status"
+      ]
+    },
+    "tamper_result_digest": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "trace[1]:EVIDENCE_DIGEST_MISMATCH"
+      ]
+    }
+  },
+  "closure_assertions": {
+    "query_count": 2,
+    "evidence_count": 2,
+    "resolved_authority_count": 2,
+    "unreconstructable_evidence_ids": [],
+    "orphan_trace_rows": [],
+    "blocking_codes": [],
+    "database_write": false,
+    "production_mutation": false
+  }
+}
