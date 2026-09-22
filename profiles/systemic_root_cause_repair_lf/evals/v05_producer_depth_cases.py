@@ -249,9 +249,13 @@ quality_handoff = json.loads((ROOT / "handoffs" / "to_quality_pack.handoff.json"
 runtime_binding = json.loads((ROOT / "contracts" / "runtime_binding.json").read_text())
 
 check(
-    "V05_MAIN_CONTRACT_CURRENT",
-    "Current provider-side generation is pinned to SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5." in main_contract_text
-    and "- `case_mode`" in main_contract_text,
+    "V05_MAIN_CONTRACT_COMPATIBLE",
+    (
+        "Current provider-side generation is pinned to SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5." in main_contract_text
+        or "Current provider-side generation is pinned to SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6." in main_contract_text
+    )
+    and "- `case_mode`" in main_contract_text
+    and "## V0.5 producer-depth additions" in main_contract_text,
 )
 check(
     "V05_SEMANTIC_JUDGE_PREMATURE_STOP_PRESENT",
