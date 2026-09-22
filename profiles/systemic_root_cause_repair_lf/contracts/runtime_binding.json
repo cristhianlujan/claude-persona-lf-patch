@@ -45,5 +45,29 @@
       "path": "validators/materialize_quality_receipt.py",
       "callable": "materialize_quality_receipt"
     }
+  },
+  "model_context": {
+    "full_source_to_model": false,
+    "required_source_refs": [
+      "profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md"
+    ],
+    "allow_additional_sources": true,
+    "source_projection": {
+      "mode": "MARKDOWN_SECTIONS",
+      "include_sections": [
+        "Purpose",
+        "Working method (do this first; the rules below are how the result is checked)",
+        "Output trajectory (field order for the typed output)",
+        "Claim semantics",
+        "Status semantics",
+        "Required inputs",
+        "Non-negotiable rules",
+        "Typed output",
+        "Claim ceiling",
+        "Closure-proof contract"
+      ],
+      "max_chars": 42000
+    }
   }
 }
