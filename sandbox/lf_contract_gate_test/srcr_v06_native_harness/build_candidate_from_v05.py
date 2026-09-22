@@ -458,11 +458,9 @@ def merge_manifest(base_manifest, observed_manifest):
             seen.add(row.get("evidence_id"))
     out["bundle_id"] = "SRCR-V06-LIFECYCLE-MERGED-EVIDENCE-20260922"
     out["observed_at"] = observed_manifest.get("observed_at") or out.get("observed_at")
-    out["producer"] = {
-        "type": "EXTERNAL_RESOLVER",
-        "name": "SRCR_V06_LIFECYCLE_EVIDENCE_MERGER",
-        "self_reported": False,
-    }
+    # Preserve the governed external-resolver producer envelope from the
+    # frozen base manifest. Merging observed rows must not manufacture a new
+    # producer identity.
     out["bundle_digest"] = canonical_evidence_bundle_digest(out)
     return out
 
