@@ -4,8 +4,8 @@
   "source_candidate_file_sha256": "cbc05a3445ef27cfdca34a4103d79e640264e142efae3abae0cda253264e80cb",
   "repair_builder_code_head": "f776511512133006cbf1d068a3479c7cd7347345",
   "repaired_candidate_path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/candidate_v06_repaired.json",
-  "repaired_candidate_file_sha256": "6f3b6bf7f52a0fe48ee3892fe5f3ba7ab01efa5d4a4f19e51c26352170229e6f",
-  "repaired_candidate_canonical_sha256": "85aa2e43bab34b9d815a418bdf11c6947a4bfc6623916c68dfba3794cf925b2b",
+  "repaired_candidate_file_sha256": "afdc8517f79eec87d2042f7680b9a95621e83d8c2511fd85b2dc8f1712baae52",
+  "repaired_candidate_canonical_sha256": "126ca5dd7be63f582536fa0662dd1dde488e3b908dfa5dbbafb3ccd50f588e01",
   "delta_targets_added": [
     "supabase://proposed/PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
     "supabase://proposed/PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
@@ -21,5 +21,6 @@
   "runtime_activation": false,
   "production_mutation": false,
   "current_uncertainty_evidence_map_added": true,
-  "qualification_next_gate_consumer_ref": "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1/QUALIFICATION_LIFECYCLE"
+  "qualification_next_gate_consumer_ref": "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1/QUALIFICATION_LIFECYCLE",
+  "research_assurance_exact_web_locators_added": true
 }
