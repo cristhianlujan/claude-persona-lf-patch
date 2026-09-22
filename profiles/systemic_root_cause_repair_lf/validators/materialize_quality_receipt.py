@@ -70,6 +70,7 @@ def materialize_quality_receipt(
     producer_execution_id: str | None = None,
     reviewer_execution_id: str | None = None,
     producer_execution_receipt_ref: str | None = None,
+    review_input_sha256: str | None = None,
 ) -> dict[str, Any]:
     if not isinstance(candidate, dict):
         raise QualityReceiptMaterializationError("CANDIDATE_NOT_OBJECT")
@@ -123,6 +124,11 @@ def materialize_quality_receipt(
         producer_execution_receipt_ref = _text(
             producer_execution_receipt_ref, "PRODUCER_EXECUTION_RECEIPT_REF"
         )
+        review_input_sha256 = _text(review_input_sha256, "REVIEW_INPUT_SHA256")
+        if len(review_input_sha256) != 64 or any(
+            ch not in "0123456789abcdef" for ch in review_input_sha256
+        ):
+            raise QualityReceiptMaterializationError("REVIEW_INPUT_SHA256_INVALID")
         if producer_execution_id == reviewer_execution_id:
             raise QualityReceiptMaterializationError(
                 "REVIEWER_EXECUTION_MUST_DIFFER_FROM_PRODUCER"
@@ -136,6 +142,14 @@ def materialize_quality_receipt(
                 "producer_execution_id": producer_execution_id,
                 "reviewer_execution_id": reviewer_execution_id,
                 "producer_execution_receipt_ref": producer_execution_receipt_ref,
+                "review_input_sha256": review_input_sha256,
+                "reviewer_context_mode": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT",
+                "review_input_classes": [
+                    "CURRENT_AUTHORITY_REFS",
+                    "EVIDENCE_MANIFEST",
+                    "EXACT_CANDIDATE",
+                    "SCOPE_AUTHORITY_PACKET",
+                ],
                 "independence_evidence_refs": [
                     producer_execution_receipt_ref,
                     semantic_execution_receipt_ref,
@@ -169,6 +183,14 @@ def materialize_quality_receipt(
             "semantic_verdict": semantic_verdict,
             "candidate_sha256": semantic_result.get("candidate_sha256"),
             "scope_packet_sha256": semantic_result.get("scope_packet_sha256"),
+            **(
+                {
+                    "reviewer_execution_id": reviewer_execution_id,
+                    "review_input_sha256": review_input_sha256,
+                }
+                if pack_id == V06
+                else {}
+            ),
         },
         "proof_binding": {
             "required_obligation_ids": summary.get("required_obligation_ids") or [],
