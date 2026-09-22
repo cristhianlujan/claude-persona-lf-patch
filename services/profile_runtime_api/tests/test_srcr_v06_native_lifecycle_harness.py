@@ -9,6 +9,9 @@ import importlib.util
 import json
 from pathlib import Path
 
+from profile_runtime_api.repository import RepositoryBindings
+from profile_runtime_api.validation import OutputGates
+
 ROOT = Path(__file__).resolve().parents[3]
 HARNESS_PATH = (
     ROOT
@@ -735,3 +738,48 @@ def test_v06_implementable_edge_change_must_be_declared_in_delta() -> None:
         item["code"] == "V06_SELECTED_REPAIR_CHANGE_UNDECLARED"
         for item in errors
     )
+
+
+
+def test_srcr_output_gates_preserve_structural_metadata_and_manifest_transport() -> None:
+    candidate_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_repaired_20260922" / "candidate_v06_repaired.json"
+    )
+    manifest_path = (
+        ROOT / "sandbox" / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922" / "evidence_manifest_v06_merged.json"
+    )
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    repo = RepositoryBindings(ROOT, max_prompt_chars=120000)
+    gates = OutputGates(repo)
+    contract_gate, payload = gates.contract(
+        profile_slug="systemic_root_cause_repair_lf",
+        raw_output=json.dumps(candidate, ensure_ascii=False),
+        schema=repo.runtime_schema("systemic_root_cause_repair_lf"),
+        evidence_manifest=manifest,
+    )
+    assert contract_gate["status"] == "PASS", contract_gate
+    assert contract_gate["validation_role"] == "PRE_QUALITY_STRUCTURAL_FLOOR"
+    assert contract_gate["canonical_quality_accepted"] is False
+    assert contract_gate["closure_summary"]["computed_handoff_ready"] is True
+
+    utility = gates.semantic_utility(
+        profile_slug="systemic_root_cause_repair_lf",
+        payload=payload,
+        contract_gate=contract_gate,
+        evidence_manifest=manifest,
+    )
+    assert utility["status"] == "PASS", utility
+    assert utility["evidence_manifest_sha256"] == contract_gate["evidence_manifest_sha256"]
+
+    missing = gates.semantic_utility(
+        profile_slug="systemic_root_cause_repair_lf",
+        payload=payload,
+        contract_gate=contract_gate,
+        evidence_manifest=None,
+    )
+    assert missing["status"] == "FAIL", missing
+    assert "PROFILE_SEMANTIC_UTILITY_EVIDENCE_MANIFEST_REQUIRED" in missing["blocking_codes"]
