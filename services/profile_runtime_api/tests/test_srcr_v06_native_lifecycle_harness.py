@@ -58,9 +58,9 @@ def test_native_harness_reuses_generic_execution_contract_with_read_tools() -> N
     contract = handoff["execution_contract"]
 
     assert handoff["executor_mode"] == "GPT_NATIVE"
-    assert handoff["tool_permissions"] == ["READ_GITHUB", "READ_SUPABASE"]
+    assert handoff["tool_permissions"] == ["READ_GITHUB", "READ_SUPABASE", "READ_WEB"]
     assert contract["executor_mode"] == "GPT_NATIVE"
-    assert set(contract["tool_permissions"]) == {"READ_GITHUB", "READ_SUPABASE"}
+    assert set(contract["tool_permissions"]) == {"READ_GITHUB", "READ_SUPABASE", "READ_WEB"}
     assert "WRITE_SUPABASE" in contract["forbidden_actions"]
     assert "WRITE_GITHUB" in contract["forbidden_actions"]
     assert "SELF_AUTHORIZE_QUALITY" in contract["forbidden_actions"]
@@ -107,6 +107,58 @@ def test_query_trace_binds_exactly_to_external_manifest() -> None:
 
     assert harness.validate_query_trace(trace) == []
     assert harness.validate_manifest_trace_binding(manifest, trace) == []
+
+
+def test_web_research_trace_binds_exact_https_evidence() -> None:
+    locator = "https://slsa.dev/spec/v1.2/provenance"
+    digest = sha("web-result")
+    trace = [{
+        "sequence": 1,
+        "tool_permission": "READ_WEB",
+        "resolver_id": "LF_WEB_RESEARCH_READBACK_V1",
+        "provider": "WEB",
+        "query_locator": locator,
+        "request_digest": sha("web-request"),
+        "result_digest": digest,
+        "observed_at": "2026-09-22T14:28:56Z",
+        "evidence_id": "EV-WEB-001",
+        "consumer": "$.research_assurance",
+        "result_status": "FOUND",
+        "result_count": 1,
+        "claim_support": "CONTENT",
+    }]
+    manifest = {"evidence": [{
+        "evidence_id": "EV-WEB-001",
+        "source_locator": locator,
+        "digest": digest,
+    }]}
+    assert harness.validate_query_trace(trace) == []
+    assert harness.validate_manifest_trace_binding(manifest, trace) == []
+
+
+def test_web_research_trace_rejects_virtual_web_locator() -> None:
+    digest = sha("web-result")
+    trace = [{
+        "sequence": 1,
+        "tool_permission": "READ_WEB",
+        "resolver_id": "LF_WEB_RESEARCH_READBACK_V1",
+        "provider": "WEB",
+        "query_locator": "web://slsa.dev/spec/v1.2/provenance",
+        "request_digest": sha("web-request"),
+        "result_digest": digest,
+        "observed_at": "2026-09-22T14:28:56Z",
+        "evidence_id": "EV-WEB-001",
+        "consumer": "$.research_assurance",
+        "result_status": "FOUND",
+        "result_count": 1,
+        "claim_support": "CONTENT",
+    }]
+    manifest = {"evidence": [{
+        "evidence_id": "EV-WEB-001",
+        "source_locator": "web://slsa.dev/spec/v1.2/provenance",
+        "digest": digest,
+    }]}
+    assert "trace[0]:WEB_LOCATOR_CLASS_MISMATCH" in harness.validate_manifest_trace_binding(manifest, trace)
 
 
 def test_query_trace_rejects_noncanonical_resolver_and_write_permission() -> None:
