@@ -1,0 +1,350 @@
+{
+  "schema": "SRCR_MANDATORY_SELF_REPAIR_CLOSURE_V1",
+  "spec_id": "SRCR-SELF-REPAIR-MANDATORY-CLOSURE-20260922",
+  "status": "MANDATORY_CLOSURE_SPEC",
+  "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+  "profile_pack_baseline": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+  "amends": [
+    "srcr_profile_agnostic_self_improvement_spec.json",
+    "srcr_self_repair_spec_incremental_value.json"
+  ],
+  "source_trace": {
+    "name": "TRAZA_PASO_A_PASO_SRCR_V05_LIFECYCLE.md",
+    "sha256": "dede460b435b6d79088dfbf472c42574c38bc06f870c28e77f288e28e4cc4eb9",
+    "observed_steps": 247
+  },
+  "objective": "Make every known self-repair, transport, evidence, independence, validation, wiring and closure defect an explicit fail-closed obligation. No candidate or profile revision may be represented as implementation-ready while any mandatory obligation is below READBACK_CLOSED.",
+  "progress_contract": {
+    "states": [
+      {
+        "state": "NOT_STARTED",
+        "percent": 0
+      },
+      {
+        "state": "SPECIFIED",
+        "percent": 25
+      },
+      {
+        "state": "IMPLEMENTED",
+        "percent": 50
+      },
+      {
+        "state": "TESTED",
+        "percent": 75
+      },
+      {
+        "state": "READBACK_CLOSED",
+        "percent": 100
+      }
+    ],
+    "rule": "Progress is derived from evidence. A producer/reviewer may not choose an arbitrary percentage.",
+    "close_state": "READBACK_CLOSED",
+    "per_point_report_required": [
+      "obligation_id",
+      "state",
+      "percent",
+      "evidence_refs",
+      "blocking_codes",
+      "remaining_requirements"
+    ]
+  },
+  "global_closure_rule": {
+    "expression": "EVERY mandatory_closure obligation MUST equal READBACK_CLOSED",
+    "handoff_ready_rule": "handoff_ready_for_profile_update = true only when every mandatory closure is READBACK_CLOSED, all required negative tests reject, all positive tests pass, and the exact revision is bound to readback evidence.",
+    "fail_closed": true,
+    "partial_is_closed": false,
+    "declaration_is_proof": false,
+    "no_override_by": [
+      "producer handoff_ready",
+      "empty open_design_decisions",
+      "deterministic PASS",
+      "semantic utility PASS",
+      "CI green",
+      "component existence without observed wiring"
+    ],
+    "blocking_code": "SRCR_MANDATORY_CLOSURE_INCOMPLETE"
+  },
+  "mandatory_closures": [
+    {
+      "obligation_id": "MC-01",
+      "title": "Live research execution capability",
+      "issue": "The method can require live authority traversal while a runtime producer may have no tool/function-calling capability.",
+      "required_behavior": "For every run requiring live investigation, prove one executable research path: TOOL_CAPABLE_PRODUCER or EXTERNAL_AUTHORITY_RESOLVER. A no-tool producer may run only when the external resolver has already materialized the complete bounded evidence/query manifest needed for the run and can hydrate remaining refs JIT without model-authored authority.",
+      "implementation_targets": [
+        "profile runtime/orchestrator",
+        "evidence resolver",
+        "runtime binding"
+      ],
+      "close_evidence": [
+        "exact caller/runtime identity",
+        "declared research_execution_mode",
+        "successful live lookup/readback through that mode",
+        "negative test: live-research case with neither capability is rejected before production"
+      ],
+      "blocking_codes": [
+        "SRCR_LIVE_RESEARCH_EXECUTION_PATH_MISSING"
+      ],
+      "forbidden_shortcuts": [
+        "Treat prompt instructions as tool capability",
+        "Assume a local model can query GitHub/Supabase because the method says to do so"
+      ]
+    },
+    {
+      "obligation_id": "MC-02",
+      "title": "Canonical model context pack",
+      "issue": "The files delivered to the producer must not depend on an ad-hoc caller or null model_context.",
+      "required_behavior": "Compile a canonical minimal context manifest from runtime binding: required sources, optional allowed sources, section projection, exact source SHA/digest, byte/token budget and excluded payloads. Persist/read back the manifest actually delivered.",
+      "implementation_targets": [
+        "contracts/runtime_binding.json",
+        "context compiler/loader",
+        "execution receipt"
+      ],
+      "close_evidence": [
+        "non-null canonical model_context contract",
+        "actual delivered context manifest bound to execution and source revision",
+        "budget guard positive and overflow negative tests"
+      ],
+      "blocking_codes": [
+        "SRCR_CANONICAL_MODEL_CONTEXT_UNPROVEN"
+      ]
+    },
+    {
+      "obligation_id": "MC-03",
+      "title": "Evidence manifest end-to-end transport",
+      "issue": "Candidate validation can depend on an evidence manifest that the runtime caller does not pass through all gates.",
+      "required_behavior": "Transport the same digest-bound evidence manifest from resolver to deterministic validator, semantic utility, independent semantic judge and canonical quality receipt. Each consumer must record the exact manifest digest it consumed.",
+      "implementation_targets": [
+        "runtime caller",
+        "runtime_validate.py invocation",
+        "runtime_semantic_utility.py invocation",
+        "semantic judge invocation",
+        "quality receipt materializer/validator"
+      ],
+      "close_evidence": [
+        "one integration run showing identical evidence_manifest_sha256 at every hop",
+        "negative test: omit or mutate manifest at any hop and fail closed"
+      ],
+      "blocking_codes": [
+        "SRCR_EVIDENCE_MANIFEST_TRANSPORT_INCOMPLETE",
+        "SRCR_EVIDENCE_MANIFEST_DIGEST_DRIFT"
+      ]
+    },
+    {
+      "obligation_id": "MC-04",
+      "title": "Exact evidence resolution including EKB and zero-row results",
+      "issue": "Generic references or zero-row EKB lookups can appear as evidence; material claims may also be uncited.",
+      "required_behavior": "Every material evidence_ref must resolve to one manifest item with exact locator, query/result status, observed_at/currentness and subject. EMPTY/NOT_FOUND may prove absence only when the query scope is exact; it may not support a positive existence claim. Every material factual claim must cite at least one resolving evidence item.",
+      "implementation_targets": [
+        "evidence manifest schema/resolver",
+        "runtime validator evidence binding",
+        "semantic judge evidence integrity"
+      ],
+      "close_evidence": [
+        "generic unresolved EKB ref fixture is rejected",
+        "zero-row positive-claim fixture is rejected",
+        "true-but-uncited material claim fixture is rejected",
+        "exact absence query may support an absence claim"
+      ],
+      "blocking_codes": [
+        "SRCR_EVIDENCE_REFERENCE_NOT_EXACT",
+        "SRCR_ZERO_ROW_USED_AS_POSITIVE_EVIDENCE",
+        "SRCR_MATERIAL_CLAIM_UNCITED"
+      ]
+    },
+    {
+      "obligation_id": "MC-05",
+      "title": "Complete research query trace",
+      "issue": "The producer/resolver's intermediate authority lookups were not recorded, preventing step-by-step reconstruction.",
+      "required_behavior": "Record every authority/evidence lookup executed by the tool-capable producer or external resolver. Each query trace item binds actor, execution_id, surface, exact locator or canonicalized query fingerprint, input digest, result status/count, result digest, observed_at and emitted evidence IDs. Sensitive values may be redacted from payload text but not from digests/lineage.",
+      "implementation_targets": [
+        "evidence resolver/query layer",
+        "execution evidence bundle"
+      ],
+      "close_evidence": [
+        "integration test reconstructs all evidence IDs from query_trace",
+        "negative test: evidence item without producing query/read is rejected when live lookup was required"
+      ],
+      "blocking_codes": [
+        "SRCR_QUERY_TRACE_INCOMPLETE",
+        "SRCR_EVIDENCE_WITHOUT_RECORDED_RETRIEVAL"
+      ]
+    },
+    {
+      "obligation_id": "MC-06",
+      "title": "Pre-freeze schema and typed protocol validation",
+      "issue": "A candidate with malformed test_protocol setup/action reached downstream validation.",
+      "required_behavior": "Before candidate digest/freeze, validate the complete candidate against the exact current schema and reject malformed typed collections. Freeze is impossible when schema validation has any error.",
+      "implementation_targets": [
+        "producer/harness pre-freeze gate",
+        "schemas/output.schema.json"
+      ],
+      "close_evidence": [
+        "malformed setup/action fixture rejected before freeze",
+        "valid candidate frozen only after zero schema errors",
+        "candidate receipt records schema revision and validation digest"
+      ],
+      "blocking_codes": [
+        "SRCR_PREFREEZE_SCHEMA_INVALID"
+      ]
+    },
+    {
+      "obligation_id": "MC-07",
+      "title": "Single ownership of structural rules",
+      "issue": "Structural rules were duplicated between runtime_validate.py and runtime_semantic_utility.py and could drift silently.",
+      "required_behavior": "Every structural blocking rule/code has one canonical owner. runtime_validate owns structural rules; semantic utility may consume the deterministic gate and run distinct utility-only checks but may not reimplement or re-emit structural rule logic. Maintain a machine-readable rule ownership catalog.",
+      "implementation_targets": [
+        "validators/runtime_validate.py",
+        "validators/runtime_semantic_utility.py",
+        "rule ownership catalog/static test"
+      ],
+      "close_evidence": [
+        "static ownership test finds zero duplicate structural rule IDs/codes",
+        "mutation of one structural rule has one implementation target and all dependent tests detect the change",
+        "utility result cannot emit a structural-owned blocking code"
+      ],
+      "blocking_codes": [
+        "SRCR_STRUCTURAL_RULE_DUPLICATED",
+        "SRCR_RULE_OWNERSHIP_AMBIGUOUS"
+      ]
+    },
+    {
+      "obligation_id": "MC-08",
+      "title": "Canonical finding deduplication",
+      "issue": "The same underlying defect can be counted separately by schema and validator layers.",
+      "required_behavior": "Aggregate findings by a canonical fingerprint built from rule_id + candidate_path/subject + failure_class. Preserve all detector/source layers as evidence, but count one logical finding once. Different failure classes at the same path remain distinct.",
+      "implementation_targets": [
+        "validation result aggregator",
+        "quality/pre-quality reporting"
+      ],
+      "close_evidence": [
+        "setup/action malformed fixture yields one logical finding per malformed field, not duplicate schema+validator findings",
+        "distinct defects on same field remain distinct",
+        "reported finding_count equals canonical unique finding IDs"
+      ],
+      "blocking_codes": [
+        "SRCR_FINDING_DEDUP_INCONSISTENT"
+      ]
+    },
+    {
+      "obligation_id": "MC-09",
+      "title": "Enforced reviewer independence",
+      "issue": "A comparator/reviewer can share producer execution identity and independence may be merely asserted.",
+      "required_behavior": "Canonical semantic acceptance requires reviewer_execution_id != producer_execution_id, reviewer actor/session context isolated from producer private reasoning, exact candidate frozen before review, and reviewer inputs limited to the authorized scope packet, exact candidate, evidence bundle and current authority needed to verify them.",
+      "implementation_targets": [
+        "semantic review handoff",
+        "semantic result schema/validator",
+        "quality receipt"
+      ],
+      "close_evidence": [
+        "quality receipt binds distinct producer and reviewer execution IDs",
+        "same-execution fixture is rejected",
+        "candidate mutation after review freeze invalidates receipt"
+      ],
+      "blocking_codes": [
+        "SRCR_REVIEWER_INDEPENDENCE_NOT_PROVEN",
+        "SRCR_PRODUCER_REVIEWER_EXECUTION_COLLISION"
+      ]
+    },
+    {
+      "obligation_id": "MC-10",
+      "title": "Observed semantic judge invocation and canonical quality receipt",
+      "issue": "Judge files/materializers may exist without an actual caller executing them.",
+      "required_behavior": "Resolve and prove the physical caller path candidate -> deterministic gate -> utility floor -> independent semantic judge -> semantic result validator -> quality receipt materializer -> quality receipt validator. Component registration or runtime_binding labels alone do not close this obligation.",
+      "implementation_targets": [
+        "runtime/orchestrator caller",
+        "semantic judge binding",
+        "quality receipt path"
+      ],
+      "close_evidence": [
+        "integration trace proves every hop consumed the exact candidate/evidence/scope digests",
+        "missing judge invocation blocks receipt",
+        "utility PASS without semantic result cannot be represented as accepted quality"
+      ],
+      "blocking_codes": [
+        "SRCR_SEMANTIC_JUDGE_CALLER_UNRESOLVED",
+        "SRCR_CANONICAL_QUALITY_RECEIPT_MISSING"
+      ]
+    },
+    {
+      "obligation_id": "MC-11",
+      "title": "Physical next-gate, terminality and readback closure",
+      "issue": "A next_gate label can exist without an operational consumer; side-channel failure can leave canonical execution non-terminal.",
+      "required_behavior": "For every material edge, independently prove producer -> transported contract -> real consumer -> authority/enforcement -> effect/readback. A next_gate must resolve to an actual consumer. When an auxiliary queue/worker and canonical execution represent the same execution, terminal success/failure/cancelled state must reconcile to the canonical execution or an explicit authority contract must prove why it is non-authoritative.",
+      "implementation_targets": [
+        "material_process_graph edge closure",
+        "semantic T5",
+        "runtime lifecycle/terminality contracts"
+      ],
+      "close_evidence": [
+        "next_gate consumer positive test",
+        "no-consumer fixture fails",
+        "queue/worker terminal failure propagates or explicitly reconciles to canonical execution in test/readback",
+        "rollback/readback tested when applicable"
+      ],
+      "blocking_codes": [
+        "SRCR_NEXT_GATE_CONSUMER_UNRESOLVED",
+        "SRCR_CANONICAL_TERMINALITY_NOT_RECONCILED"
+      ]
+    },
+    {
+      "obligation_id": "MC-12",
+      "title": "Selected-repair change completeness",
+      "issue": "A proposed repair edge/change can appear in the material graph or implementation package without being declared in implementation_delta/deliverables.",
+      "required_behavior": "Independently enumerate every selected-repair material change from the entire candidate and reconcile 100% against implementation_delta + deliverables + wiring. Any graph proposed_change_ref or required mechanism absent from the declared footprint blocks producer decision closure before handoff_ready can be true.",
+      "implementation_targets": [
+        "producer pre-freeze reconciliation",
+        "deterministic cross-field validator",
+        "independent semantic judge R2"
+      ],
+      "close_evidence": [
+        "undeclared queue-terminal bridge style fixture rejected before handoff_ready",
+        "all selected-repair change refs map to declared target/action/dependency/acceptance evidence",
+        "discovery-only out-of-scope findings remain outside selected repair"
+      ],
+      "blocking_codes": [
+        "SRCR_UNDECLARED_SELECTED_REPAIR_CHANGE",
+        "SRCR_IMPLEMENTATION_FOOTPRINT_INCOMPLETE"
+      ]
+    }
+  ],
+  "acceptance_matrix": {
+    "required_for_close": [
+      "12/12 obligations READBACK_CLOSED",
+      "0 unresolved blocking codes",
+      "0 duplicate structural rule owners",
+      "0 logical duplicate findings",
+      "100% material candidate changes reconciled",
+      "100% material evidence refs resolved",
+      "100% live research lookups traceable when live research applies",
+      "producer_execution_id != reviewer_execution_id",
+      "same candidate/evidence/scope digests across semantic result and quality receipt",
+      "no merge/runtime activation/production mutation is implied by this specification"
+    ],
+    "ready_result": "SELF_REPAIR_SPEC_CLOSED",
+    "otherwise": "SELF_REPAIR_SPEC_OPEN"
+  },
+  "regression_families": [
+    "missing-live-research-capability",
+    "context-pack-drift",
+    "manifest-drop-or-mutation",
+    "generic-ekb-ref",
+    "zero-row-positive-evidence",
+    "uncited-material-claim",
+    "missing-query-trace",
+    "malformed-prefreeze-schema",
+    "duplicated-structural-rule",
+    "duplicate-finding-count",
+    "same-producer-reviewer-execution",
+    "judge-not-called",
+    "next-gate-without-consumer",
+    "terminal-worker-failure-not-reconciled",
+    "undeclared-selected-repair-change"
+  ],
+  "scope_guard": {
+    "generic_only": true,
+    "lifecycle_case_specific_rules_forbidden": true,
+    "no_new_parallel_engine": true,
+    "no_second_semantic_authority": true,
+    "no_merge_runtime_or_production_authorization": true
+  }
+}
