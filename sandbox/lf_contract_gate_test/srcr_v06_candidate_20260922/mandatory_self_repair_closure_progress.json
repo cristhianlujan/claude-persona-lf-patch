@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 82.6923076923077,
+  "overall_percent": 84.61538461538461,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -96,17 +96,19 @@
     },
     {
       "obligation_id": "MC-07",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "rule_ownership.v1.json assigns structural/utility/research-trace/independent-semantic owners",
-        "V0.6 control ownership regression reports deterministic/semantic overlap=0",
-        "runtime and native harness delegate query-trace validation to one owner",
-        "Validate LF Packs 35736254524 PASS"
+        "exact-head ownership scan on 45cdf0e6bececaae890775f851181b411e7c8ac5: 234 structural emitted codes, 19 semantic-utility emitted codes, overlap=0",
+        "V0.6 ownership regression PASS: deterministic=230 semantic=19 overlap=0 mutation_detected=1",
+        "negative mutation injected structural-owned NOT_OBJECT into semantic utility and ownership detection returned overlap=[NOT_OBJECT]",
+        "rule_ownership.v1.json owner paths are unique; STRUCTURAL and SEMANTIC_UTILITY remain distinct canonical implementation targets",
+        "RESEARCH_TRACE remains the single canonical owner; native harness and runtime engine delegate to research_trace.py",
+        "post-persistence scan on f9cd0f172a14c2384e3e395a4f945a2926eefd2c remained structural=234 semantic=19 overlap=0 owner_paths_unique=true",
+        "subsequent commits through eaa34a3318a889bcd2281d6fc6dfc354700e4efe changed MC-06/MC-07 evidence/progress surfaces only; no ownership implementation source was modified",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc07_rule_ownership_readback.json"
       ],
-      "remaining_requirements": [
-        "Retain mutation/negative evidence on the final exact-head and confirm no duplicate owner is reintroduced by later repairs."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-08",
@@ -186,8 +188,8 @@
       ]
     }
   ],
-  "closed_count": 7,
-  "open_count": 6,
+  "closed_count": 8,
+  "open_count": 5,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -200,7 +202,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "d7257ae5bb8dbac9127b83c966f8b80de1a11d2f",
+  "current_exact_code_head": "eaa34a3318a889bcd2281d6fc6dfc354700e4efe",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -233,6 +235,13 @@
     "mc06_execution_branch_head": "45cdf0e6bececaae890775f851181b411e7c8ac5",
     "mc06_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
     "mc06_manifest_bundle_digest": "sha256:38527cfb43f1f06b713582c079a7b4a27e6828f2ef4796978d3f00e097cc1f7b",
-    "mc06_validation_sha256": "bf7671f727efb361de6be2385a237ab07a3ab1dae7d12d61222adb32d7b1b7de"
+    "mc06_validation_sha256": "bf7671f727efb361de6be2385a237ab07a3ab1dae7d12d61222adb32d7b1b7de",
+    "mc07_source_revision": "f9cd0f172a14c2384e3e395a4f945a2926eefd2c",
+    "mc07_structural_code_count_ast": 234,
+    "mc07_semantic_utility_code_count_ast": 19,
+    "mc07_overlap_count": 0,
+    "mc07_mutation_duplicate_code": "NOT_OBJECT",
+    "mc07_mutation_detected": true,
+    "mc07_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc07_rule_ownership_readback.json"
   }
 }
