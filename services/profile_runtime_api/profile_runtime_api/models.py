@@ -294,6 +294,9 @@ class ProfileTask(StrictModel):
     required_card_refs: list[str] = Field(default_factory=list, max_length=4)
     send_image_to_model: bool = False
     governed_operation: GovernedOperationContext | None = None
+    # External validation evidence is transport-only. It is not a model-produced field
+    # and is consumed only by deterministic/semantic validation after generation.
+    evidence_manifest: dict[str, Any] | None = None
 
     @model_validator(mode="after")
     def validate_bound_sources(self) -> "ProfileTask":
@@ -304,6 +307,11 @@ class ProfileTask(StrictModel):
             raise ValueError("RUNTIME_OUTPUT_MODE_PROFILE_MISMATCH")
         if any(not isinstance(key, str) or not key.strip() for key in self.input_fields):
             raise ValueError("PROFILE_INPUT_FIELD_NAME_INVALID")
+        if self.evidence_manifest is not None:
+            if not self.evidence_manifest:
+                raise ValueError("PROFILE_EVIDENCE_MANIFEST_EMPTY")
+            if len(json.dumps(self.evidence_manifest, ensure_ascii=False)) > 250_000:
+                raise ValueError("PROFILE_EVIDENCE_MANIFEST_BUDGET_EXCEEDED")
 
         seen_adapters: set[str] = set()
         adapter_versions: dict[str, str | None] = {}
