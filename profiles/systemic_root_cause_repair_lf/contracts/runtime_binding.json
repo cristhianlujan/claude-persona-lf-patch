@@ -69,5 +69,12 @@
       ],
       "max_chars": 42000
     }
+  },
+  "research_execution": {
+    "mode": "EXTERNAL_AUTHORITY_RESOLVER",
+    "resolver_ref": "profiles/systemic_root_cause_repair_lf/contracts/evidence_manifest.schema.json",
+    "requires_evidence_manifest": true,
+    "requires_query_trace": true,
+    "requires_resolved_authority_context": true
   }
 }
