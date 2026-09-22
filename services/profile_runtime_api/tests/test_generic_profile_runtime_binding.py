@@ -149,6 +149,70 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             'EXECUTABLE_TEST_PROTOCOL_INCOMPLETE',
         )
 
+    def test_contract_deduplicates_real_required_schema_error_and_profile_validator(self):
+        tmp,root,repo=self._repo()
+        try:
+            schema={
+                "$schema":"https://json-schema.org/draft/2020-12/schema",
+                "type":"object",
+                "required":["test_protocol"],
+                "properties":{
+                    "test_protocol":{
+                        "type":"object",
+                        "required":["setup","action","assertions","failure_signal"],
+                        "properties":{
+                            "setup":{"type":"array","minItems":1,"items":{"type":"string"}},
+                            "action":{"type":"array","minItems":1,"items":{"type":"string"}},
+                            "assertions":{"type":"array","minItems":1,"items":{"type":"string"}},
+                            "failure_signal":{"type":"string","minLength":1},
+                        },
+                        "additionalProperties":False,
+                    }
+                },
+                "additionalProperties":False,
+            }
+            (root/'profiles/p/schemas/output.schema.json').write_text(json.dumps(schema))
+            (root/'profiles/p/validators/runtime_validate.py').write_text(
+                'def validate(payload):\n'
+                '    errors=[]\n'
+                '    protocol=payload.get("test_protocol") or {}\n'
+                '    for key in ("setup","action"):\n'
+                '        value=protocol.get(key)\n'
+                '        if not isinstance(value,list) or not value:\n'
+                '            errors.append({"code":"EXECUTABLE_TEST_PROTOCOL_INCOMPLETE","path":f"$.test_protocol.{key}"})\n'
+                '    codes=sorted({item["code"] for item in errors})\n'
+                '    return {"status":"PASS" if not errors else "FAIL","valid":not errors,"errors":errors,"blocking_codes":codes}\n'
+            )
+            gates=OutputGates(repo)
+            contract,_=gates.contract(
+                profile_slug='p',
+                raw_output=json.dumps({
+                    "test_protocol":{
+                        "assertions":["assert"],
+                        "failure_signal":"FAIL",
+                    }
+                }),
+                schema=repo.runtime_schema('p'),
+            )
+            self.assertEqual(contract['status'],'FAIL')
+            self.assertEqual(len(contract['errors']),4)
+            self.assertEqual(contract['finding_count'],2)
+            self.assertEqual(
+                contract['finding_count'],
+                len({item['finding_id'] for item in contract['logical_findings']}),
+            )
+            by_path={item['candidate_path']:item for item in contract['logical_findings']}
+            for field in ('setup','action'):
+                item=by_path[f'$.test_protocol.{field}']
+                self.assertEqual(item['failure_class'],'EXECUTABLE_TEST_PROTOCOL_INCOMPLETE')
+                self.assertEqual(item['detectors'],['JSON_SCHEMA','PROFILE_VALIDATOR'])
+                self.assertEqual(
+                    item['raw_codes'],
+                    ['EXECUTABLE_TEST_PROTOCOL_INCOMPLETE','JSON_SCHEMA_VALIDATION_FAILED'],
+                )
+        finally:
+            tmp.cleanup()
+
     def test_logical_findings_keep_distinct_failure_classes_on_same_path(self):
         errors=[
             {
