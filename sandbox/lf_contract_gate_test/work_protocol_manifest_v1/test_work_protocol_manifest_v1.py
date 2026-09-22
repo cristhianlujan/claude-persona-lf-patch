@@ -32,6 +32,7 @@ schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
 obligation_schema = schema["properties"]["obligations"]["items"]
 evidence_policy_schema = schema["properties"]["evidence_policy"]
 control_policy_schema = schema["properties"]["control_policy"]
+solution_isolation_policy_schema = schema["properties"]["solution_isolation_policy"]
 controller_policy_schema = schema["properties"]["controller_policy"]
 closure_controller_policy_schema = schema["properties"]["closure_controller_policy"]
 source_checks = {
@@ -60,6 +61,8 @@ source_checks = {
     "sql_independent_receipt_required": "INDEPENDENT_LEDGER_RECEIPT_MISSING" in sql and "WORK_PROTOCOL_GATE_EVIDENCE" in sql,
     "sql_evidence_enforced_in_progress_view": "ee.evidence_eval->>'result'<>'PASS'" in sql,
     "sql_stale_evidence_blocks": "BLOCKED_STALE_EVIDENCE" in sql,
+    "schema_solution_isolation_policy_required": "solution_isolation_policy" in schema["required"] and solution_isolation_policy_schema["properties"]["unit_mode"]["const"] == "ONE_SOLUTION_PER_PR" and solution_isolation_policy_schema["properties"]["mixed_solution_pr_allowed"]["const"] is False,
+    "sql_solution_isolation_policy_enforced": "SOLUTION_ISOLATION_POLICY_INVALID" in sql and "ONE_SOLUTION_PER_PR" in sql and "migration_apply_requires_separate_pr" in sql,
     "schema_control_policy_required": "control_policy" in schema["required"] and control_policy_schema["properties"]["scope_change_mode"]["const"] == "SUPERSEDE_NEW_EXECUTION_FULL_REVALIDATION",
     "schema_required_waivers_forbidden": control_policy_schema["properties"]["required_obligation_waivers_allowed"]["const"] is False,
     "schema_obligation_control_flags": all(k in obligation_schema["required"] for k in ("waiver_allowed", "irreversible_effect", "human_approval_required")),
