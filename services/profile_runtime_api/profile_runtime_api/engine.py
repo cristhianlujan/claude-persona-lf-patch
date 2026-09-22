@@ -80,7 +80,11 @@ def _model_context_readback(
     }
 
 
-def _validate_research_execution(task: ProfileTask, binding: Any) -> dict[str, Any] | None:
+def _validate_research_execution(
+    task: ProfileTask,
+    binding: Any,
+    validator_binding: tuple[Any, str] | None,
+) -> dict[str, Any] | None:
     contract = getattr(binding, "research_execution", None) if binding is not None else None
     if not isinstance(contract, dict):
         return None
@@ -89,58 +93,39 @@ def _validate_research_execution(task: ProfileTask, binding: Any) -> dict[str, A
     manifest = task.evidence_manifest
     if not isinstance(manifest, dict) or not manifest:
         raise LlamaTransportError("SRCR_EVIDENCE_MANIFEST_REQUIRED_BEFORE_MODEL")
-    rows = manifest.get("evidence")
-    trace = manifest.get("query_trace")
-    if not isinstance(rows, list) or not rows:
-        raise LlamaTransportError("SRCR_EVIDENCE_MANIFEST_EMPTY_BEFORE_MODEL")
-    if not isinstance(trace, list) or not trace:
-        raise LlamaTransportError("SRCR_QUERY_TRACE_REQUIRED_BEFORE_MODEL")
-    evidence_ids = [
-        row.get("evidence_id")
-        for row in rows
-        if isinstance(row, dict) and isinstance(row.get("evidence_id"), str) and row.get("evidence_id")
-    ]
-    if len(evidence_ids) != len(rows) or len(evidence_ids) != len(set(evidence_ids)):
-        raise LlamaTransportError("SRCR_EVIDENCE_MANIFEST_IDS_INVALID")
-    emitted: set[str] = set()
-    query_ids: set[str] = set()
-    for item in trace:
-        if not isinstance(item, dict):
-            raise LlamaTransportError("SRCR_QUERY_TRACE_ENTRY_INVALID")
-        query_id = item.get("query_id")
-        if not isinstance(query_id, str) or not query_id or query_id in query_ids:
-            raise LlamaTransportError("SRCR_QUERY_TRACE_ID_INVALID")
-        query_ids.add(query_id)
-        emitted_ids = item.get("emitted_evidence_ids")
-        if not isinstance(emitted_ids, list) or any(
-            not isinstance(value, str) or not value for value in emitted_ids
-        ):
-            raise LlamaTransportError("SRCR_QUERY_TRACE_EVIDENCE_IDS_INVALID")
-        unknown = sorted(set(emitted_ids) - set(evidence_ids))
-        if unknown:
-            raise LlamaTransportError("SRCR_QUERY_TRACE_UNKNOWN_EVIDENCE_ID", ",".join(unknown))
-        emitted.update(emitted_ids)
-    missing_lineage = sorted(set(evidence_ids) - emitted)
-    if missing_lineage:
-        raise LlamaTransportError(
-            "SRCR_EVIDENCE_WITHOUT_RECORDED_RETRIEVAL", ",".join(missing_lineage)
-        )
     if task.governed_operation is None:
         raise LlamaTransportError("SRCR_RESOLVED_AUTHORITY_CONTEXT_REQUIRED")
     capsule = task.governed_operation.context_capsule
     resolved = capsule.get("resolved_authority_context") if isinstance(capsule, dict) else None
     if not isinstance(resolved, dict) or not resolved:
         raise LlamaTransportError("SRCR_RESOLVED_AUTHORITY_CONTEXT_REQUIRED")
-    manifest_sha256 = "sha256:" + canonical_json_sha256(manifest)
-    if capsule.get("evidence_manifest_sha256") != manifest_sha256:
+    expected_manifest_sha256 = "sha256:" + canonical_json_sha256(manifest)
+    if capsule.get("evidence_manifest_sha256") != expected_manifest_sha256:
         raise LlamaTransportError("SRCR_RESOLVED_AUTHORITY_MANIFEST_DIGEST_MISMATCH")
+    if validator_binding is None:
+        raise LlamaTransportError("SRCR_RESEARCH_TRACE_VALIDATOR_MISSING")
+    module, callable_name = validator_binding
+    validator = getattr(module, callable_name, None)
+    if not callable(validator):
+        raise LlamaTransportError("SRCR_RESEARCH_TRACE_VALIDATOR_CALLABLE_MISSING")
+    result = validator(
+        manifest,
+        resolved_authority_context=resolved,
+        expected_manifest_sha256=expected_manifest_sha256,
+    )
+    if not isinstance(result, dict):
+        raise LlamaTransportError("SRCR_RESEARCH_TRACE_VALIDATOR_RESULT_INVALID")
+    codes = result.get("blocking_codes")
+    if result.get("status") != "PASS" or not isinstance(codes, list) or codes:
+        rendered = ",".join(str(code) for code in (codes or ["UNKNOWN"]))
+        raise LlamaTransportError("SRCR_RESEARCH_TRACE_INVALID", rendered)
+    readback = result.get("readback")
+    if not isinstance(readback, dict):
+        raise LlamaTransportError("SRCR_RESEARCH_TRACE_READBACK_MISSING")
     return {
         "mode": contract["mode"],
         "resolver_ref": contract["resolver_ref"],
-        "evidence_manifest_sha256": manifest_sha256,
-        "query_count": len(trace),
-        "evidence_count": len(rows),
-        "resolved_authority_context_sha256": canonical_json_sha256(resolved),
+        **readback,
     }
 
 
@@ -1122,7 +1107,8 @@ class ProfileRuntimeEngine:
             self.repository.validate_profile_identity(task.profile_slug, task.profile_code)
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)
             binding=self.repository.runtime_binding(task.profile_slug)
-            research_execution_readback=_validate_research_execution(task,binding)
+            research_trace_validator=self.repository.load_research_trace_validator(task.profile_slug)
+            research_execution_readback=_validate_research_execution(task,binding,research_trace_validator)
             model_sources=self.repository.profile_model_sources(task.profile_slug,sources)
             transport_readback=_model_context_readback(model_sources, task.evidence_manifest)
             generation_schema=self.repository.model_generation_schema(task.profile_slug,schema.payload)
@@ -1149,7 +1135,8 @@ class ProfileRuntimeEngine:
             self.repository.validate_profile_identity(task.profile_slug, task.profile_code)
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)
             binding=self.repository.runtime_binding(task.profile_slug)
-            research_execution_readback=_validate_research_execution(task,binding)
+            research_trace_validator=self.repository.load_research_trace_validator(task.profile_slug)
+            research_execution_readback=_validate_research_execution(task,binding,research_trace_validator)
             model_sources=self.repository.profile_model_sources(task.profile_slug,sources)
             transport_readback=_model_context_readback(model_sources, task.evidence_manifest)
             generation_schema=self.repository.model_generation_schema(task.profile_slug,schema.payload)
