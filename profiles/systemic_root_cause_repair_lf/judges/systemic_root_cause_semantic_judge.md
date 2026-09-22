@@ -10,7 +10,8 @@ The judge receives the same run authority resolved before producer execution. Th
 
 ## Required inputs
 1. `exact_candidate` plus `candidate_sha256`.
-2. `scope_authority_packet` plus `scope_packet_sha256`, materialized by `input_validate` before profile execution.
+2. Exact `evidence_manifest` plus `evidence_manifest_sha256`; the reviewer must bind its result to the exact manifest bytes it consumed.
+3. `scope_authority_packet` plus `scope_packet_sha256`, materialized by `input_validate` before profile execution.
 3. Exact current upstream sources referenced by material scope/authority items when needed to interpret them.
 4. Literal request/failure envelope and resolved run context.
 5. Deterministic validator result for the exact candidate.
@@ -225,6 +226,7 @@ Return `BLOCK_PIPELINE` for fabricated authority/evidence, unauthorized mutation
 - `verdict`
 - `candidate_sha256`
 - `scope_packet_sha256`
+- `evidence_manifest_sha256`
 - `source_refs_inspected[]`
 - `observed_candidate_changes[]`
 - `requirement_reconciliation[]`
@@ -239,3 +241,8 @@ Return `BLOCK_PIPELINE` for fabricated authority/evidence, unauthorized mutation
 
 ## MR02-R2 discriminator
 A valid implementation of this judge must reject a candidate that incorporates a new readiness function into the selected implementation when the exact authorized child scope allows caller adoption/steps/contracts but does not authorize that new function. This is a generic scope-conformance rule; no function name, backlog ID, or MR02-specific term belongs in production judge logic.
+
+
+## V0.6 evidence-manifest identity binding
+
+The evidence-manifest digest is an input binding, not a producer claim. The independent semantic result MUST return the exact `evidence_manifest_sha256` it consumed. A V0.6 quality receipt is invalid if deterministic validation, semantic review and receipt do not bind to the same exact manifest digest.
