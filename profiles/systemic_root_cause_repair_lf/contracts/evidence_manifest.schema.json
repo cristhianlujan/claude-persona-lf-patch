@@ -183,6 +183,13 @@
           "result_count": {
             "type": "integer",
             "minimum": 0
+          },
+          "claim_support": {
+            "enum": [
+              "PRESENCE",
+              "ABSENCE",
+              "CONTENT"
+            ]
           }
         }
       }
