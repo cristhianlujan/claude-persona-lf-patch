@@ -18,6 +18,7 @@ v05 = runpy.run_path(str(ROOT / "evals" / "v05_producer_depth_cases.py"), run_na
 v05_pair = v05["v05_pair"]
 runtime_validate = v05["runtime_validate"]
 closure_proof = v05["closure_proof"]
+V04_PROCESS_FIXTURE = v05["V04_PROCESS_FIXTURE"]
 schema_validator = Draft7Validator(json.loads((ROOT / "schemas" / "output.schema.json").read_text()))
 
 V05 = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
@@ -58,6 +59,7 @@ def v06_pair():
     candidate = copy.deepcopy(candidate)
     evidence = copy.deepcopy(evidence)
     candidate["profile_pack_id"] = V06
+    candidate["material_process_graph"] = copy.deepcopy(V04_PROCESS_FIXTURE["material_process_graph"])
 
     nodes = candidate["material_process_graph"]["nodes"]
     if not nodes:
