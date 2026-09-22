@@ -20,12 +20,13 @@ from .models import (
     JobAccepted,
     QueueExecuteRequest,
     ResearchBaselineRequest,
+    SemanticJudgeRequest,
 )
 from .settings import Settings, SettingsError
 
 
 def _job_meta(
-    kind: str, payload: ExecuteRequest | ArtifactSetExecuteRequest | QueueExecuteRequest | ResearchBaselineRequest | BatchRequest
+    kind: str, payload: ExecuteRequest | ArtifactSetExecuteRequest | QueueExecuteRequest | ResearchBaselineRequest | SemanticJudgeRequest | BatchRequest
 ) -> dict[str, Any]:
     rendered = payload.model_dump(mode="json", by_alias=True)
     meta: dict[str, Any] = {
@@ -72,6 +73,18 @@ def _job_meta(
                 "request_id": payload.request_id,
                 "profiles": [payload.profile_code],
                 "baseline_contract_version": payload.research_baseline_contract.get("contract_version"),
+            }
+        )
+    elif isinstance(payload, SemanticJudgeRequest):
+        meta.update(
+            {
+                "artifact_sha256": None,
+                "screen_code": None,
+                "request_id": payload.request_id,
+                "profiles": [payload.profile_code],
+                "execution_id": payload.execution_id,
+                "candidate_sha256": payload.candidate_sha256,
+                "scope_packet_sha256": payload.scope_packet_sha256,
             }
         )
     else:
@@ -174,7 +187,7 @@ def create_app(
         *,
         kind: str,
         external_id: str,
-        payload: ExecuteRequest | ArtifactSetExecuteRequest | QueueExecuteRequest | ResearchBaselineRequest | BatchRequest,
+        payload: ExecuteRequest | ArtifactSetExecuteRequest | QueueExecuteRequest | ResearchBaselineRequest | SemanticJudgeRequest | BatchRequest,
         request: Request,
     ) -> JobAccepted:
         meta = _job_meta(kind, payload)
@@ -198,6 +211,8 @@ def create_app(
                         result = engine.run_queue_execute(payload)
                     elif isinstance(payload, ResearchBaselineRequest):
                         result = engine.run_research_baseline(payload)
+                    elif isinstance(payload, SemanticJudgeRequest):
+                        result = engine.run_semantic_judge(payload)
                     else:
                         result = engine.run_batch(payload)
                     store.complete(job["job_id"], result)
@@ -291,6 +306,22 @@ def create_app(
     ) -> JobAccepted:
         return submit_job(
             kind="research_baseline",
+            external_id=payload.request_id,
+            payload=payload,
+            request=request,
+        )
+
+    @app.post(
+        "/v1/profile/semantic-judge",
+        response_model=JobAccepted,
+        status_code=status.HTTP_202_ACCEPTED,
+        dependencies=[Depends(authorize)],
+    )
+    def semantic_judge(
+        payload: SemanticJudgeRequest, request: Request
+    ) -> JobAccepted:
+        return submit_job(
+            kind="semantic_judge",
             external_id=payload.request_id,
             payload=payload,
             request=request,

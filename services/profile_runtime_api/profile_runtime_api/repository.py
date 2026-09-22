@@ -48,6 +48,7 @@ class RuntimeProfileBinding:
     model_context: dict[str, Any] | None = None
     execution_partition: dict[str, Any] | None = None
     execution_budget: dict[str, Any] | None = None
+    canonical_quality: dict[str, Any] | None = None
 
 
 class RepositoryBindings:
@@ -134,6 +135,7 @@ class RepositoryBindings:
         model_context = payload.get("model_context")
         execution_partition = payload.get("execution_partition")
         execution_budget = payload.get("execution_budget")
+        canonical_quality = payload.get("canonical_quality")
         if not isinstance(profile_code, str) or not profile_code:
             raise RepositoryError("PROFILE_RUNTIME_BINDING_CODE_INVALID", profile_slug)
         if not isinstance(runtime_schema, dict) or not isinstance(runtime_schema.get("default"), str) or not isinstance(runtime_schema.get("output_modes"), dict):
@@ -203,7 +205,36 @@ class RepositoryBindings:
                 or not 0 <= execution_budget.get("max_swap_used_pct") <= 100
             ):
                 raise RepositoryError("PROFILE_RUNTIME_EXECUTION_BUDGET_INVALID", profile_slug)
-        refs = [runtime_schema["default"], *runtime_schema["output_modes"].values(), canonical["path"], semantic["path"]]
+        if canonical_quality is not None:
+            if not isinstance(canonical_quality, dict):
+                raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_INVALID", profile_slug)
+            semantic_judge_path = canonical_quality.get("semantic_judge_path")
+            semantic_result_validator = canonical_quality.get("semantic_result_validator")
+            required_pack_ids = canonical_quality.get("required_for_profile_pack_ids")
+            if (
+                not isinstance(semantic_judge_path, str)
+                or not semantic_judge_path
+                or not isinstance(semantic_result_validator, dict)
+                or not isinstance(semantic_result_validator.get("path"), str)
+                or not semantic_result_validator.get("path")
+                or not isinstance(semantic_result_validator.get("callable"), str)
+                or not semantic_result_validator.get("callable")
+                or not isinstance(required_pack_ids, list)
+                or not required_pack_ids
+                or any(not isinstance(item, str) or not item for item in required_pack_ids)
+            ):
+                raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_BINDING_INVALID", profile_slug)
+        refs = [
+            runtime_schema["default"],
+            *runtime_schema["output_modes"].values(),
+            canonical["path"],
+            semantic["path"],
+        ]
+        if isinstance(canonical_quality, dict):
+            refs.extend([
+                canonical_quality["semantic_judge_path"],
+                canonical_quality["semantic_result_validator"]["path"],
+            ])
         for rel in refs:
             if not isinstance(rel, str) or not rel or rel.startswith("/") or ".." in PurePosixPath(rel).parts:
                 raise RepositoryError("PROFILE_RUNTIME_BINDING_REF_INVALID", str(rel))
@@ -225,6 +256,7 @@ class RepositoryBindings:
             model_context=dict(model_context) if isinstance(model_context, dict) else None,
             execution_partition=dict(execution_partition) if isinstance(execution_partition, dict) else None,
             execution_budget=dict(execution_budget) if isinstance(execution_budget, dict) else None,
+            canonical_quality=dict(canonical_quality) if isinstance(canonical_quality, dict) else None,
         )
 
 
@@ -436,6 +468,40 @@ class RepositoryBindings:
     def validator_callable_name(self, profile_slug: str) -> str | None:
         binding = self.runtime_binding(profile_slug)
         return binding.canonical_validator_callable if binding is not None else None
+
+    def load_canonical_quality(self, profile_slug: str) -> dict[str, Any] | None:
+        binding = self.runtime_binding(profile_slug)
+        if binding is None or binding.canonical_quality is None:
+            return None
+        quality = binding.canonical_quality
+        profile_root = (self.profiles_root / profile_slug).resolve()
+        judge_rel = quality["semantic_judge_path"]
+        validator = quality["semantic_result_validator"]
+        judge_path = (profile_root / judge_rel).resolve()
+        self._within(judge_path, profile_root, "PROFILE_SEMANTIC_JUDGE_PATH_ESCAPE")
+        if not judge_path.is_file():
+            raise RepositoryError("PROFILE_SEMANTIC_JUDGE_MISSING", judge_rel)
+        try:
+            judge_text = judge_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            raise RepositoryError("PROFILE_SEMANTIC_JUDGE_READ_FAILED", judge_rel) from exc
+        validator_path = (profile_root / validator["path"]).resolve()
+        self._within(validator_path, profile_root, "PROFILE_SEMANTIC_VALIDATOR_PATH_ESCAPE")
+        module = self._load_with_siblings(
+            validator_path,
+            validator_path.parent,
+            f"lf_profile_semantic_result_validator_{profile_slug}",
+        )
+        callable_name = validator["callable"]
+        if not callable(getattr(module, callable_name, None)):
+            raise RepositoryError("PROFILE_SEMANTIC_VALIDATOR_CALLABLE_MISSING", callable_name)
+        return {
+            "judge_text": judge_text,
+            "judge_ref": str(judge_path.relative_to(self.repo_root)),
+            "validator_module": module,
+            "validator_callable": callable_name,
+            "required_for_profile_pack_ids": list(quality["required_for_profile_pack_ids"]),
+        }
 
     def load_semantic_utility(self, profile_slug: str) -> tuple[ModuleType, str] | None:
         binding = self.runtime_binding(profile_slug)

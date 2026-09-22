@@ -279,6 +279,43 @@ class ResearchBaselineRequest(StrictModel):
         return self
 
 
+class SemanticJudgeRequest(StrictModel):
+    request_id: str = Field(min_length=1, max_length=200)
+    operation_code: Literal["EJECUCION_PERFIL_LF"] = "EJECUCION_PERFIL_LF"
+    execution_id: str = Field(min_length=1, max_length=240)
+    profile_code: str = Field(pattern=CODE_RE.pattern)
+    profile_slug: str = Field(pattern=SLUG_RE.pattern)
+    profile_source_paths: list[str] = Field(min_length=1, max_length=20)
+    profile_source_digest: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    input_literal: str = Field(min_length=1, max_length=100_000)
+    exact_candidate: dict[str, Any]
+    candidate_sha256: str = Field(pattern=SHA256_RE.pattern)
+    scope_authority_packet: dict[str, Any]
+    scope_packet_sha256: str = Field(pattern=SHA256_RE.pattern)
+    deterministic_validation: dict[str, Any]
+    evidence_manifest: dict[str, Any] | None = None
+
+    @model_validator(mode="after")
+    def validate_semantic_binding(self) -> "SemanticJudgeRequest":
+        if not self.exact_candidate:
+            raise ValueError("SEMANTIC_JUDGE_CANDIDATE_REQUIRED")
+        packet = self.scope_authority_packet
+        if packet.get("packet_version") != "LF_SCOPE_AUTHORITY_PACKET_V1":
+            raise ValueError("SEMANTIC_JUDGE_SCOPE_PACKET_VERSION_INVALID")
+        if packet.get("execution_id") != self.execution_id:
+            raise ValueError("SEMANTIC_JUDGE_SCOPE_EXECUTION_MISMATCH")
+        embedded = packet.get("sha256")
+        if embedded != "sha256:" + self.scope_packet_sha256:
+            raise ValueError("SEMANTIC_JUDGE_SCOPE_PACKET_SHA_MISMATCH")
+        if self.deterministic_validation.get("status") != "PASS":
+            raise ValueError("SEMANTIC_JUDGE_DETERMINISTIC_PREDECESSOR_NOT_PASS")
+        if len(json.dumps(packet, ensure_ascii=False)) > 32_000:
+            raise ValueError("SEMANTIC_JUDGE_SCOPE_PACKET_BUDGET_EXCEEDED")
+        if len(json.dumps(self.exact_candidate, ensure_ascii=False)) > 300_000:
+            raise ValueError("SEMANTIC_JUDGE_CANDIDATE_BUDGET_EXCEEDED")
+        return self
+
+
 class ProfileTask(StrictModel):
     request_id: str = Field(min_length=1, max_length=200)
     operation_code: Literal["EJECUCION_PERFIL_LF"] = "EJECUCION_PERFIL_LF"
