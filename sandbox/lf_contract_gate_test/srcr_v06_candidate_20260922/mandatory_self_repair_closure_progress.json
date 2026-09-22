@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 73.07692307692308,
+  "overall_percent": 75,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -23,15 +23,17 @@
     },
     {
       "obligation_id": "MC-02",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "model_context is canonical in runtime_binding and model_context_readback records exact source digests/character budget",
-        "positive projection/readback and source-budget regressions passed in Validate LF Packs 35736254524"
+        "runtime_binding has a non-null canonical model_context contract with required source refs, section projection and hard character budget",
+        "exact GPT_NATIVE delivery packet was materialized from source revision 5de5d6c66a2f014ae05e2ba912b69aaaf21b626d with 2 delivered sources, 37,980 chars and context_manifest_sha256 7c948c7efb1b83b854f51145398c8f8f4b96bab37b4cb95dc148f10236071297",
+        "GPT-5.6 Sol native execution consumed both exact materialized source payloads and produced persisted RAW output bound to request/context/source digests",
+        "PROFILE_EXECUTION_RECEIPT_V1 validated clean with provider OPENAI_CHATGPT_NATIVE, execution_mode GPT_NATIVE, exact source revision and GitHub materialization readback",
+        "positive budget readback PASS at 37,980 <= 42,000 chars; overflow mutation at 37,979 failed closed with PROFILE_RUNTIME_MODEL_CONTEXT_BUDGET_EXCEEDED",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc02_model_context_readback.json"
       ],
-      "remaining_requirements": [
-        "Retain a real execution receipt/readback proving the exact context manifest delivered to the model."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-03",
@@ -178,8 +180,8 @@
       ]
     }
   ],
-  "closed_count": 2,
-  "open_count": 11,
+  "closed_count": 3,
+  "open_count": 10,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -192,7 +194,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "d0306fb1ae01443d370d1d77b21e9537f48ed0a0",
+  "current_exact_code_head": "5de5d6c66a2f014ae05e2ba912b69aaaf21b626d",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -200,6 +202,11 @@
     "source_revision": "d0306fb1ae01443d370d1d77b21e9537f48ed0a0",
     "runtime_api_tests": "236 passed",
     "bootstrap_run_id": 35744244227,
-    "bootstrap_conclusion": "success"
+    "bootstrap_conclusion": "success",
+    "mc02_native_execution_id": "EXEC-SRCR-MC02-GPT-NATIVE-20260922-001",
+    "mc02_context_manifest_sha256": "7c948c7efb1b83b854f51145398c8f8f4b96bab37b4cb95dc148f10236071297",
+    "mc02_execution_receipt_sha256": "8aa8cd60bc9c669b286ac0e023478d38b1ff060acee1a8abd8283a9371481028",
+    "mc02_provider": "OPENAI_CHATGPT_NATIVE",
+    "mc02_model_id": "GPT-5.6 Sol"
   }
 }
