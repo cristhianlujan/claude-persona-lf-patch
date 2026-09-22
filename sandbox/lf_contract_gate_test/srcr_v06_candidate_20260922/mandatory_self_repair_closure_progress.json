@@ -3,8 +3,8 @@
   "spec_ref": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json",
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
-  "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 12 must be 100.",
-  "overall_percent": 43.75,
+  "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
+  "overall_percent": 42.30769230769231,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -147,8 +147,22 @@
       "remaining_requirements": [
         "Add producer pre-freeze graph-to-delta reconciliation and rerun negative/positive tests"
       ]
+    },
+    {
+      "obligation_id": "MC-13",
+      "state": "SPECIFIED",
+      "percent": 25,
+      "evidence": [
+        "Mandatory closure contract now requires the full ungrouped replay of the six trace phases used in the 247-step V0.5 Lifecycle analysis.",
+        "Acceptance requires zero open observations, zero failed applicable steps and zero unresolved mandatory inputs."
+      ],
+      "remaining_requirements": [
+        "Implement/finish MC-01..MC-12 changes.",
+        "Run the complete ungrouped replay on the exact revised profile/candidate.",
+        "Repair every observation and rerun until clean."
+      ]
     }
   ],
   "closed_count": 0,
-  "open_count": 12
+  "open_count": 13
 }
