@@ -26,6 +26,7 @@ from .models import (
     ProfileTask,
     QueueExecuteRequest,
     ResearchBaselineRequest,
+    SemanticQualityFinalizeRequest,
 )
 from .repository import RepositoryBindings
 from .runtime_authority import resolve_typed_runtime_context
@@ -825,6 +826,48 @@ class ProfileRuntimeEngine:
             code,detail=_failure(exc); failures=[self._profile_failure(task=t,code=code,detail=detail,stage="STRUCTURAL_CONTEXT",started=started) for t in request.profiles]; return self._batch_result(request,failures,started,context=None)
         results=[self._execute_profile(task=t,artifact=request.artifact,prepared=prepared,context_reused_within_batch=i>0) for i,t in enumerate(request.profiles)]
         return self._batch_result(request,results,started,context=prepared)
+
+    def run_semantic_quality_finalize(
+        self, request: SemanticQualityFinalizeRequest
+    ) -> dict[str, Any]:
+        started = time.perf_counter()
+        try:
+            self.repository.validate_profile_identity(
+                request.profile_slug, request.profile_code
+            )
+            result = self.gates.canonical_quality_finalize(
+                profile_slug=request.profile_slug,
+                candidate=request.candidate,
+                evidence_manifest=request.evidence_manifest,
+                scope_authority_packet=request.scope_authority_packet,
+                semantic_result=request.semantic_result,
+                candidate_revision=request.candidate_revision,
+                semantic_execution_receipt_ref=request.semantic_execution_receipt_ref,
+                producer_execution_id=request.producer_execution_id,
+                reviewer_execution_id=request.reviewer_execution_id,
+                producer_execution_receipt_ref=request.producer_execution_receipt_ref,
+                issued_at=request.issued_at,
+            )
+        except Exception as exc:
+            code, detail = _failure(exc)
+            result = {
+                "status": "FAIL",
+                "blocking_codes": [code],
+                "detail": detail,
+                "canonical_quality_accepted": False,
+                "quality_receipt": None,
+                "downstream_authorized": False,
+            }
+        return {
+            "schema": RESULT_SCHEMA,
+            "kind": "semantic_quality_finalize",
+            "request_id": request.request_id,
+            "profile_code": request.profile_code,
+            "profile_slug": request.profile_slug,
+            "result": result,
+            "total_ms": round((time.perf_counter() - started) * 1000, 3),
+            "downstream_authorized": False,
+        }
 
     def runtime_snapshot(self) -> dict[str, Any]:
         llama = self.llama_client.health()
