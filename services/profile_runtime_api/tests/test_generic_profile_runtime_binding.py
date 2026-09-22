@@ -279,6 +279,83 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             tmp.cleanup()
 
 
+
+    def test_canonical_quality_binding_is_consumed_by_runtime_boundary(self):
+        tmp,root,repo=self._repo()
+        try:
+            (root/'profiles/p/judges').mkdir(parents=True)
+            (root/'profiles/p/judges/judge.md').write_text('# Judge\n')
+            (root/'profiles/p/judges/semantic.md').write_text('# Semantic\n')
+            (root/'profiles/p/schemas/quality.json').write_text(json.dumps({
+                '$schema':'https://json-schema.org/draft/2020-12/schema',
+                'type':'object',
+                'additionalProperties':True,
+            }))
+            (root/'profiles/p/validators/semantic_result.py').write_text(
+                'def evaluate(payload):\n    return {"status":"PASS","blocking_codes":[]}\n'
+            )
+            (root/'profiles/p/validators/quality_receipt.py').write_text(
+                'def validate_quality_receipt(receipt,candidate,evidence,semantic):\n'
+                '    return {"status":"PASS","blocking_codes":[]}\n'
+            )
+            (root/'profiles/p/validators/materialize_quality.py').write_text(
+                'def materialize_quality_receipt(*args,**kwargs):\n    return {}\n'
+            )
+            path=root/'profiles/p/contracts/runtime_binding.json'
+            data=json.loads(path.read_text())
+            data['canonical_quality']={
+                'required_for_profile_pack_ids':['PACK-V1'],
+                'judge_path':'judges/judge.md',
+                'semantic_judge_path':'judges/semantic.md',
+                'semantic_result_validator':{
+                    'path':'validators/semantic_result.py',
+                    'callable':'evaluate',
+                },
+                'quality_receipt_schema':'schemas/quality.json',
+                'quality_receipt_validator':{
+                    'path':'validators/quality_receipt.py',
+                    'callable':'validate_quality_receipt',
+                },
+                'deterministic_floors_can_accept_quality':False,
+                'receipt_required_for_pass_to_quality_pack':True,
+                'quality_receipt_materializer':{
+                    'path':'validators/materialize_quality.py',
+                    'callable':'materialize_quality_receipt',
+                },
+            }
+            path.write_text(json.dumps(data))
+            gates=OutputGates(repo)
+            boundary=gates.canonical_quality_boundary(
+                profile_slug='p',
+                candidate={'profile_pack_id':'PACK-V1'},
+                contract_gate={'status':'PASS','blocking_codes':[]},
+                semantic_gate={'status':'PASS','blocking_codes':[]},
+            )
+            self.assertEqual(boundary['applicability'],'REQUIRED')
+            self.assertEqual(boundary['status'],'PENDING_INDEPENDENT_SEMANTIC_REVIEW')
+            self.assertFalse(boundary['canonical_quality_accepted'])
+            self.assertFalse(boundary['deterministic_floors_can_accept_quality'])
+            self.assertTrue(boundary['receipt_required_for_pass_to_quality_pack'])
+
+            blocked=gates.canonical_quality_boundary(
+                profile_slug='p',
+                candidate={'profile_pack_id':'PACK-V1'},
+                contract_gate={'status':'FAIL','blocking_codes':['BAD']},
+                semantic_gate={'status':'NOT_EVALUATED','blocking_codes':['PROFILE_CONTRACT_INVALID']},
+            )
+            self.assertEqual(blocked['status'],'BLOCKED_BY_DETERMINISTIC_FLOORS')
+            self.assertIn('BAD',blocked['blocking_codes'])
+        finally:
+            tmp.cleanup()
+
+    def test_engine_emits_canonical_quality_boundary_on_both_execution_paths(self):
+        queue_source=inspect.getsource(ProfileRuntimeEngine._execute_queue_profile)
+        artifact_source=inspect.getsource(ProfileRuntimeEngine._execute_profile)
+        for source in (queue_source,artifact_source):
+            self.assertIn('canonical_quality_boundary',source)
+            self.assertIn('"canonical_quality":canonical_quality',source)
+
+
     def test_weak_governance_fails_closed(self):
         tmp,root,repo=self._repo()
         try:
