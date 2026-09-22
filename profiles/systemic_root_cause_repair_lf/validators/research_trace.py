@@ -221,6 +221,47 @@ def validate_runtime_research_bundle(
                 errors.append(f"trace[{idx}]:FOUND_RESULT_CANNOT_SUPPORT_ABSENCE")
     if not isinstance(resolved_authority_context, dict) or not resolved_authority_context:
         errors.append("RESOLVED_AUTHORITY_CONTEXT_REQUIRED")
+    else:
+        evidence_by_id = {
+            row.get("evidence_id"): row
+            for row in (
+                evidence_manifest.get("evidence", [])
+                if isinstance(evidence_manifest, dict)
+                else []
+            )
+            if isinstance(row, dict) and isinstance(row.get("evidence_id"), str)
+        }
+        if set(resolved_authority_context) != set(evidence_by_id):
+            errors.append("RESOLVED_AUTHORITY_EVIDENCE_SET_MISMATCH")
+        trace_by_id = {
+            row.get("evidence_id"): row
+            for row in (trace if isinstance(trace, list) else [])
+            if isinstance(row, dict) and isinstance(row.get("evidence_id"), str)
+        }
+        for evidence_id, evidence_row in evidence_by_id.items():
+            resolved_row = resolved_authority_context.get(evidence_id)
+            if not isinstance(resolved_row, dict):
+                errors.append(f"RESOLVED_AUTHORITY_ROW_INVALID:{evidence_id}")
+                continue
+            if resolved_row.get("source_locator") != evidence_row.get("source_locator"):
+                errors.append(f"RESOLVED_AUTHORITY_LOCATOR_MISMATCH:{evidence_id}")
+            if resolved_row.get("digest") != evidence_row.get("digest"):
+                errors.append(f"RESOLVED_AUTHORITY_DIGEST_MISMATCH:{evidence_id}")
+            trace_row = trace_by_id.get(evidence_id) or {}
+            for field in ("result_status", "result_count", "claim_support"):
+                if resolved_row.get(field) != trace_row.get(field):
+                    errors.append(
+                        f"RESOLVED_AUTHORITY_TRACE_METADATA_MISMATCH:{evidence_id}:{field}"
+                    )
+            if "resolved_value" not in resolved_row:
+                errors.append(f"RESOLVED_AUTHORITY_VALUE_MISSING:{evidence_id}")
+            elif trace_row.get("result_status") == "FOUND" and resolved_row.get("resolved_value") in (
+                None,
+                "",
+                [],
+                {},
+            ):
+                errors.append(f"RESOLVED_AUTHORITY_FOUND_VALUE_EMPTY:{evidence_id}")
 
     observed_manifest_sha256 = (
         "sha256:" + _canonical_sha256(evidence_manifest)
@@ -247,6 +288,11 @@ def validate_runtime_research_bundle(
                 _canonical_sha256(resolved_authority_context)
                 if isinstance(resolved_authority_context, dict) and resolved_authority_context
                 else None
+            ),
+            "resolved_authority_count": (
+                len(resolved_authority_context)
+                if isinstance(resolved_authority_context, dict)
+                else 0
             ),
         },
     }
