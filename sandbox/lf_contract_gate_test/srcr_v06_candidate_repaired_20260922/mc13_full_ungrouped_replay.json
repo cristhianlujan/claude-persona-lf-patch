@@ -1,0 +1,5423 @@
+{
+  "schema": "SRCR_MC13_FULL_UNGROUPED_REPLAY_V1",
+  "status": "REPLAY_BLOCKED",
+  "observed_at": "2026-09-22T16:55:41.359237+00:00",
+  "exact_revision": {
+    "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
+    "branch_head_at_live_replay": "cf8b9a19f68ce72a94a06156c0cccb6b3ad13572",
+    "material_code_head": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+    "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+    "later_changes": "evidence/readback only"
+  },
+  "baseline_contract": {
+    "minimum_rows": 247,
+    "required_phase_counts": {
+      "Entrada": 3,
+      "Investigacion": 132,
+      "Transporte": 7,
+      "Determinista": 45,
+      "Jueces": 18,
+      "Repeticiones": 42
+    },
+    "no_grouping": true
+  },
+  "summary": {
+    "row_count": 247,
+    "phase_counts": {
+      "Entrada": 3,
+      "Investigacion": 132,
+      "Transporte": 7,
+      "Determinista": 45,
+      "Jueces": 18,
+      "Repeticiones": 42
+    },
+    "passed_rows": 246,
+    "failed_applicable_rows": 1,
+    "incomplete_input_rows": 0,
+    "unresolved_evidence_ids": 0,
+    "fabricated_evidence_ids": 0,
+    "missing_transport_hops": 0,
+    "semantic_judge_invocation_missing": false,
+    "quality_receipt_invocation_missing": false,
+    "duplicate_structural_ownership": 0,
+    "duplicate_logical_findings": 0,
+    "open_material_observation_count": 1,
+    "open_observations": [
+      {
+        "sequence": 187,
+        "phase": "Determinista",
+        "step_id": "D45_LF_CONTRACT_CHECK_EXACT_HEAD",
+        "note": "Governed paths were changed without LF_OPERATION_CONTRACT_RECEIPT. Governance prohibits fabricating or retroactively issuing the receipt.",
+        "evidence_refs": [
+          "github-actions://lf-contract-check/35756765026"
+        ]
+      }
+    ],
+    "live_authority_resolution": {
+      "expected": 65,
+      "verified": 65,
+      "unresolved": 0
+    },
+    "exact_head_ci": {
+      "validate_lf_packs": {
+        "run_id": 35756765086,
+        "conclusion": "success",
+        "tests": "247 passed"
+      },
+      "lf_contract_check": {
+        "run_id": 35756765026,
+        "conclusion": "failure",
+        "blocking_code": "FAIL_RECEIPT_MISSING",
+        "retroactive_receipt_allowed": false
+      }
+    }
+  },
+  "rows": [
+    {
+      "sequence": 1,
+      "phase": "Entrada",
+      "step_id": "E01_EXACT_CODE_REVISION",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "git material history",
+      "transformation": "freeze exact material revision",
+      "output_produced": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "readback": "post-1e5dad changes are evidence/readback only",
+      "next_consumer": "Investigacion",
+      "expected_output": "exact code revision fixed",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "git://1e5dad487c30a37b68120940a3ecc3518f733a84"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 2,
+      "phase": "Entrada",
+      "step_id": "E02_EXACT_CANDIDATE",
+      "input_received": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+      "source": "candidate_v06_repaired.json",
+      "transformation": "freeze candidate digest",
+      "output_produced": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+      "readback": "MC-12 independent R2 binds same digest",
+      "next_consumer": "Investigacion",
+      "expected_output": "exact candidate fixed",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "candidate_v06_repaired.json",
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 3,
+      "phase": "Entrada",
+      "step_id": "E03_EXACT_AUTHORITY_DIGESTS",
+      "input_received": {
+        "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+        "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+        "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40"
+      },
+      "source": "MC-12 independent review",
+      "transformation": "freeze authority digests",
+      "output_produced": {
+        "manifest": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+        "scope": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+        "review_input": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40"
+      },
+      "readback": "all exact bindings match",
+      "next_consumer": "Investigacion",
+      "expected_output": "evidence/scope/review input fixed",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 4,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-001",
+      "input_received": "EV-LC-001",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-001"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 5,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-002",
+      "input_received": "EV-LC-002",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-002"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 6,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-003",
+      "input_received": "EV-LC-003",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-003"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 7,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-004",
+      "input_received": "EV-LC-004",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-004"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 8,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-005",
+      "input_received": "EV-LC-005",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-005"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 9,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-006",
+      "input_received": "EV-LC-006",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-006"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 10,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-007",
+      "input_received": "EV-LC-007",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-007"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 11,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-008",
+      "input_received": "EV-LC-008",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-008"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 12,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-009",
+      "input_received": "EV-LC-009",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-009"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 13,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-010",
+      "input_received": "EV-LC-010",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-010"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 14,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-011",
+      "input_received": "EV-LC-011",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-011"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 15,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-012",
+      "input_received": "EV-LC-012",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-012"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 16,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-013",
+      "input_received": "EV-LC-013",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-013"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 17,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-014",
+      "input_received": "EV-LC-014",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-014"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 18,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-015",
+      "input_received": "EV-LC-015",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-015"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 19,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-016",
+      "input_received": "EV-LC-016",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-016"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 20,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-017",
+      "input_received": "EV-LC-017",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-017"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 21,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-018",
+      "input_received": "EV-LC-018",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-018"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 22,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-019",
+      "input_received": "EV-LC-019",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-019"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 23,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-020",
+      "input_received": "EV-LC-020",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS_SUPERSEDED_HISTORICAL_ABSENCE",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-020"
+      ],
+      "note": "Historical absence is superseded by MC-11/MC-10 repair readback.",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 24,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-021",
+      "input_received": "EV-LC-021",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-021"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 25,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-022",
+      "input_received": "EV-LC-022",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-022"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 26,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-023",
+      "input_received": "EV-LC-023",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-023"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 27,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-024",
+      "input_received": "EV-LC-024",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-024"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 28,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-025",
+      "input_received": "EV-LC-025",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-025"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 29,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-026",
+      "input_received": "EV-LC-026",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-026"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 30,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-027",
+      "input_received": "EV-LC-027",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-027"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 31,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-028",
+      "input_received": "EV-LC-028",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-028"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 32,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-029",
+      "input_received": "EV-LC-029",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-029"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 33,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-030",
+      "input_received": "EV-LC-030",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-030"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 34,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-031",
+      "input_received": "EV-LC-031",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-031"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 35,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-032",
+      "input_received": "EV-LC-032",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-032"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 36,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-033",
+      "input_received": "EV-LC-033",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-033"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 37,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-034",
+      "input_received": "EV-LC-034",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-034"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 38,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-035",
+      "input_received": "EV-LC-035",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS_SUPERSEDED_HISTORICAL_ABSENCE",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-035"
+      ],
+      "note": "Historical absence is superseded by MC-11/MC-10 repair readback.",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 39,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-036",
+      "input_received": "EV-LC-036",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-036"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 40,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-037",
+      "input_received": "EV-LC-037",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-037"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 41,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-038",
+      "input_received": "EV-LC-038",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-038"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 42,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-039",
+      "input_received": "EV-LC-039",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-039"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 43,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-040",
+      "input_received": "EV-LC-040",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-040"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 44,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-041",
+      "input_received": "EV-LC-041",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-041"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 45,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-042",
+      "input_received": "EV-LC-042",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-042"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 46,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-043",
+      "input_received": "EV-LC-043",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-043"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 47,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LC-044",
+      "input_received": "EV-LC-044",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LC-044"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 48,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-PROFILE-CURRENT",
+      "input_received": "EV-PROFILE-CURRENT",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-PROFILE-CURRENT"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 49,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-CREATE",
+      "input_received": "EV-CREATE",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-CREATE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 50,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-UPDATE",
+      "input_received": "EV-UPDATE",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-UPDATE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 51,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-RUNTIME-REFRESH",
+      "input_received": "EV-RUNTIME-REFRESH",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-RUNTIME-REFRESH"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 52,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-RUNTIME-BOOTSTRAP",
+      "input_received": "EV-RUNTIME-BOOTSTRAP",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-RUNTIME-BOOTSTRAP"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 53,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-OPS",
+      "input_received": "EV-OPS",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-OPS"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 54,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-ROUTER",
+      "input_received": "EV-ROUTER",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-ROUTER"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 55,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-PROMOTION-ABSENCE",
+      "input_received": "EV-PROMOTION-ABSENCE",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-PROMOTION-ABSENCE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 56,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-RETIRE",
+      "input_received": "EV-RETIRE",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-RETIRE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 57,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-STATE-MODEL",
+      "input_received": "EV-STATE-MODEL",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-STATE-MODEL"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 58,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-QUALIFICATION",
+      "input_received": "EV-QUALIFICATION",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-QUALIFICATION"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 59,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-ACT0045",
+      "input_received": "EV-ACT0045",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-ACT0045"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 60,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-DESTINATION",
+      "input_received": "EV-DESTINATION",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-DESTINATION"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 61,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-RELATIONS",
+      "input_received": "EV-RELATIONS",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-RELATIONS"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 62,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-EKB",
+      "input_received": "EV-EKB",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-EKB"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 63,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-WORKER",
+      "input_received": "EV-WORKER",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-WORKER"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 64,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-V05-SOURCE",
+      "input_received": "EV-V05-SOURCE",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-V05-SOURCE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 65,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-LIFECYCLE-POLICY",
+      "input_received": "EV-LIFECYCLE-POLICY",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-LIFECYCLE-POLICY"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 66,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-WEB-OPENGITOPS",
+      "input_received": "EV-WEB-OPENGITOPS",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-WEB-OPENGITOPS"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 67,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-WEB-K8S-CONTROLLERS",
+      "input_received": "EV-WEB-K8S-CONTROLLERS",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-WEB-K8S-CONTROLLERS"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 68,
+      "phase": "Investigacion",
+      "step_id": "I_LIVE_EV-WEB-SLSA-PROVENANCE",
+      "input_received": "EV-WEB-SLSA-PROVENANCE",
+      "source": "mc13_live_authority_readback.json",
+      "transformation": "resolve cited authority current-state",
+      "output_produced": "PASS",
+      "readback": "65/65 current resolution",
+      "next_consumer": "Transport",
+      "expected_output": "current authority or evidence-bound absence resolves",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json",
+        "EV-WEB-SLSA-PROVENANCE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 69,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-001",
+      "input_received": "EV-LC-001",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-001"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 70,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-002",
+      "input_received": "EV-LC-002",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-002"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 71,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-003",
+      "input_received": "EV-LC-003",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-003"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 72,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-004",
+      "input_received": "EV-LC-004",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-004"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 73,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-005",
+      "input_received": "EV-LC-005",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-005"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 74,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-006",
+      "input_received": "EV-LC-006",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-006"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 75,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-007",
+      "input_received": "EV-LC-007",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-007"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 76,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-008",
+      "input_received": "EV-LC-008",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-008"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 77,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-009",
+      "input_received": "EV-LC-009",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-009"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 78,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-010",
+      "input_received": "EV-LC-010",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-010"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 79,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-011",
+      "input_received": "EV-LC-011",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-011"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 80,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-012",
+      "input_received": "EV-LC-012",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-012"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 81,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-013",
+      "input_received": "EV-LC-013",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-013"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 82,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-014",
+      "input_received": "EV-LC-014",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-014"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 83,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-015",
+      "input_received": "EV-LC-015",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-015"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 84,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-016",
+      "input_received": "EV-LC-016",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-016"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 85,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-017",
+      "input_received": "EV-LC-017",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-017"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 86,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-018",
+      "input_received": "EV-LC-018",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-018"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 87,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-019",
+      "input_received": "EV-LC-019",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-019"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 88,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-020",
+      "input_received": "EV-LC-020",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-020"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 89,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-021",
+      "input_received": "EV-LC-021",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-021"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 90,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-022",
+      "input_received": "EV-LC-022",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-022"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 91,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-023",
+      "input_received": "EV-LC-023",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-023"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 92,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-024",
+      "input_received": "EV-LC-024",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-024"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 93,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-025",
+      "input_received": "EV-LC-025",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-025"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 94,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-026",
+      "input_received": "EV-LC-026",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-026"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 95,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-027",
+      "input_received": "EV-LC-027",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-027"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 96,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-028",
+      "input_received": "EV-LC-028",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-028"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 97,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-029",
+      "input_received": "EV-LC-029",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-029"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 98,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-030",
+      "input_received": "EV-LC-030",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-030"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 99,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-031",
+      "input_received": "EV-LC-031",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-031"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 100,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-032",
+      "input_received": "EV-LC-032",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-032"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 101,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-033",
+      "input_received": "EV-LC-033",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-033"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 102,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-034",
+      "input_received": "EV-LC-034",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-034"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 103,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-035",
+      "input_received": "EV-LC-035",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-035"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 104,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-036",
+      "input_received": "EV-LC-036",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-036"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 105,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-037",
+      "input_received": "EV-LC-037",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-037"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 106,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-038",
+      "input_received": "EV-LC-038",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-038"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 107,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-039",
+      "input_received": "EV-LC-039",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-039"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 108,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-040",
+      "input_received": "EV-LC-040",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-040"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 109,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-041",
+      "input_received": "EV-LC-041",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-041"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 110,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-042",
+      "input_received": "EV-LC-042",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-042"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 111,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-043",
+      "input_received": "EV-LC-043",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-043"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 112,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LC-044",
+      "input_received": "EV-LC-044",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LC-044"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 113,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-PROFILE-CURRENT",
+      "input_received": "EV-PROFILE-CURRENT",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-PROFILE-CURRENT"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 114,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-CREATE",
+      "input_received": "EV-CREATE",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-CREATE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 115,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-UPDATE",
+      "input_received": "EV-UPDATE",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-UPDATE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 116,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-RUNTIME-REFRESH",
+      "input_received": "EV-RUNTIME-REFRESH",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-RUNTIME-REFRESH"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 117,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-RUNTIME-BOOTSTRAP",
+      "input_received": "EV-RUNTIME-BOOTSTRAP",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-RUNTIME-BOOTSTRAP"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 118,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-OPS",
+      "input_received": "EV-OPS",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-OPS"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 119,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-ROUTER",
+      "input_received": "EV-ROUTER",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-ROUTER"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 120,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-PROMOTION-ABSENCE",
+      "input_received": "EV-PROMOTION-ABSENCE",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-PROMOTION-ABSENCE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 121,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-RETIRE",
+      "input_received": "EV-RETIRE",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-RETIRE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 122,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-STATE-MODEL",
+      "input_received": "EV-STATE-MODEL",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-STATE-MODEL"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 123,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-QUALIFICATION",
+      "input_received": "EV-QUALIFICATION",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-QUALIFICATION"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 124,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-ACT0045",
+      "input_received": "EV-ACT0045",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-ACT0045"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 125,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-DESTINATION",
+      "input_received": "EV-DESTINATION",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-DESTINATION"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 126,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-RELATIONS",
+      "input_received": "EV-RELATIONS",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-RELATIONS"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 127,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-EKB",
+      "input_received": "EV-EKB",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-EKB"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 128,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-WORKER",
+      "input_received": "EV-WORKER",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-WORKER"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 129,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-V05-SOURCE",
+      "input_received": "EV-V05-SOURCE",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-V05-SOURCE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 130,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-LIFECYCLE-POLICY",
+      "input_received": "EV-LIFECYCLE-POLICY",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-LIFECYCLE-POLICY"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 131,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-WEB-OPENGITOPS",
+      "input_received": "EV-WEB-OPENGITOPS",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-WEB-OPENGITOPS"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 132,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-WEB-K8S-CONTROLLERS",
+      "input_received": "EV-WEB-K8S-CONTROLLERS",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-WEB-K8S-CONTROLLERS"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 133,
+      "phase": "Investigacion",
+      "step_id": "I_BIND_EV-WEB-SLSA-PROVENANCE",
+      "input_received": "EV-WEB-SLSA-PROVENANCE",
+      "source": "query_trace_prefreeze.json + evidence_manifest_v06_merged.json",
+      "transformation": "bind evidence_id + locator + digest",
+      "output_produced": "MATCH",
+      "readback": "65/65 locator and digest bindings",
+      "next_consumer": "Transport",
+      "expected_output": "trace row exactly binds manifest row",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "query_trace_prefreeze.json",
+        "evidence_manifest_v06_merged.json",
+        "EV-WEB-SLSA-PROVENANCE"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 134,
+      "phase": "Investigacion",
+      "step_id": "I131_CARDINALITY",
+      "input_received": {
+        "manifest": 65,
+        "trace": 65,
+        "live": 65
+      },
+      "source": "manifest + trace + live authority",
+      "transformation": "compare row cardinality",
+      "output_produced": {
+        "manifest": 65,
+        "trace": 65,
+        "live": 65
+      },
+      "readback": "65=65=65",
+      "next_consumer": "Transport",
+      "expected_output": "all evidence accounted for",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 135,
+      "phase": "Investigacion",
+      "step_id": "I132_UNIQUENESS",
+      "input_received": {
+        "evidence_ids": 65
+      },
+      "source": "manifest + trace + live authority",
+      "transformation": "check uniqueness/orphans",
+      "output_produced": 0,
+      "readback": {
+        "duplicates": 0,
+        "orphans": 0,
+        "unresolved": 0,
+        "fabricated": 0
+      },
+      "next_consumer": "Transport",
+      "expected_output": "zero duplicate/orphan/unresolved/fabricated refs",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc13_live_authority_readback.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 136,
+      "phase": "Transporte",
+      "step_id": "T01_MODEL_CONTEXT",
+      "input_received": "canonical source projection",
+      "source": "governed transport boundary",
+      "transformation": "deliver exact upstream output",
+      "output_produced": "native model context",
+      "readback": "MC-02 exact readback",
+      "next_consumer": "Determinista",
+      "expected_output": "no missing hop / identity mutation",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "MC-02 exact readback"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 137,
+      "phase": "Transporte",
+      "step_id": "T02_MANIFEST_DETERMINISTIC",
+      "input_received": "evidence manifest",
+      "source": "governed transport boundary",
+      "transformation": "deliver exact upstream output",
+      "output_produced": "deterministic validator",
+      "readback": "MC-03 same digest all hops",
+      "next_consumer": "Determinista",
+      "expected_output": "no missing hop / identity mutation",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "MC-03 same digest all hops"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 138,
+      "phase": "Transporte",
+      "step_id": "T03_RESEARCH_BUNDLE",
+      "input_received": "manifest+trace+resolved authority",
+      "source": "governed transport boundary",
+      "transformation": "deliver exact upstream output",
+      "output_produced": "research_trace owner",
+      "readback": "MC-05 canonical validator PASS",
+      "next_consumer": "Determinista",
+      "expected_output": "no missing hop / identity mutation",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "MC-05 canonical validator PASS"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 139,
+      "phase": "Transporte",
+      "step_id": "T04_DETERMINISTIC_UTILITY",
+      "input_received": "structural floor + manifest",
+      "source": "governed transport boundary",
+      "transformation": "deliver exact upstream output",
+      "output_produced": "semantic utility",
+      "readback": "MC-06 deterministic+utility PASS",
+      "next_consumer": "Determinista",
+      "expected_output": "no missing hop / identity mutation",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "MC-06 deterministic+utility PASS"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 140,
+      "phase": "Transporte",
+      "step_id": "T05_CANDIDATE_REVIEWER",
+      "input_received": "candidate+evidence+scope",
+      "source": "governed transport boundary",
+      "transformation": "deliver exact upstream output",
+      "output_produced": "isolated semantic reviewer",
+      "readback": "MC-10 exact bindings",
+      "next_consumer": "Determinista",
+      "expected_output": "no missing hop / identity mutation",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "MC-10 exact bindings"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 141,
+      "phase": "Transporte",
+      "step_id": "T06_REVIEW_RECEIPT",
+      "input_received": "independent semantic result",
+      "source": "governed transport boundary",
+      "transformation": "deliver exact upstream output",
+      "output_produced": "canonical finalizer/quality receipt",
+      "readback": "MC-10 PASS_TO_QUALITY_PACK",
+      "next_consumer": "Determinista",
+      "expected_output": "no missing hop / identity mutation",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "MC-10 PASS_TO_QUALITY_PACK"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 142,
+      "phase": "Transporte",
+      "step_id": "T07_RECEIPT_PERSISTENCE",
+      "input_received": "quality receipt",
+      "source": "governed transport boundary",
+      "transformation": "deliver exact upstream output",
+      "output_produced": "semantic_judge + report_output Supabase steps",
+      "readback": "MC-10 same receipt persisted at steps 70/80",
+      "next_consumer": "Determinista",
+      "expected_output": "no missing hop / identity mutation",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "MC-10 same receipt persisted at steps 70/80"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 143,
+      "phase": "Determinista",
+      "step_id": "D01_CANDIDATE_OBJECT",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "object",
+      "readback": "object",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 144,
+      "phase": "Determinista",
+      "step_id": "D02_CANDIDATE_DIGEST",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+      "readback": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 145,
+      "phase": "Determinista",
+      "step_id": "D03_SCOPE_DIGEST",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+      "readback": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 146,
+      "phase": "Determinista",
+      "step_id": "D04_MANIFEST_DIGEST",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+      "readback": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 147,
+      "phase": "Determinista",
+      "step_id": "D05_MANIFEST_COUNT",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 65,
+      "readback": 65,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 148,
+      "phase": "Determinista",
+      "step_id": "D06_TRACE_COUNT",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 65,
+      "readback": 65,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 149,
+      "phase": "Determinista",
+      "step_id": "D07_MANIFEST_UNIQUE",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 65,
+      "readback": 65,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 150,
+      "phase": "Determinista",
+      "step_id": "D08_TRACE_UNIQUE",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 65,
+      "readback": 65,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 151,
+      "phase": "Determinista",
+      "step_id": "D09_TRACE_SEQUENCE",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "1..65",
+      "readback": "1..65",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 152,
+      "phase": "Determinista",
+      "step_id": "D10_EVIDENCE_HAS_TRACE",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 0,
+      "readback": 0,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 153,
+      "phase": "Determinista",
+      "step_id": "D11_TRACE_HAS_EVIDENCE",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 0,
+      "readback": 0,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 154,
+      "phase": "Determinista",
+      "step_id": "D12_LOCATOR_BINDING",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 0,
+      "readback": 0,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 155,
+      "phase": "Determinista",
+      "step_id": "D13_DIGEST_BINDING",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 0,
+      "readback": 0,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 156,
+      "phase": "Determinista",
+      "step_id": "D14_ZERO_ROW_SEMANTICS",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "PASS",
+      "readback": "PASS",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 157,
+      "phase": "Determinista",
+      "step_id": "D15_UNRESOLVED_ZERO",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 0,
+      "readback": 0,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 158,
+      "phase": "Determinista",
+      "step_id": "D16_FABRICATED_ZERO",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 0,
+      "readback": 0,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 159,
+      "phase": "Determinista",
+      "step_id": "D17_SUPABASE_39",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 39,
+      "readback": 39,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 160,
+      "phase": "Determinista",
+      "step_id": "D18_GITHUB_23",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 23,
+      "readback": 23,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 161,
+      "phase": "Determinista",
+      "step_id": "D19_WEB_3",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 3,
+      "readback": 3,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 162,
+      "phase": "Determinista",
+      "step_id": "D20_RESEARCH_VALIDATOR_PASS",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "PASS",
+      "readback": "PASS",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 163,
+      "phase": "Determinista",
+      "step_id": "D21_PREFREEZE_SCHEMA_ZERO",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 0,
+      "readback": 0,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 164,
+      "phase": "Determinista",
+      "step_id": "D22_PREFREEZE_DETERMINISTIC_PASS",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "PASS",
+      "readback": "PASS",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 165,
+      "phase": "Determinista",
+      "step_id": "D23_PREFREEZE_UTILITY_PASS",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "PASS",
+      "readback": "PASS",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 166,
+      "phase": "Determinista",
+      "step_id": "D24_PREFREEZE_PASS",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "PASS_PRE_QUALITY",
+      "readback": "PASS_PRE_QUALITY",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 167,
+      "phase": "Determinista",
+      "step_id": "D25_OWNER_OVERLAP_ZERO",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 0,
+      "readback": 0,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 168,
+      "phase": "Determinista",
+      "step_id": "D26_OWNER_MUTATION_DETECTED",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": true,
+      "readback": true,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 169,
+      "phase": "Determinista",
+      "step_id": "D27_DEDUP_BASELINE_ZERO",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 0,
+      "readback": 0,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 170,
+      "phase": "Determinista",
+      "step_id": "D28_DEDUP_MUTATION_RAW4",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 4,
+      "readback": 4,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 171,
+      "phase": "Determinista",
+      "step_id": "D29_DEDUP_MUTATION_LOGICAL2",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 2,
+      "readback": 2,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 172,
+      "phase": "Determinista",
+      "step_id": "D30_DEDUP_UNIQUE2",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 2,
+      "readback": 2,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 173,
+      "phase": "Determinista",
+      "step_id": "D31_INDEPENDENT_REVIEW_BOUNDARY",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "READBACK_CLOSED",
+      "readback": "READBACK_CLOSED",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 174,
+      "phase": "Determinista",
+      "step_id": "D32_MC10_REVIEW_PASS",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "PASS_INDEPENDENT_SEMANTIC",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 175,
+      "phase": "Determinista",
+      "step_id": "D33_MC10_RECEIPT_PASS",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "PASS_TO_QUALITY_PACK",
+      "readback": "PASS_TO_QUALITY_PACK",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 176,
+      "phase": "Determinista",
+      "step_id": "D34_PRODUCER_REVIEWER_DISTINCT",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": true,
+      "readback": true,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 177,
+      "phase": "Determinista",
+      "step_id": "D35_NO_PRODUCTION_MUTATION",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": true,
+      "readback": true,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 178,
+      "phase": "Determinista",
+      "step_id": "D36_MC11_TERMINALITY_LIVE",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "TESTED_WITH_LIVE_READBACK",
+      "readback": "TESTED_WITH_LIVE_READBACK",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 179,
+      "phase": "Determinista",
+      "step_id": "D37_FAILED_QUEUE_RECONCILED_BLOCKED",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "BLOCKED",
+      "readback": "BLOCKED",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 180,
+      "phase": "Determinista",
+      "step_id": "D38_SEMANTIC_PENDING_NONTERMINAL",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "IN_PROGRESS",
+      "readback": "IN_PROGRESS",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 181,
+      "phase": "Determinista",
+      "step_id": "D39_NO_QUEUE_PROBE_CLASSIFIED",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "NO_QUEUE_ROW",
+      "readback": "NO_QUEUE_ROW",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 182,
+      "phase": "Determinista",
+      "step_id": "D40_MC11_T5_PASS",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "PASS_INDEPENDENT_SEMANTIC",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 183,
+      "phase": "Determinista",
+      "step_id": "D41_MC12_REVIEW_VALIDATOR_PASS",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "PASS",
+      "readback": "PASS",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 184,
+      "phase": "Determinista",
+      "step_id": "D42_MC12_INDEPENDENT_PASS",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": "PASS_INDEPENDENT_SEMANTIC",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 185,
+      "phase": "Determinista",
+      "step_id": "D43_MC12_UNDECLARED_ZERO",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": 0,
+      "readback": 0,
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 186,
+      "phase": "Determinista",
+      "step_id": "D44_VALIDATE_LF_PACKS_EXACT_HEAD",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": {
+        "run_id": 35756765086,
+        "conclusion": "success",
+        "tests": "247 passed"
+      },
+      "readback": {
+        "run_id": 35756765086,
+        "conclusion": "success",
+        "tests": "247 passed"
+      },
+      "next_consumer": "Jueces",
+      "expected_output": "expected exact result",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc-readbacks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 187,
+      "phase": "Determinista",
+      "step_id": "D45_LF_CONTRACT_CHECK_EXACT_HEAD",
+      "input_received": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+      "source": "exact-head deterministic control",
+      "transformation": "evaluate one invariant",
+      "output_produced": {
+        "run_id": 35756765026,
+        "conclusion": "failure",
+        "blocking_code": "FAIL_RECEIPT_MISSING"
+      },
+      "readback": {
+        "run_id": 35756765026,
+        "conclusion": "failure",
+        "blocking_code": "FAIL_RECEIPT_MISSING"
+      },
+      "next_consumer": "Jueces",
+      "expected_output": "required branch-governance gate clean",
+      "input_complete": true,
+      "output_correct": false,
+      "status": "FAIL",
+      "evidence_refs": [
+        "github-actions://lf-contract-check/35756765026"
+      ],
+      "note": "Governed paths were changed without LF_OPERATION_CONTRACT_RECEIPT. Governance prohibits fabricating or retroactively issuing the receipt.",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 188,
+      "phase": "Jueces",
+      "step_id": "J01_ISOLATED_CONTEXT",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 189,
+      "phase": "Jueces",
+      "step_id": "J02_NO_PRODUCER_PRIVATE_CONTEXT",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 190,
+      "phase": "Jueces",
+      "step_id": "J03_CANDIDATE_BINDING",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 191,
+      "phase": "Jueces",
+      "step_id": "J04_EVIDENCE_BINDING",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 192,
+      "phase": "Jueces",
+      "step_id": "J05_SCOPE_BINDING",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 193,
+      "phase": "Jueces",
+      "step_id": "J06_REVIEW_INPUT_BINDING",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 194,
+      "phase": "Jueces",
+      "step_id": "J07_REVIEW_INPUT_CLASSES",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 195,
+      "phase": "Jueces",
+      "step_id": "J08_REQUIREMENTS_RECONCILED",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 196,
+      "phase": "Jueces",
+      "step_id": "J09_R2_ZERO_UNDECLARED",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 197,
+      "phase": "Jueces",
+      "step_id": "J10_SCOPE_NO_UNAUTHORIZED",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 198,
+      "phase": "Jueces",
+      "step_id": "J11_JUDGE_CLOSURE",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 199,
+      "phase": "Jueces",
+      "step_id": "J12_SCOPE_AUTHORITY_INTEGRITY",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 200,
+      "phase": "Jueces",
+      "step_id": "J13_EVIDENCE_INTEGRITY",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 201,
+      "phase": "Jueces",
+      "step_id": "J14_CAUSAL_CLOSURE",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 202,
+      "phase": "Jueces",
+      "step_id": "J15_CONTRADICTION_INTEGRITY",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 203,
+      "phase": "Jueces",
+      "step_id": "J16_MINIMUM_SUFFICIENT_REUSE",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 204,
+      "phase": "Jueces",
+      "step_id": "J17_INDEPENDENT_DECISION_CLOSURE",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 205,
+      "phase": "Jueces",
+      "step_id": "J18_FALSIFIABILITY_REGRESSION",
+      "input_received": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+      "source": "mc12_independent_r2_review.json",
+      "transformation": "evaluate one independent semantic input/reconciliation/invariant",
+      "output_produced": "PASS",
+      "readback": "PASS_INDEPENDENT_SEMANTIC",
+      "next_consumer": "Repeticiones",
+      "expected_output": "individual judge check clean",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "mc12_independent_r2_review.json"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 206,
+      "phase": "Repeticiones",
+      "step_id": "R01_test_candidate_contract_cannot_erase_explicit_failure",
+      "input_received": "test_candidate_contract_cannot_erase_explicit_failure",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_candidate_contract_cannot_erase_explicit_failure"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 207,
+      "phase": "Repeticiones",
+      "step_id": "R02_test_finalization_cannot_bypass_candidate_floors",
+      "input_received": "test_finalization_cannot_bypass_candidate_floors",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_finalization_cannot_bypass_candidate_floors"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 208,
+      "phase": "Repeticiones",
+      "step_id": "R03_test_card_required_input_missing_blocks",
+      "input_received": "test_card_required_input_missing_blocks",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_card_required_input_missing_blocks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 209,
+      "phase": "Repeticiones",
+      "step_id": "R04_test_no_card_uses_governed_fallback_without_schema_invention",
+      "input_received": "test_no_card_uses_governed_fallback_without_schema_invention",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_no_card_uses_governed_fallback_without_schema_invention"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 210,
+      "phase": "Repeticiones",
+      "step_id": "R05_test_multiple_card_candidates_without_selection_block",
+      "input_received": "test_multiple_card_candidates_without_selection_block",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_multiple_card_candidates_without_selection_block"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 211,
+      "phase": "Repeticiones",
+      "step_id": "R06_test_single_unselected_card_also_blocks_silent_selection",
+      "input_received": "test_single_unselected_card_also_blocks_silent_selection",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_single_unselected_card_also_blocks_silent_selection"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 212,
+      "phase": "Repeticiones",
+      "step_id": "R07_test_missing_profile_authority_blocks",
+      "input_received": "test_missing_profile_authority_blocks",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_missing_profile_authority_blocks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 213,
+      "phase": "Repeticiones",
+      "step_id": "R08_test_required_authority_missing_blocks",
+      "input_received": "test_required_authority_missing_blocks",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_required_authority_missing_blocks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 214,
+      "phase": "Repeticiones",
+      "step_id": "R09_test_incompatible_authorities_block",
+      "input_received": "test_incompatible_authorities_block",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_incompatible_authorities_block"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 215,
+      "phase": "Repeticiones",
+      "step_id": "R10_test_invalid_authority_digest_blocks_before_claiming_reconstructible",
+      "input_received": "test_invalid_authority_digest_blocks_before_claiming_reconstructible",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_invalid_authority_digest_blocks_before_claiming_reconstructible"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 216,
+      "phase": "Repeticiones",
+      "step_id": "R11_test_missing_required_adapter_blocks_even_after_model_construction",
+      "input_received": "test_missing_required_adapter_blocks_even_after_model_construction",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_missing_required_adapter_blocks_even_after_model_construction"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 217,
+      "phase": "Repeticiones",
+      "step_id": "R12_test_ambiguous_runtime_schema_blocks",
+      "input_received": "test_ambiguous_runtime_schema_blocks",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_ambiguous_runtime_schema_blocks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 218,
+      "phase": "Repeticiones",
+      "step_id": "R13_test_invalid_runtime_schema_digest_blocks_provenance",
+      "input_received": "test_invalid_runtime_schema_digest_blocks_provenance",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_invalid_runtime_schema_digest_blocks_provenance"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 219,
+      "phase": "Repeticiones",
+      "step_id": "R14_test_invalid_input_governance_digest_blocks",
+      "input_received": "test_invalid_input_governance_digest_blocks",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_invalid_input_governance_digest_blocks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 220,
+      "phase": "Repeticiones",
+      "step_id": "R15_test_context_cannot_redefine_current_run_to_hide_cross_run_source",
+      "input_received": "test_context_cannot_redefine_current_run_to_hide_cross_run_source",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_context_cannot_redefine_current_run_to_hide_cross_run_source"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 221,
+      "phase": "Repeticiones",
+      "step_id": "R16_test_logical_findings_deduplicate_schema_and_profile_detector_without_collapsing_fields",
+      "input_received": "test_logical_findings_deduplicate_schema_and_profile_detector_without_collapsing_fields",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_logical_findings_deduplicate_schema_and_profile_detector_without_collapsing_fields"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 222,
+      "phase": "Repeticiones",
+      "step_id": "R17_test_contract_deduplicates_real_required_schema_error_and_profile_validator",
+      "input_received": "test_contract_deduplicates_real_required_schema_error_and_profile_validator",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_contract_deduplicates_real_required_schema_error_and_profile_validator"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 223,
+      "phase": "Repeticiones",
+      "step_id": "R18_test_logical_findings_keep_distinct_failure_classes_on_same_path",
+      "input_received": "test_logical_findings_keep_distinct_failure_classes_on_same_path",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_logical_findings_keep_distinct_failure_classes_on_same_path"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 224,
+      "phase": "Repeticiones",
+      "step_id": "R19_test_external_research_resolver_delegates_and_fails_closed_on_context_binding",
+      "input_received": "test_external_research_resolver_delegates_and_fails_closed_on_context_binding",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_external_research_resolver_delegates_and_fails_closed_on_context_binding"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 225,
+      "phase": "Repeticiones",
+      "step_id": "R20_test_profile_task_carries_external_manifest_but_rejects_empty_manifest",
+      "input_received": "test_profile_task_carries_external_manifest_but_rejects_empty_manifest",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_profile_task_carries_external_manifest_but_rejects_empty_manifest"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 226,
+      "phase": "Repeticiones",
+      "step_id": "R21_test_canonical_quality_binding_is_exposed_and_fail_closed",
+      "input_received": "test_canonical_quality_binding_is_exposed_and_fail_closed",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_canonical_quality_binding_is_exposed_and_fail_closed"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 227,
+      "phase": "Repeticiones",
+      "step_id": "R22_test_structurally_valid_nonpass_receipt_does_not_accept_quality",
+      "input_received": "test_structurally_valid_nonpass_receipt_does_not_accept_quality",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_structurally_valid_nonpass_receipt_does_not_accept_quality"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 228,
+      "phase": "Repeticiones",
+      "step_id": "R23_test_weak_governance_fails_closed",
+      "input_received": "test_weak_governance_fails_closed",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_weak_governance_fails_closed"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 229,
+      "phase": "Repeticiones",
+      "step_id": "R24_test_srcr_external_authority_binding_fails_closed_without_resolver_execution",
+      "input_received": "test_srcr_external_authority_binding_fails_closed_without_resolver_execution",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_srcr_external_authority_binding_fails_closed_without_resolver_execution"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 230,
+      "phase": "Repeticiones",
+      "step_id": "R25_test_srcr_external_authority_binding_fails_closed_without_manifest",
+      "input_received": "test_srcr_external_authority_binding_fails_closed_without_manifest",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_srcr_external_authority_binding_fails_closed_without_manifest"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 231,
+      "phase": "Repeticiones",
+      "step_id": "R26_test_invalid_required_canonical_quality_boundary_blocks",
+      "input_received": "test_invalid_required_canonical_quality_boundary_blocks",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_invalid_required_canonical_quality_boundary_blocks"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 232,
+      "phase": "Repeticiones",
+      "step_id": "R27_test_runtime_block_is_not_relabelled_as_semantic_pending",
+      "input_received": "test_runtime_block_is_not_relabelled_as_semantic_pending",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_runtime_block_is_not_relabelled_as_semantic_pending"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 233,
+      "phase": "Repeticiones",
+      "step_id": "R28_test_reconcile_never_promotes_in_progress_or_failed_judge",
+      "input_received": "test_reconcile_never_promotes_in_progress_or_failed_judge",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_reconcile_never_promotes_in_progress_or_failed_judge"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 234,
+      "phase": "Repeticiones",
+      "step_id": "R29_test_failure_persistence_reconciles_queue_terminal_to_canonical_execution",
+      "input_received": "test_failure_persistence_reconciles_queue_terminal_to_canonical_execution",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_failure_persistence_reconciles_queue_terminal_to_canonical_execution"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 235,
+      "phase": "Repeticiones",
+      "step_id": "R30_test_terminal_reconciler_source_is_fail_closed_and_semantic_pending_is_nonterminal",
+      "input_received": "test_terminal_reconciler_source_is_fail_closed_and_semantic_pending_is_nonterminal",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_terminal_reconciler_source_is_fail_closed_and_semantic_pending_is_nonterminal"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 236,
+      "phase": "Repeticiones",
+      "step_id": "R31_test_review_relay_rejects_stale_or_unbound_producer_before_api",
+      "input_received": "test_review_relay_rejects_stale_or_unbound_producer_before_api",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_review_relay_rejects_stale_or_unbound_producer_before_api"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 237,
+      "phase": "Repeticiones",
+      "step_id": "R32_test_review_relay_never_persists_nonaccepted_or_mismatched_review",
+      "input_received": "test_review_relay_never_persists_nonaccepted_or_mismatched_review",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_review_relay_never_persists_nonaccepted_or_mismatched_review"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 238,
+      "phase": "Repeticiones",
+      "step_id": "R33_test_recording_success_without_exact_readback_is_not_completion",
+      "input_received": "test_recording_success_without_exact_readback_is_not_completion",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_recording_success_without_exact_readback_is_not_completion"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 239,
+      "phase": "Repeticiones",
+      "step_id": "R34_test_worker_review_entrypoint_uses_relay_without_running_producer",
+      "input_received": "test_worker_review_entrypoint_uses_relay_without_running_producer",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_worker_review_entrypoint_uses_relay_without_running_producer"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 240,
+      "phase": "Repeticiones",
+      "step_id": "R35_test_web_research_trace_rejects_virtual_web_locator",
+      "input_received": "test_web_research_trace_rejects_virtual_web_locator",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_web_research_trace_rejects_virtual_web_locator"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 241,
+      "phase": "Repeticiones",
+      "step_id": "R36_test_query_trace_rejects_noncanonical_resolver_and_write_permission",
+      "input_received": "test_query_trace_rejects_noncanonical_resolver_and_write_permission",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_query_trace_rejects_noncanonical_resolver_and_write_permission"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 242,
+      "phase": "Repeticiones",
+      "step_id": "R37_test_manifest_trace_rejects_borrowed_locator_or_digest",
+      "input_received": "test_manifest_trace_rejects_borrowed_locator_or_digest",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_manifest_trace_rejects_borrowed_locator_or_digest"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 243,
+      "phase": "Repeticiones",
+      "step_id": "R38_test_zero_result_evidence_cannot_support_positive_claim",
+      "input_received": "test_zero_result_evidence_cannot_support_positive_claim",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_zero_result_evidence_cannot_support_positive_claim"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 244,
+      "phase": "Repeticiones",
+      "step_id": "R39_test_runtime_research_bundle_rejects_unhydrated_or_mismatched_authority",
+      "input_received": "test_runtime_research_bundle_rejects_unhydrated_or_mismatched_authority",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_runtime_research_bundle_rejects_unhydrated_or_mismatched_authority"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 245,
+      "phase": "Repeticiones",
+      "step_id": "R40_test_current_uncertainty_without_evidence_map_is_rejected",
+      "input_received": "test_current_uncertainty_without_evidence_map_is_rejected",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_current_uncertainty_without_evidence_map_is_rejected"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 246,
+      "phase": "Repeticiones",
+      "step_id": "R41_test_prefreeze_rejects_malformed_test_protocol_before_candidate_receipt",
+      "input_received": "test_prefreeze_rejects_malformed_test_protocol_before_candidate_receipt",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_prefreeze_rejects_malformed_test_protocol_before_candidate_receipt"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    },
+    {
+      "sequence": 247,
+      "phase": "Repeticiones",
+      "step_id": "R42_test_v06_undeclared_material_ref_outside_graph_fails_closed",
+      "input_received": "test_v06_undeclared_material_ref_outside_graph_fails_closed",
+      "source": "exact-head runtime test source",
+      "transformation": "execute negative/adversarial regression",
+      "output_produced": "PASS",
+      "readback": {
+        "run_id": 35756765086,
+        "suite": "247 passed"
+      },
+      "next_consumer": "Replay summary",
+      "expected_output": "individual regression exists and passed exact-head suite",
+      "input_complete": true,
+      "output_correct": true,
+      "status": "PASS",
+      "evidence_refs": [
+        "github-actions://Validate LF Packs/35756765086",
+        "test_v06_undeclared_material_ref_outside_graph_fails_closed"
+      ],
+      "note": "",
+      "applicability": "APPLICABLE"
+    }
+  ]
+}
