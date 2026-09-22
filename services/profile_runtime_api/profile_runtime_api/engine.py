@@ -57,6 +57,29 @@ def _not_evaluated(code: str) -> dict[str, Any]:
     return {"status": "NOT_EVALUATED", "blocking_codes": [code], "downstream_authorized": False}
 
 
+def _model_context_readback(
+    model_sources: list[dict[str, str]], evidence_manifest: dict[str, Any] | None
+) -> dict[str, Any]:
+    source_manifest = [
+        {
+            "ref": item["ref"],
+            "content_sha256": sha256_text(item["content"]),
+            "chars": len(item["content"]),
+        }
+        for item in model_sources
+    ]
+    return {
+        "source_manifest": source_manifest,
+        "source_manifest_sha256": canonical_json_sha256(source_manifest),
+        "total_chars": sum(item["chars"] for item in source_manifest),
+        "evidence_manifest_sha256": (
+            canonical_json_sha256(evidence_manifest)
+            if isinstance(evidence_manifest, dict)
+            else None
+        ),
+    }
+
+
 def _snapshot_binding_paths(contract: dict[str, Any]) -> dict[str, list[str]]:
     raw = contract.get("snapshot_binding_paths") or {}
     if not isinstance(raw, dict):
@@ -1036,6 +1059,7 @@ class ProfileRuntimeEngine:
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)
             binding=self.repository.runtime_binding(task.profile_slug)
             model_sources=self.repository.profile_model_sources(task.profile_slug,sources)
+            transport_readback=_model_context_readback(model_sources, task.evidence_manifest)
             generation_schema=self.repository.model_generation_schema(task.profile_slug,schema.payload)
             governed_pack, governed_receipt = _governed_context(task, context_pack, profile_sources=sources, schema=schema)
             adapter=PersistentLlamaServerAdapter(settings=self.settings,client=self.llama_client,schema=schema,structural_context=governed_pack,image_bytes=None,image_media_type=None,model_profile_sources=model_sources,generation_schema=generation_schema,execution_budget=(binding.execution_budget if binding else None))
@@ -1046,12 +1070,12 @@ class ProfileRuntimeEngine:
         model_raw_output=runtime_package.get("raw_output")
         try:
             materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
-            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest); canonical_quality=self.gates.canonical_quality_boundary(profile_slug=task.profile_slug,candidate=payload,contract_gate=contract,semantic_gate=semantic)
+            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest); canonical_quality=self.gates.canonical_quality_boundary(profile_slug=task.profile_slug,candidate=payload,contract_gate=contract,semantic_gate=semantic,evidence_manifest=task.evidence_manifest)
         except Exception as exc:
             code,detail=_failure(exc)
             diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
             return self._profile_failure(task=task,code=code,detail=detail,stage="POST_GENERATION_VALIDATION",started=started,context=context,runtime_diagnostics=diagnostics)
-        completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
+        completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"model_context_readback":transport_readback,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
         return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"canonical_quality":canonical_quality,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
     def _execute_profile(self, *, task: ProfileTask, artifact: Any, prepared: PreparedContext, context_reused_within_batch: bool) -> dict[str, Any]:
@@ -1061,6 +1085,7 @@ class ProfileRuntimeEngine:
             sources=self.repository.profile_sources(task.profile_slug,task.profile_source_paths); schema=self.repository.runtime_schema(task.profile_slug, task.runtime_output_mode)
             binding=self.repository.runtime_binding(task.profile_slug)
             model_sources=self.repository.profile_model_sources(task.profile_slug,sources)
+            transport_readback=_model_context_readback(model_sources, task.evidence_manifest)
             generation_schema=self.repository.model_generation_schema(task.profile_slug,schema.payload)
             if task.send_image_to_model and not self.settings.allow_model_image: raise LlamaTransportError("FULL_IMAGE_MODEL_PATH_DISABLED")
             image_bytes=artifact.image_bytes() if task.send_image_to_model else None
@@ -1073,12 +1098,12 @@ class ProfileRuntimeEngine:
         model_raw_output=runtime_package.get("raw_output")
         try:
             materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
-            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest); canonical_quality=self.gates.canonical_quality_boundary(profile_slug=task.profile_slug,candidate=payload,contract_gate=contract,semantic_gate=semantic)
+            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest); canonical_quality=self.gates.canonical_quality_boundary(profile_slug=task.profile_slug,candidate=payload,contract_gate=contract,semantic_gate=semantic,evidence_manifest=task.evidence_manifest)
         except Exception as exc:
             code,detail=_failure(exc)
             diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
             return self._profile_failure(task=task,code=code,detail=detail,stage="POST_GENERATION_VALIDATION",started=started,context=context,runtime_diagnostics=diagnostics)
-        completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
+        completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"model_context_readback":transport_readback,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
         return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"canonical_quality":canonical_quality,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
     @staticmethod
