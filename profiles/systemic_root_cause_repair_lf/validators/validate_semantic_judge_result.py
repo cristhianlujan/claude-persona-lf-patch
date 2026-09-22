@@ -64,7 +64,13 @@ def _scope_ids(scope_packet: Any) -> set[str]:
     return out
 
 
-def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None) -> dict[str, Any]:
+def evaluate(
+    payload: Any,
+    scope_packet: Any = None,
+    expected_candidate_sha256: str | None = None,
+    expected_scope_packet_sha256: str | None = None,
+    expected_evidence_manifest_sha256: str | None = None,
+) -> dict[str, Any]:
     errors: list[str] = []
     if not isinstance(payload, dict):
         return {"status": "FAIL", "blocking_codes": ["SEMANTIC_JUDGE_RESULT_NOT_OBJECT"]}
@@ -81,6 +87,11 @@ def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: 
         errors.append("SEMANTIC_JUDGE_CANDIDATE_SHA_MISMATCH")
     if expected_scope_packet_sha256 is not None and payload.get("scope_packet_sha256") != expected_scope_packet_sha256:
         errors.append("SEMANTIC_JUDGE_SCOPE_SHA_MISMATCH")
+    if expected_evidence_manifest_sha256 is not None:
+        if not _sha_ok(payload.get("evidence_manifest_sha256")):
+            errors.append("SEMANTIC_JUDGE_EVIDENCE_MANIFEST_SHA_INVALID")
+        elif payload.get("evidence_manifest_sha256") != expected_evidence_manifest_sha256:
+            errors.append("SEMANTIC_JUDGE_EVIDENCE_MANIFEST_SHA_MISMATCH")
 
     observed = payload.get("observed_candidate_changes")
     if not isinstance(observed, list):
@@ -167,6 +178,7 @@ def main() -> int:
     parser.add_argument("--scope-packet")
     parser.add_argument("--candidate-sha256")
     parser.add_argument("--scope-packet-sha256")
+    parser.add_argument("--evidence-manifest-sha256")
     args = parser.parse_args()
     with open(args.result, "r", encoding="utf-8") as fh:
         payload = json.load(fh)
@@ -179,6 +191,7 @@ def main() -> int:
         scope_packet=scope_packet,
         expected_candidate_sha256=args.candidate_sha256,
         expected_scope_packet_sha256=args.scope_packet_sha256,
+        expected_evidence_manifest_sha256=args.evidence_manifest_sha256,
     )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0 if result["status"] == "PASS" else 1
