@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 76.92307692307692,
+  "overall_percent": 78.84615384615384,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -37,16 +37,17 @@
     },
     {
       "obligation_id": "MC-03",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "evidence_manifest_sha256 is observable across contract/utility/canonical-quality finalization",
-        "semantic result and quality receipt now bind the exact evidence manifest digest",
-        "tampered/different manifest is rejected by regression; Validate LF Packs 35736254524 PASS"
+        "same evidence_manifest_sha256 feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb observed at resolver, deterministic validator, semantic utility, independent semantic review, canonical finalizer and quality receipt",
+        "candidate 6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16 and scope 49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f are bound to review_input c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+        "canonical quality finalization PASS and receipt decision PASS_TO_QUALITY_PACK with distinct producer/reviewer execution IDs",
+        "negative matrix fails closed for deterministic manifest omission, utility manifest omission, semantic manifest mutation and receipt/evidence mutation",
+        "runtime transport repair preserved structural-floor metadata into semantic utility and added fail-closed utility manifest requirement",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc03_evidence_manifest_e2e_readback.json"
       ],
-      "remaining_requirements": [
-        "Complete one independent semantic review and canonical quality receipt on the same candidate/evidence/scope digests."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-04",
@@ -182,8 +183,8 @@
       ]
     }
   ],
-  "closed_count": 4,
-  "open_count": 9,
+  "closed_count": 5,
+  "open_count": 8,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -196,7 +197,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "5de5d6c66a2f014ae05e2ba912b69aaaf21b626d",
+  "current_exact_code_head": "c0bb4c0802e76bdb6d0acf384353c656db5c82bf",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -213,6 +214,12 @@
     "mc05_investigation_id": "EXEC-SRCR-MC05-TRACE-20260922-001",
     "mc05_evidence_manifest_sha256": "369846e21d79c3f6ca69a83d8f78a2a4f45d51d8a422ce80b61825d90d4c8fb8",
     "mc05_resolved_authority_context_sha256": "8148390bfec2bac60cf2a1499a291f14b598fa6754011e23346c2d3ceace4f46",
-    "mc05_readback_sha256": "9f8abde27b7385f815a62b3d1931ee5f58da01623dbe807c4c0b30736bb0d58d"
+    "mc05_readback_sha256": "9f8abde27b7385f815a62b3d1931ee5f58da01623dbe807c4c0b30736bb0d58d",
+    "mc03_source_revision": "5beb0c05a1b2c8aab07a744cf91ee10fc86501f3",
+    "mc03_evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "mc03_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "mc03_scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "mc03_review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+    "mc03_quality_decision": "PASS_TO_QUALITY_PACK"
   }
 }
