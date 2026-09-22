@@ -9,7 +9,7 @@ from pathlib import Path
 from profile_runtime_api.engine import ProfileRuntimeEngine, _model_context_readback, _validate_research_execution
 from profile_runtime_api.models import ProfileTask
 from profile_runtime_api.repository import RepositoryBindings, RepositoryError
-from profile_runtime_api.validation import OutputGates
+from profile_runtime_api.validation import OutputGates, canonical_logical_findings
 from profile_runtime_api.hashing import canonical_json_sha256
 from types import SimpleNamespace
 
@@ -109,6 +109,45 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             self.assertIn('MANIFEST_NOT_DELIVERED_TO_VALIDATOR',missing['blocking_codes'])
         finally:
             tmp.cleanup()
+
+    def test_logical_findings_deduplicate_schema_and_profile_detector_without_collapsing_fields(self):
+        errors=[
+            {
+                'code':'JSON_SCHEMA_VALIDATION_FAILED',
+                'path':'$.planned_regressions[0].test_protocol.setup',
+                'detector':'JSON_SCHEMA',
+            },
+            {
+                'code':'EXECUTABLE_TEST_PROTOCOL_INCOMPLETE',
+                'path':'$.planned_regressions[0].test_protocol.setup',
+                'detector':'PROFILE_VALIDATOR',
+            },
+            {
+                'code':'JSON_SCHEMA_VALIDATION_FAILED',
+                'path':'$.planned_regressions[0].test_protocol.action',
+                'detector':'JSON_SCHEMA',
+            },
+            {
+                'code':'EXECUTABLE_TEST_PROTOCOL_INCOMPLETE',
+                'path':'$.planned_regressions[0].test_protocol.action',
+                'detector':'PROFILE_VALIDATOR',
+            },
+        ]
+        findings=canonical_logical_findings(errors)
+        self.assertEqual(len(findings),2)
+        by_path={item['candidate_path']:item for item in findings}
+        self.assertEqual(
+            by_path['$.planned_regressions[0].test_protocol.setup']['detectors'],
+            ['JSON_SCHEMA','PROFILE_VALIDATOR'],
+        )
+        self.assertEqual(
+            by_path['$.planned_regressions[0].test_protocol.action']['detectors'],
+            ['JSON_SCHEMA','PROFILE_VALIDATOR'],
+        )
+        self.assertEqual(
+            by_path['$.planned_regressions[0].test_protocol.setup']['failure_class'],
+            'EXECUTABLE_TEST_PROTOCOL_INCOMPLETE',
+        )
 
     def test_manifest_digest_is_observable_at_validator_and_utility(self):
         tmp,root,repo=self._repo()
