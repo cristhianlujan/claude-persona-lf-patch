@@ -1,0 +1,31 @@
+{
+  "schema": "SRCR_MC02_NATIVE_CONTEXT_CONSUMPTION_V1",
+  "execution_id": "EXEC-SRCR-MC02-GPT-NATIVE-20260922-001",
+  "executor_mode": "GPT_NATIVE",
+  "provider": "OPENAI_CHATGPT_NATIVE",
+  "model_id": "GPT-5.6 Sol",
+  "source_revision": "5de5d6c66a2f014ae05e2ba912b69aaaf21b626d",
+  "request_sha256": "a4e3ba52674909e9ac689abb37c02b3f89f67b2dc55dcd655936f0886c28da28",
+  "context_manifest_sha256": "7c948c7efb1b83b854f51145398c8f8f4b96bab37b4cb95dc148f10236071297",
+  "consumed_source_refs": [
+    "profiles/systemic_root_cause_repair_lf/SKILL.md",
+    "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md"
+  ],
+  "content_probes": {
+    "purpose_boundary": "minimum sufficient, implementable repair specification that eliminates the failure class",
+    "freeze_rule": "schema-invalid draft is repaired before freeze",
+    "output_trajectory_entry": "FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> CURRENT REPAIR DISPOSITION",
+    "v06_generation_pin": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+    "v06_edge_rule": "future wiring cannot be cited as evidence that the current edge is closed",
+    "claim_ceiling": "CANDIDATO / READ_ONLY",
+    "semantic_boundary": "canonical evidence-bound semantic quality gate"
+  },
+  "context_budget": {
+    "delivered_chars": 37980,
+    "max_chars": 42000,
+    "within_budget": true
+  },
+  "status": "CONTEXT_CONSUMED_READ_ONLY",
+  "downstream_authorized": false,
+  "mutation_performed": false
+}
