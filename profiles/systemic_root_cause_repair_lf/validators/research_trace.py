@@ -172,7 +172,9 @@ def validate_manifest_trace_binding(manifest: Any, trace: Any) -> list[str]:
         ):
             errors.append(f"trace[{idx}]:GITHUB_LOCATOR_CLASS_MISMATCH")
         if provider == "SUPABASE" and not (
-            locator.startswith("supabase://") or locator.startswith("sql:")
+            locator.startswith("supabase://")
+            or locator.startswith("supabase-sql://")
+            or locator.startswith("sql:")
         ):
             errors.append(f"trace[{idx}]:SUPABASE_LOCATOR_CLASS_MISMATCH")
 
