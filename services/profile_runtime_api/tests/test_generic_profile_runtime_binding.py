@@ -208,6 +208,70 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             tmp.cleanup()
 
 
+
+    def test_canonical_quality_gate_consumes_bound_semantic_and_receipt_validators(self):
+        tmp,root,repo=self._repo()
+        try:
+            profile_root=root/'profiles/p'
+            (profile_root/'judges').mkdir(parents=True)
+            (profile_root/'judges/mini.md').write_text('# judge\n')
+            (profile_root/'judges/semantic.md').write_text('# semantic\n')
+            (profile_root/'schemas/quality.json').write_text(
+                json.dumps({
+                    '$schema':'https://json-schema.org/draft/2020-12/schema',
+                    'type':'object',
+                    'required':['decision'],
+                    'properties':{'decision':{'const':'PASS'}},
+                    'additionalProperties':False,
+                })
+            )
+            (profile_root/'validators/semantic_result.py').write_text(
+                'def evaluate(payload):\n'
+                '    return {"status":"PASS","blocking_codes":[]} if payload.get("verdict")=="PASS" else {"status":"FAIL","blocking_codes":["SEMANTIC_BAD"]}\n'
+            )
+            (profile_root/'validators/quality_receipt.py').write_text(
+                'def validate_quality_receipt(receipt,candidate,evidence_manifest,semantic_result):\n'
+                '    ok = receipt.get("decision")=="PASS" and candidate.get("profile_pack_id")=="PACK-V1" and evidence_manifest.get("marker")=="trusted" and semantic_result.get("verdict")=="PASS"\n'
+                '    return {"status":"PASS" if ok else "FAIL","blocking_codes":[] if ok else ["RECEIPT_BAD"]}\n'
+            )
+            path=profile_root/'contracts/runtime_binding.json'
+            data=json.loads(path.read_text())
+            data['canonical_quality']={
+                'required_for_profile_pack_ids':['PACK-V1'],
+                'judge_path':'judges/mini.md',
+                'semantic_judge_path':'judges/semantic.md',
+                'semantic_result_validator':{'path':'validators/semantic_result.py','callable':'evaluate'},
+                'quality_receipt_schema':'schemas/quality.json',
+                'quality_receipt_validator':{'path':'validators/quality_receipt.py','callable':'validate_quality_receipt'},
+                'deterministic_floors_can_accept_quality':False,
+                'receipt_required_for_pass_to_quality_pack':True,
+            }
+            path.write_text(json.dumps(data))
+            gates=OutputGates(repo)
+            result=gates.canonical_quality(
+                profile_slug='p',
+                candidate={'profile_pack_id':'PACK-V1'},
+                evidence_manifest={'marker':'trusted'},
+                semantic_result={'verdict':'PASS'},
+                quality_receipt={'decision':'PASS'},
+            )
+            self.assertEqual(result['status'],'PASS')
+            self.assertTrue(result['canonical_quality_accepted'])
+            self.assertFalse(result['downstream_authorized'])
+
+            bad=gates.canonical_quality(
+                profile_slug='p',
+                candidate={'profile_pack_id':'PACK-V1'},
+                evidence_manifest={'marker':'trusted'},
+                semantic_result={'verdict':'FAIL'},
+                quality_receipt={'decision':'PASS'},
+            )
+            self.assertEqual(bad['status'],'FAIL')
+            self.assertIn('SEMANTIC_BAD',bad['blocking_codes'])
+        finally:
+            tmp.cleanup()
+
+
     def test_weak_governance_fails_closed(self):
         tmp,root,repo=self._repo()
         try:
