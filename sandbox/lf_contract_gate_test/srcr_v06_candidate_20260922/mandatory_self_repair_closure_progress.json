@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 90.38461538461539,
+  "overall_percent": 92.3076923076923,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -159,18 +159,23 @@
     },
     {
       "obligation_id": "MC-11",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "builder now declares proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer for PROFILE_RUNTIME_CANARY_REQUIRED",
-        "builder declares queue terminal reconciliation control/wiring/deliverable",
-        "builder regression verifies canary consumer and terminality footprint; Validate LF Packs 35736254524 PASS",
-        "MC-10 negative producer probe EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000010 remains IN_PROGRESS after execute_profile server validation failed; this is an exact terminality/reconciliation case owned by MC-11 and is not used as MC-10 closure evidence."
+        "Builder exact regeneration on source head cb7e622a2abeee5331c444469fd1cbf9e93180e9 reproduced frozen candidate digest 6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16 byte/semantic-equal and PASS_PRE_QUALITY.",
+        "Observed next-gate fixture with CURRENT real consumer evidence passes edge_closure; deleting both current and proposed consumer fails with V06_IMPLEMENTABLE_NEXT_GATE_CONSUMER_REQUIRED.",
+        "LF_SUPABASE_SANDBOX migration 20260922163720 materialized public.lf_profile_execution_reconcile_queue_terminal_v1(uuid,text).",
+        "Live FAILED queue pair 23839099-ab5f-46a3-bc9d-200f16bdc0c2 reconciled canonical execution from IN_PROGRESS to BLOCKED with PROFILE_RUNTIME_QUEUE_TERMINAL_RECONCILIATION_V1 receipt; idempotent replay returned TERMINAL_PAIR_ALREADY_RECONCILED.",
+        "Live SUCCEEDED queue pair 152a3d60-02b0-4bbf-b9fa-b83995b295d6 read back as canonical COMPLETED and TERMINAL_PAIR_RECONCILED.",
+        "Semantic-review-pending queue pair e1554fa6-1802-4839-bbaa-02c6bf2f1c94 remained canonical IN_PROGRESS and resolved to semantic_judge; pending is not falsely terminalized.",
+        "MC-10 probe ...0010 has zero matching queue rows; live reconciler returned NO_QUEUE_ROW with queue_authoritative=false, closing the explicit authority exception without mutating it.",
+        "Current queue schema excludes CANCELLED, so cancelled is NOT_APPLICABLE for current runtime; reconciler includes forward-compatible CANCELLED mapping.",
+        "Worker bridge regression suite passed 20/20; terminal reconciliation is compare-and-set and idempotent.",
+        "Independent T5 reviewer EXEC-MC11-T5-INDEPENDENT-REVIEW-20260922-001 evaluated all 13 material edges, returned PASS_INDEPENDENT_SEMANTIC with zero T5 blocking findings, and deterministic semantic-result validation PASS.",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc11_terminality_readback.json",
+        "T5: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc11_t5_semantic_readback.json"
       ],
-      "remaining_requirements": [
-        "Regenerate/freeze the candidate from the repaired builder and obtain clean independent T5 semantic readback.",
-        "Reconcile the failed MC-10 probe execution EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000010 to a governed terminal outcome or prove the canonical non-authoritative exception; retain readback."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-12",
@@ -197,8 +202,8 @@
       ]
     }
   ],
-  "closed_count": 10,
-  "open_count": 3,
+  "closed_count": 11,
+  "open_count": 2,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -211,7 +216,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "d8e408a5247a69cc761e531189ebaa8b7d3f88ad",
+  "current_exact_code_head": "4021504a9ed4cd4c94f0a10e514c49d6b4e3f7eb",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -271,6 +276,14 @@
     "mc10_review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
     "mc10_quality_receipt_sha256": "68311064c73ae1bf9732b07a4784eb0e668b4c13ad90a24aa3d9bf350be486f9",
     "mc10_execution_status": "COMPLETED",
-    "mc10_quality_decision": "PASS_TO_QUALITY_PACK"
+    "mc10_quality_decision": "PASS_TO_QUALITY_PACK",
+    "mc11_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "mc11_terminal_migration_version": "20260922163720",
+    "mc11_failure_pair_request_id": "23839099-ab5f-46a3-bc9d-200f16bdc0c2",
+    "mc11_terminal_post_readback_sha256": "da08ac7cc8e2627f32dbf3b0a66096572b2ede6e9478157458befe9a11b58d06",
+    "mc11_t5_reviewer_execution_id": "EXEC-MC11-T5-INDEPENDENT-REVIEW-20260922-001",
+    "mc11_t5_result": "PASS",
+    "mc11_t5_edge_count": 13,
+    "mc11_t5_blocking_findings": 0
   }
 }
