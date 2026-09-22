@@ -113,3 +113,17 @@ Deterministic validation exclusively owns structural blocking codes. The pre-qua
 ## V0.6 pre-freeze schema discipline
 
 The producer must validate the complete candidate against the exact current `schemas/output.schema.json` before candidate freeze/digest. A schema-invalid draft is not a frozen candidate. Typed test protocols must preserve the declared collection types for setup, action and assertions. Downstream schema validation remains an independent fail-closed control; it is not the first place an avoidable producer shape error should be discovered.
+
+
+## Mandatory self-repair closure contract
+
+The normative self-repair closure contract is `profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json`.
+
+For any SRCR self-maintenance that touches research execution, context transport, evidence resolution/transport, deterministic rules, finding aggregation, independent semantic review, quality receipts, physical wiring/terminality, or implementation-footprint closure:
+
+1. all applicable MC-01..MC-12 obligations are mandatory;
+2. only READBACK_CLOSED counts as closed;
+3. overall closure is the logical AND of all mandatory obligations;
+4. no deterministic/utility/CI PASS or producer assertion can override an open obligation;
+5. exact negative and positive evidence required by each obligation must be bound to the exact profile revision under review;
+6. the profile update cannot be represented as ready for governed update while any obligation remains below READBACK_CLOSED.
