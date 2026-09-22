@@ -1,0 +1,101 @@
+{
+  "schema_version": "LF_WORK_PROTOCOL_CROSS_GATE_EXTERNAL_CASE_V1",
+  "case_id": "INPUT_GOVERNANCE_BACKLOG_193_201",
+  "captured_at": "2026-09-22T21:30:00Z",
+  "authority": {
+    "source": "supabase://public.lf_backlog_errores_operativos",
+    "row_ids": [193, 194, 195, 196, 197, 198, 199, 200, 201]
+  },
+  "purpose": "External adversarial fixture for generic dependency, closure, currentness and lifecycle tests. Case data must not become protocol-specific branching logic.",
+  "nodes": [
+    {
+      "id": 193,
+      "key": "INPUT-GOV-TRANSVERSAL-01-ROUTER-FACTORY-ROUTE-DECISION",
+      "priority": "ALTA",
+      "depends_on": [],
+      "blocks": [
+        "INPUT-GOV-TRANSVERSAL-02",
+        "INPUT-GOV-TRANSVERSAL-03"
+      ],
+      "sequence": 1
+    },
+    {
+      "id": 194,
+      "key": "INPUT-GOV-TRANSVERSAL-02-CATALOG-REGISTRATION",
+      "priority": "ALTA",
+      "depends_on": ["INPUT-GOV-TRANSVERSAL-01"],
+      "blocks": [
+        "INPUT-GOV-TRANSVERSAL-03",
+        "INPUT-GOV-TRANSVERSAL-07"
+      ],
+      "sequence": 2
+    },
+    {
+      "id": 195,
+      "key": "INPUT-GOV-TRANSVERSAL-03-EKB-WRITER-CONVERGENCE",
+      "priority": "ALTA",
+      "depends_on": ["INPUT-GOV-TRANSVERSAL-02"],
+      "blocks": [],
+      "sequence": 3
+    },
+    {
+      "id": 196,
+      "key": "INPUT-GOV-TRANSVERSAL-04-EKB-READ-CHECKPOINT-PATTERN",
+      "priority": "MEDIA",
+      "depends_on": [],
+      "blocks": [],
+      "sequence": 4
+    },
+    {
+      "id": 197,
+      "key": "INPUT-GOV-TRANSVERSAL-05-INTERNAL-REMEDIATION-BACKLOG",
+      "priority": "MEDIA",
+      "depends_on": [],
+      "blocks": [],
+      "sequence": 5
+    },
+    {
+      "id": 198,
+      "key": "INPUT-GOV-TRANSVERSAL-06-ADAPTER-BINDING-ACTIVATION-DECISION",
+      "priority": "MEDIA",
+      "depends_on": [],
+      "blocks": [],
+      "sequence": 6
+    },
+    {
+      "id": 199,
+      "key": "INPUT-GOV-TRANSVERSAL-07-READINESS-FAMILIES-AS-SHARED-CATALOG",
+      "priority": "BAJA",
+      "depends_on": ["INPUT-GOV-TRANSVERSAL-02"],
+      "blocks": [],
+      "sequence": 7
+    },
+    {
+      "id": 200,
+      "key": "INPUT-GOV-TRANSVERSAL-08-FRESHNESS-CURRENTNESS-GENERALIZATION",
+      "priority": "BAJA",
+      "depends_on": [],
+      "blocks": [],
+      "sequence": 8
+    },
+    {
+      "id": 201,
+      "key": "INPUT-GOV-TRANSVERSAL-09-AGENT-LIFECYCLE-DRAFT-VS-ACTIVE-RUNTIME",
+      "priority": "CRITICA",
+      "depends_on": [],
+      "blocks": [],
+      "sequence": 9
+    }
+  ],
+  "expected_invariants": {
+    "graph_acyclic": true,
+    "ordered_dependency_chain": [
+      "INPUT-GOV-TRANSVERSAL-01",
+      "INPUT-GOV-TRANSVERSAL-02",
+      "INPUT-GOV-TRANSVERSAL-03"
+    ],
+    "dependent_cannot_close_before_predecessor": true,
+    "critical_independent_blocker_must_not_be_hidden_by_sequence": "INPUT-GOV-TRANSVERSAL-09",
+    "case_specific_ids_must_not_enter_protocol_branching_logic": true
+  }
+}
