@@ -234,6 +234,7 @@ class OutputGates:
                 "schema_sha256": schema.sha256,
                 "schema_source_refs": list(schema.source_refs),
                 "schema_mode": schema.mode,
+                "evidence_manifest_sha256": (canonical_json_sha256(evidence_manifest) if isinstance(evidence_manifest, dict) else None),
                 "blocking_codes": blocking,
                 "errors": errors,
             },
@@ -248,12 +249,14 @@ class OutputGates:
         contract_gate: dict[str, Any],
         evidence_manifest: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        manifest_sha256 = canonical_json_sha256(evidence_manifest) if isinstance(evidence_manifest, dict) else None
         if contract_gate.get("status") != "PASS" or payload is None:
             return {
                 "status": "NOT_EVALUATED",
                 "evaluation_scope": "DETERMINISTIC_UTILITY_FLOOR",
                 "blocking_codes": ["PROFILE_CONTRACT_INVALID"],
                 "independent_semantic_judge": "NOT_EXECUTED",
+                "evidence_manifest_sha256": manifest_sha256,
             }
         errors: list[str] = []
         local_utility = self.repository.load_semantic_utility(profile_slug)
@@ -266,6 +269,7 @@ class OutputGates:
                     "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
                     "blocking_codes": ["PROFILE_SEMANTIC_UTILITY_CALLABLE_MISSING"],
                     "independent_semantic_judge": "NOT_EXECUTED",
+                    "evidence_manifest_sha256": manifest_sha256,
                     "downstream_authorized": False,
                 }
             try:
@@ -284,6 +288,7 @@ class OutputGates:
                     "blocking_codes": ["PROFILE_SEMANTIC_UTILITY_EXCEPTION"],
                     "message": type(exc).__name__,
                     "independent_semantic_judge": "NOT_EXECUTED",
+                    "evidence_manifest_sha256": manifest_sha256,
                     "downstream_authorized": False,
                 }
             if isinstance(result, dict):
@@ -296,6 +301,7 @@ class OutputGates:
                     "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
                     "blocking_codes": sorted({str(code) for code in codes}),
                     "independent_semantic_judge": "NOT_EXECUTED",
+                    "evidence_manifest_sha256": manifest_sha256,
                     "downstream_authorized": False,
                 }
             if isinstance(result, list):
@@ -305,6 +311,7 @@ class OutputGates:
                     "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
                     "blocking_codes": codes,
                     "independent_semantic_judge": "NOT_EXECUTED",
+                    "evidence_manifest_sha256": manifest_sha256,
                     "downstream_authorized": False,
                 }
             return {
@@ -312,7 +319,8 @@ class OutputGates:
                 "evaluation_scope": "PROFILE_LOCAL_DETERMINISTIC_UTILITY_FLOOR",
                 "blocking_codes": ["PROFILE_SEMANTIC_UTILITY_RESULT_INVALID"],
                 "independent_semantic_judge": "NOT_EXECUTED",
-                "downstream_authorized": False,
+                "evidence_manifest_sha256": manifest_sha256,
+                    "downstream_authorized": False,
             }
         if profile_slug == "product_director_lf":
             deliverable = payload.get("deliverable_created")
@@ -460,13 +468,15 @@ class OutputGates:
                 "evaluation_scope": "NO_PROFILE_UTILITY_POLICY",
                 "blocking_codes": ["SEMANTIC_UTILITY_POLICY_NOT_BOUND"],
                 "independent_semantic_judge": "NOT_EXECUTED",
+                "evidence_manifest_sha256": manifest_sha256,
             }
         return {
             "status": "PASS" if not errors else "FAIL",
             "evaluation_scope": "DETERMINISTIC_UTILITY_FLOOR_NOT_FINAL_SEMANTIC_AUTHORITY",
             "blocking_codes": sorted(set(errors)),
             "independent_semantic_judge": "NOT_EXECUTED",
-            "downstream_authorized": False,
+            "evidence_manifest_sha256": manifest_sha256,
+                    "downstream_authorized": False,
         }
 
     @staticmethod
@@ -490,7 +500,9 @@ class OutputGates:
         candidate: dict[str, Any] | None,
         contract_gate: dict[str, Any],
         semantic_gate: dict[str, Any],
+        evidence_manifest: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        manifest_sha256 = canonical_json_sha256(evidence_manifest) if isinstance(evidence_manifest, dict) else None
         binding = self.repository.runtime_binding(profile_slug)
         quality = binding.canonical_quality if binding is not None else None
         if not isinstance(quality, dict):
@@ -501,6 +513,7 @@ class OutputGates:
                 "receipt_required_for_pass_to_quality_pack": False,
                 "blocking_codes": ["CANONICAL_QUALITY_NOT_BOUND"],
                 "canonical_quality_accepted": False,
+                "evidence_manifest_sha256": manifest_sha256,
                 "downstream_authorized": False,
             }
         pack_id = candidate.get("profile_pack_id") if isinstance(candidate, dict) else None
@@ -515,6 +528,7 @@ class OutputGates:
                 ),
                 "blocking_codes": [],
                 "canonical_quality_accepted": False,
+                "evidence_manifest_sha256": manifest_sha256,
                 "downstream_authorized": False,
             }
 
@@ -552,7 +566,8 @@ class OutputGates:
                 )
             ),
             "canonical_quality_accepted": False,
-            "downstream_authorized": False,
+            "evidence_manifest_sha256": manifest_sha256,
+                "downstream_authorized": False,
         }
 
     def canonical_quality(
@@ -565,6 +580,7 @@ class OutputGates:
         quality_receipt: dict[str, Any],
         scope_authority_packet: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        manifest_sha256 = canonical_json_sha256(evidence_manifest)
         binding = self.repository.runtime_binding(profile_slug)
         quality = binding.canonical_quality if binding is not None else None
         if not isinstance(quality, dict):
@@ -572,6 +588,7 @@ class OutputGates:
                 "status": "NOT_EVALUATED",
                 "blocking_codes": ["CANONICAL_QUALITY_NOT_BOUND"],
                 "canonical_quality_accepted": False,
+                "evidence_manifest_sha256": manifest_sha256,
                 "downstream_authorized": False,
             }
 
@@ -582,6 +599,7 @@ class OutputGates:
                 "status": "NOT_APPLICABLE",
                 "blocking_codes": [],
                 "canonical_quality_accepted": False,
+                "evidence_manifest_sha256": manifest_sha256,
                 "downstream_authorized": False,
             }
 
@@ -599,6 +617,7 @@ class OutputGates:
                 "status": "FAIL",
                 "blocking_codes": ["CANONICAL_QUALITY_BINDING_INCOMPLETE"],
                 "canonical_quality_accepted": False,
+                "evidence_manifest_sha256": manifest_sha256,
                 "downstream_authorized": False,
             }
 
@@ -667,7 +686,8 @@ class OutputGates:
             "blocking_codes": codes,
             "canonical_quality_accepted": not codes and receipt_accepts_quality,
             "receipt_schema_sha256": receipt_schema.sha256,
-            "downstream_authorized": False,
+            "evidence_manifest_sha256": manifest_sha256,
+                "downstream_authorized": False,
         }
 
     def canonical_quality_finalize(
@@ -685,6 +705,7 @@ class OutputGates:
         producer_execution_receipt_ref: str,
         issued_at: str,
     ) -> dict[str, Any]:
+        expected_evidence_manifest_sha256 = canonical_json_sha256(evidence_manifest)
         binding = self.repository.runtime_binding(profile_slug)
         quality = binding.canonical_quality if binding is not None else None
         if not isinstance(quality, dict):
@@ -845,6 +866,7 @@ class OutputGates:
             "semantic_result_validation": semantic_gate,
             "expected_candidate_sha256": expected_candidate_sha256,
             "expected_scope_packet_sha256": expected_scope_packet_sha256,
+            "expected_evidence_manifest_sha256": expected_evidence_manifest_sha256,
             "downstream_authorized": False,
         }
 
