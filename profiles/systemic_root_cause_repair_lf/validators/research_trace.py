@@ -108,6 +108,8 @@ def validate_query_trace(trace: Any) -> list[str]:
                 errors.append(f"{path}:FOUND_WITH_ZERO_RESULTS")
             elif result_status in {"EMPTY", "NOT_FOUND"} and result_count != 0:
                 errors.append(f"{path}:ABSENCE_WITH_NONZERO_RESULTS")
+            if result_status in {"EMPTY", "NOT_FOUND"} and row.get("claim_support") != "ABSENCE":
+                errors.append(f"{path}:ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT")
 
         evidence_id = row.get("evidence_id")
         if not isinstance(evidence_id, str) or len(evidence_id.strip()) < 3:
