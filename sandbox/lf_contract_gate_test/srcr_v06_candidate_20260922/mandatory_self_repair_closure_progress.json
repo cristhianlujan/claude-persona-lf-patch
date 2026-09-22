@@ -211,8 +211,8 @@
     "mc02_provider": "OPENAI_CHATGPT_NATIVE",
     "mc02_model_id": "GPT-5.6 Sol",
     "mc05_investigation_id": "EXEC-SRCR-MC05-TRACE-20260922-001",
-    "mc05_evidence_manifest_sha256": "c53cdd58d65fdf742850ad6c69e08e0e2ec2807915841690674369e454acb5c5",
+    "mc05_evidence_manifest_sha256": "369846e21d79c3f6ca69a83d8f78a2a4f45d51d8a422ce80b61825d90d4c8fb8",
     "mc05_resolved_authority_context_sha256": "8148390bfec2bac60cf2a1499a291f14b598fa6754011e23346c2d3ceace4f46",
-    "mc05_readback_sha256": "4dd11f3ed1b4de7db79e79a4aa8d7f9dd4f3dad65cc3112d675997ee1b951c0c"
+    "mc05_readback_sha256": "9f8abde27b7385f815a62b3d1931ee5f58da01623dbe807c4c0b30736bb0d58d"
   }
 }
