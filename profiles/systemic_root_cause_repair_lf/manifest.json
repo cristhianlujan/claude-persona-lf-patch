@@ -1,6 +1,6 @@
 {
   "schema_version": "lf-profile-pack-manifest/v1",
-  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
   "profile_slug": "systemic_root_cause_repair_lf",
   "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
   "operation": "CREACION_PERFIL_LF",
@@ -40,6 +40,8 @@
     "validators/producer_depth.py",
     "validators/runtime_semantic_utility.py",
     "validators/runtime_validate.py",
-    "validators/validate_pack.py"
+    "validators/validate_pack.py",
+    "evals/v06_edge_closure_cases.py",
+    "validators/edge_closure.py"
   ]
 }
