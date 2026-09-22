@@ -1095,9 +1095,9 @@
         "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
         "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
         "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
-        "web://opengitops.dev/principles/v1.0",
-        "web://kubernetes.io/docs/concepts/architecture/controller/",
-        "web://slsa.dev/spec/v1.2/provenance"
+        "https://opengitops.dev/",
+        "https://kubernetes.io/docs/concepts/architecture/controller/",
+        "https://slsa.dev/spec/v1.2/provenance"
       ]
     },
     {
