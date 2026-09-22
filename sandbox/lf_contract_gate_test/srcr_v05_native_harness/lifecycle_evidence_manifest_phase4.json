@@ -1,7 +1,7 @@
 {
   "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
   "bundle_id": "BUNDLE-SRCR-V05-LIFECYCLE-NATIVE-PHASE4-20260921",
-  "bundle_digest": "sha256:606861ea28811420546fc0a1188de1b96b0c186cea5f93f6bd842841dc88ba14",
+  "bundle_digest": "sha256:d3011ffeacdbef3f824c8041170302cdd77a0de7982213e5fcee17f9e626b5cb",
   "observed_at": "2026-09-21T22:55:00-05:00",
   "producer": {
     "kind": "SOURCE_FIRST_RESOLVER",
@@ -30,7 +30,7 @@
       "evidence_id": "EV-LC-039",
       "subject": "full deep regression log exposing schema/self-validator drift",
       "evidence_class": "OBSERVED_READBACK",
-      "source_locator": "github-actions://cristhianlujan/claude-persona-lf-patch/jobs/106607329745",
+      "source_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106607329745/logs",
       "revision_or_observed_at": "run:35684161556",
       "digest": "sha256:02a185c9f238343c245eabd457450af139a4d20f93c895c05208ffa88a657e51",
       "state": "CURRENT"
@@ -57,7 +57,7 @@
       "evidence_id": "EV-LC-042",
       "subject": "new-branch push Validate LF Packs zero-SHA failure log",
       "evidence_class": "OBSERVED_READBACK",
-      "source_locator": "github-actions://cristhianlujan/claude-persona-lf-patch/jobs/106601722653",
+      "source_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106601722653/logs",
       "revision_or_observed_at": "run:35682323915",
       "digest": "sha256:889c5d936d43f56a4f2544c7b7dd5edb4b7afa8e9c3796cc9c19494ac597f62b",
       "state": "CURRENT"
@@ -66,7 +66,7 @@
       "evidence_id": "EV-LC-043",
       "subject": "new-branch push lf-contract-check zero-SHA failure log",
       "evidence_class": "OBSERVED_READBACK",
-      "source_locator": "github-actions://cristhianlujan/claude-persona-lf-patch/jobs/106601741367",
+      "source_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106601741367/logs",
       "revision_or_observed_at": "run:35682323913",
       "digest": "sha256:d7f77c903577cbf53d05aa8b626b5b736bec46053991a1169f48548cb4bd25d5",
       "state": "CURRENT"
