@@ -1,0 +1,184 @@
+{
+  "schema": "SRCR_V06_LIFECYCLE_NATIVE_TRACE_PHASE2_V1",
+  "run_id": "EXEC-SRCR-V06-NATIVE-LIFECYCLE-REGRESSION-20260921-001",
+  "mode": "READ_ONLY_NONBLIND_REGRESSION",
+  "trace": [
+    {
+      "sequence": 1,
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q20_db_functions_inserting_lf_activos",
+      "request_digest": "sha256:cf8858dc450d16d985731105f1fcd1b41d72912cd315e32dadf161ea437d7e24",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "evidence_id": "EV-LC-016",
+      "consumer": "$.execution_effect_reconciliation.create_registration_writer"
+    },
+    {
+      "sequence": 2,
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q21_lifecycle_relevant_triggers",
+      "request_digest": "sha256:8804cc7eac1d8ef787d363b60e45465565b470bc1780a68024cd04e69c7ce699",
+      "result_digest": "sha256:3782a60ffc725653de877778519d5b5879227e7abf902ec92bfc9f705f2bd4b7",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "evidence_id": "EV-LC-017",
+      "consumer": "$.execution_effect_reconciliation.trigger_writer"
+    },
+    {
+      "sequence": 3,
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q22_next_gate_function_refs",
+      "request_digest": "sha256:fe267f06af9e1c97472b4e2a7a292246d61893d7a84afa5902177ac832f2886c",
+      "result_digest": "sha256:c68ea5a22eabc3b5bf06b72f101deca00c98dca03c3e6a996f18de3c79aea7f1",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "evidence_id": "EV-LC-018",
+      "consumer": "$.material_process_graph.canary_activation_consumers"
+    },
+    {
+      "sequence": 4,
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q23_failed_queue_vs_operation_execution",
+      "request_digest": "sha256:09686abf76faeb46a6fbcce2f0ff4f2ccf0abeafc22a27b5d14530ad91bd8cd4",
+      "result_digest": "sha256:45e735655f0d5fb7227765c5a6bd8251e8089f3c64c1744f23b036b870a9500d",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "evidence_id": "EV-LC-019",
+      "consumer": "$.historical_regressions.failure_terminality"
+    },
+    {
+      "sequence": 5,
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q24_queue_operation_bridge_functions",
+      "request_digest": "sha256:494dc842845ae8ce171323cfe9e6951a29ae5f0454fcaa41e885d58d97856f5f",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "evidence_id": "EV-LC-020",
+      "consumer": "$.material_process_graph.failure_bridge"
+    },
+    {
+      "sequence": 6,
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q25_retire_rollback_action_inventory",
+      "request_digest": "sha256:380704a65edfe49acfc4b587eedca2c2268eeef652da77c5f541567dcbe61ec3",
+      "result_digest": "sha256:f6af98ea68df967523624130bc5862f40989d601ff5d931459ef7225ade550e4",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "evidence_id": "EV-LC-021",
+      "consumer": "$.material_process_graph.retire_rollback_operationality"
+    },
+    {
+      "sequence": 7,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/functions/run-creacion-perfil-lf/index.ts",
+      "request_digest": "sha256:97a103e33eef01956e577cff6c7ab2fa7743d94de36f31a07337b4d15d11762c",
+      "result_digest": "sha256:4286a17f526e1844ebb130429a2827289951cdb96c34b27ed4aaacbcf3368efa",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "evidence_id": "EV-LC-022",
+      "consumer": "$.material_process_graph.create_runtime_caller"
+    },
+    {
+      "sequence": 8,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "request_digest": "sha256:3aa7a1e660bcfbdad68adc761a37217366b843f08b2fc3b23a99f11a516c3423",
+      "result_digest": "sha256:a14dd1d35f258683b4a1c9c39eff32ba92a60d7828274729bbcd0edbf7c74510",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "evidence_id": "EV-LC-023",
+      "consumer": "$.material_process_graph.runtime_failure_persistence"
+    },
+    {
+      "sequence": 9,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/migrations/20260921064000_lf_profile_update_research_baseline_reconcile_v1.sql",
+      "request_digest": "sha256:5056f710b8b281841a37d036b86d68223f3f8ef342aa972569e4ef56d8768ada",
+      "result_digest": "sha256:814b14fb3ab1e075ea842d2bab4cf4a98ac8dc64bfc203c96e063a6a7f5b05b2",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "evidence_id": "EV-LC-024",
+      "consumer": "$.material_process_graph.post_merge_reconcile"
+    },
+    {
+      "sequence": 10,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/migrations/20260921013000_lf_profile_runtime_source_refresh_operation_v1.sql",
+      "request_digest": "sha256:4fe0f6eb7d9ea5fd1b65a4345b714e38affa1020013c039b7bc197e41f52b6e3",
+      "result_digest": "sha256:2711640ce236114856ad5fb87a54d2b9f29532d84c50fd01779df3cbb60b3bc1",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "evidence_id": "EV-LC-025",
+      "consumer": "$.material_process_graph.post_refresh_next_gate"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "LC-F01",
+      "class": "CREATE_REGISTER_EDGE_OUT_OF_BAND",
+      "status": "CONFIRMED_STRENGTHENED",
+      "evidence_ids": [
+        "EV-LC-016",
+        "EV-LC-017",
+        "EV-LC-022"
+      ],
+      "observation": "The current profile creation Edge Function initializes/records the governed execution but contains no generic lf_activos registration write. Current database routines contain no function that inserts lf_activos, and lifecycle triggers do not materialize a profile asset. SRCR registration therefore remains outside the CREACION_PERFIL_LF execution edge.",
+      "impact": "A creation execution can close while canonical operational registration is still a separate out-of-band act."
+    },
+    {
+      "finding_id": "LC-F02",
+      "class": "PUBLISH_PROMOTE_EDGE_IMPLICIT",
+      "status": "CONFIRMED_STRENGTHENED",
+      "evidence_ids": [
+        "EV-LC-024"
+      ],
+      "observation": "The post-merge reconcile function accepts an already-merged SHA/PR and reconciles it, but the governed update operation does not own or model the merge/publish transition itself. Repository search found no Edge/workflow caller for post_merge_reconcile; the actual transition is external and only reconciled afterward.",
+      "impact": "The lifecycle lacks an explicit handoff state/receipt between pre-merge validation and post-merge reconciliation."
+    },
+    {
+      "finding_id": "LC-F03",
+      "class": "NEXT_GATE_WITHOUT_OPERATIONAL_CONSUMER",
+      "status": "CONFIRMED_STRENGTHENED",
+      "evidence_ids": [
+        "EV-LC-018",
+        "EV-LC-025"
+      ],
+      "observation": "Database-wide function inspection found only producers/validators of PROFILE_RUNTIME_CANARY_REQUIRED and PROFILE_RUNTIME_ACTIVATION_REQUIRED. No operational consumer was found; router/operation registries also have no matching action/operation.",
+      "impact": "The canonical chain can emit a mandatory next gate that cannot be entered through the governed lifecycle."
+    },
+    {
+      "finding_id": "LC-F04",
+      "class": "DEPRECATE_ROLLBACK_NOT_OPERATIONAL",
+      "status": "CONFIRMED_STRENGTHENED",
+      "evidence_ids": [
+        "EV-LC-021"
+      ],
+      "observation": "The only lifecycle removal entry is RETIRE -> RETIRO_ACTIVO_LF and it remains CANDIDATO_READ_ONLY / OP_CANDIDATE. No rollback, restore, recovery, reactivate or unretire operation/action exists.",
+      "impact": "A full operational profile lifecycle cannot currently execute deprecate/rollback end to end."
+    },
+    {
+      "finding_id": "LC-F05",
+      "class": "QUEUE_FAILURE_NOT_PROPAGATED_TO_CANONICAL_EXECUTION",
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-019",
+        "EV-LC-020",
+        "EV-LC-023"
+      ],
+      "observation": "Request 23839099 is terminal FAILED in private.lf_profile_runtime_queue_v1 with HETZNER_BASELINE_API_FAILED, while its canonical EJECUCION_PERFIL_LF execution remains IN_PROGRESS. Worker _persist_failure updates only the queue row. No database function bridges terminal queue failure to lf_operation_execution.",
+      "impact": "Failed runtime attempts leak canonical executions in IN_PROGRESS, so lifecycle terminality and recovery/readback become inconsistent."
+    }
+  ]
+}
