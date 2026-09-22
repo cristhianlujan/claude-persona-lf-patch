@@ -285,6 +285,8 @@ def materialize_prequality_freeze(
         if isinstance(evidence_manifest, dict)
         else None
     )
+    validation_sha256 = canonical_sha256(validation)
+    output_schema_file_sha256 = hashlib.sha256(OUTPUT_SCHEMA_PATH.read_bytes()).hexdigest()
     return {
         "schema": "SRCR_PREQUALITY_FREEZE_V1",
         "receipt_kind": "NON_ACCEPTANCE_PRE_QUALITY_FREEZE",
@@ -294,6 +296,9 @@ def materialize_prequality_freeze(
         "trace_count": len(query_trace) if isinstance(query_trace, list) else 0,
         "pre_quality_status": validation["status"],
         "schema_error_count": 0,
+        "output_schema_path": str(OUTPUT_SCHEMA_PATH.relative_to(ROOT)),
+        "output_schema_file_sha256": output_schema_file_sha256,
+        "validation_sha256": validation_sha256,
         "deterministic_status": deterministic["status"],
         "semantic_utility_status": semantic["status"],
         "independent_quality": validation.get("independent_quality"),
