@@ -1,0 +1,111 @@
+{
+  "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+  "bundle_id": "BUNDLE-SRCR-V06-LIFECYCLE-NATIVE-PHASE3-20260921",
+  "bundle_digest": "sha256:56e1ec0565d1a35fa45b059ff881256bde792af2f6d445fbf4268efad5af0ddd",
+  "observed_at": "2026-09-21T22:45:00-05:00",
+  "producer": {
+    "kind": "SOURCE_FIRST_RESOLVER",
+    "resolver_ref": "supabase://private.lf_evidence_resolver_registry_v1/LF_SUPABASE_READBACK_V1+LF_GITHUB_SOURCE_READBACK_V1"
+  },
+  "evidence": [
+    {
+      "evidence_id": "EV-LC-026",
+      "subject": "runtime ProfileTask transport model source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/models.py",
+      "revision_or_observed_at": "gitblob:db3db9b9d88edffb5c0e1163332023003d71c43a",
+      "digest": "sha256:b4fb0b2b4415ce3c07c1d085fc818952f148ef87c0e31c07831c5b7319d271cc",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-027",
+      "subject": "runtime binding parser source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/repository.py",
+      "revision_or_observed_at": "gitblob:f41f1123412b36827cc44e460ab89d15f915795f",
+      "digest": "sha256:7f52972108c2f3415b2311907f1aebb0979bd4a9d84dee85f8fce3dacd2cf507",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-028",
+      "subject": "runtime contract and semantic gate invocation source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/validation.py",
+      "revision_or_observed_at": "gitblob:6663597322fbff0715efa0314f369ab88df040e1",
+      "digest": "sha256:0aec13a82d24e07e343fe8a4edf344d83538f1a5c8fcf15a20821b86436e6dd0",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-029",
+      "subject": "runtime engine downstream authorization source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/engine.py",
+      "revision_or_observed_at": "gitblob:a557646c9bdfa516474a5eccf008545be3a1fe8a",
+      "digest": "sha256:df3b7febceac80d2380b5f821e59e11d469079dbeca64689eea61835087b8f5d",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-030",
+      "subject": "SRCR V0.6 raw runtime binding including canonical quality",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json",
+      "revision_or_observed_at": "gitblob:479fd31233b98f1b132561e31738e4a49ba740aa",
+      "digest": "sha256:fc4c61433622421a4b86327fa116c090d4b5d6c065d2fa4757d63e887edec439",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-031",
+      "subject": "SRCR runtime validator evidence manifest signature",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+      "revision_or_observed_at": "gitblob:497404772632214998e5448374c158613f3bd0aa",
+      "digest": "sha256:9371a5a1e709d072278aee39e83b9b8a8e5d8f01e2c7f8e3559346b3f893ed3b",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-032",
+      "subject": "SRCR semantic utility evidence manifest signature",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
+      "revision_or_observed_at": "gitblob:e60388b2b4ef891066ed20362169b052c1050210",
+      "digest": "sha256:32288cb8cd3f85ab0ee53347479a7b57073468627bb2bc392fd9e86e512d54ec",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-033",
+      "subject": "SRCR canonical quality receipt validator source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/validate_quality_receipt.py",
+      "revision_or_observed_at": "gitblob:be63f0cf7c8461021e83d145c7261ae146345c54",
+      "digest": "sha256:f54b1a60a5cbe7e2c29bf7cbe5a43f73ed2b7281b64215d24fb4e1c7c2d1e2fb",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-034",
+      "subject": "Hetzner governed runtime semantic judge handoff source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "revision_or_observed_at": "gitblob:31b72db3b835f88f0fabb86e3dd5b3a7e6ff1b97",
+      "digest": "sha256:a14dd1d35f258683b4a1c9c39eff32ba92a60d7828274729bbcd0edbf7c74510",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-035",
+      "subject": "persisted SRCR semantic and canonical quality receipt inventory under exact receipt types",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q26_srcr_quality_receipt_rows",
+      "revision_or_observed_at": "2026-09-21T22:45:00-05:00",
+      "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-036",
+      "subject": "EJECUCION_PERFIL_LF semantic judge active contract and judge binding",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q27_srcr_semantic_judge_operation_binding",
+      "revision_or_observed_at": "2026-09-21T22:45:00-05:00",
+      "digest": "sha256:05fc474e6995043e08322d6ddb6a00ed029999e260a6d108bf50eedef0768621",
+      "state": "CURRENT"
+    }
+  ]
+}
