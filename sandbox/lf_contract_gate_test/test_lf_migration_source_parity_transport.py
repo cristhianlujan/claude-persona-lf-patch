@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# M13 regression coverage for owner-bound source-only migration reconciliation.
 from __future__ import annotations
 
 import hashlib
