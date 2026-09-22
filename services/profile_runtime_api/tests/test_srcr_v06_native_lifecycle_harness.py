@@ -385,3 +385,45 @@ def test_prefreeze_rejects_malformed_test_protocol_before_candidate_receipt() ->
         assert str(exc).startswith("PREFREEZE_VALIDATION_NOT_CLEAN:OUTPUT_SCHEMA")
     else:
         raise AssertionError("schema-invalid candidate must never materialize a freeze receipt")
+
+
+def test_v06_implementable_edge_change_must_be_declared_in_delta() -> None:
+    payload = {
+        "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+        "status": "SYSTEMIC_REPAIR_SPEC",
+        "implementation_delta": [
+            {
+                "target": "supabase://proposed/PROFILE_RELEASE_CONTRACT_V1",
+                "action": "create",
+                "rationale": "x",
+                "evidence_refs": ["evidence://x"],
+            }
+        ],
+        "material_process_graph": {
+            "edges": [
+                {
+                    "disposition": "IMPLEMENTABLE",
+                    "proposed_change_ref": "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge",
+                }
+            ]
+        },
+    }
+    errors = harness.runtime_validate._v06_selected_change_errors(payload)
+    assert any(
+        item["code"] == "V06_SELECTED_REPAIR_CHANGE_UNDECLARED"
+        for item in errors
+    )
+
+    payload["implementation_delta"].append(
+        {
+            "target": "supabase://proposed/EJECUCION_PERFIL_LF/queue_terminal_bridge",
+            "action": "declare exact queue terminal bridge",
+            "rationale": "close canonical terminality",
+            "evidence_refs": ["evidence://terminality"],
+        }
+    )
+    errors = harness.runtime_validate._v06_selected_change_errors(payload)
+    assert not any(
+        item["code"] == "V06_SELECTED_REPAIR_CHANGE_UNDECLARED"
+        for item in errors
+    )
