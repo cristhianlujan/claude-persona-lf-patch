@@ -31,7 +31,12 @@ jobs:
 
           root=Path('profiles/systemic_root_cause_repair_lf')
           td=Path('sandbox/lf_contract_gate_test/srcr_v05_lifecycle_regression')
-          candidate_bytes=gzip.decompress(base64.b64decode((td/'candidate.json.gz.b64').read_text().strip()))
+          parts=[(td/f'candidate.part{i}.b64').read_text().strip() for i in range(1,9)]
+          candidate_b64=''.join(parts)
+          print('CANDIDATE_B64_LEN='+str(len(candidate_b64)))
+          if len(candidate_b64) != 31612:
+              raise SystemExit('FAIL_CANDIDATE_TRANSPORT_LENGTH')
+          candidate_bytes=gzip.decompress(base64.b64decode(candidate_b64))
           manifest_bytes=gzip.decompress(base64.b64decode((td/'evidence_manifest.json.gz.b64').read_text().strip()))
           candidate=json.loads(candidate_bytes)
           manifest=json.loads(manifest_bytes)
@@ -44,7 +49,7 @@ jobs:
           schema=json.loads((root/'schemas/output.schema.json').read_text())
           errs=sorted(Draft7Validator(schema).iter_errors(candidate), key=lambda e:list(e.path))
           print('SCHEMA_ERRORS='+str(len(errs)))
-          for e in errs[:30]: print('SCHEMA_ERROR', list(e.path), e.message)
+          for e in errs[:50]: print('SCHEMA_ERROR', list(e.path), e.message)
           if errs: raise SystemExit('FAIL_OUTPUT_SCHEMA')
 
           sys.path.insert(0,str(root))
