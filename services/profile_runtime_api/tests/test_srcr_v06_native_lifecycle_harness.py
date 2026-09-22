@@ -486,6 +486,12 @@ def test_repaired_v06_candidate_passes_governed_prequality_freeze() -> None:
     trace_doc = json.loads(trace_path.read_text(encoding="utf-8"))
     query_trace = trace_doc["trace"]
 
+    validation = harness.post_producer_validation(
+        candidate=candidate,
+        evidence_manifest=manifest,
+        query_trace=query_trace,
+    )
+    assert validation["status"] == "PASS_PRE_QUALITY", validation
     receipt = harness.materialize_prequality_freeze(
         candidate=candidate,
         evidence_manifest=manifest,
