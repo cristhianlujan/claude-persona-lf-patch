@@ -340,6 +340,16 @@ class APITest(unittest.TestCase):
         self.assertEqual(invalid_response.status_code, 422)
         self.assertEqual(invalid_response.json()["detail"], "REQUEST_VALIDATION_FAILED")
 
+        leaked = self.semantic_quality_payload("semantic-finalize-3")
+        leaked["producer_private_reasoning"] = "must never cross reviewer boundary"
+        leaked_response = self.client.post(
+            "/v1/profile/semantic-quality-finalize",
+            json=leaked,
+            headers=self.auth(),
+        )
+        self.assertEqual(leaked_response.status_code, 422)
+        self.assertEqual(leaked_response.json()["detail"], "REQUEST_VALIDATION_FAILED")
+
     def test_validation_error_does_not_echo_literal_input(self) -> None:
         invalid = self.payload("api-invalid-1")
         invalid["profile"]["profile_slug"] = "quality_pack"
