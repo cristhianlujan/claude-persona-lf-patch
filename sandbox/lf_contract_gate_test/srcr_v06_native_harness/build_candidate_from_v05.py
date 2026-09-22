@@ -98,6 +98,36 @@ def build_candidate(base):
 
     delta = c.setdefault("implementation_delta", [])
     add_unique(delta, "target", {
+        "target": "supabase://proposed/PROFILE_RELEASE_CONTRACT_V1",
+        "action": "create the immutable release contract and all selected materialization, runtime-binding and post-refresh reconciliation edges",
+        "rationale": "Multiple implementable lifecycle edges share one release authority and must be declared as one bounded artifact family rather than graph-only changes.",
+        "evidence_refs": ["EV-LC-004", "EV-LC-006", "EV-LC-015", "EV-LC-025"],
+    })
+    add_unique(delta, "target", {
+        "target": "supabase://proposed/PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
+        "action": "bind release materialization to the existing qualification lifecycle before promotion",
+        "rationale": "The materialize-to-qualify edge is part of the selected repair and must be present in the declared implementation footprint.",
+        "evidence_refs": ["EV-LC-006", "EV-LC-036"],
+    })
+    add_unique(delta, "target", {
+        "target": "supabase://proposed/PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
+        "action": "enforce distinct deterministic, independent semantic, canonical quality and operational authorization layers",
+        "rationale": "Qualification-to-promotion and verify-to-execute edges both depend on this selected authority boundary.",
+        "evidence_refs": ["EV-LC-028", "EV-LC-029", "EV-LC-035", "EV-LC-036"],
+    })
+    add_unique(delta, "target", {
+        "target": "supabase://proposed/PROFILE_RELEASE_TRANSITION_POLICY_V1",
+        "action": "define governed promote, deprecate, rollback and rollback-refresh transitions for exact release identities",
+        "rationale": "Every selected lifecycle state-transition edge must reconcile to a declared implementation target.",
+        "evidence_refs": ["EV-LC-006", "EV-LC-011", "EV-LC-021"],
+    })
+    add_unique(delta, "target", {
+        "target": "supabase://proposed/PROFILE_RELEASE_COMPATIBILITY_WINDOW_V1",
+        "action": "enforce no-new-adoption and active-consumer drain before retirement",
+        "rationale": "The deprecate-to-retire edge is selected and requires an explicit declared compatibility/retirement artifact.",
+        "evidence_refs": ["EV-LC-005", "EV-LC-021"],
+    })
+    add_unique(delta, "target", {
         "target": "supabase://proposed/GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
         "action": "bind PROFILE_RUNTIME_CANARY_REQUIRED to a governed verify-runtime-canary consumer",
         "rationale": "The current refresh path emits a canary-required gate without an operational consumer; the selected repair must name and wire the future consumer.",
