@@ -16,7 +16,7 @@ REQUIRED = [
     "evals/v03_contract_schema_cases.py","evals/v03_deterministic_floor_cases.py",
     "evals/v03_quality_receipt_cases.py","evals/v03_generalization_property_cases.py",
     "evals/v03_original_escape_replay.py","evals/v03_transversal_contract_cases.py","evals/v03_incremental_value_cases.py",
-    "evals/v04_transversal_closure_cases.py","evals/v05_producer_depth_cases.py","evals/v06_edge_closure_cases.py","contracts/closure_proof_v2.md"
+    "evals/v04_transversal_closure_cases.py","evals/v05_producer_depth_cases.py","evals/v06_edge_closure_cases.py","evals/v06_lifecycle_escape_replay.py","contracts/closure_proof_v2.md"
 ]
 
 def fail(code):
@@ -124,6 +124,7 @@ for rel in [
     "evals/v04_transversal_closure_cases.py",
     "evals/v05_producer_depth_cases.py",
     "evals/v06_edge_closure_cases.py",
+    "evals/v06_lifecycle_escape_replay.py",
     "evals/v06_control_ownership_cases.py",
     "evals/v06_quality_receipt_materialization_cases.py",
     "evals/sandbox_b/run_cases.py",
