@@ -115,6 +115,9 @@ def validate_quality_receipt(
         reviewer_execution_id = boundary.get("reviewer_execution_id")
         producer_receipt_ref = boundary.get("producer_execution_receipt_ref")
         semantic_receipt_ref = boundary.get("semantic_execution_receipt_ref")
+        review_input_sha256 = boundary.get("review_input_sha256")
+        reviewer_context_mode = boundary.get("reviewer_context_mode")
+        review_input_classes = boundary.get("review_input_classes")
         independence_refs = boundary.get("independence_evidence_refs")
         if not _nonempty(producer_execution_id):
             errors.append(_err("SRCR_V06_PRODUCER_EXECUTION_ID_REQUIRED", "$.receipt.review_boundary.producer_execution_id"))
@@ -146,6 +149,26 @@ def validate_quality_receipt(
             or semantic_receipt_ref not in independence_refs
         ):
             errors.append(_err("SRCR_V06_INDEPENDENCE_EVIDENCE_REFS_INCOMPLETE", "$.receipt.review_boundary.independence_evidence_refs"))
+        if (
+            not isinstance(review_input_sha256, str)
+            or len(review_input_sha256) != 64
+            or any(ch not in "0123456789abcdef" for ch in review_input_sha256)
+        ):
+            errors.append(_err("SRCR_V06_REVIEW_INPUT_SHA_INVALID", "$.receipt.review_boundary.review_input_sha256"))
+        if reviewer_context_mode != "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT":
+            errors.append(_err("SRCR_V06_REVIEWER_CONTEXT_NOT_ISOLATED", "$.receipt.review_boundary.reviewer_context_mode"))
+        expected_review_input_classes = {
+            "CURRENT_AUTHORITY_REFS",
+            "EVIDENCE_MANIFEST",
+            "EXACT_CANDIDATE",
+            "SCOPE_AUTHORITY_PACKET",
+        }
+        if (
+            not isinstance(review_input_classes, list)
+            or set(review_input_classes) != expected_review_input_classes
+            or len(review_input_classes) != len(expected_review_input_classes)
+        ):
+            errors.append(_err("SRCR_V06_REVIEW_INPUT_CLASS_BOUNDARY_INVALID", "$.receipt.review_boundary.review_input_classes"))
 
     closure_errors, summary = closure.validate_v03_closure(candidate, evidence_manifest)
     if closure_errors:
@@ -165,6 +188,12 @@ def validate_quality_receipt(
     semantic_gate = semantic_validator.evaluate(
         semantic_result,
         expected_evidence_manifest_sha256=expected_evidence_manifest_sha256,
+        expected_reviewer_execution_id=(
+            boundary.get("reviewer_execution_id") if candidate_pack == V06 else None
+        ),
+        expected_review_input_sha256=(
+            boundary.get("review_input_sha256") if candidate_pack == V06 else None
+        ),
     )
     if semantic_gate.get("status") != "PASS":
         errors.append(
@@ -233,6 +262,28 @@ def validate_quality_receipt(
         errors.append(_err("SRCR_SEMANTIC_RESULT_CANDIDATE_SHA_MISMATCH", "$.semantic_result.candidate_sha256"))
     if isinstance(semantic_result, dict) and semantic_binding.get("scope_packet_sha256") != semantic_result.get("scope_packet_sha256"):
         errors.append(_err("SRCR_QUALITY_SCOPE_PACKET_SHA_MISMATCH", "$.receipt.semantic_binding.scope_packet_sha256"))
+
+    if candidate_pack == V06:
+        if semantic_binding.get("reviewer_execution_id") != boundary.get("reviewer_execution_id"):
+            errors.append(_err(
+                "SRCR_V06_QUALITY_REVIEWER_EXECUTION_ID_MISMATCH",
+                "$.receipt.semantic_binding.reviewer_execution_id",
+            ))
+        if isinstance(semantic_result, dict) and semantic_result.get("reviewer_execution_id") != boundary.get("reviewer_execution_id"):
+            errors.append(_err(
+                "SRCR_V06_SEMANTIC_REVIEWER_EXECUTION_ID_MISMATCH",
+                "$.semantic_result.reviewer_execution_id",
+            ))
+        if semantic_binding.get("review_input_sha256") != boundary.get("review_input_sha256"):
+            errors.append(_err(
+                "SRCR_V06_QUALITY_REVIEW_INPUT_SHA_MISMATCH",
+                "$.receipt.semantic_binding.review_input_sha256",
+            ))
+        if isinstance(semantic_result, dict) and semantic_result.get("review_input_sha256") != boundary.get("review_input_sha256"):
+            errors.append(_err(
+                "SRCR_V06_SEMANTIC_REVIEW_INPUT_SHA_MISMATCH",
+                "$.semantic_result.review_input_sha256",
+            ))
 
     proof_receipt = receipt.get("proof_binding")
     if not isinstance(proof_receipt, dict):
