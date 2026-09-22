@@ -348,6 +348,140 @@ class GenericRuntimeBindingTest(unittest.TestCase):
         finally:
             tmp.cleanup()
 
+
+    def test_canonical_quality_finalize_binds_candidate_scope_and_independent_receipt(self):
+        tmp,root,repo=self._repo()
+        try:
+            (root/'profiles/p/judges').mkdir(parents=True)
+            (root/'profiles/p/judges/judge.md').write_text('# Judge\n')
+            (root/'profiles/p/judges/semantic.md').write_text('# Semantic\n')
+            (root/'profiles/p/schemas/quality.json').write_text(json.dumps({
+                '$schema':'https://json-schema.org/draft/2020-12/schema',
+                'type':'object',
+                'required':['decision'],
+                'properties':{'decision':{'type':'string'}},
+                'additionalProperties':True,
+            }))
+            (root/'profiles/p/validators/semantic_result.py').write_text(
+                'def evaluate(payload, scope_packet=None, expected_candidate_sha256=None, expected_scope_packet_sha256=None):\n'
+                '    ok = payload.get("candidate_sha256")==expected_candidate_sha256 and payload.get("scope_packet_sha256")==expected_scope_packet_sha256 and isinstance(scope_packet, dict)\n'
+                '    return {"status":"PASS" if ok else "FAIL","blocking_codes":[] if ok else ["BINDING_MISMATCH"]}\n'
+            )
+            (root/'profiles/p/validators/quality_receipt.py').write_text(
+                'def validate_quality_receipt(receipt,candidate,evidence,semantic):\n'
+                '    accepted = receipt.get("decision")=="PASS_TO_QUALITY_PACK"\n'
+                '    return {"status":"PASS","blocking_codes":[],"canonical_quality_accepted":accepted}\n'
+            )
+            (root/'profiles/p/validators/materialize_quality.py').write_text(
+                'def materialize_quality_receipt(candidate,evidence,semantic,**kwargs):\n'
+                '    if kwargs.get("producer_execution_id")==kwargs.get("reviewer_execution_id"):\n'
+                '        raise ValueError("NOT_INDEPENDENT")\n'
+                '    return {"decision":"PASS_TO_QUALITY_PACK","reviewer_execution_id":kwargs.get("reviewer_execution_id")}\n'
+            )
+            binding_path=root/'profiles/p/contracts/runtime_binding.json'
+            data=json.loads(binding_path.read_text())
+            data['canonical_quality']={
+                'required_for_profile_pack_ids':['PACK-V1'],
+                'judge_path':'judges/judge.md',
+                'semantic_judge_path':'judges/semantic.md',
+                'semantic_result_validator':{'path':'validators/semantic_result.py','callable':'evaluate'},
+                'quality_receipt_schema':'schemas/quality.json',
+                'quality_receipt_validator':{'path':'validators/quality_receipt.py','callable':'validate_quality_receipt'},
+                'deterministic_floors_can_accept_quality':False,
+                'receipt_required_for_pass_to_quality_pack':True,
+                'quality_receipt_materializer':{'path':'validators/materialize_quality.py','callable':'materialize_quality_receipt'},
+            }
+            binding_path.write_text(json.dumps(data))
+
+            candidate={'profile_pack_id':'PACK-V1','value':'x'}
+            scope={'packet_version':'TEST','authorized_requirements':[]}
+            from profile_runtime_api.hashing import canonical_json_sha256
+            semantic={
+                'candidate_sha256':canonical_json_sha256(candidate),
+                'scope_packet_sha256':canonical_json_sha256(scope),
+            }
+            result=OutputGates(repo).canonical_quality_finalize(
+                profile_slug='p',
+                candidate=candidate,
+                evidence_manifest={'bundle_id':'B','evidence':[{'evidence_id':'EV-1'}]},
+                scope_authority_packet=scope,
+                semantic_result=semantic,
+                candidate_revision='rev-1',
+                semantic_execution_receipt_ref='review://receipt/1',
+                producer_execution_id='EXEC-PRODUCER-1',
+                reviewer_execution_id='EXEC-REVIEWER-1',
+                producer_execution_receipt_ref='producer://receipt/1',
+                issued_at='2026-09-22T05:30:00Z',
+            )
+            self.assertEqual(result['status'],'PASS')
+            self.assertTrue(result['canonical_quality_accepted'])
+            self.assertEqual(result['quality_receipt']['reviewer_execution_id'],'EXEC-REVIEWER-1')
+
+            tampered=dict(semantic,candidate_sha256='0'*64)
+            rejected=OutputGates(repo).canonical_quality_finalize(
+                profile_slug='p',
+                candidate=candidate,
+                evidence_manifest={'bundle_id':'B','evidence':[{'evidence_id':'EV-1'}]},
+                scope_authority_packet=scope,
+                semantic_result=tampered,
+                candidate_revision='rev-1',
+                semantic_execution_receipt_ref='review://receipt/1',
+                producer_execution_id='EXEC-PRODUCER-1',
+                reviewer_execution_id='EXEC-REVIEWER-1',
+                producer_execution_receipt_ref='producer://receipt/1',
+                issued_at='2026-09-22T05:30:00Z',
+            )
+            self.assertEqual(rejected['status'],'FAIL')
+            self.assertIn('BINDING_MISMATCH',rejected['blocking_codes'])
+        finally:
+            tmp.cleanup()
+
+    def test_structurally_valid_nonpass_receipt_does_not_accept_quality(self):
+        tmp,root,repo=self._repo()
+        try:
+            (root/'profiles/p/judges').mkdir(parents=True)
+            (root/'profiles/p/judges/judge.md').write_text('# Judge\n')
+            (root/'profiles/p/judges/semantic.md').write_text('# Semantic\n')
+            (root/'profiles/p/schemas/quality.json').write_text(json.dumps({
+                '$schema':'https://json-schema.org/draft/2020-12/schema',
+                'type':'object','additionalProperties':True,
+            }))
+            (root/'profiles/p/validators/semantic_result.py').write_text(
+                'def evaluate(payload):\n    return {"status":"PASS","blocking_codes":[]}\n'
+            )
+            (root/'profiles/p/validators/quality_receipt.py').write_text(
+                'def validate_quality_receipt(receipt,candidate,evidence,semantic):\n'
+                '    return {"status":"PASS","blocking_codes":[],"canonical_quality_accepted":False}\n'
+            )
+            (root/'profiles/p/validators/materialize_quality.py').write_text(
+                'def materialize_quality_receipt(*args,**kwargs):\n    return {}\n'
+            )
+            binding_path=root/'profiles/p/contracts/runtime_binding.json'
+            data=json.loads(binding_path.read_text())
+            data['canonical_quality']={
+                'required_for_profile_pack_ids':['PACK-V1'],
+                'judge_path':'judges/judge.md','semantic_judge_path':'judges/semantic.md',
+                'semantic_result_validator':{'path':'validators/semantic_result.py','callable':'evaluate'},
+                'quality_receipt_schema':'schemas/quality.json',
+                'quality_receipt_validator':{'path':'validators/quality_receipt.py','callable':'validate_quality_receipt'},
+                'deterministic_floors_can_accept_quality':False,
+                'receipt_required_for_pass_to_quality_pack':True,
+                'quality_receipt_materializer':{'path':'validators/materialize_quality.py','callable':'materialize_quality_receipt'},
+            }
+            binding_path.write_text(json.dumps(data))
+            gate=OutputGates(repo).canonical_quality(
+                profile_slug='p',
+                candidate={'profile_pack_id':'PACK-V1'},
+                evidence_manifest={'evidence':[]},
+                semantic_result={},
+                quality_receipt={},
+            )
+            self.assertEqual(gate['status'],'PASS')
+            self.assertFalse(gate['canonical_quality_accepted'])
+        finally:
+            tmp.cleanup()
+
+
     def test_engine_emits_canonical_quality_boundary_on_both_execution_paths(self):
         queue_source=inspect.getsource(ProfileRuntimeEngine._execute_queue_profile)
         artifact_source=inspect.getsource(ProfileRuntimeEngine._execute_profile)
