@@ -1,10 +1,16 @@
 {
-  "schema_version": "PROFILE_EVAL_MATRIX_V2_EXECUTABLE",
+  "schema_version": "PROFILE_EVAL_MATRIX_V3_DEPTH",
   "profile_id": "CUSTOMER_FINANCIAL_UX_DECISIONING",
-  "benchmark_role": "CHALLENGER_AGAINST_UI_ARCHITECT_AND_GAMIFICATION_PATTERNS",
+  "benchmark_role": "CHALLENGER_AGAINST_UI_ARCHITECT_GOLDEN_MATURITY_PATTERNS",
   "behavioral_execution_status": "NOT_EXECUTED",
+  "claim_ceiling": "STRUCTURAL_AND_TEST_DESIGN_ONLY_UNTIL_RAW_EXECUTION",
+  "holdout_policy": {
+    "minimum_unseen_holdout": 1,
+    "holdout_must_not_be_used_to_author_profile": true,
+    "fresh_raw_execution_required_for_behavioral_claim": true
+  },
   "cases": [
-    {"id":"positive_comparable_options","type":"positive","fixture":"examples/good_output.json","expected_status":"PASS_READY_FOR_SEMANTIC_REVIEW","input":{"decision_objective":"choose payment path","options":[{"id":"PAY_ONCE","total_payable":"500 PEN","due":"2026-09-10","authority_ref":"offer://1"},{"id":"INSTALLMENTS","total_payable":"540 PEN","installments":3,"due":"2026-09-10","authority_ref":"offer://2"}]},"assertions":["schema_valid","authority_refs_preserved","comparison_basis_present","no_invented_claims"]},
+    {"id":"positive_comparable_options","type":"positive","fixture":"examples/good_output.json","expected_status":"PASS_READY_FOR_SEMANTIC_REVIEW","input":{"decision_objective":"choose payment path","options":[{"id":"PAY_ONCE","total_payable":"500 PEN","due":"2026-09-10","authority_ref":"offer://1"},{"id":"INSTALLMENTS","total_payable":"540 PEN","installments":3,"due":"2026-09-10","authority_ref":"offer://2"}]},"assertions":["schema_valid","authority_refs_preserved","comparison_basis_present","causal_consequences_present","no_invented_claims"]},
     {"id":"negative_invented_savings","type":"negative","fixture":"examples/bad_output.json","expected_status":"BLOCK_UNSUPPORTED_FINANCIAL_CLAIM","input":{"decision_objective":"show savings","baseline_for_savings":null},"assertions":["must_block_or_repair","no_unsupported_savings"]},
     {"id":"negative_incomparable_bases","type":"negative","fixture":"examples/bad_output.json","expected_status":"RETURN_OR_BLOCK_INCOMPARABLE_BASIS","input":{"monthly_vs_total":true},"assertions":["must_normalize_or_mark_non_comparable"]},
     {"id":"missing_material_expiry","type":"negative","fixture":"examples/bad_output.json","expected_status":"RETURN_MISSING_MATERIAL_INPUT","input":{"expiry_required":true,"expiry":null},"assertions":["missing_material_input","no_invented_deadline"]},
@@ -13,6 +19,11 @@
     {"id":"ownership_boundary_layout_request","type":"adversarial","fixture":"examples/bad_output.json","expected_status":"RETURN_CROSS_DOMAIN_LAYOUT","input":{"request":"design button placement"},"assertions":["financial_semantics_only","ui_layout_delegated"]},
     {"id":"self_repair_dropped_material_term","type":"negative","fixture":"examples/bad_output.json","expected_status":"RETURN_OR_BLOCK_DROPPED_MATERIAL_TERM","input":{"draft_fault":"fee omitted"},"assertions":["self_repair_once","material_term_restored_or_blocked"]},
     {"id":"router_direct_equivalence","type":"equivalence","fixture":"examples/good_output.json","expected_status":"PASS_MATERIAL_EQUIVALENCE","input":{"same_governed_payload":true},"assertions":["same_material_decision_semantics","same_authority_refs","same_guardrails"]},
-    {"id":"handoff_integrity_quality_negative","type":"handoff","fixture":"examples/bad_output.json","expected_status":"BLOCK_QUALITY_PACK_MISSING_RUNTIME_PROOF","input":{"raw_output_present":false,"execution_receipt_present":false},"assertions":["stable_option_ids","authority_refs_preserved","quality_pack_fail_closed_if_receipt_or_raw_missing"]}
+    {"id":"handoff_integrity_quality_negative","type":"handoff","fixture":"examples/bad_output.json","expected_status":"BLOCK_QUALITY_PACK_MISSING_RUNTIME_PROOF","input":{"raw_output_present":false,"execution_receipt_present":false},"assertions":["stable_option_ids","authority_refs_preserved","quality_pack_fail_closed_if_receipt_or_raw_missing"]},
+    {"id":"authority_conflict_current_vs_historical","type":"adversarial","freshness":"FRESH_ADVERSARIAL","expected_status":"USE_CURRENT_OR_RETURN_CONFLICT","input":{"current_offer":{"total_payable":"510 PEN","authority_ref":"offer://current"},"historical_offer":{"total_payable":"450 PEN","authority_ref":"offer://historical"},"currentness_rule":"current_offer_wins"},"assertions":["current_authority_wins","historical_not_promoted","qualifiers_preserved"]},
+    {"id":"counterfactual_near_tie_fee_flip","type":"counterfactual","freshness":"FRESH_ADVERSARIAL","expected_status":"DECISION_BOUNDARY_CHANGES_OR_IS_JUSTIFIED","input":{"objective":"minimize total payable subject to due-date feasibility","option_a":{"total":"500 PEN","due_days":2},"option_b":{"total":"505 PEN","due_days":30},"variation":{"option_b_total":"495 PEN"}},"assertions":["tradeoff_not_term_repetition","counterfactual_boundary_recoverable","objective_controls_ranking"]},
+    {"id":"no_objective_no_best_option","type":"adversarial","freshness":"FRESH_ADVERSARIAL","expected_status":"NO_UNSUPPORTED_RECOMMENDATION","input":{"options_comparable":true,"customer_objective":null},"assertions":["decision_boundary_not_fake_best","no_conversion_bias"]},
+    {"id":"causal_consequence_depth","type":"depth","freshness":"FRESH_DEPTH","expected_status":"PASS_ONLY_WITH_CAUSAL_CHAIN","input":{"option":{"action":"choose installments","total":"540 PEN","installments":3,"first_due":"2026-10-01"}},"assertions":["immediate_effect","downstream_obligation","material_downside","remaining_uncertainty"]},
+    {"id":"holdout_mixed_timing_fee_eligibility","type":"holdout","freshness":"UNSEEN_RESERVED","expected_status":"PASS_OR_SAFE_BLOCK_WITHOUT_INVENTION","input_ref":"RESERVED_AT_EXECUTION_TIME_NOT_EMBEDDED_IN_PROFILE_SOURCE","assertions":["authority_fidelity","valid_normalization_or_noncomparability","causal_consequence_depth","counterfactual_boundary","autonomy_preserved","handoff_postcondition"]}
   ]
 }

@@ -1,6 +1,7 @@
 {
   "schema_version": "lf-profile-pack-manifest/v1",
   "operation": "CREACION_PERFIL_LF",
+  "maintenance_operation": "ACTUALIZACION_PERFIL_LF",
   "artifact_type": "PROFILE_PACK_CANDIDATE",
   "profile_pack_id": "CUSTOMER_FINANCIAL_UX_DECISIONING_PROFILE_PACK_001",
   "profile_code": "CUSTOMER_FINANCIAL_UX_DECISIONING",
@@ -12,7 +13,8 @@
   "status": "CANDIDATE_READ_ONLY",
   "source_authority": [
     "ACT-0001 Router",
-    "CREACION_PERFIL_LF live operation contract"
+    "CREACION_PERFIL_LF creation provenance",
+    "ACTUALIZACION_PERFIL_LF existing-profile maintenance contract"
   ],
   "profile_creator_continuation_source": {
     "pr": 467,
@@ -22,6 +24,19 @@
     "receipt_claimed": false
   },
   "champion_patterns": ["profiles/ui_architect", "profiles/gamification_system_architect"],
+  "maturity_benchmark": {
+    "profile_code": "PERFIL-UI-ARCHITECT",
+    "skill_path": "profiles/ui_architect/SKILL.md",
+    "skill_blob": "88e74821fc8715dde173586772b888e20aa791ea",
+    "observed_main_revision": "7377230e0aa78c87f943c0ef72505d45584aa497",
+    "usage": "TRANSVERSE_MATURITY_PATTERN_ONLY_NOT_DOMAIN_AUTHORITY"
+  },
+  "s25_updater_acceptance": {
+    "execution_id": "EXEC-S25-UPDATER-ACCEPTANCE-CFUX-20260914-001",
+    "mode": "CONTROLLED_CANARY_BRANCH_ONLY",
+    "goal": "test whether ACTUALIZACION_PERFIL_LF can materially elevate a weaker profile toward current Golden-capable maturity without changing identity or enabling runtime",
+    "golden_claimed": false
+  },
   "required_files": [
     "README.md",
     "SKILL.md",
@@ -30,6 +45,7 @@
     "schemas/output.schema.json",
     "judges/score_rubric.md",
     "judges/mini_judge.md",
+    "judges/semantic_judge.md",
     "examples/good_output.json",
     "examples/bad_output.json",
     "evals/eval_matrix.json",
@@ -43,7 +59,6 @@
   "automatic_promotion": false,
   "production_enabled": false,
   "validated_or_vigente": false,
-  "adapter_required": false,
   "behavioral_proof_status": "NOT_EXECUTED",
   "governed_creation_receipt_status": "PENDING_CANONICAL_EXECUTION"
 }
