@@ -1,23 +1,66 @@
 {
+  "schema": "SRCR_MC06_PREFREEZE_READBACK_V2",
+  "status": "READBACK_CLOSED",
+  "observed_at": "2026-09-22T16:00:18.663108888Z",
   "execution_surface": "SENTINELX_EPHEMERAL_READ_ONLY",
-  "observed_at": "2026-09-22T14:23:40.569545+00:00",
-  "receipt": {
-    "candidate_bytes": 144162,
-    "candidate_sha256": "85aa2e43bab34b9d815a418bdf11c6947a4bfc6623916c68dfba3794cf925b2b",
-    "canonical_quality_accepted": false,
-    "deterministic_status": "PASS",
-    "independent_quality": "PENDING_INDEPENDENT_REVIEW",
-    "manifest_bundle_digest": "sha256:fc4c452e7b2e299276a96cb555f4513d0638e2a3cb8329b8a92e294792c2036e",
-    "output_schema_file_sha256": "a1f642e9ecae259869e311c75a793635a37b95f68db2ec9c55488ca682658430",
-    "output_schema_path": "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
-    "pre_quality_status": "PASS_PRE_QUALITY",
-    "receipt_kind": "NON_ACCEPTANCE_PRE_QUALITY_FREEZE",
-    "schema": "SRCR_PREQUALITY_FREEZE_V1",
-    "schema_error_count": 0,
-    "semantic_utility_status": "PASS",
-    "trace_count": 62,
-    "validation_sha256": "77450c838cbb6499f67aa7c86ed4ff10645d05762035de6df82f2f2bf2c455bd"
+  "execution_branch_head": "45cdf0e6bececaae890775f851181b411e7c8ac5",
+  "source_revision": "d7257ae5bb8dbac9127b83c966f8b80de1a11d2f",
+  "candidate": {
+    "path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/candidate_v06_repaired.json",
+    "file_sha256": "c1ec9d20976ff373591fa5cda893e404b34e674ff091234a40e9c455ae915648",
+    "canonical_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16"
   },
-  "schema": "SRCR_MC06_PREFREEZE_READBACK_V1",
-  "source_revision": "8cf6d00c7f707127c9e23f21c748f02e18f1ec26"
+  "evidence_manifest": {
+    "path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_20260922/evidence_manifest_v06_merged.json",
+    "file_sha256": "5ce5d166e4d22552baeb23c4d162b6af6abbe11f58385e220080c3543bc4c0e4",
+    "bundle_digest": "sha256:38527cfb43f1f06b713582c079a7b4a27e6828f2ef4796978d3f00e097cc1f7b",
+    "evidence_count": 65
+  },
+  "query_trace": {
+    "path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/query_trace_prefreeze.json",
+    "wrapper_file_sha256": "0ba338f61542d24cb0765d168c99fff954ef3008223dd0811c4f4d5afb6825a5",
+    "trace_count": 65
+  },
+  "governed_prefreeze_receipt": {
+    "schema": "SRCR_PREQUALITY_FREEZE_V1",
+    "receipt_kind": "NON_ACCEPTANCE_PRE_QUALITY_FREEZE",
+    "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "candidate_bytes": 144258,
+    "manifest_bundle_digest": "sha256:38527cfb43f1f06b713582c079a7b4a27e6828f2ef4796978d3f00e097cc1f7b",
+    "trace_count": 65,
+    "pre_quality_status": "PASS_PRE_QUALITY",
+    "schema_error_count": 0,
+    "output_schema_path": "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+    "output_schema_file_sha256": "a1f642e9ecae259869e311c75a793635a37b95f68db2ec9c55488ca682658430",
+    "validation_sha256": "bf7671f727efb361de6be2385a237ab07a3ab1dae7d12d61222adb32d7b1b7de",
+    "deterministic_status": "PASS",
+    "semantic_utility_status": "PASS",
+    "independent_quality": "PENDING_INDEPENDENT_REVIEW",
+    "canonical_quality_accepted": false
+  },
+  "negative_schema_mutation": {
+    "candidate_basis_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "mutation": "remove planned_regressions[0].test_protocol.action",
+    "exit_code": 1,
+    "expected_block": "PREFREEZE_VALIDATION_NOT_CLEAN:OUTPUT_SCHEMA",
+    "observed_block": "PREFREEZE_VALIDATION_NOT_CLEAN:OUTPUT_SCHEMA",
+    "unexpected_receipt_emitted": false,
+    "status": "PASS"
+  },
+  "closure_assertions": {
+    "schema_before_freeze": true,
+    "schema_error_count": 0,
+    "deterministic_status": "PASS",
+    "semantic_utility_status": "PASS",
+    "candidate_identity_matches_mc03": true,
+    "manifest_and_trace_counts_match": true,
+    "production_mutation": false,
+    "database_write": false,
+    "runtime_activation": false
+  },
+  "historical_receipt_superseded": {
+    "source_revision": "8cf6d00c7f707127c9e23f21c748f02e18f1ec26",
+    "candidate_sha256": "85aa2e43bab34b9d815a418bdf11c6947a4bfc6623916c68dfba3794cf925b2b",
+    "reason": "stale candidate identity; retained only as historical evidence"
+  }
 }
