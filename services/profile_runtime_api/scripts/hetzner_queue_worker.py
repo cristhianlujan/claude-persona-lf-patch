@@ -829,6 +829,8 @@ def _record_semantic_quality_result(
             "status": "BLOCKED",
             "error_code": "CANONICAL_QUALITY_FINALIZE_NOT_PASS",
         }
+    if _gate_blocking_codes(finalize_result):
+        return {"status": "BLOCKED", "error_code": "CANONICAL_QUALITY_FINALIZE_HAS_BLOCKERS"}
     if finalize_result.get("canonical_quality_accepted") is not True:
         return {
             "status": "BLOCKED",
@@ -840,6 +842,10 @@ def _record_semantic_quality_result(
             "status": "BLOCKED",
             "error_code": "CANONICAL_QUALITY_RECEIPT_MISSING",
         }
+    if receipt.get("decision") != "PASS_TO_QUALITY_PACK":
+        return {"status": "BLOCKED", "error_code": "CANONICAL_QUALITY_RECEIPT_NOT_PASS"}
+    if _gate_blocking_codes(semantic_result):
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_REVIEW_HAS_BLOCKERS"}
     unsupported_claims = semantic_result.get("unsupported_claims")
     if unsupported_claims is None:
         unsupported_claims = []
@@ -917,6 +923,75 @@ def _record_semantic_quality_result(
         "canonical_quality_accepted": True,
         "quality_receipt": receipt,
     }
+
+
+def finalize_semantic_quality_review(
+    conn: psycopg.Connection, review_request: dict[str, Any]
+) -> dict[str, Any]:
+    """Consume an external review through the pure API and the existing recorder.
+
+    No model is called here. The producer candidate must already be persisted by
+    EJECUCION_PERFIL_LF; an arbitrary candidate cannot finalize another execution.
+    """
+    execution_id = review_request.get("producer_execution_id")
+    if not isinstance(execution_id, str) or not execution_id:
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_REVIEW_PRODUCER_REQUIRED"}
+    with conn.cursor() as cur:
+        producer = _read_governed_step(cur, execution_id, "execute_profile")
+        output = _read_governed_step(cur, execution_id, "output_validate")
+    if (
+        not isinstance(producer, dict)
+        or not isinstance(output, dict)
+        or producer.get("status") != "STEP_PASS_WITH_EVIDENCE"
+        or output.get("status") != "STEP_PASS_WITH_EVIDENCE"
+    ):
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_REVIEW_PREDECESSORS_NOT_CLEAN"}
+    if (
+        producer.get("evidence_ref") != review_request.get("producer_execution_receipt_ref")
+        or producer.get("evidence_payload", {}).get("profile_output") != review_request.get("candidate")
+    ):
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_REVIEW_PRODUCER_READBACK_MISMATCH"}
+
+    response = _api_json("POST", "/v1/profile/semantic-quality-finalize", review_request)
+    if (
+        response.get("kind") != "semantic_quality_finalize"
+        or any(response.get(key) != review_request.get(key) for key in ("request_id", "profile_code", "profile_slug"))
+        or not isinstance(response.get("result"), dict)
+    ):
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_QUALITY_API_RESPONSE_MISMATCH"}
+    result = response["result"]
+    if result.get("status") != "PASS" or result.get("canonical_quality_accepted") is not True:
+        return {
+            "status": "BLOCKED",
+            "error_code": "CANONICAL_QUALITY_NOT_ACCEPTED",
+            "finalization": result,
+        }
+    # Reuse the same recorder path; no direct step-state writes or second judge.
+    recorded = _record_semantic_quality_result(
+        conn,
+        execution_id=execution_id,
+        profile_code=review_request["profile_code"],
+        semantic_execution_receipt_ref=review_request["semantic_execution_receipt_ref"],
+        semantic_result=review_request["semantic_result"],
+        finalize_result=result,
+    )
+    if recorded.get("status") != "COMPLETED":
+        return recorded
+    with conn.cursor() as cur:
+        semantic = _read_governed_step(cur, execution_id, "semantic_judge")
+        report = _read_governed_step(cur, execution_id, "report_output")
+    expected_receipt = result["quality_receipt"]
+    if (
+        not isinstance(semantic, dict)
+        or not isinstance(report, dict)
+        or semantic.get("status") != "STEP_PASS_WITH_EVIDENCE"
+        or report.get("status") != "STEP_PASS_WITH_EVIDENCE"
+        or semantic.get("evidence_ref") != review_request["semantic_execution_receipt_ref"]
+        or semantic.get("evidence_payload", {}).get("semantic_judge_result", {}).get("quality_receipt") != expected_receipt
+        or report.get("evidence_payload", {}).get("quality_receipt") != expected_receipt
+    ):
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_QUALITY_PERSISTENCE_READBACK_MISMATCH"}
+    return {**recorded, "persistence_readback": "PASS", "downstream_authorized": False}
 
 
 def _validate_envelope(request_id: str, envelope: Any) -> dict[str, Any]:
@@ -1401,9 +1476,25 @@ def run_once() -> bool:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--daemon", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--daemon", action="store_true")
+    mode.add_argument("--semantic-review", type=Path, help="Consume an independently produced SemanticQualityFinalizeRequest JSON")
     parser.add_argument("--idle-seconds", type=float, default=3.0)
     args = parser.parse_args()
+    if args.semantic_review is not None:
+        request = json.loads(args.semantic_review.read_text(encoding="utf-8"))
+        if not isinstance(request, dict):
+            raise SystemExit("SEMANTIC_REVIEW_REQUEST_NOT_OBJECT")
+        conn = _connect()
+        try:
+            result = finalize_semantic_quality_review(conn, request)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0 if result.get("status") == "COMPLETED" else 1
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
     if not args.daemon:
         return 0 if run_once() else 4
     while True:

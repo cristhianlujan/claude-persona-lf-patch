@@ -57,41 +57,6 @@ def _not_evaluated(code: str) -> dict[str, Any]:
     return {"status": "NOT_EVALUATED", "blocking_codes": [code], "downstream_authorized": False}
 
 
-def _canonical_quality_state(
-    binding: Any,
-    payload: dict[str, Any] | None,
-) -> dict[str, Any]:
-    config = getattr(binding, "canonical_quality", None) if binding is not None else None
-    if not isinstance(config, dict):
-        return {
-            "applicability": "NOT_BOUND",
-            "status": "NOT_EVALUATED",
-            "downstream_authorized": False,
-        }
-    profile_pack_id = payload.get("profile_pack_id") if isinstance(payload, dict) else None
-    required_packs = config.get("required_for_profile_pack_ids") or []
-    required = isinstance(profile_pack_id, str) and profile_pack_id in required_packs
-    if not required:
-        return {
-            "applicability": "NOT_APPLICABLE",
-            "profile_pack_id": profile_pack_id,
-            "status": "NOT_REQUIRED",
-            "downstream_authorized": False,
-        }
-    return {
-        "applicability": "REQUIRED",
-        "profile_pack_id": profile_pack_id,
-        "status": "PENDING_INDEPENDENT_SEMANTIC_REVIEW",
-        "semantic_judge_path": config["semantic_judge_path"],
-        "semantic_result_validator": dict(config["semantic_result_validator"]),
-        "quality_receipt_schema": config["quality_receipt_schema"],
-        "quality_receipt_validator": dict(config["quality_receipt_validator"]),
-        "deterministic_floors_can_accept_quality": False,
-        "receipt_required_for_pass_to_quality_pack": True,
-        "downstream_authorized": False,
-    }
-
-
 def _snapshot_binding_paths(contract: dict[str, Any]) -> dict[str, list[str]]:
     raw = contract.get("snapshot_binding_paths") or {}
     if not isinstance(raw, dict):
@@ -1082,7 +1047,6 @@ class ProfileRuntimeEngine:
         try:
             materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
             contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest); canonical_quality=self.gates.canonical_quality_boundary(profile_slug=task.profile_slug,candidate=payload,contract_gate=contract,semantic_gate=semantic)
-            canonical_quality=_canonical_quality_state(binding,payload)
         except Exception as exc:
             code,detail=_failure(exc)
             diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
@@ -1110,7 +1074,6 @@ class ProfileRuntimeEngine:
         try:
             materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
             contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest); canonical_quality=self.gates.canonical_quality_boundary(profile_slug=task.profile_slug,candidate=payload,contract_gate=contract,semantic_gate=semantic)
-            canonical_quality=_canonical_quality_state(binding,payload)
         except Exception as exc:
             code,detail=_failure(exc)
             diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)

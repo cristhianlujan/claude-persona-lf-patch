@@ -236,7 +236,7 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             (profile_root/'validators/quality_receipt.py').write_text(
                 'def validate_quality_receipt(receipt,candidate,evidence_manifest,semantic_result):\n'
                 '    ok = receipt.get("decision")=="PASS" and candidate.get("profile_pack_id")=="PACK-V1" and evidence_manifest.get("marker")=="trusted" and semantic_result.get("verdict")=="PASS"\n'
-                '    return {"status":"PASS" if ok else "FAIL","blocking_codes":[] if ok else ["RECEIPT_BAD"]}\n'
+                '    return {"status":"PASS" if ok else "FAIL","blocking_codes":[] if ok else ["RECEIPT_BAD"],"canonical_quality_accepted":ok}\n'
             )
             (profile_root/'validators/materialize_quality_receipt.py').write_text(
                 'def materialize_quality_receipt(*args, **kwargs):\n'
@@ -395,7 +395,11 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             }
             binding_path.write_text(json.dumps(data))
 
-            candidate={'profile_pack_id':'PACK-V1','value':'x'}
+            output_schema_path=root/'profiles/p/schemas/output.schema.json'
+            output_schema=json.loads(output_schema_path.read_text())
+            output_schema['properties']['profile_pack_id']={'const':'PACK-V1'}
+            output_schema_path.write_text(json.dumps(output_schema))
+            candidate={'profile_pack_id':'PACK-V1','answer':'good'}
             scope={'packet_version':'TEST','authorized_requirements':[]}
             from profile_runtime_api.hashing import canonical_json_sha256
             semantic={
@@ -482,15 +486,6 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             self.assertFalse(gate['canonical_quality_accepted'])
         finally:
             tmp.cleanup()
-
-
-    def test_engine_emits_canonical_quality_boundary_on_both_execution_paths(self):
-        queue_source=inspect.getsource(ProfileRuntimeEngine._execute_queue_profile)
-        artifact_source=inspect.getsource(ProfileRuntimeEngine._execute_profile)
-        for source in (queue_source,artifact_source):
-            self.assertIn('canonical_quality_boundary',source)
-            self.assertIn('"canonical_quality":canonical_quality',source)
-
 
 
     def test_declared_model_context_requires_bound_source_set(self):

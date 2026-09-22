@@ -32,6 +32,18 @@ def strict_json_object(raw_output: Any) -> tuple[dict[str, Any] | None, list[str
     return payload, []
 
 
+def _quality_gate_errors(result: Any, prefix: str) -> list[str]:
+    """A missing diagnostic must never turn a failed validator into acceptance."""
+    if not isinstance(result, dict):
+        return [prefix + "_RESULT_INVALID"]
+    codes = result.get("blocking_codes")
+    if not isinstance(codes, list) or any(not isinstance(code, str) or not code for code in codes):
+        return [prefix + "_BLOCKING_CODES_INVALID"]
+    if result.get("status") != "PASS":
+        return codes or [prefix + "_NOT_PASS"]
+    return codes
+
+
 def _ui_focused_semantic_v3_errors(values: dict[str, str]) -> list[str]:
     """High-confidence semantic guardrails for Focused UI Decision.
 
@@ -514,6 +526,11 @@ class OutputGates:
         )
         return {
             "applicability": "REQUIRED",
+            "profile_pack_id": pack_id,
+            "semantic_judge_path": quality["semantic_judge_path"],
+            "semantic_result_validator": dict(quality["semantic_result_validator"]),
+            "quality_receipt_schema": quality["quality_receipt_schema"],
+            "quality_receipt_validator": dict(quality["quality_receipt_validator"]),
             "status": (
                 "PENDING_INDEPENDENT_SEMANTIC_REVIEW"
                 if floors_clean
@@ -605,15 +622,9 @@ class OutputGates:
             except Exception as exc:
                 errors.append("CANONICAL_QUALITY_SEMANTIC_VALIDATOR_EXCEPTION:" + type(exc).__name__)
             else:
-                if not isinstance(semantic_gate, dict) or semantic_gate.get("status") != "PASS":
-                    errors.extend(
-                        str(code)
-                        for code in (
-                            semantic_gate.get("blocking_codes", [])
-                            if isinstance(semantic_gate, dict)
-                            else ["CANONICAL_QUALITY_SEMANTIC_VALIDATOR_RESULT_INVALID"]
-                        )
-                    )
+                errors.extend(_quality_gate_errors(
+                    semantic_gate, "CANONICAL_QUALITY_SEMANTIC_VALIDATOR"
+                ))
 
         try:
             Draft202012Validator.check_schema(receipt_schema.payload)
@@ -641,18 +652,13 @@ class OutputGates:
             except Exception as exc:
                 errors.append("CANONICAL_QUALITY_RECEIPT_VALIDATOR_EXCEPTION:" + type(exc).__name__)
             else:
-                if not isinstance(receipt_gate, dict) or receipt_gate.get("status") != "PASS":
-                    errors.extend(
-                        str(code)
-                        for code in (
-                            receipt_gate.get("blocking_codes", [])
-                            if isinstance(receipt_gate, dict)
-                            else ["CANONICAL_QUALITY_RECEIPT_VALIDATOR_RESULT_INVALID"]
-                        )
-                    )
-                else:
+                receipt_errors = _quality_gate_errors(
+                    receipt_gate, "CANONICAL_QUALITY_RECEIPT_VALIDATOR"
+                )
+                errors.extend(receipt_errors)
+                if not receipt_errors:
                     receipt_accepts_quality = (
-                        receipt_gate.get("canonical_quality_accepted", True) is True
+                        receipt_gate.get("canonical_quality_accepted") is True
                     )
 
         codes = sorted(set(errors))
@@ -697,6 +703,33 @@ class OutputGates:
                 "blocking_codes": [],
                 "canonical_quality_accepted": False,
                 "quality_receipt": None,
+                "downstream_authorized": False,
+            }
+
+        # The finalization endpoint is callable separately from execution. Recheck
+        # the supplied candidate with the same bound floors before issuing a receipt.
+        contract_gate, payload = self.contract(
+            profile_slug=profile_slug,
+            raw_output=json.dumps(candidate, ensure_ascii=False),
+            schema=self.repository.runtime_schema(profile_slug),
+            evidence_manifest=evidence_manifest,
+        )
+        utility_gate = self.semantic_utility(
+            profile_slug=profile_slug,
+            payload=payload,
+            contract_gate=contract_gate,
+            evidence_manifest=evidence_manifest,
+        )
+        floor_errors = _quality_gate_errors(contract_gate, "CANONICAL_QUALITY_CONTRACT_FLOOR")
+        floor_errors.extend(_quality_gate_errors(utility_gate, "CANONICAL_QUALITY_UTILITY_FLOOR"))
+        if floor_errors:
+            return {
+                "status": "FAIL",
+                "blocking_codes": sorted(set(floor_errors)),
+                "canonical_quality_accepted": False,
+                "quality_receipt": None,
+                "profile_contract_valid": contract_gate,
+                "semantic_utility": utility_gate,
                 "downstream_authorized": False,
             }
 
@@ -745,19 +778,13 @@ class OutputGates:
                 "quality_receipt": None,
                 "downstream_authorized": False,
             }
-        if not isinstance(semantic_gate, dict) or semantic_gate.get("status") != "PASS":
+        semantic_errors = _quality_gate_errors(
+            semantic_gate, "CANONICAL_QUALITY_SEMANTIC_VALIDATOR"
+        )
+        if semantic_errors:
             return {
                 "status": "FAIL",
-                "blocking_codes": sorted(
-                    {
-                        str(code)
-                        for code in (
-                            semantic_gate.get("blocking_codes", [])
-                            if isinstance(semantic_gate, dict)
-                            else ["CANONICAL_QUALITY_SEMANTIC_VALIDATOR_RESULT_INVALID"]
-                        )
-                    }
-                ),
+                "blocking_codes": sorted(set(semantic_errors)),
                 "canonical_quality_accepted": False,
                 "quality_receipt": None,
                 "semantic_result_validation": semantic_gate,
@@ -812,7 +839,9 @@ class OutputGates:
         )
         return {
             **quality_gate,
-            "quality_receipt": quality_receipt,
+            "quality_receipt": quality_receipt if quality_gate.get("status") == "PASS" else None,
+            "profile_contract_valid": contract_gate,
+            "semantic_utility": utility_gate,
             "semantic_result_validation": semantic_gate,
             "expected_candidate_sha256": expected_candidate_sha256,
             "expected_scope_packet_sha256": expected_scope_packet_sha256,
@@ -846,6 +875,18 @@ class OutputGates:
                     if raw_errors is None:
                         explicitly_clean = result.get("status") == "PASS" or result.get("valid") is True
                         raw_errors = [] if explicitly_clean else ["CANONICAL_PROFILE_VALIDATOR_RESULT_INVALID"]
+                    if not isinstance(raw_errors, list):
+                        raw_errors = ["CANONICAL_PROFILE_VALIDATOR_RESULT_INVALID"]
+                    else:
+                        raw_errors = list(raw_errors)
+                    declared_codes = result.get("blocking_codes", [])
+                    if not isinstance(declared_codes, list):
+                        raw_errors.append("CANONICAL_PROFILE_VALIDATOR_RESULT_INVALID")
+                    else:
+                        raw_errors.extend(declared_codes)
+                    if result.get("valid") is False or ("status" in result and result["status"] != "PASS"):
+                        if not raw_errors:
+                            raw_errors.append("CANONICAL_PROFILE_VALIDATOR_NOT_PASS")
                 elif isinstance(result, list):
                     raw_errors = result
                 else:

@@ -39,9 +39,10 @@ defecto debido al OOM observado con Qwen y `parallel=1`.
 | `GET` | `/runtime` | Bearer | Estado de `llama-server`, caché, jobs y clasificación |
 | `POST` | `/v1/profile/execute` | Bearer | Encola una ejecución idempotente por `request_id` |
 | `POST` | `/v1/profile/batch` | Bearer | Encola hasta 8 perfiles con un solo context pack |
+| `POST` | `/v1/profile/semantic-quality-finalize` | Bearer | Valida una revisión externa contra el candidato y materializa su comprobante de calidad |
 | `GET` | `/v1/jobs/{id}` | Bearer | Lee estado y resultado persistido en SQLite |
 
-Los `POST` responden `202`. Reusar el mismo ID con bytes diferentes devuelve `409`.
+Los `POST` de ejecución responden `202`. Reusar el mismo ID con bytes diferentes devuelve `409`.
 Los jobs que queden incompletos tras un reinicio se recuperan como `FAILED`, nunca
 como éxito implícito.
 
@@ -55,6 +56,27 @@ Cada resultado conserva gates independientes:
 
 `downstream_authorized` permanece siempre en `false`. Los gates de contrato,
 semántica y autorización están prohibidos dentro de la caché estructural.
+
+### Cierre de calidad de una revisión externa
+
+`semantic-quality-finalize` responde `200` con el resultado de validación. Es una
+operación pura: revalida schema, contrato y utilidad sobre el candidato recibido,
+verifica la revisión contra candidato y alcance, y usa el materializador y
+validador declarados en `canonical_quality`. No invoca un modelo ni escribe en
+Supabase. Una respuesta HTTP correcta no implica aceptación: se requiere
+`status=PASS`, cero bloqueadores y `canonical_quality_accepted=true` explícito.
+
+El consumidor `hetzner_queue_worker.py --semantic-review <request.json>` recibe un
+`SemanticQualityFinalizeRequest` producido por la frontera de revisión externa.
+Relee `execute_profile` y `output_validate`, compara candidato y referencia del
+productor, llama al endpoint puro y registra `semantic_judge` seguido de
+`report_output` mediante `lf_record_profile_execution_step_v1`. Solo devuelve
+`COMPLETED` después de releer ambos pasos y el mismo comprobante. No ejecuta al
+productor ni promueve runtime; `downstream_authorized` permanece en `false`.
+
+Este consumidor no crea ni programa la revisión independiente. La prueba de
+integración usa sustitutos de API y base de datos; la aceptación operativa exige
+un resultado independiente real y su relectura en el entorno autorizado.
 
 ## Contrato de entrada
 
