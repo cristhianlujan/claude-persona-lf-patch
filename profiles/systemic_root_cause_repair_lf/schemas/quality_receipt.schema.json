@@ -87,6 +87,27 @@
             "type": "string",
             "minLength": 5
           }
+        },
+        "review_input_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "reviewer_context_mode": {
+          "const": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT"
+        },
+        "review_input_classes": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "CURRENT_AUTHORITY_REFS",
+              "EVIDENCE_MANIFEST",
+              "EXACT_CANDIDATE",
+              "SCOPE_AUTHORITY_PACKET"
+            ]
+          }
         }
       }
     },
@@ -157,6 +178,14 @@
           "pattern": "^[0-9a-f]{64}$"
         },
         "scope_packet_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "reviewer_execution_id": {
+          "type": "string",
+          "minLength": 8
+        },
+        "review_input_sha256": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
         }
@@ -268,7 +297,10 @@
               "producer_execution_id",
               "reviewer_execution_id",
               "producer_execution_receipt_ref",
-              "independence_evidence_refs"
+              "independence_evidence_refs",
+              "review_input_sha256",
+              "reviewer_context_mode",
+              "review_input_classes"
             ]
           },
           "evidence_binding": {
@@ -276,6 +308,12 @@
               "bundle_id",
               "bundle_digest",
               "evidence_manifest_sha256"
+            ]
+          },
+          "semantic_binding": {
+            "required": [
+              "reviewer_execution_id",
+              "review_input_sha256"
             ]
           }
         }
