@@ -116,7 +116,22 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
                 "evidence_manifest": manifest,
             }
         }
-        bound = worker._bind_external_authority_resolution(payload, model_governance())
+        external_resolution = {
+            "mode": "EXTERNAL_AUTHORITY_RESOLVER",
+            "resolved_authority_context": {
+                "EV-1": {
+                    "source_locator": "supabase://public/example/1",
+                    "digest": "sha256:" + "1" * 64,
+                    "result_status": "FOUND",
+                    "result_count": 1,
+                    "claim_support": "CONTENT",
+                    "resolved_value": {"fact": "live"},
+                }
+            },
+        }
+        bound = worker._bind_external_authority_resolution(
+            payload, model_governance(), external_resolution=external_resolution
+        )
         capsule = bound["context_capsule"]
         self.assertEqual(capsule["query_trace_count"], 1)
         self.assertEqual(capsule["evidence_count"], 1)
@@ -127,6 +142,81 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         self.assertEqual(
             capsule["resolved_authority_context"]["EV-1"]["source_locator"],
             "supabase://public/example/1",
+        )
+        self.assertEqual(capsule["research_execution_mode"], "EXTERNAL_AUTHORITY_RESOLVER")
+        self.assertEqual(capsule["resolved_authority_count"], 1)
+        self.assertEqual(
+            capsule["resolved_authority_context"]["EV-1"]["resolved_value"]["fact"],
+            "live",
+        )
+
+    def test_srcr_external_authority_binding_fails_closed_without_resolver_execution(self) -> None:
+        manifest = {
+            "bundle_id": "SRCR-TEST",
+            "evidence": [{
+                "evidence_id": "EV-1",
+                "subject": "current authority",
+                "evidence_class": "OBSERVED_LIVE",
+                "source_locator": "supabase://public/example/1",
+                "revision_or_observed_at": "2026-09-22T00:00:00Z",
+                "digest": "sha256:" + "1" * 64,
+                "state": "CURRENT",
+            }],
+            "query_trace": [{
+                "sequence": 1,
+                "tool_permission": "READ_SUPABASE",
+                "resolver_id": "LF_SUPABASE_READBACK_V1",
+                "provider": "SUPABASE",
+                "query_locator": "supabase://public/example/1",
+                "request_digest": "sha256:" + "2" * 64,
+                "result_digest": "sha256:" + "1" * 64,
+                "observed_at": "2026-09-22T00:00:00Z",
+                "evidence_id": "EV-1",
+                "consumer": "$.live_authority_packet",
+                "result_status": "FOUND",
+                "result_count": 1,
+                "claim_support": "CONTENT",
+            }],
+        }
+        payload = {"profile": {
+            "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            "evidence_manifest": manifest,
+        }}
+        with self.assertRaisesRegex(
+            RuntimeError, "SRCR_LIVE_RESEARCH_EXECUTION_PATH_MISSING"
+        ):
+            worker._bind_external_authority_resolution(payload, model_governance())
+
+    def test_srcr_research_queue_payload_transports_manifest_and_resolved_values(self) -> None:
+        manifest = {
+            "bundle_id": "SRCR-TEST",
+            "evidence": [{"evidence_id": "EV-1"}],
+            "query_trace": [{"evidence_id": "EV-1"}],
+        }
+        claimed_payload = claimed()
+        claimed_payload.update({
+            "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            "profile_slug": "systemic_root_cause_repair_lf",
+            "profile_source_paths": ["profiles/systemic_root_cause_repair_lf/SKILL.md"],
+            "runtime_request_envelope": {
+                "schema": "LF_PROFILE_RUNTIME_QUEUE_RESEARCH_V1",
+                "route_kind": "QUEUE_NATIVE_RESEARCH",
+                "research_execution_mode": "EXTERNAL_AUTHORITY_RESOLVER",
+                "evidence_manifest": manifest,
+                "resolved_authority_context": {
+                    "EV-1": {
+                        "source_locator": "supabase://public/example/1",
+                        "digest": "sha256:" + "1" * 64,
+                        "resolved_value": {"fact": "live"},
+                    }
+                },
+            },
+        })
+        payload = worker._queue_native_payload(claimed_payload)
+        self.assertEqual(payload["profile"]["evidence_manifest"], manifest)
+        self.assertEqual(
+            payload["_external_authority_resolution"]["mode"],
+            "EXTERNAL_AUTHORITY_RESOLVER",
         )
 
     def test_srcr_external_authority_binding_fails_closed_without_manifest(self) -> None:
