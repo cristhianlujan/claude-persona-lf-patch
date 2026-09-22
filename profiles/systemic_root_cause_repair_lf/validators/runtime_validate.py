@@ -34,7 +34,7 @@ except (ImportError, ModuleNotFoundError):
     validate_incremental_value = _iv_mod.validate_incremental_value
 
 try:
-    from .producer_depth import V05_PACK_ID, case_mode as _v05_case_mode, validate_producer_depth
+    from .producer_depth import V05_PACK_ID, V06_PACK_ID, case_mode as _v05_case_mode, validate_producer_depth
 except (ImportError, ModuleNotFoundError):
     import importlib.util as _pd_importlib_util
     from pathlib import Path as _PDPath
@@ -44,18 +44,32 @@ except (ImportError, ModuleNotFoundError):
     assert _pd_spec and _pd_spec.loader
     _pd_spec.loader.exec_module(_pd_mod)
     V05_PACK_ID = _pd_mod.V05_PACK_ID
+    V06_PACK_ID = _pd_mod.V06_PACK_ID
     _v05_case_mode = _pd_mod.case_mode
     validate_producer_depth = _pd_mod.validate_producer_depth
 
+try:
+    from .edge_closure import validate_edge_closure
+except (ImportError, ModuleNotFoundError):
+    import importlib.util as _ec_importlib_util
+    from pathlib import Path as _ECPath
+    _ec_path = _ECPath(__file__).with_name("edge_closure.py")
+    _ec_spec = _ec_importlib_util.spec_from_file_location("srcr_edge_closure", _ec_path)
+    _ec_mod = _ec_importlib_util.module_from_spec(_ec_spec)
+    assert _ec_spec and _ec_spec.loader
+    _ec_spec.loader.exec_module(_ec_mod)
+    validate_edge_closure = _ec_mod.validate_edge_closure
+
 V04_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
 # V0.5 inherits every V0.4 transversal guard; it only adds the producer-depth floor.
-V04_FAMILY_PACK_IDS = {V04_PACK_ID, V05_PACK_ID}
+V04_FAMILY_PACK_IDS = {V04_PACK_ID, V05_PACK_ID, V06_PACK_ID}
 
 ALLOWED_PROFILE_PACK_IDS = {
     "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
     "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
     V04_PACK_ID,
     V05_PACK_ID,
+    V06_PACK_ID,
 }
 
 ALLOWED_STATUS = {
@@ -865,6 +879,7 @@ def validate(payload, evidence_manifest=None):
         errors.extend(_implementation_plan_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
     errors.extend(_v04_transversal_errors(payload))
     errors.extend(validate_producer_depth(payload, evidence_manifest))
+    errors.extend(validate_edge_closure(payload, evidence_manifest))
 
     closure_errors, closure_summary = validate_v03_closure(payload, evidence_manifest)
     errors.extend(closure_errors)
