@@ -13,51 +13,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install schema validator
         run: python -m pip install --quiet jsonschema
-      - name: Validate frozen first-pass candidate
+      - name: Diagnose frozen candidate schema
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
-          import base64, gzip, hashlib, json, sys
+          import base64,gzip,hashlib,json
           from pathlib import Path
           from jsonschema import Draft7Validator
-
           root=Path('profiles/systemic_root_cause_repair_lf')
           td=Path('sandbox/lf_contract_gate_test/srcr_v05_lifecycle_regression')
           names=['candidate.part1.b64','candidate.part2.b64','candidate.part3.b64','candidate.part4a.b64','candidate.part4b.b64','candidate.part5.b64','candidate.part6.b64','candidate.part7.b64','candidate.part8.b64']
-          parts=[(td/n).read_text().strip() for n in names]
-          candidate_b64=''.join(parts)
-          print('CANDIDATE_B64_LEN='+str(len(candidate_b64)))
-          if len(candidate_b64) != 31612:
-              raise SystemExit('FAIL_CANDIDATE_TRANSPORT_LENGTH')
-          candidate_bytes=gzip.decompress(base64.b64decode(candidate_b64))
-          manifest_bytes=gzip.decompress(base64.b64decode((td/'evidence_manifest.json.gz.b64').read_text().strip()))
-          candidate=json.loads(candidate_bytes)
-          manifest=json.loads(manifest_bytes)
-          sha=hashlib.sha256(candidate_bytes).hexdigest()
-          expected='5236f4fa746290ee75b8d3892fa9a970b2e13adf9b3bf38e3b2d9352dac13c05'
+          raw=gzip.decompress(base64.b64decode(''.join((td/n).read_text().strip() for n in names)))
+          sha=hashlib.sha256(raw).hexdigest()
           print('CANDIDATE_SHA256='+sha)
-          if sha != expected:
-              raise SystemExit('FAIL_CANDIDATE_SHA_MISMATCH')
+          if sha!='5236f4fa746290ee75b8d3892fa9a970b2e13adf9b3bf38e3b2d9352dac13c05': raise SystemExit(2)
+          candidate=json.loads(raw)
           schema=json.loads((root/'schemas/output.schema.json').read_text())
-          errs=sorted(Draft7Validator(schema).iter_errors(candidate), key=lambda e:list(e.path))
+          errs=sorted(Draft7Validator(schema).iter_errors(candidate),key=lambda e:list(e.path))
           print('SCHEMA_ERRORS='+str(len(errs)))
-          for e in errs[:50]: print('SCHEMA_ERROR', list(e.path), e.message)
-          if errs: raise SystemExit('FAIL_OUTPUT_SCHEMA')
-          sys.path.insert(0,str(root))
-          from validators import runtime_validate, runtime_semantic_utility
-          structural=runtime_validate.validate(candidate, manifest)
-          print('RUNTIME_VALIDATE='+json.dumps(structural,sort_keys=True,separators=(',',':')))
-          if structural.get('status') != 'PASS': raise SystemExit('FAIL_RUNTIME_VALIDATE')
-          semantic=runtime_semantic_utility.evaluate(candidate, structural, manifest)
-          print('RUNTIME_SEMANTIC_UTILITY='+json.dumps(semantic,sort_keys=True,separators=(',',':')))
-          if semantic.get('status') != 'PASS': raise SystemExit('FAIL_RUNTIME_SEMANTIC_UTILITY')
-          print('PASS_SRCR_V05_LIFECYCLE_FIRST_PASS')
+          def walk(e,depth=0):
+              print('SUBERR depth='+str(depth)+' path='+json.dumps(list(e.absolute_path))+' schema_path='+json.dumps(list(e.absolute_schema_path))+' msg='+e.message)
+              for x in e.context:
+                  walk(x,depth+1)
+          for e in errs:
+              if list(e.path)==['implementation_package']:
+                  walk(e)
+          raise SystemExit('EXPECTED_SCHEMA_DIAGNOSTIC')
           PY
