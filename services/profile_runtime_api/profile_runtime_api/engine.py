@@ -18,6 +18,7 @@ from .llama import (
     UI_PRODUCTION_SEMANTIC_TRANSPORT_VERSION_V2,
     decode_ui_production_transport,
     generate_research_baseline_snapshot,
+    generate_independent_semantic_judge,
 )
 from .models import (
     ArtifactSetExecuteRequest,
@@ -26,6 +27,7 @@ from .models import (
     ProfileTask,
     QueueExecuteRequest,
     ResearchBaselineRequest,
+    SemanticJudgeRequest,
 )
 from .repository import RepositoryBindings
 from .runtime_authority import resolve_typed_runtime_context
@@ -652,6 +654,101 @@ class ProfileRuntimeEngine:
         return {
             "schema": RESULT_SCHEMA,
             "kind": "research_baseline",
+            "request_id": request.request_id,
+            "result": result,
+            "total_ms": round((time.perf_counter() - started) * 1000, 3),
+            "downstream_authorized": False,
+        }
+
+    def run_semantic_judge(self, request: SemanticJudgeRequest) -> dict[str, Any]:
+        started = time.perf_counter()
+        try:
+            self.repository.validate_profile_identity(request.profile_slug, request.profile_code)
+            sources = self.repository.profile_sources(
+                request.profile_slug, request.profile_source_paths
+            )
+            source_manifest = [
+                {"ref": item["ref"], "content_sha256": sha256_text(item["content"])}
+                for item in sources
+            ]
+            observed_source_digest = "sha256:" + canonical_json_sha256(source_manifest)
+            if observed_source_digest != request.profile_source_digest:
+                raise LlamaTransportError("SEMANTIC_JUDGE_PROFILE_SOURCE_DIGEST_MISMATCH")
+            observed_candidate_sha = canonical_json_sha256(request.exact_candidate)
+            if observed_candidate_sha != request.candidate_sha256:
+                raise LlamaTransportError("SEMANTIC_JUDGE_CANDIDATE_SHA_MISMATCH")
+            if request.scope_authority_packet.get("sha256") != "sha256:" + request.scope_packet_sha256:
+                raise LlamaTransportError("SEMANTIC_JUDGE_SCOPE_SHA_MISMATCH")
+            quality = self.repository.load_canonical_quality(request.profile_slug)
+            if quality is None:
+                raise LlamaTransportError("SEMANTIC_JUDGE_RUNTIME_BINDING_MISSING")
+            pack_id = request.exact_candidate.get("profile_pack_id")
+            if pack_id not in set(quality["required_for_profile_pack_ids"]):
+                raise LlamaTransportError("SEMANTIC_JUDGE_PROFILE_PACK_NOT_BOUND", str(pack_id))
+            binding = self.repository.runtime_binding(request.profile_slug)
+            max_output_tokens = None
+            if binding and isinstance(binding.execution_budget, dict):
+                candidate_budget = binding.execution_budget.get("max_output_tokens")
+                if isinstance(candidate_budget, int) and candidate_budget > 0:
+                    max_output_tokens = candidate_budget
+            generated = generate_independent_semantic_judge(
+                settings=self.settings,
+                client=self.llama_client,
+                profile_slug=request.profile_slug,
+                judge_text=quality["judge_text"],
+                input_literal=request.input_literal,
+                exact_candidate=request.exact_candidate,
+                scope_authority_packet=request.scope_authority_packet,
+                deterministic_validation=request.deterministic_validation,
+                evidence_manifest=request.evidence_manifest,
+                candidate_sha256=request.candidate_sha256,
+                scope_packet_sha256=request.scope_packet_sha256,
+                max_output_tokens=max_output_tokens,
+            )
+            semantic_result = generated["semantic_judge_result"]
+            validator = getattr(
+                quality["validator_module"], quality["validator_callable"]
+            )
+            validator_result = validator(
+                semantic_result,
+                scope_packet=request.scope_authority_packet,
+                expected_candidate_sha256=request.candidate_sha256,
+                expected_scope_packet_sha256=request.scope_packet_sha256,
+            )
+            if not isinstance(validator_result, dict):
+                raise LlamaTransportError("SEMANTIC_JUDGE_VALIDATOR_RESULT_INVALID")
+            result = {
+                "status": "PASS" if validator_result.get("status") == "PASS" else "FAIL",
+                "blocking_codes": list(validator_result.get("blocking_codes") or []),
+                "semantic_judge_result": semantic_result,
+                "semantic_result_validation": validator_result,
+                "candidate_sha256": request.candidate_sha256,
+                "scope_packet_sha256": request.scope_packet_sha256,
+                "judge_ref": quality["judge_ref"],
+                "runtime_model_id": generated["model_id"],
+                "usage": generated["usage"],
+                "timings": generated["timings"],
+                "finish_reason": generated["finish_reason"],
+                "semantic_model_call_count": 1,
+                "producer_independence_proven": True,
+                "canonical_quality_accepted": (
+                    validator_result.get("status") == "PASS"
+                    and semantic_result.get("verdict") == "PASS_INDEPENDENT_SEMANTIC"
+                ),
+            }
+        except Exception as exc:
+            code, detail = _failure(exc)
+            result = {
+                "status": "FAIL",
+                "blocking_codes": [code],
+                "detail": detail,
+                "semantic_model_call_count": 0,
+                "producer_independence_proven": False,
+                "canonical_quality_accepted": False,
+            }
+        return {
+            "schema": RESULT_SCHEMA,
+            "kind": "semantic_judge",
             "request_id": request.request_id,
             "result": result,
             "total_ms": round((time.perf_counter() - started) * 1000, 3),
