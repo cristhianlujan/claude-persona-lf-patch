@@ -143,6 +143,8 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             data=json.loads(path.read_text())
             data['model_context']={
                 'full_source_to_model':False,
+                'required_source_refs':['profiles/p/SKILL.md'],
+                'allow_additional_sources':False,
                 'source_projection':{'mode':'MARKDOWN_SECTIONS','include_sections':['Purpose'],'max_chars':1000},
             }
             data['execution_partition']={
@@ -488,6 +490,35 @@ class GenericRuntimeBindingTest(unittest.TestCase):
         for source in (queue_source,artifact_source):
             self.assertIn('canonical_quality_boundary',source)
             self.assertIn('"canonical_quality":canonical_quality',source)
+
+
+
+    def test_declared_model_context_requires_bound_source_set(self):
+        tmp,root,repo=self._repo()
+        try:
+            path=root/'profiles/p/contracts/runtime_binding.json'
+            data=json.loads(path.read_text())
+            data['model_context']={
+                'full_source_to_model':False,
+                'required_source_refs':['profiles/p/SKILL.md','profiles/p/contracts/runtime_binding.json'],
+                'allow_additional_sources':True,
+                'source_projection':{'mode':'MARKDOWN_SECTIONS','include_sections':['Purpose'],'max_chars':5000},
+            }
+            path.write_text(json.dumps(data))
+            with self.assertRaises(RepositoryError) as cm:
+                repo.profile_sources('p',['profiles/p/SKILL.md'])
+            self.assertEqual(cm.exception.code,'PROFILE_RUNTIME_REQUIRED_SOURCE_MISSING')
+
+            sources=repo.profile_sources(
+                'p',
+                ['profiles/p/SKILL.md','profiles/p/contracts/runtime_binding.json'],
+            )
+            self.assertEqual(
+                {item['ref'] for item in sources},
+                {'profiles/p/SKILL.md','profiles/p/contracts/runtime_binding.json'},
+            )
+        finally:
+            tmp.cleanup()
 
 
     def test_weak_governance_fails_closed(self):
