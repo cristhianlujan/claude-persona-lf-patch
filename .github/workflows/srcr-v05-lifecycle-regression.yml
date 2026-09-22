@@ -32,6 +32,8 @@ jobs:
           root=Path('profiles/systemic_root_cause_repair_lf')
           td=Path('sandbox/lf_contract_gate_test/srcr_v05_lifecycle_regression')
           parts=[(td/f'candidate.part{i}.b64').read_text().strip() for i in range(1,9)]
+          for i,p in enumerate(parts,1):
+              print(f'PART{i}_LEN={len(p)} SHA256={hashlib.sha256(p.encode()).hexdigest()}')
           candidate_b64=''.join(parts)
           print('CANDIDATE_B64_LEN='+str(len(candidate_b64)))
           if len(candidate_b64) != 31612:
@@ -45,13 +47,11 @@ jobs:
           print('CANDIDATE_SHA256='+sha)
           if sha != expected:
               raise SystemExit('FAIL_CANDIDATE_SHA_MISMATCH')
-
           schema=json.loads((root/'schemas/output.schema.json').read_text())
           errs=sorted(Draft7Validator(schema).iter_errors(candidate), key=lambda e:list(e.path))
           print('SCHEMA_ERRORS='+str(len(errs)))
           for e in errs[:50]: print('SCHEMA_ERROR', list(e.path), e.message)
           if errs: raise SystemExit('FAIL_OUTPUT_SCHEMA')
-
           sys.path.insert(0,str(root))
           from validators import runtime_validate, runtime_semantic_utility
           structural=runtime_validate.validate(candidate, manifest)
