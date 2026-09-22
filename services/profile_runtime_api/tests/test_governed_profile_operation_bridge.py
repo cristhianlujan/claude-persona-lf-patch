@@ -143,6 +143,102 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         self.assertLess(events.index("baseline-persisted"), events.index("/v1/profile/queue-execute"))
         self.assertLess(events.index("/v1/profile/queue-execute"), events.index("main-persisted"))
 
+
+    def test_output_validate_persists_required_canonical_quality_boundary(self) -> None:
+        profile = {
+            "runtime_completion": {"status": "PASS", "receipt": {}},
+            "profile_contract_valid": {"status": "PASS", "blocking_codes": []},
+            "semantic_utility": {"status": "PASS", "blocking_codes": []},
+            "canonical_quality": {
+                "applicability": "REQUIRED",
+                "status": "PENDING_INDEPENDENT_SEMANTIC_REVIEW",
+                "deterministic_floors_can_accept_quality": False,
+                "receipt_required_for_pass_to_quality_pack": True,
+            },
+            "raw_output": '{"profile_pack_id":"SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"}',
+        }
+        job = {"result": {"result": profile}}
+        captured: dict[str, dict] = {}
+
+        class Cursor:
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+
+        class Conn(FakeConn):
+            def cursor(self): return Cursor()
+
+        def fetch(_cur, _query, params):
+            step_id = params[1]
+            payload = params[3].obj
+            captured[step_id] = payload
+            return {"outcome": "STEP_RECORDED"}
+
+        governed = {
+            "execution_id": model_governance()["execution_id"],
+            "source": {
+                "profile_source_digest": "sha256:" + "b" * 64,
+                "source_revision": "c" * 40,
+            },
+        }
+        with (
+            patch.object(worker, "_profile_result", return_value=profile),
+            patch.object(worker, "_read_model_governance", return_value=model_governance()),
+            patch.object(worker, "_fetch_json_scalar", side_effect=fetch),
+        ):
+            result = worker._record_post_model_governance(
+                Conn(),
+                claimed=claimed(),
+                governed=governed,
+                job=job,
+            )
+        self.assertEqual(result["status"], "READY_FOR_SEMANTIC_JUDGE")
+        self.assertEqual(result["canonical_quality"]["applicability"], "REQUIRED")
+        self.assertEqual(
+            captured["output_validate"]["canonical_quality"]["status"],
+            "PENDING_INDEPENDENT_SEMANTIC_REVIEW",
+        )
+
+    def test_invalid_required_canonical_quality_boundary_blocks(self) -> None:
+        profile = {
+            "runtime_completion": {"status": "PASS", "receipt": {}},
+            "profile_contract_valid": {"status": "PASS", "blocking_codes": []},
+            "semantic_utility": {"status": "PASS", "blocking_codes": []},
+            "canonical_quality": {
+                "applicability": "REQUIRED",
+                "status": "PASS",
+                "deterministic_floors_can_accept_quality": True,
+                "receipt_required_for_pass_to_quality_pack": False,
+            },
+            "raw_output": '{}',
+        }
+        job = {"result": {"result": profile}}
+        class Cursor:
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+        class Conn(FakeConn):
+            def cursor(self): return Cursor()
+        governed = {
+            "execution_id": model_governance()["execution_id"],
+            "source": {
+                "profile_source_digest": "sha256:" + "b" * 64,
+                "source_revision": "c" * 40,
+            },
+        }
+        with (
+            patch.object(worker, "_profile_result", return_value=profile),
+            patch.object(worker, "_read_model_governance", return_value=model_governance()),
+            patch.object(worker, "_fetch_json_scalar", return_value={"outcome": "STEP_RECORDED"}),
+        ):
+            result = worker._record_post_model_governance(
+                Conn(), claimed=claimed(), governed=governed, job=job
+            )
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(
+            result["error_code"],
+            "HETZNER_CANONICAL_QUALITY_BOUNDARY_INVALID",
+        )
+
+
     def test_ready_for_semantic_judge_never_persists_queue_success(self) -> None:
         runtime_profile = {
             "runtime_completion": {"status": "PASS", "receipt": {}},
