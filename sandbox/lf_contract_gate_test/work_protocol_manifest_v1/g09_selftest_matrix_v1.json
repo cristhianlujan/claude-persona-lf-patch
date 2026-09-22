@@ -1,6 +1,12 @@
 {
   "schema_version": "LF_WORK_PROTOCOL_G09_SELFTEST_MATRIX_V1",
-  "required_dimensions": ["positive", "negative", "drift", "bypass", "timeout"],
+  "required_dimensions": [
+    "positive",
+    "negative",
+    "drift",
+    "bypass",
+    "timeout"
+  ],
   "gates": {
     "G00": {
       "name": "Owner-first Entry",
@@ -55,7 +61,7 @@
       "positive": "positive_scope_change_supersession_full_revalidation",
       "negative": "negative_required_obligation_waiver_forbidden",
       "drift": "negative_scope_change_requires_new_verified_authorization",
-      "bypass": "negative_irreversible_action_missing_human_readback",
+      "bypass": "negative_mixed_solution_pr_forbidden",
       "timeout": "probe_g06_timeout_overlay"
     },
     "G07": {
