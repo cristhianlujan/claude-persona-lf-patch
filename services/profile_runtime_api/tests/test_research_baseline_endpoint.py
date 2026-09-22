@@ -161,7 +161,7 @@ class ResearchBaselineEndpointTest(unittest.TestCase):
                 request_id="11111111-2222-3333-4444-555555555555",
                 profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
                 profile_slug="systemic_root_cause_repair_lf",
-                profile_source_paths=[self.path],
+                profile_source_paths=self.paths,
                 input_literal=self.literal,
                 input_digest=self.input_digest,
                 profile_source_digest=self.source_digest,
