@@ -250,13 +250,16 @@ def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
         if envelope is None:
             payload["lf_adapter_sources"] = _adapter_sources(cur, payload["profile_code"])
         elif isinstance(envelope, dict):
-            governance = envelope.get("input_governance")
-            if (
-                isinstance(governance, dict)
-                and governance.get("subject_mode") == "NON_CANONICAL_ARTIFACT"
-                and (governance.get("current") is not True or governance.get("ready") is not True)
-            ):
+            if envelope.get("route_kind") == "QUEUE_NATIVE_RESEARCH":
                 payload["lf_adapter_sources"] = _adapter_sources(cur, payload["profile_code"])
+            else:
+                governance = envelope.get("input_governance")
+                if (
+                    isinstance(governance, dict)
+                    and governance.get("subject_mode") == "NON_CANONICAL_ARTIFACT"
+                    and (governance.get("current") is not True or governance.get("ready") is not True)
+                ):
+                    payload["lf_adapter_sources"] = _adapter_sources(cur, payload["profile_code"])
         conn.commit()
         return payload
 
@@ -676,7 +679,9 @@ def _baseline_envelope_from_job(job: dict[str, Any]) -> dict[str, Any]:
 
 
 def _bind_external_authority_resolution(
-    payload: dict[str, Any], model_governance: dict[str, Any]
+    payload: dict[str, Any],
+    model_governance: dict[str, Any],
+    external_resolution: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     profile = payload.get("profile")
     if not isinstance(profile, dict):
@@ -693,33 +698,49 @@ def _bind_external_authority_resolution(
         raise RuntimeError("SRCR_EVIDENCE_MANIFEST_EMPTY_BEFORE_MODEL")
     if not isinstance(query_trace, list) or not query_trace:
         raise RuntimeError("SRCR_QUERY_TRACE_REQUIRED_BEFORE_MODEL")
+    if (
+        not isinstance(external_resolution, dict)
+        or external_resolution.get("mode") != "EXTERNAL_AUTHORITY_RESOLVER"
+    ):
+        raise RuntimeError("SRCR_LIVE_RESEARCH_EXECUTION_PATH_MISSING")
+    resolved = external_resolution.get("resolved_authority_context")
+    if not isinstance(resolved, dict) or not resolved:
+        raise RuntimeError("SRCR_RESOLVED_AUTHORITY_CONTEXT_REQUIRED")
 
-    resolved: dict[str, Any] = {}
+    evidence_by_id: dict[str, dict[str, Any]] = {}
     for row in evidence:
         if not isinstance(row, dict):
             raise RuntimeError("SRCR_EVIDENCE_MANIFEST_ROW_INVALID")
         evidence_id = row.get("evidence_id")
         if not isinstance(evidence_id, str) or not evidence_id:
             raise RuntimeError("SRCR_EVIDENCE_MANIFEST_ID_INVALID")
-        if evidence_id in resolved:
+        if evidence_id in evidence_by_id:
             raise RuntimeError("SRCR_EVIDENCE_MANIFEST_ID_DUPLICATE")
-        resolved[evidence_id] = {
-            "subject": row.get("subject"),
-            "evidence_class": row.get("evidence_class"),
-            "source_locator": row.get("source_locator"),
-            "revision_or_observed_at": row.get("revision_or_observed_at"),
-            "digest": row.get("digest"),
-            "state": row.get("state"),
-        }
+        evidence_by_id[evidence_id] = row
+    if set(resolved) != set(evidence_by_id):
+        raise RuntimeError("SRCR_RESOLVED_AUTHORITY_EVIDENCE_SET_MISMATCH")
+    for evidence_id, evidence_row in evidence_by_id.items():
+        resolved_row = resolved.get(evidence_id)
+        if not isinstance(resolved_row, dict):
+            raise RuntimeError(f"SRCR_RESOLVED_AUTHORITY_ROW_INVALID:{evidence_id}")
+        if resolved_row.get("source_locator") != evidence_row.get("source_locator"):
+            raise RuntimeError(f"SRCR_RESOLVED_AUTHORITY_LOCATOR_MISMATCH:{evidence_id}")
+        if resolved_row.get("digest") != evidence_row.get("digest"):
+            raise RuntimeError(f"SRCR_RESOLVED_AUTHORITY_DIGEST_MISMATCH:{evidence_id}")
+        if "resolved_value" not in resolved_row:
+            raise RuntimeError(f"SRCR_RESOLVED_AUTHORITY_VALUE_MISSING:{evidence_id}")
 
     bound = dict(model_governance)
     capsule = dict(bound.get("context_capsule") or {})
+    capsule["research_execution_mode"] = "EXTERNAL_AUTHORITY_RESOLVER"
     capsule["resolved_authority_context"] = resolved
     capsule["evidence_manifest_sha256"] = "sha256:" + _canonical_json_sha256(manifest)
     capsule["query_trace_count"] = len(query_trace)
     capsule["evidence_count"] = len(evidence)
+    capsule["resolved_authority_count"] = len(resolved)
     bound["context_capsule"] = capsule
     return bound
+
 
 def _attach_governed_operation(
     payload: dict[str, Any], model_governance: dict[str, Any]
@@ -727,8 +748,9 @@ def _attach_governed_operation(
     profile = payload.get("profile")
     if not isinstance(profile, dict):
         raise RuntimeError("HETZNER_GOVERNED_PROFILE_PAYLOAD_MISSING")
+    external_resolution = payload.pop("_external_authority_resolution", None)
     profile["governed_operation"] = _bind_external_authority_resolution(
-        payload, model_governance
+        payload, model_governance, external_resolution=external_resolution
     )
     return payload
 
@@ -1223,18 +1245,37 @@ def _queue_native_payload(claimed: dict[str, Any]) -> dict[str, Any]:
         or claimed.get("input_image_media_type")
     ):
         raise RuntimeError("HETZNER_QUEUE_NATIVE_IMAGE_REQUIRES_GOVERNED_ENVELOPE")
-    return {
-        "profile": {
-            "request_id": claimed["request_id"],
-            "operation_code": claimed["operation_code"],
-            "profile_code": claimed["profile_code"],
-            "profile_slug": claimed["profile_slug"],
-            "profile_source_paths": claimed["profile_source_paths"],
-            "input_literal": claimed["input_literal"],
-            "lf_adapter_sources": claimed.get("lf_adapter_sources") or [],
-            "send_image_to_model": False,
-        }
+    profile = {
+        "request_id": claimed["request_id"],
+        "operation_code": claimed["operation_code"],
+        "profile_code": claimed["profile_code"],
+        "profile_slug": claimed["profile_slug"],
+        "profile_source_paths": claimed["profile_source_paths"],
+        "input_literal": claimed["input_literal"],
+        "lf_adapter_sources": claimed.get("lf_adapter_sources") or [],
+        "send_image_to_model": False,
     }
+    payload: dict[str, Any] = {"profile": profile}
+    envelope = claimed.get("runtime_request_envelope")
+    if isinstance(envelope, dict) and envelope.get("route_kind") == "QUEUE_NATIVE_RESEARCH":
+        if envelope.get("schema") != "LF_PROFILE_RUNTIME_QUEUE_RESEARCH_V1":
+            raise RuntimeError("SRCR_RESEARCH_QUEUE_ENVELOPE_SCHEMA_INVALID")
+        if envelope.get("research_execution_mode") != "EXTERNAL_AUTHORITY_RESOLVER":
+            raise RuntimeError("SRCR_LIVE_RESEARCH_EXECUTION_PATH_MISSING")
+        manifest = envelope.get("evidence_manifest")
+        resolved = envelope.get("resolved_authority_context")
+        if not isinstance(manifest, dict) or not manifest:
+            raise RuntimeError("SRCR_EVIDENCE_MANIFEST_REQUIRED_BEFORE_MODEL")
+        if not isinstance(resolved, dict) or not resolved:
+            raise RuntimeError("SRCR_RESOLVED_AUTHORITY_CONTEXT_REQUIRED")
+        if len(json.dumps(resolved, ensure_ascii=False)) > 120_000:
+            raise RuntimeError("SRCR_RESOLVED_AUTHORITY_CONTEXT_BUDGET_EXCEEDED")
+        profile["evidence_manifest"] = manifest
+        payload["_external_authority_resolution"] = {
+            "mode": "EXTERNAL_AUTHORITY_RESOLVER",
+            "resolved_authority_context": resolved,
+        }
+    return payload
 
 
 def _wait_job(job_id: str) -> dict[str, Any]:
@@ -1482,7 +1523,11 @@ def run_once() -> bool:
 
         model_governance = _read_model_governance(conn, governed)
         envelope = claimed.get("runtime_request_envelope")
-        if envelope is not None:
+        if isinstance(envelope, dict) and envelope.get("route_kind") == "QUEUE_NATIVE_RESEARCH":
+            payload = _queue_native_payload(claimed)
+            endpoint = "/v1/profile/queue-execute"
+            route = "QUEUE_NATIVE_RESEARCH"
+        elif envelope is not None:
             envelope = materialize_router_advisory_envelope(
                 request_id,
                 envelope,
