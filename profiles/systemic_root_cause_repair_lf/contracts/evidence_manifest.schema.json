@@ -131,19 +131,22 @@
           "tool_permission": {
             "enum": [
               "READ_GITHUB",
-              "READ_SUPABASE"
+              "READ_SUPABASE",
+              "READ_WEB"
             ]
           },
           "resolver_id": {
             "enum": [
               "LF_GITHUB_SOURCE_READBACK_V1",
-              "LF_SUPABASE_READBACK_V1"
+              "LF_SUPABASE_READBACK_V1",
+              "LF_WEB_RESEARCH_READBACK_V1"
             ]
           },
           "provider": {
             "enum": [
               "GITHUB",
-              "SUPABASE"
+              "SUPABASE",
+              "WEB"
             ]
           },
           "query_locator": {
