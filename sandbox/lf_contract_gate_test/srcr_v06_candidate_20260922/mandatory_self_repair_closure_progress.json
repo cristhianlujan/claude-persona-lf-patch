@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 80.76923076923077,
+  "overall_percent": 82.6923076923077,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -81,16 +81,18 @@
     },
     {
       "obligation_id": "MC-06",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "materialize_prequality_freeze rejects malformed test_protocol before freeze",
-        "malformed setup/action regression expects PREFREEZE_VALIDATION_NOT_CLEAN:OUTPUT_SCHEMA",
-        "Validate LF Packs 35736254524 PASS"
+        "governed materialize_prequality_freeze executed on branch head 45cdf0e6bececaae890775f851181b411e7c8ac5 with exact code head d7257ae5bb8dbac9127b83c966f8b80de1a11d2f",
+        "current repaired candidate canonical sha256 6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16 matches the candidate already bound by MC-03",
+        "pre-freeze receipt SRCR_PREQUALITY_FREEZE_V1 returned PASS_PRE_QUALITY with schema_error_count=0, deterministic_status=PASS and semantic_utility_status=PASS",
+        "freeze bound 65 evidence rows to 65 query-trace rows; manifest bundle digest sha256:38527cfb43f1f06b713582c079a7b4a27e6828f2ef4796978d3f00e097cc1f7b",
+        "negative mutation removing planned_regressions[0].test_protocol.action exited 1 with PREFREEZE_VALIDATION_NOT_CLEAN:OUTPUT_SCHEMA and emitted no freeze receipt",
+        "stale historical MC-06 receipt for candidate 85aa2e43... was superseded rather than reused",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc06_prefreeze_readback.json"
       ],
-      "remaining_requirements": [
-        "Freeze the repaired candidate through the governed pre-freeze path and retain the successful schema/validator receipt."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-07",
@@ -184,8 +186,8 @@
       ]
     }
   ],
-  "closed_count": 6,
-  "open_count": 7,
+  "closed_count": 7,
+  "open_count": 6,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -226,6 +228,11 @@
     "mc04_observed_at": "2026-09-22T15:51:17.457067+00:00",
     "mc04_manifest_sha256": "sha256:2108a51dc0438e8af3e481bd311c1d3be4c5d14d3c9a89e934888e3fc7bece82",
     "mc04_positive_result_digest": "sha256:1b3ab519024ce451855c71e1b3cfe51be668029f93ffa7f36f03fe13a954090a",
-    "mc04_absence_result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    "mc04_absence_result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "mc06_source_revision": "d7257ae5bb8dbac9127b83c966f8b80de1a11d2f",
+    "mc06_execution_branch_head": "45cdf0e6bececaae890775f851181b411e7c8ac5",
+    "mc06_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "mc06_manifest_bundle_digest": "sha256:38527cfb43f1f06b713582c079a7b4a27e6828f2ef4796978d3f00e097cc1f7b",
+    "mc06_validation_sha256": "bf7671f727efb361de6be2385a237ab07a3ab1dae7d12d61222adb32d7b1b7de"
   }
 }
