@@ -180,6 +180,7 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             (profile_root/'schemas/quality.json').write_text('{"type":"object"}')
             (profile_root/'validators/semantic_result.py').write_text('def evaluate(payload):\n    return {"status":"PASS","blocking_codes":[]}\n')
             (profile_root/'validators/quality_receipt.py').write_text('def validate_quality_receipt(*args):\n    return {"status":"PASS","blocking_codes":[]}\n')
+            (profile_root/'validators/materialize_quality_receipt.py').write_text('def materialize_quality_receipt(*args, **kwargs):\n    return {"decision":"PASS"}\n')
             path=profile_root/'contracts/runtime_binding.json'
             data=json.loads(path.read_text())
             data['canonical_quality']={
@@ -189,6 +190,7 @@ class GenericRuntimeBindingTest(unittest.TestCase):
                 'semantic_result_validator':{'path':'validators/semantic_result.py','callable':'evaluate'},
                 'quality_receipt_schema':'schemas/quality.json',
                 'quality_receipt_validator':{'path':'validators/quality_receipt.py','callable':'validate_quality_receipt'},
+                'quality_receipt_materializer':{'path':'validators/materialize_quality_receipt.py','callable':'materialize_quality_receipt'},
                 'deterministic_floors_can_accept_quality':False,
                 'receipt_required_for_pass_to_quality_pack':True,
             }
@@ -233,6 +235,10 @@ class GenericRuntimeBindingTest(unittest.TestCase):
                 'def validate_quality_receipt(receipt,candidate,evidence_manifest,semantic_result):\n'
                 '    ok = receipt.get("decision")=="PASS" and candidate.get("profile_pack_id")=="PACK-V1" and evidence_manifest.get("marker")=="trusted" and semantic_result.get("verdict")=="PASS"\n'
                 '    return {"status":"PASS" if ok else "FAIL","blocking_codes":[] if ok else ["RECEIPT_BAD"]}\n'
+            )
+            (profile_root/'validators/materialize_quality_receipt.py').write_text(
+                'def materialize_quality_receipt(*args, **kwargs):\n'
+                '    return {"decision":"PASS"}\n'
             )
             path=profile_root/'contracts/runtime_binding.json'
             data=json.loads(path.read_text())
