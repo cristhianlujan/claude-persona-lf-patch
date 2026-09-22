@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 92.3076923076923,
+  "overall_percent": 94.23076923076923,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -179,16 +179,19 @@
     },
     {
       "obligation_id": "MC-12",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "runtime_validate reconciles every IMPLEMENTABLE proposed_change_ref/proposed_next_gate_consumer_ref against implementation_delta",
-        "builder now declares parent lifecycle artifact families plus canary consumer and queue terminal bridge",
-        "exact-head builder regression has passed Validate LF Packs 35736254524"
+        "runtime_validate now extracts proposed selected-repair refs from the entire exact candidate, excluding only implementation_delta itself, and reconciles them against declared targets",
+        "fresh exact-head baseline on 1e5dad487c30a37b68120940a3ecc3518f733a84 PASS with zero V06_SELECTED_REPAIR_CHANGE_UNDECLARED and computed_handoff_ready=true",
+        "fresh surface scan: 41 selected-repair ref occurrences / 27 unique refs / 10 declared material changes / 0 uncovered after same-object authority_ref -> enforcement_point_ref binding",
+        "negative undeclared hard-guard mechanism fails closed with V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+        "negative removal of EJECUCION_PERFIL_LF queue_terminal_bridge delta fails closed with V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+        "independent reviewer EXEC-MC11-T5-INDEPENDENT-REVIEW-20260922-001 re-extracted 10 material candidate changes and R2 reconciled 10/10 as declared-equivalent, undeclared_count=0, blocking_codes=[]",
+        "semantic-result validator PASS against exact candidate/evidence/scope/review-input digests; candidate digest remains 6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc12_selected_repair_completeness_readback.json"
       ],
-      "remaining_requirements": [
-        "Regenerate/freeze candidate and independently re-extract observed changes; R2 must return zero undeclared selected-repair changes."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-13",
@@ -202,8 +205,8 @@
       ]
     }
   ],
-  "closed_count": 11,
-  "open_count": 2,
+  "closed_count": 12,
+  "open_count": 1,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -216,7 +219,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "4021504a9ed4cd4c94f0a10e514c49d6b4e3f7eb",
+  "current_exact_code_head": "1e5dad487c30a37b68120940a3ecc3518f733a84",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -284,6 +287,15 @@
     "mc11_t5_reviewer_execution_id": "EXEC-MC11-T5-INDEPENDENT-REVIEW-20260922-001",
     "mc11_t5_result": "PASS",
     "mc11_t5_edge_count": 13,
-    "mc11_t5_blocking_findings": 0
+    "mc11_t5_blocking_findings": 0,
+    "mc12_source_revision": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+    "mc12_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "mc12_selected_ref_occurrences": 41,
+    "mc12_selected_unique_refs": 27,
+    "mc12_declared_material_changes": 10,
+    "mc12_uncovered_selected_refs": 0,
+    "mc12_independent_reviewer_execution_id": "EXEC-MC11-T5-INDEPENDENT-REVIEW-20260922-001",
+    "mc12_r2_undeclared_count": 0,
+    "mc12_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc12_selected_repair_completeness_readback.json"
   }
 }
