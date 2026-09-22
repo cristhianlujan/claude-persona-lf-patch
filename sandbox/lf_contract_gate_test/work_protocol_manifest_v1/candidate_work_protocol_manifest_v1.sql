@@ -666,6 +666,7 @@ set search_path = pg_catalog, public, extensions
 as $fn$
 declare
   policy jsonb;
+  isolation jsonb;
   frozen_at timestamptz;
   waiver_ttl integer;
   w jsonb;
@@ -698,6 +699,16 @@ begin
     return jsonb_build_object('result','BLOCKED','code','CONTROL_POLICY_INVALID');
   end if;
   waiver_ttl := (policy->>'waiver_max_ttl_seconds')::integer;
+
+  isolation := p_work_protocol->'solution_isolation_policy';
+  if jsonb_typeof(isolation) is distinct from 'object'
+     or isolation->>'unit_mode' is distinct from 'ONE_SOLUTION_PER_PR'
+     or coalesce((isolation->>'mixed_solution_pr_allowed')::boolean,true) is not false
+     or coalesce((isolation->>'scope_expansion_requires_new_pr')::boolean,false) is not true
+     or coalesce((isolation->>'migration_apply_requires_separate_pr')::boolean,false) is not true
+     or coalesce((isolation->>'receipt_must_bind_exact_pr_scope')::boolean,false) is not true then
+    return jsonb_build_object('result','BLOCKED','code','SOLUTION_ISOLATION_POLICY_INVALID');
+  end if;
 
   begin
     frozen_at := (p_work_protocol->>'frozen_at')::timestamptz;
