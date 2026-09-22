@@ -1,0 +1,93 @@
+{
+  "schema": "SRCR_MC04_EXACT_EVIDENCE_EKB_ZERO_ROW_READBACK_V1",
+  "status": "READBACK_CLOSED",
+  "source_revision": "9b9a41da6635a47cefe293ae15b021e9fa89aa3f",
+  "observed_at": "2026-09-22T15:39:36.359484Z",
+  "authority": {
+    "supabase_project_id": "mhwmirqcgxxukpctffuv",
+    "supabase_project_name": "LF_SUPABASE_SANDBOX",
+    "table": "public.lf_error_knowledge",
+    "access_mode": "READ_ONLY"
+  },
+  "exact_head_control": {
+    "validator_path": "profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
+    "validator_git_blob_sha": "af643b05ada2822099399c0f50a5d7455470a525",
+    "required_resolver_id": "LF_SUPABASE_READBACK_V1",
+    "zero_row_blocking_code": "ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT"
+  },
+  "live_evidence": {
+    "positive_ekb_lookup": {
+      "result_status": "FOUND",
+      "result_count": 3,
+      "claim_support": "CONTENT",
+      "codes": [
+        "PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001",
+        "PROFILE-RUNTIME-GOVERNED-STEP-BYPASS-001",
+        "PROFILE-RUNTIME-RESEARCH-BASELINE-TEMPORAL-BINDING-001"
+      ],
+      "result_digest": "sha256:0fe35f0170a3d00c1b882c4d4a08ddef085cfc6cc75fa60e00a5a9df74bf014a"
+    },
+    "zero_row_lookup": {
+      "code": "MC04-ZERO-ROW-9B9A41DA6635A47C",
+      "result_status": "EMPTY",
+      "result_count": 0,
+      "claim_support": "ABSENCE",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "live_replay": {
+    "valid_bundle": {
+      "status": "PASS",
+      "blocking_codes": [],
+      "evidence_manifest_sha256": "sha256:a6322dcbf2a61f2ac1e3e8f3e675dcbc714cc99fa88b5033fa39696f4f043bd6",
+      "query_count": 2,
+      "evidence_count": 2,
+      "resolved_authority_context_sha256": "6e5db5dcb689ca772fb864ec2c2e14a11f3e8bc4600ce037f35c5b175eb25357",
+      "resolved_authority_count": 2
+    },
+    "negative_zero_as_positive": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "trace[1]:ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT"
+      ],
+      "evidence_manifest_sha256": "sha256:0c2c2cac5f3bac3d12e627d39c351b65098918a6f0d1e27a20b1687e119b48f5"
+    },
+    "negative_generic_ekb_locator": {
+      "mutation": "replace exact positive source_locator with supabase://public.lf_error_knowledge",
+      "status": "FAIL",
+      "blocking_codes": [
+        "trace[0]:EVIDENCE_LOCATOR_MISMATCH"
+      ],
+      "evidence_manifest_sha256": "sha256:fe94a0c9a0d6e664587a8e07c567ceaf513df91dd2ba6b30fa1976e26ac8b93b"
+    }
+  },
+  "already_tested_guards": {
+    "supported_material_claim_requires_evidence": "SUPPORTED_CLAIM_EVIDENCE_REQUIRED",
+    "evidence_map_requires_refs": "EVIDENCE_MAP_REFS_REQUIRED",
+    "current_uncertainty_requires_exact_evidence_map": "CURRENT_UNCERTAINTY_EVIDENCE_MAP_REQUIRED"
+  },
+  "ci_source_revision": {
+    "validate_lf_packs": {
+      "run_id": 35747882885,
+      "conclusion": "success"
+    },
+    "bootstrap_reproducibility": {
+      "run_id": 35747882880,
+      "conclusion": "success"
+    },
+    "branch_wide_contract_check": {
+      "run_id": 35747882714,
+      "conclusion": "failure",
+      "failed_step": "Canonical preflight and unified CI applicability plan",
+      "mc04_closure_usage": "NOT_USED_AS_MC04_EVIDENCE",
+      "note": "MC-04-specific validator tests are covered by the successful Validate LF Packs run. This branch-wide failure remains visible and does not close or advance any other MC."
+    }
+  },
+  "mutation_scope": {
+    "production_mutation": false,
+    "database_write": false,
+    "runtime_activation": false,
+    "merge": false
+  },
+  "closure_note": "MC-04 is closed for the candidate evidence path: live EKB presence is bound to exact locator+digest, zero-row is accepted only as ABSENCE, the same zero-row cannot support a positive claim, and generic EKB locator substitution is rejected."
+}
