@@ -40,7 +40,7 @@ RESEARCH_TRACE_PATH = PROFILE_ROOT / "validators" / "research_trace.py"
 PROFILE_CODE = "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
 PROFILE_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
 EXECUTOR_MODE = "GPT_NATIVE"
-REQUIRED_TOOL_PERMISSIONS = ("READ_GITHUB", "READ_SUPABASE")
+REQUIRED_TOOL_PERMISSIONS = ("READ_GITHUB", "READ_SUPABASE", "READ_WEB")
 FORBIDDEN_WRITE_PREFIXES = ("WRITE_", "MUTATE_", "DELETE_", "MERGE_", "PUBLISH_", "DEPLOY_")
 
 EVIDENCE_RESOLVERS = {
@@ -51,6 +51,10 @@ EVIDENCE_RESOLVERS = {
     "SUPABASE": {
         "resolver_id": "LF_SUPABASE_READBACK_V1",
         "provider": "SUPABASE",
+    },
+    "WEB": {
+        "resolver_id": "LF_WEB_RESEARCH_READBACK_V1",
+        "provider": "WEB",
     },
 }
 
@@ -115,6 +119,7 @@ def build_native_execution_contract(
             "READ_INPUT",
             "READ_GITHUB",
             "READ_SUPABASE",
+            "READ_WEB",
             "EVALUATE_SYSTEMIC_CAUSALITY",
             "EMIT_FROZEN_CANDIDATE",
             "EMIT_INVESTIGATION_TRACE",
