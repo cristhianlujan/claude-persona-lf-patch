@@ -123,6 +123,10 @@
         "bundle_digest": {
           "type": "string",
           "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "evidence_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         }
       }
     },
@@ -265,6 +269,13 @@
               "reviewer_execution_id",
               "producer_execution_receipt_ref",
               "independence_evidence_refs"
+            ]
+          },
+          "evidence_binding": {
+            "required": [
+              "bundle_id",
+              "bundle_digest",
+              "evidence_manifest_sha256"
             ]
           }
         }
