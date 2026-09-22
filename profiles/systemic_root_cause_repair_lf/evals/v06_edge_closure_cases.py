@@ -59,8 +59,9 @@ def v06_pair():
     candidate = copy.deepcopy(candidate)
     evidence = copy.deepcopy(evidence)
     candidate["profile_pack_id"] = V06
-    # This fixture isolates material-edge behavior; no current uncertainty is material here.
-    candidate["current_uncertainties"] = []
+    # Preserve inherited NON_BLOCKING_HISTORICAL uncertainty because the fixture also
+    # preserves a PARTIAL live-authority packet and an unresolved historical producer.
+    # Removing that classification would make a ready candidate internally inconsistent.
     candidate["material_process_graph"] = copy.deepcopy(V04_PROCESS_FIXTURE["material_process_graph"])
 
     nodes = candidate["material_process_graph"]["nodes"]
