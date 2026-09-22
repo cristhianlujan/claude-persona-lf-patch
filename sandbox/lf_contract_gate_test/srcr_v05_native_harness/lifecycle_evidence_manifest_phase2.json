@@ -1,7 +1,7 @@
 {
   "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
   "bundle_id": "BUNDLE-SRCR-V05-LIFECYCLE-NATIVE-PHASE2-20260921",
-  "bundle_digest": "sha256:efc0d33bd468b49d0aa8dfde44b5a589aed4e413925a3e11c47bdcdccd856996",
+  "bundle_digest": "sha256:1d3fa528dfe53427f7f1efc12952ad6ae00911b005139dd0bd651f4bac1f70ac",
   "observed_at": "2026-09-21T22:35:00-05:00",
   "producer": {
     "kind": "SOURCE_FIRST_RESOLVER",
@@ -68,7 +68,7 @@
       "evidence_class": "SOURCE_PROVENANCE",
       "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/functions/run-creacion-perfil-lf/index.ts",
       "revision_or_observed_at": "gitblob:f05f4f5c77c1e438b03ead1f3a64c75d9657c8b1",
-      "digest": "gitblob:f05f4f5c77c1e438b03ead1f3a64c75d9657c8b1",
+      "digest": "sha256:4286a17f526e1844ebb130429a2827289951cdb96c34b27ed4aaacbcf3368efa",
       "state": "CURRENT"
     },
     {
@@ -77,7 +77,7 @@
       "evidence_class": "SOURCE_PROVENANCE",
       "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
       "revision_or_observed_at": "gitblob:31b72db3b835f88f0fabb86e3dd5b3a7e6ff1b97",
-      "digest": "gitblob:31b72db3b835f88f0fabb86e3dd5b3a7e6ff1b97",
+      "digest": "sha256:a14dd1d35f258683b4a1c9c39eff32ba92a60d7828274729bbcd0edbf7c74510",
       "state": "CURRENT"
     },
     {
@@ -86,7 +86,7 @@
       "evidence_class": "SOURCE_PROVENANCE",
       "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/migrations/20260921064000_lf_profile_update_research_baseline_reconcile_v1.sql",
       "revision_or_observed_at": "gitblob:49e83a704fc6811814955a6a1e19dff8942dfff3",
-      "digest": "gitblob:49e83a704fc6811814955a6a1e19dff8942dfff3",
+      "digest": "sha256:814b14fb3ab1e075ea842d2bab4cf4a98ac8dc64bfc203c96e063a6a7f5b05b2",
       "state": "CURRENT"
     },
     {
@@ -95,7 +95,7 @@
       "evidence_class": "SOURCE_PROVENANCE",
       "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/migrations/20260921013000_lf_profile_runtime_source_refresh_operation_v1.sql",
       "revision_or_observed_at": "gitblob:f967b4fed62425e3a63d4379dda78ef65126f0d3",
-      "digest": "gitblob:f967b4fed62425e3a63d4379dda78ef65126f0d3",
+      "digest": "sha256:2711640ce236114856ad5fb87a54d2b9f29532d84c50fd01779df3cbb60b3bc1",
       "state": "CURRENT"
     }
   ]
