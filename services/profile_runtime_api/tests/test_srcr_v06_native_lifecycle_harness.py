@@ -698,6 +698,51 @@ def test_v06_builder_declares_canary_consumer_and_queue_terminal_bridge() -> Non
     assert "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge" in deliverables
 
 
+def test_v06_observed_next_gate_with_real_consumer_evidence_passes() -> None:
+    proof = {
+        "applicability": "REQUIRED",
+        "status": "OBSERVED_PASS",
+        "evidence_refs": ["EV-EDGE"],
+    }
+    payload = {
+        "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+        "material_process_graph": {
+            "applies": True,
+            "nodes": [{"node_id": "A"}, {"node_id": "B"}],
+            "edges": [{
+                "edge_id": "EDGE-A-B",
+                "from_node": "A",
+                "to_node": "B",
+                "edge_kind": "CONTROL_FLOW",
+                "observation_status": "OBSERVED_CLOSED",
+                "disposition": "REUSE_AS_IS",
+                "producer_evidence_refs": ["EV-EDGE"],
+                "transport_evidence_refs": ["EV-EDGE"],
+                "consumer_evidence_refs": ["EV-CONSUMER"],
+                "enforcement_evidence_refs": ["EV-EDGE"],
+                "effect_readback_evidence_refs": ["EV-EDGE"],
+                "gap_evidence_refs": [],
+                "next_gate": "NEXT_GATE",
+                "next_gate_consumer_evidence_refs": ["EV-CONSUMER"],
+                "canonical_route_consistency": proof,
+                "post_transition_currentness": proof,
+                "terminality": proof,
+                "identity_consistency": proof,
+                "rollback_executability": proof,
+                "proposed_change_ref": None,
+                "blocking_uncertainty_id": None,
+            }],
+        },
+    }
+    manifest = {
+        "evidence": [
+            {"evidence_id": "EV-EDGE", "state": "CURRENT"},
+            {"evidence_id": "EV-CONSUMER", "state": "CURRENT"},
+        ]
+    }
+    assert harness.runtime_validate.validate_edge_closure(payload, manifest) == []
+
+
 def test_v06_implementable_next_gate_requires_real_or_proposed_consumer() -> None:
     candidate_path = (
         ROOT / "sandbox" / "lf_contract_gate_test"
