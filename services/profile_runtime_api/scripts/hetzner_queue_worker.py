@@ -674,13 +674,62 @@ def _baseline_envelope_from_job(job: dict[str, Any]) -> dict[str, Any]:
     return envelope
 
 
+
+def _bind_external_authority_resolution(
+    payload: dict[str, Any], model_governance: dict[str, Any]
+) -> dict[str, Any]:
+    profile = payload.get("profile")
+    if not isinstance(profile, dict):
+        raise RuntimeError("HETZNER_GOVERNED_PROFILE_PAYLOAD_MISSING")
+    if profile.get("profile_code") != "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF":
+        return model_governance
+
+    manifest = profile.get("evidence_manifest")
+    if not isinstance(manifest, dict) or not manifest:
+        raise RuntimeError("SRCR_EVIDENCE_MANIFEST_REQUIRED_BEFORE_MODEL")
+    evidence = manifest.get("evidence")
+    query_trace = manifest.get("query_trace")
+    if not isinstance(evidence, list) or not evidence:
+        raise RuntimeError("SRCR_EVIDENCE_MANIFEST_EMPTY_BEFORE_MODEL")
+    if not isinstance(query_trace, list) or not query_trace:
+        raise RuntimeError("SRCR_QUERY_TRACE_REQUIRED_BEFORE_MODEL")
+
+    resolved: dict[str, Any] = {}
+    for row in evidence:
+        if not isinstance(row, dict):
+            raise RuntimeError("SRCR_EVIDENCE_MANIFEST_ROW_INVALID")
+        evidence_id = row.get("evidence_id")
+        if not isinstance(evidence_id, str) or not evidence_id:
+            raise RuntimeError("SRCR_EVIDENCE_MANIFEST_ID_INVALID")
+        if evidence_id in resolved:
+            raise RuntimeError("SRCR_EVIDENCE_MANIFEST_ID_DUPLICATE")
+        resolved[evidence_id] = {
+            "subject": row.get("subject"),
+            "evidence_class": row.get("evidence_class"),
+            "source_locator": row.get("source_locator"),
+            "revision_or_observed_at": row.get("revision_or_observed_at"),
+            "digest": row.get("digest"),
+            "state": row.get("state"),
+        }
+
+    bound = dict(model_governance)
+    capsule = dict(bound.get("context_capsule") or {})
+    capsule["resolved_authority_context"] = resolved
+    capsule["evidence_manifest_sha256"] = "sha256:" + _canonical_json_sha256(manifest)
+    capsule["query_trace_count"] = len(query_trace)
+    capsule["evidence_count"] = len(evidence)
+    bound["context_capsule"] = capsule
+    return bound
+
 def _attach_governed_operation(
     payload: dict[str, Any], model_governance: dict[str, Any]
 ) -> dict[str, Any]:
     profile = payload.get("profile")
     if not isinstance(profile, dict):
         raise RuntimeError("HETZNER_GOVERNED_PROFILE_PAYLOAD_MISSING")
-    profile["governed_operation"] = model_governance
+    profile["governed_operation"] = _bind_external_authority_resolution(
+        payload, model_governance
+    )
     return payload
 
 
