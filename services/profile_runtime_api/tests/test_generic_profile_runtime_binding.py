@@ -114,10 +114,10 @@ class GenericRuntimeBindingTest(unittest.TestCase):
         tmp,root,repo=self._repo()
         try:
             (root/'profiles/p/validators/runtime_validate.py').write_text(
-                'def validate(payload, evidence_manifest=None):\\n    return []\\n'
+                'def validate(payload, evidence_manifest=None):\n    return []\n'
             )
             (root/'profiles/p/validators/runtime_semantic_utility.py').write_text(
-                'def evaluate(payload, contract_gate, evidence_manifest=None):\\n    return {"status":"PASS","blocking_codes":[]}\\n'
+                'def evaluate(payload, contract_gate, evidence_manifest=None):\n    return {"status":"PASS","blocking_codes":[]}\n'
             )
             gates=OutputGates(repo)
             schema=repo.runtime_schema('p')
