@@ -77,6 +77,21 @@ class RepositoryBindings:
     ) -> list[dict[str, str]]:
         if not paths:
             raise RepositoryError("PROFILE_SOURCE_PATHS_MISSING")
+        binding = self.runtime_binding(profile_slug)
+        if binding is not None and isinstance(binding.model_context, dict):
+            required_refs = set(binding.model_context.get("required_source_refs") or [])
+            supplied_refs = set(paths)
+            missing = sorted(required_refs - supplied_refs)
+            if missing:
+                raise RepositoryError(
+                    "PROFILE_RUNTIME_REQUIRED_SOURCE_MISSING", ",".join(missing)
+                )
+            if binding.model_context.get("allow_additional_sources") is False:
+                extra = sorted(supplied_refs - required_refs)
+                if extra:
+                    raise RepositoryError(
+                        "PROFILE_RUNTIME_UNDECLARED_SOURCE_FORBIDDEN", ",".join(extra)
+                    )
         profile_root = (self.profiles_root / profile_slug).resolve()
         self._within(profile_root, self.profiles_root, "PROFILE_ROOT_PATH_ESCAPE")
         if not profile_root.is_dir():
@@ -157,9 +172,29 @@ class RepositoryBindings:
             raise RepositoryError("PROFILE_RUNTIME_BINDING_GOVERNANCE_WEAK", profile_slug)
         if model_context is not None:
             projection = model_context.get("source_projection") if isinstance(model_context, dict) else None
+            required_source_refs = (
+                model_context.get("required_source_refs")
+                if isinstance(model_context, dict)
+                else None
+            )
+            allow_additional_sources = (
+                model_context.get("allow_additional_sources")
+                if isinstance(model_context, dict)
+                else None
+            )
             if (
                 not isinstance(model_context, dict)
                 or model_context.get("full_source_to_model") is not False
+                or not isinstance(required_source_refs, list)
+                or not required_source_refs
+                or len(required_source_refs) != len(set(required_source_refs))
+                or any(
+                    not isinstance(value, str)
+                    or not value.startswith(f"profiles/{profile_slug}/")
+                    or ".." in PurePosixPath(value).parts
+                    for value in required_source_refs
+                )
+                or not isinstance(allow_additional_sources, bool)
                 or not isinstance(projection, dict)
                 or projection.get("mode") != "MARKDOWN_SECTIONS"
                 or not isinstance(projection.get("include_sections"), list)
