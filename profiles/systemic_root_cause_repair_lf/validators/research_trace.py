@@ -10,11 +10,12 @@ import hashlib
 import json
 from typing import Any
 
-REQUIRED_TOOL_PERMISSIONS = {"READ_GITHUB", "READ_SUPABASE"}
+REQUIRED_TOOL_PERMISSIONS = {"READ_GITHUB", "READ_SUPABASE", "READ_WEB"}
 FORBIDDEN_WRITE_PREFIXES = ("WRITE_", "MUTATE_", "DELETE_", "MERGE_", "PUBLISH_", "DEPLOY_")
 EVIDENCE_RESOLVERS = {
     "GITHUB": {"resolver_id": "LF_GITHUB_SOURCE_READBACK_V1", "provider": "GITHUB"},
     "SUPABASE": {"resolver_id": "LF_SUPABASE_READBACK_V1", "provider": "SUPABASE"},
+    "WEB": {"resolver_id": "LF_WEB_RESEARCH_READBACK_V1", "provider": "WEB"},
 }
 TRACE_REQUIRED_FIELDS = {
     "sequence",
@@ -177,6 +178,11 @@ def validate_manifest_trace_binding(manifest: Any, trace: Any) -> list[str]:
             or locator.startswith("sql:")
         ):
             errors.append(f"trace[{idx}]:SUPABASE_LOCATOR_CLASS_MISMATCH")
+        if provider == "WEB" and not (
+            locator.startswith("https://")
+            or locator.startswith("http://")
+        ):
+            errors.append(f"trace[{idx}]:WEB_LOCATOR_CLASS_MISMATCH")
 
     missing = sorted(set(by_id) - traced_ids)
     if missing:
