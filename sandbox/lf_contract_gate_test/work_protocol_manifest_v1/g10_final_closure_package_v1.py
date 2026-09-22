@@ -12,7 +12,7 @@ import sys
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
-G09 = Path(__file__).with_name("g09_cold_replay_v1.py")
+CROSS_GATE = Path(__file__).with_name("cross_gate_integration_v1.py")
 SCHEMA = Path(__file__).with_name("g10_final_closure_package_v1.schema.json")
 README = Path(__file__).with_name("README.md")
 MIGRATION = ROOT / "supabase/migrations/20260922144000_work_protocol_manifest_v1.sql"
@@ -37,38 +37,48 @@ def git_blob(path: Path) -> str:
     ).strip()
 
 
-def run_g09() -> dict[str, Any]:
+def run_cross_gate() -> dict[str, Any]:
     proc = subprocess.run(
-        [sys.executable, str(G09)],
+        [sys.executable, str(CROSS_GATE)],
         cwd=ROOT,
         text=True,
         capture_output=True,
-        timeout=120,
+        timeout=180,
         check=False,
     )
     if proc.returncode != 0:
         raise AssertionError({
-            "code": "G10_G09_REPLAY_FAILED",
+            "code": "G10_CROSS_GATE_REPLAY_FAILED",
             "returncode": proc.returncode,
             "stdout": proc.stdout[-4000:],
             "stderr": proc.stderr[-4000:],
         })
     payload = json.loads(proc.stdout)
     assert payload["status"] == "PASS", payload
-    assert payload["gate_count"] == 9, payload
-    assert payload["dimension_count"] == 5, payload
-    assert payload["matrix_case_count"] == 45, payload
-    assert payload["cold_replay"]["status"] == "PASS", payload
-    assert payload["cold_replay"]["byte_equivalent_canonical_json"] is True, payload
-    for gate_id in [f"G{i:02d}" for i in range(9)]:
-        row = payload["matrix_results"][gate_id]
-        assert row == {
-            "positive": "PASS",
-            "negative": "PASS",
-            "drift": "PASS",
-            "bypass": "PASS",
-            "timeout": "PASS",
-        }, (gate_id, row)
+    assert payload["gate_count"] == 10, payload
+    assert payload["link_count"] == 9, payload
+    assert [x["gate"] for x in payload["chain"]] == [f"G{i:02d}" for i in range(10)], payload
+    assert all(x["status"] == "PASS" for x in payload["chain"]), payload
+    assert len(payload["negative_probes"]) >= 3, payload
+    assert set(payload["negative_probes"].values()) == {"PASS"}, payload
+
+    for idx, gate in enumerate(payload["chain"]):
+        if idx:
+            assert gate["input_digest"] == payload["chain"][idx - 1]["output_digest"], {
+                "code": "G10_CROSS_GATE_LINEAGE_BROKEN",
+                "predecessor": payload["chain"][idx - 1]["gate"],
+                "gate": gate["gate"],
+            }
+
+    summary = payload["g09_summary"]
+    assert summary["status"] == "PASS", summary
+    assert summary["gate_count"] == 9, summary
+    assert summary["dimension_count"] == 5, summary
+    assert summary["matrix_case_count"] == 45, summary
+    assert HEX64.fullmatch(summary["cold_replay_sha256"]), summary
+
+    expected_status = {f"G{i:02d}": "READBACK_CLOSED" for i in range(10)}
+    assert payload["gate_status"] == expected_status, payload["gate_status"]
     return payload
 
 
@@ -86,6 +96,8 @@ def validate_ci_plan(plan: dict[str, Any]) -> tuple[str, str, str]:
     assert ready is True, plan.get("source_authority")
     required_changed = {
         ".github/workflows/validate-lf-packs.yml",
+        "sandbox/lf_contract_gate_test/work_protocol_manifest_v1/cross_gate_external_case_input_governance_v1.json",
+        "sandbox/lf_contract_gate_test/work_protocol_manifest_v1/cross_gate_integration_v1.py",
         "sandbox/lf_contract_gate_test/work_protocol_manifest_v1/g10_final_closure_package_v1.py",
         "sandbox/lf_contract_gate_test/work_protocol_manifest_v1/g10_final_closure_package_v1.schema.json",
     }
@@ -115,8 +127,20 @@ def validate_documented_readbacks() -> list[str]:
 
 def build_package(plan: dict[str, Any]) -> dict[str, Any]:
     head, base, current = validate_ci_plan(plan)
-    g09 = run_g09()
+    cross = run_cross_gate()
     documented = validate_documented_readbacks()
+
+    gate_status = dict(cross["gate_status"])
+    assert gate_status == {f"G{i:02d}": "READBACK_CLOSED" for i in range(10)}
+
+    g09_summary = cross["g09_summary"]
+    g09_matrix = {
+        "status": g09_summary["status"],
+        "gate_count": g09_summary["gate_count"],
+        "dimension_count": g09_summary["dimension_count"],
+        "matrix_case_count": g09_summary["matrix_case_count"],
+        "cold_replay_sha256": g09_summary["cold_replay_sha256"],
+    }
 
     migration_bytes = MIGRATION.read_bytes()
     migration_blob = git_blob(MIGRATION)
@@ -130,7 +154,46 @@ def build_package(plan: dict[str, Any]) -> dict[str, Any]:
         "expected_blob": migration_blob,
     }
 
-    gate_status = {f"G{i:02d}": "READBACK_CLOSED" for i in range(10)}
+    migration_binding = {
+        "path": str(MIGRATION.relative_to(ROOT)),
+        "git_blob_sha1": migration_blob,
+        "source_sha256": migration_sha256,
+    }
+
+    cross_summary = {
+        "status": cross["status"],
+        "gate_count": cross["gate_count"],
+        "link_count": cross["link_count"],
+        "lineage_root_sha256": cross["lineage_root_sha256"],
+        "external_case_fixture_sha256": cross["external_case"]["fixture_sha256"],
+        "negative_probe_count": len(cross["negative_probes"]),
+        "gate_status": gate_status,
+        "per_gate_evidence": cross["chain"],
+    }
+
+    g10_evidence = {
+        "candidate_head_sha": head,
+        "authority_current_revision": current,
+        "authority_currentness": (plan.get("source_authority") or {}).get("decision"),
+        "migration_binding": migration_binding,
+        "gate_status": gate_status,
+        "g09_matrix": g09_matrix,
+        "cross_gate_lineage_root_sha256": cross["lineage_root_sha256"],
+    }
+    g10_evidence_digest = sha256_bytes(canonical_bytes(g10_evidence))
+    g10_lineage = {
+        "gate": "G10",
+        "status": "PASS",
+        "input_digest": cross["lineage_root_sha256"],
+        "evidence_digest": g10_evidence_digest,
+        "output_digest": sha256_bytes(canonical_bytes({
+            "gate": "G10",
+            "status": "PASS",
+            "input_digest": cross["lineage_root_sha256"],
+            "evidence_digest": g10_evidence_digest,
+        })),
+    }
+
     package: dict[str, Any] = {
         "schema_version": "LF_WORK_PROTOCOL_G10_FINAL_CLOSURE_PACKAGE_V1",
         "result": "READY_FOR_EKB_READBACK",
@@ -139,18 +202,10 @@ def build_package(plan: dict[str, Any]) -> dict[str, Any]:
         "authority_current_revision": current,
         "authority_currentness": (plan.get("source_authority") or {}).get("decision"),
         "gate_status": gate_status,
-        "g09_matrix": {
-            "status": "PASS",
-            "gate_count": g09["gate_count"],
-            "dimension_count": g09["dimension_count"],
-            "matrix_case_count": g09["matrix_case_count"],
-            "cold_replay_sha256": g09["cold_replay"]["replay_sha256"],
-        },
-        "migration_binding": {
-            "path": str(MIGRATION.relative_to(ROOT)),
-            "git_blob_sha1": migration_blob,
-            "source_sha256": migration_sha256,
-        },
+        "g09_matrix": g09_matrix,
+        "cross_gate_integration": cross_summary,
+        "g10_lineage": g10_lineage,
+        "migration_binding": migration_binding,
         "documented_live_readback_sections": documented,
         "waiver_debt_count": 0,
         "receipt_boundary": {
@@ -167,8 +222,10 @@ def build_package(plan: dict[str, Any]) -> dict[str, Any]:
         "next_gate": "G11_CANDIDATE_RECEIPT",
     }
     package["package_sha256"] = sha256_bytes(canonical_bytes(package))
+
     schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
     jsonschema.Draft202012Validator(schema).validate(package)
+
     verify_source = dict(package)
     supplied_digest = verify_source.pop("package_sha256")
     recomputed = sha256_bytes(canonical_bytes(verify_source))
@@ -177,6 +234,7 @@ def build_package(plan: dict[str, Any]) -> dict[str, Any]:
         "supplied": supplied_digest,
         "recomputed": recomputed,
     }
+    assert package["g10_lineage"]["input_digest"] == package["cross_gate_integration"]["lineage_root_sha256"]
     return package
 
 
