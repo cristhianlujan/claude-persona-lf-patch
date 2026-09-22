@@ -280,6 +280,11 @@ class RepositoryBindings:
                 or research_execution.get("requires_resolved_authority_context") is not True
                 or not isinstance(research_execution.get("resolver_ref"), str)
                 or not research_execution.get("resolver_ref")
+                or not isinstance(research_execution.get("validator"), dict)
+                or not isinstance(research_execution["validator"].get("path"), str)
+                or not research_execution["validator"].get("path")
+                or not isinstance(research_execution["validator"].get("callable"), str)
+                or not research_execution["validator"].get("callable")
             ):
                 raise RepositoryError("PROFILE_RUNTIME_RESEARCH_EXECUTION_INVALID", profile_slug)
         if execution_budget is not None:
@@ -297,6 +302,8 @@ class RepositoryBindings:
             ):
                 raise RepositoryError("PROFILE_RUNTIME_EXECUTION_BUDGET_INVALID", profile_slug)
         refs = [runtime_schema["default"], *runtime_schema["output_modes"].values(), canonical["path"], semantic["path"]]
+        if isinstance(research_execution, dict):
+            refs.append(research_execution["validator"]["path"])
         if isinstance(canonical_quality, dict):
             refs.extend([
                 canonical_quality["judge_path"],
@@ -550,6 +557,21 @@ class RepositoryBindings:
             f"lf_profile_semantic_utility_{profile_slug}",
         )
         return module, binding.semantic_utility_callable
+
+    def load_research_trace_validator(self, profile_slug: str) -> tuple[ModuleType, str] | None:
+        binding = self.runtime_binding(profile_slug)
+        research = binding.research_execution if binding is not None else None
+        if not isinstance(research, dict):
+            return None
+        spec = research.get("validator")
+        if not isinstance(spec, dict):
+            raise RepositoryError("PROFILE_RUNTIME_RESEARCH_VALIDATOR_MISSING", profile_slug)
+        module = self._load_file(
+            self.profiles_root / profile_slug / spec["path"],
+            f"lf_profile_research_trace_{profile_slug}",
+        )
+        return module, spec["callable"]
+
 
     def load_canonical_quality_validator(
         self, profile_slug: str, component: str
