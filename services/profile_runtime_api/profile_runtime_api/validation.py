@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import json
 import re
 from typing import Any
@@ -166,7 +167,12 @@ class OutputGates:
         self.repository = repository
 
     def contract(
-        self, *, profile_slug: str, raw_output: Any, schema: SchemaBinding
+        self,
+        *,
+        profile_slug: str,
+        raw_output: Any,
+        schema: SchemaBinding,
+        evidence_manifest: dict[str, Any] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any] | None]:
         payload, parse_errors = strict_json_object(raw_output)
         errors: list[dict[str, Any]] = [
@@ -202,7 +208,11 @@ class OutputGates:
             if not (
                 profile_slug == "ui_architect" and schema.mode in UI_SCHEMA_ONLY_MODES
             ):
-                errors.extend(self._canonical_errors(profile_slug, payload))
+                errors.extend(
+                    self._canonical_errors(
+                        profile_slug, payload, evidence_manifest=evidence_manifest
+                    )
+                )
         blocking = sorted({str(item.get("code")) for item in errors})
         return (
             {
@@ -223,6 +233,7 @@ class OutputGates:
         profile_slug: str,
         payload: dict[str, Any] | None,
         contract_gate: dict[str, Any],
+        evidence_manifest: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         if contract_gate.get("status") != "PASS" or payload is None:
             return {
@@ -245,7 +256,14 @@ class OutputGates:
                     "downstream_authorized": False,
                 }
             try:
-                result = evaluator(payload, contract_gate)
+                if self._supports_evidence_manifest(evaluator):
+                    result = evaluator(
+                        payload,
+                        contract_gate,
+                        evidence_manifest=evidence_manifest,
+                    )
+                else:
+                    result = evaluator(payload, contract_gate)
             except Exception as exc:
                 return {
                     "status": "FAIL",
@@ -438,8 +456,26 @@ class OutputGates:
             "downstream_authorized": False,
         }
 
+    @staticmethod
+    def _supports_evidence_manifest(callable_obj: Any) -> bool:
+        try:
+            params = inspect.signature(callable_obj).parameters
+        except (TypeError, ValueError):
+            return False
+        return (
+            "evidence_manifest" in params
+            or any(
+                parameter.kind is inspect.Parameter.VAR_KEYWORD
+                for parameter in params.values()
+            )
+        )
+
     def _canonical_errors(
-        self, profile_slug: str, payload: dict[str, Any]
+        self,
+        profile_slug: str,
+        payload: dict[str, Any],
+        *,
+        evidence_manifest: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         module = self.repository.load_validator(profile_slug)
         if module is None:
@@ -450,7 +486,10 @@ class OutputGates:
                 validator = getattr(module, callable_name, None)
                 if not callable(validator):
                     return [{"code": "CANONICAL_PROFILE_VALIDATOR_CALLABLE_MISSING", "path": "$"}]
-                result = validator(payload)
+                if self._supports_evidence_manifest(validator):
+                    result = validator(payload, evidence_manifest=evidence_manifest)
+                else:
+                    result = validator(payload)
                 if isinstance(result, dict):
                     raw_errors = result.get("errors")
                     if raw_errors is None:
