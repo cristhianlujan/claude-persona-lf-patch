@@ -1,0 +1,408 @@
+{
+  "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+  "bundle_id": "BUNDLE-SRCR-V06-LIFECYCLE-NATIVE-COMBINED-20260921",
+  "bundle_digest": "sha256:2b3055458fe7cb2e4a0da058af20fefa0f95f33b896a4677bcead5dd86d91109",
+  "observed_at": "2026-09-21T23:02:00-05:00",
+  "producer": {
+    "kind": "SOURCE_FIRST_RESOLVER",
+    "resolver_ref": "supabase://private.lf_evidence_resolver_registry_v1/LF_SUPABASE_READBACK_V1+LF_GITHUB_SOURCE_READBACK_V1"
+  },
+  "evidence": [
+    {
+      "evidence_id": "EV-LC-001",
+      "subject": "exact SRCR profile operational asset and lifecycle state",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q5_profile_asset_exact",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:7a35a3f993e7b3bb3eb4bb5555d40f6865948486e4114a5148a59e831bb9133f",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-002",
+      "subject": "profile lifecycle operation inventory",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q6_profile_phase_operation_codes",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:68ad29b4ea3b24df5d9d5feb82b4a5fa89b658c9d5e8a7c401fb0a27c109c2da",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-003",
+      "subject": "profile operation step contract and judge coverage counts",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q7_step_counts_by_profile_operation",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:8bb5802122924bf66619c005ebddb64bf265444c88da23474c3d72465d0cef43",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-004",
+      "subject": "create and update operation edge definitions",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q8_create_update_step_ids",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:a34855ad7f884ca583e977a5521f22023960e521999ae2496937752887c31567",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-005",
+      "subject": "generic asset retirement operation steps",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q9_retiro_activo_steps",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:dfab57fd7767a67aadfed6b0a0b6dc6bcb0ba0345e16729d439f97b0e9a62897",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-006",
+      "subject": "explicit profile lifecycle operation coverage for register wire publish promote verify deprecate rollback",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q10_profile_publish_promote_rollback_absence",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:03e140fadf94e0f7ca5376bc9316bd2d04f202bbf43396c46ed29b9f1b80a7ad",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-007",
+      "subject": "profile router action inventory",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q11_profile_router_actions",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:7071c640e8c59132c0b670e0bd721391a751ece8623a23af5b35217b278374cc",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-008",
+      "subject": "SRCR creation execution terminal summary",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q12_creation_execution_summary",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:411b4f7bc417690dfcaaa7c8f8995ad2ec592ec09305cf74dfe9a29e90d174fe",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-009",
+      "subject": "SRCR creation execution missing active step",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q13_creation_missing_step",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:42f6565c8e73c1821cb94f431dccfb2b89eb8e00f1a68e58b3450b0b613eecff",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-010",
+      "subject": "SRCR operational asset creation provenance",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q14_creation_asset_provenance",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:01399e6b5d9a075cda355307d588284bc9ab96fe3090c7ea2902bc1a337b5915",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-011",
+      "subject": "profile runtime activation and canary router actions",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q15_activation_canary_actions_absent",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-012",
+      "subject": "profile update post-regression merge reconciliation edge",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q16_update_merge_edge",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:fe5f440a53482265933a3a253bad5d7e9259531879e56d0eeae149a03e5aff30",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-013",
+      "subject": "profile execution runtime step chain",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q17_execution_profile_step_chain",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:4b4081763c79633e4cec688e3a71676b63e44734cb2cd649f890c875dccf2a09",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-014",
+      "subject": "recent SRCR profile execution histories",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q18_latest_srcr_profile_executions",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:4582efe8da9bdb4eed8cd7c1f86fa44f5b0639d196c153d0d5430616a29797ae",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-015",
+      "subject": "SRCR runtime source refresh execution and next gate",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q19_runtime_refresh_execution",
+      "revision_or_observed_at": "2026-09-21T22:00:00-05:00",
+      "digest": "sha256:4eab2f8c1bdd6e819d32be002b792019137e37005376854d9e5932a815394ac9",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-016",
+      "subject": "current database routines that insert into public.lf_activos",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q20_db_functions_inserting_lf_activos",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-017",
+      "subject": "triggers on lf_activos and operation execution tables",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q21_lifecycle_relevant_triggers",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:3782a60ffc725653de877778519d5b5879227e7abf902ec92bfc9f705f2bd4b7",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-018",
+      "subject": "database routines mentioning profile runtime canary or activation required gates",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q22_next_gate_function_refs",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:c68ea5a22eabc3b5bf06b72f101deca00c98dca03c3e6a996f18de3c79aea7f1",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-019",
+      "subject": "failed profile runtime queue row versus canonical operation execution state",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q23_failed_queue_vs_operation_execution",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:45e735655f0d5fb7227765c5a6bd8251e8089f3c64c1744f23b036b870a9500d",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-020",
+      "subject": "database routines bridging profile runtime queue and operation execution",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q24_queue_operation_bridge_functions",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-021",
+      "subject": "retire rollback restore recovery operation and router action inventory",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q25_retire_rollback_action_inventory",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:f6af98ea68df967523624130bc5862f40989d601ff5d931459ef7225ade550e4",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-022",
+      "subject": "current governed profile creation edge function source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/functions/run-creacion-perfil-lf/index.ts",
+      "revision_or_observed_at": "gitblob:f05f4f5c77c1e438b03ead1f3a64c75d9657c8b1",
+      "digest": "sha256:4286a17f526e1844ebb130429a2827289951cdb96c34b27ed4aaacbcf3368efa",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-023",
+      "subject": "current Hetzner profile runtime queue worker failure persistence source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "revision_or_observed_at": "gitblob:31b72db3b835f88f0fabb86e3dd5b3a7e6ff1b97",
+      "digest": "sha256:a14dd1d35f258683b4a1c9c39eff32ba92a60d7828274729bbcd0edbf7c74510",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-024",
+      "subject": "current profile update post-merge reconciliation source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/migrations/20260921064000_lf_profile_update_research_baseline_reconcile_v1.sql",
+      "revision_or_observed_at": "gitblob:49e83a704fc6811814955a6a1e19dff8942dfff3",
+      "digest": "sha256:814b14fb3ab1e075ea842d2bab4cf4a98ac8dc64bfc203c96e063a6a7f5b05b2",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-025",
+      "subject": "current profile runtime source refresh lifecycle source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/migrations/20260921013000_lf_profile_runtime_source_refresh_operation_v1.sql",
+      "revision_or_observed_at": "gitblob:f967b4fed62425e3a63d4379dda78ef65126f0d3",
+      "digest": "sha256:2711640ce236114856ad5fb87a54d2b9f29532d84c50fd01779df3cbb60b3bc1",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-026",
+      "subject": "runtime ProfileTask transport model source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/models.py",
+      "revision_or_observed_at": "gitblob:db3db9b9d88edffb5c0e1163332023003d71c43a",
+      "digest": "sha256:b4fb0b2b4415ce3c07c1d085fc818952f148ef87c0e31c07831c5b7319d271cc",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-027",
+      "subject": "runtime binding parser source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/repository.py",
+      "revision_or_observed_at": "gitblob:f41f1123412b36827cc44e460ab89d15f915795f",
+      "digest": "sha256:7f52972108c2f3415b2311907f1aebb0979bd4a9d84dee85f8fce3dacd2cf507",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-028",
+      "subject": "runtime contract and semantic gate invocation source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/validation.py",
+      "revision_or_observed_at": "gitblob:6663597322fbff0715efa0314f369ab88df040e1",
+      "digest": "sha256:0aec13a82d24e07e343fe8a4edf344d83538f1a5c8fcf15a20821b86436e6dd0",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-029",
+      "subject": "runtime engine downstream authorization source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/engine.py",
+      "revision_or_observed_at": "gitblob:a557646c9bdfa516474a5eccf008545be3a1fe8a",
+      "digest": "sha256:df3b7febceac80d2380b5f821e59e11d469079dbeca64689eea61835087b8f5d",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-030",
+      "subject": "SRCR V0.6 raw runtime binding including canonical quality",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json",
+      "revision_or_observed_at": "gitblob:479fd31233b98f1b132561e31738e4a49ba740aa",
+      "digest": "sha256:fc4c61433622421a4b86327fa116c090d4b5d6c065d2fa4757d63e887edec439",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-031",
+      "subject": "SRCR runtime validator evidence manifest signature",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+      "revision_or_observed_at": "gitblob:497404772632214998e5448374c158613f3bd0aa",
+      "digest": "sha256:9371a5a1e709d072278aee39e83b9b8a8e5d8f01e2c7f8e3559346b3f893ed3b",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-032",
+      "subject": "SRCR semantic utility evidence manifest signature",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
+      "revision_or_observed_at": "gitblob:e60388b2b4ef891066ed20362169b052c1050210",
+      "digest": "sha256:32288cb8cd3f85ab0ee53347479a7b57073468627bb2bc392fd9e86e512d54ec",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-033",
+      "subject": "SRCR canonical quality receipt validator source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/validate_quality_receipt.py",
+      "revision_or_observed_at": "gitblob:be63f0cf7c8461021e83d145c7261ae146345c54",
+      "digest": "sha256:f54b1a60a5cbe7e2c29bf7cbe5a43f73ed2b7281b64215d24fb4e1c7c2d1e2fb",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-034",
+      "subject": "Hetzner governed runtime semantic judge handoff source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "revision_or_observed_at": "gitblob:31b72db3b835f88f0fabb86e3dd5b3a7e6ff1b97",
+      "digest": "sha256:a14dd1d35f258683b4a1c9c39eff32ba92a60d7828274729bbcd0edbf7c74510",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-035",
+      "subject": "persisted SRCR semantic and canonical quality receipt inventory under exact receipt types",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q26_srcr_quality_receipt_rows",
+      "revision_or_observed_at": "2026-09-21T22:45:00-05:00",
+      "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-036",
+      "subject": "EJECUCION_PERFIL_LF semantic judge active contract and judge binding",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q27_srcr_semantic_judge_operation_binding",
+      "revision_or_observed_at": "2026-09-21T22:45:00-05:00",
+      "digest": "sha256:05fc474e6995043e08322d6ddb6a00ed029999e260a6d108bf50eedef0768621",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-037",
+      "subject": "SRCR pack self-validator source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/validate_pack.py",
+      "revision_or_observed_at": "gitblob:df02c772d28609ee6f427424808a432c8d2165d3",
+      "digest": "sha256:833d25b3a5700f3802b7b9e7054614ddbd4e52fe1955bf25cb0ae241b505be12",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-038",
+      "subject": "SRCR output schema V0.6 architecture-audit conditional source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+      "revision_or_observed_at": "gitblob:e3943180f5e5a2dde19693a6f39d6b75c3b20697",
+      "digest": "sha256:20976ea82219d55f394c8183c038778ae8bb26c0e72bcccc744db184e862a94a",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-039",
+      "subject": "full deep regression log exposing schema/self-validator drift",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106607329745/logs",
+      "revision_or_observed_at": "run:35684161556",
+      "digest": "sha256:02a185c9f238343c245eabd457450af139a4d20f93c895c05208ffa88a657e51",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-040",
+      "subject": "Validate LF Packs workflow source handling push base SHA",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/.github/workflows/validate-lf-packs.yml",
+      "revision_or_observed_at": "gitblob:d02f6f603516962f7c288122c2dfbbcbb39e3111",
+      "digest": "sha256:7d514e85717df9a4447d9cb0b30c4eba27d528b08696e038d963d18e25915f96",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-041",
+      "subject": "lf-contract-check workflow source handling push base SHA",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/.github/workflows/lf-contract-check.yml",
+      "revision_or_observed_at": "gitblob:53bd414917e6522e42abf6cd6492f49a702e7fd9",
+      "digest": "sha256:621162f34c7c5a376ddd9876a285c4b04741fcfcf01ab194a8c6f1281d2a16c7",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-042",
+      "subject": "new-branch push Validate LF Packs zero-SHA failure log",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106601722653/logs",
+      "revision_or_observed_at": "run:35682323915",
+      "digest": "sha256:889c5d936d43f56a4f2544c7b7dd5edb4b7afa8e9c3796cc9c19494ac597f62b",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-043",
+      "subject": "new-branch push lf-contract-check zero-SHA failure log",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106601741367/logs",
+      "revision_or_observed_at": "run:35682323913",
+      "digest": "sha256:d7f77c903577cbf53d05aa8b626b5b736bec46053991a1169f48548cb4bd25d5",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-044",
+      "subject": "V0.6 producer-depth eval contract for ARCHITECTURE_AUDIT relaxation",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/evals/v06_producer_depth_cases.py",
+      "revision_or_observed_at": "gitblob:5f03d484bb8dfea7df8b792a5d0c0d9366939193",
+      "digest": "sha256:9a874c4f24fd2b47a28d151df3c50bbe37509f4858989460b74746e3a13df4d5",
+      "state": "CURRENT"
+    }
+  ]
+}
