@@ -283,25 +283,28 @@ def build_candidate(base):
             )
         stages = plan.get("stages")
         if isinstance(stages, list):
-            retire_idx = next((i for i, x in enumerate(stages) if isinstance(x, dict) and "RETIRE" in str(x.get("stage", "")).upper()), None)
+            retire_idx = next((
+                i for i, x in enumerate(stages)
+                if isinstance(x, dict) and "RETIRE" in str(x.get("stage_id", "")).upper()
+            ), None)
             drain = {
-                "stage": "T4-COMPAT-DRAIN",
+                "stage_id": "T4-COMPAT-DRAIN",
                 "entry_condition": "Release is deprecated/superseded and no-new-adoption is enforced.",
-                "actions": [
+                "changes": [
                     "Inventory every active consumer against the exact deprecated release identity.",
                     "Keep existing consumers on the exact release while preventing new bindings.",
                     "Re-read consumer inventory after migration/rebinding actions.",
                 ],
                 "exit_condition": "Authoritative active-consumer inventory is zero and readback is current.",
-                "rollback": "Cancel retirement enablement and remain in deprecated/superseded drain state; do not restore new adoption implicitly.",
+                "rollback_scope": "Cancel retirement enablement and remain deprecated/superseded; do not restore new adoption implicitly.",
             }
-            if not any(isinstance(x, dict) and x.get("stage") == drain["stage"] for x in stages):
+            if not any(isinstance(x, dict) and x.get("stage_id") == drain["stage_id"] for x in stages):
                 if retire_idx is None:
                     stages.append(drain)
                 else:
                     stages.insert(retire_idx, drain)
                     if isinstance(stages[retire_idx + 1], dict):
-                        stages[retire_idx + 1]["stage"] = "T5-RETIRE-ENABLE"
+                        stages[retire_idx + 1]["stage_id"] = "T5-RETIRE-ENABLE"
 
     # Strengthen CREATE criterion with the missing first release edge.
     for ac in c.get("acceptance_criteria", []):
