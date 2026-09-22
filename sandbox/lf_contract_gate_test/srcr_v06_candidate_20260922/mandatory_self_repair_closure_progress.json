@@ -164,5 +164,17 @@
     }
   ],
   "closed_count": 0,
-  "open_count": 13
+  "open_count": 13,
+  "reporting_contract": {
+    "required_every_run": true,
+    "columns": [
+      "Punto obligatorio",
+      "Avance",
+      "Estado actual",
+      "Qué falta para 100%"
+    ],
+    "include_all_mc_rows": true,
+    "global_footer_required": true,
+    "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
+  }
 }
