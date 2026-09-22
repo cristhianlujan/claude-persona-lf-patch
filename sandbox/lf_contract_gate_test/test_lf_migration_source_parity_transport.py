@@ -61,6 +61,9 @@ class LfMigrationTransportParityTests(unittest.TestCase):
             "-- LF_MIGRATION_RECONCILIATION_SOURCE_V1\n"
             "-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY\n"
             "-- owner_binding_required=true\n"
+            "-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF\n"
+            "-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-20260922142522-20260922-001\n"
+            "-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER\n"
             "-- source_authority=supabase_migrations.schema_migrations\n"
             f"-- source_version={version}\n"
             f"-- source_name={name}\n"
@@ -84,6 +87,17 @@ class LfMigrationTransportParityTests(unittest.TestCase):
         self.assertFalse(
             subject.reconciliation_source_metadata(
                 sql.replace(f"source_name={name}", "source_name=other"),
+                version=version,
+                name=name,
+            )
+        )
+
+        self.assertFalse(
+            subject.reconciliation_source_metadata(
+                sql.replace(
+                    "reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-20260922142522-20260922-001",
+                    "reconciliation_owner_execution_id=UNKNOWN",
+                ),
                 version=version,
                 name=name,
             )
