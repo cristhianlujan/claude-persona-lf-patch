@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 94.23076923076923,
+  "overall_percent": 98.07692307692308,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -199,13 +199,22 @@
     },
     {
       "obligation_id": "MC-13",
-      "state": "SPECIFIED",
-      "percent": 25,
+      "state": "REPLAY_BLOCKED",
+      "percent": 75,
       "evidence": [
-        "Mandatory closure contract requires the complete ungrouped replay across Entrada, Investigacion, Transporte, Determinista, Jueces and Repeticiones."
+        "full ungrouped replay executed and persisted with exactly 247 rows: Entrada=3, Investigacion=132, Transporte=7, Determinista=45, Jueces=18, Repeticiones=42",
+        "246/247 applicable rows PASS; incomplete_input_rows=0, unresolved_evidence_ids=0, fabricated_evidence_ids=0, missing_transport_hops=0",
+        "all 65 frozen evidence IDs were re-resolved against current authority: Supabase 39/39, GitHub 23/23, Web 3/3",
+        "semantic judge and quality receipt are both present; duplicate structural ownership=0 and duplicate logical findings=0",
+        "Validate LF Packs exact material code head 1e5dad487c30a37b68120940a3ecc3518f733a84 run 35756765086 SUCCESS with 247 persistent runtime tests passed",
+        "sole failed row D45_LF_CONTRACT_CHECK_EXACT_HEAD: run 35756765026 failed preflight with FAIL_RECEIPT_MISSING",
+        "live Supabase search found zero ACTUALIZACION_PERFIL_LF executions for the SRCR profile created before the September 22 governed writes; a receipt now would be retroactive and is prohibited",
+        "branch remains 308 commits ahead of main with 109 changed files, 53 governed, so integrating current main does not remove the governance violation",
+        "replay: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_full_ungrouped_replay.json",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_full_replay_readback.json"
       ],
       "remaining_requirements": [
-        "Run the full ungrouped replay on the final exact revision across Entrada, Investigacion, Transporte, Determinista, Jueces and Repeticiones; repair every observation until zero remain."
+        "Reconstruct the branch changes under a canonical pre-write ACTUALIZACION_PERFIL_LF execution and legitimate governed receipt, then rerun all 247 MC-13 rows on the final exact revision until failed_applicable_rows=0 and open_material_observation_count=0."
       ]
     }
   ],
@@ -223,7 +232,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "c8d0016df30a2480b2770604e047546415da5de5",
+  "current_exact_code_head": "1e5dad487c30a37b68120940a3ecc3518f733a84",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -308,6 +317,16 @@
     "mc12_r2_declared_equivalent_count": 11,
     "mc12_r2_discovery_only_count": 1,
     "mc12_semantic_result_validation": "PASS",
-    "mc12_independent_r2_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc12_independent_r2_review.json"
+    "mc12_independent_r2_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc12_independent_r2_review.json",
+    "mc13_material_code_head": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+    "mc13_replay_rows": 247,
+    "mc13_passed_rows": 246,
+    "mc13_failed_rows": 1,
+    "mc13_live_authority_verified": "65/65",
+    "mc13_validate_lf_packs_run_id": 35756765086,
+    "mc13_lf_contract_check_run_id": 35756765026,
+    "mc13_blocking_code": "FAIL_RECEIPT_MISSING",
+    "mc13_replay_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_full_ungrouped_replay.json",
+    "mc13_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_full_replay_readback.json"
   }
 }
