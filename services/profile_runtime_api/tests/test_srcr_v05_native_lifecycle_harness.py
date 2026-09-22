@@ -228,7 +228,7 @@ def test_persisted_lifecycle_phase4_trace_and_manifest_are_exactly_bound() -> No
     manifest = json.loads((base / "lifecycle_evidence_manifest_phase4.json").read_text(encoding="utf-8"))
     trace = trace_payload["trace"]
 
-    assert len(trace) == 7
+    assert len(trace) == 8
     assert harness.validate_query_trace(trace) == []
     assert harness.validate_manifest_trace_binding(manifest, trace) == []
 
