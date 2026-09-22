@@ -444,6 +444,19 @@ def build_candidate(base):
             "expected_result": "Retirement remains blocked until active consumers equal zero; existing consumers are preserved during drain.",
         })
 
+    evidence_map = c.setdefault("evidence_map", [])
+    if not any(
+        isinstance(row, dict) and row.get("claim_path") == "$.current_uncertainties"
+        for row in evidence_map
+    ):
+        evidence_map.append({
+            "claim_path": "$.current_uncertainties",
+            "evidence_refs": [
+                "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+                "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+            ],
+        })
+
     # Explicit material-edge inventory. These are observed gaps with implementable
     # repairs or proposed internal edges; none is claimed REUSE_AS_IS without proof.
     g = c.get("material_process_graph")
@@ -477,6 +490,7 @@ def build_candidate(base):
             "EDGE-MATERIALIZE-QUALIFY", "LC03", "LC04", "CONTROL_FLOW", "PROPOSED_ONLY",
             "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1", [],
             next_gate="QUALIFICATION_LIFECYCLE",
+            proposed_next_consumer="proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1/QUALIFICATION_LIFECYCLE",
         ),
         edge(
             "EDGE-QUALIFY-PROMOTE", "LC04", "LC05", "AUTHORITY", "OBSERVED_OPEN",
