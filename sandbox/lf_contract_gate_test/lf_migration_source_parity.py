@@ -92,6 +92,13 @@ EXTERNAL_OWNER_EVIDENCE_SCHEMA = "lf-migration-external-owner-currentness/v1"
 EXTERNAL_OWNER_EVIDENCE_ENV = "LF_MIGRATION_EXTERNAL_OWNER_EVIDENCE_JSON"
 SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 
+RECONCILIATION_MARKER = "LF_MIGRATION_RECONCILIATION_SOURCE_V1"
+RECONCILIATION_REQUIRED_FIELDS = {
+    "reconciliation_mode": "SOURCE_ONLY_NO_DDL_REPLAY",
+    "owner_binding_required": "true",
+    "source_authority": "supabase_migrations.schema_migrations",
+}
+
 
 def managed(name: str) -> bool:
     return (
@@ -103,6 +110,40 @@ def managed(name: str) -> bool:
 
 def classified(name: str) -> bool:
     return managed(name) or name.startswith(CLASSIFIED_EXTERNAL_PREFIXES) or name in CLASSIFIED_EXTERNAL_NAMES
+
+
+def reconciliation_source_metadata(sql: str, *, version: str, name: str) -> bool:
+    """Accept only explicit source-only recovery metadata bound to exact version/name."""
+    marker = False
+    fields: dict[str, str] = {}
+    for raw in sql.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        stripped = raw.strip()
+        if not stripped:
+            continue
+        if not stripped.startswith("--"):
+            break
+        body = stripped[2:].strip()
+        if body == RECONCILIATION_MARKER:
+            marker = True
+            continue
+        if "=" in body:
+            key, value = body.split("=", 1)
+            fields[key.strip()] = value.strip()
+    if not marker:
+        return False
+    if any(fields.get(key) != expected for key, expected in RECONCILIATION_REQUIRED_FIELDS.items()):
+        return False
+    return fields.get("source_version") == version and fields.get("source_name") == name
+
+
+def managed_source(path: pathlib.Path, version: str, name: str) -> bool:
+    if managed(name):
+        return True
+    try:
+        sql = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return False
+    return reconciliation_source_metadata(sql, version=version, name=name)
 
 
 def canonical(sql: str) -> bytes:
@@ -866,6 +907,33 @@ def main() -> int:
     if classified("totally_unknown_future_migration"):
         fail("FAIL_CI009_SELFTEST_UNKNOWN_ACCEPTED")
 
+    reconciliation_probe = (
+        "-- LF_MIGRATION_RECONCILIATION_SOURCE_V1\n"
+        "-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY\n"
+        "-- owner_binding_required=true\n"
+        "-- source_authority=supabase_migrations.schema_migrations\n"
+        "-- source_version=20260922142522\n"
+        "-- source_name=create_engineering_backlog_and_progress_tracking\n"
+        "select 1;\n"
+    )
+    if not reconciliation_source_metadata(
+        reconciliation_probe,
+        version="20260922142522",
+        name="create_engineering_backlog_and_progress_tracking",
+    ):
+        fail("FAIL_CI009_SELFTEST_RECONCILIATION_MARKER_POSITIVE")
+    if reconciliation_source_metadata(
+        reconciliation_probe,
+        version="20260922142523",
+        name="create_engineering_backlog_and_progress_tracking",
+    ):
+        fail("FAIL_CI009_SELFTEST_RECONCILIATION_VERSION_MISMATCH_ACCEPTED")
+    if reconciliation_source_metadata(
+        reconciliation_probe.replace("owner_binding_required=true", "owner_binding_required=false"),
+        version="20260922142522",
+        name="create_engineering_backlog_and_progress_tracking",
+    ):
+        fail("FAIL_CI009_SELFTEST_RECONCILIATION_OWNER_BINDING_BYPASS")
     markers: list[tuple[pathlib.Path, re.Match[str]]] = []
     for path in sorted(migrations.glob("*.sql")):
         first = path.read_text(encoding="utf-8").splitlines()[0] if path.stat().st_size else ""
@@ -910,6 +978,7 @@ def main() -> int:
 
     local: dict[str, tuple[str, str, str]] = {}
     local_versions_all: set[str] = set()
+    reconciliation_versions: set[str] = set()
     for path in sorted(migrations.glob("*.sql")):
         match = FILENAME_RE.fullmatch(path.name)
         if not match:
@@ -918,11 +987,16 @@ def main() -> int:
         if version <= cutover:
             continue
         local_versions_all.add(version)
-        if not managed(name):
+        source_sql = path.read_text(encoding="utf-8")
+        reconciliation_source = reconciliation_source_metadata(
+            source_sql, version=version, name=name
+        )
+        if not managed(name) and not reconciliation_source:
             if version > classification_baseline_end and not classified(name):
                 fail("FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION", f"git={path.name}")
             continue
-        source_sql = path.read_text(encoding="utf-8")
+        if reconciliation_source:
+            reconciliation_versions.add(version)
         local[version] = (
             name,
             hashlib.sha256(canonical(source_sql)).hexdigest(),
@@ -932,7 +1006,9 @@ def main() -> int:
     remote_unclassified = {
         version: value
         for version, value in remote_all.items()
-        if version > classification_baseline_end and not classified(value[0])
+        if version > classification_baseline_end
+        and not classified(value[0])
+        and version not in reconciliation_versions
     }
     external_unclassified_pending: dict[str, dict[str, str]] = {}
     if remote_unclassified:
@@ -964,7 +1040,7 @@ def main() -> int:
 
     remote: dict[str, tuple[str, str]] = {}
     for version, (name, content_proof) in remote_all.items():
-        if not managed(name):
+        if not managed(name) and version not in reconciliation_versions:
             continue
         remote[version] = (name, remote_content_sha256(content_proof, version))
 
@@ -1041,7 +1117,7 @@ def main() -> int:
         )
     print("PASS_LF_MIGRATION_TRANSPORT_SELFTEST=3/3")
     print("PASS_LF_MIGRATION_EXTERNAL_OWNER_CURRENTNESS=ENFORCED")
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=32/32")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=35/35")
     return 0
 
 
