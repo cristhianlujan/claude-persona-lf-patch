@@ -19,10 +19,10 @@ Produce a structured, evidence-grounded systemic repair specification for recurr
 13. Final acceptance requires the canonical evidence-bound semantic quality gate on the exact candidate revision. External audit is optional and cannot block merely because it has not run.
 14. Evidence-class vocabularies are namespaced by field: recurrence provenance and falsification execution state are distinct contracts and may not borrow each other's enum values.
 15. When material research is required, incremental value must be measured against a digest-bound pre-research solution baseline. The producer may report MATERIAL_UPLIFT or NO_MATERIAL_UPLIFT, but semantic materiality is accepted only by the independent quality boundary; UNPROVEN cannot close a ready material-research specification.
-16. Current provider-side generation is pinned to SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5. V0.2, V0.3 and V0.4 remain validator-readable for historical compatibility and cannot be newly generated to bypass V0.5 obligations.
+16. Current provider-side generation is pinned to SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6. V0.2 through V0.5 remain validator-readable for historical compatibility and cannot be newly generated to bypass V0.6 obligations.
 17. Repair disposition is derived before solution design. Every disposition carries an executable `repair_disposition.verification` with an explicit method, expected result and evidence references so the current disposition can be independently re-checked. Exact current evidence may close the case as `NO_REPAIR_REQUIRED` only for `ALREADY_RESOLVED` or `NOT_MATERIAL`; this disposition cannot carry a repair delta, selected alternative, implementation package, transition or rollback and does not require repair-only ceremony such as fabricated recurrence, alternative comparison or a systemic causal chain when those are immaterial to proving current disposition. Non-ready cases may use repair_disposition=UNDETERMINED when currentness/materiality itself remains design-blocking.
 18. Every material quantitative policy decision is explicitly inventoried and grounded in existing canonical authority, a reusable evidence-backed calibration rule, or a mechanically resolvable implementation precondition whose resolution cannot change design. Incident-only timing/count samples cannot close policy.
-19. Every material process/lifecycle is represented as a node graph with authority, I/O, state/transition, producer/consumer, wiring/control, failure/recovery, evidence and acceptance. A material node left `DESIGN_BLOCKING` prevents repair-spec closure.
+19. Every material process/lifecycle is represented as a node graph with authority, I/O, state/transition, producer/consumer, wiring/control, failure/recovery, evidence and acceptance. V0.6 requires explicit material edges and evidence-bound AS-IS closure: producer, transport, actual consumer, canonical route/authority when applicable, enforcement, effect/readback and terminality. `next_gate` must resolve to a real consumer. Post-transition currentness, identity consistency and rollback executability are explicit applicability/status proofs. Proposed wiring never closes an observed AS-IS edge. A material node or edge left `DESIGN_BLOCKING` prevents repair-spec closure.
 
 ## Required output
 - `status`
@@ -91,3 +91,15 @@ V0.5 keeps V0.4 transversal closure and changes producer behavior without adding
 - `ARCHITECTURE_AUDIT` relaxes recurrence evidence and incident-chain length only; systemic causality and the immediate/root/first-bad/escape control claims remain required for a ready specification.
 - A `DESIGN_BLOCKING` uncertainty is legitimate only when its `attempted_sources` resolve against the externally assembled evidence manifest; a blocked material-process node must reference that design-blocking uncertainty.
 - An accessible but uninspected authority is unfinished investigation, not a valid reason to stop.
+
+
+## V0.6 physical edge closure additions
+
+V0.6 preserves V0.5 investigation-depth requirements and closes the distinction between component existence and actual wiring.
+
+- Every material graph with `applies=true` has explicit `edges`.
+- `REUSE_AS_IS` is allowed only for an `OBSERVED_CLOSED` edge with current external evidence for producer, transported contract/data, real consumer, enforcement and effect/readback.
+- An emitted `next_gate` must resolve to a current consumer on the observed path; a label alone is not wiring.
+- Canonical-route consistency, post-transition currentness, terminality, identity consistency and rollback executability are typed proof objects with explicit applicability.
+- An observed failure may be paired with an `IMPLEMENTABLE` future repair, but future wiring cannot be cited as evidence that the current edge is closed.
+- Deterministic validation owns these structural invariants. Semantic utility consumes the deterministic gate and does not re-implement the same structural rules.
