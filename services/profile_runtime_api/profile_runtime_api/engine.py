@@ -1003,7 +1003,7 @@ class ProfileRuntimeEngine:
         model_raw_output=runtime_package.get("raw_output")
         try:
             materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
-            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract)
+            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest)
         except Exception as exc:
             code,detail=_failure(exc)
             diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
@@ -1030,7 +1030,7 @@ class ProfileRuntimeEngine:
         model_raw_output=runtime_package.get("raw_output")
         try:
             materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
-            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract)
+            contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest)
         except Exception as exc:
             code,detail=_failure(exc)
             diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
