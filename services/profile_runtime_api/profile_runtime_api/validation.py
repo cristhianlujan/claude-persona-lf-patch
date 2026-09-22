@@ -7,6 +7,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator, SchemaError
 
+from .hashing import canonical_json_sha256
 from .repository import RepositoryBindings, SchemaBinding
 
 PASS_QUALITY_VERDICTS = {"PASS_TO_COMPOSER", "PASS_WITH_RESTRICTIONS"}
@@ -567,6 +568,7 @@ class OutputGates:
             }
 
         errors: list[str] = []
+        receipt_accepts_quality = False
         semantic_binding = self.repository.load_canonical_quality_validator(
             profile_slug, "semantic_result_validator"
         )
@@ -637,13 +639,169 @@ class OutputGates:
                             else ["CANONICAL_QUALITY_RECEIPT_VALIDATOR_RESULT_INVALID"]
                         )
                     )
+                else:
+                    receipt_accepts_quality = receipt_gate.get("canonical_quality_accepted") is True
 
         codes = sorted(set(errors))
         return {
             "status": "PASS" if not codes else "FAIL",
             "blocking_codes": codes,
-            "canonical_quality_accepted": not codes,
+            "canonical_quality_accepted": not codes and receipt_accepts_quality,
             "receipt_schema_sha256": receipt_schema.sha256,
+            "downstream_authorized": False,
+        }
+
+    def canonical_quality_finalize(
+        self,
+        *,
+        profile_slug: str,
+        candidate: dict[str, Any],
+        evidence_manifest: dict[str, Any],
+        scope_authority_packet: dict[str, Any],
+        semantic_result: dict[str, Any],
+        candidate_revision: str,
+        semantic_execution_receipt_ref: str,
+        producer_execution_id: str,
+        reviewer_execution_id: str,
+        producer_execution_receipt_ref: str,
+        issued_at: str,
+    ) -> dict[str, Any]:
+        binding = self.repository.runtime_binding(profile_slug)
+        quality = binding.canonical_quality if binding is not None else None
+        if not isinstance(quality, dict):
+            return {
+                "status": "FAIL",
+                "blocking_codes": ["CANONICAL_QUALITY_NOT_BOUND"],
+                "canonical_quality_accepted": False,
+                "quality_receipt": None,
+                "downstream_authorized": False,
+            }
+
+        pack_id = candidate.get("profile_pack_id")
+        if pack_id not in set(quality.get("required_for_profile_pack_ids") or []):
+            return {
+                "status": "NOT_APPLICABLE",
+                "blocking_codes": [],
+                "canonical_quality_accepted": False,
+                "quality_receipt": None,
+                "downstream_authorized": False,
+            }
+
+        semantic_binding = self.repository.load_canonical_quality_validator(
+            profile_slug, "semantic_result_validator"
+        )
+        materializer_binding = self.repository.load_canonical_quality_validator(
+            profile_slug, "quality_receipt_materializer"
+        )
+        if semantic_binding is None or materializer_binding is None:
+            return {
+                "status": "FAIL",
+                "blocking_codes": ["CANONICAL_QUALITY_FINALIZER_BINDING_INCOMPLETE"],
+                "canonical_quality_accepted": False,
+                "quality_receipt": None,
+                "downstream_authorized": False,
+            }
+
+        expected_candidate_sha256 = canonical_json_sha256(candidate)
+        expected_scope_packet_sha256 = canonical_json_sha256(scope_authority_packet)
+        semantic_module, semantic_callable_name = semantic_binding
+        semantic_callable = getattr(semantic_module, semantic_callable_name, None)
+        if not callable(semantic_callable):
+            return {
+                "status": "FAIL",
+                "blocking_codes": ["CANONICAL_QUALITY_SEMANTIC_VALIDATOR_CALLABLE_MISSING"],
+                "canonical_quality_accepted": False,
+                "quality_receipt": None,
+                "downstream_authorized": False,
+            }
+
+        try:
+            semantic_gate = semantic_callable(
+                semantic_result,
+                scope_packet=scope_authority_packet,
+                expected_candidate_sha256=expected_candidate_sha256,
+                expected_scope_packet_sha256=expected_scope_packet_sha256,
+            )
+        except Exception as exc:
+            return {
+                "status": "FAIL",
+                "blocking_codes": [
+                    "CANONICAL_QUALITY_SEMANTIC_VALIDATOR_EXCEPTION:" + type(exc).__name__
+                ],
+                "canonical_quality_accepted": False,
+                "quality_receipt": None,
+                "downstream_authorized": False,
+            }
+        if not isinstance(semantic_gate, dict) or semantic_gate.get("status") != "PASS":
+            return {
+                "status": "FAIL",
+                "blocking_codes": sorted(
+                    {
+                        str(code)
+                        for code in (
+                            semantic_gate.get("blocking_codes", [])
+                            if isinstance(semantic_gate, dict)
+                            else ["CANONICAL_QUALITY_SEMANTIC_VALIDATOR_RESULT_INVALID"]
+                        )
+                    }
+                ),
+                "canonical_quality_accepted": False,
+                "quality_receipt": None,
+                "semantic_result_validation": semantic_gate,
+                "downstream_authorized": False,
+            }
+
+        materializer_module, materializer_callable_name = materializer_binding
+        materializer_callable = getattr(
+            materializer_module, materializer_callable_name, None
+        )
+        if not callable(materializer_callable):
+            return {
+                "status": "FAIL",
+                "blocking_codes": ["CANONICAL_QUALITY_MATERIALIZER_CALLABLE_MISSING"],
+                "canonical_quality_accepted": False,
+                "quality_receipt": None,
+                "semantic_result_validation": semantic_gate,
+                "downstream_authorized": False,
+            }
+
+        try:
+            quality_receipt = materializer_callable(
+                candidate,
+                evidence_manifest,
+                semantic_result,
+                candidate_revision=candidate_revision,
+                semantic_execution_receipt_ref=semantic_execution_receipt_ref,
+                issued_at=issued_at,
+                producer_execution_id=producer_execution_id,
+                reviewer_execution_id=reviewer_execution_id,
+                producer_execution_receipt_ref=producer_execution_receipt_ref,
+            )
+        except Exception as exc:
+            return {
+                "status": "FAIL",
+                "blocking_codes": [
+                    "CANONICAL_QUALITY_MATERIALIZATION_FAILED:" + type(exc).__name__
+                ],
+                "canonical_quality_accepted": False,
+                "quality_receipt": None,
+                "semantic_result_validation": semantic_gate,
+                "downstream_authorized": False,
+            }
+
+        quality_gate = self.canonical_quality(
+            profile_slug=profile_slug,
+            candidate=candidate,
+            evidence_manifest=evidence_manifest,
+            semantic_result=semantic_result,
+            quality_receipt=quality_receipt,
+        )
+        return {
+            **quality_gate,
+            "quality_receipt": quality_receipt,
+            "semantic_result_validation": semantic_gate,
+            "expected_candidate_sha256": expected_candidate_sha256,
+            "expected_scope_packet_sha256": expected_scope_packet_sha256,
             "downstream_authorized": False,
         }
 
