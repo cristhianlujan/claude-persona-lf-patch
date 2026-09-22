@@ -295,6 +295,66 @@ def test_zero_result_evidence_cannot_support_positive_claim() -> None:
     assert harness.validate_query_trace([absence]) == []
 
 
+def test_runtime_research_bundle_requires_result_semantics_for_every_live_query() -> None:
+    digest = sha("result")
+    locator = "sql:select * from public.example where id=$1"
+    manifest = {
+        "evidence": [{
+            "evidence_id": "EV-1",
+            "source_locator": locator,
+            "digest": digest,
+        }],
+        "query_trace": [{
+            "sequence": 1,
+            "tool_permission": "READ_SUPABASE",
+            "resolver_id": "LF_SUPABASE_READBACK_V1",
+            "provider": "SUPABASE",
+            "query_locator": locator,
+            "request_digest": sha("request"),
+            "result_digest": digest,
+            "observed_at": "2026-09-22T00:00:00Z",
+            "evidence_id": "EV-1",
+            "consumer": "$.live_authority_packet",
+        }],
+    }
+    manifest_sha = "sha256:" + harness.canonical_sha256(manifest)
+    result = harness.research_trace.validate_runtime_research_bundle(
+        manifest,
+        resolved_authority_context={"EV-1": {"fact": "x"}},
+        expected_manifest_sha256=manifest_sha,
+    )
+    assert result["status"] == "FAIL"
+    assert "trace[0]:RESULT_STATUS_REQUIRED_AT_RUNTIME" in result["blocking_codes"]
+    assert "trace[0]:RESULT_COUNT_REQUIRED_AT_RUNTIME" in result["blocking_codes"]
+    assert "trace[0]:CLAIM_SUPPORT_REQUIRED_AT_RUNTIME" in result["blocking_codes"]
+
+    manifest["query_trace"][0].update({
+        "result_status": "EMPTY",
+        "result_count": 0,
+        "claim_support": "PRESENCE",
+    })
+    manifest_sha = "sha256:" + harness.canonical_sha256(manifest)
+    positive_zero = harness.research_trace.validate_runtime_research_bundle(
+        manifest,
+        resolved_authority_context={"EV-1": {"fact": "x"}},
+        expected_manifest_sha256=manifest_sha,
+    )
+    assert positive_zero["status"] == "FAIL"
+    assert any(
+        code.endswith("ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT")
+        for code in positive_zero["blocking_codes"]
+    )
+
+    manifest["query_trace"][0]["claim_support"] = "ABSENCE"
+    manifest_sha = "sha256:" + harness.canonical_sha256(manifest)
+    absence = harness.research_trace.validate_runtime_research_bundle(
+        manifest,
+        resolved_authority_context={"EV-1": {"fact": "x"}},
+        expected_manifest_sha256=manifest_sha,
+    )
+    assert absence["status"] == "PASS", absence
+
+
 def test_current_uncertainty_without_evidence_map_is_rejected() -> None:
     candidate_path = (
         ROOT
