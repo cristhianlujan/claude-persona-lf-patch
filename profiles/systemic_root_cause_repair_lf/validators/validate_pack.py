@@ -124,6 +124,7 @@ for rel in [
     "evals/v04_transversal_closure_cases.py",
     "evals/v05_producer_depth_cases.py",
     "evals/v06_edge_closure_cases.py",
+    "evals/v06_control_ownership_cases.py",
     "evals/sandbox_b/run_cases.py",
 ]:
     run_assurance(rel)
