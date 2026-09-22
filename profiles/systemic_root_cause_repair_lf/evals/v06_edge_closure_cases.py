@@ -59,6 +59,8 @@ def v06_pair():
     candidate = copy.deepcopy(candidate)
     evidence = copy.deepcopy(evidence)
     candidate["profile_pack_id"] = V06
+    # This fixture isolates material-edge behavior; no current uncertainty is material here.
+    candidate["current_uncertainties"] = []
     candidate["material_process_graph"] = copy.deepcopy(V04_PROCESS_FIXTURE["material_process_graph"])
 
     nodes = candidate["material_process_graph"]["nodes"]
