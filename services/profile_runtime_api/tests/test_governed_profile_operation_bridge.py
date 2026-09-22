@@ -77,6 +77,77 @@ def model_governance() -> dict:
 
 
 class GovernedBridgeOrderingTest(unittest.TestCase):
+
+    def test_srcr_external_authority_manifest_is_bound_into_governed_context(self) -> None:
+        manifest = {
+            "bundle_id": "SRCR-TEST",
+            "evidence": [
+                {
+                    "evidence_id": "EV-1",
+                    "subject": "current authority",
+                    "evidence_class": "OBSERVED_LIVE",
+                    "source_locator": "supabase://public/example/1",
+                    "revision_or_observed_at": "2026-09-22T00:00:00Z",
+                    "digest": "sha256:" + "1" * 64,
+                    "state": "CURRENT",
+                }
+            ],
+            "query_trace": [
+                {
+                    "sequence": 1,
+                    "tool_permission": "READ_SUPABASE",
+                    "resolver_id": "LF_SUPABASE_READBACK_V1",
+                    "provider": "SUPABASE",
+                    "query_locator": "supabase://public/example/1",
+                    "request_digest": "sha256:" + "2" * 64,
+                    "result_digest": "sha256:" + "1" * 64,
+                    "observed_at": "2026-09-22T00:00:00Z",
+                    "evidence_id": "EV-1",
+                    "consumer": "$.live_authority_packet",
+                    "result_status": "FOUND",
+                    "result_count": 1,
+                    "claim_support": "CONTENT",
+                }
+            ],
+        }
+        payload = {
+            "profile": {
+                "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+                "evidence_manifest": manifest,
+            }
+        }
+        bound = worker._bind_external_authority_resolution(payload, model_governance())
+        capsule = bound["context_capsule"]
+        self.assertEqual(capsule["query_trace_count"], 1)
+        self.assertEqual(capsule["evidence_count"], 1)
+        self.assertEqual(
+            capsule["evidence_manifest_sha256"],
+            "sha256:" + worker._canonical_json_sha256(manifest),
+        )
+        self.assertEqual(
+            capsule["resolved_authority_context"]["EV-1"]["source_locator"],
+            "supabase://public/example/1",
+        )
+
+    def test_srcr_external_authority_binding_fails_closed_without_manifest(self) -> None:
+        payload = {
+            "profile": {
+                "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            }
+        }
+        with self.assertRaisesRegex(
+            RuntimeError, "SRCR_EVIDENCE_MANIFEST_REQUIRED_BEFORE_MODEL"
+        ):
+            worker._bind_external_authority_resolution(payload, model_governance())
+
+    def test_non_srcr_profile_keeps_governed_context_unchanged(self) -> None:
+        governed = model_governance()
+        payload = {"profile": {"profile_code": "PERFIL-QUALITY-PACK"}}
+        self.assertIs(
+            worker._bind_external_authority_resolution(payload, governed),
+            governed,
+        )
+
     def test_not_required_skips_baseline_model_endpoint(self) -> None:
         calls: list[tuple[str, str]] = []
         governed = {
