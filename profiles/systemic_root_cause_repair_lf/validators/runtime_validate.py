@@ -849,6 +849,72 @@ def _v04_transversal_errors(payload):
     return errors
 
 
+
+def _normalize_change_ref(value):
+    if not _nonempty_string(value):
+        return None
+    text = value.strip()
+    for prefix in (
+        "supabase://proposed/",
+        "proposed://",
+        "github://proposed/",
+        "artifact://proposed/",
+    ):
+        if text.startswith(prefix):
+            text = text[len(prefix):]
+            break
+    return text.strip("/")
+
+
+def _v06_selected_change_errors(payload):
+    if payload.get("profile_pack_id") != V06_PACK_ID:
+        return []
+    if payload.get("status") != "SYSTEMIC_REPAIR_SPEC":
+        return []
+
+    errors = []
+    delta = payload.get("implementation_delta")
+    if not isinstance(delta, list) or not delta:
+        return [_error(
+            "V06_IMPLEMENTATION_DELTA_REQUIRED_FOR_SELECTED_REPAIR",
+            "$.implementation_delta",
+        )]
+
+    declared_targets = []
+    for idx, row in enumerate(delta):
+        if not isinstance(row, dict):
+            continue
+        normalized = _normalize_change_ref(row.get("target"))
+        if normalized:
+            declared_targets.append((normalized, idx))
+
+    graph = payload.get("material_process_graph")
+    edges = graph.get("edges") if isinstance(graph, dict) else []
+    if not isinstance(edges, list):
+        return errors
+
+    for idx, edge in enumerate(edges):
+        if not isinstance(edge, dict) or edge.get("disposition") != "IMPLEMENTABLE":
+            continue
+        ref = _normalize_change_ref(edge.get("proposed_change_ref"))
+        if not ref:
+            errors.append(_error(
+                "V06_IMPLEMENTABLE_EDGE_CHANGE_REF_REQUIRED",
+                f"$.material_process_graph.edges[{idx}].proposed_change_ref",
+            ))
+            continue
+        covered = any(
+            ref == target or ref.startswith(target + "/")
+            for target, _ in declared_targets
+        )
+        if not covered:
+            errors.append(_error(
+                "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+                f"$.material_process_graph.edges[{idx}].proposed_change_ref",
+                ref,
+            ))
+    return errors
+
 def validate(payload, evidence_manifest=None):
     if evidence_manifest is None:
         candidate, embedded_manifest = unwrap_runtime_input(payload)
@@ -899,6 +965,7 @@ def validate(payload, evidence_manifest=None):
     errors.extend(_v04_transversal_errors(payload))
     errors.extend(validate_producer_depth(payload, evidence_manifest))
     errors.extend(validate_edge_closure(payload, evidence_manifest))
+    errors.extend(_v06_selected_change_errors(payload))
 
     closure_errors, closure_summary = validate_v03_closure(payload, evidence_manifest)
     errors.extend(closure_errors)
