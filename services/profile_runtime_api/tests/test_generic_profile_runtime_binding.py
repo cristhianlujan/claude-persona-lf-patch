@@ -170,6 +170,25 @@ class GenericRuntimeBindingTest(unittest.TestCase):
         )
         self.assertEqual(len({item['finding_id'] for item in findings}),2)
 
+    def test_contract_finding_count_matches_unique_logical_finding_ids(self):
+        tmp,root,repo=self._repo()
+        try:
+            gates=OutputGates(repo)
+            schema=repo.runtime_schema('p')
+            contract,_=gates.contract(
+                profile_slug='p',
+                raw_output='{"answer":7}',
+                schema=schema,
+            )
+            self.assertEqual(contract['status'],'FAIL')
+            self.assertEqual(contract['finding_count'],len(contract['logical_findings']))
+            self.assertEqual(
+                contract['finding_count'],
+                len({item['finding_id'] for item in contract['logical_findings']}),
+            )
+        finally:
+            tmp.cleanup()
+
     def test_manifest_digest_is_observable_at_validator_and_utility(self):
         tmp,root,repo=self._repo()
         try:
