@@ -493,6 +493,41 @@ class RepositoryBindings:
         )
         return module, binding.semantic_utility_callable
 
+    def load_canonical_quality_validator(
+        self, profile_slug: str, component: str
+    ) -> tuple[ModuleType, str] | None:
+        binding = self.runtime_binding(profile_slug)
+        quality = binding.canonical_quality if binding is not None else None
+        if not isinstance(quality, dict):
+            return None
+        if component not in {"semantic_result_validator", "quality_receipt_validator"}:
+            raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_COMPONENT_INVALID", component)
+        spec = quality.get(component)
+        if not isinstance(spec, dict):
+            raise RepositoryError("PROFILE_RUNTIME_CANONICAL_QUALITY_COMPONENT_MISSING", component)
+        module = self._load_file(
+            self.profiles_root / profile_slug / spec["path"],
+            f"lf_profile_{component}_{profile_slug}",
+        )
+        return module, spec["callable"]
+
+    def canonical_quality_receipt_schema(self, profile_slug: str) -> SchemaBinding | None:
+        binding = self.runtime_binding(profile_slug)
+        quality = binding.canonical_quality if binding is not None else None
+        if not isinstance(quality, dict):
+            return None
+        profile_root = (self.profiles_root / profile_slug).resolve()
+        selected = (profile_root / quality["quality_receipt_schema"]).resolve()
+        self._within(selected, profile_root, "PROFILE_RUNTIME_CANONICAL_QUALITY_SCHEMA_ESCAPE")
+        payload, raw = self._read_schema(selected, profile_root)
+        return SchemaBinding(
+            payload=payload,
+            raw=raw,
+            sha256=sha256_bytes(raw),
+            source_refs=(str(selected.relative_to(self.repo_root)),),
+            mode="CANONICAL_QUALITY_RECEIPT",
+        )
+
     @staticmethod
     def _load_file(path: Path, module_name: str) -> ModuleType:
         if not path.is_file():
