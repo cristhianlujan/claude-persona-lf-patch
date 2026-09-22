@@ -252,6 +252,54 @@ def post_producer_validation(
     }
 
 
+
+def materialize_prequality_freeze(
+    *,
+    candidate: Any,
+    evidence_manifest: Any,
+    query_trace: Any,
+) -> dict[str, Any]:
+    validation = post_producer_validation(
+        candidate=candidate,
+        evidence_manifest=evidence_manifest,
+        query_trace=query_trace,
+    )
+    if validation.get("status") != "PASS_PRE_QUALITY":
+        raise RuntimeError(
+            "PREFREEZE_VALIDATION_NOT_CLEAN:"
+            + str(validation.get("first_failed_stage") or "UNKNOWN")
+        )
+    if validation.get("schema_errors"):
+        raise RuntimeError("PREFREEZE_SCHEMA_INVALID")
+    deterministic = validation.get("runtime_validate")
+    semantic = validation.get("semantic_utility")
+    if not isinstance(deterministic, dict) or deterministic.get("status") != "PASS":
+        raise RuntimeError("PREFREEZE_DETERMINISTIC_NOT_PASS")
+    if not isinstance(semantic, dict) or semantic.get("status") != "PASS":
+        raise RuntimeError("PREFREEZE_UTILITY_NOT_PASS")
+    raw = json.dumps(
+        candidate, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    manifest_digest = (
+        evidence_manifest.get("bundle_digest")
+        if isinstance(evidence_manifest, dict)
+        else None
+    )
+    return {
+        "schema": "SRCR_PREQUALITY_FREEZE_V1",
+        "receipt_kind": "NON_ACCEPTANCE_PRE_QUALITY_FREEZE",
+        "candidate_sha256": hashlib.sha256(raw).hexdigest(),
+        "candidate_bytes": len(raw),
+        "manifest_bundle_digest": manifest_digest,
+        "trace_count": len(query_trace) if isinstance(query_trace, list) else 0,
+        "pre_quality_status": validation["status"],
+        "schema_error_count": 0,
+        "deterministic_status": deterministic["status"],
+        "semantic_utility_status": semantic["status"],
+        "independent_quality": validation.get("independent_quality"),
+        "canonical_quality_accepted": False,
+    }
+
 def build_native_handoff(
     *,
     run_id: str,
@@ -325,6 +373,11 @@ def main() -> int:
     p_post.add_argument("--manifest", required=True)
     p_post.add_argument("--trace", required=True)
 
+    p_freeze = sub.add_parser("freeze")
+    p_freeze.add_argument("--candidate", required=True)
+    p_freeze.add_argument("--manifest", required=True)
+    p_freeze.add_argument("--trace", required=True)
+
     args = parser.parse_args()
     if args.command == "preflight":
         payload = build_native_handoff(
@@ -332,8 +385,14 @@ def main() -> int:
             case_packet=_read_json(args.case_packet),
             profile_source_sha256=args.profile_source_sha256,
         )
-    else:
+    elif args.command == "post":
         payload = post_producer_validation(
+            candidate=_read_json(args.candidate),
+            evidence_manifest=_read_json(args.manifest),
+            query_trace=_read_json(args.trace),
+        )
+    else:
+        payload = materialize_prequality_freeze(
             candidate=_read_json(args.candidate),
             evidence_manifest=_read_json(args.manifest),
             query_trace=_read_json(args.trace),
