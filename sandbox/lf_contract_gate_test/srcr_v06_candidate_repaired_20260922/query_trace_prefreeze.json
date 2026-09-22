@@ -1,10 +1,10 @@
 {
   "schema": "SRCR_V06_PREFREEZE_QUERY_TRACE_V1",
-  "lineage_mode": "MIXED_RECORDED_AND_RECONSTRUCTED_HISTORICAL",
-  "live_readback": false,
+  "lineage_mode": "MIXED_RECORDED_RECONSTRUCTED_AND_FRESH_LIVE",
+  "live_readback": true,
   "original_recorded_query_count": 44,
   "reconstructed_historical_count": 18,
-  "trace_count": 62,
+  "trace_count": 65,
   "trace": [
     {
       "consumer": "$.live_authority_packet.profile_asset",
@@ -862,6 +862,58 @@
       "consumer": "$.historical_evidence_manifest.EV-LIFECYCLE-POLICY",
       "lineage_class": "RECONSTRUCTED_HISTORICAL_MANIFEST_LINEAGE",
       "reconstruction_source": "evidence_manifest_v06_merged.json"
+    },
+    {
+      "sequence": 63,
+      "tool_permission": "READ_WEB",
+      "resolver_id": "LF_WEB_RESEARCH_READBACK_V1",
+      "provider": "WEB",
+      "query_id": "LIVE-WEB-OPENGITOPS",
+      "query_locator": "https://opengitops.dev/",
+      "request_digest": "sha256:5428e3456c64fdd1c14ae110e5eb7ab162c75b936f6409715c4cd671c47b410d",
+      "result_digest": "sha256:afac35b419ce0c447584baf12fcedfe778d62ee29b5ad9744bfdb4eb6f2932fd",
+      "observed_at": "2026-09-22T14:28:56.706776+00:00",
+      "evidence_id": "EV-WEB-OPENGITOPS",
+      "consumer": "$.research_assurance",
+      "result_status": "FOUND",
+      "result_count": 1,
+      "claim_support": "CONTENT",
+      "lineage_class": "FRESH_LIVE_RESEARCH"
+    },
+    {
+      "sequence": 64,
+      "tool_permission": "READ_WEB",
+      "resolver_id": "LF_WEB_RESEARCH_READBACK_V1",
+      "provider": "WEB",
+      "query_id": "LIVE-WEB-K8S-CONTROLLERS",
+      "query_locator": "https://kubernetes.io/docs/concepts/architecture/controller/",
+      "request_digest": "sha256:39c0bb12dc84d98bf9ce19bd90fc8f6f8a2a97f5ead406b93b990f3f1063f276",
+      "result_digest": "sha256:ca5018ccc3ef70ccbe88b65674ff8fd8c2184c582c50d0922feba38a85a531bb",
+      "observed_at": "2026-09-22T14:28:56.706776+00:00",
+      "evidence_id": "EV-WEB-K8S-CONTROLLERS",
+      "consumer": "$.research_assurance",
+      "result_status": "FOUND",
+      "result_count": 1,
+      "claim_support": "CONTENT",
+      "lineage_class": "FRESH_LIVE_RESEARCH"
+    },
+    {
+      "sequence": 65,
+      "tool_permission": "READ_WEB",
+      "resolver_id": "LF_WEB_RESEARCH_READBACK_V1",
+      "provider": "WEB",
+      "query_id": "LIVE-WEB-SLSA-PROVENANCE",
+      "query_locator": "https://slsa.dev/spec/v1.2/provenance",
+      "request_digest": "sha256:7a219dbee602e02042866ea45c4f6414296aad414770d954dc56877f711ce2c3",
+      "result_digest": "sha256:9a176a8193aff28144dbab80584f0e9dd707a7c24f98c436349674a4a0e51e44",
+      "observed_at": "2026-09-22T14:28:56.706776+00:00",
+      "evidence_id": "EV-WEB-SLSA-PROVENANCE",
+      "consumer": "$.research_assurance",
+      "result_status": "FOUND",
+      "result_count": 1,
+      "claim_support": "CONTENT",
+      "lineage_class": "FRESH_LIVE_RESEARCH"
     }
-  ]
+  ],
+  "fresh_live_query_count": 3
 }
