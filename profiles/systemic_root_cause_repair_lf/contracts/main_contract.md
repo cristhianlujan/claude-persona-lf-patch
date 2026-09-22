@@ -129,3 +129,8 @@ For any SRCR self-maintenance that touches research execution, context transport
 6. the profile update cannot be represented as ready for governed update while any obligation remains below READBACK_CLOSED.
 
 - MC-13 complete replay MUST be clean: zero open observations, zero failed applicable steps and zero unresolved mandatory inputs. NOT_APPLICABLE requires explicit evidence/rationale and cannot hide an applicable check.
+
+
+## Mandatory per-run progress table
+
+The mandatory self-repair closure report is part of the execution contract, not optional presentation. Every run MUST render MC-01..MC-13 as separate rows with `Punto obligatorio | Avance | Estado actual | Qué falta para 100%`, sourced from exact current readback. A run is reporting-incomplete if this table is absent, rows are grouped/omitted, or percentages are not supported by the current progress evidence.
