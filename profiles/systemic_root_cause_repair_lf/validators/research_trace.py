@@ -191,6 +191,26 @@ def validate_runtime_research_bundle(
     trace = evidence_manifest.get("query_trace") if isinstance(evidence_manifest, dict) else None
     errors = validate_query_trace(trace)
     errors.extend(validate_manifest_trace_binding(evidence_manifest, trace))
+    # New runtime research must record result cardinality and claim semantics for
+    # every lookup. Historical trace validators stay backward-compatible, but
+    # a live external resolver cannot omit these fields to hide zero-row results.
+    if isinstance(trace, list):
+        for idx, row in enumerate(trace):
+            if not isinstance(row, dict):
+                continue
+            status = row.get("result_status")
+            count = row.get("result_count")
+            support = row.get("claim_support")
+            if status is None:
+                errors.append(f"trace[{idx}]:RESULT_STATUS_REQUIRED_AT_RUNTIME")
+            if not isinstance(count, int) or count < 0:
+                errors.append(f"trace[{idx}]:RESULT_COUNT_REQUIRED_AT_RUNTIME")
+            if support not in {"PRESENCE", "ABSENCE", "CONTENT"}:
+                errors.append(f"trace[{idx}]:CLAIM_SUPPORT_REQUIRED_AT_RUNTIME")
+            if status in {"EMPTY", "NOT_FOUND"} and support != "ABSENCE":
+                errors.append(f"trace[{idx}]:ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT")
+            if status == "FOUND" and support == "ABSENCE":
+                errors.append(f"trace[{idx}]:FOUND_RESULT_CANNOT_SUPPORT_ABSENCE")
     if not isinstance(resolved_authority_context, dict) or not resolved_authority_context:
         errors.append("RESOLVED_AUTHORITY_CONTEXT_REQUIRED")
 
