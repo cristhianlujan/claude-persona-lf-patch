@@ -56,6 +56,41 @@ def _not_evaluated(code: str) -> dict[str, Any]:
     return {"status": "NOT_EVALUATED", "blocking_codes": [code], "downstream_authorized": False}
 
 
+def _canonical_quality_state(
+    binding: Any,
+    payload: dict[str, Any] | None,
+) -> dict[str, Any]:
+    config = getattr(binding, "canonical_quality", None) if binding is not None else None
+    if not isinstance(config, dict):
+        return {
+            "applicability": "NOT_BOUND",
+            "status": "NOT_EVALUATED",
+            "downstream_authorized": False,
+        }
+    profile_pack_id = payload.get("profile_pack_id") if isinstance(payload, dict) else None
+    required_packs = config.get("required_for_profile_pack_ids") or []
+    required = isinstance(profile_pack_id, str) and profile_pack_id in required_packs
+    if not required:
+        return {
+            "applicability": "NOT_APPLICABLE",
+            "profile_pack_id": profile_pack_id,
+            "status": "NOT_REQUIRED",
+            "downstream_authorized": False,
+        }
+    return {
+        "applicability": "REQUIRED",
+        "profile_pack_id": profile_pack_id,
+        "status": "PENDING_INDEPENDENT_SEMANTIC_REVIEW",
+        "semantic_judge_path": config["semantic_judge_path"],
+        "semantic_result_validator": dict(config["semantic_result_validator"]),
+        "quality_receipt_schema": config["quality_receipt_schema"],
+        "quality_receipt_validator": dict(config["quality_receipt_validator"]),
+        "deterministic_floors_can_accept_quality": False,
+        "receipt_required_for_pass_to_quality_pack": True,
+        "downstream_authorized": False,
+    }
+
+
 def _snapshot_binding_paths(contract: dict[str, Any]) -> dict[str, list[str]]:
     raw = contract.get("snapshot_binding_paths") or {}
     if not isinstance(raw, dict):
@@ -1004,12 +1039,14 @@ class ProfileRuntimeEngine:
         try:
             materialized_output,materialization=self._materialize_runtime_output(task=task,model_raw_output=model_raw_output,governed_receipt=governed_receipt)
             contract,payload=self.gates.contract(profile_slug=task.profile_slug,raw_output=materialized_output,schema=schema,evidence_manifest=task.evidence_manifest); semantic=self.gates.semantic_utility(profile_slug=task.profile_slug,payload=payload,contract_gate=contract,evidence_manifest=task.evidence_manifest)
+            canonical_quality=_canonical_quality_state(binding,payload)
+            canonical_quality=_canonical_quality_state(binding,payload)
         except Exception as exc:
             code,detail=_failure(exc)
             diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
             return self._profile_failure(task=task,code=code,detail=detail,stage="POST_GENERATION_VALIDATION",started=started,context=context,runtime_diagnostics=diagnostics)
         completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
-        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
+        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"canonical_quality":canonical_quality,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
     def _execute_profile(self, *, task: ProfileTask, artifact: Any, prepared: PreparedContext, context_reused_within_batch: bool) -> dict[str, Any]:
         started=time.perf_counter(); context={"cache_key":prepared.cache_key,"cache_hit":prepared.cache_hit,"pack_sha256":prepared.pack.get("pack_sha256"),"prepare_ms":prepared.prepare_ms,"reused_within_batch":context_reused_within_batch,"runtime_output_mode":task.runtime_output_mode}
@@ -1036,14 +1073,14 @@ class ProfileRuntimeEngine:
             diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
             return self._profile_failure(task=task,code=code,detail=detail,stage="POST_GENERATION_VALIDATION",started=started,context=context,runtime_diagnostics=diagnostics)
         completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
-        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
+        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"canonical_quality":canonical_quality,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
     @staticmethod
     def _profile_failure(*,task:ProfileTask,code:str,detail:str|None,stage:str,started:float,context:dict[str,Any]|None=None,runtime_diagnostics:dict[str,Any]|None=None)->dict[str,Any]:
         completion={"status":"FAIL","blocking_codes":[code],"stage":stage};
         if detail: completion["detail"]=detail
         if runtime_diagnostics: completion["diagnostics"]=runtime_diagnostics
-        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":_not_evaluated("RUNTIME_COMPLETION_FAILED"),"semantic_utility":_not_evaluated("RUNTIME_COMPLETION_FAILED"),"model_raw_output":(runtime_diagnostics or {}).get("model_raw_output"),"raw_output":None,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
+        return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":_not_evaluated("RUNTIME_COMPLETION_FAILED"),"semantic_utility":_not_evaluated("RUNTIME_COMPLETION_FAILED"),"canonical_quality":{"applicability":"NOT_EVALUATED","status":"NOT_EVALUATED","downstream_authorized":False},"model_raw_output":(runtime_diagnostics or {}).get("model_raw_output"),"raw_output":None,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
     @staticmethod
     def _batch_result(request:BatchRequest,profile_results:list[dict[str,Any]],started:float,*,context:PreparedContext|None)->dict[str,Any]:
