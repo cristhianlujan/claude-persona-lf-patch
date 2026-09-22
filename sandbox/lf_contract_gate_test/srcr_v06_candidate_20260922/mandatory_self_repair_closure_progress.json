@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 78.84615384615384,
+  "overall_percent": 80.76923076923077,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -51,17 +51,18 @@
     },
     {
       "obligation_id": "MC-04",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "runtime research bundle requires result_status, result_count and claim_support",
-        "EMPTY/NOT_FOUND can support only ABSENCE; positive zero-row evidence is rejected",
-        "current uncertainty without evidence-map binding is rejected; exact locator/digest lineage is enforced",
-        "Validate LF Packs 35736254524 PASS"
+        "exact-head live readback on public.lf_error_knowledge at source revision c5e0603256728955ca04e70b710d6a0a0b4396ec returned 3 exact targeted EKB rows with locator/result digest/current observation bound through LF_SUPABASE_READBACK_V1",
+        "exact scoped lookup MC04-ZERO-ROW-C5E0603256728955 returned EMPTY/0 and is accepted only with claim_support=ABSENCE",
+        "same zero-row mutated to positive support failed with trace[1]:ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT",
+        "generic EKB locator substitution failed with EVIDENCE_LOCATOR_MISMATCH / RESOLVED_AUTHORITY_LOCATOR_MISMATCH",
+        "removing the material $.symptom evidence-map binding failed with EVIDENCE_MAP_CRITICAL_CLAIMS_MISSING",
+        "canonical runtime research-bundle replay PASS: query_count=2, evidence_count=2, resolved_authority_count=2",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc04_live_evidence_readback.json"
       ],
-      "remaining_requirements": [
-        "Replay against live EKB/current authority and retain readback showing every material claim resolves exactly, including zero-row absence evidence."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-05",
@@ -183,8 +184,8 @@
       ]
     }
   ],
-  "closed_count": 5,
-  "open_count": 8,
+  "closed_count": 6,
+  "open_count": 7,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -197,7 +198,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "c0bb4c0802e76bdb6d0acf384353c656db5c82bf",
+  "current_exact_code_head": "d7257ae5bb8dbac9127b83c966f8b80de1a11d2f",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -220,6 +221,11 @@
     "mc03_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
     "mc03_scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
     "mc03_review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
-    "mc03_quality_decision": "PASS_TO_QUALITY_PACK"
+    "mc03_quality_decision": "PASS_TO_QUALITY_PACK",
+    "mc04_source_revision": "c5e0603256728955ca04e70b710d6a0a0b4396ec",
+    "mc04_observed_at": "2026-09-22T15:51:17.457067+00:00",
+    "mc04_manifest_sha256": "sha256:2108a51dc0438e8af3e481bd311c1d3be4c5d14d3c9a89e934888e3fc7bece82",
+    "mc04_positive_result_digest": "sha256:1b3ab519024ce451855c71e1b3cfe51be668029f93ffa7f36f03fe13a954090a",
+    "mc04_absence_result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
   }
 }
