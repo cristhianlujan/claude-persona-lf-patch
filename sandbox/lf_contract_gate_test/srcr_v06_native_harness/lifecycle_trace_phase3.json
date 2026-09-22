@@ -1,6 +1,6 @@
 {
-  "schema": "SRCR_V06_LIFECYCLE_NATIVE_TRACE_PHASE3_V1",
-  "run_id": "EXEC-SRCR-V06-NATIVE-LIFECYCLE-REGRESSION-20260921-001",
+  "schema": "SRCR_V05_LIFECYCLE_NATIVE_TRACE_PHASE3_V1",
+  "run_id": "EXEC-SRCR-V05-NATIVE-LIFECYCLE-REGRESSION-20260921-001",
   "mode": "READ_ONLY_NONBLIND_REGRESSION",
   "trace": [
     {
@@ -159,7 +159,7 @@
         "EV-LC-030",
         "EV-LC-033"
       ],
-      "observation": "The raw SRCR binding requires canonical quality for V0.6 and names judge/result/receipt validators. RuntimeProfileBinding does not parse canonical_quality and service runtime contains no quality receipt consumer.",
+      "observation": "The raw SRCR binding requires canonical quality for V0.5 and names judge/result/receipt validators. RuntimeProfileBinding does not parse canonical_quality and service runtime contains no quality receipt consumer.",
       "impact": "The authoritative quality contract is dead configuration in the operational service path."
     },
     {
@@ -183,7 +183,7 @@
         "EV-LC-035"
       ],
       "observation": "A canonical quality receipt validator exists, but zero SRCR rows were found under the exact semantic/quality receipt types queried.",
-      "impact": "No durable canonical-quality readback currently closes the V0.6 path."
+      "impact": "No durable canonical-quality readback currently closes the V0.5 path."
     },
     {
       "finding_id": "LC-F10",
