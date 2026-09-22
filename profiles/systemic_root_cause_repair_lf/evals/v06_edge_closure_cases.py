@@ -59,9 +59,22 @@ def v06_pair():
     candidate = copy.deepcopy(candidate)
     evidence = copy.deepcopy(evidence)
     candidate["profile_pack_id"] = V06
-    # Preserve inherited NON_BLOCKING_HISTORICAL uncertainty because the fixture also
-    # preserves a PARTIAL live-authority packet and an unresolved historical producer.
-    # Removing that classification would make a ready candidate internally inconsistent.
+    # This fixture represents a genuinely ready current path. Normalize the inherited
+    # generic historical fixture to fully observed current authority so edge closure is
+    # the only variable under test.
+    candidate["live_authority_packet"]["status"] = "COMPLETE"
+    candidate["live_authority_packet"]["inspected_surfaces"] = list(
+        candidate["live_authority_packet"]["applicable_surfaces"]
+    )
+    candidate["live_authority_packet"]["unavailable_sources"] = []
+    candidate["live_authority_packet"]["unavailable_source_assessments"] = []
+    candidate["current_uncertainties"] = []
+    for row in candidate["execution_effect_reconciliation"]:
+        row["reconciliation_status"] = "MATCH"
+        row["observed_producer_refs"] = ["fixture://producer/current"]
+        row["blocking"] = False
+        row["impact"] = "NONE"
+        row["containment_ref"] = None
     candidate["material_process_graph"] = copy.deepcopy(V04_PROCESS_FIXTURE["material_process_graph"])
 
     nodes = candidate["material_process_graph"]["nodes"]
