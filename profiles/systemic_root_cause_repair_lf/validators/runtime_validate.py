@@ -410,7 +410,11 @@ def _evidence_map_errors(payload):
     if missing:
         errors.append(_error("EVIDENCE_MAP_CRITICAL_CLAIMS_MISSING", "$.evidence_map", ",".join(missing)))
     uncertainties = payload.get("current_uncertainties")
-    if isinstance(uncertainties, list) and uncertainties:
+    if (
+        payload.get("profile_pack_id") == V06_PACK_ID
+        and isinstance(uncertainties, list)
+        and uncertainties
+    ):
         has_uncertainty_evidence = (
             "$.current_uncertainties" in paths
             or all(
