@@ -135,4 +135,13 @@ def test_clean_finalization_keeps_acceptance_separate_from_authorization(quality
     assert result["quality_receipt"] is not None
     assert result["profile_contract_valid"]["status"] == "PASS"
     assert result["semantic_utility"]["status"] == "PASS"
+    assert result["review_input_binding"]["reviewer_context_mode"] == "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT"
+    assert set(result["review_input_binding"]["review_input_classes"]) == {
+        "CURRENT_AUTHORITY_REFS",
+        "EVIDENCE_MANIFEST",
+        "EXACT_CANDIDATE",
+        "SCOPE_AUTHORITY_PACKET",
+    }
+    assert "PRODUCER_PRIVATE_REASONING" in result["review_input_binding"]["forbidden_input_classes"]
+    assert result["expected_review_input_sha256"] == result["review_input_binding"]["review_input_sha256"]
     assert result["downstream_authorized"] is False
