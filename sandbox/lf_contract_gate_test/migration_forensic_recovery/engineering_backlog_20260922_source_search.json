@@ -1,0 +1,48 @@
+{
+  "schema_version": "lf-migration-forensic-source-search/v1",
+  "incident": "ENGINEERING_BACKLOG_ORPHAN_MIGRATIONS_20260922",
+  "status": "ORIGINAL_SOURCE_NOT_RECOVERABLE",
+  "observed_at": "2026-09-22T18:25:00Z",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "provenance_gap_ekb_code": "SRC-001",
+  "source_context": {
+    "business_trace_execution_id": "INIT-PAULO-BACKLOG-20260922-001",
+    "business_trace_is_governed_operation_execution": false,
+    "workstream": "PAULO-LF-ENGINEERING-2026",
+    "source_ref": "chat:induccion-paulo-2026-09"
+  },
+  "negative_searches": [
+    "GitHub main/default-branch code search: no matching migration path/name/table source",
+    "all current remote branch refs: no matching migration file",
+    "all refs/pull/*/head: no matching migration file",
+    "GitHub commit search by migration names and engineering_workstreams: no matching commit",
+    "GitHub PR search: no matching owner PR",
+    "Project/Library files: no DDL source artifact",
+    "conversation retrieval: work creation recovered but exact original DDL/tool-call not retained",
+    "public.lf_log_operativo, lf_ops.auditoria_eventos and overall_design.operation_log at creation window: no source/tool-call record",
+    "public.lf_operation_execution/effect_guard/events: no governed execution for INIT-PAULO-BACKLOG-20260922-001"
+  ],
+  "original_source_search_complete": true,
+  "original_source_found": false,
+  "recovery_policy": {
+    "ownership_mode": "FORENSIC_RECOVERY_OWNER",
+    "owner_receipt_schema": "lf-migration-source-recovery-currentness/v1",
+    "source_recovery_basis": "SINGLE_STATEMENT_SOURCE_PRESERVING_LEDGER_MIRROR",
+    "source_materialization_mode": "FORENSIC_LEDGER_MIRROR_NOT_ORIGINAL_SOURCE",
+    "ddl_replayed": false
+  },
+  "migrations": [
+    {
+      "version": "20260922142522",
+      "name": "create_engineering_backlog_and_progress_tracking",
+      "remote_statement_count": 1,
+      "recovery_path": "supabase/migrations/20260922142522_create_engineering_backlog_and_progress_tracking.sql"
+    },
+    {
+      "version": "20260922142548",
+      "name": "fix_engineering_progress_view_aggregation_v2",
+      "remote_statement_count": 1,
+      "recovery_path": "supabase/migrations/20260922142548_fix_engineering_progress_view_aggregation_v2.sql"
+    }
+  ]
+}
