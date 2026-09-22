@@ -1,0 +1,118 @@
+{
+  "contract_code": "LF_CI_EVIDENCE_CONTRACT_V1",
+  "version": "1.0.0-candidate",
+  "owner": "S30",
+  "productization_owner": "S31",
+  "status": "SOURCE_CANDIDATE_NO_LIVE_MUTATION",
+  "purpose": "Aggregate already-verified CI provider receipts into one exact-subject evidence decision without re-running provider semantics or turning CI PASS into semantic, E2E, merge, runtime or production closure.",
+  "authority_boundary": {
+    "aggregator_is_ci_producer": false,
+    "aggregator_may_call_github_rest": false,
+    "aggregator_may_call_remote_currentness": false,
+    "provider_specific_verification_remains_with_provider": true,
+    "currentness_provider": "S31_CURRENTNESS_AUTHORITY",
+    "currentness_receipt_schema": "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1",
+    "source_attestation_receipt_schema": "LF_SOURCE_ATTESTATION_RECEIPT_V1",
+    "github_reconciliation_v7_role": "OPTIONAL_POST_MERGE_ARTIFACT_PROVIDER_ONLY",
+    "programacion_provenance_role": "EXISTING_DOMAIN_SPECIFIC_PROVENANCE_NOT_RELABELED_AS_GLOBAL_LF_AUTHORITY"
+  },
+  "subject_binding": [
+    "repository_full_name",
+    "candidate_head_sha",
+    "base_sha",
+    "target_branch",
+    "pr_number",
+    "evidence_purpose"
+  ],
+  "provider_codes": {
+    "VALIDATE_LF_PACKS": {
+      "provider_kind": "GITHUB_WORKFLOW",
+      "workflow_name": "Validate LF Packs",
+      "workflow_path": ".github/workflows/validate-lf-packs.yml",
+      "accepted_modes": ["DIRECT_SUCCESS"]
+    },
+    "LF_CONTRACT_CHECK": {
+      "provider_kind": "GITHUB_WORKFLOW_DEEP",
+      "workflow_name": "lf-contract-check",
+      "workflow_path": ".github/workflows/lf-contract-check.yml",
+      "accepted_modes": ["DEEP_RUN"],
+      "deep_job_name": "lf-contract-check",
+      "audit_artifact_name_pattern": "r8-continuous-audit-{run_id}",
+      "exact_deep_reuse_supported_in_v1": false
+    },
+    "LF_BOOTSTRAP_REPRODUCIBILITY": {
+      "provider_kind": "GITHUB_WORKFLOW",
+      "workflow_name": "LF Bootstrap Reproducibility Probe",
+      "workflow_path": ".github/workflows/lf-bootstrap-reproducibility.yml",
+      "accepted_modes": ["DIRECT_SUCCESS"]
+    },
+    "CURRENTNESS_AUTHORITY": {
+      "provider_kind": "SOURCE_ATTESTATION",
+      "authority_receipt_schema": "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1",
+      "attestation_receipt_schema": "LF_SOURCE_ATTESTATION_RECEIPT_V1",
+      "authority_owner": "S31",
+      "authority_revision_binding": "AGGREGATE_BASE_SHA",
+      "authority_ref_binding": "refs/heads/{target_branch}",
+      "durable_anchor_required": true,
+      "durable_anchor_workflow": "LF Currentness Authority",
+      "durable_anchor_workflow_path": ".github/workflows/lf-material-currentness.yml",
+      "network_reverification_by_aggregator": false
+    },
+    "EXTERNAL_RECONCILIATION_V7": {
+      "provider_kind": "SUPABASE_POST_MERGE_RECONCILIATION",
+      "function": "public.record_external_ci_verification_v7",
+      "scope": "LF_SKILL_ARTIFACT_POST_MERGE_ONLY",
+      "not_generic_ci_authority": true
+    }
+  },
+  "requirement_profiles": {
+    "PRE_MERGE_STANDARD": {
+      "required_providers": ["VALIDATE_LF_PACKS", "LF_CONTRACT_CHECK", "LF_BOOTSTRAP_REPRODUCIBILITY"],
+      "currentness_required": false,
+      "post_merge_reconciliation_required": false
+    },
+    "PRE_MERGE_WITH_CURRENTNESS": {
+      "required_providers": ["VALIDATE_LF_PACKS", "LF_CONTRACT_CHECK", "LF_BOOTSTRAP_REPRODUCIBILITY", "CURRENTNESS_AUTHORITY"],
+      "currentness_required": true,
+      "post_merge_reconciliation_required": false
+    },
+    "POST_MERGE_ARTIFACT_RECONCILIATION": {
+      "required_providers": ["CURRENTNESS_AUTHORITY", "EXTERNAL_RECONCILIATION_V7"],
+      "currentness_required": true,
+      "post_merge_reconciliation_required": true
+    }
+  },
+  "invariants": [
+    "Exactly one receipt per required provider code.",
+    "All CI workflow receipts bind the exact candidate head and exact base SHA in the aggregate subject.",
+    "Workflow-level success alone never satisfies LF_CONTRACT_CHECK; DEEP_RUN proof requires a successful deep job plus a non-expired audit artifact with SHA-256 digest.",
+    "CURRENTNESS_AUTHORITY requires both LF_CURRENTNESS_AUTHORITY_RECEIPT_V1 and LF_SOURCE_ATTESTATION_RECEIPT_V1 plus a durable successful workflow anchor from the S31 producer.",
+    "The currentness authority receipt must be ready and bind current_revision to aggregate base_sha; the source-attestation receipt binds the exact repository, refs/heads/{target_branch} and the same base revision.",
+    "Neither currentness receipt attests the candidate head; the candidate head is proven independently by exact-head CI workflow receipts.",
+    "The aggregator validates hashes, identities and durable-anchor metadata offline but performs no remote currentness lookup.",
+    "Provider FAIL, unknown status, duplicate provider, subject mismatch, malformed digest or missing required provider fails closed.",
+    "CI evidence may be complete while semantic review, qualification, E2E, runtime, production or merge authorization remains incomplete.",
+    "No result from this contract authorizes merge_main, runtime, production, Golden, semantic closure or E2E closure."
+  ],
+  "results": [
+    "PASS_CI_EVIDENCE_AGGREGATED",
+    "BLOCK_CI_PROVIDER_MISSING",
+    "BLOCK_CI_PROVIDER_DUPLICATE",
+    "BLOCK_CI_PROVIDER_UNKNOWN",
+    "BLOCK_CI_SUBJECT_MISMATCH",
+    "BLOCK_CI_PROVIDER_RESULT_INVALID",
+    "BLOCK_CI_CONTRACT_DEEP_PROOF_INVALID",
+    "BLOCK_CI_CURRENTNESS_RECEIPT_INVALID",
+    "BLOCK_CI_POST_MERGE_PROVIDER_INVALID"
+  ],
+  "claim_ceiling": "CI_EVIDENCE_ONLY_NOT_DOMAIN_CLOSURE",
+  "forbidden_claims": [
+    "E2E_PASS_FROM_CI_PASS",
+    "QUALIFICATION_PASS_FROM_CI_PASS",
+    "SEMANTIC_REVIEW_PASS_FROM_CI_PASS",
+    "MERGE_AUTHORIZED_FROM_CI_PASS",
+    "RUNTIME_AUTHORIZED_FROM_CI_PASS",
+    "PRODUCTION_AUTHORIZED_FROM_CI_PASS",
+    "GOLDEN_AUTHORIZED_FROM_CI_PASS"
+  ]
+}

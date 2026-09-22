@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lf.local/contracts/ci_provider_receipt.schema.json",
+  "title": "LF CI Provider Receipt V1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "receipt_version",
+    "provider_code",
+    "provider_kind",
+    "provider_mode",
+    "repository_full_name",
+    "candidate_head_sha",
+    "base_sha",
+    "target_branch",
+    "pr_number",
+    "result",
+    "source_ref",
+    "observed_at",
+    "receipt_sha256"
+  ],
+  "properties": {
+    "receipt_version": {"const": "LF_CI_PROVIDER_RECEIPT_V1"},
+    "provider_code": {"enum": ["VALIDATE_LF_PACKS", "LF_CONTRACT_CHECK", "LF_BOOTSTRAP_REPRODUCIBILITY", "CURRENTNESS_AUTHORITY", "EXTERNAL_RECONCILIATION_V7"]},
+    "provider_kind": {"enum": ["GITHUB_WORKFLOW", "GITHUB_WORKFLOW_DEEP", "SOURCE_ATTESTATION", "SUPABASE_POST_MERGE_RECONCILIATION"]},
+    "provider_mode": {"type": "string", "minLength": 1},
+    "repository_full_name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "candidate_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "base_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "target_branch": {"type": "string", "minLength": 1},
+    "pr_number": {"type": ["integer", "null"], "minimum": 1},
+    "result": {"enum": ["PASS", "FAIL"]},
+    "source_ref": {"type": "string", "minLength": 1},
+    "observed_at": {"type": "string", "minLength": 1},
+    "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
