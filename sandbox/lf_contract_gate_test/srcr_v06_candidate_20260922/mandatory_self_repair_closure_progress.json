@@ -1,0 +1,154 @@
+{
+  "schema": "SRCR_MANDATORY_SELF_REPAIR_PROGRESS_V1",
+  "spec_ref": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json",
+  "as_of": "2026-09-22",
+  "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
+  "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 12 must be 100.",
+  "overall_percent": 43.75,
+  "points": [
+    {
+      "obligation_id": "MC-01",
+      "state": "SPECIFIED",
+      "percent": 25,
+      "evidence": [
+        "Current Llama transport has no tool/function-calling surface in llama.py",
+        "Mandatory closure contract now defines tool-capable producer OR external resolver path"
+      ],
+      "remaining_requirements": [
+        "Need executable live-research path + negative test"
+      ]
+    },
+    {
+      "obligation_id": "MC-02",
+      "state": "IMPLEMENTED",
+      "percent": 50,
+      "evidence": [
+        "runtime_binding.json now has non-null model_context, required_source_refs, section projection and max_chars"
+      ],
+      "remaining_requirements": [
+        "Need execution receipt/readback proving exact context delivered + budget tests"
+      ]
+    },
+    {
+      "obligation_id": "MC-03",
+      "state": "IMPLEMENTED",
+      "percent": 50,
+      "evidence": [
+        "engine.py passes task.evidence_manifest to contract and semantic_utility and passes request.evidence_manifest to canonical_quality_finalize"
+      ],
+      "remaining_requirements": [
+        "Need one end-to-end run proving identical manifest digest at every hop including independent judge/receipt"
+      ]
+    },
+    {
+      "obligation_id": "MC-04",
+      "state": "SPECIFIED",
+      "percent": 25,
+      "evidence": [
+        "V0.5 trace proved generic EKB ref/zero-row and uncited material claim escapes",
+        "Mandatory closure contract now requires exact resolution semantics"
+      ],
+      "remaining_requirements": [
+        "Implement generic exact-ref/zero-row/uncited-claim checks + regressions"
+      ]
+    },
+    {
+      "obligation_id": "MC-05",
+      "state": "SPECIFIED",
+      "percent": 25,
+      "evidence": [
+        "V0.5 trace cannot reconstruct all intermediate research queries",
+        "Mandatory closure contract now defines query_trace lineage"
+      ],
+      "remaining_requirements": [
+        "Implement query recording and reconstruction test"
+      ]
+    },
+    {
+      "obligation_id": "MC-06",
+      "state": "SPECIFIED",
+      "percent": 25,
+      "evidence": [
+        "V0.6 SKILL contains pre-freeze schema discipline",
+        "Current candidate passed pre-quality after repair"
+      ],
+      "remaining_requirements": [
+        "Prove freeze is mechanically impossible before exact schema PASS; add malformed setup/action pre-freeze regression"
+      ]
+    },
+    {
+      "obligation_id": "MC-07",
+      "state": "IMPLEMENTED",
+      "percent": 50,
+      "evidence": [
+        "V0.6 contract states deterministic validation owns structural invariants and utility must not reimplement them",
+        "runtime_semantic_utility.py is materially smaller than runtime_validate.py"
+      ],
+      "remaining_requirements": [
+        "Add machine-readable rule ownership catalog + static zero-duplicate structural rule test"
+      ]
+    },
+    {
+      "obligation_id": "MC-08",
+      "state": "SPECIFIED",
+      "percent": 25,
+      "evidence": [
+        "V0.5 trace counted setup/action in schema and another layer",
+        "Mandatory closure contract now requires canonical finding fingerprint"
+      ],
+      "remaining_requirements": [
+        "Implement aggregator and duplicate-vs-distinct regression"
+      ]
+    },
+    {
+      "obligation_id": "MC-09",
+      "state": "IMPLEMENTED",
+      "percent": 50,
+      "evidence": [
+        "materialize_quality_receipt.py rejects producer_execution_id == reviewer_execution_id",
+        "validate_quality_receipt.py requires distinct IDs and independence evidence refs"
+      ],
+      "remaining_requirements": [
+        "Run/retain positive and same-execution negative tests on exact branch"
+      ]
+    },
+    {
+      "obligation_id": "MC-10",
+      "state": "IMPLEMENTED",
+      "percent": 50,
+      "evidence": [
+        "runtime has canonical_quality_finalize path and quality materializer/validator",
+        "V0.6 review still required external independent judge production"
+      ],
+      "remaining_requirements": [
+        "Prove physical caller invokes semantic judge and binds exact candidate/evidence/scope before receipt"
+      ]
+    },
+    {
+      "obligation_id": "MC-11",
+      "state": "TESTED",
+      "percent": 75,
+      "evidence": [
+        "Independent V0.6 semantic review detected PROFILE_RUNTIME_CANARY_REQUIRED without operational consumer",
+        "Quality receipt was not materialized because T5 remained open"
+      ],
+      "remaining_requirements": [
+        "Repair/declare physical consumer and terminality propagation, rerun to clean semantic result"
+      ]
+    },
+    {
+      "obligation_id": "MC-12",
+      "state": "TESTED",
+      "percent": 75,
+      "evidence": [
+        "Independent V0.6 R2 detected queue_terminal_bridge as UNDECLARED_PROPOSED_CHANGE",
+        "Quality receipt was not materialized"
+      ],
+      "remaining_requirements": [
+        "Add producer pre-freeze graph-to-delta reconciliation and rerun negative/positive tests"
+      ]
+    }
+  ],
+  "closed_count": 0,
+  "open_count": 12
+}
