@@ -503,6 +503,11 @@ def test_repaired_v06_candidate_passes_governed_prequality_freeze() -> None:
     )
     assert receipt["pre_quality_status"] == "PASS_PRE_QUALITY", receipt
     assert receipt["schema_error_count"] == 0, receipt
+    assert receipt["output_schema_path"] == "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json"
+    assert receipt["output_schema_file_sha256"] == hashlib.sha256(
+        (ROOT / receipt["output_schema_path"]).read_bytes()
+    ).hexdigest()
+    assert receipt["validation_sha256"] == harness.canonical_sha256(validation)
     assert receipt["deterministic_status"] == "PASS", receipt
     assert receipt["semantic_utility_status"] == "PASS", receipt
     assert receipt["independent_quality"] == "PENDING_INDEPENDENT_REVIEW", receipt
