@@ -75,6 +75,10 @@
     "resolver_ref": "profiles/systemic_root_cause_repair_lf/contracts/evidence_manifest.schema.json",
     "requires_evidence_manifest": true,
     "requires_query_trace": true,
-    "requires_resolved_authority_context": true
+    "requires_resolved_authority_context": true,
+    "validator": {
+      "path": "validators/research_trace.py",
+      "callable": "validate_runtime_research_bundle"
+    }
   }
 }
