@@ -7,7 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[3]
 VALIDATOR = ROOT / "gobernanza/judges/validate_work_protocol_manifest_v1.py"
-MIGRATION = ROOT / "supabase/migrations/20260922144000_work_protocol_manifest_v1.sql"
+MIGRATION = ROOT / "supabase/migrations/20260922144000_lf_work_protocol_manifest_v1.sql"
 SCHEMA = ROOT / "gobernanza/contratos/work_protocol_manifest_v1.schema.json"
 G09 = Path(__file__).with_name("g09_cold_replay_v1.py")
 spec = importlib.util.spec_from_file_location("wpm", VALIDATOR)
