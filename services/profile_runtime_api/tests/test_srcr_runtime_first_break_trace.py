@@ -67,3 +67,41 @@ def test_srcr_v05_runtime_first_break_trace() -> None:
     assert "SRCR_EVIDENCE_MANIFEST_REQUIRED" in set(runtime_contract.get("blocking_codes") or [])
     assert runtime_semantic.get("status") == "NOT_EVALUATED", runtime_semantic
     assert runtime_semantic.get("independent_semantic_judge") == "NOT_EXECUTED"
+
+
+def test_srcr_v05_after_manifest_next_break_quality_boundary() -> None:
+    repository = RepositoryBindings(ROOT, max_prompt_chars=200_000)
+    binding = repository.runtime_binding(PROFILE)
+    assert binding is not None
+
+    binding_path = ROOT / "profiles" / PROFILE / "contracts" / "runtime_binding.json"
+    raw_binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    declared_quality = raw_binding.get("canonical_quality")
+
+    service_pkg = ROOT / "services" / "profile_runtime_api" / "profile_runtime_api"
+    canonical_quality_consumers = []
+    quality_receipt_consumers = []
+    for path in service_pkg.rglob("*.py"):
+        body = path.read_text(encoding="utf-8")
+        if "canonical_quality" in body:
+            canonical_quality_consumers.append(str(path.relative_to(ROOT)))
+        if "validate_quality_receipt" in body:
+            quality_receipt_consumers.append(str(path.relative_to(ROOT)))
+
+    trace = {
+        "CONTROL_after_W1_direct_validator": "PASS",
+        "CONTROL_after_W1_direct_semantic": "PASS",
+        "T4_canonical_quality_declared": isinstance(declared_quality, dict),
+        "T4_v05_quality_required": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5" in set((declared_quality or {}).get("required_for_profile_pack_ids") or []),
+        "T4_runtime_binding_exposes_canonical_quality": hasattr(binding, "canonical_quality"),
+        "T4_runtime_canonical_quality_consumers": canonical_quality_consumers,
+        "T5_runtime_quality_receipt_validator_consumers": quality_receipt_consumers,
+        "SECOND_BREAK": "CANONICAL_QUALITY_BOUNDARY_DECLARED_BUT_NOT_CONSUMED_BY_RUNTIME",
+    }
+    warnings.warn("SRCR_RUNTIME_TRACE_2=" + json.dumps(trace, ensure_ascii=False, sort_keys=True))
+
+    assert isinstance(declared_quality, dict)
+    assert "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5" in set(declared_quality.get("required_for_profile_pack_ids") or [])
+    assert not hasattr(binding, "canonical_quality")
+    assert canonical_quality_consumers == []
+    assert quality_receipt_consumers == []
