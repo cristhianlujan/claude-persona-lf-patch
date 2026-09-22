@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import base64
+import gzip
 import importlib.util
 import json
 from pathlib import Path
@@ -246,3 +248,55 @@ def test_persisted_lifecycle_phase4_trace_and_manifest_are_exactly_bound() -> No
     findings = {item["finding_id"]: item for item in trace_payload["findings"]}
     assert findings["LC-F11"]["status"] == "ROOT_CAUSE_CONFIRMED"
     assert findings["LC-F12"]["status"] == "ROOT_CAUSE_CONFIRMED"
+
+
+def test_zero_result_evidence_cannot_support_positive_claim() -> None:
+    base = {
+        "sequence": 1,
+        "tool_permission": "READ_SUPABASE",
+        "resolver_id": "LF_SUPABASE_READBACK_V1",
+        "provider": "SUPABASE",
+        "query_locator": "sql:Q-zero-row",
+        "request_digest": sha("request"),
+        "result_digest": sha("empty-result"),
+        "observed_at": "2026-09-22T00:00:00Z",
+        "evidence_id": "EV-ZERO",
+        "consumer": "$.live_authority_packet",
+        "result_status": "EMPTY",
+        "result_count": 0,
+    }
+    positive = dict(base, claim_support="PRESENCE")
+    assert "trace[0]:ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT" in harness.validate_query_trace([positive])
+
+    absence = dict(base, claim_support="ABSENCE")
+    assert harness.validate_query_trace([absence]) == []
+
+
+def test_current_uncertainty_without_evidence_map_is_rejected() -> None:
+    candidate_path = (
+        ROOT
+        / "sandbox"
+        / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922"
+        / "candidate_v06.json.gz.b64"
+    )
+    manifest_path = (
+        ROOT
+        / "sandbox"
+        / "lf_contract_gate_test"
+        / "srcr_v06_candidate_20260922"
+        / "evidence_manifest_v06_merged.json"
+    )
+    candidate = json.loads(
+        gzip.decompress(base64.b64decode(candidate_path.read_bytes())).decode("utf-8")
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert candidate.get("current_uncertainties")
+    candidate["evidence_map"] = [
+        row
+        for row in candidate.get("evidence_map", [])
+        if row.get("claim_path") != "$.current_uncertainties"
+        and not str(row.get("claim_path") or "").startswith("$.current_uncertainties[")
+    ]
+    result = harness.runtime_validate.validate(candidate, manifest)
+    assert "CURRENT_UNCERTAINTY_EVIDENCE_MAP_REQUIRED" in result["blocking_codes"]
