@@ -394,5 +394,49 @@
     "no_new_parallel_engine": true,
     "no_second_semantic_authority": true,
     "no_merge_runtime_or_production_authorization": true
+  },
+  "reporting_contract": {
+    "report_id": "SRCR_MANDATORY_CLOSURE_PROGRESS_TABLE_V1",
+    "mandatory_every_run": true,
+    "audience": "USER",
+    "timing": [
+      "show at the end of every SRCR self-repair execution or repair iteration",
+      "show again whenever any MC state changes materially during a long run"
+    ],
+    "columns": [
+      "Punto obligatorio",
+      "Avance",
+      "Estado actual",
+      "Qué falta para 100%"
+    ],
+    "row_scope": "Always include every mandatory obligation MC-01..MC-13; never hide completed, unchanged or blocked rows.",
+    "source_of_truth": "Derive each row from the exact current mandatory_self_repair_closure_progress artifact/readback. Do not estimate percentages conversationally.",
+    "progress_rules": {
+      "allowed_states": {
+        "NOT_STARTED": 0,
+        "SPECIFIED": 25,
+        "IMPLEMENTED": 50,
+        "TESTED": 75,
+        "READBACK_CLOSED": 100
+      },
+      "percent_format": "integer percent per MC point",
+      "global_progress": "arithmetic mean of all mandatory MC percentages, plus closed_count/total_count",
+      "closure_display": "Only READBACK_CLOSED may be shown as 100% or closed."
+    },
+    "required_footer": [
+      "Avance global",
+      "MC cerrados / total",
+      "MC abiertos / total",
+      "current exact revision/commit",
+      "current progress artifact/readback reference"
+    ],
+    "missing_data_behavior": "If a row cannot be derived from evidence, show it as OPEN/UNKNOWN with the exact missing evidence in 'Qué falta para 100%'; never omit the row or invent progress.",
+    "anti_regression": [
+      "Do not replace the table with prose only.",
+      "Do not group multiple MC rows.",
+      "Do not suppress rows whose status did not change.",
+      "Do not report a higher percentage without new evidence satisfying the next progress state.",
+      "If MC-13 finds an observation and reopens an owning MC, reflect the reopened state in the same table."
+    ]
   }
 }
