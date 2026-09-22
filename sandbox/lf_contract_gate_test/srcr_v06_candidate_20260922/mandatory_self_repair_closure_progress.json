@@ -4,7 +4,7 @@
   "as_of": "2026-09-22",
   "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
   "close_rule": "Only READBACK_CLOSED=100 counts as closed; all 13 MC-01..MC-13 must be 100, including a clean MC-13 replay.",
-  "overall_percent": 84.61538461538461,
+  "overall_percent": 86.53846153846153,
   "points": [
     {
       "obligation_id": "MC-01",
@@ -112,16 +112,19 @@
     },
     {
       "obligation_id": "MC-08",
-      "state": "TESTED",
-      "percent": 75,
+      "state": "READBACK_CLOSED",
+      "percent": 100,
       "evidence": [
-        "canonical_logical_findings fingerprints failure_class + candidate_path and preserves detector lineage",
-        "schema + profile-validator duplicate defect regression collapses to one logical finding per field",
-        "Validate LF Packs 35736254524 PASS"
+        "fresh E2E baseline on exact code head 0b028df79435e7016ca2326884535a97fc400298 returned status=PASS, raw_error_count=0, finding_count=0 and unique_finding_id_count=0",
+        "pre-repair E2E mutation exposed a real dedup gap: missing setup+action produced 5 raw errors and 4 logical findings because JSON Schema used the parent path and blocking_codes were re-added at root",
+        "canonical aggregator now normalizes required-property schema errors to the missing field path and suppresses already represented validator blocking_codes while preserving detector lineage",
+        "post-repair E2E mutation produces 4 raw detector errors -> exactly 2 logical findings, one for setup and one for action, each preserving JSON_SCHEMA + PROFILE_VALIDATOR",
+        "finding_count equals unique finding IDs in baseline and mutation; logical_duplicate_count=0; distinct failure classes remain separately covered by regression",
+        "Validate LF Packs run 35751931829 SUCCESS with 238 persistent Profile Runtime API tests",
+        "lf-contract-check run 35751931908 is separately blocked at branch-level preflight by FAIL_RECEIPT_MISSING before code validation; no retroactive receipt was fabricated",
+        "readback: sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc08_finding_dedup_readback.json"
       ],
-      "remaining_requirements": [
-        "Exercise the final repaired candidate and retain finding_count readback proving no logical duplicate findings end-to-end."
-      ]
+      "remaining_requirements": []
     },
     {
       "obligation_id": "MC-09",
@@ -188,8 +191,8 @@
       ]
     }
   ],
-  "closed_count": 8,
-  "open_count": 5,
+  "closed_count": 9,
+  "open_count": 4,
   "reporting_contract": {
     "required_every_run": true,
     "columns": [
@@ -202,7 +205,7 @@
     "global_footer_required": true,
     "source": "profiles/systemic_root_cause_repair_lf/contracts/mandatory_self_repair_closure.v1.json#reporting_contract"
   },
-  "current_exact_code_head": "eaa34a3318a889bcd2281d6fc6dfc354700e4efe",
+  "current_exact_code_head": "0b028df79435e7016ca2326884535a97fc400298",
   "validation_evidence": {
     "workflow": "Validate LF Packs",
     "run_id": 35744244255,
@@ -242,6 +245,17 @@
     "mc07_overlap_count": 0,
     "mc07_mutation_duplicate_code": "NOT_OBJECT",
     "mc07_mutation_detected": true,
-    "mc07_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc07_rule_ownership_readback.json"
+    "mc07_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc07_rule_ownership_readback.json",
+    "mc08_source_revision": "0b028df79435e7016ca2326884535a97fc400298",
+    "mc08_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "mc08_baseline_finding_count": 0,
+    "mc08_mutation_raw_error_count": 4,
+    "mc08_mutation_logical_finding_count": 2,
+    "mc08_validate_lf_packs_run_id": 35751931829,
+    "mc08_validate_lf_packs_conclusion": "success",
+    "mc08_runtime_api_tests": "238 passed",
+    "mc08_contract_check_run_id": 35751931908,
+    "mc08_contract_check_blocker": "FAIL_RECEIPT_MISSING",
+    "mc08_readback_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc08_finding_dedup_readback.json"
   }
 }
