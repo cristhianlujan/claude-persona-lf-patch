@@ -107,6 +107,22 @@ The ledger receipt must bind the same execution, gate, result digest, source rev
 
 Evidence history is never rewritten to “fix” a prior result. A new observation or verification creates new evidence/receipt history; the previous receipt remains append-only. Evidence from another execution cannot satisfy the current execution.
 
+## Solution / PR isolation
+
+Any material solution that is materialized in Git MUST own its own dedicated pull request. A pull request is a change-isolation boundary, not a transport bucket.
+
+The frozen manifest carries a required `solution_isolation_policy` with these fail-closed invariants:
+
+- `unit_mode=ONE_SOLUTION_PER_PR`: one independently closable solution unit per PR;
+- `mixed_solution_pr_allowed=false`: unrelated fixes, remediations, migrations, refactors or opportunistic cleanup cannot share the same PR;
+- `scope_expansion_requires_new_pr=true`: discovering a second solution or materially expanding the original solution requires a new PR/execution boundary instead of widening the current PR;
+- `migration_apply_requires_separate_pr=true`: when a solution also requires deployable database migration materialization/apply, that migration is promoted through its own migration-only PR after the candidate solution has been qualified;
+- `receipt_must_bind_exact_pr_scope=true`: candidate/closure receipts must bind the exact PR head and exact solution scope; a receipt from another PR or broader/narrower solution scope is invalid.
+
+Tests, documentation and evidence that are necessary to prove the same solution MAY remain in that solution's PR. The prohibition is against multiple independently closable solutions sharing one PR, not against the artifacts required to verify one solution.
+
+If a PR contains more than one independent solution unit, the protocol result is BLOCKED and the work must be split before merge. This rule exists to constrain blast radius, prevent cross-solution CI/currentness contamination, make rollback and ownership unambiguous, and stop one repair from invalidating or masking another.
+
 ## Change control, waivers and irreversible actions
 
 V1 treats control changes as a new governed execution, never as an in-place edit of a frozen manifest.
