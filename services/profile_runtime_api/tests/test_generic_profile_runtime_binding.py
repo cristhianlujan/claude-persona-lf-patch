@@ -249,6 +249,7 @@ class GenericRuntimeBindingTest(unittest.TestCase):
                 'semantic_result_validator':{'path':'validators/semantic_result.py','callable':'evaluate'},
                 'quality_receipt_schema':'schemas/quality.json',
                 'quality_receipt_validator':{'path':'validators/quality_receipt.py','callable':'validate_quality_receipt'},
+                'quality_receipt_materializer':{'path':'validators/materialize_quality_receipt.py','callable':'materialize_quality_receipt'},
                 'deterministic_floors_can_accept_quality':False,
                 'receipt_required_for_pass_to_quality_pack':True,
             }
