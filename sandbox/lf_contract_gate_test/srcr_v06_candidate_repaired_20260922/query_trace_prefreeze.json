@@ -3,7 +3,7 @@
   "lineage_mode": "MIXED_RECORDED_RECONSTRUCTED_AND_FRESH_LIVE",
   "live_readback": true,
   "original_recorded_query_count": 44,
-  "reconstructed_historical_count": 18,
+  "reconstructed_historical_count": 17,
   "trace_count": 65,
   "trace": [
     {
@@ -808,15 +808,17 @@
       "tool_permission": "READ_SUPABASE",
       "resolver_id": "LF_SUPABASE_READBACK_V1",
       "provider": "SUPABASE",
-      "query_id": "HIST-EV-EKB",
-      "query_locator": "supabase://public/lf_error_knowledge?profile_runtime_lifecycle_currentness=2026-09-21",
-      "request_digest": "sha256:eef967b7234693611496b22483e39cdade61d7f382ef1575b0c7fccfcf4145f5",
-      "result_digest": "sha256:1f4c6e85976a793e511cf91e11008e50280b29cf88556abf6f11e74a1acea738",
-      "observed_at": "2026-09-22T00:00:00Z",
+      "query_id": "LIVE-EV-EKB-20260922",
+      "query_locator": "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z",
+      "request_digest": "sha256:067c707a9c51b6d162a48cfcbf4aa89f2eba3ad9a0be49dfb375c45726421715",
+      "result_digest": "sha256:d6a62e93ccb0cabcfe72c389d0eb95a14144fcbeb48af09b34620eb39ded00d1",
+      "observed_at": "2026-09-22T14:36:05.625019+00:00",
       "evidence_id": "EV-EKB",
-      "consumer": "$.historical_evidence_manifest.EV-EKB",
-      "lineage_class": "RECONSTRUCTED_HISTORICAL_MANIFEST_LINEAGE",
-      "reconstruction_source": "evidence_manifest_v06_merged.json"
+      "consumer": "$.live_authority_packet",
+      "lineage_class": "FRESH_LIVE_RESEARCH",
+      "result_status": "FOUND",
+      "result_count": 110,
+      "claim_support": "CONTENT"
     },
     {
       "sequence": 60,
@@ -915,5 +917,5 @@
       "lineage_class": "FRESH_LIVE_RESEARCH"
     }
   ],
-  "fresh_live_query_count": 3
+  "fresh_live_query_count": 4
 }
