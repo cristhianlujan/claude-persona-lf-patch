@@ -1,0 +1,160 @@
+{
+  "schema": "LF_UNIFIED_EXECUTION_TASK_CONTRACT_V1",
+  "spec_id": "PILOT-SRCR-UNIFIED-EXECUTION-V1",
+  "authority": {
+    "handoff_event_id": 15186,
+    "ekb_code": "GOV-SRCR-PILOT-EXECUTION-PROTOCOL-001",
+    "pilot_profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    "pilot_profile_pack": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+    "pilot_profile_source_sha": "cb455027df2d2e2795ab66d41a539e217a04966f"
+  },
+  "execution_identity": {
+    "required": [
+      "execution_id",
+      "operation_code",
+      "operation_spec_id",
+      "operation_spec_digest",
+      "profile_code",
+      "profile_source_sha",
+      "executor_binding_id",
+      "executor_binding_digest"
+    ],
+    "freeze_at_start": [
+      "operation_spec_id",
+      "operation_spec_digest",
+      "profile_code",
+      "profile_source_sha",
+      "executor_binding_id",
+      "executor_binding_digest"
+    ],
+    "runtime_release_sha_is_distinct_from_profile_source_sha": true
+  },
+  "task_envelope": {
+    "required": [
+      "schema",
+      "execution_id",
+      "operation_code",
+      "operation_spec_digest",
+      "task_id",
+      "step_id",
+      "attempt_no",
+      "profile_code",
+      "profile_source_sha",
+      "executor_binding_id",
+      "executor_binding_digest",
+      "required_capabilities",
+      "input_refs",
+      "evidence_refs",
+      "lease_required"
+    ],
+    "schema_value": "LF_UNIFIED_EXECUTION_TASK_V1",
+    "constraints": {
+      "attempt_no_min": 1,
+      "required_capabilities_type": "array",
+      "input_refs_type": "array",
+      "evidence_refs_type": "array",
+      "lease_required": true,
+      "next_task_must_not_be_selected_by_executor": true
+    }
+  },
+  "result_envelope": {
+    "required": [
+      "schema",
+      "execution_id",
+      "task_id",
+      "step_id",
+      "attempt_no",
+      "lease_owner",
+      "lease_fence",
+      "outcome",
+      "result_digest",
+      "evidence_refs"
+    ],
+    "schema_value": "LF_UNIFIED_EXECUTION_RESULT_V1",
+    "outcome_enum": [
+      "SUCCEEDED",
+      "BLOCKED",
+      "FAILED",
+      "RETRYABLE_FAILURE"
+    ],
+    "constraints": {
+      "result_identity_must_match_claimed_task": true,
+      "lease_fence_must_equal_current_execution_fence": true,
+      "stale_fence_rejected": true,
+      "submission_idempotent_on_exact_identity_and_digest": true,
+      "executor_cannot_advance_execution_state": true
+    }
+  },
+  "advance_execution": {
+    "sole_next_task_owner": true,
+    "reads": [
+      "canonical_execution_state",
+      "accepted_result",
+      "operation_spec",
+      "checkpoint"
+    ],
+    "writes": [
+      "canonical_execution_state",
+      "next_task_or_terminal_receipt"
+    ],
+    "forbidden": [
+      "runtime_selected_next_step",
+      "queue_selected_next_step",
+      "profile_selected_next_step"
+    ]
+  },
+  "lease_and_checkpoint": {
+    "lease_fence_required_to_submit_or_checkpoint": true,
+    "checkpoint_seq_monotonic": true,
+    "stale_worker_write_rejected": true,
+    "retry_requires_new_attempt_identity": true
+  },
+  "terminality": {
+    "canonical_state_authority": "public.lf_operation_execution",
+    "queue_role": "TRANSPORT_OR_PROJECTION_ONLY",
+    "terminal_requires_zero_executable_pending_task": true
+  },
+  "capability_preflight": {
+    "required_before_model_call": true,
+    "must_validate": [
+      "executor_binding_current",
+      "required_runtime_capabilities_available",
+      "profile_source_exact",
+      "operation_spec_exact"
+    ]
+  },
+  "db_change_provenance": {
+    "required_fields": [
+      "repo",
+      "branch",
+      "source_sha",
+      "migration_path",
+      "migration_digest",
+      "execution_id",
+      "environment",
+      "authorization"
+    ]
+  },
+  "runtime_ownership": {
+    "generic_runtime_profile_specific_literals_forbidden": true,
+    "generic_runtime_srcr_specific_routing_forbidden": true,
+    "generic_runtime_baseline_specific_routing_forbidden": true,
+    "profile_branch_generic_runtime_mutation_forbidden": true
+  },
+  "acceptance": {
+    "architecture_verdict_independent": true,
+    "srcr_v06_quality_verdict_independent": true,
+    "quality_247_individual_steps_required": true,
+    "quality_independent_semantic_judge_required": true,
+    "provisional_without_judge_forbidden": true,
+    "aggregate_pass_cannot_hide_missed_step": true
+  },
+  "scope_limits": [
+    "SPEC_AND_GOVERNANCE_ONLY",
+    "NO_CODE",
+    "NO_MERGE",
+    "NO_RUNTIME_ACTIVATION",
+    "NO_PRODUCTION_MUTATION",
+    "NO_CREACION_PERFIL_LF_CHANGE"
+  ]
+}
