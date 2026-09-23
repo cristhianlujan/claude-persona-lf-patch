@@ -3,8 +3,9 @@ import re
 import unittest
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-SQL = (HERE / 'g02_execution_identity_candidate_v1.sql').read_text()
+ROOT = Path(__file__).resolve().parents[3]
+MIGRATION = ROOT / 'supabase/migrations/20260923062500_lf_pilot_srcr_unified_execution_g02_identity_v1.sql'
+SQL = MIGRATION.read_text()
 LOW = SQL.lower()
 
 REQUIRED_FIELDS = [
@@ -27,9 +28,10 @@ FREEZE_FIELDS = [
 ]
 
 class G02ExecutionIdentityCandidate(unittest.TestCase):
-    def test_candidate_only_and_no_live_apply(self):
-        self.assertIn('CANDIDATE ONLY', SQL)
-        self.assertIn('No live Supabase apply is authorized', SQL)
+    def test_exact_candidate_migration_exists(self):
+        self.assertTrue(MIGRATION.is_file())
+        self.assertIn('CANDIDATE SOURCE', SQL)
+        self.assertIn('NO LIVE SUPABASE APPLY', SQL)
         self.assertNotIn('insert into supabase_migrations.schema_migrations', LOW)
         self.assertNotIn('insert into public.lf_operation_registry', LOW)
 
@@ -103,5 +105,5 @@ class G02ExecutionIdentityCandidate(unittest.TestCase):
 
 if __name__ == '__main__':
     result = unittest.main(verbosity=2, exit=False).result
-    print(f'PILOT_SRCR_G02_EXECUTION_IDENTITY_TESTS={result.testsRun} RESULT={"PASS" if result.wasSuccessful() else "FAIL"} DDL_APPLIED=0')
+    print(f'PILOT_SRCR_G02_EXECUTION_IDENTITY_TESTS={result.testsRun} RESULT={"PASS" if result.wasSuccessful() else "FAIL"} LIVE_DDL_APPLIED=0')
     raise SystemExit(0 if result.wasSuccessful() else 1)
