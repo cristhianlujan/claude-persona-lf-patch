@@ -59,7 +59,16 @@
     "work_protocol_post_merge_proof": "SATISFIED_INCIDENTALLY",
     "work_protocol_tombstone": "SKIPPED",
     "closure_evidence_commit": "4132debbff5c52cad2ce2ed998edca97103f04f3",
-    "gate_progress_pct_pending_current_head_ci": 95,
+    "clarification_commit": "e0a0d713e1026b735b0c946c2a8e4aa6b9921836",
+    "current_head_ci": {
+      "validate_lf_packs_run": 35895636830,
+      "lf_bootstrap_run": 35895636838,
+      "lf_contract_check_run": 35895637015,
+      "validate_lf_packs_job": 107298750494,
+      "all_required_workflows": "SUCCESS"
+    },
+    "gate_progress_pct": 100,
+    "blocker_count": 0,
     "next_gate_after_closure": "G05_CLAIM_LEASE_FENCE"
   }
 }
