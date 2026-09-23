@@ -1,0 +1,50 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-pilot-srcr-unified-execution-g03-task-envelope",
+  "issued_by": "operation_judge",
+  "operation_code": "PILOT_SRCR_UNIFIED_EXECUTION_V1",
+  "execution_id": "EXEC-SRCR-PILOT-G03-TASK-ENVELOPE-20260923-001",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "G03_TASK_ENVELOPE_SCHEMA_VALIDATOR_AND_REGRESSION_READY",
+  "contract_sha": "ad2099fbe4327a51ff19577ec497f9d5b8a26cb1220154918a68daebf9804c4e",
+  "judge_sha": "validate_lf_unified_execution_task_v1.py@2e3a6f6d27b3495337f579401e13db4a9f0eedda",
+  "source_sha_list": [
+    "59804946632c19f70f14a76077bb5f2c7e36dd8e",
+    "ae1bcbb3c443396347805f38037556bce9e7f88b",
+    "6dea45eea313b46cfc3afed3cb369deab43dcab1",
+    "cb455027df2d2e2795ab66d41a539e217a04966f",
+    "28d747862960e85486dd4df638c5a80f96f055df",
+    "2e3a6f6d27b3495337f579401e13db4a9f0eedda",
+    "9555f3b2e944f69dc5e2fbdd89cfe12ab5c6d579"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/lf_unified_execution_task_v1.schema.json",
+    "gobernanza/judges/validate_lf_unified_execution_task_v1.py",
+    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g03/test_g03_task_envelope_candidate.py"
+  ],
+  "target_blob_sha_by_path": {
+    "gobernanza/contratos/lf_unified_execution_task_v1.schema.json": "28d747862960e85486dd4df638c5a80f96f055df",
+    "gobernanza/judges/validate_lf_unified_execution_task_v1.py": "2e3a6f6d27b3495337f579401e13db4a9f0eedda",
+    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g03/test_g03_task_envelope_candidate.py": "9555f3b2e944f69dc5e2fbdd89cfe12ab5c6d579"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-23T11:51:14Z",
+  "candidate_code_head": "59804946632c19f70f14a76077bb5f2c7e36dd8e",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "G03_EXACT_HEAD_CI_EKB_AND_READBACK",
+  "pr_number": null,
+  "authority_events": [15186, 15188, 15196, 15197],
+  "ekb_code": "GOV-SRCR-PILOT-EXECUTION-PROTOCOL-001",
+  "frozen_profile_source_sha": "cb455027df2d2e2795ab66d41a539e217a04966f",
+  "g01_contract_head": "ae1bcbb3c443396347805f38037556bce9e7f88b",
+  "g02_candidate_head": "6dea45eea313b46cfc3afed3cb369deab43dcab1",
+  "solution_isolation_policy": "ONE_SOLUTION_PER_PR",
+  "mixed_solution_pr_allowed": false,
+  "migration_paths_in_pr": 0,
+  "runtime_activation": false,
+  "production_applied": false,
+  "creacion_perfil_lf_touched": false,
+  "architecture_verdict_declared": false,
+  "srcr_v06_quality_verdict_declared": false
+}
