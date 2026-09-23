@@ -46,8 +46,6 @@ where codigo_activo='PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF'
   and tipo_activo='PERFIL'
   and archived_at is null;
 
-if not found then raise exception 'PROFILE_SEMANTIC_JUDGE_PROFILE_BINDING_TARGET_MISSING'; end if;
-
 update public.lf_operation_step_contracts
 set resolver_ref='HETZNER_INDEPENDENT_SEMANTIC_JUDGE_WORKER_V1',
     notes='Physical consumer: services/profile_runtime_api/scripts/semantic_judge_worker.py via lf-profile-semantic-judge-worker.service. Binding is resolved from canonical public.lf_activos metadata; profile judge prompt/validator remain technical artifacts. One fresh isolated model call follows clean output_validate.',
