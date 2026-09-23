@@ -193,10 +193,14 @@ def _classify_source_first_pending(
     name = local_names.get(version, "")
     expected_path = f"supabase/migrations/{version}_{name}.sql"
     normalized_changed = sorted(path.replace("\\", "/") for path in changed_paths if path)
-    if normalized_changed != [expected_path]:
+    migration_changed = [
+        path for path in normalized_changed
+        if path.startswith("supabase/migrations/")
+    ]
+    if migration_changed != [expected_path]:
         fail(
             "FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE",
-            f"expected={[expected_path]} changed={normalized_changed}",
+            f"expected={[expected_path]} migration_changed={migration_changed}",
         )
     if base_has_expected_path:
         fail(
@@ -248,6 +252,8 @@ def _git_source_first_context(
     except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
         fail("FAIL_LF_MIGRATION_SOURCE_FIRST_GIT_CONTEXT", type(exc).__name__)
     changed_paths = [line.strip() for line in changed_proc.stdout.splitlines() if line.strip()]
+    if not any(path.replace("\\", "/").startswith("supabase/migrations/") for path in changed_paths):
+        return None
     local_only = sorted(set(local) - set(remote))
     if len(local_only) == 1:
         version = local_only[0]
@@ -608,11 +614,20 @@ def source_first_self_test() -> None:
         event_name="pull_request",
     ) != version:
         fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SELFTEST_POSITIVE")
-    checks = 1
+    if _classify_source_first_pending(
+        local_versions=local,
+        remote_versions=remote,
+        changed_paths=[path, "sandbox/lf_contract_gate_test/test_same_solution.py"],
+        local_names=names,
+        base_has_expected_path=False,
+        event_name="pull_request",
+    ) != version:
+        fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SELFTEST_COMPANION")
+    checks = 2
     negatives = [
         (local, remote | {"20260902000000"}, [path], False, "pull_request", "FAIL_LF_MIGRATION_VERSION_PARITY"),
         (local | {"20260914162001"}, remote, [path], False, "pull_request", "FAIL_LF_MIGRATION_SOURCE_FIRST_PENDING_COUNT"),
-        (local, remote, [path, "README.md"], False, "pull_request", "FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE"),
+        (local, remote, [path, "supabase/migrations/20260914162001_second.sql"], False, "pull_request", "FAIL_LF_MIGRATION_SOURCE_FIRST_SCOPE"),
         (local, remote, [path], True, "pull_request", "FAIL_LF_MIGRATION_SOURCE_FIRST_BASE_ALREADY_HAS_SOURCE"),
         (local, remote, [path], False, "push", "FAIL_LF_MIGRATION_VERSION_PARITY"),
     ]
@@ -632,7 +647,7 @@ def source_first_self_test() -> None:
         else:
             fail("FAIL_LF_MIGRATION_SOURCE_FIRST_SELFTEST_NEGATIVE", expected)
         checks += 1
-    print(f"PASS_LF_MIGRATION_SOURCE_FIRST_SELFTEST={checks}/6")
+    print(f"PASS_LF_MIGRATION_SOURCE_FIRST_SELFTEST={checks}/7")
 
 
 def remote_content_sha256(field: str, version: str) -> str:
