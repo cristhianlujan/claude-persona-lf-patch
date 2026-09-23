@@ -13,6 +13,10 @@ Capability transversal LF: `MIGRATION_SOURCE_PARITY` / `TRANSVERSAL_MIGRATION_SO
 
 Exigir paridad source-first exacta entre migraciones Git y el ledger Supabase.
 
+## Relación con CHANGESET_GOVERNANCE
+
+En la revisión candidata `CHANGESET_GOVERNANCE_LF_V1`, este mismo activo se consume como subcontrol `MIGRATION_CONTROL`: aplica únicamente cuando el changeset contiene familia `MIGRATION` y decide solo sobre `supabase/migrations/*`. Un PR sin familia `MIGRATION` recibe `NOT_APPLICABLE`; el drift global no puede convertirlo en fallo. El activo vigente no se degrada ni cambia de estado durante la revisión candidata (R4).
+
 ## Cuándo consumirlo
 
 En PRs o cierres que tocan o dependen de migraciones gobernadas.

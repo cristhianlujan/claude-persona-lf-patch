@@ -296,7 +296,6 @@ jobs:
               raise SystemExit("FAIL_S28_CI_LANE_ROUTER_LOAD")
           lane_router = importlib.util.module_from_spec(lane_spec)
           lane_spec.loader.exec_module(lane_router)
-          lane = lane_router.classify(changed)
 
           # Canonical content/scope checks remain authoritative before applicability.
           p0_regular = False
@@ -322,13 +321,31 @@ jobs:
                           regular.add(raw_path.decode("utf-8", "strict"))
                   p0_regular = all(path in regular for path in changed)
 
+          changeset_path = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_changeset_governance.py")
           plan_path = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py")
           currentness_path = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_currentness_bridge_v1.py")
+          import sys
+          changeset_spec = importlib.util.spec_from_file_location("lf_changeset_governance", changeset_path)
+          if changeset_spec is None or changeset_spec.loader is None:
+              raise SystemExit("FAIL_S28_CHANGESET_GOVERNANCE_LOAD")
+          changeset_module = importlib.util.module_from_spec(changeset_spec)
+          sys.modules[changeset_spec.name] = changeset_module
+          changeset_spec.loader.exec_module(changeset_module)
+          changeset = changeset_module.evaluate(repo_root=Path("."), changed_paths=changed)
+          lane = lane_router.classify(
+              changed,
+              family_by_path=changeset["family_by_path"],
+              family_controls=changeset["family_controls"],
+          )
+          effective_lane_mode = (
+              "CLASSIFICATION_REQUIRED"
+              if changeset["classification_required_paths"]
+              else lane.mode
+          )
           plan_spec = importlib.util.spec_from_file_location("lf_ci_execution_plan_v2", plan_path)
           if plan_spec is None or plan_spec.loader is None:
               raise SystemExit("FAIL_S28_CI_EXECUTION_PLAN_LOAD")
           plan_module = importlib.util.module_from_spec(plan_spec)
-          import sys
           sys.modules[plan_spec.name] = plan_module
           plan_spec.loader.exec_module(plan_module)
           currentness_spec = importlib.util.spec_from_file_location(
@@ -363,12 +380,14 @@ jobs:
           plan = plan_module.build_plan(
               changed_paths=changed,
               lane_required_controls=lane.required_controls,
-              lane_mode=lane.mode,
+              lane_mode=effective_lane_mode,
               repo_root=Path("."),
               force_full=force_full,
               force_full_reason=force_reason,
               source_ref=exact_head,
+              classified_paths=changeset["family_by_path"].keys(),
           )
+          plan["changeset_governance"] = changeset
           applicability_sha256 = plan["plan_sha256"]
           authority_bound = currentness_module.resolve_authority_evidence_revision(
               repo=Path("."),
@@ -441,24 +460,26 @@ jobs:
               handle.write(f"authority_current_revision={plan['source_authority']['resolved_revision']}\n")
               handle.write(f"currentness_decision={plan['source_authority']['decision']}\n")
               handle.write(f"plan_full_regression={str(plan['full_regression']).lower()}\n")
-              handle.write(f"lane_mode={lane.mode}\n")
+              handle.write(f"lane_mode={effective_lane_mode}\n")
+              handle.write(f"changeset_governance_json={json.dumps(changeset, separators=(',', ':'), sort_keys=True)}\n")
 
           summary = os.environ.get("GITHUB_STEP_SUMMARY")
           if summary:
               with open(summary, "a", encoding="utf-8") as handle:
                   handle.write("### Strategy 28 — unified CI applicability authority\n")
                   handle.write(f"- tier compatibility output: `{tier}`\n")
-                  handle.write(f"- lane mode: `{lane.mode}`\n")
+                  handle.write(f"- lane mode: `{effective_lane_mode}`\n")
+                  handle.write(f"- changeset result: `{changeset['result']}` (`{changeset['mode']}`)\n")
                   handle.write(f"- applicability sha256: `{plan['applicability_sha256']}`\n")
                   handle.write(f"- evidence sha256: `{plan['evidence_sha256']}`\n")
                   handle.write(f"- currentness: `{plan['source_authority']['decision']}` -> `{plan['source_authority']['resolved_revision']}`\n")
                   handle.write(f"- full regression: `{str(plan['full_regression']).lower()}`\n")
                   handle.write(f"- required controls: `{required_controls_json}`\n")
                   handle.write(f"- lf-contract-check controls: `{lf_contract_controls_json}`\n")
-                  handle.write("- execution authority: CI_FAST_DEEP_LANE_ROUTER plan -> carrier controls; unknown/self-change => full regression\n")
+                  handle.write("- execution authority: CI_FAST_DEEP_LANE_ROUTER + CHANGESET_GOVERNANCE report -> carrier controls; unclassified paths remain REPORT_ONLY and family-scoped controls stay applicability-bound\n")
 
           print(
-              f"PASS_LF_UNIFIED_CI_PLAN tier={tier} lane={lane.mode} "
+              f"PASS_LF_UNIFIED_CI_PLAN tier={tier} lane={effective_lane_mode} "
               f"plan_sha={plan['plan_sha256']} controls={required_controls_json}"
           )
           PY

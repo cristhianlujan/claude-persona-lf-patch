@@ -225,7 +225,7 @@ def main() -> None:
     require(text, "input_governance_parity_required", "FAIL_INPUT_GOV_APPLICABILITY_OUTPUT_MISSING")
     require(text, "ci_router_selftest_required", "FAIL_CI_ROUTER_SELFTEST_OUTPUT_MISSING")
     require(text, "required_controls_json", "FAIL_REQUIRED_CONTROLS_OUTPUT_MISSING")
-    require(text, "execution authority: CI_FAST_DEEP_LANE_ROUTER plan -> carrier controls", "FAIL_UNIFIED_CI_PLAN_AUTHORITY_MARKER_MISSING")
+    require(text, "execution authority: CI_FAST_DEEP_LANE_ROUTER + CHANGESET_GOVERNANCE report -> carrier controls", "FAIL_UNIFIED_CI_PLAN_AUTHORITY_MARKER_MISSING")
     require(text, EXECUTION_PLAN, "FAIL_UNIFIED_CI_EXECUTION_PLAN_NOT_WIRED")
     require(text, "lf_contract_controls_json", "FAIL_CARRIER_CONTROL_OUTPUT_MISSING")
     require(text, EXECUTION_PLAN_TEST, "FAIL_CI_EXECUTION_PLAN_TEST_NOT_WIRED")

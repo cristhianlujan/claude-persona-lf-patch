@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.19
+LF Contract Check v0.20
+
+v0.20 changes:
+- Admits only canonical `changesets/<solution_ref>.json` manifest paths required by CHANGESET_GOVERNANCE.
+- Keeps nested, hidden, non-JSON and malformed manifest lookalikes denied.
 
 Sandbox validator for controlled LF governance gates.
 
@@ -87,6 +91,16 @@ RECEIPT_DIR = Path("sandbox/lf_contract_gate_test/receipts")
 PROFILE_RUNTIME_TEST_PATH = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py")
 PROFILE_RUNTIME_PASS_MARKER = "PROFILE_RUNTIME_GATE_TESTS_PASS 23/23"
 VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
+CHANGESET_MANIFEST_PREFIX = "changesets/"
+CHANGESET_MANIFEST_RE = re.compile(r"^changesets/[A-Za-z0-9][A-Za-z0-9._-]{2,127}\.json$")
+CHANGESET_MANIFEST_ALLOWED_PROBE = "changesets/CHANGESET-GOVERNANCE-LF-V1-PR4.json"
+CHANGESET_MANIFEST_DENIED_LOOKALIKES = {
+    "changesets/a.json",
+    "changesets/.hidden.json",
+    "changesets/CHANGESET-GOVERNANCE-LF-V1-PR4.yaml",
+    "changesets/subdir/CHANGESET-GOVERNANCE-LF-V1-PR4.json",
+    "changesets/CHANGESET GOVERNANCE.json",
+}
 COMPACT_PROTOCOL_PATH = Path("docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md")
 COMPACT_PROTOCOL_LOCATOR_PATH = Path("claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md")
 COMPACT_PROTOCOL_TOP_LEVEL_FIELDS = [
@@ -371,7 +385,26 @@ def validate_contract() -> str:
 def is_allowed_path(path: str) -> bool:
     if path in ALLOWED_EXACT:
         return True
+    if CHANGESET_MANIFEST_RE.fullmatch(path):
+        return True
     return any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
+
+
+def validate_changeset_manifest_admission_scope() -> None:
+    failures: list[str] = []
+    if CHANGESET_MANIFEST_PREFIX in ALLOWED_PREFIXES:
+        failures.append("changeset_prefix_must_remain_narrow")
+    if not is_allowed_path(CHANGESET_MANIFEST_ALLOWED_PROBE):
+        failures.append("canonical_changeset_manifest_not_allowed")
+    for path in sorted(CHANGESET_MANIFEST_DENIED_LOOKALIKES):
+        if is_allowed_path(path):
+            failures.append(f"lookalike_unexpectedly_allowed:{path}")
+    if failures:
+        fail("FAIL_CHANGESET_MANIFEST_ADMISSION_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_CHANGESET_MANIFEST_ADMISSION_SCOPE_INVARIANT: "
+        f"allowed=1 denied={len(CHANGESET_MANIFEST_DENIED_LOOKALIKES)}"
+    )
 
 
 def validate_profile_creator_workflow_admission_scope() -> None:
@@ -752,6 +785,7 @@ def main() -> None:
     validate_profile_creator_edge_admission_scope()
     validate_profile_operation_runtime_edge_admission_scope()
     validate_operational_protocol_scope()
+    validate_changeset_manifest_admission_scope()
     validate_compact_protocol_contract()
     validate_p0_closure_evidence_scope()
     validate_p0_persistence_test_scope()
