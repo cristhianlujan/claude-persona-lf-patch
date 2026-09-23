@@ -157,7 +157,7 @@ r5["blocking_codes"] = s4["blocking_codes"]
 assert_blocked(r5, candidate, evidence, s4, "SRCR_QUALITY_DECISION_SEMANTIC_MISMATCH", "pass_over_nonpass_semantic")
 
 v02 = json.loads((ROOT / "examples" / "good_output.json").read_text())
-assert_blocked(receipt, v02, evidence, semantic, "SRCR_QUALITY_RECEIPT_REQUIRES_V03", "v02_not_eligible")
+assert_blocked(receipt, v02, evidence, semantic, "SRCR_QUALITY_RECEIPT_REQUIRES_CLOSURE_PACK", "v02_not_eligible")
 
 r6 = copy.deepcopy(receipt)
 r6["semantic_binding"]["semantic_result_digest"] = "sha256:" + ("0" * 64)

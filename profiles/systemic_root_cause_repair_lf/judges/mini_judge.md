@@ -24,7 +24,8 @@ Return `PASS_TO_QUALITY_PACK` only when:
 - all independently observed candidate changes are reconciled against both producer-declared delta and authorized scope;
 - no material open design decision remains;
 - no blocking condition remains.
-- when material research is applicable, the digest-bound pre-research baseline and incremental-value delta have passed independent semantic review; MATERIAL_UPLIFT is independently substantiated or NO_MATERIAL_UPLIFT is accepted without forcing novelty, and UNPROVEN is absent.
+- when material research is applicable, the digest-bound pre-research baseline and incremental-value delta have passed independent semantic review; MATERIAL_UPLIFT is independently substantiated or NO_MATERIAL_UPLIFT is accepted without forcing novelty, and UNPROVEN is absent;
+- for V0.4, current repair disposition, all material quantitative decisions and any applicable material process graph pass the independent semantic checks; a valid `NO_REPAIR_REQUIRED` is accepted as a positive evidence-bound outcome rather than forced into a repair spec.
 
 Producer assertions such as `handoff_ready=true`, `open_design_decisions=[]`, selected alternative, declared implementation delta or research URLs are inputs to review, never proof of closure.
 
@@ -53,9 +54,9 @@ Score never overrides a BLOCK condition.
 ## Experiment boundary
 Sandbox B does not yet alter the profile's existing 12 omission dimensions, 8 falsification families, or producer architecture. It changes only the semantic-judge contract and its independent scope/change reconciliation.
 
-## V0.3 canonical quality receipt
+## V0.3/V0.4 canonical quality receipt
 
-For SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3, this same mini-judge remains the single canonical quality gate. No second judge is introduced.
+For SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3, SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4 and SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5, this same mini-judge remains the single canonical quality gate. No second judge is introduced.
 
 The independent semantic result is the semantic decision input. The final quality decision is materialized as SRCR_QUALITY_RECEIPT_V1 and is valid only when validators/validate_quality_receipt.py proves all exact bindings:
 
@@ -76,3 +77,19 @@ PASS_TO_QUALITY_PACK may be encoded only when:
 A changed candidate, evidence bundle, semantic result, proof set, or scope packet invalidates the receipt. Deterministic or semantic-utility PASS without this receipt remains pre-quality only.
 
 The profile output must never self-issue or embed the canonical quality receipt. The receipt is produced at the independent quality boundary after candidate generation.
+
+## V0.5 premature-stop check (verification, not coaching)
+
+Applies to every non-ready V0.5 output (`NEEDS_MORE_EVIDENCE`, `RETURN_TO_WORKER_FOR_SELF_REPAIR`) and to every `DESIGN_BLOCKING` node of `material_process_graph`.
+
+The judge does not redesign the answer. It checks one thing: did the producer stop while accessible evidence could still close the gap?
+
+1. For each `DESIGN_BLOCKING` uncertainty, confirm that `attempted_sources` covers the surfaces that could plausibly close it (source at exact revision, operation definitions, execution receipts, runtime readback, EKB). The deterministic floor already proves each attempt resolves in the evidence manifest and that the manifest row records the same locator; the judge checks coverage, not existence.
+2. Hydrate each attempt's `evidence_id` and confirm the recorded evidence supports the declared `result` (for example, `ABSENT` requires evidence of an empty answer to that locator). If it does not, record `ATTEMPT_RESULT_NOT_SUPPORTED` and return to worker.
+3. When several `DESIGN_BLOCKING` process nodes share one uncertainty, confirm that its attempts cover every one of those nodes; a generic gap covering unrelated phases is `PREMATURE_DESIGN_BLOCKING`.
+4. Sample at least one accessible surface that the candidate did not list. If it closes or materially narrows the gap, record `PREMATURE_DESIGN_BLOCKING` and return `RETURN_TO_WORKER_FOR_SELF_REPAIR` naming the surface only (not the answer).
+5. If a blocker is derived from the test harness or requested profile revision rather than from the audited system, record `TEST_CONTEXT_AS_BLOCKER` and return to worker.
+6. If any cited reference does not exist in live authority, record `EVIDENCE_REFERENCE_NOT_FOUND`; fabricated evidence remains a BLOCK condition.
+
+A legitimate `NEEDS_MORE_EVIDENCE` with resolved attempts and no unlisted closing surface is a valid outcome and must not be penalized. This check never raises the bar for `SYSTEMIC_REPAIR_SPEC`.
+
