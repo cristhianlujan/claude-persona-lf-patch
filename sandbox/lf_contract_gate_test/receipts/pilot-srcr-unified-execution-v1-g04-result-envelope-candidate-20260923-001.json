@@ -10,6 +10,7 @@
   "contract_sha": "ad2099fbe4327a51ff19577ec497f9d5b8a26cb1220154918a68daebf9804c4e",
   "judge_sha": "validate_lf_unified_execution_result_v1.py@f8febfb533fa6b835e7fdff1da2f37dacf7912fa",
   "source_sha_list": [
+    "1ec04bb8563be849d387b4a7f26a1f0e6acec625",
     "478b776f3993182dd244da02d1c483fd50ff560e",
     "ae1bcbb3c443396347805f38037556bce9e7f88b",
     "6dea45eea313b46cfc3afed3cb369deab43dcab1",
@@ -31,7 +32,7 @@
   },
   "blocking_codes": [],
   "issued_at": "2026-09-23T12:09:11Z",
-  "candidate_code_head": "478b776f3993182dd244da02d1c483fd50ff560e",
+  "candidate_code_head": "1ec04bb8563be849d387b4a7f26a1f0e6acec625",
   "operation_status_at_issue": "IN_PROGRESS",
   "next_gate": "G04_EXACT_HEAD_CI_EKB_AND_READBACK",
   "pr_number": 1022,
