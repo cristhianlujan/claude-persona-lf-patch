@@ -124,7 +124,7 @@ PROFILE_OPERATION_RUNTIME_EDGE_DENIED_LOOKALIKES = {
 
 ALLOWED_GITHUB_EXACT = {
     ".github/workflows/lf-contract-check.yml",
-    ".github/workflows/lf-bootstrap-reproducibility.yml",
+    ".github/workflows/lf-db-regression.yml",
     ".github/workflows/lf-github-reconcile-v3.yml",
     ".github/workflows/story-agent-evidence-verifier.yml",
     ".github/workflows/profile-driven-screen-generation.yml",
