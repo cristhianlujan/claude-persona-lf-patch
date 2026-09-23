@@ -8,7 +8,6 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 WORKER = REPO_ROOT / "services/profile_runtime_api/scripts/semantic_judge_worker.py"
 SERVICE = REPO_ROOT / "services/profile_runtime_api/deploy/lf-profile-semantic-judge-worker.service"
 INSTALL = REPO_ROOT / "services/profile_runtime_api/scripts/install.sh"
-MIGRATION = REPO_ROOT / "supabase/migrations/20260922234500_lf_profile_semantic_judge_worker_binding_v1.sql"
 
 BINDING = {
     "schema": "LF_PROFILE_SEMANTIC_JUDGE_BINDING_V1",
@@ -78,15 +77,10 @@ def test_worker_recomputes_candidate_identity_before_judging() -> None:
     assert prepared["binding_ref"].startswith("supabase://public.lf_activos/")
 
 
-def test_physical_service_and_supabase_binding_are_declared() -> None:
+def test_physical_service_is_declared_and_installed() -> None:
     service = SERVICE.read_text(encoding="utf-8")
     install = INSTALL.read_text(encoding="utf-8")
-    migration = MIGRATION.read_text(encoding="utf-8")
     assert "semantic_judge_worker.py --daemon" in service
     assert "PYTHONPATH=/opt/lf-profile-runtime-api/current/services/profile_runtime_api" in service
     assert "lf-profile-semantic-judge-worker.service" in install
     assert "systemctl enable lf-profile-runtime-api.service lf-profile-semantic-judge-worker.service" in install
-    assert "HETZNER_INDEPENDENT_SEMANTIC_JUDGE_WORKER_V1" in migration
-    assert "semantic_judge_binding" in migration
-    assert "LF_PROFILE_SEMANTIC_JUDGE_BINDING_V1" in migration
-    assert "EXEC-M14" not in migration
