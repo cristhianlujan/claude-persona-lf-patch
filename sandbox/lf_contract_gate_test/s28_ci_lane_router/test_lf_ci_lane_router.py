@@ -63,7 +63,7 @@ def main():
     check("p0_runtime_core_control", [p0_core], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("profile_creator_governance_control_bundle", [contract_validator, p0_core], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     check("s26_commit_readback_control", [s26_readback], migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
-    check("s26_commit_readback_lookalike_fail_closed", [s26_readback + ".bak"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
+    check("s26_commit_readback_lookalike_fail_closed", [s26_readback + ".bak"], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=True, mode="CLASSIFICATION_REQUIRED")
     check("p0_helper_requires_external", [p0_helper], migration=False, input_gov=False, selftest=False, p0_external=True, deep_shared=False, mode="SPECIALIZED_REQUIRED")
     check("p0_config_requires_external", [p0_config], migration=False, input_gov=False, selftest=False, p0_external=True, deep_shared=False, mode="SPECIALIZED_REQUIRED")
     check("p0_broker_requires_external", [p0_broker], migration=False, input_gov=False, selftest=False, p0_external=True, deep_shared=False, mode="SPECIALIZED_REQUIRED")
@@ -78,12 +78,12 @@ def main():
     check("s30a_real_delta_isolated", real_s30a_delta, migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
     real_s30b_delta = [validate_workflow, s30_data_receipt, s30_data, "sandbox/lf_contract_gate_test/s30_data_access_candidate/lf_data_access.py", "sandbox/lf_contract_gate_test/s30_data_access_candidate/test_s30_data_access_v2.py"]
     check("s30b_real_delta_isolated", real_s30b_delta, migration=False, input_gov=False, selftest=True, p0_external=False, deep_shared=False, mode="CI_ROUTER_SELFTEST_ONLY")
-    check("lf_contract_check_lookalike_fail_closed", ["scripts/lf_contract_check_copy.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
-    check("p0_runtime_core_lookalike_fail_closed", [p0_core + ".bak"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
-    check("unknown_contract_gate_sandbox_fail_closed", ["sandbox/lf_contract_gate_test/new_unbound_validator.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
-    check("unknown_s30_receipt_sibling_fail_closed", ["sandbox/lf_contract_gate_test/receipts/s30_b_unbound.json"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
-    check("s30b_plus_unknown_fail_closed", [s30_data, "sandbox/lf_contract_gate_test/s30_data_access_other/unbound.py"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
-    check("unknown_fail_closed", ["mystery/new_surface.xyz"], migration=True, input_gov=True, selftest=False, p0_external=True, deep_shared=True, mode="DEEP_SHARED_UNKNOWN")
+    check("lf_contract_check_lookalike_fail_closed", ["scripts/lf_contract_check_copy.py"], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=True, mode="CLASSIFICATION_REQUIRED")
+    check("p0_runtime_core_lookalike_fail_closed", [p0_core + ".bak"], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=True, mode="CLASSIFICATION_REQUIRED")
+    check("unknown_contract_gate_sandbox_fail_closed", ["sandbox/lf_contract_gate_test/new_unbound_validator.py"], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=True, mode="CLASSIFICATION_REQUIRED")
+    check("unknown_s30_receipt_sibling_fail_closed", ["sandbox/lf_contract_gate_test/receipts/s30_b_unbound.json"], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=True, mode="CLASSIFICATION_REQUIRED")
+    check("s30b_plus_unknown_fail_closed", [s30_data, "sandbox/lf_contract_gate_test/s30_data_access_other/unbound.py"], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=True, mode="CLASSIFICATION_REQUIRED")
+    check("unknown_fail_closed", ["mystery/new_surface.xyz"], migration=False, input_gov=False, selftest=False, p0_external=False, deep_shared=True, mode="CLASSIFICATION_REQUIRED")
     check("empty_fail_closed", [], migration=True, input_gov=True, selftest=True, p0_external=True, deep_shared=True, mode="DEEP_SHARED_EMPTY_FAIL_CLOSED")
     print("CI_LANE_ROUTER_REGRESSIONS_PASS=39/39")
 
@@ -103,6 +103,17 @@ def defensive(decision, name):
         decision.deep_shared,
     )
     assert actual == (True, True, True, True), (name, actual, decision)
+
+
+def classification_required(decision, name):
+    actual = (
+        decision.migration_parity_required,
+        decision.input_governance_parity_required,
+        decision.p0_exact_head_external_required,
+        decision.deep_shared,
+    )
+    assert actual == (False, False, False, True), (name, actual, decision)
+    assert decision.mode == "CLASSIFICATION_REQUIRED", (name, decision)
 
 
 def fresh_registry():
@@ -159,12 +170,10 @@ def extended_main():
     positives += 1
 
     got = classify(["sandbox/lf_contract_gate_test/s30_c_reliability_harnes/freeze.json"])
-    defensive(got, "typo")
-    assert got.mode == "DEEP_SHARED_UNKNOWN"
+    classification_required(got, "typo")
     negatives += 1
     got = classify(["sandbox/lf_contract_gate_test/s30_z_unregistered/a.json"])
-    defensive(got, "unregistered")
-    assert got.mode == "DEEP_SHARED_UNKNOWN"
+    classification_required(got, "unregistered")
     negatives += 1
 
     reg = fresh_registry()
@@ -210,8 +219,7 @@ def extended_main():
     assert got.mode == "DEEP_SHARED_REGISTRY_INVALID"
     negatives += 1
     got = classify([c, "sandbox/lf_contract_gate_test/unbound_future_validator.py"])
-    defensive(got, "mixed_known_unknown")
-    assert got.mode == "DEEP_SHARED_UNKNOWN"
+    classification_required(got, "mixed_known_unknown")
     negatives += 1
     reg = fresh_registry()
     reg["lanes"][3]["matchers"] = [{"kind": "prefix", "value": "supabase/functions/lf-p0-exact-head-evidence-broker-v2/"}]
@@ -246,8 +254,7 @@ def extended_main():
     assert got.mode == "DEEP_SHARED_REGISTRY_INVALID"
     negatives += 1
     got = classify(["mystery/unknown.xyz"])
-    defensive(got, "outside_unknown")
-    assert got.mode == "DEEP_SHARED_UNKNOWN"
+    classification_required(got, "outside_unknown")
     negatives += 1
 
     print(f"S30_DECLARATIVE_POSITIVE_PASS={positives}/{positives}")
@@ -283,11 +290,8 @@ def required_controls_shadow_main():
     assert owner_bundle.p0_exact_head_external_required is False, owner_bundle
 
     unknown = classify(["mystery/new_surface.xyz"])
-    assert unknown.required_controls == tuple(sorted((
-        CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY,
-        CONTROL_MIGRATION_SOURCE_PARITY,
-        CONTROL_P0_EXACT_HEAD_EXTERNAL,
-    ))), unknown
+    assert unknown.required_controls == (), unknown
+    assert unknown.mode == "CLASSIFICATION_REQUIRED", unknown
     assert unknown.deep_shared is True
     assert unknown.ci_router_selftest_required is False
 

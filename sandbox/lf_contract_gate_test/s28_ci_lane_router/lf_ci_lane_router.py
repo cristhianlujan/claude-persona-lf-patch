@@ -37,6 +37,17 @@ SharedRegistryValidationError = _SHARED_OWNERSHIP.SharedRegistryValidationError
 compile_shared_registry = _SHARED_OWNERSHIP.compile_shared_registry
 load_shared_registry = _SHARED_OWNERSHIP.load_shared_registry
 
+_CHANGESET_PATH = Path(__file__).with_name("lf_changeset_governance.py")
+_CHANGESET_SPEC = importlib.util.spec_from_file_location("lf_changeset_governance", _CHANGESET_PATH)
+if _CHANGESET_SPEC is None or _CHANGESET_SPEC.loader is None:
+    raise ImportError(f"cannot load LF changeset governance helper: {_CHANGESET_PATH}")
+_CHANGESET = importlib.util.module_from_spec(_CHANGESET_SPEC)
+sys.modules[_CHANGESET_SPEC.name] = _CHANGESET
+_CHANGESET_SPEC.loader.exec_module(_CHANGESET)
+ChangesetIntegrityError = _CHANGESET.ChangesetIntegrityError
+evaluate_pr_integrity = _CHANGESET.evaluate_pr_integrity
+load_family_registry = _CHANGESET.load_family_registry
+
 MIGRATION_PREFIX = "supabase/migrations/"
 MIGRATION_VALIDATOR = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 MIGRATION_TRANSPORT_TEST = "sandbox/lf_contract_gate_test/test_lf_migration_source_parity_transport.py"
@@ -239,6 +250,7 @@ def classify(
     *,
     registry_data: Mapping[str, Any] | None = None,
     shared_registry_data: Mapping[str, Any] | None = None,
+    manifest_data: Mapping[str, Any] | None = None,
 ) -> LaneDecision:
     changed = tuple(sorted({p.strip() for p in paths if p and p.strip()}))
     if not changed:
@@ -252,6 +264,17 @@ def classify(
         shared_registry = _shared_registry_for(shared_registry_data)
     except SharedRegistryValidationError as exc:
         return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"SHARED_REGISTRY_INVALID:{exc.code}")
+
+    family_registry = load_family_registry()
+    manifest_paths = [p for p in changed if family_registry.family_for(p) == "CHANGESET_MANIFEST"]
+    effective_manifest = manifest_data
+    if effective_manifest is None and len(manifest_paths) == 1:
+        candidate = Path(manifest_paths[0])
+        if candidate.is_file():
+            import json
+            effective_manifest = json.loads(candidate.read_text(encoding="utf-8"))
+    integrity = evaluate_pr_integrity(changed, manifest_data=effective_manifest, registry=family_registry)
+    classified_families = integrity["families"]
 
     migration = False
     input_gov = False
@@ -270,6 +293,15 @@ def classify(
         except RegistryValidationError as exc:
             return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"PRODUCT_REGISTRY_INVALID:{exc.code}")
         shared_control = shared_registry.match(path)
+        change_family = classified_families.get(path)
+        if change_family is not None:
+            family_controls = family_registry.controls.get(change_family, ())
+            required_controls.update(family_controls)
+            migration = migration or CONTROL_MIGRATION_SOURCE_PARITY in family_controls
+            input_gov = input_gov or CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY in family_controls
+            selftest = selftest or CONTROL_CI_ROUTER_SELFTEST in family_controls
+            p0_external = p0_external or CONTROL_P0_EXACT_HEAD_EXTERNAL in family_controls
+            reasons.append(f"CHANGE_FAMILY:{change_family}:{path}")
 
         if path.startswith(MIGRATION_PREFIX) or path in {MIGRATION_VALIDATOR, MIGRATION_TRANSPORT_TEST}:
             migration = True
@@ -315,24 +347,18 @@ def classify(
         if not _is_known_shared(
             path,
             product_lane is not None and product_lane.known,
-            shared_control is not None,
+            shared_control is not None or change_family is not None,
         ) and not path.startswith(MIGRATION_PREFIX):
             unknown = True
             reasons.append(f"UNKNOWN:{path}")
 
     if unknown:
-        migration = True
-        input_gov = True
-        p0_external = True
+        # CHANGESET_GOVERNANCE owns classification. Unknown paths require an
+        # explicit family/manifest instead of inheriting unrelated controls.
         deep_shared = True
-        required_controls.update((
-            CONTROL_MIGRATION_SOURCE_PARITY,
-            CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY,
-            CONTROL_P0_EXACT_HEAD_EXTERNAL,
-        ))
 
     if unknown:
-        mode = "DEEP_SHARED_UNKNOWN"
+        mode = "CLASSIFICATION_REQUIRED"
     elif migration or input_gov or p0_external:
         mode = "SPECIALIZED_REQUIRED"
     elif selftest:

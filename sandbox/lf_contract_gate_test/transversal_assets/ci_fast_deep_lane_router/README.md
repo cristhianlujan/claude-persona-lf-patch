@@ -216,3 +216,19 @@ En feature branches, el base histórico del último commit de la rama no debe co
 Materiales de currentness de esta capability incluyen los tres workflows CI, `s28_ci_lane_router/**`, `gate_check_observability/**`, este README y la implementación `material_currentness/**`.
 
 Antes de una decisión material, consultar además `public.lf_activos` y las superficies runtime vigentes. Si cambia el contrato de aplicabilidad, revalidar sólo el closure afectado; no perseguir el SHA global de main.
+
+## Revisión candidata — TRANSVERSAL_CHANGESET_GOVERNANCE
+
+`CHANGESET_GOVERNANCE_LF_V1` evoluciona esta misma capability; no crea un segundo Router ni cambia por sí sola el estado live del activo.
+
+En la revisión candidata:
+
+- `CI_FAST_DEEP_LANE_ROUTER` conserva su `codigo_activo` y referencias existentes;
+- `TRANSVERSAL_CHANGESET_GOVERNANCE` es el nombre canónico objetivo de la capacidad revisada, sujeto al lifecycle normal `CANDIDATO → EN_REVISION → PRUEBA_SANDBOX → APROBADO`;
+- rutas desconocidas pasan a `CLASSIFICATION_REQUIRED` en lugar de heredar migration/input/P0 por fallback;
+- familias fijas se declaran en `lf_change_family_registry_v1.json` y no son sobrescribibles por manifiesto;
+- el manifiesto `changesets/<solution_ref>.json` clasifica únicamente las rutas no cubiertas por familias/ownership ya declarados;
+- `PR_INTEGRITY` opera inicialmente en `REPORT_ONLY`: reporta ruta no declarada sin juzgar calidad semántica;
+- `MIGRATION_SOURCE_PARITY` queda consumido sólo cuando la familia/control aplicable lo requiere; no decide el alcance general del PR.
+
+La promoción del nombre/metadata en `public.lf_activos` requiere readback posterior al merge y no forma parte de esta revisión de código candidata.

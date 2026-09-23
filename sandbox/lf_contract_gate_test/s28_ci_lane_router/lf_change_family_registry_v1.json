@@ -1,0 +1,19 @@
+{
+  "registry_version": "LF_CHANGE_FAMILY_REGISTRY_V1",
+  "fixed_families": [
+    {"family": "MIGRATION", "kind": "prefix", "value": "supabase/migrations/"},
+    {"family": "CHANGESET_MANIFEST", "kind": "prefix", "value": "changesets/"},
+    {"family": "CI_ROUTER", "kind": "prefix", "value": "sandbox/lf_contract_gate_test/s28_ci_lane_router/"},
+    {"family": "WORKFLOW", "kind": "prefix_suffixes", "value": ".github/workflows/", "suffixes": [".yaml", ".yml"]},
+    {"family": "SERVICE_RUNTIME", "kind": "prefix", "value": "services/"},
+    {"family": "SUPABASE_FUNCTION", "kind": "prefix", "value": "supabase/functions/"}
+  ],
+  "family_controls": {
+    "MIGRATION": ["MIGRATION_SOURCE_PARITY"],
+    "CHANGESET_MANIFEST": ["CI_ROUTER_SELFTEST"],
+    "CI_ROUTER": ["CI_ROUTER_SELFTEST"],
+    "WORKFLOW": ["CI_ROUTER_SELFTEST"],
+    "SERVICE_RUNTIME": [],
+    "SUPABASE_FUNCTION": []
+  }
+}
