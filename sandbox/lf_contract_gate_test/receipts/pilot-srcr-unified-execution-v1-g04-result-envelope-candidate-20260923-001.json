@@ -34,7 +34,7 @@
   "candidate_code_head": "6b556fd962859c29cf8f4a534fba919b4d17a91d",
   "operation_status_at_issue": "IN_PROGRESS",
   "next_gate": "G04_EXACT_HEAD_CI_EKB_AND_READBACK",
-  "pr_number": null,
+  "pr_number": 1022,
   "authority_events": [15186, 15188, 15196, 15197],
   "ekb_code": "GOV-SRCR-PILOT-EXECUTION-PROTOCOL-001",
   "frozen_profile_source_sha": "cb455027df2d2e2795ab66d41a539e217a04966f",
