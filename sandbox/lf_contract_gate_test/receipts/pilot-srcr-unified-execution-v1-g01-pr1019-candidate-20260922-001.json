@@ -1,0 +1,43 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-pilot-srcr-unified-execution-g01",
+  "issued_by": "operation_judge",
+  "operation_code": "PILOT_SRCR_UNIFIED_EXECUTION_V1",
+  "execution_id": "EXEC-SRCR-PILOT-SPEC-20260922-001",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "G01_PRE_RECEIPT_SPEC_AUTHORITY_READBACK",
+  "contract_sha": "ee41e3272de0a6cf703334a112e8670e51f564410382dc0b98e6a2da3377936a",
+  "judge_sha": "lf-contract-check-v0.19@f515a98581572ae02a2229aa329fb8170240cc34",
+  "source_sha_list": [
+    "a0a91d1a89bad2ead1b2e017917e83c277ed6e8d",
+    "cb455027df2d2e2795ab66d41a539e217a04966f",
+    "d20e6e7c4b4534b6d8588c69ca6e71787e2d9f3e",
+    "1732c862a0e93c4d7004cb067b9b3d712cb95d87"
+  ],
+  "target_paths": [
+    "gobernanza/procedimientos/pilot_srcr_unified_execution_v1.md",
+    "gobernanza/contratos/pilot_srcr_unified_execution_task_contract_v1.json"
+  ],
+  "target_blob_sha_by_path": {
+    "gobernanza/procedimientos/pilot_srcr_unified_execution_v1.md": "d20e6e7c4b4534b6d8588c69ca6e71787e2d9f3e",
+    "gobernanza/contratos/pilot_srcr_unified_execution_task_contract_v1.json": "1732c862a0e93c4d7004cb067b9b3d712cb95d87"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-23T04:55:00Z",
+  "candidate_code_head": "a0a91d1a89bad2ead1b2e017917e83c277ed6e8d",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "G01_POST_RECEIPT_EXACT_HEAD_CI_AND_EKB_SYNC",
+  "pr_number": 1019,
+  "authority_events": [15186, 15188],
+  "ekb_code": "GOV-SRCR-PILOT-EXECUTION-PROTOCOL-001",
+  "frozen_profile_source_sha": "cb455027df2d2e2795ab66d41a539e217a04966f",
+  "solution_isolation_policy": "ONE_SOLUTION_PER_PR",
+  "mixed_solution_pr_allowed": false,
+  "migration_paths_in_pr": 0,
+  "runtime_activation": false,
+  "production_applied": false,
+  "creacion_perfil_lf_touched": false,
+  "architecture_verdict_declared": false,
+  "srcr_v06_quality_verdict_declared": false
+}
