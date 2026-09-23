@@ -66,6 +66,7 @@ MANAGED_EXACT_NAMES = {
     "prepare_assurance_method_and_profile_top_tier_v1",
     "fix_profile_update_begin_target_path_v1",
     "fix_profile_update_begin_no_unbound_qualification_v1",
+    "restrict_profile_semantic_judge_trust_validator_acl",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -888,6 +889,8 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_RPC_ISOLATION")
     if not managed("s28_architecture_alert_dispatcher_fast_exit_v1"):
         fail("FAIL_CI009_SELFTEST_S28_DISPATCHER_FAST_EXIT")
+    if not managed("restrict_profile_semantic_judge_trust_validator_acl"):
+        fail("FAIL_CI009_SELFTEST_PROFILE_SEMANTIC_JUDGE_TRUST_VALIDATOR_ACL")
     if not managed("s26_profile_runtime_readiness_v1"):
         fail("FAIL_CI009_SELFTEST_STRATEGY_S26_FAMILY")
     if not managed("s30_c05_generic_execution_reliability_v1"):
@@ -1135,7 +1138,7 @@ def main() -> int:
         )
     print("PASS_LF_MIGRATION_TRANSPORT_SELFTEST=3/3")
     print("PASS_LF_MIGRATION_EXTERNAL_OWNER_CURRENTNESS=ENFORCED")
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=36/36")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=37/37")
     return 0
 
 
