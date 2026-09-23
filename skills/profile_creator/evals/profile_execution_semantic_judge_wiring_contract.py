@@ -55,7 +55,7 @@ assert (
 assert "has_function_privilege('anon', v_oid, 'execute')" in acl_migration
 assert "has_function_privilege('authenticated', v_oid, 'execute')" in acl_migration
 assert "has_function_privilege('service_role', v_oid, 'execute')" in acl_migration
-assert "exec-runtime-semantic-judge-wiring-20260922-001" in acl_migration
+assert "exec-runtime-semantic-judge-wiring-20260923-005" in acl_migration
 assert "sandbox_apply_authorized" in acl_migration
 assert "production_apply_authorized" in acl_migration
 
