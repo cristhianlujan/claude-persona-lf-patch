@@ -6,7 +6,17 @@ do $pre$
 begin
   if not exists (
     select 1
-    from public.lf_operation_step_contracts
+    from public.lf_operation_execution
+    where execution_id='EXEC-ACTUALIZACION-PERFIL-SRCR-SEMANTIC-JUDGE-WIRING-20260922-001'
+      and operation_code='ACTUALIZACION_PERFIL_LF'
+      and target_code='PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF'
+      and status='IN_PROGRESS'
+  ) then
+    raise exception 'PROFILE_SEMANTIC_JUDGE_GOVERNED_UPDATE_EXECUTION_MISSING';
+  end if;
+
+  if not exists (
+    select 1 from public.lf_operation_step_contracts
     where operation_code='EJECUCION_PERFIL_LF'
       and step_id='semantic_judge'
       and status='ACTIVE_ENFORCEMENT'
@@ -16,8 +26,7 @@ begin
   end if;
 
   if not exists (
-    select 1
-    from public.lf_operation_step_contracts
+    select 1 from public.lf_operation_step_contracts
     where operation_code='EJECUCION_PERFIL_LF'
       and step_id='report_output'
       and status='ACTIVE_ENFORCEMENT'
@@ -30,15 +39,13 @@ $pre$;
 
 update public.lf_operation_step_contracts
 set resolver_ref='HETZNER_INDEPENDENT_SEMANTIC_JUDGE_WORKER_V1',
-    notes='Physical consumer: services/profile_runtime_api/scripts/semantic_judge_worker.py via lf-profile-semantic-judge-worker.service. The worker executes one fresh isolated model call after clean output_validate, loads the profile semantic_judge_binding.json, validates the independent receipt deterministically, and records through lf_record_profile_execution_step_v1. Supabase remains operational authority; profile judge contract remains semantic authority.',
+    notes='Physical consumer: services/profile_runtime_api/scripts/semantic_judge_worker.py via lf-profile-semantic-judge-worker.service. One fresh isolated model call follows clean output_validate; the profile binding supplies semantic contract and validator. Supabase remains operational authority.',
     updated_at=clock_timestamp(),
-    updated_by_execution_id='EXEC-PROFILE-SEMANTIC-JUDGE-WIRING-20260922-001'
+    updated_by_execution_id='EXEC-ACTUALIZACION-PERFIL-SRCR-SEMANTIC-JUDGE-WIRING-20260922-001'
 where operation_code='EJECUCION_PERFIL_LF'
   and step_id='semantic_judge'
   and status='ACTIVE_ENFORCEMENT';
 
--- Bind the operation inventory to the implementation artifacts without making
--- GitHub an operational authority. source_paths is canonical JSONB.
 update public.lf_operation_registry r
 set source_paths=(
       select coalesce(jsonb_agg(d.value order by d.value), '[]'::jsonb)
@@ -55,14 +62,13 @@ set source_paths=(
       ) as d
     ),
     updated_at=clock_timestamp(),
-    updated_by_execution_id='EXEC-PROFILE-SEMANTIC-JUDGE-WIRING-20260922-001'
+    updated_by_execution_id='EXEC-ACTUALIZACION-PERFIL-SRCR-SEMANTIC-JUDGE-WIRING-20260922-001'
 where operation_code='EJECUCION_PERFIL_LF';
 
 do $post$
 begin
   if not exists (
-    select 1
-    from public.lf_operation_step_contracts
+    select 1 from public.lf_operation_step_contracts
     where operation_code='EJECUCION_PERFIL_LF'
       and step_id='semantic_judge'
       and resolver_ref='HETZNER_INDEPENDENT_SEMANTIC_JUDGE_WORKER_V1'
@@ -72,8 +78,7 @@ begin
   end if;
 
   if not exists (
-    select 1
-    from public.lf_operation_registry
+    select 1 from public.lf_operation_registry
     where operation_code='EJECUCION_PERFIL_LF'
       and source_paths @> jsonb_build_array(
         'services/profile_runtime_api/scripts/semantic_judge_worker.py',
