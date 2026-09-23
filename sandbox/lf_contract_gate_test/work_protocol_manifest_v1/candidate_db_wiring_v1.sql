@@ -1,8 +1,4 @@
--- LF_WORK_PROTOCOL_MANIFEST_V1 sandbox locator.
--- Canonical deployable candidate:
--- sandbox/lf_contract_gate_test/work_protocol_manifest_v1/candidate_work_protocol_manifest_v1.sql
---
--- This file intentionally contains no executable SQL.
--- The canonical migration was materialized byte-identical to the SQL rehearsed
--- transactionally against LF Supabase and then rolled back with zero residue.
--- Proven source Git blob SHA: 7f555f45a5131c2976b54d4ca2e7c9fa2ac608fd
+-- DEPRECATED: LF_WORK_PROTOCOL_MANIFEST_V1
+-- WORK_PROTOCOL_V1_DEPRECATED_DO_NOT_USE
+-- No canonical deployable Work Protocol V1 candidate exists.
+-- Historical bytes are available only through Git history.
