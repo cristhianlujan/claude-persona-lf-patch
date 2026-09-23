@@ -227,7 +227,7 @@ En la revisión candidata:
 - `TRANSVERSAL_CHANGESET_GOVERNANCE` es el nombre canónico objetivo de la capacidad revisada, sujeto al lifecycle normal `CANDIDATO → EN_REVISION → PRUEBA_SANDBOX → APROBADO`;
 - rutas desconocidas pasan a `CLASSIFICATION_REQUIRED` en lugar de heredar migration/input/P0 por fallback;
 - familias fijas se declaran en `lf_change_family_registry_v1.json` y no son sobrescribibles por manifiesto;
-- el manifiesto `changesets/<solution_ref>.json` clasifica únicamente las rutas no cubiertas por familias/ownership ya declarados;
+- el manifiesto `sandbox/lf_contract_gate_test/changesets/<solution_ref>.json` clasifica únicamente las rutas no cubiertas por familias/ownership ya declarados; su ubicación reutiliza el scope sandbox ya gobernado por `lf-contract-check` y evita una excepción paralela;
 - `PR_INTEGRITY` opera inicialmente en `REPORT_ONLY`: reporta ruta no declarada sin juzgar calidad semántica;
 - `MIGRATION_SOURCE_PARITY` queda consumido sólo cuando la familia/control aplicable lo requiere; no decide el alcance general del PR.
 
