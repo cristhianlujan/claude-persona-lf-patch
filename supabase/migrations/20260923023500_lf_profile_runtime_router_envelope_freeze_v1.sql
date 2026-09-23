@@ -16,6 +16,9 @@ declare
   v_route jsonb;
   v_runtime_adapters jsonb := '[]'::jsonb;
   v_required jsonb := '[]'::jsonb;
+  v_profile_baseline_mode text;
+  v_profile_baseline_contract jsonb;
+  v_profile_execution_binding jsonb;
   v_envelope jsonb;
   v_digest text;
 begin
@@ -54,6 +57,41 @@ begin
   if jsonb_typeof(coalesce(v_route->'adapters','[]'::jsonb)) <> 'array' then
     raise exception using errcode='23514', message='HETZNER_ROUTER_ENVELOPE_ADAPTERS_INVALID';
   end if;
+
+  select coalesce(nullif(metadata->>'research_baseline_mode',''),'NOT_REQUIRED'),
+         metadata->'research_baseline_contract'
+    into v_profile_baseline_mode,v_profile_baseline_contract
+  from public.lf_activos
+  where codigo_activo=new.profile_code
+    and tipo_activo='PERFIL'
+    and archived_at is null;
+
+  if v_profile_baseline_mode is null
+     or v_profile_baseline_mode not in ('NOT_REQUIRED','PRE_RESEARCH_ALWAYS') then
+    raise exception using errcode='23514', message='HETZNER_ROUTER_PROFILE_BASELINE_MODE_INVALID';
+  end if;
+  if v_profile_baseline_mode='PRE_RESEARCH_ALWAYS' and (
+       jsonb_typeof(v_profile_baseline_contract)<>'object'
+       or v_profile_baseline_contract->>'contract_version'<>'PROFILE_RESEARCH_BASELINE_BINDING_V1'
+       or v_profile_baseline_contract->>'profile_validator_binding'<>'PROFILE_OUTPUT_VALIDATOR_BOUND_V1'
+     ) then
+    raise exception using errcode='23514', message='HETZNER_ROUTER_PROFILE_BASELINE_CONTRACT_INVALID';
+  end if;
+  if v_profile_baseline_mode='NOT_REQUIRED' then
+    v_profile_baseline_contract:=null;
+  end if;
+
+  v_profile_execution_binding:=jsonb_build_object(
+    'schema','LF_PROFILE_EXECUTION_BINDING_V1',
+    'activation_source','ROUTER',
+    'operation_code','EJECUCION_PERFIL_LF',
+    'profile_code',new.profile_code,
+    'profile_slug',new.profile_slug,
+    'research_baseline_mode',v_profile_baseline_mode,
+    'research_baseline_action',case when v_profile_baseline_mode='PRE_RESEARCH_ALWAYS' then 'PROFILE_RESEARCH_BASELINE' else 'NOT_REQUIRED' end,
+    'research_baseline_contract',v_profile_baseline_contract,
+    'main_profile_action','EXECUTE_PROFILE'
+  );
 
   select coalesce(
     jsonb_agg(
@@ -115,6 +153,7 @@ begin
       'profile_source_paths',new.profile_source_paths
     ),
     'route',v_route,
+    'profile_execution_binding',v_profile_execution_binding,
     'resolved_runtime_adapters',v_runtime_adapters
   );
   v_digest := 'sha256:' || encode(
@@ -190,6 +229,12 @@ alter table private.lf_profile_runtime_queue_v1
       and router_execution_envelope#>>'{target,profile_code}'=profile_code
       and router_execution_envelope#>>'{target,profile_slug}'=profile_slug
       and router_execution_envelope#>'{target,profile_source_paths}'=profile_source_paths
+      and router_execution_envelope#>>'{profile_execution_binding,activation_source}'='ROUTER'
+      and router_execution_envelope#>>'{profile_execution_binding,operation_code}'='EJECUCION_PERFIL_LF'
+      and router_execution_envelope#>>'{profile_execution_binding,profile_code}'=profile_code
+      and router_execution_envelope#>>'{profile_execution_binding,profile_slug}'=profile_slug
+      and router_execution_envelope#>>'{profile_execution_binding,research_baseline_mode}' in ('NOT_REQUIRED','PRE_RESEARCH_ALWAYS')
+      and router_execution_envelope#>>'{profile_execution_binding,main_profile_action}'='EXECUTE_PROFILE'
       and router_execution_envelope_sha256 ~ '^sha256:[0-9a-f]{64}$'
     )
   ) not valid;
