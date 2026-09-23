@@ -108,6 +108,15 @@ class G04ResultEnvelopeCandidateTests(unittest.TestCase):
             validator.validate_result_envelope(result, expected_current_lease=lease),
         )
 
+    def test_current_lease_owner_mismatch_fails_closed(self):
+        result = valid_result()
+        lease = expected_lease(result)
+        lease["lease_owner"] = "executor-generic-stale"
+        self.assertIn(
+            "RESULT_ENVELOPE_CURRENT_LEASE_MISMATCH:lease_owner",
+            validator.validate_result_envelope(result, expected_current_lease=lease),
+        )
+
     def test_partial_current_lease_cannot_bypass_binding(self):
         result = valid_result()
         lease = {"lease_owner": result["lease_owner"]}
