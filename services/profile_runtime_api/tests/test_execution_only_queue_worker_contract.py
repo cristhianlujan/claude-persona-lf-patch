@@ -133,3 +133,19 @@ def test_runtime_only_reads_exact_router_resolved_capsule_refs() -> None:
     assert "HETZNER_RESOLVED_ADAPTER_CAPSULE_PATH_ESCAPE" in source
     assert "HETZNER_ROUTER_EXECUTION_PROFILE_CODE_MISMATCH" in source
     assert "HETZNER_ROUTER_EXECUTION_ENVELOPE_DIGEST_MISMATCH" in source
+
+
+def test_scope_authority_packet_is_compiled_by_canonical_supabase_rpc() -> None:
+    source = ACTIVE.read_text(encoding="utf-8")
+    assert "lf_profile_execution_scope_authority_packet_v1" in source
+    assert '"scope_authority_packet": scope["scope_authority_packet"]' in source
+    assert '"scope_authority_packet_sha256": scope["scope_packet_sha256"]' in source
+
+
+def test_baseline_decision_is_frozen_by_router_not_inferred_by_runtime() -> None:
+    source = ACTIVE.read_text(encoding="utf-8")
+    assert "LF_PROFILE_EXECUTION_BINDING_V1" in source
+    assert "research_baseline_mode" in source
+    assert "research_baseline_action" in source
+    assert "HETZNER_BASELINE_ACTION_NOT_ROUTER_BOUND" in source
+    assert "HETZNER_BASELINE_MODE_NOT_ROUTER_BOUND" in source
