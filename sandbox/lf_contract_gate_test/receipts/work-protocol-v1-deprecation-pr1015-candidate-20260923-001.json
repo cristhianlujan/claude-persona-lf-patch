@@ -1,0 +1,39 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-work-protocol-v1-deprecation",
+  "issued_by": "operation_judge",
+  "operation_code": "WORK_PROTOCOL_V1_DEPRECATION",
+  "execution_id": "EXEC-WORK-PROTOCOL-V1-DEPRECATION-20260923-001",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "WORK_PROTOCOL_V1_DEPRECATION_GUARDS_READY",
+  "contract_sha": "work_protocol_manifest_v1.md@01d8fba2f863caf1e5edfac2cc78c2a3fecf2e86",
+  "judge_sha": "validate_work_protocol_manifest_v1.py@f6f5f88dc7de8c46b3bd9e2544d1a8eec0dea32d",
+  "source_sha_list": [
+    "d15a83124da9310f3938e8bf8b8d3df27b27abdb",
+    "01d8fba2f863caf1e5edfac2cc78c2a3fecf2e86",
+    "8bfa5664f21a1b454cfc4897f459630429735a08",
+    "f6f5f88dc7de8c46b3bd9e2544d1a8eec0dea32d"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/work_protocol_manifest_v1.md",
+    "gobernanza/contratos/work_protocol_manifest_v1.schema.json",
+    "gobernanza/judges/validate_work_protocol_manifest_v1.py"
+  ],
+  "target_blob_sha_by_path": {
+    "gobernanza/contratos/work_protocol_manifest_v1.md": "01d8fba2f863caf1e5edfac2cc78c2a3fecf2e86",
+    "gobernanza/contratos/work_protocol_manifest_v1.schema.json": "8bfa5664f21a1b454cfc4897f459630429735a08",
+    "gobernanza/judges/validate_work_protocol_manifest_v1.py": "f6f5f88dc7de8c46b3bd9e2544d1a8eec0dea32d"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-23T14:11:32Z",
+  "candidate_code_head": "d15a83124da9310f3938e8bf8b8d3df27b27abdb",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "EXACT_HEAD_CI_READBACK_NO_MERGE",
+  "pr_number": 1015,
+  "deprecation_code": "WORK_PROTOCOL_V1_DEPRECATED_DO_NOT_USE",
+  "g12_rollout_cancelled": true,
+  "runtime_activation": false,
+  "production_applied": false,
+  "merge_authorized": false
+}
