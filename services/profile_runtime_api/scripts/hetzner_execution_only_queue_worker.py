@@ -74,6 +74,34 @@ def _verify_router_envelope(claimed: dict[str, Any]) -> dict[str, Any]:
     asset = route.get("asset")
     if not isinstance(asset, dict) or asset.get("codigo_activo") != claimed.get("profile_code"):
         raise RuntimeError("HETZNER_ROUTER_EXECUTION_ASSET_MISMATCH")
+    binding = envelope.get("profile_execution_binding")
+    if not isinstance(binding, dict):
+        raise RuntimeError("HETZNER_ROUTER_PROFILE_EXECUTION_BINDING_MISSING")
+    if binding.get("schema") != "LF_PROFILE_EXECUTION_BINDING_V1":
+        raise RuntimeError("HETZNER_ROUTER_PROFILE_EXECUTION_BINDING_SCHEMA_INVALID")
+    if binding.get("activation_source") != "ROUTER":
+        raise RuntimeError("HETZNER_ROUTER_PROFILE_EXECUTION_BINDING_AUTHORITY_INVALID")
+    if binding.get("operation_code") != "EJECUCION_PERFIL_LF":
+        raise RuntimeError("HETZNER_ROUTER_PROFILE_EXECUTION_BINDING_OPERATION_INVALID")
+    if binding.get("profile_code") != claimed.get("profile_code") or binding.get("profile_slug") != claimed.get("profile_slug"):
+        raise RuntimeError("HETZNER_ROUTER_PROFILE_EXECUTION_BINDING_TARGET_MISMATCH")
+    baseline_mode = binding.get("research_baseline_mode")
+    baseline_action = binding.get("research_baseline_action")
+    if baseline_mode not in {"NOT_REQUIRED", "PRE_RESEARCH_ALWAYS"}:
+        raise RuntimeError("HETZNER_ROUTER_PROFILE_BASELINE_MODE_INVALID")
+    if baseline_mode == "PRE_RESEARCH_ALWAYS":
+        contract = binding.get("research_baseline_contract")
+        if (
+            baseline_action != "PROFILE_RESEARCH_BASELINE"
+            or not isinstance(contract, dict)
+            or contract.get("contract_version") != "PROFILE_RESEARCH_BASELINE_BINDING_V1"
+            or contract.get("profile_validator_binding") != "PROFILE_OUTPUT_VALIDATOR_BOUND_V1"
+        ):
+            raise RuntimeError("HETZNER_ROUTER_PROFILE_BASELINE_BINDING_INVALID")
+    elif baseline_action != "NOT_REQUIRED" or binding.get("research_baseline_contract") is not None:
+        raise RuntimeError("HETZNER_ROUTER_PROFILE_BASELINE_NOT_REQUIRED_BINDING_INVALID")
+    if binding.get("main_profile_action") != "EXECUTE_PROFILE":
+        raise RuntimeError("HETZNER_ROUTER_MAIN_PROFILE_ACTION_INVALID")
     return envelope
 
 
@@ -212,6 +240,7 @@ def _begin_governed_pre_model(
         "profile_source_digest": source["profile_source_digest"],
         "router_execution_envelope": router_envelope,
         "router_execution_envelope_sha256": claimed["router_execution_envelope_sha256"],
+        "profile_execution_binding": router_envelope["profile_execution_binding"],
         "read_only": True,
         "no_write": True,
         "no_promotion": True,
@@ -279,16 +308,33 @@ def _begin_governed_pre_model(
                 "runtime_source_mode": "EXACT_DEPLOYED_GIT_REVISION",
             },
         )
+        input_source_ref = f"queue://private.lf_profile_runtime_queue_v1/{request_id}@{input_digest}"
+        scope = legacy._fetch_json_scalar(
+            cur,
+            "select public.lf_profile_execution_scope_authority_packet_v1(%s,%s,%s)",
+            (execution_id, claimed["input_literal"], input_source_ref),
+        )
+        if (
+            scope.get("status") != "READY"
+            or not isinstance(scope.get("scope_authority_packet"), dict)
+            or not isinstance(scope.get("scope_packet_sha256"), str)
+        ):
+            raise RuntimeError(
+                "HETZNER_GOVERNED_SCOPE_AUTHORITY_PACKET_NOT_READY:"
+                + str(scope.get("code") or scope.get("status") or "UNKNOWN")
+            )
         legacy._record_governed_step(
             cur,
             execution_id=execution_id,
             step_id="input_validate",
-            evidence_ref=f"queue://private.lf_profile_runtime_queue_v1/{request_id}@{input_digest}",
+            evidence_ref=input_source_ref,
             payload={
                 "input_scope": f"QUEUE_REQUEST:{request_id}",
                 "activation_trigger_match": True,
                 "input_digest": input_digest,
                 "read_only": True,
+                "scope_authority_packet": scope["scope_authority_packet"],
+                "scope_authority_packet_sha256": scope["scope_packet_sha256"],
             },
         )
 
@@ -335,6 +381,7 @@ def _begin_governed_pre_model(
         "baseline_first": baseline_first,
         "research_baseline_mode": execution_manifest.get("research_baseline_mode"),
         "research_baseline_contract": execution_manifest.get("research_baseline_contract"),
+        "profile_execution_binding": router_envelope["profile_execution_binding"],
     }
 
 
@@ -349,23 +396,36 @@ def run_once() -> bool:
         request_id = claimed["request_id"]
         governed = _begin_governed_pre_model(conn, claimed)
         baseline_first = governed.get("baseline_first") or {}
-        if baseline_first.get("outcome") == "BASELINE_REQUIRED":
-            baseline_accepted = legacy._api_json(
-                "POST",
-                "/v1/profile/research-baseline",
-                legacy._baseline_api_payload(claimed, governed),
-            )
-            baseline_job_id = baseline_accepted.get("job_id")
-            if not isinstance(baseline_job_id, str) or not baseline_job_id:
-                raise RuntimeError("HETZNER_BASELINE_API_JOB_ID_MISSING")
-            baseline_job = legacy._wait_job(baseline_job_id)
-            baseline_envelope = legacy._baseline_envelope_from_job(baseline_job)
-            legacy._persist_required_baseline(conn, governed, baseline_envelope)
-        elif baseline_first.get("outcome") != "STEP_RECORDED":
-            raise RuntimeError(
-                "HETZNER_GOVERNED_BASELINE_HANDSHAKE_INVALID:"
-                + str(baseline_first.get("outcome") or baseline_first.get("code") or "UNKNOWN")
-            )
+        execution_binding = governed.get("profile_execution_binding") or {}
+        baseline_mode = execution_binding.get("research_baseline_mode")
+        baseline_action = execution_binding.get("research_baseline_action")
+        if baseline_mode == "PRE_RESEARCH_ALWAYS":
+            if baseline_first.get("outcome") == "BASELINE_REQUIRED":
+                if baseline_action != "PROFILE_RESEARCH_BASELINE":
+                    raise RuntimeError("HETZNER_BASELINE_ACTION_NOT_ROUTER_BOUND")
+                if execution_binding.get("research_baseline_contract") != governed.get("research_baseline_contract"):
+                    raise RuntimeError("HETZNER_BASELINE_CONTRACT_ROUTER_MANIFEST_MISMATCH")
+                baseline_accepted = legacy._api_json(
+                    "POST",
+                    "/v1/profile/research-baseline",
+                    legacy._baseline_api_payload(claimed, governed),
+                )
+                baseline_job_id = baseline_accepted.get("job_id")
+                if not isinstance(baseline_job_id, str) or not baseline_job_id:
+                    raise RuntimeError("HETZNER_BASELINE_API_JOB_ID_MISSING")
+                baseline_job = legacy._wait_job(baseline_job_id)
+                baseline_envelope = legacy._baseline_envelope_from_job(baseline_job)
+                legacy._persist_required_baseline(conn, governed, baseline_envelope)
+            elif baseline_first.get("outcome") != "STEP_RECORDED":
+                raise RuntimeError(
+                    "HETZNER_GOVERNED_BASELINE_HANDSHAKE_INVALID:"
+                    + str(baseline_first.get("outcome") or baseline_first.get("code") or "UNKNOWN")
+                )
+        elif baseline_mode == "NOT_REQUIRED":
+            if baseline_action != "NOT_REQUIRED" or baseline_first.get("outcome") != "STEP_RECORDED":
+                raise RuntimeError("HETZNER_BASELINE_NOT_REQUIRED_BINDING_MISMATCH")
+        else:
+            raise RuntimeError("HETZNER_BASELINE_MODE_NOT_ROUTER_BOUND")
 
         model_governance = legacy._read_model_governance(conn, governed)
         envelope = claimed.get("runtime_request_envelope")
