@@ -12,10 +12,11 @@ ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
 REGISTRY = HERE / "lf_ci_control_impact_registry_v2.json"
 RUNTIME_CLASSIFIER = HERE / "classify_changed_migration_runtime_v1.py"
+RETIRED_WORKFLOW = ROOT / ".github/workflows/lf-bootstrap-reproducibility.yml"
 WORKFLOWS = {
     "LF_CONTRACT_CHECK": ROOT / ".github/workflows/lf-contract-check.yml",
     "VALIDATE_LF_PACKS": ROOT / ".github/workflows/validate-lf-packs.yml",
-    "LF_BOOTSTRAP_REPRODUCIBILITY": ROOT / ".github/workflows/lf-bootstrap-reproducibility.yml",
+    "LF_DB_REGRESSION": ROOT / ".github/workflows/lf-db-regression.yml",
 }
 
 
@@ -36,7 +37,6 @@ def require_step_guard(text: str, step_name: str, control_id: str) -> None:
     require(block, control_id, f"FAIL_CI_CARRIER_CONTROL_NOT_BOUND:{step_name}")
 
 
-
 def require_job_guard(text: str, job_id: str, control_id: str) -> None:
     marker = f"  {job_id}:"
     start = text.find(marker)
@@ -47,6 +47,7 @@ def require_job_guard(text: str, job_id: str, control_id: str) -> None:
     require(block, "if:", f"FAIL_CI_CARRIER_JOB_UNGUARDED:{job_id}")
     require(block, control_id, f"FAIL_CI_CARRIER_CONTROL_NOT_BOUND:{job_id}")
 
+
 def main() -> None:
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
     controls = registry["controls"]
@@ -55,6 +56,14 @@ def main() -> None:
     assert len(universe) == len(controls), "FAIL_CI_CARRIER_DUPLICATE_CONTROL"
 
     texts = {name:path.read_text(encoding="utf-8") for name,path in WORKFLOWS.items()}
+
+    # Retirement invariants: the historical Bootstrap carrier and remote schema
+    # reconstruction are not executable, routable, required, or receipted.
+    assert not RETIRED_WORKFLOW.exists(), "FAIL_RETIRED_BOOTSTRAP_WORKFLOW_STILL_EXECUTABLE"
+    assert "REMOTE_SCHEMA_REPRODUCIBILITY" not in universe, "FAIL_RETIRED_REMOTE_SCHEMA_CONTROL_IN_REGISTRY"
+    assert "REMOTE_SCHEMA_REPRODUCIBILITY" not in set(registry["full_regression_controls"]), "FAIL_RETIRED_REMOTE_SCHEMA_CONTROL_IN_FULL_REGRESSION"
+    assert all(row["carrier"] != "LF_BOOTSTRAP_REPRODUCIBILITY" for row in controls), "FAIL_RETIRED_BOOTSTRAP_CARRIER_IN_REGISTRY"
+    assert all("lf-bootstrap-reproducibility.yml" not in json.dumps(row, sort_keys=True) for row in controls), "FAIL_RETIRED_BOOTSTRAP_ROUTING_IN_REGISTRY"
 
     # All carriers consume the same canonical plan implementation, not a local
     # FAST/DEEP classifier.
@@ -70,33 +79,42 @@ def main() -> None:
     require(texts["VALIDATE_LF_PACKS"], "refs/heads/main:refs/remotes/origin/main", "FAIL_PACKS_MOVING_MAIN_NOT_RESOLVED")
     require(texts["VALIDATE_LF_PACKS"], "--authority-current-revision", "FAIL_PACKS_CURRENTNESS_ARGUMENT_MISSING")
     assert "--authority-bound-revision" not in texts["VALIDATE_LF_PACKS"], "FAIL_PACKS_LOCAL_AUTHORITY_BINDING_REMAINS"
-    require(texts["LF_BOOTSTRAP_REPRODUCIBILITY"], "emit_ci_execution_plan_v2.py", "FAIL_BOOTSTRAP_PLAN_NOT_WIRED")
-    require(texts["LF_BOOTSTRAP_REPRODUCIBILITY"], "refs/heads/main:refs/remotes/origin/main", "FAIL_BOOTSTRAP_MOVING_MAIN_NOT_RESOLVED")
-    require(texts["LF_BOOTSTRAP_REPRODUCIBILITY"], "--authority-current-revision", "FAIL_BOOTSTRAP_CURRENTNESS_ARGUMENT_MISSING")
-    assert "--authority-bound-revision" not in texts["LF_BOOTSTRAP_REPRODUCIBILITY"], "FAIL_BOOTSTRAP_LOCAL_AUTHORITY_BINDING_REMAINS"
+    require(texts["LF_DB_REGRESSION"], "emit_ci_execution_plan_v2.py", "FAIL_DB_REGRESSION_PLAN_NOT_WIRED")
+    require(texts["LF_DB_REGRESSION"], "refs/heads/main:refs/remotes/origin/main", "FAIL_DB_REGRESSION_MOVING_MAIN_NOT_RESOLVED")
+    require(texts["LF_DB_REGRESSION"], "--authority-current-revision", "FAIL_DB_REGRESSION_CURRENTNESS_ARGUMENT_MISSING")
+    assert "--authority-bound-revision" not in texts["LF_DB_REGRESSION"], "FAIL_DB_REGRESSION_LOCAL_AUTHORITY_BINDING_REMAINS"
 
-    bootstrap = texts["LF_BOOTSTRAP_REPRODUCIBILITY"]
-    for forbidden in ("docs_only=", "schema_sensitive=", "deep_required", "remote_schema_required"):
-        assert forbidden not in bootstrap, f"FAIL_BOOTSTRAP_PARALLEL_CLASSIFIER_REMAINS:{forbidden}"
-    require_job_guard(bootstrap, "schema-bootstrap-probe", "REMOTE_SCHEMA_REPRODUCIBILITY")
-    require_job_guard(bootstrap, "v7-runtime-apply-rollback", "V7_RUNTIME_REGRESSION")
-    require_job_guard(bootstrap, "candidate-migration-apply-rollback", "DB_CANDIDATE_APPLY_ROLLBACK")
-    require(bootstrap, "run_changed_migrations_rollback_v1.py", "FAIL_EXACT_CANDIDATE_ROLLBACK_NOT_WIRED")
-    require(bootstrap, "policy_resolver_post_apply_probe_v1.sql", "FAIL_POLICY_RESOLVER_POST_APPLY_NOT_WIRED")
-    require(bootstrap, "ledger_before.txt", "FAIL_CANDIDATE_LEDGER_PRESTATE_MISSING")
-    require(bootstrap, "ledger_after.txt", "FAIL_CANDIDATE_LEDGER_POSTSTATE_MISSING")
+    db_regression = texts["LF_DB_REGRESSION"]
+    for forbidden in (
+        "docs_only=",
+        "schema_sensitive=",
+        "deep_required",
+        "remote_schema_required",
+        "schema-bootstrap-probe",
+        "REMOTE_SCHEMA_REPRODUCIBILITY",
+        "LF_BOOTSTRAP_REPRODUCIBILITY",
+        "LF Bootstrap Reproducibility Probe",
+    ):
+        assert forbidden not in db_regression, f"FAIL_DB_REGRESSION_RETIRED_OR_PARALLEL_LOGIC:{forbidden}"
+    require_job_guard(db_regression, "v7-runtime-apply-rollback", "V7_RUNTIME_REGRESSION")
+    require_job_guard(db_regression, "candidate-migration-apply-rollback", "DB_CANDIDATE_APPLY_ROLLBACK")
+    require(db_regression, "run_changed_migrations_rollback_v1.py", "FAIL_EXACT_CANDIDATE_ROLLBACK_NOT_WIRED")
+    require(db_regression, "policy_resolver_post_apply_probe_v1.sql", "FAIL_POLICY_RESOLVER_POST_APPLY_NOT_WIRED")
+    require(db_regression, "ledger_before.txt", "FAIL_CANDIDATE_LEDGER_PRESTATE_MISSING")
+    require(db_regression, "ledger_after.txt", "FAIL_CANDIDATE_LEDGER_POSTSTATE_MISSING")
+    require(db_regression, "db_regression_controls_json", "FAIL_DB_REGRESSION_CONTROLS_OUTPUT_MISSING")
 
-    # Bootstrap owns only replay applicability. Exact content remains an
-    # independent MIGRATION_SOURCE_PARITY responsibility.
+    # DB regression owns candidate replay/runtime regression only. Exact content
+    # remains an independent MIGRATION_SOURCE_PARITY responsibility.
     require(
-        bootstrap,
+        db_regression,
         "classify_changed_migration_runtime_v1.py",
         "FAIL_CANDIDATE_RUNTIME_CLASSIFIER_NOT_WIRED",
     )
-    require(bootstrap, "emit-query", "FAIL_CANDIDATE_RUNTIME_QUERY_CONTRACT_NOT_WIRED")
-    require(bootstrap, "classify", "FAIL_CANDIDATE_RUNTIME_CLASSIFY_CONTRACT_NOT_WIRED")
-    assert "lf_operation_effect_guard" not in bootstrap, "FAIL_BOOTSTRAP_PROVENANCE_AUTHORITY_REINTRODUCED"
-    assert "APPLIED_UNVERIFIED" not in bootstrap, "FAIL_BOOTSTRAP_CONTENT_CLASSIFICATION_REINTRODUCED"
+    require(db_regression, "emit-query", "FAIL_CANDIDATE_RUNTIME_QUERY_CONTRACT_NOT_WIRED")
+    require(db_regression, "classify", "FAIL_CANDIDATE_RUNTIME_CLASSIFY_CONTRACT_NOT_WIRED")
+    assert "lf_operation_effect_guard" not in db_regression, "FAIL_DB_REGRESSION_PROVENANCE_AUTHORITY_REINTRODUCED"
+    assert "APPLIED_UNVERIFIED" not in db_regression, "FAIL_DB_REGRESSION_CONTENT_CLASSIFICATION_REINTRODUCED"
 
     classifier_source = RUNTIME_CLASSIFIER.read_text(encoding="utf-8")
     require(
@@ -201,6 +219,7 @@ def main() -> None:
     for material_only in ("DB_CANDIDATE_APPLY_ROLLBACK","POLICY_RESOLVER_REGRESSION","P0_FAST_DOCS","P0_EXACT_HEAD_EXTERNAL"):
         assert material_only not in full, f"FAIL_MATERIAL_ONLY_IN_FULL_REGRESSION:{material_only}"
 
+    print("REMOTE_SCHEMA_RETIREMENT_JUDGE_PASS zero_operational_routing=true zero_jobs=true zero_blocking=true")
     print(f"CI_CONTROL_CARRIER_WIRING_V2_PASS controls={len(controls)} carriers={len(texts)}")
 
 
