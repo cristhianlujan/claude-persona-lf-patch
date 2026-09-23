@@ -17,6 +17,7 @@ def main():
     # D3 6/6
     r=evaluate_pr_integrity(["supabase/migrations/20260923000000_x.sql"]); assert r["families"] and not r["classification_required"]; checks+=1
     r=evaluate_pr_integrity([".github/workflows/x.yml"]); assert not r["classification_required"]; checks+=1
+    r=evaluate_pr_integrity([".github/workflows/x.yml.bak"]); assert r["classification_required"] and r["violations"]==["UNDECLARED_PATH:.github/workflows/x.yml.bak"]
     r=evaluate_pr_integrity(["services/profile_runtime_api/x.py"]); assert r["families"]["services/profile_runtime_api/x.py"]=="SERVICE_RUNTIME"; checks+=1
     r=evaluate_pr_integrity(["changesets/SOL-1.json","custom/a.py"], manifest_data={"solution_ref":"SOL-1","paths":{"custom/a.py":"CUSTOM"}}); assert not r["classification_required"]; checks+=1
     r=evaluate_pr_integrity(["custom/a.py"]); assert r["classification_required"] and r["violations"]==["UNDECLARED_PATH:custom/a.py"]; checks+=1

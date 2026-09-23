@@ -62,8 +62,8 @@ def main() -> None:
     exercise([P0_BROKER], broker_rc=0, expected_calls=1, expected_exit=None)
     # A live broker failure remains fail-closed when the broker is required.
     exercise([P0_BROKER], broker_rc=7, expected_calls=1, expected_exit=7)
-    # Unknown ownership also remains fail-closed and requires the live broker.
-    exercise([UNKNOWN], broker_rc=8, expected_calls=1, expected_exit=8)
+    # Unknown ownership is fail-closed by classification, not by invoking an unrelated P0 broker.
+    exercise([UNKNOWN], broker_rc=8, expected_calls=0, expected_exit=None)
     print("PASS_P0_EXTERNAL_APPLICABILITY_ENTRYPOINT=4/4")
 
 

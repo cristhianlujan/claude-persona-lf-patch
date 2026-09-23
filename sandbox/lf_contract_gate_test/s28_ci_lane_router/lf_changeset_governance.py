@@ -31,9 +31,14 @@ class FixedFamily:
     family: str
     kind: str
     value: str
+    suffixes: tuple[str, ...] = ()
 
     def matches(self, path: str) -> bool:
-        return path == self.value if self.kind == "exact" else path.startswith(self.value)
+        if self.kind == "exact":
+            return path == self.value
+        if self.kind == "prefix":
+            return path.startswith(self.value)
+        return path.startswith(self.value) and any(path.endswith(suffix) for suffix in self.suffixes)
 
 
 @dataclass(frozen=True)
@@ -64,15 +69,25 @@ def compile_family_registry(data: Mapping[str, Any]) -> FamilyRegistry:
     fixed: list[FixedFamily] = []
     seen: set[str] = set()
     for row in raw:
-        if not isinstance(row, Mapping) or set(row) != {"family", "kind", "value"}:
+        if not isinstance(row, Mapping):
             raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_ENTRY")
-        family, kind, value = row["family"], row["kind"], row["value"]
+        family, kind, value = row.get("family"), row.get("kind"), row.get("value")
+        expected_keys = {"family", "kind", "value", "suffixes"} if kind == "prefix_suffixes" else {"family", "kind", "value"}
+        if set(row) != expected_keys:
+            raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_ENTRY")
         if not isinstance(family, str) or FAMILY_RE.fullmatch(family) is None or family in seen:
             raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_ID", str(family))
-        if kind not in {"prefix", "exact"} or not isinstance(value, str) or not _safe_path(value):
+        if kind not in {"prefix", "exact", "prefix_suffixes"} or not isinstance(value, str) or not _safe_path(value):
             raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_MATCHER", str(value))
+        suffixes = row.get("suffixes", [])
+        if kind == "prefix_suffixes" and (
+            not isinstance(suffixes, list)
+            or not suffixes
+            or any(not isinstance(v, str) or not v.startswith(".") or "/" in v for v in suffixes)
+        ):
+            raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_SUFFIXES", str(suffixes))
         seen.add(family)
-        fixed.append(FixedFamily(family, kind, value))
+        fixed.append(FixedFamily(family, kind, value, tuple(sorted(set(suffixes)))))
     compiled_controls: dict[str, tuple[str, ...]] = {}
     for family, values in controls.items():
         if family not in seen or not isinstance(values, list) or any(not isinstance(v, str) for v in values):
