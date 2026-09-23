@@ -1,0 +1,15 @@
+{
+  "schema": "LF_PROFILE_SEMANTIC_JUDGE_BINDING_V1",
+  "prompt_path": "judges/systemic_root_cause_semantic_judge.md",
+  "validator_path": "validators/validate_semantic_judge_result.py",
+  "validator_callable": "evaluate",
+  "pass_verdict": "PASS_INDEPENDENT_SEMANTIC",
+  "candidate_input_path": "profile_output",
+  "scope_packet_source": "INPUT_VALIDATE_SCOPE_AUTHORITY_PACKET",
+  "deterministic_predecessor": "output_validate",
+  "independence": {
+    "separate_model_call_required": true,
+    "producer_prompt_reuse_forbidden": true,
+    "producer_self_verdict_forbidden": true
+  }
+}
