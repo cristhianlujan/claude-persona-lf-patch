@@ -1,0 +1,52 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-pilot-srcr-unified-execution-g04-result-envelope",
+  "issued_by": "operation_judge",
+  "operation_code": "PILOT_SRCR_UNIFIED_EXECUTION_V1",
+  "execution_id": "EXEC-SRCR-PILOT-G04-RESULT-ENVELOPE-20260923-001",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "G04_RESULT_ENVELOPE_SCHEMA_VALIDATOR_AND_REGRESSION_READY",
+  "contract_sha": "ad2099fbe4327a51ff19577ec497f9d5b8a26cb1220154918a68daebf9804c4e",
+  "judge_sha": "validate_lf_unified_execution_result_v1.py@f8febfb533fa6b835e7fdff1da2f37dacf7912fa",
+  "source_sha_list": [
+    "6b556fd962859c29cf8f4a534fba919b4d17a91d",
+    "ae1bcbb3c443396347805f38037556bce9e7f88b",
+    "6dea45eea313b46cfc3afed3cb369deab43dcab1",
+    "6e5166f16253a63a6b6341d1bd681ed876571903",
+    "cb455027df2d2e2795ab66d41a539e217a04966f",
+    "bbbe8589414b6444102cbd1a21f8f9204d0e2ec5",
+    "f8febfb533fa6b835e7fdff1da2f37dacf7912fa",
+    "942e94ff94a86a03c916191d7eb679feef8b59dd"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/lf_unified_execution_result_v1.schema.json",
+    "gobernanza/judges/validate_lf_unified_execution_result_v1.py",
+    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g04/test_g04_result_envelope_candidate.py"
+  ],
+  "target_blob_sha_by_path": {
+    "gobernanza/contratos/lf_unified_execution_result_v1.schema.json": "bbbe8589414b6444102cbd1a21f8f9204d0e2ec5",
+    "gobernanza/judges/validate_lf_unified_execution_result_v1.py": "f8febfb533fa6b835e7fdff1da2f37dacf7912fa",
+    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g04/test_g04_result_envelope_candidate.py": "942e94ff94a86a03c916191d7eb679feef8b59dd"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-23T12:09:11Z",
+  "candidate_code_head": "6b556fd962859c29cf8f4a534fba919b4d17a91d",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "G04_EXACT_HEAD_CI_EKB_AND_READBACK",
+  "pr_number": null,
+  "authority_events": [15186, 15188, 15196, 15197],
+  "ekb_code": "GOV-SRCR-PILOT-EXECUTION-PROTOCOL-001",
+  "frozen_profile_source_sha": "cb455027df2d2e2795ab66d41a539e217a04966f",
+  "g01_contract_head": "ae1bcbb3c443396347805f38037556bce9e7f88b",
+  "g02_candidate_head": "6dea45eea313b46cfc3afed3cb369deab43dcab1",
+  "g03_candidate_head": "6e5166f16253a63a6b6341d1bd681ed876571903",
+  "solution_isolation_policy": "ONE_SOLUTION_PER_PR",
+  "mixed_solution_pr_allowed": false,
+  "migration_paths_in_pr": 0,
+  "runtime_activation": false,
+  "production_applied": false,
+  "creacion_perfil_lf_touched": false,
+  "architecture_verdict_declared": false,
+  "srcr_v06_quality_verdict_declared": false
+}
