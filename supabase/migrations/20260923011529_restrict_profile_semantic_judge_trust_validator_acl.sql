@@ -2,11 +2,32 @@ begin;
 
 -- LF_PROFILE_SEMANTIC_JUDGE_TRUST_VALIDATOR_ACL_V1
 -- Keep the SECURITY DEFINER trust validator internal to the service-role recorder.
+-- Sandbox apply is owned by EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-001.
 
 do $pre$
 declare
   v_security_definer boolean;
 begin
+  if not exists (
+    select 1
+    from public.lf_operation_execution e
+    join public.lf_operation_execution_steps s
+      on s.execution_id=e.execution_id
+     and s.step_id='pre_write_execution_binding_gate'
+     and s.status='STEP_PASS_WITH_EVIDENCE'
+    where e.execution_id='EXEC-RUNTIME-SEMANTIC-JUDGE-WIRING-20260922-001'
+      and e.operation_code='ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF'
+      and e.target_type='OPERATION_CODE'
+      and e.target_code='EJECUCION_PERFIL_LF'
+      and e.status='IN_PROGRESS'
+      and e.target_repo='cristhianlujan/claude-persona-lf-patch'
+      and e.target_path='services/profile_runtime_api'
+      and coalesce((e.manifest->>'sandbox_apply_authorized')::boolean,false)=true
+      and coalesce((e.manifest->>'production_apply_authorized')::boolean,true)=false
+  ) then
+    raise exception 'PROFILE_SEMANTIC_JUDGE_ACL_PREWRITE_AUTHORITY_MISSING';
+  end if;
+
   select p.prosecdef
     into v_security_definer
   from pg_catalog.pg_proc p
