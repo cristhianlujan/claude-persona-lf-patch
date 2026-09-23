@@ -29,10 +29,31 @@ for content in runtime_files:
     assert "SRCR-LIFECYCLE-DEEP-BLIND-001" not in content
 
 migration_hits = []
+acl_migration_hits = []
 for path in (ROOT / "supabase/migrations").glob("*.sql"):
     content = path.read_text(encoding="utf-8")
-    if "LF_PROFILE_SEMANTIC_JUDGE_RUNTIME_WIRING_V1" in content:
+    if "-- LF_PROFILE_SEMANTIC_JUDGE_RUNTIME_WIRING_V1" in content:
         migration_hits.append(path)
+    if "LF_PROFILE_SEMANTIC_JUDGE_TRUST_VALIDATOR_ACL_V1" in content:
+        acl_migration_hits.append((path, content.lower()))
 assert len(migration_hits) == 1, migration_hits
+assert len(acl_migration_hits) == 1, [path for path, _ in acl_migration_hits]
+
+acl_path, acl_migration = acl_migration_hits[0]
+trust_validator = (
+    "public.lf_profile_execution_trust_validation_v2(text,text,jsonb)"
+)
+for role in ("public", "anon", "authenticated"):
+    assert (
+        f"revoke all on function {trust_validator}\n  from {role};"
+        in acl_migration
+    ), (acl_path, role)
+assert (
+    f"grant execute on function {trust_validator}\n  to service_role;"
+    in acl_migration
+), acl_path
+assert "has_function_privilege('anon', v_oid, 'execute')" in acl_migration
+assert "has_function_privilege('authenticated', v_oid, 'execute')" in acl_migration
+assert "has_function_privilege('service_role', v_oid, 'execute')" in acl_migration
 
 print("PROFILE_EXECUTION_SEMANTIC_JUDGE_WIRING_CONTRACT_PASS")
