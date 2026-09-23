@@ -276,21 +276,13 @@ jobs:
         run: python -m pytest services/profile_runtime_api/tests
 
       - name: Install shared JSON Schema validation dependency
-        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK') || contains(steps.ci_plan.outputs.changed_paths_json, 'gobernanza/contratos/work_protocol_manifest_v1') || contains(steps.ci_plan.outputs.changed_paths_json, 'gobernanza/judges/validate_work_protocol_manifest_v1.py') || contains(steps.ci_plan.outputs.changed_paths_json, 'sandbox/lf_contract_gate_test/work_protocol_manifest_v1/')
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK')
         run: python -m pip install --disable-pip-version-check jsonschema==4.23.0
 
-      - name: Validate Work Protocol G09 cold replay
-        timeout-minutes: 2
-        run: python sandbox/lf_contract_gate_test/work_protocol_manifest_v1/test_work_protocol_manifest_v1.py
-
-      - name: Build Work Protocol G10 final closure package
-        id: g10_closure
+      - name: Validate Work Protocol V1 deprecation tombstone
         if: contains(steps.ci_plan.outputs.changed_paths_json, 'gobernanza/contratos/work_protocol_manifest_v1') || contains(steps.ci_plan.outputs.changed_paths_json, 'gobernanza/judges/validate_work_protocol_manifest_v1.py') || contains(steps.ci_plan.outputs.changed_paths_json, 'sandbox/lf_contract_gate_test/work_protocol_manifest_v1/')
         timeout-minutes: 2
-        run: |
-          python sandbox/lf_contract_gate_test/work_protocol_manifest_v1/g10_final_closure_package_v1.py \
-            --ci-plan .lf_ci/lf_ci_execution_plan_v2.json \
-            --output .lf_ci/work_protocol_g10_final_closure_package_v1.json
+        run: python sandbox/lf_contract_gate_test/work_protocol_manifest_v1/test_work_protocol_manifest_v1.py
 
       - name: Validate profile template pack
         if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK')
@@ -435,14 +427,6 @@ jobs:
           path: .lf_gate_diagnostics/profile_runtime_v3
           if-no-files-found: error
           retention-days: 30
-      - name: Persist Work Protocol G10 final closure package
-        if: always() && steps.g10_closure.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: work-protocol-g10-final-closure-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .lf_ci/work_protocol_g10_final_closure_package_v1.json
-          if-no-files-found: error
-          retention-days: 30
       - name: Persist unified CI applicability plan
         if: always() && steps.ci_plan.outcome == 'success'
         uses: actions/upload-artifact@v4
@@ -535,7 +519,7 @@ jobs:
           spec=importlib.util.spec_from_file_location("s30_control_validator","/tmp/s30-control/validator.py")
           validator=importlib.util.module_from_spec(spec); spec.loader.exec_module(validator)
           scope=validator.broker_scope_decision(contract,changed,receipt_path,receipt,path_modes)
-          if scope.get("status")!="PASS": fail(scope.get("blocking_code","BLOCK_S30_BROKER_SCOPE"),scope.get("detail",""))
+          if scope.get("status")!="PASS": fail(scope.get("blocking_code","BLOCK_S30_BROKER_SCOPE"),scope.get("detail","") )
           evaluation=validator.evaluate(contract,receipt,base)
           if scope["mode"]=="REPAIR":
               repair_cfg=(contract.get("git_write_broker",{}).get("scope_modes",{}).get("REPAIR") or {})
