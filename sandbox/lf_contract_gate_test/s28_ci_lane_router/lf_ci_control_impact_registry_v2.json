@@ -17,7 +17,6 @@
     "PROFILE_PACK",
     "PROFILE_RUNTIME_V3",
     "R8_USER_STORY_AUDIT",
-    "REMOTE_SCHEMA_REPRODUCIBILITY",
     "S30_BOUNDED_REGRESSION",
     "S36_ASSURANCE",
     "SKILL_PACK",
@@ -44,7 +43,7 @@
         },
         {
           "kind": "exact",
-          "value": ".github/workflows/lf-bootstrap-reproducibility.yml"
+          "value": ".github/workflows/lf-db-regression.yml"
         }
       ],
       "material_matchers": [],
@@ -52,7 +51,7 @@
     },
     {
       "control_id": "DB_CANDIDATE_APPLY_ROLLBACK",
-      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
+      "carrier": "LF_DB_REGRESSION",
       "path_matchers": [
         {
           "kind": "prefix",
@@ -383,7 +382,7 @@
     },
     {
       "control_id": "POLICY_RESOLVER_REGRESSION",
-      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
+      "carrier": "LF_DB_REGRESSION",
       "path_matchers": [],
       "material_matchers": [
         {
@@ -446,26 +445,6 @@
         {
           "kind": "exact",
           "value": "sandbox/lf_contract_gate_test/r8_continuous_audit.py"
-        }
-      ],
-      "material_matchers": [],
-      "dependencies": []
-    },
-    {
-      "control_id": "REMOTE_SCHEMA_REPRODUCIBILITY",
-      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
-      "path_matchers": [
-        {
-          "kind": "exact",
-          "value": "supabase/config.toml"
-        },
-        {
-          "kind": "exact",
-          "value": "supabase/roles.sql"
-        },
-        {
-          "kind": "exact",
-          "value": ".github/workflows/lf-bootstrap-reproducibility.yml"
         }
       ],
       "material_matchers": [],
@@ -555,7 +534,7 @@
     },
     {
       "control_id": "V7_RUNTIME_REGRESSION",
-      "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
+      "carrier": "LF_DB_REGRESSION",
       "path_matchers": [
         {
           "kind": "exact",
