@@ -10,24 +10,27 @@
   "contract_sha": "work_protocol_manifest_v1.md@01d8fba2f863caf1e5edfac2cc78c2a3fecf2e86",
   "judge_sha": "validate_work_protocol_manifest_v1.py@f6f5f88dc7de8c46b3bd9e2544d1a8eec0dea32d",
   "source_sha_list": [
-    "d15a83124da9310f3938e8bf8b8d3df27b27abdb",
+    "52b66bce7fbd8db5e50277bda0c563b711180ea2",
     "01d8fba2f863caf1e5edfac2cc78c2a3fecf2e86",
     "8bfa5664f21a1b454cfc4897f459630429735a08",
-    "f6f5f88dc7de8c46b3bd9e2544d1a8eec0dea32d"
+    "f6f5f88dc7de8c46b3bd9e2544d1a8eec0dea32d",
+    "d7ab460e7e447e0415f780357956e5806e9dd8f9"
   ],
   "target_paths": [
+    ".github/workflows/validate-lf-packs.yml",
     "gobernanza/contratos/work_protocol_manifest_v1.md",
     "gobernanza/contratos/work_protocol_manifest_v1.schema.json",
     "gobernanza/judges/validate_work_protocol_manifest_v1.py"
   ],
   "target_blob_sha_by_path": {
+    ".github/workflows/validate-lf-packs.yml": "d7ab460e7e447e0415f780357956e5806e9dd8f9",
     "gobernanza/contratos/work_protocol_manifest_v1.md": "01d8fba2f863caf1e5edfac2cc78c2a3fecf2e86",
     "gobernanza/contratos/work_protocol_manifest_v1.schema.json": "8bfa5664f21a1b454cfc4897f459630429735a08",
     "gobernanza/judges/validate_work_protocol_manifest_v1.py": "f6f5f88dc7de8c46b3bd9e2544d1a8eec0dea32d"
   },
   "blocking_codes": [],
-  "issued_at": "2026-09-23T14:11:32Z",
-  "candidate_code_head": "d15a83124da9310f3938e8bf8b8d3df27b27abdb",
+  "issued_at": "2026-09-23T15:12:30Z",
+  "candidate_code_head": "52b66bce7fbd8db5e50277bda0c563b711180ea2",
   "operation_status_at_issue": "IN_PROGRESS",
   "next_gate": "EXACT_HEAD_CI_READBACK_NO_MERGE",
   "pr_number": 1015,
