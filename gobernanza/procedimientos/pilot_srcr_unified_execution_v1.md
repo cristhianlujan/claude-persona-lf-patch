@@ -6,6 +6,7 @@ Scope: SPEC_AND_GOVERNANCE_ONLY
 ## Canonical authority
 
 - Supabase handoff: `public.lf_eventos.id=15186`
+- Governance amendment: `public.lf_eventos.id=15188`
 - Protocol EKB: `GOV-SRCR-PILOT-EXECUTION-PROTOCOL-001`
 - Pilot profile: `PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF`
 - Profile pack: `SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6`
@@ -13,7 +14,7 @@ Scope: SPEC_AND_GOVERNANCE_ONLY
 - Post-freeze profile head excluded by authority: `e0e8a40b`
 - Canonical profile contract for the frozen source: `profiles/systemic_root_cause_repair_lf/contracts/main_contract.md`
 
-This file is a repository representation of the already-authorized pilot. It does not supersede event 15186 or the EKB. Any contradiction fails closed to the Supabase handoff plus exact frozen source.
+This file is a repository representation of the already-authorized pilot plus its strict-sequencing amendment. It does not supersede Supabase/EKB. Any contradiction fails closed to events 15186/15188, the active EKB, and the exact frozen profile source.
 
 ## Explicit limits
 
@@ -39,6 +40,16 @@ After each solution or run, persist material new or recurrent learning in EKB be
 
 Global progress is the arithmetic mean of the 15 gate percentages.
 
+## Strict sequential execution
+
+Gate order is exactly `G01 -> G02 -> G03 -> G04 -> G05 -> G06 -> G07 -> G08 -> G09 -> G10 -> G11 -> G12 -> G13 -> G14 -> G15`.
+
+`G(n+1)` MUST NOT START until `G(n)` is 100% with clean evidence/readback, EKB synchronized, coupled surfaces synchronized, and blocker count 0. No parallel gate advancement.
+
+Any observed work concerning a later gate before its predecessor closes is diagnostic only and MUST be reported as `OUT_OF_ORDER_PROGRESS`; it is not valid gate advancement until reconciled.
+
+Every run summary MUST include all 15 gates with: gate id/name, percentage, status, what changed, evidence refs, PR ref when applicable, EKB status, coupled-surface sync, and blockers; plus global percentage, current gate, blocker count, and out-of-order flag.
+
 ## Invariants
 
 - `INV-01`: only `advance_execution` determines the next executable task.
@@ -61,10 +72,12 @@ Global progress is the arithmetic mean of the 15 gate percentages.
 | G09 | TERMINALITY | G07,G08 | Terminal state proves no executable pending task and transport is non-authoritative. |
 | G10 | RETRY_ATTEMPT_POLICY | G05,G08,G09 | Retry creates a bounded attempt without reusing stale result/fence identity. |
 | G11 | FAILURE_INJECTION_AND_247_ACCEPTANCE | G01-G10 | Failure injection + all 247 step results; independent semantic judge mandatory; aggregate PASS cannot hide misses. |
-| G12 | STATE_AUTHORITY | — | `public.lf_operation_execution` is sole state authority; queues are transport/projection only. |
-| G13 | PROFILE_SOURCE_BINDING | — | Profile SHA is independent of runtime release SHA; capability preflight happens before model call. |
-| G14 | DB_CHANGE_PROVENANCE | — | Every DB mutation records repo, branch, source SHA, migration path/digest, execution ID, environment and authorization. |
-| G15 | RUNTIME_OWNERSHIP | — | Generic runtime contains no profile-specific SRCR/baseline/operation-routing logic and is not modified from profile branches. |
+| G12 | STATE_AUTHORITY | G11 | `public.lf_operation_execution` is sole state authority; queues are transport/projection only. |
+| G13 | PROFILE_SOURCE_BINDING | G12 | Profile SHA is independent of runtime release SHA; capability preflight happens before model call. |
+| G14 | DB_CHANGE_PROVENANCE | G13 | Every DB mutation records repo, branch, source SHA, migration path/digest, execution ID, environment and authorization. |
+| G15 | RUNTIME_OWNERSHIP | G14 | Generic runtime contains no profile-specific SRCR/baseline/operation-routing logic and is not modified from profile branches. |
+
+The sequential amendment governs progression even where the original dependency list did not explicitly name the immediately preceding gate.
 
 ## PR partition
 
@@ -100,4 +113,4 @@ A profile candidate freeze or deterministic/pre-quality PASS is not SRCR semanti
 
 ## Frozen task/result contract
 
-The machine-readable contract is `gobernanza/contratos/pilot_srcr_unified_execution_task_contract_v1.json` in the same PR. G03/G04 do not close from prose alone; runtime/database implementation and exact readback remain separate gates.
+The machine-readable contract is `gobernanza/contratos/pilot_srcr_unified_execution_task_contract_v1.json` in the same PR. Its sections for later gates are frozen contract content, not later-gate execution progress. Runtime/database implementation and exact readback remain separate sequential gates.
