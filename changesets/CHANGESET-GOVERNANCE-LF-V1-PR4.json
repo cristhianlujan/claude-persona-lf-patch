@@ -1,0 +1,18 @@
+{
+  "paths": {
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py": "CI",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_change_family_registry_v1.json": "CI",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_changeset_governance.py": "CI",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py": "CI",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py": "CI",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_changeset_governance_v1.py": "TEST",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py": "TEST",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py": "TEST",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_p0_external_applicability_entrypoint.py": "TEST",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_s26_reconcile_workflow_ownership.py": "TEST",
+    "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md": "DOC",
+    "sandbox/lf_contract_gate_test/transversal_assets/github_contract_gate_lf/README.md": "DOC",
+    "sandbox/lf_contract_gate_test/transversal_assets/migration_source_parity/README.md": "DOC"
+  },
+  "solution_ref": "CHANGESET-GOVERNANCE-LF-V1-PR4"
+}

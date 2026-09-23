@@ -12,6 +12,10 @@ Alias operativo: `lf-contract-check`.
 `GITHUB_CONTRACT_GATE_LF` es el consumer/orchestrator canónico del workflow `.github/workflows/lf-contract-check.yml`.
 No es un segundo engine de gates. Resuelve policies, aplica el Router de CI, traduce `required_controls` al manifest declarativo y delega ejecución al engine transversal existente.
 
+## Consumo de CHANGESET_GOVERNANCE
+
+La revisión candidata `CHANGESET_GOVERNANCE_LF_V1` no cambia el rol de `GITHUB_CONTRACT_GATE_LF`. El workflow consume el reporte `REPORT_ONLY` producido por el Router existente, usa sus familias para resolver `required_controls` y mantiene el judge semántico fuera de esta clasificación determinística. No se crea un segundo gate engine ni se modifica el estado live del activo durante la revisión (R4).
+
 ## Cuándo consumirlo
 
 En cualquier cambio gobernado por `lf-contract-check`, antes de declarar el lote `PASS_CLOSED` o equivalente.

@@ -214,8 +214,8 @@ def _is_p0_exact_head_external_owner(path: str) -> bool:
     return path.startswith(P0_EXACT_HEAD_EXTERNAL_PREFIX) or path in P0_EXACT_HEAD_EXTERNAL_EXACT
 
 
-def _is_known_shared(path: str, product_known: bool, shared_known: bool) -> bool:
-    if product_known or shared_known:
+def _is_known_shared(path: str, product_known: bool, shared_known: bool, family_known: bool = False) -> bool:
+    if product_known or shared_known or family_known:
         return True
     if path.startswith(CI_ROUTER_PREFIX):
         return True
@@ -239,10 +239,21 @@ def classify(
     *,
     registry_data: Mapping[str, Any] | None = None,
     shared_registry_data: Mapping[str, Any] | None = None,
+    family_by_path: Mapping[str, str] | None = None,
+    family_controls: Mapping[str, Iterable[str]] | None = None,
 ) -> LaneDecision:
     changed = tuple(sorted({p.strip() for p in paths if p and p.strip()}))
     if not changed:
-        return _fail_closed("DEEP_SHARED_EMPTY_FAIL_CLOSED", "NO_CHANGED_PATHS")
+        return LaneDecision(
+            mode="CLASSIFICATION_REQUIRED",
+            migration_parity_required=False,
+            input_governance_parity_required=False,
+            ci_router_selftest_required=False,
+            p0_exact_head_external_required=False,
+            deep_shared=True,
+            reasons=("NO_CHANGED_PATHS",),
+            required_controls=(),
+        )
 
     try:
         registry = _registry_for(registry_data)
@@ -263,6 +274,8 @@ def classify(
     product_namespaces: set[str] = set()
     required_controls: set[str] = set()
     reasons: list[str] = []
+    declared_families = dict(family_by_path or {})
+    controls_by_family = {key: tuple(values) for key, values in (family_controls or {}).items()}
 
     for path in changed:
         try:
@@ -271,10 +284,14 @@ def classify(
             return _fail_closed("DEEP_SHARED_REGISTRY_INVALID", f"PRODUCT_REGISTRY_INVALID:{exc.code}")
         shared_control = shared_registry.match(path)
 
-        if path.startswith(MIGRATION_PREFIX) or path in {MIGRATION_VALIDATOR, MIGRATION_TRANSPORT_TEST}:
+        if path.startswith(MIGRATION_PREFIX):
             migration = True
             required_controls.add(CONTROL_MIGRATION_SOURCE_PARITY)
             reasons.append(f"MIGRATION:{path}")
+        if path in {MIGRATION_VALIDATOR, MIGRATION_TRANSPORT_TEST}:
+            selftest = True
+            required_controls.add(CONTROL_CI_ROUTER_SELFTEST)
+            reasons.append(f"MIGRATION_CONTROL_SOURCE_SELFTEST:{path}")
         if _is_input_governance_migration(path) or path == INPUT_GOV_VALIDATOR:
             input_gov = True
             required_controls.add(CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY)
@@ -312,27 +329,30 @@ def classify(
                 unknown = True
                 reasons.append(f"UNKNOWN_PRODUCT_LANE:{product_lane.lane_id}:{path}")
 
+        declared_family = declared_families.get(path)
+        if declared_family is not None:
+            family_required = tuple(controls_by_family.get(declared_family, ()))
+            required_controls.update(family_required)
+            migration = migration or CONTROL_MIGRATION_SOURCE_PARITY in family_required
+            input_gov = input_gov or CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY in family_required
+            selftest = selftest or CONTROL_CI_ROUTER_SELFTEST in family_required
+            p0_external = p0_external or CONTROL_P0_EXACT_HEAD_EXTERNAL in family_required
+            reasons.append(f"CHANGE_FAMILY:{declared_family}:{path}")
+
         if not _is_known_shared(
             path,
             product_lane is not None and product_lane.known,
             shared_control is not None,
+            declared_family is not None,
         ) and not path.startswith(MIGRATION_PREFIX):
             unknown = True
             reasons.append(f"UNKNOWN:{path}")
 
     if unknown:
-        migration = True
-        input_gov = True
-        p0_external = True
         deep_shared = True
-        required_controls.update((
-            CONTROL_MIGRATION_SOURCE_PARITY,
-            CONTROL_INPUT_GOVERNANCE_MIGRATION_PARITY,
-            CONTROL_P0_EXACT_HEAD_EXTERNAL,
-        ))
 
     if unknown:
-        mode = "DEEP_SHARED_UNKNOWN"
+        mode = "CLASSIFICATION_REQUIRED"
     elif migration or input_gov or p0_external:
         mode = "SPECIALIZED_REQUIRED"
     elif selftest:

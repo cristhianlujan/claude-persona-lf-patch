@@ -101,14 +101,14 @@ def test_profile_change_does_not_select_database_bootstrap() -> None:
     assert_not(got, "DB_CANDIDATE_APPLY_ROLLBACK", "REMOTE_SCHEMA_REPRODUCIBILITY", "V7_RUNTIME_REGRESSION")
 
 
-def test_unknown_surface_fails_closed_to_full_regression() -> None:
+def test_unknown_surface_reports_classification_without_full_regression() -> None:
     path = "mystery/new_surface.xyz"
-    got = plan([path], {path: "x"}, mode="DEEP_SHARED_UNKNOWN")
-    assert got["full_regression"] is True
-    assert got["full_regression_reason"] == "UNKNOWN_SCOPE_FAIL_CLOSED"
-    assert "DB_CANDIDATE_APPLY_ROLLBACK" not in got["required_controls"]
-    assert "POLICY_RESOLVER_REGRESSION" not in got["required_controls"]
-    assert "P0_FAST_DOCS" not in got["required_controls"]
+    got = plan([path], {path: "x"}, mode="CLASSIFICATION_REQUIRED", lane=())
+    assert got["full_regression"] is False
+    assert got["full_regression_reason"] is None
+    assert "MIGRATION_SOURCE_PARITY" not in got["required_controls"]
+    assert "P0_EXACT_HEAD_EXTERNAL" not in got["required_controls"]
+    assert any(row.get("state") == "CLASSIFICATION_REQUIRED_REPORT_ONLY" for row in got["material_evidence"])
     assert len(got["required_controls"]) + len(got["not_applicable_controls"]) == len(got["control_universe"])
 
 
@@ -172,8 +172,10 @@ def test_contract_carrier_self_change_is_scoped() -> None:
     assert got["full_regression"] is False
     assert got["carrier_regression"] is True
     assert got["carrier_regression_carriers"] == ["LF_CONTRACT_CHECK"]
-    expected = full_controls_for_carrier("LF_CONTRACT_CHECK")
+    expected = full_controls_for_carrier("LF_CONTRACT_CHECK") - {"MIGRATION_SOURCE_PARITY", "INPUT_GOVERNANCE_MIGRATION_PARITY"}
     assert set(got["carrier_controls"]["LF_CONTRACT_CHECK"]) == expected
+    assert "MIGRATION_SOURCE_PARITY" not in got["required_controls"]
+    assert "INPUT_GOVERNANCE_MIGRATION_PARITY" not in got["required_controls"]
     assert "VALIDATE_LF_PACKS" not in got["carrier_controls"]
     assert "LF_BOOTSTRAP_REPRODUCIBILITY" not in got["carrier_controls"]
 
@@ -280,7 +282,7 @@ def main() -> None:
         test_policy_resolver_migration_is_precise_and_candidate_bound,
         test_v7_material_selects_v7_regression,
         test_profile_change_does_not_select_database_bootstrap,
-        test_unknown_surface_fails_closed_to_full_regression,
+        test_unknown_surface_reports_classification_without_full_regression,
         test_router_self_change_forces_full_regression,
         test_global_authority_change_dominates_carrier_regression,
         test_validate_packs_carrier_self_change_is_scoped,

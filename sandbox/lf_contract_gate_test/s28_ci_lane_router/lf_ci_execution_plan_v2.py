@@ -19,6 +19,7 @@ SCHEMA_VERSION = "lf-ci-execution-plan/v2"
 REGISTRY_VERSION = "lf-ci-control-impact-registry/v2"
 REGISTRY_PATH = Path(__file__).with_name("lf_ci_control_impact_registry_v2.json")
 SELF_PREFIX = "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
+APPLICABILITY_SCOPED_CONTROLS = frozenset({"MIGRATION_SOURCE_PARITY", "INPUT_GOVERNANCE_MIGRATION_PARITY"})
 CARRIER_SELF_PATHS = {
     ".github/workflows/lf-contract-check.yml": "LF_CONTRACT_CHECK",
     ".github/workflows/validate-lf-packs.yml": "VALIDATE_LF_PACKS",
@@ -176,11 +177,12 @@ def build_plan(
     force_full: bool = False,
     force_full_reason: str | None = None,
     source_ref: str | None = None,
+    classified_paths: Iterable[str] = (),
 ) -> dict[str,Any]:
     control_universe, full_regression_controls, controls = load_registry()
     by_id = {c.control_id:c for c in controls}
     changed = tuple(sorted({p.strip() for p in changed_paths if isinstance(p,str) and p.strip()}))
-    if not changed and not force_full:
+    if not changed and not force_full and lane_mode != "CLASSIFICATION_REQUIRED":
         force_full = True
         force_full_reason = force_full_reason or "NO_CHANGED_PATHS_FAIL_CLOSED"
 
@@ -195,6 +197,7 @@ def build_plan(
         if p in CARRIER_SELF_PATHS
     }))
     unknown_lane = lane_mode.startswith("DEEP_SHARED_UNKNOWN")
+    classification_required = lane_mode == "CLASSIFICATION_REQUIRED"
     full_regression = bool(force_full or authority_self_change or unknown_lane)
     full_reason = (
         force_full_reason
@@ -213,7 +216,7 @@ def build_plan(
     required: set[str] = set(lane_required_controls)
     reason_map: dict[str,set[str]] = {cid:set() for cid in control_universe}
     material_evidence: list[dict[str,Any]] = []
-    handled_paths: set[str] = set()
+    handled_paths: set[str] = {p for p in classified_paths if p in changed}
 
     # Material/path applicability is always evaluated, including during a
     # full regression. Full regression adds reusable controls; it must never
@@ -235,8 +238,12 @@ def build_plan(
         material_evidence.append(evidence)
 
     if full_regression:
-        required.update(full_regression_controls)
-        for cid in full_regression_controls:
+        eligible_full = tuple(
+            cid for cid in full_regression_controls
+            if cid not in APPLICABILITY_SCOPED_CONTROLS or cid in required
+        )
+        required.update(eligible_full)
+        for cid in eligible_full:
             reason_map[cid].add(f"FULL_REGRESSION:{full_reason}")
     else:
         if carrier_regression:
@@ -244,6 +251,7 @@ def build_plan(
                 cid
                 for cid in full_regression_controls
                 if by_id[cid].carrier in carrier_self_changes
+                and (cid not in APPLICABILITY_SCOPED_CONTROLS or cid in required)
             ))
             if not carrier_full_controls:
                 raise PlanError(
@@ -260,14 +268,23 @@ def build_plan(
         # mapped by the declarative impact registry. If that mapping drifts,
         # the path remains unhandled and the plan fails closed to global full.
         unhandled = sorted(set(changed)-handled_paths)
-        if unhandled:
+        if unhandled and classification_required:
+            material_evidence.append({
+                "unmapped_paths": unhandled,
+                "state": "CLASSIFICATION_REQUIRED_REPORT_ONLY",
+            })
+        elif unhandled:
             full_regression = True
             full_reason = "UNMAPPED_CHANGED_PATH_FAIL_CLOSED"
             carrier_regression = False
             carrier_regression_reason = None
             carrier_self_changes = ()
-            required.update(full_regression_controls)
-            for cid in full_regression_controls:
+            eligible_full = tuple(
+                cid for cid in full_regression_controls
+                if cid not in APPLICABILITY_SCOPED_CONTROLS or cid in required
+            )
+            required.update(eligible_full)
+            for cid in eligible_full:
                 reason_map[cid].add(f"FULL_REGRESSION:{full_reason}")
             material_evidence.append({"unmapped_paths":unhandled,"state":"FAIL_CLOSED_TO_FULL"})
 
@@ -279,6 +296,8 @@ def build_plan(
         if control is None:
             continue
         for dep in control.dependencies:
+            if dep in APPLICABILITY_SCOPED_CONTROLS and dep not in required:
+                continue
             if dep not in required:
                 required.add(dep)
                 pending.append(dep)

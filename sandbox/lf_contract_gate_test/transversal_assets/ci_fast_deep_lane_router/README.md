@@ -2,6 +2,8 @@
 
 Capability transversal LF: `CI_FAST_DEEP_LANE_ROUTER` / `TRANSVERSAL_CI_FAST_DEEP_LANE_ROUTER`.
 
+Revisión candidata `CHANGESET_GOVERNANCE_LF_V1`: evoluciona este mismo activo hacia el nombre canónico `TRANSVERSAL_CHANGESET_GOVERNANCE` sin cambiar `codigo_activo` ni crear un segundo Router. El activo vigente permanece `ACTIVO / ACTIVE_SHARED_ENFORCEMENT` hasta promoción y readback autorizados (R4).
+
 ## Estado
 
 - Estado operativo esperado: `ACTIVO`
@@ -76,7 +78,7 @@ El plan combina:
 
 Reglas:
 
-- cambio desconocido o no mapeado → full regression global reusable;
+- cambio desconocido o no clasificado → `CLASSIFICATION_REQUIRED` en `REPORT_ONLY`; nunca activa `MIGRATION_SOURCE_PARITY`, Input Governance parity ni P0 por fallback;
 - cambio bajo la propia autoridad del Router/aplicabilidad → full regression global reusable;
 - cambio de uno o más workflows carrier → regresión completa **solo de los carriers modificados**, más triggers path/material y closure recursivo de dependencias;
 - si un workflow carrier pierde su matcher declarativo, el path queda no manejado y vuelve a full global fail-closed;
@@ -84,6 +86,12 @@ Reglas:
 - una dependencia requerida se agrega automáticamente al plan, incluso si cruza de carrier;
 - un control desconocido emitido por el Router bloquea;
 - ninguna ruta puede degradarse silenciosamente a FAST.
+
+## Revisión candidata CHANGESET_GOVERNANCE
+
+La revisión candidata consume `lf_change_family_registry_v1.json` y, cuando existe, exactamente un manifiesto `changesets/<solution_ref>.json`. Las familias fijas no son sobrescribibles; el manifiesto clasifica únicamente las rutas restantes. `PR_INTEGRITY` reporta archivos no declarados, múltiples soluciones, familias inválidas y overrides de familia fija. En V1 el resultado es `REPORT_ONLY` y no juzga calidad semántica.
+
+La clasificación se integra en `lf_ci_lane_router.py`; no existe un segundo motor de routing. Una ruta `MIGRATION` activa el control de migraciones por aplicabilidad propia. Una ruta desconocida sin manifiesto queda `CLASSIFICATION_REQUIRED` sin heredar controles no relacionados.
 
 ## Migraciones de base de datos
 

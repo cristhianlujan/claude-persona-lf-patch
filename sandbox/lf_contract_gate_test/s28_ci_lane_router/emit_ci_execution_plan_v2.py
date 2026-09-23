@@ -14,6 +14,7 @@ HERE = Path(__file__).resolve().parent
 ROUTER_PATH = HERE / "lf_ci_lane_router.py"
 PLAN_PATH = HERE / "lf_ci_execution_plan_v2.py"
 CURRENTNESS_PATH = HERE / "lf_ci_currentness_bridge_v1.py"
+CHANGESET_PATH = HERE / "lf_changeset_governance.py"
 
 
 def _load(path: Path, name: str):
@@ -29,6 +30,7 @@ def _load(path: Path, name: str):
 ROUTER = _load(ROUTER_PATH, "lf_ci_lane_router_runtime")
 PLAN = _load(PLAN_PATH, "lf_ci_execution_plan_v2_runtime")
 CURRENTNESS = _load(CURRENTNESS_PATH, "lf_ci_currentness_bridge_v1_runtime")
+CHANGESET = _load(CHANGESET_PATH, "lf_changeset_governance_runtime")
 
 
 def parser() -> argparse.ArgumentParser:
@@ -71,16 +73,28 @@ def main() -> int:
         force_full = True
         force_reason = force_reason or "MAIN_PUSH_FULL_REGRESSION"
 
-    lane = ROUTER.classify(changed)
+    changeset = CHANGESET.evaluate(repo_root=repo, changed_paths=changed)
+    lane = ROUTER.classify(
+        changed,
+        family_by_path=changeset["family_by_path"],
+        family_controls=changeset["family_controls"],
+    )
+    effective_lane_mode = (
+        "CLASSIFICATION_REQUIRED"
+        if changeset["classification_required_paths"]
+        else lane.mode
+    )
     plan = PLAN.build_plan(
         changed_paths=changed,
         lane_required_controls=lane.required_controls,
-        lane_mode=lane.mode,
+        lane_mode=effective_lane_mode,
         repo_root=repo,
         force_full=force_full,
         force_full_reason=force_reason,
         source_ref=args.head or None,
+        classified_paths=changeset["family_by_path"].keys(),
     )
+    plan["changeset_governance"] = changeset
     applicability_sha256 = plan["plan_sha256"]
     current_revision = args.authority_current_revision or args.base or args.head
     if not current_revision:
@@ -134,6 +148,7 @@ def main() -> int:
             "validate_packs_controls_json": json.dumps(carrier.get("VALIDATE_LF_PACKS", []), separators=(",", ":")),
             "bootstrap_controls_json": json.dumps(carrier.get("LF_BOOTSTRAP_REPRODUCIBILITY", []), separators=(",", ":")),
             "changed_paths_json": json.dumps(plan["changed_paths"], separators=(",", ":")),
+            "changeset_governance_json": json.dumps(plan["changeset_governance"], separators=(",", ":"), sort_keys=True),
         }
         with gh_out.open("a", encoding="utf-8") as handle:
             for key, value in values.items():
@@ -150,6 +165,8 @@ def main() -> int:
         "required_controls": plan["required_controls"],
         "changed_paths": plan["changed_paths"],
         "coverage_complete": plan["coverage_complete"],
+        "changeset_result": plan["changeset_governance"]["result"],
+        "changeset_mode": plan["changeset_governance"]["mode"],
     }, sort_keys=True))
     return 0
 

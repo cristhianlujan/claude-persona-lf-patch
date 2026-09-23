@@ -23,8 +23,9 @@ def main() -> None:
     assert repaired_delta.deep_shared is False, repaired_delta
 
     lookalike = classify([workflow + ".bak"])
-    assert lookalike.mode == "DEEP_SHARED_UNKNOWN", lookalike
-    assert lookalike.p0_exact_head_external_required is True, lookalike
+    assert lookalike.mode == "CLASSIFICATION_REQUIRED", lookalike
+    assert lookalike.p0_exact_head_external_required is False, lookalike
+    assert lookalike.migration_parity_required is False, lookalike
     assert lookalike.deep_shared is True, lookalike
 
     print("PASS_S26_RECONCILE_WORKFLOW_OWNERSHIP=11/11")

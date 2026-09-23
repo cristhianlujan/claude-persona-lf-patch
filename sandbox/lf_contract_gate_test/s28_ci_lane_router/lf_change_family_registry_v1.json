@@ -1,0 +1,50 @@
+{
+  "registry_version": "LF_CHANGE_FAMILY_REGISTRY_V1",
+  "fixed_families": [
+    {
+      "family": "MIGRATION",
+      "matchers": [
+        {"kind": "prefix", "value": "supabase/migrations/"}
+      ]
+    },
+    {
+      "family": "CHANGESET_MANIFEST",
+      "matchers": [
+        {"kind": "prefix", "value": "changesets/"}
+      ]
+    },
+    {
+      "family": "SERVICE",
+      "matchers": [
+        {"kind": "prefix", "value": "services/"}
+      ]
+    }
+  ],
+  "manifest_families": [
+    "ADAPTER",
+    "CARD",
+    "CI",
+    "DOC",
+    "GOVERNANCE",
+    "OTHER",
+    "PROFILE",
+    "SANDBOX",
+    "SKILL",
+    "TEST"
+  ],
+  "family_controls": {
+    "MIGRATION": ["MIGRATION_SOURCE_PARITY"],
+    "CHANGESET_MANIFEST": ["CI_ROUTER_SELFTEST"],
+    "SERVICE": [],
+    "ADAPTER": [],
+    "CARD": [],
+    "CI": [],
+    "DOC": [],
+    "GOVERNANCE": [],
+    "OTHER": [],
+    "PROFILE": [],
+    "SANDBOX": [],
+    "SKILL": [],
+    "TEST": []
+  }
+}
