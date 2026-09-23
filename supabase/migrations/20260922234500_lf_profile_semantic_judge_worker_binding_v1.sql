@@ -32,7 +32,7 @@ update public.lf_operation_step_contracts
 set resolver_ref='HETZNER_INDEPENDENT_SEMANTIC_JUDGE_WORKER_V1',
     notes='Physical consumer: services/profile_runtime_api/scripts/semantic_judge_worker.py via lf-profile-semantic-judge-worker.service. The worker executes one fresh isolated model call after clean output_validate, loads the profile semantic_judge_binding.json, validates the independent receipt deterministically, and records through lf_record_profile_execution_step_v1. Supabase remains operational authority; profile judge contract remains semantic authority.',
     updated_at=clock_timestamp(),
-    updated_by_execution_id='EXEC-M14-SRCR-V06-LIFECYCLE-20260922-001'
+    updated_by_execution_id='EXEC-PROFILE-SEMANTIC-JUDGE-WIRING-20260922-001'
 where operation_code='EJECUCION_PERFIL_LF'
   and step_id='semantic_judge'
   and status='ACTIVE_ENFORCEMENT';
@@ -52,7 +52,7 @@ set source_paths=(
       ) as u(p)
     ),
     updated_at=clock_timestamp(),
-    updated_by_execution_id='EXEC-M14-SRCR-V06-LIFECYCLE-20260922-001'
+    updated_by_execution_id='EXEC-PROFILE-SEMANTIC-JUDGE-WIRING-20260922-001'
 where operation_code='EJECUCION_PERFIL_LF';
 
 do $post$
