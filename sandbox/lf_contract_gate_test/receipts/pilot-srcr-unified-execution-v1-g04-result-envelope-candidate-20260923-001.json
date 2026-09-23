@@ -49,5 +49,16 @@
   "production_applied": false,
   "creacion_perfil_lf_touched": false,
   "architecture_verdict_declared": false,
-  "srcr_v06_quality_verdict_declared": false
+  "srcr_v06_quality_verdict_declared": false,
+  "closure_readback": {
+    "verified_exact_head": "55cc35e0ae0b6d501a4fe99e7cbb5ee3676cfd39",
+    "validate_lf_packs_run": 35894561698,
+    "lf_bootstrap_run": 35894561407,
+    "lf_contract_check_run": 35894561631,
+    "validate_lf_packs_job": 107295134651,
+    "work_protocol_tombstone": "SKIPPED",
+    "blocker_count": 0,
+    "gate_progress_pct": 100,
+    "next_gate_after_closure": "G05_CLAIM_LEASE_FENCE"
+  }
 }
