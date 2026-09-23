@@ -24,7 +24,8 @@ Return `PASS_TO_QUALITY_PACK` only when:
 - all independently observed candidate changes are reconciled against both producer-declared delta and authorized scope;
 - no material open design decision remains;
 - no blocking condition remains.
-- when material research is applicable, the digest-bound pre-research baseline and incremental-value delta have passed independent semantic review; MATERIAL_UPLIFT is independently substantiated or NO_MATERIAL_UPLIFT is accepted without forcing novelty, and UNPROVEN is absent.
+- when material research is applicable, the digest-bound pre-research baseline and incremental-value delta have passed independent semantic review; MATERIAL_UPLIFT is independently substantiated or NO_MATERIAL_UPLIFT is accepted without forcing novelty, and UNPROVEN is absent;
+- for V0.4, current repair disposition, all material quantitative decisions and any applicable material process graph pass the independent semantic checks; a valid `NO_REPAIR_REQUIRED` is accepted as a positive evidence-bound outcome rather than forced into a repair spec.
 
 Producer assertions such as `handoff_ready=true`, `open_design_decisions=[]`, selected alternative, declared implementation delta or research URLs are inputs to review, never proof of closure.
 
@@ -53,9 +54,9 @@ Score never overrides a BLOCK condition.
 ## Experiment boundary
 Sandbox B does not yet alter the profile's existing 12 omission dimensions, 8 falsification families, or producer architecture. It changes only the semantic-judge contract and its independent scope/change reconciliation.
 
-## V0.3 canonical quality receipt
+## V0.3/V0.4 canonical quality receipt
 
-For SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3, this same mini-judge remains the single canonical quality gate. No second judge is introduced.
+For SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3 and SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4, this same mini-judge remains the single canonical quality gate. No second judge is introduced.
 
 The independent semantic result is the semantic decision input. The final quality decision is materialized as SRCR_QUALITY_RECEIPT_V1 and is valid only when validators/validate_quality_receipt.py proves all exact bindings:
 

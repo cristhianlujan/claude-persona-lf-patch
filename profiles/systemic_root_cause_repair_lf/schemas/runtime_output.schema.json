@@ -14,7 +14,10 @@
       ]
     },
     "profile_pack_id": {
-      "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+      "enum": [
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+      ]
     },
     "solution_depth": {
       "type": "object",
@@ -601,6 +604,15 @@
           ]
         }
       }
+    },
+    "repair_disposition": {
+      "type": "object"
+    },
+    "quantitative_decisions": {
+      "type": "array"
+    },
+    "material_process_graph": {
+      "type": "object"
     }
   },
   "allOf": [
