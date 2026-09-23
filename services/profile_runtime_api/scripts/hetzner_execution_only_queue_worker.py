@@ -3,16 +3,18 @@
 
 ACT-0001 routing is frozen upstream at queue ingress. This active worker verifies
 that immutable envelope, materializes only the exact adapter capsule refs already
-resolved by the Router, and delegates the remaining transport/model/recording flow
-to the existing queue-worker implementation.
+resolved by the Router, and owns its runtime control flow directly.
 
-No Router call, adapter discovery query, profile discovery query, policy selection,
-or lifecycle decision is allowed here.
+The historical worker is imported only as an allowlisted implementation library for
+transport/model/evidence helpers. Its claim, Router resolution, adapter discovery,
+profile discovery, run_once and main control flow are never called or monkeypatched.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +22,11 @@ import psycopg
 from psycopg.types.json import Jsonb
 
 import hetzner_queue_worker as legacy
+
+try:
+    from .runtime_envelope_materializer import materialize_router_advisory_envelope
+except ImportError:  # direct script execution under systemd
+    from runtime_envelope_materializer import materialize_router_advisory_envelope
 
 TABLE = legacy.TABLE
 PROVIDER = legacy.PROVIDER
@@ -331,10 +338,89 @@ def _begin_governed_pre_model(
     }
 
 
+def run_once() -> bool:
+    conn = legacy._connect()
+    request_id: str | None = None
+    try:
+        legacy._reconcile_governed_pending(conn)
+        claimed = _claim(conn)
+        if claimed is None:
+            return False
+        request_id = claimed["request_id"]
+        governed = _begin_governed_pre_model(conn, claimed)
+        baseline_first = governed.get("baseline_first") or {}
+        if baseline_first.get("outcome") == "BASELINE_REQUIRED":
+            baseline_accepted = legacy._api_json(
+                "POST",
+                "/v1/profile/research-baseline",
+                legacy._baseline_api_payload(claimed, governed),
+            )
+            baseline_job_id = baseline_accepted.get("job_id")
+            if not isinstance(baseline_job_id, str) or not baseline_job_id:
+                raise RuntimeError("HETZNER_BASELINE_API_JOB_ID_MISSING")
+            baseline_job = legacy._wait_job(baseline_job_id)
+            baseline_envelope = legacy._baseline_envelope_from_job(baseline_job)
+            legacy._persist_required_baseline(conn, governed, baseline_envelope)
+        elif baseline_first.get("outcome") != "STEP_RECORDED":
+            raise RuntimeError(
+                "HETZNER_GOVERNED_BASELINE_HANDSHAKE_INVALID:"
+                + str(baseline_first.get("outcome") or baseline_first.get("code") or "UNKNOWN")
+            )
+
+        model_governance = legacy._read_model_governance(conn, governed)
+        envelope = claimed.get("runtime_request_envelope")
+        if envelope is not None:
+            envelope = materialize_router_advisory_envelope(
+                request_id,
+                envelope,
+                live_adapter_sources=claimed.get("lf_adapter_sources") or [],
+            )
+            payload = legacy._validate_envelope(request_id, envelope)
+            if "artifact_set" in payload:
+                endpoint = "/v1/profile/artifact-set-execute"
+                route = "GOVERNED_NONCANONICAL_ARTIFACT_SET"
+            else:
+                endpoint = "/v1/profile/execute"
+                route = "GOVERNED_ENVELOPE"
+        else:
+            payload = legacy._queue_native_payload(claimed)
+            endpoint = "/v1/profile/queue-execute"
+            route = "QUEUE_NATIVE"
+        payload = legacy._attach_governed_operation(payload, model_governance)
+        accepted = legacy._api_json("POST", endpoint, payload)
+        job_id = accepted.get("job_id")
+        if not isinstance(job_id, str) or not job_id:
+            raise RuntimeError("HETZNER_API_JOB_ID_MISSING")
+        job = legacy._wait_job(job_id)
+        legacy._persist_success(conn, request_id, job, claimed=claimed, governed=governed)
+        print(f"HETZNER_QUEUE_REQUEST_ID={request_id}")
+        print(f"HETZNER_QUEUE_ROUTE={route}")
+        print(f"HETZNER_QUEUE_JOB_ID={job_id}")
+        print(f"HETZNER_QUEUE_STATUS={job.get('status')}")
+        return True
+    except Exception as exc:
+        if request_id is not None:
+            try:
+                legacy._persist_failure(conn, request_id, exc)
+            except Exception:
+                conn.rollback()
+        print(f"HETZNER_QUEUE_ERROR={type(exc).__name__}:{str(exc)[:500]}", flush=True)
+        return True
+    finally:
+        conn.close()
+
+
 def main() -> int:
-    legacy._claim = _claim
-    legacy._begin_governed_pre_model = _begin_governed_pre_model
-    return legacy.main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--daemon", action="store_true")
+    parser.add_argument("--idle-seconds", type=float, default=3.0)
+    args = parser.parse_args()
+    if not args.daemon:
+        return 0 if run_once() else 4
+    while True:
+        did_work = run_once()
+        if not did_work:
+            time.sleep(max(0.5, args.idle_seconds))
 
 
 if __name__ == "__main__":
