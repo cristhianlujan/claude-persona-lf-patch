@@ -61,10 +61,11 @@
     "closure_evidence_commit": "4132debbff5c52cad2ce2ed998edca97103f04f3",
     "clarification_commit": "e0a0d713e1026b735b0c946c2a8e4aa6b9921836",
     "current_head_ci": {
-      "validate_lf_packs_run": 35895636830,
-      "lf_bootstrap_run": 35895636838,
-      "lf_contract_check_run": 35895637015,
-      "validate_lf_packs_job": 107298750494,
+      "exact_head": "a5e625326ff157adb223757a84e04632d6b804b6",
+      "validate_lf_packs_run": 35896117514,
+      "lf_bootstrap_run": 35896117484,
+      "lf_contract_check_run": 35896117480,
+      "validate_lf_packs_job": 107300333346,
       "all_required_workflows": "SUCCESS"
     },
     "gate_progress_pct": 100,
