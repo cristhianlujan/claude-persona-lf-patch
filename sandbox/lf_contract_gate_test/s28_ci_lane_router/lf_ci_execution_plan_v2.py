@@ -18,10 +18,13 @@ SCHEMA_VERSION = "lf-ci-execution-plan/v2"
 REGISTRY_VERSION = "lf-ci-control-impact-registry/v2"
 REGISTRY_PATH = Path(__file__).with_name("lf_ci_control_impact_registry_v2.json")
 SELF_PREFIX = "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
+RETIRED_CONTROL_IDS = frozenset({"REMOTE_SCHEMA_REPRODUCIBILITY"})
+RETIRED_CARRIERS = frozenset({"LF_BOOTSTRAP_REPRODUCIBILITY"})
+RETIRED_WORKFLOW_PATHS = frozenset({".github/workflows/lf-bootstrap-reproducibility.yml"})
 CARRIER_SELF_PATHS = {
     ".github/workflows/lf-contract-check.yml": "LF_CONTRACT_CHECK",
     ".github/workflows/validate-lf-packs.yml": "VALIDATE_LF_PACKS",
-    ".github/workflows/lf-bootstrap-reproducibility.yml": "LF_BOOTSTRAP_REPRODUCIBILITY",
+    ".github/workflows/lf-db-regression.yml": "LF_DB_REGRESSION",
 }
 CANONICAL_CARRIERS = frozenset(CARRIER_SELF_PATHS.values())
 PLAN_HASH_FIELDS = (
@@ -101,11 +104,15 @@ def load_registry(path: Path = REGISTRY_PATH) -> tuple[tuple[str, ...], tuple[Im
         carrier = raw["carrier"]
         if not isinstance(cid, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]*", cid):
             raise PlanError(f"FAIL_CI_IMPACT_CONTROL_ID:{cid!r}")
+        if cid in RETIRED_CONTROL_IDS:
+            raise PlanError(f"FAIL_CI_RETIRED_CONTROL_REINTRODUCED:{cid}")
         if cid in seen:
             raise PlanError(f"FAIL_CI_IMPACT_CONTROL_DUPLICATE:{cid}")
         seen.add(cid)
         if not isinstance(carrier, str) or carrier not in CANONICAL_CARRIERS:
             raise PlanError(f"FAIL_CI_IMPACT_CARRIER:{cid}")
+        if carrier in RETIRED_CARRIERS:
+            raise PlanError(f"FAIL_CI_RETIRED_CARRIER_REINTRODUCED:{carrier}:{cid}")
         pm = raw["path_matchers"]
         mm = raw["material_matchers"]
         deps = raw["dependencies"]
@@ -118,6 +125,8 @@ def load_registry(path: Path = REGISTRY_PATH) -> tuple[tuple[str, ...], tuple[Im
                 raise PlanError(f"FAIL_CI_IMPACT_MATCHER_TYPES:{cid}")
             if matcher["kind"] in {"prefix", "exact"} and not _safe_path(matcher["value"]):
                 raise PlanError(f"FAIL_CI_IMPACT_MATCHER_PATH:{cid}")
+            if matcher["kind"] in {"prefix", "exact"} and matcher["value"] in RETIRED_WORKFLOW_PATHS:
+                raise PlanError(f"FAIL_CI_RETIRED_WORKFLOW_MATCHER_REINTRODUCED:{cid}:{matcher['value']}")
             if matcher["kind"] not in {"prefix", "exact", "sql_regex", "path_or_sql_regex"}:
                 raise PlanError(f"FAIL_CI_IMPACT_MATCHER_KIND:{cid}:{matcher['kind']}")
             if matcher["kind"] in {"sql_regex", "path_or_sql_regex"}:
@@ -137,6 +146,9 @@ def load_registry(path: Path = REGISTRY_PATH) -> tuple[tuple[str, ...], tuple[Im
             or any(not isinstance(cid, str) for cid in legacy_full)
         ):
             raise PlanError("FAIL_CI_IMPACT_REGISTRY_LEGACY_FULL_FIELD")
+        retired_legacy = sorted(set(legacy_full) & RETIRED_CONTROL_IDS)
+        if retired_legacy:
+            raise PlanError(f"FAIL_CI_RETIRED_CONTROL_IN_LEGACY_FULL:{retired_legacy}")
         unknown_legacy = sorted(set(legacy_full) - seen)
         if unknown_legacy:
             raise PlanError(f"FAIL_CI_IMPACT_LEGACY_FULL_UNKNOWN_CONTROL:{unknown_legacy}")
@@ -239,10 +251,17 @@ def validate_plan_contract(plan: Mapping[str, Any]) -> None:
     carrier_controls = plan.get("carrier_controls")
     if not isinstance(required, list) or len(required) != len(set(required)) or required != sorted(required):
         raise PlanError("FAIL_CI_PLAN_REQUIRED_CONTROLS")
+    if RETIRED_CONTROL_IDS.intersection(required):
+        raise PlanError("FAIL_CI_RETIRED_CONTROL_IN_REQUIRED_SET")
     if not isinstance(universe, list) or len(universe) != len(set(universe)) or universe != sorted(universe):
         raise PlanError("FAIL_CI_PLAN_CONTROL_UNIVERSE")
+    if RETIRED_CONTROL_IDS.intersection(universe):
+        raise PlanError("FAIL_CI_RETIRED_CONTROL_IN_UNIVERSE")
     if not isinstance(na_rows, list) or not isinstance(carrier_controls, Mapping):
         raise PlanError("FAIL_CI_PLAN_COVERAGE_SHAPE")
+    retired_carriers_present = sorted(RETIRED_CARRIERS.intersection(carrier_controls))
+    if retired_carriers_present:
+        raise PlanError(f"FAIL_CI_RETIRED_CARRIER_IN_PLAN:{retired_carriers_present}")
 
     not_applicable: list[str] = []
     for row in na_rows:
@@ -256,6 +275,8 @@ def validate_plan_contract(plan: Mapping[str, Any]) -> None:
         carrier = row["carrier"]
         if not isinstance(cid, str) or carrier not in CANONICAL_CARRIERS:
             raise PlanError("FAIL_CI_PLAN_NOT_APPLICABLE_ROW")
+        if cid in RETIRED_CONTROL_IDS or carrier in RETIRED_CARRIERS:
+            raise PlanError("FAIL_CI_RETIRED_CONTROL_OR_CARRIER_NOT_APPLICABLE_ROW")
         not_applicable.append(cid)
 
     if sorted(required + not_applicable) != universe or set(required) & set(not_applicable):
@@ -270,8 +291,12 @@ def validate_plan_contract(plan: Mapping[str, Any]) -> None:
     for carrier, controls in carrier_controls.items():
         if carrier not in CANONICAL_CARRIERS:
             raise PlanError(f"FAIL_CI_PLAN_UNKNOWN_CARRIER:{carrier}")
+        if carrier in RETIRED_CARRIERS:
+            raise PlanError(f"FAIL_CI_RETIRED_CARRIER_IN_PLAN:{carrier}")
         if not isinstance(controls, list) or controls != sorted(controls) or len(controls) != len(set(controls)):
             raise PlanError(f"FAIL_CI_PLAN_CARRIER_CONTROLS:{carrier}")
+        if RETIRED_CONTROL_IDS.intersection(controls):
+            raise PlanError(f"FAIL_CI_RETIRED_CONTROL_IN_CARRIER:{carrier}")
         flattened.extend(controls)
     if len(flattened) != len(set(flattened)):
         raise PlanError("FAIL_CI_PLAN_DUPLICATE_CONTROL_CARRIER")
@@ -309,12 +334,17 @@ def build_plan(
     if not changed and not lane_controls:
         raise PlanError("FAIL_CI_PLAN_EMPTY_WITHOUT_APPLICABILITY")
 
+    retired_lane_control = sorted(set(lane_controls) & RETIRED_CONTROL_IDS)
+    if retired_lane_control:
+        raise PlanError(f"FAIL_CI_RETIRED_CONTROL_FROM_ROUTER:{retired_lane_control}")
     unknown_lane_control = sorted(set(lane_controls) - set(control_universe))
     if unknown_lane_control:
         raise PlanError(f"FAIL_CI_PLAN_UNKNOWN_LANE_CONTROL:{unknown_lane_control}")
 
     authority_self_change = any(p.startswith(SELF_PREFIX) for p in changed)
     carrier_self_changes = tuple(sorted({CARRIER_SELF_PATHS[p] for p in changed if p in CARRIER_SELF_PATHS}))
+    if RETIRED_CARRIERS.intersection(carrier_self_changes):
+        raise PlanError("FAIL_CI_RETIRED_CARRIER_SELF_CHANGE")
     full_regression = bool(force_full or authority_self_change)
     full_reason = (
         force_full_reason
@@ -361,6 +391,8 @@ def build_plan(
             reason_map[dep].add(f"DEPENDENCY_OF:{cid}")
 
     required_sorted = sorted(required)
+    if RETIRED_CONTROL_IDS.intersection(required_sorted):
+        raise PlanError("FAIL_CI_RETIRED_CONTROL_IN_REQUIRED_SET")
     not_applicable = [
         {
             "control_id": cid,
@@ -375,6 +407,9 @@ def build_plan(
         carrier_controls.setdefault(by_id[cid].carrier, []).append(cid)
     for values in carrier_controls.values():
         values.sort()
+    retired_carriers_present = sorted(RETIRED_CARRIERS.intersection(carrier_controls))
+    if retired_carriers_present:
+        raise PlanError(f"FAIL_CI_RETIRED_CARRIER_IN_PLAN:{retired_carriers_present}")
 
     plan: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
