@@ -4,7 +4,7 @@ Canonical identity: `FULL_REGRESSION` / `TRANSVERSAL_FULL_REGRESSION`.
 
 ## Estado y Owner
 
-- Owner: `LF_GOVERNANCE_CI`
+- Owner: `LF_GOVERNANCE`
 - Tipo: transversal CI plan consumer/verifier.
 - Estado de esta revisión: candidate / `READY_FOR_PROMOTION` only after deterministic + semantic + exact-head CI proof.
 - `FULL_REGRESSION` is **not** a Router, applicability engine, registry, validator bundle, or carrier.
@@ -23,6 +23,20 @@ It protects these invariants:
 - `PARALLEL_APPLICABILITY_ENGINE = 0`
 - `FAIL_OPEN_CASES = 0`
 - `PARALLEL_ACTIVE_PATHS = 0`
+
+## Cuándo consumirlo
+
+Consume `FULL_REGRESSION` only after Changeset Governance and the canonical execution plan have already resolved applicability for the exact candidate revision. It is appropriate for manual/main verification, authority-change verification, promotion proof and post-merge verification; it is never an applicability fallback.
+
+## Cómo consumirlo
+
+1. obtain the governed `lf-ci-execution-plan/v2`;
+2. verify its currentness/source authority and deterministic `plan_sha256`;
+3. let only the canonical carriers execute their own `carrier_controls`;
+4. collect exactly one compatible `lf-ci-carrier-receipt/v1` per planned carrier;
+5. pass plan + receipts to `full_regression_v1.py`;
+6. require exact `planned == executed`, zero extras, zero duplicates and zero retired controls;
+7. accept `NOT_APPLICABLE` only when `required_controls=[]`, with zero execution.
 
 ## Qué hace
 
@@ -139,7 +153,7 @@ Each required carrier supplies one `lf-ci-carrier-receipt/v1` bound to:
 
 Missing, duplicate, extra, wrong-SHA or wrong-revision receipts block.
 
-## Blocking / NOT_APPLICABLE
+## Fail-closed / límites
 
 Blocking conditions include:
 
@@ -154,11 +168,7 @@ Blocking conditions include:
 
 `NOT_APPLICABLE` is valid only when `required_controls=[]`; it emits zero execution and accepts zero carrier receipts.
 
-## Fail-closed
-
-There is no fallback from invalid evidence to “run everything”.
-
-The sequence is:
+There is no fallback from invalid evidence to “run everything”:
 
 `invalid/unresolved input → BLOCK`
 
@@ -214,6 +224,21 @@ Semantic judge:
 
 - `sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py`
 
+## Superficies canónicas
+
+- `sandbox/lf_contract_gate_test/transversal_assets/full_regression/README.md`
+- `sandbox/lf_contract_gate_test/transversal_assets/full_regression/full_regression_v1.py`
+- `sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_currentness_bridge_v1.py`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_shared_ci_control_ownership_registry_v1.json`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json`
+- `sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md`
+- `.github/workflows/lf-contract-check.yml`
+- `.github/workflows/validate-lf-packs.yml`
+- `.github/workflows/lf-bootstrap-reproducibility.yml`
+
 ## Tests
 
 Deterministic:
@@ -242,6 +267,40 @@ Independent judge:
 `sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py`
 
 It evaluates P1–P8 plus identity, owner, duplicate/orphan responsibility, parallel paths, README, registry, implementation and execution fidelity.
+
+## Validación y readback
+
+Before promotion require:
+
+- deterministic P1–P8 PASS;
+- semantic P1–P8 PASS;
+- E2E A–E PASS;
+- exact-head CI green for the three canonical carriers;
+- README/implementation/registry exact-head readback;
+- `INVALID_RESIDUAL=0`;
+- `UNPLANNED_EXECUTIONS=0`;
+- `DUPLICATE_CONTROL_EXECUTIONS=0`.
+
+After an authorized merge, repeat main readback, Supabase readback, E2E execution and real consumer/receipt verification before `COMPROBADO=YES` is possible.
+
+## No duplicación
+
+Do not create:
+
+- another FULL_REGRESSION;
+- another Router;
+- another applicability engine;
+- another registry;
+- another carrier path;
+- another currentness engine.
+
+Extend the existing authorities and consume their receipts.
+
+## Currentness
+
+`refs/heads/main` remains the moving authority. The source revision recorded for a candidate is historical evidence, not a replacement authority.
+
+`lf_ci_currentness_bridge_v1.py` includes `transversal_assets/full_regression/**` in the CI authority material selectors so a future material change cannot silently bypass currentness evaluation.
 
 ## Relation with CHANGESET_GOVERNANCE_LF_V1
 
