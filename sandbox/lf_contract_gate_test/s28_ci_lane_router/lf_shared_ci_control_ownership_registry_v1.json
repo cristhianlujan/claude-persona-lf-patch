@@ -1,20 +1,140 @@
 {
   "registry_version": "LF_SHARED_CI_CONTROL_OWNERSHIP_V1",
   "controls": [
-    {"control_id":"LF_BOOTSTRAP_REPRODUCIBILITY_WORKFLOW","path":".github/workflows/lf-bootstrap-reproducibility.yml","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"LF_CONTRACT_CHECK_WORKFLOW","path":".github/workflows/lf-contract-check.yml","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"LF_GITHUB_RECONCILE_WORKFLOW","path":".github/workflows/lf-github-reconcile-v3.yml","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"VALIDATE_LF_PACKS_WORKFLOW","path":".github/workflows/validate-lf-packs.yml","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"P0_RUNTIME_CORE","path":"sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_V1.py","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"P0_RUNTIME_ENTRYPOINT","path":"sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"S26_COMMIT_READBACK_CONTROL","path":"sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_binding.py","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"S26_COMMIT_READBACK_BASE_DRIFT_CONTROL","path":"sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_pr_merge_base_drift.py","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"S36_ASSURANCE_COMPLETENESS_GATE","path":"sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"S36_ASSURANCE_COMPLETENESS_GATE_SELFTEST","path":"sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"CI_FAST_DEEP_LANE_ROUTER_README","path":"sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"LF_CONTRACT_CHECK_VALIDATOR","path":"scripts/lf_contract_check.py","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"FULL_REGRESSION_IMPLEMENTATION","path":"sandbox/lf_contract_gate_test/transversal_assets/full_regression/full_regression_v1.py","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"FULL_REGRESSION_README","path":"sandbox/lf_contract_gate_test/transversal_assets/full_regression/README.md","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false},
-    {"control_id":"FULL_REGRESSION_SEMANTIC_JUDGE","path":"sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py","migration_parity_required":false,"input_governance_parity_required":false,"ci_router_selftest_required":true,"p0_exact_head_external_required":false,"deep_shared":false}
+    {
+      "control_id": "LF_DB_REGRESSION_WORKFLOW",
+      "path": ".github/workflows/lf-db-regression.yml",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "LF_CONTRACT_CHECK_WORKFLOW",
+      "path": ".github/workflows/lf-contract-check.yml",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "LF_GITHUB_RECONCILE_WORKFLOW",
+      "path": ".github/workflows/lf-github-reconcile-v3.yml",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "VALIDATE_LF_PACKS_WORKFLOW",
+      "path": ".github/workflows/validate-lf-packs.yml",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "P0_RUNTIME_CORE",
+      "path": "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_CORE_V1.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "P0_RUNTIME_ENTRYPOINT",
+      "path": "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "S26_COMMIT_READBACK_CONTROL",
+      "path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_binding.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "S26_COMMIT_READBACK_BASE_DRIFT_CONTROL",
+      "path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/test_s26_commit_readback_pr_merge_base_drift.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "S36_ASSURANCE_COMPLETENESS_GATE",
+      "path": "sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "S36_ASSURANCE_COMPLETENESS_GATE_SELFTEST",
+      "path": "sandbox/lf_contract_gate_test/test_s36_wp06_ci_completeness_gate.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "CI_FAST_DEEP_LANE_ROUTER_README",
+      "path": "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "LF_CONTRACT_CHECK_VALIDATOR",
+      "path": "scripts/lf_contract_check.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "FULL_REGRESSION_IMPLEMENTATION",
+      "path": "sandbox/lf_contract_gate_test/transversal_assets/full_regression/full_regression_v1.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "FULL_REGRESSION_README",
+      "path": "sandbox/lf_contract_gate_test/transversal_assets/full_regression/README.md",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "FULL_REGRESSION_SEMANTIC_JUDGE",
+      "path": "sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    }
   ]
 }
