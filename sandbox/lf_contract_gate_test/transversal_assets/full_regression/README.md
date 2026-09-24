@@ -1,0 +1,256 @@
+# FULL_REGRESSION
+
+Canonical identity: `FULL_REGRESSION` / `TRANSVERSAL_FULL_REGRESSION`.
+
+## Estado y Owner
+
+- Owner: `LF_GOVERNANCE_CI`
+- Tipo: transversal CI plan consumer/verifier.
+- Estado de esta revisión: candidate / `READY_FOR_PROMOTION` only after deterministic + semantic + exact-head CI proof.
+- `FULL_REGRESSION` is **not** a Router, applicability engine, registry, validator bundle, or carrier.
+
+## Propósito
+
+Verify that a governed CI applicability plan was executed exactly once by its canonical carriers, with compatible receipts and no extra controls.
+
+It protects these invariants:
+
+- `LOCAL_APPLICABILITY_DECISIONS = 0`
+- `PLANNED_CONTROLS = EXECUTED_CONTROLS`
+- `UNPLANNED_EXECUTIONS = 0`
+- `DUPLICATE_CONTROL_EXECUTIONS = 0`
+- `RETIRED_CONTROL_EXECUTIONS = 0`
+- `PARALLEL_APPLICABILITY_ENGINE = 0`
+- `FAIL_OPEN_CASES = 0`
+- `PARALLEL_ACTIVE_PATHS = 0`
+
+## Qué hace
+
+1. consumes the already-resolved `lf-ci-execution-plan/v2`;
+2. validates plan integrity/SHA/currentness contract;
+3. resolves the carrier partition already present in the plan;
+4. consumes one compatible receipt per required canonical carrier;
+5. verifies exact planned/executed equality;
+6. blocks duplicates, retired controls, stale or incompatible receipts;
+7. emits `lf-full-regression-receipt/v1`;
+8. returns `NOT_APPLICABLE` with zero executions when the governed plan contains no controls.
+
+## Qué NO hace
+
+- does not determine Applicability;
+- does not classify paths;
+- does not add controls because the run is “full”;
+- does not execute controls owned by another carrier;
+- does not create another Router;
+- does not create another registry;
+- does not replace Changeset Governance;
+- does not turn an invalid plan into “run everything”;
+- does not manufacture PASS by executing non-applicable controls.
+
+## Authority
+
+Applicability authority:
+
+`CHANGESET_GOVERNANCE_LF_V1 → LF_CI_EXECUTION_PLAN_V2`
+
+Currentness authority:
+
+`CURRENTNESS_AUTHORITY` through `lf_ci_currentness_bridge_v1.py`.
+
+`FULL_REGRESSION` consumes those decisions. It cannot override them.
+
+## Inputs
+
+Required:
+
+- governed `lf-ci-execution-plan/v2`;
+- canonical carrier receipts `lf-ci-carrier-receipt/v1` for every carrier present in `carrier_controls`.
+
+Optional hard guards:
+
+- expected exact source revision;
+- explicit retired-control set.
+
+Input contract is validated before any PASS or `NOT_APPLICABLE` receipt is emitted.
+
+## Outputs
+
+`lf-full-regression-receipt/v1` containing:
+
+- asset/canonical identity;
+- source `plan_sha256`;
+- applicability decision;
+- planned and executed controls;
+- consumed carrier receipt digests;
+- zero-count invariants for unplanned, duplicate, retired, parallel and fail-open execution;
+- deterministic `receipt_sha256`.
+
+## Consumers
+
+Canonical consumers in this candidate are CI self-tests/readback and the promotion proof for the same governed plan. Production/runtime activation is not implied.
+
+The existing workflows remain carriers of their own controls; they are not consumers that delegate execution to `FULL_REGRESSION`.
+
+## Dependencies
+
+Canonical dependencies:
+
+- `CHANGESET_GOVERNANCE_LF_V1`;
+- `CI_FAST_DEEP_LANE_ROUTER`;
+- `LF_CI_EXECUTION_PLAN_V2`;
+- `CURRENTNESS_AUTHORITY`;
+- `lf_ci_control_impact_registry_v2.json`;
+- `lf_shared_ci_control_ownership_registry_v1.json`;
+- the three existing canonical workflow carriers.
+
+No dependency grants local applicability authority to this asset.
+
+## Applicability
+
+`FULL_REGRESSION` may be requested for manual/main/authority-change verification, but the request **never changes the set of controls**.
+
+The governed plan remains the only source of:
+
+- `required_controls`;
+- `not_applicable_controls`;
+- `carrier_controls`;
+- dependency closure.
+
+A legacy `full_regression_controls` field may still exist in the impact registry for compatibility/readback, but its semantics are `HISTORICAL_COMPATIBILITY_IGNORED_FOR_APPLICABILITY`.
+
+## Canonical carriers
+
+Exactly the existing carriers:
+
+- `LF_CONTRACT_CHECK` → `.github/workflows/lf-contract-check.yml`
+- `VALIDATE_LF_PACKS` → `.github/workflows/validate-lf-packs.yml`
+- `LF_BOOTSTRAP_REPRODUCIBILITY` → `.github/workflows/lf-bootstrap-reproducibility.yml`
+
+`FULL_REGRESSION` is not a fourth carrier.
+
+## Receipts
+
+Each required carrier supplies one `lf-ci-carrier-receipt/v1` bound to:
+
+- the same `plan_sha256`;
+- the expected exact source revision when present;
+- exactly its planned control subset;
+- PASS results for those controls.
+
+Missing, duplicate, extra, wrong-SHA or wrong-revision receipts block.
+
+## Blocking / NOT_APPLICABLE
+
+Blocking conditions include:
+
+- plan missing/corrupt/incomplete;
+- unresolved applicability;
+- stale/unready source authority;
+- carrier unknown or missing;
+- receipt missing/incompatible/corrupt;
+- planned/executed mismatch;
+- duplicate control execution;
+- retired control planned/executed.
+
+`NOT_APPLICABLE` is valid only when `required_controls=[]`; it emits zero execution and accepts zero carrier receipts.
+
+## Fail-closed
+
+There is no fallback from invalid evidence to “run everything”.
+
+The sequence is:
+
+`invalid/unresolved input → BLOCK`
+
+not:
+
+`invalid/unresolved input → expand controls`.
+
+## Lifecycle
+
+`CREATE → REGISTER_CANDIDATE → REVIEW → SANDBOX_TEST → READY_FOR_PROMOTION → MERGE_AUTHORIZED → MAIN_READBACK → ACTIVATE_AUTHORIZED → VERIFY → DEPRECATE/ROLLBACK`
+
+This PR may reach `READY_FOR_PROMOTION`. Merge, runtime activation or productive mutation require separate authorization.
+
+## Observability
+
+The receipt exposes deterministic counters:
+
+- local applicability decisions;
+- unplanned executions;
+- duplicate control executions;
+- retired control executions;
+- parallel active paths;
+- fail-open cases.
+
+All must be zero for PASS.
+
+## Registries
+
+Reused canonical registries only:
+
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_shared_ci_control_ownership_registry_v1.json`
+
+Supabase identity registry:
+
+- `public.lf_activos` with `codigo_activo=FULL_REGRESSION`.
+
+No row is required in `public.lf_capability_registry` or `public.lf_operation_registry` solely to create identity.
+
+## Código físico
+
+Implementation:
+
+- `sandbox/lf_contract_gate_test/transversal_assets/full_regression/full_regression_v1.py`
+
+Applicability/plan authority consumed:
+
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_currentness_bridge_v1.py`
+
+Semantic judge:
+
+- `sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py`
+
+## Tests
+
+Deterministic:
+
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py`
+
+E2E cases covered:
+
+- A: real `NOT_APPLICABLE`, zero execution;
+- B: partial applicability, `planned == executed`;
+- C: external canonical carriers produce receipts, `FULL_REGRESSION` consumes them, zero duplication;
+- D: invalid plan blocks;
+- E: former run-everything behavior does not return.
+
+## Deterministic criteria
+
+PASS requires P1–P8 deterministic evidence, exact plan/receipt hashes, exact carrier partition, and all zero invariants.
+
+A related test passing is not evidence for another point.
+
+## Semantic criteria
+
+Independent judge:
+
+`sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py`
+
+It evaluates P1–P8 plus identity, owner, duplicate/orphan responsibility, parallel paths, README, registry, implementation and execution fidelity.
+
+## Relation with CHANGESET_GOVERNANCE_LF_V1
+
+Changeset Governance owns classification/applicability input. `FULL_REGRESSION` is downstream and cannot decide locally that a control applies.
+
+Changing the declarative legacy full-regression list alone must not change planned controls.
+
+## COMPROBADO
+
+`PASS` is not `COMPROBADO`.
+
+`COMPROBADO=YES` additionally requires merged `main`, post-main readback, real execution, real carrier receipts, a real consumer and post-main Supabase/readback evidence. Before authorized merge, the maximum valid state is `READY_FOR_PROMOTION` and `COMPROBADO=NO`.

@@ -2,11 +2,8 @@
 """CURRENTNESS_AUTHORITY adapter for the unified CI applicability authority.
 
 This module does not implement a second currentness engine. It builds the
-material binding for CI_FAST_DEEP_LANE_ROUTER and delegates the decision to
-the existing material_currentness/CURRENTNESS_AUTHORITY implementation.
-
-The historical base SHA is evidence context only. The moving authority is
-refs/heads/main, resolved at execution time.
+material binding for CI_FAST_DEEP_LANE_ROUTER + FULL_REGRESSION and delegates
+the decision to the existing material_currentness/CURRENTNESS_AUTHORITY.
 """
 from __future__ import annotations
 
@@ -34,6 +31,7 @@ CI_AUTHORITY_SELECTORS = {
         "sandbox/lf_contract_gate_test/s28_ci_lane_router/",
         "sandbox/lf_contract_gate_test/gate_check_observability/",
         "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/",
+        "sandbox/lf_contract_gate_test/transversal_assets/full_regression/",
         "sandbox/lf_contract_gate_test/material_currentness/",
     ],
     "globs": [],
@@ -66,12 +64,7 @@ def resolve_authority_evidence_revision(
     candidate_head_revision: str | None,
     current_revision: str,
 ) -> str:
-    """Resolve the historical authority revision for currentness.
-
-    The diff base and the moving authority are intentionally distinct.
-    A push to main creates *new* evidence for the just-materialized main and
-    therefore binds currentness to current_revision, not event.before.
-    """
+    """Resolve the historical authority revision for currentness."""
     if not HEX40.fullmatch(current_revision or ""):
         raise ValueError("FAIL_CI_CURRENTNESS_CURRENT_REVISION")
     event_name = (event_name or "").strip()
@@ -154,7 +147,7 @@ def build_binding(*, bound_revision: str, current_revision: str) -> dict[str, An
         "dependency_completeness": "COMPLETE",
         "require_ancestor": True,
         "contract_identity": "CI_FAST_DEEP_LANE_ROUTER",
-        "implementation_binding": "LF_CI_APPLICABILITY_AUTHORITY_V2",
+        "implementation_binding": "LF_CI_APPLICABILITY_AUTHORITY_V2+FULL_REGRESSION_V1",
         "compatibility_contract": {"assessments": []},
         "materials": [
             {
@@ -176,20 +169,12 @@ def evaluate_ci_authority_currentness(
     bound_revision: str,
     current_revision: str,
 ) -> dict[str, Any]:
-    if bound_revision == current_revision:
-        binding = build_binding(
-            bound_revision=bound_revision,
-            current_revision=current_revision,
-        )
-        result = CURRENTNESS.evaluate_authority(binding, repo)
-    else:
-        binding = build_binding(
-            bound_revision=bound_revision,
-            current_revision=current_revision,
-        )
-        result = CURRENTNESS.evaluate_authority(binding, repo)
-
-    out = {
+    binding = build_binding(
+        bound_revision=bound_revision,
+        current_revision=current_revision,
+    )
+    result = CURRENTNESS.evaluate_authority(binding, repo)
+    return {
         "schema_version": "LF_CI_AUTHORITY_CURRENTNESS_RECEIPT_V1",
         "authority_ref": "refs/heads/main",
         "evidence_revision": bound_revision,
@@ -204,7 +189,6 @@ def evaluate_ci_authority_currentness(
         "authority_receipt_sha256": result.get("receipt_sha256"),
         "evidence_semantics": "HISTORICAL_IMMUTABLE_REFERENCE_NOT_MOVING_AUTHORITY",
     }
-    return out
 
 
 def require_ready(receipt: dict[str, Any]) -> None:
