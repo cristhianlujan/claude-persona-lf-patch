@@ -18,7 +18,7 @@ IMPLEMENTATION = HERE / "full_regression_v1.py"
 WORKFLOWS = [
     ROOT / ".github/workflows/lf-contract-check.yml",
     ROOT / ".github/workflows/validate-lf-packs.yml",
-    ROOT / ".github/workflows/lf-bootstrap-reproducibility.yml",
+    ROOT / ".github/workflows/lf-db-regression.yml",
 ]
 
 
@@ -138,7 +138,7 @@ def main() -> int:
         check(
             "P8",
             "No second FULL_REGRESSION/router/registry/carrier path.",
-            ["single AST-declared FULL_REGRESSION asset identity", "existing shared/impact registries reused", "same three workflows"],
+            ["single AST-declared FULL_REGRESSION asset identity", "existing shared/impact registries reused", "same three canonical workflows"],
             len(executable_identities) == 1
             and executable_identities[0].endswith("transversal_assets/full_regression/full_regression_v1.py")
             and required_asset_paths.issubset(registered_paths)
