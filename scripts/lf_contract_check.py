@@ -120,11 +120,14 @@ PROFILE_OPERATION_RUNTIME_EDGE_DENIED_LOOKALIKES = {
     "supabase/functions/run-creacion-perfil-lf-copy/index.ts",
     "supabase/functions/run-creacion-perfil-lf/child/index.ts",
 }
+RETIRED_GITHUB_DELETE_ONLY = {
+    ".github/workflows/lf-bootstrap-reproducibility.yml",
+}
 
 
 ALLOWED_GITHUB_EXACT = {
     ".github/workflows/lf-contract-check.yml",
-    ".github/workflows/lf-bootstrap-reproducibility.yml",
+    ".github/workflows/lf-db-regression.yml",
     ".github/workflows/lf-github-reconcile-v3.yml",
     ".github/workflows/story-agent-evidence-verifier.yml",
     ".github/workflows/profile-driven-screen-generation.yml",
@@ -374,6 +377,18 @@ def is_allowed_path(path: str) -> bool:
     return any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
 
 
+def validate_retired_github_paths() -> None:
+    failures: list[str] = []
+    for path in sorted(RETIRED_GITHUB_DELETE_ONLY):
+        if path in ALLOWED_GITHUB_EXACT:
+            failures.append(f"retired_path_must_not_be_allowed:{path}")
+        if Path(path).exists():
+            failures.append(f"retired_path_reintroduced:{path}")
+    if failures:
+        fail("FAIL_RETIRED_GITHUB_PATH_REINTRODUCED", ",".join(failures))
+    print(f"PASS_RETIRED_GITHUB_PATH_GUARD: absent={len(RETIRED_GITHUB_DELETE_ONLY)} delete_only=true")
+
+
 def validate_profile_creator_workflow_admission_scope() -> None:
     failures: list[str] = []
     if ".github/" in ALLOWED_PREFIXES:
@@ -574,6 +589,10 @@ def validate_changed_files(changed_files: list[str]) -> list[str]:
             if path.startswith(blocked):
                 fail("FAIL_BLOCKED_SCOPE_RISK", f"Ruta productiva/bloqueada tocada: {path}")
 
+        if path in RETIRED_GITHUB_DELETE_ONLY and not Path(path).exists():
+            print(f"Retired GitHub path deletion allowed: {path}")
+            continue
+
         if path.startswith(FORBIDDEN_GITHUB_PREFIX) and path not in ALLOWED_GITHUB_EXACT:
             fail("FAIL_UNAUTHORIZED_GITHUB_PATH", f"Ruta .github no autorizada: {path}")
 
@@ -748,6 +767,7 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
 
 def main() -> None:
     validate_contract()
+    validate_retired_github_paths()
     validate_profile_creator_workflow_admission_scope()
     validate_profile_creator_edge_admission_scope()
     validate_profile_operation_runtime_edge_admission_scope()

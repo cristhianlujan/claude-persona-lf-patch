@@ -705,11 +705,13 @@ PR #254 cerró Quality Pack + Evidence Lineage siguiendo este patrón:
 - binding refrescado antes del siguiente write;
 - integración sin force-push;
 - CI repetido sobre el nuevo exact-head;
-- `Validate LF Packs`, `lf-contract-check` y
-  `LF Bootstrap Reproducibility Probe` en `SUCCESS`;
+- workflows requeridos por `CI_FAST_DEEP_LANE_ROUTER` para ese exact-head en `SUCCESS`;
 - comprobación final de estabilidad de `main`;
 - merge protegido;
 - readback post-merge;
 - cierre Supabase y enriquecimiento EKB.
+
+La lista concreta de carriers no se trata como universal: `LF DB Regression` sólo
+se exige cuando el plan de aplicabilidad le asigna controles para el exact-head.
 
 Reutilizar esta sección para los perfiles restantes con la misma clase de bloqueo.

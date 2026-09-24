@@ -132,7 +132,7 @@ def main() -> int:
             "required_controls_json": json.dumps(plan["required_controls"], separators=(",", ":")),
             "lf_contract_controls_json": json.dumps(carrier.get("LF_CONTRACT_CHECK", []), separators=(",", ":")),
             "validate_packs_controls_json": json.dumps(carrier.get("VALIDATE_LF_PACKS", []), separators=(",", ":")),
-            "bootstrap_controls_json": json.dumps(carrier.get("LF_BOOTSTRAP_REPRODUCIBILITY", []), separators=(",", ":")),
+            "db_regression_controls_json": json.dumps(carrier.get("LF_DB_REGRESSION", []), separators=(",", ":")),
             "changed_paths_json": json.dumps(plan["changed_paths"], separators=(",", ":")),
         }
         with gh_out.open("a", encoding="utf-8") as handle:

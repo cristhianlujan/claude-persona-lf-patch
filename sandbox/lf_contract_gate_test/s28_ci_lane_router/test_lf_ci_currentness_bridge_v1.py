@@ -40,7 +40,7 @@ def setup_repo() -> tuple[Path, str]:
     paths = {
         ".github/workflows/lf-contract-check.yml": "name: contract\n",
         ".github/workflows/validate-lf-packs.yml": "name: packs\n",
-        ".github/workflows/lf-bootstrap-reproducibility.yml": "name: bootstrap\n",
+        ".github/workflows/lf-db-regression.yml": "name: db-regression\n",
         "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py": "print('router')\n",
         "sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py": "print('gates')\n",
         "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md": "# CI\n",
@@ -97,7 +97,6 @@ def test_same_revision_is_current() -> None:
     assert r["decision"] == "CURRENT", r
     assert r["ready"] is True, r
     assert r["rebind_allowed"] is False, r
-
 
 
 def test_pr_that_contains_current_main_binds_current_authority() -> None:

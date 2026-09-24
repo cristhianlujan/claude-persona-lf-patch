@@ -8,6 +8,7 @@ Capability transversal LF: `CI_FAST_DEEP_LANE_ROUTER` / `TRANSVERSAL_CI_FAST_DEE
 - Inventory status requerido: `ACTIVE_SHARED_ENFORCEMENT`
 - Autoridad de currentness: `public.lf_activos`
 - README de consumo: `sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md`
+- No existe ni debe crearse un activo Bootstrap/Reproducibility independiente.
 
 ## Propósito
 
@@ -41,7 +42,7 @@ lf-ci-execution-plan/v2
 required workflow carriers
  ├─ lf-contract-check
  ├─ Validate LF Packs
- └─ LF Bootstrap Reproducibility Probe
+ └─ LF DB Regression
       ↓
 controles seleccionados solamente
 ```
@@ -85,6 +86,30 @@ Reglas:
 - un control desconocido emitido por el Router bloquea;
 - ninguna ruta puede degradarse silenciosamente a FAST.
 
+## Retiro de REMOTE_SCHEMA_REPRODUCIBILITY
+
+`REMOTE_SCHEMA_REPRODUCIBILITY` está retirado del camino operativo. La reconstrucción completa del schema remoto no prueba el candidato del PR y no conserva poder de bloqueo.
+
+Invariantes de retiro:
+
+- `REMOTE_SCHEMA_REPRODUCIBILITY` no pertenece al universo ni a `full_regression_controls`;
+- no existe job de reconstrucción remota en ningún carrier vigente;
+- ningún `required_controls` puede emitirlo;
+- ningún consumer debe esperar receipt suyo;
+- el carrier histórico `LF_BOOTSTRAP_REPRODUCIBILITY` no puede reaparecer en el plan;
+- `.github/workflows/lf-bootstrap-reproducibility.yml` no es una superficie ejecutable vigente;
+- `lf_ci_execution_plan_v2.py` bloquea explícitamente la reintroducción del control, carrier o matcher histórico.
+
+El retiro no elimina controles legítimos asociados anteriormente al mismo workflow. Quedan bajo un único carrier natural, `LF_DB_REGRESSION`:
+
+| Control | Necesidad | Consumidor real | Semántica |
+|---|---|---|---|
+| `DB_CANDIDATE_APPLY_ROLLBACK` | Sí, cuando cambia una migración | probe exacto del candidato | blocking |
+| `POLICY_RESOLVER_REGRESSION` | Sí, cuando cambia material de policy resolver | probe post-apply dentro del rollback | blocking, depende de DB candidate |
+| `V7_RUNTIME_REGRESSION` | Sí, como regresión reusable V7 | harness PostgreSQL 17 | blocking cuando aplica |
+
+No se crea un activo transversal nuevo: ownership, routing, currentness y README continúan homologados bajo `CI_FAST_DEEP_LANE_ROUTER`.
+
 ## Migraciones de base de datos
 
 Una migración modificada no queda probada por reconstruir el schema remoto vigente.
@@ -127,17 +152,17 @@ El full regression conserva valor como auditoría del Router, pero no sustituye 
 
 **Carrier regression** se usa cuando cambia uno de los tres workflows carrier. El plan selecciona dinámicamente todos los controles reutilizables de `full_regression_controls` cuyo `carrier` coincide con el workflow modificado, conserva los controles disparados por path/material y luego calcula el closure recursivo de dependencias. No existe una lista paralela hardcodeada por workflow.
 
-Ejemplo esperado para un cambio aislado de `.github/workflows/validate-lf-packs.yml`: los controles reutilizables de `VALIDATE_LF_PACKS` más los triggers transversales legítimos del path (`CI_ROUTER_SELFTEST` y `DECLARED_GOVERNANCE_PATHS`); no los restantes controles globales no causales de Bootstrap o `lf-contract-check`.
+Ejemplo esperado para un cambio aislado de `.github/workflows/validate-lf-packs.yml`: los controles reutilizables de `VALIDATE_LF_PACKS` más los triggers transversales legítimos del path (`CI_ROUTER_SELFTEST` y `DECLARED_GOVERNANCE_PATHS`); no los restantes controles globales no causales de otros carriers.
 
 Los controles material-bound (por ejemplo candidate apply/rollback) sólo son requeridos si existe ese material en el diff; no se convierten en PASS artificial dentro de una regresión genérica.
 
 ## Carriers
 
-Los nombres requeridos por branch protection permanecen estables:
+Carriers vigentes del mismo plan:
 
 - `Validate LF Packs`
 - `lf-contract-check`
-- `LF Bootstrap Reproducibility Probe`
+- `LF DB Regression`
 
 Son **carriers del mismo plan**, no tres clasificadores independientes.
 
@@ -158,7 +183,7 @@ El plan decide **qué control aplica**; el orquestador ejecuta los checks declar
 - `sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py`
 - `.github/workflows/lf-contract-check.yml`
 - `.github/workflows/validate-lf-packs.yml`
-- `.github/workflows/lf-bootstrap-reproducibility.yml`
+- `.github/workflows/lf-db-regression.yml`
 
 ## Validación y readback
 

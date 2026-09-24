@@ -2,8 +2,8 @@
   "registry_version": "LF_SHARED_CI_CONTROL_OWNERSHIP_V1",
   "controls": [
     {
-      "control_id": "LF_BOOTSTRAP_REPRODUCIBILITY_WORKFLOW",
-      "path": ".github/workflows/lf-bootstrap-reproducibility.yml",
+      "control_id": "LF_DB_REGRESSION_WORKFLOW",
+      "path": ".github/workflows/lf-db-regression.yml",
       "migration_parity_required": false,
       "input_governance_parity_required": false,
       "ci_router_selftest_required": true,
