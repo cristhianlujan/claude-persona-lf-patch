@@ -25,7 +25,7 @@ CI_AUTHORITY_SELECTORS = {
     "paths": [
         ".github/workflows/lf-contract-check.yml",
         ".github/workflows/validate-lf-packs.yml",
-        ".github/workflows/lf-bootstrap-reproducibility.yml",
+        ".github/workflows/lf-db-regression.yml",
     ],
     "prefixes": [
         "sandbox/lf_contract_gate_test/s28_ci_lane_router/",
