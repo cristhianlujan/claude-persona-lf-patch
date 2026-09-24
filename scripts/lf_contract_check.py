@@ -126,7 +126,6 @@ RETIRED_GITHUB_DELETE_ONLY = {
 
 
 ALLOWED_GITHUB_EXACT = {
-    ".github/pull_request_template.md",
     ".github/workflows/lf-contract-check.yml",
     ".github/workflows/lf-db-regression.yml",
     ".github/workflows/lf-github-reconcile-v3.yml",
