@@ -6,7 +6,11 @@ Canonical identity: `FULL_REGRESSION` / `TRANSVERSAL_FULL_REGRESSION`.
 
 - Owner: `LF_GOVERNANCE`
 - Tipo: transversal CI plan consumer/verifier.
-- Estado de esta revisión: candidate / `READY_FOR_PROMOTION` only after deterministic + semantic + exact-head CI proof.
+- Estado documental: `VIGENTE`.
+- Estado operativo candidato: `READ_ONLY`.
+- Runtime: `NO_HABILITADO`.
+- Inventory status: `FORMAL_TRANSVERSAL_REGISTERED_NOT_CUTOVER`.
+- Promotion status: `READY_FOR_PROMOTION` only after deterministic + semantic + exact-head CI proof for the current candidate head.
 - `FULL_REGRESSION` is **not** a Router, applicability engine, registry, validator bundle, or carrier.
 
 ## Propósito
@@ -63,6 +67,12 @@ Consume `FULL_REGRESSION` only after Changeset Governance and the canonical exec
 
 ## Authority
 
+Authority is intentionally split by concern; no support surface may replace it:
+
+- GitHub: canonical source, wiring, tests, workflows and README contract.
+- Supabase sandbox: canonical operational identity, metadata, materialized asset relationships, lifecycle state and EKB.
+- Drive: supporting inventory/readback only; it is **not** an authority source for code, lifecycle or relationships.
+
 Applicability authority:
 
 `CHANGESET_GOVERNANCE_LF_V1 → LF_CI_EXECUTION_PLAN_V2`
@@ -72,6 +82,18 @@ Currentness authority:
 `CURRENTNESS_AUTHORITY` through `lf_ci_currentness_bridge_v1.py`.
 
 `FULL_REGRESSION` consumes those decisions. It cannot override them.
+
+## Descubrimiento y ubicación
+
+Lookup order for agents/auditors:
+
+1. `public.lf_activos` with `codigo_activo=FULL_REGRESSION` for identity, state, owner, paths and metadata;
+2. `public.lf_activo_relaciones` for materialized structural dependencies/consumers;
+3. this README for the consumption contract and physical surfaces;
+4. the existing source files and registries listed below for exact wiring;
+5. Drive inventories only as supporting snapshots/readback.
+
+While candidate/not-cutover, the active transversal index must not falsely present this asset as operationally active. The repository transversal index contains a non-active candidate locator instead.
 
 ## Inputs
 
@@ -101,23 +123,37 @@ Input contract is validated before any PASS or `NOT_APPLICABLE` receipt is emitt
 
 ## Consumers
 
-Canonical consumers in this candidate are CI self-tests/readback and the promotion proof for the same governed plan. Production/runtime activation is not implied.
+Direct verification contexts in this candidate are CI self-tests/readback, PR promotion proof and post-main verification after an authorized merge.
+
+`GITHUB_CONTRACT_GATE_LF` is an `UPSTREAM_TRANSITIVE_CONSUMER`: its governed CI path depends transitively on the `FULL_REGRESSION` plan/verification contract, but it is **not** a direct caller that delegates its owned controls to `full_regression_v1.py`.
 
 The existing workflows remain carriers of their own controls; they are not consumers that delegate execution to `FULL_REGRESSION`.
 
 ## Dependencies
 
-Canonical dependencies:
+Canonical logical dependencies:
 
-- `CHANGESET_GOVERNANCE_LF_V1`;
-- `CI_FAST_DEEP_LANE_ROUTER`;
-- `LF_CI_EXECUTION_PLAN_V2`;
-- `CURRENTNESS_AUTHORITY`;
+- `CHANGESET_GOVERNANCE_LF_V1` — applicability authority;
+- `LF_CI_EXECUTION_PLAN_V2` — governed execution plan contract;
+- `CI_FAST_DEEP_LANE_ROUTER` — materialized structural dependency;
+- `CURRENTNESS_AUTHORITY` — materialized structural dependency/currentness participant;
 - `lf_ci_control_impact_registry_v2.json`;
 - `lf_shared_ci_control_ownership_registry_v1.json`;
 - the three existing canonical workflow carriers.
 
 No dependency grants local applicability authority to this asset.
+
+## Relaciones materializadas
+
+The durable graph in `public.lf_activo_relaciones` is required for asset-to-asset relationships that have canonical `lf_activos` identities:
+
+- `FULL_REGRESSION --DEPENDE_DE--> CI_FAST_DEEP_LANE_ROUTER`;
+- `FULL_REGRESSION --DEPENDE_DE--> CURRENTNESS_AUTHORITY`;
+- `GITHUB_CONTRACT_GATE_LF --CONSUME_TRANSITIVAMENTE--> FULL_REGRESSION`.
+
+Logical authorities without their own `lf_activos` identity remain contractual dependencies in metadata/README and must not be fabricated as asset rows solely to complete a graph.
+
+For retirement and health audits, incoming consumer checks must see the `GITHUB_CONTRACT_GATE_LF` relation so `FULL_REGRESSION` cannot be treated as orphaned.
 
 ## Applicability
 
@@ -195,6 +231,14 @@ The receipt exposes deterministic counters:
 
 All must be zero for PASS.
 
+Data-health readback additionally verifies:
+
+- one non-archived `public.lf_activos` row for `FULL_REGRESSION`;
+- expected materialized relationship set with no duplicate relation tuple;
+- metadata consumer/dependency declarations consistent with the materialized graph;
+- documented test paths correspond to tests actually executed in exact-head CI;
+- candidate source revision equals the PR exact head used for evidence.
+
 ## Registries
 
 Reused canonical registries only:
@@ -202,9 +246,10 @@ Reused canonical registries only:
 - `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json`
 - `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_shared_ci_control_ownership_registry_v1.json`
 
-Supabase identity registry:
+Supabase identity and relationship registries:
 
-- `public.lf_activos` with `codigo_activo=FULL_REGRESSION`.
+- `public.lf_activos` with `codigo_activo=FULL_REGRESSION`;
+- `public.lf_activo_relaciones` for canonical asset-to-asset edges.
 
 No row is required in `public.lf_capability_registry` or `public.lf_operation_registry` solely to create identity.
 
@@ -241,10 +286,14 @@ Semantic judge:
 
 ## Tests
 
-Deterministic:
+Material deterministic/integration coverage:
 
 - `sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py`
 - `sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py`
+- `sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_currentness_bridge_v1.py`
+
+The CI router self-test currently executes seven checks; only the four above are declared as material `FULL_REGRESSION` test paths because they directly cover this asset's plan/wiring/currentness surfaces.
 
 E2E cases covered:
 
@@ -266,7 +315,7 @@ Independent judge:
 
 `sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py`
 
-It evaluates P1–P8 plus identity, owner, duplicate/orphan responsibility, parallel paths, README, registry, implementation and execution fidelity.
+It evaluates P1–P8 plus identity, owner, duplicate/orphan responsibility, parallel paths, README, registry, implementation, execution fidelity, discoverability and relationship documentation.
 
 ## Validación y readback
 
@@ -277,6 +326,8 @@ Before promotion require:
 - E2E A–E PASS;
 - exact-head CI green for the three canonical carriers;
 - README/implementation/registry exact-head readback;
+- Supabase identity + relation + metadata readback;
+- supporting Drive inventory updated with the same candidate identity/head without promoting Drive to authority;
 - `INVALID_RESIDUAL=0`;
 - `UNPLANNED_EXECUTIONS=0`;
 - `DUPLICATE_CONTROL_EXECUTIONS=0`.
