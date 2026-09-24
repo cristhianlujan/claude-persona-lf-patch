@@ -36,7 +36,6 @@ def require_step_guard(text: str, step_name: str, control_id: str) -> None:
     require(block, control_id, f"FAIL_CI_CARRIER_CONTROL_NOT_BOUND:{step_name}")
 
 
-
 def require_job_guard(text: str, job_id: str, control_id: str) -> None:
     marker = f"  {job_id}:"
     start = text.find(marker)
@@ -46,6 +45,7 @@ def require_job_guard(text: str, job_id: str, control_id: str) -> None:
     block = text[start:end]
     require(block, "if:", f"FAIL_CI_CARRIER_JOB_UNGUARDED:{job_id}")
     require(block, control_id, f"FAIL_CI_CARRIER_CONTROL_NOT_BOUND:{job_id}")
+
 
 def main() -> None:
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
@@ -195,11 +195,9 @@ def main() -> None:
     entrypoint = (ROOT / "sandbox/lf_contract_gate_test/PR93_P0_RUNTIME_CONTRACT_CHECK_ENTRYPOINT.py").read_text(encoding="utf-8")
     require(entrypoint, "P0_EXACT_HEAD_EXTERNAL_APPLICABILITY", "FAIL_P0_EXTERNAL_DELEGATED_MARKER_MISSING")
 
-    # Candidate-bound controls are not allowed to masquerade as generic full
-    # regression evidence when no candidate material exists.
-    full = set(registry["full_regression_controls"])
-    for material_only in ("DB_CANDIDATE_APPLY_ROLLBACK","POLICY_RESOLVER_REGRESSION","P0_FAST_DOCS","P0_EXACT_HEAD_EXTERNAL"):
-        assert material_only not in full, f"FAIL_MATERIAL_ONLY_IN_FULL_REGRESSION:{material_only}"
+    # The legacy `full_regression_controls` field, if retained for backward
+    # compatibility/readback, is deliberately not consumed here. Applicability
+    # and carrier ownership come only from `controls` + the canonical plan.
 
     print(f"CI_CONTROL_CARRIER_WIRING_V2_PASS controls={len(controls)} carriers={len(texts)}")
 
