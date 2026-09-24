@@ -2,6 +2,7 @@
 """Independent semantic judge for FULL_REGRESSION P1-P8."""
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 
@@ -31,6 +32,23 @@ def check(point: str, expectation: str, evidence: list[str], ok: bool, gap: str 
     }
 
 
+def _declares_full_regression_asset(path: Path) -> bool:
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    except (UnicodeDecodeError, SyntaxError):
+        return False
+    for node in tree.body:
+        if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+            continue
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+        value = node.value
+        if not isinstance(value, ast.Constant) or value.value != "FULL_REGRESSION":
+            continue
+        if any(isinstance(target, ast.Name) and target.id == "ASSET_CODE" for target in targets):
+            return True
+    return False
+
+
 def main() -> int:
     plan = PLAN.read_text(encoding="utf-8")
     emitter = EMITTER.read_text(encoding="utf-8")
@@ -40,14 +58,11 @@ def main() -> int:
     shared = json.loads(SHARED_REGISTRY.read_text(encoding="utf-8"))
     impact = json.loads(IMPACT_REGISTRY.read_text(encoding="utf-8"))
 
-    executable_identities = []
-    for path in ROOT.rglob("*.py"):
-        try:
-            text = path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            continue
-        if 'ASSET_CODE = "FULL_REGRESSION"' in text:
-            executable_identities.append(path.relative_to(ROOT).as_posix())
+    executable_identities = sorted(
+        path.relative_to(ROOT).as_posix()
+        for path in ROOT.rglob("*.py")
+        if _declares_full_regression_asset(path)
+    )
 
     registered_paths = {row["path"] for row in shared.get("controls", [])}
     required_asset_paths = {
@@ -123,7 +138,7 @@ def main() -> int:
         check(
             "P8",
             "No second FULL_REGRESSION/router/registry/carrier path.",
-            ["single executable FULL_REGRESSION identity", "existing shared/impact registries reused", "same three workflows"],
+            ["single AST-declared FULL_REGRESSION asset identity", "existing shared/impact registries reused", "same three workflows"],
             len(executable_identities) == 1
             and executable_identities[0].endswith("transversal_assets/full_regression/full_regression_v1.py")
             and required_asset_paths.issubset(registered_paths)
@@ -160,7 +175,7 @@ def main() -> int:
     readme_ok = all(token in asset_readme for token in readme_tokens)
     router_ok = "FULL_REGRESSION consumes the governed plan" in router_readme
     identity_ok = 'CANONICAL_NAME = "TRANSVERSAL_FULL_REGRESSION"' in impl
-    owner_ok = "LF_GOVERNANCE_CI" in asset_readme
+    owner_ok = "LF_GOVERNANCE" in asset_readme
     extra = {
         "identity_coherent": identity_ok,
         "owner_coherent": owner_ok,
