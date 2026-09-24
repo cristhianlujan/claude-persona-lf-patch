@@ -111,6 +111,59 @@ def test_profile_change_does_not_select_database_bootstrap() -> None:
         assert control not in got["required_controls"]
 
 
+def test_supabase_config_never_selects_retired_remote_schema() -> None:
+    path = "supabase/config.toml"
+    got = plan([path], {path: "project_id='lf'\n"})
+    assert "REMOTE_SCHEMA_REPRODUCIBILITY" not in got["required_controls"]
+    assert "LF_BOOTSTRAP_REPRODUCIBILITY" not in got["carrier_controls"]
+
+
+def test_retired_control_reintroduction_is_rejected() -> None:
+    data = json.loads(P.REGISTRY_PATH.read_text(encoding="utf-8"))
+    data["controls"].append({
+        "control_id": "REMOTE_SCHEMA_REPRODUCIBILITY",
+        "carrier": "LF_DB_REGRESSION",
+        "path_matchers": [{"kind": "exact", "value": "supabase/config.toml"}],
+        "material_matchers": [],
+        "dependencies": [],
+    })
+    with tempfile.TemporaryDirectory(prefix="lf-retired-control-") as td:
+        p = Path(td) / "registry.json"
+        p.write_text(json.dumps(data), encoding="utf-8")
+        expect_plan_error("FAIL_CI_RETIRED_CONTROL_REINTRODUCED", lambda: P.load_registry(p))
+
+
+def test_retired_carrier_reintroduction_is_rejected() -> None:
+    data = json.loads(P.REGISTRY_PATH.read_text(encoding="utf-8"))
+    data["controls"][0]["carrier"] = "LF_BOOTSTRAP_REPRODUCIBILITY"
+    with tempfile.TemporaryDirectory(prefix="lf-retired-carrier-") as td:
+        p = Path(td) / "registry.json"
+        p.write_text(json.dumps(data), encoding="utf-8")
+        try:
+            P.load_registry(p)
+        except P.PlanError as exc:
+            assert str(exc).startswith(("FAIL_CI_RETIRED_CARRIER_REINTRODUCED", "FAIL_CI_IMPACT_CARRIER")), str(exc)
+        else:
+            raise AssertionError("retired carrier was accepted")
+
+
+def test_retired_workflow_matcher_reintroduction_is_rejected() -> None:
+    data = json.loads(P.REGISTRY_PATH.read_text(encoding="utf-8"))
+    data["controls"][0]["path_matchers"] = [{"kind": "exact", "value": ".github/workflows/lf-bootstrap-reproducibility.yml"}]
+    with tempfile.TemporaryDirectory(prefix="lf-retired-workflow-") as td:
+        p = Path(td) / "registry.json"
+        p.write_text(json.dumps(data), encoding="utf-8")
+        expect_plan_error("FAIL_CI_RETIRED_WORKFLOW_MATCHER_REINTRODUCED", lambda: P.load_registry(p))
+
+
+def test_router_cannot_require_retired_control() -> None:
+    path = "profiles/quality_pack/SKILL.md"
+    expect_plan_error(
+        "FAIL_CI_RETIRED_CONTROL_FROM_ROUTER",
+        lambda: plan([path], {path: "# profile"}, lane=("REMOTE_SCHEMA_REPRODUCIBILITY",)),
+    )
+
+
 def test_unresolved_applicability_blocks_instead_of_run_everything() -> None:
     path = "mystery/new_surface.xyz"
     expect_plan_error("FAIL_CI_PLAN_APPLICABILITY_UNRESOLVED", lambda: plan([path], {path: "x"}, mode="CLASSIFICATION_REQUIRED"))
@@ -259,21 +312,17 @@ def test_fail_closed_missing_stale_wrong_sha_unresolved_and_invalid_receipt() ->
     expect_full_error("BLOCK_FULL_REGRESSION_PLAN_MISSING", lambda: F.consume(None, []))
     path = "docs/p0/MATRIZ_OPCIONES_OCR_CV.md"
     got = plan([path], {path: "# evidence"}, mode="DEEP_SHARED_KNOWN")
-
     stale = copy.deepcopy(got)
     stale["source_authority"] = {"ready": False}
     expect_full_error("BLOCK_FULL_REGRESSION_PLAN_STALE_OR_UNREADY", lambda: F.consume(stale, []))
-
     rs = receipts_for(got)
     bad_receipt = copy.deepcopy(rs[0])
     bad_receipt["receipt_sha256"] = "0" * 64
     expect_full_error("BLOCK_FULL_REGRESSION_RECEIPT_SHA", lambda: F.consume(got, [bad_receipt]))
-
     wrong_plan_sha = copy.deepcopy(rs[0])
     wrong_plan_sha["plan_sha256"] = "f" * 64
     wrong_plan_sha["receipt_sha256"] = F._sha(F._carrier_receipt_payload(wrong_plan_sha))
     expect_full_error("BLOCK_FULL_REGRESSION_RECEIPT_PLAN_SHA", lambda: F.consume(got, [wrong_plan_sha]))
-
     unresolved = copy.deepcopy(got)
     only = unresolved["required_controls"][0]
     unresolved["carrier_controls"] = {"UNKNOWN_CARRIER": [only]}
@@ -306,6 +355,11 @@ def main() -> None:
         test_policy_resolver_migration_is_precise_and_candidate_bound,
         test_v7_material_selects_v7_regression,
         test_profile_change_does_not_select_database_bootstrap,
+        test_supabase_config_never_selects_retired_remote_schema,
+        test_retired_control_reintroduction_is_rejected,
+        test_retired_carrier_reintroduction_is_rejected,
+        test_retired_workflow_matcher_reintroduction_is_rejected,
+        test_router_cannot_require_retired_control,
         test_unresolved_applicability_blocks_instead_of_run_everything,
         test_force_full_is_verification_mode_not_applicability_expansion,
         test_router_self_change_does_not_expand_beyond_governed_plan,
