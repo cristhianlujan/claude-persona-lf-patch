@@ -41,7 +41,7 @@ lf-ci-execution-plan/v2
 canonical carriers solamente
  ├─ lf-contract-check
  ├─ Validate LF Packs
- └─ LF Bootstrap Reproducibility Probe
+ └─ LF DB Regression
       ↓
 receipts por carrier
       ↓
@@ -174,7 +174,7 @@ Los nombres requeridos por branch protection permanecen estables:
 
 - `Validate LF Packs`
 - `lf-contract-check`
-- `LF Bootstrap Reproducibility Probe`
+- `LF DB Regression`
 
 Son carriers del mismo plan, no clasificadores independientes.
 
@@ -201,7 +201,7 @@ El plan decide qué control aplica; el orquestador ejecuta los checks declarados
 - `sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py`
 - `.github/workflows/lf-contract-check.yml`
 - `.github/workflows/validate-lf-packs.yml`
-- `.github/workflows/lf-bootstrap-reproducibility.yml`
+- `.github/workflows/lf-db-regression.yml`
 
 ## Validación y readback
 
