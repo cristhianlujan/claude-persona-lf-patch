@@ -13,6 +13,7 @@ EMITTER = ROOT / "sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execu
 SHARED_REGISTRY = ROOT / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_shared_ci_control_ownership_registry_v1.json"
 IMPACT_REGISTRY = ROOT / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json"
 ROUTER_README = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md"
+TRANSVERSAL_INDEX = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/README.md"
 ASSET_README = HERE / "README.md"
 IMPLEMENTATION = HERE / "full_regression_v1.py"
 WORKFLOWS = [
@@ -55,6 +56,7 @@ def main() -> int:
     impl = IMPLEMENTATION.read_text(encoding="utf-8")
     asset_readme = ASSET_README.read_text(encoding="utf-8")
     router_readme = ROUTER_README.read_text(encoding="utf-8")
+    transversal_index = TRANSVERSAL_INDEX.read_text(encoding="utf-8")
     shared = json.loads(SHARED_REGISTRY.read_text(encoding="utf-8"))
     impact = json.loads(IMPACT_REGISTRY.read_text(encoding="utf-8"))
 
@@ -153,10 +155,15 @@ def main() -> int:
         "TRANSVERSAL_FULL_REGRESSION",
         "Owner",
         "Authority",
+        "Descubrimiento y ubicación",
         "Inputs",
         "Outputs",
         "Consumers",
+        "UPSTREAM_TRANSITIVE_CONSUMER",
         "Dependencies",
+        "Relaciones materializadas",
+        "public.lf_activo_relaciones",
+        "FORMAL_TRANSVERSAL_REGISTERED_NOT_CUTOVER",
         "Applicability",
         "Canonical carriers",
         "Receipts",
@@ -174,6 +181,11 @@ def main() -> int:
     ]
     readme_ok = all(token in asset_readme for token in readme_tokens)
     router_ok = "FULL_REGRESSION consumes the governed plan" in router_readme
+    locator_ok = (
+        "Candidate `FULL_REGRESSION`" in transversal_index
+        and "FORMAL_TRANSVERSAL_REGISTERED_NOT_CUTOVER" in transversal_index
+        and "public.lf_activo_relaciones" in transversal_index
+    )
     identity_ok = 'CANONICAL_NAME = "TRANSVERSAL_FULL_REGRESSION"' in impl
     owner_ok = "LF_GOVERNANCE" in asset_readme
     extra = {
@@ -183,7 +195,9 @@ def main() -> int:
         "no_orphan_responsibility": points[3]["semantic_verdict"] == "PASS",
         "no_parallel_paths": points[7]["semantic_verdict"] == "PASS",
         "readme_faithful": readme_ok and router_ok,
+        "candidate_discoverability": locator_ok,
         "asset_metadata_contract_faithful": "public.lf_activos" in asset_readme,
+        "relationship_contract_faithful": "public.lf_activo_relaciones" in asset_readme,
         "registry_faithful": required_asset_paths.issubset(registered_paths),
         "implementation_faithful": all(p["semantic_verdict"] == "PASS" for p in points),
         "execution_faithful": "CANONICAL_CARRIERS_ONLY" in impl,
