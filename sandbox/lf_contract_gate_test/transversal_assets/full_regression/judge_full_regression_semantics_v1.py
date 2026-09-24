@@ -10,12 +10,14 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
 PLAN = ROOT / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py"
 EMITTER = ROOT / "sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py"
+CURRENTNESS = ROOT / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_currentness_bridge_v1.py"
 SHARED_REGISTRY = ROOT / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_shared_ci_control_ownership_registry_v1.json"
 IMPACT_REGISTRY = ROOT / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json"
 ROUTER_README = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md"
 TRANSVERSAL_INDEX = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/README.md"
 ASSET_README = HERE / "README.md"
 IMPLEMENTATION = HERE / "full_regression_v1.py"
+TRANSVERSAL_INDEX_PATH = "sandbox/lf_contract_gate_test/transversal_assets/README.md"
 WORKFLOWS = [
     ROOT / ".github/workflows/lf-contract-check.yml",
     ROOT / ".github/workflows/validate-lf-packs.yml",
@@ -53,6 +55,7 @@ def _declares_full_regression_asset(path: Path) -> bool:
 def main() -> int:
     plan = PLAN.read_text(encoding="utf-8")
     emitter = EMITTER.read_text(encoding="utf-8")
+    currentness = CURRENTNESS.read_text(encoding="utf-8")
     impl = IMPLEMENTATION.read_text(encoding="utf-8")
     asset_readme = ASSET_README.read_text(encoding="utf-8")
     router_readme = ROUTER_README.read_text(encoding="utf-8")
@@ -66,8 +69,17 @@ def main() -> int:
         if _declares_full_regression_asset(path)
     )
 
-    registered_paths = {row["path"] for row in shared.get("controls", [])}
+    shared_rows = shared.get("controls", [])
+    registered_paths = {row["path"] for row in shared_rows}
+    index_ownership = [
+        row for row in shared_rows
+        if row.get("path") == TRANSVERSAL_INDEX_PATH
+        and row.get("control_id") == "TRANSVERSAL_ASSET_INDEX_README"
+        and row.get("ci_router_selftest_required") is True
+        and row.get("deep_shared") is False
+    ]
     required_asset_paths = {
+        TRANSVERSAL_INDEX_PATH,
         "sandbox/lf_contract_gate_test/transversal_assets/full_regression/README.md",
         "sandbox/lf_contract_gate_test/transversal_assets/full_regression/full_regression_v1.py",
         "sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py",
@@ -186,6 +198,8 @@ def main() -> int:
         and "FORMAL_TRANSVERSAL_REGISTERED_NOT_CUTOVER" in transversal_index
         and "public.lf_activo_relaciones" in transversal_index
     )
+    index_ownership_ok = len(index_ownership) == 1
+    index_currentness_ok = f'"{TRANSVERSAL_INDEX_PATH}"' in currentness
     identity_ok = 'CANONICAL_NAME = "TRANSVERSAL_FULL_REGRESSION"' in impl
     owner_ok = "LF_GOVERNANCE" in asset_readme
     extra = {
@@ -196,6 +210,8 @@ def main() -> int:
         "no_parallel_paths": points[7]["semantic_verdict"] == "PASS",
         "readme_faithful": readme_ok and router_ok,
         "candidate_discoverability": locator_ok,
+        "candidate_index_exact_ownership": index_ownership_ok,
+        "candidate_index_currentness": index_currentness_ok,
         "asset_metadata_contract_faithful": "public.lf_activos" in asset_readme,
         "relationship_contract_faithful": "public.lf_activo_relaciones" in asset_readme,
         "registry_faithful": required_asset_paths.issubset(registered_paths),
