@@ -138,7 +138,7 @@ Exactly the existing carriers:
 
 - `LF_CONTRACT_CHECK` → `.github/workflows/lf-contract-check.yml`
 - `VALIDATE_LF_PACKS` → `.github/workflows/validate-lf-packs.yml`
-- `LF_BOOTSTRAP_REPRODUCIBILITY` → `.github/workflows/lf-bootstrap-reproducibility.yml`
+- `LF_DB_REGRESSION` → `.github/workflows/lf-db-regression.yml`
 
 `FULL_REGRESSION` is not a fourth carrier.
 
@@ -237,7 +237,7 @@ Semantic judge:
 - `sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md`
 - `.github/workflows/lf-contract-check.yml`
 - `.github/workflows/validate-lf-packs.yml`
-- `.github/workflows/lf-bootstrap-reproducibility.yml`
+- `.github/workflows/lf-db-regression.yml`
 
 ## Tests
 
