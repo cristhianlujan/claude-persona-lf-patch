@@ -53,7 +53,11 @@ No existe un segundo Router. `lf_ci_execution_plan_v2.py` consume la decisión d
 
 `FULL_REGRESSION` tampoco es un Router ni un cuarto carrier. Es un consumidor/verificador transversal del plan ya resuelto.
 
-## Cómo consumir el plan
+## Cuándo consumirlo
+
+Antes de ejecutar validaciones CI costosas, atribuir un resultado de carrier a un candidato o solicitar una comprobación FULL_REGRESSION. Primero debe existir una decisión de applicability gobernada para el exact-head.
+
+## Cómo consumirlo
 
 1. Resolver `CI_FAST_DEEP_LANE_ROUTER` en `public.lf_activos`.
 2. Resolver base y exact-head.
@@ -108,7 +112,7 @@ Invariantes:
 - `FAIL_OPEN_CASES = 0`
 - `PARALLEL_ACTIVE_PATHS = 0`
 
-## Fail-closed
+## Fail-closed / límites
 
 No existe fallback “desconocido → ejecutar todo”.
 
