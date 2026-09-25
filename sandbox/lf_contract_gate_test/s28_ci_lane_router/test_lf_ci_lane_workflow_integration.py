@@ -312,14 +312,31 @@ def main() -> None:
     )
     require(
         pre_ekb_block,
-        "public.lf_pre_ekb_gate_consumer_v1('GITHUB_CONTRACT_GATE_LF')",
-        "FAIL_LF_CONTRACT_PRE_EKB_CONSUMER_READBACK_MISSING",
+        "steps.plan_trace.outcome == 'success'",
+        "FAIL_LF_CONTRACT_PRE_EKB_PLAN_TRACE_NOT_REQUIRED",
     )
     require(
         pre_ekb_block,
-        "public.fn_lf_operation_reserve_execution_v1",
-        "FAIL_LF_CONTRACT_PRE_EKB_PARENT_EXECUTION_NOT_RESERVED",
+        "public.lf_pre_ekb_gate_consumer_v1('GITHUB_CONTRACT_GATE_LF')",
+        "FAIL_LF_CONTRACT_PRE_EKB_CONSUMER_READBACK_MISSING",
     )
+    reserve_marker = "- name: Reserve governed lf-contract-check plan trace"
+    require(text, reserve_marker, "FAIL_LF_CONTRACT_PLAN_TRACE_RESERVE_STEP_MISSING")
+    reserve_start = text.index(reserve_marker)
+    if reserve_start >= pre_ekb_start:
+        raise SystemExit("FAIL_LF_CONTRACT_PLAN_TRACE_RESERVE_NOT_BEFORE_PRE_EKB")
+    require(
+        pre_ekb_block,
+        "--mode assert",
+        "FAIL_LF_CONTRACT_PRE_EKB_PARENT_EXECUTION_NOT_REUSED",
+    )
+    require(
+        pre_ekb_block,
+        "/tmp/lf_contract_plan_trace_assert.sql",
+        "FAIL_LF_CONTRACT_PRE_EKB_PARENT_EXECUTION_READBACK_MISSING",
+    )
+    if "public.fn_lf_operation_reserve_execution_v1" in pre_ekb_block:
+        raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_SECOND_PARENT_RESERVATION")
     require(
         pre_ekb_block,
         "public.lf_record_gate_checks_v1",

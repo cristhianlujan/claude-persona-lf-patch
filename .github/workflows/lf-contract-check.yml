@@ -298,7 +298,6 @@ jobs:
           lane_spec.loader.exec_module(lane_router)
           lane = lane_router.classify(changed)
 
-          # Canonical content/scope checks remain authoritative before applicability.
           p0_regular = False
           if changed:
               governed = validator.validate_changed_files(changed)
@@ -463,6 +462,48 @@ jobs:
           )
           PY
 
+      - name: Reserve governed lf-contract-check plan trace
+        id: plan_trace
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+          LF_EXACT_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          LF_WORKFLOW_EVENT: ${{ github.event_name }}
+          LF_REPOSITORY: ${{ github.repository }}
+          LF_RUN_ID: ${{ github.run_id }}
+          LF_RUN_ATTEMPT: ${{ github.run_attempt }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${PGPASSWORD:-}" ]; then
+            echo "FAIL_LF_CONTRACT_PLAN_TRACE_DB_PASSWORD_MISSING"
+            exit 1
+          fi
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_plan_trace_v1.py \
+            --plan .lf_ci/lf_ci_execution_plan_v2.json \
+            --exact-source "$LF_EXACT_SOURCE_SHA" \
+            --repository "$LF_REPOSITORY" \
+            --run-id "$LF_RUN_ID" \
+            --run-attempt "$LF_RUN_ATTEMPT" \
+            --workflow-event "$LF_WORKFLOW_EVENT" \
+            --output-json .lf_ci/lf_contract_plan_trace_v1.json \
+            --output-sql /tmp/lf_contract_plan_trace_reserve.sql
+          psql -X -v ON_ERROR_STOP=1 -At -f /tmp/lf_contract_plan_trace_reserve.sql
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_plan_trace_wiring_v1.py \
+            --request .lf_ci/lf_contract_plan_trace_v1.json \
+            --mode assert \
+            --exact-source "$LF_EXACT_SOURCE_SHA" \
+            --repository "$LF_REPOSITORY" \
+            --run-id "$LF_RUN_ID" \
+            --run-attempt "$LF_RUN_ATTEMPT" \
+            --output-sql /tmp/lf_contract_plan_trace_assert.sql
+          psql -X -v ON_ERROR_STOP=1 -At -f /tmp/lf_contract_plan_trace_assert.sql
+          echo "PASS_LF_CONTRACT_PLAN_TRACE_RESERVED_ONCE"
+
       - name: Run CI lane router self-tests with deterministic diagnostics
         if: contains(fromJSON(steps.feedback_tier.outputs.lf_contract_controls_json), 'CI_ROUTER_SELFTEST')
         run: |
@@ -477,6 +518,8 @@ jobs:
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_currentness_bridge_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_currentness_bridge_v1.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_run_changed_migrations_rollback_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_run_changed_migrations_rollback_v1.py","critical":true}' \
             --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py","critical":true}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_plan_trace_wiring_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_plan_trace_wiring_v1.py","critical":true}' \
+            --command-json '{"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_plan_trace_workflow_wiring_v1.py"],"source_path":"sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_plan_trace_workflow_wiring_v1.py","critical":true}' \
             --artifact-dir .lf_gate_diagnostics/lf_contract_check/ci_router_selftest \
             --artifact-name lf_gate_error_v1.json \
             --check-prefix CIR \
@@ -1176,7 +1219,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lf-ci-applicability-plan-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .lf_ci/lf_ci_execution_plan_v2.json
+          path: |
+            .lf_ci/lf_ci_execution_plan_v2.json
+            .lf_ci/lf_contract_plan_trace_v1.json
           if-no-files-found: error
           retention-days: 30
 
@@ -1191,7 +1236,7 @@ jobs:
           retention-days: 30
 
       - name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE
-        if: always() && steps.feedback_tier.outcome == 'success' && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true' && steps.deterministic_diagnostics_artifact.outcome == 'success'
+        if: always() && steps.feedback_tier.outcome == 'success' && steps.plan_trace.outcome == 'success' && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true' && steps.deterministic_diagnostics_artifact.outcome == 'success'
         env:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           PGHOST: aws-1-us-east-1.pooler.supabase.com
@@ -1219,9 +1264,17 @@ jobs:
             exit 1
           fi
 
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_plan_trace_wiring_v1.py \
+            --request .lf_ci/lf_contract_plan_trace_v1.json \
+            --mode assert \
+            --exact-source "$LF_EXACT_SOURCE_SHA" \
+            --repository "$LF_REPOSITORY" \
+            --run-id "$LF_RUN_ID" \
+            --run-attempt "$LF_RUN_ATTEMPT" \
+            --output-sql /tmp/lf_contract_plan_trace_assert.sql
+
           python3 - <<'PY'
           import base64
-          import hashlib
           import json
           import os
           from pathlib import Path
@@ -1235,6 +1288,13 @@ jobs:
           workflow_event = os.environ.get("LF_WORKFLOW_EVENT", "").strip()
           artifact_name = f"lf-gate-diagnostics-lf-contract-check-{run_id}-{run_attempt}"
           workflow_path = ".github/workflows/lf-contract-check.yml"
+          trace_request = json.loads(Path(".lf_ci/lf_contract_plan_trace_v1.json").read_text(encoding="utf-8"))
+          execution_id = str(trace_request.get("execution_id") or "").strip()
+          expected_execution_id = f"EXEC-LF-CONTRACT-CHECK-{run_id}-{run_attempt}"
+          if execution_id != expected_execution_id:
+              raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_TRACE_EXECUTION_ID_MISMATCH")
+          if trace_request.get("request_sha256") != trace_request.get("manifest", {}).get("evidence_sha256"):
+              raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_TRACE_REQUEST_SHA_MISMATCH")
 
           if len(exact_source) != 40 or any(ch not in "0123456789abcdef" for ch in exact_source.lower()):
               raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_SOURCE_SHA_INVALID")
@@ -1391,20 +1451,6 @@ jobs:
               print("PASS_LF_CONTRACT_PRE_EKB_NO_NONPASS_DIAGNOSTICS")
               raise SystemExit(0)
 
-          execution_id = f"EXEC-LF-CONTRACT-CHECK-{run_id}-{run_attempt}"
-          idempotency_key = f"LF-CONTRACT-CHECK:{run_id}:{run_attempt}:{exact_source}"
-          target_code = f"LF_CONTRACT_CHECK_RUN_{run_id}_{run_attempt}"
-          request_payload = {
-              "operation_code": "GITHUB_CONTRACT_GATE_LF",
-              "execution_id": execution_id,
-              "source_commit": exact_source,
-              "workflow_event": workflow_event,
-              "batches": batches,
-          }
-          request_sha = hashlib.sha256(
-              json.dumps(request_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
-          ).hexdigest()
-
           def sql_text(value: str) -> str:
               encoded = base64.b64encode(value.encode("utf-8")).decode("ascii")
               return f"convert_from(decode('{encoded}','base64'),'UTF8')"
@@ -1413,34 +1459,7 @@ jobs:
               raw = json.dumps(value, sort_keys=True, separators=(",", ":"))
               return f"{sql_text(raw)}::jsonb"
 
-          manifest = {
-              "scope": "LF_CONTRACT_CHECK_PRE_EKB_GATE_HANDOFF",
-              "source_commit": exact_source,
-              "github_run_id": run_id,
-              "github_run_attempt": run_attempt,
-              "workflow_event": workflow_event,
-              "diagnostic_artifact": artifact_name,
-              "canonical_step_id": "contract_judge",
-              "productive_ingress": "public.lf_record_gate_checks_v1",
-              "ekb_governance": "PRE_EKB_GATE",
-              "direct_ekb_write_allowed": False,
-          }
-
-          statements = ["\\set ON_ERROR_STOP on"]
-          statements.append(
-              "select public.fn_lf_operation_reserve_execution_v1("
-              f"{sql_text(execution_id)},"
-              "'GITHUB_CONTRACT_GATE_LF',"
-              "'REPOSITORY_GOVERNED_PATHS',"
-              f"{sql_text(target_code)},"
-              f"{sql_text(idempotency_key)},"
-              f"'{request_sha}',"
-              f"{sql_text(execution_id)},"
-              f"{sql_text(repository)},"
-              f"{sql_text(workflow_path)},"
-              f"{sql_json(manifest)}"
-              ")::text;"
-          )
+          statements = ["\\set ON_ERROR_STOP on", "\\i /tmp/lf_contract_plan_trace_assert.sql"]
 
           for batch in batches:
               context = {
@@ -1542,7 +1561,7 @@ jobs:
             update public.lf_operation_execution
             set status='BLOCKED',
                 completed_at=coalesce(completed_at,clock_timestamp()),
-                checkpoint_payload=jsonb_build_object(
+                checkpoint_payload=coalesce(checkpoint_payload,'{}'::jsonb)||jsonb_build_object(
                   'lot_code','LF_CONTRACT_CHECK_PRE_EKB_HANDOFF',
                   'source_commit',{sql_text(exact_source)},
                   'github_run_id',{sql_text(run_id)},
@@ -1689,3 +1708,36 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 7
+
+      - name: Close governed lf-contract-check plan trace
+        if: always() && steps.plan_trace.outcome == 'success'
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+          LF_EXACT_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          LF_REPOSITORY: ${{ github.repository }}
+          LF_RUN_ID: ${{ github.run_id }}
+          LF_RUN_ATTEMPT: ${{ github.run_attempt }}
+          LF_JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${PGPASSWORD:-}" ]; then
+            echo "FAIL_LF_CONTRACT_PLAN_TRACE_CLOSE_DB_PASSWORD_MISSING"
+            exit 1
+          fi
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_plan_trace_wiring_v1.py \
+            --request .lf_ci/lf_contract_plan_trace_v1.json \
+            --mode close \
+            --job-status "$LF_JOB_STATUS" \
+            --exact-source "$LF_EXACT_SOURCE_SHA" \
+            --repository "$LF_REPOSITORY" \
+            --run-id "$LF_RUN_ID" \
+            --run-attempt "$LF_RUN_ATTEMPT" \
+            --output-sql /tmp/lf_contract_plan_trace_close.sql
+          psql -X -v ON_ERROR_STOP=1 -At -f /tmp/lf_contract_plan_trace_close.sql
+          echo "PASS_LF_CONTRACT_PLAN_TRACE_LIFECYCLE_CLOSED job_status=$LF_JOB_STATUS"
