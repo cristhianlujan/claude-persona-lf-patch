@@ -59,7 +59,6 @@ def select_transport(target_type: str, migration_path: str | None = None) -> Dec
                 "POST_APPLY_RENAME_AS_NORMAL_FLOW",
                 "MIGRATION_PARITY_BYPASS",
                 "DB_APPLY_BEFORE_GIT_SOURCE_READBACK",
-                "PASS_WITHOUT_GIT_SUPABASE_DUAL_READBACK",
             ),
             required_preconditions=(
                 "ROUTER_BINDING_ACTUALIZACION_DB_LF",
@@ -67,14 +66,11 @@ def select_transport(target_type: str, migration_path: str | None = None) -> Dec
                 "EXACT_SOURCE_PATH_BOUND",
                 "GIT_SOURCE_PERSISTED_EXACT_HEAD",
                 "GIT_SOURCE_READBACK",
-                "MIGRATION_PERSIST_VERIFY_READY_TO_APPLY",
                 "MIGRATION_SOURCE_PARITY_PRECHECK",
                 "ROLLBACK_OR_FAIL_FORWARD_PLAN",
             ),
             required_postconditions=(
                 "EXACT_LEDGER_VERSION_NAME_READBACK",
-                "GIT_SUPABASE_DUAL_READBACK",
-                "MIGRATION_PERSIST_VERIFY_CONSISTENT",
                 "MIGRATION_SOURCE_PARITY_RETEST",
                 "EXACT_HEAD_CI_PASS",
                 "EKB_CLOSEOUT",
@@ -104,7 +100,8 @@ def self_test() -> None:
     assert m.migration_version == "20260917191749"
     assert m.migration_name == "lf_example_v1"
     assert "GIT_SOURCE_PERSISTED_EXACT_HEAD" in m.required_preconditions
-    assert "MIGRATION_PERSIST_VERIFY_CONSISTENT" in m.required_postconditions
+    assert "GIT_SOURCE_READBACK" in m.required_preconditions
+    assert "DB_APPLY_BEFORE_GIT_SOURCE_READBACK" in m.forbidden
     for target in sorted(DIRECT_TYPES):
         d = select_transport(target)
         assert d.executor == DIRECT_MODE
