@@ -11,6 +11,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PLAN_PATH = HERE / "lf_ci_execution_plan_v2.py"
+C0_CAPTURE = HERE / "contract_check_c0_baseline_capture_v1.py"
 
 
 def load(path: Path, name: str):
@@ -360,6 +361,20 @@ def main() -> None:
     for test in tests:
         test()
     print(f"LF_CI_EXECUTION_PLAN_V2_PASS={len(tests)}/{len(tests)}")
+
+    output = Path(".lf_gate_diagnostics/lf_contract_check/ci_router_selftest/contract_check_c0_baseline_demonstration_v1.json")
+    completed = subprocess.run(
+        [sys.executable, str(C0_CAPTURE), "--output", str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if completed.stdout:
+        print(completed.stdout, end="" if completed.stdout.endswith("\n") else "\n")
+    if completed.stderr:
+        print(completed.stderr, file=sys.stderr, end="" if completed.stderr.endswith("\n") else "\n")
+    if completed.returncode != 0:
+        raise SystemExit("FAIL_C0_CONTRACT_CHECK_BASELINE_DEMONSTRATION")
 
 
 if __name__ == "__main__":
