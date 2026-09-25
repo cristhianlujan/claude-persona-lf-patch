@@ -43,6 +43,20 @@ def git_bytes(*args: str) -> bytes:
     return subprocess.check_output(["git", *args])
 
 
+def assert_frozen_main() -> str:
+    """Resolve main in both local and detached Actions checkouts without weakening identity."""
+    run(["git", "cat-file", "-e", f"{BASELINE_COMMIT}^{{commit}}"])
+    for ref in ("refs/remotes/origin/main", "refs/heads/main"):
+        completed = run(["git", "rev-parse", "--verify", ref], check=False)
+        if completed.returncode != 0:
+            continue
+        resolved = completed.stdout.strip()
+        if resolved != BASELINE_COMMIT:
+            raise SystemExit(f"FAIL_C0_MAIN_MOVED_FROM_FROZEN_BASELINE:{ref}:{resolved}")
+        return ref
+    raise SystemExit("FAIL_C0_MAIN_REF_UNRESOLVABLE")
+
+
 def load_module(path: Path, name: str):
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
@@ -141,6 +155,7 @@ def source_identity() -> dict[str, Any]:
 def normalize(value: dict[str, Any]) -> dict[str, Any]:
     value = json.loads(json.dumps(value))
     value.pop("demonstration_sha256", None)
+    value.pop("resolved_main_ref", None)
     return value
 
 
@@ -153,8 +168,7 @@ def main() -> int:
     parser.add_argument("--expected", default=str(EXPECTED_FILE))
     args = parser.parse_args()
 
-    if git_text("rev-parse", "refs/heads/main") != BASELINE_COMMIT:
-        raise SystemExit("FAIL_C0_MAIN_MOVED_FROM_FROZEN_BASELINE")
+    resolved_main_ref = assert_frozen_main()
 
     historical = json.loads(HISTORICAL_PLAN_FILE.read_text(encoding="utf-8"))
     if historical.get("head_sha") != "fd990b734b1112e465914fd6a1b508c3f7b506e3":
@@ -201,7 +215,8 @@ def main() -> int:
     demonstration: dict[str, Any] = {
         "schema_version": "lf-contract-check-c0-baseline/v1",
         "baseline_commit": BASELINE_COMMIT,
-        "baseline_main_ref": "refs/heads/main",
+        "baseline_main_ref": "main",
+        "resolved_main_ref": resolved_main_ref,
         "source_identity": identities,
         "representative_router_cases": router_cases,
         "representative_plan_cases": plan_cases,
@@ -246,6 +261,7 @@ def main() -> int:
             f"carrier_regression={str(plan['carrier_regression']).lower()} "
             f"required_controls={json.dumps(plan['required_controls'], separators=(',', ':'))}"
         )
+    print(f"C0_BASELINE_MAIN_REF={resolved_main_ref}")
     print(f"C0_BASELINE_DEMONSTRATION_SHA256={demonstration['demonstration_sha256']}")
     print(f"C0_BASELINE_EVIDENCE={output}")
     return 0
