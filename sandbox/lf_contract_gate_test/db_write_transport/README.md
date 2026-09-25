@@ -8,22 +8,26 @@ Capacidad transversal LF para seleccionar el canal de escritura de base de datos
 
 No concede permisos, no sustituye al Router y no crea una nueva operación. Su única responsabilidad es elegir el transporte correcto según `target_type` y mantener fail-closed las migrations que requieren identidad exacta entre Git y `supabase_migrations.schema_migrations`.
 
-## Regla WRITE-AHEAD para MIGRATION
+## Soluciones encadenadas para MIGRATION
 
-Antes de cualquier apply de una migration, la fuente exacta debe quedar durable y releída desde Git.
+### 1. MIGRATION_WRITE_AHEAD_V1
 
-Identidad mínima obligatoria:
+Antes de cualquier apply, la fuente exacta debe quedar durable y releída desde Git mediante `lf_migration_git_persist.py`.
 
-- `execution_id` gobernado;
-- `effect_scope=MIGRATION:<version>`;
-- `target_path=supabase/migrations/<version>_<name>.sql`;
-- `source_sha`, `blob_sha1` y `source_sha256` exactos;
-- rama gobernada distinta de `main`;
-- readback remoto positivo.
+### 2. MIGRATION_ORCHESTRATED_SAGA_V1
 
-El transporte de persistencia es `lf_migration_git_persist.py`. No toca Supabase, no hace merge y no concede autoridad.
+Después del write-ahead, `lf_migration_orchestrated_saga.py` gobierna secuencialmente el mismo identity scope:
 
-La orquestación Git → Supabase → verificación y la reconciliación automática son soluciones dependientes separadas y no forman parte de este PR.
+1. write-ahead durable;
+2. ready-to-apply;
+3. apply exacto por `ACTUALIZACION_DB_LF`;
+4. ledger readback;
+5. `MIGRATION_SOURCE_PARITY=PASS`;
+6. `CONSISTENT`.
+
+El state gate es determinista e idempotente: reintentar el mismo snapshot produce el mismo verdict. No ejecuta writes por sí mismo.
+
+La reconciliación/auto-repair es una tercera solución dependiente y separada.
 
 ## Regla de selección
 
@@ -46,16 +50,27 @@ Antes de cualquier write:
 4. Ejecutar migration source parity precheck.
 5. Definir rollback o fail-forward plan.
 6. Persistir/readback Git antes de apply.
-7. No continuar si existe remote-only drift no clasificado, source ambiguity, checksum mismatch o identidad no resuelta.
+7. Exigir `MIGRATION_ORCHESTRATED_SAGA_READY_TO_APPLY`.
+
+## Cierre obligatorio
+
+Después del apply:
+
+- ledger exacto version/name;
+- migration source parity PASS;
+- `MIGRATION_ORCHESTRATED_SAGA_CONSISTENT`;
+- exact-head CI PASS;
+- EKB closeout cuando corresponda.
 
 ## Dependencias y activos relacionados
 
 - Router: `ACT-0001`.
 - Operación consumidora: `ACTUALIZACION_DB_LF`.
 - Capacidad padre: `DB_WRITE_TRANSPORT`.
+- Write-ahead: `MIGRATION_WRITE_AHEAD_V1`.
+- Saga: `MIGRATION_ORCHESTRATED_SAGA_V1`.
 - Gate de validación existente: `MIGRATION_SOURCE_PARITY`.
-- Persistencia write-ahead: `sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py`.
-- EKB principal: `CI-MIGRATION-SOURCE-PARITY-001`.
+- Downstream: `MIGRATION_SOURCE_RECONCILIATION_V1`.
 
 ## Límites
 
