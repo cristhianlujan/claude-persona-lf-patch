@@ -1,0 +1,93 @@
+{
+  "schema": "SRCR_MC12_SELECTED_REPAIR_COMPLETENESS_READBACK_V2",
+  "status": "READBACK_CLOSED",
+  "observed_at": "2026-09-22T16:55:21.723859+00:00",
+  "source_revision": "c8d0016df30a2480b2770604e047546415da5de5",
+  "candidate": {
+    "path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/candidate_v06_repaired.json",
+    "canonical_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "file_sha256": "c1ec9d20976ff373591fa5cda893e404b34e674ff091234a40e9c455ae915648",
+    "builder_regeneration_equal": true,
+    "pre_quality_status": "PASS_PRE_QUALITY",
+    "validation_sha256": "bf7671f727efb361de6be2385a237ab07a3ab1dae7d12d61222adb32d7b1b7de"
+  },
+  "deterministic_completeness": {
+    "owner": "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+    "baseline_status": "PASS",
+    "baseline_blocking_codes": [],
+    "computed_handoff_ready": true,
+    "extraction_rule": "Traverse the entire exact candidate and extract every proposed material-change ref except implementation_delta itself; reconcile each against declared implementation targets. Proposed authority_ref may own a concrete same-object enforcement_point_ref.",
+    "fresh_surface_scan": {
+      "selected_repair_ref_occurrences": 47,
+      "selected_repair_unique_refs": 29,
+      "uncovered_selected_refs": 0
+    },
+    "negative_tests": [
+      {
+        "mutation": "hard_guard.enforcement_point_ref -> proposed://UNDECLARED_MATERIAL_MECHANISM_V1/enforce",
+        "status": "FAIL",
+        "expected_code": "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+        "observed": true
+      },
+      {
+        "mutation": "remove supabase://proposed/EJECUCION_PERFIL_LF/queue_terminal_bridge from implementation_delta",
+        "status": "FAIL",
+        "computed_handoff_ready_before_cross_field_gate": true,
+        "expected_code": "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+        "observed": true,
+        "purpose": "Proves producer handoff_ready cannot override selected-repair footprint incompleteness."
+      },
+      {
+        "mutation": "implementation_delta[0].action='' and evidence_refs=[]",
+        "status": "FAIL",
+        "expected_codes": [
+          "V06_IMPLEMENTATION_DELTA_ACTION_REQUIRED",
+          "V06_IMPLEMENTATION_DELTA_EVIDENCE_REQUIRED"
+        ],
+        "observed": true
+      }
+    ]
+  },
+  "independent_r2": {
+    "review_ref": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc12_independent_r2_review.json",
+    "reviewer_execution_id": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+    "reviewer_context_mode": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT",
+    "extraction_seed": "ENTIRE_CANDIDATE_EXCLUDING_IMPLEMENTATION_DELTA_AS_SEED",
+    "review_source_revision": "c8d0016df30a2480b2770604e047546415da5de5",
+    "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+    "observed_candidate_change_count": 12,
+    "selected_declared_equivalent_count": 11,
+    "discovery_only_not_in_selected_repair_count": 1,
+    "undeclared_proposed_change_count": 0,
+    "verdict": "PASS_INDEPENDENT_SEMANTIC",
+    "deterministic_semantic_result_validation": "PASS",
+    "blocking_codes": []
+  },
+  "material_change_reconciliation": {
+    "selected_material_changes": 11,
+    "declared_equivalent": 11,
+    "discovery_only_findings": 1,
+    "undeclared_selected_changes": 0,
+    "runtime_refresh_contract_wiring_note": "REFRESCO_RUNTIME exact desired/observed release wiring is independently observed as material and is declared in implementation_package.deliverables[5] plus wiring[3..5], even though it is not a separate implementation_delta row.",
+    "retire_authority_note": "RETIRO_ACTIVO_LF operational readiness is classified DISCOVERY_ONLY_NOT_IN_SELECTED_REPAIR / DISCOVERY_OUT_OF_SCOPE and remains an implementation precondition; it is not promoted into the selected repair."
+  },
+  "superseded_evidence": {
+    "prior_readback_schema": "SRCR_MC12_SELECTED_REPAIR_COMPLETENESS_READBACK_V1",
+    "reason": "The earlier R2 reused the MC-11 T5 review whose observed_candidate_changes were seeded from implementation_delta. That does not satisfy MC-12 independent whole-candidate extraction, so it is superseded by EXEC-MC12-INDEPENDENT-R2-20260922-001.",
+    "prior_counts_not_authoritative": true
+  },
+  "closure_assertions": {
+    "all_selected_repair_refs_reconciled": true,
+    "all_material_selected_changes_declared_equivalent": true,
+    "independent_whole_candidate_r2": true,
+    "r2_zero_undeclared_changes": true,
+    "discovery_only_items_not_promoted_into_selected_repair": true,
+    "candidate_digest_unchanged": true,
+    "production_mutation": false,
+    "runtime_activation": false,
+    "merge": false
+  }
+}

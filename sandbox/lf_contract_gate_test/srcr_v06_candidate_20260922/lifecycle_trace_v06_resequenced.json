@@ -1,0 +1,819 @@
+{
+  "evidence_count": 44,
+  "finding_count": 17,
+  "findings": [
+    {
+      "class": "CREATE_REGISTER_EDGE_OUT_OF_BAND",
+      "evidence_ids": [
+        "EV-LC-004",
+        "EV-LC-010"
+      ],
+      "finding_id": "LC-F01",
+      "github_evidence": [
+        "supabase/migrations/20260917025332_lf_systemic_root_cause_profile_asset_binding_v1.sql@blob:1b77652d1ff8e74d345e74a95cbeee80adfedd27",
+        "supabase/migrations/20260917025714_lf_systemic_root_cause_profile_state_alignment_v1.sql@blob:af33c2ef7fd2ff23a4127b67f960ceac0b4b0a48"
+      ],
+      "impact": "Creation can PASS while operational registration/wiring is performed by an out-of-band artifact not represented as a creation lifecycle edge.",
+      "observation": "CREACION_PERFIL_LF has no explicit register/wire step. The SRCR profile asset was inserted later by a profile-specific migration hard-coded to this profile while preserving the creation execution id as provenance.",
+      "phase": 1,
+      "status": "CONFIRMED"
+    },
+    {
+      "class": "PUBLISH_PROMOTE_EDGE_IMPLICIT",
+      "evidence_ids": [
+        "EV-LC-004",
+        "EV-LC-006",
+        "EV-LC-012"
+      ],
+      "finding_id": "LC-F02",
+      "impact": "Promotion/merge is an implicit external event rather than an explicit governed lifecycle transition.",
+      "observation": "ACTUALIZACION_PERFIL_LF moves directly from regression_after to post_merge_reconcile. The observed post_merge step contains merge_sha, but there is no governed merge/publish/promote step or profile router action between them.",
+      "phase": 1,
+      "status": "CONFIRMED"
+    },
+    {
+      "class": "NEXT_GATE_WITHOUT_OPERATIONAL_CONSUMER",
+      "evidence_ids": [
+        "EV-LC-007",
+        "EV-LC-011",
+        "EV-LC-015"
+      ],
+      "finding_id": "LC-F03",
+      "impact": "The lifecycle emits a mandatory next gate that has no governed operational consumer.",
+      "observation": "REFRESCO_RUNTIME_PERFIL_LF closes with post_refresh_next_gate=PROFILE_RUNTIME_CANARY_REQUIRED, but router/operation authority contains no PROFILE_RUNTIME_CANARY or PROFILE_RUNTIME_ACTIVATION action/operation.",
+      "phase": 1,
+      "status": "CONFIRMED"
+    },
+    {
+      "class": "DEPRECATE_ROLLBACK_NOT_OPERATIONAL",
+      "evidence_ids": [
+        "EV-LC-005",
+        "EV-LC-006",
+        "EV-LC-007"
+      ],
+      "finding_id": "LC-F04",
+      "impact": "Deprecation/retirement and rollback are not available as an operational end-to-end profile lifecycle.",
+      "observation": "The only retirement path is RETIRO_ACTIVO_LF and its router action RETIRE, both CANDIDATO_READ_ONLY. No dedicated profile rollback operation/action exists.",
+      "phase": 1,
+      "status": "CONFIRMED"
+    },
+    {
+      "class": "VERIFY_RUNTIME_TERMINALITY_INCONSISTENT",
+      "evidence_ids": [
+        "EV-LC-013",
+        "EV-LC-014"
+      ],
+      "finding_id": "LC-F05",
+      "impact": "Terminality/recovery behavior must be reconciled before claiming lifecycle closure; this finding does not yet assign a single root cause.",
+      "observation": "Recent SRCR executions show mixed terminal behavior: one latest run remains IN_PROGRESS after context_admission, another remains IN_PROGRESS after semantic_judge blocked, while a prior run completed the full chain.",
+      "phase": 1,
+      "status": "CONFIRMED_OBSERVATION"
+    },
+    {
+      "class": "CREATE_REGISTER_EDGE_OUT_OF_BAND",
+      "evidence_ids": [
+        "EV-LC-016",
+        "EV-LC-017",
+        "EV-LC-022"
+      ],
+      "finding_id": "LC-F01",
+      "impact": "A creation execution can close while canonical operational registration is still a separate out-of-band act.",
+      "observation": "The current profile creation Edge Function initializes/records the governed execution but contains no generic lf_activos registration write. Current database routines contain no function that inserts lf_activos, and lifecycle triggers do not materialize a profile asset. SRCR registration therefore remains outside the CREACION_PERFIL_LF execution edge.",
+      "phase": 2,
+      "status": "CONFIRMED_STRENGTHENED"
+    },
+    {
+      "class": "PUBLISH_PROMOTE_EDGE_IMPLICIT",
+      "evidence_ids": [
+        "EV-LC-024"
+      ],
+      "finding_id": "LC-F02",
+      "impact": "The lifecycle lacks an explicit handoff state/receipt between pre-merge validation and post-merge reconciliation.",
+      "observation": "The post-merge reconcile function accepts an already-merged SHA/PR and reconciles it, but the governed update operation does not own or model the merge/publish transition itself. Repository search found no Edge/workflow caller for post_merge_reconcile; the actual transition is external and only reconciled afterward.",
+      "phase": 2,
+      "status": "CONFIRMED_STRENGTHENED"
+    },
+    {
+      "class": "NEXT_GATE_WITHOUT_OPERATIONAL_CONSUMER",
+      "evidence_ids": [
+        "EV-LC-018",
+        "EV-LC-025"
+      ],
+      "finding_id": "LC-F03",
+      "impact": "The canonical chain can emit a mandatory next gate that cannot be entered through the governed lifecycle.",
+      "observation": "Database-wide function inspection found only producers/validators of PROFILE_RUNTIME_CANARY_REQUIRED and PROFILE_RUNTIME_ACTIVATION_REQUIRED. No operational consumer was found; router/operation registries also have no matching action/operation.",
+      "phase": 2,
+      "status": "CONFIRMED_STRENGTHENED"
+    },
+    {
+      "class": "DEPRECATE_ROLLBACK_NOT_OPERATIONAL",
+      "evidence_ids": [
+        "EV-LC-021"
+      ],
+      "finding_id": "LC-F04",
+      "impact": "A full operational profile lifecycle cannot currently execute deprecate/rollback end to end.",
+      "observation": "The only lifecycle removal entry is RETIRE -> RETIRO_ACTIVO_LF and it remains CANDIDATO_READ_ONLY / OP_CANDIDATE. No rollback, restore, recovery, reactivate or unretire operation/action exists.",
+      "phase": 2,
+      "status": "CONFIRMED_STRENGTHENED"
+    },
+    {
+      "class": "QUEUE_FAILURE_NOT_PROPAGATED_TO_CANONICAL_EXECUTION",
+      "evidence_ids": [
+        "EV-LC-019",
+        "EV-LC-020",
+        "EV-LC-023"
+      ],
+      "finding_id": "LC-F05",
+      "impact": "Failed runtime attempts leak canonical executions in IN_PROGRESS, so lifecycle terminality and recovery/readback become inconsistent.",
+      "observation": "Request 23839099 is terminal FAILED in private.lf_profile_runtime_queue_v1 with HETZNER_BASELINE_API_FAILED, while its canonical EJECUCION_PERFIL_LF execution remains IN_PROGRESS. Worker _persist_failure updates only the queue row. No database function bridges terminal queue failure to lf_operation_execution.",
+      "phase": 2,
+      "status": "ROOT_CAUSE_CONFIRMED"
+    },
+    {
+      "class": "EVIDENCE_MANIFEST_TRANSPORT_GAP",
+      "evidence_ids": [
+        "EV-LC-026",
+        "EV-LC-028",
+        "EV-LC-031",
+        "EV-LC-032"
+      ],
+      "finding_id": "LC-F06",
+      "impact": "Externally resolved evidence is lost at the runtime boundary, causing false unresolved-evidence failures before semantic evaluation.",
+      "observation": "SRCR validators explicitly accept evidence_manifest, but ProfileTask has no evidence_manifest field and the runtime gate calls validator(payload) and evaluator(payload, contract_gate) only.",
+      "phase": 3,
+      "status": "ROOT_CAUSE_CONFIRMED"
+    },
+    {
+      "class": "CANONICAL_QUALITY_DECLARED_NOT_CONSUMED",
+      "evidence_ids": [
+        "EV-LC-027",
+        "EV-LC-030",
+        "EV-LC-033"
+      ],
+      "finding_id": "LC-F07",
+      "impact": "The authoritative quality contract is dead configuration in the operational service path.",
+      "observation": "The raw SRCR binding requires canonical quality for V0.5 and names judge/result/receipt validators. RuntimeProfileBinding does not parse canonical_quality and service runtime contains no quality receipt consumer.",
+      "phase": 3,
+      "status": "ROOT_CAUSE_CONFIRMED"
+    },
+    {
+      "class": "SEMANTIC_JUDGE_BOUND_WITHOUT_AUTOMATIC_EXECUTOR",
+      "evidence_ids": [
+        "EV-LC-028",
+        "EV-LC-034",
+        "EV-LC-036"
+      ],
+      "finding_id": "LC-F08",
+      "impact": "The governed execution can reach the independent-quality boundary but cannot cross it automatically.",
+      "observation": "Supabase has an ACTIVE_ENFORCEMENT semantic_judge step requiring semantic_judge_result and unsupported_claims, while the worker returns READY_FOR_SEMANTIC_JUDGE with semantic_judge_auto_recorded=false and the runtime service reports independent_semantic_judge=NOT_EXECUTED.",
+      "phase": 3,
+      "status": "ROOT_CAUSE_CONFIRMED"
+    },
+    {
+      "class": "CANONICAL_QUALITY_RECEIPT_UNMATERIALIZED",
+      "evidence_ids": [
+        "EV-LC-033",
+        "EV-LC-035"
+      ],
+      "finding_id": "LC-F09",
+      "impact": "No durable canonical-quality readback currently closes the V0.5 path.",
+      "observation": "A canonical quality receipt validator exists, but zero SRCR rows were found under the exact semantic/quality receipt types queried.",
+      "phase": 3,
+      "status": "CONFIRMED_CONSEQUENCE"
+    },
+    {
+      "class": "DOWNSTREAM_AUTHORIZATION_HAS_NO_TRUE_PATH",
+      "evidence_ids": [
+        "EV-LC-028",
+        "EV-LC-029",
+        "EV-LC-030"
+      ],
+      "finding_id": "LC-F10",
+      "impact": "Even a hypothetical clean producer output cannot become downstream-authorized through the current service path.",
+      "observation": "The runtime service returns downstream_authorized=false throughout and never consumes canonical_quality to derive a true state.",
+      "phase": 3,
+      "status": "CONFIRMED_CONSEQUENCE"
+    },
+    {
+      "class": "ARCHITECTURE_AUDIT_SCHEMA_RUNTIME_REQUIREMENT_DIVERGENCE",
+      "evidence_ids": [
+        "EV-LC-037",
+        "EV-LC-038",
+        "EV-LC-039",
+        "EV-LC-044"
+      ],
+      "finding_id": "LC-F11",
+      "impact": "Schema can accept an architecture-audit candidate that runtime_validate rejects, while the pack self-validator fails the pack itself. The repair is to align the schema with the intended narrow relaxation, not to weaken validate_pack.",
+      "observation": "V0.5 explicitly says ARCHITECTURE_AUDIT relaxes only incident-specific recurrence/chain requirements, and runtime_validate still requires alternatives, falsification, implementation package and regression artifacts for SYSTEMIC_REPAIR_SPEC. Commit 4ca changed output.schema.json so V0.5 ARCHITECTURE_AUDIT is exempted from the entire repair-artifact requirement block. validate_pack detects the resulting contract divergence as SCHEMA_REQUIRED_KEY_MISSING:alternatives.",
+      "phase": 4,
+      "status": "ROOT_CAUSE_CONFIRMED"
+    },
+    {
+      "class": "NEW_BRANCH_PUSH_ZERO_BASE_SHA_NOT_NORMALIZED",
+      "evidence_ids": [
+        "EV-LC-040",
+        "EV-LC-041",
+        "EV-LC-042",
+        "EV-LC-043"
+      ],
+      "finding_id": "LC-F12",
+      "impact": "Initial branch pushes can report red checks for CI transport/currentness mechanics before the candidate is evaluated; this can mask the first substantive failure.",
+      "observation": "On the first push that creates a branch, github.event.before is 40 zeroes. Validate LF Packs fetches any non-empty base and lf-contract-check requires/fetches any non-empty exact_base, so both attempt git fetch of 000...000 and fail before material validation. A separate bootstrap workflow already guards this zero sentinel, proving a repository-local handling pattern exists.",
+      "phase": 4,
+      "status": "ROOT_CAUSE_CONFIRMED"
+    }
+  ],
+  "mode": "READ_ONLY_NONBLIND_REGRESSION",
+  "run_id": "EXEC-SRCR-V05-NATIVE-LIFECYCLE-REGRESSION-20260921-001",
+  "schema": "SRCR_V06_LIFECYCLE_NATIVE_RESEQUENCED_TRACE_V1",
+  "trace": [
+    {
+      "consumer": "$.live_authority_packet.profile_asset",
+      "evidence_id": "EV-LC-001",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q5_profile_asset_exact",
+      "query_locator": "sql:Q5_profile_asset_exact",
+      "request_digest": "sha256:2894cb604ab97c8142fc056a478f1b9cdc3a0feae3c1cb0c4851548e62f07e29",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:7a35a3f993e7b3bb3eb4bb5555d40f6865948486e4114a5148a59e831bb9133f",
+      "sequence": 1,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.lifecycle_operations",
+      "evidence_id": "EV-LC-002",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q6_profile_phase_operation_codes",
+      "query_locator": "sql:Q6_profile_phase_operation_codes",
+      "request_digest": "sha256:50d8e443bec317475dcf77c75c1158eee83f953213360940aeba734fe6f3e124",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:68ad29b4ea3b24df5d9d5feb82b4a5fa89b658c9d5e8a7c401fb0a27c109c2da",
+      "sequence": 2,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.operation_step_coverage",
+      "evidence_id": "EV-LC-003",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q7_step_counts_by_profile_operation",
+      "query_locator": "sql:Q7_step_counts_by_profile_operation",
+      "request_digest": "sha256:4bbe77d094124a0bc76878b3020f6dbcd518121d5c32f327b5b3030d06c9716d",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:8bb5802122924bf66619c005ebddb64bf265444c88da23474c3d72465d0cef43",
+      "sequence": 3,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.create_update_edges",
+      "evidence_id": "EV-LC-004",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q8_create_update_step_ids",
+      "query_locator": "sql:Q8_create_update_step_ids",
+      "request_digest": "sha256:3faee60a1a4f274c6c20043078963965e5ea5e716044d0c841250b5a3e239600",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:a34855ad7f884ca583e977a5521f22023960e521999ae2496937752887c31567",
+      "sequence": 4,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.deprecate_retire",
+      "evidence_id": "EV-LC-005",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q9_retiro_activo_steps",
+      "query_locator": "sql:Q9_retiro_activo_steps",
+      "request_digest": "sha256:ac03f6adb829d33a57ccb351578aea011f9430b86cf335ea502105c0d897949e",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:dfab57fd7767a67aadfed6b0a0b6dc6bcb0ba0345e16729d439f97b0e9a62897",
+      "sequence": 5,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.omission_discovery.lifecycle_named_operations",
+      "evidence_id": "EV-LC-006",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q10_profile_publish_promote_rollback_absence",
+      "query_locator": "sql:Q10_profile_publish_promote_rollback_absence",
+      "request_digest": "sha256:adeeb981ce23b8c415609a99dcfe7df21f077394158c9cc7783d151934d67d8a",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:03e140fadf94e0f7ca5376bc9316bd2d04f202bbf43396c46ed29b9f1b80a7ad",
+      "sequence": 6,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.router_actions",
+      "evidence_id": "EV-LC-007",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q11_profile_router_actions",
+      "query_locator": "sql:Q11_profile_router_actions",
+      "request_digest": "sha256:87a1bd8df3b50331dd934bd3587a18e04e56850e68c715eed101e2d37f0e618e",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:7071c640e8c59132c0b670e0bd721391a751ece8623a23af5b35217b278374cc",
+      "sequence": 7,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.historical_regressions.creation_execution",
+      "evidence_id": "EV-LC-008",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q12_creation_execution_summary",
+      "query_locator": "sql:Q12_creation_execution_summary",
+      "request_digest": "sha256:7b786ff969d12c925ed2567e715283cac842e26093ac6757348564833455d9a8",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:411b4f7bc417690dfcaaa7c8f8995ad2ec592ec09305cf74dfe9a29e90d174fe",
+      "sequence": 8,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.creation_terminal_step",
+      "evidence_id": "EV-LC-009",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q13_creation_missing_step",
+      "query_locator": "sql:Q13_creation_missing_step",
+      "request_digest": "sha256:16eb8aa4ca1b90a883e2a0cbef06d48de0cfbd11a4b0754b54ebc3ed3f47cd62",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:42f6565c8e73c1821cb94f431dccfb2b89eb8e00f1a68e58b3450b0b613eecff",
+      "sequence": 9,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.execution_effect_reconciliation.asset_registration",
+      "evidence_id": "EV-LC-010",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q14_creation_asset_provenance",
+      "query_locator": "sql:Q14_creation_asset_provenance",
+      "request_digest": "sha256:26e5dc9431e13ead7cc97784fce8f23b319181752f05c36a424ae35a0ec75c24",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:01399e6b5d9a075cda355307d588284bc9ab96fe3090c7ea2902bc1a337b5915",
+      "sequence": 10,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.activation_canary",
+      "evidence_id": "EV-LC-011",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q15_activation_canary_actions_absent",
+      "query_locator": "sql:Q15_activation_canary_actions_absent",
+      "request_digest": "sha256:495d76d7ef1453cb10d5ed22ff7fd43ae1e5b9c95c4de99d001aeaf985f694e4",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sequence": 11,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.publish_promote_edge",
+      "evidence_id": "EV-LC-012",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q16_update_merge_edge",
+      "query_locator": "sql:Q16_update_merge_edge",
+      "request_digest": "sha256:0f62bbe69aed4cba523d1977efa183920dc029a8bd6c2e6053cb7acc1becac71",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:fe5f440a53482265933a3a253bad5d7e9259531879e56d0eeae149a03e5aff30",
+      "sequence": 12,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.runtime_verify_chain",
+      "evidence_id": "EV-LC-013",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q17_execution_profile_step_chain",
+      "query_locator": "sql:Q17_execution_profile_step_chain",
+      "request_digest": "sha256:6e7f01b93b8f7b36128271f031ebd691568619083f02716ebcd84f811dcb6891",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:4b4081763c79633e4cec688e3a71676b63e44734cb2cd649f890c875dccf2a09",
+      "sequence": 13,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.historical_regressions.runtime_executions",
+      "evidence_id": "EV-LC-014",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q18_latest_srcr_profile_executions",
+      "query_locator": "sql:Q18_latest_srcr_profile_executions",
+      "request_digest": "sha256:d8c3d1b6aff757c0e1e3ee1f798014a0dd4c8d571bb65cd5dfa82c3ede41bcb7",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:4582efe8da9bdb4eed8cd7c1f86fa44f5b0639d196c153d0d5430616a29797ae",
+      "sequence": 14,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.runtime_refresh",
+      "evidence_id": "EV-LC-015",
+      "observed_at": "2026-09-21T22:15:00-05:00",
+      "phase": 1,
+      "provider": "SUPABASE",
+      "query_id": "Q19_runtime_refresh_execution",
+      "query_locator": "sql:Q19_runtime_refresh_execution",
+      "request_digest": "sha256:7f94e4e4068ec802b4a2c2ca3991438725693c2a5f2209071296e005911b04db",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:4eab2f8c1bdd6e819d32be002b792019137e37005376854d9e5932a815394ac9",
+      "sequence": 15,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.execution_effect_reconciliation.create_registration_writer",
+      "evidence_id": "EV-LC-016",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "phase": 2,
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q20_db_functions_inserting_lf_activos",
+      "request_digest": "sha256:cf8858dc450d16d985731105f1fcd1b41d72912cd315e32dadf161ea437d7e24",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sequence": 16,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.execution_effect_reconciliation.trigger_writer",
+      "evidence_id": "EV-LC-017",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "phase": 2,
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q21_lifecycle_relevant_triggers",
+      "request_digest": "sha256:8804cc7eac1d8ef787d363b60e45465565b470bc1780a68024cd04e69c7ce699",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:3782a60ffc725653de877778519d5b5879227e7abf902ec92bfc9f705f2bd4b7",
+      "sequence": 17,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.canary_activation_consumers",
+      "evidence_id": "EV-LC-018",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "phase": 2,
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q22_next_gate_function_refs",
+      "request_digest": "sha256:fe267f06af9e1c97472b4e2a7a292246d61893d7a84afa5902177ac832f2886c",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:c68ea5a22eabc3b5bf06b72f101deca00c98dca03c3e6a996f18de3c79aea7f1",
+      "sequence": 18,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.historical_regressions.failure_terminality",
+      "evidence_id": "EV-LC-019",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "phase": 2,
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q23_failed_queue_vs_operation_execution",
+      "request_digest": "sha256:09686abf76faeb46a6fbcce2f0ff4f2ccf0abeafc22a27b5d14530ad91bd8cd4",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:45e735655f0d5fb7227765c5a6bd8251e8089f3c64c1744f23b036b870a9500d",
+      "sequence": 19,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.failure_bridge",
+      "evidence_id": "EV-LC-020",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "phase": 2,
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q24_queue_operation_bridge_functions",
+      "request_digest": "sha256:494dc842845ae8ce171323cfe9e6951a29ae5f0454fcaa41e885d58d97856f5f",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sequence": 20,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.retire_rollback_operationality",
+      "evidence_id": "EV-LC-021",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "phase": 2,
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q25_retire_rollback_action_inventory",
+      "request_digest": "sha256:380704a65edfe49acfc4b587eedca2c2268eeef652da77c5f541567dcbe61ec3",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:f6af98ea68df967523624130bc5862f40989d601ff5d931459ef7225ade550e4",
+      "sequence": 21,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.create_runtime_caller",
+      "evidence_id": "EV-LC-022",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "phase": 2,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/functions/run-creacion-perfil-lf/index.ts",
+      "request_digest": "sha256:97a103e33eef01956e577cff6c7ab2fa7743d94de36f31a07337b4d15d11762c",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:4286a17f526e1844ebb130429a2827289951cdb96c34b27ed4aaacbcf3368efa",
+      "sequence": 22,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.runtime_failure_persistence",
+      "evidence_id": "EV-LC-023",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "phase": 2,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "request_digest": "sha256:3aa7a1e660bcfbdad68adc761a37217366b843f08b2fc3b23a99f11a516c3423",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:a14dd1d35f258683b4a1c9c39eff32ba92a60d7828274729bbcd0edbf7c74510",
+      "sequence": 23,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.post_merge_reconcile",
+      "evidence_id": "EV-LC-024",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "phase": 2,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/migrations/20260921064000_lf_profile_update_research_baseline_reconcile_v1.sql",
+      "request_digest": "sha256:5056f710b8b281841a37d036b86d68223f3f8ef342aa972569e4ef56d8768ada",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:814b14fb3ab1e075ea842d2bab4cf4a98ac8dc64bfc203c96e063a6a7f5b05b2",
+      "sequence": 24,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.post_refresh_next_gate",
+      "evidence_id": "EV-LC-025",
+      "observed_at": "2026-09-21T22:35:00-05:00",
+      "phase": 2,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/migrations/20260921013000_lf_profile_runtime_source_refresh_operation_v1.sql",
+      "request_digest": "sha256:4fe0f6eb7d9ea5fd1b65a4345b714e38affa1020013c039b7bc197e41f52b6e3",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:2711640ce236114856ad5fb87a54d2b9f29532d84c50fd01779df3cbb60b3bc1",
+      "sequence": 25,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.transport.profile_task",
+      "evidence_id": "EV-LC-026",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/models.py",
+      "request_digest": "sha256:2fa0ee9b5a658356ecee4b89a6cc38fb305c89ae31d551f1161afa2e0a546ba9",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:b4fb0b2b4415ce3c07c1d085fc818952f148ef87c0e31c07831c5b7319d271cc",
+      "sequence": 26,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.transport.runtime_binding_parser",
+      "evidence_id": "EV-LC-027",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/repository.py",
+      "request_digest": "sha256:72108fd377c0d512946dc12ea6e6abb1577e54a7f20f498778a82917affff96b",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:7f52972108c2f3415b2311907f1aebb0979bd4a9d84dee85f8fce3dacd2cf507",
+      "sequence": 27,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.output_validation.invocation",
+      "evidence_id": "EV-LC-028",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/validation.py",
+      "request_digest": "sha256:5a2d09679775c73be0975d3b9d05a3d4623e64cc054373bd2de1cdfd89f0dd23",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:0aec13a82d24e07e343fe8a4edf344d83538f1a5c8fcf15a20821b86436e6dd0",
+      "sequence": 28,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.downstream_authorization",
+      "evidence_id": "EV-LC-029",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/engine.py",
+      "request_digest": "sha256:e668ca56297f46ec4a2ce791b1cb880154aa3ab4e66406d105b66c4cbc115c5a",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:df3b7febceac80d2380b5f821e59e11d469079dbeca64689eea61835087b8f5d",
+      "sequence": 29,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.quality_declared_contract",
+      "evidence_id": "EV-LC-030",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json",
+      "request_digest": "sha256:5fb6ff2f932db9eaf37c8050462ef87b0829b5d7ecd5bfba2be5f9f25251fe85",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:fc4c61433622421a4b86327fa116c090d4b5d6c065d2fa4757d63e887edec439",
+      "sequence": 30,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.output_validation.validator_signature",
+      "evidence_id": "EV-LC-031",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+      "request_digest": "sha256:dd1344873e7f1bebaf5176605229228f46886202e90fed6d9a95840955c97910",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:9371a5a1e709d072278aee39e83b9b8a8e5d8f01e2c7f8e3559346b3f893ed3b",
+      "sequence": 31,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.output_validation.semantic_signature",
+      "evidence_id": "EV-LC-032",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
+      "request_digest": "sha256:e29826b5fc5898dbf621229bde88df6f45a4390ea01db7ef48ec4fb168fec2ae",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:32288cb8cd3f85ab0ee53347479a7b57073468627bb2bc392fd9e86e512d54ec",
+      "sequence": 32,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.quality_receipt_validator",
+      "evidence_id": "EV-LC-033",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/validate_quality_receipt.py",
+      "request_digest": "sha256:04ccdabc957324416e929f00e01d30655497039fd7af295f71b8525d47220d9c",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:f54b1a60a5cbe7e2c29bf7cbe5a43f73ed2b7281b64215d24fb4e1c7c2d1e2fb",
+      "sequence": 33,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.material_process_graph.semantic_judge_handoff",
+      "evidence_id": "EV-LC-034",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "request_digest": "sha256:3aa7a1e660bcfbdad68adc761a37217366b843f08b2fc3b23a99f11a516c3423",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:a14dd1d35f258683b4a1c9c39eff32ba92a60d7828274729bbcd0edbf7c74510",
+      "sequence": 34,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.historical_regressions.persisted_quality_receipts",
+      "evidence_id": "EV-LC-035",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q26_srcr_quality_receipt_rows",
+      "request_digest": "sha256:42eb20f46503fa48efe939676818804bcff167913bf2fcff6f044360bf173cb6",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sequence": 35,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.material_process_graph.semantic_judge_enforcement",
+      "evidence_id": "EV-LC-036",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "phase": 3,
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q27_srcr_semantic_judge_operation_binding",
+      "request_digest": "sha256:c1348770df580beaf20df0750605cad32258982181841156b6671141fc359759",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "result_digest": "sha256:05fc474e6995043e08322d6ddb6a00ed029999e260a6d108bf50eedef0768621",
+      "sequence": 36,
+      "tool_permission": "READ_SUPABASE"
+    },
+    {
+      "consumer": "$.profile_pack_validation.self_validator",
+      "evidence_id": "EV-LC-037",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "phase": 4,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/validate_pack.py",
+      "request_digest": "sha256:e2f6e434e85f87113cb17655e338fd960233eb1bdc45e6d3b7e927c53ccfc20d",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:833d25b3a5700f3802b7b9e7054614ddbd4e52fe1955bf25cb0ae241b505be12",
+      "sequence": 37,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.profile_pack_validation.output_schema",
+      "evidence_id": "EV-LC-038",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "phase": 4,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+      "request_digest": "sha256:f05eb3f84a6b1d04cb453d0eff4bbb5234bf7ed5e900a941e1d9b07b902e8bbb",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:20976ea82219d55f394c8183c038778ae8bb26c0e72bcccc744db184e862a94a",
+      "sequence": 38,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.historical_regressions.deep_pack_validation",
+      "evidence_id": "EV-LC-039",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "phase": 4,
+      "provider": "GITHUB",
+      "query_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106607329745/logs",
+      "request_digest": "sha256:b8e7fb3fc41dd974952832eab3b207d60489c9e2c26b178c9198c782d554e75f",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:02a185c9f238343c245eabd457450af139a4d20f93c895c05208ffa88a657e51",
+      "sequence": 39,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.ci_applicability.validate_lf_packs",
+      "evidence_id": "EV-LC-040",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "phase": 4,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/.github/workflows/validate-lf-packs.yml",
+      "request_digest": "sha256:1bf55cff79fec410525610f768567a687935011ddf026992ec090470affdfd14",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:7d514e85717df9a4447d9cb0b30c4eba27d528b08696e038d963d18e25915f96",
+      "sequence": 40,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.ci_applicability.lf_contract_check",
+      "evidence_id": "EV-LC-041",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "phase": 4,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/.github/workflows/lf-contract-check.yml",
+      "request_digest": "sha256:2fb00969bf54835e30885284e3fed15ed6173dd3005e5fc4a2923167cbaef97e",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:621162f34c7c5a376ddd9876a285c4b04741fcfcf01ab194a8c6f1281d2a16c7",
+      "sequence": 41,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.historical_regressions.new_branch_push_validate",
+      "evidence_id": "EV-LC-042",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "phase": 4,
+      "provider": "GITHUB",
+      "query_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106601722653/logs",
+      "request_digest": "sha256:fa54489c97ddd51dae024ccbe00fa4049cdb4bd8b80888bafe0eca1a95483450",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:889c5d936d43f56a4f2544c7b7dd5edb4b7afa8e9c3796cc9c19494ac597f62b",
+      "sequence": 42,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.historical_regressions.new_branch_push_contract",
+      "evidence_id": "EV-LC-043",
+      "observed_at": "2026-09-21T22:55:00-05:00",
+      "phase": 4,
+      "provider": "GITHUB",
+      "query_locator": "https://api.github.com/repos/cristhianlujan/claude-persona-lf-patch/actions/jobs/106601741367/logs",
+      "request_digest": "sha256:eebe82ced6fd976c481ea439c26d26bdbd3154923491273b6f459631dea9e45b",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:d7f77c903577cbf53d05aa8b626b5b736bec46053991a1169f48548cb4bd25d5",
+      "sequence": 43,
+      "tool_permission": "READ_GITHUB"
+    },
+    {
+      "consumer": "$.profile_pack_validation.v05_architecture_audit_contract",
+      "evidence_id": "EV-LC-044",
+      "observed_at": "2026-09-21T22:58:00-05:00",
+      "phase": 4,
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/evals/v05_producer_depth_cases.py",
+      "request_digest": "sha256:f2784825a8c41017b4a099ae1a8fdd8980e4a85619c70a97d4f2aea846612b67",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "result_digest": "sha256:9a874c4f24fd2b47a28d151df3c50bbe37509f4858989460b74746e3a13df4d5",
+      "sequence": 44,
+      "tool_permission": "READ_GITHUB"
+    }
+  ],
+  "trace_count": 44
+}

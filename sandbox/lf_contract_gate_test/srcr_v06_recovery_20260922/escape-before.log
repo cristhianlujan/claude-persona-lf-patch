@@ -1,0 +1,532 @@
+FFFFFFFFFFFF.                                                        [100%]
+=================================== FAILURES ===================================
+____ test_nonclean_validator_can_never_accept_quality[bad_result0-semantic] ____
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc203410>
+component = 'semantic', bad_result = {'status': 'FAIL', 'blocking_codes': []}
+
+    @pytest.mark.parametrize("component", ["semantic", "receipt"])
+    @pytest.mark.parametrize("bad_result", [
+        {"status": "FAIL", "blocking_codes": []},
+        {"status": "BLOCKED"},
+        {"status": "PASS", "blocking_codes": ["UNRESOLVED"]},
+        {"status": "PASS", "blocking_codes": "INVALID_SHAPE"},
+    ])
+    def test_nonclean_validator_can_never_accept_quality(quality, component, bad_result):
+        semantic = {"status": "PASS", "blocking_codes": []}
+        receipt = {"status": "PASS", "blocking_codes": [], "canonical_quality_accepted": True}
+        if component == "semantic":
+            semantic = bad_result
+        else:
+            receipt = dict(bad_result, canonical_quality_accepted=True)
+        result = quality.canonical_quality(
+            profile_slug="p", candidate={"profile_pack_id": "PACK", "answer": "good"},
+            evidence_manifest={}, semantic_result={"validator_result": semantic},
+            quality_receipt={"validator_result": receipt},
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:72: AssertionError
+____ test_nonclean_validator_can_never_accept_quality[bad_result0-receipt] _____
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc237140>
+component = 'receipt', bad_result = {'status': 'FAIL', 'blocking_codes': []}
+
+    @pytest.mark.parametrize("component", ["semantic", "receipt"])
+    @pytest.mark.parametrize("bad_result", [
+        {"status": "FAIL", "blocking_codes": []},
+        {"status": "BLOCKED"},
+        {"status": "PASS", "blocking_codes": ["UNRESOLVED"]},
+        {"status": "PASS", "blocking_codes": "INVALID_SHAPE"},
+    ])
+    def test_nonclean_validator_can_never_accept_quality(quality, component, bad_result):
+        semantic = {"status": "PASS", "blocking_codes": []}
+        receipt = {"status": "PASS", "blocking_codes": [], "canonical_quality_accepted": True}
+        if component == "semantic":
+            semantic = bad_result
+        else:
+            receipt = dict(bad_result, canonical_quality_accepted=True)
+        result = quality.canonical_quality(
+            profile_slug="p", candidate={"profile_pack_id": "PACK", "answer": "good"},
+            evidence_manifest={}, semantic_result={"validator_result": semantic},
+            quality_receipt={"validator_result": receipt},
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:72: AssertionError
+____ test_nonclean_validator_can_never_accept_quality[bad_result1-semantic] ____
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc2364b0>
+component = 'semantic', bad_result = {'status': 'BLOCKED'}
+
+    @pytest.mark.parametrize("component", ["semantic", "receipt"])
+    @pytest.mark.parametrize("bad_result", [
+        {"status": "FAIL", "blocking_codes": []},
+        {"status": "BLOCKED"},
+        {"status": "PASS", "blocking_codes": ["UNRESOLVED"]},
+        {"status": "PASS", "blocking_codes": "INVALID_SHAPE"},
+    ])
+    def test_nonclean_validator_can_never_accept_quality(quality, component, bad_result):
+        semantic = {"status": "PASS", "blocking_codes": []}
+        receipt = {"status": "PASS", "blocking_codes": [], "canonical_quality_accepted": True}
+        if component == "semantic":
+            semantic = bad_result
+        else:
+            receipt = dict(bad_result, canonical_quality_accepted=True)
+        result = quality.canonical_quality(
+            profile_slug="p", candidate={"profile_pack_id": "PACK", "answer": "good"},
+            evidence_manifest={}, semantic_result={"validator_result": semantic},
+            quality_receipt={"validator_result": receipt},
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:72: AssertionError
+____ test_nonclean_validator_can_never_accept_quality[bad_result1-receipt] _____
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc202c30>
+component = 'receipt', bad_result = {'status': 'BLOCKED'}
+
+    @pytest.mark.parametrize("component", ["semantic", "receipt"])
+    @pytest.mark.parametrize("bad_result", [
+        {"status": "FAIL", "blocking_codes": []},
+        {"status": "BLOCKED"},
+        {"status": "PASS", "blocking_codes": ["UNRESOLVED"]},
+        {"status": "PASS", "blocking_codes": "INVALID_SHAPE"},
+    ])
+    def test_nonclean_validator_can_never_accept_quality(quality, component, bad_result):
+        semantic = {"status": "PASS", "blocking_codes": []}
+        receipt = {"status": "PASS", "blocking_codes": [], "canonical_quality_accepted": True}
+        if component == "semantic":
+            semantic = bad_result
+        else:
+            receipt = dict(bad_result, canonical_quality_accepted=True)
+        result = quality.canonical_quality(
+            profile_slug="p", candidate={"profile_pack_id": "PACK", "answer": "good"},
+            evidence_manifest={}, semantic_result={"validator_result": semantic},
+            quality_receipt={"validator_result": receipt},
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:72: AssertionError
+____ test_nonclean_validator_can_never_accept_quality[bad_result2-semantic] ____
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc2022a0>
+component = 'semantic'
+bad_result = {'status': 'PASS', 'blocking_codes': ['UNRESOLVED']}
+
+    @pytest.mark.parametrize("component", ["semantic", "receipt"])
+    @pytest.mark.parametrize("bad_result", [
+        {"status": "FAIL", "blocking_codes": []},
+        {"status": "BLOCKED"},
+        {"status": "PASS", "blocking_codes": ["UNRESOLVED"]},
+        {"status": "PASS", "blocking_codes": "INVALID_SHAPE"},
+    ])
+    def test_nonclean_validator_can_never_accept_quality(quality, component, bad_result):
+        semantic = {"status": "PASS", "blocking_codes": []}
+        receipt = {"status": "PASS", "blocking_codes": [], "canonical_quality_accepted": True}
+        if component == "semantic":
+            semantic = bad_result
+        else:
+            receipt = dict(bad_result, canonical_quality_accepted=True)
+        result = quality.canonical_quality(
+            profile_slug="p", candidate={"profile_pack_id": "PACK", "answer": "good"},
+            evidence_manifest={}, semantic_result={"validator_result": semantic},
+            quality_receipt={"validator_result": receipt},
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:72: AssertionError
+____ test_nonclean_validator_can_never_accept_quality[bad_result2-receipt] _____
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc399d00>
+component = 'receipt'
+bad_result = {'status': 'PASS', 'blocking_codes': ['UNRESOLVED']}
+
+    @pytest.mark.parametrize("component", ["semantic", "receipt"])
+    @pytest.mark.parametrize("bad_result", [
+        {"status": "FAIL", "blocking_codes": []},
+        {"status": "BLOCKED"},
+        {"status": "PASS", "blocking_codes": ["UNRESOLVED"]},
+        {"status": "PASS", "blocking_codes": "INVALID_SHAPE"},
+    ])
+    def test_nonclean_validator_can_never_accept_quality(quality, component, bad_result):
+        semantic = {"status": "PASS", "blocking_codes": []}
+        receipt = {"status": "PASS", "blocking_codes": [], "canonical_quality_accepted": True}
+        if component == "semantic":
+            semantic = bad_result
+        else:
+            receipt = dict(bad_result, canonical_quality_accepted=True)
+        result = quality.canonical_quality(
+            profile_slug="p", candidate={"profile_pack_id": "PACK", "answer": "good"},
+            evidence_manifest={}, semantic_result={"validator_result": semantic},
+            quality_receipt={"validator_result": receipt},
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:72: AssertionError
+____ test_nonclean_validator_can_never_accept_quality[bad_result3-semantic] ____
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc237710>
+component = 'semantic'
+bad_result = {'status': 'PASS', 'blocking_codes': 'INVALID_SHAPE'}
+
+    @pytest.mark.parametrize("component", ["semantic", "receipt"])
+    @pytest.mark.parametrize("bad_result", [
+        {"status": "FAIL", "blocking_codes": []},
+        {"status": "BLOCKED"},
+        {"status": "PASS", "blocking_codes": ["UNRESOLVED"]},
+        {"status": "PASS", "blocking_codes": "INVALID_SHAPE"},
+    ])
+    def test_nonclean_validator_can_never_accept_quality(quality, component, bad_result):
+        semantic = {"status": "PASS", "blocking_codes": []}
+        receipt = {"status": "PASS", "blocking_codes": [], "canonical_quality_accepted": True}
+        if component == "semantic":
+            semantic = bad_result
+        else:
+            receipt = dict(bad_result, canonical_quality_accepted=True)
+        result = quality.canonical_quality(
+            profile_slug="p", candidate={"profile_pack_id": "PACK", "answer": "good"},
+            evidence_manifest={}, semantic_result={"validator_result": semantic},
+            quality_receipt={"validator_result": receipt},
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:72: AssertionError
+____ test_nonclean_validator_can_never_accept_quality[bad_result3-receipt] _____
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fcfff2f0>
+component = 'receipt'
+bad_result = {'status': 'PASS', 'blocking_codes': 'INVALID_SHAPE'}
+
+    @pytest.mark.parametrize("component", ["semantic", "receipt"])
+    @pytest.mark.parametrize("bad_result", [
+        {"status": "FAIL", "blocking_codes": []},
+        {"status": "BLOCKED"},
+        {"status": "PASS", "blocking_codes": ["UNRESOLVED"]},
+        {"status": "PASS", "blocking_codes": "INVALID_SHAPE"},
+    ])
+    def test_nonclean_validator_can_never_accept_quality(quality, component, bad_result):
+        semantic = {"status": "PASS", "blocking_codes": []}
+        receipt = {"status": "PASS", "blocking_codes": [], "canonical_quality_accepted": True}
+        if component == "semantic":
+            semantic = bad_result
+        else:
+            receipt = dict(bad_result, canonical_quality_accepted=True)
+        result = quality.canonical_quality(
+            profile_slug="p", candidate={"profile_pack_id": "PACK", "answer": "good"},
+            evidence_manifest={}, semantic_result={"validator_result": semantic},
+            quality_receipt={"validator_result": receipt},
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:72: AssertionError
+___________________ test_quality_acceptance_must_be_explicit ___________________
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc284bf0>
+
+    def test_quality_acceptance_must_be_explicit(quality):
+        result = quality.canonical_quality(
+            profile_slug="p", candidate={"profile_pack_id": "PACK", "answer": "good"},
+            evidence_manifest={}, semantic_result={"validator_result": {"status": "PASS", "blocking_codes": []}},
+            quality_receipt={"validator_result": {"status": "PASS", "blocking_codes": []}},
+        )
+>       assert result["canonical_quality_accepted"] is False
+E       assert True is False
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:83: AssertionError
+_ test_finalization_cannot_bypass_candidate_floors[candidate0-OUTPUT_SCHEMA_VALIDATION_FAILED] _
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc2868d0>
+candidate = {'profile_pack_id': 'PACK'}
+expected = 'OUTPUT_SCHEMA_VALIDATION_FAILED'
+
+    @pytest.mark.parametrize("candidate,expected", [
+        ({"profile_pack_id": "PACK"}, "OUTPUT_SCHEMA_VALIDATION_FAILED"),
+        ({"profile_pack_id": "PACK", "answer": "bad"}, "CONTRACT_FAILED"),
+        ({"profile_pack_id": "PACK", "answer": "shallow"}, "UTILITY_FAILED"),
+    ])
+    def test_finalization_cannot_bypass_candidate_floors(quality, candidate, expected):
+        result = quality.canonical_quality_finalize(
+            profile_slug="p", candidate=candidate, evidence_manifest={}, scope_authority_packet={},
+            semantic_result={"validator_result": {"status": "PASS", "blocking_codes": []}},
+            candidate_revision="candidate-1", semantic_execution_receipt_ref="review://1",
+            producer_execution_id="producer-1", reviewer_execution_id="reviewer-1",
+            producer_execution_receipt_ref="producer://1", issued_at="2026-09-22T06:00:00Z",
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:99: AssertionError
+_ test_finalization_cannot_bypass_candidate_floors[candidate1-CONTRACT_FAILED] _
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc287770>
+candidate = {'profile_pack_id': 'PACK', 'answer': 'bad'}
+expected = 'CONTRACT_FAILED'
+
+    @pytest.mark.parametrize("candidate,expected", [
+        ({"profile_pack_id": "PACK"}, "OUTPUT_SCHEMA_VALIDATION_FAILED"),
+        ({"profile_pack_id": "PACK", "answer": "bad"}, "CONTRACT_FAILED"),
+        ({"profile_pack_id": "PACK", "answer": "shallow"}, "UTILITY_FAILED"),
+    ])
+    def test_finalization_cannot_bypass_candidate_floors(quality, candidate, expected):
+        result = quality.canonical_quality_finalize(
+            profile_slug="p", candidate=candidate, evidence_manifest={}, scope_authority_packet={},
+            semantic_result={"validator_result": {"status": "PASS", "blocking_codes": []}},
+            candidate_revision="candidate-1", semantic_execution_receipt_ref="review://1",
+            producer_execution_id="producer-1", reviewer_execution_id="reviewer-1",
+            producer_execution_receipt_ref="producer://1", issued_at="2026-09-22T06:00:00Z",
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:99: AssertionError
+_ test_finalization_cannot_bypass_candidate_floors[candidate2-UTILITY_FAILED] __
+
+quality = <profile_runtime_api.validation.OutputGates object at 0x7fa2fc285670>
+candidate = {'profile_pack_id': 'PACK', 'answer': 'shallow'}
+expected = 'UTILITY_FAILED'
+
+    @pytest.mark.parametrize("candidate,expected", [
+        ({"profile_pack_id": "PACK"}, "OUTPUT_SCHEMA_VALIDATION_FAILED"),
+        ({"profile_pack_id": "PACK", "answer": "bad"}, "CONTRACT_FAILED"),
+        ({"profile_pack_id": "PACK", "answer": "shallow"}, "UTILITY_FAILED"),
+    ])
+    def test_finalization_cannot_bypass_candidate_floors(quality, candidate, expected):
+        result = quality.canonical_quality_finalize(
+            profile_slug="p", candidate=candidate, evidence_manifest={}, scope_authority_packet={},
+            semantic_result={"validator_result": {"status": "PASS", "blocking_codes": []}},
+            candidate_revision="candidate-1", semantic_execution_receipt_ref="review://1",
+            producer_execution_id="producer-1", reviewer_execution_id="reviewer-1",
+            producer_execution_receipt_ref="producer://1", issued_at="2026-09-22T06:00:00Z",
+        )
+>       assert result["status"] == "FAIL"
+E       AssertionError: assert 'PASS' == 'FAIL'
+E         
+E         - FAIL
+E         + PASS
+
+services/profile_runtime_api/tests/test_canonical_quality_acceptance.py:99: AssertionError
+_ EngineGateTest.test_both_execution_paths_preserve_canonical_quality_gate_result (route='queue', status='BLOCKED_BY_DETERMINISTIC_FLOORS') _
+
+self = <tests.test_engine.EngineGateTest testMethod=test_both_execution_paths_preserve_canonical_quality_gate_result>
+
+    def test_both_execution_paths_preserve_canonical_quality_gate_result(self) -> None:
+        for route in ("queue", "artifact"):
+            for status in ("BLOCKED_BY_DETERMINISTIC_FLOORS", "PENDING_INDEPENDENT_SEMANTIC_REVIEW"):
+                with self.subTest(route=route, status=status):
+                    engine, _pipeline = self.engine(valid_quality_output())
+                    boundary = {
+                        "applicability": "REQUIRED",
+                        "status": status,
+                        "blocking_codes": ["FAILED_FLOOR"] if status.startswith("BLOCKED") else [],
+                        "canonical_quality_accepted": False,
+                        "downstream_authorized": False,
+                    }
+                    task = self.quality_task("quality-boundary-" + route)
+                    with patch.object(engine.gates, "canonical_quality_boundary", return_value=boundary) as gate:
+                        if route == "queue":
+                            result = engine.run_queue_execute(QueueExecuteRequest(profile=task))["result"]
+                        else:
+                            result = engine.run_execute(ExecuteRequest(
+                                artifact=self.artifact,
+                                input_governance=self.governance,
+                                profile=task,
+                            ))["result"]
+                    gate.assert_called_once()
+>                   self.assertEqual(result["canonical_quality"], boundary)
+E                   AssertionError: {'applicability': 'NOT_BOUND', 'status': 'NOT_EVALUATED', 'd[24 chars]alse} != {'applicability': 'REQUIRED', 'status': 'BLOCKED_BY_DETERMIN[114 chars]alse}
+E                   - {'applicability': 'NOT_BOUND',
+E                   ?                    ^^^^^^ ^
+E                   
+E                   + {'applicability': 'REQUIRED',
+E                   ?                    ^^^ ^^^
+E                   
+E                   +  'blocking_codes': ['FAILED_FLOOR'],
+E                   +  'canonical_quality_accepted': False,
+E                      'downstream_authorized': False,
+E                   -  'status': 'NOT_EVALUATED'}
+E                   +  'status': 'BLOCKED_BY_DETERMINISTIC_FLOORS'}
+
+services/profile_runtime_api/tests/test_engine.py:397: AssertionError
+_ EngineGateTest.test_both_execution_paths_preserve_canonical_quality_gate_result (route='queue', status='PENDING_INDEPENDENT_SEMANTIC_REVIEW') _
+
+self = <tests.test_engine.EngineGateTest testMethod=test_both_execution_paths_preserve_canonical_quality_gate_result>
+
+    def test_both_execution_paths_preserve_canonical_quality_gate_result(self) -> None:
+        for route in ("queue", "artifact"):
+            for status in ("BLOCKED_BY_DETERMINISTIC_FLOORS", "PENDING_INDEPENDENT_SEMANTIC_REVIEW"):
+                with self.subTest(route=route, status=status):
+                    engine, _pipeline = self.engine(valid_quality_output())
+                    boundary = {
+                        "applicability": "REQUIRED",
+                        "status": status,
+                        "blocking_codes": ["FAILED_FLOOR"] if status.startswith("BLOCKED") else [],
+                        "canonical_quality_accepted": False,
+                        "downstream_authorized": False,
+                    }
+                    task = self.quality_task("quality-boundary-" + route)
+                    with patch.object(engine.gates, "canonical_quality_boundary", return_value=boundary) as gate:
+                        if route == "queue":
+                            result = engine.run_queue_execute(QueueExecuteRequest(profile=task))["result"]
+                        else:
+                            result = engine.run_execute(ExecuteRequest(
+                                artifact=self.artifact,
+                                input_governance=self.governance,
+                                profile=task,
+                            ))["result"]
+                    gate.assert_called_once()
+>                   self.assertEqual(result["canonical_quality"], boundary)
+E                   AssertionError: {'applicability': 'NOT_BOUND', 'status': 'NOT_EVALUATED', 'd[24 chars]alse} != {'applicability': 'REQUIRED', 'status': 'PENDING_INDEPENDENT[104 chars]alse}
+E                   - {'applicability': 'NOT_BOUND',
+E                   ?                    ^^^^^^ ^
+E                   
+E                   + {'applicability': 'REQUIRED',
+E                   ?                    ^^^ ^^^
+E                   
+E                   +  'blocking_codes': [],
+E                   +  'canonical_quality_accepted': False,
+E                      'downstream_authorized': False,
+E                   -  'status': 'NOT_EVALUATED'}
+E                   +  'status': 'PENDING_INDEPENDENT_SEMANTIC_REVIEW'}
+
+services/profile_runtime_api/tests/test_engine.py:397: AssertionError
+_ EngineGateTest.test_both_execution_paths_preserve_canonical_quality_gate_result (route='artifact', status='BLOCKED_BY_DETERMINISTIC_FLOORS') _
+
+self = <tests.test_engine.EngineGateTest testMethod=test_both_execution_paths_preserve_canonical_quality_gate_result>
+
+    def test_both_execution_paths_preserve_canonical_quality_gate_result(self) -> None:
+        for route in ("queue", "artifact"):
+            for status in ("BLOCKED_BY_DETERMINISTIC_FLOORS", "PENDING_INDEPENDENT_SEMANTIC_REVIEW"):
+                with self.subTest(route=route, status=status):
+                    engine, _pipeline = self.engine(valid_quality_output())
+                    boundary = {
+                        "applicability": "REQUIRED",
+                        "status": status,
+                        "blocking_codes": ["FAILED_FLOOR"] if status.startswith("BLOCKED") else [],
+                        "canonical_quality_accepted": False,
+                        "downstream_authorized": False,
+                    }
+                    task = self.quality_task("quality-boundary-" + route)
+                    with patch.object(engine.gates, "canonical_quality_boundary", return_value=boundary) as gate:
+                        if route == "queue":
+                            result = engine.run_queue_execute(QueueExecuteRequest(profile=task))["result"]
+                        else:
+                            result = engine.run_execute(ExecuteRequest(
+                                artifact=self.artifact,
+                                input_governance=self.governance,
+                                profile=task,
+                            ))["result"]
+                    gate.assert_called_once()
+>                   self.assertEqual(result["canonical_quality"], boundary)
+E                   AssertionError: {'applicability': 'NOT_BOUND', 'status': 'NOT_EVALUATED', 'd[24 chars]alse} != {'applicability': 'REQUIRED', 'status': 'BLOCKED_BY_DETERMIN[114 chars]alse}
+E                   - {'applicability': 'NOT_BOUND',
+E                   ?                    ^^^^^^ ^
+E                   
+E                   + {'applicability': 'REQUIRED',
+E                   ?                    ^^^ ^^^
+E                   
+E                   +  'blocking_codes': ['FAILED_FLOOR'],
+E                   +  'canonical_quality_accepted': False,
+E                      'downstream_authorized': False,
+E                   -  'status': 'NOT_EVALUATED'}
+E                   +  'status': 'BLOCKED_BY_DETERMINISTIC_FLOORS'}
+
+services/profile_runtime_api/tests/test_engine.py:397: AssertionError
+_ EngineGateTest.test_both_execution_paths_preserve_canonical_quality_gate_result (route='artifact', status='PENDING_INDEPENDENT_SEMANTIC_REVIEW') _
+
+self = <tests.test_engine.EngineGateTest testMethod=test_both_execution_paths_preserve_canonical_quality_gate_result>
+
+    def test_both_execution_paths_preserve_canonical_quality_gate_result(self) -> None:
+        for route in ("queue", "artifact"):
+            for status in ("BLOCKED_BY_DETERMINISTIC_FLOORS", "PENDING_INDEPENDENT_SEMANTIC_REVIEW"):
+                with self.subTest(route=route, status=status):
+                    engine, _pipeline = self.engine(valid_quality_output())
+                    boundary = {
+                        "applicability": "REQUIRED",
+                        "status": status,
+                        "blocking_codes": ["FAILED_FLOOR"] if status.startswith("BLOCKED") else [],
+                        "canonical_quality_accepted": False,
+                        "downstream_authorized": False,
+                    }
+                    task = self.quality_task("quality-boundary-" + route)
+                    with patch.object(engine.gates, "canonical_quality_boundary", return_value=boundary) as gate:
+                        if route == "queue":
+                            result = engine.run_queue_execute(QueueExecuteRequest(profile=task))["result"]
+                        else:
+                            result = engine.run_execute(ExecuteRequest(
+                                artifact=self.artifact,
+                                input_governance=self.governance,
+                                profile=task,
+                            ))["result"]
+                    gate.assert_called_once()
+>                   self.assertEqual(result["canonical_quality"], boundary)
+E                   AssertionError: {'applicability': 'NOT_BOUND', 'status': 'NOT_EVALUATED', 'd[24 chars]alse} != {'applicability': 'REQUIRED', 'status': 'PENDING_INDEPENDENT[104 chars]alse}
+E                   - {'applicability': 'NOT_BOUND',
+E                   ?                    ^^^^^^ ^
+E                   
+E                   + {'applicability': 'REQUIRED',
+E                   ?                    ^^^ ^^^
+E                   
+E                   +  'blocking_codes': [],
+E                   +  'canonical_quality_accepted': False,
+E                      'downstream_authorized': False,
+E                   -  'status': 'NOT_EVALUATED'}
+E                   +  'status': 'PENDING_INDEPENDENT_SEMANTIC_REVIEW'}
+
+services/profile_runtime_api/tests/test_engine.py:397: AssertionError
+=========================== short test summary info ============================
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_nonclean_validator_can_never_accept_quality[bad_result0-semantic]
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_nonclean_validator_can_never_accept_quality[bad_result0-receipt]
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_nonclean_validator_can_never_accept_quality[bad_result1-semantic]
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_nonclean_validator_can_never_accept_quality[bad_result1-receipt]
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_nonclean_validator_can_never_accept_quality[bad_result2-semantic]
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_nonclean_validator_can_never_accept_quality[bad_result2-receipt]
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_nonclean_validator_can_never_accept_quality[bad_result3-semantic]
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_nonclean_validator_can_never_accept_quality[bad_result3-receipt]
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_quality_acceptance_must_be_explicit
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_finalization_cannot_bypass_candidate_floors[candidate0-OUTPUT_SCHEMA_VALIDATION_FAILED]
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_finalization_cannot_bypass_candidate_floors[candidate1-CONTRACT_FAILED]
+FAILED services/profile_runtime_api/tests/test_canonical_quality_acceptance.py::test_finalization_cannot_bypass_candidate_floors[candidate2-UTILITY_FAILED]
+SUBFAILED(route='queue', status='BLOCKED_BY_DETERMINISTIC_FLOORS') services/profile_runtime_api/tests/test_engine.py::EngineGateTest::test_both_execution_paths_preserve_canonical_quality_gate_result
+SUBFAILED(route='queue', status='PENDING_INDEPENDENT_SEMANTIC_REVIEW') services/profile_runtime_api/tests/test_engine.py::EngineGateTest::test_both_execution_paths_preserve_canonical_quality_gate_result
+SUBFAILED(route='artifact', status='BLOCKED_BY_DETERMINISTIC_FLOORS') services/profile_runtime_api/tests/test_engine.py::EngineGateTest::test_both_execution_paths_preserve_canonical_quality_gate_result
+SUBFAILED(route='artifact', status='PENDING_INDEPENDENT_SEMANTIC_REVIEW') services/profile_runtime_api/tests/test_engine.py::EngineGateTest::test_both_execution_paths_preserve_canonical_quality_gate_result
+16 failed, 1 passed in 0.47s

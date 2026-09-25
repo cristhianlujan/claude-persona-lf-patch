@@ -1,0 +1,144 @@
+{
+  "packet_version": "LF_SCOPE_AUTHORITY_PACKET_V1",
+  "execution_id": "EXEC-SRCR-LIFECYCLE-DEEP-BLIND-HANDOFF-20260921",
+  "subject_ref": "supabase://public.lf_eventos/14795#CASE_PACKET",
+  "authorized_requirements": [
+    {
+      "id": "REQ-LC-01",
+      "statement": "separate declared behavior from physically executed/wired behavior",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "REQ-LC-02",
+      "statement": "inspect all lifecycle phases even if no known issue is listed",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "REQ-LC-03",
+      "statement": "discover new material gaps independently",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "REQ-LC-04",
+      "statement": "assess whether components/controls should exist before preserving them",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "REQ-LC-05",
+      "statement": "compare at least three materially distinct alternatives when a material repair is justified",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "REQ-LC-06",
+      "statement": "do not invent authority, numeric policy, consumer, wiring, or currentness",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "REQ-LC-07",
+      "statement": "if missing evidence can change architecture/enforcement/wiring/transition/rollback/acceptance, return NEEDS_MORE_EVIDENCE rather than forcing a repair spec",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "REQ-LC-08",
+      "statement": "if current authority proves the issue already resolved or not material, return NO_REPAIR_REQUIRED rather than fabricating work",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "REQ-LC-09",
+      "statement": "for SYSTEMIC_REPAIR_SPEC, leave zero open design decisions and produce an implementable package with transition, rollback, acceptance and falsification",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    }
+  ],
+  "constraints": [
+    {
+      "id": "CON-LC-01",
+      "statement": "Scope is Profile lifecycle end-to-end, not execution-lifecycle MR02.",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "CON-LC-02",
+      "statement": "Current authority must be inspected read-only across exact source/runtime/Supabase/EKB surfaces.",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    }
+  ],
+  "forbidden_changes": [
+    {
+      "id": "FORBID-LC-01",
+      "statement": "no code changes",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "FORBID-LC-02",
+      "statement": "no GitHub writes",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "FORBID-LC-03",
+      "statement": "no Supabase operational writes",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "FORBID-LC-04",
+      "statement": "no runtime activation",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "FORBID-LC-05",
+      "statement": "no production mutation",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "FORBID-LC-06",
+      "statement": "no merge/promotion",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "FORBID-LC-07",
+      "statement": "no prior-answer reuse",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    },
+    {
+      "id": "FORBID-LC-08",
+      "statement": "no MR02 optimization",
+      "source_refs": [
+        "supabase://public.lf_eventos/14795#CASE_PACKET"
+      ]
+    }
+  ]
+}

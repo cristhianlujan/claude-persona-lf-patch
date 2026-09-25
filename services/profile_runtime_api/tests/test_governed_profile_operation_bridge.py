@@ -77,6 +77,167 @@ def model_governance() -> dict:
 
 
 class GovernedBridgeOrderingTest(unittest.TestCase):
+
+    def test_srcr_external_authority_manifest_is_bound_into_governed_context(self) -> None:
+        manifest = {
+            "bundle_id": "SRCR-TEST",
+            "evidence": [
+                {
+                    "evidence_id": "EV-1",
+                    "subject": "current authority",
+                    "evidence_class": "OBSERVED_LIVE",
+                    "source_locator": "supabase://public/example/1",
+                    "revision_or_observed_at": "2026-09-22T00:00:00Z",
+                    "digest": "sha256:" + "1" * 64,
+                    "state": "CURRENT",
+                }
+            ],
+            "query_trace": [
+                {
+                    "sequence": 1,
+                    "tool_permission": "READ_SUPABASE",
+                    "resolver_id": "LF_SUPABASE_READBACK_V1",
+                    "provider": "SUPABASE",
+                    "query_locator": "supabase://public/example/1",
+                    "request_digest": "sha256:" + "2" * 64,
+                    "result_digest": "sha256:" + "1" * 64,
+                    "observed_at": "2026-09-22T00:00:00Z",
+                    "evidence_id": "EV-1",
+                    "consumer": "$.live_authority_packet",
+                    "result_status": "FOUND",
+                    "result_count": 1,
+                    "claim_support": "CONTENT",
+                }
+            ],
+        }
+        payload = {
+            "profile": {
+                "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+                "evidence_manifest": manifest,
+            }
+        }
+        external_resolution = {
+            "mode": "EXTERNAL_AUTHORITY_RESOLVER",
+            "resolved_authority_context": {
+                "EV-1": {
+                    "source_locator": "supabase://public/example/1",
+                    "digest": "sha256:" + "1" * 64,
+                    "result_status": "FOUND",
+                    "result_count": 1,
+                    "claim_support": "CONTENT",
+                    "resolved_value": {"fact": "live"},
+                }
+            },
+        }
+        bound = worker._bind_external_authority_resolution(
+            payload, model_governance(), external_resolution=external_resolution
+        )
+        capsule = bound["context_capsule"]
+        self.assertEqual(capsule["query_trace_count"], 1)
+        self.assertEqual(capsule["evidence_count"], 1)
+        self.assertEqual(
+            capsule["evidence_manifest_sha256"],
+            "sha256:" + worker._canonical_json_sha256(manifest),
+        )
+        self.assertEqual(
+            capsule["resolved_authority_context"]["EV-1"]["source_locator"],
+            "supabase://public/example/1",
+        )
+        self.assertEqual(capsule["research_execution_mode"], "EXTERNAL_AUTHORITY_RESOLVER")
+        self.assertEqual(capsule["resolved_authority_count"], 1)
+        self.assertEqual(
+            capsule["resolved_authority_context"]["EV-1"]["resolved_value"]["fact"],
+            "live",
+        )
+
+    def test_srcr_external_authority_binding_fails_closed_without_resolver_execution(self) -> None:
+        manifest = {
+            "bundle_id": "SRCR-TEST",
+            "evidence": [{
+                "evidence_id": "EV-1",
+                "subject": "current authority",
+                "evidence_class": "OBSERVED_LIVE",
+                "source_locator": "supabase://public/example/1",
+                "revision_or_observed_at": "2026-09-22T00:00:00Z",
+                "digest": "sha256:" + "1" * 64,
+                "state": "CURRENT",
+            }],
+            "query_trace": [{
+                "sequence": 1,
+                "tool_permission": "READ_SUPABASE",
+                "resolver_id": "LF_SUPABASE_READBACK_V1",
+                "provider": "SUPABASE",
+                "query_locator": "supabase://public/example/1",
+                "request_digest": "sha256:" + "2" * 64,
+                "result_digest": "sha256:" + "1" * 64,
+                "observed_at": "2026-09-22T00:00:00Z",
+                "evidence_id": "EV-1",
+                "consumer": "$.live_authority_packet",
+                "result_status": "FOUND",
+                "result_count": 1,
+                "claim_support": "CONTENT",
+            }],
+        }
+        payload = {"profile": {
+            "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            "evidence_manifest": manifest,
+        }}
+        with self.assertRaisesRegex(
+            RuntimeError, "SRCR_LIVE_RESEARCH_EXECUTION_PATH_MISSING"
+        ):
+            worker._bind_external_authority_resolution(payload, model_governance())
+
+    def test_srcr_research_queue_payload_transports_manifest_and_resolved_values(self) -> None:
+        manifest = {
+            "bundle_id": "SRCR-TEST",
+            "evidence": [{"evidence_id": "EV-1"}],
+            "query_trace": [{"evidence_id": "EV-1"}],
+        }
+        claimed_payload = claimed()
+        claimed_payload.update({
+            "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            "profile_slug": "systemic_root_cause_repair_lf",
+            "profile_source_paths": ["profiles/systemic_root_cause_repair_lf/SKILL.md"],
+            "runtime_request_envelope": {
+                "schema": "LF_PROFILE_RUNTIME_QUEUE_RESEARCH_V1",
+                "route_kind": "QUEUE_NATIVE_RESEARCH",
+                "research_execution_mode": "EXTERNAL_AUTHORITY_RESOLVER",
+                "evidence_manifest": manifest,
+                "resolved_authority_context": {
+                    "EV-1": {
+                        "source_locator": "supabase://public/example/1",
+                        "digest": "sha256:" + "1" * 64,
+                        "resolved_value": {"fact": "live"},
+                    }
+                },
+            },
+        })
+        payload = worker._queue_native_payload(claimed_payload)
+        self.assertEqual(payload["profile"]["evidence_manifest"], manifest)
+        self.assertEqual(
+            payload["_external_authority_resolution"]["mode"],
+            "EXTERNAL_AUTHORITY_RESOLVER",
+        )
+
+    def test_srcr_external_authority_binding_fails_closed_without_manifest(self) -> None:
+        payload = {
+            "profile": {
+                "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            }
+        }
+        with self.assertRaisesRegex(
+            RuntimeError, "SRCR_EVIDENCE_MANIFEST_REQUIRED_BEFORE_MODEL"
+        ):
+            worker._bind_external_authority_resolution(payload, model_governance())
+
+    def test_non_srcr_profile_keeps_governed_context_unchanged(self) -> None:
+        governed = model_governance()
+        payload = {"profile": {"profile_code": "PERFIL-QUALITY-PACK"}}
+        self.assertIs(
+            worker._bind_external_authority_resolution(payload, governed),
+            governed,
+        )
+
     def test_not_required_skips_baseline_model_endpoint(self) -> None:
         calls: list[tuple[str, str]] = []
         governed = {
@@ -142,6 +303,194 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         self.assertLess(events.index("/v1/profile/research-baseline"), events.index("baseline-persisted"))
         self.assertLess(events.index("baseline-persisted"), events.index("/v1/profile/queue-execute"))
         self.assertLess(events.index("/v1/profile/queue-execute"), events.index("main-persisted"))
+
+
+    def test_output_validate_persists_required_canonical_quality_boundary(self) -> None:
+        profile = {
+            "runtime_completion": {"status": "PASS", "receipt": {}},
+            "profile_contract_valid": {"status": "PASS", "blocking_codes": []},
+            "semantic_utility": {"status": "PASS", "blocking_codes": []},
+            "canonical_quality": {
+                "applicability": "REQUIRED",
+                "status": "PENDING_INDEPENDENT_SEMANTIC_REVIEW",
+                "deterministic_floors_can_accept_quality": False,
+                "receipt_required_for_pass_to_quality_pack": True,
+            },
+            "raw_output": '{"profile_pack_id":"SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"}',
+        }
+        job = {"result": {"result": profile}}
+        captured: dict[str, dict] = {}
+
+        class Cursor:
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+
+        class Conn(FakeConn):
+            def cursor(self): return Cursor()
+
+        def fetch(_cur, _query, params):
+            step_id = params[1]
+            payload = params[3].obj
+            captured[step_id] = payload
+            return {"outcome": "STEP_RECORDED"}
+
+        governed = {
+            "execution_id": model_governance()["execution_id"],
+            "source": {
+                "profile_source_digest": "sha256:" + "b" * 64,
+                "source_revision": "c" * 40,
+            },
+        }
+        with (
+            patch.object(worker, "_profile_result", return_value=profile),
+            patch.object(worker, "_read_model_governance", return_value=model_governance()),
+            patch.object(worker, "_fetch_json_scalar", side_effect=fetch),
+        ):
+            result = worker._record_post_model_governance(
+                Conn(),
+                claimed=claimed(),
+                governed=governed,
+                job=job,
+            )
+        self.assertEqual(result["status"], "READY_FOR_SEMANTIC_JUDGE")
+        self.assertEqual(result["canonical_quality"]["applicability"], "REQUIRED")
+        self.assertEqual(
+            captured["output_validate"]["canonical_quality"]["status"],
+            "PENDING_INDEPENDENT_SEMANTIC_REVIEW",
+        )
+
+    def test_invalid_required_canonical_quality_boundary_blocks(self) -> None:
+        profile = {
+            "runtime_completion": {"status": "PASS", "receipt": {}},
+            "profile_contract_valid": {"status": "PASS", "blocking_codes": []},
+            "semantic_utility": {"status": "PASS", "blocking_codes": []},
+            "canonical_quality": {
+                "applicability": "REQUIRED",
+                "status": "PASS",
+                "deterministic_floors_can_accept_quality": True,
+                "receipt_required_for_pass_to_quality_pack": False,
+            },
+            "raw_output": '{}',
+        }
+        job = {"result": {"result": profile}}
+        class Cursor:
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+        class Conn(FakeConn):
+            def cursor(self): return Cursor()
+        governed = {
+            "execution_id": model_governance()["execution_id"],
+            "source": {
+                "profile_source_digest": "sha256:" + "b" * 64,
+                "source_revision": "c" * 40,
+            },
+        }
+        with (
+            patch.object(worker, "_profile_result", return_value=profile),
+            patch.object(worker, "_read_model_governance", return_value=model_governance()),
+            patch.object(worker, "_fetch_json_scalar", return_value={"outcome": "STEP_RECORDED"}),
+        ):
+            result = worker._record_post_model_governance(
+                Conn(), claimed=claimed(), governed=governed, job=job
+            )
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(
+            result["error_code"],
+            "HETZNER_CANONICAL_QUALITY_BOUNDARY_INVALID",
+        )
+
+
+
+    def test_validated_semantic_quality_records_judge_then_report_output(self) -> None:
+        captured: list[tuple[str, dict]] = []
+
+        class Cursor:
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+
+        class Conn(FakeConn):
+            def __init__(self): self.commits = 0
+            def cursor(self): return Cursor()
+            def commit(self): self.commits += 1
+
+        def fetch(_cur, _query, params):
+            step_id = params[1]
+            payload = params[3].obj
+            captured.append((step_id, payload))
+            return {"outcome": "STEP_RECORDED"}
+
+        finalize = {
+            "status": "PASS",
+            "canonical_quality_accepted": True,
+            "quality_receipt": {"decision": "PASS_TO_QUALITY_PACK"},
+        }
+        semantic = {
+            "verdict": "PASS_INDEPENDENT_SEMANTIC",
+            "candidate_sha256": "a" * 64,
+            "scope_packet_sha256": "b" * 64,
+            "blocking_codes": [],
+            "unsupported_claims": [],
+        }
+        conn = Conn()
+        with patch.object(worker, "_fetch_json_scalar", side_effect=fetch):
+            result = worker._record_semantic_quality_result(
+                conn,
+                execution_id=model_governance()["execution_id"],
+                profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+                semantic_execution_receipt_ref="native-review://receipt/1",
+                semantic_result=semantic,
+                finalize_result=finalize,
+            )
+
+        self.assertEqual(result["status"], "COMPLETED")
+        self.assertEqual([step for step, _payload in captured], ["semantic_judge", "report_output"])
+        self.assertEqual(captured[0][1]["semantic_judge_result"]["status"], "PASS")
+        self.assertEqual(captured[0][1]["unsupported_claims"], [])
+        self.assertTrue(captured[1][1]["no_write_performed"])
+        self.assertTrue(captured[1][1]["canonical_quality_accepted"])
+        self.assertEqual(conn.commits, 1)
+
+    def test_semantic_quality_never_records_when_review_is_not_independent_pass(self) -> None:
+        class Conn(FakeConn):
+            def cursor(self):
+                raise AssertionError("DB must not be touched for rejected review")
+
+        base = {
+            "status": "PASS",
+            "canonical_quality_accepted": True,
+            "quality_receipt": {"decision": "PASS_TO_QUALITY_PACK"},
+        }
+        rejected = worker._record_semantic_quality_result(
+            Conn(),
+            execution_id=model_governance()["execution_id"],
+            profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            semantic_execution_receipt_ref="native-review://receipt/1",
+            semantic_result={
+                "verdict": "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+                "unsupported_claims": [],
+            },
+            finalize_result=base,
+        )
+        self.assertEqual(rejected["status"], "BLOCKED")
+        self.assertEqual(rejected["error_code"], "SEMANTIC_REVIEW_VERDICT_NOT_PASS")
+
+        rejected_claim = worker._record_semantic_quality_result(
+            Conn(),
+            execution_id=model_governance()["execution_id"],
+            profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            semantic_execution_receipt_ref="native-review://receipt/1",
+            semantic_result={
+                "verdict": "PASS_INDEPENDENT_SEMANTIC",
+                "unsupported_claims": [{"claim": "unresolved"}],
+            },
+            finalize_result=base,
+        )
+        self.assertEqual(rejected_claim["status"], "BLOCKED")
+        self.assertEqual(
+            rejected_claim["error_code"],
+            "SEMANTIC_REVIEW_UNSUPPORTED_CLAIMS_PRESENT",
+        )
+
 
     def test_ready_for_semantic_judge_never_persists_queue_success(self) -> None:
         runtime_profile = {
@@ -317,6 +666,76 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         self.assertTrue(
             any("HETZNER_GOVERNED_TERMINAL_JUDGE_FAILED" in query for query, _params in conn.cursor_obj.calls)
         )
+
+    def test_failure_persistence_reconciles_queue_terminal_to_canonical_execution(self) -> None:
+        class Cursor:
+            def __init__(self):
+                self.rowcount = 0
+                self.calls = []
+            def __enter__(self): return self
+            def __exit__(self, *_args): return None
+            def execute(self, query, params=None):
+                self.calls.append((query, params))
+                if "set status='FAILED'" in query:
+                    self.rowcount = 1
+                else:
+                    self.rowcount = 1
+        class Conn(FakeConn):
+            def __init__(self):
+                self.cursor_obj = Cursor()
+                self.commits = 0
+            def cursor(self): return self.cursor_obj
+            def commit(self): self.commits += 1
+
+        conn = Conn()
+        request_id = claimed()["request_id"]
+        terminal = {
+            "result": "CANONICAL_TERMINAL_RECONCILED",
+            "queue_status": "FAILED",
+            "canonical_status_after": "BLOCKED",
+        }
+        with patch.object(worker, "_reconcile_queue_terminal", return_value=terminal) as reconcile:
+            result = worker._persist_failure(
+                conn, request_id, RuntimeError("HETZNER_BASELINE_API_FAILED:fixture")
+            )
+        self.assertEqual(result, terminal)
+        reconcile.assert_called_once_with(conn.cursor_obj, request_id)
+        self.assertEqual(conn.commits, 1)
+        self.assertTrue(
+            any("set status='FAILED'" in query for query, _params in conn.cursor_obj.calls)
+        )
+
+    def test_queue_terminal_helper_calls_single_canonical_reconciler_rpc(self) -> None:
+        request_id = claimed()["request_id"]
+        expected = {
+            "result": "CANONICAL_TERMINAL_RECONCILED",
+            "canonical_status_after": "BLOCKED",
+        }
+        cursor = object()
+        with patch.object(worker, "_fetch_json_scalar", return_value=expected) as fetch:
+            result = worker._reconcile_queue_terminal(cursor, request_id)
+        self.assertEqual(result, expected)
+        fetch.assert_called_once_with(
+            cursor,
+            "select public.lf_profile_execution_reconcile_queue_terminal_v1(%s::uuid,%s)",
+            (request_id, worker._governed_execution_id(request_id)),
+        )
+
+    def test_terminal_reconciler_source_is_fail_closed_and_semantic_pending_is_nonterminal(self) -> None:
+        sql = (
+            ROOT / "supabase" / "migrations"
+            / "20260922162500_lf_profile_execution_queue_terminal_reconcile_v1.sql"
+        ).read_text(encoding="utf-8")
+        self.assertIn("q.status='FAILED'", sql)
+        self.assertIn("target_status := 'BLOCKED'", sql)
+        self.assertIn("q.status='CANCELLED'", sql)
+        self.assertIn("target_status := 'CANCELLED'", sql)
+        self.assertIn("HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING", sql)
+        self.assertIn("NON_TERMINAL_SEMANTIC_REVIEW_PENDING", sql)
+        self.assertIn("QUEUE_SUCCESS_CANONICAL_NOT_COMPLETED", sql)
+        self.assertIn("CANONICAL_TERMINAL_CONFLICT", sql)
+        self.assertIn("and status='IN_PROGRESS'", sql)
+        self.assertIn("PROFILE_RUNTIME_QUEUE_TERMINAL_RECONCILIATION_V1", sql)
 
     def test_execution_identity_is_stable(self) -> None:
         request_id = claimed()["request_id"]

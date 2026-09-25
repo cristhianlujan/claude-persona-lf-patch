@@ -1,0 +1,106 @@
+{
+  "schema": "SRCR_MC04_EXACT_EVIDENCE_EKB_ZERO_ROW_READBACK_V2",
+  "status": "READBACK_CLOSED",
+  "source_revision": "c5e0603256728955ca04e70b710d6a0a0b4396ec",
+  "observed_at": "2026-09-22T15:51:17.457067+00:00",
+  "authority": {
+    "supabase_project_id": "mhwmirqcgxxukpctffuv",
+    "table": "public.lf_error_knowledge",
+    "access_mode": "READ_ONLY"
+  },
+  "exact_head_control": {
+    "validator_path": "profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
+    "validator_git_blob_sha": "af643b05ada2822099399c0f50a5d7455470a525",
+    "required_resolver_id": "LF_SUPABASE_READBACK_V1",
+    "zero_row_blocking_code": "ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT"
+  },
+  "live_evidence": {
+    "positive_ekb_lookup": {
+      "result_status": "FOUND",
+      "result_count": 3,
+      "claim_support": "CONTENT",
+      "codes": [
+        "PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001",
+        "PROFILE-RUNTIME-GOVERNED-STEP-BYPASS-001",
+        "PROFILE-RUNTIME-RESEARCH-BASELINE-TEMPORAL-BINDING-001"
+      ],
+      "result_digest": "sha256:1b3ab519024ce451855c71e1b3cfe51be668029f93ffa7f36f03fe13a954090a"
+    },
+    "zero_row_lookup": {
+      "code": "MC04-ZERO-ROW-C5E0603256728955",
+      "result_status": "EMPTY",
+      "result_count": 0,
+      "claim_support": "ABSENCE",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "live_replay": {
+    "valid_bundle": {
+      "status": "PASS",
+      "blocking_codes": [],
+      "evidence_manifest_sha256": "sha256:2108a51dc0438e8af3e481bd311c1d3be4c5d14d3c9a89e934888e3fc7bece82",
+      "query_count": 2,
+      "evidence_count": 2,
+      "resolved_authority_count": 2,
+      "resolved_authority_context_sha256": "8eca36657ac11159506bfb80be9b337027ef96356ad5ebd690a69f6b26f98b56"
+    },
+    "negative_zero_as_positive": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "trace[1]:ZERO_RESULT_REQUIRES_ABSENCE_SUPPORT"
+      ]
+    },
+    "negative_generic_ekb_locator": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "RESOLVED_AUTHORITY_LOCATOR_MISMATCH:EV-MC04-EKB-PRESENT",
+        "trace[0]:EVIDENCE_LOCATOR_MISMATCH"
+      ]
+    },
+    "negative_uncited_material_claim": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "EVIDENCE_MAP_CRITICAL_CLAIMS_MISSING"
+      ]
+    }
+  },
+  "query_trace": [
+    {
+      "sequence": 1,
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:select codigo,categoria,titulo,severidad,estado,\n       to_char(ultima_vez at time zone 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') as ultima_vez_utc,\n       lifecycle_phase,root_cause_family,source_ref\nfrom public.lf_error_knowledge\nwhere codigo in (\n 'PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001',\n 'PROFILE-RUNTIME-GOVERNED-STEP-BYPASS-001',\n 'PROFILE-RUNTIME-RESEARCH-BASELINE-TEMPORAL-BINDING-001'\n)\norder by codigo;",
+      "request_digest": "sha256:d7177f23e5c4a7f1f24939c84dfc650412827a09b7ab688562e4ddc992891412",
+      "result_digest": "sha256:1b3ab519024ce451855c71e1b3cfe51be668029f93ffa7f36f03fe13a954090a",
+      "observed_at": "2026-09-22T15:51:17.457067+00:00",
+      "evidence_id": "EV-MC04-EKB-PRESENT",
+      "consumer": "$.live_authority_packet",
+      "result_status": "FOUND",
+      "result_count": 3,
+      "claim_support": "CONTENT"
+    },
+    {
+      "sequence": 2,
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:select codigo,categoria,titulo,severidad,estado\nfrom public.lf_error_knowledge\nwhere codigo='MC04-ZERO-ROW-C5E0603256728955'\norder by codigo;",
+      "request_digest": "sha256:5af6318340fdf273d33bc359e8ec03671c3eceed998fb0320a29a6c9fcfb9bea",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "observed_at": "2026-09-22T15:51:17.457067+00:00",
+      "evidence_id": "EV-MC04-EKB-ABSENT",
+      "consumer": "$.live_authority_packet",
+      "result_status": "EMPTY",
+      "result_count": 0,
+      "claim_support": "ABSENCE"
+    }
+  ],
+  "mutation_scope": {
+    "production_mutation": false,
+    "database_write": false,
+    "runtime_activation": false,
+    "merge": false
+  },
+  "closure_note": "Exact live EKB presence, exact scoped absence, generic locator rejection, zero-row positive-claim rejection and uncited material-claim rejection all passed on the exact source revision."
+}

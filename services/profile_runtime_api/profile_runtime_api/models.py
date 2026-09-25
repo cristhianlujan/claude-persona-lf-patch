@@ -294,6 +294,9 @@ class ProfileTask(StrictModel):
     required_card_refs: list[str] = Field(default_factory=list, max_length=4)
     send_image_to_model: bool = False
     governed_operation: GovernedOperationContext | None = None
+    # External validation evidence is transport-only. It is not a model-produced field
+    # and is consumed only by deterministic/semantic validation after generation.
+    evidence_manifest: dict[str, Any] | None = None
 
     @model_validator(mode="after")
     def validate_bound_sources(self) -> "ProfileTask":
@@ -304,6 +307,11 @@ class ProfileTask(StrictModel):
             raise ValueError("RUNTIME_OUTPUT_MODE_PROFILE_MISMATCH")
         if any(not isinstance(key, str) or not key.strip() for key in self.input_fields):
             raise ValueError("PROFILE_INPUT_FIELD_NAME_INVALID")
+        if self.evidence_manifest is not None:
+            if not self.evidence_manifest:
+                raise ValueError("PROFILE_EVIDENCE_MANIFEST_EMPTY")
+            if len(json.dumps(self.evidence_manifest, ensure_ascii=False)) > 250_000:
+                raise ValueError("PROFILE_EVIDENCE_MANIFEST_BUDGET_EXCEEDED")
 
         seen_adapters: set[str] = set()
         adapter_versions: dict[str, str | None] = {}
@@ -335,6 +343,40 @@ class ProfileTask(StrictModel):
         missing_cards = sorted(set(self.required_card_refs) - seen_cards)
         if missing_cards:
             raise ValueError("LF_CARD_REQUIRED_SOURCE_MISSING:" + ",".join(missing_cards))
+        return self
+
+
+class SemanticQualityFinalizeRequest(StrictModel):
+    """Deterministic consumer of an already-independent semantic review.
+
+    This request never asks the runtime model to judge its own output. The semantic
+    result and its independent execution identity are supplied by the external
+    reviewer boundary; the runtime only validates bindings and materializes the
+    canonical quality receipt.
+    """
+
+    request_id: str = Field(min_length=1, max_length=200)
+    profile_code: str = Field(pattern=CODE_RE.pattern)
+    profile_slug: str = Field(pattern=SLUG_RE.pattern)
+    candidate: dict[str, Any]
+    evidence_manifest: dict[str, Any]
+    scope_authority_packet: dict[str, Any]
+    semantic_result: dict[str, Any]
+    candidate_revision: str = Field(min_length=3, max_length=200)
+    semantic_execution_receipt_ref: str = Field(min_length=5, max_length=800)
+    producer_execution_id: str = Field(min_length=8, max_length=240)
+    reviewer_execution_id: str = Field(min_length=8, max_length=240)
+    producer_execution_receipt_ref: str = Field(min_length=5, max_length=800)
+    issued_at: str = Field(min_length=8, max_length=120)
+
+    @model_validator(mode="after")
+    def validate_independent_boundary(self) -> "SemanticQualityFinalizeRequest":
+        if self.producer_execution_id == self.reviewer_execution_id:
+            raise ValueError("SEMANTIC_REVIEWER_EXECUTION_MUST_DIFFER_FROM_PRODUCER")
+        if self.producer_execution_receipt_ref == self.semantic_execution_receipt_ref:
+            raise ValueError("SEMANTIC_REVIEWER_RECEIPT_MUST_DIFFER_FROM_PRODUCER")
+        if not self.candidate or not self.evidence_manifest or not self.scope_authority_packet:
+            raise ValueError("SEMANTIC_QUALITY_FINALIZE_BINDINGS_REQUIRED")
         return self
 
 

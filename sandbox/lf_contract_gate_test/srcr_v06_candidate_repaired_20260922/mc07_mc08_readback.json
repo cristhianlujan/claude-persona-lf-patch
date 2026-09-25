@@ -1,0 +1,10 @@
+{
+  "execution_surface": "SENTINELX_EPHEMERAL_READ_ONLY",
+  "mc07_control_ownership_output": "SRCR_V06_CONTROL_OWNERSHIP=PASS deterministic=230 semantic=19 overlap=0 mutation_detected=1",
+  "mc07_status": "PASS",
+  "mc08_dedup_test_output": "----------------------------------------------------------------------\nRan 3 tests in 0.005s\n\nOK",
+  "mc08_status": "PASS",
+  "observed_at": "2026-09-22T14:25:23.440121+00:00",
+  "schema": "SRCR_MC07_MC08_READBACK_V1",
+  "source_revision": "3fad1c274c32293e128624e9be364eca7c4e9410"
+}

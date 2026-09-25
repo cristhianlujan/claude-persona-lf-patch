@@ -1,0 +1,169 @@
+{
+  "canonical_quality_accepted": false,
+  "first_failed_stage": null,
+  "independent_quality": "PENDING_INDEPENDENT_REVIEW",
+  "manifest_trace_binding_errors": [],
+  "runtime_validate": {
+    "blocking_codes": [],
+    "canonical_quality_accepted": false,
+    "closure_summary": {
+      "applies": true,
+      "candidate_digest": "sha256:673472a74143d4e755fb012c2f37811772e66f3374fb3e54350a290a38b2f544",
+      "canonical_quality_accepted": false,
+      "closed_obligation_ids": [
+        "PO-AUTH",
+        "PO-COMPAT",
+        "PO-CONCURRENCY",
+        "PO-DECISION",
+        "PO-EVIDENCE",
+        "PO-MIG",
+        "PO-OBS",
+        "PO-OPER",
+        "PO-POLICY",
+        "PO-STATE",
+        "PO-TEST",
+        "PO-WIRING"
+      ],
+      "closure_contract_version": "SRCR_CLOSURE_PROOF_V2",
+      "computed_handoff_ready": true,
+      "evidence_bundle_digest": "sha256:fc4c452e7b2e299276a96cb555f4513d0638e2a3cb8329b8a92e294792c2036e",
+      "evidence_bundle_id": "SRCR-V06-LIFECYCLE-MERGED-EVIDENCE-20260922",
+      "evidence_refs_resolved": 15,
+      "open_obligation_ids": [],
+      "post_implementation_obligation_ids": [
+        "PO-POST-RETIRE",
+        "PO-POST-TEST",
+        "PO-POST-WIRING"
+      ],
+      "quality_stage": "PRE_QUALITY_FLOOR",
+      "required_obligation_ids": [
+        "PO-AUTH",
+        "PO-COMPAT",
+        "PO-CONCURRENCY",
+        "PO-DECISION",
+        "PO-EVIDENCE",
+        "PO-MIG",
+        "PO-OBS",
+        "PO-OPER",
+        "PO-POLICY",
+        "PO-STATE",
+        "PO-TEST",
+        "PO-WIRING"
+      ],
+      "required_obligation_types": [
+        "AUTHORITY_EXISTENCE",
+        "COMPATIBILITY",
+        "CONCURRENCY",
+        "DECISION_CLOSURE",
+        "EVIDENCE_PROVENANCE",
+        "MIGRATION_TRANSITION",
+        "OBSERVABILITY",
+        "OTHER_MATERIAL",
+        "POLICY_CONTRACT",
+        "STATE_RECOVERY_SEMANTICS",
+        "TEST_ASSURANCE",
+        "WIRING_PHYSICALITY"
+      ]
+    },
+    "errors": [],
+    "incremental_value_summary": {
+      "adopted_delta_ids": [
+        "D-RECONCILE",
+        "D-PROVENANCE"
+      ],
+      "applies": true,
+      "hard_limit_tokens": 2400,
+      "outcome": "MATERIAL_UPLIFT",
+      "packet_estimated_tokens": 714,
+      "required_for_ready": true,
+      "semantic_materiality_authority": "INDEPENDENT_SEMANTIC_JUDGE",
+      "soft_limit_tokens": 1200
+    },
+    "status": "PASS",
+    "valid": true,
+    "validation_role": "PRE_QUALITY_STRUCTURAL_FLOOR"
+  },
+  "schema_errors": [],
+  "semantic_utility": {
+    "blocking_codes": [],
+    "canonical_quality_accepted": false,
+    "canonical_quality_receipt_required": true,
+    "closure_summary": {
+      "applies": true,
+      "candidate_digest": "sha256:673472a74143d4e755fb012c2f37811772e66f3374fb3e54350a290a38b2f544",
+      "canonical_quality_accepted": false,
+      "closed_obligation_ids": [
+        "PO-AUTH",
+        "PO-COMPAT",
+        "PO-CONCURRENCY",
+        "PO-DECISION",
+        "PO-EVIDENCE",
+        "PO-MIG",
+        "PO-OBS",
+        "PO-OPER",
+        "PO-POLICY",
+        "PO-STATE",
+        "PO-TEST",
+        "PO-WIRING"
+      ],
+      "closure_contract_version": "SRCR_CLOSURE_PROOF_V2",
+      "computed_handoff_ready": true,
+      "evidence_bundle_digest": "sha256:fc4c452e7b2e299276a96cb555f4513d0638e2a3cb8329b8a92e294792c2036e",
+      "evidence_bundle_id": "SRCR-V06-LIFECYCLE-MERGED-EVIDENCE-20260922",
+      "evidence_refs_resolved": 15,
+      "open_obligation_ids": [],
+      "post_implementation_obligation_ids": [
+        "PO-POST-RETIRE",
+        "PO-POST-TEST",
+        "PO-POST-WIRING"
+      ],
+      "quality_stage": "PRE_QUALITY_FLOOR",
+      "required_obligation_ids": [
+        "PO-AUTH",
+        "PO-COMPAT",
+        "PO-CONCURRENCY",
+        "PO-DECISION",
+        "PO-EVIDENCE",
+        "PO-MIG",
+        "PO-OBS",
+        "PO-OPER",
+        "PO-POLICY",
+        "PO-STATE",
+        "PO-TEST",
+        "PO-WIRING"
+      ],
+      "required_obligation_types": [
+        "AUTHORITY_EXISTENCE",
+        "COMPATIBILITY",
+        "CONCURRENCY",
+        "DECISION_CLOSURE",
+        "EVIDENCE_PROVENANCE",
+        "MIGRATION_TRANSITION",
+        "OBSERVABILITY",
+        "OTHER_MATERIAL",
+        "POLICY_CONTRACT",
+        "STATE_RECOVERY_SEMANTICS",
+        "TEST_ASSURANCE",
+        "WIRING_PHYSICALITY"
+      ]
+    },
+    "control_ownership": "SEMANTIC_UTILITY_ONLY_NO_STRUCTURAL_DUPLICATION",
+    "incremental_value_summary": {
+      "adopted_delta_ids": [
+        "D-RECONCILE",
+        "D-PROVENANCE"
+      ],
+      "applies": true,
+      "hard_limit_tokens": 2400,
+      "outcome": "MATERIAL_UPLIFT",
+      "packet_estimated_tokens": 714,
+      "required_for_ready": true,
+      "semantic_materiality_authority": "INDEPENDENT_SEMANTIC_JUDGE",
+      "soft_limit_tokens": 1200
+    },
+    "semantic_role": "PRE_QUALITY_SEMANTIC_UTILITY_FLOOR",
+    "status": "PASS"
+  },
+  "status": "PASS_PRE_QUALITY",
+  "trace_errors": []
+}

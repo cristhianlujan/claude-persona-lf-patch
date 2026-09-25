@@ -1,0 +1,4045 @@
+{
+  "acceptance_criteria": [
+    {
+      "criterion": "CREATE closes only after canonical asset registration/readback and first immutable non-promoted release materialization.",
+      "expected_result": "Creation cannot be lifecycle-complete while registration or first release identity is absent; no implicit promotion occurs.",
+      "verification_method": "Execute isolated CREATE, resolve canonical asset/source readback, materialize the first release, and verify exact identity linkage."
+    },
+    {
+      "criterion": "AC-UPDATE: UPDATE materializa una nueva identidad de release candidate después de merge/readback.",
+      "expected_result": "Release immutable Rn con source/digests exactos; prior active unchanged.",
+      "verification_method": "Update + post_merge_reconcile + release readback."
+    },
+    {
+      "criterion": "AC-REGISTER: release envelope enlaza source revision, entrypoint, manifest, runtime binding/policy/quality receipts.",
+      "expected_result": "Una sola identidad reproducible; ref faltante bloquea.",
+      "verification_method": "Recomputar envelope digest y resolver cada ref."
+    },
+    {
+      "criterion": "AC-QUALIFY: usa QUALIFICATION_LIFECYCLE existente y no inventa un segundo estado de calificación.",
+      "expected_result": "Solo QUAL_QUALIFIED habilita promotion.",
+      "verification_method": "Resolver transiciones QUAL_* y receipt de qualification."
+    },
+    {
+      "criterion": "AC-PROMOTE: promotion cambia desired release por CAS y no ejecuta source write ni runtime refresh implícito.",
+      "expected_result": "Desired release cambia una vez; refresh queda como siguiente operación explícita.",
+      "verification_method": "Canary positive/negative + binding readback."
+    },
+    {
+      "criterion": "AC-RUNTIME: REFRESCO_RUNTIME consume el exact desired release y produce observed release/readbacks sin auto-promoción.",
+      "expected_result": "Observed=desired y digests exactos; state/impacto preservados.",
+      "verification_method": "Refresh + source/health/state readback."
+    },
+    {
+      "criterion": "AC-VERIFY: currentness cruza desired binding, asset metadata, runtime source/release y receipts.",
+      "expected_result": "Cierre solo si todos convergen; mismatch queda STALE/blocked.",
+      "verification_method": "Reconciler read-only sobre todas las superficies."
+    },
+    {
+      "criterion": "AC-DEPRECATE: deprecación detiene nuevas adopciones sin borrar historial ni romper consumers actuales.",
+      "expected_result": "Nuevos binds bloqueados; existing consumers visibles.",
+      "verification_method": "Consumer inventory + route/adoption negative test."
+    },
+    {
+      "criterion": "AC-RETIRE: retire requiere zero active consumers y operación RETIRO_ACTIVO_LF operacional/aceptada.",
+      "expected_result": "Retired terminal con archive readback; historial preservado.",
+      "verification_method": "Positive/consumer-blocked/replay canaries."
+    },
+    {
+      "criterion": "AC-ROLLBACK: rollback selecciona prior release exacto, actualiza desired binding, refresca runtime y verifica convergencia.",
+      "expected_result": "Prior exact release restaurado; failed release conserva historia.",
+      "verification_method": "Rollback canary con prior release + mismatch negative."
+    },
+    {
+      "criterion": "The three acceptance layers remain independently observable and non-substitutable.",
+      "expected_result": "Each missing layer blocks only its downstream transition; no earlier PASS implies promotion.",
+      "verification_method": "Remove structural PASS, semantic PASS, quality receipt, and operational authorization one at a time."
+    },
+    {
+      "criterion": "Deprecated releases enforce a consumer drain window before retirement.",
+      "expected_result": "Retirement remains blocked until active consumers equal zero; existing consumers are preserved during drain.",
+      "verification_method": "Test active-consumer block, no-new-adoption, zero-consumer exit and terminal archive readback."
+    }
+  ],
+  "alternatives": [
+    {
+      "basis_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+      ],
+      "blast_radius": "Bajo, centrado en contracts/receipts existentes.",
+      "complexity": "Baja.",
+      "description": "Mantener las operaciones por fase y endurecer únicamente next_gate/readback entre UPDATE y REFRESH, sin una entidad/binding de release.",
+      "fail_closed": "Parcial; puede bloquear drift de fase pero no decidir release deseado global.",
+      "id": "A",
+      "idempotency": "Heredada por operación, sin idempotencia global de promoción.",
+      "operational_cost": "Bajo.",
+      "prevention": "Mejora currentness, pero no crea una autoridad para promoción, supersession o rollback.",
+      "recoverability": "Rollback sigue dependiendo de reconstruir el prior source/runtime desde receipts dispersos.",
+      "reuse": "Muy alto."
+    },
+    {
+      "basis_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+        "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+      ],
+      "blast_radius": "Medio y acotado a contratos/wiring de perfil; operaciones existentes siguen siendo ejecutores de fase.",
+      "complexity": "Media; añade una frontera de release y wiring, no un segundo executor.",
+      "description": "Añadir una identidad inmutable de profile release, un binding desired-versus-observed y un reconciler/lifecycle operation delgado que componga las operaciones existentes y reutilice QUALIFICATION_LIFECYCLE.",
+      "fail_closed": "Fuerte: mismatch desired/observed, release no calificado, digest stale o consumer activo bloquean transición.",
+      "id": "B",
+      "idempotency": "Release ID + expected previous binding + transition action permiten CAS/replay seguro.",
+      "operational_cost": "Medio; una reconciliación adicional pero sin duplicar inferencia/runtime.",
+      "prevention": "Una promotion solo puede apuntar a un release exacto calificado; refresh y rollback consumen esa misma identidad y cierran por readback.",
+      "recoverability": "Rollback vuelve a un release previo exacto y verifica runtime/source/state antes de cerrar.",
+      "reuse": "Máximo: usa operation execution history, Router, qualification, update, refresh, execute y retire."
+    },
+    {
+      "basis_refs": [
+        "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones"
+      ],
+      "blast_radius": "Alto sobre Profile Creator, update, Router, runtime y retiro.",
+      "complexity": "Alta.",
+      "description": "Crear un orquestador monolítico nuevo de lifecycle de perfiles que reimplemente CREATE/UPDATE/PROMOTE/REFRESH/VERIFY/RETIRE/ROLLBACK.",
+      "fail_closed": "Puede ser fuerte, pero introduce riesgo de dos motores y autoridad divergente.",
+      "id": "C",
+      "idempotency": "Debe reimplementar idempotencia de cada fase y global.",
+      "operational_cost": "Alto.",
+      "prevention": "Centraliza toda secuencia, pero a costa de duplicar autoridades y lógica ya gobernada.",
+      "recoverability": "Centralizable, con alto acoplamiento y riesgo de rollback recursivo.",
+      "reuse": "Bajo-medio; encapsula o duplica operaciones existentes."
+    }
+  ],
+  "authority_contradictions": [],
+  "blocking_codes": [],
+  "case_mode": "ARCHITECTURE_AUDIT",
+  "causal_chain": [
+    {
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001"
+      ],
+      "missing_evidence": [],
+      "statement": "CREATE materializa y lee de vuelta un profile pack candidato con receipt, sin merge ni activación.",
+      "status": "ESTABLISHED"
+    },
+    {
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84"
+      ],
+      "missing_evidence": [],
+      "statement": "UPDATE valida y reconcilia el merge exacto, pero su salida es un next_gate de refresh; no un release activo/promovido.",
+      "status": "ESTABLISHED"
+    },
+    {
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "missing_evidence": [],
+      "statement": "REFRESCO_RUNTIME liga main/entrypoint/manifest/release-path al runtime y preserva CANDIDATE_READ_ONLY/BLOQUEADO; no promueve.",
+      "status": "ESTABLISHED"
+    },
+    {
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001",
+        "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF"
+      ],
+      "missing_evidence": [],
+      "statement": "El primer bootstrap de ejecución read-only existe como transición separada y candidata, por lo que no debe confundirse con un refresh posterior ni con promoción.",
+      "status": "ESTABLISHED"
+    },
+    {
+      "evidence_refs": [
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+        "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+      ],
+      "missing_evidence": [],
+      "statement": "El Router no expone una operación activa de publish/promote del perfil y RETIRO_ACTIVO_LF sigue candidato, dejando promoción, supersession y rollback sin una autoridad común de release.",
+      "status": "ESTABLISHED"
+    }
+  ],
+  "challenger_review": [
+    {
+      "challenge": "Can stronger UPDATE->REFRESH next_gate/readback alone solve the lifecycle?",
+      "challenge_id": "CH-1",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+      ],
+      "outcome": "SURVIVED",
+      "resolution": "No. It still lacks a canonical promotable release identity and rollback target, so state remains distributed."
+    },
+    {
+      "challenge": "Can Git tags/releases be the profile release authority?",
+      "challenge_id": "CH-2",
+      "evidence_refs": [
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "supabase://public/lf_artifact_destination_registry/DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT",
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001"
+      ],
+      "outcome": "SURVIVED",
+      "resolution": "No. Git is technical source artifact while LF operational authority is Supabase; using Git as release authority would split governance."
+    },
+    {
+      "challenge": "Should a new monolithic lifecycle engine replace existing operations?",
+      "challenge_id": "CH-3",
+      "evidence_refs": [
+        "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py"
+      ],
+      "outcome": "SURVIVED",
+      "resolution": "No. CREATE/UPDATE/REFRESH/EXECUTE already have governed receipts; a thin release/reconcile boundary closes the missing authority with lower blast radius."
+    },
+    {
+      "challenge": "Can current runtime CANDIDATE_READ_ONLY be treated as release promotion?",
+      "challenge_id": "CH-4",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+      ],
+      "outcome": "SURVIVED",
+      "resolution": "No. Refresh/bootstrap explicitly preserve no production/automatic promotion and have distinct gates."
+    }
+  ],
+  "closure_proof": {
+    "authority_bindings": [
+      {
+        "authority_kind": "EXISTING_AUTHORITY",
+        "evidence_ids": [
+          "EV-PROFILE-CURRENT"
+        ],
+        "subject": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "used_as_existing_authority": true
+      },
+      {
+        "authority_kind": "EXISTING_AUTHORITY",
+        "evidence_ids": [
+          "EV-UPDATE"
+        ],
+        "subject": "ACTUALIZACION_PERFIL_LF",
+        "used_as_existing_authority": true
+      },
+      {
+        "authority_kind": "EXISTING_AUTHORITY",
+        "evidence_ids": [
+          "EV-LIFECYCLE-POLICY"
+        ],
+        "subject": "ACT-0001_SUPABASE",
+        "used_as_existing_authority": true
+      },
+      {
+        "authority_kind": "EXISTING_REUSABLE_CAPABILITY",
+        "evidence_ids": [
+          "EV-QUALIFICATION"
+        ],
+        "subject": "QUALIFICATION_LIFECYCLE",
+        "used_as_existing_authority": false
+      },
+      {
+        "authority_kind": "PROPOSED_DELIVERABLE",
+        "evidence_ids": [],
+        "subject": "GESTION_RELEASE_PERFIL_LF",
+        "used_as_existing_authority": false
+      }
+    ],
+    "behavioral_proofs": [
+      {
+        "behavior_id": "BEH-STATE",
+        "decision_refs": [
+          "$.rollback_plan",
+          "$.material_process_graph.nodes",
+          "$.planned_regressions"
+        ],
+        "entry_conditions": [
+          "Only QUAL_QUALIFIED exact release can become desired.",
+          "Rollback requires an exact predecessor release."
+        ],
+        "evidence_ids": [
+          "EV-RUNTIME-REFRESH",
+          "EV-RUNTIME-BOOTSTRAP",
+          "EV-RETIRE"
+        ],
+        "illegal_transitions": [
+          "UNQUALIFIED/STALE cannot become desired.",
+          "FAILED cannot become CONVERGED without a fresh successful reconcile.",
+          "RETIRED cannot be silently reactivated by editing compatibility fields."
+        ],
+        "materiality_signal": "STATE_RECOVERY",
+        "recovery_paths": [
+          "Terminal refresh failure restores predecessor via governed rollback.",
+          "Consumer-blocked retire remains deprecated and retryable."
+        ],
+        "states_or_steps": [
+          "DESIRED_Rn",
+          "REFRESHING",
+          "CONVERGED",
+          "FAILED",
+          "ROLLED_BACK",
+          "RETIRED"
+        ],
+        "terminal_conditions": [
+          "CONVERGED only after source/health/state readback.",
+          "RETIRED only after zero-consumer + archive readback."
+        ]
+      },
+      {
+        "behavior_id": "BEH-MIG",
+        "decision_refs": [
+          "$.transition_plan",
+          "$.acceptance_criteria"
+        ],
+        "entry_conditions": [
+          "Current f5baa identity and receipts resolve exactly.",
+          "Legacy bootstrap does not fabricate historical qualification."
+        ],
+        "evidence_ids": [
+          "EV-PROFILE-CURRENT",
+          "EV-RUNTIME-REFRESH",
+          "EV-RUNTIME-BOOTSTRAP"
+        ],
+        "illegal_transitions": [
+          "Legacy status fields cannot directly set desired release.",
+          "Historical runtime execution cannot be relabeled as historical qualification."
+        ],
+        "materiality_signal": "MIGRATION_TRANSITION",
+        "recovery_paths": [
+          "If bootstrap identity mismatches, leave existing runtime untouched and block migration.",
+          "Rollback bootstrap binding before any promotion side effect."
+        ],
+        "states_or_steps": [
+          "LEGACY_CURRENT",
+          "BOOTSTRAP_RELEASE",
+          "QUAL_UNQUALIFIED",
+          "QUALIFIED",
+          "DESIRED",
+          "OBSERVED"
+        ],
+        "terminal_conditions": [
+          "Migration complete only when release binding and current runtime readback reconcile.",
+          "Legacy projections no longer authorize lifecycle actions."
+        ]
+      }
+    ],
+    "context_transport_proofs": [],
+    "contract_version": "SRCR_CLOSURE_PROOF_V2",
+    "derived_decision_closure": {
+      "closed_obligation_ids": [
+        "PO-AUTH",
+        "PO-WIRING",
+        "PO-POLICY",
+        "PO-STATE",
+        "PO-CONCURRENCY",
+        "PO-MIG",
+        "PO-COMPAT",
+        "PO-OBS",
+        "PO-TEST",
+        "PO-OPER",
+        "PO-DECISION",
+        "PO-EVIDENCE"
+      ],
+      "handoff_ready": true,
+      "open_obligation_ids": [],
+      "post_implementation_obligation_ids": [
+        "PO-POST-WIRING",
+        "PO-POST-TEST",
+        "PO-POST-RETIRE"
+      ],
+      "quality_state": "QUALITY_PENDING",
+      "required_obligation_ids": [
+        "PO-AUTH",
+        "PO-WIRING",
+        "PO-POLICY",
+        "PO-STATE",
+        "PO-CONCURRENCY",
+        "PO-MIG",
+        "PO-COMPAT",
+        "PO-OBS",
+        "PO-TEST",
+        "PO-OPER",
+        "PO-DECISION",
+        "PO-EVIDENCE"
+      ]
+    },
+    "materiality": [
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-WIRING"
+        ],
+        "rationale": "Lifecycle crosses create/update/qualification/runtime/retire operations.",
+        "signal": "CROSS_OPERATION"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-AUTH"
+        ],
+        "rationale": "A new release transition authority/binding is proposed under existing Supabase governance.",
+        "signal": "AUTHORITY_CHANGE"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-POLICY"
+        ],
+        "rationale": "Release envelope and transition contracts are required.",
+        "signal": "POLICY_CONTRACT_CHANGE"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-STATE"
+        ],
+        "rationale": "Refresh failure and rollback semantics are material.",
+        "signal": "STATE_RECOVERY"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-CONCURRENCY"
+        ],
+        "rationale": "Concurrent update/promotion and duplicate transitions can corrupt current binding without CAS/idempotency.",
+        "signal": "CONCURRENCY"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-MIG"
+        ],
+        "rationale": "Current live profile must bootstrap into the release model without false historical claims.",
+        "signal": "MIGRATION_TRANSITION"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-DECISION"
+        ],
+        "rationale": "The chosen release/reconciler architecture is the central repair decision.",
+        "signal": "ARCHITECTURE"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-DECISION"
+        ],
+        "rationale": "Qualification/currentness/CAS are hard guards at the transition boundary.",
+        "signal": "CONTROLS"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-POLICY"
+        ],
+        "rationale": "Typed release and transition contracts are material.",
+        "signal": "POLICIES_CONTRACTS"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-WIRING"
+        ],
+        "rationale": "Promotion/reconcile/rollback edges are currently absent and must be explicit.",
+        "signal": "WIRING"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-MIG",
+          "PO-COMPAT"
+        ],
+        "rationale": "Legacy profile/runtime projections need a deterministic bootstrap mapping.",
+        "signal": "COMPATIBILITY_TRANSITION"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-STATE"
+        ],
+        "rationale": "Rollback and terminal retire must be defined without hard delete.",
+        "signal": "RECOVERY_TERMINALITY"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-OBS"
+        ],
+        "rationale": "Lifecycle closure requires cross-surface desired/observed readback.",
+        "signal": "OBSERVABILITY"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-TEST"
+        ],
+        "rationale": "Stateful lifecycle changes require executable negative/positive behavioral proof.",
+        "signal": "TESTING_ASSURANCE"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-OPER"
+        ],
+        "rationale": "Reconciliation/replay/history are material to safe operation.",
+        "signal": "OPERABILITY_MAINTENANCE"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-EVIDENCE"
+        ],
+        "rationale": "Current claims and exact release identity must be evidence-bound.",
+        "signal": "EVIDENCE_PROVENANCE"
+      },
+      {
+        "material": true,
+        "obligation_ids": [
+          "PO-DECISION"
+        ],
+        "rationale": "No design choice may remain open in a ready spec.",
+        "signal": "DECISION_CLOSURE"
+      }
+    ],
+    "proof_obligations": [
+      {
+        "closure_basis": "Existing LF authority is resolved; new release operation is explicitly proposed, not misrepresented as existing.",
+        "decision_refs": [
+          "$.implementation_package.architecture_decisions",
+          "$.owner"
+        ],
+        "derived_from": [
+          "AUTHORITY_CHANGE"
+        ],
+        "evidence_ids": [
+          "EV-PROFILE-CURRENT",
+          "EV-ACT0045",
+          "EV-QUALIFICATION",
+          "EV-LIFECYCLE-POLICY"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-AUTH",
+        "obligation_type": "AUTHORITY_EXISTENCE",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "All material new edges have explicit producer/contract/consumer/enforcement/failure design; existing edges are reused.",
+        "decision_refs": [
+          "$.implementation_package.wiring",
+          "$.material_process_graph.nodes"
+        ],
+        "derived_from": [
+          "CROSS_OPERATION",
+          "WIRING"
+        ],
+        "evidence_ids": [
+          "EV-ROUTER",
+          "EV-UPDATE",
+          "EV-RUNTIME-REFRESH"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-WIRING",
+        "obligation_type": "WIRING_PHYSICALITY",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "Release/qualification/transition contracts are fully specified and preserve canonical state authority.",
+        "decision_refs": [
+          "$.implementation_package.policy_contract_changes"
+        ],
+        "derived_from": [
+          "POLICY_CONTRACT_CHANGE",
+          "POLICIES_CONTRACTS"
+        ],
+        "evidence_ids": [
+          "EV-STATE-MODEL",
+          "EV-QUALIFICATION",
+          "EV-PROFILE-CURRENT"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-POLICY",
+        "obligation_type": "POLICY_CONTRACT",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "Bootstrap, refresh, failure, rollback, deprecate and terminal retire semantics are explicit and falsifiable.",
+        "decision_refs": [
+          "$.transition_plan",
+          "$.rollback_plan",
+          "$.planned_regressions"
+        ],
+        "derived_from": [
+          "STATE_RECOVERY",
+          "RECOVERY_TERMINALITY"
+        ],
+        "evidence_ids": [
+          "EV-RUNTIME-REFRESH",
+          "EV-RUNTIME-BOOTSTRAP",
+          "EV-RETIRE"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-STATE",
+        "obligation_type": "STATE_RECOVERY_SEMANTICS",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "CAS expected previous binding + idempotency key defines duplicate/concurrent transition behavior.",
+        "decision_refs": [
+          "$.hard_guard",
+          "$.planned_regressions"
+        ],
+        "derived_from": [
+          "CONCURRENCY"
+        ],
+        "evidence_ids": [
+          "EV-UPDATE",
+          "EV-RUNTIME-REFRESH"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-CONCURRENCY",
+        "obligation_type": "CONCURRENCY",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "Legacy current profile can bootstrap into release identity without false historical qualification; new lifecycle proceeds through canonical release states.",
+        "decision_refs": [
+          "$.transition_plan"
+        ],
+        "derived_from": [
+          "MIGRATION_TRANSITION",
+          "COMPATIBILITY_TRANSITION"
+        ],
+        "evidence_ids": [
+          "EV-PROFILE-CURRENT",
+          "EV-RUNTIME-BOOTSTRAP",
+          "EV-RUNTIME-REFRESH"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-MIG",
+        "obligation_type": "MIGRATION_TRANSITION",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "Compatibility fields remain projections and existing phase operations remain callable while release binding becomes lifecycle authority.",
+        "decision_refs": [
+          "$.transition_plan"
+        ],
+        "derived_from": [
+          "COMPATIBILITY_TRANSITION"
+        ],
+        "evidence_ids": [
+          "EV-PROFILE-CURRENT",
+          "EV-RUNTIME-REFRESH"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-COMPAT",
+        "obligation_type": "COMPATIBILITY",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "Desired/observed/qualification/runtime/retire signals and blocking outcomes are specified.",
+        "decision_refs": [
+          "$.implementation_package.observability_plan",
+          "$.acceptance_criteria"
+        ],
+        "derived_from": [
+          "OBSERVABILITY"
+        ],
+        "evidence_ids": [
+          "EV-UPDATE",
+          "EV-RUNTIME-REFRESH",
+          "EV-PROFILE-CURRENT"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-OBS",
+        "obligation_type": "OBSERVABILITY",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "Executable positive/negative tests cover bypass, stale, duplicate, concurrency, partial, bootstrap, readiness, rollback, retire and unversioned cases.",
+        "decision_refs": [
+          "$.planned_regressions",
+          "$.falsification_results"
+        ],
+        "derived_from": [
+          "TESTING_ASSURANCE"
+        ],
+        "evidence_ids": [
+          "EV-CREATE",
+          "EV-UPDATE",
+          "EV-RUNTIME-REFRESH",
+          "EV-RUNTIME-BOOTSTRAP"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-TEST",
+        "obligation_type": "TEST_ASSURANCE",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "Lifecycle operation is resumable/idempotent and retains immutable history/receipts.",
+        "decision_refs": [
+          "$.implementation_package.observability_plan",
+          "$.rollback_plan"
+        ],
+        "derived_from": [
+          "OPERABILITY_MAINTENANCE"
+        ],
+        "evidence_ids": [
+          "EV-UPDATE",
+          "EV-RUNTIME-REFRESH",
+          "EV-RETIRE"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-OPER",
+        "obligation_type": "OTHER_MATERIAL",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "Selected architecture closes authority, identity, state, wiring, transition, rollback and acceptance with no open design decision.",
+        "decision_refs": [
+          "$.selected_alternative",
+          "$.implementation_package",
+          "$.hard_guard"
+        ],
+        "derived_from": [
+          "ARCHITECTURE",
+          "CONTROLS",
+          "DECISION_CLOSURE"
+        ],
+        "evidence_ids": [
+          "EV-OPS",
+          "EV-ROUTER",
+          "EV-QUALIFICATION",
+          "EV-PROMOTION-ABSENCE"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-DECISION",
+        "obligation_type": "DECISION_CLOSURE",
+        "proof_phase": "REPAIR_DESIGN",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": "Current evidence was independently resolved; historical EKB was currentness-checked and test-head context was not turned into a defect.",
+        "decision_refs": [
+          "$.evidence_map",
+          "$.live_authority_packet"
+        ],
+        "derived_from": [
+          "EVIDENCE_PROVENANCE"
+        ],
+        "evidence_ids": [
+          "EV-PROFILE-CURRENT",
+          "EV-CREATE",
+          "EV-UPDATE",
+          "EV-RUNTIME-REFRESH",
+          "EV-RUNTIME-BOOTSTRAP",
+          "EV-OPS",
+          "EV-ROUTER",
+          "EV-PROMOTION-ABSENCE",
+          "EV-RETIRE",
+          "EV-STATE-MODEL",
+          "EV-QUALIFICATION",
+          "EV-WORKER",
+          "EV-EKB"
+        ],
+        "missing_requirements": [],
+        "obligation_id": "PO-EVIDENCE",
+        "obligation_type": "EVIDENCE_PROVENANCE",
+        "proof_phase": "CURRENT_STATE",
+        "status": "CLOSED"
+      },
+      {
+        "closure_basis": null,
+        "decision_refs": [
+          "$.next_gate"
+        ],
+        "derived_from": [
+          "WIRING"
+        ],
+        "evidence_ids": [
+          "EV-ROUTER"
+        ],
+        "missing_requirements": [
+          "Observe proposed release wiring as live/operational after implementation."
+        ],
+        "obligation_id": "PO-POST-WIRING",
+        "obligation_type": "WIRING_PHYSICALITY",
+        "proof_phase": "POST_IMPLEMENTATION",
+        "status": "OPEN"
+      },
+      {
+        "closure_basis": null,
+        "decision_refs": [
+          "$.next_gate"
+        ],
+        "derived_from": [
+          "TESTING_ASSURANCE"
+        ],
+        "evidence_ids": [
+          "EV-UPDATE"
+        ],
+        "missing_requirements": [
+          "Convert planned release canaries into observed tests after implementation."
+        ],
+        "obligation_id": "PO-POST-TEST",
+        "obligation_type": "TEST_ASSURANCE",
+        "proof_phase": "POST_IMPLEMENTATION",
+        "status": "OPEN"
+      },
+      {
+        "closure_basis": null,
+        "decision_refs": [
+          "$.next_gate"
+        ],
+        "derived_from": [
+          "OPERABILITY_MAINTENANCE"
+        ],
+        "evidence_ids": [
+          "EV-RETIRE"
+        ],
+        "missing_requirements": [
+          "Verify RETIRO_ACTIVO_LF operational authority before retirement enablement."
+        ],
+        "obligation_id": "PO-POST-RETIRE",
+        "obligation_type": "OTHER_MATERIAL",
+        "proof_phase": "POST_IMPLEMENTATION",
+        "status": "OPEN"
+      }
+    ],
+    "wiring_proofs": [
+      {
+        "binding_kind": "EXISTING_AUTHORITY",
+        "binding_ref": "PROFILE_CREATE->CREACION_PERFIL_LF",
+        "binding_state": "OBSERVED_WIRED",
+        "consumer_ref": "CREACION_PERFIL_LF",
+        "data_contract_ref": "CREACION_PERFIL_LF",
+        "edge_id": "W-CREATE",
+        "enforcement_point_ref": "lf_router_action_registry",
+        "evidence_ids": [
+          "EV-ROUTER",
+          "EV-CREATE"
+        ],
+        "failure_behavior": "Block when target/destination/binding invalid.",
+        "obligation_ids": [
+          "PO-WIRING"
+        ],
+        "producer_ref": "PROFILE_CREATE"
+      },
+      {
+        "binding_kind": "EXISTING_AUTHORITY",
+        "binding_ref": "PROFILE_UPDATE->ACTUALIZACION_PERFIL_LF",
+        "binding_state": "OBSERVED_WIRED",
+        "consumer_ref": "ACTUALIZACION_PERFIL_LF",
+        "data_contract_ref": "ACTUALIZACION_PERFIL_LF",
+        "edge_id": "W-UPDATE",
+        "enforcement_point_ref": "lf_router_action_registry",
+        "evidence_ids": [
+          "EV-ROUTER",
+          "EV-UPDATE"
+        ],
+        "failure_behavior": "Block without governed pre-write binding/exact readback.",
+        "obligation_ids": [
+          "PO-WIRING"
+        ],
+        "producer_ref": "PROFILE_UPDATE"
+      },
+      {
+        "binding_kind": "PROPOSED_DELIVERABLE",
+        "binding_ref": "proposed://PROFILE_RELEASE_CONTRACT_V1",
+        "binding_state": "PROPOSED_WIRING",
+        "consumer_ref": "GESTION_RELEASE_PERFIL_LF.materialize",
+        "data_contract_ref": "PROFILE_RELEASE_CONTRACT_V1",
+        "edge_id": "W-RELEASE-MATERIALIZE",
+        "enforcement_point_ref": "release materialize guard",
+        "evidence_ids": [],
+        "failure_behavior": "Block release materialization on missing/mismatched exact identity.",
+        "obligation_ids": [
+          "PO-WIRING"
+        ],
+        "producer_ref": "ACTUALIZACION_PERFIL_LF.post_merge_reconcile"
+      },
+      {
+        "binding_kind": "PROPOSED_DELIVERABLE",
+        "binding_ref": "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
+        "binding_state": "PROPOSED_WIRING",
+        "consumer_ref": "QUALIFICATION_LIFECYCLE",
+        "data_contract_ref": "PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
+        "edge_id": "W-QUALIFICATION",
+        "enforcement_point_ref": "qualification transition authority",
+        "evidence_ids": [],
+        "failure_behavior": "Keep release non-promotable until qualified; invalidate to STALE on evidence change.",
+        "obligation_ids": [
+          "PO-WIRING"
+        ],
+        "producer_ref": "GESTION_RELEASE_PERFIL_LF.materialize"
+      },
+      {
+        "binding_kind": "PROPOSED_DELIVERABLE",
+        "binding_ref": "proposed://GESTION_RELEASE_PERFIL_LF/promote",
+        "binding_state": "PROPOSED_WIRING",
+        "consumer_ref": "profile_release_binding.desired_release_id",
+        "data_contract_ref": "PROFILE_RELEASE_TRANSITION_POLICY_V1",
+        "edge_id": "W-PROMOTE-PROPOSED",
+        "enforcement_point_ref": "qualification/currentness/CAS guard",
+        "evidence_ids": [],
+        "failure_behavior": "No desired binding change on qualification/stale/CAS failure.",
+        "obligation_ids": [
+          "PO-WIRING"
+        ],
+        "producer_ref": "GESTION_RELEASE_PERFIL_LF.promote"
+      },
+      {
+        "binding_kind": "PROPOSED_DELIVERABLE",
+        "binding_ref": "proposed://profile_release_binding->REFRESCO_RUNTIME_PERFIL_LF",
+        "binding_state": "PROPOSED_WIRING",
+        "consumer_ref": "REFRESCO_RUNTIME_PERFIL_LF",
+        "data_contract_ref": "PROFILE_RELEASE_CONTRACT_V1",
+        "edge_id": "W-DESIRED-TO-REFRESH",
+        "enforcement_point_ref": "pre_refresh_binding_gate",
+        "evidence_ids": [],
+        "failure_behavior": "Block refresh if release identity does not resolve exactly.",
+        "obligation_ids": [
+          "PO-WIRING"
+        ],
+        "producer_ref": "profile_release_binding.desired_release_id"
+      },
+      {
+        "binding_kind": "PROPOSED_DELIVERABLE",
+        "binding_ref": "proposed://GESTION_RELEASE_PERFIL_LF/reconcile",
+        "binding_state": "PROPOSED_WIRING",
+        "consumer_ref": "GESTION_RELEASE_PERFIL_LF.reconcile",
+        "data_contract_ref": "PROFILE_RELEASE_CONTRACT_V1",
+        "edge_id": "W-RECONCILE",
+        "enforcement_point_ref": "desired-vs-observed reconciler",
+        "evidence_ids": [],
+        "failure_behavior": "Do not declare converged when runtime/source/state readback mismatches.",
+        "obligation_ids": [
+          "PO-WIRING"
+        ],
+        "producer_ref": "REFRESCO_RUNTIME_PERFIL_LF.readbacks"
+      },
+      {
+        "binding_kind": "PROPOSED_DELIVERABLE",
+        "binding_ref": "proposed://GESTION_RELEASE_PERFIL_LF/rollback",
+        "binding_state": "PROPOSED_WIRING",
+        "consumer_ref": "profile_release_binding+REFRESCO_RUNTIME_PERFIL_LF",
+        "data_contract_ref": "PROFILE_RELEASE_TRANSITION_POLICY_V1",
+        "edge_id": "W-ROLLBACK-PROPOSED",
+        "enforcement_point_ref": "prior-release exact identity + CAS guard",
+        "evidence_ids": [],
+        "failure_behavior": "Block when predecessor cannot be verified; keep current desired state.",
+        "obligation_ids": [
+          "PO-WIRING"
+        ],
+        "producer_ref": "GESTION_RELEASE_PERFIL_LF.rollback"
+      }
+    ]
+  },
+  "current_uncertainties": [
+    {
+      "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[0]",
+      "design_consequence": "No cambia la arquitectura de release, promoción o rollback; bloquea únicamente habilitar retirement productivo hasta que la capacidad reusable esté operacional.",
+      "evidence_needed": [
+        "Receipt/estado operacional vigente para la operación de retiro aplicable a PERFIL."
+      ],
+      "impact": "IMPLEMENTATION_PRECONDITION",
+      "uncertainty": "RETIRO_ACTIVO_LF permanece OP_CANDIDATE; debe alcanzar autoridad operacional o una autoridad equivalente aprobada antes de activar la etapa terminal de retirement."
+    }
+  ],
+  "escape_control": {
+    "evidence_refs": [
+      "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+      "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001"
+    ],
+    "missing_evidence": [],
+    "statement": "Los readbacks de UPDATE/REFRESH, health/source/state verification y los canaries detectan deriva o fallos posteriores, pero operan por fase y no pueden sustituir una decisión canónica previa de release qualification/promotion.",
+    "status": "ESTABLISHED"
+  },
+  "evidence_map": [
+    {
+      "claim_path": "$.symptom",
+      "evidence_refs": [
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+      ]
+    },
+    {
+      "claim_path": "$.immediate_cause",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+      ]
+    },
+    {
+      "claim_path": "$.systemic_root_cause",
+      "evidence_refs": [
+        "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+      ]
+    },
+    {
+      "claim_path": "$.first_bad_control",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+      ]
+    },
+    {
+      "claim_path": "$.escape_control",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001"
+      ]
+    },
+    {
+      "claim_path": "$.origin_asset",
+      "evidence_refs": [
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+      ]
+    },
+    {
+      "claim_path": "$.origin_operation",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84"
+      ]
+    },
+    {
+      "claim_path": "$.owner",
+      "evidence_refs": [
+        "supabase://public/v_lf_operation_policy_snapshot/ACTUALIZACION_PERFIL_LF/POL-LF-OPERATION-LIFECYCLE"
+      ]
+    },
+    {
+      "claim_path": "$.material_process_graph",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001",
+        "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+        "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+      ]
+    },
+    {
+      "claim_path": "$.selected_alternative",
+      "evidence_refs": [
+        "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ]
+    },
+    {
+      "claim_path": "$.transition_plan",
+      "evidence_refs": [
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+      ]
+    },
+    {
+      "claim_path": "$.rollback_plan",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones"
+      ]
+    },
+    {
+      "claim_path": "$.repair_disposition",
+      "evidence_refs": [
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+        "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+      ]
+    },
+    {
+      "claim_path": "$.research_assurance",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+        "https://opengitops.dev/",
+        "https://kubernetes.io/docs/concepts/architecture/controller/",
+        "https://slsa.dev/spec/v1.2/provenance"
+      ]
+    },
+    {
+      "claim_path": "$.current_uncertainties",
+      "evidence_refs": [
+        "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL"
+      ]
+    }
+  ],
+  "execution_effect_reconciliation": [
+    {
+      "blocking": false,
+      "containment_ref": null,
+      "declared_producer": "CREACION_PERFIL_LF",
+      "declared_producer_ref": "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+      "effect": "candidate profile pack creation",
+      "impact": "NONE",
+      "observed_producer_refs": [
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001/steps"
+      ],
+      "observed_ref": "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+      "reconciliation_status": "MATCH"
+    },
+    {
+      "blocking": false,
+      "containment_ref": null,
+      "declared_producer": "ACTUALIZACION_PERFIL_LF",
+      "declared_producer_ref": "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+      "effect": "post-merge source reconciliation",
+      "impact": "NONE",
+      "observed_producer_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84"
+      ],
+      "observed_ref": "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "reconciliation_status": "MATCH"
+    },
+    {
+      "blocking": false,
+      "containment_ref": null,
+      "declared_producer": "REFRESCO_RUNTIME_PERFIL_LF",
+      "declared_producer_ref": "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+      "effect": "runtime source refresh and readback",
+      "impact": "NONE",
+      "observed_producer_refs": [
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "observed_ref": "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+      "reconciliation_status": "MATCH"
+    },
+    {
+      "blocking": false,
+      "containment_ref": null,
+      "declared_producer": "EJECUCION_PERFIL_LF",
+      "declared_producer_ref": "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+      "effect": "governed runtime execution pre-model steps",
+      "impact": "NONE",
+      "observed_producer_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py"
+      ],
+      "observed_ref": "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "reconciliation_status": "MATCH"
+    }
+  ],
+  "falsification_results": [
+    {
+      "case": "bypass",
+      "evidence_class": "DESIGN_ONLY",
+      "evidence_ref": "design://profile-release/bypass",
+      "expected_result": "Promotion bloqueada antes de cambiar desired release.",
+      "result": "PLANNED",
+      "test_protocol": {
+        "action": [
+          "Intentar promover un release sin QUAL_QUALIFIED."
+        ],
+        "assertions": [
+          "Promotion bloqueada antes de cambiar desired release.",
+          "No aparecen efectos extra en runtime, Router, desired binding ni historial."
+        ],
+        "failure_signal": "PROFILE_RELEASE_NOT_QUALIFIED",
+        "setup": [
+          "Materializar releases/bindings aislados en sandbox/read-only scope.",
+          "Congelar exact source/evidence refs del caso."
+        ]
+      },
+      "verification_method": "Ejecutar canary gobernado contra la frontera de profile release y releer binding, execution receipts y runtime readback."
+    },
+    {
+      "case": "retry",
+      "evidence_class": "DESIGN_ONLY",
+      "evidence_ref": "design://profile-release/retry",
+      "expected_result": "Mismo desired release; eventual converge or terminal failure receipt, sin duplicate effect.",
+      "result": "PLANNED",
+      "test_protocol": {
+        "action": [
+          "Reintentar reconcile/refresh después de readiness transitoria sin duplicar promotion."
+        ],
+        "assertions": [
+          "Mismo desired release; eventual converge or terminal failure receipt, sin duplicate effect.",
+          "No aparecen efectos extra en runtime, Router, desired binding ni historial."
+        ],
+        "failure_signal": "PROFILE_RUNTIME_RETRY_DUPLICATED_EFFECT",
+        "setup": [
+          "Materializar releases/bindings aislados en sandbox/read-only scope.",
+          "Congelar exact source/evidence refs del caso."
+        ]
+      },
+      "verification_method": "Ejecutar canary gobernado contra la frontera de profile release y releer binding, execution receipts y runtime readback."
+    },
+    {
+      "case": "concurrency",
+      "evidence_class": "DESIGN_ONLY",
+      "evidence_ref": "design://profile-release/concurrency",
+      "expected_result": "Solo una transición CAS válida; nunca estado híbrido.",
+      "result": "PLANNED",
+      "test_protocol": {
+        "action": [
+          "Correr update a R2 mientras promotion de R1 usa expected previous binding."
+        ],
+        "assertions": [
+          "Solo una transición CAS válida; nunca estado híbrido.",
+          "No aparecen efectos extra en runtime, Router, desired binding ni historial."
+        ],
+        "failure_signal": "PROFILE_RELEASE_CONCURRENT_BINDING",
+        "setup": [
+          "Materializar releases/bindings aislados en sandbox/read-only scope.",
+          "Congelar exact source/evidence refs del caso."
+        ]
+      },
+      "verification_method": "Ejecutar canary gobernado contra la frontera de profile release y releer binding, execution receipts y runtime readback."
+    },
+    {
+      "case": "partial_failure",
+      "evidence_class": "DESIGN_ONLY",
+      "evidence_ref": "design://profile-release/partial_failure",
+      "expected_result": "No cerrar observed binding; revertir o marcar reconcile pending preservando prior release.",
+      "result": "PLANNED",
+      "test_protocol": {
+        "action": [
+          "Fallar después de switch/restart y antes de source/state readback."
+        ],
+        "assertions": [
+          "No cerrar observed binding; revertir o marcar reconcile pending preservando prior release.",
+          "No aparecen efectos extra en runtime, Router, desired binding ni historial."
+        ],
+        "failure_signal": "PROFILE_RELEASE_PARTIAL_REFRESH",
+        "setup": [
+          "Materializar releases/bindings aislados en sandbox/read-only scope.",
+          "Congelar exact source/evidence refs del caso."
+        ]
+      },
+      "verification_method": "Ejecutar canary gobernado contra la frontera de profile release y releer binding, execution receipts y runtime readback."
+    },
+    {
+      "case": "stale_state",
+      "evidence_class": "DESIGN_ONLY",
+      "evidence_ref": "design://profile-release/stale_state",
+      "expected_result": "Currentness bloquea promotion y marca qualification stale; desired binding no cambia.",
+      "result": "PLANNED",
+      "test_protocol": {
+        "action": [
+          "Alterar source/digest entre qualification y promotion."
+        ],
+        "assertions": [
+          "Currentness bloquea promotion y marca qualification stale; desired binding no cambia.",
+          "No aparecen efectos extra en runtime, Router, desired binding ni historial."
+        ],
+        "failure_signal": "PROFILE_RELEASE_SOURCE_STALE",
+        "setup": [
+          "Materializar releases/bindings aislados en sandbox/read-only scope.",
+          "Congelar exact source/evidence refs del caso."
+        ]
+      },
+      "verification_method": "Ejecutar canary gobernado contra la frontera de profile release y releer binding, execution receipts y runtime readback."
+    },
+    {
+      "case": "interrupted_execution",
+      "evidence_class": "DESIGN_ONLY",
+      "evidence_ref": "design://profile-release/interrupted_execution",
+      "expected_result": "Reanudación idempotente determina observed state antes de emitir cierre; no auto-promoción.",
+      "result": "PLANNED",
+      "test_protocol": {
+        "action": [
+          "Interrumpir bootstrap/reconcile entre effect y final readback."
+        ],
+        "assertions": [
+          "Reanudación idempotente determina observed state antes de emitir cierre; no auto-promoción.",
+          "No aparecen efectos extra en runtime, Router, desired binding ni historial."
+        ],
+        "failure_signal": "PROFILE_RELEASE_INTERRUPTED_UNRESOLVED",
+        "setup": [
+          "Materializar releases/bindings aislados en sandbox/read-only scope.",
+          "Congelar exact source/evidence refs del caso."
+        ]
+      },
+      "verification_method": "Ejecutar canary gobernado contra la frontera de profile release y releer binding, execution receipts y runtime readback."
+    },
+    {
+      "case": "replay_or_duplicate",
+      "evidence_class": "DESIGN_ONLY",
+      "evidence_ref": "design://profile-release/replay_or_duplicate",
+      "expected_result": "Un solo efecto; replay retorna mismo release/receipt.",
+      "result": "PLANNED",
+      "test_protocol": {
+        "action": [
+          "Repetir la misma transition con misma idempotency key."
+        ],
+        "assertions": [
+          "Un solo efecto; replay retorna mismo release/receipt.",
+          "No aparecen efectos extra en runtime, Router, desired binding ni historial."
+        ],
+        "failure_signal": "PROFILE_RELEASE_DUPLICATE_EFFECT",
+        "setup": [
+          "Materializar releases/bindings aislados en sandbox/read-only scope.",
+          "Congelar exact source/evidence refs del caso."
+        ]
+      },
+      "verification_method": "Ejecutar canary gobernado contra la frontera de profile release y releer binding, execution receipts y runtime readback."
+    },
+    {
+      "case": "undeclared_or_unversioned_caller",
+      "evidence_class": "DESIGN_ONLY",
+      "evidence_ref": "design://profile-release/undeclared_or_unversioned_caller",
+      "expected_result": "Bloqueo antes de effect; no se infiere autoridad desde caller o compatibility fields.",
+      "result": "PLANNED",
+      "test_protocol": {
+        "action": [
+          "Intentar transition/execute sin release_id/source/digests gobernados."
+        ],
+        "assertions": [
+          "Bloqueo antes de effect; no se infiere autoridad desde caller o compatibility fields.",
+          "No aparecen efectos extra en runtime, Router, desired binding ni historial."
+        ],
+        "failure_signal": "PROFILE_RELEASE_IDENTITY_INCOMPLETE",
+        "setup": [
+          "Materializar releases/bindings aislados en sandbox/read-only scope.",
+          "Congelar exact source/evidence refs del caso."
+        ]
+      },
+      "verification_method": "Ejecutar canary gobernado contra la frontera de profile release y releer binding, execution receipts y runtime readback."
+    }
+  ],
+  "first_bad_control": {
+    "evidence_refs": [
+      "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+    ],
+    "missing_evidence": [],
+    "statement": "El primer punto corregible es la salida post-merge de ACTUALIZACION_PERFIL_LF: allí existe suficiente identidad exacta para materializar un profile_release inmutable, pero hoy solo se registra currentness y se deriva PROFILE_RUNTIME_REFRESH_REQUIRED.",
+    "status": "ESTABLISHED"
+  },
+  "hard_guard": {
+    "blocking_code": "PROFILE_RELEASE_TRANSITION_NOT_PROVABLE",
+    "control": "Profile release transition CAS + qualification/currentness guard",
+    "enforcement_point_ref": "proposed://GESTION_RELEASE_PERFIL_LF/transition",
+    "evidence_refs": [
+      "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+      "supabase://lf_ops/estados_catalogo+estados_transiciones",
+      "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+    ],
+    "fail_closed_condition": "Bloquear si release no está QUALIFIED, identidad/digests difieren, expected prior binding no coincide, o el readback observado no converge al desired release.",
+    "missing_evidence": [],
+    "observable_result": "No cambia desired release ni se autoriza runtime/retire; se emite receipt determinista con causa.",
+    "validation_state": "SPECIFIED"
+  },
+  "historical_regressions": [
+    {
+      "case_id": "HIST-CREATE-CANDIDATE",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001"
+      ],
+      "observed_failure": "CREATE pudo cerrar correctamente como candidato no oficial; prueba que candidate creation no equivale a promotion/runtime.",
+      "occurrence_ref": "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001"
+    },
+    {
+      "case_id": "HIST-UPDATE-REFRESH-SEPARATION",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "observed_failure": "UPDATE post-merge exige runtime refresh separado; promotion no está implícita.",
+      "occurrence_ref": "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84"
+    },
+    {
+      "case_id": "HIST-RUNTIME-BOOTSTRAP",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001"
+      ],
+      "observed_failure": "El primer bootstrap read-only fue una transición gobernada separada de refresh y sin autorización productiva.",
+      "occurrence_ref": "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001"
+    }
+  ],
+  "immediate_cause": {
+    "evidence_refs": [
+      "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+      "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+      "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+    ],
+    "missing_evidence": [],
+    "statement": "CREATE y UPDATE producen fuente exacta y receipts; UPDATE deriva PROFILE_RUNTIME_REFRESH_REQUIRED y REFRESH liga la fuente al runtime, pero ninguna frontera materializa un release inmutable común ni un desired_release binding que sea consumido por promoción, runtime y rollback.",
+    "status": "ESTABLISHED"
+  },
+  "implementation_delta": [
+    {
+      "action": "Create immutable profile-release identity contract and provenance envelope from exact current primitives.",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+      ],
+      "rationale": "Turns distributed source/runtime identity into one promotable and rollbackable subject.",
+      "target": "supabase://proposed/PROFILE_RELEASE_CONTRACT_V1"
+    },
+    {
+      "action": "Create minimal desired/observed current release binding; keep immutable history in operation executions.",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "rationale": "Enables deterministic reconciliation, CAS promotion and exact rollback without a duplicate history engine.",
+      "target": "supabase://proposed/profile_release_binding"
+    },
+    {
+      "action": "Create thin lifecycle/reconciler operation that composes existing phase operations and qualification.",
+      "evidence_refs": [
+        "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+      ],
+      "rationale": "Closes missing promotion/reconcile/rollback authority while avoiding a monolithic second executor.",
+      "target": "supabase://proposed/GESTION_RELEASE_PERFIL_LF"
+    },
+    {
+      "action": "Bind profile release promotion/deprecate/reconcile/rollback/retire actions to the lifecycle operation after contracts are operational.",
+      "evidence_refs": [
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+      ],
+      "rationale": "Makes physical invocation explicit and fail-closed.",
+      "target": "supabase://public/lf_router_action_registry"
+    },
+    {
+      "target": "supabase://proposed/PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
+      "action": "bind release materialization to the existing qualification lifecycle before promotion",
+      "rationale": "The materialize-to-qualify edge is part of the selected repair and must be present in the declared implementation footprint.",
+      "evidence_refs": [
+        "EV-LC-006",
+        "EV-LC-036"
+      ]
+    },
+    {
+      "target": "supabase://proposed/PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
+      "action": "enforce distinct deterministic, independent semantic, canonical quality and operational authorization layers",
+      "rationale": "Qualification-to-promotion and verify-to-execute edges both depend on this selected authority boundary.",
+      "evidence_refs": [
+        "EV-LC-028",
+        "EV-LC-029",
+        "EV-LC-035",
+        "EV-LC-036"
+      ]
+    },
+    {
+      "target": "supabase://proposed/PROFILE_RELEASE_TRANSITION_POLICY_V1",
+      "action": "define governed promote, deprecate, rollback and rollback-refresh transitions for exact release identities",
+      "rationale": "Every selected lifecycle state-transition edge must reconcile to a declared implementation target.",
+      "evidence_refs": [
+        "EV-LC-006",
+        "EV-LC-011",
+        "EV-LC-021"
+      ]
+    },
+    {
+      "target": "supabase://proposed/PROFILE_RELEASE_COMPATIBILITY_WINDOW_V1",
+      "action": "enforce no-new-adoption and active-consumer drain before retirement",
+      "rationale": "The deprecate-to-retire edge is selected and requires an explicit declared compatibility/retirement artifact.",
+      "evidence_refs": [
+        "EV-LC-005",
+        "EV-LC-021"
+      ]
+    },
+    {
+      "target": "supabase://proposed/GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
+      "action": "bind PROFILE_RUNTIME_CANARY_REQUIRED to a governed verify-runtime-canary consumer",
+      "rationale": "The current refresh path emits a canary-required gate without an operational consumer; the selected repair must name and wire the future consumer.",
+      "evidence_refs": [
+        "EV-LC-018",
+        "EV-LC-025"
+      ]
+    },
+    {
+      "target": "supabase://proposed/EJECUCION_PERFIL_LF/queue_terminal_bridge",
+      "action": "reconcile terminal queue outcomes into the canonical execution state",
+      "rationale": "A failed runtime queue request can remain disconnected from the canonical execution terminal state; the selected repair requires deterministic propagation and readback.",
+      "evidence_refs": [
+        "EV-LC-019",
+        "EV-LC-020",
+        "EV-LC-023"
+      ]
+    }
+  ],
+  "implementation_package": {
+    "architecture_decisions": [
+      {
+        "alternatives_considered": [
+          "Git-only lifecycle authority",
+          "Supabase-governed thin release boundary",
+          "Monolithic runtime lifecycle engine"
+        ],
+        "authority_ref": "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "decision": "In a thin Supabase-governed profile release lifecycle boundary that composes existing operations; Git/runtime remain source/effect surfaces.",
+        "decision_id": "AD-1",
+        "evidence_refs": [
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+          "supabase://public/lf_router_action_registry?asset_type=PERFIL"
+        ],
+        "question": "Where should profile lifecycle authority live?",
+        "rationale": "Preserves existing operational authority and avoids a second executor."
+      },
+      {
+        "alternatives_considered": [
+          "distributed metadata only",
+          "Git tag authority",
+          "immutable LF release envelope"
+        ],
+        "authority_ref": "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "decision": "Immutable release envelope keyed by digest over profile_code, source revision, entrypoint/manifest/runtime-binding/control/quality refs plus predecessor.",
+        "decision_id": "AD-2",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+        ],
+        "question": "How is a release identified?",
+        "rationale": "All primitives already exist in update/refresh receipts; centralizing the binding enables exact promotion/rollback."
+      },
+      {
+        "alternatives_considered": [
+          "new profile-specific qualification states",
+          "reuse QUALIFICATION_LIFECYCLE"
+        ],
+        "authority_ref": "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+        "decision": "Reuse existing QUALIFICATION_LIFECYCLE and bind it to profile_release; do not introduce a second qualification state machine.",
+        "decision_id": "AD-3",
+        "evidence_refs": [
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+        ],
+        "question": "How is qualification represented?",
+        "rationale": "Existing transitions already provide audited/idempotent qualification/stale/retry semantics."
+      },
+      {
+        "alternatives_considered": [
+          "Treat deterministic validation as sufficient acceptance",
+          "Treat semantic acceptance as automatic operational promotion",
+          "Keep deterministic, semantic, and operational authorization as distinct gates"
+        ],
+        "authority_ref": "proposed://PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
+        "decision": "Use three explicit non-substitutable layers: deterministic structural floor, independent semantic acceptance with canonical quality receipt, and a separate operational authorization/promotion transition. No earlier layer self-authorizes the next.",
+        "decision_id": "AD-4",
+        "evidence_refs": [
+          "github://services/profile_runtime_api/profile_runtime_api/validation.py",
+          "github://services/profile_runtime_api/profile_runtime_api/engine.py",
+          "supabase://public/lf_operation_step_judge_bindings"
+        ],
+        "question": "How are quality acceptance and operational promotion separated?",
+        "rationale": "Observed runtime paths declare quality controls but do not consume them into a true downstream authorization path; separating the layers prevents validator PASS from becoming implicit promotion."
+      },
+      {
+        "alternatives_considered": [
+          "Immediate retirement at deprecation",
+          "Fixed calendar grace period without authority",
+          "Consumer-inventory drain stage with zero-consumer exit"
+        ],
+        "authority_ref": "proposed://PROFILE_RELEASE_COMPATIBILITY_WINDOW_V1",
+        "decision": "Deprecation immediately blocks new adoption, while existing consumers remain explicitly inventoried and supported in a drain stage. Retirement is enabled only after the authoritative active-consumer inventory reaches zero and terminal archive/readback passes.",
+        "decision_id": "AD-5",
+        "evidence_refs": [
+          "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+          "supabase://public/lf_router_action_registry?asset_type=PERFIL"
+        ],
+        "question": "How do remaining consumers migrate during deprecation?",
+        "rationale": "This creates a bounded state transition without inventing a calendar deadline; the exit condition is measurable consumer state rather than elapsed time."
+      }
+    ],
+    "context_transport": {
+      "compiler_ref": null,
+      "degradation_rule": null,
+      "delivery_strategy": null,
+      "deterministic_inputs": [],
+      "excluded_payloads": [],
+      "jit_refs": [],
+      "rationale": "The release lifecycle transports deterministic refs/receipts, not model prompt context.",
+      "status": "NOT_APPLICABLE",
+      "token_budget": null
+    },
+    "control_matrix": [
+      {
+        "applies_when": "Materializing any release after create/update.",
+        "authority_ref": "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "blocking_code": "PROFILE_RELEASE_IDENTITY_INCOMPLETE",
+        "control_id": "CTL-RELEASE-ID",
+        "enforcement_point_ref": "proposed://GESTION_RELEASE_PERFIL_LF/materialize",
+        "input_contract": "Exact source/entrypoint/manifest/runtime-binding/quality refs and predecessor.",
+        "observable_result": "No promotable release row/receipt is created.",
+        "purpose": "Prevent unversioned or borrowed release identity.",
+        "verification_method": "Recompute envelope digest and resolve every ref."
+      },
+      {
+        "applies_when": "Promote request.",
+        "authority_ref": "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+        "blocking_code": "PROFILE_RELEASE_NOT_QUALIFIED_OR_STALE",
+        "control_id": "CTL-PROMOTE",
+        "enforcement_point_ref": "proposed://GESTION_RELEASE_PERFIL_LF/promote",
+        "input_contract": "QUAL_QUALIFIED + expected previous desired_release_id + idempotency key.",
+        "observable_result": "Desired binding unchanged on failure.",
+        "purpose": "Allow only qualified current releases to become desired.",
+        "verification_method": "Positive/negative/CAS/replay canaries."
+      },
+      {
+        "applies_when": "After refresh, restart, source change, or currentness invalidation.",
+        "authority_ref": "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "blocking_code": "PROFILE_RELEASE_NOT_CONVERGED",
+        "control_id": "CTL-RECONCILE",
+        "enforcement_point_ref": "proposed://GESTION_RELEASE_PERFIL_LF/reconcile",
+        "input_contract": "desired release, runtime readback, asset metadata, receipts.",
+        "observable_result": "STALE/FAILED receipt; execute/promote gates remain closed.",
+        "purpose": "Detect desired-versus-observed divergence without self-promoting.",
+        "verification_method": "Cross-read desired binding, runtime source/release and asset metadata."
+      },
+      {
+        "applies_when": "Retire request.",
+        "authority_ref": "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+        "blocking_code": "PROFILE_RELEASE_ACTIVE_CONSUMER_OR_RETIRE_NOT_OPERATIONAL",
+        "control_id": "CTL-RETIRE",
+        "enforcement_point_ref": "RETIRO_ACTIVO_LF dependency_consumer_check",
+        "input_contract": "deprecated release + zero active consumers + operational retire authority.",
+        "observable_result": "No archive/terminal transition on failure.",
+        "purpose": "Protect consumers and history at terminal retirement.",
+        "verification_method": "Consumer-blocked/positive/replay canaries."
+      },
+      {
+        "applies_when": "A release requests promotion or downstream authorization.",
+        "authority_ref": "proposed://PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
+        "blocking_code": "PROFILE_RELEASE_QUALITY_OR_AUTHORIZATION_INCOMPLETE",
+        "control_id": "CTL-QUALITY-AUTH",
+        "enforcement_point_ref": "proposed://GESTION_RELEASE_PERFIL_LF/promote",
+        "input_contract": "Structural floor PASS + independent semantic PASS + canonical quality receipt + separate operational authorization bound to the exact release identity.",
+        "observable_result": "Desired binding and downstream authorization remain unchanged.",
+        "purpose": "Prevent structural or semantic PASS from implicitly authorizing promotion.",
+        "verification_method": "Negative matrix removes each layer independently and proves fail-closed behavior."
+      },
+      {
+        "applies_when": "A release is deprecated or superseded while active consumers remain.",
+        "authority_ref": "proposed://PROFILE_RELEASE_COMPATIBILITY_WINDOW_V1",
+        "blocking_code": "PROFILE_RELEASE_CONSUMER_DRAIN_INCOMPLETE",
+        "control_id": "CTL-COMPAT-DRAIN",
+        "enforcement_point_ref": "proposed://GESTION_RELEASE_PERFIL_LF/deprecate",
+        "input_contract": "No-new-adoption marker + authoritative active-consumer inventory + terminal readback.",
+        "observable_result": "Release remains deprecated/superseded and cannot retire while consumer count is nonzero.",
+        "purpose": "Protect remaining consumers between deprecation and terminal retirement.",
+        "verification_method": "Active-consumer, zero-consumer and replay cases over the governed retirement check."
+      },
+      {
+        "control_id": "CTL-RUNTIME-CANARY-CONSUMER",
+        "purpose": "Guarantee that PROFILE_RUNTIME_CANARY_REQUIRED is consumed by a governed lifecycle action rather than remaining a label-only gate.",
+        "authority_ref": "proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
+        "applies_when": "REFRESCO_RUNTIME has applied a desired release and post-refresh verification is required.",
+        "enforcement_point_ref": "proposed://GESTION_RELEASE_PERFIL_LF/verify_runtime_canary",
+        "input_contract": "Exact release identity + refresh readback + PROFILE_RUNTIME_CANARY_REQUIRED gate.",
+        "blocking_code": "PROFILE_RUNTIME_CANARY_CONSUMER_MISSING",
+        "observable_result": "Canary result and observed release state are recorded against the exact release before execution authorization.",
+        "verification_method": "Negative no-consumer case must fail; positive consumer path must show producer, transport, consumer, enforcement and readback."
+      },
+      {
+        "control_id": "CTL-QUEUE-CANONICAL-TERMINALITY",
+        "purpose": "Keep runtime queue terminal outcome and canonical EJECUCION_PERFIL_LF terminal state consistent.",
+        "authority_ref": "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge",
+        "applies_when": "A runtime queue request reaches SUCCEEDED, FAILED or CANCELLED for a governed profile execution.",
+        "enforcement_point_ref": "proposed://EJECUCION_PERFIL_LF/reconcile_queue_terminal",
+        "input_contract": "Queue request identity + producer execution identity + terminal queue state + failure/success evidence.",
+        "blocking_code": "PROFILE_EXECUTION_TERMINALITY_RECONCILIATION_FAILED",
+        "observable_result": "Canonical execution reaches the corresponding terminal state or the reconciliation fails closed with explicit evidence.",
+        "verification_method": "Inject terminal success/failure/cancelled queue outcomes and read back canonical execution state for the same identity."
+      }
+    ],
+    "decision_closure": {
+      "closure_statement": "Architecture, authority boundaries, release identity, state/reconcile semantics, physical wiring, compatibility, rollback and acceptance are fixed. The remaining retire-authority check controls enablement only and cannot change the selected design.",
+      "handoff_ready": true,
+      "implementation_preconditions": [
+        {
+          "decision_rule": "If retire authority is not operational, keep retirement stage disabled; do not alter release/promotion/rollback architecture.",
+          "design_effect": "NONE",
+          "expected_shape": "RETIRO_ACTIVO_LF reaches operational/approved authority with consumer-check/archive/readback guarantees.",
+          "name": "retire_authority_operational",
+          "resolver_ref": "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+          "stage": "RETIRE_ENABLEMENT"
+        }
+      ],
+      "open_design_decisions": []
+    },
+    "deliverables": [
+      {
+        "acceptance_refs": [
+          "AC-REGISTER",
+          "AC-PROMOTE",
+          "AC-VERIFY"
+        ],
+        "artifact_ref": "supabase://proposed/profile_release_binding",
+        "change_type": "CREATE",
+        "dependencies": [
+          "lf_operation_execution",
+          "lf_activos"
+        ],
+        "exact_delta": "Add minimal current binding keyed by profile_code with desired_release_id, observed_release_id, expected generation/currentness and latest reconcile receipt; immutable history stays in operation executions."
+      },
+      {
+        "acceptance_refs": [
+          "AC-REGISTER"
+        ],
+        "artifact_ref": "supabase://proposed/PROFILE_RELEASE_CONTRACT_V1",
+        "change_type": "CREATE",
+        "dependencies": [
+          "ACTUALIZACION_PERFIL_LF post_merge_reconcile",
+          "quality receipts"
+        ],
+        "exact_delta": "Typed immutable release envelope and digest/provenance contract with predecessor and exact evidence refs."
+      },
+      {
+        "acceptance_refs": [
+          "AC-PROMOTE",
+          "AC-VERIFY",
+          "AC-ROLLBACK",
+          "AC-RETIRE"
+        ],
+        "artifact_ref": "supabase://proposed/GESTION_RELEASE_PERFIL_LF",
+        "change_type": "CREATE",
+        "dependencies": [
+          "Router",
+          "QUALIFICATION_LIFECYCLE",
+          "ACTUALIZACION_PERFIL_LF",
+          "REFRESCO_RUNTIME_PERFIL_LF",
+          "RETIRO_ACTIVO_LF"
+        ],
+        "exact_delta": "Thin lifecycle operation with materialize/qualify-bind/promote/deprecate/reconcile/rollback/retire actions; delegates source/runtime/archive effects to existing operations."
+      },
+      {
+        "acceptance_refs": [
+          "AC-PROMOTE",
+          "AC-DEPRECATE",
+          "AC-ROLLBACK"
+        ],
+        "artifact_ref": "supabase://public/lf_router_action_registry",
+        "change_type": "BIND",
+        "dependencies": [
+          "GESTION_RELEASE_PERFIL_LF"
+        ],
+        "exact_delta": "Add profile release actions to the lifecycle operation only after their contracts/authority are operational; keep existing PROFILE_CREATE/UPDATE/EXECUTION/RUNTIME_REFRESH bindings unchanged."
+      },
+      {
+        "acceptance_refs": [
+          "AC-QUALIFY"
+        ],
+        "artifact_ref": "supabase://lf_ops/QUALIFICATION_LIFECYCLE",
+        "change_type": "BIND",
+        "dependencies": [
+          "PROFILE_RELEASE_CONTRACT_V1"
+        ],
+        "exact_delta": "Bind existing qualification states/transitions to profile_release subject identity; no new qualification states."
+      },
+      {
+        "acceptance_refs": [
+          "AC-RUNTIME",
+          "AC-VERIFY",
+          "AC-ROLLBACK"
+        ],
+        "artifact_ref": "profiles/runtime refresh contract wiring",
+        "change_type": "MODIFY",
+        "dependencies": [
+          "profile_release_binding",
+          "REFRESCO_RUNTIME_PERFIL_LF"
+        ],
+        "exact_delta": "Require REFRESCO_RUNTIME_PERFIL_LF to consume exact desired release identity when invoked from release lifecycle and report observed release on source/state readback."
+      },
+      {
+        "artifact_ref": "proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
+        "change_type": "BIND",
+        "exact_delta": "Bind PROFILE_RUNTIME_CANARY_REQUIRED to verify_runtime_canary and persist exact-release canary/readback before execution authorization.",
+        "dependencies": [
+          "PROFILE_RELEASE_CONTRACT_V1",
+          "REFRESCO_RUNTIME",
+          "PROFILE_RUNTIME_CANARY_REQUIRED"
+        ],
+        "acceptance_refs": [
+          "CTL-RUNTIME-CANARY-CONSUMER",
+          "EDGE-REFRESH-VERIFY"
+        ]
+      },
+      {
+        "artifact_ref": "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge",
+        "change_type": "MODIFY",
+        "exact_delta": "Add idempotent terminal queue reconciliation so SUCCEEDED/FAILED/CANCELLED outcomes update or explicitly reconcile the canonical execution state with exact identity and readback.",
+        "dependencies": [
+          "private.lf_profile_runtime_queue_v1",
+          "lf_operation_execution",
+          "EJECUCION_PERFIL_LF"
+        ],
+        "acceptance_refs": [
+          "CTL-QUEUE-CANONICAL-TERMINALITY",
+          "EDGE-EXECUTE-TERMINAL-READBACK"
+        ]
+      }
+    ],
+    "observability_plan": [
+      {
+        "alert_or_gate": "PROFILE_RELEASE_NOT_CONVERGED",
+        "expected_change": "CONVERGED after successful refresh/rollback; STALE/FAILED on mismatch.",
+        "signal": "desired_vs_observed_release",
+        "source_ref": "supabase://proposed/profile_release_binding"
+      },
+      {
+        "alert_or_gate": "PROFILE_RELEASE_NOT_QUALIFIED_OR_STALE",
+        "expected_change": "QUALIFIED only with bound current evidence; STALE when identity/control evidence changes.",
+        "signal": "release_qualification_state",
+        "source_ref": "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+      },
+      {
+        "alert_or_gate": "PROFILE_RELEASE_RUNTIME_IDENTITY_MISMATCH",
+        "expected_change": "Runtime source/release/readback exactly matches desired release after reconcile.",
+        "signal": "runtime_release_identity",
+        "source_ref": "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      },
+      {
+        "alert_or_gate": "PROFILE_RELEASE_ACTIVE_CONSUMER_OR_RETIRE_NOT_OPERATIONAL",
+        "expected_change": "Terminal retire only at zero active consumers and clean archive readback.",
+        "signal": "retirement_consumer_count/state",
+        "source_ref": "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+      },
+      {
+        "alert_or_gate": "PROFILE_RELEASE_QUALITY_OR_AUTHORIZATION_INCOMPLETE",
+        "expected_change": "Quality receipt and operational promotion receipt remain separately addressable and exact-identity-bound.",
+        "signal": "quality_acceptance_vs_operational_authorization",
+        "source_ref": "proposed://PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1"
+      },
+      {
+        "alert_or_gate": "PROFILE_RELEASE_CONSUMER_DRAIN_INCOMPLETE",
+        "expected_change": "No-new-adoption at deprecation; active consumer count monotonically drains to zero before retirement.",
+        "signal": "deprecated_release_active_consumer_count",
+        "source_ref": "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+      }
+    ],
+    "policy_contract_changes": [
+      {
+        "authority_ref": "proposed://PROFILE_RELEASE_CONTRACT_V1",
+        "change": "Define immutable release envelope, release_id digest, predecessor link, desired/observed binding, and receipts.",
+        "compatibility_rule": "Existing profile metadata remains projection/readback; it cannot independently authorize lifecycle transitions.",
+        "evidence_refs": [
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+        ],
+        "owner_ref": "supabase://public/lf_activos/ACT-0045"
+      },
+      {
+        "authority_ref": "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
+        "change": "Bind profile releases to the existing QUALIFICATION_LIFECYCLE; source/control evidence change invalidates QUALIFIED to STALE.",
+        "compatibility_rule": "No new qualification vocabulary; existing QUAL_* states remain canonical.",
+        "evidence_refs": [
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+        ],
+        "owner_ref": "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+      },
+      {
+        "authority_ref": "proposed://PROFILE_RELEASE_TRANSITION_POLICY_V1",
+        "change": "Define materialize, qualify, promote, deprecate, rollback and retire actions with CAS/idempotency/readback semantics.",
+        "compatibility_rule": "CREATE/UPDATE/REFRESH/EXECUTE remain separate existing operations; lifecycle boundary orchestrates only state/binding transitions.",
+        "evidence_refs": [
+          "supabase://lf_ops/estados_catalogo+estados_transiciones",
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+          "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+        ],
+        "owner_ref": "supabase://lf_ops/estados_catalogo+estados_transiciones"
+      },
+      {
+        "authority_ref": "proposed://PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
+        "change": "Codify deterministic floor -> independent semantic acceptance -> canonical quality receipt -> operational authorization/promotion as separate, exact-identity-bound layers.",
+        "compatibility_rule": "Existing validators and judges remain reusable but none may self-authorize promotion or downstream execution merely by returning PASS.",
+        "evidence_refs": [
+          "github://services/profile_runtime_api/profile_runtime_api/validation.py",
+          "github://services/profile_runtime_api/profile_runtime_api/engine.py",
+          "supabase://public/lf_operation_step_judge_bindings"
+        ],
+        "owner_ref": "supabase://public/lf_activos/ACT-0045"
+      },
+      {
+        "authority_ref": "proposed://PROFILE_RELEASE_COMPATIBILITY_WINDOW_V1",
+        "change": "Add a deprecation drain stage: reject new adoption immediately, inventory existing consumers, maintain compatibility for them, and permit retirement only at zero active consumers with readback.",
+        "compatibility_rule": "No invented time window. Existing consumers keep the prior exact release during drain; new consumers must bind a non-deprecated release.",
+        "evidence_refs": [
+          "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+          "supabase://public/lf_router_action_registry?asset_type=PERFIL"
+        ],
+        "owner_ref": "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+      }
+    ],
+    "wiring": [
+      {
+        "contract_ref": "PROFILE_RELEASE_CONTRACT_V1",
+        "data_carried": [
+          "profile_code",
+          "exact source revision",
+          "canonical asset identity",
+          "entrypoint/manifest/runtime-binding refs",
+          "creation receipt"
+        ],
+        "fail_closed_behavior": "Do not close CREATE as lifecycle-complete or create a promotable release if registration/readback is absent.",
+        "from_ref": "CREACION_PERFIL_LF.canonical_registration_readback",
+        "precondition": "Create completed with canonical asset registration and exact readback.",
+        "to_ref": "GESTION_RELEASE_PERFIL_LF.materialize"
+      },
+      {
+        "contract_ref": "PROFILE_RELEASE_CONTRACT_V1",
+        "data_carried": [
+          "profile_code",
+          "main/source revision",
+          "entrypoint_sha",
+          "manifest_sha",
+          "quality receipt refs"
+        ],
+        "fail_closed_behavior": "Do not create promotable release if any exact identity ref is absent/mismatched.",
+        "from_ref": "ACTUALIZACION_PERFIL_LF.post_merge_reconcile",
+        "precondition": "Update exact-head and post-merge reconcile passed.",
+        "to_ref": "GESTION_RELEASE_PERFIL_LF.materialize"
+      },
+      {
+        "contract_ref": "PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
+        "data_carried": [
+          "release_id",
+          "evidence refs"
+        ],
+        "fail_closed_behavior": "Release remains non-promotable until QUAL_QUALIFIED.",
+        "from_ref": "GESTION_RELEASE_PERFIL_LF.materialize",
+        "precondition": "Immutable release materialized.",
+        "to_ref": "QUALIFICATION_LIFECYCLE"
+      },
+      {
+        "contract_ref": "PROFILE_RELEASE_TRANSITION_POLICY_V1",
+        "data_carried": [
+          "desired_release_id",
+          "exact source/release refs",
+          "prior release_id"
+        ],
+        "fail_closed_behavior": "Do not change runtime if desired binding transition failed.",
+        "from_ref": "GESTION_RELEASE_PERFIL_LF.promote",
+        "precondition": "Qualified release and CAS expected previous binding.",
+        "to_ref": "REFRESCO_RUNTIME_PERFIL_LF"
+      },
+      {
+        "contract_ref": "PROFILE_RELEASE_CONTRACT_V1",
+        "data_carried": [
+          "runtime_source_sha",
+          "runtime_release_ref",
+          "health/source/state readbacks"
+        ],
+        "fail_closed_behavior": "Do not mark observed/converged if any exact readback fails.",
+        "from_ref": "REFRESCO_RUNTIME_PERFIL_LF.readbacks",
+        "precondition": "Refresh attempted.",
+        "to_ref": "GESTION_RELEASE_PERFIL_LF.reconcile"
+      },
+      {
+        "contract_ref": "PROFILE_RELEASE_TRANSITION_POLICY_V1",
+        "data_carried": [
+          "prior exact release_id",
+          "rollback reason",
+          "expected current binding"
+        ],
+        "fail_closed_behavior": "Keep current desired binding unchanged if prior release cannot be verified.",
+        "from_ref": "GESTION_RELEASE_PERFIL_LF.rollback",
+        "precondition": "Prior release identity resolves and CAS succeeds.",
+        "to_ref": "REFRESCO_RUNTIME_PERFIL_LF"
+      },
+      {
+        "contract_ref": "PROFILE_RELEASE_TRANSITION_POLICY_V1",
+        "data_carried": [
+          "release/profile identity",
+          "consumer inventory proof",
+          "terminal intent"
+        ],
+        "fail_closed_behavior": "Remain deprecated/superseded; no hard delete.",
+        "from_ref": "GESTION_RELEASE_PERFIL_LF.retire",
+        "precondition": "Deprecated/no-new-adoption and zero active consumers; retire authority operational.",
+        "to_ref": "RETIRO_ACTIVO_LF"
+      },
+      {
+        "contract_ref": "PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
+        "data_carried": [
+          "exact candidate identity",
+          "external evidence manifest",
+          "scope authority packet"
+        ],
+        "fail_closed_behavior": "No canonical quality receipt or operational promotion authority is created.",
+        "from_ref": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF.pre_quality_floors",
+        "precondition": "Output schema, runtime_validate and semantic utility all pass without quality acceptance.",
+        "to_ref": "independent_semantic_judge"
+      },
+      {
+        "contract_ref": "PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
+        "data_carried": [
+          "release_id",
+          "candidate digest",
+          "independent verdict",
+          "canonical quality receipt ref"
+        ],
+        "fail_closed_behavior": "Quality PASS alone never mutates desired binding; promotion still requires explicit operational authorization.",
+        "from_ref": "canonical_quality_receipt",
+        "precondition": "Canonical quality receipt is independently materialized for the exact current candidate/release.",
+        "to_ref": "GESTION_RELEASE_PERFIL_LF.promote"
+      },
+      {
+        "from_ref": "REFRESCO_RUNTIME.post_refresh",
+        "to_ref": "GESTION_RELEASE_PERFIL_LF.verify_runtime_canary",
+        "contract_ref": "PROFILE_RUNTIME_CANARY_REQUIRED",
+        "data_carried": [
+          "release_id",
+          "desired_release_id",
+          "refresh readback",
+          "runtime binding identity"
+        ],
+        "precondition": "Refresh completed for the exact desired release and canary verification is required.",
+        "fail_closed_behavior": "Do not mark observed release verified and do not authorize execution while the canary consumer/result is absent."
+      },
+      {
+        "from_ref": "private.lf_profile_runtime_queue_v1.terminal_outcome",
+        "to_ref": "EJECUCION_PERFIL_LF.reconcile_queue_terminal",
+        "contract_ref": "PROFILE_EXECUTION_QUEUE_TERMINALITY_V1",
+        "data_carried": [
+          "queue_request_id",
+          "producer_execution_id",
+          "terminal_status",
+          "error_code",
+          "terminal evidence ref"
+        ],
+        "precondition": "Queue request is terminal and is bound to one canonical profile execution identity.",
+        "fail_closed_behavior": "Do not leave the canonical execution IN_PROGRESS after an authoritative terminal queue outcome; reconciliation mismatch is an explicit blocker."
+      }
+    ]
+  },
+  "invariant": {
+    "evidence_refs": [
+      "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+      "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+    ],
+    "missing_evidence": [],
+    "statement": "Ningún profile release puede ser promovido, servido por runtime, retirado o restaurado si el release_id no liga exact source revision + entrypoint/manifest/runtime-binding/quality evidence y si desired/observed no pueden reconciliarse por receipts.",
+    "validation_state": "SPECIFIED"
+  },
+  "live_authority_packet": {
+    "applicable_surfaces": [
+      "profile_asset",
+      "operation_registry_and_steps",
+      "operation_executions_and_step_receipts",
+      "router_actions",
+      "state_catalog_and_transitions",
+      "artifact_destination",
+      "runtime_worker_source",
+      "asset_relations",
+      "EKB",
+      "exact_profile_source_under_test"
+    ],
+    "evidence_refs": [
+      "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+      "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+      "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001",
+      "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+      "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+      "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+      "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+      "supabase://lf_ops/estados_catalogo+estados_transiciones",
+      "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+      "supabase://public/lf_artifact_destination_registry/DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT",
+      "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "supabase://public/lf_activo_relaciones/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z",
+      "github://cristhianlujan/claude-persona-lf-patch@37eeb13e980b1729350428caa8d2d55a8de21246/profiles/systemic_root_cause_repair_lf"
+    ],
+    "inspected_surfaces": [
+      "profile_asset",
+      "operation_registry_and_steps",
+      "operation_executions_and_step_receipts",
+      "router_actions",
+      "state_catalog_and_transitions",
+      "artifact_destination",
+      "runtime_worker_source",
+      "asset_relations",
+      "EKB",
+      "exact_profile_source_under_test"
+    ],
+    "material_effects_observed": true,
+    "observed_at": "2026-09-22T00:00:00Z",
+    "status": "COMPLETE",
+    "unavailable_source_assessments": [],
+    "unavailable_sources": []
+  },
+  "material_process_graph": {
+    "applies": true,
+    "edges": [
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-004",
+            "EV-LC-016",
+            "EV-LC-022"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "consumer_evidence_refs": [],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-CREATE-REGISTER",
+        "edge_kind": "DATA_CONTRACT",
+        "effect_readback_evidence_refs": [
+          "EV-LC-010"
+        ],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC01",
+        "gap_evidence_refs": [
+          "EV-LC-004",
+          "EV-LC-009",
+          "EV-LC-010",
+          "EV-LC-016",
+          "EV-LC-022"
+        ],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-009",
+            "EV-LC-010"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "OBSERVED_OPEN",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-010"
+          ],
+          "status": "OBSERVED_PASS"
+        },
+        "producer_evidence_refs": [
+          "EV-LC-022"
+        ],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_CONTRACT_V1/create_materialization",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-006",
+            "EV-LC-021"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-008",
+            "EV-LC-009"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "to_node": "LC03",
+        "transport_evidence_refs": []
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-006",
+            "EV-LC-012",
+            "EV-LC-024"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "consumer_evidence_refs": [],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-UPDATE-MATERIALIZE",
+        "edge_kind": "STATE_TRANSITION",
+        "effect_readback_evidence_refs": [
+          "EV-LC-012"
+        ],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC02",
+        "gap_evidence_refs": [
+          "EV-LC-006",
+          "EV-LC-012",
+          "EV-LC-024"
+        ],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-006",
+            "EV-LC-024"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "OBSERVED_OPEN",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-024"
+          ],
+          "status": "OBSERVED_PASS"
+        },
+        "producer_evidence_refs": [
+          "EV-LC-024"
+        ],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_CONTRACT_V1/update_materialization",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-006",
+            "EV-LC-021"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-012"
+          ],
+          "status": "OBSERVED_PASS"
+        },
+        "to_node": "LC03",
+        "transport_evidence_refs": []
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "consumer_evidence_refs": [],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-MATERIALIZE-QUALIFY",
+        "edge_kind": "CONTROL_FLOW",
+        "effect_readback_evidence_refs": [],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC03",
+        "gap_evidence_refs": [],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "next_gate": "QUALIFICATION_LIFECYCLE",
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "PROPOSED_ONLY",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "producer_evidence_refs": [],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "to_node": "LC04",
+        "transport_evidence_refs": [],
+        "proposed_next_gate_consumer_ref": "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1/QUALIFICATION_LIFECYCLE"
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-006"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "consumer_evidence_refs": [],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-QUALIFY-PROMOTE",
+        "edge_kind": "AUTHORITY",
+        "effect_readback_evidence_refs": [],
+        "enforcement_evidence_refs": [
+          "EV-LC-036"
+        ],
+        "from_node": "LC04",
+        "gap_evidence_refs": [
+          "EV-LC-006",
+          "EV-LC-035",
+          "EV-LC-036"
+        ],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-035"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "OBSERVED_OPEN",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "producer_evidence_refs": [],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "to_node": "LC05",
+        "transport_evidence_refs": []
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-011",
+            "EV-LC-018"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "consumer_evidence_refs": [
+          "EV-LC-018"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-PROMOTE-BOOTSTRAP",
+        "edge_kind": "CONTROL_FLOW",
+        "effect_readback_evidence_refs": [],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC05",
+        "gap_evidence_refs": [
+          "EV-LC-011",
+          "EV-LC-018"
+        ],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "OBSERVED_OPEN",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "producer_evidence_refs": [],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_TRANSITION_POLICY_V1/promote_to_bootstrap",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "to_node": "LC06",
+        "transport_evidence_refs": []
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "consumer_evidence_refs": [
+          "EV-LC-015"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-BOOTSTRAP-REFRESH",
+        "edge_kind": "RUNTIME_BINDING",
+        "effect_readback_evidence_refs": [
+          "EV-LC-015"
+        ],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC06",
+        "gap_evidence_refs": [
+          "EV-LC-015",
+          "EV-LC-025",
+          "EV-LC-026",
+          "EV-LC-027",
+          "EV-LC-030"
+        ],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-015",
+            "EV-LC-030"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "OBSERVED_OPEN",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-015",
+            "EV-LC-025"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "producer_evidence_refs": [
+          "EV-LC-025"
+        ],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_CONTRACT_V1/runtime_release_binding",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "to_node": "LC07",
+        "transport_evidence_refs": [
+          "EV-LC-026",
+          "EV-LC-027"
+        ]
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "consumer_evidence_refs": [
+          "EV-LC-018"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-REFRESH-VERIFY",
+        "edge_kind": "CONTROL_FLOW",
+        "effect_readback_evidence_refs": [],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC07",
+        "gap_evidence_refs": [
+          "EV-LC-018",
+          "EV-LC-025"
+        ],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "next_gate": "PROFILE_RUNTIME_CANARY_REQUIRED",
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "OBSERVED_OPEN",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-018",
+            "EV-LC-025"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "producer_evidence_refs": [
+          "EV-LC-025"
+        ],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_CONTRACT_V1/post_refresh_reconcile",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-018"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "to_node": "LC08",
+        "transport_evidence_refs": [],
+        "proposed_next_gate_consumer_ref": "proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer"
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-029",
+            "EV-LC-036"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "consumer_evidence_refs": [
+          "EV-LC-029"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-VERIFY-EXECUTE",
+        "edge_kind": "AUTHORITY",
+        "effect_readback_evidence_refs": [],
+        "enforcement_evidence_refs": [
+          "EV-LC-036"
+        ],
+        "from_node": "LC08",
+        "gap_evidence_refs": [
+          "EV-LC-028",
+          "EV-LC-029",
+          "EV-LC-030",
+          "EV-LC-034",
+          "EV-LC-035",
+          "EV-LC-036"
+        ],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-030",
+            "EV-LC-035"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "OBSERVED_OPEN",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-035"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "producer_evidence_refs": [],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1/downstream_authorization",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-019",
+            "EV-LC-023"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "to_node": "LC09",
+        "transport_evidence_refs": [
+          "EV-LC-028"
+        ]
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "consumer_evidence_refs": [
+          "EV-LC-019"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-EXECUTE-TERMINAL-READBACK",
+        "edge_kind": "RECOVERY",
+        "effect_readback_evidence_refs": [],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC09",
+        "gap_evidence_refs": [
+          "EV-LC-019",
+          "EV-LC-020",
+          "EV-LC-023"
+        ],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "OBSERVED_OPEN",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "producer_evidence_refs": [
+          "EV-LC-023"
+        ],
+        "proposed_change_ref": "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-019",
+            "EV-LC-020",
+            "EV-LC-023"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "to_node": "LC08",
+        "transport_evidence_refs": []
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "consumer_evidence_refs": [],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-EXECUTE-DEPRECATE",
+        "edge_kind": "STATE_TRANSITION",
+        "effect_readback_evidence_refs": [],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC09",
+        "gap_evidence_refs": [],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "PROPOSED_ONLY",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "producer_evidence_refs": [],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_TRANSITION_POLICY_V1/deprecate",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "to_node": "LC10",
+        "transport_evidence_refs": []
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-005",
+            "EV-LC-021"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "consumer_evidence_refs": [
+          "EV-LC-005"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-DEPRECATE-RETIRE",
+        "edge_kind": "STATE_TRANSITION",
+        "effect_readback_evidence_refs": [],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC10",
+        "gap_evidence_refs": [
+          "EV-LC-005",
+          "EV-LC-021"
+        ],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "OBSERVED_OPEN",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "producer_evidence_refs": [],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_COMPATIBILITY_WINDOW_V1/drain_then_retire",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-021"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-021"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "to_node": "LC11",
+        "transport_evidence_refs": []
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-006",
+            "EV-LC-021"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "consumer_evidence_refs": [],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-VERIFY-ROLLBACK",
+        "edge_kind": "RECOVERY",
+        "effect_readback_evidence_refs": [],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC08",
+        "gap_evidence_refs": [
+          "EV-LC-006",
+          "EV-LC-021"
+        ],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "OBSERVED_OPEN",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "producer_evidence_refs": [],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_TRANSITION_POLICY_V1/rollback",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [
+            "EV-LC-006",
+            "EV-LC-021"
+          ],
+          "status": "OBSERVED_FAIL"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "to_node": "LC12",
+        "transport_evidence_refs": []
+      },
+      {
+        "blocking_uncertainty_id": null,
+        "canonical_route_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "consumer_evidence_refs": [],
+        "disposition": "IMPLEMENTABLE",
+        "edge_id": "EDGE-ROLLBACK-REFRESH",
+        "edge_kind": "RUNTIME_BINDING",
+        "effect_readback_evidence_refs": [],
+        "enforcement_evidence_refs": [],
+        "from_node": "LC12",
+        "gap_evidence_refs": [],
+        "identity_consistency": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "next_gate": null,
+        "next_gate_consumer_evidence_refs": [],
+        "observation_status": "PROPOSED_ONLY",
+        "post_transition_currentness": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "producer_evidence_refs": [],
+        "proposed_change_ref": "proposed://PROFILE_RELEASE_TRANSITION_POLICY_V1/rollback_refresh",
+        "rollback_executability": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "terminality": {
+          "applicability": "REQUIRED",
+          "evidence_refs": [],
+          "status": "PROPOSED_ONLY"
+        },
+        "to_node": "LC07",
+        "transport_evidence_refs": []
+      }
+    ],
+    "nodes": [
+      {
+        "acceptance_refs": [
+          "AC-CREATE"
+        ],
+        "authority_refs": [
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+          "supabase://public/lf_artifact_destination_registry/DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT",
+          "supabase://public/lf_activos/ACT-0045"
+        ],
+        "consumer_refs": [
+          "release materialization/update governance"
+        ],
+        "control_refs": [
+          "pre_destination_resolution_gate",
+          "pre_write_execution_binding_gate",
+          "github_readback",
+          "contract_judge"
+        ],
+        "disposition": "REUSE_AS_IS",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+          "supabase://public/lf_artifact_destination_registry/DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT"
+        ],
+        "failure_recovery": "Block before write when destination/binding invalid; preserve no activation and exact receipt/readback.",
+        "inputs": [
+          "missing target",
+          "purpose",
+          "canonical destination"
+        ],
+        "node_id": "LC01",
+        "outputs": [
+          "candidate profile pack",
+          "creation receipt"
+        ],
+        "phase": "CREATE",
+        "producer_refs": [
+          "CREACION_PERFIL_LF"
+        ],
+        "state_transition": "NO_ASSET -> CANDIDATE_PACKAGE (no active release)",
+        "wiring_refs": [
+          "PROFILE_CREATE->CREACION_PERFIL_LF",
+          "supabase://public/lf_artifact_destination_registry/DEST_CREACION_PERFIL_LF_PROFILE_PACK_DEFAULT"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-UPDATE"
+        ],
+        "authority_refs": [
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84"
+        ],
+        "consumer_refs": [
+          "profile release materializer",
+          "REFRESCO_RUNTIME_PERFIL_LF"
+        ],
+        "control_refs": [
+          "deterministic_validation",
+          "semantic_judge",
+          "regression_after",
+          "post_merge_reconcile"
+        ],
+        "disposition": "REUSE_AS_IS",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84"
+        ],
+        "failure_recovery": "If main advances, rebind and rerun; failed candidate never becomes desired active release.",
+        "inputs": [
+          "existing profile",
+          "authorized patch",
+          "pre-write binding"
+        ],
+        "node_id": "LC02",
+        "outputs": [
+          "merged exact source",
+          "post_merge reconcile",
+          "candidate release inputs"
+        ],
+        "phase": "UPDATE",
+        "producer_refs": [
+          "ACTUALIZACION_PERFIL_LF"
+        ],
+        "state_transition": "ACTIVE/PRIOR RELEASE PRESERVED; NEW CANDIDATE SOURCE MATERIALIZED",
+        "wiring_refs": [
+          "PROFILE_UPDATE->ACTUALIZACION_PERFIL_LF",
+          "post_merge_reconcile->PROFILE_RUNTIME_REFRESH_REQUIRED"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-REGISTER"
+        ],
+        "authority_refs": [
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+        ],
+        "consumer_refs": [
+          "qualification",
+          "promotion",
+          "runtime refresh",
+          "rollback"
+        ],
+        "control_refs": [
+          "release envelope digest",
+          "exact evidence resolver",
+          "idempotency by release identity"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+        ],
+        "failure_recovery": "Missing or mismatched identity fails closed without creating a promotable release; replay returns same release_id.",
+        "inputs": [
+          "main/source SHA",
+          "entrypoint SHA",
+          "manifest SHA",
+          "runtime binding/policy refs",
+          "quality receipt"
+        ],
+        "node_id": "LC03",
+        "outputs": [
+          "immutable profile_release envelope",
+          "release_id",
+          "QUAL_UNQUALIFIED binding"
+        ],
+        "phase": "REGISTER/MATERIALIZE RELEASE",
+        "producer_refs": [
+          "proposed GESTION_RELEASE_PERFIL_LF.materialize"
+        ],
+        "state_transition": "SOURCE_CANDIDATE -> RELEASE_REGISTERED/QUAL_UNQUALIFIED",
+        "wiring_refs": [
+          "W-RELEASE-MATERIALIZE"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-QUALIFY"
+        ],
+        "authority_refs": [
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones"
+        ],
+        "consumer_refs": [
+          "promotion guard"
+        ],
+        "control_refs": [
+          "table-driven audited idempotent transitions",
+          "receipt evidence"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "evidence_refs": [
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+        ],
+        "failure_recovery": "Failed qualification remains non-promotable; source/evidence change invalidates qualification to STALE.",
+        "inputs": [
+          "registered release",
+          "CI/semantic/canary receipts"
+        ],
+        "node_id": "LC04",
+        "outputs": [
+          "QUAL_QUALIFIED or QUAL_FAILED/STALE"
+        ],
+        "phase": "QUALIFY",
+        "producer_refs": [
+          "existing QUALIFICATION_LIFECYCLE transition primitive bound to profile_release"
+        ],
+        "state_transition": "QUAL_UNQUALIFIED -> QUAL_QUALIFYING -> QUAL_QUALIFIED|QUAL_FAILED; QUALIFIED -> STALE on invalidation",
+        "wiring_refs": [
+          "W-QUALIFICATION"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-PROMOTE"
+        ],
+        "authority_refs": [
+          "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones"
+        ],
+        "consumer_refs": [
+          "REFRESCO_RUNTIME_PERFIL_LF",
+          "EJECUCION_PERFIL_LF admission"
+        ],
+        "control_refs": [
+          "qualification guard",
+          "CAS expected previous binding",
+          "no source/runtime side effect"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "evidence_refs": [
+          "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+          "supabase://public/lf_router_action_registry?asset_type=PERFIL"
+        ],
+        "failure_recovery": "Stale/duplicate/concurrent promotion fails closed or replays idempotently; prior desired binding remains authoritative until CAS succeeds.",
+        "inputs": [
+          "QUAL_QUALIFIED release_id",
+          "expected previous desired_release_id",
+          "idempotency key"
+        ],
+        "node_id": "LC05",
+        "outputs": [
+          "desired_release_id binding",
+          "promotion receipt"
+        ],
+        "phase": "PUBLISH/PROMOTE",
+        "producer_refs": [
+          "proposed GESTION_RELEASE_PERFIL_LF.promote"
+        ],
+        "state_transition": "QUALIFIED CANDIDATE -> DESIRED ACTIVE RELEASE; prior desired -> SUPERSEDED for new adoption",
+        "wiring_refs": [
+          "W-PROMOTE-PROPOSED"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-RUNTIME",
+          "F-BOOTSTRAP"
+        ],
+        "authority_refs": [
+          "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001",
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF"
+        ],
+        "consumer_refs": [
+          "EJECUCION_PERFIL_LF"
+        ],
+        "control_refs": [
+          "pre/post router readback",
+          "no production/no auto impact"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001",
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF"
+        ],
+        "failure_recovery": "Failed bootstrap leaves execution blocked and release non-active for execution; do not treat refresh as bootstrap substitute.",
+        "inputs": [
+          "qualified desired release",
+          "read-only execution policy"
+        ],
+        "node_id": "LC06",
+        "outputs": [
+          "runtime enabled read-only",
+          "Router PROFILE_EXECUTION ready"
+        ],
+        "phase": "FIRST BOOTSTRAP/ENABLEMENT",
+        "producer_refs": [
+          "TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF or its operational successor"
+        ],
+        "state_transition": "NO_HABILITADO -> CANDIDATE_READ_ONLY (first enablement only)",
+        "wiring_refs": [
+          "W-BOOTSTRAP"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-RUNTIME",
+          "F-READINESS"
+        ],
+        "authority_refs": [
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF"
+        ],
+        "consumer_refs": [
+          "reconciler",
+          "EJECUCION_PERFIL_LF"
+        ],
+        "control_refs": [
+          "source_currentness",
+          "runtime_baseline",
+          "pre_refresh_binding_gate",
+          "health_readback",
+          "source_readback",
+          "state_preservation",
+          "asset_reconcile"
+        ],
+        "disposition": "REUSE_AS_IS",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+          "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z"
+        ],
+        "failure_recovery": "On terminal refresh/readback failure, restore prior release; readiness transient is retried/bounded before terminal rollback decision.",
+        "inputs": [
+          "desired release exact identity",
+          "prior observed release"
+        ],
+        "node_id": "LC07",
+        "outputs": [
+          "runtime source/release switched",
+          "health/source/state readbacks",
+          "observed_release_id"
+        ],
+        "phase": "RUNTIME REFRESH/REBIND",
+        "producer_refs": [
+          "REFRESCO_RUNTIME_PERFIL_LF"
+        ],
+        "state_transition": "OBSERVED_Rn -> OBSERVED_Rn+1 while policy state remains read-only unless separate transition",
+        "wiring_refs": [
+          "PROFILE_RUNTIME_REFRESH->REFRESCO_RUNTIME_PERFIL_LF",
+          "W-DESIRED-TO-REFRESH"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-VERIFY"
+        ],
+        "authority_refs": [
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py"
+        ],
+        "consumer_refs": [
+          "promotion/execute/retire gates",
+          "observability"
+        ],
+        "control_refs": [
+          "desired-vs-observed compare",
+          "exact digest/reference resolver",
+          "currentness invalidation"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "evidence_refs": [
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+          "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py"
+        ],
+        "failure_recovery": "Mismatch never self-heals by mutating desired state; route to refresh/requalify or rollback with exact prior release.",
+        "inputs": [
+          "desired_release_id",
+          "observed runtime release/source",
+          "asset metadata",
+          "latest receipts"
+        ],
+        "node_id": "LC08",
+        "outputs": [
+          "CONVERGED|STALE|FAILED reconciliation receipt"
+        ],
+        "phase": "VERIFY/RECONCILE",
+        "producer_refs": [
+          "proposed GESTION_RELEASE_PERFIL_LF.reconcile"
+        ],
+        "state_transition": "No promotion side effect; mismatch can invalidate qualification/currentness",
+        "wiring_refs": [
+          "W-RECONCILE"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-RUNTIME"
+        ],
+        "authority_refs": [
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+          "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+        ],
+        "consumer_refs": [
+          "caller/quality"
+        ],
+        "control_refs": [
+          "router",
+          "profile_resolve",
+          "profile_source_read",
+          "input_validate",
+          "context_admission",
+          "research_baseline_freeze"
+        ],
+        "disposition": "REUSE_AS_IS",
+        "evidence_refs": [
+          "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+        ],
+        "failure_recovery": "Missing governed pre-model steps blocks model call; semantic/contract failures do not mutate release binding.",
+        "inputs": [
+          "exact profile source",
+          "governed execution envelope",
+          "active/read-only policy"
+        ],
+        "node_id": "LC09",
+        "outputs": [
+          "governed profile result",
+          "execution receipts"
+        ],
+        "phase": "EXECUTE",
+        "producer_refs": [
+          "EJECUCION_PERFIL_LF + current queue worker"
+        ],
+        "state_transition": "No release lifecycle transition; consumes current eligible release",
+        "wiring_refs": [
+          "PROFILE_EXECUTION->EJECUCION_PERFIL_LF"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-DEPRECATE"
+        ],
+        "authority_refs": [
+          "supabase://public/lf_activo_relaciones/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones"
+        ],
+        "consumer_refs": [
+          "Router/admission",
+          "retirement dependency check"
+        ],
+        "control_refs": [
+          "consumer inventory",
+          "new-adoption guard",
+          "history preservation"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "evidence_refs": [
+          "supabase://public/lf_activo_relaciones/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+          "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+        ],
+        "failure_recovery": "If consumers remain, do not retire; migration can resume idempotently without deleting release history.",
+        "inputs": [
+          "current release",
+          "newer promoted release or deprecation decision",
+          "consumer inventory"
+        ],
+        "node_id": "LC10",
+        "outputs": [
+          "no-new-adoption marker",
+          "consumer migration/readback"
+        ],
+        "phase": "DEPRECATE/SUPERSEDE",
+        "producer_refs": [
+          "proposed GESTION_RELEASE_PERFIL_LF.deprecate"
+        ],
+        "state_transition": "ACTIVE -> SUPERSEDED/DEPRECATED FOR NEW ADOPTION; existing consumers remain visible",
+        "wiring_refs": [
+          "W-DEPRECATE"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-RETIRE"
+        ],
+        "authority_refs": [
+          "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF"
+        ],
+        "consumer_refs": [
+          "historical/readback only"
+        ],
+        "control_refs": [
+          "dependency_consumer_check",
+          "archive_write",
+          "archive_readback",
+          "idempotency"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "evidence_refs": [
+          "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+        ],
+        "failure_recovery": "Active consumer or non-operational retire capability blocks terminal transition; no hard delete.",
+        "inputs": [
+          "deprecated release/asset",
+          "zero active consumers",
+          "operational retire authority"
+        ],
+        "node_id": "LC11",
+        "outputs": [
+          "terminal archive/retire receipt",
+          "history retained"
+        ],
+        "phase": "RETIRE",
+        "producer_refs": [
+          "RETIRO_ACTIVO_LF after operational qualification"
+        ],
+        "state_transition": "DEPRECATED -> RETIRED terminal",
+        "wiring_refs": [
+          "RETIRE candidate -> RETIRO_ACTIVO_LF"
+        ]
+      },
+      {
+        "acceptance_refs": [
+          "AC-ROLLBACK"
+        ],
+        "authority_refs": [
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones"
+        ],
+        "consumer_refs": [
+          "runtime/reconciler"
+        ],
+        "control_refs": [
+          "prior-release exact identity",
+          "CAS",
+          "runtime/source/state readback"
+        ],
+        "disposition": "IMPLEMENTABLE",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones"
+        ],
+        "failure_recovery": "If prior release cannot be verified, leave current desired binding unchanged and block; rollback never reconstructs an unversioned state.",
+        "inputs": [
+          "prior exact release_id",
+          "failed/current desired release",
+          "rollback reason"
+        ],
+        "node_id": "LC12",
+        "outputs": [
+          "desired binding reset to prior release",
+          "runtime refreshed",
+          "rollback/readback receipt"
+        ],
+        "phase": "ROLLBACK",
+        "producer_refs": [
+          "proposed GESTION_RELEASE_PERFIL_LF.rollback + REFRESCO_RUNTIME_PERFIL_LF"
+        ],
+        "state_transition": "DESIRED_Rn -> DESIRED_Rn-1; failed Rn retained as historical/superseded",
+        "wiring_refs": [
+          "W-ROLLBACK-PROPOSED",
+          "W-DESIRED-TO-REFRESH"
+        ]
+      }
+    ],
+    "rationale": "El caso es un lifecycle stateful; cada nodo material se reconcilia con autoridad, I/O, producer/consumer, wiring, failure/recovery y readback."
+  },
+  "next_gate": {
+    "entry_condition": "Exact candidate remains deterministic/semantic-valid with no DESIGN_BLOCKING uncertainty; retirement enablement stays gated as an implementation precondition.",
+    "exit_condition": "Implement candidate artifacts in governed sandbox, run structural/behavioral regressions, independent semantic judge, exact-head CI, and post-implementation readbacks before any activation.",
+    "gate": "IMPLEMENTATION_OWNER_HANDOFF"
+  },
+  "omission_discovery": [
+    {
+      "dimension": "ARCHITECTURE",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "finding": "Add canonical immutable release + desired/observed reconcile boundary; reuse child operations."
+    },
+    {
+      "dimension": "CONTROLS",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones"
+      ],
+      "finding": "Promotion/rollback need qualification/currentness/CAS hard guards at one release transition boundary."
+    },
+    {
+      "dimension": "POLICIES_CONTRACTS",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84"
+      ],
+      "finding": "Define release envelope, qualification binding, promotion/deprecation/rollback transition contract and receipts."
+    },
+    {
+      "dimension": "CONTEXT_TRANSPORT",
+      "disposition": "NOT_APPLICABLE",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "finding": "No model-context transport is required to operate the release lifecycle; refs/receipts are deterministic control data."
+    },
+    {
+      "dimension": "WIRING",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "finding": "Wire update->release materialization->qualification->promotion->refresh/reconcile and rollback using existing Router/operations."
+    },
+    {
+      "dimension": "COMPATIBILITY_TRANSITION",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "finding": "Legacy profile metadata/runtime bindings must map to a bootstrap release without falsely claiming historical qualification."
+    },
+    {
+      "dimension": "RECOVERY_TERMINALITY",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+        "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z"
+      ],
+      "finding": "Specify exact rollback to prior release and terminal retirement only after consumer/readback proof."
+    },
+    {
+      "dimension": "OBSERVABILITY",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84"
+      ],
+      "finding": "Expose desired/observed release, qualification, reconcile state and exact receipt chain in readback."
+    },
+    {
+      "dimension": "SECURITY_AUTHORITY",
+      "disposition": "REUSE_AS_IS",
+      "evidence_refs": [
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase://public/lf_activos/ACT-0045"
+      ],
+      "finding": "Keep Supabase operational authority and fail-closed Router/operation binding; do not make Git or runtime self-authorizing."
+    },
+    {
+      "dimension": "COST_PERFORMANCE",
+      "disposition": "NOT_APPLICABLE",
+      "evidence_refs": [
+        "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "finding": "No reusable numeric timeout/threshold is fixed by this design; readiness timing remains separately calibrated."
+    },
+    {
+      "dimension": "TESTING_ASSURANCE",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://public/lf_operation_execution/EXEC-S30-A2R-SYSTEMIC-PROFILE-RUNTIME-TRANSITION-20260917-001"
+      ],
+      "finding": "Add structural and behavioral regressions for bypass, stale, duplicate, concurrency, partial failure, bootstrap, rollback and retirement."
+    },
+    {
+      "dimension": "OPERABILITY_MAINTENANCE",
+      "disposition": "REQUIRED_CHANGE",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+      ],
+      "finding": "Make reconciler resumable/idempotent and preserve immutable release/history receipts for support and rollback."
+    }
+  ],
+  "origin_asset": {
+    "authority_kind": "EXISTING_AUTHORITY",
+    "code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    "evidence_id": "EV-PROFILE-CURRENT",
+    "evidence_ref": "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    "missing_evidence": [],
+    "observed_revision": "2026-09-21T09:11:53.697359+00:00",
+    "status": "RESOLVED",
+    "subject": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+  },
+  "origin_operation": {
+    "authority_kind": "EXISTING_AUTHORITY",
+    "code": "ACTUALIZACION_PERFIL_LF",
+    "evidence_id": "EV-UPDATE",
+    "evidence_ref": "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+    "missing_evidence": [],
+    "observed_revision": "2026-09-21T09:05:38.653000+00:00",
+    "status": "RESOLVED",
+    "subject": "ACTUALIZACION_PERFIL_LF"
+  },
+  "owner": {
+    "authority_kind": "EXISTING_AUTHORITY",
+    "code": "ACT-0001_SUPABASE",
+    "evidence_id": "EV-LIFECYCLE-POLICY",
+    "evidence_ref": "supabase://public/v_lf_operation_policy_snapshot/ACTUALIZACION_PERFIL_LF/POL-LF-OPERATION-LIFECYCLE",
+    "missing_evidence": [],
+    "observed_revision": "v1.1-operational-closure@2adb62f8b47a599fd6a6ce2ed1f7b545678b15b0283a07dccdc235bea37e3c00",
+    "status": "RESOLVED",
+    "subject": "ACT-0001_SUPABASE"
+  },
+  "planned_regressions": [
+    {
+      "case_id": "F-BYPASS",
+      "expected_result": "Promotion bloqueada antes de cambiar desired release.",
+      "scenario": "promotion bypass",
+      "test_protocol": {
+        "action": [
+          "Intentar promover un release sin QUAL_QUALIFIED."
+        ],
+        "assertions": [
+          "Promotion bloqueada antes de cambiar desired release.",
+          "No aparecen efectos extra en runtime, Router ni historial de release."
+        ],
+        "failure_signal": "PROFILE_RELEASE_NOT_QUALIFIED",
+        "setup": [
+          "Materializar dos releases de prueba y bindings/receipts aislados; no tocar producción."
+        ]
+      },
+      "verification_method": "Canary gobernado con setup aislado y readback exacto de release/binding/runtime."
+    },
+    {
+      "case_id": "F-STALE",
+      "expected_result": "CAS/currentness bloquea promotion; binding no cambia.",
+      "scenario": "stale source",
+      "test_protocol": {
+        "action": [
+          "Alterar source/digest entre qualification y promotion."
+        ],
+        "assertions": [
+          "CAS/currentness bloquea promotion; binding no cambia.",
+          "No aparecen efectos extra en runtime, Router ni historial de release."
+        ],
+        "failure_signal": "PROFILE_RELEASE_SOURCE_STALE",
+        "setup": [
+          "Materializar dos releases de prueba y bindings/receipts aislados; no tocar producción."
+        ]
+      },
+      "verification_method": "Canary gobernado con setup aislado y readback exacto de release/binding/runtime."
+    },
+    {
+      "case_id": "F-DUP",
+      "expected_result": "Un solo efecto; replay devuelve mismo release/receipt.",
+      "scenario": "duplicate promotion",
+      "test_protocol": {
+        "action": [
+          "Repetir exactamente la misma promotion con misma idempotency key."
+        ],
+        "assertions": [
+          "Un solo efecto; replay devuelve mismo release/receipt.",
+          "No aparecen efectos extra en runtime, Router ni historial de release."
+        ],
+        "failure_signal": "PROFILE_RELEASE_DUPLICATE_EFFECT",
+        "setup": [
+          "Materializar dos releases de prueba y bindings/receipts aislados; no tocar producción."
+        ]
+      },
+      "verification_method": "Canary gobernado con setup aislado y readback exacto de release/binding/runtime."
+    },
+    {
+      "case_id": "F-CONCURRENT",
+      "expected_result": "Solo una transición CAS válida; nunca estado híbrido.",
+      "scenario": "concurrent update/promote",
+      "test_protocol": {
+        "action": [
+          "Correr update a R2 mientras promotion de R1 usa expected previous binding."
+        ],
+        "assertions": [
+          "Solo una transición CAS válida; nunca estado híbrido.",
+          "No aparecen efectos extra en runtime, Router ni historial de release."
+        ],
+        "failure_signal": "PROFILE_RELEASE_CONCURRENT_BINDING",
+        "setup": [
+          "Materializar dos releases de prueba y bindings/receipts aislados; no tocar producción."
+        ]
+      },
+      "verification_method": "Canary gobernado con setup aislado y readback exacto de release/binding/runtime."
+    },
+    {
+      "case_id": "F-PARTIAL",
+      "expected_result": "No cerrar observed binding; revertir o marcar reconcile pending y preservar prior release.",
+      "scenario": "partial runtime refresh",
+      "test_protocol": {
+        "action": [
+          "Fallar después de switch/restart y antes de source/state readback."
+        ],
+        "assertions": [
+          "No cerrar observed binding; revertir o marcar reconcile pending y preservar prior release.",
+          "No aparecen efectos extra en runtime, Router ni historial de release."
+        ],
+        "failure_signal": "PROFILE_RELEASE_PARTIAL_REFRESH",
+        "setup": [
+          "Materializar dos releases de prueba y bindings/receipts aislados; no tocar producción."
+        ]
+      },
+      "verification_method": "Canary gobernado con setup aislado y readback exacto de release/binding/runtime."
+    },
+    {
+      "case_id": "F-BOOTSTRAP",
+      "expected_result": "No declarar release activo; Router execution permanece bloqueado.",
+      "scenario": "failed first bootstrap",
+      "test_protocol": {
+        "action": [
+          "Fallar la transición inicial de NO_HABILITADO a read-only."
+        ],
+        "assertions": [
+          "No declarar release activo; Router execution permanece bloqueado.",
+          "No aparecen efectos extra en runtime, Router ni historial de release."
+        ],
+        "failure_signal": "PROFILE_RELEASE_BOOTSTRAP_NOT_READY",
+        "setup": [
+          "Materializar dos releases de prueba y bindings/receipts aislados; no tocar producción."
+        ]
+      },
+      "verification_method": "Canary gobernado con setup aislado y readback exacto de release/binding/runtime."
+    },
+    {
+      "case_id": "F-READINESS",
+      "expected_result": "No rollback por primer connection-refused; cerrar solo tras bounded readiness/readback o terminal failure.",
+      "scenario": "transient readiness",
+      "test_protocol": {
+        "action": [
+          "Simular restart exitoso seguido de readiness transitoria y luego OK/terminal fail."
+        ],
+        "assertions": [
+          "No rollback por primer connection-refused; cerrar solo tras bounded readiness/readback o terminal failure.",
+          "No aparecen efectos extra en runtime, Router ni historial de release."
+        ],
+        "failure_signal": "PROFILE_RUNTIME_READINESS_UNRESOLVED",
+        "setup": [
+          "Materializar dos releases de prueba y bindings/receipts aislados; no tocar producción."
+        ]
+      },
+      "verification_method": "Canary gobernado con setup aislado y readback exacto de release/binding/runtime."
+    },
+    {
+      "case_id": "F-ROLLBACK",
+      "expected_result": "Bloquear restore; mantener desired/observed actuales e historial.",
+      "scenario": "rollback mismatch",
+      "test_protocol": {
+        "action": [
+          "Solicitar rollback a prior release cuyo digest/readback no coincide."
+        ],
+        "assertions": [
+          "Bloquear restore; mantener desired/observed actuales e historial.",
+          "No aparecen efectos extra en runtime, Router ni historial de release."
+        ],
+        "failure_signal": "PROFILE_RELEASE_ROLLBACK_IDENTITY_MISMATCH",
+        "setup": [
+          "Materializar dos releases de prueba y bindings/receipts aislados; no tocar producción."
+        ]
+      },
+      "verification_method": "Canary gobernado con setup aislado y readback exacto de release/binding/runtime."
+    },
+    {
+      "case_id": "F-RETIRE",
+      "expected_result": "Retire bloqueado; release permanece direccionable para consumers existentes.",
+      "scenario": "retire active consumer",
+      "test_protocol": {
+        "action": [
+          "Intentar retire con consumer activo según dependency check."
+        ],
+        "assertions": [
+          "Retire bloqueado; release permanece direccionable para consumers existentes.",
+          "No aparecen efectos extra en runtime, Router ni historial de release."
+        ],
+        "failure_signal": "PROFILE_RELEASE_ACTIVE_CONSUMER",
+        "setup": [
+          "Materializar dos releases de prueba y bindings/receipts aislados; no tocar producción."
+        ]
+      },
+      "verification_method": "Canary gobernado con setup aislado y readback exacto de release/binding/runtime."
+    },
+    {
+      "case_id": "F-UNVERSIONED",
+      "expected_result": "Bloquear en release boundary antes de runtime.",
+      "scenario": "unversioned release",
+      "test_protocol": {
+        "action": [
+          "Intentar promotion/execute sin source revision + required digests."
+        ],
+        "assertions": [
+          "Bloquear en release boundary antes de runtime.",
+          "No aparecen efectos extra en runtime, Router ni historial de release."
+        ],
+        "failure_signal": "PROFILE_RELEASE_IDENTITY_INCOMPLETE",
+        "setup": [
+          "Materializar dos releases de prueba y bindings/receipts aislados; no tocar producción."
+        ]
+      },
+      "verification_method": "Canary gobernado con setup aislado y readback exacto de release/binding/runtime."
+    }
+  ],
+  "preferred_alternative": "B",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+  "quantitative_decisions": [],
+  "recurrence_evidence": [
+    {
+      "evidence_class": "OBSERVED_LIVE",
+      "fact": "Más de una actualización gobernada termina mediante reconciliación/next_gate de runtime en lugar de una identidad de release promovible común.",
+      "ref": "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "scope": "profile update lifecycle"
+    },
+    {
+      "evidence_class": "OBSERVED_LIVE",
+      "fact": "Refreshes gobernados preservan estado/impacto y exact source identity sin auto-promoción, confirmando que runtime binding y promotion son responsabilidades separadas.",
+      "ref": "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+      "scope": "profile runtime lifecycle"
+    }
+  ],
+  "rejected_alternatives": [
+    {
+      "evidence_refs": [
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "id": "A",
+      "reason": "No resuelve la ausencia de una decisión canónica de release/promotion/rollback; solo mejora handoffs fase-locales."
+    },
+    {
+      "evidence_refs": [
+        "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+      ],
+      "id": "C",
+      "reason": "Duplica operaciones y autoridades existentes, aumenta blast radius y contradice el patrón de reuse mínimo suficiente."
+    }
+  ],
+  "repair_disposition": {
+    "active_failure_present": true,
+    "currentness_refs": [
+      "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+      "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+      "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py"
+    ],
+    "decision": "REPAIR_REQUIRED",
+    "evidence_refs": [
+      "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+      "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+      "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+    ],
+    "material_repair_justified": true,
+    "rationale": "La ausencia de una autoridad de profile release es actual y material: publish/promote no tiene ruta operativa, release identity está distribuida y retirement sigue candidato; las operaciones fase-locales existentes sí aportan primitivas reutilizables.",
+    "verification": {
+      "evidence_refs": [
+        "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+        "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "executable": true,
+      "expected_result": "Persisten operaciones de fase y exact-source receipts, pero no una autoridad operativa única de profile release/promotion; RETIRO_ACTIVO_LF permanece candidato.",
+      "method": "Releer Router, operation registry, profile asset metadata y latest update/refresh receipts; comprobar si existe un binding operativo de profile release/promote común."
+    }
+  },
+  "repair_level": "ARCHITECTURAL",
+  "research_assurance": {
+    "baseline_digest": "sha256:e0a40db2e8c577c4cc5f953d12781e440599a428b21ddd201700859ec26004a1",
+    "baseline_solution_snapshot": {
+      "assumptions": [
+        "Supabase remains operational authority.",
+        "Existing child operations remain phase executors.",
+        "Qualification lifecycle can be reused through an explicit release binding."
+      ],
+      "capture_stage": "PRE_RESEARCH_CHALLENGER",
+      "evidence_refs": [
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+        "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z",
+        "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE"
+      ],
+      "input_digest": "sha256:179f995d45395ca0e6f9ead3a31c6ddc6296d1b173e214ad661d36c0c5fb722b",
+      "known_gaps": [
+        "No active profile publish/promote route.",
+        "Retirement operation remains candidate.",
+        "Current release identity is distributed across metadata and receipts."
+      ],
+      "leading_solution_summary": "Compose existing profile operations behind one immutable profile-release identity and desired-versus-observed reconciliation boundary; do not add a second execution engine.",
+      "profile_source_digest": "sha256:eae84ec03f24c4e862a1d327b8916f2e897ab5dddc6fae0fe72d03b2ad43915d",
+      "snapshot_version": "SRCR_BASELINE_SOLUTION_V1"
+    },
+    "context_strategy": "JIT_HIGH_SIGNAL",
+    "current_practice_research_required": true,
+    "discovery_deltas": [
+      {
+        "baseline_gap": "Baseline said reconciler but did not explicitly separate desired and observed release state.",
+        "category": "OPERABILITY",
+        "delta_id": "D-RECONCILE",
+        "disposition": "ADOPTED",
+        "final_design_refs": [
+          "$.implementation_package.architecture_decisions",
+          "$.material_process_graph.nodes"
+        ],
+        "material_effect": "Adds a one-way desired-release binding plus observed-runtime readback loop with idempotent convergence.",
+        "tradeoff": "Adds one durable binding and reconcile receipt, avoiding a new executor.",
+        "trigger_evidence_refs": [
+          "web://opengitops.dev/principles/v1.0",
+          "web://kubernetes.io/docs/concepts/architecture/controller/"
+        ]
+      },
+      {
+        "baseline_gap": "Baseline release identity did not explicitly bind all provenance inputs needed for rollback verification.",
+        "category": "HIDDEN_RISK",
+        "delta_id": "D-PROVENANCE",
+        "disposition": "ADOPTED",
+        "final_design_refs": [
+          "$.implementation_package.policy_contract_changes",
+          "$.invariant"
+        ],
+        "material_effect": "Release envelope includes exact source and material artifact/control digests/receipts before promotion.",
+        "tradeoff": "Slightly larger immutable envelope in exchange for reproducible promotion/rollback identity.",
+        "trigger_evidence_refs": [
+          "web://slsa.dev/spec/v1.2/provenance"
+        ]
+      }
+    ],
+    "external_evidence_refs": [
+      "web://opengitops.dev/principles/v1.0",
+      "web://kubernetes.io/docs/concepts/architecture/controller/",
+      "web://slsa.dev/spec/v1.2/provenance"
+    ],
+    "external_research_rationale": "Desired-state reconciliation and artifact provenance are active architecture practices; current references can sharpen implementation while LF canonical authority remains internal.",
+    "first_solution_disposition": "REVISED",
+    "incremental_value_outcome": "MATERIAL_UPLIFT",
+    "incremental_value_rationale": "Research did not replace the LF-native design; it sharpened it into explicit desired/observed reconciliation and provenance-bound immutable release identity.",
+    "internal_evidence_refs": [
+      "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+      "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+      "supabase://lf_ops/estados_catalogo+estados_transiciones",
+      "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+    ],
+    "patterns_compared": [
+      {
+        "fit": "Strong fit for desired_release versus observed_runtime_release; existing operations remain controllers/effectors.",
+        "pattern": "Declarative desired state with continuous reconciliation",
+        "source_refs": [
+          "web://opengitops.dev/principles/v1.0",
+          "web://kubernetes.io/docs/concepts/architecture/controller/"
+        ],
+        "tradeoff": "Requires explicit desired/observed binding and idempotent reconcile semantics."
+      },
+      {
+        "fit": "Strong fit for promotion/rollback identity and exact readback.",
+        "pattern": "Artifact provenance bound to source and immutable digests",
+        "source_refs": [
+          "web://slsa.dev/spec/v1.2/provenance"
+        ],
+        "tradeoff": "Adds an envelope digest/refs but avoids a parallel history store."
+      }
+    ],
+    "research_complete": true,
+    "research_questions": [
+      "What current reconciliation pattern best preserves declarative desired state and idempotent convergence without creating a monolithic second engine?",
+      "What minimum provenance identity is needed so promotion and rollback reference the exact produced artifact/release?"
+    ]
+  },
+  "residual_risks": [
+    {
+      "evidence_refs": [
+        "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84"
+      ],
+      "risk": "Releases históricos anteriores al envelope no tendrán identidad completa; deben migrarse como legacy snapshots o quedar fuera de rollback automatizado hasta reconciliación."
+    },
+    {
+      "evidence_refs": [
+        "supabase-sql://public.lf_error_knowledge/profile_runtime_lifecycle_currentness@2026-09-22T14:36:05.625019Z",
+        "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      ],
+      "risk": "Readiness de runtime puede ser transitoria después de restart; rollback no debe dispararse por el primer fallo de health."
+    }
+  ],
+  "rollback_plan": {
+    "inverse_actions": [
+      "CAS desired_release_id back to exact predecessor release.",
+      "Invoke REFRESCO_RUNTIME_PERFIL_LF for predecessor exact source/release.",
+      "Run source/health/state + desired/observed reconciliation before closure."
+    ],
+    "protected_history": [
+      "Never delete failed/superseded release envelope.",
+      "Preserve all operation execution/quality/promotion/rollback receipts.",
+      "Preserve previous desired/observed generations for forensic replay."
+    ],
+    "trigger_conditions": [
+      "Promotion/refresh/reconcile fails exact source/health/state readback.",
+      "Concurrent transition CAS conflict cannot be safely replayed.",
+      "New release causes governed execution regression after promotion."
+    ],
+    "verification": [
+      "desired_release_id equals predecessor.",
+      "runtime source/release identity equals predecessor exact envelope.",
+      "health/source/state readbacks pass.",
+      "failed release remains non-active but queryable."
+    ]
+  },
+  "selected_alternative": "B",
+  "should_exist_assessment": {
+    "elimination_impact": "Sin una release identity/binding común, update, runtime, verification y rollback seguirían conciliando estado por campos y receipts dispersos; no habría una fuente única para promotion/rollback.",
+    "evidence_refs": [
+      "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+      "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+      "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+      "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+    ],
+    "missing_evidence": [],
+    "native_or_existing_alternative": "Reutilizar lf_operation_execution/receipts, QUALIFICATION_LIFECYCLE, Router y las operaciones CREATE/UPDATE/REFRESH/EXECUTE/RETIRE existentes; crear solo la mínima capa de release/binding/reconciliation que hoy falta.",
+    "real_consumers": [
+      {
+        "consumer": "ACTUALIZACION_PERFIL_LF post_merge_reconcile",
+        "evidence_ref": "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84"
+      },
+      {
+        "consumer": "REFRESCO_RUNTIME_PERFIL_LF source/readback",
+        "evidence_ref": "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+      },
+      {
+        "consumer": "EJECUCION_PERFIL_LF governed runtime worker",
+        "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@f5baa359bf22510af9961b151ab77e47c74bbcc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py"
+      },
+      {
+        "consumer": "RETIRO_ACTIVO_LF consumer-check/archive path",
+        "evidence_ref": "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+      }
+    ],
+    "subject": "canonical profile release lifecycle boundary",
+    "verdict": "SHOULD_EXIST"
+  },
+  "solution_depth": {
+    "complexity_signals": [
+      "CROSS_OPERATION",
+      "AUTHORITY_CHANGE",
+      "POLICY_CONTRACT_CHANGE",
+      "STATE_RECOVERY",
+      "CONCURRENCY",
+      "MIGRATION_TRANSITION"
+    ],
+    "mode": "DEEP_ARCHITECTURE_RESEARCH",
+    "rationale": "The lifecycle spans multiple governed operations, authority/state changes, recovery, concurrency and migration/compatibility; current practice informs reconciliation/provenance without changing LF authority."
+  },
+  "status": "SYSTEMIC_REPAIR_SPEC",
+  "symptom": {
+    "evidence_refs": [
+      "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "supabase://public/lf_operation_execution/EXEC-S30-A2R-PROFILE-SYSTEMIC-ROOT-CAUSE-20260916-001",
+      "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+      "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+      "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+      "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+    ],
+    "missing_evidence": [],
+    "statement": "El lifecycle real del perfil está gobernado por operaciones y receipts de fase, pero carece de una identidad de release y de una transición de promoción/rollback de perfil que una CREATE/UPDATE, materialización, calificación, runtime, verificación y retiro en un estado deseado-versus-observado reconciliable.",
+    "status": "OBSERVED"
+  },
+  "systemic_root_cause": {
+    "evidence_refs": [
+      "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+      "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+      "supabase://lf_ops/estados_catalogo+estados_transiciones",
+      "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+      "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+    ],
+    "missing_evidence": [],
+    "statement": "La gobernanza evolucionó por operaciones verticales de fase y no por una autoridad canónica de profile release: identidad, calificación, transición, runtime binding y retiro están distribuidos. Esa fragmentación permite que cada fase esté bien cerrada localmente sin que exista un único contrato que decida qué release está calificado, deseado, observado, activo, supersedido o restaurable.",
+    "status": "ESTABLISHED"
+  },
+  "transition_plan": {
+    "compatibility_rule": "Legacy estado_documental/estado_operativo/runtime_estado remain projections and cannot authorize promotion. Existing CREATE/UPDATE/EXECUTE/REFRESH actions remain compatible and are not rerouted through a monolithic engine. Deprecation blocks new adoption immediately; existing consumers stay on their exact release during an explicit drain stage until authoritative active-consumer inventory reaches zero.",
+    "stages": [
+      {
+        "changes": [
+          "Create release envelope/binding/lifecycle operation definitions and validators.",
+          "Bind existing QUALIFICATION_LIFECYCLE to release subject."
+        ],
+        "entry_condition": "Contracts/schema reviewed with no design blockers.",
+        "exit_condition": "Deterministic schema/negative tests and no production bindings yet.",
+        "rollback_scope": "Remove candidate definitions/bindings before activation; no runtime effect.",
+        "stage_id": "T1-DEFINE"
+      },
+      {
+        "changes": [
+          "Materialize legacy bootstrap release from current f5baa identity without asserting historical qualification.",
+          "Set observed release from current runtime; desired remains explicit candidate until qualified/promotion canary."
+        ],
+        "entry_condition": "T1 accepted; current profile identity/readbacks current.",
+        "exit_condition": "Legacy mapping exact and idempotent; compatibility fields reconcile to release refs.",
+        "rollback_scope": "Delete candidate binding only if no consumer/promotion; preserve source/runtime history.",
+        "stage_id": "T2-BOOTSTRAP"
+      },
+      {
+        "changes": [
+          "Qualify a non-production release.",
+          "Run promotion/reconcile/refresh/rollback canaries including concurrency/stale cases."
+        ],
+        "entry_condition": "T2 clean; qualification and CAS guards live in sandbox/read-only scope.",
+        "exit_condition": "All structural/behavioral tests pass; no automatic production activation.",
+        "rollback_scope": "Restore prior desired binding and exact prior runtime release; keep failed release/receipts.",
+        "stage_id": "T3-QUALIFY-PROMOTE-CANARY"
+      },
+      {
+        "changes": [
+          "Inventory every active consumer against the exact deprecated release identity.",
+          "Keep existing consumers on the exact release while preventing new bindings.",
+          "Re-read consumer inventory after migration/rebinding actions."
+        ],
+        "entry_condition": "Release is deprecated/superseded and no-new-adoption is enforced.",
+        "exit_condition": "Authoritative active-consumer inventory is zero and readback is current.",
+        "rollback_scope": "Cancel retirement enablement and remain deprecated/superseded; do not restore new adoption implicitly.",
+        "stage_id": "T4-COMPAT-DRAIN"
+      },
+      {
+        "changes": [
+          "Enable deprecate/retire path and active-consumer blocking."
+        ],
+        "entry_condition": "RETIRO_ACTIVO_LF operational authority verified and consumer semantics pass.",
+        "exit_condition": "Positive/negative/replay/archive readback canaries pass.",
+        "rollback_scope": "Disable retirement routing; never resurrect hard-deleted state because hard delete is forbidden.",
+        "stage_id": "T5-RETIRE-ENABLE"
+      }
+    ],
+    "strategy": "Bootstrap current live profile into a legacy release identity from exact current metadata/receipts, then introduce qualification/promotion binding without reclassifying historical evidence; subsequent updates create normal immutable releases."
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "schema": "LF_SANDBOX_RECOVERY_EVIDENCE_V1",
+  "base_commit": "bf403b156b3e9ab5cb2f6331ebc291f83bb58da3",
+  "branch": "lf/srcr-v06-lifecycle-regression-sandbox-20260922",
+  "scope": "Resume interrupted canonical_quality -> independent review finalizer -> canonical receipt persistence consumer",
+  "findings": [
+    {
+      "id": "CQ-01",
+      "observed": "Engine overwrote canonical quality gate with a second state builder.",
+      "resolution": "Keep the gate result on both execution paths; metadata comes from that same boundary."
+    },
+    {
+      "id": "CQ-02",
+      "observed": "FAIL with empty diagnostics and omitted acceptance boolean could be interpreted as accepted.",
+      "resolution": "Preserve explicit rejection, validate diagnostic shape, require explicit canonical_quality_accepted=true; preserve contract rejection too."
+    },
+    {
+      "id": "CQ-03",
+      "observed": "Pure finalizer did not run full schema/contract/utility over its candidate.",
+      "resolution": "Reuse the existing candidate gates with external evidence before receipt materialization."
+    },
+    {
+      "id": "CQ-04",
+      "observed": "Worker persistence function had no caller.",
+      "resolution": "Add external-review relay and worker entrypoint, check producer readback, call existing pure endpoint/recorder and read back judge/report receipt."
+    }
+  ],
+  "tests": {
+    "negative_reproduction_before": "16 assertion failures including 4 route subtests; process exit 1",
+    "runtime_suite": {
+      "passed": 213,
+      "subtests_passed": 4,
+      "failures": 0,
+      "errors": 0,
+      "warnings": 4
+    },
+    "canonical_receipt_materialization": "4/4",
+    "historical_lifecycle_escape_replay": "9/9",
+    "integration_boundary": "Real runtime/validator code locally; API transport and database recorder substituted for persistence relay tests"
+  },
+  "evidence_files": [
+    {
+      "path": "sandbox/lf_contract_gate_test/srcr_v06_recovery_20260922/escape-before.log",
+      "sha256": "454349d577402be0e8a7972cf724346c1718464e49786be048a45e71f2c48e65"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/srcr_v06_recovery_20260922/runtime-regression.log",
+      "sha256": "a5a5fb10a513e0e928b01b9c0950352b7350a4d87a203fbac91bc763c68a4e3a"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/srcr_v06_recovery_20260922/runtime-regression.xml",
+      "sha256": "e9f6b2b327241649f80ddf7f77fb95190ea56c56aca6c2d91f613838b7b5f5f1"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/srcr_v06_recovery_20260922/receipt-regression.log",
+      "sha256": "d80e48c5a5ea47cd994c946f95588c5be10ed60ed6140c0b745b8c26bb21f791"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/srcr_v06_recovery_20260922/lifecycle-replay.log",
+      "sha256": "0de400f6fdc08abce7a88fc25021ddff99cb9ba19c34eb10161aede0805d95ae"
+    }
+  ],
+  "operational_acceptance": false,
+  "runtime_activation": false,
+  "main_modified": false,
+  "production_modified": false,
+  "pending": [
+    "New complete V0.6 Lifecycle producer output with external observed evidence",
+    "Actual independent semantic reviewer execution bound to that candidate and scope",
+    "Canonical quality receipt plus authorized environment readback",
+    "New blind holdout from another domain"
+  ],
+  "progress": {
+    "recovery": 100,
+    "local_implementation_verification": 100,
+    "global_profile_readiness": "NOT_MEASURED; no operational acceptance"
+  }
+}

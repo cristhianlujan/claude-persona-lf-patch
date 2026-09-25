@@ -1,0 +1,98 @@
+{
+  "schema": "SRCR_MC11_PHYSICAL_EDGE_TERMINALITY_READBACK_V1",
+  "status": "TESTED_WITH_LIVE_READBACK",
+  "source_revision": "cb7e622a2abeee5331c444469fd1cbf9e93180e9",
+  "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+  "evidence_manifest_bundle_digest": "sha256:38527cfb43f1f06b713582c079a7b4a27e6828f2ef4796978d3f00e097cc1f7b",
+  "builder_regeneration": {
+    "regenerated_equals_frozen": true,
+    "regenerated_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "pre_quality_status": "PASS_PRE_QUALITY"
+  },
+  "next_gate_consumer_tests": {
+    "observed_real_consumer_fixture": {
+      "status": "PASS",
+      "errors": []
+    },
+    "missing_consumer_fixture": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "V06_IMPLEMENTABLE_NEXT_GATE_CONSUMER_REQUIRED"
+      ]
+    },
+    "candidate_open_edge": {
+      "edge_id": "EDGE-REFRESH-VERIFY",
+      "next_gate": "PROFILE_RUNTIME_CANARY_REQUIRED",
+      "current_consumer_evidence_refs": [],
+      "observation_status": "OBSERVED_OPEN",
+      "disposition": "IMPLEMENTABLE",
+      "proposed_next_gate_consumer_ref": "proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer"
+    }
+  },
+  "terminal_reconciler": {
+    "source_path": "supabase/migrations/20260922162500_lf_profile_execution_queue_terminal_reconcile_v1.sql",
+    "caller_path": "services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+    "sandbox_project": "LF_SUPABASE_SANDBOX",
+    "applied_migration_version": "20260922163720",
+    "function": "public.lf_profile_execution_reconcile_queue_terminal_v1(uuid,text)",
+    "worker_unittest_count": 20,
+    "worker_unittest_status": "PASS"
+  },
+  "live_readback": {
+    "observed_at": "2026-09-22T16:37:39.912549+00:00",
+    "pre_repair_snapshot_sha256": "54bf4ea1d90305ae39cd0abc9bf907fd62f51a04f1cf615465aa5cad5989cb75",
+    "failure_pair": {
+      "request_id": "23839099-ab5f-46a3-bc9d-200f16bdc0c2",
+      "queue_status": "FAILED",
+      "queue_error_code": "HETZNER_BASELINE_API_FAILED",
+      "canonical_status_before": "IN_PROGRESS",
+      "reconcile_result": "CANONICAL_TERMINAL_RECONCILED",
+      "canonical_status_after": "BLOCKED",
+      "terminal_receipt_schema": "PROFILE_RUNTIME_QUEUE_TERMINAL_RECONCILIATION_V1",
+      "idempotent_replay_result": "TERMINAL_PAIR_ALREADY_RECONCILED",
+      "post_reconcile_result_sha256": "da08ac7cc8e2627f32dbf3b0a66096572b2ede6e9478157458befe9a11b58d06"
+    },
+    "success_pair": {
+      "request_id": "152a3d60-02b0-4bbf-b9fa-b83995b295d6",
+      "queue_status": "SUCCEEDED",
+      "canonical_status": "COMPLETED",
+      "reconcile_result": "TERMINAL_PAIR_RECONCILED"
+    },
+    "semantic_pending_pair": {
+      "request_id": "e1554fa6-1802-4839-bbaa-02c6bf2f1c94",
+      "queue_status": "BLOCKED",
+      "queue_error_code": "HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING",
+      "canonical_status": "IN_PROGRESS",
+      "reconcile_result": "NON_TERMINAL_SEMANTIC_REVIEW_PENDING",
+      "next_gate": "semantic_judge"
+    },
+    "mc10_probe_exception": {
+      "execution_id": "EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000010",
+      "canonical_status": "IN_PROGRESS",
+      "matching_queue_rows": 0,
+      "reconcile_result": "NO_QUEUE_ROW",
+      "queue_authoritative": false,
+      "disposition": "EXPLICIT_NON_QUEUE_EXECUTION_FOR_MC11_TERMINALITY"
+    },
+    "cancelled_applicability": {
+      "current_queue_schema_allows_cancelled": false,
+      "current_allowed_statuses": [
+        "PENDING",
+        "RUNNING",
+        "SUCCEEDED",
+        "BLOCKED",
+        "FAILED"
+      ],
+      "current_applicability": "NOT_APPLICABLE",
+      "implementation_forward_compatible": true
+    }
+  },
+  "rollback_readback": {
+    "applicable_to_this_reconciliation": false,
+    "rationale": "The bridge reconciles metadata terminality only; it performs no business/runtime effect and therefore has no inverse runtime action. Idempotent replay is the required recovery/readback behavior.",
+    "idempotent_replay_verified": true
+  },
+  "production_mutation": false,
+  "runtime_activation": false,
+  "merge": false
+}

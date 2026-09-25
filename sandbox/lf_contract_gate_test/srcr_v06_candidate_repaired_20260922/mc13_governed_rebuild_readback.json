@@ -1,0 +1,119 @@
+{
+  "schema": "SRCR_MC13_GOVERNED_REBUILD_READBACK_V1",
+  "status": "REPLAY_BLOCKED_EXTERNAL_SOURCE_PROVENANCE",
+  "observed_at": "2026-09-22T17:45:00Z",
+  "original_replay": {
+    "rows": 247,
+    "pass": 246,
+    "fail": 1,
+    "original_blocker": "FAIL_RECEIPT_MISSING"
+  },
+  "governed_profile_update": {
+    "execution_id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-7ba517b6-85ee-43bb-b4a0-57b6112f8b15",
+    "execution_status": "IN_PROGRESS",
+    "initial_main_revision": "f5baa359bf22510af9961b151ab77e47c74bbcc5",
+    "init_workflow_run": 35760409514,
+    "prewrite_workflow_run": 35760690257,
+    "write_readback_workflow_run": 35760884177,
+    "validation_semantic_regression_workflow_run": 35761264035,
+    "pre_write": {
+      "result": "STEP_PASS_WITH_EVIDENCE",
+      "server_trust_context_valid": true,
+      "server_trust_context_source": "run-creacion-perfil-lf",
+      "resolver": "GITHUB_PUBLIC_API_EXACT_REF_V1",
+      "revision_sha": "f5baa359bf22510af9961b151ab77e47c74bbcc5",
+      "target_blob_sha": "937052915872a145d47c204e78fd9ec9766d45a2",
+      "continuity_state": "CURRENT_BOUND"
+    }
+  },
+  "fresh_branch": {
+    "branch": "lf/srcr-v06-mc13-governed-rebuild-20260922",
+    "base_revision": "f5baa359bf22510af9961b151ab77e47c74bbcc5",
+    "candidate_code_head": "e31bfe6c319e852e9cc083dbc611f3a5acbb4d2c",
+    "candidate_receipt_head": "2566bb239e362efc27e6f118f92caff66ed65bd7",
+    "changed_profile_files": 34,
+    "changed_outside_profile_root": 0,
+    "profile_tree_sha": "2fe4d62429176c8a80e3ec8bed5f25a9501efba2",
+    "independently_reviewed_material_tree_sha": "2fe4d62429176c8a80e3ec8bed5f25a9501efba2",
+    "semantic_material_delta": 0
+  },
+  "validation": {
+    "local_runtime_tests": "161/161 PASS",
+    "local_profile_pack": "PASS_SYSTEMIC_ROOT_CAUSE_REPAIR_PACK",
+    "ci_validate_lf_packs": {
+      "run_id": 35761541182,
+      "head_sha": "2566bb239e362efc27e6f118f92caff66ed65bd7",
+      "conclusion": "success",
+      "markers": [
+        "SRCR_V06_CONTROL_OWNERSHIP=PASS deterministic=234 semantic=19 overlap=0 mutation_detected=1",
+        "SRCR_V06_QUALITY_RECEIPT_MATERIALIZATION=9/9",
+        "PASS_SYSTEMIC_ROOT_CAUSE_REPAIR_PACK"
+      ]
+    },
+    "candidate_receipt_contract": "7/7 PASS",
+    "local_lf_contract_check": "PASS_CONTRACT_VALID"
+  },
+  "candidate_receipt": {
+    "path": "sandbox/lf_contract_gate_test/receipts/actualizacion-perfil-systemic-root-cause-repair-lf-mc13-governed-rebuild-candidate-20260922-001.json",
+    "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+    "result": "PASS_CANDIDATE",
+    "operation_status_at_issue": "IN_PROGRESS",
+    "target_paths": [
+      "profiles/systemic_root_cause_repair_lf/**"
+    ],
+    "blob_map_count": 34,
+    "candidate_code_head": "e31bfe6c319e852e9cc083dbc611f3a5acbb4d2c",
+    "post_code_head_nonreceipt_changes": 0,
+    "merge_authorized": false
+  },
+  "exact_head_contract_gate": {
+    "run_id": 35761541366,
+    "head_sha": "2566bb239e362efc27e6f118f92caff66ed65bd7",
+    "receipt_preflight_result": "PASS",
+    "ci_router_selftest": "7/7 PASS",
+    "declared_governance_paths": "PASS",
+    "original_receipt_blocker_resolved": true,
+    "final_result": "FAIL",
+    "current_blocker": "FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION",
+    "failing_group": "MIGRATION_SOURCE_PARITY",
+    "remote_only_unclassified": [
+      "20260922142522_create_engineering_backlog_and_progress_tracking",
+      "20260922142548_fix_engineering_progress_view_aggregation_v2"
+    ],
+    "diagnostic_artifact_id": 10710790145,
+    "gate_execution_id": "EXEC-LF-CONTRACT-CHECK-35761541366-1",
+    "gate_check_result_id": 225
+  },
+  "ekb_readback": {
+    "persisted": true,
+    "events": [
+      14885,
+      14886
+    ],
+    "ekb_id": "dc9c07ef-67a5-49e9-a80b-4df201e29e1e",
+    "code": "GATE-GITHUB-CONTRACT-GATE-LF-LF-CONTRACT-CHECK-DECLARATIVE-CONTROLS-MIGRATION-SOURCE-PARITY-MIGRATION-SOURCE-PARITY-001-PROCESS-EXIT-NONZERO",
+    "state": "activo",
+    "severity": "High",
+    "frequency_after": 80
+  },
+  "provenance_investigation": {
+    "github_default_branch_source_found": false,
+    "any_remote_branch_source_found": false,
+    "pr_source_found": false,
+    "durable_migration_owner_receipt_found": false,
+    "prior_project_work_confirms_tables_were_created": true,
+    "prior_project_work_source_sql_recoverable": false,
+    "capability_contract": "sandbox/lf_contract_gate_test/transversal_assets/migration_source_parity/README.md",
+    "prohibited_remediation": "Do not reconstruct source from the live migration ledger and do not hardcode migration version/name/SHA/owner exceptions."
+  },
+  "remaining_requirement": "Recover the original migration source/provenance through a legitimate owner and establish durable ACTUALIZACION_DB_LF external-owner currentness, or otherwise repair MIGRATION_SOURCE_PARITY through its canonical owner without reconstructing source from the live ledger. Then rerun lf-contract-check and the full 247-row MC-13 replay.",
+  "closure_assertions": {
+    "profile_receipt_problem_fixed": true,
+    "profile_reconstruction_governed": true,
+    "profile_scope_isolated": true,
+    "runtime_activation": false,
+    "production_mutation": false,
+    "merge": false,
+    "mc13_can_close": false
+  }
+}

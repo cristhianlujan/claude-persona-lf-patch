@@ -1,0 +1,113 @@
+{
+  "schema": "SRCR_MC08_FINDING_DEDUP_READBACK_V1",
+  "status": "READBACK_CLOSED",
+  "observed_at": "2026-09-22T16:09:17.592988+00:00",
+  "scope": "MC-08_ONLY",
+  "source_revision": "0b028df79435e7016ca2326884535a97fc400298",
+  "candidate": {
+    "path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/candidate_v06_repaired.json",
+    "file_sha256": "c1ec9d20976ff373591fa5cda893e404b34e674ff091234a40e9c455ae915648",
+    "canonical_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16"
+  },
+  "canonical_owner": {
+    "path": "services/profile_runtime_api/profile_runtime_api/validation.py",
+    "blob_sha": "920f99da5fe42368bff18049b5ac9f66f2d7ebb7",
+    "function": "canonical_logical_findings"
+  },
+  "discovered_e2e_gap": {
+    "source_revision": "67fcf0eaa8faccdd4b4350368ab3fed2ec8d82f7",
+    "mutation": "remove planned_regressions[0].test_protocol.setup and action",
+    "raw_error_count": 5,
+    "logical_finding_count": 4,
+    "observed_problem": [
+      "JSON Schema reported missing required fields at the parent test_protocol path.",
+      "PROFILE_VALIDATOR reported the same defects at field paths.",
+      "blocking_codes already represented by detailed validator errors were appended again as a root-path finding."
+    ],
+    "closure_status_at_discovery": "BLOCKED"
+  },
+  "repair": {
+    "implementation_commit": "15bc1bb401f7726c9005b2e01cd4ff3e8274d714",
+    "test_commit": "0b028df79435e7016ca2326884535a97fc400298",
+    "changes": [
+      "Normalize JSON Schema required-property errors to the missing field path before logical fingerprinting.",
+      "Do not append declared blocking_codes already represented by detailed profile-validator errors.",
+      "Preserve detector lineage and distinct failure classes."
+    ],
+    "test_file": "services/profile_runtime_api/tests/test_generic_profile_runtime_binding.py",
+    "test_blob_sha": "cfc4719ec07600bb4d292e236b66acecd4e6c4b7"
+  },
+  "targeted_regression": {
+    "status": "PASS",
+    "test_count": 4,
+    "tests": [
+      "test_logical_findings_deduplicate_schema_and_profile_detector_without_collapsing_fields",
+      "test_contract_deduplicates_real_required_schema_error_and_profile_validator",
+      "test_logical_findings_keep_distinct_failure_classes_on_same_path",
+      "test_contract_finding_count_matches_unique_logical_finding_ids"
+    ]
+  },
+  "e2e_baseline": {
+    "status": "PASS",
+    "raw_error_count": 0,
+    "finding_count": 0,
+    "unique_finding_id_count": 0,
+    "blocking_codes": [],
+    "logical_duplicate_count": 0
+  },
+  "e2e_negative_mutation": {
+    "mutation": "remove planned_regressions[0].test_protocol.setup and action",
+    "status": "FAIL",
+    "raw_error_count": 4,
+    "finding_count": 2,
+    "unique_finding_id_count": 2,
+    "logical_duplicate_count": 0,
+    "findings": [
+      {
+        "candidate_path": "$.planned_regressions[0].test_protocol.action",
+        "finding_id": "sha256:ddf348732ba86031f21c53778cc60d344e1c7c45b94a3c09e189a297928e08e5",
+        "failure_class": "EXECUTABLE_TEST_PROTOCOL_INCOMPLETE",
+        "detectors": ["JSON_SCHEMA", "PROFILE_VALIDATOR"],
+        "raw_codes": ["EXECUTABLE_TEST_PROTOCOL_INCOMPLETE", "JSON_SCHEMA_VALIDATION_FAILED"]
+      },
+      {
+        "candidate_path": "$.planned_regressions[0].test_protocol.setup",
+        "finding_id": "sha256:cb9922df8d64deae82cdfe7351dc1ae18ef260d44f2942b81d9ddbef80329f5d",
+        "failure_class": "EXECUTABLE_TEST_PROTOCOL_INCOMPLETE",
+        "detectors": ["JSON_SCHEMA", "PROFILE_VALIDATOR"],
+        "raw_codes": ["EXECUTABLE_TEST_PROTOCOL_INCOMPLETE", "JSON_SCHEMA_VALIDATION_FAILED"]
+      }
+    ],
+    "assertions": {
+      "one_logical_finding_per_malformed_field": true,
+      "schema_and_profile_detector_lineage_preserved": true,
+      "finding_count_equals_unique_finding_ids": true,
+      "different_fields_not_collapsed": true
+    }
+  },
+  "ci_readback": {
+    "validate_lf_packs_run_id": 35751931829,
+    "validate_lf_packs_conclusion": "success",
+    "persistent_runtime_api_tests": "238 passed",
+    "lf_contract_check_run_id": 35751931908,
+    "lf_contract_check_conclusion": "failure",
+    "lf_contract_check_failure_stage": "Canonical preflight and unified CI applicability plan",
+    "lf_contract_check_failure_code": "FAIL_RECEIPT_MISSING",
+    "lf_contract_check_interpretation": "Branch-level governance blocker; the job stopped before code validation. No retroactive receipt was fabricated."
+  },
+  "host_regression_note": {
+    "targeted_tests": "4/4 PASS",
+    "unittest_discovery": "191 discovered; 6 skipped; 2 import errors only because host venv lacks pytest",
+    "functional_regression_observed": false,
+    "authoritative_complete_environment": "Validate LF Packs run 35751931829"
+  },
+  "closure_assertions": {
+    "reported_finding_count_equals_unique_finding_ids": true,
+    "current_candidate_logical_duplicate_findings": 0,
+    "schema_validator_duplicate_mutation_collapses_correctly": true,
+    "distinct_failure_classes_preserved": true,
+    "production_mutation": false,
+    "database_write": false,
+    "runtime_activation": false
+  }
+}

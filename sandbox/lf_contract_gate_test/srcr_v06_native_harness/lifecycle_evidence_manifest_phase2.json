@@ -1,0 +1,102 @@
+{
+  "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+  "bundle_id": "BUNDLE-SRCR-V05-LIFECYCLE-NATIVE-PHASE2-20260921",
+  "bundle_digest": "sha256:1d3fa528dfe53427f7f1efc12952ad6ae00911b005139dd0bd651f4bac1f70ac",
+  "observed_at": "2026-09-21T22:35:00-05:00",
+  "producer": {
+    "kind": "SOURCE_FIRST_RESOLVER",
+    "resolver_ref": "supabase://private.lf_evidence_resolver_registry_v1/LF_SUPABASE_READBACK_V1+LF_GITHUB_SOURCE_READBACK_V1"
+  },
+  "evidence": [
+    {
+      "evidence_id": "EV-LC-016",
+      "subject": "current database routines that insert into public.lf_activos",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q20_db_functions_inserting_lf_activos",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-017",
+      "subject": "triggers on lf_activos and operation execution tables",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q21_lifecycle_relevant_triggers",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:3782a60ffc725653de877778519d5b5879227e7abf902ec92bfc9f705f2bd4b7",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-018",
+      "subject": "database routines mentioning profile runtime canary or activation required gates",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q22_next_gate_function_refs",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:c68ea5a22eabc3b5bf06b72f101deca00c98dca03c3e6a996f18de3c79aea7f1",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-019",
+      "subject": "failed profile runtime queue row versus canonical operation execution state",
+      "evidence_class": "OBSERVED_READBACK",
+      "source_locator": "sql:Q23_failed_queue_vs_operation_execution",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:45e735655f0d5fb7227765c5a6bd8251e8089f3c64c1744f23b036b870a9500d",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-020",
+      "subject": "database routines bridging profile runtime queue and operation execution",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q24_queue_operation_bridge_functions",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-021",
+      "subject": "retire rollback restore recovery operation and router action inventory",
+      "evidence_class": "OBSERVED_LIVE",
+      "source_locator": "sql:Q25_retire_rollback_action_inventory",
+      "revision_or_observed_at": "2026-09-21T22:35:00-05:00",
+      "digest": "sha256:f6af98ea68df967523624130bc5862f40989d601ff5d931459ef7225ade550e4",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-022",
+      "subject": "current governed profile creation edge function source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/functions/run-creacion-perfil-lf/index.ts",
+      "revision_or_observed_at": "gitblob:f05f4f5c77c1e438b03ead1f3a64c75d9657c8b1",
+      "digest": "sha256:4286a17f526e1844ebb130429a2827289951cdb96c34b27ed4aaacbcf3368efa",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-023",
+      "subject": "current Hetzner profile runtime queue worker failure persistence source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "revision_or_observed_at": "gitblob:31b72db3b835f88f0fabb86e3dd5b3a7e6ff1b97",
+      "digest": "sha256:a14dd1d35f258683b4a1c9c39eff32ba92a60d7828274729bbcd0edbf7c74510",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-024",
+      "subject": "current profile update post-merge reconciliation source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/migrations/20260921064000_lf_profile_update_research_baseline_reconcile_v1.sql",
+      "revision_or_observed_at": "gitblob:49e83a704fc6811814955a6a1e19dff8942dfff3",
+      "digest": "sha256:814b14fb3ab1e075ea842d2bab4cf4a98ac8dc64bfc203c96e063a6a7f5b05b2",
+      "state": "CURRENT"
+    },
+    {
+      "evidence_id": "EV-LC-025",
+      "subject": "current profile runtime source refresh lifecycle source",
+      "evidence_class": "SOURCE_PROVENANCE",
+      "source_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/supabase/migrations/20260921013000_lf_profile_runtime_source_refresh_operation_v1.sql",
+      "revision_or_observed_at": "gitblob:f967b4fed62425e3a63d4379dda78ef65126f0d3",
+      "digest": "sha256:2711640ce236114856ad5fb87a54d2b9f29532d84c50fd01779df3cbb60b3bc1",
+      "state": "CURRENT"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "schema": "LF_PROFILE_MODEL_CONTEXT_MANIFEST_V1",
+  "execution_id": "EXEC-SRCR-MC02-GPT-NATIVE-20260922-001",
+  "executor_mode": "GPT_NATIVE",
+  "provider": "OPENAI_CHATGPT_NATIVE",
+  "model_id": "GPT-5.6 Sol",
+  "request_sha256": "a4e3ba52674909e9ac689abb37c02b3f89f67b2dc55dcd655936f0886c28da28",
+  "literal_input": "Verify delivery of the exact canonical SRCR model context pack. Read-only; no mutation, no promotion.",
+  "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "source_revision": "5de5d6c66a2f014ae05e2ba912b69aaaf21b626d",
+  "runtime_binding_ref": "profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json",
+  "runtime_binding_sha256": "2da99ea292e3ff248e94453754b4be11936a129c0d55d851e5d8988627ce34f7",
+  "required_source_refs": [
+    "profiles/systemic_root_cause_repair_lf/SKILL.md",
+    "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md"
+  ],
+  "allow_additional_sources": true,
+  "source_projection": {
+    "mode": "MARKDOWN_SECTIONS",
+    "include_sections": [
+      "Purpose",
+      "Working method (do this first; the rules below are how the result is checked)",
+      "Output trajectory (field order for the typed output)",
+      "Claim semantics",
+      "Status semantics",
+      "Required inputs",
+      "Non-negotiable rules",
+      "Typed output",
+      "Claim ceiling",
+      "Closure-proof contract"
+    ],
+    "max_chars": 42000
+  },
+  "delivered_source_manifest": [
+    {
+      "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "content_sha256": "e2fd770ccab99ee2c04d4b7fb02a58546a69b4cab020dfa5d820378adeb77bec",
+      "chars": 26457,
+      "projection": "MARKDOWN_SECTIONS"
+    },
+    {
+      "ref": "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md",
+      "content_sha256": "68968b57d57e1fba6ccbff21195dc32c100271698e92d9f42c9a1b2ff620d1a8",
+      "chars": 11523,
+      "projection": "FULL_REQUIRED_SOURCE"
+    }
+  ],
+  "total_chars": 37980,
+  "max_chars": 42000,
+  "within_char_budget": true,
+  "excluded_payloads": {
+    "full_source_to_model": false,
+    "skill_excluded_sections": [
+      "Activation",
+      "Case mode (V0.5)",
+      "Output modes",
+      "Mandatory self-repair closure contract",
+      "Mandatory per-run progress table"
+    ],
+    "binary_artifacts": "EXCLUDED",
+    "producer_private_context": "EXCLUDED"
+  },
+  "context_manifest_sha256": "7c948c7efb1b83b854f51145398c8f8f4b96bab37b4cb95dc148f10236071297"
+}

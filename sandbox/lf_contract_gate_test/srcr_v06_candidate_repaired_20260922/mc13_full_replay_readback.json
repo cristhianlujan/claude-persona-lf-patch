@@ -1,0 +1,87 @@
+{
+  "schema": "SRCR_MC13_FULL_REPLAY_READBACK_V1",
+  "status": "REPLAY_BLOCKED",
+  "observed_at": "2026-09-22T16:55:41.359237+00:00",
+  "exact_revision": {
+    "material_code_head": "1e5dad487c30a37b68120940a3ecc3518f733a84",
+    "branch_replay_head": "eb7378c8f624df182ce8155e743a0f251b99153e",
+    "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40"
+  },
+  "replay": {
+    "artifact": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_full_ungrouped_replay.json",
+    "row_count": 247,
+    "phase_counts": {
+      "Entrada": 3,
+      "Investigacion": 132,
+      "Transporte": 7,
+      "Determinista": 45,
+      "Jueces": 18,
+      "Repeticiones": 42
+    },
+    "passed_rows": 246,
+    "failed_applicable_rows": 1,
+    "incomplete_input_rows": 0,
+    "unresolved_evidence_ids": 0,
+    "fabricated_evidence_ids": 0,
+    "missing_transport_hops": 0,
+    "missing_semantic_judge_invocations": 0,
+    "missing_quality_receipt_invocations": 0,
+    "duplicate_structural_ownership": 0,
+    "duplicate_logical_findings": 0
+  },
+  "live_authority": {
+    "artifact": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc13_live_authority_readback.json",
+    "verified": 65,
+    "expected": 65,
+    "providers": {
+      "SUPABASE": "39/39",
+      "GITHUB": "23/23",
+      "WEB": "3/3"
+    },
+    "invalid_zero_row_or_broad_probes_rejected_and_corrected": 2
+  },
+  "only_open_observation": {
+    "sequence": 187,
+    "phase": "Determinista",
+    "step_id": "D45_LF_CONTRACT_CHECK_EXACT_HEAD",
+    "run_id": 35756765026,
+    "blocking_code": "FAIL_RECEIPT_MISSING",
+    "reason": "Governed paths exist in the branch diff without LF_OPERATION_CONTRACT_RECEIPT.",
+    "exact_head_validate_lf_packs": {
+      "run_id": 35756765086,
+      "conclusion": "success",
+      "persistent_runtime_tests": "247 passed"
+    },
+    "prewrite_update_execution_search": {
+      "window_start": "2026-09-22T14:00:00Z",
+      "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "operation_code": "ACTUALIZACION_PERFIL_LF",
+      "result_count": 0
+    },
+    "branch_vs_main": {
+      "status": "ahead",
+      "ahead_by": 308,
+      "behind_by": 0,
+      "changed_file_count": 109,
+      "governed_changed_file_count": 53
+    },
+    "retroactive_receipt_allowed": false,
+    "remediation_required": "Reconstruct the branch changes under a canonical pre-write ACTUALIZACION_PERFIL_LF execution and legitimate governed receipt, then rerun all 247 MC-13 rows on that final revision."
+  },
+  "closure_assertions": {
+    "mc01_to_mc12_closed": true,
+    "full_replay_ran": true,
+    "full_replay_ungrouped": true,
+    "all_live_evidence_resolved": true,
+    "zero_incomplete_inputs": true,
+    "zero_incorrect_candidate_controls_except_branch_governance": false,
+    "zero_open_material_observations": false,
+    "can_mark_readback_closed": false,
+    "production_mutation": false,
+    "runtime_activation": false,
+    "merge": false
+  }
+}

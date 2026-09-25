@@ -1078,28 +1078,9 @@
     "execution_effect_reconciliation",
     "authority_contradictions",
     "repair_level",
-    "should_exist_assessment",
-    "solution_depth",
-    "research_assurance",
-    "challenger_review",
-    "omission_discovery",
-    "implementation_package",
-    "alternatives",
-    "preferred_alternative",
-    "selected_alternative",
-    "rejected_alternatives",
-    "falsification_results",
     "origin_asset",
     "origin_operation",
     "owner",
-    "invariant",
-    "hard_guard",
-    "implementation_delta",
-    "transition_plan",
-    "rollback_plan",
-    "acceptance_criteria",
-    "historical_regressions",
-    "planned_regressions",
     "current_uncertainties",
     "residual_risks",
     "evidence_map",
@@ -1112,13 +1093,17 @@
         "SYSTEMIC_REPAIR_SPEC",
         "NEEDS_MORE_EVIDENCE",
         "RETURN_TO_WORKER_FOR_SELF_REPAIR",
-        "BLOCK_PIPELINE"
+        "BLOCK_PIPELINE",
+        "NO_REPAIR_REQUIRED"
       ]
     },
     "profile_pack_id": {
       "enum": [
         "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
-        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
       ]
     },
     "symptom": {
@@ -1143,7 +1128,6 @@
     },
     "causal_chain": {
       "type": "array",
-      "minItems": 3,
       "items": {
         "$ref": "#/$defs/claim"
       }
@@ -1156,7 +1140,6 @@
     },
     "recurrence_evidence": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -2081,6 +2064,61 @@
                 "type": "null"
               }
             ]
+          },
+          "attempted_sources": {
+            "type": "array",
+            "description": "V0.5: accessible surfaces actually consulted before declaring the gap. Each evidence_id must resolve in the external evidence manifest.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "surface",
+                "locator",
+                "result",
+                "observation",
+                "evidence_id"
+              ],
+              "properties": {
+                "surface": {
+                  "enum": [
+                    "GITHUB_SOURCE",
+                    "SUPABASE_TABLE_OR_VIEW",
+                    "SUPABASE_FUNCTION",
+                    "OPERATION_DEFINITION",
+                    "OPERATION_EXECUTION_RECEIPT",
+                    "RUNTIME_READBACK",
+                    "EDGE_FUNCTION",
+                    "EKB",
+                    "OTHER_GOVERNED_SOURCE"
+                  ]
+                },
+                "locator": {
+                  "type": "string",
+                  "minLength": 5
+                },
+                "result": {
+                  "enum": [
+                    "ABSENT",
+                    "UNREACHABLE",
+                    "ACCESS_DENIED",
+                    "FOUND_INSUFFICIENT"
+                  ]
+                },
+                "observation": {
+                  "type": "string",
+                  "minLength": 8
+                },
+                "evidence_id": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              }
+            }
+          },
+          "uncertainty_id": {
+            "type": "string",
+            "minLength": 2,
+            "description": "V0.5: required for DESIGN_BLOCKING rows; referenced by blocked material_process_graph nodes."
           }
         }
       }
@@ -3191,6 +3229,727 @@
     },
     "closure_proof": {
       "$ref": "#/$defs/closure_proof"
+    },
+    "repair_disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "rationale",
+        "evidence_refs",
+        "currentness_refs",
+        "active_failure_present",
+        "material_repair_justified",
+        "verification"
+      ],
+      "properties": {
+        "decision": {
+          "enum": [
+            "REPAIR_REQUIRED",
+            "ALREADY_RESOLVED",
+            "NOT_MATERIAL",
+            "UNDETERMINED"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 12
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 5
+          }
+        },
+        "currentness_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 5
+          }
+        },
+        "active_failure_present": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "material_repair_justified": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executable",
+            "method",
+            "expected_result",
+            "evidence_refs"
+          ],
+          "properties": {
+            "executable": {
+              "const": true
+            },
+            "method": {
+              "type": "string",
+              "minLength": 8
+            },
+            "expected_result": {
+              "type": "string",
+              "minLength": 8
+            },
+            "evidence_refs": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 5
+              }
+            }
+          }
+        }
+      }
+    },
+    "quantitative_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "decision_id",
+          "parameter",
+          "proposed_value",
+          "materiality",
+          "affects",
+          "grounding_type",
+          "grounding_ref",
+          "evidence_refs",
+          "incident_specific_only",
+          "closure_state",
+          "precondition_ref"
+        ],
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "minLength": 2
+          },
+          "parameter": {
+            "type": "string",
+            "minLength": 3
+          },
+          "proposed_value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "materiality": {
+            "enum": [
+              "MATERIAL",
+              "NON_MATERIAL"
+            ]
+          },
+          "affects": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 3
+            }
+          },
+          "grounding_type": {
+            "enum": [
+              "EXISTING_AUTHORITY",
+              "CALIBRATION_RULE",
+              "IMPLEMENTATION_PRECONDITION",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "grounding_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_refs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 5
+            }
+          },
+          "incident_specific_only": {
+            "type": "boolean"
+          },
+          "closure_state": {
+            "enum": [
+              "GROUNDED",
+              "PRECONDITION",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "precondition_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "material_process_graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applies",
+        "rationale",
+        "nodes"
+      ],
+      "properties": {
+        "applies": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 8
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "node_id",
+              "phase",
+              "authority_refs",
+              "inputs",
+              "outputs",
+              "state_transition",
+              "producer_refs",
+              "consumer_refs",
+              "wiring_refs",
+              "control_refs",
+              "failure_recovery",
+              "disposition",
+              "evidence_refs",
+              "acceptance_refs"
+            ],
+            "properties": {
+              "node_id": {
+                "type": "string",
+                "minLength": 2
+              },
+              "phase": {
+                "type": "string",
+                "minLength": 3
+              },
+              "authority_refs": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 5
+                }
+              },
+              "inputs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 2
+                }
+              },
+              "outputs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 2
+                }
+              },
+              "state_transition": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 5
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "producer_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "consumer_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "wiring_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "control_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "failure_recovery": {
+                "type": "string",
+                "minLength": 8
+              },
+              "disposition": {
+                "enum": [
+                  "IMPLEMENTABLE",
+                  "REUSE_AS_IS",
+                  "DESIGN_BLOCKING"
+                ]
+              },
+              "evidence_refs": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 5
+                }
+              },
+              "acceptance_refs": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "blocking_uncertainty_id": {
+                "type": "string",
+                "minLength": 2,
+                "description": "V0.5: required when disposition=DESIGN_BLOCKING; names the DESIGN_BLOCKING current_uncertainty (and so its attempted_sources)."
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "edge_id",
+              "from_node",
+              "to_node",
+              "edge_kind",
+              "observation_status",
+              "disposition",
+              "producer_evidence_refs",
+              "transport_evidence_refs",
+              "consumer_evidence_refs",
+              "enforcement_evidence_refs",
+              "effect_readback_evidence_refs",
+              "gap_evidence_refs",
+              "next_gate",
+              "next_gate_consumer_evidence_refs",
+              "canonical_route_consistency",
+              "post_transition_currentness",
+              "terminality",
+              "identity_consistency",
+              "rollback_executability",
+              "proposed_change_ref",
+              "blocking_uncertainty_id"
+            ],
+            "properties": {
+              "edge_id": {
+                "type": "string",
+                "minLength": 2
+              },
+              "from_node": {
+                "type": "string",
+                "minLength": 2
+              },
+              "to_node": {
+                "type": "string",
+                "minLength": 2
+              },
+              "edge_kind": {
+                "enum": [
+                  "CONTROL_FLOW",
+                  "DATA_CONTRACT",
+                  "STATE_TRANSITION",
+                  "AUTHORITY",
+                  "RUNTIME_BINDING",
+                  "RECOVERY"
+                ]
+              },
+              "observation_status": {
+                "enum": [
+                  "OBSERVED_CLOSED",
+                  "OBSERVED_OPEN",
+                  "UNRESOLVED",
+                  "PROPOSED_ONLY"
+                ]
+              },
+              "disposition": {
+                "enum": [
+                  "REUSE_AS_IS",
+                  "IMPLEMENTABLE",
+                  "DESIGN_BLOCKING"
+                ]
+              },
+              "producer_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "transport_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "consumer_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "enforcement_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "effect_readback_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "gap_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "next_gate": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "next_gate_consumer_evidence_refs": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "canonical_route_consistency": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applicability",
+                  "status",
+                  "evidence_refs"
+                ],
+                "properties": {
+                  "applicability": {
+                    "enum": [
+                      "REQUIRED",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "OBSERVED_PASS",
+                      "OBSERVED_FAIL",
+                      "UNRESOLVED",
+                      "PROPOSED_ONLY",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    }
+                  }
+                }
+              },
+              "post_transition_currentness": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applicability",
+                  "status",
+                  "evidence_refs"
+                ],
+                "properties": {
+                  "applicability": {
+                    "enum": [
+                      "REQUIRED",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "OBSERVED_PASS",
+                      "OBSERVED_FAIL",
+                      "UNRESOLVED",
+                      "PROPOSED_ONLY",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    }
+                  }
+                }
+              },
+              "terminality": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applicability",
+                  "status",
+                  "evidence_refs"
+                ],
+                "properties": {
+                  "applicability": {
+                    "enum": [
+                      "REQUIRED",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "OBSERVED_PASS",
+                      "OBSERVED_FAIL",
+                      "UNRESOLVED",
+                      "PROPOSED_ONLY",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    }
+                  }
+                }
+              },
+              "identity_consistency": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applicability",
+                  "status",
+                  "evidence_refs"
+                ],
+                "properties": {
+                  "applicability": {
+                    "enum": [
+                      "REQUIRED",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "OBSERVED_PASS",
+                      "OBSERVED_FAIL",
+                      "UNRESOLVED",
+                      "PROPOSED_ONLY",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    }
+                  }
+                }
+              },
+              "rollback_executability": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "applicability",
+                  "status",
+                  "evidence_refs"
+                ],
+                "properties": {
+                  "applicability": {
+                    "enum": [
+                      "REQUIRED",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "OBSERVED_PASS",
+                      "OBSERVED_FAIL",
+                      "UNRESOLVED",
+                      "PROPOSED_ONLY",
+                      "NOT_APPLICABLE"
+                    ]
+                  },
+                  "evidence_refs": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 3
+                    }
+                  }
+                }
+              },
+              "proposed_change_ref": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "blocking_uncertainty_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "proposed_next_gate_consumer_ref": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "applies": {
+                "const": true
+              }
+            },
+            "required": [
+              "applies"
+            ]
+          },
+          "then": {
+            "properties": {
+              "nodes": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "case_mode": {
+      "enum": [
+        "INCIDENT_REPAIR",
+        "ARCHITECTURE_AUDIT"
+      ],
+      "description": "V0.5: INCIDENT_REPAIR explains a recurring failure class; ARCHITECTURE_AUDIT maps and repairs a process/lifecycle without a triggering incident. Audit mode relaxes only recurrence evidence and the incident-length causal chain; systemic causality and controls (immediate_cause, systemic_root_cause, first_bad_control, escape_control) remain mandatory."
     }
   },
   "allOf": [
@@ -3366,7 +4125,12 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+            ]
           }
         },
         "required": [
@@ -3451,7 +4215,12 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+            ]
           },
           "solution_depth": {
             "properties": {
@@ -3484,7 +4253,12 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+            ]
           },
           "solution_depth": {
             "properties": {
@@ -3517,7 +4291,12 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+            ]
           },
           "omission_discovery": {
             "contains": {
@@ -3547,6 +4326,373 @@
           "closure_proof": {
             "properties": {
               "wiring_proofs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+            ]
+          }
+        },
+        "required": [
+          "profile_pack_id"
+        ]
+      },
+      "then": {
+        "required": [
+          "repair_disposition",
+          "quantitative_decisions",
+          "material_process_graph"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "NO_REPAIR_REQUIRED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "selected_alternative": {
+            "type": "null"
+          },
+          "preferred_alternative": {
+            "type": "null"
+          },
+          "alternatives": {
+            "maxItems": 0
+          },
+          "rejected_alternatives": {
+            "maxItems": 0
+          },
+          "implementation_delta": {
+            "maxItems": 0
+          },
+          "implementation_package": {
+            "type": "null"
+          },
+          "transition_plan": {
+            "type": "null"
+          },
+          "rollback_plan": {
+            "type": "null"
+          },
+          "residual_risks": {
+            "maxItems": 0
+          },
+          "blocking_codes": {
+            "maxItems": 0
+          },
+          "repair_level": {
+            "const": "UNDETERMINED"
+          },
+          "repair_disposition": {
+            "properties": {
+              "decision": {
+                "enum": [
+                  "ALREADY_RESOLVED",
+                  "NOT_MATERIAL"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {
+            "properties": {
+              "status": {
+                "enum": [
+                  "SYSTEMIC_REPAIR_SPEC",
+                  "NEEDS_MORE_EVIDENCE",
+                  "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+                  "BLOCK_PIPELINE"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          {
+            "not": {
+              "properties": {
+                "profile_pack_id": {
+                  "enum": [
+                    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+                    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+                  ]
+                },
+                "case_mode": {
+                  "const": "ARCHITECTURE_AUDIT"
+                }
+              },
+              "required": [
+                "profile_pack_id",
+                "case_mode"
+              ]
+            }
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "causal_chain": {
+            "minItems": 3
+          }
+        },
+        "required": [
+          "should_exist_assessment",
+          "solution_depth",
+          "research_assurance",
+          "challenger_review",
+          "omission_discovery",
+          "implementation_package",
+          "alternatives",
+          "preferred_alternative",
+          "selected_alternative",
+          "rejected_alternatives",
+          "falsification_results",
+          "invariant",
+          "hard_guard",
+          "implementation_delta",
+          "transition_plan",
+          "rollback_plan",
+          "acceptance_criteria",
+          "historical_regressions",
+          "planned_regressions"
+        ]
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {
+            "properties": {
+              "status": {
+                "enum": [
+                  "SYSTEMIC_REPAIR_SPEC",
+                  "NEEDS_MORE_EVIDENCE",
+                  "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+                  "BLOCK_PIPELINE"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          {
+            "not": {
+              "properties": {
+                "profile_pack_id": {
+                  "enum": [
+                    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+                    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+                  ]
+                },
+                "case_mode": {
+                  "const": "ARCHITECTURE_AUDIT"
+                }
+              },
+              "required": [
+                "profile_pack_id",
+                "case_mode"
+              ]
+            }
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "recurrence_evidence": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "NO_REPAIR_REQUIRED"
+          },
+          "repair_disposition": {
+            "properties": {
+              "decision": {
+                "const": "ALREADY_RESOLVED"
+              }
+            },
+            "required": [
+              "decision"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "repair_disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "repair_disposition": {
+            "properties": {
+              "active_failure_present": {
+                "const": false
+              },
+              "material_repair_justified": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "NEEDS_MORE_EVIDENCE",
+              "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+              "BLOCK_PIPELINE"
+            ]
+          },
+          "repair_disposition": {
+            "properties": {
+              "decision": {
+                "const": "REPAIR_REQUIRED"
+              }
+            },
+            "required": [
+              "decision"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "repair_disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "repair_disposition": {
+            "properties": {
+              "active_failure_present": {
+                "const": true
+              },
+              "material_repair_justified": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+            ]
+          }
+        },
+        "required": [
+          "profile_pack_id"
+        ]
+      },
+      "then": {
+        "required": [
+          "case_mode"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+            ]
+          },
+          "case_mode": {
+            "const": "ARCHITECTURE_AUDIT"
+          },
+          "status": {
+            "enum": [
+              "SYSTEMIC_REPAIR_SPEC",
+              "NEEDS_MORE_EVIDENCE",
+              "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+              "BLOCK_PIPELINE"
+            ]
+          }
+        },
+        "required": [
+          "profile_pack_id",
+          "case_mode",
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "causal_chain": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+          },
+          "material_process_graph": {
+            "properties": {
+              "applies": {
+                "const": true
+              }
+            },
+            "required": [
+              "applies"
+            ]
+          }
+        },
+        "required": [
+          "profile_pack_id",
+          "material_process_graph"
+        ]
+      },
+      "then": {
+        "properties": {
+          "material_process_graph": {
+            "required": [
+              "edges"
+            ],
+            "properties": {
+              "edges": {
                 "minItems": 1
               }
             }
