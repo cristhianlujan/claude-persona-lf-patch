@@ -1,0 +1,80 @@
+{
+  "schema": "S36_WP5_PERFORMANCE_ASSURANCE_CONTRACT_V1",
+  "snapshot": {
+    "id": 61,
+    "snapshot_code": "LF_TEST_ASSURANCE_2026_20260912",
+    "mode": "READ_ONLY_REFERENCE"
+  },
+  "canonical_matrix": "S36_CANONICAL_LF_TEST_MATRIX",
+  "principles": {
+    "single_matrix_only": true,
+    "performance_is_assurance_dimension": true,
+    "business_kpi_excluded": true,
+    "production_like_requires_explicit_authorization": true,
+    "mandatory_paid_saas": false,
+    "scheduler_or_productive_runtime_created": false,
+    "owner_semantics_mutated": false
+  },
+  "dimensions": {
+    "latency": {
+      "metrics": ["p50_ms", "p95_ms", "p99_ms", "max_ms"],
+      "pass_requires_threshold": true
+    },
+    "throughput": {
+      "metrics": ["operations_per_second"],
+      "applicability": "ONLY_WHEN_WORKLOAD_HAS_REPEATABLE_OPERATION_UNIT",
+      "pass_requires_threshold": true
+    },
+    "repeated_reliability": {
+      "metrics": ["error_count", "output_mismatch_count", "stable_output_rate"],
+      "pass_requires_threshold": true
+    },
+    "resource_behavior": {
+      "metrics": ["cpu_ms", "peak_alloc_bytes", "rss_delta_kib"],
+      "pass_requires_threshold": true,
+      "note": "Cost awareness is technical resource/provider cost only; business KPIs are excluded."
+    },
+    "timeout_behavior": {
+      "metrics": ["configured_timeout_seconds", "timeout_result", "fail_closed"],
+      "pass_requires_threshold": true
+    },
+    "production_like": {
+      "default_status": "BLOCK",
+      "authorization_required": true
+    }
+  },
+  "threshold_policy": {
+    "allowed_provenance": ["OWNER_REQUIREMENT", "EXISTING_CONTRACT", "EXPLICIT_BASELINE_POLICY"],
+    "invented_thresholds_forbidden": true,
+    "baseline_without_gate": "MEASURED_NOT_COVERED",
+    "missing_threshold_status": "NOT_COVERED",
+    "production_like_without_authorization_status": "BLOCK"
+  },
+  "status_taxonomy": ["PASS", "FAIL", "BLOCK", "NOT_COVERED"],
+  "environment_taxonomy": ["LOCAL_SANDBOX", "CI_SANDBOX", "STAGING_AUTHORIZED", "PRODUCTION_LIKE_AUTHORIZED"],
+  "required_receipt_fields": [
+    "target_id",
+    "target_source_sha",
+    "fixture_id",
+    "fixture_source_sha",
+    "environment_class",
+    "workload_shape",
+    "warmup",
+    "sample_count",
+    "latency",
+    "throughput",
+    "repeated_reliability",
+    "resource_behavior",
+    "timeout_behavior",
+    "thresholds_with_provenance",
+    "dimension_verdicts",
+    "production_like_authorization"
+  ],
+  "regression_policy": {
+    "reference_baseline_must_be_explicit": true,
+    "reference_and_candidate_source_sha_required": true,
+    "comparison_delta_may_be_reported_without_gate": true,
+    "pass_fail_requires_explicit_threshold_policy": true,
+    "no_cross_environment_pass_claim": true
+  }
+}

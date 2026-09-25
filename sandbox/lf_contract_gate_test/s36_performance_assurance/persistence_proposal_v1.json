@@ -1,0 +1,60 @@
+{
+  "schema": "S36_WP5_PERFORMANCE_PERSISTENCE_PROPOSAL_V1",
+  "status": "PROPOSAL_ONLY_NOT_APPLIED",
+  "snapshot_mutation_required": false,
+  "new_strategy_required": false,
+  "new_matrix_required": false,
+  "canonical_matrix": "S36_CANONICAL_LF_TEST_MATRIX",
+  "proposed_suite": {
+    "suite_code": "TS-S36-PERFORMANCE-ASSURANCE-V1",
+    "module_code": "LF_TEST_ASSURANCE",
+    "name": "S36 Transversal Performance Assurance",
+    "version": "v1",
+    "status": "CANDIDATO",
+    "execution_policy": {
+      "local_sandbox_first": true,
+      "threshold_provenance_required": true,
+      "performance_pass_without_threshold_forbidden": true,
+      "production_like_requires_explicit_authorization": true,
+      "db_matrix_runner_applicable": false
+    },
+    "metadata": {
+      "canonical_matrix": "S36_CANONICAL_LF_TEST_MATRIX",
+      "matrix_family": "TRANSVERSAL_PERFORMANCE",
+      "dimension": "PERFORMANCE",
+      "assurance_owner": "S36",
+      "wp": "WP5",
+      "promotion_state": "PROPOSED_PENDING_COORDINATOR_ENROLLMENT",
+      "no_runtime_change": true,
+      "no_production_change": true,
+      "no_owner_semantics_change": true
+    }
+  },
+  "proposed_cases": [
+    {"test_code":"PERF-LATENCY-01","title":"Latency baseline and threshold provenance","default_status_without_threshold":"NOT_COVERED"},
+    {"test_code":"PERF-THROUGHPUT-01","title":"Throughput when repeatable workload unit applies","default_status_without_threshold":"NOT_COVERED"},
+    {"test_code":"PERF-RELIABILITY-01","title":"Repeated execution reliability and output stability","default_status_without_contract":"NOT_COVERED"},
+    {"test_code":"PERF-RESOURCE-01","title":"Resource and technical cost behavior","default_status_without_threshold":"NOT_COVERED"},
+    {"test_code":"PERF-TIMEOUT-01","title":"Timeout behavior and fail-closed boundary","default_status_without_contract":"NOT_COVERED"},
+    {"test_code":"PERF-PRODLIKE-AUTH-01","title":"Production-like authorization gate","default_status_without_authorization":"BLOCK"}
+  ],
+  "reuse_storage_map": {
+    "suite_catalog": "public.lf_test_suites",
+    "case_catalog": "public.lf_test_suite_cases",
+    "campaign_run": "public.lf_test_suite_runs",
+    "case_execution": "public.lf_test_runs",
+    "metric_assertions": "public.lf_test_assertion_results",
+    "receipts_and_artifacts": "public.lf_test_artifacts",
+    "observability_views": ["public.v_lf_test_run_observability", "public.v_lf_test_suite_observability"]
+  },
+  "receipt_mapping": {
+    "public.lf_test_runs.duration_ms": "total/case latency where measurement is valid",
+    "public.lf_test_runs.environment": "LOCAL_SANDBOX / CI_SANDBOX / authorized environment",
+    "public.lf_test_runs.commit_sha": "source binding",
+    "public.lf_test_runs.evidence_payload": "summary + workload + provenance",
+    "public.lf_test_assertion_results": "dimension metric + expected threshold provenance + actual value + PASS/FAIL/NOT_COVERED",
+    "public.lf_test_artifacts": "full JSON baseline/regression receipt with sha256"
+  },
+  "enrollment_rule": "Coordinator may enroll this suite into the existing canonical matrix after review. Do not create requirement bindings that imply an executor can run a target it cannot faithfully execute.",
+  "write_status": "NO_SUPABASE_WRITE_PERFORMED_BY_WP5"
+}
