@@ -436,7 +436,7 @@ def main() -> None:
     dgp_manifest = json.loads(DGP_CONTROL_MANIFEST.read_text(encoding="utf-8"))
     assert dgp_manifest["schema_version"] == "lf-gate-group-manifest/v1", dgp_manifest
     assert dgp_manifest["consumer_code"] == "LF_CONTRACT_CHECK", dgp_manifest
-    assert dgp_manifest["gate_id"] == "LF_CONTRACT_CHECK_DECLARATIVE_GOVERNANCE_PATHS", dgp_manifest
+    assert dgp_manifest["gate_id"] == "LF_CONTRACT_CHECK_DECLARED_GOVERNANCE_PATHS", dgp_manifest
     assert dgp_manifest["expected_total_checks"] == 1, dgp_manifest
     assert [g["group_id"] for g in dgp_manifest["groups"]] == ["DECLARED_GOVERNANCE_PATHS"], dgp_manifest
     dgp_group = dgp_manifest["groups"][0]
