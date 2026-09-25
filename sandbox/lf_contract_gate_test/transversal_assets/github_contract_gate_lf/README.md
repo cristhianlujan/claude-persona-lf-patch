@@ -12,6 +12,98 @@ Alias operativo: `lf-contract-check`.
 `GITHUB_CONTRACT_GATE_LF` es el consumer/orchestrator canónico del workflow `.github/workflows/lf-contract-check.yml`.
 No es un segundo engine de gates. Resuelve policies, aplica el Router de CI, traduce `required_controls` al manifest declarativo y delega ejecución al engine transversal existente.
 
+## Decisión arquitectónica
+
+Decisión: **RESTRUCTURE, no retirar**.
+
+`lf-contract-check` conserva valor como frontera de composición y cierre de CI. Su responsabilidad es decidir qué controles aplican a una revisión, comprobar que la composición declarada está completa y producir una decisión agregada ligada al candidato exacto.
+
+No debe convertirse en autoridad semántica de cada dominio ni absorber la implementación interna de controles como Migration Parity, Currentness, PRE_EKB, observabilidad u otros controles transversales. Esos controles mantienen su propia autoridad y contrato; `lf-contract-check` los consume/orquesta cuando el Router y el manifest indican que aplican.
+
+## Problema que corrige esta reestructuración
+
+Históricamente el workflow acumuló validadores y responsabilidades heterogéneas. Eso generó cuatro riesgos:
+
+1. **Segunda autoridad:** reglas de scope, receipt o aplicabilidad podían quedar hardcodeadas en el consumer además de existir en registries/manifests.
+2. **Duplicidad:** lógica perteneciente a controles especializados podía terminar ejecutándose o reinterpretándose dentro del contract-check.
+3. **Blast radius alto:** un cambio interno de un control de dominio podía romper el gate transversal completo aunque la composición fuese correcta.
+4. **Falsos BLOCK/PASS:** cuando aplicabilidad, currentness o evidencia se resolvían en más de una superficie, dos autoridades podían discrepar.
+
+La solución no es retirar el gate, sino adelgazarlo hasta dejar una única responsabilidad transversal: **composición + completitud + binding + decisión agregada**.
+
+## Frontera de responsabilidad
+
+### `lf-contract-check` SÍ debe
+
+- resolver el candidato exacto y su contexto de CI;
+- aplicar el Router de CI;
+- obtener `required_controls` desde la autoridad declarativa vigente;
+- comprobar que cada control requerido tiene binding/manifest resoluble;
+- delegar la ejecución al engine/control propietario;
+- recoger verdictos y evidencia de los controles aplicables;
+- bloquear si falta un control requerido, binding, currentness o evidencia obligatoria;
+- emitir el resultado agregado para GitHub sin reinterpretar la semántica interna de cada control.
+
+### `lf-contract-check` NO debe
+
+- implementar por sí mismo la semántica de Migration Parity, Currentness, PRE_EKB, observabilidad u otros controles de dominio;
+- mantener allowlists o reglas paralelas que ya tengan autoridad en registries/manifests;
+- crear un segundo engine de gates;
+- decidir lifecycle o estado activo de los controles;
+- sustituir `public.lf_activos`, el policy snapshot o los registries declarativos como autoridad;
+- convertir un PASS histórico en PASS para otra revisión.
+
+## Relaciones y dependencias
+
+Flujo lógico:
+
+```text
+GitHub candidate / exact revision
+          |
+          v
+GITHUB_CONTRACT_GATE_LF (`lf-contract-check`)
+          |
+          +--> CI Router
+          |       |
+          |       v
+          |   required_controls
+          |       |
+          +-------+
+          |
+          v
+control manifest / bindings / policies
+          |
+          v
+LF_GATE_GROUP_ORCHESTRATOR_V1
+          |
+          +--> Migration Parity (si aplica)
+          +--> Currentness (si aplica)
+          +--> PRE_EKB (si aplica)
+          +--> Observability / otros controles declarados (si aplican)
+          |
+          v
+veredictos + evidencia exacta
+          |
+          v
+PASS / BLOCK agregado para GitHub
+```
+
+Regla de dependencia: una relación con otro control significa **consumo/delegación**, no ownership de su semántica.
+
+## Clasificación de relaciones
+
+Al documentar una dependencia de `lf-contract-check`, clasificarla explícitamente como una de estas categorías:
+
+| Tipo | Significado |
+|---|---|
+| `RUNTIME` | dependencia necesaria para ejecutar/orquestar el control |
+| `EVIDENCE` | fuente o contrato requerido para demostrar el resultado |
+| `APPLICABILITY` | decide si un control debe ejecutarse para el cambio actual |
+| `REFERENCE_ONLY` | referencia documental; no participa en ejecución |
+| `LEGACY` | relación histórica que no debe gobernar comportamiento nuevo |
+
+No usar una dependencia `REFERENCE_ONLY` o `LEGACY` como autoridad operacional.
+
 ## Cuándo consumirlo
 
 En cualquier cambio gobernado por `lf-contract-check`, antes de declarar el lote `PASS_CLOSED` o equivalente.
@@ -63,6 +155,25 @@ El cierre mínimo requiere:
 
 No crear otro contract-check engine, otro Router, otro gate-group orchestrator ni otra base de inventario.
 Las nuevas validaciones se agregan como controles declarativos o consumers del engine transversal existente.
+
+Antes de agregar lógica nueva directamente al workflow o a `scripts/lf_contract_check.py`, responder:
+
+1. ¿La regla pertenece realmente a composición/aplicabilidad/cierre agregado?
+2. ¿Ya existe un control propietario de esa semántica?
+3. ¿Puede expresarse mediante registry/manifest/binding sin hardcodearla en el consumer?
+
+Si la respuesta a 2 o 3 es sí, no duplicar la regla dentro de `lf-contract-check`.
+
+## Criterio de evolución
+
+Una modificación futura de `lf-contract-check` es arquitectónicamente válida solo si mantiene estas invariantes:
+
+- una sola autoridad por regla;
+- aplicabilidad declarativa y trazable;
+- ejecución delegada al control propietario;
+- evidencia ligada a candidate SHA/revisión exacta;
+- fallo cerrado ante ambigüedad material;
+- ausencia de engines, registries o policies paralelos.
 
 ## Currentness
 
