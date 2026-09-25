@@ -1,0 +1,103 @@
+{
+  "captured_on": "2026-09-14",
+  "project_id": "mhwmirqcgxxukpctffuv",
+  "main_anchor": "d5f9a387f4ef6aeab3df8122f27b404f4114a08a",
+  "active_state_semantics": {
+    "normalization": "UPPER(TRIM(estado))",
+    "vocabulary": ["ACTIVO", "ACTIVE", "ABIERTO", "OPEN"],
+    "source_precedent": "public.fn_lf_router_preflight_v1"
+  },
+  "high_severity_semantics": {
+    "normalization": "UPPER(TRIM(severidad))",
+    "vocabulary": ["ALTA", "HIGH", "CRITICA", "CRITICAL", "P0"],
+    "source_precedent": "public.fn_lf_router_preflight_v1"
+  },
+  "live_counts": {
+    "active_errors": 523,
+    "active_errors_null_phase": 0,
+    "active_errors_null_roles": 0,
+    "active_high_critical_or_alta": 334,
+    "duplicate_active_error_codes": 0,
+    "unhandled_high_critical_or_alta": 0,
+    "active_prevention_rules": 261,
+    "active_prevention_rules_null_phase": 121,
+    "active_prevention_rules_null_roles": 121,
+    "best_practices": 105,
+    "best_practices_with_practice": 105,
+    "best_practices_with_evidence": 105
+  },
+  "detectability_distribution": {
+    "LOUD_EARLY": {"active": 159, "high_critical": 72},
+    "PROCESS_DEPENDENT": {"active": 150, "high_critical": 114},
+    "UNSPECIFIED": {"active": 108, "high_critical": 59},
+    "SILENT": {"active": 60, "high_critical": 55},
+    "LOUD_LATE": {"active": 46, "high_critical": 34}
+  },
+  "explicit_active_ekb_steps": [
+    {"operation_code":"ACTUALIZACION_REGLA_LF","step_id":"ekb_preflight","step_order":10,"operation_state":"OP_CANDIDATE"},
+    {"operation_code":"CREACION_ESTRATEGIA_LF","step_id":"ekb_preflight","step_order":4,"operation_state":"OP_OPERATIONAL"},
+    {"operation_code":"CREACION_REGLA_LF","step_id":"ekb_preflight","step_order":10,"operation_state":"OP_CANDIDATE"},
+    {"operation_code":"LEARNING_BRIDGE_KB_CARD_LF","step_id":"ekb_precheck","step_order":3,"operation_state":"OP_OPERATIONAL"}
+  ],
+  "contract_level_ekb_consumers": [
+    "ACTUALIZACION_DB_LF",
+    "ACTUALIZACION_ESTRATEGIA_LF",
+    "ACTUALIZACION_REGLA_LF",
+    "ANALISIS_RIESGO_CONTENIDO_LF",
+    "CREACION_ESTRATEGIA_LF",
+    "CREACION_REGLA_LF",
+    "ESCRITURA_BASE_CONOCIMIENTO_LF",
+    "EXTRACCION_DOCUMENTOS_REGULATORIOS_LF",
+    "EXTRACCION_FUENTES_DIGITALES_LF",
+    "EXTRACCION_NOTICIAS_FINANCIERAS_LF",
+    "HOMOLOGACION_FUENTES_DIGITALES_LF",
+    "MATERIALIZACION_REGLA_EXPLORADA_LF",
+    "ORQUESTACION_PIPELINE_LF",
+    "VINCULACION_REGLA_PANTALLA_LF"
+  ],
+  "precedent": {
+    "function": "programacion.fn_input_governance_ekb_checkpoint",
+    "router_function": "public.fn_lf_router_preflight_v1",
+    "strengths_reused": [
+      "normalized active error read",
+      "active prevention rule read",
+      "high/critical/ALTA/CRITICA/P0 without control blocks",
+      "receipt output",
+      "service-role-only execution"
+    ],
+    "not_reused": "Input Governance hardcoded phase-to-error-code arrays"
+  },
+  "first_real_case_required_codes": [
+    "GOV-001",
+    "AUD-018",
+    "CI-009",
+    "CI-014",
+    "CI-MIGRATION-SOURCE-PARITY-001",
+    "GOV-024",
+    "GOVERNED-PATH-RECEIPT-PREFLIGHT-001",
+    "PROGRAMMING-E2E-MIGRATION-PARITY-001",
+    "SRC-005",
+    "PROFILES-EKB-PREFLIGHT-OMISSION-001"
+  ],
+  "first_real_case_active_rule_coverage": {
+    "AUD-018": ["PRV-AUD-018"],
+    "CI-009": ["PRV-CI-009"],
+    "GOV-001": ["PRV-GOV-001"],
+    "PROFILES-EKB-PREFLIGHT-OMISSION-001": ["PROFILES-RULE-EKB-BEFORE-PROBLEM-001"],
+    "SRC-005": ["PRV-SRC-005"]
+  },
+  "first_real_case_best_practice_categories_present": {
+    "Auditoría": 9,
+    "CI_GOVERNANCE": 1,
+    "DevOps/CI": 2,
+    "Gobernanza": 4,
+    "Source control": 1
+  },
+  "first_real_case_expected_disposition": "EKB_RESOLVED_CONTROLS_PENDING",
+  "currentness_findings": [
+    "The legacy exact estado='activo' filter would see 469 rows, while canonical Router-compatible active-state normalization sees 523 rows.",
+    "The prior inventory count of 239 high/critical rows omitted ALTA-class rows; Router-compatible severity normalization currently yields 334 high-severity active rows.",
+    "No active-code duplicates or unhandled canonical high-severity rows were observed at this readback."
+  ],
+  "reason": "Applicable learnings can be resolved, but no new unified control-execution receipts are fabricated for this candidate. AUD-018 forbids declarative PASS."
+}
