@@ -26,7 +26,9 @@ Antes de cualquier apply DB se exige:
 - `source_sha256` exacto;
 - readback Git positivo.
 
-Solo entonces `lf_migration_persist_verify.py` puede emitir:
+`lf_migration_git_persist.py` es el transporte transversal de esta fase. Solo puede escribir el path exacto `supabase/migrations/<version>_<name>.sql` en ramas `lf/migration-source-persist/*` o `lf/migration-source-repair/*`; no puede escribir `main`, fusionar PRs ni tocar Supabase. La autoridad de invocación sigue siendo `ACTUALIZACION_DB_LF`.
+
+Solo después del readback remoto `lf_migration_persist_verify.py` puede emitir:
 
 `GIT_SOURCE_DURABLE_READY_FOR_EXACT_APPLY`.
 
@@ -52,6 +54,10 @@ Solo entonces el state gate emite:
 
 `PASS_GIT_SUPABASE_DUAL_READBACK` / `CONSISTENT`.
 
+## Reparación histórica
+
+Si Supabase ya tiene la migración aplicada, la Fase B no se repite. Se localiza el source histórico mediante evidencia durable, se vuelven a comprobar sus bytes, se persiste mediante el mismo transporte Git y se reejecuta parity con `ddl_replayed=false`.
+
 ## Fail closed
 
 Bloqueos mínimos:
@@ -67,12 +73,14 @@ No se permite:
 - timestamp remoto remintado;
 - rename post-apply como flujo normal;
 - bypass de parity;
-- PASS con una sola superficie verificada.
+- PASS con una sola superficie verificada;
+- Git write directo a `main`.
 
 ## Uso
 
 ```bash
+python sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py --request persist-request.json
 python sandbox/lf_contract_gate_test/db_write_transport/lf_migration_persist_verify.py --file receipt.json
 ```
 
-El helper solo verifica estado. El actor autorizado realiza los writes; la autoridad permanece en Router + `ACTUALIZACION_DB_LF` + contratos/policies vigentes.
+Los helpers son transporte/verificación; no conceden autoridad. La autoridad permanece en Router + `ACTUALIZACION_DB_LF` + contratos/policies vigentes.
