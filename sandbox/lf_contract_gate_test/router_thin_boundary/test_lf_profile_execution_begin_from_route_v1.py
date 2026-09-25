@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parents[3]
 MIGRATION = ROOT / "supabase/migrations/20260925160500_lf_profile_execution_begin_from_route_v1.sql"
 SQL = MIGRATION.read_text(encoding="utf-8")
 LOWER = SQL.lower()
+FUNCTION_BODY = LOWER.split("as $function$", 1)[1].split("$function$", 1)[0]
 
 
 def test_receiver_delegates_to_canonical_profile_begin() -> None:
@@ -25,7 +26,6 @@ def test_receiver_requires_exact_thin_router_identity() -> None:
 
 
 def test_receiver_does_not_reroute_or_resolve_downstream_work() -> None:
-    function_body = LOWER.split("as $function$", 1)[1].split("$function$", 1)[0]
     forbidden = (
         "lf_router_resolve_v1",
         "lf_router_route_decision_v1",
@@ -39,7 +39,7 @@ def test_receiver_does_not_reroute_or_resolve_downstream_work() -> None:
         "runtime_request_envelope",
     )
     for token in forbidden:
-        assert token not in function_body
+        assert token not in FUNCTION_BODY
 
 
 def test_receiver_binds_route_provenance_into_manifest() -> None:
@@ -50,7 +50,7 @@ def test_receiver_binds_route_provenance_into_manifest() -> None:
         "route_decision_sha256",
         "route_decision",
     ):
-        assert token in function_body if False else token in LOWER
+        assert token in FUNCTION_BODY
 
 
 def test_foreign_operation_fails_before_reservation() -> None:
