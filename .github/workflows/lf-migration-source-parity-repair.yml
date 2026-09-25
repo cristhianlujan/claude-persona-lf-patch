@@ -1,0 +1,129 @@
+name: LF Migration Source Parity Repair
+
+on:
+  workflow_run:
+    workflows: ["lf-contract-check"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: lf-migration-source-parity-repair-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      !startsWith(github.event.workflow_run.head_branch, 'lf/migration-source-repair/')
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+      PGHOST: aws-1-us-east-1.pooler.supabase.com
+      PGPORT: "5432"
+      PGUSER: postgres.mhwmirqcgxxukpctffuv
+      PGDATABASE: postgres
+      PGSSLMODE: require
+    steps:
+      - name: Checkout trusted default branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download exact contract-check diagnostics
+        uses: actions/download-artifact@v4
+        with:
+          pattern: lf-gate-diagnostics-lf-contract-check-${{ github.event.workflow_run.id }}-*
+          path: .repair-diagnostics
+          merge-multiple: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Execute deterministic source-only repair
+        env:
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          git config user.name "lf-migration-source-parity-repair"
+          git config user.email "lf-migration-source-parity-repair@users.noreply.github.com"
+          git fetch --no-tags origin main
+          MAIN_SHA="$(git rev-parse origin/main)"
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_repair.py \
+            --diagnostics-dir .repair-diagnostics \
+            --repository "$REPOSITORY" \
+            --main-sha "$MAIN_SHA" \
+            --source-run-id "$SOURCE_RUN_ID"
+
+  verify-repaired-dual-surface:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'lf/migration-source-repair/')
+    runs-on: ubuntu-latest
+    env:
+      PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+      PGHOST: aws-1-us-east-1.pooler.supabase.com
+      PGPORT: "5432"
+      PGUSER: postgres.mhwmirqcgxxukpctffuv
+      PGDATABASE: postgres
+      PGSSLMODE: require
+    steps:
+      - name: Checkout exact repaired head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Prove repair through canonical migration saga
+        env:
+          REPAIRED_HEAD: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          mapfile -t migrations < <(git diff --name-only origin/main...HEAD -- 'supabase/migrations/*.sql')
+          if [ "${#migrations[@]}" -ne 1 ]; then
+            echo "BLOCK_REPAIR_EXPECTED_EXACT_ONE_MIGRATION_SOURCE count=${#migrations[@]}"
+            exit 1
+          fi
+          path="${migrations[0]}"
+          file="${path##*/}"
+          version="${file%%_*}"
+          name="${file#*_}"
+          name="${name%.sql}"
+          source_sha256="$(sha256sum "$path" | awk '{print $1}')"
+          blob="$(git rev-parse "HEAD:$path")"
+          row="$(docker run --rm -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE postgres:17.6 \
+            psql -X -v ON_ERROR_STOP=1 --csv -t -c "select version,coalesce(name,'') from supabase_migrations.schema_migrations where version='${version}' and name='${name}'")"
+          if [ "$row" != "${version},${name}" ]; then
+            echo "BLOCK_REPAIR_LEDGER_READBACK_MISMATCH observed=$row"
+            exit 1
+          fi
+          cat > "$RUNNER_TEMP/saga-readback.json" <<JSON
+          {"schema_version":"lf-migration-orchestrated-saga/v1","operation_code":"ACTUALIZACION_DB_LF","execution_id":"EXEC-MIGRATION-PARITY-REPAIR-VERIFY-${{ github.event.workflow_run.id }}","effect_scope":"MIGRATION:${version}","target_path":"${path}","migration_version":"${version}","migration_name":"${name}","source_sha256":"${source_sha256}","git":{"path":"${path}","source_sha256":"${source_sha256}","head_sha":"${REPAIRED_HEAD}","blob_sha1":"${blob}","persisted":true,"readback":true},"supabase":{"applied":true,"readback":true,"ledger_version":"${version}","ledger_name":"${name}","ddl_replayed":false},"parity":{"source_path":"${path}","migration_version":"${version}","migration_name":"${name}","status":"PASS"}}
+          JSON
+          verdict="$(python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_orchestrated_saga.py --file "$RUNNER_TEMP/saga-readback.json")"
+          echo "$verdict"
+          python3 - "$verdict" <<'PY'
+          import json,sys
+          payload=json.loads(sys.argv[1])
+          if payload.get('status')!='CONSISTENT' or payload.get('consistent') is not True:
+              raise SystemExit('BLOCK_REPAIR_SAGA_NOT_CONSISTENT')
+          print('PASS_MIGRATION_SOURCE_RECONCILIATION_CONSISTENT')
+          PY
+
+  repair-failed-after-attempt:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      startsWith(github.event.workflow_run.head_branch, 'lf/migration-source-repair/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preserve escalation boundary
+        run: |
+          echo "MIGRATION_SOURCE_PARITY_REPAIR_PERSISTED_FAILURE=1"
+          echo "The repair PR failed canonical lf-contract-check. Do not retry source mutation automatically. Existing PRE_EKB evidence is the escalation authority."
+          exit 1
