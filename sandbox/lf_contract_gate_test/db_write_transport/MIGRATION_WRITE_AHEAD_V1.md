@@ -33,14 +33,15 @@ Cada persistencia queda ligada a:
 ## Implementación
 
 - Transporte: `lf_migration_git_persist.py`.
-- Consumidor: `ACTUALIZACION_DB_LF` a través de `DB_WRITE_TRANSPORT`.
-- Gate previo existente: `MIGRATION_SOURCE_PARITY`.
+- Consumidor material: `ACTUALIZACION_DB_LF` a través de `DB_WRITE_TRANSPORT`.
+- `MIGRATION_SOURCE_PARITY` es una capacidad relacionada del pedido de migration; WRITE_AHEAD no la ejecuta ni depende de su carrier CI.
 
-## Dependencias
+## Relaciones canónicas
 
-- Padre: `DB_WRITE_TRANSPORT`.
-- Autoridad: Router `ACT-0001` + `ACTUALIZACION_DB_LF`.
-- Downstream: `MIGRATION_ORCHESTRATED_SAGA_V1`.
+- `DEPENDE_DE -> DB_WRITE_TRANSPORT`.
+- `GOBERNADO_POR -> ACT-0001`.
+- `RELACIONADO_CAPACIDADES -> MIGRATION_SOURCE_PARITY`.
+- `MIGRATION_ORCHESTRATED_SAGA_V1` es consumidor downstream de la evidencia write-ahead; no es una llamada realizada por esta capacidad.
 
 ## Evidencia de salida
 
@@ -53,4 +54,4 @@ Receipt `lf-migration-git-persist/v1` con:
 
 ## Límites
 
-Esta capacidad no autoriza apply, producción, merge, runtime ni promoción. Su única salida material es una fuente Git durable y verificable.
+Esta capacidad no llama S30, E.16, workflows CI ni `MIGRATION_SOURCE_PARITY` como parte de su funcionamiento. No autoriza apply, producción, merge, runtime ni promoción. Su única salida material es una fuente Git durable y verificable.
