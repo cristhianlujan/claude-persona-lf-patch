@@ -469,6 +469,10 @@
         {
           "kind": "prefix",
           "value": "sandbox/lf_contract_gate_test/migration_source_parity/"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
         }
       ],
       "material_matchers": [],
