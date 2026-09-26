@@ -4,9 +4,12 @@ from __future__ import annotations
 import importlib.util
 import json
 import shutil
+import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[3]
 MODULE = Path(__file__).with_name("pack_validation_harness_v1.py")
 spec = importlib.util.spec_from_file_location("pack_validation_harness_v1", MODULE)
 mod = importlib.util.module_from_spec(spec)
@@ -244,6 +247,19 @@ def test_policy_required_invariants_cannot_be_disabled():
             assert str(exc).startswith("POLICY_REQUIRED_INVARIANT_DISABLED")
         else:
             raise AssertionError("expected fail-closed policy validation")
+
+
+def test_clean_workflow_v1_regression():
+    test_file = ROOT / "sandbox/lf_contract_gate_test/pack_validation_contract/test_clean_workflow_v1.py"
+    completed = subprocess.run(
+        [sys.executable, str(test_file)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert "PASS_PACK_VALIDATION_CLEAN_WORKFLOW_V1=7/7" in completed.stdout, completed.stdout
 
 
 def main() -> None:
