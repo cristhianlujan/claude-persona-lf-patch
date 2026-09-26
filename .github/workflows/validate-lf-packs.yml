@@ -302,6 +302,9 @@ jobs:
           fi
           [[ "$base" =~ ^[0-9a-f]{40}$ ]] || { echo "BLOCK_PACK_VALIDATION_BASE_SHA" >&2; exit 1; }
           [[ "$head" =~ ^[0-9a-f]{40}$ ]] || { echo "BLOCK_PACK_VALIDATION_HEAD_SHA" >&2; exit 1; }
+          if [[ "$(git rev-parse --is-shallow-repository)" == "true" ]]; then
+            git fetch --no-tags --unshallow origin "$head"
+          fi
           git fetch --no-tags origin "$base" "$head"
           worktree="$(mktemp -d)/candidate"
           git worktree add --detach "$worktree" "$head"
@@ -328,6 +331,7 @@ jobs:
           path: .lf_pack_validation
           if-no-files-found: error
           retention-days: 30
+          include-hidden-files: true
 
       - name: Validate S26 semantic-to-render binding regressions
         if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_RUNTIME_V3')

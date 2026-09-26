@@ -50,6 +50,10 @@ def main() -> None:
     assert "git worktree add --detach \"$worktree\" \"$head\"" in source
     assert "--repo-root \"$worktree\"" in source
     assert "Persist bounded Pack Validation evidence" in source
+    assert 'git rev-parse --is-shallow-repository' in source
+    assert 'git fetch --no-tags --unshallow origin "$head"' in source
+    assert "include-hidden-files: true" in source
+    assert "include-hidden-files: true" in core
 
     # Direct fixed-pack invocations are retired from the source carrier.
     for old_call in (

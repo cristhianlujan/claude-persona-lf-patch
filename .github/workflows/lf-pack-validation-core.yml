@@ -70,3 +70,4 @@ jobs:
           path: .lf_pack_validation
           if-no-files-found: error
           retention-days: 30
+          include-hidden-files: true
