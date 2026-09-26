@@ -1,0 +1,152 @@
+name: Visual Evidence Gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visual-evidence-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  applicability:
+    name: visual-evidence-applicability
+    runs-on: ubuntu-latest
+    outputs:
+      required: ${{ steps.classify.outputs.visual_evidence_required }}
+      base_sha: ${{ steps.context.outputs.base_sha }}
+      head_sha: ${{ steps.context.outputs.head_sha }}
+      plan_sha256: ${{ steps.classify.outputs.plan_sha256 }}
+      evidence_sha256: ${{ steps.classify.outputs.evidence_sha256 }}
+    steps:
+      - name: Checkout exact candidate source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Resolve exact applicability context
+        id: context
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+            git fetch --no-tags origin "$base" "$head"
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            base="${{ github.event.before }}"
+            head="${GITHUB_SHA}"
+            if [[ -n "$base" && "$base" != "0000000000000000000000000000000000000000" ]]; then
+              git fetch --no-tags origin "$base" "$head"
+            fi
+          else
+            base=""
+            head="$(git rev-parse HEAD)"
+          fi
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          authority_current="$(git rev-parse refs/remotes/origin/main)"
+          echo "base_sha=$base" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head" >> "$GITHUB_OUTPUT"
+          echo "authority_current_revision=$authority_current" >> "$GITHUB_OUTPUT"
+
+      - name: Build unified applicability plan
+        id: classify
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .lf_ci
+          args=(
+            --repo-root .
+            --base "${{ steps.context.outputs.base_sha }}"
+            --head "${{ steps.context.outputs.head_sha }}"
+            --authority-current-revision "${{ steps.context.outputs.authority_current_revision }}"
+            --event-name "${GITHUB_EVENT_NAME}"
+            --event-action "${{ github.event.action }}"
+            --ref-name "${GITHUB_REF_NAME:-}"
+            --output-json .lf_ci/lf_ci_execution_plan_v2.json
+            --github-output "$GITHUB_OUTPUT"
+          )
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            args+=(--force-full --force-full-reason WORKFLOW_DISPATCH_FULL_REGRESSION)
+          fi
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py "${args[@]}"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          plan = json.loads(Path('.lf_ci/lf_ci_execution_plan_v2.json').read_text(encoding='utf-8'))
+          if plan.get('coverage_complete') is not True:
+              raise SystemExit('BLOCK_VISUAL_EVIDENCE_PLAN_INCOMPLETE')
+          controls = (plan.get('carrier_controls') or {}).get('VISUAL_EVIDENCE_GATE', [])
+          if controls not in ([], ['VISUAL_EVIDENCE_GATE']):
+              raise SystemExit(f'BLOCK_VISUAL_EVIDENCE_CARRIER_SCOPE:{controls!r}')
+          required = controls == ['VISUAL_EVIDENCE_GATE']
+          with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as handle:
+              handle.write(f"visual_evidence_required={'true' if required else 'false'}\n")
+          print(
+              'VISUAL_EVIDENCE_UNIFIED_PLAN',
+              'required='+str(required).lower(),
+              'plan_sha256='+str(plan.get('plan_sha256')),
+              'applicability_sha256='+str(plan.get('applicability_sha256')),
+          )
+          PY
+
+      - name: Persist unified applicability plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-evidence-applicability-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/lf_ci_execution_plan_v2.json
+          if-no-files-found: error
+          retention-days: 30
+
+  visual-evidence-gate:
+    name: visual-evidence-gate
+    needs: applicability
+    if: needs.applicability.outputs.required == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact candidate source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.applicability.outputs.head_sha }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Provision existing visual evidence dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${P0_CI_ENGINEERING_REGRESSION:-}" ]; then
+            echo "FAIL_VISUAL_EVIDENCE_ENGINEERING_OVERRIDE_FORBIDDEN"
+            exit 1
+          fi
+          python3 -m pip install --disable-pip-version-check \
+            -r sandbox/story_creator_p0_visual/v1.1/requirements-p0-visual-quality.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa
+
+      - name: Verify visual owner and carrier boundary
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/visual_evidence_gate/visual_evidence_gate_v1.py --self-test
+          python3 sandbox/lf_contract_gate_test/visual_evidence_gate/test_visual_evidence_gate_v1.py
+          python3 sandbox/lf_contract_gate_test/visual_evidence_gate/test_visual_evidence_carrier_cutover_v1.py
+
+      - name: Execute visual evidence gate
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/visual_evidence_gate/visual_evidence_gate_v1.py

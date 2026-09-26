@@ -12,7 +12,7 @@
     "LF_VALIDATION_ENGINE",
     "MIGRATION_SOURCE_PARITY",
     "NO_BYPASS_PROFILE_CARD_SKILL",
-    "P0_VISUAL_RUNTIME",
+    "VISUAL_EVIDENCE_GATE",
     "PASS_EVIDENCE",
     "PROFILE_PACK",
     "PROFILE_RUNTIME_V3",
@@ -44,6 +44,10 @@
         {
           "kind": "exact",
           "value": ".github/workflows/lf-db-regression.yml"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/visual-evidence-gate.yml"
         }
       ],
       "material_matchers": [],
@@ -341,8 +345,8 @@
       "dependencies": []
     },
     {
-      "control_id": "P0_VISUAL_RUNTIME",
-      "carrier": "LF_CONTRACT_CHECK",
+      "control_id": "VISUAL_EVIDENCE_GATE",
+      "carrier": "VISUAL_EVIDENCE_GATE",
       "path_matchers": [
         {
           "kind": "prefix",
@@ -351,6 +355,14 @@
         {
           "kind": "prefix",
           "value": "sandbox/lf_contract_gate_test/story_creator_visual_screen_reading_architecture/"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/visual_evidence_gate/"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/visual-evidence-gate.yml"
         }
       ],
       "material_matchers": [],
