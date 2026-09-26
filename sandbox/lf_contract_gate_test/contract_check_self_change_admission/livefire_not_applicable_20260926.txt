@@ -1,0 +1,2 @@
+LF live-fire probe: unrelated PR must produce PASS_NOT_APPLICABLE in lf-independent-change-admission.
+Created 2026-09-26. No protected Contract Check surface is modified.
