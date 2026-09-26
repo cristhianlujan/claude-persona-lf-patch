@@ -4,6 +4,8 @@ on:
   workflow_run:
     workflows: ["lf-contract-check"]
     types: [completed]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   actions: read
@@ -12,10 +14,56 @@ permissions:
   id-token: write
 
 concurrency:
-  group: lf-github-reconcile-v3-${{ github.event.workflow_run.id }}
+  group: lf-github-reconcile-v3-${{ github.event.workflow_run.id || github.event.pull_request.number || github.run_id }}
   cancel-in-progress: false
 
 jobs:
+  independent-change-admission:
+    if: github.event_name == 'pull_request_target'
+    name: lf-independent-change-admission
+    permissions:
+      contents: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout trusted base admission source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Self-test independent admission source
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py self-test
+
+      - name: Classify independent admission applicability
+        id: admission_scope
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py classify
+
+      - name: Record independent admission not applicable
+        if: steps.admission_scope.outputs.applicable == 'false'
+        run: |
+          set -euo pipefail
+          echo "PASS_INDEPENDENT_CHANGE_ADMISSION_NOT_APPLICABLE status=${{ steps.admission_scope.outputs.status }}"
+
+      - name: Validate Contract Check self-change admission
+        if: steps.admission_scope.outputs.applicable == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py validate
+
   reconcile:
     if: >-
       github.event.workflow_run.conclusion == 'success' &&

@@ -21,6 +21,7 @@ ANCHOR_SURFACES = (
 GUARD_SURFACES = (
     ".github/workflows/lf-github-reconcile-v3.yml",
     "sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_contract_check_self_change_admission_v1.py",
+    "sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py",
 )
 RECEIPT_PREFIX = "sandbox/lf_contract_gate_test/receipts/"
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
@@ -379,6 +380,7 @@ def self_test() -> dict[str, Any]:
     blocked("BLOCK_SELF_CHANGE_EXECUTION_NOT_FOUND", lambda p: p["execution_readback"].__setitem__("execution", None))
     blocked("BLOCK_SELF_CHANGE_EXECUTION_CODE_HEAD", lambda p: p["execution_readback"]["execution"]["manifest"].__setitem__("candidate_code_head", "d" * 40))
     blocked("BLOCK_SELF_CHANGE_GUARD_COCHANGE", lambda p: p["changed_files"].append(GUARD_SURFACES[0]))
+    blocked("BLOCK_SELF_CHANGE_GUARD_COCHANGE", lambda p: p["changed_files"].append(GUARD_SURFACES[2]))
     blocked("BLOCK_SELF_CHANGE_ANCHOR_MISMATCH", lambda p: p["base_observed_anchors"][ANCHOR_SURFACES[0]].__setitem__("sha256", "6" * 64))
     return {"status": "PASS_SELF_TEST", "checks": checks}
 
