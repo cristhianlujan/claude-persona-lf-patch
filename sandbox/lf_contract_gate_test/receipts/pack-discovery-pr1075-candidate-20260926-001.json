@@ -1,0 +1,40 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-pack-discovery",
+  "issued_by": "operation_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-PACK-DISCOVERY-PR1075-20260925-001",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "contract_judge",
+  "contract_sha": "b10ccc8527bc2499775559635fb59736744e46f3ca5e150cf4644cd4c491d7e8",
+  "judge_sha": "MIGRATION_20260531_GITHUB_CONTRACT_GATE_LF_PROTOCOL",
+  "source_sha_list": [
+    "2a7efec989d666f6c2514884e288c26c8d607c6c",
+    "97882c3240bbd31bf612c5af90a472cc7d487fbf",
+    "8fcafec32c421860fd0a94ac882473a1b6c63682",
+    "266445b95f5491bacb438a5cda0f058a2d0588f5"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/pack_discovery_resolve_affected_packs_v1.json",
+    "sandbox/lf_contract_gate_test/pack_validation_contract/resolve_affected_packs_v1.py",
+    "sandbox/lf_contract_gate_test/pack_validation_contract/test_resolve_affected_packs_v1.py"
+  ],
+  "target_blob_sha_by_path": {
+    "gobernanza/contratos/pack_discovery_resolve_affected_packs_v1.json": "97882c3240bbd31bf612c5af90a472cc7d487fbf",
+    "sandbox/lf_contract_gate_test/pack_validation_contract/resolve_affected_packs_v1.py": "8fcafec32c421860fd0a94ac882473a1b6c63682",
+    "sandbox/lf_contract_gate_test/pack_validation_contract/test_resolve_affected_packs_v1.py": "266445b95f5491bacb438a5cda0f058a2d0588f5"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-26T04:54:16.880909Z",
+  "candidate_code_head": "2a7efec989d666f6c2514884e288c26c8d607c6c",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "POST_RECEIPT_EXACT_HEAD_CI_THEN_CLOSE_PR2",
+  "stage": "CODE_ONLY_GOVERNANCE_QUALIFICATION",
+  "pr_number": 1075,
+  "authority_current_revision": "6d1d24223bd26fc8965977380d7b5ced54e8a80a",
+  "currentness_decision": "CURRENT",
+  "runtime_activation": false,
+  "production_applied": false,
+  "validators_executed_by_discovery": false
+}
