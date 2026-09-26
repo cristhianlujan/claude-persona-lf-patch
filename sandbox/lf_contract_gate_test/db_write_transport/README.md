@@ -22,10 +22,10 @@ Después del write-ahead, `lf_migration_orchestrated_saga.py` gobierna secuencia
 2. ready-to-apply;
 3. apply exacto por `ACTUALIZACION_DB_LF`;
 4. ledger readback;
-5. `MIGRATION_SOURCE_PARITY=PASS`;
+5. `MIGRATION_SOURCE_PARITY=PASS` respaldado por evidencia canónica `LF_GATE_ERROR_V1` del mismo exact-head;
 6. `CONSISTENT`.
 
-El state gate es determinista e idempotente: reintentar el mismo snapshot produce el mismo verdict. No ejecuta writes por sí mismo.
+El state gate es determinista e idempotente: reintentar el mismo snapshot produce el mismo verdict. No ejecuta writes por sí mismo y no depende del workflow/carrier que transporte `MIGRATION_SOURCE_PARITY`.
 
 La reconciliación/auto-repair es una tercera solución dependiente y separada.
 
@@ -57,9 +57,9 @@ Antes de cualquier write:
 Después del apply:
 
 - ledger exacto version/name;
-- migration source parity PASS;
+- migration source parity PASS con evidencia canónica ligada al mismo exact-head;
 - `MIGRATION_ORCHESTRATED_SAGA_CONSISTENT`;
-- exact-head CI PASS;
+- exact-head CI PASS como condición de pase del cambio, no como estado interno de Saga;
 - EKB closeout cuando corresponda.
 
 ## Dependencias y activos relacionados
