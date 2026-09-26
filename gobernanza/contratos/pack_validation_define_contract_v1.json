@@ -1,0 +1,141 @@
+{
+  "schema_version": "lf-pack-validation-contract/v1",
+  "capability": "PACK_VALIDATION",
+  "action": "DEFINE",
+  "object": "CONTRACT",
+  "durable_name": "PACK_VALIDATION_DEFINE_CONTRACT",
+  "owner": "PACK_VALIDATION",
+  "purpose": "Validate affected LF profile and skill packs through a deterministic, bounded, generic validation contract without absorbing runtime, assurance, database, Git-write, observability, EKB, lifecycle, or deployment responsibilities.",
+  "scope": {
+    "included": [
+      "resolve affected governed packs from changed paths and declared applicability input",
+      "validate required pack structure",
+      "validate manifest and schema requirements owned by the pack contract",
+      "discover and execute the pack-local deterministic validators/validate_pack.py entrypoint when present and governed",
+      "aggregate pack-scoped PASS or FAIL with blocking codes and evidence references"
+    ],
+    "excluded": [
+      "runtime execution or runtime regression ownership",
+      "profile runtime API tests",
+      "semantic-to-render runtime binding regression",
+      "S30 or Git-write broker execution",
+      "DeployKey use or protected branch writes",
+      "database apply, rollback, or database regression",
+      "Supabase control-plane readback ownership",
+      "assurance qualification or semantic quality judgment",
+      "gate observability ownership",
+      "EKB persistence ownership",
+      "lifecycle, deprecation, promotion, deployment, or production authorization"
+    ]
+  },
+  "input_contract": {
+    "required": [
+      "base_sha",
+      "head_sha",
+      "changed_paths"
+    ],
+    "optional": [
+      "applicable_pack_types",
+      "applicability_evidence_ref"
+    ],
+    "constraints": {
+      "base_sha": "40-char git SHA when available for diff-bound validation",
+      "head_sha": "40-char exact candidate git SHA",
+      "changed_paths": "ordered or unordered list of repository-relative paths; normalization must not change semantic membership",
+      "applicable_pack_types": "subset of governed pack types known to the contract; unknown values fail closed"
+    }
+  },
+  "pack_types": {
+    "PROFILE_PACK": {
+      "roots": ["profiles/", "skills/profile_creator/"],
+      "local_validator_contract": "validators/validate_pack.py",
+      "generic_discovery_required": true,
+      "slug_hardcoding_for_privileged_canary": false
+    },
+    "SKILL_PACK": {
+      "roots": ["skills/"],
+      "local_validator_contract": "validators/validate_pack.py",
+      "generic_discovery_required": true,
+      "slug_hardcoding_for_privileged_canary": false
+    }
+  },
+  "execution_contract": {
+    "mode": "DETERMINISTIC_FIRST",
+    "steps": [
+      "RESOLVE_AFFECTED_PACKS",
+      "VALIDATE_PACK_STRUCTURE",
+      "VALIDATE_PACK_MANIFEST_AND_SCHEMAS",
+      "EXECUTE_PACK_LOCAL_VALIDATOR",
+      "AGGREGATE_PACK_RESULT"
+    ],
+    "fail_closed_conditions": [
+      "unknown governed pack type",
+      "affected governed pack cannot be resolved unambiguously",
+      "required structure is missing",
+      "manifest or required schema is invalid",
+      "declared local validator is missing where required",
+      "local validator is symlinked or resolves outside its governed pack boundary",
+      "local validator returns non-zero",
+      "evidence cannot be bound to the exact head"
+    ],
+    "not_applicable_result": "SKIP"
+  },
+  "output_contract": {
+    "required_fields": [
+      "status",
+      "base_sha",
+      "head_sha",
+      "affected_packs",
+      "checks_executed",
+      "blocking_codes",
+      "evidence"
+    ],
+    "status_enum": ["PASS", "FAIL", "SKIP"],
+    "affected_pack_fields": [
+      "pack_id",
+      "pack_type",
+      "pack_root",
+      "validator_ref",
+      "status"
+    ],
+    "authorization_fields": {
+      "runtime_authorized": false,
+      "deployment_authorized": false,
+      "git_write_authorized": false,
+      "db_write_authorized": false,
+      "production_authorized": false,
+      "semantic_quality_review_authorized": false
+    }
+  },
+  "ownership_invariants": [
+    "PACK_VALIDATION may validate packs but must not become the owner or carrier of unrelated runtime, database, Git-write, assurance, observability, EKB, lifecycle, or deployment controls.",
+    "A control may be invoked by the pass orchestrator after PACK_VALIDATION, but its ownership and evidence remain with that control.",
+    "Pack-local validators may validate pack-owned deterministic contracts only; they must not silently become alternate orchestrators for unrelated transversal controls.",
+    "Moving a control out of Validate LF Packs requires a proven destination owner and wiring before removal from the existing carrier.",
+    "No PASS from PACK_VALIDATION grants runtime, merge, deployment, production, database-write, or Git-write authorization."
+  ],
+  "compatibility_requirements": [
+    "preserve generic profile-validator discovery already relied on by governed profile packs",
+    "preserve fail-closed behavior for invalid or missing governed pack structure",
+    "preserve exact-head evidence binding",
+    "do not weaken existing applicable controls while ownership is being migrated"
+  ],
+  "migration_sequence": [
+    "PACK_DISCOVERY_RESOLVE_AFFECTED_PACKS",
+    "PACK_VALIDATION_EXECUTE_PACK_CHECKS",
+    "PROFILE_PACK_VALIDATION_CLEAN_VALIDATOR",
+    "PACK_VALIDATION_CLEAN_WORKFLOW",
+    "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS",
+    "PACK_VALIDATION_VERIFY_E2E_FLOW"
+  ],
+  "evidence_requirements": {
+    "minimum": [
+      "exact head SHA",
+      "resolved affected pack list",
+      "validator refs actually executed",
+      "per-pack deterministic result",
+      "blocking codes for every failure"
+    ],
+    "completion_rule": "The contract is defined when this document is source-readable on the exact PR head and its invariants can be consumed by the subsequent implementation PRs. This PR does not claim the workflow or validators are already compliant."
+  }
+}
