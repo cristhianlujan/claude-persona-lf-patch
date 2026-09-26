@@ -1,0 +1,142 @@
+name: LF Contract Check PRE_EKB cutover builder
+
+on:
+  push:
+    branches:
+      - lf/contract-check-pre-ekb-cutover-v1
+
+permissions:
+  contents: write
+
+jobs:
+  cutover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout cutover branch
+        uses: actions/checkout@v4
+        with:
+          ref: lf/contract-check-pre-ekb-cutover-v1
+          fetch-depth: 0
+
+      - name: Replace inline PRE_EKB implementation with canonical consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/lf-contract-check.yml')
+          text = workflow.read_text(encoding='utf-8')
+          start_marker = '      - name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE\n'
+          end_marker = '      - name: Capture authenticated E.16 Actions inventory\n'
+          if text.count(start_marker) != 1:
+              raise SystemExit(f'FAIL_PRE_EKB_CUTOVER_START_MARKER count={text.count(start_marker)}')
+          if text.count(end_marker) != 1:
+              raise SystemExit(f'FAIL_PRE_EKB_CUTOVER_END_MARKER count={text.count(end_marker)}')
+          start = text.index(start_marker)
+          end = text.index(end_marker, start)
+          old_block = text[start:end]
+          required_old = [
+              "public.lf_record_gate_checks_v1",
+              "public.fn_lf_operation_reserve_execution_v1",
+              "LF_PRE_EKB_GATE_AUTOPERSIST_V1",
+              "python3 - <<'PY'",
+          ]
+          missing = [token for token in required_old if token not in old_block]
+          if missing:
+              raise SystemExit(f'FAIL_PRE_EKB_CUTOVER_OLD_BLOCK_NOT_EXPECTED missing={missing}')
+
+          replacement = '''      - name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE
+        if: always() && steps.feedback_tier.outcome == 'success' && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true' && steps.deterministic_diagnostics_artifact.outcome == 'success'
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: "5432"
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGDATABASE: postgres
+          PGSSLMODE: require
+          LF_EXACT_SOURCE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          LF_WORKFLOW_EVENT: ${{ github.event_name }}
+          LF_REPOSITORY: ${{ github.repository }}
+          LF_RUN_ID: ${{ github.run_id }}
+          LF_RUN_ATTEMPT: ${{ github.run_attempt }}
+          LF_JOB_ID: ${{ github.job }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py \\
+            --diagnostics-root .lf_gate_diagnostics/lf_contract_check
+
+'''
+          new_text = text[:start] + replacement + text[end:]
+          if new_text.count('sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py') != 1:
+              raise SystemExit('FAIL_PRE_EKB_CUTOVER_CONSUMER_CALL_COUNT')
+          workflow.write_text(new_text, encoding='utf-8')
+
+          test_path = Path('sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_workflow_cutover_v1.py')
+          test_path.write_text('''#!/usr/bin/env python3
+from pathlib import Path
+
+WORKFLOW = Path(".github/workflows/lf-contract-check.yml")
+START = "      - name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE\\n"
+END = "      - name: Capture authenticated E.16 Actions inventory\\n"
+CONSUMER = "sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py"
+
+
+def main() -> int:
+    text = WORKFLOW.read_text(encoding="utf-8")
+    assert text.count(START) == 1
+    assert text.count(END) == 1
+    start = text.index(START)
+    end = text.index(END, start)
+    block = text[start:end]
+    assert CONSUMER in block
+    assert block.count(CONSUMER) == 1
+    for forbidden in (
+        "python3 - <<'PY'",
+        "public.lf_record_gate_checks_v1",
+        "public.fn_lf_operation_reserve_execution_v1",
+        "public.lf_pre_ekb_gate_consumer_v1",
+        "LF_PRE_EKB_GATE_AUTOPERSIST_V1",
+    ):
+        assert forbidden not in block, forbidden
+    for required in (
+        "PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}",
+        "LF_EXACT_SOURCE_SHA:",
+        "LF_WORKFLOW_EVENT:",
+        "LF_REPOSITORY:",
+        "LF_RUN_ID:",
+        "LF_RUN_ATTEMPT:",
+        "LF_JOB_ID:",
+        "--diagnostics-root .lf_gate_diagnostics/lf_contract_check",
+    ):
+        assert required in block, required
+    print("PASS_LF_CONTRACT_PRE_EKB_WORKFLOW_CUTOVER checks=13")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+''', encoding='utf-8')
+          PY
+
+      - name: Prove cutover locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py --self-test
+          python3 sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_consumer_v1.py
+          python3 sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_workflow_cutover_v1.py
+
+      - name: Commit bounded cutover and remove builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/workflows/lf-contract-check.yml \
+            sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_workflow_cutover_v1.py
+          git rm .github/workflows/lf-contract-check-pre-ekb-cutover-builder.yml
+          git diff --cached --check
+          git commit -m 'refactor(contract-check): cut over PRE_EKB to canonical consumer'
+          git push origin HEAD:lf/contract-check-pre-ekb-cutover-v1
