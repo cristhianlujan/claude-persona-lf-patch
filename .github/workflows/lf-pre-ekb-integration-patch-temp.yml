@@ -1,0 +1,137 @@
+name: LF PRE_EKB integration patch temp
+
+on:
+  push:
+    branches:
+      - lf/contract-check-pre-ekb-cutover-v4
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: lf/contract-check-pre-ekb-cutover-v4
+          fetch-depth: 0
+
+      - name: Patch integration assertions to owner boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py')
+          text = path.read_text(encoding='utf-8')
+          start_marker = '    # P4: deterministic non-pass diagnostics must enter the existing productive\n'
+          end_marker = '    pre_ekb_sql = LF_CONTRACT_PRE_EKB_MIGRATION.read_text(encoding="utf-8")\n'
+          if text.count(start_marker) != 1 or text.count(end_marker) != 1:
+              raise SystemExit('FAIL_PRE_EKB_INTEGRATION_PATCH_MARKERS')
+          start = text.index(start_marker)
+          end = text.index(end_marker, start)
+
+          replacement = '''    # P4: Contract Check must delegate PRE_EKB persistence to the canonical owner.
+          # The workflow proves durable diagnostics + exact-head context; PRE_EKB internals
+          # are asserted on the extracted consumer, not duplicated in this carrier.
+          require(
+              text,
+              "Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE",
+              "FAIL_LF_CONTRACT_PRE_EKB_STEP_MISSING",
+          )
+          require(
+              text,
+              "id: deterministic_diagnostics_artifact",
+              "FAIL_LF_CONTRACT_PRE_EKB_ARTIFACT_STEP_ID_MISSING",
+          )
+          pre_ekb_marker = "- name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE"
+          pre_ekb_start = text.index(pre_ekb_marker)
+          try:
+              pre_ekb_end = text.index("\\n      - name:", pre_ekb_start + len(pre_ekb_marker))
+          except ValueError:
+              pre_ekb_end = len(text)
+          pre_ekb_block = text[pre_ekb_start:pre_ekb_end]
+          require(pre_ekb_block, "if: always()", "FAIL_LF_CONTRACT_PRE_EKB_NOT_ALWAYS_READBACK")
+          require(
+              pre_ekb_block,
+              "steps.deterministic_diagnostics_artifact.outcome == 'success'",
+              "FAIL_LF_CONTRACT_PRE_EKB_ARTIFACT_DURABILITY_NOT_REQUIRED",
+          )
+          consumer_path = "sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py"
+          require(pre_ekb_block, consumer_path, "FAIL_LF_CONTRACT_PRE_EKB_CANONICAL_CONSUMER_NOT_WIRED")
+          require(pre_ekb_block, "LF_EXACT_SOURCE_SHA", "FAIL_LF_CONTRACT_PRE_EKB_EXACT_HEAD_BINDING_MISSING")
+          require(
+              pre_ekb_block,
+              "--diagnostics-root .lf_gate_diagnostics/lf_contract_check",
+              "FAIL_LF_CONTRACT_PRE_EKB_DIAGNOSTICS_ROOT_MISSING",
+          )
+          for forbidden in (
+              "public.lf_pre_ekb_gate_consumer_v1",
+              "public.fn_lf_operation_reserve_execution_v1",
+              "public.lf_record_gate_checks_v1",
+              "LF_PRE_EKB_GATE_AUTOPERSIST_V1",
+              "public.lf_write_pipeline_ekb_v1",
+              "python3 - <<'PY'",
+          ):
+              if forbidden in pre_ekb_block:
+                  raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_INLINE_IMPLEMENTATION_REMAINS:{forbidden}")
+
+          consumer_text = Path(consumer_path).read_text(encoding="utf-8")
+          require(
+              consumer_text,
+              "public.lf_pre_ekb_gate_consumer_v1('GITHUB_CONTRACT_GATE_LF')",
+              "FAIL_LF_CONTRACT_PRE_EKB_CONSUMER_READBACK_MISSING",
+          )
+          require(
+              consumer_text,
+              "public.fn_lf_operation_reserve_execution_v1",
+              "FAIL_LF_CONTRACT_PRE_EKB_PARENT_EXECUTION_NOT_RESERVED",
+          )
+          require(
+              consumer_text,
+              "public.lf_record_gate_checks_v1",
+              "FAIL_LF_CONTRACT_PRE_EKB_PRODUCTIVE_INGRESS_MISSING",
+          )
+          require(consumer_text, "'contract_judge'", "FAIL_LF_CONTRACT_PRE_EKB_CANONICAL_STEP_MISSING")
+          require(consumer_text, "EKB_PERSISTED", "FAIL_LF_CONTRACT_PRE_EKB_RECEIPT_READBACK_MISSING")
+          require(
+              consumer_text,
+              "BLOCKED_EKB_PERSISTENCE",
+              "FAIL_LF_CONTRACT_PRE_EKB_BLOCKED_PERSISTENCE_GUARD_MISSING",
+          )
+          require(consumer_text, "ACT-0057", "FAIL_LF_CONTRACT_PRE_EKB_CHILD_SKILL_READBACK_MISSING")
+          if "persist_gate_failures_to_ekb_v1.py" in consumer_text:
+              raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_EMIT_ONLY_ADAPTER_USED_PRODUCTIVELY")
+          if "public.lf_write_pipeline_ekb_v1(" in consumer_text:
+              raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_DIRECT_WRITER_BYPASS")
+
+          '''
+          path.write_text(text[:start] + replacement + text[end:], encoding='utf-8')
+          PY
+
+      - name: Prove bounded cutover
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check -q pyyaml
+          python3 sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py --self-test
+          python3 sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_consumer_v1.py
+          python3 sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_workflow_cutover_v1.py
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py
+          git diff --check -- sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py
+
+      - name: Commit integration assertion cutover
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py; then
+            echo PASS_PRE_EKB_INTEGRATION_PATCH_ALREADY_APPLIED
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_workflow_integration.py
+          git commit -m 'test(contract-check): assert PRE_EKB canonical owner boundary'
+          git push origin HEAD:lf/contract-check-pre-ekb-cutover-v4
