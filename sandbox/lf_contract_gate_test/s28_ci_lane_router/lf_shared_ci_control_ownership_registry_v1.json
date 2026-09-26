@@ -101,8 +101,44 @@
       "deep_shared": false
     },
     {
+      "control_id": "TRANSVERSAL_ASSET_INDEX_README",
+      "path": "sandbox/lf_contract_gate_test/transversal_assets/README.md",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
       "control_id": "LF_CONTRACT_CHECK_VALIDATOR",
       "path": "scripts/lf_contract_check.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "FULL_REGRESSION_IMPLEMENTATION",
+      "path": "sandbox/lf_contract_gate_test/transversal_assets/full_regression/full_regression_v1.py",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "FULL_REGRESSION_README",
+      "path": "sandbox/lf_contract_gate_test/transversal_assets/full_regression/README.md",
+      "migration_parity_required": false,
+      "input_governance_parity_required": false,
+      "ci_router_selftest_required": true,
+      "p0_exact_head_external_required": false,
+      "deep_shared": false
+    },
+    {
+      "control_id": "FULL_REGRESSION_SEMANTIC_JUDGE",
+      "path": "sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py",
       "migration_parity_required": false,
       "input_governance_parity_required": false,
       "ci_router_selftest_required": true,

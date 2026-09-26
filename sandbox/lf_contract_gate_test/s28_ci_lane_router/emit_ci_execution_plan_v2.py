@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Emit the exact-head CI applicability plan from CI_FAST_DEEP_LANE_ROUTER."""
+"""Emit exact-head CI applicability plan.
+
+`--force-full` is retained as a compatibility CLI name. It requests
+FULL_REGRESSION verification of the governed plan; it never expands
+applicability or means "run everything".
+"""
 from __future__ import annotations
 
 import argparse
@@ -42,8 +47,13 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--ref-name", default=os.environ.get("GITHUB_REF_NAME", ""))
     p.add_argument("--output-json", required=True)
     p.add_argument("--github-output")
-    p.add_argument("--force-full", action="store_true")
-    p.add_argument("--force-full-reason")
+    p.add_argument(
+        "--force-full",
+        dest="request_full_regression",
+        action="store_true",
+        help="Compatibility flag: verify the governed plan with FULL_REGRESSION; never expand controls.",
+    )
+    p.add_argument("--force-full-reason", dest="full_regression_reason")
     return p
 
 
@@ -62,14 +72,14 @@ def main() -> int:
     repo = Path(args.repo_root).resolve()
     changed = _changed(repo, args.base, args.head)
 
-    force_full = args.force_full
-    force_reason = args.force_full_reason
+    request_full_regression = args.request_full_regression
+    full_regression_reason = args.full_regression_reason
     if args.event_name in {"workflow_dispatch", "schedule"}:
-        force_full = True
-        force_reason = force_reason or f"{args.event_name.upper()}_FULL_REGRESSION"
+        request_full_regression = True
+        full_regression_reason = full_regression_reason or f"{args.event_name.upper()}_FULL_REGRESSION"
     elif args.event_name == "push" and args.ref_name == "main":
-        force_full = True
-        force_reason = force_reason or "MAIN_PUSH_FULL_REGRESSION"
+        request_full_regression = True
+        full_regression_reason = full_regression_reason or "MAIN_PUSH_FULL_REGRESSION"
 
     lane = ROUTER.classify(changed)
     plan = PLAN.build_plan(
@@ -77,8 +87,8 @@ def main() -> int:
         lane_required_controls=lane.required_controls,
         lane_mode=lane.mode,
         repo_root=repo,
-        force_full=force_full,
-        force_full_reason=force_reason,
+        force_full=request_full_regression,
+        force_full_reason=full_regression_reason,
         source_ref=args.head or None,
     )
     applicability_sha256 = plan["plan_sha256"]
@@ -114,6 +124,8 @@ def main() -> int:
         PLAN._canonical(evidence_source).encode("utf-8")
     )
 
+    PLAN.validate_plan_contract(plan)
+
     out = Path(args.output_json)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(plan, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -129,6 +141,7 @@ def main() -> int:
             "currentness_decision": plan["source_authority"]["decision"],
             "lane_mode": plan["lane_mode"],
             "full_regression": str(plan["full_regression"]).lower(),
+            "applicability_decision": plan["applicability_decision"],
             "required_controls_json": json.dumps(plan["required_controls"], separators=(",", ":")),
             "lf_contract_controls_json": json.dumps(carrier.get("LF_CONTRACT_CHECK", []), separators=(",", ":")),
             "validate_packs_controls_json": json.dumps(carrier.get("VALIDATE_LF_PACKS", []), separators=(",", ":")),
@@ -146,7 +159,9 @@ def main() -> int:
         "evidence_sha256": plan["evidence_sha256"],
         "currentness_decision": plan["source_authority"]["decision"],
         "lane_mode": plan["lane_mode"],
+        "applicability_decision": plan["applicability_decision"],
         "full_regression": plan["full_regression"],
+        "full_regression_semantics": plan["full_regression_semantics"],
         "required_controls": plan["required_controls"],
         "changed_paths": plan["changed_paths"],
         "coverage_complete": plan["coverage_complete"],

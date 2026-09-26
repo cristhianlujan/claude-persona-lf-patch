@@ -60,6 +60,12 @@ Todo activo transversal documentable en estado `ACTIVE_SHARED_ENFORCEMENT` o `AC
 
 - `STATE_MODEL_POLICY` — `TRANSVERSAL_STATE_MODEL_POLICY` → `sandbox/lf_contract_gate_test/transversal_assets/pol_lf_state_model/README.md`
 
+## Candidatos registrados no cutover
+
+Esta sección es sólo un **locator**. No forma parte del índice de activos operativamente activos ni autoriza consumo productivo.
+
+- Candidate `FULL_REGRESSION` (`FORMAL_TRANSVERSAL_REGISTERED_NOT_CUTOVER`, `READ_ONLY`): `sandbox/lf_contract_gate_test/transversal_assets/full_regression/README.md`. Autoridad operativa de estado/metadata/relaciones: `public.lf_activos` + `public.lf_activo_relaciones`; source/wiring: GitHub. Drive es soporte de inventario, no autoridad.
+
 ## Campos mínimos del README
 
 Cada README debe explicar: propósito, cuándo consumirlo, cómo consumirlo, superficies canónicas, fail-closed/límites, validación/readback, no duplicación y currentness.
