@@ -1,111 +1,70 @@
 #!/usr/bin/env python3
-import importlib.util
+import ast
 import json
-import tempfile
 from pathlib import Path
 
-MODULE_PATH = Path(__file__).resolve().parents[1] / 'validators' / 'validate_pack.py'
-spec = importlib.util.spec_from_file_location('profile_creator_validate_pack', MODULE_PATH)
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
+VALIDATOR = Path(__file__).resolve().parents[1] / 'validators' / 'validate_pack.py'
+source = VALIDATOR.read_text(encoding='utf-8')
+tree = ast.parse(source)
 
+function_names = {
+    node.name
+    for node in ast.walk(tree)
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+}
+string_literals = [
+    node.value
+    for node in ast.walk(tree)
+    if isinstance(node, ast.Constant) and isinstance(node.value, str)
+]
+checks_append_calls = [
+    node
+    for node in ast.walk(tree)
+    if isinstance(node, ast.Call)
+    and isinstance(node.func, ast.Attribute)
+    and isinstance(node.func.value, ast.Name)
+    and node.func.value.id == 'checks'
+    and node.func.attr == 'append'
+]
 
-def make_validator(root: Path, slug: str):
-    path = root / 'profiles' / slug / 'validators' / 'validate_pack.py'
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text('raise SystemExit(0)\n', encoding='utf-8')
-    return path
-
-
-def run_case(case_id, builder, expected_slugs, expected_errors):
-    with tempfile.TemporaryDirectory() as tmp:
-        repo = Path(tmp)
-        (repo / 'profiles').mkdir(parents=True)
-        builder(repo)
-        discovered, errors = module.discover_profile_validators(repo)
-        slugs = [slug for slug, _, _ in discovered]
-        passed = slugs == expected_slugs and errors == expected_errors
-        return {
-            'id': case_id,
-            'expected_slugs': expected_slugs,
-            'actual_slugs': slugs,
-            'expected_errors': expected_errors,
-            'actual_errors': errors,
-            'passed': passed,
-        }
-
-
-cases = []
-
-cases.append(run_case(
-    'generic_two_profiles',
-    lambda repo: (make_validator(repo, 'alpha_profile'), make_validator(repo, 'zeta_profile')),
-    ['alpha_profile', 'zeta_profile'],
-    [],
-))
-
-
-def template_and_missing(repo):
-    make_validator(repo, '_template')
-    (repo / 'profiles' / 'beta_without_validator').mkdir(parents=True)
-    make_validator(repo, 'gamma_profile')
-
-cases.append(run_case(
-    'template_excluded_missing_validator_skipped',
-    template_and_missing,
-    ['gamma_profile'],
-    [],
-))
-
-
-def future_holdout(repo):
-    make_validator(repo, 'future_profile_not_known_to_profile_creator')
-
-cases.append(run_case(
-    'future_profile_holdout_discovered_without_hardcode',
-    future_holdout,
-    ['future_profile_not_known_to_profile_creator'],
-    [],
-))
-
-
-def no_validators(repo):
-    (repo / 'profiles' / 'plain_profile').mkdir(parents=True)
-
-cases.append(run_case(
-    'no_validator_contract_means_not_discovered',
-    no_validators,
-    [],
-    [],
-))
-
-
-def symlink_validator(repo):
-    real = repo / 'external_validator.py'
-    real.write_text('raise SystemExit(0)\n', encoding='utf-8')
-    link = repo / 'profiles' / 'symlink_profile' / 'validators' / 'validate_pack.py'
-    link.parent.mkdir(parents=True, exist_ok=True)
-    link.symlink_to(real)
-
-cases.append(run_case(
-    'symlink_validator_rejected_fail_closed',
-    symlink_validator,
-    [],
-    ['PROFILE_VALIDATOR_SYMLINK_FORBIDDEN:symlink_profile'],
-))
-
-with tempfile.TemporaryDirectory() as tmp:
-    repo = Path(tmp)
-    discovered, errors = module.discover_profile_validators(repo)
-    cases.append({
-        'id': 'missing_profiles_root_rejected',
-        'expected_slugs': [],
-        'actual_slugs': [slug for slug, _, _ in discovered],
-        'expected_errors': ['PROFILES_ROOT_MISSING'],
-        'actual_errors': errors,
-        'passed': discovered == [] and errors == ['PROFILES_ROOT_MISSING'],
-    })
+cases = [
+    {
+        'id': 'no_cross_profile_discovery_function',
+        'passed': 'discover_profile_validators' not in function_names,
+    },
+    {
+        'id': 'no_dynamic_cross_pack_check_append',
+        'passed': len(checks_append_calls) == 0,
+    },
+    {
+        'id': 'no_dynamic_profile_pack_check_namespace',
+        'passed': all('PROFILE_PACK::' not in value for value in string_literals),
+    },
+    {
+        'id': 'declares_local_pack_scope',
+        'passed': "'validation_scope': 'PROFILE_CREATOR_PACK_ONLY'" in source,
+    },
+    {
+        'id': 'declares_transversal_discovery_not_executed',
+        'passed': "'transversal_pack_discovery_executed': False" in source,
+    },
+    {
+        'id': 'declares_transversal_execution_not_executed',
+        'passed': "'transversal_pack_execution_executed': False" in source,
+    },
+    {
+        'id': 'delegates_transversal_owner',
+        'passed': "'transversal_pack_owner': 'PACK_VALIDATION'" in source,
+    },
+]
 
 passed = all(case['passed'] for case in cases)
-print(json.dumps({'passed': passed, 'case_count': len(cases), 'cases': cases}, indent=2))
+print(json.dumps({
+    'passed': passed,
+    'case_count': len(cases),
+    'legacy_filename_note': 'This historical eval filename is retained for compatibility; its contract now enforces the profile_creator local-pack boundary.',
+    'owner': 'PROFILE_CREATOR',
+    'transversal_pack_owner': 'PACK_VALIDATION',
+    'cases': cases,
+}, indent=2))
 raise SystemExit(0 if passed else 1)
