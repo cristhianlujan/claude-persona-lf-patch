@@ -285,8 +285,9 @@ def main() -> None:
     require(text, "github.event.pull_request.head.sha", "FAIL_EXACT_PR_HEAD_CHECKOUT_MISSING")
     require(text, "if: needs.dedupe-router.outputs.run_deep == 'true'", "FAIL_DEEP_JOB_GUARD_CHANGED")
 
-    # P4: deterministic non-pass diagnostics must enter the existing productive
-    # ledger/PRE_EKB route only after the artifact is durable.
+    # P4: Contract Check must delegate PRE_EKB persistence to the canonical owner.
+    # The workflow proves durable diagnostics + exact-head context; PRE_EKB internals
+    # are asserted on the extracted consumer, not duplicated in this carrier.
     require(
         text,
         "Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE",
@@ -310,39 +311,58 @@ def main() -> None:
         "steps.deterministic_diagnostics_artifact.outcome == 'success'",
         "FAIL_LF_CONTRACT_PRE_EKB_ARTIFACT_DURABILITY_NOT_REQUIRED",
     )
+    consumer_path = "sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py"
+    require(pre_ekb_block, consumer_path, "FAIL_LF_CONTRACT_PRE_EKB_CANONICAL_CONSUMER_NOT_WIRED")
+    require(pre_ekb_block, "LF_EXACT_SOURCE_SHA", "FAIL_LF_CONTRACT_PRE_EKB_EXACT_HEAD_BINDING_MISSING")
     require(
         pre_ekb_block,
-        "public.lf_pre_ekb_gate_consumer_v1('GITHUB_CONTRACT_GATE_LF')",
+        "--diagnostics-root .lf_gate_diagnostics/lf_contract_check",
+        "FAIL_LF_CONTRACT_PRE_EKB_DIAGNOSTICS_ROOT_MISSING",
+    )
+    for forbidden in (
+        "public.lf_pre_ekb_gate_consumer_v1",
+        "public.fn_lf_operation_reserve_execution_v1",
+        "public.lf_record_gate_checks_v1",
+        "LF_PRE_EKB_GATE_AUTOPERSIST_V1",
+        "public.lf_write_pipeline_ekb_v1",
+        "python3 - <<'PY'",
+    ):
+        if forbidden in pre_ekb_block:
+            raise SystemExit(f"FAIL_LF_CONTRACT_PRE_EKB_INLINE_IMPLEMENTATION_REMAINS:{forbidden}")
+
+    consumer_text = Path(consumer_path).read_text(encoding="utf-8")
+    require(
+        consumer_text,
+        "public.lf_pre_ekb_gate_consumer_v1",
         "FAIL_LF_CONTRACT_PRE_EKB_CONSUMER_READBACK_MISSING",
     )
     require(
-        pre_ekb_block,
+        consumer_text,
+        "OPERATION_CODE = \"GITHUB_CONTRACT_GATE_LF\"",
+        "FAIL_LF_CONTRACT_PRE_EKB_OPERATION_BINDING_MISSING",
+    )
+    require(
+        consumer_text,
         "public.fn_lf_operation_reserve_execution_v1",
         "FAIL_LF_CONTRACT_PRE_EKB_PARENT_EXECUTION_NOT_RESERVED",
     )
     require(
-        pre_ekb_block,
+        consumer_text,
         "public.lf_record_gate_checks_v1",
         "FAIL_LF_CONTRACT_PRE_EKB_PRODUCTIVE_INGRESS_MISSING",
     )
-    require(pre_ekb_block, "'contract_judge'", "FAIL_LF_CONTRACT_PRE_EKB_CANONICAL_STEP_MISSING")
-    require(pre_ekb_block, "EKB_PERSISTED", "FAIL_LF_CONTRACT_PRE_EKB_RECEIPT_READBACK_MISSING")
+    require(consumer_text, "contract_judge", "FAIL_LF_CONTRACT_PRE_EKB_CANONICAL_STEP_MISSING")
+    require(consumer_text, "EKB_PERSISTED", "FAIL_LF_CONTRACT_PRE_EKB_RECEIPT_READBACK_MISSING")
     require(
-        pre_ekb_block,
+        consumer_text,
         "BLOCKED_EKB_PERSISTENCE",
         "FAIL_LF_CONTRACT_PRE_EKB_BLOCKED_PERSISTENCE_GUARD_MISSING",
     )
-    require(pre_ekb_block, "ACT-0057", "FAIL_LF_CONTRACT_PRE_EKB_CHILD_SKILL_READBACK_MISSING")
-    require(
-        pre_ekb_block,
-        "LF_EXACT_SOURCE_SHA",
-        "FAIL_LF_CONTRACT_PRE_EKB_EXACT_HEAD_BINDING_MISSING",
-    )
-    if "persist_gate_failures_to_ekb_v1.py" in pre_ekb_block:
+    require(consumer_text, "ACT-0057", "FAIL_LF_CONTRACT_PRE_EKB_CHILD_SKILL_READBACK_MISSING")
+    if "persist_gate_failures_to_ekb_v1.py" in consumer_text:
         raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_EMIT_ONLY_ADAPTER_USED_PRODUCTIVELY")
-    if "public.lf_write_pipeline_ekb_v1" in pre_ekb_block:
+    if "public.lf_write_pipeline_ekb_v1(" in consumer_text:
         raise SystemExit("FAIL_LF_CONTRACT_PRE_EKB_DIRECT_WRITER_BYPASS")
-
     pre_ekb_sql = LF_CONTRACT_PRE_EKB_MIGRATION.read_text(encoding="utf-8")
     require(
         pre_ekb_sql,

@@ -1,0 +1,28 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1",
+  "issued_by": "operation_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-CONTRACT-CHECK-PRE-EKB-CUTOVER-PR1115-20260926-002",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "contract_judge",
+  "contract_sha": "b10ccc8527bc2499775559635fb59736744e46f3ca5e150cf4644cd4c491d7e8",
+  "judge_sha": "MIGRATION_20260531_GITHUB_GATE_PROTOCOL",
+  "source_sha_list": [
+    "eda78c3fcf248836243daf3da3a7d0c13e6f08ca",
+    "b10ccc8527bc2499775559635fb59736744e46f3ca5e150cf4644cd4c491d7e8",
+    "MIGRATION_20260531_GITHUB_GATE_PROTOCOL"
+  ],
+  "target_paths": [
+    ".github/workflows/lf-contract-check.yml"
+  ],
+  "target_blob_sha_by_path": {
+    ".github/workflows/lf-contract-check.yml": "f0466a8641361147ed9404ca886e2d2249f03d56"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-26T23:10:45Z",
+  "candidate_code_head": "eda78c3fcf248836243daf3da3a7d0c13e6f08ca",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "MERGE_AUTHORIZATION_REQUIRED"
+}
