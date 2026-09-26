@@ -185,6 +185,15 @@ def main() -> int:
         contract = '''contract_version: "v0.1"\ncontract_id: "LF-GH-GATE-INSTALL-SANDBOX-20260529-001"\nactivo_router: "ACT-0001"\nvista: "public.v_lf_fuente_operativa"\noperation_code: "GITHUB_CONTRACT_GATE_INSTALL_SANDBOX"\nimpacto_productivo: false\nestado_salida_permitido: "GATE_INSTALL_SANDBOX_TESTED"\n'''
         write(repo / "sandbox/lf_contract_gate_test/lf_contract.yml", contract)
         write(repo / "sandbox/lf_contract_gate_test/preexisting.txt", "base\n")
+        support_files = [
+            "services/profile_runtime_api/profile_runtime_api/engine.py",
+            "profiles/systemic_root_cause_repair_lf/validators/incremental_value.py",
+            "supabase/migrations/20260922215336_lf_profile_baseline_digest_parity_guard_v1.sql",
+        ]
+        for relative in support_files:
+            destination = repo / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source / relative, destination)
         checked(["git", "add", "-A"], repo)
         checked(["git", "commit", "-m", "base"], repo)
         base = checked(["git", "rev-parse", "HEAD"], repo)
@@ -197,6 +206,7 @@ def main() -> int:
             "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
             "scripts/lf_contract_check.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py",
+            "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_execution_research_baseline_digest_parity.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/run_lf_adapter_binding_tests.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py",
             "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py",

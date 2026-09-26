@@ -18,7 +18,7 @@ Cuando aplica, el perfil declara en su asset un contrato PROFILE_RESEARCH_BASELI
 
 El asset puede declarar snapshot_binding_paths para campos internos del snapshot que no deben ser inventados por el modelo. Las fuentes permitidas son input_digest, profile_source_digest, evidence_refs y capture_stage; cada una apunta a una ruta JSON arbitraria del snapshot. El runtime elimina esas hojas del schema de generación, las inyecta determinísticamente antes de validar/hash y el servidor vuelve a comprobarlas antes de persistir.
 
-El productor entrega un envelope genérico con snapshot opaco, baseline_digest, capture_stage, input_digest, profile_source_digest y evidence_refs. El servidor valida identidad/orden temporal, bloquea evidencia externa antes del freeze y persiste un server_snapshot_fingerprint independiente. Ese fingerprint no sustituye el digest canónico del perfil.
+El productor entrega un envelope genérico con snapshot opaco, baseline_digest, capture_stage, input_digest, profile_source_digest y evidence_refs. El servidor valida identidad/orden temporal, bloquea evidencia externa antes del freeze y verifica el baseline_digest con la primitiva transversal private.fn_payload_sha256_v7 antes de persistir. También conserva un server_snapshot_fingerprint independiente basado en jsonb::text para readback; ese fingerprint no sustituye el digest canónico.
 
 El step limpio queda en public.lf_operation_execution_steps; el recorder canónico impide reemplazarlo con evidencia distinta. En execute_profile, el server usa las rutas declarativas del asset para extraer snapshot/digest del output y compararlos con lo congelado. La corrección del digest canónico sigue siendo responsabilidad del output validator enlazado del perfil.
 
