@@ -134,7 +134,6 @@ ALLOWED_GITHUB_EXACT = {
     ".github/workflows/input-governance-pr418-holdout-replay.yml",
     ".github/workflows/validate-lf-packs.yml",
     ".github/workflows/lf-material-currentness.yml",
-    ".github/workflows/visual-evidence-gate.yml",
     PROFILE_CREATOR_CALLER_WORKFLOW_PATH,
 }
 OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {

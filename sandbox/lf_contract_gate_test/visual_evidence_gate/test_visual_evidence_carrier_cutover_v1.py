@@ -87,9 +87,12 @@ def test_workflow_self_change_routes_to_visual_carrier() -> None:
     assert got["carrier_controls"][CONTROL_ID] == [CONTROL_ID]
 
 
-def test_exact_path_admission_keeps_github_default_denied() -> None:
-    assert WORKFLOW_REL in VALIDATOR.ALLOWED_GITHUB_EXACT
-    assert VALIDATOR.is_allowed_path(WORKFLOW_REL)
+def test_visual_cutover_does_not_self_authorize_github_path() -> None:
+    # Path admission is a Changeset Governance responsibility. The visual
+    # carrier must not mutate Contract Check's exact workflow allowlist merely
+    # to authorize itself.
+    assert WORKFLOW_REL not in VALIDATOR.ALLOWED_GITHUB_EXACT
+    assert not VALIDATOR.is_allowed_path(WORKFLOW_REL)
     assert ".github/" not in VALIDATOR.ALLOWED_PREFIXES
     for lookalike in (
         WORKFLOW_REL + ".bak",
@@ -128,7 +131,7 @@ def main() -> None:
         test_visual_change_routes_only_to_visual_carrier,
         test_nonvisual_change_does_not_route_to_visual_carrier,
         test_workflow_self_change_routes_to_visual_carrier,
-        test_exact_path_admission_keeps_github_default_denied,
+        test_visual_cutover_does_not_self_authorize_github_path,
         test_dedicated_workflow_consumes_unified_plan_and_owner,
         test_contract_check_no_longer_owns_visual_control_in_plan,
     ]
