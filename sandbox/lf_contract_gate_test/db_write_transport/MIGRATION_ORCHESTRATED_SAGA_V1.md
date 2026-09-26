@@ -4,9 +4,13 @@
 
 Gobernar secuencialmente la transición de una migration ya persistida en Git hacia apply exacto en Supabase y cierre verificado, sin crear un segundo writer ni otra autoridad.
 
-## Dependencia obligatoria
+## Dependencias obligatorias
 
-`MIGRATION_WRITE_AHEAD_V1` debe haber producido source durable + readback exacto. Sin esa evidencia la saga bloquea.
+1. `MIGRATION_WRITE_AHEAD_V1` debe haber producido source durable + readback exacto.
+2. `DB_WRITE_TRANSPORT` conserva la autoridad de transporte material del apply.
+3. `MIGRATION_SOURCE_PARITY` debe producir evidencia canónica PASS antes de que la Saga pueda cerrar `CONSISTENT`.
+
+La dependencia de `MIGRATION_SOURCE_PARITY` es de evidencia funcional; Saga no invoca ni depende de `lf-contract-check`, S30, E.16 ni de ningún carrier CI.
 
 ## Secuencia
 
@@ -57,12 +61,16 @@ El state gate es puro y determinista: revaluar el mismo snapshot produce el mism
 - State gate: `lf_migration_orchestrated_saga.py`.
 - Tests: `test_lf_migration_orchestrated_saga.py`.
 - Autoridad material: Router `ACT-0001` + `ACTUALIZACION_DB_LF` + `DB_WRITE_TRANSPORT`.
-- Verificador canónico downstream: `MIGRATION_SOURCE_PARITY`.
+- Dependencia de validación: `MIGRATION_SOURCE_PARITY`.
 - Contrato de evidencia reutilizado: `LF_GATE_ERROR_V1` / `LF_GATE_CHECK_OBSERVABILITY_V1`.
 
-## Relaciones
+## Relaciones canónicas
 
-`DB_WRITE_TRANSPORT -> MIGRATION_WRITE_AHEAD_V1 -> MIGRATION_ORCHESTRATED_SAGA_V1 -> MIGRATION_SOURCE_RECONCILIATION_V1`.
+- `DEPENDE_DE -> DB_WRITE_TRANSPORT`.
+- `DEPENDE_DE -> MIGRATION_WRITE_AHEAD_V1`.
+- `DEPENDE_DE -> MIGRATION_SOURCE_PARITY`.
+- `GOBERNADO_POR -> ACT-0001`.
+- `MIGRATION_SOURCE_RECONCILIATION_V1` es una capacidad posterior y condicional ante un finding reparable; Saga no la invoca.
 
 ## Límites
 
