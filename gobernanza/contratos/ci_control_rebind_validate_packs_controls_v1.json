@@ -1,0 +1,82 @@
+{
+  "schema_version": "lf-ci-control-rebind-validate-packs/v1",
+  "durable_name": "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS",
+  "source_carrier": "VALIDATE_LF_PACKS",
+  "source_workflow": ".github/workflows/validate-lf-packs.yml",
+  "pack_validation_core": ".github/workflows/lf-pack-validation-core.yml",
+  "owner": "PACK_VALIDATION",
+  "purpose": "Move only pack-owned deterministic validation behind PACK_VALIDATION while preserving every foreign control on its current carrier until its destination owner and wiring are independently proven.",
+  "pack_owned_controls": {
+    "PROFILE_PACK": {
+      "target_owner": "PACK_VALIDATION",
+      "target_execution": "PACK_VALIDATION_CLEAN_WORKFLOW",
+      "pack_type": "PROFILE_PACK",
+      "rebind_allowed": true
+    },
+    "SKILL_PACK": {
+      "target_owner": "PACK_VALIDATION",
+      "target_execution": "PACK_VALIDATION_CLEAN_WORKFLOW",
+      "pack_type": "SKILL_PACK",
+      "rebind_allowed": true
+    },
+    "LEARNING_ENGINE_PACK": {
+      "target_owner": "PACK_VALIDATION",
+      "target_execution": "PACK_VALIDATION_CLEAN_WORKFLOW",
+      "pack_type": "SKILL_PACK",
+      "reason": "skills/learning_engine is a governed skill pack with its own validators/validate_pack.py entrypoint",
+      "rebind_allowed": true
+    }
+  },
+  "foreign_controls_retained": {
+    "PROFILE_RUNTIME_V3": {
+      "domain_owner": "PROFILE_RUNTIME",
+      "destination_wiring": "NOT_PROVEN_IN_THIS_CHANGE",
+      "remove_from_source_carrier": false
+    },
+    "GATE_CHECK_OBSERVABILITY": {
+      "domain_owner": "GATE_CHECK_OBSERVABILITY",
+      "destination_wiring": "NOT_PROVEN_IN_THIS_CHANGE",
+      "remove_from_source_carrier": false
+    },
+    "S30_BOUNDED_REGRESSION": {
+      "domain_owner": "UNRESOLVED_EXACT_S30_OWNER",
+      "destination_wiring": "NOT_PROVEN_IN_THIS_CHANGE",
+      "remove_from_source_carrier": false
+    },
+    "TRANSVERSAL_README": {
+      "domain_owner": "TRANSVERSAL_README",
+      "destination_wiring": "NOT_PROVEN_IN_THIS_CHANGE",
+      "remove_from_source_carrier": false
+    }
+  },
+  "inline_foreign_surfaces_retained": {
+    "S30_SELF_GOVERNANCE_AND_PROTECTED_WRITE_BROKER": {
+      "reason": "workflow_dispatch control plane and protected Git write are not pack validation",
+      "destination_wiring": "NOT_PROVEN_IN_THIS_CHANGE",
+      "remove_from_source_workflow": false
+    },
+    "WORK_PROTOCOL_V1_DEPRECATION_TOMBSTONE": {
+      "reason": "retirement/deprecation regression is not pack validation",
+      "destination_wiring": "NOT_PROVEN_IN_THIS_CHANGE",
+      "remove_from_source_workflow": false
+    }
+  },
+  "cutover_invariants": [
+    "PACK_VALIDATION_CORE_HAS_WORKFLOW_CALL_ONLY",
+    "PACK_VALIDATION_CORE_CONSUMES_ALREADY_AUTHORIZED_BASE_HEAD_CHANGED_PATHS",
+    "PACK_VALIDATION_CORE_DOES_NOT_RESOLVE_FOREIGN_APPLICABILITY",
+    "PACK_OWNED_CONTROLS_USE_GENERIC_DISCOVERY_AND_PACK_LOCAL_VALIDATORS",
+    "FOREIGN_CONTROLS_REMAIN_EXECUTABLE_ON_SOURCE_CARRIER_UNTIL_DESTINATION_WIRING_IS_PROVEN",
+    "NO_SECOND_PACK_VALIDATION_ENGINE",
+    "NO_GIT_WRITE_DB_WRITE_RUNTIME_DEPLOYMENT_OR_PRODUCTION_AUTHORIZATION"
+  ],
+  "forbidden_removals_until_proven_destination": [
+    "PROFILE_RUNTIME_V3",
+    "GATE_CHECK_OBSERVABILITY",
+    "S30_BOUNDED_REGRESSION",
+    "TRANSVERSAL_README",
+    "S30_SELF_GOVERNANCE_AND_PROTECTED_WRITE_BROKER",
+    "WORK_PROTOCOL_V1_DEPRECATION_TOMBSTONE"
+  ],
+  "next_handoff": "PACK_VALIDATION_VERIFY_E2E_FLOW"
+}
