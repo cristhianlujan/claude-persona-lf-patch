@@ -54,3 +54,5 @@ lf_contract:
     estado_salida_permitido: "GATE_INSTALL_SANDBOX_TESTED"
     no_validated: true
     no_production: true
+
+# Step 6B live-fire fixture only; branch must never be merged.
