@@ -77,7 +77,7 @@ Relaciones canónicas:
 
 ## Validación y readback
 
-- Core: `sandbox/lf_contract_gate_test/migration_source_parity/test_migration_source_parity_core.py`.
+- Core: `sandbox/lf_contract_gate_test/s30_migration_source_parity/test_migration_source_parity_core.py`.
 - Adapter/compatibilidad: tests existentes de `lf_migration_source_parity.py` y transporte.
 - Cambios de contrato deben revalidar Saga y Reconciliation como consumidores.
 - El readback final debe comprobar tanto source revision como metadata vigente de `public.lf_activos`.
