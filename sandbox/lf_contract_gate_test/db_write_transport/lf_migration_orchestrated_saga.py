@@ -9,6 +9,7 @@ write-ahead -> exact DB apply -> ledger readback -> parity verification.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from dataclasses import asdict, dataclass
@@ -17,6 +18,11 @@ from typing import Any
 
 SCHEMA_VERSION = "lf-migration-orchestrated-saga/v1"
 OPERATION_CODE = "ACTUALIZACION_DB_LF"
+PARITY_EVIDENCE_CONTRACT = "LF_GATE_ERROR_V1"
+PARITY_EVIDENCE_PRODUCER = "LF_GATE_CHECK_OBSERVABILITY_V1"
+PARITY_GATE_SUFFIX = "::MIGRATION_SOURCE_PARITY"
+PARITY_STEP_ID = "migration_source_parity"
+PARITY_SOURCE_PATH = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 FILENAME_RE = re.compile(r"^(?P<version>\d{14})_(?P<name>[A-Za-z0-9][A-Za-z0-9_]*)\.sql$")
 SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA64_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -55,6 +61,64 @@ def _obj(payload: dict[str, Any], key: str) -> dict[str, Any]:
     return value
 
 
+def _canonical_json(value: object) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _evidence_digest(report: dict[str, Any]) -> str:
+    payload = dict(report)
+    payload.pop("manifest_sha256", None)
+    return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+def _validate_parity_evidence(parity: dict[str, Any], *, git_head: str) -> bool:
+    evidence = parity.get("evidence")
+    if not isinstance(evidence, dict):
+        raise ValueError("MIGRATION_SAGA_PARITY_CANONICAL_EVIDENCE_REQUIRED")
+    if evidence.get("contract") != PARITY_EVIDENCE_CONTRACT:
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_CONTRACT_INVALID")
+    if evidence.get("producer") != PARITY_EVIDENCE_PRODUCER:
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_PRODUCER_INVALID")
+    gate_id = str(evidence.get("gate_id") or "")
+    if not gate_id.endswith(PARITY_GATE_SUFFIX):
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_GATE_INVALID")
+    if evidence.get("step_id") != PARITY_STEP_ID:
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_STEP_INVALID")
+    if evidence.get("gate_result") != "PASS":
+        return False
+    if evidence.get("diagnostic_complete") is not True:
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_INCOMPLETE")
+    observed_digest = str(evidence.get("manifest_sha256") or "").lower()
+    if SHA64_RE.fullmatch(observed_digest) is None or observed_digest != _evidence_digest(evidence):
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_DIGEST_MISMATCH")
+    source_commit = str(evidence.get("source_commit") or "").lower()
+    tested_commit = str(evidence.get("tested_commit") or "").lower()
+    if source_commit != git_head or tested_commit != git_head:
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_HEAD_MISMATCH")
+    if evidence.get("source_path") != [PARITY_SOURCE_PATH]:
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_SOURCE_INVALID")
+    impacts = evidence.get("downstream_impact")
+    if not isinstance(impacts, list) or "MIGRATION_SOURCE_PARITY" not in impacts:
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_IMPACT_INVALID")
+    if evidence.get("expected_check_count") != 1 or evidence.get("executed_check_count") != 1:
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_CHECK_COUNT_INVALID")
+    if evidence.get("pass_count") != 1 or evidence.get("fail_count") != 0 or evidence.get("blocked_count") != 0:
+        return False
+    checks = evidence.get("checks")
+    if not isinstance(checks, list) or len(checks) != 1 or not isinstance(checks[0], dict):
+        raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_CHECK_INVALID")
+    check = checks[0]
+    if check.get("check_status") != "PASS" or check.get("exit_code") != 0 or check.get("rc") != 0:
+        return False
+    if check.get("producer") != PARITY_EVIDENCE_PRODUCER:
+        raise ValueError("MIGRATION_SAGA_PARITY_CHECK_PRODUCER_INVALID")
+    if check.get("source_path") != PARITY_SOURCE_PATH:
+        raise ValueError("MIGRATION_SAGA_PARITY_CHECK_SOURCE_INVALID")
+    if str(check.get("source_commit") or "").lower() != git_head or str(check.get("tested_commit") or "").lower() != git_head:
+        raise ValueError("MIGRATION_SAGA_PARITY_CHECK_HEAD_MISMATCH")
+    return True
+
+
 def evaluate(payload: dict[str, Any]) -> Verdict:
     if not isinstance(payload, dict):
         raise ValueError("MIGRATION_SAGA_PAYLOAD_OBJECT_REQUIRED")
@@ -82,7 +146,8 @@ def evaluate(payload: dict[str, Any]) -> Verdict:
     git = _obj(payload, "git")
     if git.get("path") != path or git.get("source_sha256") != source_sha256:
         raise ValueError("MIGRATION_SAGA_GIT_IDENTITY_MISMATCH")
-    if SHA40_RE.fullmatch(str(git.get("head_sha") or "").lower()) is None:
+    git_head = str(git.get("head_sha") or "").lower()
+    if SHA40_RE.fullmatch(git_head) is None:
         raise ValueError("MIGRATION_SAGA_GIT_HEAD_INVALID")
     if SHA40_RE.fullmatch(str(git.get("blob_sha1") or "").lower()) is None:
         raise ValueError("MIGRATION_SAGA_GIT_BLOB_INVALID")
@@ -107,6 +172,9 @@ def evaluate(payload: dict[str, Any]) -> Verdict:
     if parity.get("migration_version") != version or parity.get("migration_name") != name:
         raise ValueError("MIGRATION_SAGA_PARITY_IDENTITY_MISMATCH")
     if parity.get("status") != "PASS":
+        return Verdict(SCHEMA_VERSION, "BLOCKED", "BLOCK_DUAL_SURFACE_PARITY_NOT_PASS",
+                       execution_id, effect_scope, path, version, name, False, False)
+    if not _validate_parity_evidence(parity, git_head=git_head):
         return Verdict(SCHEMA_VERSION, "BLOCKED", "BLOCK_DUAL_SURFACE_PARITY_NOT_PASS",
                        execution_id, effect_scope, path, version, name, False, False)
 
