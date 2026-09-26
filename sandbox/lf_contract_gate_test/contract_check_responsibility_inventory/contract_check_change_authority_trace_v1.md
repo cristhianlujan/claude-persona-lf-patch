@@ -64,7 +64,36 @@ But its validation is implemented inside `scripts/lf_contract_check.py` (`valida
 
 Therefore candidate receipts improve evidence integrity but do **not** independently authorize a change to Contract Check.
 
-## 4. Actual authority chain
+## 4. Existing governed repository-write mechanisms
+
+The repository already contains a separate governed write mechanism that must not be overlooked:
+
+- PR #657 merged the operational `S30_GIT_WRITE_BROKER_V2` path;
+- it validates exact main/base, source ancestry, bounded allowed paths and performs post-push remote SHA readback;
+- it uses the active `s30-governed-write-boundary` ruleset and a governed DeployKey;
+- its protected target namespace is explicitly limited to `lf/s30-*`.
+
+This is useful because it proves LF already has a pattern for **externalized repository mutation transport** that does not rely on ordinary direct connector writes.
+
+However, it does **not** currently solve Contract Check self-authorization:
+
+1. its ruleset does not apply to `main`;
+2. its broker contract limits targets to the S30 protected namespace;
+3. PR #657 explicitly retained `main` under the required `lf-contract-check` status;
+4. its purpose is governed branch write transport, not final merge admission to `main`.
+
+There is also an unmerged candidate, PR #785 `REPOSITORY_CHANGE_LF`, that defines a generic repository-change request/receipt boundary with exact expected HEAD, allowed/requested paths, immutable request hash, governed provider binding and post-write readback.
+
+That candidate is relevant as reusable design material, but it is **not current authority**:
+
+- PR #785 remains open/unmerged;
+- its contract explicitly requires `target_branch` not to be `main`/`master`;
+- its receipt has `merge_authorized=false`;
+- merge authority is deliberately owned elsewhere.
+
+Therefore the broker and repository-change candidate reduce the amount of new design needed, but neither currently inserts an independent required merge authority between a Contract Check self-change and `main`.
+
+## 5. Actual authority chain
 
 ```text
 PR changes lf-contract-check
@@ -94,7 +123,19 @@ status: lf-contract-check
 protect-main permits merge
 ```
 
-## 5. Verdict
+Parallel existing write machinery:
+
+```text
+S30_GIT_WRITE_BROKER_V2
+        |
+        +--> exact base/source + bounded paths + post-write readback
+        |
+        +--> target only: lf/s30-*
+        |
+        `--> does not authorize main merge
+```
+
+## 6. Verdict
 
 ### What already exists and should be reused
 
@@ -102,7 +143,9 @@ protect-main permits merge
 - exact candidate checkout/binding;
 - self-change/full-regression behavior;
 - candidate receipt exact-head/blob evidence;
-- currentness checks.
+- currentness checks;
+- governed repository-write transport pattern from `S30_GIT_WRITE_BROKER_V2`;
+- request/receipt boundary ideas from the unmerged `REPOSITORY_CHANGE_LF` candidate, only where independently revalidated.
 
 ### What is still missing
 
@@ -119,15 +162,21 @@ protect-main
 
 This means the existing work reduced risk and improved evidence, but it did **not** fully break self-authorization.
 
-## 6. Minimal next design question
+## 7. Minimal next design question
 
-Do **not** create another mega-control.
+Do **not** create another mega-control and do **not** recreate the existing governed-write transport.
 
 The next design step should answer only this question:
 
-> What minimal independent mechanism can validate the exact candidate SHA + authorized diff/scope for changes to `lf-contract-check`, and produce/anchor merge authority without depending on the candidate Contract Check implementation?
+> What is the smallest independent merge-admission mechanism for Contract Check self-change that can reuse the existing exact-head/currentness/receipt/write-governance primitives while validating exact candidate SHA + authorized diff/scope without executing the candidate Contract Check implementation?
 
-Any proposed mechanism must reuse the existing exact-head, receipt and self-change assets where possible and must not become a second general pass orchestrator.
+The important distinction is now explicit:
+
+```text
+repository write transport != main merge authority
+```
+
+Any proposal that merely routes the candidate through `S30_GIT_WRITE_BROKER_V2` still leaves `protect-main -> lf-contract-check` unchanged and therefore does not close the circularity.
 
 ## Non-scope
 
