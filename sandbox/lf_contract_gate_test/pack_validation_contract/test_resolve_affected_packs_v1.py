@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MODULE = ROOT / "scripts/pack_validation/resolve_affected_packs_v1.py"
+MODULE = ROOT / "sandbox/lf_contract_gate_test/pack_validation_contract/resolve_affected_packs_v1.py"
 VALIDATION = ROOT / "gobernanza/contratos/pack_validation_define_contract_v1.json"
 DISCOVERY = ROOT / "gobernanza/contratos/pack_discovery_resolve_affected_packs_v1.json"
 
