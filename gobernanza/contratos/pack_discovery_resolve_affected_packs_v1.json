@@ -1,0 +1,60 @@
+{
+  "schema_version": "lf-pack-discovery-contract/v1",
+  "durable_name": "PACK_DISCOVERY_RESOLVE_AFFECTED_PACKS",
+  "owner": "PACK_VALIDATION",
+  "depends_on": "PACK_VALIDATION_DEFINE_CONTRACT",
+  "purpose": "Resolve concrete governed packs affected by an already-authorized changed-path set without re-deciding CI control applicability and without executing pack validators.",
+  "input_contract": {
+    "required": ["base_sha", "head_sha", "changed_paths"],
+    "changed_paths_authority": "UPSTREAM_CHANGESET_GOVERNANCE_OR_EQUIVALENT_CANONICAL_CALLER",
+    "must_not_recompute_ci_run_skip": true
+  },
+  "rules": [
+    {
+      "rule_id": "PROFILE_DIRECT_CHILD",
+      "trigger_prefix": "profiles/",
+      "pack_type": "PROFILE_PACK",
+      "mode": "DIRECT_CHILD",
+      "target_root": "profiles/"
+    },
+    {
+      "rule_id": "PROFILE_CREATOR_FANOUT",
+      "trigger_prefix": "skills/profile_creator/",
+      "pack_type": "PROFILE_PACK",
+      "mode": "ENUMERATE_CHILDREN",
+      "target_root": "profiles/"
+    },
+    {
+      "rule_id": "SKILL_DIRECT_CHILD",
+      "trigger_prefix": "skills/",
+      "pack_type": "SKILL_PACK",
+      "mode": "DIRECT_CHILD",
+      "target_root": "skills/"
+    }
+  ],
+  "resolution_invariants": [
+    "Use repository-relative POSIX paths only; absolute, traversal, dot-segment, empty-segment and backslash paths fail closed.",
+    "DIRECT_CHILD resolves the first child below target_root and does not require the pack to still exist at head, so governed deletions remain visible.",
+    "ENUMERATE_CHILDREN discovers child directories dynamically from target_root; no pack slug allowlist is permitted.",
+    "Enumeration ignores hidden/underscore-prefixed children and symlinked directories but does not pre-judge pack structure; missing structure belongs to PACK_VALIDATION_EXECUTE_PACK_CHECKS.",
+    "Overlapping rules may legitimately resolve more than one affected pack class; deduplicate only identical pack_type plus pack_root identities.",
+    "A root-level file directly under profiles/ or skills/ is not invented into a pack.",
+    "No validator is executed by discovery.",
+    "No runtime, Git write, DB write, assurance, observability, EKB persistence, lifecycle, deployment or production authorization is emitted."
+  ],
+  "output_contract": {
+    "status_enum": ["PASS", "FAIL", "SKIP"],
+    "required_fields": ["status", "base_sha", "head_sha", "changed_paths", "affected_packs", "blocking_codes"],
+    "affected_pack_fields": ["pack_type", "pack_root", "trigger_rules", "trigger_paths", "exists_at_head"],
+    "stable_order": ["pack_type", "pack_root"],
+    "authorization_fields": {
+      "validators_executed": false,
+      "runtime_authorized": false,
+      "git_write_authorized": false,
+      "db_write_authorized": false,
+      "deployment_authorized": false,
+      "production_authorized": false
+    }
+  },
+  "handoff": "PACK_VALIDATION_EXECUTE_PACK_CHECKS"
+}
