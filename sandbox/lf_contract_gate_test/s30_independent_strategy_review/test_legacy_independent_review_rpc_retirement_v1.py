@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MIGRATION = ROOT / "supabase/migrations/20260926162500_retire_legacy_independent_strategy_review_rpc_v1.sql"
+MIGRATION = ROOT / "supabase/migrations/20260926162500_lf_retire_legacy_independent_strategy_review_rpc_v1.sql"
 
 
 def main() -> None:
