@@ -1,0 +1,26 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-self-change-livefire",
+  "issued_by": "operation_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-SELF-CHANGE-LIVEFIRE-NONEXISTENT-PR1099",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "contract_judge",
+  "contract_sha": "LIVEFIRE_CONTRACT_CHECK_SELF_CHANGE_V1",
+  "judge_sha": "LIVEFIRE_CONTRACT_CHECK_SELF_CHANGE_JUDGE_V1",
+  "source_sha_list": [
+    "69e0c9cae41d58d33e74435069485f2642a9b9e3"
+  ],
+  "target_paths": [
+    "sandbox/lf_contract_gate_test/lf_contract.yml"
+  ],
+  "target_blob_sha_by_path": {
+    "sandbox/lf_contract_gate_test/lf_contract.yml": "b018ff740e3431024f7adbe1dd4a68c7fcb9f458"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-26T16:35:05Z",
+  "candidate_code_head": "69e0c9cae41d58d33e74435069485f2642a9b9e3",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "LIVEFIRE_EXPECT_BLOCK_EXECUTION_NOT_FOUND"
+}
