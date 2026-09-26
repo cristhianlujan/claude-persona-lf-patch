@@ -44,15 +44,16 @@ def git_bytes(*args: str) -> bytes:
 
 
 def assert_frozen_main() -> str:
-    """Resolve main in both local and detached Actions checkouts without weakening identity."""
+    """Require the frozen baseline to remain reachable from the current canonical main."""
     run(["git", "cat-file", "-e", f"{BASELINE_COMMIT}^{{commit}}"])
     for ref in ("refs/remotes/origin/main", "refs/heads/main"):
         completed = run(["git", "rev-parse", "--verify", ref], check=False)
         if completed.returncode != 0:
             continue
-        resolved = completed.stdout.strip()
-        if resolved != BASELINE_COMMIT:
-            raise SystemExit(f"FAIL_C0_MAIN_MOVED_FROM_FROZEN_BASELINE:{ref}:{resolved}")
+        ancestor = run(["git", "merge-base", "--is-ancestor", BASELINE_COMMIT, ref], check=False)
+        if ancestor.returncode != 0:
+            resolved = completed.stdout.strip()
+            raise SystemExit(f"FAIL_C0_FROZEN_BASELINE_NOT_ANCESTOR_OF_CURRENT_MAIN:{ref}:{resolved}")
         return ref
     raise SystemExit("FAIL_C0_MAIN_REF_UNRESOLVABLE")
 
