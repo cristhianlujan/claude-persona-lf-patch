@@ -23,7 +23,7 @@ Identidad mínima obligatoria:
 
 El transporte de persistencia es `lf_migration_git_persist.py`. No toca Supabase, no hace merge y no concede autoridad.
 
-La orquestación Git → Supabase → verificación y la reconciliación automática son soluciones dependientes separadas y no forman parte de este PR.
+La orquestación Git → Supabase → verificación y la reconciliación son soluciones dependientes separadas y no forman parte de WRITE_AHEAD.
 
 ## Regla de selección
 
@@ -36,27 +36,20 @@ La orquestación Git → Supabase → verificación y la reconciliación automá
 
 Para `MIGRATION`, el filename `YYYYMMDDHHMMSS_name.sql` es la identidad canónica. La versión registrada en `supabase_migrations.schema_migrations.version` debe ser exactamente ese prefijo de 14 dígitos.
 
-## Preflight obligatorio
+## Preflight del pedido de migration
 
-Antes de cualquier write:
+El pedido superior puede exigir Router, EKB, identidad exacta, parity, rollback/fail-forward y otros controles. Esas capacidades no se convierten por ello en llamadas internas de WRITE_AHEAD.
 
-1. Resolver Router: `MIGRATION + UPDATE -> ACTUALIZACION_DB_LF`.
-2. Leer EKB aplicable.
-3. Fijar `target_path`, `version`, `name`, source revision y source SHA exactos.
-4. Ejecutar migration source parity precheck.
-5. Definir rollback o fail-forward plan.
-6. Persistir/readback Git antes de apply.
-7. No continuar si existe remote-only drift no clasificado, source ambiguity, checksum mismatch o identidad no resuelta.
+La responsabilidad propia de WRITE_AHEAD empieza al recibir una identidad gobernada y termina cuando la fuente exacta queda persistida y releída desde Git.
 
 ## Dependencias y activos relacionados
 
-- Router: `ACT-0001`.
-- Operación consumidora: `ACTUALIZACION_DB_LF`.
-- Capacidad padre: `DB_WRITE_TRANSPORT`.
-- Gate de validación existente: `MIGRATION_SOURCE_PARITY`.
+- `DEPENDE_DE -> DB_WRITE_TRANSPORT`.
+- `GOBERNADO_POR -> ACT-0001`.
+- `RELACIONADO_CAPACIDADES -> MIGRATION_SOURCE_PARITY` como control del pedido, no como llamada interna.
 - Persistencia write-ahead: `sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py`.
 - EKB principal: `CI-MIGRATION-SOURCE-PARITY-001`.
 
 ## Límites
 
-`DB_WRITE_TRANSPORT` no autoriza producción, merge, runtime activation ni bypass de parity. Toda autoridad permanece en Router, contratos/policies activos y la operación gobernada que lo consume.
+WRITE_AHEAD no llama S30, E.16, workflows CI ni `MIGRATION_SOURCE_PARITY`. `DB_WRITE_TRANSPORT` no autoriza producción, merge, runtime activation ni bypass de parity. Toda autoridad permanece en Router, contratos/policies activos y la operación gobernada que lo consume.
