@@ -20,7 +20,7 @@ Capability canónica que compara un snapshot ya resuelto de fuente Git con el le
 
 - `migration_source_parity_core.py`: invariante puro de parity sobre snapshots ya resueltos.
 - `../migration_transport_normalization.py`: comparador canónico de representación de transporte.
-- `test_migration_source_parity_core.py`: positivos, negativos y prueba de ausencia de acoplamiento CI/process.
+- `../s30_migration_source_parity/test_migration_source_parity_core.py`: positivos, negativos y prueba de ausencia de acoplamiento CI/process dentro del harness S30 ya existente.
 
 ### Adapter de pase existente
 
@@ -86,7 +86,7 @@ PR/change -> CI router -> carrier -> parity adapter -> core
 ## Archivos
 
 - `migration_source_parity_core.py`: core funcional de Parity.
-- `test_migration_source_parity_core.py`: tests del core.
+- `../s30_migration_source_parity/test_migration_source_parity_core.py`: tests del core ejecutados por S30.
 - `MIGRATION_SOURCE_RECONCILIATION_V1.md`: contrato funcional de Reconciliation.
 - `lf_migration_source_parity_repair.py`: coordinador de reparación source-only.
 - `test_lf_migration_source_parity_repair.py`: pruebas de Reconciliation.
