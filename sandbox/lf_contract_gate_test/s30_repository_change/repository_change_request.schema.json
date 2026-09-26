@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lf.local/contracts/repository_change_request.schema.json",
+  "title": "LF Repository Change Request V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_version",
+    "owner_code",
+    "operation_code",
+    "execution_id",
+    "repository_full_name",
+    "target_branch",
+    "expected_head",
+    "allowed_paths",
+    "requested_paths",
+    "request_sha256",
+    "idempotency_key",
+    "transport_provider_ref",
+    "authority_receipt_ref"
+  ],
+  "properties": {
+    "request_version": {"const": "LF_REPOSITORY_CHANGE_REQUEST_V1"},
+    "owner_code": {"type": "string", "minLength": 1, "maxLength": 128},
+    "operation_code": {"type": "string", "pattern": "^[A-Z0-9_]+$"},
+    "execution_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "repository_full_name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "target_branch": {"type": "string", "minLength": 1, "maxLength": 240},
+    "expected_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "allowed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 1024}
+    },
+    "requested_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 1024}
+    },
+    "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 512},
+    "transport_provider_ref": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "authority_receipt_ref": {"type": "string", "minLength": 1, "maxLength": 2048},
+    "change_manifest": {"type": "object"}
+  }
+}

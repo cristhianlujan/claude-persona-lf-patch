@@ -1,0 +1,21 @@
+{
+  "allowed_paths": [
+    "sandbox/lf_contract_gate_test/s30_repository_change/LF_REPOSITORY_CHANGE_CONTRACT_V1.json",
+    "sandbox/lf_contract_gate_test/s30_repository_change/README.md",
+    "sandbox/lf_contract_gate_test/s30_repository_change/S30_PR_SCOPE_LOCK_V1.json",
+    "sandbox/lf_contract_gate_test/s30_repository_change/lf_repository_change_validator_v1.py",
+    "sandbox/lf_contract_gate_test/s30_repository_change/live_repository_change_inventory_20260914.json",
+    "sandbox/lf_contract_gate_test/s30_repository_change/repository_change_receipt.schema.json",
+    "sandbox/lf_contract_gate_test/s30_repository_change/repository_change_request.schema.json",
+    "sandbox/lf_contract_gate_test/s30_repository_change/test_lf_repository_change_validator_v1.py",
+    "sandbox/lf_contract_gate_test/s30_repository_change/test_repository_change_contract_v1.py",
+    "sandbox/lf_contract_gate_test/s30_repository_change/test_s30_pr_scope_lock_v1.py"
+  ],
+  "cross_owner_changes_allowed": false,
+  "head_branch": "s30-repository-change-lf-20260914",
+  "mode": "EXACT_FILE_ALLOWLIST_FAIL_CLOSED",
+  "owner": "S30",
+  "pr_number": null,
+  "scope_anchor_revision": "18784e12ae4e4b8c7c48ae4004011444deb1fbeb",
+  "scope_lock_version": "S30_PR_SCOPE_LOCK_V1"
+}
