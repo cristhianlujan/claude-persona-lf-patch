@@ -1,0 +1,55 @@
+{
+  "baseline_commit": "1f179dfb76741e3c96f921cf64c07533dd082bad",
+  "capability": "LF_CONTRACT_CORE",
+  "contract_behavior": {
+    "negative_each_required_term_removed": {
+      "all_fail_closed": true,
+      "cases": 7,
+      "failure_code": "FAIL_CONTRACT_INVALID"
+    },
+    "negative_missing_contract": {
+      "exit_code": 1,
+      "failure_code": "FAIL_CONTRACT_MISSING"
+    },
+    "positive": {
+      "exit_code": 0,
+      "required_terms_count": 7,
+      "returned_sha256": "40969a55fc1eb86fe72dea56a7d3ba59ba977e176a7103a3fa9e88d67e5c94c6"
+    }
+  },
+  "schema_version": "lf-contract-check-c0-core-baseline/v2",
+  "scope": {
+    "excluded_from_c0_execution": [
+      "router",
+      "applicability_plan",
+      "migration_parity",
+      "validate_lf_packs",
+      "db_regression",
+      "profile_runtime",
+      "p0",
+      "assurance",
+      "supabase_control_plane"
+    ],
+    "executes_only": [
+      "validate_contract"
+    ]
+  },
+  "source_identity": {
+    ".github/workflows/lf-contract-check.yml": {
+      "git_blob": "553dc9bfe21cb6db28b6f6a0f5367adea079461b",
+      "sha256": "768949e84a17d663dcbd26e5efb782cb5e7f00dbf956c3d2eda8b5501090af01"
+    },
+    "sandbox/lf_contract_gate_test/lf_contract.yml": {
+      "git_blob": "55a842e7805c88673762eb2fcadec654b5ba213f",
+      "sha256": "40969a55fc1eb86fe72dea56a7d3ba59ba977e176a7103a3fa9e88d67e5c94c6"
+    },
+    "scripts/lf_contract_check.py": {
+      "git_blob": "5e6a1e9f0e0cd1dc6a92f4d3b4eac1425405b0c9",
+      "sha256": "befa5915e69d7d537e953d4a24d4d1a8c72c1c18b8daef0504845ad595ce2a0f"
+    }
+  },
+  "wiring": {
+    "script_main_first_call": "validate_contract",
+    "workflow_references_validator_path": true
+  }
+}
