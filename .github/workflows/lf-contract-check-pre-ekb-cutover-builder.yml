@@ -6,7 +6,7 @@ on:
       - lf/contract-check-pre-ekb-cutover-v1
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   cutover:
@@ -18,7 +18,7 @@ jobs:
           ref: lf/contract-check-pre-ekb-cutover-v1
           fetch-depth: 0
 
-      - name: Replace inline PRE_EKB implementation
+      - name: Generate bounded PRE_EKB cutover candidate
         shell: bash
         run: |
           set -euo pipefail
@@ -95,23 +95,29 @@ jobs:
           test.write_text('\n'.join(test_lines), encoding='utf-8')
           PY
 
-      - name: Prove cutover
+      - name: Prove generated cutover
         shell: bash
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py --self-test
           python3 sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_consumer_v1.py
           python3 sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_workflow_cutover_v1.py
+          git diff --check -- .github/workflows/lf-contract-check.yml sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_workflow_cutover_v1.py
 
-      - name: Commit bounded result
+      - name: Stage export payload
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add .github/workflows/lf-contract-check.yml sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_workflow_cutover_v1.py
-          git rm .github/workflows/lf-contract-check-pre-ekb-cutover-builder.yml
-          git rm -f .lf_ci/contract_check_pre_ekb_cutover.trigger || true
-          git diff --cached --check
-          git commit -m 'refactor(contract-check): cut over PRE_EKB to canonical consumer'
-          git push origin HEAD:lf/contract-check-pre-ekb-cutover-v1
+          mkdir -p /tmp/pre-ekb-cutover/.github/workflows
+          mkdir -p /tmp/pre-ekb-cutover/sandbox/lf_contract_gate_test/pre_ekb_gate
+          cp .github/workflows/lf-contract-check.yml /tmp/pre-ekb-cutover/.github/workflows/lf-contract-check.yml
+          cp sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_workflow_cutover_v1.py /tmp/pre-ekb-cutover/sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_workflow_cutover_v1.py
+
+      - name: Upload exact cutover payload
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-check-pre-ekb-cutover-payload
+          path: /tmp/pre-ekb-cutover
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7
