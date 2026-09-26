@@ -1,0 +1,69 @@
+name: LF Contract Check Intrinsic Validation Baseline
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - ".github/workflows/lf-contract-check-intrinsic-validation-baseline.yml"
+      - "sandbox/lf_contract_gate_test/contract_check_intrinsic_validation/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract-check-intrinsic-validation-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Demonstrate intrinsic LF contract validation baseline
+        run: |
+          set -euo pipefail
+          python sandbox/lf_contract_gate_test/contract_check_intrinsic_validation/contract_check_intrinsic_validation_baseline_v1.py
+
+      - name: Read back exact intrinsic validation evidence
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          path = Path('.lf_gate_diagnostics/lf_contract_check/intrinsic_validation/contract_check_intrinsic_validation_baseline_v1.json')
+          if not path.is_file():
+              raise SystemExit('FAIL_CONTRACT_BASELINE_EVIDENCE_MISSING')
+          payload = json.loads(path.read_text(encoding='utf-8'))
+          if payload.get('capability') != 'LF_CONTRACT_CORE':
+              raise SystemExit('FAIL_CONTRACT_BASELINE_CAPABILITY_MISMATCH')
+          if payload.get('scope', {}).get('executes_only') != ['validate_contract']:
+              raise SystemExit('FAIL_CONTRACT_BASELINE_SCOPE_NOT_ISOLATED')
+          excluded = set(payload.get('scope', {}).get('excluded_external_execution', []))
+          required_excluded = {
+              'router', 'applicability_plan', 'migration_parity', 'validate_lf_packs',
+              'db_regression', 'profile_runtime', 'p0', 'assurance', 'supabase_control_plane'
+          }
+          if not required_excluded.issubset(excluded):
+              raise SystemExit('FAIL_CONTRACT_BASELINE_EXTERNAL_SCOPE_LEAK')
+          digest = hashlib.sha256(path.read_bytes()).hexdigest()
+          print(f'CONTRACT_INTRINSIC_BASELINE_EXACT_READBACK_SHA256={digest}')
+          print('CONTRACT_INTRINSIC_BASELINE_EXTERNAL_DEPENDENCIES=0')
+          PY
+
+      - name: Persist intrinsic contract validation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-contract-check-intrinsic-validation-${{ github.event.pull_request.head.sha || github.sha }}
+          path: .lf_gate_diagnostics/lf_contract_check/intrinsic_validation/contract_check_intrinsic_validation_baseline_v1.json
+          if-no-files-found: error
+          retention-days: 14
