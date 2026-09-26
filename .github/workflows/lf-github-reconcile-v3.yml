@@ -323,7 +323,7 @@ jobs:
           script: |
             const token = await core.getIDToken('lf-supabase-github-reconcile-v3');
             core.setSecret(token);
-            core.setOutput('token', token)
+            core.setOutput('token', token);
 
       - name: Fetch governed artifact inventory
         if: steps.applicability.outputs.required == 'true'
