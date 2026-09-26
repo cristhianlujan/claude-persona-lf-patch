@@ -15,11 +15,18 @@ if str(TRANSPORT_ROOT) not in sys.path:
 import migration_transport_normalization as transport
 
 TARGET = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/migration_source_parity_core.py"
-SPEC = importlib.util.spec_from_file_location("migration_source_parity_core", TARGET)
+SPEC = importlib.util.spec_from_file_location("migration_source_parity_core_test_subject", TARGET)
 assert SPEC is not None and SPEC.loader is not None
 core = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = core
 SPEC.loader.exec_module(core)
+
+ADAPTER_TARGET = ROOT / "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
+ADAPTER_SPEC = importlib.util.spec_from_file_location("lf_migration_source_parity_adapter_test_subject", ADAPTER_TARGET)
+assert ADAPTER_SPEC is not None and ADAPTER_SPEC.loader is not None
+adapter = importlib.util.module_from_spec(ADAPTER_SPEC)
+sys.modules[ADAPTER_SPEC.name] = adapter
+ADAPTER_SPEC.loader.exec_module(adapter)
 
 
 class MigrationSourceParityCoreTests(unittest.TestCase):
@@ -96,6 +103,33 @@ class MigrationSourceParityCoreTests(unittest.TestCase):
         )
         for token in forbidden:
             self.assertNotIn(token, source)
+
+    def test_ci_adapter_delegates_to_functional_core(self) -> None:
+        version = "20260926010106"
+        name = "lf_parity_adapter_delegate"
+        sql = "select 1;\n"
+        calls: list[tuple[object, object, object]] = []
+        original = adapter._core.evaluate_exact_parity
+
+        def spy(local, remote, statement_counts):
+            calls.append((local, remote, statement_counts))
+            return original(local, remote, statement_counts)
+
+        adapter._core.evaluate_exact_parity = spy
+        try:
+            direct_count, cli_count, comparisons = adapter.evaluate_managed_transport(
+                {version: (name, transport.direct_source_hash(sql), sql)},
+                {version: (name, transport.direct_source_hash(sql))},
+                {version: 1},
+            )
+        finally:
+            adapter._core.evaluate_exact_parity = original
+
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(direct_count, 1)
+        self.assertEqual(cli_count, 0)
+        self.assertIn(version, comparisons)
+        self.assertIs(adapter._legacy.evaluate_managed_transport, adapter.evaluate_managed_transport)
 
 
 if __name__ == "__main__":
