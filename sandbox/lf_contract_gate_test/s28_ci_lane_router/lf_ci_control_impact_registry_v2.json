@@ -465,6 +465,10 @@
         {
           "kind": "prefix",
           "value": "sandbox/lf_contract_gate_test/db_write_transport/"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/migration_source_parity/"
         }
       ],
       "material_matchers": [],
