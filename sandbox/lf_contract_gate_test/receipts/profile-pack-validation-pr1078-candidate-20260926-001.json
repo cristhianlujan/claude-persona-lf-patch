@@ -1,0 +1,40 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-profile-pack-validation-boundary",
+  "issued_by": "operation_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-PROFILE-PACK-VALIDATION-PR1078-20260926-001",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "contract_judge",
+  "contract_sha": "b10ccc8527bc2499775559635fb59736744e46f3ca5e150cf4644cd4c491d7e8",
+  "judge_sha": "MIGRATION_20260531_GITHUB_CONTRACT_GATE_LF_PROTOCOL",
+  "source_sha_list": [
+    "91254024e356b7bc4a4f66bb34dac8a4eb69cafd",
+    "88f06b11629758e502f7ed481ba5ff63a394071b",
+    "52616aaf39c127ce56d2f7f22e67ed8ae9f710cc"
+  ],
+  "target_paths": [
+    "skills/profile_creator/validators/validate_pack.py",
+    "skills/profile_creator/evals/profile_validator_discovery_matrix.py"
+  ],
+  "target_blob_sha_by_path": {
+    "skills/profile_creator/validators/validate_pack.py": "88f06b11629758e502f7ed481ba5ff63a394071b",
+    "skills/profile_creator/evals/profile_validator_discovery_matrix.py": "52616aaf39c127ce56d2f7f22e67ed8ae9f710cc"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-26T06:26:29.037471Z",
+  "candidate_code_head": "91254024e356b7bc4a4f66bb34dac8a4eb69cafd",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "POST_RECEIPT_EXACT_HEAD_CI_THEN_CLOSE_PR4",
+  "stage": "CODE_ONLY_GOVERNANCE_QUALIFICATION",
+  "pr_number": 1078,
+  "authority_current_revision": "bbd34b623df8ac89657a37ef43d545f865448aee",
+  "currentness_decision": "CURRENT",
+  "validation_scope": "PROFILE_CREATOR_PACK_ONLY",
+  "transversal_pack_owner": "PACK_VALIDATION",
+  "transversal_pack_discovery_executed": false,
+  "transversal_pack_execution_executed": false,
+  "runtime_activation": false,
+  "production_applied": false
+}
