@@ -19,6 +19,7 @@ from typing import Iterable
 
 SCHEMA_VERSION = "lf-gate-ekb-persistence/v1"
 PRODUCER = "LF_GATE_EKB_BRIDGE_V1"
+_EXACT_FAIL_CODE = re.compile(r"^(FAIL_[A-Z0-9_]+)(?::(?:\s.*)?)?$")
 
 
 def now() -> str:
@@ -45,23 +46,49 @@ def stable_error_code(gate_id: str, group_id: str, source_path: str, error_class
     return f"CI-GATE-{sanitize_code(group_id)[:28]}-{digest}"
 
 
+def exact_fail_code(error_class: str, error_summary: str) -> str | None:
+    """Recover an emitted FAIL_* identity before generic process fallback erases it."""
+    for raw in (error_class, error_summary):
+        value = str(raw or "").strip()
+        if not value:
+            continue
+        match = _EXACT_FAIL_CODE.fullmatch(value)
+        if match:
+            return match.group(1)
+    return None
+
+
 def source_ref(run_id: str, group_id: str) -> str:
     repo = os.environ.get("GITHUB_REPOSITORY") or "UNKNOWN_REPOSITORY"
     return f"github-actions://{repo}/actions/runs/{run_id}#group={group_id}"
 
 
-def payload_from_failure(*, gate_id: str, owner: str, group_id: str, check: dict, run_id: str, report_ref: str) -> dict:
+def payload_from_failure(
+    *,
+    gate_id: str,
+    owner: str,
+    group_id: str,
+    check: dict,
+    run_id: str,
+    job_id: str,
+    report_ref: str,
+) -> dict:
     source_path = str(check.get("source_path") or check.get("input_ref") or "UNKNOWN_SOURCE_PATH")
-    error_class = str(check.get("error_class") or "PROCESS_EXIT_NONZERO")
+    raw_error_class = str(check.get("error_class") or "PROCESS_EXIT_NONZERO")
     error_summary = str(check.get("error_summary") or f"Gate check failed rc={check.get('rc')}")
-    code = stable_error_code(gate_id, group_id, source_path, error_class)
+    fail_code = exact_fail_code(raw_error_class, error_summary)
+    error_class = fail_code or raw_error_class
+    code = fail_code or stable_error_code(gate_id, group_id, source_path, error_class)
     evidence = {
         "gate_id": gate_id,
         "group_id": group_id,
         "run_id": run_id,
+        "job_id": job_id,
         "check_id": check.get("check_id"),
+        "rc": check.get("rc"),
         "source_path": source_path,
         "error_class": error_class,
+        "raw_error_class": raw_error_class,
         "error_summary": error_summary,
         "assertion_text": check.get("assertion_text"),
         "failure_id": check.get("failure_id"),
@@ -88,7 +115,7 @@ def payload_from_failure(*, gate_id: str, owner: str, group_id: str, check: dict
         "consumer_role": roles,
         "root_cause_family": "UNCLASSIFIED_WITH_REASON",
         "detectability": "LOUD_EARLY",
-        "source_context": f"gate={gate_id};group={group_id};run={run_id};source={source_path}",
+        "source_context": f"gate={gate_id};group={group_id};run={run_id};job={job_id};source={source_path}",
         "source_ref": source_ref(run_id, group_id),
         "evidencia": canonical(evidence),
         "lote_origen": f"CI-GATE-{run_id}",
@@ -108,8 +135,20 @@ def candidates_from_child(report: dict, report_ref: str, group_id: str | None = 
     owner = str(report.get("owner") or "UNKNOWN_OWNER")
     gid = group_id or str(report.get("step_id") or "UNGROUPED")
     run_id = str(report.get("run_id") or os.environ.get("GITHUB_RUN_ID") or "LOCAL")
+    job_id = str(report.get("job_id") or os.environ.get("GITHUB_JOB") or "LOCAL")
     failures = [x for x in (report.get("checks") or []) if isinstance(x, dict) and x.get("check_status") == "FAIL"]
-    return [payload_from_failure(gate_id=gate_id, owner=owner, group_id=gid, check=x, run_id=run_id, report_ref=report_ref) for x in failures]
+    return [
+        payload_from_failure(
+            gate_id=gate_id,
+            owner=owner,
+            group_id=gid,
+            check=x,
+            run_id=run_id,
+            job_id=job_id,
+            report_ref=report_ref,
+        )
+        for x in failures
+    ]
 
 
 def candidates_from_group_summary(summary: dict, summary_path: Path) -> list[dict]:
@@ -139,6 +178,7 @@ def candidates_from_group_summary(summary: dict, summary_path: Path) -> list[dic
             group_id="GROUP-ORCHESTRATION",
             check=synthetic,
             run_id=str(summary.get("run_id") or os.environ.get("GITHUB_RUN_ID") or "LOCAL"),
+            job_id=str(summary.get("job_id") or os.environ.get("GITHUB_JOB") or "LOCAL"),
             report_ref=str(summary_path.as_posix()),
         ))
     return candidates
