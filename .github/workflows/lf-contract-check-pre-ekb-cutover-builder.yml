@@ -34,36 +34,34 @@ jobs:
           start = text.index(start_marker)
           end = text.index(end_marker, start)
           old_block = text[start:end]
-          for token in (
-              'public.lf_record_gate_checks_v1',
-              'public.fn_lf_operation_reserve_execution_v1',
-              'LF_PRE_EKB_GATE_AUTOPERSIST_V1',
-          ):
+          for token in ('public.lf_record_gate_checks_v1','public.fn_lf_operation_reserve_execution_v1','LF_PRE_EKB_GATE_AUTOPERSIST_V1'):
               if token not in old_block:
                   raise SystemExit('FAIL_PRE_EKB_CUTOVER_OLD_BLOCK:' + token)
 
-          replacement = '''      - name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE
-        if: always() && steps.feedback_tier.outcome == 'success' && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true' && steps.deterministic_diagnostics_artifact.outcome == 'success'
-        env:
-          PGPASSWORD: @@OPEN@@ secrets.LF_SUPABASE_DB_PASSWORD @@CLOSE@@
-          PGHOST: aws-1-us-east-1.pooler.supabase.com
-          PGPORT: "5432"
-          PGUSER: postgres.mhwmirqcgxxukpctffuv
-          PGDATABASE: postgres
-          PGSSLMODE: require
-          LF_EXACT_SOURCE_SHA: @@OPEN@@ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha @@CLOSE@@
-          LF_WORKFLOW_EVENT: @@OPEN@@ github.event_name @@CLOSE@@
-          LF_REPOSITORY: @@OPEN@@ github.repository @@CLOSE@@
-          LF_RUN_ID: @@OPEN@@ github.run_id @@CLOSE@@
-          LF_RUN_ATTEMPT: @@OPEN@@ github.run_attempt @@CLOSE@@
-          LF_JOB_ID: @@OPEN@@ github.job @@CLOSE@@
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py \\
-            --diagnostics-root .lf_gate_diagnostics/lf_contract_check
-
-'''
+          replacement_lines = [
+              '      - name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE',
+              "        if: always() && steps.feedback_tier.outcome == 'success' && steps.deterministic_diagnostics.outcome == 'success' && steps.deterministic_diagnostics.outputs.has_files == 'true' && steps.deterministic_diagnostics_artifact.outcome == 'success'",
+              '        env:',
+              '          PGPASSWORD: @@OPEN@@ secrets.LF_SUPABASE_DB_PASSWORD @@CLOSE@@',
+              '          PGHOST: aws-1-us-east-1.pooler.supabase.com',
+              '          PGPORT: "5432"',
+              '          PGUSER: postgres.mhwmirqcgxxukpctffuv',
+              '          PGDATABASE: postgres',
+              '          PGSSLMODE: require',
+              "          LF_EXACT_SOURCE_SHA: @@OPEN@@ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha @@CLOSE@@",
+              '          LF_WORKFLOW_EVENT: @@OPEN@@ github.event_name @@CLOSE@@',
+              '          LF_REPOSITORY: @@OPEN@@ github.repository @@CLOSE@@',
+              '          LF_RUN_ID: @@OPEN@@ github.run_id @@CLOSE@@',
+              '          LF_RUN_ATTEMPT: @@OPEN@@ github.run_attempt @@CLOSE@@',
+              '          LF_JOB_ID: @@OPEN@@ github.job @@CLOSE@@',
+              '        shell: bash',
+              '        run: |',
+              '          set -euo pipefail',
+              '          python3 sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py \\',
+              '            --diagnostics-root .lf_gate_diagnostics/lf_contract_check',
+              '',
+          ]
+          replacement = '\n'.join(replacement_lines) + '\n'
           replacement = replacement.replace('@@OPEN@@', '${' + '{').replace('@@CLOSE@@', '}' + '}')
           new_text = text[:start] + replacement + text[end:]
           consumer = 'sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py'
@@ -71,25 +69,30 @@ jobs:
               raise SystemExit('FAIL_PRE_EKB_CUTOVER_CONSUMER_COUNT')
           workflow.write_text(new_text, encoding='utf-8')
 
+          test_lines = [
+              '#!/usr/bin/env python3',
+              'from pathlib import Path',
+              '',
+              'p = Path(".github/workflows/lf-contract-check.yml")',
+              'text = p.read_text(encoding="utf-8")',
+              'start_marker = "      - name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE\\n"',
+              'end_marker = "      - name: Capture authenticated E.16 Actions inventory\\n"',
+              'assert text.count(start_marker) == 1',
+              'assert text.count(end_marker) == 1',
+              'start = text.index(start_marker)',
+              'end = text.index(end_marker, start)',
+              'block = text[start:end]',
+              'consumer = "sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py"',
+              'assert block.count(consumer) == 1',
+              'for forbidden in ("public.lf_record_gate_checks_v1", "public.fn_lf_operation_reserve_execution_v1", "public.lf_pre_ekb_gate_consumer_v1", "LF_PRE_EKB_GATE_AUTOPERSIST_V1", "python3 - <<\\\'PY\\\'"):',
+              '    assert forbidden not in block, forbidden',
+              'for required in ("PGPASSWORD:", "LF_EXACT_SOURCE_SHA:", "LF_WORKFLOW_EVENT:", "LF_REPOSITORY:", "LF_RUN_ID:", "LF_RUN_ATTEMPT:", "LF_JOB_ID:", "--diagnostics-root .lf_gate_diagnostics/lf_contract_check"):',
+              '    assert required in block, required',
+              'print("PASS_LF_CONTRACT_PRE_EKB_WORKFLOW_CUTOVER checks=13")',
+              '',
+          ]
           test = Path('sandbox/lf_contract_gate_test/pre_ekb_gate/test_lf_contract_check_pre_ekb_workflow_cutover_v1.py')
-          test.write_text('''#!/usr/bin/env python3
-from pathlib import Path
-
-p = Path(".github/workflows/lf-contract-check.yml")
-text = p.read_text(encoding="utf-8")
-start_marker = "      - name: Persist failed deterministic LF contract diagnostics through PRE_EKB_GATE\\n"
-end_marker = "      - name: Capture authenticated E.16 Actions inventory\\n"
-assert text.count(start_marker) == 1
-assert text.count(end_marker) == 1
-block = text[text.index(start_marker):text.index(end_marker, text.index(start_marker))]
-consumer = "sandbox/lf_contract_gate_test/pre_ekb_gate/lf_contract_check_pre_ekb_consumer_v1.py"
-assert block.count(consumer) == 1
-for forbidden in ("public.lf_record_gate_checks_v1", "public.fn_lf_operation_reserve_execution_v1", "public.lf_pre_ekb_gate_consumer_v1", "LF_PRE_EKB_GATE_AUTOPERSIST_V1", "python3 - <<'PY'"):
-    assert forbidden not in block, forbidden
-for required in ("PGPASSWORD:", "LF_EXACT_SOURCE_SHA:", "LF_WORKFLOW_EVENT:", "LF_REPOSITORY:", "LF_RUN_ID:", "LF_RUN_ATTEMPT:", "LF_JOB_ID:", "--diagnostics-root .lf_gate_diagnostics/lf_contract_check"):
-    assert required in block, required
-print("PASS_LF_CONTRACT_PRE_EKB_WORKFLOW_CUTOVER checks=13")
-''', encoding='utf-8')
+          test.write_text('\n'.join(test_lines), encoding='utf-8')
           PY
 
       - name: Prove cutover
