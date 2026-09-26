@@ -8,22 +8,30 @@ Capacidad transversal LF para seleccionar el canal de escritura de base de datos
 
 No concede permisos, no sustituye al Router y no crea una nueva operación. Su única responsabilidad es elegir el transporte correcto según `target_type` y mantener fail-closed las migrations que requieren identidad exacta entre Git y `supabase_migrations.schema_migrations`.
 
-## Regla WRITE-AHEAD para MIGRATION
+## Soluciones encadenadas para MIGRATION
 
-Antes de cualquier apply de una migration, la fuente exacta debe quedar durable y releída desde Git.
+### 1. MIGRATION_WRITE_AHEAD_V1
 
-Identidad mínima obligatoria:
+Antes de cualquier apply, la fuente exacta debe quedar durable y releída desde Git mediante `lf_migration_git_persist.py`.
 
-- `execution_id` gobernado;
-- `effect_scope=MIGRATION:<version>`;
-- `target_path=supabase/migrations/<version>_<name>.sql`;
-- `source_sha`, `blob_sha1` y `source_sha256` exactos;
-- rama gobernada distinta de `main`;
-- readback remoto positivo.
+WRITE_AHEAD no ejecuta parity ni controles CI; su responsabilidad termina con source durable + readback exacto.
 
-El transporte de persistencia es `lf_migration_git_persist.py`. No toca Supabase, no hace merge y no concede autoridad.
+### 2. MIGRATION_ORCHESTRATED_SAGA_V1
 
-La orquestación Git → Supabase → verificación y la reconciliación son soluciones dependientes separadas y no forman parte de WRITE_AHEAD.
+Después del write-ahead, `lf_migration_orchestrated_saga.py` gobierna secuencialmente el mismo identity scope:
+
+1. write-ahead durable;
+2. ready-to-apply;
+3. apply exacto por `ACTUALIZACION_DB_LF` / `DB_WRITE_TRANSPORT`;
+4. ledger readback;
+5. `MIGRATION_SOURCE_PARITY=PASS` respaldado por evidencia canónica `LF_GATE_ERROR_V1` del mismo exact-head;
+6. `CONSISTENT`.
+
+El state gate es determinista e idempotente: reintentar el mismo snapshot produce el mismo verdict. No ejecuta writes por sí mismo y no depende del workflow/carrier que transporte `MIGRATION_SOURCE_PARITY`.
+
+`MIGRATION_SOURCE_PARITY` es una dependencia funcional de evidencia para el cierre de Saga; S30, E.16, `Validate LF Packs`, `LF DB Regression` y `lf-contract-check` son controles/carriers de pase y no forman parte de la Saga.
+
+La reconciliación es una tercera capacidad separada y condicional ante findings reparables de parity.
 
 ## Regla de selección
 
@@ -36,20 +44,23 @@ La orquestación Git → Supabase → verificación y la reconciliación son sol
 
 Para `MIGRATION`, el filename `YYYYMMDDHHMMSS_name.sql` es la identidad canónica. La versión registrada en `supabase_migrations.schema_migrations.version` debe ser exactamente ese prefijo de 14 dígitos.
 
-## Preflight del pedido de migration
+## Fronteras del pedido
 
-El pedido superior puede exigir Router, EKB, identidad exacta, parity, rollback/fail-forward y otros controles. Esas capacidades no se convierten por ello en llamadas internas de WRITE_AHEAD.
+El pedido superior resuelve Router, EKB y controles de pase. Las capacidades de Migration solo consumen las entradas/evidencias que les corresponden y no se convierten en dueñas de CI ni del lifecycle general.
 
-La responsabilidad propia de WRITE_AHEAD empieza al recibir una identidad gobernada y termina cuando la fuente exacta queda persistida y releída desde Git.
+## Relaciones canónicas
 
-## Dependencias y activos relacionados
-
+### MIGRATION_WRITE_AHEAD_V1
 - `DEPENDE_DE -> DB_WRITE_TRANSPORT`.
 - `GOBERNADO_POR -> ACT-0001`.
-- `RELACIONADO_CAPACIDADES -> MIGRATION_SOURCE_PARITY` como control del pedido, no como llamada interna.
-- Persistencia write-ahead: `sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py`.
-- EKB principal: `CI-MIGRATION-SOURCE-PARITY-001`.
+- `RELACIONADO_CAPACIDADES -> MIGRATION_SOURCE_PARITY`.
+
+### MIGRATION_ORCHESTRATED_SAGA_V1
+- `DEPENDE_DE -> DB_WRITE_TRANSPORT`.
+- `DEPENDE_DE -> MIGRATION_WRITE_AHEAD_V1`.
+- `DEPENDE_DE -> MIGRATION_SOURCE_PARITY`.
+- `GOBERNADO_POR -> ACT-0001`.
 
 ## Límites
 
-WRITE_AHEAD no llama S30, E.16, workflows CI ni `MIGRATION_SOURCE_PARITY`. `DB_WRITE_TRANSPORT` no autoriza producción, merge, runtime activation ni bypass de parity. Toda autoridad permanece en Router, contratos/policies activos y la operación gobernada que lo consume.
+`DB_WRITE_TRANSPORT`, WRITE_AHEAD y Saga no llaman S30/E.16 ni convierten workflows CI en dependencias funcionales. No autorizan producción, merge, runtime activation ni bypass de parity. Toda autoridad permanece en Router, contratos/policies activos y la operación gobernada que corresponda.
