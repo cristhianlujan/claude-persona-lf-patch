@@ -1,0 +1,76 @@
+{
+  "schema_version": "lf-pack-validation-clean-workflow/v1",
+  "durable_name": "PACK_VALIDATION_CLEAN_WORKFLOW",
+  "owner": "PACK_VALIDATION",
+  "depends_on": [
+    "PACK_VALIDATION_DEFINE_CONTRACT",
+    "PACK_DISCOVERY_RESOLVE_AFFECTED_PACKS",
+    "PACK_VALIDATION_EXECUTE_PACK_CHECKS",
+    "PROFILE_PACK_VALIDATION_CLEAN_VALIDATOR"
+  ],
+  "purpose": "Materialize a clean reusable Pack Validation workflow definition that consumes already-authorized exact-head change context, resolves affected packs once, executes only pack-local deterministic validators, and emits bounded evidence without owning unrelated CI controls.",
+  "workflow": {
+    "staged_definition_path": "sandbox/lf_contract_gate_test/pack_validation_contract/lf-pack-validation-core.staged.yml",
+    "target_cutover_path": ".github/workflows/lf-pack-validation-core.yml",
+    "activation": "STAGED_DEFINITION_ONLY",
+    "allowed_triggers_after_cutover": ["workflow_call"],
+    "forbidden_triggers": ["pull_request", "push", "workflow_dispatch", "schedule"],
+    "cutover_owner": "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS",
+    "legacy_carrier_remains_active_until_cutover": ".github/workflows/validate-lf-packs.yml"
+  },
+  "input_contract": {
+    "required": ["base_sha", "head_sha", "changed_paths_json"],
+    "authority": "CI_FAST_DEEP_LANE_ROUTER_OR_EQUIVALENT_ALREADY_AUTHORIZED_PLAN",
+    "must_not_redecide": ["RUN_SKIP_APPLICABILITY", "UNRELATED_CONTROL_APPLICABILITY"]
+  },
+  "execution_sequence": [
+    "CHECKOUT_EXACT_HEAD",
+    "RESOLVE_AFFECTED_PACKS",
+    "EXECUTE_PACK_CHECKS",
+    "PERSIST_PACK_VALIDATION_EVIDENCE"
+  ],
+  "allowed_capabilities": [
+    "read repository source at exact head",
+    "install deterministic pack-validator dependencies",
+    "resolve affected governed packs",
+    "execute pack-local validators/validate_pack.py",
+    "upload bounded Pack Validation evidence artifact after cutover"
+  ],
+  "forbidden_capabilities": [
+    "profile runtime API tests",
+    "runtime regression",
+    "S30 broker or protected Git writes",
+    "gate observability qualification",
+    "Supabase control-plane readback",
+    "EKB persistence",
+    "database apply or rollback",
+    "assurance judgment",
+    "deployment",
+    "production activation"
+  ],
+  "migration_safety": {
+    "parallel_active_engine_forbidden": true,
+    "staged_definition_is_not_github_actions_carrier": true,
+    "new_workflow_has_no_autonomous_trigger": true,
+    "old_carrier_not_removed_in_this_solution": true,
+    "target_github_path_not_admitted_until_cutover": true,
+    "removal_requires_destination_owner_and_wiring_proof": true
+  },
+  "output_contract": {
+    "artifact_name_prefix": "lf-pack-validation-",
+    "required_files": [
+      ".lf_pack_validation/discovery.json",
+      ".lf_pack_validation/result.json",
+      ".lf_pack_validation/summary.json"
+    ],
+    "status_enum": ["PASS", "FAIL", "SKIP"],
+    "authorizations": {
+      "runtime_authorized": false,
+      "git_write_authorized": false,
+      "db_write_authorized": false,
+      "deployment_authorized": false,
+      "production_authorized": false
+    }
+  },
+  "next_handoff": "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS"
+}
