@@ -424,7 +424,7 @@ def validate_live() -> dict[str, Any]:
 def self_test() -> dict[str, Any]:
     checks = 0
     base = guard.self_test()
-    if base != {"status": "PASS_SELF_TEST", "checks": 9}:
+    if base != {"status": "PASS_SELF_TEST", "checks": 10}:
         raise AssertionError(base)
     checks += 1
     for good in (
@@ -437,7 +437,7 @@ def self_test() -> dict[str, Any]:
     for bad in ("", "has space", "';drop table x;--", "x" * 201):
         assert EXECUTION_ID_RE.fullmatch(bad) is None
         checks += 1
-    result = {"status": "PASS_CARRIER_SELF_TEST", "checks": checks, "guard_checks": 9}
+    result = {"status": "PASS_CARRIER_SELF_TEST", "checks": checks, "guard_checks": 10}
     print(json.dumps(result, sort_keys=True))
     return result
 
