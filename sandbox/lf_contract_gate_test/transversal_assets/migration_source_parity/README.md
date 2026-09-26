@@ -2,79 +2,76 @@
 
 Capability transversal LF: `MIGRATION_SOURCE_PARITY` / `TRANSVERSAL_MIGRATION_SOURCE_PARITY`.
 
-## Estado
+## Estado e identidad
 
-- Estado operativo esperado: `ACTIVO`
-- Inventory status requerido: `ACTIVE_SHARED_ENFORCEMENT`
-- Autoridad de currentness: `public.lf_activos`
-- README de consumo: `sandbox/lf_contract_gate_test/transversal_assets/migration_source_parity/README.md`
+- Tipo: `CAPABILITY`.
+- Subtipo objetivo: `TRANSVERSAL_GOVERNANCE_CONTROL`.
+- Rol: `MIGRATION_GIT_LEDGER_PARITY_GUARD`.
+- Owner: `LF_GOVERNANCE_S30_DB`.
+- Versión funcional: `1.0.0`.
+- Estado operativo vigente: `ACTIVO`.
+- Inventory status: `ACTIVE_SHARED_ENFORCEMENT`.
+- Autoridad de currentness: `public.lf_activos`.
 
-## Propósito
+## Responsabilidad única
 
-Exigir paridad source-first exacta entre migraciones Git y el ledger Supabase.
+Comprobar, en modo fail-closed, que un snapshot ya resuelto de migrations en Git y el snapshot correspondiente del ledger `supabase_migrations.schema_migrations` tienen la misma identidad y contenido canónico.
 
-## Cuándo consumirlo
+El núcleo funcional valida:
 
-En PRs o cierres que tocan o dependen de migraciones gobernadas.
+1. conjunto exacto de versiones;
+2. nombre exacto por versión;
+3. contenido exacto bajo la normalización de transporte vigente;
+4. cardinalidad de statements del ledger;
+5. resultado tipado `PASS` o error canónico de parity.
 
-Antes de usarlo, resolver el activo en `public.lf_activos` y confirmar que no esté archivado, que siga `ACTIVO` y que `metadata.transversal_inventory.inventory_status=ACTIVE_SHARED_ENFORCEMENT`.
+No crea ni modifica migrations, no aplica DDL, no repara source, no crea PR, no decide controles de pase y no administra lifecycle.
 
-## Cómo consumirlo
+## Núcleo funcional canónico
 
-1. Resolver primero `MIGRATION_SOURCE_PARITY` en el inventario transversal; no buscar una implementación nueva antes de revisar este activo.
-2. Entrar por `sandbox/lf_contract_gate_test/lf_migration_source_parity.py` o por la superficie canónica equivalente indicada por el contrato vigente.
-3. Conservar la identidad de la operación/consumer, source revision y evidencia que exige el contrato de la capability.
-4. Si el resultado es `FAIL` o `BLOCKED`, conservar el diagnóstico durable y seguir la ruta de error gobernada aplicable; no crear un writer o store paralelo.
-5. Cerrar únicamente con readback desde la superficie canónica y currentness suficiente para la decisión.
+- `sandbox/lf_contract_gate_test/migration_source_parity/migration_source_parity_core.py`
+- `sandbox/lf_contract_gate_test/migration_transport_normalization.py`
 
-## Superficies canónicas
+`migration_source_parity_core.py` recibe snapshots ya resueltos y no conoce GitHub, PRs, workflows, `required_controls`, conexiones DB ni ejecución de procesos.
 
-- `sandbox/lf_contract_gate_test/lf_migration_source_parity.py`
-- `.github/workflows/lf-contract-check.yml`
-- `GITHUB_CONTRACT_GATE_LF`
+## Adapter de pase / compatibilidad CI
 
-Las superficies anteriores son referencias de consumo/implementación. Si existe discrepancia entre este README y el contrato/runtime vigente, prevalece la autoridad canónica y el README debe actualizarse.
+`sandbox/lf_contract_gate_test/lf_migration_source_parity.py` sigue siendo el adapter existente para el contexto de PR/CI. Puede resolver contexto de source-first, currentness de owner concurrente y preparar los inputs que necesita la comparación.
 
-## Independencia entre owners
+Ese adapter **no define la responsabilidad del activo**. `.github/workflows/lf-contract-check.yml`, `GITHUB_CONTRACT_GATE_LF`, `CI_FAST_DEEP_LANE_ROUTER` y S30 son carriers/controles de pase que pueden ejecutar o validar la capability; no son dependencias funcionales de `MIGRATION_SOURCE_PARITY`.
 
-Un `remote-only` no se atribuye automáticamente al PR que está siendo validado.
+## Consumidores funcionales conocidos
 
-Puede clasificarse como `EXTERNAL_OWNER_PENDING` únicamente cuando la evidencia current demuestra, para la misma identidad `version + name + path`:
+- `MIGRATION_ORCHESTRATED_SAGA_V1`: exige parity `PASS` antes de cerrar `CONSISTENT`.
+- `MIGRATION_SOURCE_RECONCILIATION_V1`: consume findings de parity y, tras una reparación, parity vuelve a ser el verificador independiente.
+- `MIGRATION_WRITE_AHEAD_V1`: capability relacionada; no delega a Parity la persistencia.
 
-- exactamente un receipt durable `lf-migration-owner-currentness/v1` en `lf_operation_effect_guard`, emitido por `ACTUALIZACION_DB_LF`;
-- el receipt está `SUCCEEDED`, con `write_readback=PASS`, `currentness_result=OWNER_PR_EXACT_OPEN` y `ddl_replayed=false`;
-- el PR indicado por el receipt sigue abierto en GitHub y su head SHA sigue siendo exactamente el registrado;
-- ese PR contiene exactamente el path esperado con el Git blob registrado;
-- el head SHA es distinto del exact-head que está siendo validado;
-- source del head owner accesible;
-- contenido del source owner equivalente al ledger remoto bajo el comparador de transporte vigente.
+## Relaciones canónicas
 
-La búsqueda de ownership es dirigida por esos receipts; no se enumeran todos los PRs abiertos del repositorio.
+- `GOBERNADO_POR -> ACT-0001`.
+- Las dependencias de Saga y Reconciliation hacia Parity se registran desde los consumidores (`DEPENDE_DE -> MIGRATION_SOURCE_PARITY`).
+- No existe dependencia funcional `MIGRATION_SOURCE_PARITY -> lf-contract-check` ni hacia un workflow.
 
-Ese `remote-only` queda fuera de la paridad del PR ajeno porque pertenece a otro carril demostrado. No se copia su migration ni se absorbe su owner.
+## Contexto de owner concurrente
 
-Cuando el owner es ausente, múltiple, cerrado, ambiguo, de otro repositorio, el source no coincide con Supabase o la evidencia de PRs abiertos está incompleta, el resultado sigue siendo `FAIL`.
+La clasificación `EXTERNAL_OWNER_PENDING` pertenece al adapter de pase, no al núcleo de parity. Se usa únicamente para evitar atribuir a un PR una migration que evidencia current demuestra como propiedad exacta de otro PR gobernado.
 
-## Fail-closed / límites
+Debe seguir siendo fail-closed: owner ausente, múltiple, cerrado, ambiguo, de otro repositorio, source no equivalente o evidencia incompleta conserva el `FAIL`.
 
-No aplicar DDL remoto para hacer verde el gate ni reconstruir source desde el ledger vivo.
+## Reconciliation
 
-No hardcodear número de PR, migration version, filename, SHA u owner para exceptuar un `remote-only`. La clasificación se resuelve en cada corrida desde ejecución gobernada + PR abierto + source exacto + ledger.
+Un finding reparable no autoriza a Parity a modificar nada. `MIGRATION_SOURCE_RECONCILIATION_V1` es una capability distinta y condicional. Parity permanece detector/verificador independiente.
 
-Si falta una dependencia, binding, currentness, permiso o evidencia requerida, el consumidor debe bloquear y reportar el primer punto no satisfecho.
+## Validación
 
-## Validación y readback
-
-- Verificar currentness del activo antes de consumirlo.
-- Ejecutar los gates/tests propios de la capability y del consumer; no convertir un test local en cierre global.
-- Mantener source revision, execution/consumer identity y referencias de evidencia.
-- Leer de vuelta el resultado desde la superficie durable correspondiente.
-- Para cambios de contrato o comportamiento, revalidar consumidores afectados y actualizar este README.
+- Core: `sandbox/lf_contract_gate_test/migration_source_parity/test_migration_source_parity_core.py`.
+- Adapter/compatibilidad: tests existentes de `lf_migration_source_parity.py` y transporte.
+- Cambios de contrato deben revalidar Saga y Reconciliation como consumidores.
 
 ## No duplicación
 
-No crear una segunda capability, tabla, runner, registry, writer o contrato que resuelva la misma responsabilidad. Si el contrato actual no cubre un caso válido, extender este activo por su owner y conservar lineage.
+No crear un segundo motor de parity. El core y el adapter son dos superficies de la misma capability: el core contiene el invariante funcional; el adapter aporta contexto del pase. La normalización de transporte se reutiliza desde `migration_transport_normalization.py`.
 
 ## Currentness
 
-Este README describe cómo consumir la capability, pero no fija su estado para siempre. El consumidor debe consultar `public.lf_activos` y la superficie runtime vigente en cada decisión material.
+Este README describe el contrato de responsabilidad. El estado efectivo del activo se consulta en `public.lf_activos`; un workflow verde no sustituye el readback de currentness ni convierte el carrier CI en autoridad funcional.
