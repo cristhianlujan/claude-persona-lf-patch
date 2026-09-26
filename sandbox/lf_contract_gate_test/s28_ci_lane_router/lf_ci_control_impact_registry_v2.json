@@ -29,10 +29,22 @@
       "control_id": "CI_ROUTER_SELFTEST",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/s28_ci_lane_router/"},
-        {"kind": "exact", "value": ".github/workflows/lf-contract-check.yml"},
-        {"kind": "exact", "value": ".github/workflows/validate-lf-packs.yml"},
-        {"kind": "exact", "value": ".github/workflows/lf-db-regression.yml"}
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-contract-check.yml"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/validate-lf-packs.yml"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-db-regression.yml"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -40,17 +52,33 @@
     {
       "control_id": "DB_CANDIDATE_APPLY_ROLLBACK",
       "carrier": "LF_DB_REGRESSION",
-      "path_matchers": [{"kind": "prefix", "value": "supabase/migrations/"}],
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "supabase/migrations/"
+        }
+      ],
       "material_matchers": [],
-      "dependencies": ["MIGRATION_SOURCE_PARITY"]
+      "dependencies": [
+        "MIGRATION_SOURCE_PARITY"
+      ]
     },
     {
       "control_id": "DECLARED_GOVERNANCE_PATHS",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "gobernanza/"},
-        {"kind": "exact", "value": "scripts/validate_declared_paths.py"},
-        {"kind": "prefix", "value": ".github/workflows/"}
+        {
+          "kind": "prefix",
+          "value": "gobernanza/"
+        },
+        {
+          "kind": "exact",
+          "value": "scripts/validate_declared_paths.py"
+        },
+        {
+          "kind": "prefix",
+          "value": ".github/workflows/"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -59,18 +87,32 @@
       "control_id": "E16_ACTIONS_INVENTORY",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_"},
-        {"kind": "exact", "value": ".github/workflows/lf-contract-check.yml"}
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-contract-check.yml"
+        }
       ],
       "material_matchers": [],
-      "dependencies": ["E16_GOVERNANCE"]
+      "dependencies": [
+        "E16_GOVERNANCE"
+      ]
     },
     {
       "control_id": "E16_GOVERNANCE",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_"},
-        {"kind": "exact", "value": ".github/workflows/lf-contract-check.yml"}
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-contract-check.yml"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -78,21 +120,45 @@
     {
       "control_id": "GATE_CHECK_OBSERVABILITY",
       "carrier": "VALIDATE_LF_PACKS",
-      "path_matchers": [{"kind": "prefix", "value": "sandbox/lf_contract_gate_test/gate_check_observability/"}],
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/gate_check_observability/"
+        }
+      ],
       "material_matchers": [],
-      "dependencies": ["PROFILE_RUNTIME_V3"]
+      "dependencies": [
+        "PROFILE_RUNTIME_V3"
+      ]
     },
     {
       "control_id": "INPUT_GOVERNANCE_MIGRATION_PARITY",
       "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [{"kind": "exact", "value": "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"}],
-      "material_matchers": [{"kind": "path_or_sql_regex", "value": "input[_-]governance|retire_b2b_auth005_legacy_totp_screen"}],
-      "dependencies": ["MIGRATION_SOURCE_PARITY"]
+      "path_matchers": [
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/input_governance_migration_parity_compact.py"
+        }
+      ],
+      "material_matchers": [
+        {
+          "kind": "path_or_sql_regex",
+          "value": "input[_-]governance|retire_b2b_auth005_legacy_totp_screen"
+        }
+      ],
+      "dependencies": [
+        "MIGRATION_SOURCE_PARITY"
+      ]
     },
     {
       "control_id": "LEARNING_ENGINE_PACK",
       "carrier": "VALIDATE_LF_PACKS",
-      "path_matchers": [{"kind": "prefix", "value": "skills/learning_engine/"}],
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "skills/learning_engine/"
+        }
+      ],
       "material_matchers": [],
       "dependencies": []
     },
@@ -100,13 +166,34 @@
       "control_id": "LF_CONTRACT_CORE",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "supabase/migrations/"},
-        {"kind": "prefix", "value": "gobernanza/"},
-        {"kind": "prefix", "value": "profiles/"},
-        {"kind": "prefix", "value": "skills/"},
-        {"kind": "prefix", "value": "cards/"},
-        {"kind": "prefix", "value": "adapters/"},
-        {"kind": "exact", "value": "scripts/lf_contract_check.py"}
+        {
+          "kind": "prefix",
+          "value": "supabase/migrations/"
+        },
+        {
+          "kind": "prefix",
+          "value": "gobernanza/"
+        },
+        {
+          "kind": "prefix",
+          "value": "profiles/"
+        },
+        {
+          "kind": "prefix",
+          "value": "skills/"
+        },
+        {
+          "kind": "prefix",
+          "value": "cards/"
+        },
+        {
+          "kind": "prefix",
+          "value": "adapters/"
+        },
+        {
+          "kind": "exact",
+          "value": "scripts/lf_contract_check.py"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -115,8 +202,14 @@
       "control_id": "LF_VALIDATION_ENGINE",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/validation_engine/"},
-        {"kind": "exact", "value": "scripts/lf_contract_check.py"}
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/validation_engine/"
+        },
+        {
+          "kind": "exact",
+          "value": "scripts/lf_contract_check.py"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -124,7 +217,12 @@
     {
       "control_id": "MIGRATION_SOURCE_PARITY",
       "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [{"kind": "prefix", "value": "supabase/migrations/"}],
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "supabase/migrations/"
+        }
+      ],
       "material_matchers": [],
       "dependencies": []
     },
@@ -132,11 +230,26 @@
       "control_id": "NO_BYPASS_PROFILE_CARD_SKILL",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "profiles/"},
-        {"kind": "prefix", "value": "skills/"},
-        {"kind": "prefix", "value": "cards/"},
-        {"kind": "prefix", "value": "adapters/"},
-        {"kind": "prefix", "value": "sandbox/no_bypass_judge_profile_card_skill/"}
+        {
+          "kind": "prefix",
+          "value": "profiles/"
+        },
+        {
+          "kind": "prefix",
+          "value": "skills/"
+        },
+        {
+          "kind": "prefix",
+          "value": "cards/"
+        },
+        {
+          "kind": "prefix",
+          "value": "adapters/"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/no_bypass_judge_profile_card_skill/"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -145,31 +258,84 @@
       "control_id": "P0_EXACT_HEAD_EXTERNAL",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "supabase/functions/lf-p0-exact-head-evidence-broker-v2/"},
-        {"kind": "exact", "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v1.py"},
-        {"kind": "exact", "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v2.py"},
-        {"kind": "exact", "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_v2.json"},
-        {"kind": "exact", "value": "supabase/config.toml"}
+        {
+          "kind": "prefix",
+          "value": "supabase/functions/lf-p0-exact-head-evidence-broker-v2/"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v1.py"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_ci_v2.py"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/p0_exact_head_real_source_v2.json"
+        },
+        {
+          "kind": "exact",
+          "value": "supabase/config.toml"
+        }
       ],
       "material_matchers": [],
-      "dependencies": ["LF_CONTRACT_CORE"]
+      "dependencies": [
+        "LF_CONTRACT_CORE"
+      ]
     },
     {
       "control_id": "P0_FAST_DOCS",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "exact", "value": "docs/p0/CONTRATO_BENCHMARK_OCR_CV.md"},
-        {"kind": "exact", "value": "docs/p0/MAPA_BRECHAS_OCR_CV.md"},
-        {"kind": "exact", "value": "docs/p0/MATRIZ_OPCIONES_OCR_CV.md"},
-        {"kind": "exact", "value": "docs/p0/PERSISTENCE_CONTRACT_AUDIT_20260812.md"},
-        {"kind": "exact", "value": "docs/p0/REAL_PERSISTENCE_READBACK_20260812.md"},
-        {"kind": "exact", "value": "docs/p0/RESEARCH_OCR_SCREEN_P0.md"},
-        {"kind": "exact", "value": "docs/p0/persistence-normalization-config-v1.json"},
-        {"kind": "exact", "value": "docs/p0/P0_EXECUTION_PERSISTENCE_CONTRACT_V2.md"},
-        {"kind": "exact", "value": "docs/p0/ADR_OCR_UI_PIPELINE_20260812.md"},
-        {"kind": "exact", "value": "docs/p0/OCR_BENCHMARK_PLAN.md"},
-        {"kind": "exact", "value": "docs/p0/OCR_GAP_MATRIX.md"},
-        {"kind": "exact", "value": "docs/p0/OCR_RESEARCH_REPORT.md"}
+        {
+          "kind": "exact",
+          "value": "docs/p0/CONTRATO_BENCHMARK_OCR_CV.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/MAPA_BRECHAS_OCR_CV.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/MATRIZ_OPCIONES_OCR_CV.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/PERSISTENCE_CONTRACT_AUDIT_20260812.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/REAL_PERSISTENCE_READBACK_20260812.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/RESEARCH_OCR_SCREEN_P0.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/persistence-normalization-config-v1.json"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/P0_EXECUTION_PERSISTENCE_CONTRACT_V2.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/ADR_OCR_UI_PIPELINE_20260812.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/OCR_BENCHMARK_PLAN.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/OCR_GAP_MATRIX.md"
+        },
+        {
+          "kind": "exact",
+          "value": "docs/p0/OCR_RESEARCH_REPORT.md"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -178,8 +344,14 @@
       "control_id": "P0_VISUAL_RUNTIME",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "sandbox/story_creator_p0_visual/"},
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/story_creator_visual_screen_reading_architecture/"}
+        {
+          "kind": "prefix",
+          "value": "sandbox/story_creator_p0_visual/"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/story_creator_visual_screen_reading_architecture/"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -188,10 +360,22 @@
       "control_id": "PASS_EVIDENCE",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "profiles/"},
-        {"kind": "prefix", "value": "skills/"},
-        {"kind": "prefix", "value": "cards/"},
-        {"kind": "prefix", "value": "adapters/"}
+        {
+          "kind": "prefix",
+          "value": "profiles/"
+        },
+        {
+          "kind": "prefix",
+          "value": "skills/"
+        },
+        {
+          "kind": "prefix",
+          "value": "cards/"
+        },
+        {
+          "kind": "prefix",
+          "value": "adapters/"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -200,15 +384,28 @@
       "control_id": "POLICY_RESOLVER_REGRESSION",
       "carrier": "LF_DB_REGRESSION",
       "path_matchers": [],
-      "material_matchers": [{"kind": "sql_regex", "value": "\\b(?:v_lf_operation_policy_snapshot|lf_attach_operation_policy_snapshot_v1|lf_operation_policy_snapshot_guard_v1|lf_operation_policy_bindings|lf_policy_versions)\\b"}],
-      "dependencies": ["DB_CANDIDATE_APPLY_ROLLBACK"]
+      "material_matchers": [
+        {
+          "kind": "sql_regex",
+          "value": "\\b(?:v_lf_operation_policy_snapshot|lf_attach_operation_policy_snapshot_v1|lf_operation_policy_snapshot_guard_v1|lf_operation_policy_bindings|lf_policy_versions)\\b"
+        }
+      ],
+      "dependencies": [
+        "DB_CANDIDATE_APPLY_ROLLBACK"
+      ]
     },
     {
       "control_id": "PROFILE_PACK",
       "carrier": "VALIDATE_LF_PACKS",
       "path_matchers": [
-        {"kind": "prefix", "value": "profiles/"},
-        {"kind": "prefix", "value": "skills/profile_creator/"}
+        {
+          "kind": "prefix",
+          "value": "profiles/"
+        },
+        {
+          "kind": "prefix",
+          "value": "skills/profile_creator/"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -217,10 +414,22 @@
       "control_id": "PROFILE_RUNTIME_V3",
       "carrier": "VALIDATE_LF_PACKS",
       "path_matchers": [
-        {"kind": "prefix", "value": "services/profile_runtime_api/"},
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/"},
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/profile_execution_runtime/"},
-        {"kind": "prefix", "value": "profiles/"}
+        {
+          "kind": "prefix",
+          "value": "services/profile_runtime_api/"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/profile_execution_runtime/"
+        },
+        {
+          "kind": "prefix",
+          "value": "profiles/"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -229,8 +438,14 @@
       "control_id": "R8_USER_STORY_AUDIT",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "skills/creating-integral-user-stories/"},
-        {"kind": "exact", "value": "sandbox/lf_contract_gate_test/r8_continuous_audit.py"}
+        {
+          "kind": "prefix",
+          "value": "skills/creating-integral-user-stories/"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/r8_continuous_audit.py"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -239,10 +454,22 @@
       "control_id": "S30_BOUNDED_REGRESSION",
       "carrier": "VALIDATE_LF_PACKS",
       "path_matchers": [
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/s30_"},
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/receipts/s30_"},
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/db_write_transport/"},
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/migration_source_parity/"}
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/s30_"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/receipts/s30_"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/db_write_transport/"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/migration_source_parity/"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -251,32 +478,64 @@
       "control_id": "S36_ASSURANCE",
       "carrier": "LF_CONTRACT_CHECK",
       "path_matchers": [
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/s36_"},
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/test_s36_"}
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/s36_"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/test_s36_"
+        }
       ],
-      "material_matchers": [{"kind": "sql_regex", "value": "\\b(?:lf_assurance_claim_catalog|lf_assurance_obligation_catalog|lf_assurance_defeater_catalog|lf_assurance_subject_bindings|lf_assurance_evaluations|lf_test_suite_cases|lf_test_suites)\\b"}],
+      "material_matchers": [
+        {
+          "kind": "sql_regex",
+          "value": "\\b(?:lf_assurance_claim_catalog|lf_assurance_obligation_catalog|lf_assurance_defeater_catalog|lf_assurance_subject_bindings|lf_assurance_evaluations|lf_test_suite_cases|lf_test_suites)\\b"
+        }
+      ],
       "dependencies": []
     },
     {
       "control_id": "SKILL_PACK",
       "carrier": "VALIDATE_LF_PACKS",
-      "path_matchers": [{"kind": "prefix", "value": "skills/"}],
+      "path_matchers": [
+        {
+          "kind": "prefix",
+          "value": "skills/"
+        }
+      ],
       "material_matchers": [],
       "dependencies": []
     },
     {
       "control_id": "SUPABASE_CONTROL_PLANE_READBACK",
       "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [{"kind": "exact", "value": "supabase/config.toml"}],
-      "material_matchers": [{"kind": "sql_regex", "value": "(?i)\\b(?:pgrst|postgrest|db_schema|db_schemas)\\b|ALTER\\s+ROLE\\s+authenticator|(?:GRANT|REVOKE|ALTER\\s+DEFAULT\\s+PRIVILEGES)[^;]*\\bSCHEMA\\s+net\\b"}],
+      "path_matchers": [
+        {
+          "kind": "exact",
+          "value": "supabase/config.toml"
+        }
+      ],
+      "material_matchers": [
+        {
+          "kind": "sql_regex",
+          "value": "(?i)\\b(?:pgrst|postgrest|db_schema|db_schemas)\\b|ALTER\\s+ROLE\\s+authenticator|(?:GRANT|REVOKE|ALTER\\s+DEFAULT\\s+PRIVILEGES)[^;]*\\bSCHEMA\\s+net\\b"
+        }
+      ],
       "dependencies": []
     },
     {
       "control_id": "TRANSVERSAL_README",
       "carrier": "VALIDATE_LF_PACKS",
       "path_matchers": [
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/transversal_assets/"},
-        {"kind": "prefix", "value": "sandbox/lf_contract_gate_test/transversal_asset_readme/"}
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/transversal_assets/"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/transversal_asset_readme/"
+        }
       ],
       "material_matchers": [],
       "dependencies": []
@@ -285,14 +544,37 @@
       "control_id": "V7_RUNTIME_REGRESSION",
       "carrier": "LF_DB_REGRESSION",
       "path_matchers": [
-        {"kind": "exact", "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_MIGRATIONS.txt"},
-        {"kind": "exact", "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_BASE.sql"},
-        {"kind": "exact", "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_APPLY_READBACK.sql"},
-        {"kind": "exact", "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_ROLLBACK_READBACK.sql"},
-        {"kind": "prefix", "value": "supabase/migrations/20260801"},
-        {"kind": "prefix", "value": "supabase/migrations/20260807"}
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_MIGRATIONS.txt"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_BASE.sql"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_APPLY_READBACK.sql"
+        },
+        {
+          "kind": "exact",
+          "value": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_ROLLBACK_READBACK.sql"
+        },
+        {
+          "kind": "prefix",
+          "value": "supabase/migrations/20260801"
+        },
+        {
+          "kind": "prefix",
+          "value": "supabase/migrations/20260807"
+        }
       ],
-      "material_matchers": [{"kind": "sql_regex", "value": "(?i)\\b(?:writer_hmac_nonce_v7|quarantine_compensating_evidence_v7|lf_writer_verifier_v7|writer_key_rotation_v7)\\b"}],
+      "material_matchers": [
+        {
+          "kind": "sql_regex",
+          "value": "(?i)\\b(?:writer_hmac_nonce_v7|quarantine_compensating_evidence_v7|lf_writer_verifier_v7|writer_key_rotation_v7)\\b"
+        }
+      ],
       "dependencies": []
     }
   ]
