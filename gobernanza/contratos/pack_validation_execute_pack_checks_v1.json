@@ -1,0 +1,91 @@
+{
+  "schema_version": "lf-pack-validation-execution/v1",
+  "durable_name": "PACK_VALIDATION_EXECUTE_PACK_CHECKS",
+  "owner": "PACK_VALIDATION",
+  "depends_on": [
+    "PACK_VALIDATION_DEFINE_CONTRACT",
+    "PACK_DISCOVERY_RESOLVE_AFFECTED_PACKS"
+  ],
+  "purpose": "Execute deterministic pack-owned validation only for packs already resolved by governed discovery, bind evidence to the exact candidate head, and return bounded per-pack PASS/FAIL without becoming a transversal orchestrator.",
+  "input_contract": {
+    "required": [
+      "base_sha",
+      "head_sha",
+      "discovery_result"
+    ],
+    "discovery_result_requirements": [
+      "status is PASS or SKIP; FAIL blocks execution",
+      "base_sha and head_sha exactly match executor inputs",
+      "validators_executed is false",
+      "each pack identity is a unique direct child of a target_root declared by the discovery contract and authorized by PACK_VALIDATION_DEFINE_CONTRACT"
+    ]
+  },
+  "execution_contract": {
+    "mode": "DETERMINISTIC_BOUNDED",
+    "default_timeout_seconds_per_pack": 120,
+    "maximum_timeout_seconds_per_pack": 300,
+    "steps": [
+      "VERIFY_EXACT_GIT_IDENTITY",
+      "VERIFY_PACK_ROOT_BOUNDARY",
+      "VERIFY_LOCAL_VALIDATOR_BOUNDARY",
+      "EXECUTE_PACK_LOCAL_VALIDATOR",
+      "AGGREGATE_PACK_RESULT"
+    ],
+    "pack_specific_structure_manifest_schema_authority": "PACK_LOCAL_VALIDATOR",
+    "validator_entrypoint": "validators/validate_pack.py",
+    "validator_invocation": "python <pack_root>/validators/validate_pack.py <pack_root>",
+    "output_capture": {
+      "full_stdout_stderr_persisted": false,
+      "sha256_full_streams": true,
+      "max_capture_bytes_per_stream": 65536,
+      "max_excerpt_chars_per_stream": 4096
+    }
+  },
+  "fail_closed_conditions": [
+    "upstream discovery failed or has inconsistent status",
+    "discovery base/head does not equal executor base/head",
+    "repository HEAD is not the declared exact head",
+    "base commit is unavailable or not an ancestor of head",
+    "unknown pack type or unauthorized pack root",
+    "duplicate pack identity",
+    "pack root is missing, symlinked, or escapes repository",
+    "local validator is missing, symlinked, or escapes pack boundary",
+    "local validator times out or exits non-zero"
+  ],
+  "output_contract": {
+    "status_enum": ["PASS", "FAIL", "SKIP"],
+    "required_fields": [
+      "status",
+      "base_sha",
+      "head_sha",
+      "affected_packs",
+      "checks_executed",
+      "blocking_codes",
+      "evidence"
+    ],
+    "affected_pack_fields": [
+      "pack_id",
+      "pack_type",
+      "pack_root",
+      "validator_ref",
+      "status",
+      "checks_executed",
+      "blocking_codes"
+    ],
+    "authorization_fields": {
+      "runtime_authorized": false,
+      "git_write_authorized": false,
+      "db_write_authorized": false,
+      "deployment_authorized": false,
+      "production_authorized": false,
+      "semantic_quality_review_authorized": false
+    }
+  },
+  "ownership_invariants": [
+    "The executor consumes discovery output and must not recompute CI RUN/SKIP applicability.",
+    "The executor validates pack execution boundaries but delegates pack-specific structure, manifest and schema semantics to the pack-local validator.",
+    "A pack-local validator may validate only its pack-owned deterministic contract; cross-pack or transversal responsibilities are not legitimized by this executor and are cleaned in later owner PRs.",
+    "No PASS grants merge, runtime, database, deployment, production or semantic-quality authorization."
+  ],
+  "handoff": "PROFILE_PACK_VALIDATION_CLEAN_VALIDATOR"
+}
