@@ -1,36 +1,43 @@
 #!/usr/bin/env python3
-"""Deterministic source-only repair coordinator for MIGRATION_SOURCE_PARITY.
+"""Deterministic source-only reconciliation for MIGRATION_SOURCE_PARITY.
 
-Runs only from trusted follow-up context. Historical owner receipts are locators,
-never authority: source bytes are re-read from Git and compared to the live
-migration ledger before MIGRATION_WRITE_AHEAD_V1 is allowed to create a repair
-branch. No DDL is replayed, no ledger row is mutated, and no merge is performed.
+Consumes one canonical parity failure evidence object, recovers and verifies the
+exact historical migration source, and delegates Git persistence to
+MIGRATION_WRITE_AHEAD_V1. It does not listen to CI workflows, classify unknown
+migration owners, open pull requests, rerun parity, execute Saga, replay DDL,
+mutate the migration ledger, or merge anything.
 """
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import hashlib
 import json
 import os
 import re
 import subprocess
-import urllib.request
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 DB_WRITE = ROOT / "sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py"
 TRANSPORT_DIR = ROOT / "sandbox/lf_contract_gate_test"
-import sys
 sys.path.insert(0, str(TRANSPORT_DIR))
 import migration_transport_normalization as transport
 
 VERSION_RE = re.compile(r"20\d{12}")
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
-REPAIRABLE = (
-    "FAIL_LF_MIGRATION_VERSION_PARITY",
-    "FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION",
+SHA64 = re.compile(r"^[0-9a-f]{64}$")
+PARITY_CONTRACT = "LF_GATE_ERROR_V1"
+PARITY_PRODUCER = "LF_GATE_CHECK_OBSERVABILITY_V1"
+PARITY_GATE_SUFFIX = "::MIGRATION_SOURCE_PARITY"
+PARITY_STEP_ID = "migration_source_parity"
+PARITY_SOURCE_PATH = "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
+REPAIRABLE_FAILURE = "FAIL_LF_MIGRATION_VERSION_PARITY"
+VERSION_PARITY_DETAIL = re.compile(
+    r"^FAIL_LF_MIGRATION_VERSION_PARITY: remote_only=(?P<remote>\[[^\]]*\]) local_only=(?P<local>\[[^\]]*\])$"
 )
 
 
@@ -38,30 +45,92 @@ def run(argv: list[str], *, check: bool = True) -> subprocess.CompletedProcess[s
     return subprocess.run(argv, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=check, timeout=120)
 
 
-def diagnostic_text(root: Path) -> str:
-    chunks: list[str] = []
-    for path in sorted(root.rglob("*")):
-        if path.is_file() and path.stat().st_size <= 2_000_000:
-            try:
-                chunks.append(path.read_text(encoding="utf-8"))
-            except UnicodeDecodeError:
-                continue
-    return "\n".join(chunks)
+def canonical_json(value: object) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
-def extract_versions(text: str) -> list[str]:
-    if not any(code in text for code in REPAIRABLE):
+def evidence_digest(report: dict[str, object]) -> str:
+    payload = dict(report)
+    payload.pop("manifest_sha256", None)
+    return hashlib.sha256(canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+def _version_list(raw: str, label: str) -> list[str]:
+    try:
+        value = ast.literal_eval(raw)
+    except (SyntaxError, ValueError) as exc:
+        raise RuntimeError(f"MIGRATION_REPAIR_{label}_LIST_INVALID") from exc
+    if not isinstance(value, list) or any(not isinstance(item, str) or VERSION_RE.fullmatch(item) is None for item in value):
+        raise RuntimeError(f"MIGRATION_REPAIR_{label}_LIST_INVALID")
+    return value
+
+
+def parse_parity_finding(report: dict[str, object]) -> dict[str, str] | None:
+    if not isinstance(report, dict):
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_OBJECT_REQUIRED")
+    if report.get("contract") != PARITY_CONTRACT:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_CONTRACT_INVALID")
+    if report.get("producer") != PARITY_PRODUCER:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_PRODUCER_INVALID")
+    if not str(report.get("gate_id") or "").endswith(PARITY_GATE_SUFFIX):
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_GATE_INVALID")
+    if report.get("step_id") != PARITY_STEP_ID:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_STEP_INVALID")
+    if report.get("gate_result") != "FAIL":
+        return None
+    if report.get("diagnostic_complete") is not True:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_INCOMPLETE")
+    observed_digest = str(report.get("manifest_sha256") or "").lower()
+    if SHA64.fullmatch(observed_digest) is None or observed_digest != evidence_digest(report):
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_DIGEST_MISMATCH")
+    source_head = str(report.get("source_commit") or "").lower()
+    tested_head = str(report.get("tested_commit") or "").lower()
+    if SHA40.fullmatch(source_head) is None or source_head != tested_head:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_HEAD_MISMATCH")
+    if report.get("source_path") != [PARITY_SOURCE_PATH]:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_SOURCE_INVALID")
+    impacts = report.get("downstream_impact")
+    if not isinstance(impacts, list) or "MIGRATION_SOURCE_PARITY" not in impacts:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_IMPACT_INVALID")
+    if report.get("expected_check_count") != 1 or report.get("executed_check_count") != 1:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_CHECK_COUNT_INVALID")
+    if report.get("fail_count") != 1 or report.get("pass_count") != 0 or report.get("blocked_count") != 0:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_RESULT_COUNTS_INVALID")
+    checks = report.get("checks")
+    if not isinstance(checks, list) or len(checks) != 1 or not isinstance(checks[0], dict):
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_CHECK_INVALID")
+    check = checks[0]
+    if check.get("check_status") != "FAIL" or check.get("source_path") != PARITY_SOURCE_PATH:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_CHECK_INVALID")
+    if check.get("producer") != PARITY_PRODUCER:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_CHECK_PRODUCER_INVALID")
+    if str(check.get("source_commit") or "").lower() != source_head or str(check.get("tested_commit") or "").lower() != source_head:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_CHECK_HEAD_MISMATCH")
+    summary = str(check.get("error_summary") or "").strip()
+    match = VERSION_PARITY_DETAIL.fullmatch(summary)
+    if match is None:
+        return None
+    remote_only = _version_list(match.group("remote"), "REMOTE_ONLY")
+    local_only = _version_list(match.group("local"), "LOCAL_ONLY")
+    if local_only:
+        return None
+    if len(remote_only) != 1:
+        raise RuntimeError(f"MIGRATION_REPAIR_EXPECTED_SINGLE_REMOTE_ONLY:count={len(remote_only)}")
+    return {
+        "failure_code": REPAIRABLE_FAILURE,
+        "version": remote_only[0],
+        "source_head": source_head,
+        "evidence_sha256": observed_digest,
+        "run_id": str(report.get("run_id") or ""),
+    }
+
+
+def query_rows(version: str) -> list[list[str]]:
+    if VERSION_RE.fullmatch(version) is None:
         return []
-    return sorted(set(VERSION_RE.findall(text)))
-
-
-def query_rows(versions: list[str]) -> list[list[str]]:
-    if not versions or any(VERSION_RE.fullmatch(v) is None for v in versions):
-        return []
-    missing = [k for k in ("PGHOST", "PGPORT", "PGUSER", "PGPASSWORD", "PGDATABASE", "PGSSLMODE") if not os.environ.get(k)]
+    missing = [key for key in ("PGHOST", "PGPORT", "PGUSER", "PGPASSWORD", "PGDATABASE", "PGSSLMODE") if not os.environ.get(key)]
     if missing:
         raise RuntimeError("MIGRATION_REPAIR_DB_ENV_MISSING:" + ",".join(missing))
-    pg_array = "{" + ",".join(versions) + "}"
     sql = (
         "select m.version,coalesce(m.name,''),"
         "encode(convert_to(coalesce(array_to_string(m.statements,chr(10)),''),'UTF8'),'hex'),"
@@ -72,9 +141,9 @@ def query_rows(versions: list[str]) -> list[list[str]]:
         "from supabase_migrations.schema_migrations m "
         "join public.lf_operation_effect_guard g on g.receipt->>'migration_version'=m.version "
         "and g.receipt->>'migration_name'=m.name "
-        f"where m.version=any('{pg_array}'::text[]) and g.state='SUCCEEDED' "
+        f"where m.version='{version}' and g.state='SUCCEEDED' "
         "and g.receipt->>'schema_version'='lf-migration-owner-currentness/v1' "
-        "order by m.version,g.resolved_at desc nulls last,g.execution_id"
+        "order by g.resolved_at desc nulls last,g.execution_id"
     )
     argv = ["docker", "run", "--rm"]
     for key in ("PGHOST", "PGPORT", "PGUSER", "PGPASSWORD", "PGDATABASE", "PGSSLMODE"):
@@ -108,13 +177,19 @@ def select_locator(version: str, rows: list[list[str]], repository: str) -> dict
         except (ValueError, UnicodeDecodeError):
             continue
         candidates.append({
-            "version": v, "name": name, "remote_sql": remote_sql,
-            "remote_sha256": remote_hash(remote_sql), "remote_statement_count": int(raw_count),
-            "execution_id": execution_id, "path": path, "source_sha": head, "source_blob": blob,
+            "version": v,
+            "name": name,
+            "remote_sql": remote_sql,
+            "remote_sha256": remote_hash(remote_sql),
+            "remote_statement_count": int(raw_count),
+            "execution_id": execution_id,
+            "path": path,
+            "source_sha": head,
+            "source_blob": blob,
         })
     if not candidates:
         raise RuntimeError(f"MIGRATION_REPAIR_LOCATOR_MISSING:{version}")
-    identities = {(c["path"], c["source_blob"]) for c in candidates}
+    identities = {(candidate["path"], candidate["source_blob"]) for candidate in candidates}
     if len(identities) != 1:
         raise RuntimeError(f"MIGRATION_REPAIR_LOCATOR_AMBIGUOUS:{version}")
     return candidates[0]
@@ -127,11 +202,20 @@ def verify_source(locator: dict[str, object]) -> tuple[str, str]:
     blob = run(["git", "rev-parse", f"{source_sha}:{path}"]).stdout.strip().lower()
     if blob != locator["source_blob"]:
         raise RuntimeError("MIGRATION_REPAIR_SOURCE_BLOB_MISMATCH")
-    raw = subprocess.run(["git", "show", f"{source_sha}:{path}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, timeout=60).stdout
+    raw = subprocess.run(
+        ["git", "show", f"{source_sha}:{path}"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+        timeout=60,
+    ).stdout
     sql = raw.decode("utf-8")
     comparison = transport.compare_exact_source(
-        version=str(locator["version"]), source_name=str(locator["name"]), source_sql=sql,
-        remote_name=str(locator["name"]), remote_sha256=str(locator["remote_sha256"]),
+        version=str(locator["version"]),
+        source_name=str(locator["name"]),
+        source_sql=sql,
+        remote_name=str(locator["name"]),
+        remote_sha256=str(locator["remote_sha256"]),
         remote_statement_count=int(locator["remote_statement_count"]),
     )
     if comparison.representation not in {"DIRECT_SOURCE", "CLI_STATEMENT_STORAGE"}:
@@ -139,76 +223,75 @@ def verify_source(locator: dict[str, object]) -> tuple[str, str]:
     return hashlib.sha256(raw).hexdigest(), comparison.representation
 
 
-def open_pr(repository: str, token: str, branch: str, version: str, name: str, source_execution: str, source_blob: str) -> int:
-    payload = json.dumps({
-        "title": f"repair(parity): restore exact migration source {version}",
-        "head": branch,
-        "base": "main",
-        "draft": True,
-        "body": (
-            "Automated source-only MIGRATION_SOURCE_PARITY repair.\n\n"
-            f"- migration: `{version}_{name}`\n"
-            f"- historical locator execution: `{source_execution}`\n"
-            f"- verified source blob: `{source_blob}`\n"
-            "- DDL replay: false\n- ledger mutation: false\n- merge: not authorized\n\n"
-            "The normal lf-contract-check is the post-repair parity readback. If it still fails, the existing PRE_EKB path owns escalation."
-        ),
-    }).encode("utf-8")
-    request = urllib.request.Request(
-        f"https://api.github.com/repos/{repository}/pulls", data=payload, method="POST",
-        headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json", "Content-Type": "application/json", "User-Agent": "lf-migration-parity-repair-v1"},
-    )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        result = json.loads(response.read().decode("utf-8"))
-    return int(result["number"])
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--diagnostics-dir", required=True)
+    parser.add_argument("--parity-evidence", required=True)
     parser.add_argument("--repository", required=True)
     parser.add_argument("--main-sha", required=True)
-    parser.add_argument("--source-run-id", required=True)
     args = parser.parse_args()
-    text = diagnostic_text(Path(args.diagnostics_dir))
-    versions = extract_versions(text)
-    if not versions:
-        print(json.dumps({"status": "NOT_APPLICABLE", "code": "NO_REPAIRABLE_MIGRATION_PARITY_FAILURE"}, sort_keys=True))
+
+    evidence_path = Path(args.parity_evidence)
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("MIGRATION_REPAIR_PARITY_EVIDENCE_READ_FAILED") from exc
+    finding = parse_parity_finding(evidence)
+    if finding is None:
+        print(json.dumps({"status": "NOT_APPLICABLE", "code": "PARITY_FAILURE_NOT_SOURCE_RECONCILIABLE"}, sort_keys=True))
         return 0
     if SHA40.fullmatch(args.main_sha) is None:
         raise RuntimeError("MIGRATION_REPAIR_MAIN_SHA_INVALID")
-    rows = query_rows(versions)
-    token = os.environ.get("GITHUB_TOKEN", "").strip()
-    if not token:
-        raise RuntimeError("MIGRATION_REPAIR_GITHUB_TOKEN_MISSING")
-    results = []
-    for version in versions:
-        locator = select_locator(version, rows, args.repository)
-        source_sha256, representation = verify_source(locator)
-        branch = f"lf/migration-source-repair/run-{args.source_run_id}-{version}"
-        request_path = Path(os.environ.get("RUNNER_TEMP", ".")) / f"migration-repair-{version}.json"
-        request_path.write_text(json.dumps({
-            "repository": args.repository,
-            "base_sha": args.main_sha,
-            "source_sha": locator["source_sha"],
-            "source_blob": locator["source_blob"],
-            "source_sha256": source_sha256,
-            "target_path": locator["path"],
-            "target_branch": branch,
-            "execution_id": f"EXEC-MIGRATION-PARITY-REPAIR-{args.source_run_id}-{version}",
-        }, sort_keys=True), encoding="utf-8")
-        persist = run(["python3", str(DB_WRITE), "--request", str(request_path)])
-        receipt = json.loads(persist.stdout)
-        if receipt.get("status") != "PASS" or receipt.get("readback") is not True:
-            raise RuntimeError(f"MIGRATION_REPAIR_GIT_PERSIST_FAILED:{version}")
-        pr_number = open_pr(args.repository, token, branch, version, str(locator["name"]), str(locator["execution_id"]), str(locator["source_blob"]))
-        results.append({
-            "version": version, "name": locator["name"], "branch": branch, "pr_number": pr_number,
-            "source_blob": locator["source_blob"], "source_sha256": source_sha256,
-            "representation": representation, "ddl_replayed": False, "ledger_mutated": False,
-            "post_repair_check": "lf-contract-check/MIGRATION_SOURCE_PARITY + MIGRATION_ORCHESTRATED_SAGA_V1",
-        })
-    print(json.dumps({"status": "REPAIR_DISPATCHED", "schema_version": "lf-migration-source-reconciliation/v1", "repairs": results}, sort_keys=True, separators=(",", ":")))
+
+    version = finding["version"]
+    rows = query_rows(version)
+    locator = select_locator(version, rows, args.repository)
+    source_sha256, representation = verify_source(locator)
+    evidence_key = finding["evidence_sha256"][:12]
+    branch = f"lf/migration-source-repair/evidence-{evidence_key}-{version}"
+    execution_id = f"EXEC-MIGRATION-SOURCE-REPAIR-{version}-{evidence_key.upper()}"
+    request_path = Path(os.environ.get("RUNNER_TEMP", ".")) / f"migration-repair-{version}.json"
+    request_path.write_text(json.dumps({
+        "repository": args.repository,
+        "base_sha": args.main_sha,
+        "source_sha": locator["source_sha"],
+        "source_blob": locator["source_blob"],
+        "source_sha256": source_sha256,
+        "target_path": locator["path"],
+        "target_branch": branch,
+        "execution_id": execution_id,
+    }, sort_keys=True), encoding="utf-8")
+    persist = run(["python3", str(DB_WRITE), "--request", str(request_path)])
+    receipt = json.loads(persist.stdout)
+    if receipt.get("status") != "PASS" or receipt.get("readback") is not True:
+        raise RuntimeError(f"MIGRATION_REPAIR_GIT_PERSIST_FAILED:{version}")
+
+    result = {
+        "status": "SOURCE_REPAIR_PERSISTED",
+        "schema_version": "lf-migration-source-reconciliation/v1",
+        "failure_code": finding["failure_code"],
+        "parity_failure_head": finding["source_head"],
+        "parity_evidence_sha256": finding["evidence_sha256"],
+        "version": version,
+        "name": locator["name"],
+        "branch": branch,
+        "persisted_head_sha": receipt.get("persisted_head_sha"),
+        "source_blob": locator["source_blob"],
+        "source_sha256": source_sha256,
+        "representation": representation,
+        "ddl_replayed": False,
+        "ledger_mutated": False,
+        "pr_request": {
+            "action": "CREATE_DRAFT_PR",
+            "head": branch,
+            "base": "main",
+            "title": f"repair(parity): restore exact migration source {version}",
+        },
+        "post_repair_requirements": [
+            "MIGRATION_SOURCE_PARITY_CANONICAL_EVIDENCE_PASS",
+            "MIGRATION_ORCHESTRATED_SAGA_V1_CONSISTENT",
+        ],
+    }
+    print(json.dumps(result, sort_keys=True, separators=(",", ":")))
     return 0
 
 
