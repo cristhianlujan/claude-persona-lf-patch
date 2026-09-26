@@ -1,0 +1,67 @@
+{
+  "schema_version": "lf-operation-test-coverage-owner/v1",
+  "capability_code": "OPERATION_TEST_COVERAGE",
+  "status": "CANDIDATE_BOUNDARY_ONLY",
+  "live_cutover_performed": false,
+  "legacy_implementation": {
+    "function": "public.lf_s36_operation_assurance_coverage_v1()",
+    "source": "supabase/migrations/20260914205435_s36_assurance_completeness_engine_v1.sql",
+    "global_aggregate_function": "public.lf_s36_assurance_completeness_v1(boolean)"
+  },
+  "owns": [
+    "OPERATION_TEST_BINDING_COVERAGE",
+    "OPERATION_TEST_SUITE_PRESENCE",
+    "OPERATION_TEST_CASE_PRESENCE",
+    "UNMAPPED_TEST_RUN_DIAGNOSTIC"
+  ],
+  "does_not_own": [
+    "CHANGESET_APPLICABILITY",
+    "TEST_EXECUTION",
+    "QUALITY_VERDICT",
+    "INDEPENDENT_REVIEW",
+    "QUALIFICATION_FINALIZATION",
+    "QUALIFICATION_LIFECYCLE_MUTATION",
+    "TEST_OR_SUITE_RESULT_MATERIALIZATION",
+    "CARD_PREPROMOTION_E2E",
+    "ASSET_LIFECYCLE_STATEFUL_ASSURANCE",
+    "ADVERSARIAL_AUTHORITY_ASSURANCE",
+    "GLOBAL_COVERAGE_DEBT_MONOTONICITY",
+    "FULL_REGRESSION",
+    "RUNTIME_OR_PRODUCTION_ACTIVATION"
+  ],
+  "canonical_stores_reused": [
+    "public.lf_operation_registry",
+    "public.lf_test_requirement_bindings",
+    "public.lf_test_suites",
+    "public.lf_test_suite_cases",
+    "public.lf_test_runs"
+  ],
+  "parallel_test_matrix_allowed": false,
+  "legacy_state_semantics": {
+    "DISCOVERED": "OPERATION_VISIBLE_PENDING_REQUIRED_BINDING",
+    "EVIDENCE_UNMAPPED": "RUN_EXISTS_WITHOUT_REQUIRED_BINDING",
+    "NOT_COVERED": "REQUIRED_BINDING_ABSENT",
+    "BLOCK": "STRUCTURAL_COVERAGE_INVALID_OR_INCOMPLETE",
+    "COVERED": "STRUCTURALLY_COVERED_ONLY"
+  },
+  "semantic_invariants": [
+    "STRUCTURAL_COVERAGE_NEVER_IMPLIES_TEST_EXECUTED",
+    "STRUCTURAL_COVERAGE_NEVER_IMPLIES_TEST_PASS",
+    "STRUCTURAL_COVERAGE_NEVER_IMPLIES_ASSURANCE_PASS",
+    "STRUCTURAL_COVERAGE_NEVER_IMPLIES_QUALIFICATION_PASS",
+    "ZERO_OBSERVED_RUNS_MAY_STILL_BE_STRUCTURALLY_COVERED",
+    "APPLICABILITY_IS_SUPPLIED_BY_CHANGESET_GOVERNANCE",
+    "NO_PARALLEL_MATRIX_OR_STORE"
+  ],
+  "related_owners": {
+    "applicability": "CHANGESET_GOVERNANCE",
+    "independent_review": "INDEPENDENT_REVIEW",
+    "qualification_materialization": "QUALIFICATION_FINALIZATION",
+    "global_debt": "TEST_COVERAGE_DEBT_GUARD",
+    "global_execution": "FULL_REGRESSION"
+  },
+  "ekb_refs": [
+    "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001",
+    "OPERATION-TEST-COVERAGE-COVERED-OVERCLAIM-001"
+  ]
+}
