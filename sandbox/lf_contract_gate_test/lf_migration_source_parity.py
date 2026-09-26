@@ -13,6 +13,8 @@ import pathlib
 import sys
 
 _MODULE_DIR = pathlib.Path(__file__).resolve().parent
+if str(_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(_MODULE_DIR))
 _CONTEXT_PATH = _MODULE_DIR / "migration_source_parity" / "lf_migration_source_parity_ci_context.py"
 _CORE_PATH = _MODULE_DIR / "migration_source_parity" / "migration_source_parity_core.py"
 
