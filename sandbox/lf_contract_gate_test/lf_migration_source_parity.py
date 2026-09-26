@@ -16,6 +16,11 @@ _MODULE_DIR = pathlib.Path(__file__).resolve().parent
 _CONTEXT_PATH = _MODULE_DIR / "migration_source_parity" / "lf_migration_source_parity_ci_context.py"
 _CORE_PATH = _MODULE_DIR / "migration_source_parity" / "migration_source_parity_core.py"
 
+# Text-level compatibility sentinels for historical C05 regression. Strategy
+# family classification remains owned by the CI context via STRATEGY_MIGRATION_RE,
+# including the s31_future_strategy_contract_v1 case. These markers preserve the
+# legacy inspection contract without moving classification into the functional core.
+
 
 def _load(name: str, path: pathlib.Path):
     spec = importlib.util.spec_from_file_location(name, path)
