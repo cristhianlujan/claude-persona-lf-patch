@@ -1,0 +1,34 @@
+name: Visual Evidence Gate Selftest
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "sandbox/lf_contract_gate_test/visual_evidence_gate/**"
+      - ".github/workflows/visual-evidence-gate-selftest.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual-evidence-gate-selftest:
+    name: visual-evidence-gate-selftest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact candidate source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify owner boundary and fail-closed behavior
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/visual_evidence_gate/visual_evidence_gate_v1.py --self-test
+          python3 sandbox/lf_contract_gate_test/visual_evidence_gate/test_visual_evidence_gate_v1.py
