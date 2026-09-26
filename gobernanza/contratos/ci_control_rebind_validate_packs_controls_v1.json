@@ -78,5 +78,19 @@
     "S30_SELF_GOVERNANCE_AND_PROTECTED_WRITE_BROKER",
     "WORK_PROTOCOL_V1_DEPRECATION_TOMBSTONE"
   ],
-  "next_handoff": "PACK_VALIDATION_VERIFY_E2E_FLOW"
+  "next_handoff": "PACK_VALIDATION_VERIFY_E2E_FLOW",
+  "preexisting_asset_boundaries": {
+    "PACK_VALIDATION_HARNESS": {
+      "role": "DEEP_PROFILE_CERTIFICATION_CANDIDATE_WITH_EXTERNAL_FLOOR_AND_HOLDOUTS",
+      "relationship_to_pack_validation": "DISTINCT_DEEPER_CERTIFICATION_NOT_THE_PASE_PACK_EXECUTION_ENGINE",
+      "invoked_by_this_cutover": false,
+      "activation_or_promotion_by_this_cutover": false,
+      "consumer_rebind_by_this_cutover": false
+    },
+    "POL-PACK-VALIDATION-FLOOR": {
+      "role": "POLICY_FOR_PACK_VALIDATION_HARNESS_CERTIFICATION",
+      "consumed_by_clean_pack_validation_flow": false,
+      "activation_or_binding_by_this_cutover": false
+    }
+  }
 }

@@ -273,8 +273,8 @@ jobs:
           PYTHONDONTWRITEBYTECODE: "1"
         run: python -m pytest services/profile_runtime_api/tests
 
-      - name: Install shared JSON Schema validation dependency
-        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK')
+      - name: Install deterministic Pack Validation dependency
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK') || contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'SKILL_PACK') || contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'LEARNING_ENGINE_PACK')
         run: python -m pip install --disable-pip-version-check jsonschema==4.23.0
 
       - name: Validate Work Protocol V1 deprecation tombstone
@@ -282,29 +282,52 @@ jobs:
         timeout-minutes: 2
         run: python sandbox/lf_contract_gate_test/work_protocol_manifest_v1/test_work_protocol_manifest_v1.py
 
-      - name: Validate profile template pack
-        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK')
-        run: python profiles/_template/validators/validate_pack.py profiles/_template
+      - name: Validate Pack Validation control rebind contract
+        if: contains(steps.ci_plan.outputs.changed_paths_json, '.github/workflows/validate-lf-packs.yml') || contains(steps.ci_plan.outputs.changed_paths_json, '.github/workflows/lf-pack-validation-core.yml') || contains(steps.ci_plan.outputs.changed_paths_json, 'gobernanza/contratos/ci_control_rebind_validate_packs_controls_v1.json') || contains(steps.ci_plan.outputs.changed_paths_json, 'sandbox/lf_contract_gate_test/pack_validation_contract/test_ci_control_rebind_validate_packs_controls_v1.py')
+        run: python sandbox/lf_contract_gate_test/pack_validation_contract/test_ci_control_rebind_validate_packs_controls_v1.py
 
-      - name: Validate skill template pack
-        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'SKILL_PACK')
-        run: python skills/_template/validators/validate_pack.py skills/_template
+      - name: Execute canonical Pack Validation flow
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK') || contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'SKILL_PACK') || contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'LEARNING_ENGINE_PACK')
+        env:
+          LF_CHANGED_PATHS_JSON: ${{ steps.ci_plan.outputs.changed_paths_json }}
+          LF_PACK_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || inputs.base_main_sha }}
+          LF_PACK_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${LF_PACK_BASE_SHA:-}"
+          head="${LF_PACK_HEAD_SHA:-}"
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            head="$(git rev-parse HEAD)"
+          fi
+          [[ "$base" =~ ^[0-9a-f]{40}$ ]] || { echo "BLOCK_PACK_VALIDATION_BASE_SHA" >&2; exit 1; }
+          [[ "$head" =~ ^[0-9a-f]{40}$ ]] || { echo "BLOCK_PACK_VALIDATION_HEAD_SHA" >&2; exit 1; }
+          git fetch --no-tags origin "$base" "$head"
+          worktree="$(mktemp -d)/candidate"
+          git worktree add --detach "$worktree" "$head"
+          cleanup() { git worktree remove --force "$worktree" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          python "$worktree/sandbox/lf_contract_gate_test/pack_validation_contract/run_pack_validation_flow_v1.py" \
+            --repo-root "$worktree" \
+            --validation-contract "$worktree/gobernanza/contratos/pack_validation_define_contract_v1.json" \
+            --discovery-contract "$worktree/gobernanza/contratos/pack_discovery_resolve_affected_packs_v1.json" \
+            --base-sha "$base" \
+            --head-sha "$head" \
+            --changed-paths-env LF_CHANGED_PATHS_JSON \
+            --output-dir .lf_pack_validation
 
-      - name: Validate skill creator pack
-        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'SKILL_PACK')
-        run: python skills/skill_creator/validators/validate_pack.py skills/skill_creator
-
-      - name: Validate profile creator pack
-        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK')
-        run: python skills/profile_creator/validators/validate_pack.py skills/profile_creator
-
-      - name: Validate pack validation harness v1 regressions
-        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK')
+      - name: Validate Pack Validation harness v1 regressions
+        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK') || contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'SKILL_PACK') || contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'LEARNING_ENGINE_PACK')
         run: python sandbox/lf_contract_gate_test/pack_validation_harness/test_pack_validation_harness_v1.py
 
-      - name: Validate learning engine pack
-        if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'LEARNING_ENGINE_PACK')
-        run: python skills/learning_engine/validators/validate_pack.py skills/learning_engine
+      - name: Persist bounded Pack Validation evidence
+        if: always() && steps.ci_plan.outcome == 'success' && (contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_PACK') || contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'SKILL_PACK') || contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'LEARNING_ENGINE_PACK'))
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-pack-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_pack_validation
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Validate S26 semantic-to-render binding regressions
         if: contains(fromJSON(steps.ci_plan.outputs.validate_packs_controls_json), 'PROFILE_RUNTIME_V3')
