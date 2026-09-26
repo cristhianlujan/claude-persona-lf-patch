@@ -31,9 +31,10 @@ Esos casos quedan `NOT_APPLICABLE` o bloqueados para su owner correspondiente.
 
 ## Dependencias obligatorias
 
-1. `MIGRATION_SOURCE_PARITY` como detector/verificador canónico.
+1. `MIGRATION_SOURCE_PARITY` como detector/verificador canónico del finding reparable.
 2. `MIGRATION_WRITE_AHEAD_V1` para persistir el source recuperado.
-3. `MIGRATION_ORCHESTRATED_SAGA_V1` es requisito posterior de cierre del pedido, no una llamada interna de Reconciliation.
+
+`MIGRATION_ORCHESTRATED_SAGA_V1` no es dependencia interna del reconciliador: es una capacidad relacionada del cierre posterior del pedido una vez que la reparación vuelve al flujo normal.
 
 ## Flujo propio
 
@@ -82,12 +83,15 @@ El reconciliador no ejecuta esas acciones posteriores.
 
 No existe workflow propio de Reconciliation: la admisión, creación de PR y controles de pase pertenecen al pedido y a las capacidades transversales correspondientes.
 
-## Relación arquitectónica
+## Relaciones canónicas
 
-`DB_WRITE_TRANSPORT -> MIGRATION_WRITE_AHEAD_V1 -> MIGRATION_ORCHESTRATED_SAGA_V1 -> MIGRATION_SOURCE_RECONCILIATION_V1`.
+- `DEPENDE_DE -> MIGRATION_SOURCE_PARITY`.
+- `DEPENDE_DE -> MIGRATION_WRITE_AHEAD_V1`.
+- `GOBERNADO_POR -> ACT-0001`.
+- `RELACIONADO_CAPACIDADES -> MIGRATION_ORCHESTRATED_SAGA_V1` únicamente porque Saga forma parte del cierre posterior del pedido; Reconciliation no la invoca.
 
-`MIGRATION_SOURCE_RECONCILIATION_V1` consume el finding de `MIGRATION_SOURCE_PARITY`; no reemplaza el control ni su carrier.
+No existe dependencia funcional hacia S30, E.16 ni carriers CI.
 
 ## Activación
 
-Candidato únicamente. Este PR no autoriza merge, producción, runtime ni activación automática.
+Candidato únicamente mientras el PR no esté integrado a `main`. El merge documental/código no implica activación de runtime ni producción.
