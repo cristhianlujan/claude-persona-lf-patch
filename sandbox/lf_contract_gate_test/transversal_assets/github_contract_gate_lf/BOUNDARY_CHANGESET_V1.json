@@ -1,0 +1,21 @@
+{
+  "schema_version": "GITHUB_PROVIDER_READBACK_CHANGESET_V1",
+  "solution": "GITHUB_PROVIDER_READBACK_V1",
+  "one_solution_one_pr": true,
+  "owner": "GITHUB_CONTRACT_GATE_LF",
+  "router": "ACT-0001",
+  "router_resolution": "CAPABILITY/UPDATE -> ACTUALIZACION_DB_LF",
+  "resolver_registry": "EVIDENCE_RESOLVER_REGISTRY",
+  "consumer": "PR93_LOTE_E16_GITHUB_INVENTORY",
+  "base_main_sha": "1f179dfb76741e3c96f921cf64c07533dd082bad",
+  "merge_authorized": false,
+  "production_activation_authorized": false,
+  "supabase_mutation_in_pr": false,
+  "classifications": [
+    "BLOCKED_INFRA_DNS",
+    "BLOCKED_GITHUB_API",
+    "FAIL_AUTH",
+    "FAIL_GITHUB_API",
+    "FAIL_EVIDENCE_MISMATCH"
+  ]
+}

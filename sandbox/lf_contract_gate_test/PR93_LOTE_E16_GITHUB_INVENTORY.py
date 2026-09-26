@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -21,7 +20,25 @@ EXPECTED_WORKFLOWS = ("lf-contract-check", "Validate LF Packs")
 ALLOWED_EVENTS = {"push", "pull_request", "both"}
 ALLOWED_STATUSES = {"requested", "waiting", "pending", "queued", "in_progress", "completed"}
 FAILED_CONCLUSIONS = {"failure", "cancelled", "timed_out", "action_required", "startup_failure", "stale"}
-MAX_RESPONSE_BYTES = 16 * 1024 * 1024
+BOUNDARY_PATH = (
+    Path(__file__).resolve().parent
+    / "transversal_assets"
+    / "github_contract_gate_lf"
+    / "github_api_readback_v1.py"
+)
+
+
+def _load_boundary():
+    spec = importlib.util.spec_from_file_location("lf_github_api_readback_v1", BOUNDARY_PATH)
+    if spec is None or spec.loader is None:
+        raise SystemExit("FAIL_E16_GITHUB_BOUNDARY_LOAD")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+GITHUB_BOUNDARY = _load_boundary()
 
 
 def fail(code: str, message: str) -> None:
@@ -58,35 +75,35 @@ def parse_link_header(value: str | None) -> dict[str, str]:
 
 
 def request_json(url: str, token: str) -> tuple[dict[str, Any], dict[str, str]]:
-    request = urllib.request.Request(url, headers={
-        "Accept": "application/vnd.github+json",
-        "Authorization": f"Bearer {token}",
-        "X-GitHub-Api-Version": "2022-11-28",
-        "User-Agent": "pr93-e16-actions-inventory",
-    })
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            data = response.read(MAX_RESPONSE_BYTES + 1)
-            headers = {key.lower(): value for key, value in response.headers.items()}
-        if len(data) > MAX_RESPONSE_BYTES:
-            fail("FAIL_E16_ACTIONS_API_RESPONSE_TOO_LARGE", "response exceeds 16 MiB")
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", "replace")[:500]
-        fail("FAIL_E16_ACTIONS_API_HTTP", f"HTTP {exc.code}: {detail}")
-    except urllib.error.URLError as exc:
-        fail("FAIL_E16_ACTIONS_API_NETWORK", str(exc.reason))
-    try:
-        value = json.loads(data.decode("utf-8", "strict"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        fail("FAIL_E16_ACTIONS_API_JSON", str(exc))
-    if not isinstance(value, dict):
-        fail("FAIL_E16_ACTIONS_API_SHAPE", "response must be a JSON object")
-    return value, headers
+        value, headers, _receipt = GITHUB_BOUNDARY.request_json(
+            url,
+            token,
+            user_agent="pr93-e16-actions-inventory",
+        )
+        return value, headers
+    except GITHUB_BOUNDARY.GithubReadbackError as exc:
+        if exc.code == "FAIL_GITHUB_READBACK_AUTH":
+            fail("FAIL_E16_ACTIONS_API_AUTH", str(exc))
+        if exc.code == "FAIL_GITHUB_READBACK_NETWORK":
+            fail("FAIL_E16_ACTIONS_API_NETWORK", str(exc))
+        if exc.code == "FAIL_GITHUB_READBACK_JSON":
+            fail("FAIL_E16_ACTIONS_API_JSON", str(exc))
+        if exc.code == "FAIL_GITHUB_READBACK_SHAPE":
+            fail("FAIL_E16_ACTIONS_API_SHAPE", str(exc))
+        if exc.code == "FAIL_GITHUB_READBACK_RESPONSE_TOO_LARGE":
+            fail("FAIL_E16_ACTIONS_API_RESPONSE_TOO_LARGE", str(exc))
+        fail("FAIL_E16_ACTIONS_API_HTTP", str(exc))
 
 
 def validate_page_url(url: str, *, origin: tuple[str, str], path: str, head_sha: str) -> None:
     parsed = urllib.parse.urlsplit(url)
-    if parsed.username is not None or parsed.password is not None or (parsed.scheme, parsed.netloc) != origin or parsed.path != path:
+    if (
+        parsed.username is not None
+        or parsed.password is not None
+        or (parsed.scheme, parsed.netloc) != origin
+        or parsed.path != path
+    ):
         fail("FAIL_E16_ACTIONS_API_PAGINATION", "pagination changed canonical endpoint")
     query = urllib.parse.parse_qs(parsed.query, keep_blank_values=True)
     if query.get("head_sha") != [head_sha] or query.get("per_page") != ["100"]:
@@ -96,7 +113,12 @@ def validate_page_url(url: str, *, origin: tuple[str, str], path: str, head_sha:
         fail("FAIL_E16_ACTIONS_API_PAGINATION", "pagination page is invalid")
 
 
-def fetch_runs(repository: str, head_sha: str, token: str, api_base: str) -> tuple[list[dict[str, Any]], int, int]:
+def fetch_runs(
+    repository: str,
+    head_sha: str,
+    token: str,
+    api_base: str,
+) -> tuple[list[dict[str, Any]], int, int]:
     owner, sep, repo = repository.partition("/")
     if not sep or not owner or not repo or "/" in repo:
         fail("FAIL_E16_REPOSITORY_INVALID", "repository must be owner/name")
@@ -122,7 +144,12 @@ def fetch_runs(repository: str, head_sha: str, token: str, api_base: str) -> tup
         payload, headers = request_json(next_url, token)
         total = payload.get("total_count")
         items = payload.get("workflow_runs")
-        if not isinstance(total, int) or total < 0 or not isinstance(items, list) or any(not isinstance(item, dict) for item in items):
+        if (
+            not isinstance(total, int)
+            or total < 0
+            or not isinstance(items, list)
+            or any(not isinstance(item, dict) for item in items)
+        ):
             fail("FAIL_E16_ACTIONS_API_SHAPE", "invalid actions response")
         if reported_total is None:
             reported_total = total
@@ -131,7 +158,10 @@ def fetch_runs(repository: str, head_sha: str, token: str, api_base: str) -> tup
         runs.extend(items)
         next_url = parse_link_header(headers.get("link")).get("next")
     if reported_total is None or len(runs) != reported_total:
-        fail("FAIL_E16_ACTIONS_API_PAGINATION", f"observed={len(runs)} reported={reported_total}")
+        fail(
+            "FAIL_E16_ACTIONS_API_PAGINATION",
+            f"observed={len(runs)} reported={reported_total}",
+        )
     return runs, pages, reported_total
 
 
@@ -142,26 +172,50 @@ def positive_int(value: object, field: str) -> int:
 
 
 def compact_run(run: dict[str, Any]) -> dict[str, Any]:
-    return {key: run.get(key) for key in (
-        "id", "name", "event", "head_sha", "head_branch", "status", "conclusion", "run_number", "run_attempt",
-        "created_at", "updated_at", "html_url", "workflow_id", "path"
-    )}
+    return {
+        key: run.get(key)
+        for key in (
+            "id",
+            "name",
+            "event",
+            "head_sha",
+            "head_branch",
+            "status",
+            "conclusion",
+            "run_number",
+            "run_attempt",
+            "created_at",
+            "updated_at",
+            "html_url",
+            "workflow_id",
+            "path",
+        )
+    }
 
 
-def select_inventory(runs: list[dict[str, Any]], head_sha: str, matrix: tuple[tuple[str, str], ...]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def select_inventory(
+    runs: list[dict[str, Any]],
+    head_sha: str,
+    matrix: tuple[tuple[str, str], ...],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     exact = [run for run in runs if run.get("head_sha") == head_sha]
     selected: list[dict[str, Any]] = []
     missing: list[dict[str, Any]] = []
     for workflow, event in matrix:
-        candidates = [run for run in exact if run.get("name") == workflow and run.get("event") == event]
+        candidates = [
+            run for run in exact if run.get("name") == workflow and run.get("event") == event
+        ]
         if not candidates:
             missing.append({"workflow": workflow, "event": event})
             continue
-        latest = max(candidates, key=lambda run: (
-            positive_int(run.get("run_number"), "run_number"),
-            positive_int(run.get("run_attempt", 1), "run_attempt"),
-            positive_int(run.get("id"), "id"),
-        ))
+        latest = max(
+            candidates,
+            key=lambda run: (
+                positive_int(run.get("run_number"), "run_number"),
+                positive_int(run.get("run_attempt", 1), "run_attempt"),
+                positive_int(run.get("id"), "id"),
+            ),
+        )
         compact = compact_run(latest)
         status = compact["status"]
         conclusion = compact["conclusion"]
@@ -185,6 +239,7 @@ def main() -> int:
     parser.add_argument("--matrix-wait-seconds", type=float, default=30.0)
     parser.add_argument("--poll-interval-seconds", type=float, default=2.0)
     args = parser.parse_args()
+
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
         fail("FAIL_E16_GITHUB_TOKEN_MISSING", "GITHUB_TOKEN is required")
@@ -192,7 +247,13 @@ def main() -> int:
         fail("FAIL_E16_REPOSITORY_INVALID", "repository is required")
     if not isinstance(args.head_sha, str) or SHA_RE.fullmatch(args.head_sha) is None:
         fail("FAIL_E16_HEAD_SHA_INVALID", "head SHA invalid")
-    required_event = args.required_event or os.environ.get("E16_REQUIRED_EVENT") or os.environ.get("GITHUB_EVENT_NAME") or "both"
+
+    required_event = (
+        args.required_event
+        or os.environ.get("E16_REQUIRED_EVENT")
+        or os.environ.get("GITHUB_EVENT_NAME")
+        or "both"
+    )
     if required_event not in ALLOWED_EVENTS:
         required_event = "both"
     matrix = required_matrix(required_event)
@@ -211,6 +272,7 @@ def main() -> int:
         if remaining <= 0:
             fail("FAIL_E16_ACTIONS_MATRIX_INCOMPLETE", canonical_json(missing).strip())
         time.sleep(min(args.poll_interval_seconds, remaining))
+
     pending = [run for run in selected if run["status"] != "completed"]
     record = {
         "schema_version": "pr93-e16-actions-inventory/v2",
@@ -218,19 +280,44 @@ def main() -> int:
         "repository": args.repository,
         "head_sha": args.head_sha,
         "required_event": required_event,
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
-        "api": {"authenticated": True, "pagination_complete": True, "pages_fetched": pages, "reported_total_count": total, "matching_runs_observed": len(runs), "poll_attempts": attempts},
-        "expected_matrix": [{"workflow": workflow, "event": event} for workflow, event in matrix],
-        "all_matching_runs": sorted((compact_run(run) for run in runs), key=lambda run: (run.get("run_number") or 0, run.get("run_attempt") or 1, run.get("id") or 0)),
+        "generated_at_utc": datetime.now(timezone.utc)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z"),
+        "api": {
+            "authenticated": True,
+            "pagination_complete": True,
+            "pages_fetched": pages,
+            "reported_total_count": total,
+            "matching_runs_observed": len(runs),
+            "poll_attempts": attempts,
+            "authority_asset": GITHUB_BOUNDARY.AUTHORITY_ASSET,
+            "resolver_registry_asset": GITHUB_BOUNDARY.RESOLVER_REGISTRY_ASSET,
+            "provider": GITHUB_BOUNDARY.PROVIDER,
+            "network_retry_max_attempts": GITHUB_BOUNDARY.DEFAULT_MAX_ATTEMPTS,
+        },
+        "expected_matrix": [
+            {"workflow": workflow, "event": event} for workflow, event in matrix
+        ],
+        "all_matching_runs": sorted(
+            (compact_run(run) for run in runs),
+            key=lambda run: (
+                run.get("run_number") or 0,
+                run.get("run_attempt") or 1,
+                run.get("id") or 0,
+            ),
+        ),
         "selected_runs": selected,
         "matrix_complete": len(selected) == len(matrix) and not missing,
         "selected_latest_known_failure_present": False,
         "selected_pending_present": bool(pending),
         "selected_pending_count": len(pending),
         "selected_pending_runs": pending,
-        "historical_failure_present": any(run.get("conclusion") in FAILED_CONCLUSIONS for run in runs),
+        "historical_failure_present": any(
+            run.get("conclusion") in FAILED_CONCLUSIONS for run in runs
+        ),
         "runtime_or_merge_claimed": False,
     }
+
     output = args.output.absolute()
     output.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -238,8 +325,12 @@ def main() -> int:
             handle.write(canonical_json(record))
     except FileExistsError:
         fail("FAIL_E16_ACTIONS_INVENTORY_EXISTS", f"output already exists: {output}")
+
     for run in selected:
-        print(f"E16_ACTIONS_RUN={run['name']}|{run['event']}|{run['id']}|{run['status']}|{run['conclusion']}")
+        print(
+            f"E16_ACTIONS_RUN={run['name']}|{run['event']}|{run['id']}|"
+            f"{run['status']}|{run['conclusion']}"
+        )
     print(f"PASS_E16_CANONICAL_ACTIONS_INVENTORY={len(selected)}/{len(matrix)}")
     print(f"E16_ACTIONS_INVENTORY={output}")
     return 0
