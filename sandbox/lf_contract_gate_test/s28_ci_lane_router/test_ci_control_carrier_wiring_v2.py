@@ -47,6 +47,29 @@ def require_job_guard(text: str, job_id: str, control_id: str) -> None:
     require(block, control_id, f"FAIL_CI_CARRIER_CONTROL_NOT_BOUND:{job_id}")
 
 
+def event_block(text: str, event_name: str) -> str:
+    lines = text.splitlines()
+    marker = f"  {event_name}:"
+    for index, line in enumerate(lines):
+        if line == marker:
+            block = [line]
+            for candidate in lines[index + 1 :]:
+                if candidate.strip():
+                    indent = len(candidate) - len(candidate.lstrip())
+                    if indent <= 2:
+                        break
+                block.append(candidate)
+            return "\n".join(block)
+    raise AssertionError(f"FAIL_CI_CARRIER_EVENT_MISSING:{event_name}")
+
+
+def assert_pull_request_admission_parity(texts: dict[str, str]) -> None:
+    for carrier, text in texts.items():
+        block = event_block(text, "pull_request")
+        forbid(block, "branches:", f"FAIL_CI_CARRIER_PR_TARGET_FILTER_PREEMPTS_ROUTER:{carrier}")
+        require(block, "ready_for_review", f"FAIL_CI_CARRIER_READY_FOR_REVIEW_EVENT_MISSING:{carrier}")
+
+
 def assert_registry_retirement(registry: dict) -> None:
     rows = registry["controls"]
     universe = {row["control_id"] for row in rows}
@@ -69,6 +92,8 @@ def assert_registry_retirement(registry: dict) -> None:
 def assert_carrier_wiring(texts: dict[str, str]) -> None:
     for carrier, text in texts.items():
         require(text, "lf_ci_execution_plan_v2.py" if carrier == "LF_CONTRACT_CHECK" else "emit_ci_execution_plan_v2.py", f"FAIL_PLAN_NOT_WIRED:{carrier}")
+
+    assert_pull_request_admission_parity(texts)
 
     db = texts["LF_DB_REGRESSION"]
     require(db, "name: LF DB Regression", "FAIL_DB_REGRESSION_NAME")

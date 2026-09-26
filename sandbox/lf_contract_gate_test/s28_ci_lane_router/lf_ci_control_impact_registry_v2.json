@@ -461,6 +461,10 @@
         {
           "kind": "prefix",
           "value": "sandbox/lf_contract_gate_test/receipts/s30_"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/db_write_transport/"
         }
       ],
       "material_matchers": [],
