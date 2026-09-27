@@ -2,11 +2,12 @@
 """Standalone pass-level owner for visual evidence validation.
 
 `VISUAL_EVIDENCE_GATE` is the durable logical identity that replaces the legacy
-orchestration label `P0_VISUAL_RUNTIME`.  The existing historical P0 helpers are
-reused as implementation dependencies; they are not copied or renamed here.
+orchestration label `P0_VISUAL_RUNTIME`. Existing historical P0 helpers are
+reused as implementation dependencies; they are not duplicated here.
 
 Boundary:
 - owns execution of the visual completeness/fidelity regression bundle;
+- owns legacy P0 visual-quality regressions migrated out of E.16;
 - does not decide applicability;
 - does not own repository/path admission;
 - does not own exact-head evidence transport or persistence;
@@ -26,6 +27,7 @@ SCHEMA_VERSION = "lf-visual-evidence-gate/v1"
 CONTROL_ID = "VISUAL_EVIDENCE_GATE"
 LEGACY_ORCHESTRATION_ALIAS = "P0_VISUAL_RUNTIME"
 REPO_ROOT = Path(__file__).resolve().parents[3]
+EXPECTED_HELPER_COUNT = 5
 
 CANONICAL_HELPERS: tuple[tuple[str, str], ...] = (
     (
@@ -44,6 +46,10 @@ CANONICAL_HELPERS: tuple[tuple[str, str], ...] = (
         "MULTISCREEN_STRUCTURAL_GENERALIZATION_REGRESSION",
         "sandbox/lf_contract_gate_test/P0_MULTISCREEN_STRUCTURAL_GENERALIZATION_REGRESSION_V3.py",
     ),
+    (
+        "LEGACY_P0_VISUAL_QUALITY_REGRESSION_BUNDLE",
+        "sandbox/lf_contract_gate_test/P0_VISUAL_QUALITY_REGRESSION_BUNDLE_V1.py",
+    ),
 )
 
 
@@ -61,7 +67,7 @@ def _safe_relative_path(value: str) -> bool:
 def _validate_contract_shape() -> None:
     if CONTROL_ID == LEGACY_ORCHESTRATION_ALIAS:
         raise VisualEvidenceGateError("FAIL_VISUAL_EVIDENCE_GATE_ID_NOT_RENAMED")
-    if len(CANONICAL_HELPERS) != 4:
+    if len(CANONICAL_HELPERS) != EXPECTED_HELPER_COUNT:
         raise VisualEvidenceGateError("FAIL_VISUAL_EVIDENCE_GATE_HELPER_COUNT")
     names = [name for name, _ in CANONICAL_HELPERS]
     paths = [path for _, path in CANONICAL_HELPERS]
@@ -116,7 +122,7 @@ def self_test(repo_root: Path = REPO_ROOT) -> Mapping[str, object]:
             "visual_evidence_validation": True,
         },
     }
-    print(f"PASS_VISUAL_EVIDENCE_GATE_SELFTEST={len(helpers)}/{len(CANONICAL_HELPERS)}")
+    print(f"PASS_VISUAL_EVIDENCE_GATE_SELFTEST={len(helpers)}/{EXPECTED_HELPER_COUNT}")
     return result
 
 
