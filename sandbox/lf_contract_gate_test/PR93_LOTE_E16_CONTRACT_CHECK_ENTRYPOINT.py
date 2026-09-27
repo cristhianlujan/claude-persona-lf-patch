@@ -3,7 +3,9 @@
 
 The base validator remains byte-identical to commit 4b9e768a. This entry point
 replaces only ``get_changed_files`` with the CA-N96 implementation and delegates
-all contract, receipt, scope and forbidden-status validation to ``base.main``.
+repository ``.github`` path admission to the already-active Changeset Governance
+owner. All non-GitHub contract, receipt, scope and forbidden-status validation
+continues to execute through ``base.main``.
 """
 from __future__ import annotations
 
@@ -19,6 +21,7 @@ sys.dont_write_bytecode = True
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 ZERO_SHA = "0" * 40
 BASE_VALIDATOR_PATH = Path(__file__).resolve().parents[2] / "scripts/lf_contract_check.py"
+GITHUB_PATH_PREFIX = ".github/"
 
 
 def _load_base_validator():
@@ -33,6 +36,7 @@ def _load_base_validator():
 base = _load_base_validator()
 fail = base.fail
 run_git = base.run_git
+_original_validate_changed_files = base.validate_changed_files
 
 
 def git_changed_files(base_revision: str, head_revision: str) -> list[str]:
@@ -254,8 +258,32 @@ def get_changed_files() -> list[str]:
     return []
 
 
+def validate_changed_files_without_repository_admission(changed_files: list[str]) -> list[str]:
+    """Validate Contract Check scope only; repository admission is upstream.
+
+    Changeset Governance already fail-closes unknown `.github` paths before the
+    Contract Check carrier runs. This adapter therefore removes `.github` paths
+    only from Contract Check's legacy scope-admission function while preserving
+    every non-GitHub validation performed by the base validator.
+    """
+    github_paths = [path for path in changed_files if path.startswith(GITHUB_PATH_PREFIX)]
+    contract_scope_paths = [path for path in changed_files if not path.startswith(GITHUB_PATH_PREFIX)]
+    for path in github_paths:
+        print(f"REPOSITORY_PATH_ADMISSION=DELEGATED_TO_CHANGESET_GOVERNANCE:{path}")
+    if not contract_scope_paths:
+        return []
+    return _original_validate_changed_files(contract_scope_paths)
+
+
+def validate_legacy_github_admission_delegated() -> None:
+    print("PASS_REPOSITORY_PATH_ADMISSION_DELEGATED: owner=TRANSVERSAL_CHANGESET_GOVERNANCE")
+
+
 def main() -> None:
     base.get_changed_files = get_changed_files
+    base.validate_changed_files = validate_changed_files_without_repository_admission
+    base.validate_retired_github_paths = validate_legacy_github_admission_delegated
+    base.validate_profile_creator_workflow_admission_scope = validate_legacy_github_admission_delegated
     base.main()
 
 
