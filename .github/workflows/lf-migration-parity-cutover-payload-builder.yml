@@ -1,0 +1,37 @@
+name: LF Migration Parity Cutover Payload Builder
+
+on:
+  push:
+    branches:
+      - transport/contract-check-migration-parity-cutover-v1
+
+permissions:
+  contents: write
+
+jobs:
+  build-payload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact helper head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Build exact cutover payload
+        run: python3 sandbox/lf_contract_gate_test/_cutover_builder/build_migration_parity_cutover_payload.py
+
+      - name: Commit exact non-workflow payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "LF Cutover Payload Builder"
+          git config user.email "lf-cutover-payload@users.noreply.github.com"
+          git add sandbox/lf_contract_gate_test/_cutover_payload/lf-contract-check.yml
+          if git diff --cached --quiet; then
+            echo "PASS_CUTOVER_PAYLOAD_ALREADY_PRESENT"
+            exit 0
+          fi
+          git commit -m "build(ci): materialize migration parity cutover payload"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
