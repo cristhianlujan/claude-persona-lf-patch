@@ -26,6 +26,9 @@ def canonical_digest(value: dict) -> str:
 
 
 def parity_evidence(head: str) -> dict:
+    # Mirror the canonical PASS semantics emitted by run_gate_checks_v1.py:
+    # envelope producer is observability; the check producer is the executable
+    # source path; downstream_impact is empty for PASS and reserved for failures.
     report = {
         "contract": "LF_GATE_ERROR_V1",
         "producer": "LF_GATE_CHECK_OBSERVABILITY_V1",
@@ -50,12 +53,12 @@ def parity_evidence(head: str) -> dict:
         "pass_count": 1,
         "fail_count": 0,
         "blocked_count": 0,
-        "downstream_impact": ["MIGRATION_SOURCE_PARITY"],
+        "downstream_impact": [],
         "checks": [{
             "check_status": "PASS",
             "exit_code": 0,
             "rc": 0,
-            "producer": "LF_GATE_CHECK_OBSERVABILITY_V1",
+            "producer": module.PARITY_SOURCE_PATH,
             "source_commit": head,
             "tested_commit": head,
             "source_path": module.PARITY_SOURCE_PATH,
@@ -160,6 +163,14 @@ class SagaTests(unittest.TestCase):
         attach_parity(payload)
         payload["parity"]["evidence"]["owner"] = "TAMPERED"
         with self.assertRaisesRegex(ValueError, "EVIDENCE_DIGEST_MISMATCH"):
+            module.evaluate(payload)
+
+    def test_parity_check_wrong_producer_is_rejected(self) -> None:
+        payload = applied_payload()
+        attach_parity(payload)
+        payload["parity"]["evidence"]["checks"][0]["producer"] = "LF_GATE_CHECK_OBSERVABILITY_V1"
+        payload["parity"]["evidence"]["manifest_sha256"] = canonical_digest(payload["parity"]["evidence"])
+        with self.assertRaisesRegex(ValueError, "CHECK_PRODUCER_INVALID"):
             module.evaluate(payload)
 
     def test_retry_is_idempotent(self) -> None:
