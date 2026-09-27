@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.20
+LF Contract Check v0.21
 
 Sandbox validator for controlled LF governance gates.
+
+v0.21 changes:
+- Admits only the exact Visual Evidence Gate workflow path.
+- Preserves the canonical Pack Validation core workflow admission from v0.20.
+- Keeps the broad .github/ prefix and sibling/lookalike workflows default-denied.
 
 v0.20 changes:
 - Admits only the exact canonical Pack Validation core workflow path.
@@ -104,6 +109,13 @@ COMPACT_PROTOCOL_TOP_LEVEL_FIELDS = [
     "operation_payload",
     "adapter_payload",
 ]
+VISUAL_EVIDENCE_GATE_WORKFLOW_PATH = ".github/workflows/visual-evidence-gate.yml"
+VISUAL_EVIDENCE_GATE_WORKFLOW_DENIED_LOOKALIKES = {
+    ".github/workflows/visual-evidence-gate.yml.bak",
+    ".github/workflows/visual-evidence-gate.yaml",
+    ".github/workflows/visual-evidence-gate/child.yml",
+    ".github/workflows/visual-evidence-gate-copy.yml",
+}
 PROFILE_CREATOR_CALLER_WORKFLOW_PATH = ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
 PROFILE_CREATOR_CALLER_WORKFLOW_DENIED_LOOKALIKES = {
     ".github/workflows/lf-customer-profile-creator-governance-caller.yml.bak",
@@ -146,6 +158,7 @@ ALLOWED_GITHUB_EXACT = {
     ".github/workflows/input-governance-pr418-holdout-replay.yml",
     ".github/workflows/validate-lf-packs.yml",
     ".github/workflows/lf-material-currentness.yml",
+    VISUAL_EVIDENCE_GATE_WORKFLOW_PATH,
     PROFILE_CREATOR_CALLER_WORKFLOW_PATH,
     PACK_VALIDATION_CORE_WORKFLOW_PATH,
 }
@@ -400,6 +413,25 @@ def validate_retired_github_paths() -> None:
     if failures:
         fail("FAIL_RETIRED_GITHUB_PATH_REINTRODUCED", ",".join(failures))
     print(f"PASS_RETIRED_GITHUB_PATH_GUARD: absent={len(RETIRED_GITHUB_DELETE_ONLY)} delete_only=true")
+
+
+def validate_visual_evidence_gate_workflow_admission_scope() -> None:
+    failures: list[str] = []
+    if ".github/" in ALLOWED_PREFIXES:
+        failures.append("github_prefix_must_remain_denied")
+    if VISUAL_EVIDENCE_GATE_WORKFLOW_PATH not in ALLOWED_GITHUB_EXACT:
+        failures.append("visual_evidence_gate_workflow_exact_missing")
+    if not is_allowed_path(VISUAL_EVIDENCE_GATE_WORKFLOW_PATH):
+        failures.append("visual_evidence_gate_workflow_not_allowed")
+    for path in sorted(VISUAL_EVIDENCE_GATE_WORKFLOW_DENIED_LOOKALIKES):
+        if path in ALLOWED_GITHUB_EXACT or is_allowed_path(path):
+            failures.append(f"lookalike_unexpectedly_allowed:{path}")
+    if failures:
+        fail("FAIL_VISUAL_EVIDENCE_GATE_WORKFLOW_ADMISSION_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_VISUAL_EVIDENCE_GATE_WORKFLOW_ADMISSION_SCOPE_INVARIANT: "
+        f"approved=1 denied={len(VISUAL_EVIDENCE_GATE_WORKFLOW_DENIED_LOOKALIKES)} broad_prefix=denied"
+    )
 
 
 def validate_profile_creator_workflow_admission_scope() -> None:
@@ -800,6 +832,7 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
 def main() -> None:
     validate_contract()
     validate_retired_github_paths()
+    validate_visual_evidence_gate_workflow_admission_scope()
     validate_profile_creator_workflow_admission_scope()
     validate_pack_validation_core_workflow_admission_scope()
     validate_profile_creator_edge_admission_scope()
