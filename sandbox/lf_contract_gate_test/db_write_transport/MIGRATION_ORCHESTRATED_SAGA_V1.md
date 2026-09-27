@@ -37,7 +37,8 @@ La evidencia debe:
 
 - corresponder al source path canónico `sandbox/lf_contract_gate_test/lf_migration_source_parity.py`;
 - tener exactamente un check ejecutado y PASS;
-- declarar `MIGRATION_SOURCE_PARITY` en su impacto;
+- identificar el control por `gate_id`, `step_id` y `source_path`; en PASS, `downstream_impact` puede estar vacío porque el productor canónico lo reserva para enrutar fallos;
+- declarar `LF_GATE_CHECK_OBSERVABILITY_V1` como productor del envelope y el source path canónico como productor del check ejecutado;
 - tener `source_commit` y `tested_commit` iguales al `git.head_sha` de la migration persistida;
 - conservar un `manifest_sha256` válido sobre su contenido.
 
