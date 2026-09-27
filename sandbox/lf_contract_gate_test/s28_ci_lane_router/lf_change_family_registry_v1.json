@@ -15,5 +15,26 @@
     "WORKFLOW": ["CI_ROUTER_SELFTEST"],
     "SERVICE_RUNTIME": [],
     "SUPABASE_FUNCTION": []
+  },
+  "path_admission": {
+    "version": "LF_REPOSITORY_PATH_ADMISSION_V1",
+    "default_github": "DENY",
+    "github_exact": [
+      ".github/workflows/input-governance-pr418-holdout-replay.yml",
+      ".github/workflows/lf-contract-check.yml",
+      ".github/workflows/lf-customer-profile-creator-governance-caller.yml",
+      ".github/workflows/lf-db-regression.yml",
+      ".github/workflows/lf-github-reconcile-v3.yml",
+      ".github/workflows/lf-material-currentness.yml",
+      ".github/workflows/lf-migration-source-parity-core.yml",
+      ".github/workflows/lf-pack-validation-core.yml",
+      ".github/workflows/profile-driven-screen-generation.yml",
+      ".github/workflows/story-agent-evidence-verifier.yml",
+      ".github/workflows/validate-lf-packs.yml",
+      ".github/workflows/visual-evidence-gate.yml"
+    ],
+    "github_retired_delete_only": [
+      ".github/workflows/lf-bootstrap-reproducibility.yml"
+    ]
   }
 }
