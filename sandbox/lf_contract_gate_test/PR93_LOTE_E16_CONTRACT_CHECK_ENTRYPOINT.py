@@ -6,6 +6,10 @@ replaces only ``get_changed_files`` with the CA-N96 implementation and delegates
 repository ``.github`` path admission to the already-active Changeset Governance
 owner. All non-GitHub contract, receipt, scope and forbidden-status validation
 continues to execute through ``base.main``.
+
+Repository-admission delegation is installed at module import time as well as
+when this file is executed directly, because PR93 imports this adapter and then
+invokes ``e16.base.main()`` rather than ``e16.main()``.
 """
 from __future__ import annotations
 
@@ -279,11 +283,20 @@ def validate_legacy_github_admission_delegated() -> None:
     print("PASS_REPOSITORY_PATH_ADMISSION_DELEGATED: owner=TRANSVERSAL_CHANGESET_GOVERNANCE")
 
 
-def main() -> None:
-    base.get_changed_files = get_changed_files
+def install_repository_admission_delegation() -> None:
     base.validate_changed_files = validate_changed_files_without_repository_admission
     base.validate_retired_github_paths = validate_legacy_github_admission_delegated
     base.validate_profile_creator_workflow_admission_scope = validate_legacy_github_admission_delegated
+
+
+# Install on import so callers such as PR93 that invoke e16.base.main() cannot
+# bypass the Changeset Governance delegation by skipping e16.main().
+install_repository_admission_delegation()
+
+
+def main() -> None:
+    base.get_changed_files = get_changed_files
+    install_repository_admission_delegation()
     base.main()
 
 
