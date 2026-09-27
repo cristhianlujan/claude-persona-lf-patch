@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from lf_ci_lane_router import classify
+from lf_ci_lane_router import ChangesetIntegrityError, classify
 
 
 def main() -> None:
@@ -22,10 +22,14 @@ def main() -> None:
     assert repaired_delta.p0_exact_head_external_required is False, repaired_delta
     assert repaired_delta.deep_shared is False, repaired_delta
 
-    lookalike = classify([workflow + ".bak"])
-    assert lookalike.mode == "CLASSIFICATION_REQUIRED", lookalike
-    assert lookalike.p0_exact_head_external_required is False, lookalike
-    assert lookalike.deep_shared is True, lookalike
+    lookalike_path = workflow + ".bak"
+    try:
+        classify([lookalike_path])
+    except ChangesetIntegrityError as exc:
+        assert exc.code == "FAIL_UNAUTHORIZED_GITHUB_PATH", exc
+        assert exc.detail == lookalike_path, exc
+    else:
+        raise AssertionError("GitHub workflow lookalike bypassed repository path admission")
 
     print("PASS_S26_RECONCILE_WORKFLOW_OWNERSHIP=11/11")
 
