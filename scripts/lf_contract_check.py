@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.19
+LF Contract Check v0.20
 
 Sandbox validator for controlled LF governance gates.
+
+v0.20 changes:
+- Removes repository `.github` path admission from Contract Check; Changeset
+  Governance owns repository-path admission before this validator executes.
+- Removes the historical GitHub exact allowlist, retired-workflow guard, and
+  Profile Creator workflow admission invariant from the base validator.
+- Keeps contract, receipts, governed-path and non-GitHub scope validation intact.
 
 v0.19 changes:
 - Admits only the exact canonical Profile operation runtime Edge source path.
@@ -99,13 +106,6 @@ COMPACT_PROTOCOL_TOP_LEVEL_FIELDS = [
     "operation_payload",
     "adapter_payload",
 ]
-PROFILE_CREATOR_CALLER_WORKFLOW_PATH = ".github/workflows/lf-customer-profile-creator-governance-caller.yml"
-PROFILE_CREATOR_CALLER_WORKFLOW_DENIED_LOOKALIKES = {
-    ".github/workflows/lf-customer-profile-creator-governance-caller.yml.bak",
-    ".github/workflows/lf-customer-profile-creator-governance-caller.yaml",
-    ".github/workflows/lf-customer-profile-creator-governance-caller/child.yml",
-    ".github/workflows/lf-customer-profile-creator-governance-caller-copy.yml",
-}
 PROFILE_CREATOR_CALLER_EDGE_PATH = "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts"
 PROFILE_CREATOR_CALLER_EDGE_DENIED_LOOKALIKES = {
     "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts.bak",
@@ -120,22 +120,7 @@ PROFILE_OPERATION_RUNTIME_EDGE_DENIED_LOOKALIKES = {
     "supabase/functions/run-creacion-perfil-lf-copy/index.ts",
     "supabase/functions/run-creacion-perfil-lf/child/index.ts",
 }
-RETIRED_GITHUB_DELETE_ONLY = {
-    ".github/workflows/lf-bootstrap-reproducibility.yml",
-}
 
-
-ALLOWED_GITHUB_EXACT = {
-    ".github/workflows/lf-contract-check.yml",
-    ".github/workflows/lf-db-regression.yml",
-    ".github/workflows/lf-github-reconcile-v3.yml",
-    ".github/workflows/story-agent-evidence-verifier.yml",
-    ".github/workflows/profile-driven-screen-generation.yml",
-    ".github/workflows/input-governance-pr418-holdout-replay.yml",
-    ".github/workflows/validate-lf-packs.yml",
-    ".github/workflows/lf-material-currentness.yml",
-    PROFILE_CREATOR_CALLER_WORKFLOW_PATH,
-}
 OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     "CLAUDE.md",
     ".claude/operational-execution.md",
@@ -199,7 +184,6 @@ RECONCILER_EDGE_ALLOWED_EXACT = {
     "supabase/functions/lf-github-reconcile-v3/index.ts",
 }
 ALLOWED_EXACT = {
-    *ALLOWED_GITHUB_EXACT,
     VALIDATOR_SELF_PATH,
     *OPERATIONAL_PROTOCOL_ALLOWED_EXACT,
     *P0_CLOSURE_EVIDENCE_ALLOWED_EXACT,
@@ -229,7 +213,6 @@ ALWAYS_BLOCKED_PREFIXES = [
     "production/",
     "runtime/",
 ]
-FORBIDDEN_GITHUB_PREFIX = ".github/"
 
 FORBIDDEN_TERM_EXEMPT_EXACT = {
     VALIDATOR_SELF_PATH,
@@ -375,37 +358,6 @@ def is_allowed_path(path: str) -> bool:
     if path in ALLOWED_EXACT:
         return True
     return any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
-
-
-def validate_retired_github_paths() -> None:
-    failures: list[str] = []
-    for path in sorted(RETIRED_GITHUB_DELETE_ONLY):
-        if path in ALLOWED_GITHUB_EXACT:
-            failures.append(f"retired_path_must_not_be_allowed:{path}")
-        if Path(path).exists():
-            failures.append(f"retired_path_reintroduced:{path}")
-    if failures:
-        fail("FAIL_RETIRED_GITHUB_PATH_REINTRODUCED", ",".join(failures))
-    print(f"PASS_RETIRED_GITHUB_PATH_GUARD: absent={len(RETIRED_GITHUB_DELETE_ONLY)} delete_only=true")
-
-
-def validate_profile_creator_workflow_admission_scope() -> None:
-    failures: list[str] = []
-    if ".github/" in ALLOWED_PREFIXES:
-        failures.append("github_prefix_must_remain_denied")
-    if PROFILE_CREATOR_CALLER_WORKFLOW_PATH not in ALLOWED_GITHUB_EXACT:
-        failures.append("profile_creator_workflow_exact_missing")
-    if not is_allowed_path(PROFILE_CREATOR_CALLER_WORKFLOW_PATH):
-        failures.append("profile_creator_workflow_not_allowed")
-    for path in sorted(PROFILE_CREATOR_CALLER_WORKFLOW_DENIED_LOOKALIKES):
-        if path in ALLOWED_GITHUB_EXACT or is_allowed_path(path):
-            failures.append(f"lookalike_unexpectedly_allowed:{path}")
-    if failures:
-        fail("FAIL_PROFILE_CREATOR_WORKFLOW_ADMISSION_SCOPE_INVARIANT", ",".join(failures))
-    print(
-        "PASS_PROFILE_CREATOR_WORKFLOW_ADMISSION_SCOPE_INVARIANT: "
-        f"approved=1 denied={len(PROFILE_CREATOR_CALLER_WORKFLOW_DENIED_LOOKALIKES)} broad_prefix=denied"
-    )
 
 
 def validate_profile_creator_edge_admission_scope() -> None:
@@ -589,13 +541,6 @@ def validate_changed_files(changed_files: list[str]) -> list[str]:
             if path.startswith(blocked):
                 fail("FAIL_BLOCKED_SCOPE_RISK", f"Ruta productiva/bloqueada tocada: {path}")
 
-        if path in RETIRED_GITHUB_DELETE_ONLY and not Path(path).exists():
-            print(f"Retired GitHub path deletion allowed: {path}")
-            continue
-
-        if path.startswith(FORBIDDEN_GITHUB_PREFIX) and path not in ALLOWED_GITHUB_EXACT:
-            fail("FAIL_UNAUTHORIZED_GITHUB_PATH", f"Ruta .github no autorizada: {path}")
-
         if is_governed_path(path):
             governed_files.append(path)
             continue
@@ -629,7 +574,7 @@ def receipt_covers_file(receipt: dict, changed_file: str) -> bool:
 
 def _git_blob_sha(path: str) -> str:
     raw = run_git(["ls-files", "-s", "--", path]).strip()
-    rows = [line for line in raw.splitlines() if line.strip()]
+    rows = [line.strip() for line in raw.splitlines() if line.strip()]
     if len(rows) != 1:
         fail("FAIL_CANDIDATE_RECEIPT_BLOB_UNRESOLVED", f"No se pudo resolver blob exacto para {path}")
     parts = rows[0].split(None, 3)
@@ -767,8 +712,6 @@ def validate_forbidden_terms(changed_files: list[str]) -> None:
 
 def main() -> None:
     validate_contract()
-    validate_retired_github_paths()
-    validate_profile_creator_workflow_admission_scope()
     validate_profile_creator_edge_admission_scope()
     validate_profile_operation_runtime_edge_admission_scope()
     validate_operational_protocol_scope()
