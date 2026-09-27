@@ -81,34 +81,32 @@ assert validate_profile_review_receipt(
     require_visual_bytes=True,
 ) == []
 
-# Regression for the CI repair required by #402: only the exact workflow path
-# may be allowed. Resolve the repository root from this file so the test is
-# independent of the workflow's current working directory.
+# Regression for the CI repair required by #402. Repository path admission is
+# owned by Changeset Governance; this domain test consumes that canonical owner
+# instead of importing Contract Check's legacy allowlist.
 repo_root = Path(__file__).resolve().parents[3]
-validator_path = repo_root / "scripts" / "lf_contract_check.py"
-assert validator_path.is_file(), validator_path
-spec = importlib.util.spec_from_file_location("lf_contract_check_402", validator_path)
+admission_path = repo_root / "sandbox" / "lf_contract_gate_test" / "s28_ci_lane_router" / "lf_repository_path_admission.py"
+assert admission_path.is_file(), admission_path
+spec = importlib.util.spec_from_file_location("lf_repository_path_admission_402", admission_path)
 assert spec is not None and spec.loader is not None
-validator = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(validator)
+admission = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(admission)
+policy = admission.load_repository_path_admission()
+
 workflow = ".github/workflows/profile-driven-screen-generation.yml"
-assert workflow in validator.ALLOWED_GITHUB_EXACT
-assert validator.is_allowed_path(workflow)
-assert validator.validate_changed_files([workflow]) == []
+assert policy.evaluate(workflow) == {
+    "verdict": "ADMIT",
+    "code": "PASS_GITHUB_EXACT_PATH_ADMISSION",
+}
 for lookalike in (
     ".github/workflows/profile-driven-screen-generation.yml.bak",
     ".github/workflows/profile-driven-screen-generation.yaml",
     ".github/workflows/profile-driven-screen-generation/child.yml",
     ".github/workflows/profile-driven-screen-generation-copy.yml",
 ):
-    assert lookalike not in validator.ALLOWED_GITHUB_EXACT
-    assert not validator.is_allowed_path(lookalike)
-    try:
-        validator.validate_changed_files([lookalike])
-    except SystemExit as exc:
-        assert exc.code == 1
-    else:
-        raise AssertionError(f"lookalike unexpectedly passed changed-file validation: {lookalike}")
-assert ".github/" not in validator.ALLOWED_PREFIXES
+    assert policy.evaluate(lookalike) == {
+        "verdict": "BLOCK",
+        "code": "FAIL_UNAUTHORIZED_GITHUB_PATH",
+    }
 
 print("PROFILE_DRIVEN_SCREEN_GENERATION_TESTS_PASS 10/10")
