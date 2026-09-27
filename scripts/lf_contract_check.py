@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.19
+LF Contract Check v0.20
 
 Sandbox validator for controlled LF governance gates.
+
+v0.20 changes:
+- Admits only the exact canonical Pack Validation core workflow path.
+- Keeps the broad .github/ prefix and workflow lookalikes default-denied.
+- Adds an intrinsic fail-closed invariant for this admission.
 
 v0.19 changes:
 - Admits only the exact canonical Profile operation runtime Edge source path.
@@ -106,6 +111,13 @@ PROFILE_CREATOR_CALLER_WORKFLOW_DENIED_LOOKALIKES = {
     ".github/workflows/lf-customer-profile-creator-governance-caller/child.yml",
     ".github/workflows/lf-customer-profile-creator-governance-caller-copy.yml",
 }
+PACK_VALIDATION_CORE_WORKFLOW_PATH = ".github/workflows/lf-pack-validation-core.yml"
+PACK_VALIDATION_CORE_WORKFLOW_DENIED_LOOKALIKES = {
+    ".github/workflows/lf-pack-validation-core.yml.bak",
+    ".github/workflows/lf-pack-validation-core.yaml",
+    ".github/workflows/lf-pack-validation-core/child.yml",
+    ".github/workflows/lf-pack-validation-core-copy.yml",
+}
 PROFILE_CREATOR_CALLER_EDGE_PATH = "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts"
 PROFILE_CREATOR_CALLER_EDGE_DENIED_LOOKALIKES = {
     "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts.bak",
@@ -135,6 +147,7 @@ ALLOWED_GITHUB_EXACT = {
     ".github/workflows/validate-lf-packs.yml",
     ".github/workflows/lf-material-currentness.yml",
     PROFILE_CREATOR_CALLER_WORKFLOW_PATH,
+    PACK_VALIDATION_CORE_WORKFLOW_PATH,
 }
 OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     "CLAUDE.md",
@@ -405,6 +418,25 @@ def validate_profile_creator_workflow_admission_scope() -> None:
     print(
         "PASS_PROFILE_CREATOR_WORKFLOW_ADMISSION_SCOPE_INVARIANT: "
         f"approved=1 denied={len(PROFILE_CREATOR_CALLER_WORKFLOW_DENIED_LOOKALIKES)} broad_prefix=denied"
+    )
+
+
+def validate_pack_validation_core_workflow_admission_scope() -> None:
+    failures: list[str] = []
+    if ".github/" in ALLOWED_PREFIXES:
+        failures.append("github_prefix_must_remain_denied")
+    if PACK_VALIDATION_CORE_WORKFLOW_PATH not in ALLOWED_GITHUB_EXACT:
+        failures.append("pack_validation_core_workflow_exact_missing")
+    if not is_allowed_path(PACK_VALIDATION_CORE_WORKFLOW_PATH):
+        failures.append("pack_validation_core_workflow_not_allowed")
+    for path in sorted(PACK_VALIDATION_CORE_WORKFLOW_DENIED_LOOKALIKES):
+        if path in ALLOWED_GITHUB_EXACT or is_allowed_path(path):
+            failures.append(f"lookalike_unexpectedly_allowed:{path}")
+    if failures:
+        fail("FAIL_PACK_VALIDATION_CORE_WORKFLOW_ADMISSION_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_PACK_VALIDATION_CORE_WORKFLOW_ADMISSION_SCOPE_INVARIANT: "
+        f"approved=1 denied={len(PACK_VALIDATION_CORE_WORKFLOW_DENIED_LOOKALIKES)} broad_prefix=denied"
     )
 
 
@@ -769,6 +801,7 @@ def main() -> None:
     validate_contract()
     validate_retired_github_paths()
     validate_profile_creator_workflow_admission_scope()
+    validate_pack_validation_core_workflow_admission_scope()
     validate_profile_creator_edge_admission_scope()
     validate_profile_operation_runtime_edge_admission_scope()
     validate_operational_protocol_scope()
