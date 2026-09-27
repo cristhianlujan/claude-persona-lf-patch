@@ -267,8 +267,8 @@ def validate_changed_files_without_repository_admission(changed_files: list[str]
 
     Changeset Governance already fail-closes unknown `.github` paths before the
     Contract Check carrier runs. This adapter therefore removes `.github` paths
-    only from Contract Check's legacy scope-admission function while preserving
-    every non-GitHub validation performed by the base validator.
+    only from Contract Check's scope validation while preserving every
+    non-GitHub validation performed by the base validator.
     """
     github_paths = [path for path in changed_files if path.startswith(GITHUB_PATH_PREFIX)]
     contract_scope_paths = [path for path in changed_files if not path.startswith(GITHUB_PATH_PREFIX)]
@@ -279,14 +279,8 @@ def validate_changed_files_without_repository_admission(changed_files: list[str]
     return _original_validate_changed_files(contract_scope_paths)
 
 
-def validate_legacy_github_admission_delegated() -> None:
-    print("PASS_REPOSITORY_PATH_ADMISSION_DELEGATED: owner=TRANSVERSAL_CHANGESET_GOVERNANCE")
-
-
 def install_repository_admission_delegation() -> None:
     base.validate_changed_files = validate_changed_files_without_repository_admission
-    base.validate_retired_github_paths = validate_legacy_github_admission_delegated
-    base.validate_profile_creator_workflow_admission_scope = validate_legacy_github_admission_delegated
 
 
 # Install on import so callers such as PR93 that invoke e16.base.main() cannot
