@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Regression for recent Contract Check path-admission contamination rollback.
+"""Regression for Contract Check repository-admission cleanup.
 
-This test is intentionally narrow: it proves the Visual Evidence Gate, Pack Validation
-core, and Migration Source Parity reusable workflow admissions are not owned by
-scripts/lf_contract_check.py. Historical path-admission cleanup is a separate lot.
+This test proves repository `.github` path admission is no longer owned by
+scripts/lf_contract_check.py. Changeset Governance owns that boundary; Contract
+Check retains only its contract, receipt and non-GitHub scope responsibilities.
 """
 from pathlib import Path
 
@@ -19,6 +19,13 @@ FORBIDDEN_TOKENS = {
     "validate_visual_evidence_gate_workflow_admission_scope",
     "validate_pack_validation_core_workflow_admission_scope",
     "validate_migration_source_parity_core_workflow_admission_scope",
+    "ALLOWED_GITHUB_EXACT",
+    "RETIRED_GITHUB_DELETE_ONLY",
+    "FORBIDDEN_GITHUB_PREFIX",
+    "PROFILE_CREATOR_CALLER_WORKFLOW_PATH",
+    "PROFILE_CREATOR_CALLER_WORKFLOW_DENIED_LOOKALIKES",
+    "validate_retired_github_paths",
+    "validate_profile_creator_workflow_admission_scope",
 }
 
 
@@ -26,10 +33,10 @@ def main() -> int:
     text = SOURCE.read_text(encoding="utf-8")
     leaked = sorted(token for token in FORBIDDEN_TOKENS if token in text)
     if leaked:
-        raise SystemExit("FAIL_CONTRACT_CHECK_RECENT_PATH_ADMISSION_LEAK:" + ",".join(leaked))
-    if "LF Contract Check v0.19" not in text:
-        raise SystemExit("FAIL_CONTRACT_CHECK_EXPECTED_PRE_CONTAMINATION_BASELINE")
-    print("PASS_CONTRACT_CHECK_RECENT_PATH_ADMISSION_ROLLBACK=9/9")
+        raise SystemExit("FAIL_CONTRACT_CHECK_GITHUB_ADMISSION_OWNERSHIP_LEAK:" + ",".join(leaked))
+    if "LF Contract Check v0.20" not in text:
+        raise SystemExit("FAIL_CONTRACT_CHECK_EXPECTED_GITHUB_CLEAN_BASELINE")
+    print("PASS_CONTRACT_CHECK_GITHUB_ADMISSION_REMOVAL=16/16")
     return 0
 
 
