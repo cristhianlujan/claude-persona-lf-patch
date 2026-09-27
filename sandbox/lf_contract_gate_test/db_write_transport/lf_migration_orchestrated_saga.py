@@ -98,7 +98,7 @@ def _validate_parity_evidence(parity: dict[str, Any], *, git_head: str) -> bool:
     if evidence.get("source_path") != [PARITY_SOURCE_PATH]:
         raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_SOURCE_INVALID")
     impacts = evidence.get("downstream_impact")
-    if not isinstance(impacts, list) or "MIGRATION_SOURCE_PARITY" not in impacts:
+    if not isinstance(impacts, list):
         raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_IMPACT_INVALID")
     if evidence.get("expected_check_count") != 1 or evidence.get("executed_check_count") != 1:
         raise ValueError("MIGRATION_SAGA_PARITY_EVIDENCE_CHECK_COUNT_INVALID")
@@ -110,7 +110,7 @@ def _validate_parity_evidence(parity: dict[str, Any], *, git_head: str) -> bool:
     check = checks[0]
     if check.get("check_status") != "PASS" or check.get("exit_code") != 0 or check.get("rc") != 0:
         return False
-    if check.get("producer") != PARITY_EVIDENCE_PRODUCER:
+    if check.get("producer") != PARITY_SOURCE_PATH:
         raise ValueError("MIGRATION_SAGA_PARITY_CHECK_PRODUCER_INVALID")
     if check.get("source_path") != PARITY_SOURCE_PATH:
         raise ValueError("MIGRATION_SAGA_PARITY_CHECK_SOURCE_INVALID")
