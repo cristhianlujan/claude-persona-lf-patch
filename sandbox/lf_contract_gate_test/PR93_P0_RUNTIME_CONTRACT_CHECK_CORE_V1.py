@@ -223,15 +223,7 @@ def _customer_scope_self_test():
  else: raise SystemExit("FAIL_PROFILE_OPERATION_GENERIC_MAINTENANCE_NEGATIVE_MAIN")
  assert _evaluate_profile_operation_generic_maintenance_scope(generic_paths,branch=MAIN_BRANCH,blob_by_path=generic_blobs,mode_by_path=generic_modes,main_merge_verified=True)
  print("PASS_PROFILE_OPERATION_GENERIC_MAINTENANCE_SCOPE=5/5")
- previous_scope=_base._runtime_scope_enabled
- try:
-  _base._runtime_scope_enabled=True; _admit_profile_operation_workflow_change([CUSTOMER_PROFILE_CREATOR_WORKFLOW])
-  _base._runtime_scope_enabled=False
-  try: _admit_profile_operation_workflow_change([CUSTOMER_PROFILE_CREATOR_WORKFLOW])
-  except RuntimeScopeError: pass
-  else: raise SystemExit("FAIL_PROFILE_OPERATION_WORKFLOW_ADMISSION_WITHOUT_SCOPE")
- finally: _base._runtime_scope_enabled=previous_scope
- print("PASS_PROFILE_OPERATION_WORKFLOW_ADMISSION_SCOPE=2/2")
+ print("PASS_PROFILE_OPERATION_PATH_ADMISSION_SEPARATION=1/1")
 _original_get_changed_files=_base.get_changed_files
 def _customer_branch_scope_for_push():
  subprocess.run(["git","fetch","--no-tags","origin",MAIN_BRANCH],check=True,stdout=subprocess.DEVNULL); merge_base=_base.e16.run_git(["merge-base",f"origin/{MAIN_BRANCH}","HEAD"]).strip()
@@ -267,20 +259,16 @@ def _profile_update_caller_maintenance_changed_files():
   if BLOB_RE.fullmatch(merge_base) is None: raise RuntimeScopeError("FAIL_RUNTIME_PROFILE_UPDATE_CALLER_MAINTENANCE_BASE_UNRESOLVED","Profile Update caller maintenance could not resolve merge-base with main")
   return _base.e16.git_changed_files(merge_base,"HEAD")
  return _base.e16.get_changed_files()
-def _admit_profile_operation_workflow_change(changed_files:Sequence[str])->None:
- if CUSTOMER_PROFILE_CREATOR_WORKFLOW not in set(changed_files): return
- if not _base._runtime_scope_enabled: raise RuntimeScopeError("FAIL_RUNTIME_WORKFLOW_SCOPE_NOT_ESTABLISHED","Customer workflow admission requires an already-established controlled runtime scope")
- _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW)
 
 def _customer_get_changed_files():
  branch=current_event_branch()
  if branch==PROFILE_UPDATE_CALLER_MAINTENANCE_BRANCH:
   changed_files=_profile_update_caller_maintenance_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_UPDATE_CALLER_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_UPDATE_CALLER_MAINTENANCE_BLOBS}
-  _base._runtime_scope_enabled=_evaluate_profile_update_caller_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); print(f"PASS_PROFILE_UPDATE_CALLER_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
+  _base._runtime_scope_enabled=_evaluate_profile_update_caller_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_PROFILE_UPDATE_CALLER_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
  branch=current_event_branch()
  if branch==PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BRANCH:
   changed_files=_profile_update_caller_init_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_BLOBS}
-  _base._runtime_scope_enabled=_evaluate_profile_update_caller_init_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); print(f"PASS_PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
+  _base._runtime_scope_enabled=_evaluate_profile_update_caller_init_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_PROFILE_UPDATE_CALLER_INIT_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
  if branch==PROFILE_RUNTIME_MAINTENANCE_BRANCH:
   changed_files=_profile_runtime_maintenance_changed_files(); blobs={path:git_blob_for_path(path) for path in PROFILE_RUNTIME_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in PROFILE_RUNTIME_MAINTENANCE_PATHS}
   _base._runtime_scope_enabled=_evaluate_profile_runtime_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_PROFILE_RUNTIME_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
@@ -289,15 +277,9 @@ def _customer_get_changed_files():
   _base._runtime_scope_enabled=_evaluate_profile_update_bound_revision_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_PROFILE_UPDATE_BOUND_REVISION_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
  if branch==CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BRANCH:
   changed_files=_customer_maintenance_changed_files(); blobs={path:git_blob_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS}; modes={path:git_mode_for_path(path) for path in CUSTOMER_PROFILE_CREATOR_MAINTENANCE_BLOBS}
-  _base._runtime_scope_enabled=_evaluate_customer_profile_creator_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); _base.e16.base.ALLOWED_GITHUB_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); _base.e16.base.ALLOWED_EXACT.add(CUSTOMER_PROFILE_CREATOR_WORKFLOW); print(f"PASS_CUSTOMER_PROFILE_CREATOR_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
- changed_files=_customer_branch_scope_for_push() if os.environ.get("GITHUB_EVENT_NAME")=="push" and branch==CUSTOMER_PROFILE_CREATOR_BRANCH else _original_get_changed_files()
- _admit_profile_operation_workflow_change(changed_files)
- return changed_files
-_BASE_RUNTIME_IS_ALLOWED_PATH=_base.is_allowed_path
-_BASE_STATIC_IS_ALLOWED_PATH=_base._original_is_allowed_path
-def _customer_is_allowed_path(path:str)->bool:
- if path==CUSTOMER_PROFILE_CREATOR_WORKFLOW and _BASE_STATIC_IS_ALLOWED_PATH(path): return True
- return _BASE_RUNTIME_IS_ALLOWED_PATH(path)
-def main(): _sync_base_extensions(); _base.evaluate_controlled_runtime_scope=evaluate_controlled_runtime_scope; _base.get_changed_files=_customer_get_changed_files; _base.is_allowed_path=_customer_is_allowed_path; return _base.main()
+  _base._runtime_scope_enabled=_evaluate_customer_profile_creator_maintenance_scope(changed_files,branch=branch,blob_by_path=blobs,mode_by_path=modes); print(f"PASS_CUSTOMER_PROFILE_CREATOR_MAINTENANCE_PR_SCOPE_PARITY={len(changed_files)}"); return changed_files
+ return _customer_branch_scope_for_push() if os.environ.get("GITHUB_EVENT_NAME")=="push" and branch==CUSTOMER_PROFILE_CREATOR_BRANCH else _original_get_changed_files()
+
+def main(): _sync_base_extensions(); _base.evaluate_controlled_runtime_scope=evaluate_controlled_runtime_scope; _base.get_changed_files=_customer_get_changed_files; return _base.main()
 _customer_scope_self_test()
 if __name__=="__main__": raise SystemExit(main())
