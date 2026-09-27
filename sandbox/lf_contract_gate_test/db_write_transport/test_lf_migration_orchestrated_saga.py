@@ -23,7 +23,7 @@ REPAIRED_MIGRATIONS = (
     ("20260922163720", "lf_profile_execution_queue_terminal_reconcile_v1", "d25bf3f54e8838e23d50b71f805ec97395a9375c"),
     ("20260922215336", "lf_profile_baseline_digest_parity_guard_v1", "01d3a59eda408bac4345376ecd3bd07739c3fabd"),
     ("20260922231503", "lf_profile_execution_semantic_judge_runtime_wiring_v1", "18967809f175bb4507c2f5d5c263b7c4416d1b67"),
-    ("20260923013150", "restrict_profile_semantic_judge_trust_validator_acl", "6d70e52e8c799063d97416eb00c8540dca43b98a"),
+    ("20260923013150", "restrict_profile_semantic_judge_trust_validator_acl", "f0520007669e9088508439375e56b83cbcca1ac3"),
 )
 
 # Exact LF_GATE_ERROR_V1 PASS artifact emitted by lf-contract-check run 36280618454
