@@ -3,11 +3,15 @@
 
 REPORT_ONLY classifies one solution without judging semantic quality. Fixed
 families are declarative and cannot be overridden by a per-PR manifest.
+Repository-path admission is a Changeset Governance precondition and runs
+before family classification/applicability.
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
+import sys
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path, PurePosixPath
@@ -17,6 +21,18 @@ REGISTRY_PATH = Path(__file__).with_name("lf_change_family_registry_v1.json")
 REGISTRY_VERSION = "LF_CHANGE_FAMILY_REGISTRY_V1"
 FAMILY_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
 SOLUTION_REF_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+
+_PATH_ADMISSION_PATH = Path(__file__).with_name("lf_repository_path_admission.py")
+_PATH_ADMISSION_SPEC = importlib.util.spec_from_file_location(
+    "lf_repository_path_admission", _PATH_ADMISSION_PATH
+)
+if _PATH_ADMISSION_SPEC is None or _PATH_ADMISSION_SPEC.loader is None:
+    raise ImportError(f"cannot load LF repository path admission helper: {_PATH_ADMISSION_PATH}")
+_PATH_ADMISSION = importlib.util.module_from_spec(_PATH_ADMISSION_SPEC)
+sys.modules[_PATH_ADMISSION_SPEC.name] = _PATH_ADMISSION
+_PATH_ADMISSION_SPEC.loader.exec_module(_PATH_ADMISSION)
+RepositoryPathAdmissionError = _PATH_ADMISSION.RepositoryPathAdmissionError
+load_repository_path_admission = _PATH_ADMISSION.load_repository_path_admission
 
 
 class ChangesetIntegrityError(ValueError):
@@ -131,6 +147,17 @@ def parse_manifest(data: Mapping[str, Any], *, manifest_path: str) -> tuple[str,
     return solution_ref, result
 
 
+def _enforce_repository_path_admission(paths: Iterable[str]) -> None:
+    try:
+        policy = load_repository_path_admission()
+    except RepositoryPathAdmissionError as exc:
+        raise ChangesetIntegrityError(exc.code, exc.detail) from exc
+    for path in paths:
+        decision = policy.evaluate(path, exists_after_change=Path(path).exists())
+        if decision["verdict"] == "BLOCK":
+            raise ChangesetIntegrityError(decision["code"], path)
+
+
 def evaluate_pr_integrity(
     paths: Iterable[str],
     *,
@@ -138,6 +165,7 @@ def evaluate_pr_integrity(
     registry: FamilyRegistry | None = None,
 ) -> dict[str, Any]:
     changed = tuple(sorted({p.strip() for p in paths if isinstance(p, str) and p.strip()}))
+    _enforce_repository_path_admission(changed)
     reg = registry or load_family_registry()
     manifests = _manifest_paths(changed, reg)
     if len(manifests) > 1:
