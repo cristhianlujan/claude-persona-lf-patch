@@ -1,4 +1,5 @@
 import importlib.util
+import sys
 from pathlib import Path
 
 from profile_decision_package import (
@@ -90,6 +91,7 @@ assert admission_path.is_file(), admission_path
 spec = importlib.util.spec_from_file_location("lf_repository_path_admission_402", admission_path)
 assert spec is not None and spec.loader is not None
 admission = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = admission
 spec.loader.exec_module(admission)
 policy = admission.load_repository_path_admission()
 
