@@ -1,0 +1,28 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1",
+  "issued_by": "operation_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-VISUAL-WORKFLOW-ADMISSION-PR1122-REBASE-20260927-003",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "contract_judge",
+  "contract_sha": "b10ccc8527bc2499775559635fb59736744e46f3ca5e150cf4644cd4c491d7e8",
+  "judge_sha": "MIGRATION_20260531_GITHUB_GATE_PROTOCOL",
+  "source_sha_list": [
+    "3028ff379f9e6c995304d6cf3e97ac3a7a19349b",
+    "b10ccc8527bc2499775559635fb59736744e46f3ca5e150cf4644cd4c491d7e8",
+    "MIGRATION_20260531_GITHUB_GATE_PROTOCOL"
+  ],
+  "target_paths": [
+    "scripts/lf_contract_check.py"
+  ],
+  "target_blob_sha_by_path": {
+    "scripts/lf_contract_check.py": "fd915c0b58a859713224428ae35463b839d67f40"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-27T01:18:41Z",
+  "candidate_code_head": "3028ff379f9e6c995304d6cf3e97ac3a7a19349b",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "MERGE_AUTHORIZATION_REQUIRED"
+}
