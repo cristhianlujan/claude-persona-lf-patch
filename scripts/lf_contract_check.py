@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.21
+LF Contract Check v0.22
 
 Sandbox validator for controlled LF governance gates.
+
+v0.22 changes:
+- Admits only the exact canonical Migration Source Parity core workflow path.
+- Preserves the existing Visual Evidence Gate and Pack Validation admissions.
+- Keeps the broad .github/ prefix and workflow lookalikes default-denied.
 
 v0.21 changes:
 - Admits only the exact Visual Evidence Gate workflow path.
@@ -130,6 +135,13 @@ PACK_VALIDATION_CORE_WORKFLOW_DENIED_LOOKALIKES = {
     ".github/workflows/lf-pack-validation-core/child.yml",
     ".github/workflows/lf-pack-validation-core-copy.yml",
 }
+MIGRATION_SOURCE_PARITY_CORE_WORKFLOW_PATH = ".github/workflows/lf-migration-source-parity-core.yml"
+MIGRATION_SOURCE_PARITY_CORE_WORKFLOW_DENIED_LOOKALIKES = {
+    ".github/workflows/lf-migration-source-parity-core.yml.bak",
+    ".github/workflows/lf-migration-source-parity-core.yaml",
+    ".github/workflows/lf-migration-source-parity-core/child.yml",
+    ".github/workflows/lf-migration-source-parity-core-copy.yml",
+}
 PROFILE_CREATOR_CALLER_EDGE_PATH = "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts"
 PROFILE_CREATOR_CALLER_EDGE_DENIED_LOOKALIKES = {
     "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts.bak",
@@ -161,6 +173,7 @@ ALLOWED_GITHUB_EXACT = {
     VISUAL_EVIDENCE_GATE_WORKFLOW_PATH,
     PROFILE_CREATOR_CALLER_WORKFLOW_PATH,
     PACK_VALIDATION_CORE_WORKFLOW_PATH,
+    MIGRATION_SOURCE_PARITY_CORE_WORKFLOW_PATH,
 }
 OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
     "CLAUDE.md",
@@ -469,6 +482,25 @@ def validate_pack_validation_core_workflow_admission_scope() -> None:
     print(
         "PASS_PACK_VALIDATION_CORE_WORKFLOW_ADMISSION_SCOPE_INVARIANT: "
         f"approved=1 denied={len(PACK_VALIDATION_CORE_WORKFLOW_DENIED_LOOKALIKES)} broad_prefix=denied"
+    )
+
+
+def validate_migration_source_parity_core_workflow_admission_scope() -> None:
+    failures: list[str] = []
+    if ".github/" in ALLOWED_PREFIXES:
+        failures.append("github_prefix_must_remain_denied")
+    if MIGRATION_SOURCE_PARITY_CORE_WORKFLOW_PATH not in ALLOWED_GITHUB_EXACT:
+        failures.append("migration_source_parity_core_workflow_exact_missing")
+    if not is_allowed_path(MIGRATION_SOURCE_PARITY_CORE_WORKFLOW_PATH):
+        failures.append("migration_source_parity_core_workflow_not_allowed")
+    for path in sorted(MIGRATION_SOURCE_PARITY_CORE_WORKFLOW_DENIED_LOOKALIKES):
+        if path in ALLOWED_GITHUB_EXACT or is_allowed_path(path):
+            failures.append(f"lookalike_unexpectedly_allowed:{path}")
+    if failures:
+        fail("FAIL_MIGRATION_SOURCE_PARITY_CORE_WORKFLOW_ADMISSION_SCOPE_INVARIANT", ",".join(failures))
+    print(
+        "PASS_MIGRATION_SOURCE_PARITY_CORE_WORKFLOW_ADMISSION_SCOPE_INVARIANT: "
+        f"approved=1 denied={len(MIGRATION_SOURCE_PARITY_CORE_WORKFLOW_DENIED_LOOKALIKES)} broad_prefix=denied"
     )
 
 
@@ -835,6 +867,7 @@ def main() -> None:
     validate_visual_evidence_gate_workflow_admission_scope()
     validate_profile_creator_workflow_admission_scope()
     validate_pack_validation_core_workflow_admission_scope()
+    validate_migration_source_parity_core_workflow_admission_scope()
     validate_profile_creator_edge_admission_scope()
     validate_profile_operation_runtime_edge_admission_scope()
     validate_operational_protocol_scope()
