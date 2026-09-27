@@ -2,7 +2,7 @@
   "registry_version": "LF_CHANGE_FAMILY_REGISTRY_V1",
   "fixed_families": [
     {"family": "MIGRATION", "kind": "prefix", "value": "supabase/migrations/"},
-    {"family": "CHANGESET_MANIFEST", "kind": "prefix", "value": "changesets/"},
+    {"family": "CHANGESET_MANIFEST", "kind": "prefix", "value": "sandbox/lf_contract_gate_test/changesets/"},
     {"family": "CI_ROUTER", "kind": "prefix", "value": "sandbox/lf_contract_gate_test/s28_ci_lane_router/"},
     {"family": "WORKFLOW", "kind": "prefix_suffixes", "value": ".github/workflows/", "suffixes": [".yaml", ".yml"]},
     {"family": "SERVICE_RUNTIME", "kind": "prefix", "value": "services/"},
