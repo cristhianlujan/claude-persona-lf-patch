@@ -165,7 +165,34 @@ def evaluate(snapshot: Mapping[str, Any]) -> dict[str, Any]:
         bindings_by_step[_text(row, "step_id")].append(row)
 
     active_judges = [row for row in judges if _active(row)]
-    judge_codes = {_text(row, "judge_code") for row in active_judges if _text(row, "judge_code")}
+    judge_codes_list = [_text(row, "judge_code") for row in active_judges]
+    judge_codes = {code for code in judge_codes_list if code}
+    for code, count in sorted(Counter(judge_codes_list).items()):
+        if not code:
+            fail("FAIL_ACTIVE_JUDGE_CODE_MISSING")
+        elif count != 1:
+            fail("FAIL_ACTIVE_JUDGE_DUPLICATE", {"judge_code": code, "count": count})
+
+    for binding in active_bindings:
+        step_id = _text(binding, "step_id")
+        if step_id and step_id not in active_step_ids:
+            fail("FAIL_ORPHAN_ACTIVE_JUDGE_BINDING", step_id)
+            continue
+        judge_code = _text(binding, "judge_code")
+        if not judge_code:
+            fail("FAIL_JUDGE_CODE_MISSING", step_id or None)
+            continue
+        if judge_code not in judge_codes:
+            fail("FAIL_ACTIVE_JUDGE_MISSING", {"step_id": step_id, "judge_code": judge_code})
+        contracts_for_step = by_step_contract.get(step_id, [])
+        if len(contracts_for_step) == 1:
+            declared = _text(contracts_for_step[0], "mini_judge_code")
+            if declared and declared != judge_code:
+                fail(
+                    "FAIL_STEP_MINI_JUDGE_BINDING_MISMATCH",
+                    {"step_id": step_id, "declared": declared, "bound": judge_code},
+                )
+
     for step in required_steps:
         step_id = _text(step, "step_id")
         matches = bindings_by_step.get(step_id, [])
@@ -175,11 +202,6 @@ def evaluate(snapshot: Mapping[str, Any]) -> dict[str, Any]:
         binding = matches[0]
         if binding.get("step_order") != step.get("step_order"):
             fail("FAIL_JUDGE_BINDING_ORDER_MISMATCH", step_id)
-        judge_code = _text(binding, "judge_code")
-        if not judge_code:
-            fail("FAIL_JUDGE_CODE_MISSING", step_id)
-        elif judge_code not in judge_codes:
-            fail("FAIL_ACTIVE_JUDGE_MISSING", {"step_id": step_id, "judge_code": judge_code})
 
     required_policies = [row for row in policies if row.get("required") is True]
     policy_ids: list[str] = []
