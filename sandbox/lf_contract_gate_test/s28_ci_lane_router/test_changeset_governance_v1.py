@@ -25,12 +25,21 @@ def main():
     assert r["families"] and not r["classification_required"]
     checks += 1
 
-    r = evaluate_pr_integrity([".github/workflows/x.yml"])
+    r = evaluate_pr_integrity([".github/workflows/lf-contract-check.yml"])
+    assert r["families"][".github/workflows/lf-contract-check.yml"] == "WORKFLOW"
     assert not r["classification_required"]
     checks += 1
 
-    r = evaluate_pr_integrity([".github/workflows/x.yml.bak"])
-    assert r["classification_required"] and r["violations"] == ["UNDECLARED_PATH:.github/workflows/x.yml.bak"]
+    expect(
+        "FAIL_UNAUTHORIZED_GITHUB_PATH",
+        lambda: evaluate_pr_integrity([".github/workflows/x.yml"]),
+    )
+    checks += 1
+
+    expect(
+        "FAIL_UNAUTHORIZED_GITHUB_PATH",
+        lambda: evaluate_pr_integrity([".github/workflows/x.yml.bak"]),
+    )
     checks += 1
 
     r = evaluate_pr_integrity(["services/profile_runtime_api/x.py"])
@@ -61,7 +70,7 @@ def main():
     r = evaluate_pr_integrity([legacy_root])
     assert r["classification_required"] and r["violations"] == [f"UNDECLARED_PATH:{legacy_root}"]
     checks += 1
-    print(f"CHANGESET_FIXED_FAMILY_TESTS={checks}/8 PASS")
+    print(f"CHANGESET_FIXED_FAMILY_TESTS={checks}/9 PASS")
 
     r = evaluate_pr_integrity(
         [manifest("SOL-3"), "other/a.txt"],
@@ -85,7 +94,14 @@ def main():
 
     unknown = classify(["custom/x.py"])
     assert unknown.mode == "CLASSIFICATION_REQUIRED" and not unknown.migration_parity_required, unknown
-    print("CHANGESET_ROUTER_WIRING=2/2 PASS")
+
+    try:
+        classify([".github/workflows/unregistered.yml"])
+    except ChangesetIntegrityError as exc:
+        assert exc.code == "FAIL_UNAUTHORIZED_GITHUB_PATH", exc
+    else:
+        raise AssertionError("unregistered GitHub workflow bypassed Changeset Governance admission")
+    print("CHANGESET_ROUTER_WIRING=3/3 PASS")
 
 
 if __name__ == "__main__":
