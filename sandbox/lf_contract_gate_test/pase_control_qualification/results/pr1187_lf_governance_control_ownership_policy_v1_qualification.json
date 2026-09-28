@@ -1,0 +1,70 @@
+{
+  "assessment_schema": "lf-pase-control-qualification-assessment/v1",
+  "qualification_contract": "PASE_CONTROL_QUALIFICATION_V1",
+  "qualification_input": {
+    "schema_version": "lf-pase-control-qualification/v1",
+    "qualification_type": "CONTROL_REFACTOR",
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "base_sha": "bf56eacbbd79092c0da10a05289172c8b3125cd9",
+    "head_sha": "e8f7d3be4217cddffcaaac07bd8d123571d23f70",
+    "candidate_id": "LF_GOVERNANCE_CONTROL_OWNERSHIP_POLICY_V1",
+    "declared_owner": "LF_GOVERNANCE",
+    "scope_paths": [
+      "sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/README.md",
+      "sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/lf_governance_super_admin_contract_v1.json",
+      "sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/test_lf_governance_super_admin_contract_v1.py"
+    ],
+    "owner_local_tests": [
+      "python3 sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/test_lf_governance_super_admin_contract_v1.py"
+    ],
+    "boundary_invariants": [
+      "SINGLE_ADMIN_ROOT",
+      "CI_CONTROL_NOT_AUTOMATIC_CAPABILITY",
+      "INTERNAL_CI_CHECK_REMAINS_CARRIER_INTERNAL",
+      "OWNER_RUNNER_ONLY_FOR_STANDALONE_CAPABILITY",
+      "CANDIDATE_AND_NOT_CUTOVER_RUNNERS_FORBIDDEN",
+      "PLAN_GOVERNANCE_ADMIN_IS_UNKNOWN_OWNER_DETECTION",
+      "NO_EXECUTION_BINDING_MATERIALIZED"
+    ],
+    "expected_coverage": [
+      "ADMINISTRATIVE_OWNER_POLICY",
+      "CLASSIFICATION_AWARE_RUNNER_REQUIREMENT",
+      "UNKNOWN_OWNER_FAIL_CLOSED",
+      "NO_25_OWNER_RUNNER_EXPLOSION",
+      "QUALIFICATION_NOT_ACTIVATION"
+    ],
+    "replacement": null
+  },
+  "qualification_result": {
+    "schema_version": "lf-pase-control-qualification-result/v1",
+    "candidate_id": "LF_GOVERNANCE_CONTROL_OWNERSHIP_POLICY_V1",
+    "base_sha": "bf56eacbbd79092c0da10a05289172c8b3125cd9",
+    "head_sha": "e8f7d3be4217cddffcaaac07bd8d123571d23f70",
+    "declared_owner": "LF_GOVERNANCE",
+    "checks": [
+      {"id":"Q01","status":"PASS","evidence":["PR1187 base=bf56eacbbd79092c0da10a05289172c8b3125cd9 head=e8f7d3be4217cddffcaaac07bd8d123571d23f70"],"reason":"Exact candidate identity read back."},
+      {"id":"Q02","status":"PASS","evidence":["Exactly 3 changed files, all inside lf_governance_super_admin package"],"reason":"Scope is bounded to ownership policy contract/README/test."},
+      {"id":"Q03","status":"PASS","evidence":["super_admin=LF_GOVERNANCE","candidate qualified under separate PASE_CONTROL_QUALIFICATION_V1"],"reason":"Owner declared and candidate does not self-qualify."},
+      {"id":"Q04","status":"PASS","evidence":["Deterministic owner-local contract regression included","lf-contract-check run 36477957217 SUCCESS","Validate LF Packs run 36477957267 SUCCESS","LF DB Regression run 36477957277 SUCCESS"],"reason":"Exact-head deterministic/non-regression evidence is green."},
+      {"id":"Q05","status":"PASS","evidence":["ownership_policy.internal_ci_check_requires_owner_runner=false","ownership_policy.owner_runner_required_only_for_standalone_capability=true","carrier_is_not_owner=true"],"reason":"Boundary prevents owner/runner/carrier collapse."},
+      {"id":"Q06","status":"PASS","evidence":["missing_or_wrong_super_admin_fail_closed=true","standalone_capability_missing_required_runner_fail_closed=true","candidate_runner_execution=FORBIDDEN","registered_not_cutover_execution=FORBIDDEN"],"reason":"Negative semantics are explicit and fail-closed where applicable."},
+      {"id":"Q07","status":"PASS","evidence":["No impact registry, execution plan, runner, workflow, Supabase or PASE_ORCHESTRATOR modification"],"reason":"No out-of-scope operational effect."},
+      {"id":"Q08","status":"PASS","evidence":["Static contract plus deterministic assertions; no side effects"],"reason":"Policy readback is deterministic and idempotent."},
+      {"id":"Q09","status":"NA","evidence":[],"reason":"Policy refactor does not replace an executing control or authorize cutover."},
+      {"id":"Q10","status":"PASS","evidence":["PR1185 inventory: 25/25 classified, unresolved_count=0, known_internal_ci_check_count=16","Policy consumes those conclusions without turning inventory into authority"],"reason":"Claimed ownership-policy responsibilities are complete."},
+      {"id":"Q11","status":"PASS","evidence":["All three historical CI carriers SUCCESS at exact head e8f7d3be4217cddffcaaac07bd8d123571d23f70"],"reason":"Exact-head evidence supports qualification; legacy carriers are non-regression evidence only."}
+    ],
+    "external_findings": [],
+    "coverage_complete": true,
+    "verdict": "CANDIDATE_QUALIFIED",
+    "qualified_only": true,
+    "activation_authorized": false,
+    "cutover_authorized": false,
+    "rebind_authorized": false,
+    "legacy_retirement_authorized": false
+  },
+  "verdict_scope": "OWNERSHIP_POLICY_ONLY",
+  "binding_materialized": false,
+  "supabase_registered": false,
+  "next_required_action": "Propagate this qualified ownership policy through lf-ci-execution-plan/v2, then hand off owner-validation implementation to PASE_ORCHESTRATOR_V1."
+}
