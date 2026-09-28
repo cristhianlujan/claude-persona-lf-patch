@@ -1,0 +1,41 @@
+name: LF PASE Control Qualification Runner
+
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/pase_control_qualification/**'
+      - '.github/workflows/lf-pase-control-qualification-runner.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualification-runner:
+    name: Execute PASE_CONTROL_QUALIFICATION_V1 tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Record exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "QUALIFICATION_RUNNER_HEAD=$(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+
+      - name: Execute independent qualification validator adversarials
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_control_qualification/test_pase_control_qualification_v1.py
