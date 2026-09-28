@@ -63,7 +63,7 @@ def _summary(discovery: dict[str, Any], result: dict[str, Any]) -> dict[str, Any
         "db_write_authorized": False,
         "deployment_authorized": False,
         "production_authorized": False,
-        "next_handoff": "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS",
+        "next_handoff": "PACK_VALIDATION_VERIFY_E2E_FLOW",
     }
 
 
