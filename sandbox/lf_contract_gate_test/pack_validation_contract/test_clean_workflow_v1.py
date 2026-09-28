@@ -81,11 +81,11 @@ def test_contract_identity_and_handoff() -> None:
     c = json.loads(CONTRACT.read_text(encoding="utf-8"))
     assert c["durable_name"] == "PACK_VALIDATION_CLEAN_WORKFLOW"
     assert c["owner"] == "PACK_VALIDATION"
-    assert c["workflow"]["activation"] == "STAGED_DEFINITION_ONLY"
+    assert c["workflow"]["activation"] == "REUSABLE_CORE_ADMITTED"
     assert c["workflow"]["staged_definition_path"].endswith("lf-pack-validation-core.staged.yml")
     assert c["workflow"]["target_cutover_path"] == ".github/workflows/lf-pack-validation-core.yml"
     assert c["workflow"]["legacy_carrier_remains_active_until_cutover"] == ".github/workflows/validate-lf-packs.yml"
-    assert c["next_handoff"] == "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS"
+    assert c["next_handoff"] == "PACK_VALIDATION_VERIFY_E2E_FLOW"
 
 
 def test_staged_definition_has_no_autonomous_trigger() -> None:
@@ -95,8 +95,13 @@ def test_staged_definition_has_no_autonomous_trigger() -> None:
         assert forbidden not in text, forbidden
 
 
-def test_target_workflow_not_installed_before_cutover() -> None:
-    assert not TARGET_WORKFLOW.exists(), "target carrier must remain absent until PR-6 cutover"
+def test_target_workflow_cutover_matches_qualified_staged_definition() -> None:
+    assert TARGET_WORKFLOW.is_file(), "target reusable core must be installed by PR-6 cutover"
+    assert TARGET_WORKFLOW.read_text(encoding="utf-8") == WORKFLOW.read_text(encoding="utf-8")
+    text = TARGET_WORKFLOW.read_text(encoding="utf-8")
+    assert "workflow_call:" in text
+    for forbidden in ("pull_request:", "push:", "workflow_dispatch:", "schedule:"):
+        assert forbidden not in text, forbidden
 
 
 def test_workflow_contains_only_pack_validation_boundary() -> None:
