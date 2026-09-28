@@ -1,0 +1,39 @@
+name: LF PASE Merge Gate V1 Exact Head Probe
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/lf-pase-merge-gate-v1-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-owner-local-test:
+    name: Execute PASE_MERGE_GATE_V1 exact-head test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact PASE_MERGE_GATE_V1 candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: 6950b3f67b68db090de1de9fb421a61f6a823057
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "6950b3f67b68db090de1de9fb421a61f6a823057"
+          echo "PASE_MERGE_GATE_EXACT_HEAD=$(git rev-parse HEAD)"
+
+      - name: Execute owner-local deterministic tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_merge_gate/test_pase_merge_gate_v1.py
