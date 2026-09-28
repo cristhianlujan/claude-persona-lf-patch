@@ -285,7 +285,7 @@ values
   'EXEC-BOOTSTRAP-EJECUCION-INPUT-GOVERNANCE-LF-20260928-001',
   'EXEC-BOOTSTRAP-EJECUCION-INPUT-GOVERNANCE-LF-20260928-001'
 )
-on conflict (operation_code,step_id,judge_code) do update set
+on conflict (operation_code,step_order,step_id) do update set
   step_order=excluded.step_order,clean_result_value=excluded.clean_result_value,
   blocked_result_value=excluded.blocked_result_value,
   return_result_value=excluded.return_result_value,
