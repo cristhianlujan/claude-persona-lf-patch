@@ -1,0 +1,41 @@
+{
+  "schema_version": "lf-ci-control-rebind-validate-packs/v1",
+  "durable_name": "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS",
+  "owner": "PACK_VALIDATION",
+  "source_carrier": "VALIDATE_LF_PACKS",
+  "source_workflow": ".github/workflows/validate-lf-packs.yml",
+  "pack_validation_core": ".github/workflows/lf-pack-validation-core.yml",
+  "purpose": "Define the Pack Validation-owned interface after carrier decontamination without assigning or implementing any foreign-control destination.",
+  "pack_owned_controls": {
+    "PROFILE_PACK": {"target_owner": "PACK_VALIDATION", "pack_type": "PROFILE_PACK"},
+    "SKILL_PACK": {"target_owner": "PACK_VALIDATION", "pack_type": "SKILL_PACK"},
+    "LEARNING_ENGINE_PACK": {"target_owner": "PACK_VALIDATION", "pack_type": "SKILL_PACK"}
+  },
+  "carrier_contract": {
+    "core_call_count": 1,
+    "required_inputs": ["base_sha", "head_sha", "changed_paths_json"],
+    "workflow_call_supported": true,
+    "event_compatibility_supported": true,
+    "applicability_redecision_forbidden": true,
+    "foreign_control_execution_forbidden": true
+  },
+  "foreign_controls": {
+    "PROFILE_RUNTIME_V3": "EXTERNAL_PENDING_ORCHESTRATOR_BINDING",
+    "GATE_CHECK_OBSERVABILITY": "EXTERNAL_PENDING_ORCHESTRATOR_BINDING",
+    "S30_BOUNDED_REGRESSION": "EXTERNAL_PENDING_ORCHESTRATOR_BINDING",
+    "TRANSVERSAL_README": "EXTERNAL_PENDING_ORCHESTRATOR_BINDING"
+  },
+  "cutover_invariants": [
+    "PACK_VALIDATION_CORE_HAS_WORKFLOW_CALL_ONLY",
+    "PACK_VALIDATION_CORE_CONSUMES_EXACT_BASE_HEAD_CHANGED_PATHS",
+    "PACK_VALIDATION_CORE_DOES_NOT_RESOLVE_FOREIGN_APPLICABILITY",
+    "PACK_VALIDATION_CARRIER_CONTAINS_NO_FOREIGN_EXECUTION",
+    "NO_SECOND_PACK_VALIDATION_ENGINE",
+    "NO_GIT_WRITE_DB_WRITE_RUNTIME_DEPLOYMENT_OR_PRODUCTION_AUTHORIZATION"
+  ],
+  "external_prerequisite": "PASE_ORCHESTRATOR_AND_FOREIGN_COVERAGE_PROOF",
+  "merge_authorized": false,
+  "deployment_authorized": false,
+  "production_authorized": false,
+  "next_handoff": "PACK_VALIDATION_VERIFY_E2E_FLOW"
+}
