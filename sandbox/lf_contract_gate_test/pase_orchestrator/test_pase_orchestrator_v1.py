@@ -139,6 +139,13 @@ def main() -> int:
 
     expect_error(
         module,
+        plan([], {}, admin=governance_admin(binding_materialized=True)),
+        "BLOCK_PASE_BINDING_MATERIALIZED_UNSUPPORTED",
+    )
+    checks += 1
+
+    expect_error(
+        module,
         plan(
             ["MIGRATION_SOURCE_PARITY", "PROFILE_PACK"],
             {"LF_CONTRACT_CHECK": ["MIGRATION_SOURCE_PARITY"]},
