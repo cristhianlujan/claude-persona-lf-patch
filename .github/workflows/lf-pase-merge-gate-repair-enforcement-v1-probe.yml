@@ -1,0 +1,33 @@
+name: LF PASE Merge Gate Repair Enforcement V1 Probe
+
+on:
+  push:
+    branches:
+      - lf/pase-merge-gate-repair-enforcement-v1-probe-20260928
+
+permissions:
+  contents: read
+
+jobs:
+  validate-merge-gate-repair-enforcement:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: 34b57b4ba1101b866822091aba1f36c9ab709a1a
+          persist-credentials: false
+
+      - name: Verify exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          observed="$(git rev-parse HEAD)"
+          test "$observed" = "34b57b4ba1101b866822091aba1f36c9ab709a1a"
+          echo "exact_head=$observed"
+
+      - name: Run owner-local deterministic tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_merge_gate/test_pase_merge_gate_v1.py
