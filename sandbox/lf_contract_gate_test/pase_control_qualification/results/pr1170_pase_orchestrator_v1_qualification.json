@@ -1,0 +1,115 @@
+{
+  "schema_version": "lf-pase-control-qualification-assessment/v1",
+  "qualification_contract": "PASE_CONTROL_QUALIFICATION_V1",
+  "qualification_type": "NEW_CONTROL",
+  "candidate": {
+    "pr": 1170,
+    "candidate_id": "PASE_ORCHESTRATOR_V1",
+    "base_sha": "fd7d5c5216d13a1417d231441740c4919bfbcf9f",
+    "head_sha": "8146dbbb8709c6f56417cb081931c2f3cc31a31c",
+    "observed_main_sha": "b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6",
+    "declared_owner": null,
+    "scope_paths": [
+      "sandbox/lf_contract_gate_test/pase_orchestrator/README.md",
+      "sandbox/lf_contract_gate_test/pase_orchestrator/pase_orchestrator_v1.py",
+      "sandbox/lf_contract_gate_test/pase_orchestrator/test_pase_orchestrator_v1.py"
+    ]
+  },
+  "checks": [
+    {
+      "id": "Q01",
+      "status": "PASS",
+      "reason": "Exact PR base/head and live observed main were read back from GitHub.",
+      "evidence": ["PR1170@8146dbbb8709c6f56417cb081931c2f3cc31a31c", "main@b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6"]
+    },
+    {
+      "id": "Q02",
+      "status": "PASS",
+      "reason": "PR changes exactly three PASE orchestrator-local files and no workflows or foreign domain files.",
+      "evidence": ["PR1170 changed-files readback: 3 pase_orchestrator files"]
+    },
+    {
+      "id": "Q03",
+      "status": "FAIL",
+      "reason": "No explicit canonical declared owner for PASE_ORCHESTRATOR_V1 was found in the candidate or existing authority surfaces. Candidate identity/producer is not substituted for an owner declaration.",
+      "evidence": ["PR1170 README/code/test exact-head readback", "existing impact registry has carrier/dependencies but no owner field", "existing shared CI ownership registry does not declare PASE_ORCHESTRATOR_V1"]
+    },
+    {
+      "id": "Q04",
+      "status": "BLOCKED",
+      "reason": "Owner-local tests exist, but legacy CI failed upstream before running them and no independent exact-head candidate-test execution receipt exists yet.",
+      "evidence": ["sandbox/lf_contract_gate_test/pase_orchestrator/test_pase_orchestrator_v1.py@8146dbbb8709c6f56417cb081931c2f3cc31a31c"]
+    },
+    {
+      "id": "Q05",
+      "status": "FAIL",
+      "reason": "Carrier ownership boundary is enforced, but owner identity is neither consumed nor validated. The required owner/carrier invariant is therefore incomplete.",
+      "evidence": ["pase_orchestrator_v1.py validates registry control_id/carrier/dependencies only"]
+    },
+    {
+      "id": "Q06",
+      "status": "FAIL",
+      "reason": "Adversarials cover incomplete coverage, multi-carrier, carrier drift and cycles, but there is no unknown-owner negative because the candidate has no owner input/source.",
+      "evidence": ["test_pase_orchestrator_v1.py exact-head: 8 checks, no owner field or unknown-owner case"]
+    },
+    {
+      "id": "Q07",
+      "status": "PASS",
+      "reason": "No foreign domain execution, workflow mutation, Supabase mutation, network call or cutover is introduced by the three-file candidate scope.",
+      "evidence": ["PR1170 patch exact-head", "README explicit non-scope", "source forbidden-operation boundary"]
+    },
+    {
+      "id": "Q08",
+      "status": "PASS",
+      "reason": "Planner is side-effect free and deterministic by canonical hashing, sorted inputs/ready queue and dependency-derived ordering.",
+      "evidence": ["pase_orchestrator_v1.py@8146dbbb8709c6f56417cb081931c2f3cc31a31c"]
+    },
+    {
+      "id": "Q09",
+      "status": "NA",
+      "reason": "Candidate classification is NEW_CONTROL; no existing behavior is replaced or cut over by PR1170.",
+      "evidence": []
+    },
+    {
+      "id": "Q10",
+      "status": "FAIL",
+      "reason": "Declared candidate responsibility includes respecting owner/carrier and blocking unknown owner; owner coverage is absent, so responsibility coverage is incomplete.",
+      "evidence": ["PR1170 requested qualification responsibility versus exact-head implementation/tests"]
+    },
+    {
+      "id": "Q11",
+      "status": "PASS",
+      "reason": "Material source, PR metadata, changed files and legacy CI failures were read against exact candidate head; live main was separately observed.",
+      "evidence": ["head@8146dbbb8709c6f56417cb081931c2f3cc31a31c", "main@b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6"]
+    }
+  ],
+  "external_findings": [
+    {
+      "finding_id": "PR1170-EXT-ZERO-BASE-CONTRACT-CHECK",
+      "source_control": "LF_CONTRACT_CHECK",
+      "observed_failure": "Unified execution-plan build received LF_PLAN_BASE_SHA=0000000000000000000000000000000000000000 and failed fetching that non-existent ref before candidate-specific domain execution.",
+      "candidate_causality": "DISPROVEN",
+      "causal_evidence": ["workflow run 36436246241 / job 109016678600 exact head 8146dbbb8709c6f56417cb081931c2f3cc31a31c"],
+      "owner": "CI_FAST_DEEP_LANE_ROUTER / execution-plan base-input plumbing",
+      "effect_on_candidate_verdict": "NONE"
+    },
+    {
+      "finding_id": "PR1170-EXT-ZERO-BASE-VALIDATE-PACKS",
+      "source_control": "VALIDATE_LF_PACKS",
+      "observed_failure": "Unified execution-plan build received LF_PLAN_BASE_SHA=0000000000000000000000000000000000000000 and failed fetching that non-existent ref before Pack Validation execution.",
+      "candidate_causality": "DISPROVEN",
+      "causal_evidence": ["workflow run 36436246219 / job 109016379730 exact head 8146dbbb8709c6f56417cb081931c2f3cc31a31c"],
+      "owner": "CI_FAST_DEEP_LANE_ROUTER / execution-plan base-input plumbing",
+      "effect_on_candidate_verdict": "NONE"
+    }
+  ],
+  "coverage_complete": false,
+  "verdict": "FAIL",
+  "verdict_reason": "Candidate violates its own required owner/ownership contract: owner is not declared/consumed, unknown owner cannot fail closed, and owner coverage is absent. External legacy failures are non-causal and do not contribute to FAIL.",
+  "qualified_only": true,
+  "activation_authorized": false,
+  "cutover_authorized": false,
+  "rebind_authorized": false,
+  "legacy_retirement_authorized": false,
+  "next_required_action": "Define/reuse the canonical owner representation/binding before modifying PASE_ORCHESTRATOR_V1; do not invent a parallel owner authority. Then repair only the orchestrator owner validation and re-run qualification."
+}
