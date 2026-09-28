@@ -14,6 +14,7 @@ REGISTRY = HERE / "lf_ci_control_impact_registry_v2.json"
 RUNTIME_CLASSIFIER = HERE / "classify_changed_migration_runtime_v1.py"
 HANDOFF_SELFTEST = HERE / "test_contract_check_resolution_handoff_v1.py"
 CONTRACT_RESOLUTION_SELFTEST = ROOT / "sandbox/lf_contract_gate_test/contract_resolution/test_contract_resolution_core_v1.py"
+CONTRACT_PREDICATE_SEMANTICS_SELFTEST = ROOT / "sandbox/lf_contract_gate_test/contract_predicate_semantics/test_contract_predicate_semantics_v1.py"
 RETIRED_CONTROL = "REMOTE_SCHEMA_REPRODUCIBILITY"
 RETIRED_CARRIER = "LF_BOOTSTRAP_REPRODUCIBILITY"
 RETIRED_WORKFLOW_REL = ".github/workflows/lf-bootstrap-reproducibility.yml"
@@ -107,8 +108,6 @@ def assert_carrier_wiring(texts: dict[str, str]) -> None:
     require(db, "ledger_before.txt", "FAIL_CANDIDATE_LEDGER_PRESTATE_MISSING")
     require(db, "ledger_after.txt", "FAIL_CANDIDATE_LEDGER_POSTSTATE_MISSING")
 
-    # A negative assertion mentioning the retired identifier is allowed. What is
-    # forbidden is an executable job/routing surface for remote reconstruction.
     forbid(db, "schema-bootstrap-probe:", "FAIL_REMOTE_SCHEMA_EXECUTABLE_JOB_REINTRODUCED")
     forbid(db, "supabase db reset", "FAIL_REMOTE_SCHEMA_REBUILD_COMMAND_REINTRODUCED")
     forbid(db, "LF Bootstrap Reproducibility Probe", "FAIL_RETIRED_WORKFLOW_NAME_REINTRODUCED")
@@ -125,8 +124,6 @@ def assert_no_stale_receipt_consumer() -> None:
     ]
     for path in operational:
         text = path.read_text(encoding="utf-8")
-        # Guards/tests may mention retired identifiers, but no operational surface
-        # may expose the legacy output consumed by downstream jobs.
         forbid(text, "bootstrap_controls_json", f"FAIL_STALE_BOOTSTRAP_RECEIPT_CONSUMER:{path}")
 
 
@@ -185,6 +182,25 @@ def assert_contract_resolution_core_selftest() -> None:
     print(completed.stdout.strip())
 
 
+def assert_contract_predicate_semantics_selftest() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(CONTRACT_PREDICATE_SEMANTICS_SELFTEST)],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+        timeout=20,
+    )
+    if completed.returncode != 0:
+        raise AssertionError("FAIL_CONTRACT_PREDICATE_SEMANTICS_SELFTEST:" + completed.stdout[-1000:])
+    require(
+        completed.stdout,
+        "PASS_CONTRACT_PREDICATE_SEMANTICS_V1=40/40",
+        "FAIL_CONTRACT_PREDICATE_SEMANTICS_SELFTEST_RECEIPT",
+    )
+    print(completed.stdout.strip())
+
+
 def main() -> None:
     assert not RETIRED_WORKFLOW.exists(), "FAIL_RETIRED_BOOTSTRAP_WORKFLOW_STILL_EXECUTABLE"
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
@@ -195,6 +211,7 @@ def main() -> None:
     assert_runtime_classifier()
     assert_contract_check_resolution_handoff_selftest()
     assert_contract_resolution_core_selftest()
+    assert_contract_predicate_semantics_selftest()
 
     print("REMOTE_SCHEMA_RETIREMENT_JUDGE_PASS zero_operational_routing=true zero_jobs=true zero_receipt_consumers=true zero_blocking=true")
     print(f"CI_CONTROL_CARRIER_WIRING_V2_PASS controls={len(registry['controls'])} carriers={len(texts)}")
