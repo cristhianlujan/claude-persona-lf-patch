@@ -16,6 +16,7 @@ HANDOFF_SELFTEST = HERE / "test_contract_check_resolution_handoff_v1.py"
 CONTRACT_RESOLUTION_SELFTEST = ROOT / "sandbox/lf_contract_gate_test/contract_resolution/test_contract_resolution_core_v1.py"
 CONTRACT_PREDICATE_SEMANTICS_SELFTEST = ROOT / "sandbox/lf_contract_gate_test/contract_predicate_semantics/test_contract_predicate_semantics_v1.py"
 LEGACY_CONTRACT_NORMALIZATION_SELFTEST = ROOT / "sandbox/lf_contract_gate_test/contract_legacy_normalization/test_legacy_contract_normalization_v1.py"
+CONTRACT_CHECK_SEMANTIC_INTEGRATION_SELFTEST = ROOT / "sandbox/lf_contract_gate_test/contract_check_semantic_integration/test_contract_check_semantic_integration_v1.py"
 RETIRED_CONTROL = "REMOTE_SCHEMA_REPRODUCIBILITY"
 RETIRED_CARRIER = "LF_BOOTSTRAP_REPRODUCIBILITY"
 RETIRED_WORKFLOW_REL = ".github/workflows/lf-bootstrap-reproducibility.yml"
@@ -225,6 +226,25 @@ def assert_legacy_contract_normalization_selftest() -> None:
     print(completed.stdout.strip())
 
 
+def assert_contract_check_semantic_integration_selftest() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(CONTRACT_CHECK_SEMANTIC_INTEGRATION_SELFTEST)],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+        timeout=20,
+    )
+    if completed.returncode != 0:
+        raise AssertionError("FAIL_CONTRACT_CHECK_SEMANTIC_INTEGRATION_SELFTEST:" + completed.stdout[-1000:])
+    require(
+        completed.stdout,
+        "PASS_CONTRACT_CHECK_SEMANTIC_INTEGRATION_V1=18/18",
+        "FAIL_CONTRACT_CHECK_SEMANTIC_INTEGRATION_SELFTEST_RECEIPT",
+    )
+    print(completed.stdout.strip())
+
+
 def main() -> None:
     assert not RETIRED_WORKFLOW.exists(), "FAIL_RETIRED_BOOTSTRAP_WORKFLOW_STILL_EXECUTABLE"
     registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
@@ -237,6 +257,7 @@ def main() -> None:
     assert_contract_resolution_core_selftest()
     assert_contract_predicate_semantics_selftest()
     assert_legacy_contract_normalization_selftest()
+    assert_contract_check_semantic_integration_selftest()
 
     print("REMOTE_SCHEMA_RETIREMENT_JUDGE_PASS zero_operational_routing=true zero_jobs=true zero_receipt_consumers=true zero_blocking=true")
     print(f"CI_CONTROL_CARRIER_WIRING_V2_PASS controls={len(registry['controls'])} carriers={len(texts)}")
