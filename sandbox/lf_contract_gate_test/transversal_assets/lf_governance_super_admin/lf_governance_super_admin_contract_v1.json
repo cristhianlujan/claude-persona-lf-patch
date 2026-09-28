@@ -15,6 +15,48 @@
     "state",
     "source_revision"
   ],
+  "binding_catalog": {
+    "schema_version": "lf-governance-control-binding-catalog/v1",
+    "catalog_materialized": true,
+    "owner_runner_migration_complete": false,
+    "carrier_authority": {
+      "schema_version": "lf-ci-control-impact-registry/v2",
+      "path": "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json"
+    },
+    "allowed_states": [
+      "LEGACY_CARRIER",
+      "OWNER_RUNNER_ACTIVE_LEGACY_CARRIER",
+      "REGISTERED_NOT_CUTOVER",
+      "CANDIDATE_NOT_CANONICAL"
+    ],
+    "controls": [
+      {"control_id":"CI_ROUTER_SELFTEST","capability_id":"CI_FAST_DEEP_LANE_ROUTER","runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"DB_CANDIDATE_APPLY_ROLLBACK","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"DECLARED_GOVERNANCE_PATHS","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"E16_ACTIONS_INVENTORY","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"E16_GOVERNANCE","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"GATE_CHECK_OBSERVABILITY","capability_id":"GATE_CHECK_OBSERVABILITY","runner_ref":"sandbox/lf_contract_gate_test/gate_check_observability/run_gate_check_observability_owner_v1.py","state":"CANDIDATE_NOT_CANONICAL","source_revision":"40141855cf1ead0ada24de7bc5fb28edeebc068a","evidence_ref":"PR#1171"},
+      {"control_id":"INPUT_GOVERNANCE_MIGRATION_PARITY","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"LEARNING_ENGINE_PACK","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"LF_CONTRACT_CORE","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"LF_VALIDATION_ENGINE","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"MIGRATION_SOURCE_PARITY","capability_id":"MIGRATION_SOURCE_PARITY","runner_ref":"sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py","state":"OWNER_RUNNER_ACTIVE_LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"sandbox/lf_contract_gate_test/transversal_assets/migration_source_parity/README.md"},
+      {"control_id":"NO_BYPASS_PROFILE_CARD_SKILL","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"P0_EXACT_HEAD_EXTERNAL","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"P0_FAST_DOCS","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"P0_VISUAL_RUNTIME","capability_id":"VISUAL_EVIDENCE_GATE","runner_ref":"sandbox/lf_contract_gate_test/visual_evidence_gate/visual_evidence_gate_v1.py","state":"REGISTERED_NOT_CUTOVER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"supabase/migrations/20260926203947_lf_visual_evidence_gate_capability_v1.sql"},
+      {"control_id":"PASS_EVIDENCE","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"POLICY_RESOLVER_REGRESSION","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"PROFILE_PACK","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"PROFILE_RUNTIME_V3","capability_id":"PROFILE_RUNTIME_V3","runner_ref":"sandbox/lf_contract_gate_test/profile_execution_runtime/run_profile_runtime_v3_owner_v1.py","state":"CANDIDATE_NOT_CANONICAL","source_revision":"dcfd43ca950f9da9fc9c62ae62479fd3e6e76321","evidence_ref":"PR#1169"},
+      {"control_id":"R8_USER_STORY_AUDIT","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"S30_BOUNDED_REGRESSION","capability_id":"S30_BOUNDED_REGRESSION","runner_ref":"sandbox/lf_contract_gate_test/s30_bounded_regression/run_s30_bounded_regression_v1.py","state":"CANDIDATE_NOT_CANONICAL","source_revision":"d6f007de8d9bb02ebaa5c011287795289ac2968d","evidence_ref":"PR#1168"},
+      {"control_id":"SKILL_PACK","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"SUPABASE_CONTROL_PLANE_READBACK","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"},
+      {"control_id":"TRANSVERSAL_README","capability_id":"TRANSVERSAL_README","runner_ref":"sandbox/lf_contract_gate_test/transversal_asset_readme/run_transversal_readme_owner_v1.py","state":"CANDIDATE_NOT_CANONICAL","source_revision":"10469c3fa00884f2611f49f19f2b9138c3178a8b","evidence_ref":"PR#1172"},
+      {"control_id":"V7_RUNTIME_REGRESSION","capability_id":null,"runner_ref":null,"state":"LEGACY_CARRIER","source_revision":"b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6","evidence_ref":"lf_ci_control_impact_registry_v2.json"}
+    ]
+  },
   "invariants": {
     "single_super_admin": true,
     "super_admin_equals": "LF_GOVERNANCE",
@@ -25,7 +67,10 @@
     "unknown_control_fail_closed": true,
     "missing_or_wrong_super_admin_fail_closed": true,
     "missing_runner_fail_closed": true,
+    "legacy_carrier_state_is_explicit_no_runner_exception": true,
     "carrier_drift_fail_closed": true,
+    "candidate_runner_never_executable": true,
+    "registered_not_cutover_never_executable": true,
     "qualification_not_activation": true
   },
   "prohibitions": [
