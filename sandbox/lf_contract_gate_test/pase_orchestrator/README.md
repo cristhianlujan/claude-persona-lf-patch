@@ -45,6 +45,10 @@ An `INTERNAL_CI_CHECK` therefore does not need an independent owner-runner merel
 be dispatched. A standalone capability may move to an owner-runner only through its
 separate canonical binding + qualified cutover.
 
+If `binding_materialized=true` reaches this V1 before that later binding-aware cutover
+is implemented, the orchestrator blocks fail-closed instead of silently continuing
+with stale carrier semantics.
+
 ## Exact responsibility
 
 `pase_orchestrator_v1.py`:
@@ -76,8 +80,9 @@ The orchestrator does **not**:
 - mutate assets, operation registry, lifecycle, runtime or production state;
 - change the current workflow cutover.
 
-Execution remains delegated to the carriers named by the canonical plan until a
-standalone capability has a canonical binding and a separately qualified cutover.
+Execution remains delegated to the carriers named by the canonical plan while
+`binding_materialized=false`. A later binding-aware change must be separately
+qualified before any standalone capability is dispatched through an owner-runner.
 
 ## Why this is needed
 
@@ -112,5 +117,5 @@ python3 sandbox/lf_contract_gate_test/pase_orchestrator/test_pase_orchestrator_v
 Expected marker:
 
 ```text
-PASS_PASE_ORCHESTRATOR_V1 checks=14
+PASS_PASE_ORCHESTRATOR_V1 checks=15
 ```
