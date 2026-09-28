@@ -1,0 +1,55 @@
+{
+  "schema_version": "lf-wp4-owner-decomposition/v1",
+  "legacy_lane": "S36_WP4_ADVERSARIAL",
+  "role": "HISTORICAL_INTEGRATION_REGRESSION",
+  "new_umbrella_capability_allowed": false,
+  "legacy_guard": "sandbox/lf_contract_gate_test/s36_wp4_adversarial/s36_wp4_identity_authority_guard.py",
+  "invariant_routes": {
+    "REVIEW_IDENTITY_MISSING": {
+      "owner": "INDEPENDENT_REVIEW",
+      "inventory_identity": "INDEPENDENT_ASSURANCE",
+      "operation": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF"
+    },
+    "PRODUCER_AS_REVIEWER": {
+      "owner": "INDEPENDENT_REVIEW",
+      "inventory_identity": "INDEPENDENT_ASSURANCE",
+      "operation": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF"
+    },
+    "REVIEW_MODE_NOT_INDEPENDENT": {
+      "owner": "INDEPENDENT_REVIEW",
+      "inventory_identity": "INDEPENDENT_ASSURANCE",
+      "operation": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF"
+    },
+    "REQUESTED_AUTHORITY_MISSING": {
+      "owner_chain": ["POLICY_CONSUMPTION", "ROUTER_DOWNSTREAM_AUTHORITY"]
+    },
+    "AUTHORITY_ESCALATION_ATTEMPT": {
+      "owner_chain": ["POLICY_CONSUMPTION", "ROUTER_DOWNSTREAM_AUTHORITY"]
+    }
+  },
+  "legacy_aliases": {
+    "review_mode": ["S36_ASSURANCE"],
+    "rule": "COMPATIBILITY_ONLY_NOT_CANONICAL_OWNER"
+  },
+  "open_states": {
+    "REQUIRED_STEP_BYPASS_TRANSVERSAL_DYNAMIC": "NOT_COVERED",
+    "INVALID_STATE_TRANSITION_TRANSVERSAL_NEGATIVE": "NOT_COVERED",
+    "LIVE_DESTRUCTIVE_AUTHORITY_ESCALATION": "BLOCKED"
+  },
+  "forbidden_claims": [
+    "GLOBAL_SECURITY_PASS",
+    "ASSURANCE_PASS",
+    "ASSURANCE_COMPLETENESS_PASS",
+    "QUALIFICATION_PASS",
+    "RUNTIME_AUTHORIZED",
+    "PRODUCTION_AUTHORIZED"
+  ],
+  "forbidden_new_owners": [
+    "ADVERSARIAL_SECURITY",
+    "AGENT_SECURITY_ASSURANCE"
+  ],
+  "ekb": [
+    "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001",
+    "S36-TRANSVERSAL-NEGATIVE-PATH-COVERAGE-GAP-001"
+  ]
+}
