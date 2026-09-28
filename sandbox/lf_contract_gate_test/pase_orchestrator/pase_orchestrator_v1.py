@@ -124,9 +124,13 @@ def _validate_governance_admin(plan: Mapping[str, Any]) -> dict[str, Any]:
         raise PaseOrchestratorError("FAIL_PASE_GOVERNANCE_ADMIN_BINDING_MATERIALIZED")
     if not isinstance(admin.get("supabase_registered"), bool):
         raise PaseOrchestratorError("FAIL_PASE_GOVERNANCE_ADMIN_SUPABASE_REGISTERED")
+    if admin["binding_materialized"] is not False:
+        raise PaseOrchestratorError("BLOCK_PASE_BINDING_MATERIALIZED_UNSUPPORTED")
 
     # Preserve the upstream identity verbatim. PASE validates but does not
     # recalculate ownership, create per-control owners, or resolve owner-runners.
+    # While the canonical standalone binding is not materialized, execution stays
+    # on the carriers already selected by the upstream plan.
     return dict(admin)
 
 
