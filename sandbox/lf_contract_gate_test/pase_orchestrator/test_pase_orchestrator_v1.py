@@ -19,8 +19,26 @@ def load_target():
     return module
 
 
-def plan(required, carrier_controls, *, coverage=True):
-    return {
+def governance_admin(**overrides):
+    value = {
+        "schema_version": "lf-ci-governance-admin-identity/v1",
+        "super_admin": "LF_GOVERNANCE",
+        "role": "SUPER_ADMIN_GOVERNANCE",
+        "status": "CANDIDATE_READ_ONLY",
+        "scope": "PASE_GOVERNANCE_ADMINISTRATION",
+        "applicability_authority": "CHANGESET_GOVERNANCE_LF_V1",
+        "orchestrator_consumer": "PASE_ORCHESTRATOR_V1",
+        "source_contract_schema_version": "lf-governance-super-admin/v1",
+        "source_revision": "a" * 64,
+        "binding_materialized": False,
+        "supabase_registered": False,
+    }
+    value.update(overrides)
+    return value
+
+
+def plan(required, carrier_controls, *, coverage=True, admin=None, include_admin=True):
+    value = {
         "schema_version": "lf-ci-execution-plan/v2",
         "coverage_complete": coverage,
         "required_controls": sorted(required),
@@ -29,6 +47,9 @@ def plan(required, carrier_controls, *, coverage=True):
         "applicability_sha256": "app-sha",
         "evidence_sha256": "evidence-sha",
     }
+    if include_admin:
+        value["governance_admin"] = governance_admin() if admin is None else admin
+    return value
 
 
 def expect_error(module, payload, code, registry_path=None):
@@ -59,12 +80,61 @@ def main() -> int:
     ], got
     assert got["applicability_authority"] == "UPSTREAM_PLAN_ONLY"
     assert got["execution_semantics"] == "SEQUENTIAL_DELEGATION_ONLY"
+    assert got["governance_admin"] == payload["governance_admin"]
+    assert got["governance_admin"]["binding_materialized"] is False
+    assert got["no_owner_recalculation"] is True
+    assert got["no_per_control_owner_creation"] is True
+    assert all(set(row) == {"sequence", "carrier", "controls", "mode"} for row in got["dispatches"])
     checks += 1
 
     got = module.build_dispatch_plan(plan([], {}))
     assert got["dispatches"] == []
     assert got["dispatch_count"] == 0
     assert got["control_count"] == 0
+    checks += 1
+
+    expect_error(
+        module,
+        plan([], {}, include_admin=False),
+        "FAIL_PASE_GOVERNANCE_ADMIN_MISSING",
+    )
+    checks += 1
+
+    expect_error(
+        module,
+        plan([], {}, admin=governance_admin(schema_version="wrong")),
+        "FAIL_PASE_GOVERNANCE_ADMIN_SCHEMA",
+    )
+    checks += 1
+
+    expect_error(
+        module,
+        plan([], {}, admin=governance_admin(super_admin="OTHER_ADMIN")),
+        "FAIL_PASE_GOVERNANCE_ADMIN_IDENTITY",
+    )
+    checks += 1
+
+    malformed = governance_admin()
+    del malformed["source_revision"]
+    expect_error(
+        module,
+        plan([], {}, admin=malformed),
+        "FAIL_PASE_GOVERNANCE_ADMIN_STRUCTURE",
+    )
+    checks += 1
+
+    expect_error(
+        module,
+        plan([], {}, admin=governance_admin(source_revision="not-a-sha256")),
+        "FAIL_PASE_GOVERNANCE_ADMIN_SOURCE_REVISION",
+    )
+    checks += 1
+
+    expect_error(
+        module,
+        plan([], {}, admin=governance_admin(binding_materialized="false")),
+        "FAIL_PASE_GOVERNANCE_ADMIN_BINDING_MATERIALIZED",
+    )
     checks += 1
 
     expect_error(
@@ -102,7 +172,11 @@ def main() -> int:
 
     expect_error(
         module,
-        plan(["MIGRATION_SOURCE_PARITY"], {"LF_CONTRACT_CHECK": ["MIGRATION_SOURCE_PARITY"]}, coverage=False),
+        plan(
+            ["MIGRATION_SOURCE_PARITY"],
+            {"LF_CONTRACT_CHECK": ["MIGRATION_SOURCE_PARITY"]},
+            coverage=False,
+        ),
         "FAIL_PASE_PLAN_COVERAGE_INCOMPLETE",
     )
     checks += 1
@@ -139,6 +213,8 @@ def main() -> int:
         "changed_paths",
         ".classify(",
         "validate_contract(",
+        "owner_runner",
+        "lf_governance_super_admin_contract_v1.json",
     ):
         assert forbidden not in source, forbidden
     checks += 1
