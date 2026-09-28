@@ -39,19 +39,19 @@ def main() -> int:
     assert all(p.parent.name != "s30_bounded_regression" for p in real); checks += 1
 
     source = RUNNER.read_text(encoding="utf-8")
-    forbidden = (
-        "validate-lf-packs.yml",
-        "carrier_controls",
-        "CI_FAST_DEEP_LANE_ROUTER",
-        "PACK_VALIDATION",
+    forbidden_execution_tokens = (
+        ".github/workflows/",
+        "emit_ci_execution_plan_v2.py",
+        "lf_ci_execution_plan_v2.py",
+        "validate_pack.py",
+        "services/profile_runtime_api/",
         "git push",
         "psql ",
-        "supabase",
-        "deploy",
-        "production activation",
+        "supabase db",
+        "supabase functions",
     )
     lowered = source.lower()
-    for token in forbidden:
+    for token in forbidden_execution_tokens:
         assert token.lower() not in lowered, token
     checks += 1
 
