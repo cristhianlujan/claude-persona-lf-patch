@@ -24,7 +24,7 @@ def contracts():
         {
             "operation_code": "GITHUB_CONTRACT_GATE_LF",
             "contract_code": "CONTRACT-SECONDARY-EXAMPLE-v1",
-            "contract_sha": "a" * 64,
+            "contract_sha": None,
             "required_before_write": {"evidence_required": ["x"], "preflight_required": True},
             "allowed": {"runtime": "NO_HABILITADO"},
             "blocked": {"production": "DENY"},
@@ -77,7 +77,9 @@ def main():
     result = core.evaluate(packet())
     assert result["verdict"] == "PASS"
     assert result["counts"]["resolved_contracts"] == 2
-    checks += 2
+    assert len(result["contract_digests"]) == 2
+    assert all(len(row["contract_digest_sha256"]) == 64 for row in result["contract_digests"])
+    checks += 4
 
     result = core.evaluate(packet("ENTRY"))
     assert result["verdict"] == "PASS"
@@ -103,7 +105,11 @@ def main():
     checks += 1
     expect(lambda p: p["contracts"][0].update(operation_code="OTHER"), "FAIL_CONTRACT_OPERATION_MISMATCH")
     checks += 1
-    expect(lambda p: p["contracts"][0].update(contract_sha="bad"), "FAIL_CONTRACT_SHA_INVALID")
+
+    def mutate_contract_after_evaluations(p):
+        p["contracts"][0]["allowed"]["mode"] = "MUTATED_AFTER_EVALUATION"
+
+    expect(mutate_contract_after_evaluations, "FAIL_TERM_DIGEST_MISMATCH")
     checks += 1
 
     def extra_evaluation(p):
@@ -133,8 +139,8 @@ def main():
     else:
         raise AssertionError("bad schema accepted")
 
-    assert checks == 15, checks
-    print("PASS_CONTRACT_CHECK_CORE_V1=15/15")
+    assert checks == 17, checks
+    print("PASS_CONTRACT_CHECK_CORE_V1=17/17")
 
 
 if __name__ == "__main__":
