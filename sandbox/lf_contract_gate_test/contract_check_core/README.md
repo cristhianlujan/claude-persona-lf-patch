@@ -15,7 +15,7 @@ PASE / Contract Resolution
         v
 CONTRACT_CHECK_CORE_V1
         |
-        +-- bind operation_code + contract_code + contract_sha
+        +-- bind operation_code + contract_code + canonical contract digest
         +-- derive exact term identity/digest from declared contract sections
         +-- require one evidence-backed evaluation per applicable term
         +-- block missing, duplicated, tampered, failed or triggered terms
@@ -64,6 +64,14 @@ The core does **not invent an interpretation** for those heterogeneous values. I
 
 For list sections, each list item is a term (`section[index]`). For object sections, each top-level key is a term (`section.key`). This preserves current LF contract shapes without introducing a parallel contract authority.
 
+## Exact contract binding
+
+The evaluator computes `contract_digest_sha256` from each exact resolved contract record. It does **not require** the legacy `contract_sha` column to be populated.
+
+This is intentional: live readback shows active LF contracts where `contract_sha` is absent. Contract Check must not force canonical authority to satisfy an invented completeness rule. Structural validation of declared source SHA, when required, belongs to `Operation Definition Integrity` / authority-specific integrity controls.
+
+Term evaluations remain bound to the exact contractual content through their individual `term_digest` values. If a contract term changes after evaluation, the digest mismatch blocks the check.
+
 ## Phase behavior
 
 `ENTRY` evaluates:
@@ -87,7 +95,9 @@ The capability accepts a list of resolved contracts, not one hard-coded GitHub c
 
 ## Live-shaped compatibility
 
-The regression fixture includes the current `GITHUB_CONTRACT_GATE_LF` contract shape (`required_before_write` as array, `allowed` as object, `blocked` as array, `required_after_write` as array) plus a second contract using object-shaped sections. This exercises the `1 Contract Check / N contracts` architecture without wiring the candidate to live CI.
+Read-only authority inspection found four active JSON shape combinations across current LF contracts. The evaluator supports array, object, scalar, and null section values without changing the source contract schema.
+
+The regression fixture includes the current `GITHUB_CONTRACT_GATE_LF` array/object/array/array shape plus a second object-shaped contract with `contract_sha=null`. This exercises the `1 Contract Check / N contracts` architecture and the live missing-SHA condition without wiring the candidate to CI.
 
 ## Rollout
 
