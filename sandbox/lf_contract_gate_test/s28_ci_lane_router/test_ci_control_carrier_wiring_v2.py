@@ -195,7 +195,7 @@ def assert_contract_predicate_semantics_selftest() -> None:
         raise AssertionError("FAIL_CONTRACT_PREDICATE_SEMANTICS_SELFTEST:" + completed.stdout[-1000:])
     require(
         completed.stdout,
-        "PASS_CONTRACT_PREDICATE_SEMANTICS_V1=40/40",
+        "PASS_CONTRACT_PREDICATE_SEMANTICS_V1=44/44",
         "FAIL_CONTRACT_PREDICATE_SEMANTICS_SELFTEST_RECEIPT",
     )
     print(completed.stdout.strip())
