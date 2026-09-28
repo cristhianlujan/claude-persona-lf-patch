@@ -1,0 +1,39 @@
+name: LF PASE Orchestrator PR1170 Exact Head Probe
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/lf-pase-orchestrator-pr1170-exact-head-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-owner-local-test:
+    name: Execute PASE_ORCHESTRATOR_V1 exact-head test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact PR1170 candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: dafdf2a8ceea2f298fd4edb72dbc6af183c20fd9
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "dafdf2a8ceea2f298fd4edb72dbc6af183c20fd9"
+          echo "PASE_ORCHESTRATOR_EXACT_HEAD=$(git rev-parse HEAD)"
+
+      - name: Execute owner-local deterministic tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_orchestrator/test_pase_orchestrator_v1.py
