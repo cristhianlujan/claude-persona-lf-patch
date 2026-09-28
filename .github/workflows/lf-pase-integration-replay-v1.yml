@@ -1,0 +1,41 @@
+name: LF PASE Integration Replay V1
+
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/pase_integration_replay/**'
+      - '.github/workflows/lf-pase-integration-replay-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pase-integration-replay:
+    name: Replay governance plan into PASE orchestrator
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact integration head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Record exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "PASE_INTEGRATION_REPLAY_HEAD=$(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+
+      - name: Execute PASE integration replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_integration_replay/test_pase_integration_replay_v1.py
