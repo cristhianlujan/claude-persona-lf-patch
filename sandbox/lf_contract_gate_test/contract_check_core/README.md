@@ -99,8 +99,23 @@ Read-only authority inspection found four active JSON shape combinations across 
 
 The regression fixture includes the current `GITHUB_CONTRACT_GATE_LF` array/object/array/array shape plus a second object-shaped contract with `contract_sha=null`. This exercises the `1 Contract Check / N contracts` architecture and the live missing-SHA condition without wiring the candidate to CI.
 
+## Thin carrier V1
+
+`contract_check_carrier_v1.py` is the transport-only CLI wrapper for this core.
+
+Its only responsibilities are:
+
+- read one already-built Contract Check packet from stdin or an explicit JSON file;
+- invoke `contract_check_core_v1.evaluate(packet)` without modifying the packet;
+- emit the structured result as JSON;
+- map `PASS` to exit `0`, `BLOCK` to exit `2`, and malformed carrier/input packets to exit `3`.
+
+The carrier MUST NOT resolve contracts, discover applicability, call PASE, invoke sibling controls, fetch evidence, read GitHub/Supabase, persist receipts, or perform lifecycle closure. Those are external responsibilities.
+
+This carrier is intentionally not wired into `.github/workflows/lf-contract-check.yml` in this change. Workflow cutover remains a later ordered step after the carrier is independently proven.
+
 ## Rollout
 
-This candidate remains inactive.
+The core and thin carrier remain inactive with respect to the legacy workflow.
 
-No workflow wiring, required-check change, Supabase mutation, runtime activation, deployment, merge, or production change is part of this PR. Consumer wiring and any migration away from the legacy `scripts/lf_contract_check.py` are separate changes after direct readback and compatibility proof.
+No required-check change, Supabase mutation, runtime activation, deployment, or production change is part of this stage. Workflow wiring and migration away from the legacy `scripts/lf_contract_check.py` remain separate ordered changes.
