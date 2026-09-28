@@ -1,0 +1,59 @@
+{
+  "schema_version": "lf-assurance-method-candidate-boundary/v1",
+  "methodology": "LF_ASSURANCE_METHOD_V1",
+  "classification": "CANDIDATE_EVALUATION_METHODOLOGY",
+  "pase_control": false,
+  "critical_path_allowed": false,
+  "global_activation_allowed": false,
+  "promotion_mode": "SUBJECT_BINDING_SPECIFIC_ONLY",
+  "observed_live_counts_2026_09_26": {
+    "claims": {"total": 36, "active": 0, "candidate": 36},
+    "obligations": {"total": 48, "active": 0, "candidate": 48},
+    "defeaters": {"total": 34, "active": 0, "candidate": 34},
+    "bindings": {"total": 4, "active": 0, "candidate": 4}
+  },
+  "located_candidate_consumer": {
+    "function": "public.lf_eval_strategy_matrix_probe_v1",
+    "probe": "ROUTE_GUARD_CLAIM_SURFACES",
+    "suite": "TS-STRATEGY-OP-EXECUTE-V1",
+    "test_code": "E20",
+    "suite_status": "CANDIDATO",
+    "case_status": "CANDIDATO"
+  },
+  "domain_ownership_preserved": [
+    "OPERATION_TEST_COVERAGE",
+    "TEST_COVERAGE_DEBT_GUARD",
+    "INDEPENDENT_REVIEW",
+    "QUALIFICATION_FRAMEWORK",
+    "CONTRACT_CHECK",
+    "CHANGESET_GOVERNANCE",
+    "LIFECYCLE_OWNERS",
+    "CARD_OPERATIONS",
+    "ROUTER_POLICY_AUTHORITY"
+  ],
+  "forbidden_claims": [
+    "ASSURANCE_PASS",
+    "PASE_PASS",
+    "QUALIFICATION_PASS",
+    "TESTS_PASSED",
+    "CHANGESET_SAFE",
+    "RUNTIME_AUTHORIZED",
+    "PRODUCTION_AUTHORIZED"
+  ],
+  "promotion_requirements": [
+    "EXACT_SUBJECT",
+    "EXACT_CLAIM_SET",
+    "EXPLICIT_ACTIVATION_CONDITION",
+    "DOMAIN_OWNER_UNCHANGED",
+    "NO_DUPLICATE_ENGINE",
+    "EXECUTABLE_CURRENT_EVIDENCE_AND_DEFEATERS",
+    "BOUND_PASS_SEMANTICS",
+    "EXPLICIT_CONSUMER_READBACK",
+    "GOVERNED_BINDING_LIFECYCLE"
+  ],
+  "retirement_required_now": false,
+  "ekb": [
+    "ASSURANCE-METHOD-CANDIDATE-NOT-PASE-CONTROL-001",
+    "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001"
+  ]
+}
