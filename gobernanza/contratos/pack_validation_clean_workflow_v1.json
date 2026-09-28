@@ -12,16 +12,32 @@
   "workflow": {
     "staged_definition_path": "sandbox/lf_contract_gate_test/pack_validation_contract/lf-pack-validation-core.staged.yml",
     "target_cutover_path": ".github/workflows/lf-pack-validation-core.yml",
-    "activation": "STAGED_DEFINITION_ONLY",
-    "allowed_triggers_after_cutover": ["workflow_call"],
-    "forbidden_triggers": ["pull_request", "push", "workflow_dispatch", "schedule"],
+    "activation": "REUSABLE_CORE_ADMITTED",
+    "allowed_triggers_after_cutover": [
+      "workflow_call"
+    ],
+    "forbidden_triggers": [
+      "pull_request",
+      "push",
+      "workflow_dispatch",
+      "schedule"
+    ],
     "cutover_owner": "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS",
-    "legacy_carrier_remains_active_until_cutover": ".github/workflows/validate-lf-packs.yml"
+    "legacy_carrier_remains_active_until_cutover": ".github/workflows/validate-lf-packs.yml",
+    "source_carrier_pack_execution": "CANONICAL_RUNNER_DELEGATION",
+    "source_carrier_foreign_controls_retained": true
   },
   "input_contract": {
-    "required": ["base_sha", "head_sha", "changed_paths_json"],
+    "required": [
+      "base_sha",
+      "head_sha",
+      "changed_paths_json"
+    ],
     "authority": "CI_FAST_DEEP_LANE_ROUTER_OR_EQUIVALENT_ALREADY_AUTHORIZED_PLAN",
-    "must_not_redecide": ["RUN_SKIP_APPLICABILITY", "UNRELATED_CONTROL_APPLICABILITY"]
+    "must_not_redecide": [
+      "RUN_SKIP_APPLICABILITY",
+      "UNRELATED_CONTROL_APPLICABILITY"
+    ]
   },
   "execution_sequence": [
     "CHECKOUT_EXACT_HEAD",
@@ -54,7 +70,9 @@
     "new_workflow_has_no_autonomous_trigger": true,
     "old_carrier_not_removed_in_this_solution": true,
     "target_github_path_not_admitted_until_cutover": true,
-    "removal_requires_destination_owner_and_wiring_proof": true
+    "removal_requires_destination_owner_and_wiring_proof": true,
+    "target_github_path_admitted": true,
+    "pack_execution_rebound_from_fixed_direct_invocations": true
   },
   "output_contract": {
     "artifact_name_prefix": "lf-pack-validation-",
@@ -63,7 +81,11 @@
       ".lf_pack_validation/result.json",
       ".lf_pack_validation/summary.json"
     ],
-    "status_enum": ["PASS", "FAIL", "SKIP"],
+    "status_enum": [
+      "PASS",
+      "FAIL",
+      "SKIP"
+    ],
     "authorizations": {
       "runtime_authorized": false,
       "git_write_authorized": false,
@@ -72,5 +94,5 @@
       "production_authorized": false
     }
   },
-  "next_handoff": "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS"
+  "next_handoff": "PACK_VALIDATION_VERIFY_E2E_FLOW"
 }
