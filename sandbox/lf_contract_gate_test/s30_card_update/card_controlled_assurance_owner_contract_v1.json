@@ -1,0 +1,41 @@
+{
+  "schema": "LF_CARD_CONTROLLED_ASSURANCE_OWNER_V1",
+  "status": "CANDIDATE_SOURCE_FIRST",
+  "operation_code": "ACTUALIZACION_CARD_LF",
+  "domain_owner": "CARD_OPERATIONS",
+  "mode": "CARD_UPDATE_CONTROLLED_ASSURANCE",
+  "scope": "CARD_UPDATE_I8_PREPROMOTION_E2E",
+  "review_modes": [
+    "INDEPENDENT_REVIEW",
+    "INDEPENDENT_HOLDOUT"
+  ],
+  "legacy": {
+    "owner": "S36",
+    "mode_prefix": "S36_CONTROLLED_ASSURANCE",
+    "observed_stale_in_progress": 4,
+    "stale_rows_mutated_by_this_lot": false,
+    "resume_policy": "BLOCK_REQUIRES_RECONCILIATION",
+    "active_lease_blocks_cutover": true
+  },
+  "invariants": [
+    "No new Card execution is emitted with S36 owner or S36 controlled-assurance mode.",
+    "Historical S36 Card executions remain immutable evidence.",
+    "A legacy S36 Card execution cannot resume through the canonical Card recorder, validator or E2E canary.",
+    "Card expertise uses INDEPENDENT_REVIEW or INDEPENDENT_HOLDOUT as reviewer identity.",
+    "Runtime activation, production activation, Router activation and automatic promotion remain forbidden.",
+    "No parallel Card operation, Router action, capability, matrix or store is created."
+  ],
+  "dependencies": {
+    "must_follow": [
+      "INDEPENDENT_REVIEW_TYPE_CANONICALIZATION_V1"
+    ],
+    "must_precede": [
+      "GENERIC_JUDGE_S36_INPUT_RETIREMENT",
+      "S36_CARRIER_CUTOVER"
+    ]
+  },
+  "separate_debt": {
+    "ekb_code": "CARD-UPDATE-CONTROLLED-ASSURANCE-STALE-EXECUTIONS-001",
+    "requires_separate_governed_reconciliation": true
+  }
+}
