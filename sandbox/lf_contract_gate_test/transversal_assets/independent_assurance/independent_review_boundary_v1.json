@@ -1,0 +1,67 @@
+{
+  "schema_version": "lf-independent-review-boundary/v1",
+  "inventory_code": "INDEPENDENT_ASSURANCE",
+  "inventory_canonical_name": "TRANSVERSAL_INDEPENDENT_ASSURANCE",
+  "semantic_role": "INDEPENDENT_REVIEW",
+  "rename_mode": "NO_PARALLEL_CAPABILITY_USE_EXISTING_IDENTITY_UNTIL_GOVERNED_CUTOVER",
+  "canonical_execution": {
+    "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
+    "operation_type": "INDEPENDENT_REVIEW",
+    "router_action": "STRATEGY_INDEPENDENT_REVIEW",
+    "required_step_ids": [
+      "route_bind",
+      "target_currentness",
+      "semantic_review",
+      "judge_record",
+      "reviewer_readback",
+      "report_output"
+    ],
+    "owned_outputs": [
+      "verdict",
+      "review_receipt",
+      "evidence_refs",
+      "next_gate"
+    ]
+  },
+  "downstream_integration": {
+    "capability_owner": "QUALIFICATION_FRAMEWORK",
+    "function": "public.lf_finalize_qualification_independent_review_v1",
+    "relationship": "CONSUMER_HANDOFF_NOT_OWNED_PHYSICAL_ASSET",
+    "responsibilities": [
+      "TEST_SUITE_MATERIALIZATION",
+      "QUALIFICATION_STATE_TRANSITION",
+      "QUALIFICATION_CURRENTNESS_READBACK"
+    ]
+  },
+  "forbidden_owned_responsibilities": [
+    "OPERATION_TEST_COVERAGE",
+    "TEST_COVERAGE_DEBT_MONOTONICITY",
+    "QUALIFICATION_FINALIZATION",
+    "QUALIFICATION_CURRENTNESS_AUTHORITY",
+    "LIFECYCLE_STATEFUL_REGRESSION",
+    "CARD_E2E",
+    "GENERIC_ADVERSARIAL_SECURITY",
+    "CHANGESET_APPLICABILITY",
+    "RUNTIME_ACTIVATION",
+    "PRODUCTION_ACTIVATION"
+  ],
+  "verdict_scope": "BOUND_REVIEW_CASE_ONLY",
+  "forbidden_claims": [
+    "QUALIFICATION_PASS",
+    "ASSURANCE_PASS",
+    "CHANGESET_SAFE",
+    "DEPLOYMENT_APPROVED",
+    "PRODUCTION_APPROVED"
+  ],
+  "inventory_owner_name": {
+    "current_state": "UNRESOLVED_NULL",
+    "repair_rule": "AUTHORITATIVE_OWNER_DECISION_REQUIRED_DO_NOT_INFER"
+  },
+  "no_duplicate_engine": true,
+  "ekb": [
+    "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001",
+    "INDEPENDENT-REVIEW-LEGACY-RPC-BYPASS-001",
+    "INDEPENDENT-REVIEW-FINALIZER-RESULT-CONTRACT-MISMATCH-001",
+    "STRATEGY-QUALIFICATION-INDEPENDENT-REVIEW-BOOTSTRAP-DEADLOCK-001"
+  ]
+}
