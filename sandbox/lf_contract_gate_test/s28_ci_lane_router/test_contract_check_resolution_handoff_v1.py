@@ -70,7 +70,7 @@ def main() -> None:
         )
         request = build_resolution_request(lane=lane, plan=plan(), repo_root=root)
         assert request["applicability"] == "APPLICABLE"
-        assert request["handoff_state"] == "READY_FOR_CONTRACT_RESOLUTION"
+        assert request["handoff_state"] == "READY_FOR_OPERATION_CONTEXT_BINDING"
         assert request["changeset"]["solution_ref"] == "SOL-CC-1"
         assert request["changeset"]["families"] == {MANIFEST: "CHANGESET_MANIFEST", TARGET: "CUSTOM"}
         checks += 4
@@ -78,8 +78,11 @@ def main() -> None:
         assert request["resolution_request"] == {
             "owner": "CONTRACT_RESOLUTION",
             "required": True,
+            "invocation_ready": False,
             "selection_performed": False,
-            "required_outputs": ["operation_code", "resolved_contracts"],
+            "operation_code_source": "CALLER_OPERATION_CONTEXT",
+            "required_inputs": ["operation_code", "authority_contracts"],
+            "required_outputs": ["resolved_contracts"],
         }
         assert request["contract_check_boundary"]["owner"] == "CONTRACT_CHECK"
         assert request["contract_check_boundary"]["contract_selection_allowed"] is False
