@@ -108,6 +108,8 @@ def assert_carrier_wiring(texts: dict[str, str]) -> None:
     require(db, "ledger_before.txt", "FAIL_CANDIDATE_LEDGER_PRESTATE_MISSING")
     require(db, "ledger_after.txt", "FAIL_CANDIDATE_LEDGER_POSTSTATE_MISSING")
 
+    # A negative assertion mentioning the retired identifier is allowed. What is
+    # forbidden is an executable job/routing surface for remote reconstruction.
     forbid(db, "schema-bootstrap-probe:", "FAIL_REMOTE_SCHEMA_EXECUTABLE_JOB_REINTRODUCED")
     forbid(db, "supabase db reset", "FAIL_REMOTE_SCHEMA_REBUILD_COMMAND_REINTRODUCED")
     forbid(db, "LF Bootstrap Reproducibility Probe", "FAIL_RETIRED_WORKFLOW_NAME_REINTRODUCED")
@@ -124,6 +126,8 @@ def assert_no_stale_receipt_consumer() -> None:
     ]
     for path in operational:
         text = path.read_text(encoding="utf-8")
+        # Guards/tests may mention retired identifiers, but no operational surface
+        # may expose the legacy output consumed by downstream jobs.
         forbid(text, "bootstrap_controls_json", f"FAIL_STALE_BOOTSTRAP_RECEIPT_CONSUMER:{path}")
 
 
