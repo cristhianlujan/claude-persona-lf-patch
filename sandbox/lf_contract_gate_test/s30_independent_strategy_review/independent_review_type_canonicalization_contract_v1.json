@@ -1,0 +1,38 @@
+{
+  "schema": "LF_INDEPENDENT_REVIEW_TYPE_CANONICALIZATION_V1",
+  "status": "CANDIDATE_SOURCE_FIRST",
+  "canonical_review_type": "INDEPENDENT_REVIEW",
+  "new_write_policy": {
+    "semantic_review_step_accepts": ["INDEPENDENT_REVIEW", "INDEPENDENT_HOLDOUT"],
+    "independent_review_judge_emits": "INDEPENDENT_REVIEW",
+    "independent_review_receipt_emits": "INDEPENDENT_REVIEW"
+  },
+  "legacy_readback_policy": {
+    "legacy_value": "S36_ASSURANCE",
+    "may_be_rewritten": false,
+    "qualification_readback_allowed_only_when_persisted_judge_exists_for_exact_reviewer_execution": true,
+    "observed_historical_rows_before_candidate": 9
+  },
+  "ownership": {
+    "review_verdict_owner": "INDEPENDENT_REVIEW",
+    "qualification_materialization_owner": "QUALIFICATION_FRAMEWORK"
+  },
+  "ordering": {
+    "must_follow_pr": 1094,
+    "reason": "PR 1094 replaces lf_independent_strategy_review_finalize_v1; applying this lot afterwards prevents S36_ASSURANCE from being reintroduced by wrapper replacement.",
+    "must_precede": [
+      "CARD_EXPERTISE_REVIEW_TYPE_CANONICALIZATION",
+      "GENERIC_JUDGE_S36_INPUT_RETIREMENT",
+      "S36_CARRIER_CUTOVER"
+    ]
+  },
+  "non_responsibilities": [
+    "card_expertise_assessor_mode",
+    "generic_judge_type_retirement",
+    "coverage",
+    "coverage_debt",
+    "ci_carrier_cutover",
+    "runtime_activation",
+    "production_activation"
+  ]
+}
