@@ -13,8 +13,11 @@ operation context
     operation_code
          |
          v
-Contract Resolution
+Contract Resolution carrier
     + authority contract rows
+         |
+         v
+Contract Resolution core
          |
          v
 operation_code + resolved_contracts
@@ -31,6 +34,21 @@ The v1 rule is deliberately `ALL_ACTIVE_CONTRACTS_FOR_OPERATION`. There is no on
 
 Zero active contracts is fail-closed. Duplicate active `contract_code` for the same operation is fail-closed. `contract_sha` is preserved exactly, including `NULL`; this capability does not manufacture source provenance.
 
+## Thin carrier v1
+
+`contract_resolution_carrier_v1.py` is transport only. It accepts one explicit JSON packet from stdin or a file with:
+
+- `schema_version = lf-contract-resolution-request/v1`;
+- caller-provided `operation_code`;
+- `authority_source = public.lf_operation_contracts`;
+- the authority snapshot in `contracts`.
+
+The carrier validates only this transport envelope, invokes the existing core, and emits the core result unchanged. It does **not** infer `operation_code`, query Supabase, attest freshness/provenance, select/rank contracts, evaluate contract terms, decide Contract Check applicability, or execute sibling controls.
+
+Exit codes are deterministic: success `0`, fail-closed missing active contract `2`, malformed carrier/core input `3`.
+
+This preserves the boundary that `operation_code` is caller context. The existing Changeset Governance handoff is not cut over by this carrier; binding that handoff to an already-resolved operation context remains a separate integration step.
+
 ## Evidence behind the boundary
 
 The existing Router currently counts every row in `public.lf_operation_contracts` whose `operation_code` matches and whose status is active, and exposes those contract refs. The promoted compact-consumption protocol rehydrates contracts with the same all-active query ordered by `contract_code`.
@@ -41,12 +59,15 @@ Read-only live inspection before this candidate found 39 active rows across 35 o
 
 - `contract_resolution_core_v1.py`: pure deterministic resolver, no I/O.
 - `test_contract_resolution_core_v1.py`: positive, multi-contract, status, negative and determinism coverage.
+- `contract_resolution_carrier_v1.py`: thin stdin/file carrier over the existing core.
+- `test_contract_resolution_carrier_v1.py`: transport, boundary and exit-code regression coverage.
 
 ## Non-scope
 
 - no Router/PASE redesign;
-- no operation-code routing;
-- no live Supabase function or mutation;
+- no operation-code routing or inference;
+- no live Supabase function, query, mutation or provenance attestation;
 - no Contract Check term evaluation;
+- no Changeset handoff cutover;
 - no workflow cutover;
 - no merge/deploy/activation.
