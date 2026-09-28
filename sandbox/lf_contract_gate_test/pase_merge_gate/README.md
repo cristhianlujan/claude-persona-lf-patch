@@ -1,104 +1,88 @@
-# PASE_MERGE_GATE_V1
+# PASE_MERGE_GATE_V1 — repair enforcement integration
 
 ## Purpose
 
-`PASE_MERGE_GATE_V1` is the neutral merge-policy evaluator that should eventually sit between the authoritative PASE/Changeset Governance decision and the repository required-status rule.
-
-It is intentionally **not** a replacement Router, Contract Check, qualification engine, domain control, or GitHub ruleset manager.
+`PASE_MERGE_GATE_V1` remains the neutral merge-policy evaluator between Changeset Governance and the repository required-status rule. This refactor adds the explicitly approved repair-window contract without creating a second router or a second merge gate.
 
 ```text
 Changeset Governance / lf-ci-execution-plan/v2
                   |
-                  +--> authoritative merge route
+                  | applicability (all applicable controls)
+                  v
+PASE_CONTROL_REPAIR_QUARANTINE_V1
+                  |
+                  | ACTIVE_BLOCKING / REPAIR_OBSERVE_ONLY
+                  v
+        authoritative merge route
                   |
                   v
           PASE_MERGE_GATE_V1
-           /              \
+          /                \
 CONTROL_SYSTEM_QUALIFICATION  EXECUTION_PLAN
-        |                         |
-qualified evidence          applicable control results
-        |                         |
-        +-----------+-------------+
-                    v
-                 PASS/BLOCK
 ```
 
 ## Authority boundary
 
-The gate does not decide which route applies.
+Applicability remains entirely owned by Changeset Governance / `lf-ci-execution-plan/v2`.
 
-It requires `lf-pase-merge-route/v1` with:
+The gate requires three mutually bound governance surfaces:
 
-- `authority = CHANGESET_GOVERNANCE_LF_V1`;
-- exact candidate `head_sha`;
-- source `source_revision`;
-- one of `CONTROL_SYSTEM_QUALIFICATION | EXECUTION_PLAN`;
-- the exact control IDs that remain mandatory for that merge route.
+1. canonical plan `lf-ci-execution-plan/v2` with complete coverage and plan digest;
+2. repair enforcement `lf-pase-control-enforcement/v1` produced under `CHANGESET_GOVERNANCE_LF_V1` / `PASE_CONTROL_REPAIR_QUARANTINE_V1` and bound to the exact plan digest;
+3. merge route `lf-pase-merge-route/v1` under `CHANGESET_GOVERNANCE_LF_V1`.
 
-The route is an **input from the existing Changeset Governance authority**. This candidate does not yet materialize that route upstream and does not infer it from changed paths.
+The repair projection must partition every `plan.required_controls` entry exactly once into:
 
-## CONTROL_SYSTEM_QUALIFICATION
+- `ACTIVE_BLOCKING` → appears in `blocking_controls` and must have exact-head PASS evidence;
+- `REPAIR_OBSERVE_ONLY` → appears in `observe_only_controls`; diagnostic execution is allowed and its PASS/FAIL result cannot block merge.
 
-For a control-system candidate, the route may select independent qualification instead of treating a contaminated legacy carrier as the candidate's verdict authority.
+The merge route must name exactly the `blocking_controls` set. It cannot silently suppress an active blocker or reintroduce an observe-only validator as a blocker.
 
-The gate requires an independently validated `PASE_CONTROL_QUALIFICATION_V1` result:
+## Control-system candidates
 
-- exact same `head_sha`;
-- exact candidate ID declared by the route;
+`CONTROL_SYSTEM_QUALIFICATION` still requires independent exact-head `PASE_CONTROL_QUALIFICATION_V1` evidence with:
+
+- exact candidate identity/head;
 - `verdict = CANDIDATE_QUALIFIED`;
+- independent + validated evidence envelope;
+- matching result digest;
 - `qualified_only = true`;
-- activation/cutover/rebind/legacy-retirement authorizations remain `false`;
-- result digest matches exactly;
-- evidence envelope declares independent validation and validator revision.
+- activation/cutover/rebind/legacy-retirement flags all false.
 
-Any additional controls that must still pass are declared by Changeset Governance in `required_control_ids` and are enforced exactly. The merge gate itself never chooses which legacy or domain controls to suppress or preserve.
+This requirement remains fail-closed even if every legacy validator is temporarily `REPAIR_OBSERVE_ONLY`.
 
-## EXECUTION_PLAN
+## Normal changes
 
-For a normal change:
+For `EXECUTION_PLAN` changes:
 
-- route control IDs must equal `plan.required_controls`;
-- every required control must appear exactly once;
-- exact head must match;
-- each result must be `PASS`;
-- missing, extra, duplicate, failed, or head-drifted evidence blocks.
+- canonical applicability is preserved in `plan.required_controls`;
+- the quarantine projection decides enforcement state, not applicability;
+- only `ACTIVE_BLOCKING` controls require PASS evidence;
+- `REPAIR_OBSERVE_ONLY` controls may report diagnostics independently;
+- missing/extra/duplicate blocking evidence, head drift, failed blockers, malformed policy binding, or plan/enforcement drift blocks.
+
+## Structural governance that is never quarantined
+
+The repair window does not relax:
+
+- repository path admission;
+- execution-plan schema and coverage;
+- plan/enforcement digest binding;
+- exact policy partition coverage;
+- exact-head control-system qualification;
+- pull-request, deletion, and non-fast-forward repository protections.
+
+## Re-entry
+
+The gate does not reactivate controls. Re-entry is owned by the repair policy and remains one-control-at-a-time after `CANDIDATE_QUALIFIED`, owner-runner binding PASS, equivalent replay PASS, and exact-head readback PASS.
 
 ## Trust boundary
 
-The pure Python evaluator validates policy shape and exact identity. It is **not** the trust root for GitHub artifacts.
-
-A future workflow/carrier must obtain:
-
-1. the merge route from the protected Changeset Governance/execution-plan surface;
-2. qualification evidence from the independent qualification surface;
-3. control results from their canonical execution evidence.
-
-Candidate-owned files must never be accepted as authoritative merely because they have the right JSON shape.
-
-## #1170 regression
-
-The deterministic regression includes `PASE_ORCHESTRATOR_V1` / PR #1170 as the first qualification-route fixture.
-
-That proves only the gate semantics: when Changeset Governance explicitly selects `CONTROL_SYSTEM_QUALIFICATION`, a canonical exact-head `CANDIDATE_QUALIFIED` result is sufficient, plus any explicitly preserved controls. The merge gate does not repair E16, Profile Runtime, S36, Migration, Contract Check, Validate Packs, or DB Regression.
-
-## Current integration gap
-
-Current `lf-ci-execution-plan/v2` on `main` does **not yet** emit `lf-pase-merge-route/v1`.
-
-Therefore this PR is a repository candidate only. It is not ready to replace `lf-contract-check` in `protect-main` until a separate qualified upstream handoff and a merge-gate workflow/carrier are proven.
+The pure evaluator validates deterministic shape/identity/digests. The eventual trusted carrier must obtain plan, repair enforcement, merge route, qualification evidence, and blocking-control evidence from their canonical protected producers. Candidate-owned lookalike JSON is not authority.
 
 ## Non-scope
 
-This candidate does not:
-
-- modify `.github/workflows/*`;
-- modify `protect-main` or any ruleset;
-- merge #1170;
-- reclassify changed paths/applicability;
-- execute domain controls;
-- qualify candidates itself;
-- mutate Supabase/live authority;
-- activate, cut over, rebind, retire legacy, deploy, or touch production.
+This refactor does not classify paths, recalculate applicability, execute domain controls, qualify a candidate itself, create owner-runners, modify rulesets, merge PRs, mutate Supabase, activate/cut over/rebind controls, or retire legacy validators.
 
 ## Test
 
@@ -109,5 +93,5 @@ python3 sandbox/lf_contract_gate_test/pase_merge_gate/test_pase_merge_gate_v1.py
 Expected marker:
 
 ```text
-PASS_PASE_MERGE_GATE_V1 checks=19
+PASS_PASE_MERGE_GATE_REPAIR_ENFORCEMENT_V1 checks=26
 ```
