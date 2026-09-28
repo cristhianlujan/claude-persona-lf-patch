@@ -1,0 +1,47 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1-pack-validation-local-complete",
+  "issued_by": "operation_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-PACK-VALIDATION-LOCAL-COMPLETE-PR1174-20260928-001",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "contract_judge",
+  "contract_sha": "55a842e7805c88673762eb2fcadec654b5ba213f",
+  "judge_sha": "MIGRATION_20260531_GITHUB_CONTRACT_GATE_LF_PROTOCOL",
+  "source_sha_list": [
+    "5e088f58b2310a61f956f42bb3519b38eff810b4",
+    "25a4a1cb239e61ffe46955e854ead4cd8127bdcf",
+    "298ce74b37e6bffc24f58aee666827f08514b340",
+    "2b2b8e08dac50b536a44ec02cb3511104dba910a",
+    "febc0816ab728c7e6f966d891bf6cc2efb464e66",
+    "ce0ac7ddf1be0c67578037b035d3f19b598b73a4"
+  ],
+  "target_paths": [
+    "gobernanza/contratos/pack_validation_clean_workflow_v1.json",
+    "gobernanza/contratos/pack_validation_carrier_decontamination_v1.json",
+    "gobernanza/contratos/ci_control_rebind_validate_packs_controls_v1.json",
+    "gobernanza/contratos/pack_validation_verify_e2e_flow_v1.json",
+    "gobernanza/contratos/pack_validation_readback_traceability_close_v1.json"
+  ],
+  "target_blob_sha_by_path": {
+    "gobernanza/contratos/pack_validation_clean_workflow_v1.json": "25a4a1cb239e61ffe46955e854ead4cd8127bdcf",
+    "gobernanza/contratos/pack_validation_carrier_decontamination_v1.json": "298ce74b37e6bffc24f58aee666827f08514b340",
+    "gobernanza/contratos/ci_control_rebind_validate_packs_controls_v1.json": "2b2b8e08dac50b536a44ec02cb3511104dba910a",
+    "gobernanza/contratos/pack_validation_verify_e2e_flow_v1.json": "febc0816ab728c7e6f966d891bf6cc2efb464e66",
+    "gobernanza/contratos/pack_validation_readback_traceability_close_v1.json": "ce0ac7ddf1be0c67578037b035d3f19b598b73a4"
+  },
+  "blocking_codes": [],
+  "issued_at": "2026-09-28T17:14:00Z",
+  "candidate_code_head": "5e088f58b2310a61f956f42bb3519b38eff810b4",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "EXACT_HEAD_CI_THEN_WAIT_FOR_PASE_ORCHESTRATOR",
+  "stage": "PACK_VALIDATION_LOCAL_COMPLETE_CANDIDATE",
+  "pr_number": 1174,
+  "authority_current_revision": "87f60ef1107b05e9fe7ce00b74faf149b506c4bf",
+  "currentness_decision": "CURRENT",
+  "runtime_activation": false,
+  "db_write_authorized": false,
+  "deployment_authorized": false,
+  "production_applied": false
+}
