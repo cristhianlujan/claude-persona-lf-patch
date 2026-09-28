@@ -1,0 +1,67 @@
+{
+  "schema_version": "lf-pase-control-qualification-result/v1",
+  "candidate": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "pr": 1170,
+    "candidate_id": "PASE_ORCHESTRATOR_V1",
+    "qualification_type": "CONTROL_REFACTOR",
+    "base_sha": "fd7d5c5216d13a1417d231441740c4919bfbcf9f",
+    "head_sha": "e0533baad36bf70347f57b5e416db020645e054b",
+    "declared_owner": "LF_GOVERNANCE"
+  },
+  "verdict": "CANDIDATE_QUALIFIED",
+  "qualified_only": true,
+  "activation_authorized": false,
+  "cutover_authorized": false,
+  "rebind_authorized": false,
+  "legacy_retirement_authorized": false,
+  "supabase_mutation_authorized": false,
+  "production_authorized": false,
+  "checks": {
+    "Q01_exact_identity": "PASS",
+    "Q02_exact_scope": "PASS",
+    "Q03_owner_declaration": "PASS",
+    "Q04_owner_local_executable_tests": "PASS",
+    "Q05_boundary_invariants": "PASS",
+    "Q06_negative_adversarial_tests": "PASS",
+    "Q07_out_of_scope_effects": "PASS",
+    "Q08_determinism_idempotency": "PASS",
+    "Q09_old_new_replay": "NA",
+    "Q10_preserved_coverage": "PASS",
+    "Q11_exact_head_evidence": "PASS"
+  },
+  "owner_local_evidence": {
+    "probe_pr": 1190,
+    "probe_head": "e2697e24b8bc66d1c2cbe38dc9e31c4d4e2bf33b",
+    "workflow_run": 36482108542,
+    "job": 109130006946,
+    "checked_out_candidate_head": "e0533baad36bf70347f57b5e416db020645e054b",
+    "marker": "PASS_PASE_ORCHESTRATOR_V1 checks=15",
+    "conclusion": "SUCCESS"
+  },
+  "ownership_semantics": {
+    "plan_field": "governance_admin",
+    "schema_version": "lf-ci-governance-admin-identity/v1",
+    "super_admin": "LF_GOVERNANCE",
+    "per_control_owner_creation": false,
+    "owner_recalculation": false,
+    "binding_materialized_supported": false,
+    "prebinding_execution": "CURRENT_CARRIER_DELEGATION_ONLY"
+  },
+  "external_findings": [
+    {
+      "finding_id": "PR1170-CI-CURRENTNESS-001",
+      "source_controls": ["LF_CONTRACT_CHECK", "VALIDATE_LF_PACKS", "LF_DB_REGRESSION"],
+      "observed_failure": "BLOCK_CI_AUTHORITY_CURRENTNESS:UNKNOWN_FAIL_CLOSED:COMPATIBILITY_ASSESSMENT_MISSING",
+      "candidate_causality": "DISPROVEN",
+      "effect_on_candidate_verdict": "NONE",
+      "reason": "All three historical carriers stop during unified plan/currentness construction before PASE_ORCHESTRATOR_V1 owner-local/domain execution."
+    }
+  ],
+  "notes": [
+    "The previous owner-gap FAIL is closed: the candidate now requires and validates plan.governance_admin fail-closed.",
+    "INTERNAL_CI_CHECK controls are not forced into per-control owner-runner bindings.",
+    "binding_materialized=true is intentionally blocked in V1 until a separately qualified binding-aware cutover exists.",
+    "This result does not authorize merge, activation, cutover, rebind, runner migration, legacy retirement, Supabase mutation, deploy or production."
+  ]
+}
