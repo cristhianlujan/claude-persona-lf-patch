@@ -83,6 +83,7 @@ def test_policy_resolver_migration_is_precise_and_candidate_bound() -> None:
         "S36_ASSURANCE",
         "R8_USER_STORY_AUDIT",
     )
+    assert "S36_ASSURANCE" not in got["control_universe"]
     assert got["carrier_controls"]["LF_DB_REGRESSION"] == [
         "DB_CANDIDATE_APPLY_ROLLBACK",
         "POLICY_RESOLVER_REGRESSION",
@@ -125,6 +126,8 @@ def test_unknown_surface_fails_closed_to_full_regression_without_retired_control
     assert "POLICY_RESOLVER_REGRESSION" not in got["required_controls"]
     assert "P0_FAST_DOCS" not in got["required_controls"]
     assert "REMOTE_SCHEMA_REPRODUCIBILITY" not in got["required_controls"]
+    assert "S36_ASSURANCE" not in got["required_controls"]
+    assert "S36_ASSURANCE" not in got["control_universe"]
     assert "LF_BOOTSTRAP_REPRODUCIBILITY" not in got["carrier_controls"]
     assert len(got["required_controls"]) + len(got["not_applicable_controls"]) == len(got["control_universe"])
 
@@ -138,6 +141,8 @@ def test_router_self_change_forces_full_regression() -> None:
     assert "POLICY_RESOLVER_REGRESSION" not in got["required_controls"]
     assert "P0_FAST_DOCS" not in got["required_controls"]
     assert "REMOTE_SCHEMA_REPRODUCIBILITY" not in got["required_controls"]
+    assert "S36_ASSURANCE" not in got["required_controls"]
+    assert "S36_ASSURANCE" not in got["control_universe"]
     assert len(got["required_controls"]) + len(got["not_applicable_controls"]) == len(got["control_universe"])
 
 
