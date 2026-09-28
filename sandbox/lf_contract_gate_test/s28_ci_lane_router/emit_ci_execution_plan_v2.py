@@ -14,6 +14,7 @@ HERE = Path(__file__).resolve().parent
 ROUTER_PATH = HERE / "lf_ci_lane_router.py"
 PLAN_PATH = HERE / "lf_ci_execution_plan_v2.py"
 CURRENTNESS_PATH = HERE / "lf_ci_currentness_bridge_v1.py"
+HANDOFF_PATH = HERE / "lf_contract_check_resolution_handoff_v1.py"
 
 
 def _load(path: Path, name: str):
@@ -29,6 +30,7 @@ def _load(path: Path, name: str):
 ROUTER = _load(ROUTER_PATH, "lf_ci_lane_router_runtime")
 PLAN = _load(PLAN_PATH, "lf_ci_execution_plan_v2_runtime")
 CURRENTNESS = _load(CURRENTNESS_PATH, "lf_ci_currentness_bridge_v1_runtime")
+HANDOFF = _load(HANDOFF_PATH, "lf_contract_check_resolution_handoff_v1_runtime")
 
 
 def parser() -> argparse.ArgumentParser:
@@ -81,6 +83,11 @@ def main() -> int:
         force_full_reason=force_reason,
         source_ref=args.head or None,
     )
+    plan["contract_check_resolution_request"] = HANDOFF.build_resolution_request(
+        lane=lane,
+        plan=plan,
+        repo_root=repo,
+    )
     applicability_sha256 = plan["plan_sha256"]
     current_revision = args.authority_current_revision or args.base or args.head
     if not current_revision:
@@ -121,6 +128,7 @@ def main() -> int:
     gh_out = Path(args.github_output) if args.github_output else None
     if gh_out is not None:
         carrier = plan.get("carrier_controls") or {}
+        handoff = plan["contract_check_resolution_request"]
         values = {
             "plan_sha256": plan["plan_sha256"],
             "applicability_sha256": plan["applicability_sha256"],
@@ -134,6 +142,8 @@ def main() -> int:
             "validate_packs_controls_json": json.dumps(carrier.get("VALIDATE_LF_PACKS", []), separators=(",", ":")),
             "db_regression_controls_json": json.dumps(carrier.get("LF_DB_REGRESSION", []), separators=(",", ":")),
             "changed_paths_json": json.dumps(plan["changed_paths"], separators=(",", ":")),
+            "contract_check_handoff_state": handoff["handoff_state"],
+            "contract_check_resolution_request_json": json.dumps(handoff, separators=(",", ":"), sort_keys=True),
         }
         with gh_out.open("a", encoding="utf-8") as handle:
             for key, value in values.items():
@@ -149,6 +159,7 @@ def main() -> int:
         "full_regression": plan["full_regression"],
         "required_controls": plan["required_controls"],
         "changed_paths": plan["changed_paths"],
+        "contract_check_handoff_state": plan["contract_check_resolution_request"]["handoff_state"],
         "coverage_complete": plan["coverage_complete"],
     }, sort_keys=True))
     return 0
