@@ -1,0 +1,115 @@
+{
+  "schema_version": "lf-assurance-evaluator-boundary/v1",
+  "capability_code": "ASSURANCE_EVALUATOR",
+  "classification": "CANDIDATE_DORMANT_NO_ACTIVE_BINDING",
+  "pase_control_active": false,
+  "critical_path_allowed_without_active_binding": false,
+  "observed_live_counts_2026_09_28": {
+    "claims": {"total": 36, "active": 0, "candidate": 36},
+    "obligations": {"total": 48, "active": 0, "candidate": 48},
+    "defeaters": {"total": 34, "active": 0, "candidate": 34},
+    "bindings": {"total": 4, "active": 0, "candidate": 4},
+    "evaluation_rows": 10,
+    "live_evaluator_function_count": 0
+  },
+  "semantic_chain": [
+    "EXACT_BINDING",
+    "CLAIM",
+    "REQUIRED_OBLIGATIONS",
+    "EXACT_REVISION_EVIDENCE",
+    "MANDATORY_DEFEATERS",
+    "DERIVED_RESULT"
+  ],
+  "result_values": [
+    "PASS",
+    "FAIL",
+    "OPEN",
+    "UNPROVEN",
+    "FALSE_PASS_RISK",
+    "NOT_APPLICABLE"
+  ],
+  "unsupported_rule_result": "UNPROVEN",
+  "normal_pase_without_active_binding": "NOT_APPLICABLE_NO_EXECUTION",
+  "new_review_types": [
+    "INDEPENDENT_REVIEW",
+    "INDEPENDENT_HOLDOUT"
+  ],
+  "legacy_readback_only": [
+    "S36_ASSURANCE"
+  ],
+  "reuse": {
+    "claim_catalog": "public.lf_assurance_claim_catalog",
+    "obligation_catalog": "public.lf_assurance_obligation_catalog",
+    "defeater_catalog": "public.lf_assurance_defeater_catalog",
+    "subject_bindings": "public.lf_assurance_subject_bindings",
+    "evaluation_store": "public.lf_assurance_evaluations",
+    "test_matrix": [
+      "public.lf_test_suites",
+      "public.lf_test_suite_cases",
+      "public.lf_test_runs",
+      "public.lf_test_assertion_results",
+      "public.lf_test_artifacts",
+      "public.lf_test_judge_results"
+    ]
+  },
+  "ownership": {
+    "applicability_owner": "ROUTER_CHANGESET_GOVERNANCE",
+    "claim_sufficiency_owner": "ASSURANCE_EVALUATOR",
+    "finalization_owner": "PASE_CLOSURE",
+    "independent_review_owner": "INDEPENDENT_REVIEW",
+    "qualification_owner": "QUALIFICATION_FRAMEWORK"
+  },
+  "activation_preconditions": [
+    "EXACT_ACTIVE_BINDING",
+    "ROUTER_APPLICABILITY_REQUIRED",
+    "EXACT_SOURCE_CURRENTNESS",
+    "CANONICAL_DOMAIN_OWNERS_UNCHANGED",
+    "CANONICAL_REVIEW_TYPES_ONLY_FOR_NEW_WRITES",
+    "NO_PARALLEL_EVALUATOR",
+    "FAIL_CLOSED_UNPROVEN_REGRESSION",
+    "EXPLICIT_ACTIVATION_CUTOVER"
+  ],
+  "forbidden_responsibilities": [
+    "APPLICABILITY_DISCOVERY",
+    "CONTROL_EXECUTION",
+    "CONTRACT_CHECK",
+    "MIGRATION_PARITY",
+    "PACK_VALIDATION",
+    "RUNTIME",
+    "DB_REGRESSION",
+    "OPERATION_TEST_COVERAGE",
+    "TEST_COVERAGE_DEBT_GUARD",
+    "INDEPENDENT_REVIEW_EXECUTION",
+    "QUALIFICATION_FINALIZATION",
+    "CARD_DOMAIN_CONTROL",
+    "LIFECYCLE_DOMAIN_CONTROL",
+    "WORKFLOW_DEPLOYMENT",
+    "MIGRATION_TRANSPORT",
+    "MIGRATION_PARITY_CONTROL",
+    "RUNTIME_ACTIVATION",
+    "PRODUCTION_ACTIVATION",
+    "PASE_FINAL_CLOSURE"
+  ],
+  "legacy_candidate": {
+    "source_pr": 879,
+    "integration_status": "SUPERSEDED_AS_PACKAGE",
+    "reusable_semantics": [
+      "EXACT_REVISION_EVIDENCE",
+      "CLAIM_OBLIGATION_DEFEATER_CHAIN",
+      "FALSE_PASS_DETECTION",
+      "UNSUPPORTED_TO_UNPROVEN",
+      "NEGATIVE_ADVERSARIAL_DEFEATER_EVIDENCE"
+    ],
+    "rejected_package_elements": [
+      "S36_ASSURANCE_AS_NEW_CANONICAL_REVIEW_TYPE",
+      "DEDICATED_WORKFLOW_CONTROL",
+      "DEDICATED_DEPLOYMENT_CLOSE",
+      "MIGRATION_PARITY_MODIFICATION"
+    ]
+  },
+  "ekb": [
+    "ASSURANCE-EVALUATOR-LEGACY-S36-REINTRODUCTION-RISK-001",
+    "ASSURANCE-METHOD-CANDIDATE-NOT-PASE-CONTROL-001",
+    "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001"
+  ]
+}
