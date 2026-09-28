@@ -1,0 +1,170 @@
+{
+  "assessment_schema": "lf-pase-control-qualification-assessment/v1",
+  "qualification_contract": "PASE_CONTROL_QUALIFICATION_V1",
+  "qualification_input": {
+    "schema_version": "lf-pase-control-qualification/v1",
+    "qualification_type": "BINDING_CHANGE",
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "base_sha": "5e208f53885df92a017cba0a5ff3926e61f97c7c",
+    "head_sha": "b16d49b0224edd98f0a339d16db804e3ae580f31",
+    "observed_main_sha": "b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6",
+    "candidate_id": "LF_GOVERNANCE_ADMIN_PLAN_BINDING_V1",
+    "declared_owner": "LF_GOVERNANCE",
+    "scope_paths": [
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py",
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py",
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_super_admin_plan_binding_v1.py"
+    ],
+    "owner_local_tests": [
+      "python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py",
+      "python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_super_admin_plan_binding_v1.py"
+    ],
+    "boundary_invariants": [
+      "SUPER_ADMIN_IDENTITY_FROM_EXISTING_CONTRACT_ONLY",
+      "SUPER_ADMIN_PLAN_LEVEL_ONLY",
+      "IMPACT_REGISTRY_REMAINS_CARRIER_DEPENDENCY_AUTHORITY",
+      "NO_PER_CONTROL_OWNER_INVENTION",
+      "NO_APPLICABILITY_CHANGE",
+      "NO_RUNNER_OR_DOMAIN_EXECUTION_CHANGE",
+      "MISSING_OR_DRIFTED_ADMIN_CONTRACT_FAILS_CLOSED",
+      "QUALIFICATION_NOT_ACTIVATION"
+    ],
+    "expected_coverage": [
+      "ADMIN_IDENTITY_CONTRACT_RESOLUTION",
+      "ADMIN_IDENTITY_SOURCE_REVISION",
+      "PLAN_LEVEL_ADMIN_PROPAGATION",
+      "FAIL_CLOSED_ADMIN_IDENTITY_DRIFT",
+      "NO_PARALLEL_ADMIN_AUTHORITY"
+    ],
+    "replacement": null
+  },
+  "qualification_result": {
+    "schema_version": "lf-pase-control-qualification-result/v1",
+    "candidate_id": "LF_GOVERNANCE_ADMIN_PLAN_BINDING_V1",
+    "base_sha": "5e208f53885df92a017cba0a5ff3926e61f97c7c",
+    "head_sha": "b16d49b0224edd98f0a339d16db804e3ae580f31",
+    "declared_owner": "LF_GOVERNANCE",
+    "checks": [
+      {
+        "id": "Q01",
+        "status": "PASS",
+        "evidence": [
+          "PR1183 base=5e208f53885df92a017cba0a5ff3926e61f97c7c head=b16d49b0224edd98f0a339d16db804e3ae580f31",
+          "main readback=b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6"
+        ],
+        "reason": "Exact candidate base/head and live main were independently read back."
+      },
+      {
+        "id": "Q02",
+        "status": "PASS",
+        "evidence": [
+          "compare 5e208f53885df92a017cba0a5ff3926e61f97c7c...b16d49b0224edd98f0a339d16db804e3ae580f31: ahead=3 behind=0",
+          "exact diff contains only planner plus two s28 self-test files"
+        ],
+        "reason": "The candidate is confined to the declared plan-binding responsibility and does not mutate workflows, registries or domain controls."
+      },
+      {
+        "id": "Q03",
+        "status": "PASS",
+        "evidence": [
+          "LF_GOVERNANCE identity contract qualified separately by PR1182",
+          "PASE_CONTROL_QUALIFICATION_V1 is outside candidate PR1183",
+          "planner reads super_admin identity from contract instead of declaring a new authority"
+        ],
+        "reason": "Administrative authority exists before the binding change and candidate code is not its own verdict authority."
+      },
+      {
+        "id": "Q04",
+        "status": "PASS",
+        "evidence": [
+          "lf-contract-check run 36474510224 exact head b16d49b0224edd98f0a339d16db804e3ae580f31 SUCCESS",
+          "job 109104768108 step Run CI lane router self-tests with deterministic diagnostics SUCCESS",
+          "test_lf_ci_execution_plan_v2.py exact head invokes test_lf_ci_super_admin_plan_binding_v1.py"
+        ],
+        "reason": "The existing owner-local CI self-test surface executed the plan binding and its adversarials on the exact candidate head."
+      },
+      {
+        "id": "Q05",
+        "status": "PASS",
+        "evidence": [
+          "planner adds one root governance_admin object only",
+          "lf_ci_control_impact_registry_v2.json unchanged",
+          "no workflow, carrier, runner, applicability classifier or domain-control file changed"
+        ],
+        "reason": "The change transports administrative identity only; impact/carrier/dependency authority and execution responsibilities remain where they already exist."
+      },
+      {
+        "id": "Q06",
+        "status": "PASS",
+        "evidence": [
+          "test_lf_ci_super_admin_plan_binding_v1.py checks missing contract fail-closed",
+          "bad schema fail-closed",
+          "identity drift fail-closed",
+          "super-admin/carrier collapse fail-closed",
+          "planner source test rejects hardcoded LF_GOVERNANCE identity"
+        ],
+        "reason": "Candidate-specific negative paths are executable and fail closed."
+      },
+      {
+        "id": "Q07",
+        "status": "PASS",
+        "evidence": [
+          "PR1183 changed files=3, all under s28_ci_lane_router",
+          "Validate LF Packs run 36474510233 SUCCESS",
+          "LF DB Regression run 36474510215 SUCCESS",
+          "lf-contract-check run 36474510224 SUCCESS"
+        ],
+        "reason": "No out-of-scope mutation or candidate-caused regression was observed on exact head."
+      },
+      {
+        "id": "Q08",
+        "status": "PASS",
+        "evidence": [
+          "governance_admin source_revision is SHA256 of exact contract bytes",
+          "governance_admin is included in canonical plan hashing",
+          "existing test_plan_replay_is_deterministic remains inside the exact-head self-test suite and passed"
+        ],
+        "reason": "The same contract and governed input deterministically produce the same administrative identity and plan representation."
+      },
+      {
+        "id": "Q09",
+        "status": "NA",
+        "evidence": [],
+        "reason": "BINDING_CHANGE adds an administrative identity handoff only; it does not replace an existing behavior or authorize cutover."
+      },
+      {
+        "id": "Q10",
+        "status": "PASS",
+        "evidence": [
+          "candidate responsibility is explicitly limited to ADMIN_IDENTITY_CONTRACT_RESOLUTION, source revision, plan-level propagation and fail-closed drift",
+          "PR1183 explicitly leaves control-to-capability-to-runner materialization for a later separately qualified change"
+        ],
+        "reason": "Coverage is complete for this binding change only. It does not claim that the full control-to-runner binding is materialized."
+      },
+      {
+        "id": "Q11",
+        "status": "PASS",
+        "evidence": [
+          "candidate readback tied to b16d49b0224edd98f0a339d16db804e3ae580f31",
+          "exact-head compare ahead=3 behind=0",
+          "lf-contract-check run 36474510224 SUCCESS",
+          "Validate LF Packs run 36474510233 SUCCESS",
+          "LF DB Regression run 36474510215 SUCCESS"
+        ],
+        "reason": "All material qualification evidence is tied to the exact candidate head; historical carriers provide non-regression evidence only."
+      }
+    ],
+    "external_findings": [],
+    "coverage_complete": true,
+    "verdict": "CANDIDATE_QUALIFIED",
+    "qualified_only": true,
+    "activation_authorized": false,
+    "cutover_authorized": false,
+    "rebind_authorized": false,
+    "legacy_retirement_authorized": false
+  },
+  "verdict_scope": "ADMINISTRATIVE_IDENTITY_PLAN_HANDOFF_ONLY",
+  "full_control_runner_binding_materialized": false,
+  "supabase_registered": false,
+  "next_required_action": "Complete the read-only inventory control -> capability/runner -> carrier -> state, reuse only proven owner-runner assets, and materialize that binding as a separate qualified change before repairing PASE_ORCHESTRATOR_V1."
+}
