@@ -10,26 +10,52 @@ Changeset Governance / Router
         v
 lf-ci-execution-plan/v2
         |
+        |-- plan.governance_admin
         v
 PASE_ORCHESTRATOR_V1
         |
-        +--> carrier A / applicable controls only
-        +--> carrier B / applicable controls only
+        +--> current carrier A / applicable controls only
+        +--> current carrier B / applicable controls only
         +--> ...
 ```
 
-This candidate does not replace or duplicate the Router. It consumes the existing `required_controls`, `carrier_controls`, dependency graph and plan identity already produced by `CI_FAST_DEEP_LANE_ROUTER`.
+This candidate does not replace or duplicate the Router. It consumes the existing
+`required_controls`, `carrier_controls`, dependency graph, plan identity and the
+plan-level governance administrator identity already produced upstream.
+
+## Governance administrator contract
+
+`PASE_ORCHESTRATOR_V1` requires `plan.governance_admin` with schema
+`lf-ci-governance-admin-identity/v1`.
+
+The identity is plan-level, not one owner per control:
+
+- `super_admin = LF_GOVERNANCE`;
+- source contract schema is `lf-governance-super-admin/v1`;
+- `source_revision` is a SHA-256 readback handle for the source contract;
+- `binding_materialized` and `supabase_registered` are booleans;
+- `orchestrator_consumer = PASE_ORCHESTRATOR_V1`.
+
+PASE validates this identity and propagates it unchanged into the dispatch packet.
+It does **not** load the source contract, recalculate ownership, invent per-control
+owners, or resolve owner-runners.
+
+While `binding_materialized=false`, current carrier delegation remains authoritative.
+An `INTERNAL_CI_CHECK` therefore does not need an independent owner-runner merely to
+be dispatched. A standalone capability may move to an owner-runner only through its
+separate canonical binding + qualified cutover.
 
 ## Exact responsibility
 
 `pase_orchestrator_v1.py`:
 
 1. accepts an already-authoritative `lf-ci-execution-plan/v2`;
-2. requires `coverage_complete=true`;
-3. proves every required control is delegated exactly once;
-4. checks carrier assignment against the existing `lf_ci_control_impact_registry_v2.json`;
-5. derives deterministic carrier order from the **existing dependency graph**;
-6. emits `lf-pase-dispatch-plan/v1`.
+2. requires and validates `plan.governance_admin`;
+3. requires `coverage_complete=true`;
+4. proves every required control is delegated exactly once;
+5. checks carrier assignment against the existing `lf_ci_control_impact_registry_v2.json`;
+6. derives deterministic carrier order from the **existing dependency graph**;
+7. emits `lf-pase-dispatch-plan/v1` while preserving the governance-admin identity unchanged.
 
 It never decides whether a control applies.
 
@@ -40,6 +66,9 @@ The orchestrator does **not**:
 - classify changed paths or material;
 - resolve Change Families;
 - select or evaluate contracts;
+- calculate or assign a separate owner for each control;
+- require one owner-runner per internal CI check;
+- load or reinterpret `LF_GOVERNANCE_SUPER_ADMIN_V1`;
 - execute Contract Check semantics;
 - execute Migration Source Parity, Assurance, P0, Runtime, DB Regression or another domain control;
 - create a second gate-group engine;
@@ -47,7 +76,8 @@ The orchestrator does **not**:
 - mutate assets, operation registry, lifecycle, runtime or production state;
 - change the current workflow cutover.
 
-Execution remains delegated to the carriers named by the canonical plan until each domain control is migrated to its proven owner/carrier.
+Execution remains delegated to the carriers named by the canonical plan until a
+standalone capability has a canonical binding and a separately qualified cutover.
 
 ## Why this is needed
 
@@ -82,5 +112,5 @@ python3 sandbox/lf_contract_gate_test/pase_orchestrator/test_pase_orchestrator_v
 Expected marker:
 
 ```text
-PASS_PASE_ORCHESTRATOR_V1 checks=8
+PASS_PASE_ORCHESTRATOR_V1 checks=14
 ```
