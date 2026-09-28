@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -10,6 +12,7 @@ SOURCE = ROOT / ".github/workflows/validate-lf-packs.yml"
 CORE = ROOT / ".github/workflows/lf-pack-validation-core.yml"
 STAGED = ROOT / "sandbox/lf_contract_gate_test/pack_validation_contract/lf-pack-validation-core.staged.yml"
 RUNNER = ROOT / "sandbox/lf_contract_gate_test/pack_validation_contract/run_pack_validation_flow_v1.py"
+E2E = ROOT / "sandbox/lf_contract_gate_test/pack_validation_contract/verify_pack_validation_e2e_v1.py"
 
 
 def main() -> None:
@@ -97,6 +100,17 @@ def main() -> None:
         assert row["target_execution"] == "PACK_VALIDATION_CLEAN_WORKFLOW"
         assert row["rebind_allowed"] is True
         assert control in source
+
+    # The next owned handoff is proven with isolated positive and negative E2E probes.
+    completed = subprocess.run(
+        [sys.executable, str(E2E)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert "PACK_VALIDATION_VERIFY_E2E_FLOW=PASS" in completed.stdout, completed.stdout
 
     print("CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS=PASS")
 
