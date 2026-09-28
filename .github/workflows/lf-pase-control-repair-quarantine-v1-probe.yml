@@ -1,0 +1,34 @@
+name: LF PASE Control Repair Quarantine V1 Probe
+
+on:
+  push:
+    branches:
+      - lf/pase-control-repair-quarantine-v1-probe-20260928
+
+permissions:
+  contents: read
+
+jobs:
+  validate-quarantine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: 1201b8acf686d92d858d02f27d093930522b0362
+          persist-credentials: false
+
+      - name: Verify exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          observed="$(git rev-parse HEAD)"
+          test "$observed" = "1201b8acf686d92d858d02f27d093930522b0362"
+          echo "exact_head=$observed"
+
+      - name: Run owner-local deterministic tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd sandbox/lf_contract_gate_test/s28_ci_lane_router
+          python3 test_lf_pase_control_repair_quarantine_v1.py
