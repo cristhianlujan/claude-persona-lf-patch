@@ -58,6 +58,10 @@ def _sha(value: Any) -> str:
     return hashlib.sha256(_canon(value).encode("utf-8")).hexdigest()
 
 
+def _json_equal(left: Any, right: Any) -> bool:
+    return _canon(left) == _canon(right)
+
+
 def _fact_name(value: Any) -> str:
     if not isinstance(value, str) or _FACT_RE.fullmatch(value) is None:
         raise ContractPredicateSemanticsInputError("predicate_fact_invalid")
@@ -133,6 +137,8 @@ def _observation(
     present = bool(row["present"])
     if present and "value" not in row:
         return None, None, refs_norm, {"code": "FAIL_FACT_VALUE_MISSING", "detail": {"fact": fact}}
+    if not present and "value" in row:
+        return None, None, refs_norm, {"code": "FAIL_FACT_ABSENT_WITH_VALUE", "detail": {"fact": fact}}
     value = row.get("value")
     try:
         _canon(value)
@@ -180,13 +186,13 @@ def _eval_predicate(
     if not present:
         return False, refs, []
     if op == "EQ":
-        return value == node["value"], refs, []
+        return _json_equal(value, node["value"]), refs, []
     if op == "NEQ":
-        return value != node["value"], refs, []
+        return not _json_equal(value, node["value"]), refs, []
     if op == "IN":
-        return value in node["values"], refs, []
+        return any(_json_equal(value, candidate) for candidate in node["values"]), refs, []
     if op == "NOT_IN":
-        return value not in node["values"], refs, []
+        return all(not _json_equal(value, candidate) for candidate in node["values"]), refs, []
     if op == "TRUE":
         if not isinstance(value, bool):
             return None, refs, [{"code": "FAIL_FACT_BOOLEAN_REQUIRED", "detail": {"fact": fact, "operator": op}}]
