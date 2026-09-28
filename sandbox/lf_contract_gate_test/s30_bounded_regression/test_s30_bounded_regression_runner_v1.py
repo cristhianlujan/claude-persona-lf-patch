@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 import tempfile
 from pathlib import Path
 
@@ -16,6 +17,7 @@ def load_runner():
     spec = importlib.util.spec_from_file_location("s30_bounded_runner", RUNNER)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
