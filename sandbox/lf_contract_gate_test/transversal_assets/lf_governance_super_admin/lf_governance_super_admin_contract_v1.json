@@ -1,0 +1,49 @@
+{
+  "schema_version": "lf-governance-super-admin/v1",
+  "super_admin": "LF_GOVERNANCE",
+  "role": "SUPER_ADMIN_GOVERNANCE",
+  "status": "CANDIDATE_READ_ONLY",
+  "scope": "PASE_GOVERNANCE_ADMINISTRATION",
+  "applicability_authority": "CHANGESET_GOVERNANCE_LF_V1",
+  "orchestrator_consumer": "PASE_ORCHESTRATOR_V1",
+  "required_binding_fields": [
+    "control_id",
+    "super_admin",
+    "capability_id",
+    "runner_ref",
+    "carrier",
+    "state",
+    "source_revision"
+  ],
+  "invariants": {
+    "single_super_admin": true,
+    "super_admin_equals": "LF_GOVERNANCE",
+    "super_admin_is_not_carrier": true,
+    "super_admin_is_not_runner": true,
+    "subscope_aliases_are_not_parallel_authorities": true,
+    "act_0001_role": "ROUTER_RESOLUTION_ONLY",
+    "unknown_control_fail_closed": true,
+    "missing_or_wrong_super_admin_fail_closed": true,
+    "missing_runner_fail_closed": true,
+    "carrier_drift_fail_closed": true,
+    "qualification_not_activation": true
+  },
+  "prohibitions": [
+    "DECIDE_APPLICABILITY",
+    "GENERATE_EXECUTION_PLAN",
+    "EXECUTE_DOMAIN_CONTROL",
+    "REPLACE_CAPABILITY_CONTRACT",
+    "REPLACE_RUNNER",
+    "ACT_AS_CARRIER",
+    "CUTOVER",
+    "REBIND",
+    "DEPLOY",
+    "RUNTIME_ACTIVATION",
+    "PRODUCTION_ACTIVATION",
+    "SUPABASE_WRITE"
+  ],
+  "binding_materialized": false,
+  "supabase_registered": false,
+  "cutover_authorized": false,
+  "production_authorized": false
+}
