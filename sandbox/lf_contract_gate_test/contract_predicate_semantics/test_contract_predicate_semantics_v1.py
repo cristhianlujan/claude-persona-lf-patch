@@ -305,6 +305,32 @@ def main():
     check(extra_ops["verdict"] == "READY", "NEQ NOT_IN ANY ready")
     check([e["verdict"] for e in extra_ops["evaluations"]] == ["SATISFIED", "SATISFIED", "SATISFIED"], "NEQ NOT_IN ANY semantics")
 
+    c = typed_contract()
+    c["required_before_write"] = [
+        {"id": "strict_eq", "predicate": {"op": "EQ", "fact": "contract.bound", "value": 1}},
+        {"id": "strict_in", "predicate": {"op": "IN", "fact": "contract.bound", "values": [1, 2]}},
+    ]
+    c["allowed"] = []
+    c["blocked"] = []
+    p = packet()
+    p["contracts"] = [c]
+    strict_types = sem.evaluate(p)
+    check(strict_types["verdict"] == "READY", "strict JSON type comparison ready")
+    check(
+        [e["verdict"] for e in strict_types["evaluations"]] == ["FAILED", "FAILED"],
+        "boolean never equals numeric JSON values",
+    )
+
+    p = packet()
+    p["facts"]["contract.bound"]["present"] = False
+    p["facts"]["contract.bound"]["value"] = "ambiguous"
+    absent_with_value = sem.evaluate(p)
+    check(absent_with_value["verdict"] == "BLOCK", "absent observation with value blocked")
+    check(
+        any(f["code"] == "FAIL_FACT_ABSENT_WITH_VALUE" for f in absent_with_value["failures"]),
+        "absent observation ambiguity code",
+    )
+
     check(PASS == TOTAL, "pass counter consistent")
     print(f"PASS_CONTRACT_PREDICATE_SEMANTICS_V1={PASS}/{TOTAL}")
 
