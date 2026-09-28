@@ -1,0 +1,51 @@
+{
+  "schema_version": "lf-pack-validation-carrier-decontamination/v1",
+  "durable_name": "PACK_VALIDATION_CARRIER_DECONTAMINATION_V1",
+  "owner": "PACK_VALIDATION",
+  "source_workflow": ".github/workflows/validate-lf-packs.yml",
+  "canonical_core": ".github/workflows/lf-pack-validation-core.yml",
+  "purpose": "Keep Validate LF Packs limited to exact Pack Validation context transport and one canonical PACK_VALIDATION invocation, without executing CI currentness, applicability, S30, Runtime, observability, Work Protocol, database, Assurance, EKB, deployment, or production responsibilities.",
+  "owned_transport": {
+    "accepted_ingress": ["pull_request compatibility ingress", "push compatibility ingress", "workflow_call from pass orchestrator"],
+    "required_context": ["base_sha", "head_sha", "changed_paths_json"],
+    "event_ingress_may_derive_exact_diff": true,
+    "workflow_call_consumes_caller_context_without_applicability_redecision": true,
+    "canonical_execution_count": 1
+  },
+  "forbidden_in_pack_validation_carrier": [
+    "CI currentness evaluation",
+    "CI applicability planning",
+    "Contract Check execution",
+    "Migration Parity execution",
+    "S30 governance or Git broker execution",
+    "Profile Runtime execution",
+    "gate observability execution",
+    "Transversal README execution",
+    "Work Protocol deprecation validation",
+    "Supabase or EKB persistence",
+    "database regression or mutation",
+    "Assurance judgment",
+    "deployment",
+    "production activation",
+    "direct fixed-pack validate_pack.py calls"
+  ],
+  "boundary_invariants": {
+    "single_pack_validation_engine": true,
+    "carrier_calls_reusable_core_once": true,
+    "core_rechecks_changed_paths_integrity": true,
+    "carrier_does_not_resolve_run_skip_applicability": true,
+    "carrier_does_not_compare_candidate_to_current_main": true,
+    "workflow_dispatch_removed_with_s30_control_plane": true,
+    "foreign_control_logic_not_reimplemented_here": true,
+    "foreign_control_retirement_not_claimed_here": true,
+    "foreign_control_destination_wiring_not_claimed_here": true,
+    "merge_requires_upstream_orchestrator_and_coverage_readback": true,
+    "merge_authorized": false,
+    "deployment_authorized": false,
+    "production_authorized": false
+  },
+  "local_status": "READY_PENDING_EXACT_HEAD_READBACK",
+  "external_prerequisite": "STEP_10_UPSTREAM_ORCHESTRATOR_AND_FOREIGN_COVERAGE_PROOF",
+  "closure_rule": "Pack Validation local implementation may close independently, but merge/cutover waits for upstream orchestration and no-loss foreign coverage proof.",
+  "next_handoff": "STEP_10_UPSTREAM_ORCHESTRATOR_AND_FOREIGN_COVERAGE_PROOF"
+}

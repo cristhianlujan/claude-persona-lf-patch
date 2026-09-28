@@ -1,0 +1,43 @@
+{
+  "schema_version": "lf-pack-validation-readback-traceability-close/v1",
+  "durable_name": "PACK_VALIDATION_READBACK_TRACEABILITY_CLOSE",
+  "owner": "PACK_VALIDATION",
+  "purpose": "Close all Pack Validation-owned implementation and readback work without requiring completion of the external PASE orchestrator or foreign-control routing.",
+  "historical_provenance": [
+    {"pr": 1157, "role": "clean core"},
+    {"pr": 1158, "role": "caller interface"},
+    {"pr": 1159, "role": "owned E2E"},
+    {"pr": 1162, "role": "changed-path integrity"},
+    {"pr": 1160, "role": "historical readback"},
+    {"pr": 1166, "role": "carrier decontamination"}
+  ],
+  "active_candidate_model": {
+    "shape": "CONSOLIDATED_ON_CURRENT_MAIN",
+    "base_must_be_current_main_at_branch_creation": true,
+    "exact_head_ci_required": true,
+    "old_stacked_sha_topology_required": false,
+    "historical_evidence_preserved": true
+  },
+  "local_closure_invariants": {
+    "one_owner": "PACK_VALIDATION",
+    "core_is_workflow_call_only": true,
+    "carrier_calls_core_once": true,
+    "changed_paths_integrity_required": true,
+    "positive_and_negative_pack_e2e_required": true,
+    "tampered_changed_paths_fail_before_discovery": true,
+    "foreign_owner_work_forbidden": true,
+    "external_blocker_must_be_reported_not_repaired_here": true,
+    "merge_authorized": false,
+    "deployment_authorized": false,
+    "production_authorized": false
+  },
+  "external_prerequisites": {
+    "STEP_10_UPSTREAM_ORCHESTRATOR_AND_FOREIGN_COVERAGE_PROOF": "WAITING",
+    "STEP_11_FINAL_CUTOVER_AND_PASS_READBACK": "WAITING_ON_STEP_10"
+  },
+  "external_prerequisites_count_toward_pack_validation_progress": false,
+  "local_progress_percent": 100,
+  "candidate_status": "LOCAL_COMPLETE_PENDING_EXACT_HEAD_CI",
+  "integration_status": "UNMERGED_WAITING_EXTERNAL_PREREQUISITES",
+  "next_action": "RUN_LOCAL_EXACT_HEAD_CI_THEN_WAIT_FOR_EXTERNAL_ORCHESTRATOR"
+}
