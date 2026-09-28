@@ -2,21 +2,26 @@
 """Neutral PASE dispatch planner over the canonical LF CI applicability plan.
 
 The Router/Changeset Governance owns applicability. This module only verifies the
-already-produced plan, derives dependency-safe carrier order from the canonical
-impact registry, and emits a deterministic delegation packet. It does not run
-controls, classify paths, evaluate contracts, mutate Git/Supabase, or persist
+already-produced plan, validates the plan-level governance administrator identity,
+derives dependency-safe carrier order from the canonical impact registry, and emits
+a deterministic delegation packet. It does not run controls, resolve per-control
+owners/runners, classify paths, evaluate contracts, mutate Git/Supabase, or persist
 lifecycle state.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any, Mapping
 
 PLAN_SCHEMA_VERSION = "lf-ci-execution-plan/v2"
 DISPATCH_SCHEMA_VERSION = "lf-pase-dispatch-plan/v1"
 REGISTRY_VERSION = "lf-ci-control-impact-registry/v2"
+GOVERNANCE_ADMIN_SCHEMA_VERSION = "lf-ci-governance-admin-identity/v1"
+GOVERNANCE_SUPER_ADMIN = "LF_GOVERNANCE"
+GOVERNANCE_SOURCE_CONTRACT_SCHEMA_VERSION = "lf-governance-super-admin/v1"
 ROOT = Path(__file__).resolve().parents[3]
 REGISTRY_PATH = ROOT / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json"
 
@@ -68,9 +73,70 @@ def _load_registry(path: Path = REGISTRY_PATH) -> dict[str, dict[str, Any]]:
     return result
 
 
-def _validate_plan(plan: Mapping[str, Any], registry: Mapping[str, Mapping[str, Any]]) -> tuple[list[str], dict[str, list[str]]]:
+def _validate_governance_admin(plan: Mapping[str, Any]) -> dict[str, Any]:
+    admin = plan.get("governance_admin")
+    if not isinstance(admin, Mapping):
+        raise PaseOrchestratorError("FAIL_PASE_GOVERNANCE_ADMIN_MISSING")
+
+    required_fields = {
+        "schema_version",
+        "super_admin",
+        "role",
+        "status",
+        "scope",
+        "applicability_authority",
+        "orchestrator_consumer",
+        "source_contract_schema_version",
+        "source_revision",
+        "binding_materialized",
+        "supabase_registered",
+    }
+    missing = sorted(required_fields - set(admin))
+    if missing:
+        raise PaseOrchestratorError(
+            f"FAIL_PASE_GOVERNANCE_ADMIN_STRUCTURE:missing={','.join(missing)}"
+        )
+
+    if admin.get("schema_version") != GOVERNANCE_ADMIN_SCHEMA_VERSION:
+        raise PaseOrchestratorError("FAIL_PASE_GOVERNANCE_ADMIN_SCHEMA")
+    if admin.get("super_admin") != GOVERNANCE_SUPER_ADMIN:
+        raise PaseOrchestratorError("FAIL_PASE_GOVERNANCE_ADMIN_IDENTITY")
+    if admin.get("source_contract_schema_version") != GOVERNANCE_SOURCE_CONTRACT_SCHEMA_VERSION:
+        raise PaseOrchestratorError("FAIL_PASE_GOVERNANCE_ADMIN_SOURCE_CONTRACT")
+    if admin.get("orchestrator_consumer") != "PASE_ORCHESTRATOR_V1":
+        raise PaseOrchestratorError("FAIL_PASE_GOVERNANCE_ADMIN_CONSUMER")
+
+    string_fields = (
+        "role",
+        "status",
+        "scope",
+        "applicability_authority",
+        "source_revision",
+    )
+    for key in string_fields:
+        value = admin.get(key)
+        if not isinstance(value, str) or not value.strip():
+            raise PaseOrchestratorError(f"FAIL_PASE_GOVERNANCE_ADMIN_FIELD:{key}")
+
+    if re.fullmatch(r"[0-9a-f]{64}", admin["source_revision"]) is None:
+        raise PaseOrchestratorError("FAIL_PASE_GOVERNANCE_ADMIN_SOURCE_REVISION")
+    if not isinstance(admin.get("binding_materialized"), bool):
+        raise PaseOrchestratorError("FAIL_PASE_GOVERNANCE_ADMIN_BINDING_MATERIALIZED")
+    if not isinstance(admin.get("supabase_registered"), bool):
+        raise PaseOrchestratorError("FAIL_PASE_GOVERNANCE_ADMIN_SUPABASE_REGISTERED")
+
+    # Preserve the upstream identity verbatim. PASE validates but does not
+    # recalculate ownership, create per-control owners, or resolve owner-runners.
+    return dict(admin)
+
+
+def _validate_plan(
+    plan: Mapping[str, Any],
+    registry: Mapping[str, Mapping[str, Any]],
+) -> tuple[list[str], dict[str, list[str]], dict[str, Any]]:
     if plan.get("schema_version") != PLAN_SCHEMA_VERSION:
         raise PaseOrchestratorError("FAIL_PASE_PLAN_SCHEMA")
+    governance_admin = _validate_governance_admin(plan)
     if plan.get("coverage_complete") is not True:
         raise PaseOrchestratorError("FAIL_PASE_PLAN_COVERAGE_INCOMPLETE")
 
@@ -127,7 +193,7 @@ def _validate_plan(plan: Mapping[str, Any], registry: Mapping[str, Mapping[str, 
             raise PaseOrchestratorError(
                 f"FAIL_PASE_CARRIER_DRIFT:{control}:expected={expected_carrier}:observed={observed_carrier}"
             )
-    return list(required), normalized
+    return list(required), normalized, governance_admin
 
 
 def _carrier_order(
@@ -185,7 +251,7 @@ def build_dispatch_plan(
     if not isinstance(plan, Mapping):
         raise PaseOrchestratorError("FAIL_PASE_PLAN_NOT_OBJECT")
     registry = _load_registry(registry_path)
-    required, carrier_controls = _validate_plan(plan, registry)
+    required, carrier_controls, governance_admin = _validate_plan(plan, registry)
     ordered_carriers = _carrier_order(required, carrier_controls, registry)
 
     dispatches = [
@@ -205,6 +271,7 @@ def build_dispatch_plan(
         "source_plan_sha256": plan.get("plan_sha256"),
         "source_applicability_sha256": plan.get("applicability_sha256"),
         "source_evidence_sha256": plan.get("evidence_sha256"),
+        "governance_admin": governance_admin,
         "applicability_authority": "UPSTREAM_PLAN_ONLY",
         "execution_semantics": "SEQUENTIAL_DELEGATION_ONLY",
         "required_controls": required,
@@ -213,6 +280,8 @@ def build_dispatch_plan(
         "control_count": len(required),
         "coverage_complete": True,
         "no_applicability_reclassification": True,
+        "no_owner_recalculation": True,
+        "no_per_control_owner_creation": True,
         "no_domain_execution": True,
     }
     result["dispatch_sha256"] = _sha256(result)
