@@ -1,0 +1,77 @@
+{
+  "schema_version": "lf-pack-validation-verify-e2e-flow/v1",
+  "durable_name": "PACK_VALIDATION_VERIFY_E2E_FLOW",
+  "owner": "PACK_VALIDATION",
+  "depends_on": [
+    "PACK_VALIDATION_DEFINE_CONTRACT",
+    "PACK_DISCOVERY_RESOLVE_AFFECTED_PACKS",
+    "PACK_VALIDATION_EXECUTE_PACK_CHECKS",
+    "PACK_VALIDATION_CLEAN_WORKFLOW",
+    "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS"
+  ],
+  "purpose": "Prove the PACK_VALIDATION-owned path from already-authorized exact-head input through affected-pack discovery, pack-local deterministic validation, bounded evidence, and final PASS/FAIL without invoking or owning foreign controls.",
+  "proof_model": {
+    "live_wiring_probe": {
+      "required": true,
+      "source": "exact-head Validate LF Packs run on the rebind candidate",
+      "required_observations": [
+        "canonical Pack Validation flow step executes successfully",
+        "bounded Pack Validation artifact is emitted",
+        "artifact binds base_sha and head_sha",
+        "no runtime, Git-write, DB-write, deployment, or production authorization is granted"
+      ],
+      "note": "A non-pack rebind diff may legitimately produce SKIP; this proves caller wiring but not positive pack execution."
+    },
+    "positive_pack_probe": {
+      "required": true,
+      "isolation": "TEMPORARY_GIT_REPOSITORY_ONLY",
+      "repository_pack_mutation": false,
+      "fixture": "one synthetic governed SKILL_PACK with validators/validate_pack.py returning zero",
+      "expected_status": "PASS",
+      "expected_affected_pack_count": 1,
+      "exact_head_required": true
+    },
+    "negative_pack_probe": {
+      "required": true,
+      "isolation": "TEMPORARY_GIT_REPOSITORY_ONLY",
+      "repository_pack_mutation": false,
+      "fixture": "one synthetic governed SKILL_PACK whose local validator returns non-zero",
+      "expected_status": "FAIL",
+      "required_blocking_code": "PACK_LOCAL_VALIDATOR_FAILED",
+      "exact_head_required": true
+    }
+  },
+  "caller_binding": {
+    "changed_paths": "steps.ci_plan.outputs.changed_paths_json",
+    "base_sha": "github.event.pull_request.base.sha || github.event.before || inputs.base_main_sha",
+    "head_sha": "github.event.pull_request.head.sha || github.sha",
+    "must_not_redecide_applicability": true,
+    "canonical_runner": "sandbox/lf_contract_gate_test/pack_validation_contract/run_pack_validation_flow_v1.py"
+  },
+  "required_evidence_files": [
+    ".lf_pack_validation/discovery.json",
+    ".lf_pack_validation/result.json",
+    ".lf_pack_validation/summary.json"
+  ],
+  "authorization_invariants": {
+    "runtime_authorized": false,
+    "git_write_authorized": false,
+    "db_write_authorized": false,
+    "deployment_authorized": false,
+    "production_authorized": false,
+    "semantic_quality_review_authorized": false
+  },
+  "foreign_work_forbidden": [
+    "Contract Check repair or admission change",
+    "Migration Parity repair",
+    "PROFILE_RUNTIME execution or regression ownership",
+    "S30 broker or protected Git write",
+    "Assurance judgment",
+    "DB regression or database mutation",
+    "Supabase or EKB persistence",
+    "gate observability ownership",
+    "deployment or production activation"
+  ],
+  "completion_rule": "PASS only when the live wiring probe exists and both isolated positive and negative exact-head probes satisfy their expected outcomes with bounded evidence.",
+  "next_handoff": "STEP_08_READBACK_TRACEABILITY_CLOSE"
+}
