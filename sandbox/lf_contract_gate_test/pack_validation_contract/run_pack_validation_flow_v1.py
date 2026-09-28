@@ -5,6 +5,7 @@ import argparse
 import importlib.util
 import json
 import os
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,44 @@ def _changed_paths(raw: str) -> list[str]:
     if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
         raise ValueError("CHANGED_PATHS_JSON_INVALID")
     return value
+
+
+def _canonical_changed_paths(paths: list[str]) -> list[str]:
+    if len(paths) != len(set(paths)):
+        raise ValueError("CHANGED_PATHS_DUPLICATE")
+    for path in paths:
+        if not path or path.startswith("/") or "\\" in path:
+            raise ValueError("CHANGED_PATH_INVALID")
+        parts = path.split("/")
+        if any(part in {"", ".", ".."} for part in parts):
+            raise ValueError("CHANGED_PATH_INVALID")
+    return sorted(paths)
+
+
+def _observed_changed_paths(repo_root: Path, base_sha: str, head_sha: str) -> list[str]:
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(repo_root), "diff", "--name-only", base_sha, head_sha, "--"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (subprocess.CalledProcessError, OSError) as exc:
+        raise ValueError("CHANGED_PATHS_GIT_DIFF_FAILED") from exc
+    return _canonical_changed_paths([line for line in completed.stdout.splitlines() if line])
+
+
+def _verify_changed_paths_integrity(
+    repo_root: Path,
+    base_sha: str,
+    head_sha: str,
+    changed_paths: list[str],
+) -> list[str]:
+    provided = _canonical_changed_paths(changed_paths)
+    observed = _observed_changed_paths(repo_root, base_sha, head_sha)
+    if provided != observed:
+        raise ValueError("CHANGED_PATHS_MISMATCH")
+    return provided
 
 
 def _write(path: Path, value: dict[str, Any]) -> None:
@@ -81,6 +120,7 @@ def run_flow(
 ) -> dict[str, Any]:
     validation_contract = _load_json(validation_contract_path)
     discovery_contract = _load_json(discovery_contract_path)
+    changed_paths = _verify_changed_paths_integrity(repo_root, base_sha, head_sha, changed_paths)
 
     discovery = resolver.resolve_affected_packs(
         repo_root=repo_root,

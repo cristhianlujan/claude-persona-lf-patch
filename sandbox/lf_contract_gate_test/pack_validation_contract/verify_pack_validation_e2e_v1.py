@@ -120,6 +120,53 @@ def run_probe(*, validator_fails: bool) -> tuple[dict, dict, dict]:
         td.cleanup()
 
 
+def run_changed_paths_tamper_probe() -> dict:
+    td, repo, base, head = make_repo(validator_fails=False)
+    try:
+        output_dir = repo / ".lf_pack_validation"
+        incomplete_changed = ["skills/e2e_probe/SKILL.md"]
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(RUNNER),
+                "--repo-root",
+                str(repo),
+                "--validation-contract",
+                str(VALIDATION),
+                "--discovery-contract",
+                str(DISCOVERY),
+                "--base-sha",
+                base,
+                "--head-sha",
+                head,
+                "--changed-paths-json",
+                json.dumps(incomplete_changed, separators=(",", ":")),
+                "--output-dir",
+                str(output_dir),
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        assert completed.returncode == 1, completed.stdout + completed.stderr
+        summary = json.loads((output_dir / "summary.json").read_text(encoding="utf-8"))
+        assert summary["status"] == "FAIL", summary
+        assert summary["blocking_codes"] == ["CHANGED_PATHS_MISMATCH"], summary
+        assert not (output_dir / "discovery.json").exists(), "discovery must not consume an unverified changed-path set"
+        for field in (
+            "runtime_authorized",
+            "git_write_authorized",
+            "db_write_authorized",
+            "deployment_authorized",
+            "production_authorized",
+        ):
+            assert summary[field] is False, (field, summary)
+        return summary
+    finally:
+        td.cleanup()
+
+
 def main() -> None:
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
     assert contract["durable_name"] == "PACK_VALIDATION_VERIFY_E2E_FLOW"
@@ -127,6 +174,7 @@ def main() -> None:
     assert contract["next_handoff"] == "STEP_08_READBACK_TRACEABILITY_CLOSE"
     assert contract["proof_model"]["positive_pack_probe"]["repository_pack_mutation"] is False
     assert contract["proof_model"]["negative_pack_probe"]["repository_pack_mutation"] is False
+    assert contract["proof_model"]["changed_paths_integrity_probe"]["required_blocking_code"] == "CHANGED_PATHS_MISMATCH"
 
     source = SOURCE_WORKFLOW.read_text(encoding="utf-8")
     assert "LF_CHANGED_PATHS_JSON: ${{ steps.ci_plan.outputs.changed_paths_json }}" in source
@@ -137,9 +185,11 @@ def main() -> None:
 
     positive = run_probe(validator_fails=False)
     negative = run_probe(validator_fails=True)
+    tamper = run_changed_paths_tamper_probe()
     print(
         "PACK_VALIDATION_VERIFY_E2E_FLOW=PASS "
-        f"positive={positive[2]['status']} negative={negative[2]['status']}"
+        f"positive={positive[2]['status']} negative={negative[2]['status']} "
+        f"changed_paths_integrity={tamper['blocking_codes'][0]}"
     )
 
 
