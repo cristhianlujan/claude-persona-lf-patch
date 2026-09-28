@@ -28,9 +28,14 @@
     }
   },
   "legacy_aliases": {
-    "review_mode": ["S36_ASSURANCE"],
-    "rule": "COMPATIBILITY_ONLY_NOT_CANONICAL_OWNER"
+    "review_mode": [],
+    "historical_review_mode": "S36_ASSURANCE",
+    "rule": "RETIRED_FROM_EXECUTABLE_GUARD_LINEAGE_ONLY"
   },
+  "canonical_review_modes": [
+    "INDEPENDENT_REVIEW",
+    "INDEPENDENT_HOLDOUT"
+  ],
   "open_states": {
     "REQUIRED_STEP_BYPASS_TRANSVERSAL_DYNAMIC": "NOT_COVERED",
     "INVALID_STATE_TRANSITION_TRANSVERSAL_NEGATIVE": "NOT_COVERED",

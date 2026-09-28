@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable
 
-ALLOWED_REVIEW_MODES = {"INDEPENDENT_HOLDOUT", "S36_ASSURANCE"}
+ALLOWED_REVIEW_MODES = {"INDEPENDENT_HOLDOUT", "INDEPENDENT_REVIEW"}
 
 
 @dataclass(frozen=True)
@@ -23,10 +23,11 @@ def evaluate_identity_authority(
     requested_authority: str,
     granted_authorities: Iterable[str],
 ) -> GuardResult:
-    """Owner-agnostic assurance guard.
+    """Historical integration guard over canonical owner inputs.
 
-    It validates only transversal authority and review-independence invariants.
-    It does not interpret or repair owner semantics.
+    Reviewer independence belongs to INDEPENDENT_REVIEW. Requested-vs-granted
+    authority belongs to the policy/downstream-authority chain. This guard remains
+    only as an integration regression and does not own either capability.
     """
     producer = (producer_execution_id or "").strip()
     reviewer = (reviewer_execution_id or "").strip()
