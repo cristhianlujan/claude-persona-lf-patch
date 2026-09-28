@@ -1,0 +1,80 @@
+{
+  "schema_version": "lf-pack-validation-carrier-decontamination/v1",
+  "durable_name": "PACK_VALIDATION_CARRIER_DECONTAMINATION_V1",
+  "owner": "PACK_VALIDATION",
+  "source_workflow": ".github/workflows/validate-lf-packs.yml",
+  "canonical_core": ".github/workflows/lf-pack-validation-core.yml",
+  "purpose": "Make the Validate LF Packs carrier transport only exact Pack Validation context and invoke the canonical PACK_VALIDATION core, without executing CI currentness, applicability, S30, Runtime, observability, Work Protocol, database, Assurance, EKB, deployment, or production responsibilities.",
+  "owned_transport": {
+    "accepted_ingress": [
+      "pull_request compatibility ingress",
+      "push compatibility ingress",
+      "workflow_call from pass orchestrator"
+    ],
+    "required_context": [
+      "base_sha",
+      "head_sha",
+      "changed_paths_json"
+    ],
+    "event_ingress_may_derive_exact_diff": true,
+    "workflow_call_consumes_caller_context_without_applicability_redecision": true,
+    "canonical_execution_count": 1
+  },
+  "forbidden_in_pack_validation_carrier": [
+    "CI currentness evaluation",
+    "CI applicability planning",
+    "Contract Check execution",
+    "Migration Parity execution",
+    "S30 governance or Git broker execution",
+    "Profile Runtime execution",
+    "gate observability execution",
+    "Work Protocol deprecation validation",
+    "Supabase or EKB persistence",
+    "database regression or mutation",
+    "Assurance judgment",
+    "deployment",
+    "production activation",
+    "direct fixed-pack validate_pack.py calls"
+  ],
+  "boundary_invariants": {
+    "single_pack_validation_engine": true,
+    "carrier_calls_reusable_core_once": true,
+    "core_rechecks_changed_paths_integrity": true,
+    "carrier_does_not_resolve_run_skip_applicability": true,
+    "carrier_does_not_compare_candidate_to_current_main": true,
+    "workflow_dispatch_removed_with_s30_control_plane": true,
+    "foreign_control_logic_not_reimplemented_here": true,
+    "foreign_control_retirement_not_claimed_here": true,
+    "foreign_control_destination_wiring_not_claimed_here": true,
+    "merge_requires_upstream_orchestrator_and_coverage_readback": true,
+    "merge_authorized": false,
+    "deployment_authorized": false,
+    "production_authorized": false
+  },
+  "supersedes_carrier_behavior": {
+    "historical_mixed_carrier": ".github/workflows/validate-lf-packs.yml",
+    "removed_from_pack_validation_path": [
+      "Resolve unified CI applicability plan",
+      "S30 self-governance regression and fresh receipt gate",
+      "S30 bounded regressions",
+      "Profile Runtime tests",
+      "Work Protocol tombstone",
+      "foreign observability and transversal controls"
+    ],
+    "disposition": "DETACHED_FROM_PACK_VALIDATION_PATH_NOT_DECLARED_RETIRED"
+  },
+  "corrected_operational_plan": {
+    "progress_semantics": "Functional PACK_VALIDATION implementation remains complete; the corrected cutover plan additionally requires decontaminated carrier, upstream/orchestrator integration proof, and final exact-head readback before merge.",
+    "steps_total": 11,
+    "steps_closed_after_this_candidate": 9,
+    "global_progress_percent_after_candidate": 81.8,
+    "steps": [
+      {"id": "STEP_01_TO_08", "status": "CLOSED_CANDIDATE_IMPLEMENTATION", "progress_percent": 100},
+      {"id": "STEP_09_CARRIER_DECONTAMINATION", "status": "CANDIDATE_BUILT_PENDING_EXACT_HEAD", "progress_percent": 100},
+      {"id": "STEP_10_UPSTREAM_ORCHESTRATOR_AND_FOREIGN_COVERAGE_PROOF", "status": "PENDING", "progress_percent": 0},
+      {"id": "STEP_11_FINAL_EXACT_HEAD_READBACK_AND_CUTOVER", "status": "PENDING", "progress_percent": 0}
+    ]
+  },
+  "closure_rule": "This PR may prove the clean carrier candidate, but must not be merged until upstream/orchestrator invocation and absence of unintended foreign-control coverage loss are independently read back.",
+  "next_handoff": "STEP_10_UPSTREAM_ORCHESTRATOR_AND_FOREIGN_COVERAGE_PROOF"
+}
