@@ -3,13 +3,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
 from collections import Counter
 from typing import Any, Mapping
 
 SCHEMA_VERSION = "lf-contract-check-input/v1"
 RESULT_SCHEMA_VERSION = "lf-contract-check-result/v1"
-SHA64_RE = re.compile(r"^[0-9a-f]{64}$")
 SECTIONS_BY_PHASE = {
     "ENTRY": ("required_before_write", "allowed", "blocked"),
     "CLOSURE": ("required_before_write", "allowed", "blocked", "required_after_write"),
@@ -99,14 +97,13 @@ def evaluate(packet: Mapping[str, Any]) -> dict[str, Any]:
             fail("FAIL_RESOLVED_CONTRACT_DUPLICATE", {"contract_code": code, "count": count})
 
     expected: dict[tuple[str, str, str], str] = {}
+    contract_digests: list[dict[str, str]] = []
     for contract in contracts:
         code = _text(contract, "contract_code")
         op = _text(contract, "operation_code")
         if op and op != operation_code:
             fail("FAIL_CONTRACT_OPERATION_MISMATCH", {"contract_code": code, "contract_operation_code": op})
-        sha = _text(contract, "contract_sha")
-        if SHA64_RE.fullmatch(sha) is None:
-            fail("FAIL_CONTRACT_SHA_INVALID", code or None)
+        contract_digests.append({"contract_code": code, "contract_digest_sha256": _sha(contract)})
         for section in SECTIONS_BY_PHASE[phase]:
             for term in _terms(section, contract.get(section)):
                 key = (code, section, term["term_id"])
@@ -159,6 +156,7 @@ def evaluate(packet: Mapping[str, Any]) -> dict[str, Any]:
             "evaluations": len(evaluations),
             "failures": len(failures),
         },
+        "contract_digests": contract_digests,
         "failures": failures,
         "packet_sha256": _sha(p),
     }
