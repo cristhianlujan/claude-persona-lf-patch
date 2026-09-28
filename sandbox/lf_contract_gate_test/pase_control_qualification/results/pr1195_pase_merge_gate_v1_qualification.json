@@ -1,0 +1,117 @@
+{
+  "schema_version": "lf-pase-control-qualification-result/v1",
+  "candidate_id": "PASE_MERGE_GATE_V1",
+  "base_sha": "8bb18f9521702b958193d92640a08d04a53b1b85",
+  "head_sha": "6950b3f67b68db090de1de9fb421a61f6a823057",
+  "declared_owner": "LF_GOVERNANCE",
+  "checks": [
+    {
+      "id": "Q01",
+      "status": "PASS",
+      "evidence": [
+        "PR #1195 candidate range is base 8bb18f9521702b958193d92640a08d04a53b1b85 -> head 6950b3f67b68db090de1de9fb421a61f6a823057",
+        "qualification observed main 897b25a50426cb2b5121947d9c265a393a7af800 without changing the candidate head"
+      ]
+    },
+    {
+      "id": "Q02",
+      "status": "PASS",
+      "evidence": [
+        "PR #1195 changes exactly three paths under sandbox/lf_contract_gate_test/pase_merge_gate",
+        "candidate scope is a pure merge-gate evaluator, README, and deterministic test"
+      ]
+    },
+    {
+      "id": "Q03",
+      "status": "PASS",
+      "evidence": [
+        "declared owner is plan-level governance administrator LF_GOVERNANCE",
+        "qualification does not activate, bind, rebind, cut over, or retire any carrier"
+      ]
+    },
+    {
+      "id": "Q04",
+      "status": "PASS",
+      "evidence": [
+        "independent probe run 36485910180 job 109142637604 checked out exact candidate head 6950b3f67b68db090de1de9fb421a61f6a823057",
+        "probe emitted PASS_PASE_MERGE_GATE_V1 checks=19"
+      ]
+    },
+    {
+      "id": "Q05",
+      "status": "PASS",
+      "evidence": [
+        "candidate accepts trusted lf-pase-merge-route/v1 input and does not infer applicability",
+        "source-boundary assertions prohibit workflow/ruleset mutation, merge/deploy, GitHub/Supabase access, owner resolution, contract evaluation, path classification, and domain execution"
+      ]
+    },
+    {
+      "id": "Q06",
+      "status": "PASS",
+      "evidence": [
+        "owner-local suite exercises 19 deterministic positive and negative/adversarial checks",
+        "negative cases include wrong route authority/schema/mode/base/head, missing/duplicate/extra evidence, failed or blocked controls, qualification mismatch, and non-independent runner"
+      ]
+    },
+    {
+      "id": "Q07",
+      "status": "PASS",
+      "evidence": [
+        "candidate diff is limited to three pase_merge_gate files",
+        "candidate contains no .github workflow, ruleset, Supabase, deployment, cutover, rebind, or runtime mutation"
+      ]
+    },
+    {
+      "id": "Q08",
+      "status": "PASS",
+      "evidence": [
+        "evaluator is deterministic over supplied route/evidence packets and performs no external I/O",
+        "independent exact-head execution reproduced PASS_PASE_MERGE_GATE_V1 checks=19"
+      ]
+    },
+    {
+      "id": "Q09",
+      "status": "NA",
+      "evidence": [
+        "qualification_type is NEW_CONTROL, not CONTROL_REPLACEMENT; no old-vs-new replay is mandatory for this candidate"
+      ]
+    },
+    {
+      "id": "Q10",
+      "status": "PASS",
+      "evidence": [
+        "owner-local exact-head suite passed 19/19",
+        "Validate LF Packs run 36485832584 succeeded on candidate head",
+        "LF DB Regression run 36485832631 succeeded on candidate head",
+        "legacy lf-contract-check failure is separately classified as external causality DISPROVEN"
+      ]
+    },
+    {
+      "id": "Q11",
+      "status": "PASS",
+      "evidence": [
+        "independent probe checked out exact SHA 6950b3f67b68db090de1de9fb421a61f6a823057 before executing the owner-local suite",
+        "candidate head was not modified after the successful exact-head probe"
+      ]
+    }
+  ],
+  "external_findings": [
+    {
+      "finding_id": "LEGACY_CONTRACT_CHECK_MIGRATION_SOURCE_PARITY_ON_PR1195",
+      "candidate_causality": "DISPROVEN",
+      "causal_evidence": [
+        "lf-contract-check run 36485832432 reached gate orchestration after canonical preflight, Contract Check self-tests, GitHub governance path validation, workflow policy self-tests, Supabase readback preparation/authentication and mode-audit self-tests succeeded",
+        "job 109142430229 then failed in required-control orchestration at MIGRATION_SOURCE_PARITY-001, outside the three pase_merge_gate candidate paths",
+        "Validate LF Packs run 36485832584 and LF DB Regression run 36485832631 succeeded on the same candidate head"
+      ],
+      "effect_on_candidate_verdict": "NONE"
+    }
+  ],
+  "coverage_complete": true,
+  "qualified_only": true,
+  "activation_authorized": false,
+  "cutover_authorized": false,
+  "rebind_authorized": false,
+  "legacy_retirement_authorized": false,
+  "verdict": "CANDIDATE_QUALIFIED"
+}
