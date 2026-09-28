@@ -1,0 +1,159 @@
+{
+  "assessment_schema": "lf-pase-control-qualification-assessment/v1",
+  "qualification_contract": "PASE_CONTROL_QUALIFICATION_V1",
+  "qualification_input": {
+    "schema_version": "lf-pase-control-qualification/v1",
+    "qualification_type": "NEW_CONTROL",
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "base_sha": "b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6",
+    "head_sha": "5e208f53885df92a017cba0a5ff3926e61f97c7c",
+    "observed_main_sha": "b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6",
+    "candidate_id": "LF_GOVERNANCE_SUPER_ADMIN_V1",
+    "declared_owner": "LF_GOVERNANCE",
+    "scope_paths": [
+      "sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/README.md",
+      "sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/lf_governance_super_admin_contract_v1.json",
+      "sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/test_lf_governance_super_admin_contract_v1.py"
+    ],
+    "owner_local_tests": [
+      "python3 sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/test_lf_governance_super_admin_contract_v1.py"
+    ],
+    "boundary_invariants": [
+      "SINGLE_SUPER_ADMIN_LF_GOVERNANCE",
+      "SUPER_ADMIN_NOT_CARRIER",
+      "SUPER_ADMIN_NOT_RUNNER",
+      "SUBSCOPES_NOT_PARALLEL_AUTHORITIES",
+      "ACT_0001_REMAINS_ROUTER_RESOLUTION_ONLY",
+      "NO_APPLICABILITY_OR_DOMAIN_EXECUTION",
+      "QUALIFICATION_NOT_ACTIVATION"
+    ],
+    "expected_coverage": [
+      "ADMINISTRATIVE_ROOT_IDENTITY",
+      "ADMINISTRATIVE_BOUNDARY",
+      "FUTURE_BINDING_MINIMUM_FIELDS",
+      "FAIL_CLOSED_BINDING_SEMANTICS",
+      "NO_PARALLEL_OWNER_AUTHORITY"
+    ],
+    "replacement": null
+  },
+  "qualification_result": {
+    "schema_version": "lf-pase-control-qualification-result/v1",
+    "candidate_id": "LF_GOVERNANCE_SUPER_ADMIN_V1",
+    "base_sha": "b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6",
+    "head_sha": "5e208f53885df92a017cba0a5ff3926e61f97c7c",
+    "declared_owner": "LF_GOVERNANCE",
+    "checks": [
+      {
+        "id": "Q01",
+        "status": "PASS",
+        "evidence": [
+          "PR1181 base=b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6 head=5e208f53885df92a017cba0a5ff3926e61f97c7c",
+          "main readback=b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6"
+        ],
+        "reason": "Exact candidate base/head and live main were read back independently."
+      },
+      {
+        "id": "Q02",
+        "status": "PASS",
+        "evidence": [
+          "compare b2f8d9ad833d9f8b363b7e2ab65a41d1561149c6...5e208f53885df92a017cba0a5ff3926e61f97c7c: ahead=3 behind=0, exactly 3 files under lf_governance_super_admin"
+        ],
+        "reason": "Candidate scope is exactly the declared README, contract and owner-local test."
+      },
+      {
+        "id": "Q03",
+        "status": "PASS",
+        "evidence": [
+          "contract exact-head super_admin=LF_GOVERNANCE role=SUPER_ADMIN_GOVERNANCE",
+          "PASE_CONTROL_QUALIFICATION_V1 is separate from candidate PR1181"
+        ],
+        "reason": "Administrative owner is declared before qualification and the candidate is not used as verdict authority."
+      },
+      {
+        "id": "Q04",
+        "status": "PASS",
+        "evidence": [
+          "exact-head owner-local deterministic execution: PASS_LF_GOVERNANCE_SUPER_ADMIN_CONTRACT_V1 checks=26",
+          "test_lf_governance_super_admin_contract_v1.py@5e208f53885df92a017cba0a5ff3926e61f97c7c"
+        ],
+        "reason": "Owner-local contract test passed against exact candidate bytes."
+      },
+      {
+        "id": "Q05",
+        "status": "PASS",
+        "evidence": [
+          "README@5e208f53885df92a017cba0a5ff3926e61f97c7c explicit non-execution boundary",
+          "contract prohibitions include DECIDE_APPLICABILITY, EXECUTE_DOMAIN_CONTROL, ACT_AS_CARRIER, REPLACE_RUNNER"
+        ],
+        "reason": "Candidate owns administrative identity only and explicitly excludes applicability, execution, carrier and capability-runner responsibilities."
+      },
+      {
+        "id": "Q06",
+        "status": "PASS",
+        "evidence": [
+          "owner-local test asserts unknown_control_fail_closed=true",
+          "owner-local test asserts missing_or_wrong_super_admin_fail_closed=true",
+          "owner-local test asserts missing_runner_fail_closed=true",
+          "owner-local test asserts carrier_drift_fail_closed=true"
+        ],
+        "reason": "For this read-only administrative contract, negative semantics are machine-checked as mandatory fail-closed binding invariants; binding execution remains intentionally out of scope."
+      },
+      {
+        "id": "Q07",
+        "status": "PASS",
+        "evidence": [
+          "exact diff adds only 3 read-only files",
+          "contract flags supabase_registered=false binding_materialized=false cutover_authorized=false production_authorized=false"
+        ],
+        "reason": "No workflow, registry, Supabase, runtime, carrier or foreign-domain effect is introduced."
+      },
+      {
+        "id": "Q08",
+        "status": "PASS",
+        "evidence": [
+          "static JSON contract plus side-effect-free Python assertions",
+          "candidate introduces no mutation or retryable effect"
+        ],
+        "reason": "The candidate is deterministic and side-effect free; idempotent readback of the same revision yields the same administrative contract."
+      },
+      {
+        "id": "Q09",
+        "status": "NA",
+        "evidence": [],
+        "reason": "NEW_CONTROL candidate; no behavior is replaced and no cutover occurs in PR1181."
+      },
+      {
+        "id": "Q10",
+        "status": "PASS",
+        "evidence": [
+          "required binding fields: control_id, super_admin, capability_id, runner_ref, carrier, state, source_revision",
+          "README and contract cover administrative identity, boundary, fail-closed semantics and non-parallel ownership"
+        ],
+        "reason": "All responsibilities claimed by this read-only formalization are represented; materialization of bindings is explicitly a later solution."
+      },
+      {
+        "id": "Q11",
+        "status": "PASS",
+        "evidence": [
+          "candidate source/readback tied to 5e208f53885df92a017cba0a5ff3926e61f97c7c",
+          "Validate LF Packs run 36472010758 success with plan base/head exact and coverage_complete=true",
+          "lf-contract-check exact-head run success",
+          "LF DB Regression exact-head run success"
+        ],
+        "reason": "Material qualification claims are tied to the exact candidate head; legacy CI is used only as non-regression evidence, not verdict authority."
+      }
+    ],
+    "external_findings": [],
+    "coverage_complete": true,
+    "verdict": "CANDIDATE_QUALIFIED",
+    "qualified_only": true,
+    "activation_authorized": false,
+    "cutover_authorized": false,
+    "rebind_authorized": false,
+    "legacy_retirement_authorized": false
+  },
+  "verdict_scope": "READ_ONLY_ADMINISTRATIVE_CONTRACT_ONLY",
+  "binding_materialized": false,
+  "supabase_registered": false,
+  "next_required_action": "Materialize the control-to-super_admin-to-capability-to-runner-to-carrier binding in the existing declarative authority as a separate qualified change; do not modify PASE_ORCHESTRATOR_V1 until that input is canonical."
+}
