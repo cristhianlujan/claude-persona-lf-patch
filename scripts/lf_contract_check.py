@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """
-LF Contract Check v0.20
+LF Contract Check v0.21
 
 Sandbox validator for controlled LF governance gates.
+
+v0.21 changes:
+- Enforces the v0.20 ownership boundary operationally: `.github/*` paths are
+  delegated to upstream Changeset Governance instead of being re-decided by
+  Contract Check's sandbox/non-GitHub scope validator.
+- Keeps blocked prefixes, governed-path receipts and every non-GitHub scope
+  check unchanged.
 
 v0.20 changes:
 - Removes repository `.github` path admission from Contract Check; Changeset
@@ -540,6 +547,10 @@ def validate_changed_files(changed_files: list[str]) -> list[str]:
         for blocked in ALWAYS_BLOCKED_PREFIXES:
             if path.startswith(blocked):
                 fail("FAIL_BLOCKED_SCOPE_RISK", f"Ruta productiva/bloqueada tocada: {path}")
+
+        if path.startswith(".github/"):
+            print(f"REPOSITORY_PATH_ADMISSION=DELEGATED_TO_CHANGESET_GOVERNANCE:{path}")
+            continue
 
         if is_governed_path(path):
             governed_files.append(path)
