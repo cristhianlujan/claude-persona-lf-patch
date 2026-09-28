@@ -1,0 +1,78 @@
+{
+  "schema_version": "lf-pase-control-qualification-result/v1",
+  "candidate": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "pr": 1170,
+    "candidate_id": "PASE_ORCHESTRATOR_V1",
+    "qualification_type": "CONTROL_REFACTOR",
+    "base_sha": "8bb18f9521702b958193d92640a08d04a53b1b85",
+    "head_sha": "dafdf2a8ceea2f298fd4edb72dbc6af183c20fd9",
+    "declared_owner": "LF_GOVERNANCE"
+  },
+  "verdict": "CANDIDATE_QUALIFIED",
+  "qualified_only": true,
+  "activation_authorized": false,
+  "cutover_authorized": false,
+  "rebind_authorized": false,
+  "legacy_retirement_authorized": false,
+  "supabase_mutation_authorized": false,
+  "production_authorized": false,
+  "checks": {
+    "Q01_exact_identity": "PASS",
+    "Q02_exact_scope": "PASS",
+    "Q03_owner_declaration": "PASS",
+    "Q04_owner_local_executable_tests": "PASS",
+    "Q05_boundary_invariants": "PASS",
+    "Q06_negative_adversarial_tests": "PASS",
+    "Q07_out_of_scope_effects": "PASS",
+    "Q08_determinism_idempotency": "PASS",
+    "Q09_old_new_replay": "NA",
+    "Q10_preserved_coverage": "PASS",
+    "Q11_exact_head_evidence": "PASS"
+  },
+  "owner_local_evidence": {
+    "probe_pr": 1190,
+    "probe_head": "2995bea8bf15592f9974bbc18122eb1f16e65af5",
+    "workflow_run": 36483547118,
+    "job": 109134804260,
+    "checked_out_candidate_head": "dafdf2a8ceea2f298fd4edb72dbc6af183c20fd9",
+    "marker": "PASS_PASE_ORCHESTRATOR_V1 checks=15",
+    "conclusion": "SUCCESS"
+  },
+  "ownership_semantics": {
+    "plan_field": "governance_admin",
+    "schema_version": "lf-ci-governance-admin-identity/v1",
+    "super_admin": "LF_GOVERNANCE",
+    "per_control_owner_creation": false,
+    "owner_recalculation": false,
+    "binding_materialized_supported": false,
+    "prebinding_execution": "CURRENT_CARRIER_DELEGATION_ONLY"
+  },
+  "external_findings": [
+    {
+      "finding_id": "PR1170-VALIDATE-PACKS-PROFILE-RUNTIME-001",
+      "source_control": "PROFILE_RUNTIME_V3",
+      "observed_failure": "Validate LF Packs fails at Validate PROFILE_RUNTIME V3 decomposed deterministic gates after unified applicability and preceding pack validations pass.",
+      "candidate_causality": "DISPROVEN",
+      "effect_on_candidate_verdict": "NONE",
+      "owner": "PROFILE_RUNTIME_V3"
+    },
+    {
+      "finding_id": "PR1170-CONTRACT-CHECK-E16-INVENTORY-001",
+      "source_control": "E16_ACTIONS_INVENTORY",
+      "observed_failure": "lf-contract-check fails at Capture authenticated E.16 Actions inventory after contract validation, E.16 governance regressions and earlier gates pass.",
+      "candidate_causality": "DISPROVEN",
+      "effect_on_candidate_verdict": "NONE",
+      "owner": "E16"
+    }
+  ],
+  "notes": [
+    "PR1170 was refreshed onto current main without functional changes to its three PASE files before this requalification.",
+    "Current-main registry changes are therefore included in the exact-head owner-local test.",
+    "LF DB Regression succeeds on the refreshed candidate head.",
+    "The previous owner-gap FAIL remains closed: the candidate requires and validates plan.governance_admin fail-closed.",
+    "INTERNAL_CI_CHECK controls are not forced into per-control owner-runner bindings.",
+    "binding_materialized=true is intentionally blocked in V1 until a separately qualified binding-aware cutover exists.",
+    "This result qualifies the candidate only; merge authorization is governed separately and repository rules remain authoritative."
+  ]
+}
