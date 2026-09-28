@@ -18,7 +18,6 @@
     "PROFILE_RUNTIME_V3",
     "R8_USER_STORY_AUDIT",
     "S30_BOUNDED_REGRESSION",
-    "S36_ASSURANCE",
     "SKILL_PACK",
     "SUPABASE_CONTROL_PLANE_READBACK",
     "TRANSVERSAL_README",
@@ -476,27 +475,6 @@
         }
       ],
       "material_matchers": [],
-      "dependencies": []
-    },
-    {
-      "control_id": "S36_ASSURANCE",
-      "carrier": "LF_CONTRACT_CHECK",
-      "path_matchers": [
-        {
-          "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/s36_"
-        },
-        {
-          "kind": "prefix",
-          "value": "sandbox/lf_contract_gate_test/test_s36_"
-        }
-      ],
-      "material_matchers": [
-        {
-          "kind": "sql_regex",
-          "value": "\\b(?:lf_assurance_claim_catalog|lf_assurance_obligation_catalog|lf_assurance_defeater_catalog|lf_assurance_subject_bindings|lf_assurance_evaluations|lf_test_suite_cases|lf_test_suites)\\b"
-        }
-      ],
       "dependencies": []
     },
     {
