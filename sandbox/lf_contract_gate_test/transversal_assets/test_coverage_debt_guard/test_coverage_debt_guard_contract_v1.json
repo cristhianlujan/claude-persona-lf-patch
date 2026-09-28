@@ -1,0 +1,54 @@
+{
+  "schema_version": "lf-test-coverage-debt-guard/v1",
+  "capability": "TEST_COVERAGE_DEBT_GUARD",
+  "status": "CANDIDATE_BOUNDARY_ONLY",
+  "target_owner": "FULL_REGRESSION",
+  "current_legacy_adapter": "sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py",
+  "canonical_coverage_provider": "public.lf_s36_operation_assurance_coverage_v1",
+  "pass_semantics": "ACCEPTED_TEST_COVERAGE_DEBT_NOT_GROWING",
+  "applicability": {
+    "normal_pase": false,
+    "full_regression": true,
+    "global_audit": true,
+    "baseline_cutover_validation": true
+  },
+  "issue_codes": [
+    "NEW_REQUIRED_OPERATION_DEBT",
+    "LIVE_BLOCKED",
+    "ACCEPTED_DEBT_STATE_CHANGED_WITHOUT_COVERAGE",
+    "BINDING_ACTIVITY_WITHOUT_COVERAGE",
+    "NEW_RUN_ACTIVITY_WITHOUT_COVERAGE"
+  ],
+  "forbidden_claims": [
+    "ASSURANCE_PASS",
+    "ASSURANCE_COMPLETENESS_PASS",
+    "ALL_OPERATIONS_COVERED",
+    "TESTS_PASSED",
+    "SEMANTIC_QUALITY_PASS",
+    "INDEPENDENT_REVIEW_PASS",
+    "QUALIFICATION_PASS",
+    "CHANGESET_SAFE"
+  ],
+  "non_responsibilities": [
+    "APPLICABILITY_ROUTING",
+    "CONTRACT_CHECK",
+    "TEST_EXECUTION",
+    "TEST_JUDGMENT",
+    "INDEPENDENT_REVIEW",
+    "QUALIFICATION_FINALIZATION",
+    "LIFECYCLE_STATEFUL_REGRESSION",
+    "CARD_E2E",
+    "RUNTIME_ACTIVATION",
+    "PRODUCTION_ACTIVATION"
+  ],
+  "reuse_only": {
+    "second_coverage_engine_allowed": false,
+    "second_test_matrix_allowed": false,
+    "second_debt_baseline_store_allowed": false,
+    "second_applicability_router_allowed": false
+  },
+  "ekb": [
+    "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001",
+    "TEST-COVERAGE-DEBT-GUARD-SEMANTIC-OVERCLAIM-001"
+  ]
+}
