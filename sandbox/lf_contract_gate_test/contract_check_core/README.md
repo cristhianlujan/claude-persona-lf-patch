@@ -99,23 +99,20 @@ Read-only authority inspection found four active JSON shape combinations across 
 
 The regression fixture includes the current `GITHUB_CONTRACT_GATE_LF` array/object/array/array shape plus a second object-shaped contract with `contract_sha=null`. This exercises the `1 Contract Check / N contracts` architecture and the live missing-SHA condition without wiring the candidate to CI.
 
-## Thin carrier V1
+## Carrier status
 
-`contract_check_carrier_v1.py` is the transport-only CLI wrapper for this core.
+The former direct-to-Core carrier in this directory is retired. It bypassed `Contract Check Semantic Integration V1` and therefore represented a parallel executable path around the normalization and predicate-semantics boundary.
 
-Its only responsibilities are:
+The canonical shadow carrier is now:
 
-- read one already-built Contract Check packet from stdin or an explicit JSON file;
-- invoke `contract_check_core_v1.evaluate(packet)` without modifying the packet;
-- emit the structured result as JSON;
-- map `PASS` to exit `0`, `BLOCK` to exit `2`, and malformed carrier/input packets to exit `3`.
+`sandbox/lf_contract_gate_test/contract_check_carrier/contract_check_carrier_v1.py`
 
-The carrier MUST NOT resolve contracts, discover applicability, call PASE, invoke sibling controls, fetch evidence, read GitHub/Supabase, persist receipts, or perform lifecycle closure. Those are external responsibilities.
+That carrier delegates the incoming packet to `Contract Check Semantic Integration V1`, which then reaches this core only after the governed semantic integration path has completed.
 
-This carrier is intentionally not wired into `.github/workflows/lf-contract-check.yml` in this change. Workflow cutover remains a later ordered step after the carrier is independently proven.
+This cleanup does **not** wire the final carrier into `.github/workflows/lf-contract-check.yml`. Workflow cutover remains a later ordered step.
 
 ## Rollout
 
-The core and thin carrier remain inactive with respect to the legacy workflow.
+The core and final thin carrier remain inactive with respect to the legacy workflow.
 
-No required-check change, Supabase mutation, runtime activation, deployment, or production change is part of this stage. Workflow wiring and migration away from the legacy `scripts/lf_contract_check.py` remain separate ordered changes.
+This cleanup removes only the superseded parallel direct-Core entrypoint and its dedicated test. It does not change PASE, Contract Resolution, applicability, receipts, repository-path admission, required checks, Supabase authority, runtime, deployment, production state, or workflow cutover. Migration away from the legacy `scripts/lf_contract_check.py` remains a separate ordered change.
