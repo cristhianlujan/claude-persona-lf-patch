@@ -17,7 +17,7 @@ jobs:
       - name: Checkout exact PR1170 candidate head
         uses: actions/checkout@v4
         with:
-          ref: e0533baad36bf70347f57b5e416db020645e054b
+          ref: dafdf2a8ceea2f298fd4edb72dbc6af183c20fd9
           persist-credentials: false
 
       - name: Set up Python
@@ -29,7 +29,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "e0533baad36bf70347f57b5e416db020645e054b"
+          test "$(git rev-parse HEAD)" = "dafdf2a8ceea2f298fd4edb72dbc6af183c20fd9"
           echo "PASE_ORCHESTRATOR_EXACT_HEAD=$(git rev-parse HEAD)"
 
       - name: Execute owner-local deterministic tests
