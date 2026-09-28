@@ -48,10 +48,10 @@ def main() -> None:
         "CONTROL_OWNER_BOUNDARY_ONLY": 1,
         "SEMANTIC_MAPPING_CANDIDATE": 1,
         "OWNER_RUNNER_CANDIDATE_NO_CANONICAL_BINDING": 3,
-        "INTERNAL_CI_CHECK": 5,
-        "UNRESOLVED": 11,
+        "INTERNAL_CI_CHECK": 16,
     }
     assert dict(counts) == expected
+    assert counts["UNRESOLVED"] == 0
     summary = inv["summary"]
     assert summary["control_count"] == 25
     assert summary["binding_eligible_count"] == 0
@@ -61,8 +61,8 @@ def main() -> None:
     assert summary["semantic_mapping_candidate_count"] == 1
     assert summary["owner_runner_candidate_without_canonical_binding_count"] == 3
     assert summary["control_owner_boundary_only_count"] == 1
-    assert summary["known_internal_ci_check_count"] == 5
-    assert summary["unresolved_count"] == 11
+    assert summary["known_internal_ci_check_count"] == 16
+    assert summary["unresolved_count"] == 0
     checks += 1
 
     migration = by_id["MIGRATION_SOURCE_PARITY"]
@@ -77,11 +77,28 @@ def main() -> None:
     assert visual["canonical_asset_state"] == "REGISTERED_NOT_CUTOVER"
     checks += 1
 
-    db_internal = {
+    internal_required = {
+        "CI_ROUTER_SELFTEST",
         "DB_CANDIDATE_APPLY_ROLLBACK",
+        "DECLARED_GOVERNANCE_PATHS",
+        "E16_ACTIONS_INVENTORY",
+        "E16_GOVERNANCE",
+        "INPUT_GOVERNANCE_MIGRATION_PARITY",
+        "LEARNING_ENGINE_PACK",
+        "LF_VALIDATION_ENGINE",
+        "NO_BYPASS_PROFILE_CARD_SKILL",
+        "P0_FAST_DOCS",
+        "PASS_EVIDENCE",
         "POLICY_RESOLVER_REGRESSION",
+        "R8_USER_STORY_AUDIT",
+        "SKILL_PACK",
+        "SUPABASE_CONTROL_PLANE_READBACK",
         "V7_RUNTIME_REGRESSION",
     }
+    assert {cid for cid, row in by_id.items() if row["classification"] == "INTERNAL_CI_CHECK"} == internal_required
+    checks += 1
+
+    db_internal = {"DB_CANDIDATE_APPLY_ROLLBACK", "POLICY_RESOLVER_REGRESSION", "V7_RUNTIME_REGRESSION"}
     for control_id in db_internal:
         assert by_id[control_id]["classification"] == "INTERNAL_CI_CHECK"
         assert by_id[control_id]["canonical_asset_code"] == "CI_FAST_DEEP_LANE_ROUTER"
@@ -99,11 +116,7 @@ def main() -> None:
     assert contract["binding_eligible"] is False
     checks += 1
 
-    candidate_prs = {
-        row["candidate_pr"]
-        for row in rows
-        if "candidate_pr" in row
-    }
+    candidate_prs = {row["candidate_pr"] for row in rows if "candidate_pr" in row}
     assert candidate_prs == {1168, 1169, 1171, 1172}
     checks += 1
 
