@@ -1,0 +1,106 @@
+{
+  "schema_version": "lf-pase-control-qualification-result/v1",
+  "candidate_id": "PASE_CONTROL_REPAIR_QUARANTINE_V1",
+  "base_sha": "897b25a50426cb2b5121947d9c265a393a7af800",
+  "head_sha": "1201b8acf686d92d858d02f27d093930522b0362",
+  "declared_owner": "LF_GOVERNANCE",
+  "checks": [
+    {
+      "id": "Q01",
+      "status": "PASS",
+      "evidence": [
+        "PR #1202 base=897b25a50426cb2b5121947d9c265a393a7af800 head=1201b8acf686d92d858d02f27d093930522b0362; current main readback remains exactly the candidate base."
+      ]
+    },
+    {
+      "id": "Q02",
+      "status": "PASS",
+      "evidence": [
+        "Candidate scope is exactly four PASE repair-quarantine files under sandbox/lf_contract_gate_test/s28_ci_lane_router with zero deletions."
+      ]
+    },
+    {
+      "id": "Q03",
+      "status": "PASS",
+      "evidence": [
+        "declared_owner=LF_GOVERNANCE; policy authority is CHANGESET_GOVERNANCE_LF_V1 and the candidate does not create per-control owners."
+      ]
+    },
+    {
+      "id": "Q04",
+      "status": "PASS",
+      "evidence": [
+        "Independent transport probe PR #1203 run=36497686185 job=109180976792 checked out exact candidate head 1201b8acf686d92d858d02f27d093930522b0362 and emitted PASS_PASE_CONTROL_REPAIR_QUARANTINE_V1 checks=20."
+      ]
+    },
+    {
+      "id": "Q05",
+      "status": "PASS",
+      "evidence": [
+        "Boundary contract preserves Changeset Governance/lf-ci-execution-plan/v2 as applicability authority and forbids path classification, domain execution, ruleset mutation, Supabase mutation, activation, cutover, rebind, and legacy retirement."
+      ]
+    },
+    {
+      "id": "Q06",
+      "status": "PASS",
+      "evidence": [
+        "Owner-local 20-check suite covers stale universe digest, missing state, invalid state, ACTIVE_BLOCKING without re-entry evidence, failed replay, incomplete plan coverage, partition overlap, invalid plan digest, deterministic ordering, and isolated one-control re-entry."
+      ]
+    },
+    {
+      "id": "Q07",
+      "status": "PASS",
+      "evidence": [
+        "PR #1202 changes only the four declared quarantine artifacts; it does not modify legacy validators, migrations, workflows, rulesets, or Supabase surfaces."
+      ]
+    },
+    {
+      "id": "Q08",
+      "status": "PASS",
+      "evidence": [
+        "Determinism is asserted by repeated projection producing the same result_sha256, with exact policy ordering and control-universe digest validation."
+      ]
+    },
+    {
+      "id": "Q09",
+      "status": "NA",
+      "evidence": [
+        "qualification_type=NEW_CONTROL; this candidate does not replace or retire a legacy control, so replacement replay is not applicable."
+      ]
+    },
+    {
+      "id": "Q10",
+      "status": "PASS",
+      "evidence": [
+        "Policy covers exactly all 25 controls in lf-ci-control-impact-registry/v2; all begin REPAIR_OBSERVE_ONLY while the canonical plan partition remains unchanged."
+      ]
+    },
+    {
+      "id": "Q11",
+      "status": "PASS",
+      "evidence": [
+        "Exact-head independent probe #1203 passed at 1201b8acf686d92d858d02f27d093930522b0362 and readback confirms main still equals base 897b25a50426cb2b5121947d9c265a393a7af800 with candidate head unchanged."
+      ]
+    }
+  ],
+  "external_findings": [
+    {
+      "finding_id": "PR1202-CONTRACT-CHECK-MIGRATION-PARITY-001",
+      "candidate_causality": "DISPROVEN",
+      "causal_evidence": [
+        "lf-contract-check run=36497600538 job=109180744463 resolves exact PR base=897b25a50426cb2b5121947d9c265a393a7af800 and head=1201b8acf686d92d858d02f27d093930522b0362, successfully builds the applicability plan, then fails inside the legacy Run Migration Source Parity step with MIGRATION_SOURCE_PARITY-001 / FAIL_MIGRATION_SOURCE_PARITY:1; the candidate diff contains only four repair-quarantine artifacts and does not modify migrations or the Migration Source Parity runner."
+      ],
+      "effect_on_candidate_verdict": "NONE"
+    }
+  ],
+  "coverage_complete": true,
+  "verdict": "CANDIDATE_QUALIFIED",
+  "qualified_only": true,
+  "activation_authorized": false,
+  "cutover_authorized": false,
+  "rebind_authorized": false,
+  "legacy_retirement_authorized": false,
+  "notes": [
+    "Qualification does not authorize merge, ruleset mutation, activation, cutover, rebind, Supabase mutation, or retirement."
+  ]
+}
