@@ -1,0 +1,35 @@
+{
+  "schema_version": "lf-pase-control-qualification/v1",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "candidate_id": "PASE_MERGE_GATE_V1",
+  "qualification_type": "NEW_CONTROL",
+  "base_sha": "8bb18f9521702b958193d92640a08d04a53b1b85",
+  "head_sha": "6950b3f67b68db090de1de9fb421a61f6a823057",
+  "observed_main_sha": "897b25a50426cb2b5121947d9c265a393a7af800",
+  "declared_owner": "LF_GOVERNANCE",
+  "scope_paths": [
+    "sandbox/lf_contract_gate_test/pase_merge_gate/README.md",
+    "sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_v1.py",
+    "sandbox/lf_contract_gate_test/pase_merge_gate/test_pase_merge_gate_v1.py"
+  ],
+  "owner_local_tests": [
+    "python3 sandbox/lf_contract_gate_test/pase_merge_gate/test_pase_merge_gate_v1.py",
+    "independent exact-head probe run 36485910180 job 109142637604"
+  ],
+  "boundary_invariants": [
+    "no_scope_expansion",
+    "no_legacy_carrier_as_final_authority",
+    "no_unapproved_activation",
+    "merge route is trusted input and applicability is not inferred inside the evaluator",
+    "no workflow, ruleset, GitHub, Supabase, deploy, merge, owner-resolution, or domain-control execution"
+  ],
+  "expected_coverage": [
+    "normal-plan exact base/head and complete PASS observations",
+    "control-system qualification exact candidate/head and CANDIDATE_QUALIFIED evidence",
+    "independent exact-head qualification runner requirement",
+    "missing, duplicate, extra, FAIL and BLOCKED evidence fail closed",
+    "wrong route authority, schema, mode, base or head fail closed",
+    "source boundary scan and deterministic evaluation",
+    "Validate LF Packs and LF DB Regression compatibility on candidate head"
+  ]
+}
