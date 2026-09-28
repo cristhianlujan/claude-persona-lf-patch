@@ -13,37 +13,20 @@
     "staged_definition_path": "sandbox/lf_contract_gate_test/pack_validation_contract/lf-pack-validation-core.staged.yml",
     "target_path": ".github/workflows/lf-pack-validation-core.yml",
     "activation": "REUSABLE_CORE_ADMITTED_UNWIRED",
-    "allowed_triggers": [
-      "workflow_call"
-    ],
-    "forbidden_triggers": [
-      "pull_request",
-      "push",
-      "workflow_dispatch",
-      "schedule"
-    ],
+    "allowed_triggers": ["workflow_call"],
+    "forbidden_triggers": ["pull_request", "push", "workflow_dispatch", "schedule"],
     "consumer_wiring": "NOT_CHANGED_IN_THIS_SOLUTION"
   },
   "input_contract": {
-    "required": [
-      "base_sha",
-      "head_sha",
-      "changed_paths_json"
-    ],
+    "required": ["base_sha", "head_sha", "changed_paths_json"],
     "authority": "CI_FAST_DEEP_LANE_ROUTER_OR_EQUIVALENT_ALREADY_AUTHORIZED_PLAN",
-    "must_not_redecide": [
-      "RUN_SKIP_APPLICABILITY",
-      "UNRELATED_CONTROL_APPLICABILITY"
-    ]
+    "must_not_redecide": ["RUN_SKIP_APPLICABILITY", "UNRELATED_CONTROL_APPLICABILITY"],
+    "changed_paths_integrity": "changed_paths_json must equal the exact git diff path set between base_sha and head_sha before discovery"
   },
-  "execution_sequence": [
-    "CHECKOUT_EXACT_HEAD",
-    "RESOLVE_AFFECTED_PACKS",
-    "EXECUTE_PACK_CHECKS",
-    "PERSIST_PACK_VALIDATION_EVIDENCE"
-  ],
+  "execution_sequence": ["CHECKOUT_EXACT_HEAD", "VERIFY_CHANGED_PATHS_INTEGRITY", "RESOLVE_AFFECTED_PACKS", "EXECUTE_PACK_CHECKS", "PERSIST_PACK_VALIDATION_EVIDENCE"],
   "allowed_capabilities": [
     "read repository source at exact head",
+    "verify caller-supplied changed paths against exact Git diff",
     "install deterministic pack-validator dependencies",
     "resolve affected governed packs",
     "execute pack-local validators/validate_pack.py",
@@ -65,6 +48,7 @@
     "parallel_active_pack_engine_forbidden": true,
     "core_has_no_autonomous_trigger": true,
     "core_must_match_qualified_staged_definition": true,
+    "changed_paths_mismatch_fails_closed_before_discovery": true,
     "foreign_control_rebinding_forbidden_in_this_solution": true,
     "existing_foreign_carriers_unchanged_in_this_solution": true,
     "caller_binding_required_before_replacing_existing_pack_execution": true,
@@ -78,11 +62,7 @@
       ".lf_pack_validation/result.json",
       ".lf_pack_validation/summary.json"
     ],
-    "status_enum": [
-      "PASS",
-      "FAIL",
-      "SKIP"
-    ],
+    "status_enum": ["PASS", "FAIL", "SKIP"],
     "authorizations": {
       "runtime_authorized": false,
       "git_write_authorized": false,
@@ -93,67 +73,36 @@
   },
   "operational_plan": {
     "progress_semantics": "Percentages measure only PACK_VALIDATION-owned work. External controls, blockers, fixes, migrations, or owner responsibilities never count as Pack Validation progress.",
-    "global_progress_percent": 62.5,
-    "next_step": "STEP_06_CALLER_WIRING",
+    "global_progress_percent": 100,
+    "progress_scope": "CANDIDATE_PACK_VALIDATION_IMPLEMENTATION_ONLY",
+    "next_step": "STEP_08_EXACT_HEAD_CI_READBACK",
     "steps": [
-      {
-        "id": "STEP_01_NATURE_AND_BOUNDARY",
-        "description": "Define Pack Validation nature and responsibility boundary.",
-        "progress_percent": 100,
-        "status": "CLOSED"
-      },
-      {
-        "id": "STEP_02_NATIVE_VS_FOREIGN_CLASSIFICATION",
-        "description": "Identify Pack Validation-owned capabilities versus foreign responsibilities.",
-        "progress_percent": 100,
-        "status": "CLOSED"
-      },
-      {
-        "id": "STEP_03_CLEAN_CORE",
-        "description": "Build the clean PACK_VALIDATION reusable core without foreign controls.",
-        "progress_percent": 100,
-        "status": "CLOSED"
-      },
-      {
-        "id": "STEP_04_CORE_TESTS",
-        "description": "Validate discovery, pack-local validators, exact-head handling, and bounded evidence.",
-        "progress_percent": 100,
-        "status": "CLOSED"
-      },
-      {
-        "id": "STEP_05_BOUNDARY_VERIFICATION",
-        "description": "Verify the clean core contains no Runtime, Assurance, DB, Contract Check, S30, EKB, deploy, or production responsibilities.",
-        "progress_percent": 100,
-        "status": "CLOSED"
-      },
-      {
-        "id": "STEP_06_CALLER_WIRING",
-        "description": "Connect Pack Validation to the pass orchestrator through its own interface without assuming caller or foreign-control responsibilities.",
-        "progress_percent": 0,
-        "status": "PENDING"
-      },
-      {
-        "id": "STEP_07_OWN_E2E",
-        "description": "Run Pack Validation-owned E2E: authorized input -> affected-pack discovery -> local validators -> evidence/verdict.",
-        "progress_percent": 0,
-        "status": "PENDING"
-      },
-      {
-        "id": "STEP_08_READBACK_TRACEABILITY_CLOSE",
-        "description": "Perform final readback, traceability, and closure for Pack Validation only.",
-        "progress_percent": 0,
-        "status": "PENDING"
-      }
+      {"id": "STEP_01_NATURE_AND_BOUNDARY", "description": "Define Pack Validation nature and responsibility boundary.", "progress_percent": 100, "status": "CLOSED"},
+      {"id": "STEP_02_NATIVE_VS_FOREIGN_CLASSIFICATION", "description": "Identify Pack Validation-owned capabilities versus foreign responsibilities.", "progress_percent": 100, "status": "CLOSED"},
+      {"id": "STEP_03_CLEAN_CORE", "description": "Build the clean PACK_VALIDATION reusable core without foreign controls.", "progress_percent": 100, "status": "CLOSED", "evidence_pr": 1157, "head_sha": "97353894bce8bd050d5f7bff3de129c231c1d8e8"},
+      {"id": "STEP_04_CORE_TESTS", "description": "Validate discovery, pack-local validators, exact-head handling, and bounded evidence.", "progress_percent": 100, "status": "CLOSED"},
+      {"id": "STEP_05_BOUNDARY_VERIFICATION", "description": "Verify the clean core contains no Runtime, Assurance, DB, Contract Check, S30, EKB, deploy, or production responsibilities.", "progress_percent": 100, "status": "CLOSED"},
+      {"id": "STEP_06_CALLER_WIRING", "description": "Connect Pack Validation to the pass orchestrator through its own interface without assuming caller or foreign-control responsibilities.", "progress_percent": 100, "status": "CLOSED", "evidence_pr": 1158, "head_sha": "177676b145efe31c91b4860216818cb907116570"},
+      {"id": "STEP_07_OWN_E2E", "description": "Run Pack Validation-owned E2E: authorized input -> changed-path integrity -> affected-pack discovery -> local validators -> evidence/verdict.", "progress_percent": 100, "status": "CLOSED", "evidence_pr": 1159, "head_sha": "6dac16d0cbb278dd057c8f1f999de00d7c567d4f", "integrity_hardening_pr": 1162, "integrity_head_sha": "30dd7155c8c397b83ade393a6836c06422c9caf1"},
+      {"id": "STEP_08_READBACK_TRACEABILITY_CLOSE", "description": "Perform final readback, traceability, and closure for Pack Validation only.", "progress_percent": 100, "status": "CLOSED_PENDING_EXACT_HEAD_CI", "closure_contract": "PACK_VALIDATION_READBACK_TRACEABILITY_CLOSE"}
     ]
   },
   "external_dependencies": [
     {
       "control": "CONTRACT_CHECK",
       "relationship": "EXTERNAL_CI_CONTROL",
-      "status": "BLOCKED_BY_EXTERNAL_OWNER",
+      "status": "EXTERNAL_OWNER_ONLY",
       "counts_toward_pack_validation_progress": false,
-      "rule": "Report the blocker and hand off to its owner; do not modify or repair Contract Check from Pack Validation."
+      "rule": "Report any blocker and hand off to its owner; do not modify or repair Contract Check from Pack Validation."
     }
   ],
-  "handoff_status": "BLOCKED_UNTIL_EXTERNAL_CALLER_WIRING_IS_PROVEN"
+  "candidate_closure": {
+    "status": "READBACK_CLOSED_PENDING_EXACT_HEAD_CI",
+    "integration_status": "UNMERGED",
+    "merge_authorized": false,
+    "deployment_authorized": false,
+    "production_authorized": false,
+    "closure_contract": "gobernanza/contratos/pack_validation_readback_traceability_close_v1.json"
+  },
+  "handoff_status": "CANDIDATE_READBACK_CLOSED_PENDING_EXACT_HEAD_CI"
 }

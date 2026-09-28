@@ -13,6 +13,7 @@ CORE = ROOT / ".github/workflows/lf-pack-validation-core.yml"
 STAGED = ROOT / "sandbox/lf_contract_gate_test/pack_validation_contract/lf-pack-validation-core.staged.yml"
 RUNNER = ROOT / "sandbox/lf_contract_gate_test/pack_validation_contract/run_pack_validation_flow_v1.py"
 E2E = ROOT / "sandbox/lf_contract_gate_test/pack_validation_contract/verify_pack_validation_e2e_v1.py"
+CLOSE_TEST = ROOT / "sandbox/lf_contract_gate_test/pack_validation_contract/test_pack_validation_readback_traceability_close_v1.py"
 
 
 def main() -> None:
@@ -34,7 +35,6 @@ def main() -> None:
     assert existing["PACK_VALIDATION_HARNESS"]["activation_or_promotion_by_this_cutover"] is False
     assert existing["POL-PACK-VALIDATION-FLOOR"]["consumed_by_clean_pack_validation_flow"] is False
 
-    # PR-6 admits exactly the staged reusable core; it does not invent a second engine.
     assert core == staged, "FAIL_PACK_CORE_DIFFERS_FROM_QUALIFIED_STAGED_DEFINITION"
     assert "workflow_call:" in core
     for forbidden_trigger in ("pull_request:", "push:", "workflow_dispatch:", "schedule:"):
@@ -51,7 +51,6 @@ def main() -> None:
     ):
         assert foreign.lower() not in core.lower(), f"FAIL_PACK_CORE_FOREIGN_RESPONSIBILITY:{foreign}"
 
-    # The historical carrier now delegates actual pack execution to one canonical flow.
     assert source.count("run_pack_validation_flow_v1.py") == 1
     assert "LF_CHANGED_PATHS_JSON: ${{ steps.ci_plan.outputs.changed_paths_json }}" in source
     assert "git worktree add --detach \"$worktree\" \"$head\"" in source
@@ -62,7 +61,6 @@ def main() -> None:
     assert "include-hidden-files: true" in source
     assert "include-hidden-files: true" in core
 
-    # Direct fixed-pack invocations are retired from the source carrier.
     for old_call in (
         "python profiles/_template/validators/validate_pack.py profiles/_template",
         "python skills/_template/validators/validate_pack.py skills/_template",
@@ -72,11 +70,9 @@ def main() -> None:
     ):
         assert old_call not in source, f"FAIL_DIRECT_PACK_EXECUTION_REMAINS:{old_call}"
 
-    # Pack engine self-regression remains; this is not a second pack executor.
     assert "Validate Pack Validation harness v1 regressions" in source
     assert "test_pack_validation_harness_v1.py" in source
 
-    # Foreign responsibilities remain on the source carrier until independent destination wiring exists.
     for control in (
         "PROFILE_RUNTIME_V3",
         "GATE_CHECK_OBSERVABILITY",
@@ -93,7 +89,6 @@ def main() -> None:
     assert "S30_BROKER_DEPLOY_KEY" in source
     assert "git push s30-broker" in source
 
-    # All pack-owned control identities converge on the same Pack Validation flow.
     for control in ("PROFILE_PACK", "SKILL_PACK", "LEARNING_ENGINE_PACK"):
         row = contract["pack_owned_controls"][control]
         assert row["target_owner"] == "PACK_VALIDATION"
@@ -101,7 +96,6 @@ def main() -> None:
         assert row["rebind_allowed"] is True
         assert control in source
 
-    # The next owned handoff is proven with isolated positive and negative E2E probes.
     completed = subprocess.run(
         [sys.executable, str(E2E)],
         cwd=ROOT,
@@ -111,6 +105,16 @@ def main() -> None:
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
     assert "PACK_VALIDATION_VERIFY_E2E_FLOW=PASS" in completed.stdout, completed.stdout
+
+    closed = subprocess.run(
+        [sys.executable, str(CLOSE_TEST)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert closed.returncode == 0, closed.stdout + closed.stderr
+    assert "PACK_VALIDATION_READBACK_TRACEABILITY_CLOSE=PASS" in closed.stdout, closed.stdout
 
     print("CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS=PASS")
 

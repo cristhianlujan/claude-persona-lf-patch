@@ -87,7 +87,7 @@ def test_contract_identity_and_boundary() -> None:
     assert c["workflow"]["consumer_wiring"] == "NOT_CHANGED_IN_THIS_SOLUTION"
     assert c["scope_invariants"]["foreign_control_rebinding_forbidden_in_this_solution"] is True
     assert c["scope_invariants"]["existing_foreign_carriers_unchanged_in_this_solution"] is True
-    assert c["handoff_status"] == "BLOCKED_UNTIL_EXTERNAL_CALLER_WIRING_IS_PROVEN"
+    assert c["handoff_status"] == "CANDIDATE_READBACK_CLOSED_PENDING_EXACT_HEAD_CI"
 
 
 def test_target_workflow_matches_qualified_definition_and_has_no_autonomous_trigger() -> None:
