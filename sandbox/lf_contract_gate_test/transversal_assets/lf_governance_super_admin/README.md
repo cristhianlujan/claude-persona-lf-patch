@@ -5,13 +5,13 @@
 - Código administrativo canónico: `LF_GOVERNANCE`.
 - Rol: `SUPER_ADMIN_GOVERNANCE`.
 - Estado de esta superficie: `CANDIDATE_READ_ONLY`.
-- Autoridad operacional de activos sigue en Supabase; esta superficie Git define únicamente el contrato candidato antes de cualquier registro/promoción.
+- Autoridad operacional de activos sigue en Supabase; esta superficie Git define el contrato candidato antes de cualquier registro/promoción.
 
 ## Propósito
 
-`LF_GOVERNANCE` es la raíz administrativa única para los controles/capabilities de gobernanza LF que formen parte del PASE. Centraliza identidad administrativa, no ejecución.
+`LF_GOVERNANCE` es la raíz administrativa única para los controles/capabilities de gobernanza LF que forman parte del PASE. Centraliza identidad administrativa y bindings; no ejecuta controles.
 
-No crea un owner distinto por cada control. Los nombres históricos `LF_GOVERNANCE_*` representan scopes/subdominios y no deben convertirse por sí solos en autoridades superiores paralelas.
+No crea un owner distinto por cada control. Los nombres históricos `LF_GOVERNANCE_*` representan scopes/subdominios y no se convierten por sí solos en autoridades superiores paralelas.
 
 ## Separación de responsabilidades
 
@@ -23,24 +23,25 @@ No crea un owner distinto por cada control. Los nombres históricos `LF_GOVERNAN
 - sustituye el contrato funcional de una capability;
 - sustituye el runner owner-local de una capability;
 - actúa como carrier;
-- cambia bindings, cutover, lifecycle o currentness;
-- hace deploy, runtime activation, producción o escrituras Supabase.
+- hace cutover, deploy, runtime activation, producción o escrituras Supabase.
 
-Changeset Governance conserva la autoridad de aplicabilidad. `PASE_ORCHESTRATOR_V1` consume el plan y delega. Cada capability conserva su propia lógica y runner. Los carriers son transporte, no ownership.
+Changeset Governance conserva la autoridad de aplicabilidad. `PASE_ORCHESTRATOR_V1` consume el plan y delega. Cada capability conserva su lógica y runner. Los carriers son transporte, no ownership.
 
 ## Modelo administrativo
 
 ```text
 LF_GOVERNANCE                  super administrador único
         |
-        +-- CONTROL / CAPABILITY
+        +-- control binding
                 |
-                +-- runner_ref  ejecutable propio o compartido explícitamente
-                |
-                +-- carrier     transporte vigente
+                +-- capability_id
+                +-- runner_ref / estado transicional
+                +-- carrier (resuelto SOLO desde impact registry)
 ```
 
-Para cada control de PASE, el binding futuro debe poder resolver como mínimo:
+El catálogo del contrato materializa una fila administrativa para cada `control_id` vigente, pero deliberadamente NO duplica `carrier`. `carrier` sigue siendo autoridad exclusiva de `lf_ci_control_impact_registry_v2.json`.
+
+El binding que finalmente recibe un consumidor debe poder resolver:
 
 - `control_id`;
 - `super_admin = LF_GOVERNANCE`;
@@ -48,32 +49,55 @@ Para cada control de PASE, el binding futuro debe poder resolver como mínimo:
 - `runner_ref`;
 - `carrier`;
 - `state`;
-- `source_revision` / currentness suficiente para fail-closed.
+- `source_revision`.
 
-Esta superficie NO materializa esos bindings. Ese trabajo pertenece a una solución posterior sobre la autoridad declarativa existente.
+## Estados transicionales
+
+- `LEGACY_CARRIER`: todavía no existe runner owner-local probado. El carrier vigente sigue ejecutando; no se inventa capability/runner.
+- `OWNER_RUNNER_ACTIVE_LEGACY_CARRIER`: existe runner propio vigente, pero el impact registry aún conserva el carrier histórico.
+- `REGISTERED_NOT_CUTOVER`: existe capability/runner registrado como destino, pero no está autorizado usarlo todavía.
+- `CANDIDATE_NOT_CANONICAL`: existe un runner probado en PR abierto, pero no es autoridad canónica ni ejecutable desde PASE.
+
+`CANDIDATE_NOT_CANONICAL` y `REGISTERED_NOT_CUTOVER` son informativos para migración y deben seguir delegando por el carrier actual hasta un cutover separado y calificado.
+
+## Estado de materialización
+
+`binding_catalog.catalog_materialized=true` significa únicamente que los controles actuales tienen una fila administrativa explícita y trazable.
+
+`binding_materialized=false` se mantiene porque el binding todavía no ha sido propagado/validado end-to-end hasta el Orquestador. `owner_runner_migration_complete=false` porque la mayoría de controles continúa en carriers legacy.
+
+Por tanto:
+
+```text
+CATÁLOGO MATERIALIZADO != BINDING E2E ACTIVO != CUTOVER
+```
 
 ## Invariantes
 
-1. `super_admin` para controles gobernados por este dominio debe ser exactamente `LF_GOVERNANCE`.
-2. `super_admin` no puede ser igual a `carrier` por inferencia.
-3. `super_admin` no puede sustituir `runner_ref`.
-4. un control puede compartir runner solo mediante binding explícito; nunca por coincidencia de nombre/path.
-5. un alias/subscope `LF_GOVERNANCE_*` no crea una autoridad superior adicional.
-6. `ACT-0001` permanece `ROUTER_RESOLUTION_ONLY` y no se convierte en super administrador.
-7. control desconocido, super-admin ausente/incorrecto, runner no resuelto o carrier drift deben conservar semántica fail-closed en el consumidor que valide el binding.
-8. qualification, activation, cutover y legacy retirement son estados distintos.
+1. El súper administrador debe ser exactamente `LF_GOVERNANCE`.
+2. `super_admin` no es `carrier` ni `runner_ref`.
+3. El catálogo debe cubrir exactamente el universo vigente del impact registry, sin controles extra o faltantes.
+4. El catálogo no almacena `carrier`; el carrier se resuelve del impact registry para evitar doble autoridad.
+5. Estado `LEGACY_CARRIER` permite `runner_ref=null` explícitamente; cualquier estado que declare destino requiere runner y capability.
+6. Un runner candidato nunca es ejecutable mientras el estado sea `CANDIDATE_NOT_CANONICAL`.
+7. Un destino `REGISTERED_NOT_CUTOVER` nunca es ejecutable antes del cutover calificado.
+8. Los aliases/subscopes `LF_GOVERNANCE_*` no crean súper autoridades adicionales.
+9. `ACT-0001` permanece `ROUTER_RESOLUTION_ONLY`.
+10. Control desconocido, super-admin ausente/incorrecto, binding faltante, estado inválido o carrier drift deben fallar cerrado en el consumidor.
+11. Qualification, binding, activation, cutover y legacy retirement son estados distintos.
 
 ## Relación con PASE_ORCHESTRATOR_V1
 
-Este contrato elimina la necesidad de que el orquestador interprete múltiples owners administrativos. El orquestador deberá validar el `super_admin` único y, separadamente, el `runner_ref` y `carrier` resueltos por la autoridad declarativa vigente.
+Este contrato elimina la necesidad de múltiples owners administrativos. El Orquestador deberá validar el `super_admin` único y el binding resuelto por control, sin interpretar carriers como owners ni seleccionar runners candidatos/no-cutover.
 
-No se modifica `PASE_ORCHESTRATOR_V1` en este candidato.
+Este PR todavía NO modifica `PASE_ORCHESTRATOR_V1` ni hace que el execution plan consuma el catálogo.
 
 ## No alcance
 
 - no edición de `lf_ci_control_impact_registry_v2.json`;
-- no edición de `lf-ci-execution-plan/v2`;
+- no cambio de aplicabilidad;
+- no modificación de runners/capabilities de dominio;
 - no modificación de PR #1170;
 - no normalización live de `owner_name` en Supabase;
 - no merge/cutover/deploy/producción;
-- no retiro de owners/scopes históricos.
+- no retiro de carriers o scopes históricos.
