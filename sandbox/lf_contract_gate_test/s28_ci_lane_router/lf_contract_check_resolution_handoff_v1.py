@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Boundary-safe handoff from Changeset Governance to Contract Resolution.
+"""Boundary-safe handoff from Changeset Governance toward Contract Resolution.
 
 Changeset Governance decides whether LF_CONTRACT_CORE applies and transports
-changeset identity/context. It does not select contracts and does not produce
-term verdicts. Contract Resolution fills operation_code + resolved_contracts;
-Contract Check owns contractual evaluation.
+changeset identity/context. It does not select contracts, resolve operation
+identity, or produce term verdicts. Contract Resolution consumes an
+already-resolved caller operation_code plus authority contract rows and returns
+resolved_contracts. Contract Check owns contractual evaluation.
 """
 from __future__ import annotations
 
@@ -131,7 +132,7 @@ def build_resolution_request(*, lane: Any, plan: Mapping[str, Any], repo_root: P
     elif solution_ref is None:
         state = "IDENTITY_PENDING_REPORT_ONLY"
     else:
-        state = "READY_FOR_CONTRACT_RESOLUTION"
+        state = "READY_FOR_OPERATION_CONTEXT_BINDING"
 
     control_reasons = reasons_by_control.get(CONTROL_ID, []) if applicable else []
     if not isinstance(control_reasons, list) or any(not isinstance(v, str) for v in control_reasons):
@@ -155,8 +156,11 @@ def build_resolution_request(*, lane: Any, plan: Mapping[str, Any], repo_root: P
         "resolution_request": {
             "owner": CONTRACT_RESOLUTION_OWNER,
             "required": applicable,
+            "invocation_ready": False,
             "selection_performed": False,
-            "required_outputs": ["operation_code", "resolved_contracts"],
+            "operation_code_source": "CALLER_OPERATION_CONTEXT",
+            "required_inputs": ["operation_code", "authority_contracts"],
+            "required_outputs": ["resolved_contracts"],
         },
         "contract_check_boundary": {
             "owner": CONTRACT_CHECK_OWNER,
