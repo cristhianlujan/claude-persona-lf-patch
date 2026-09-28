@@ -4,7 +4,7 @@
 
 `S36 WP4` is a historical integration-regression lane, **not an end-to-end owner** of a generic “adversarial/agent-security assurance” capability.
 
-Its reusable checks must resolve to existing domain/transversal owners. The lane must not create a parallel security platform, test matrix, policy engine, reviewer operation or authority engine.
+Its reusable checks resolve to existing domain/transversal owners. The lane must not create a parallel security platform, test matrix, policy engine, reviewer operation or authority engine.
 
 Canonical LF test stores remain `lf_test_suites`, `lf_test_suite_cases`, `lf_test_runs`, `lf_test_assertion_results`, `lf_test_artifacts`, and `lf_test_requirement_bindings`.
 
@@ -23,14 +23,14 @@ Canonical LF test stores remain `lf_test_suites`, `lf_test_suite_cases`, `lf_tes
 | Required-step bypass | operation owner step contract | owner-specific; transversal generic remains NOT_COVERED |
 | Invalid state transition | lifecycle/policy owner suite | owner-specific; transversal generic remains NOT_COVERED |
 
-## Legacy integration guard
+## Historical integration guard
 
-`./s36_wp4_identity_authority_guard.py` remains temporarily as a compatibility integration regression. It contains two different invariant families and therefore must not be promoted as one new capability:
+`./s36_wp4_identity_authority_guard.py` remains as an integration regression over two owner-controlled invariant families:
 
 1. reviewer independence;
 2. requested-vs-granted authority.
 
-The historical reviewer mode `S36_ASSURANCE` is a compatibility alias only. It must not be used as evidence that S36 is the canonical reviewer owner.
+Its executable reviewer modes are now only `INDEPENDENT_REVIEW` and `INDEPENDENT_HOLDOUT`. The historical `S36_ASSURANCE` reviewer mode is **retired from the executable guard** and remains only as lineage in historical files/evidence.
 
 ## Deterministic execution evidence
 
@@ -38,13 +38,7 @@ The historical reviewer mode `S36_ASSURANCE` is a compatibility alias only. It m
 python sandbox/lf_contract_gate_test/s36_wp4_adversarial/test_s36_wp4_identity_authority_guard.py
 ```
 
-Historical observed producer result:
-
-```text
-S36_WP4_IDENTITY_AUTHORITY_EXECUTED=1 TEST_COUNT=6 RESULT=PASS
-```
-
-A PASS proves only the guard inputs satisfied those two local invariants. It does not prove a global security verdict, Assurance completeness, Qualification, test coverage, runtime authorization or production authorization.
+A PASS proves only the supplied integration invariants. It does not prove a global security verdict, Assurance completeness, Qualification, test coverage, runtime authorization or production authorization.
 
 ## Explicit open coverage states
 
@@ -56,10 +50,10 @@ A PASS proves only the guard inputs satisfied those two local invariants. It doe
 
 ## Migration rule
 
-1. Keep the legacy guard as compatibility regression while consumers still reference it.
-2. New reviewer-independence coverage belongs to the existing Independent Review owner.
-3. New requested/granted/downstream authority coverage belongs to Policy Consumption / Router Downstream Authority as applicable.
-4. Preserve S36 paths/codes as lineage until consumer readback permits retirement.
+1. New reviewer-independence coverage belongs to the existing Independent Review owner.
+2. New requested/granted/downstream authority coverage belongs to Policy Consumption / Router Downstream Authority as applicable.
+3. Preserve S36 paths/codes only as lineage until full historical retirement is explicitly governed.
+4. Do not reintroduce `S36_ASSURANCE` as an executable reviewer mode.
 5. Do not create `ADVERSARIAL_SECURITY`, `AGENT_SECURITY_ASSURANCE` or another umbrella merely to replace the S36 umbrella.
 
 ## Result-class discipline

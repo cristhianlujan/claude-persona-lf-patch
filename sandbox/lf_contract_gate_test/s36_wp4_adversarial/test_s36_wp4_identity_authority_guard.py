@@ -10,6 +10,16 @@ class IdentityAuthorityGuardTests(unittest.TestCase):
         actual = evaluate_identity_authority(
             producer_execution_id="EXEC-PRODUCER-001",
             reviewer_execution_id="EXEC-REVIEWER-002",
+            reviewer_mode="INDEPENDENT_REVIEW",
+            requested_authority="REVIEW_ONLY",
+            granted_authorities=["REVIEW_ONLY"],
+        ).as_dict()
+        self.assertEqual(actual, {"decision": "PASS", "code": "IDENTITY_AUTHORITY_INVARIANTS_PROVEN"})
+
+    def test_holdout_remains_independent(self):
+        actual = evaluate_identity_authority(
+            producer_execution_id="EXEC-PRODUCER-001",
+            reviewer_execution_id="EXEC-REVIEWER-002",
             reviewer_mode="INDEPENDENT_HOLDOUT",
             requested_authority="REVIEW_ONLY",
             granted_authorities=["REVIEW_ONLY"],
@@ -20,11 +30,21 @@ class IdentityAuthorityGuardTests(unittest.TestCase):
         actual = evaluate_identity_authority(
             producer_execution_id="EXEC-SAME",
             reviewer_execution_id="EXEC-SAME",
-            reviewer_mode="S36_ASSURANCE",
+            reviewer_mode="INDEPENDENT_REVIEW",
             requested_authority="REVIEW_ONLY",
             granted_authorities=["REVIEW_ONLY"],
         ).as_dict()
         self.assertEqual(actual, {"decision": "BLOCK", "code": "PRODUCER_AS_REVIEWER"})
+
+    def test_legacy_s36_mode_blocks(self):
+        actual = evaluate_identity_authority(
+            producer_execution_id="EXEC-PRODUCER-001",
+            reviewer_execution_id="EXEC-REVIEWER-002",
+            reviewer_mode="S36_ASSURANCE",
+            requested_authority="REVIEW_ONLY",
+            granted_authorities=["REVIEW_ONLY"],
+        ).as_dict()
+        self.assertEqual(actual, {"decision": "BLOCK", "code": "REVIEW_MODE_NOT_INDEPENDENT"})
 
     def test_non_independent_mode_blocks(self):
         actual = evaluate_identity_authority(
@@ -40,7 +60,7 @@ class IdentityAuthorityGuardTests(unittest.TestCase):
         actual = evaluate_identity_authority(
             producer_execution_id="EXEC-PRODUCER-001",
             reviewer_execution_id="EXEC-REVIEWER-002",
-            reviewer_mode="INDEPENDENT_HOLDOUT",
+            reviewer_mode="INDEPENDENT_REVIEW",
             requested_authority="WRITE_RUNTIME",
             granted_authorities=["REVIEW_ONLY"],
         ).as_dict()
@@ -50,7 +70,7 @@ class IdentityAuthorityGuardTests(unittest.TestCase):
         actual = evaluate_identity_authority(
             producer_execution_id="",
             reviewer_execution_id="EXEC-REVIEWER-002",
-            reviewer_mode="INDEPENDENT_HOLDOUT",
+            reviewer_mode="INDEPENDENT_REVIEW",
             requested_authority="REVIEW_ONLY",
             granted_authorities=["REVIEW_ONLY"],
         ).as_dict()
@@ -60,7 +80,7 @@ class IdentityAuthorityGuardTests(unittest.TestCase):
         actual = evaluate_identity_authority(
             producer_execution_id="EXEC-PRODUCER-001",
             reviewer_execution_id="EXEC-REVIEWER-002",
-            reviewer_mode="INDEPENDENT_HOLDOUT",
+            reviewer_mode="INDEPENDENT_REVIEW",
             requested_authority="",
             granted_authorities=["REVIEW_ONLY"],
         ).as_dict()

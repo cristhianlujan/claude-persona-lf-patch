@@ -30,9 +30,12 @@ def main() -> None:
         assert code in guard
         assert routes[code]["owner_chain"] == ["POLICY_CONSUMPTION", "ROUTER_DOWNSTREAM_AUTHORITY"]
 
-    # Historical compatibility remains explicit, but S36 cannot remain canonical owner.
-    assert '"S36_ASSURANCE"' in guard
-    assert contract["legacy_aliases"]["rule"] == "COMPATIBILITY_ONLY_NOT_CANONICAL_OWNER"
+    # S36 remains only as lineage metadata; executable reviewer modes are canonical.
+    assert '"S36_ASSURANCE"' not in guard
+    assert contract["legacy_aliases"]["review_mode"] == []
+    assert contract["legacy_aliases"]["historical_review_mode"] == "S36_ASSURANCE"
+    assert contract["legacy_aliases"]["rule"] == "RETIRED_FROM_EXECUTABLE_GUARD_LINEAGE_ONLY"
+    assert contract["canonical_review_modes"] == ["INDEPENDENT_REVIEW", "INDEPENDENT_HOLDOUT"]
     assert "not an end-to-end owner" in readme
     assert "Do not create `ADVERSARIAL_SECURITY`" in readme
 
