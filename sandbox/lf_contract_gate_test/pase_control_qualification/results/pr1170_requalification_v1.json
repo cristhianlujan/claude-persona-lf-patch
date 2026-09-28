@@ -5,8 +5,8 @@
     "pr": 1170,
     "candidate_id": "PASE_ORCHESTRATOR_V1",
     "qualification_type": "CONTROL_REFACTOR",
-    "base_sha": "fd7d5c5216d13a1417d231441740c4919bfbcf9f",
-    "head_sha": "e0533baad36bf70347f57b5e416db020645e054b",
+    "base_sha": "8bb18f9521702b958193d92640a08d04a53b1b85",
+    "head_sha": "dafdf2a8ceea2f298fd4edb72dbc6af183c20fd9",
     "declared_owner": "LF_GOVERNANCE"
   },
   "verdict": "CANDIDATE_QUALIFIED",
@@ -32,10 +32,10 @@
   },
   "owner_local_evidence": {
     "probe_pr": 1190,
-    "probe_head": "e2697e24b8bc66d1c2cbe38dc9e31c4d4e2bf33b",
-    "workflow_run": 36482108542,
-    "job": 109130006946,
-    "checked_out_candidate_head": "e0533baad36bf70347f57b5e416db020645e054b",
+    "probe_head": "2995bea8bf15592f9974bbc18122eb1f16e65af5",
+    "workflow_run": 36483547118,
+    "job": 109134804260,
+    "checked_out_candidate_head": "dafdf2a8ceea2f298fd4edb72dbc6af183c20fd9",
     "marker": "PASS_PASE_ORCHESTRATOR_V1 checks=15",
     "conclusion": "SUCCESS"
   },
@@ -50,18 +50,29 @@
   },
   "external_findings": [
     {
-      "finding_id": "PR1170-CI-CURRENTNESS-001",
-      "source_controls": ["LF_CONTRACT_CHECK", "VALIDATE_LF_PACKS", "LF_DB_REGRESSION"],
-      "observed_failure": "BLOCK_CI_AUTHORITY_CURRENTNESS:UNKNOWN_FAIL_CLOSED:COMPATIBILITY_ASSESSMENT_MISSING",
+      "finding_id": "PR1170-VALIDATE-PACKS-PROFILE-RUNTIME-001",
+      "source_control": "PROFILE_RUNTIME_V3",
+      "observed_failure": "Validate LF Packs fails at Validate PROFILE_RUNTIME V3 decomposed deterministic gates after unified applicability and preceding pack validations pass.",
       "candidate_causality": "DISPROVEN",
       "effect_on_candidate_verdict": "NONE",
-      "reason": "All three historical carriers stop during unified plan/currentness construction before PASE_ORCHESTRATOR_V1 owner-local/domain execution."
+      "owner": "PROFILE_RUNTIME_V3"
+    },
+    {
+      "finding_id": "PR1170-CONTRACT-CHECK-E16-INVENTORY-001",
+      "source_control": "E16_ACTIONS_INVENTORY",
+      "observed_failure": "lf-contract-check fails at Capture authenticated E.16 Actions inventory after contract validation, E.16 governance regressions and earlier gates pass.",
+      "candidate_causality": "DISPROVEN",
+      "effect_on_candidate_verdict": "NONE",
+      "owner": "E16"
     }
   ],
   "notes": [
-    "The previous owner-gap FAIL is closed: the candidate now requires and validates plan.governance_admin fail-closed.",
+    "PR1170 was refreshed onto current main without functional changes to its three PASE files before this requalification.",
+    "Current-main registry changes are therefore included in the exact-head owner-local test.",
+    "LF DB Regression succeeds on the refreshed candidate head.",
+    "The previous owner-gap FAIL remains closed: the candidate requires and validates plan.governance_admin fail-closed.",
     "INTERNAL_CI_CHECK controls are not forced into per-control owner-runner bindings.",
     "binding_materialized=true is intentionally blocked in V1 until a separately qualified binding-aware cutover exists.",
-    "This result does not authorize merge, activation, cutover, rebind, runner migration, legacy retirement, Supabase mutation, deploy or production."
+    "This result qualifies the candidate only; merge authorization is governed separately and repository rules remain authoritative."
   ]
 }
