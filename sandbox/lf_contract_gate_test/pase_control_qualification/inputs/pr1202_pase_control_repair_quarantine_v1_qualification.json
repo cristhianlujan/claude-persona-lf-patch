@@ -1,0 +1,32 @@
+{
+  "schema_version": "lf-pase-control-qualification/v1",
+  "qualification_type": "NEW_CONTROL",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "candidate_id": "PASE_CONTROL_REPAIR_QUARANTINE_V1",
+  "declared_owner": "LF_GOVERNANCE",
+  "base_sha": "897b25a50426cb2b5121947d9c265a393a7af800",
+  "head_sha": "1201b8acf686d92d858d02f27d093930522b0362",
+  "observed_main_sha": "897b25a50426cb2b5121947d9c265a393a7af800",
+  "scope_paths": [
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/README_PASE_CONTROL_REPAIR_QUARANTINE_V1.md",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pase_control_repair_quarantine_v1.json",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pase_control_repair_quarantine_v1.py",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_pase_control_repair_quarantine_v1.py"
+  ],
+  "owner_local_tests": [
+    "python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_pase_control_repair_quarantine_v1.py"
+  ],
+  "boundary_invariants": [
+    "Changeset Governance and lf-ci-execution-plan/v2 remain the sole applicability authority; quarantine does not classify paths or reclassify applicability.",
+    "REPAIR_OBSERVE_ONLY controls may execute for diagnosis or evidence but cannot block merge.",
+    "Structural governance remains fail-closed outside the validator quarantine.",
+    "A control may return to ACTIVE_BLOCKING only one at a time after CANDIDATE_QUALIFIED, owner-runner binding PASS, equivalent replay PASS, and exact-head readback PASS.",
+    "No domain execution, ruleset mutation, Supabase mutation, activation, cutover, rebind, or legacy retirement is authorized by this candidate."
+  ],
+  "expected_coverage": [
+    "Exact coverage of the 25 controls in lf-ci-control-impact-registry/v2 with all controls initially REPAIR_OBSERVE_ONLY.",
+    "Deterministic projection of plan.required_controls into blocking_controls and observe_only_controls without changing applicability.",
+    "Fail-closed detection of universe drift, missing or unknown policy states, incomplete plan coverage, partition overlap, invalid digests, and non-deterministic policy ordering.",
+    "Mandatory complete one-control-at-a-time re-entry evidence before ACTIVE_BLOCKING."
+  ]
+}
