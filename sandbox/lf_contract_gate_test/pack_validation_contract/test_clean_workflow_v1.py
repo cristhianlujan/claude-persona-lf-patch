@@ -35,15 +35,15 @@ def git_repo() -> tuple[tempfile.TemporaryDirectory[str], Path, str, str, Path, 
     run("git", "config", "user.email", "pack-validation-test@example.invalid", cwd=repo)
     run("git", "config", "user.name", "Pack Validation Test", cwd=repo)
     write(repo / "README.md", "base\n")
+    write(
+        repo / "profiles/alpha/validators/validate_pack.py",
+        "import sys\nprint('LOCAL_PACK_PASS')\nraise SystemExit(0)\n",
+    )
     run("git", "add", ".", cwd=repo)
     run("git", "commit", "-qm", "base", cwd=repo)
     base = run("git", "rev-parse", "HEAD", cwd=repo)
 
     write(repo / "profiles/alpha/SKILL.md", "# alpha\n")
-    write(
-        repo / "profiles/alpha/validators/validate_pack.py",
-        "import sys\nprint('LOCAL_PACK_PASS')\nraise SystemExit(0)\n",
-    )
     run("git", "add", ".", cwd=repo)
     run("git", "commit", "-qm", "head", cwd=repo)
     head = run("git", "rev-parse", "HEAD", cwd=repo)
@@ -152,13 +152,17 @@ def test_exact_head_pack_pass() -> None:
 
 
 def test_non_pack_change_skips_without_validator_execution() -> None:
-    td, repo, base, head, validation, discovery = git_repo()
+    td, repo, _, pack_head, validation, discovery = git_repo()
     try:
+        write(repo / "README.md", "non-pack change\n")
+        run("git", "add", "README.md", cwd=repo)
+        run("git", "commit", "-qm", "non-pack", cwd=repo)
+        head = run("git", "rev-parse", "HEAD", cwd=repo)
         summary = mod.run_flow(
             repo_root=repo,
             validation_contract_path=validation,
             discovery_contract_path=discovery,
-            base_sha=base,
+            base_sha=pack_head,
             head_sha=head,
             changed_paths=["README.md"],
             output_dir=repo / ".lf_pack_validation",

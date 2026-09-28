@@ -9,7 +9,7 @@
     "PACK_VALIDATION_CLEAN_WORKFLOW",
     "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS"
   ],
-  "purpose": "Prove the PACK_VALIDATION-owned path from already-authorized exact-head input through affected-pack discovery, pack-local deterministic validation, bounded evidence, and final PASS/FAIL without invoking or owning foreign controls.",
+  "purpose": "Prove the PACK_VALIDATION-owned path from already-authorized exact-head input through changed-path integrity verification, affected-pack discovery, pack-local deterministic validation, bounded evidence, and final PASS/FAIL without invoking or owning foreign controls.",
   "proof_model": {
     "live_wiring_probe": {
       "required": true,
@@ -39,6 +39,15 @@
       "expected_status": "FAIL",
       "required_blocking_code": "PACK_LOCAL_VALIDATOR_FAILED",
       "exact_head_required": true
+    },
+    "changed_paths_integrity_probe": {
+      "required": true,
+      "isolation": "TEMPORARY_GIT_REPOSITORY_ONLY",
+      "repository_pack_mutation": false,
+      "fixture": "candidate changes two pack-owned files while caller supplies only one changed path",
+      "expected_status": "FAIL",
+      "required_blocking_code": "CHANGED_PATHS_MISMATCH",
+      "must_block_before_discovery": true
     }
   },
   "caller_binding": {
@@ -46,6 +55,7 @@
     "base_sha": "github.event.pull_request.base.sha || github.event.before || inputs.base_main_sha",
     "head_sha": "github.event.pull_request.head.sha || github.sha",
     "must_not_redecide_applicability": true,
+    "changed_paths_integrity": "provided changed_paths must equal git diff --name-only(base_sha, head_sha) before discovery",
     "canonical_runner": "sandbox/lf_contract_gate_test/pack_validation_contract/run_pack_validation_flow_v1.py"
   },
   "required_evidence_files": [
@@ -72,6 +82,6 @@
     "gate observability ownership",
     "deployment or production activation"
   ],
-  "completion_rule": "PASS only when the live wiring probe exists and both isolated positive and negative exact-head probes satisfy their expected outcomes with bounded evidence.",
+  "completion_rule": "PASS only when the live wiring probe exists, the isolated positive and negative exact-head probes satisfy their expected outcomes, and a mismatched changed-path set fails closed before discovery with CHANGED_PATHS_MISMATCH.",
   "next_handoff": "STEP_08_READBACK_TRACEABILITY_CLOSE"
 }
