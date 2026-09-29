@@ -1,5 +1,6 @@
 name: PASE Merge Gate
 
+# Live-fire self-change probe candidate. Trusted base code must ignore candidate workflow bytes.
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
