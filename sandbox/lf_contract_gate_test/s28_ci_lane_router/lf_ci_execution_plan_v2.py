@@ -17,7 +17,10 @@ from typing import Any, Iterable, Mapping
 
 SCHEMA_VERSION = "lf-ci-execution-plan/v2"
 REGISTRY_VERSION = "lf-ci-control-impact-registry/v2"
+SUPER_ADMIN_SCHEMA_VERSION = "lf-governance-super-admin/v1"
 REGISTRY_PATH = Path(__file__).with_name("lf_ci_control_impact_registry_v2.json")
+ROOT = Path(__file__).resolve().parents[3]
+SUPER_ADMIN_CONTRACT_PATH = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/lf_governance_super_admin_contract_v1.json"
 SELF_PREFIX = "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
 RETIRED_CONTROL_IDS = frozenset({"REMOTE_SCHEMA_REPRODUCIBILITY"})
 RETIRED_CARRIERS = frozenset({"LF_BOOTSTRAP_REPRODUCIBILITY"})
@@ -55,6 +58,66 @@ def _safe_path(value: str) -> bool:
         return False
     parts = PurePosixPath(value).parts
     return bool(parts) and all(p not in {".", ".."} for p in parts)
+
+
+def load_super_admin_identity(path: Path = SUPER_ADMIN_CONTRACT_PATH) -> dict[str, Any]:
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        raise PlanError(f"FAIL_CI_SUPER_ADMIN_CONTRACT_READ:{exc.__class__.__name__}") from exc
+    try:
+        data = json.loads(raw)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise PlanError(f"FAIL_CI_SUPER_ADMIN_CONTRACT_JSON:{exc.__class__.__name__}") from exc
+    if not isinstance(data, dict) or data.get("schema_version") != SUPER_ADMIN_SCHEMA_VERSION:
+        raise PlanError("FAIL_CI_SUPER_ADMIN_CONTRACT_SCHEMA")
+
+    string_fields = (
+        "super_admin",
+        "role",
+        "status",
+        "scope",
+        "applicability_authority",
+        "orchestrator_consumer",
+    )
+    for key in string_fields:
+        value = data.get(key)
+        if not isinstance(value, str) or not value.strip():
+            raise PlanError(f"FAIL_CI_SUPER_ADMIN_CONTRACT_FIELD:{key}")
+    if re.fullmatch(r"[A-Z][A-Z0-9_]*", data["super_admin"]) is None:
+        raise PlanError("FAIL_CI_SUPER_ADMIN_ID")
+
+    invariants = data.get("invariants")
+    if not isinstance(invariants, dict):
+        raise PlanError("FAIL_CI_SUPER_ADMIN_INVARIANTS")
+    required_true = (
+        "single_super_admin",
+        "super_admin_is_not_carrier",
+        "super_admin_is_not_runner",
+        "subscope_aliases_are_not_parallel_authorities",
+        "qualification_not_activation",
+    )
+    for key in required_true:
+        if invariants.get(key) is not True:
+            raise PlanError(f"FAIL_CI_SUPER_ADMIN_INVARIANT:{key}")
+    if invariants.get("super_admin_equals") != data["super_admin"]:
+        raise PlanError("FAIL_CI_SUPER_ADMIN_IDENTITY_DRIFT")
+    if invariants.get("act_0001_role") != "ROUTER_RESOLUTION_ONLY":
+        raise PlanError("FAIL_CI_SUPER_ADMIN_ACT0001_BOUNDARY")
+
+    return {
+        "schema_version": "lf-ci-governance-admin-identity/v1",
+        "super_admin": data["super_admin"],
+        "role": data["role"],
+        "status": data["status"],
+        "scope": data["scope"],
+        "applicability_authority": data["applicability_authority"],
+        "orchestrator_consumer": data["orchestrator_consumer"],
+        "source_contract_schema_version": data["schema_version"],
+        "source_revision": _sha(raw),
+        "binding_materialized": data.get("binding_materialized") is True,
+        "supabase_registered": data.get("supabase_registered") is True,
+    }
 
 
 def load_registry(path: Path = REGISTRY_PATH) -> tuple[tuple[str, ...], tuple[str, ...], tuple[ImpactControl, ...]]:
@@ -188,7 +251,9 @@ def build_plan(
     force_full: bool = False,
     force_full_reason: str | None = None,
     source_ref: str | None = None,
+    super_admin_contract_path: Path = SUPER_ADMIN_CONTRACT_PATH,
 ) -> dict[str,Any]:
+    governance_admin = load_super_admin_identity(super_admin_contract_path)
     control_universe, full_regression_controls, controls = load_registry()
     by_id = {c.control_id:c for c in controls}
     changed = tuple(sorted({p.strip() for p in changed_paths if isinstance(p,str) and p.strip()}))
@@ -324,6 +389,7 @@ def build_plan(
     plan: dict[str,Any] = {
         "schema_version": SCHEMA_VERSION,
         "router_capability": "CI_FAST_DEEP_LANE_ROUTER",
+        "governance_admin": governance_admin,
         "lane_mode": lane_mode,
         "full_regression": full_regression,
         "full_regression_reason": full_reason,
