@@ -1,0 +1,38 @@
+name: LF PASE Merge Gate Repair Enforcement Replay V1
+
+on:
+  push:
+    branches:
+      - lf/pase-merge-gate-repair-enforcement-replay-20260928
+
+permissions:
+  contents: read
+
+jobs:
+  replay-old-new:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout replay evidence branch with history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify exact candidate and baseline are present
+        shell: bash
+        run: |
+          set -euo pipefail
+          old="6950b3f67b68db090de1de9fb421a61f6a823057"
+          new="34b57b4ba1101b866822091aba1f36c9ab709a1a"
+          git cat-file -e "${old}^{commit}"
+          git cat-file -e "${new}^{commit}"
+          git merge-base --is-ancestor "$old" "$new"
+          git diff --exit-code "$new" -- sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_v1.py
+          echo "old_head=$old"
+          echo "new_head=$new"
+
+      - name: Replay old versus repair-enforcement behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_control_qualification/replays/pr1206_pase_merge_gate_repair_enforcement_replay_v1.py
