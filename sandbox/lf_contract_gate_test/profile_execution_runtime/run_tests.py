@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from copy import deepcopy
 
+import profile_execution_research_baseline_digest_parity as digest_parity
+
 from profile_runtime_runner import RESPONSE_TYPE, RuntimeExecutionBlocked, execute_profile_runtime
 from run_lf_adapter_binding_tests import main as run_lf_adapter_binding_tests
 from semantic_mini_judge import (
@@ -226,6 +228,7 @@ def runner_call(*, adapter=None, verifier=None, allow_test_doubles=True, sources
 
 
 def main():
+    digest_parity.main()
     passed = 0
     receipt = make_receipt()
 
