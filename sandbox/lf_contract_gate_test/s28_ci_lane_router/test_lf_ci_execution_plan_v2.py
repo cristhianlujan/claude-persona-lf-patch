@@ -11,6 +11,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PLAN_PATH = HERE / "lf_ci_execution_plan_v2.py"
+SUPER_ADMIN_TEST_PATH = HERE / "test_lf_ci_super_admin_plan_binding_v1.py"
 
 
 def load(path: Path, name: str):
@@ -23,6 +24,7 @@ def load(path: Path, name: str):
 
 
 P = load(PLAN_PATH, "lf_ci_execution_plan_v2_tested")
+SUPER_ADMIN_TEST = load(SUPER_ADMIN_TEST_PATH, "lf_ci_super_admin_plan_binding_v1_tested")
 
 
 def make_repo(files: dict[str, str]) -> Path:
@@ -341,6 +343,10 @@ def test_plan_replay_is_deterministic() -> None:
     assert json.dumps(a, sort_keys=True, separators=(",", ":")) == json.dumps(b, sort_keys=True, separators=(",", ":"))
 
 
+def test_super_admin_plan_binding_v1() -> None:
+    SUPER_ADMIN_TEST.main()
+
+
 def main() -> None:
     tests = [
         test_policy_resolver_migration_is_precise_and_candidate_bound,
@@ -361,6 +367,7 @@ def main() -> None:
         test_material_evidence_reads_exact_source_ref_not_checkout_tree,
         test_carrier_regression_keeps_candidate_bound_migration_controls,
         test_plan_replay_is_deterministic,
+        test_super_admin_plan_binding_v1,
     ]
     for test in tests:
         test()
