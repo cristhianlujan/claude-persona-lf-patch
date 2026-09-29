@@ -29,7 +29,7 @@ for path in files:
         trusted_pr.append(path.name)
 
 assert ordinary_pr == ["lf-contract-check.yml"], ordinary_pr
-assert trusted_pr == ["lf-github-reconcile-v3.yml"], trusted_pr
+assert trusted_pr == ["lf-github-reconcile-v3.yml", "pase-merge-gate.yml"], trusted_pr
 
 entrypoint = read("lf-contract-check.yml")
 assert entrypoint.startswith("name: lf-contract-check\n")
@@ -62,8 +62,16 @@ reconcile = read("lf-github-reconcile-v3.yml")
 assert 'workflows: ["lf-contract-check"]' in reconcile
 assert PULL_REQUEST_TARGET.search(reconcile)
 
+merge_gate = read("pase-merge-gate.yml")
+assert merge_gate.startswith("name: PASE Merge Gate\n")
+assert PULL_REQUEST_TARGET.search(merge_gate)
+assert not PULL_REQUEST.search(merge_gate)
+assert "Checkout trusted PR base" in merge_gate
+assert "github.event.pull_request.base.sha" in merge_gate
+assert "Evaluate base-anchored PASE merge gate" in merge_gate
+
 print(
     "PASS_PASE_SINGLE_PR_ENTRYPOINT_V1 "
     f"workflow_count={len(files)} ordinary_pr={ordinary_pr[0]} "
-    f"independent_guardian={trusted_pr[0]}"
+    f"trusted_pr={','.join(trusted_pr)}"
 )
