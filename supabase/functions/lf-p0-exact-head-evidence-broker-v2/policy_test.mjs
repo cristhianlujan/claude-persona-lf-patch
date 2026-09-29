@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import {
   REPOSITORY,
+  LEGACY_WORKFLOW_NAME,
+  LEGACY_WORKFLOW_PATH,
+  PASE_WORKFLOW_NAME,
+  PASE_WORKFLOW_PATH,
   WORKFLOW_NAME,
   WORKFLOW_PATH,
   governedRef,
@@ -13,6 +17,10 @@ const sha = "a".repeat(40);
 const base = { repository: REPOSITORY, ref: "refs/heads/main", github_sha: sha, run_id: 77, run_attempt: 1, event_name: "push" };
 assert.equal(WORKFLOW_NAME, "lf-contract-check");
 assert.equal(WORKFLOW_PATH, ".github/workflows/lf-contract-check.yml");
+assert.equal(LEGACY_WORKFLOW_NAME, "lf-contract-check");
+assert.equal(LEGACY_WORKFLOW_PATH, ".github/workflows/lf-contract-check.yml");
+assert.equal(PASE_WORKFLOW_NAME, "PASE");
+assert.equal(PASE_WORKFLOW_PATH, ".github/workflows/pase.yml");
 assert.equal(governedRef("refs/heads/main"), true);
 assert.equal(governedRef("refs/heads/lf/p0-exact-head-real-source-v2"), true);
 assert.equal(governedRef("refs/heads/feature/arbitrary"), false);
@@ -22,21 +30,26 @@ assert.equal(validateRequestScope(base), null);
 assert.equal(validateRequestScope({ ...base, ref: "refs/heads/feature/arbitrary" }), "GITHUB_REQUEST_REF_NOT_GOVERNED");
 assert.equal(validateRequestScope({ ...base, github_sha: "b".repeat(39) }), "GITHUB_SHA_INVALID");
 assert.equal(validateRequestScope({ ...base, event_name: "pull_request" }), "GITHUB_EVENT_INVALID");
-const run = {
+
+const legacyRun = {
   id: 77,
   run_attempt: 1,
   repository: { full_name: REPOSITORY },
-  name: WORKFLOW_NAME,
-  path: WORKFLOW_PATH,
+  name: LEGACY_WORKFLOW_NAME,
+  path: LEGACY_WORKFLOW_PATH,
   head_branch: "main",
   head_sha: sha,
   event: "push",
   status: "in_progress",
 };
-assert.equal(validateRunIdentity(base, run), null);
-assert.equal(validateRunIdentity(base, { ...run, name: "P0 Exact-HEAD Real-Source Evidence" }), "GITHUB_WORKFLOW_NAME_MISMATCH");
-assert.equal(validateRunIdentity(base, { ...run, path: ".github/workflows/other.yml" }), "GITHUB_WORKFLOW_PATH_MISMATCH");
-assert.equal(validateRunIdentity(base, { ...run, head_sha: "b".repeat(40) }), "GITHUB_WORKFLOW_SHA_MISMATCH");
-assert.equal(validateRunIdentity(base, { ...run, head_branch: "lf/p0-other" }), "GITHUB_WORKFLOW_BRANCH_MISMATCH");
-assert.equal(validateRunIdentity(base, { ...run, status: "completed" }), "GITHUB_WORKFLOW_STATUS_INVALID");
-console.log(JSON.stringify({ gate: "PASS_P0_EXACT_HEAD_IDENTITY_POLICY_V2", checks: 17 }));
+const paseRun = { ...legacyRun, name: PASE_WORKFLOW_NAME, path: PASE_WORKFLOW_PATH };
+
+assert.equal(validateRunIdentity(base, legacyRun), null);
+assert.equal(validateRunIdentity(base, paseRun), null);
+assert.equal(validateRunIdentity(base, { ...legacyRun, name: PASE_WORKFLOW_NAME }), "GITHUB_WORKFLOW_PATH_MISMATCH");
+assert.equal(validateRunIdentity(base, { ...legacyRun, name: "P0 Exact-HEAD Real-Source Evidence" }), "GITHUB_WORKFLOW_NAME_MISMATCH");
+assert.equal(validateRunIdentity(base, { ...legacyRun, path: ".github/workflows/other.yml" }), "GITHUB_WORKFLOW_PATH_MISMATCH");
+assert.equal(validateRunIdentity(base, { ...legacyRun, head_sha: "b".repeat(40) }), "GITHUB_WORKFLOW_SHA_MISMATCH");
+assert.equal(validateRunIdentity(base, { ...legacyRun, head_branch: "lf/p0-other" }), "GITHUB_WORKFLOW_BRANCH_MISMATCH");
+assert.equal(validateRunIdentity(base, { ...legacyRun, status: "completed" }), "GITHUB_WORKFLOW_STATUS_INVALID");
+console.log(JSON.stringify({ gate: "PASS_P0_EXACT_HEAD_IDENTITY_POLICY_V2", checks: 23 }));

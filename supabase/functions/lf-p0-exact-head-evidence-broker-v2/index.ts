@@ -1,7 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {
   REPOSITORY,
-  WORKFLOW_NAME,
   SOURCE_EVIDENCE_OBJECT_ID,
   SOURCE_SHA256,
   SOURCE_BYTES,
@@ -141,7 +140,7 @@ Deno.serve(async (req: Request) => {
           source_sha256: SOURCE_SHA256,
           github_run_id: String(body.run_id),
           github_run_attempt: String(body.run_attempt),
-          github_workflow_name: WORKFLOW_NAME,
+          github_workflow_name: run.name,
           github_workflow_path: run.path,
           github_event: body.event_name,
           github_ref: body.ref,
