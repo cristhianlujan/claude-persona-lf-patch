@@ -2,7 +2,7 @@ name: LF GitHub Reconciliation V3
 
 on:
   workflow_run:
-    workflows: ["lf-contract-check"]
+    workflows: ["lf-contract-check", "PASE"]
     types: [completed]
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
