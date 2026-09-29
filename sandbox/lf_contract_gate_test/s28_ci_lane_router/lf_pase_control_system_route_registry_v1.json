@@ -53,6 +53,11 @@
       "candidate_id": "PASE_GITHUB_ENTRYPOINT_V1"
     },
     {
+      "kind": "exact",
+      "value": ".github/workflows/pase.yml",
+      "candidate_id": "PASE_GITHUB_ENTRYPOINT_V1"
+    },
+    {
       "kind": "prefix",
       "value": "sandbox/lf_contract_gate_test/s28_ci_lane_router/",
       "candidate_id": "CHANGESET_GOVERNANCE_LF_V1"
