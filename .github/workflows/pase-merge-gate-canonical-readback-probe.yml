@@ -1,0 +1,26 @@
+name: LF PASE Merge Gate Canonical Readback Probe
+
+on:
+  pull_request:
+    branches:
+      - lf/pase-merge-gate-canonical-qualification-readback-v2-20260929
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-owner-local-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+      - name: Assert exact candidate head
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "58c8428220e011f065f53dd90b159c4ce5fa019e"
+      - name: Run merge-gate carrier self-test
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_carrier_v1.py self-test
