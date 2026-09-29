@@ -1,0 +1,143 @@
+name: LF DB Schema Drift Audit
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/lf-db-schema-drift-audit.yml"
+      - "sandbox/lf_contract_gate_test/db_schema_drift_audit/**"
+      - "sandbox/lf_contract_gate_test/transversal_assets/db_schema_drift_audit/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lf-db-schema-drift-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deterministic-self-test:
+    name: deterministic-self-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - name: Run DB schema drift comparator self-test
+        run: python3 sandbox/lf_contract_gate_test/db_schema_drift_audit/db_schema_drift_audit_v1.py --self-test
+
+  git-vs-live-readonly:
+    name: git-vs-live-readonly
+    needs: deterministic-self-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+      SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+      FINGERPRINT_SQL: sandbox/lf_contract_gate_test/db_schema_drift_audit/db_schema_fingerprint_v1.sql
+      AUDIT_REPORT: .lf_schema_drift/db_schema_drift_report_v1.json
+
+    steps:
+      - name: Require encrypted sandbox read credential
+        shell: bash
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_DB_PASSWORD:-}" ]; then
+            echo "::error::LF_SUPABASE_DB_PASSWORD is required for real read-only drift measurement"
+            exit 2
+          fi
+
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Set up pinned Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: Replay Git migrations in disposable local Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db start
+          trap 'supabase stop --no-backup || true' EXIT
+          supabase db reset
+
+          export PGHOST=127.0.0.1
+          export PGPORT=54322
+          export PGUSER=postgres
+          export PGPASSWORD=postgres
+          export PGDATABASE=postgres
+          export PGSSLMODE=disable
+          docker run --rm --network host \
+            -v "$PWD:/repo:ro" \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE \
+            postgres:17.6 \
+            psql -X -qAt -v ON_ERROR_STOP=1 -f "/repo/$FINGERPRINT_SQL" \
+            > "$RUNNER_TEMP/git-schema-fingerprint.jsonl"
+          test -s "$RUNNER_TEMP/git-schema-fingerprint.jsonl"
+
+          supabase stop --no-backup
+          trap - EXIT
+
+      - name: Read live sandbox fingerprint in forced read-only mode
+        shell: bash
+        env:
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST"
+          export PGPORT=5432
+          export PGUSER="postgres.${SUPABASE_PROJECT_ID}"
+          export PGDATABASE=postgres
+          export PGSSLMODE=require
+          export PGOPTIONS='-c default_transaction_read_only=on'
+          docker run --rm \
+            -v "$PWD:/repo:ro" \
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGDATABASE -e PGSSLMODE -e PGOPTIONS \
+            postgres:17.6 \
+            psql -X -qAt -v ON_ERROR_STOP=1 -f "/repo/$FINGERPRINT_SQL" \
+            > "$RUNNER_TEMP/live-schema-fingerprint.jsonl"
+          test -s "$RUNNER_TEMP/live-schema-fingerprint.jsonl"
+
+      - name: Compare Git replay with live sandbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "$AUDIT_REPORT")"
+          python3 sandbox/lf_contract_gate_test/db_schema_drift_audit/db_schema_drift_audit_v1.py \
+            --git-jsonl "$RUNNER_TEMP/git-schema-fingerprint.jsonl" \
+            --live-jsonl "$RUNNER_TEMP/live-schema-fingerprint.jsonl" \
+            --output "$AUDIT_REPORT"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('.lf_schema_drift/db_schema_drift_report_v1.json').read_text())
+          with open(Path(__import__('os').environ['GITHUB_STEP_SUMMARY']), 'a', encoding='utf-8') as out:
+              out.write('### LF DB Schema Drift Audit\n')
+              out.write(f"- result: `{report['result']}`\n")
+              out.write(f"- Git objects: `{report['git_object_count']}`\n")
+              out.write(f"- Live objects: `{report['live_object_count']}`\n")
+              out.write(f"- Differences: `{report['difference_count']}`\n")
+              out.write(f"- Git fingerprint: `{report['git_fingerprint_sha256']}`\n")
+              out.write(f"- Live fingerprint: `{report['live_fingerprint_sha256']}`\n")
+              out.write('- Live transaction: `READ ONLY`\n')
+          PY
+
+      - name: Persist drift report only
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-db-schema-drift-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.AUDIT_REPORT }}
+          if-no-files-found: error
+          retention-days: 30
