@@ -37,6 +37,15 @@ assert "  lf-pase:\n" in entrypoint
 assert "Build canonical PASE applicability and repair-enforcement plan" in entrypoint
 assert "PASE_CONTROL_REPAIR_QUARANTINE_V1" in entrypoint
 
+# Changeset Governance is the repository-path/admission authority. The compatibility
+# entrypoint must not invoke the historical Contract Check scope validator before
+# the canonical PASE plan because that would pre-empt legitimate owner routing.
+assert "Enforce structural repository admission" not in entrypoint
+assert "lf_pase_structural_admission" not in entrypoint
+assert "validator.validate_changed_files" not in entrypoint
+assert "scripts/lf_contract_check.py:structural-admission-only" not in entrypoint
+assert "lf_changeset_governance.py:repository-path-admission" in entrypoint
+
 # Historical validator carriers retired by the earlier PASE workflow cutover stay absent.
 assert not (WORKFLOWS / "validate-lf-packs.yml").exists()
 assert not (WORKFLOWS / "lf-db-regression.yml").exists()
