@@ -1,0 +1,45 @@
+{
+  "schema_version": "lf-pase-control-repair-policy/v1",
+  "policy_id": "PASE_CONTROL_REPAIR_QUARANTINE_V1",
+  "authority": "CHANGESET_GOVERNANCE_LF_V1",
+  "mode": "TEMPORARY_REPAIR_WINDOW",
+  "reason": "LEGACY_VALIDATORS_UNDER_REPAIR",
+  "control_universe_sha256": "57e19027335c7d052a3393403ac0d6c9f6cde1f7babf882ca99cd1d68748f7ea",
+  "states": [
+    {"control_id": "CI_ROUTER_SELFTEST", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "DB_CANDIDATE_APPLY_ROLLBACK", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "DECLARED_GOVERNANCE_PATHS", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "E16_ACTIONS_INVENTORY", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "E16_GOVERNANCE", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "GATE_CHECK_OBSERVABILITY", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "INPUT_GOVERNANCE_MIGRATION_PARITY", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "LEARNING_ENGINE_PACK", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "LF_CONTRACT_CORE", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "LF_VALIDATION_ENGINE", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "MIGRATION_SOURCE_PARITY", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "NO_BYPASS_PROFILE_CARD_SKILL", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "P0_EXACT_HEAD_EXTERNAL", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "P0_FAST_DOCS", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "P0_VISUAL_RUNTIME", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "PASS_EVIDENCE", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "POLICY_RESOLVER_REGRESSION", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "PROFILE_PACK", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "PROFILE_RUNTIME_V3", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "R8_USER_STORY_AUDIT", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "S30_BOUNDED_REGRESSION", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "SKILL_PACK", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "SUPABASE_CONTROL_PLANE_READBACK", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "TRANSVERSAL_README", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
+    {"control_id": "V7_RUNTIME_REGRESSION", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null}
+  ],
+  "reentry_contract": {
+    "required": [
+      "CANDIDATE_QUALIFIED",
+      "OWNER_RUNNER_BOUND",
+      "EQUIVALENT_REPLAY_PASS",
+      "EXACT_HEAD_READBACK_PASS"
+    ],
+    "one_control_at_a_time": true,
+    "silent_reactivation_forbidden": true
+  }
+}
