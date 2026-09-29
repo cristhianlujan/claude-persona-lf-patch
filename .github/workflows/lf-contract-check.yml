@@ -33,6 +33,12 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Probe exact-head PASE merge route
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_pase_merge_route_v1.py
+
       - name: Enforce structural repository admission
         env:
           LF_PLAN_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -155,9 +161,6 @@ jobs:
                   f"missing={missing}:extra={extra}"
               )
 
-          # During the repair window there is intentionally no automatic domain
-          # execution. A control may return to blocking only through its qualified
-          # owner-runner cutover; until then this unified entrypoint fails closed.
           if blocking:
               raise SystemExit(
                   "BLOCK_PASE_ACTIVE_CONTROL_REQUIRES_OWNER_RUNNER_CUTOVER:"
