@@ -256,6 +256,7 @@ jobs:
           import json
           import os
           import subprocess
+          import sys
           from pathlib import Path
 
           validator_path = Path("scripts/lf_contract_check.py")
@@ -324,11 +325,11 @@ jobs:
 
           plan_path = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py")
           currentness_path = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_currentness_bridge_v1.py")
+          repair_path = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pase_control_repair_quarantine_v1.py")
           plan_spec = importlib.util.spec_from_file_location("lf_ci_execution_plan_v2", plan_path)
           if plan_spec is None or plan_spec.loader is None:
               raise SystemExit("FAIL_S28_CI_EXECUTION_PLAN_LOAD")
           plan_module = importlib.util.module_from_spec(plan_spec)
-          import sys
           sys.modules[plan_spec.name] = plan_module
           plan_spec.loader.exec_module(plan_module)
           currentness_spec = importlib.util.spec_from_file_location(
@@ -339,6 +340,14 @@ jobs:
           currentness_module = importlib.util.module_from_spec(currentness_spec)
           sys.modules[currentness_spec.name] = currentness_module
           currentness_spec.loader.exec_module(currentness_module)
+          repair_spec = importlib.util.spec_from_file_location(
+              "lf_pase_control_repair_quarantine_v1", repair_path
+          )
+          if repair_spec is None or repair_spec.loader is None:
+              raise SystemExit("FAIL_PASE_REPAIR_ENFORCEMENT_LOAD")
+          repair_module = importlib.util.module_from_spec(repair_spec)
+          sys.modules[repair_spec.name] = repair_module
+          repair_spec.loader.exec_module(repair_module)
 
           subprocess.run(
               ["git","fetch","--no-tags","origin","refs/heads/main:refs/remotes/origin/main"],
@@ -370,6 +379,10 @@ jobs:
               source_ref=exact_head,
           )
           applicability_sha256 = plan["plan_sha256"]
+          plan["pase_control_enforcement"] = repair_module.project_enforcement(
+              plan,
+              repair_module.load_policy(),
+          )
           authority_bound = currentness_module.resolve_authority_evidence_revision(
               repo=Path("."),
               event_name=event_name,
@@ -409,9 +422,49 @@ jobs:
           )
 
           required_controls_json = json.dumps(plan["required_controls"], separators=(",", ":"))
-          lf_contract_controls_json = json.dumps(
-              plan.get("carrier_controls", {}).get("LF_CONTRACT_CHECK", []),
+          lf_contract_applicable_controls = list(
+              plan.get("carrier_controls", {}).get("LF_CONTRACT_CHECK", [])
+          )
+          enforcement = plan["pase_control_enforcement"]
+          blocking_set = set(enforcement["blocking_controls"])
+          observe_only_set = set(enforcement["observe_only_controls"])
+          unresolved_carrier_controls = sorted(
+              set(lf_contract_applicable_controls) - blocking_set - observe_only_set
+          )
+          if unresolved_carrier_controls:
+              raise SystemExit(
+                  "FAIL_PASE_LF_CONTRACT_ENFORCEMENT_PARTITION:"
+                  + ",".join(unresolved_carrier_controls)
+              )
+          lf_contract_blocking_controls = [
+              control_id
+              for control_id in lf_contract_applicable_controls
+              if control_id in blocking_set
+          ]
+          lf_contract_observe_only_controls = [
+              control_id
+              for control_id in lf_contract_applicable_controls
+              if control_id in observe_only_set
+          ]
+          lf_contract_applicable_controls_json = json.dumps(
+              lf_contract_applicable_controls,
               separators=(",", ":"),
+          )
+          lf_contract_blocking_controls_json = json.dumps(
+              lf_contract_blocking_controls,
+              separators=(",", ":"),
+          )
+          lf_contract_observe_only_controls_json = json.dumps(
+              lf_contract_observe_only_controls,
+              separators=(",", ":"),
+          )
+          # Compatibility alias: downstream legacy steps now receive only the
+          # canonical PASE merge-blocking subset. Applicability is preserved above.
+          lf_contract_controls_json = lf_contract_blocking_controls_json
+          pase_control_enforcement_json = json.dumps(
+              enforcement,
+              separators=(",", ":"),
+              sort_keys=True,
           )
           migration_required = str("MIGRATION_SOURCE_PARITY" in plan["required_controls"]).lower()
           input_gov_required = str("INPUT_GOVERNANCE_MIGRATION_PARITY" in plan["required_controls"]).lower()
@@ -435,6 +488,11 @@ jobs:
               handle.write(f"ci_router_selftest_required={selftest_required}\n")
               handle.write(f"required_controls_json={required_controls_json}\n")
               handle.write(f"lf_contract_controls_json={lf_contract_controls_json}\n")
+              handle.write(f"lf_contract_applicable_controls_json={lf_contract_applicable_controls_json}\n")
+              handle.write(f"lf_contract_blocking_controls_json={lf_contract_blocking_controls_json}\n")
+              handle.write(f"lf_contract_observe_only_controls_json={lf_contract_observe_only_controls_json}\n")
+              handle.write(f"pase_control_enforcement_json={pase_control_enforcement_json}\n")
+              handle.write(f"pase_repair_policy_id={enforcement['policy_id']}\n")
               handle.write(f"plan_sha256={plan['plan_sha256']}\n")
               handle.write(f"applicability_sha256={plan['applicability_sha256']}\n")
               handle.write(f"evidence_sha256={plan['evidence_sha256']}\n")
@@ -454,12 +512,17 @@ jobs:
                   handle.write(f"- currentness: `{plan['source_authority']['decision']}` -> `{plan['source_authority']['resolved_revision']}`\n")
                   handle.write(f"- full regression: `{str(plan['full_regression']).lower()}`\n")
                   handle.write(f"- required controls: `{required_controls_json}`\n")
-                  handle.write(f"- lf-contract-check controls: `{lf_contract_controls_json}`\n")
-                  handle.write("- execution authority: CI_FAST_DEEP_LANE_ROUTER plan -> carrier controls; unknown/self-change => full regression\n")
+                  handle.write(f"- lf-contract-check applicable controls: `{lf_contract_applicable_controls_json}`\n")
+                  handle.write(f"- lf-contract-check blocking controls: `{lf_contract_blocking_controls_json}`\n")
+                  handle.write(f"- lf-contract-check observe-only controls: `{lf_contract_observe_only_controls_json}`\n")
+                  handle.write(f"- PASE repair policy: `{enforcement['policy_id']}`\n")
+                  handle.write("- execution authority: CI_FAST_DEEP_LANE_ROUTER applicability -> PASE repair enforcement -> carrier blocking subset; observe-only controls cannot block\n")
 
           print(
               f"PASS_LF_UNIFIED_CI_PLAN tier={tier} lane={lane.mode} "
-              f"plan_sha={plan['plan_sha256']} controls={required_controls_json}"
+              f"plan_sha={plan['plan_sha256']} controls={required_controls_json} "
+              f"blocking={lf_contract_blocking_controls_json} "
+              f"observe_only={lf_contract_observe_only_controls_json}"
           )
           PY
 
