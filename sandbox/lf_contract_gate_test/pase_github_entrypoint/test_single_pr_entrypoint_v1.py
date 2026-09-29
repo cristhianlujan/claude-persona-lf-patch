@@ -28,18 +28,30 @@ for path in files:
     if PULL_REQUEST_TARGET.search(text):
         trusted_pr.append(path.name)
 
-assert ordinary_pr == ["lf-contract-check.yml"], ordinary_pr
+assert ordinary_pr == ["pase.yml"], ordinary_pr
 assert trusted_pr == ["lf-github-reconcile-v3.yml", "pase-merge-gate.yml"], trusted_pr
 
-entrypoint = read("lf-contract-check.yml")
-assert entrypoint.startswith("name: lf-contract-check\n")
+entrypoint = read("pase.yml")
+assert entrypoint.startswith("name: PASE\n")
+assert "  workflow_call:\n" in entrypoint
+assert "  pull_request:\n" in entrypoint
 assert "  lf-pase:\n" in entrypoint
+assert "    name: PASE\n" in entrypoint
 assert "Build canonical PASE applicability and repair-enforcement plan" in entrypoint
 assert "PASE_CONTROL_REPAIR_QUARANTINE_V1" in entrypoint
+assert '"workflow_name": os.environ["GITHUB_WORKFLOW"]' in entrypoint
+assert '"workflow_name": "lf-contract-check"' not in entrypoint
 
-# Changeset Governance is the repository-path/admission authority. The compatibility
-# entrypoint must not invoke the historical Contract Check scope validator before
-# the canonical PASE plan because that would pre-empt legitimate owner routing.
+legacy = read("lf-contract-check.yml")
+assert legacy.startswith("name: lf-contract-check\n")
+assert not PULL_REQUEST.search(legacy)
+assert "  push:\n" in legacy
+assert "uses: ./.github/workflows/pase.yml" in legacy
+assert "Build canonical PASE applicability and repair-enforcement plan" not in legacy
+
+# Changeset Governance is the repository-path/admission authority. The canonical
+# PASE entrypoint must not invoke the historical Contract Check scope validator
+# before the canonical plan because that would pre-empt legitimate owner routing.
 assert "Enforce structural repository admission" not in entrypoint
 assert "lf_pase_structural_admission" not in entrypoint
 assert "validator.validate_changed_files" not in entrypoint
