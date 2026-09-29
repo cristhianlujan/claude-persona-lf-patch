@@ -28,6 +28,11 @@
       "candidate_id": "PASE_MERGE_GATE_V1"
     },
     {
+      "kind": "exact",
+      "value": ".github/workflows/pase-merge-gate.yml",
+      "candidate_id": "PASE_MERGE_GATE_V1"
+    },
+    {
       "kind": "prefix",
       "value": "sandbox/lf_contract_gate_test/pase_orchestrator/",
       "candidate_id": "PASE_ORCHESTRATOR_V1"
