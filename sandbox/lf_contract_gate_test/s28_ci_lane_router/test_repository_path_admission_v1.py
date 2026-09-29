@@ -28,6 +28,7 @@ def main() -> int:
     policy = load_repository_path_admission()
 
     expected_exact = {
+        ".github/workflows/pase-merge-gate.yml",
         ".github/workflows/pase.yml",
         ".github/workflows/visual-evidence-gate.yml",
         ".github/workflows/lf-pack-validation-core.yml",
