@@ -314,7 +314,7 @@ function nativeProtectionVerified(input: ReconcileBody): boolean {
   const c = input.branch_protection_details?.criteria ?? {};
   return input.branch_protection_status === "VERIFIED" &&
     c.active_rules_present === true &&
-    c.lf_contract_check_required === true &&
+    c.pase_repair_window_required_checks_empty === true &&
     c.strict_status_checks === true &&
     c.solo_builder_review_policy === true &&
     c.non_fast_forward === true &&
