@@ -1,0 +1,26 @@
+name: LF PASE Control-System Qualification Authority Probe 2
+
+on:
+  pull_request:
+    branches:
+      - lf/pase-control-system-qualification-authority-v1-20260929
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-authority-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+      - name: Assert trusted candidate head
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "ce83e1ac76020ce89bdf90c08e9825dce51fbcb7"
+      - name: Run authority invariants
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_control_qualification/test_control_system_qualification_authority_v1.py
