@@ -16,6 +16,7 @@ PLAN_PATH = HERE / "lf_ci_execution_plan_v2.py"
 CURRENTNESS_PATH = HERE / "lf_ci_currentness_bridge_v1.py"
 HANDOFF_PATH = HERE / "lf_contract_check_resolution_handoff_v1.py"
 REPAIR_ENFORCEMENT_PATH = HERE / "lf_pase_control_repair_quarantine_v1.py"
+MERGE_ROUTE_PATH = HERE / "lf_pase_merge_route_v1.py"
 
 
 def _load(path: Path, name: str):
@@ -35,6 +36,10 @@ HANDOFF = _load(HANDOFF_PATH, "lf_contract_check_resolution_handoff_v1_runtime")
 REPAIR_ENFORCEMENT = _load(
     REPAIR_ENFORCEMENT_PATH,
     "lf_pase_control_repair_quarantine_v1_runtime",
+)
+MERGE_ROUTE = _load(
+    MERGE_ROUTE_PATH,
+    "lf_pase_merge_route_v1_runtime",
 )
 
 
@@ -97,6 +102,18 @@ def main() -> int:
         plan,
         REPAIR_ENFORCEMENT.load_policy(),
     )
+    if changed and args.head:
+        plan["pase_merge_route"] = MERGE_ROUTE.build_merge_route(
+            plan=plan,
+            enforcement=plan["pase_control_enforcement"],
+            head_sha=args.head,
+            changed_paths=changed,
+        )
+    elif args.event_name == "pull_request":
+        raise SystemExit("BLOCK_PASE_MERGE_ROUTE_PR_CONTEXT_MISSING")
+    else:
+        plan["pase_merge_route"] = None
+
     applicability_sha256 = plan["plan_sha256"]
     current_revision = args.authority_current_revision or args.base or args.head
     if not current_revision:
@@ -139,6 +156,7 @@ def main() -> int:
         carrier = plan.get("carrier_controls") or {}
         handoff = plan["contract_check_resolution_request"]
         enforcement = plan["pase_control_enforcement"]
+        merge_route = plan.get("pase_merge_route")
         values = {
             "plan_sha256": plan["plan_sha256"],
             "applicability_sha256": plan["applicability_sha256"],
@@ -158,11 +176,15 @@ def main() -> int:
             "pase_blocking_controls_json": json.dumps(enforcement["blocking_controls"], separators=(",", ":")),
             "pase_observe_only_controls_json": json.dumps(enforcement["observe_only_controls"], separators=(",", ":")),
             "pase_repair_policy_id": enforcement["policy_id"],
+            "pase_merge_route_json": json.dumps(merge_route, separators=(",", ":"), sort_keys=True),
+            "pase_merge_route_mode": merge_route["mode"] if merge_route else "NONE",
+            "pase_merge_route_candidate_id": (merge_route.get("candidate_id") or "") if merge_route else "",
         }
         with gh_out.open("a", encoding="utf-8") as handle:
             for key, value in values.items():
                 handle.write(f"{key}={value}\n")
 
+    merge_route = plan.get("pase_merge_route")
     print(json.dumps({
         "schema_version": plan["schema_version"],
         "plan_sha256": plan["plan_sha256"],
@@ -177,6 +199,8 @@ def main() -> int:
         "pase_repair_policy_id": plan["pase_control_enforcement"]["policy_id"],
         "pase_blocking_controls": plan["pase_control_enforcement"]["blocking_controls"],
         "pase_observe_only_controls": plan["pase_control_enforcement"]["observe_only_controls"],
+        "pase_merge_route_mode": merge_route["mode"] if merge_route else None,
+        "pase_merge_route_candidate_id": merge_route.get("candidate_id") if merge_route else None,
         "coverage_complete": plan["coverage_complete"],
     }, sort_keys=True))
     return 0
