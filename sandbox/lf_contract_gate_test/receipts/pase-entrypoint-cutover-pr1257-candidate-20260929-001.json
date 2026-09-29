@@ -1,0 +1,31 @@
+{
+  "receipt_type": "LF_OPERATION_CANDIDATE_RECEIPT",
+  "receipt_version": "v1",
+  "issued_by": "operation_judge",
+  "operation_code": "GITHUB_CONTRACT_GATE_LF",
+  "execution_id": "EXEC-PASE-ENTRYPOINT-CUTOVER-PR1257-20260929-001",
+  "result": "PASS_CANDIDATE",
+  "all_pre_merge_required_steps_pass": true,
+  "pre_merge_terminal_step": "contract_judge",
+  "contract_sha": "b10ccc8527bc2499775559635fb59736744e46f3ca5e150cf4644cd4c491d7e8",
+  "judge_sha": "MIGRATION_20260531_GITHUB_GATE_PROTOCOL",
+  "source_sha_list": [
+    "90e2aaf75b70cc50261f4b540073e923f22f5918",
+    "b10ccc8527bc2499775559635fb59736744e46f3ca5e150cf4644cd4c491d7e8",
+    "MIGRATION_20260531_GITHUB_GATE_PROTOCOL"
+  ],
+  "target_paths": [
+    ".github/workflows/lf-contract-check.yml",
+    ".github/workflows/pase.yml",
+    "sandbox/lf_contract_gate_test/pase_github_entrypoint/test_single_pr_entrypoint_v1.py"
+  ],
+  "target_blob_sha_by_path": {
+    ".github/workflows/lf-contract-check.yml": "4355bee301e90d494298cbf1e735868a86833d74",
+    ".github/workflows/pase.yml": "b47753c23d0cf7af980d0f3716f402fce853327e",
+    "sandbox/lf_contract_gate_test/pase_github_entrypoint/test_single_pr_entrypoint_v1.py": "4daf33aa50b055067d2bd85b3c6a736a4f34d475"
+  },
+  "blocking_codes": [],
+  "candidate_code_head": "90e2aaf75b70cc50261f4b540073e923f22f5918",
+  "operation_status_at_issue": "IN_PROGRESS",
+  "next_gate": "MERGE_AUTHORIZATION_REQUIRED"
+}
