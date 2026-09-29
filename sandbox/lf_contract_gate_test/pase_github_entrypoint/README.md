@@ -19,7 +19,26 @@ Changeset Governance / lf-ci-execution-plan/v2
 PASE repair enforcement
 ```
 
-The historical `lf-contract-check` identity is intentionally retained in this phase because live consumers still bind its workflow name/path. Renaming it to `pase.yml` is a later coordinated cutover after those consumers and live authority are migrated.
+The historical `lf-contract-check` identity is intentionally retained in this phase because live consumers still bind its workflow name/path. Renaming it to `pase.yml` is a later coordinated identity cutover after those consumers and live authority are migrated.
+
+## Authority ordering
+
+The compatibility entrypoint MUST NOT run the historical `scripts/lf_contract_check.py` sandbox-scope validator before Changeset Governance.
+
+Repository-path admission is a Changeset Governance precondition implemented by `lf_changeset_governance.py`; change-family classification and applicability then produce the canonical execution plan. A legacy Contract Check allowlist must not pre-empt a path that Changeset Governance already recognizes and routes to its real owner.
+
+Therefore the entrypoint order is:
+
+```text
+exact candidate checkout
+  -> single-entrypoint invariant
+  -> Changeset Governance / canonical applicability plan
+  -> PASE Orchestrator dispatch plan
+  -> repair-window enforcement
+  -> evidence persistence
+```
+
+Unknown or unauthorized repository changes remain fail-closed through Changeset Governance; removing the legacy pre-applicability validator does not create an allow-all path.
 
 ## Allowed workflow classes during repair
 
@@ -29,52 +48,28 @@ Exactly one:
 
 - `.github/workflows/lf-contract-check.yml` — current PASE entrypoint under compatibility identity.
 
-It owns GitHub transport, exact candidate context, structural admission, canonical applicability-plan emission, repair-enforcement boundary and evidence persistence. It does not execute legacy domain controls automatically while they are `REPAIR_OBSERVE_ONLY`.
+It owns GitHub transport, exact candidate context, canonical applicability-plan emission, repair-enforcement boundary and evidence persistence. It does not execute legacy domain controls automatically while they are `REPAIR_OBSERVE_ONLY`.
 
-### 2. Independent trusted PR guardian
+### 2. Independent trusted PR guardians
 
-Exactly one exception uses `pull_request_target`:
+The following use `pull_request_target` and trusted base code:
 
-- `.github/workflows/lf-github-reconcile-v3.yml`.
+- `.github/workflows/lf-github-reconcile-v3.yml` — independent self-change/reconciliation boundary;
+- `.github/workflows/pase-merge-gate.yml` — independent merge-decision carrier.
 
-This is deliberately not folded into candidate-controlled PASE execution because it validates self-change admission from trusted base context. It is an anti-self-approval boundary, not a second domain-control router.
+They are not ordinary candidate-controlled domain-control routers.
 
 ### 3. Operational workflows
 
-Operational events may remain when they are not ordinary PR validators:
+Operational events may remain when they are not ordinary PR validators, including currentness evaluation, evidence workers and governed owner brokers.
 
-- `lf-material-currentness.yml`: `workflow_dispatch` / `workflow_call` currentness evaluation;
-- `story-agent-evidence-verifier.yml`: main-push OIDC evidence worker;
-- `profile-driven-screen-generation.yml`: owner-only S30 `issue_comment` write broker;
-- `lf-customer-profile-creator-governance-caller.yml`: governed branch/dispatch operation;
-- `asset-smoke-test.yml`: scoped push smoke test.
+## PR regressions retired in the earlier cutover
 
-## PR regressions retired in this phase
-
-The following automatic PR jobs are removed from their workflows:
-
-- Currentness Authority regression job;
-- Profile Driven Screen Generation deterministic contract gate;
-- Story Agent semantic-mini-judge regressions;
-- Story Agent runtime-optimization regressions.
-
-Their underlying validators/tests are **not deleted**. During the repair window they remain diagnostic source material and can only return to automatic blocking execution through the canonical PASE applicability + qualified owner-runner cutover.
-
-This prevents a workflow path filter from pre-empting Changeset Governance and prevents a parallel workflow from becoming an accidental merge authority.
+The earlier PASE cutover removed parallel automatic PR execution from legacy validator workflows. Their underlying validators/tests were not deleted; during the repair window they remain diagnostic source material and may return to blocking execution only through canonical applicability plus qualified owner-runner cutover.
 
 ## Deferred identity cutover
 
-This phase does not rename `.github/workflows/lf-contract-check.yml` because current repository/live consumers still bind the legacy identity, including:
-
-- `lf-github-reconcile-v3.yml` workflow-run subscription;
-- the P0 exact-head evidence broker policy workflow name/path;
-- live repository-governance authority readback.
-
-The final rename requires a coordinated consumer + authority migration and post-cutover exact-head readback.
-
-## Separate finding, not repaired here
-
-The retained S30 ChatOps broker still expects the historical check name `Run LF pack validators` together with `lf-contract-check`. `validate-lf-packs.yml` has already been retired, so that dependency is a separate stale-contract finding. It is intentionally not patched in this solution.
+This phase still does not rename `.github/workflows/lf-contract-check.yml` because current consumers bind the legacy identity, including reconciliation and the P0 exact-head evidence broker. Those consumers must be migrated first, then `pase.yml` can become the active identity with post-cutover exact-head readback.
 
 ## Deterministic proof
 
@@ -82,8 +77,4 @@ The retained S30 ChatOps broker still expects the historical check name `Run LF 
 python3 sandbox/lf_contract_gate_test/pase_github_entrypoint/test_single_pr_entrypoint_v1.py
 ```
 
-Expected marker:
-
-```text
-PASS_PASE_SINGLE_PR_ENTRYPOINT_V1 workflow_count=7 ordinary_pr=lf-contract-check.yml independent_guardian=lf-github-reconcile-v3.yml
-```
+The proof requires one ordinary PR entrypoint and forbids reintroduction of the legacy Contract Check structural-admission step ahead of Changeset Governance.
