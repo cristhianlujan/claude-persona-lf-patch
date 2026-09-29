@@ -1,14 +1,10 @@
 name: lf-contract-check
 
-# Compatibility caller only. Ordinary pull-request validation is owned by PASE.
-# This legacy identity remains temporarily on push/main so post-merge evidence and
-# reconciliation keep working until the canonical source-authority/push cutover
-# is proven. It delegates execution to the single reusable PASE body.
+# Manual compatibility caller only. Ordinary pull-request and main-push validation are owned by PASE.
+# This legacy identity has no automatic trigger after the PASE source-authority cutover.
+# It remains workflow_dispatch-only for bounded rollback/diagnostic compatibility.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
