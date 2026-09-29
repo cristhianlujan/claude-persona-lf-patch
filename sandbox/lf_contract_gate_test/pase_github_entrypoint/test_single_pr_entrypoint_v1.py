@@ -34,6 +34,8 @@ assert trusted_pr == ["lf-github-reconcile-v3.yml", "pase-merge-gate.yml"], trus
 entrypoint = read("pase.yml")
 assert entrypoint.startswith("name: PASE\n")
 assert "  workflow_call:\n" in entrypoint
+assert "  push:\n" in entrypoint
+assert "    branches:\n      - main\n" in entrypoint
 assert "  pull_request:\n" in entrypoint
 assert "  lf-pase:\n" in entrypoint
 assert "    name: PASE\n" in entrypoint
