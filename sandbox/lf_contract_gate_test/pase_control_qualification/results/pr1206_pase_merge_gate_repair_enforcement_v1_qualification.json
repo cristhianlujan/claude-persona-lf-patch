@@ -1,0 +1,107 @@
+{
+  "schema_version": "lf-pase-control-qualification-result/v1",
+  "candidate_id": "PASE_MERGE_GATE_V1",
+  "base_sha": "6950b3f67b68db090de1de9fb421a61f6a823057",
+  "head_sha": "34b57b4ba1101b866822091aba1f36c9ab709a1a",
+  "declared_owner": "LF_GOVERNANCE",
+  "checks": [
+    {
+      "id": "Q01",
+      "status": "PASS",
+      "evidence": [
+        "PR #1206 remains open with exact base=6950b3f67b68db090de1de9fb421a61f6a823057 and head=34b57b4ba1101b866822091aba1f36c9ab709a1a; current main readback=897b25a50426cb2b5121947d9c265a393a7af800."
+      ]
+    },
+    {
+      "id": "Q02",
+      "status": "PASS",
+      "evidence": [
+        "Candidate scope is exactly three existing PASE_MERGE_GATE_V1 files: README.md, pase_merge_gate_v1.py, and test_pase_merge_gate_v1.py; no workflow, migration, registry, ruleset, or Supabase surface is modified by PR #1206."
+      ]
+    },
+    {
+      "id": "Q03",
+      "status": "PASS",
+      "evidence": [
+        "declared_owner=LF_GOVERNANCE; the refactor consumes the existing PASE_CONTROL_REPAIR_QUARANTINE_V1 projection and preserves CHANGESET_GOVERNANCE_LF_V1 as applicability authority."
+      ]
+    },
+    {
+      "id": "Q04",
+      "status": "PASS",
+      "evidence": [
+        "Independent exact-head transport probe PR #1207 run=36499708305 job=109187389032 checked out candidate head 34b57b4ba1101b866822091aba1f36c9ab709a1a and the owner-local suite emitted PASS_PASE_MERGE_GATE_REPAIR_ENFORCEMENT_V1 checks=26."
+      ]
+    },
+    {
+      "id": "Q05",
+      "status": "PASS",
+      "evidence": [
+        "Boundary remains narrow: applicability is not reclassified; only the exact canonical plan partition can decide blocking vs observe-only; structural governance, exact-head qualification, and active-blocking evidence remain fail-closed; no domain execution or external mutation is introduced."
+      ]
+    },
+    {
+      "id": "Q06",
+      "status": "PASS",
+      "evidence": [
+        "Owner-local 26-check suite exercises enforcement schema/authority/plan binding/required-control binding/partition/flags/digest, route-enforcement drift, active-blocking failures, missing blocking evidence, observe-only diagnostic control/head validation, qualification absence/verdict/head/independence/digest, plan coverage/digest, route authority/head, and source boundary checks."
+      ]
+    },
+    {
+      "id": "Q07",
+      "status": "PASS",
+      "evidence": [
+        "PR #1206 changes only the declared merge-gate core/test/README; it does not modify legacy validator implementations, workflows, rulesets, migrations, Supabase, activation, cutover, rebind, or retirement state."
+      ]
+    },
+    {
+      "id": "Q08",
+      "status": "PASS",
+      "evidence": [
+        "Deterministic owner-local evaluation passed at exact candidate head and exact old-vs-new replay independently re-executed governed scenarios against fixed baseline/candidate SHAs."
+      ]
+    },
+    {
+      "id": "Q09",
+      "status": "PASS",
+      "evidence": [
+        "qualification_type=CONTROL_REFACTOR; mandatory old-vs-new replay PR #1208 run=36501016866 job=109191605418 passed at exact baseline 6950b3f67b68db090de1de9fb421a61f6a823057 and candidate 34b57b4ba1101b866822091aba1f36c9ab709a1a with equivalent=5 and intentional_delta=1. The sole intended delta is observe_only_legacy_failure: OLD blocks on CONTROL_B FAIL, NEW passes while CONTROL_B remains an observable diagnostic."
+      ]
+    },
+    {
+      "id": "Q10",
+      "status": "PASS",
+      "evidence": [
+        "Coverage is preserved: lf-ci-execution-plan/v2 remains the complete applicable-control universe; enforcement must partition that exact set; ACTIVE_BLOCKING controls still require PASS and REPAIR_OBSERVE_ONLY controls remain visible as diagnostics. Validate LF Packs run=36499665956 and LF DB Regression run=36499665935 both succeeded at exact candidate head."
+      ]
+    },
+    {
+      "id": "Q11",
+      "status": "PASS",
+      "evidence": [
+        "Exact-head probe #1207 and replay #1208 both bind to candidate 34b57b4ba1101b866822091aba1f36c9ab709a1a; replay also proves baseline ancestry and no evaluator drift from the candidate. PR #1206 head is unchanged at readback."
+      ]
+    }
+  ],
+  "external_findings": [
+    {
+      "finding_id": "PR1206-CONTRACT-CHECK-MIGRATION-OWNER-AMBIGUOUS-001",
+      "candidate_causality": "DISPROVEN",
+      "causal_evidence": [
+        "lf-contract-check run=36499666120 job=109187281313 executes on exact candidate head 34b57b4ba1101b866822091aba1f36c9ab709a1a and fails in legacy MIGRATION_SOURCE_PARITY-001 with FAIL_LF_MIGRATION_EXTERNAL_OWNER_AMBIGUOUS: version=20260928212155 name=lf_b2b_auth_routing_transitions_authority_v1 matches=0. Candidate PR #1206 changes only three sandbox/lf_contract_gate_test/pase_merge_gate files and does not modify the migration parity runner or migration authority data; Validate LF Packs and LF DB Regression succeed at the same head."
+      ],
+      "effect_on_candidate_verdict": "NONE"
+    }
+  ],
+  "coverage_complete": true,
+  "verdict": "CANDIDATE_QUALIFIED",
+  "qualified_only": true,
+  "activation_authorized": false,
+  "cutover_authorized": false,
+  "rebind_authorized": false,
+  "legacy_retirement_authorized": false,
+  "notes": [
+    "Qualification does not authorize merge, ruleset mutation, activation, cutover, rebind, Supabase mutation, or retirement.",
+    "The legacy lf-contract-check failure is retained as an external finding and must not be hidden or treated as candidate work."
+  ]
+}
