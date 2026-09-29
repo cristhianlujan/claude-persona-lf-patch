@@ -7,7 +7,7 @@ const REPOSITORY_ID = "1244397752";
 const AUDIENCE = "lf-supabase-github-reconcile-v3";
 const WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-github-reconcile-v3.yml@refs/heads/main`;
 const WORKFLOW_NAME = "LF GitHub Reconciliation V3";
-const SOURCE_WORKFLOW_NAMES = new Set(["lf-contract-check", "PASE"]);
+const SOURCE_WORKFLOW_NAMES = new Set(["PASE"]);
 const ISSUER = "https://token.actions.githubusercontent.com";
 const WRITER_MODE = "GITHUB_OIDC_HMAC_NONCE_V7";
 
@@ -403,9 +403,24 @@ Deno.serve(async (req: Request) => {
     const reported = new Map(
       input.artifacts.map((item) => [Number(item.artifact_id), item]),
     );
-    const files = await repositoryFiles(verified.source.head_sha, inventory);
+    if (reported.size !== input.artifacts.length) {
+      throw new Error("Duplicate artifact IDs in reconciliation request");
+    }
+    const inventoryIds = new Set(inventory.map((item) => Number(item.artifact_id)));
+    for (const item of input.artifacts) {
+      if (!inventoryIds.has(Number(item.artifact_id))) {
+        throw new Error("Reported artifact is outside governed inventory");
+      }
+    }
+    const targetInventory = inventory.filter(
+      (item) => reported.get(Number(item.artifact_id))?.file_touched_by_merge === true,
+    );
+    const files = await repositoryFiles(verified.source.head_sha, targetInventory);
     const execution = `GHA-OIDC-${claims.run_id}-SRC-${verified.source.id}`;
     const nativeProtection = nativeProtectionVerified(input);
+    if (targetInventory.length === 0 && !nativeProtection) {
+      throw new Error("Branch protection not verified for zero-target reconciliation");
+    }
     const storedControl = nativeProtection
       ? "VERIFIED"
       : "VERIFIED_COMPENSATING_CONTROLS";
@@ -417,7 +432,7 @@ Deno.serve(async (req: Request) => {
       gate_test_run_id: number;
     }[] = [];
 
-    for (const item of inventory) {
+    for (const item of targetInventory) {
       const actual = files.get(Number(item.artifact_id));
       const manifest = reported.get(Number(item.artifact_id));
       const failures: string[] = [];
@@ -597,8 +612,9 @@ Deno.serve(async (req: Request) => {
       native_branch_protection_verified: nativeProtection,
       writer_authentication: WRITER_MODE,
       governance_files_verified: governance.length,
-      artifacts_expected: inventory.length,
-      artifacts_reported: input.artifacts.length,
+      inventory_size: inventory.length,
+      artifacts_expected: targetInventory.length,
+      artifacts_reported: targetInventory.length,
       pass_count: results.filter((item) => item.result === "PASS").length,
       fail_count: results.filter((item) => item.result === "FAIL").length,
       promoted_artifact_ids: promoted,
