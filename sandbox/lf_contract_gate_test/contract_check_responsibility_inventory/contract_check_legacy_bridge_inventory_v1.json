@@ -1,0 +1,95 @@
+{
+  "schema_version": "lf-contract-check-legacy-bridge-inventory/v1",
+  "status": "TEMPORARY_COMPATIBILITY_BRIDGE",
+  "purpose": "Keep the historical scripts/lf_contract_check.py entry path temporarily while routing every legitimate caller to the new Contract Check implementation, avoiding per-caller cutover churn.",
+  "source_main_sha": "06dbacc7957140c359543eadd3128fd4f33a4d06",
+  "bridge_path": "scripts/lf_contract_check.py",
+  "cleanup_required": true,
+  "cleanup_priority": "MANDATORY_AFTER_NEW_CONTRACT_CHECK_CUTOVER",
+  "design_invariants": [
+    "The bridge path is a compatibility facade, not the Contract Check implementation.",
+    "No LF Contract Check v0.21 functional logic may remain executable behind the bridge.",
+    "The bridge may preserve only the minimal legacy API surface needed by existing callers.",
+    "Any unsupported legacy API must fail closed instead of falling back to v0.21 behavior.",
+    "New callers must not bind to scripts/lf_contract_check.py.",
+    "Historical migrations and evidence references are not runtime callers and must remain immutable.",
+    "Negative guards that assert the legacy implementation is not executed must be preserved."
+  ],
+  "target_flow": [
+    "legacy caller",
+    "scripts/lf_contract_check.py compatibility bridge",
+    "Contract Check Final Thin Carrier",
+    "Contract Check Semantic Integration",
+    "Contract Predicate Semantics",
+    "Contract Check Core",
+    "PASS/BLOCK"
+  ],
+  "known_runtime_or_validation_consumers_to_bridge": [
+    {
+      "path": "sandbox/lf_contract_gate_test/candidate_receipt_contract.py",
+      "usage": "imports scripts/lf_contract_check.py and calls legacy receipt validation API",
+      "migration_note": "temporary bridge compatibility only; receipt responsibility must later move to its canonical capability"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/PR56_OPERATIONAL_PROTOCOL_SCOPE_TESTS.py",
+      "usage": "loads the historical validator as a module",
+      "migration_note": "temporary bridge compatibility only"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_CONTRACT_CHECK_ENTRYPOINT.py",
+      "usage": "uses scripts/lf_contract_check.py as BASE_VALIDATOR_PATH",
+      "migration_note": "temporary bridge compatibility only; E16 must eventually stop depending on Contract Check internals"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_REGRESSION_TESTS.py",
+      "usage": "loads the E16/base validator path during regression",
+      "migration_note": "temporary bridge compatibility only"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py",
+      "usage": "integrates the E16 adapter with the historical validator chain",
+      "migration_note": "temporary bridge compatibility only"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/contract_check_responsibility_inventory/test_contract_check_recent_path_admission_rollback_v1.py",
+      "usage": "imports scripts/lf_contract_check.py and explicitly asserts the v0.21 baseline",
+      "migration_note": "must be rewritten to assert bridge/new-boundary behavior; must not preserve v0.21 as an executable dependency"
+    }
+  ],
+  "known_non_consumers_or_guards_to_preserve": [
+    {
+      "path": ".github/workflows/pase.yml",
+      "reason": "canonical automatic PASE entrypoint; does not execute scripts/lf_contract_check.py"
+    },
+    {
+      "path": ".github/workflows/lf-contract-check.yml",
+      "reason": "manual compatibility workflow that delegates to pase.yml; does not execute scripts/lf_contract_check.py"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/visual_evidence_gate/test_legacy_p0_visual_coverage_v1.py",
+      "reason": "negative guard proving the visual bundle does not execute scripts/lf_contract_check.py"
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/PR93_LOTE_E16_INTEGRATION_TESTS.py",
+      "reason": "contains a workflow-level forbidden-command assertion for python3 scripts/lf_contract_check.py; preserve the prohibition while removing the module-level dependency"
+    }
+  ],
+  "historical_references_not_to_rewrite": [
+    "supabase/migrations/** references to scripts/lf_contract_check.py",
+    "historical evidence, guards, reports and PR documentation that describe the previous implementation"
+  ],
+  "live_authority_cleanup_required": {
+    "current_observation": "scripts/lf_contract_check.py is still present in repository governance as control_kind VALIDATOR while .github/workflows/pase.yml is SOURCE_WORKFLOW",
+    "required_transition": "repin the same historical path only if needed for the bridge, with the bridge content hash/blob; later remove the path from active validator authority when all bridge consumers are retired"
+  },
+  "bridge_exit_criteria": [
+    "0 workflows execute scripts/lf_contract_check.py",
+    "0 tests or adapters import scripts/lf_contract_check.py for functional Contract Check behavior",
+    "0 examples teach new callers to use scripts/lf_contract_check.py",
+    "0 active runtime/validation registries depend on the bridge path",
+    "0 active Supabase validator authority rows require the bridge path",
+    "all legitimate Contract Check callers use the new canonical entrypoint directly",
+    "bridge file can be deleted without changing Contract Check semantics"
+  ],
+  "sunset_rule": "The bridge is technical debt by design. It MUST NOT become a new permanent API or canonical Contract Check identity. Once the exit criteria are met, remove the bridge and its compatibility-only wrappers in a dedicated cleanup pass."
+}
