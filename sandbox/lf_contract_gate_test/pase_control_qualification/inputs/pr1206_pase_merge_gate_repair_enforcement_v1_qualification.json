@@ -1,0 +1,40 @@
+{
+  "schema_version": "lf-pase-control-qualification/v1",
+  "qualification_type": "CONTROL_REFACTOR",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "candidate_id": "PASE_MERGE_GATE_V1",
+  "declared_owner": "LF_GOVERNANCE",
+  "base_sha": "6950b3f67b68db090de1de9fb421a61f6a823057",
+  "head_sha": "34b57b4ba1101b866822091aba1f36c9ab709a1a",
+  "observed_main_sha": "897b25a50426cb2b5121947d9c265a393a7af800",
+  "scope_paths": [
+    "sandbox/lf_contract_gate_test/pase_merge_gate/README.md",
+    "sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_v1.py",
+    "sandbox/lf_contract_gate_test/pase_merge_gate/test_pase_merge_gate_v1.py"
+  ],
+  "owner_local_tests": [
+    "python3 sandbox/lf_contract_gate_test/pase_merge_gate/test_pase_merge_gate_v1.py",
+    "PR #1207 exact-head probe run=36499708305 job=109187389032",
+    "PR #1208 old-vs-new replay run=36501016866 job=109191605418"
+  ],
+  "boundary_invariants": [
+    "Changeset Governance and lf-ci-execution-plan/v2 remain the sole applicability authority; the merge gate cannot classify paths or add/remove applicable controls.",
+    "PASE_CONTROL_REPAIR_QUARANTINE_V1 may only partition the already-applicable control set into ACTIVE_BLOCKING and REPAIR_OBSERVE_ONLY against the exact plan digest.",
+    "Only ACTIVE_BLOCKING controls may block merge; REPAIR_OBSERVE_ONLY results remain diagnostic and cannot block merge.",
+    "Plan coverage/digest, enforcement coverage/digest, route identity/head, qualification identity/head, and ACTIVE_BLOCKING evidence remain fail-closed.",
+    "Control-system candidates still require independent exact-head CANDIDATE_QUALIFIED evidence.",
+    "No domain execution, applicability classification, workflow/ruleset mutation, GitHub/Supabase mutation, merge, activation, cutover, rebind, or legacy retirement is authorized by this candidate."
+  ],
+  "expected_coverage": [
+    "Preserve prior merge-gate PASS behavior when all applicable controls remain ACTIVE_BLOCKING and pass.",
+    "Preserve prior fail-closed behavior when an ACTIVE_BLOCKING control fails or required evidence is incomplete.",
+    "Preserve control-system qualification behavior and exact-head qualification fail-closed checks.",
+    "Introduce exactly one intended policy delta: failures from controls explicitly classified REPAIR_OBSERVE_ONLY no longer block merge while remaining observable diagnostics.",
+    "Reject enforcement schema/authority/plan drift/partition drift/digest drift, route-to-enforcement drift, diagnostic head/control drift, plan coverage/digest drift, and qualification drift.",
+    "Preserve deterministic owner-local evaluation and no foreign domain behavior."
+  ],
+  "replacement": {
+    "legacy_id": "PASE_MERGE_GATE_V1@6950b3f67b68db090de1de9fb421a61f6a823057",
+    "replay_required": true
+  }
+}
