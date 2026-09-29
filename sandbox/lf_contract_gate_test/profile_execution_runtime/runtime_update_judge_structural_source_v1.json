@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "operation_code": "ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF",
+  "judge_code": "JUDGE-ACTUALIZACION-RUNTIME-EJECUCION-PERFIL-LF-v1",
+  "scope": "STRUCTURAL_STEP_EVIDENCE",
+  "pass_if": [],
+  "fail_if": [],
+  "result_values": {
+    "pass": "STEP_PASS_WITH_EVIDENCE",
+    "blocked": "BLOCKED_STEP_NOT_CLEAN",
+    "return": "RETURN_TO_ROUTER"
+  },
+  "constraints": {
+    "operation_identity_exact": true,
+    "target_type": "OPERATION_CODE",
+    "target_code": "EJECUCION_PERFIL_LF",
+    "no_profile_authority": true,
+    "no_runtime_activation": true,
+    "no_auto_promotion": true
+  }
+}
