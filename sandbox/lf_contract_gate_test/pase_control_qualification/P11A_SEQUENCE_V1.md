@@ -8,7 +8,7 @@
 6. Exact-head probe: qualified self-change must PASS.
 7. Negative probe: same control-system route without an exact receipt must BLOCK.
 8. Merge the repaired merge-gate readback.
-9. Restore `pase-merge-gate` as the required PASE merge status only after PASS/BLOCK live-fire and ruleset readback.
-10. Continue cutover: P0 consumer compatibility -> activate `pase.yml` -> retire legacy entrypoint only after replay/readback.
+9. Continue cutover with enforcement still non-required: P0 dual-identity compatibility -> reconciliation dual-identity compatibility -> canonical source-authority retirement capability -> activate `pase.yml` as the only ordinary PR entrypoint -> live-fire/replay/readback -> retire the legacy entrypoint only after destination proof.
+10. Only after the complete cutover and legacy-retirement readback, restore `pase-merge-gate` as a required status and run the final enforcement proof.
 
-Guardrails: Changeset Governance remains the only applicability authority; one solution per PR; no ZIP; no foreign-control repair inside the candidate PR; no legacy retirement before destination proof.
+Guardrails: Changeset Governance remains the only applicability authority; one solution per PR; no ZIP; no foreign-control repair inside the candidate PR; no legacy retirement before destination proof. `protect-main.required_status_checks` stays empty throughout construction, cutover, and live-fire validation; required enforcement is the final step, not a prerequisite for cutover.
