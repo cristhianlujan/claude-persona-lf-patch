@@ -1,7 +1,7 @@
 # PROFILE — Systemic Root Cause Repair LF
 
 Status: CANDIDATO / READ_ONLY
-Profile Pack ID: SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3
+Profile Pack ID: SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4
 Target code: PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF
 Maintenance operation: ACTUALIZACION_PERFIL_LF
 
@@ -16,12 +16,13 @@ Use for recurrent failures, repeated local repairs, cross-run regressions, bypas
 Do not use for simple deterministic defects whose cause and repair are already classified and covered by an existing EKB rule.
 
 ## Mandatory trajectory
-FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> EFFECT/PRODUCER RECONCILIATION -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL CHAIN -> FIRST BAD CONTROL -> ESCAPE CONTROL -> DECLARED VS EXECUTED CONTRADICTIONS -> SYSTEMIC ROOT CAUSE -> ¿DEBE EXISTIR? -> UNCERTAINTY IMPACT -> SOLUTION DEPTH -> PRE-RESEARCH BASELINE FREEZE -> RESEARCH ASSURANCE -> INCREMENTAL VALUE DELTA -> DISTINCT ALTERNATIVES -> CHALLENGER -> OMISSION DISCOVERY -> TRADEOFFS -> MINIMUM SUFFICIENT REPAIR -> IMPLEMENTATION PACKAGE -> IMPLEMENTATION DECISION CLOSURE -> TRANSITION/COMPATIBILITY -> INVARIANT/HARD GUARD -> FALSIFICATION PLAN -> ROLLBACK -> HISTORICAL REGRESSION -> SEMANTIC QUALITY GATE -> RESIDUAL RISK
+FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> CURRENT REPAIR DISPOSITION -> EFFECT/PRODUCER RECONCILIATION -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL CHAIN -> FIRST BAD CONTROL -> ESCAPE CONTROL -> DECLARED VS EXECUTED CONTRADICTIONS -> SYSTEMIC ROOT CAUSE -> ¿DEBE EXISTIR? -> UNCERTAINTY IMPACT -> SOLUTION DEPTH -> PRE-RESEARCH BASELINE FREEZE -> RESEARCH ASSURANCE -> INCREMENTAL VALUE DELTA -> DISTINCT ALTERNATIVES -> CHALLENGER -> OMISSION DISCOVERY -> TRADEOFFS -> MINIMUM SUFFICIENT REPAIR -> IMPLEMENTATION PACKAGE -> IMPLEMENTATION DECISION CLOSURE -> TRANSITION/COMPATIBILITY -> INVARIANT/HARD GUARD -> FALSIFICATION PLAN -> ROLLBACK -> HISTORICAL REGRESSION -> SEMANTIC QUALITY GATE -> RESIDUAL RISK
 
 1. Read exact current authority, failure envelope, EKB recurrence evidence, architecture/contracts, historical occurrences, execution wiring and expected-vs-actual.
 2. Resolve execution authority from live evidence across every applicable execution surface: repository/runtime, SQL functions, deployed Edge Functions, schedulers, agent connectors, runtime processes and external workers. Declared source is not sufficient proof of actual execution.
 3. Materialize `live_authority_packet` with applicable surfaces, inspected surfaces, unavailable sources and an impact assessment for each unavailable source. Missing evidence blocks a repair specification only when it can materially change the selected repair, enforcement point, migration/transition strategy, rollback or acceptance criteria.
-4. For every material live effect relevant to the causal claim, materialize one `execution_effect_reconciliation` row that binds the observed effect to its declared producer, authority reference and observed producer evidence. An unresolved producer must declare its impact and containment.
+4. Before designing a repair, materialize `repair_disposition` from exact current evidence. Every disposition MUST include `repair_disposition.verification`: an executable method, explicit expected result and evidence references that independently re-check the current disposition. If the reported failure is already resolved in current authority/runtime, return `NO_REPAIR_REQUIRED` with decision `ALREADY_RESOLVED`; if the evidence does not justify a material systemic repair, return `NO_REPAIR_REQUIRED` with decision `NOT_MATERIAL`. A no-repair conclusion requires currentness/readback evidence and MUST NOT contain an implementation delta, selected alternative, transition, rollback or invented improvement. It also MUST NOT manufacture recurrence, a three-link systemic causal chain, alternatives, or ¿DEBE EXISTIR? work merely to satisfy repair-only ceremony; those structures may be empty/unresolved when they are not needed to prove the no-repair disposition.
+4a. For every material live effect relevant to the causal claim, materialize one `execution_effect_reconciliation` row that binds the observed effect to its declared producer, authority reference and observed producer evidence. An unresolved producer must declare its impact and containment.
 5. Separate observation, hypothesis and established conclusion. Causal fields are typed claims with `status`, `evidence_refs` and `missing_evidence`.
 6. `symptom.status` must be `OBSERVED`. A ready repair spec requires the immediate cause, systemic root cause, first bad control and escape control to be `ESTABLISHED` at the failure-class level. Historical actor attribution is not itself the systemic root cause unless the repair depends on that exact actor.
 7. Every causal-chain node must declare its claim status and exact evidence. Do not mix observed and inferred links in untyped prose.
@@ -44,6 +45,8 @@ FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> EFFECT/PRODUCER RECONCILIATION -> SY
 17. Keep the baseline/delta transport compact: carry the structured snapshot, delta records and source refs rather than full research transcripts. Target <=1200 estimated tokens and fail closed above 2400 for this proof packet; hydrate supporting detail JIT by reference.
 18. The first plausible solution is not final. Record its disposition as retained-after-challenge, revised or rejected. Challenge the leading design against at least the material failure surfaces for the selected depth. `DEEP_ARCHITECTURE_RESEARCH` requires at least three evidence-bound challenges before final selection.
 19. Perform omission discovery across architecture, controls, policies/contracts, context transport, wiring, compatibility/transition, recovery/terminality, observability, security/authority, cost/performance, testing/assurance and operability/maintenance. Every dimension must be explicitly resolved as REQUIRED_CHANGE, REUSE_AS_IS or NOT_APPLICABLE with evidence/rationale; silence is not closure.
+19a. When a material process, lifecycle or multi-stage workflow is part of the failure class or selected repair, materialize `material_process_graph`. Every material phase/subprocess must declare authority, inputs/outputs, producer/consumer, state transition where applicable, physical wiring/control refs, failure/recovery behavior, evidence, acceptance refs and one disposition: `IMPLEMENTABLE`, `REUSE_AS_IS` or `DESIGN_BLOCKING`. Mentioning a phase is not closure. Any `DESIGN_BLOCKING` node forbids `SYSTEMIC_REPAIR_SPEC`.
+19b. Materialize `quantitative_decisions` for every material threshold, timeout, deadline, polling/backoff interval, retry limit, cutoff, sample size, quorum, tolerance or other numeric policy that can change terminality, rollback timing, safety, scope or material cost. A material value may close only from an existing canonical authority or an evidence-backed calibration rule that is not specific to the triggering incident. Incident-only observations cannot close policy. If the design is stable without the exact value, leave it as a mechanically resolvable implementation precondition with no proposed value; otherwise it is `DESIGN_BLOCKING`.
 20. When the repair is materially ambiguous, compare at least 3 materially distinct alternatives across prevention, complexity, blast radius, reuse, fail-closed behavior, idempotency, recoverability and operational cost. Each alternative must carry basis references. Cosmetic variants do not count as distinct alternatives.
 21. `preferred_alternative` is provisional while design-blocking uncertainty exists. `selected_alternative` is allowed for `SYSTEMIC_REPAIR_SPEC` only after no `DESIGN_BLOCKING` uncertainty remains and the alternative is evidence-bound.
 22. Falsify the selected/preferred design against bypass, retry, concurrency, partial failure, stale state, interrupted execution, replay/duplicate and unversioned/undeclared caller cases. At specification time each family must be either:
@@ -108,6 +111,16 @@ Requires:
 
 `IMPLEMENTATION_PRECONDITION` and `NON_BLOCKING_HISTORICAL` uncertainties may remain if their containment/precondition is explicit and they cannot change the selected repair.
 
+### NO_REPAIR_REQUIRED
+Use only when exact current evidence proves either that the reported failure is already resolved or that no material systemic repair is justified. It is a positive evidence-bound disposition, not a shortcut for missing evidence.
+
+Requires:
+- `repair_disposition.decision` = `ALREADY_RESOLVED` or `NOT_MATERIAL`; `UNDETERMINED` is reserved for non-ready outputs where currentness/materiality itself is still design-blocking;
+- exact currentness/readback evidence;
+- no selected/preferred alternative, no implementation delta/package, no transition/rollback and no residual risk presented as repair work;
+- `repair_level=UNDETERMINED` and zero blocking codes;
+- executable verification/acceptance proving the current disposition remains true.
+
 ### NEEDS_MORE_EVIDENCE
 Use only when at least one `DESIGN_BLOCKING` uncertainty remains.
 
@@ -137,6 +150,7 @@ Must not present a final selected alternative or residual risk as if a repair sp
 - NEEDS_MORE_EVIDENCE
 - RETURN_TO_WORKER_FOR_SELF_REPAIR
 - BLOCK_PIPELINE
+- NO_REPAIR_REQUIRED
 
 ## Non-negotiable rules
 - First plausible fix is forbidden when recurrence/materiality indicates a systemic class.
@@ -155,10 +169,13 @@ Must not present a final selected alternative or residual risk as if a repair sp
 - Historical disposition/cleanup is not proof of systemic repair.
 - Producer output cannot bypass the canonical semantic quality gate.
 - ¿DEBE EXISTIR? is mandatory even when the component already exists or has prior approval.
+- Currentness is evaluated before repair design; an already-resolved or non-material case must not be converted into a repair merely to satisfy the profile.
+- A material numeric policy cannot be closed from one incident/sample unless that sample is itself an authorized canonical policy source.
+- A lifecycle/process is not closed by naming its phases; every material node must be evidence-bound and dispositioned.
 
 ## Typed output
 The output must include:
-status, profile_pack_id, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, solution_depth, research_assurance, alternatives, preferred_alternative, selected_alternative, rejected_alternatives, challenger_review, omission_discovery, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, implementation_package, implementation_delta, transition_plan, rollback_plan, acceptance_criteria, historical_regressions, planned_regressions, current_uncertainties, residual_risks, evidence_map, blocking_codes, next_gate.
+status, profile_pack_id, repair_disposition, quantitative_decisions, material_process_graph, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, solution_depth, research_assurance, alternatives, preferred_alternative, selected_alternative, rejected_alternatives, challenger_review, omission_discovery, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, implementation_package, implementation_delta, transition_plan, rollback_plan, acceptance_criteria, historical_regressions, planned_regressions, current_uncertainties, residual_risks, evidence_map, blocking_codes, next_gate.
 
 ## Claim ceiling
 CANDIDATO / READ_ONLY. This profile can diagnose, compare and specify a repair; it cannot authorize or execute that repair. A repair specification is quality-accepted only through the canonical deterministic and semantic gates. Implementation and post-implementation verification remain separate governed operations.

@@ -1078,28 +1078,9 @@
     "execution_effect_reconciliation",
     "authority_contradictions",
     "repair_level",
-    "should_exist_assessment",
-    "solution_depth",
-    "research_assurance",
-    "challenger_review",
-    "omission_discovery",
-    "implementation_package",
-    "alternatives",
-    "preferred_alternative",
-    "selected_alternative",
-    "rejected_alternatives",
-    "falsification_results",
     "origin_asset",
     "origin_operation",
     "owner",
-    "invariant",
-    "hard_guard",
-    "implementation_delta",
-    "transition_plan",
-    "rollback_plan",
-    "acceptance_criteria",
-    "historical_regressions",
-    "planned_regressions",
     "current_uncertainties",
     "residual_risks",
     "evidence_map",
@@ -1112,13 +1093,15 @@
         "SYSTEMIC_REPAIR_SPEC",
         "NEEDS_MORE_EVIDENCE",
         "RETURN_TO_WORKER_FOR_SELF_REPAIR",
-        "BLOCK_PIPELINE"
+        "BLOCK_PIPELINE",
+        "NO_REPAIR_REQUIRED"
       ]
     },
     "profile_pack_id": {
       "enum": [
         "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
-        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
       ]
     },
     "symptom": {
@@ -1143,7 +1126,6 @@
     },
     "causal_chain": {
       "type": "array",
-      "minItems": 3,
       "items": {
         "$ref": "#/$defs/claim"
       }
@@ -1156,7 +1138,6 @@
     },
     "recurrence_evidence": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -3191,6 +3172,376 @@
     },
     "closure_proof": {
       "$ref": "#/$defs/closure_proof"
+    },
+    "repair_disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "rationale",
+        "evidence_refs",
+        "currentness_refs",
+        "active_failure_present",
+        "material_repair_justified",
+        "verification"
+      ],
+      "properties": {
+        "decision": {
+          "enum": [
+            "REPAIR_REQUIRED",
+            "ALREADY_RESOLVED",
+            "NOT_MATERIAL",
+            "UNDETERMINED"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 12
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 5
+          }
+        },
+        "currentness_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 5
+          }
+        },
+        "active_failure_present": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "material_repair_justified": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executable",
+            "method",
+            "expected_result",
+            "evidence_refs"
+          ],
+          "properties": {
+            "executable": {
+              "const": true
+            },
+            "method": {
+              "type": "string",
+              "minLength": 8
+            },
+            "expected_result": {
+              "type": "string",
+              "minLength": 8
+            },
+            "evidence_refs": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 5
+              }
+            }
+          }
+        }
+      }
+    },
+    "quantitative_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "decision_id",
+          "parameter",
+          "proposed_value",
+          "materiality",
+          "affects",
+          "grounding_type",
+          "grounding_ref",
+          "evidence_refs",
+          "incident_specific_only",
+          "closure_state",
+          "precondition_ref"
+        ],
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "minLength": 2
+          },
+          "parameter": {
+            "type": "string",
+            "minLength": 3
+          },
+          "proposed_value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "materiality": {
+            "enum": [
+              "MATERIAL",
+              "NON_MATERIAL"
+            ]
+          },
+          "affects": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 3
+            }
+          },
+          "grounding_type": {
+            "enum": [
+              "EXISTING_AUTHORITY",
+              "CALIBRATION_RULE",
+              "IMPLEMENTATION_PRECONDITION",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "grounding_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_refs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 5
+            }
+          },
+          "incident_specific_only": {
+            "type": "boolean"
+          },
+          "closure_state": {
+            "enum": [
+              "GROUNDED",
+              "PRECONDITION",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "precondition_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "material_process_graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applies",
+        "rationale",
+        "nodes"
+      ],
+      "properties": {
+        "applies": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 8
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "node_id",
+              "phase",
+              "authority_refs",
+              "inputs",
+              "outputs",
+              "state_transition",
+              "producer_refs",
+              "consumer_refs",
+              "wiring_refs",
+              "control_refs",
+              "failure_recovery",
+              "disposition",
+              "evidence_refs",
+              "acceptance_refs"
+            ],
+            "properties": {
+              "node_id": {
+                "type": "string",
+                "minLength": 2
+              },
+              "phase": {
+                "type": "string",
+                "minLength": 3
+              },
+              "authority_refs": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 5
+                }
+              },
+              "inputs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 2
+                }
+              },
+              "outputs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 2
+                }
+              },
+              "state_transition": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 5
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "producer_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "consumer_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "wiring_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "control_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "failure_recovery": {
+                "type": "string",
+                "minLength": 8
+              },
+              "disposition": {
+                "enum": [
+                  "IMPLEMENTABLE",
+                  "REUSE_AS_IS",
+                  "DESIGN_BLOCKING"
+                ]
+              },
+              "evidence_refs": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 5
+                }
+              },
+              "acceptance_refs": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "applies": {
+                "const": true
+              }
+            },
+            "required": [
+              "applies"
+            ]
+          },
+          "then": {
+            "properties": {
+              "nodes": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
     }
   },
   "allOf": [
@@ -3366,7 +3717,10 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+            ]
           }
         },
         "required": [
@@ -3451,7 +3805,10 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+            ]
           },
           "solution_depth": {
             "properties": {
@@ -3484,7 +3841,10 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+            ]
           },
           "solution_depth": {
             "properties": {
@@ -3517,7 +3877,10 @@
       "if": {
         "properties": {
           "profile_pack_id": {
-            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+            "enum": [
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+              "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+            ]
           },
           "omission_discovery": {
             "contains": {
@@ -3548,6 +3911,231 @@
             "properties": {
               "wiring_proofs": {
                 "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+          }
+        },
+        "required": [
+          "profile_pack_id"
+        ]
+      },
+      "then": {
+        "required": [
+          "repair_disposition",
+          "quantitative_decisions",
+          "material_process_graph"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "NO_REPAIR_REQUIRED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "selected_alternative": {
+            "type": "null"
+          },
+          "preferred_alternative": {
+            "type": "null"
+          },
+          "alternatives": {
+            "maxItems": 0
+          },
+          "rejected_alternatives": {
+            "maxItems": 0
+          },
+          "implementation_delta": {
+            "maxItems": 0
+          },
+          "implementation_package": {
+            "type": "null"
+          },
+          "transition_plan": {
+            "type": "null"
+          },
+          "rollback_plan": {
+            "type": "null"
+          },
+          "residual_risks": {
+            "maxItems": 0
+          },
+          "blocking_codes": {
+            "maxItems": 0
+          },
+          "repair_level": {
+            "const": "UNDETERMINED"
+          },
+          "repair_disposition": {
+            "properties": {
+              "decision": {
+                "enum": [
+                  "ALREADY_RESOLVED",
+                  "NOT_MATERIAL"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "SYSTEMIC_REPAIR_SPEC",
+              "NEEDS_MORE_EVIDENCE",
+              "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+              "BLOCK_PIPELINE"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "causal_chain": {
+            "minItems": 3
+          }
+        },
+        "required": [
+          "should_exist_assessment",
+          "solution_depth",
+          "research_assurance",
+          "challenger_review",
+          "omission_discovery",
+          "implementation_package",
+          "alternatives",
+          "preferred_alternative",
+          "selected_alternative",
+          "rejected_alternatives",
+          "falsification_results",
+          "invariant",
+          "hard_guard",
+          "implementation_delta",
+          "transition_plan",
+          "rollback_plan",
+          "acceptance_criteria",
+          "historical_regressions",
+          "planned_regressions"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "SYSTEMIC_REPAIR_SPEC",
+              "NEEDS_MORE_EVIDENCE",
+              "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+              "BLOCK_PIPELINE"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "recurrence_evidence": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "NO_REPAIR_REQUIRED"
+          },
+          "repair_disposition": {
+            "properties": {
+              "decision": {
+                "const": "ALREADY_RESOLVED"
+              }
+            },
+            "required": [
+              "decision"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "repair_disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "repair_disposition": {
+            "properties": {
+              "active_failure_present": {
+                "const": false
+              },
+              "material_repair_justified": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "NEEDS_MORE_EVIDENCE",
+              "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+              "BLOCK_PIPELINE"
+            ]
+          },
+          "repair_disposition": {
+            "properties": {
+              "decision": {
+                "const": "REPAIR_REQUIRED"
+              }
+            },
+            "required": [
+              "decision"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "repair_disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "repair_disposition": {
+            "properties": {
+              "active_failure_present": {
+                "const": true
+              },
+              "material_repair_justified": {
+                "const": true
               }
             }
           }

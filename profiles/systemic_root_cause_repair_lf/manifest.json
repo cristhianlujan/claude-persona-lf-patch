@@ -1,6 +1,6 @@
 {
   "schema_version": "lf-profile-pack-manifest/v1",
-  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
   "profile_slug": "systemic_root_cause_repair_lf",
   "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
   "operation": "CREACION_PERFIL_LF",
