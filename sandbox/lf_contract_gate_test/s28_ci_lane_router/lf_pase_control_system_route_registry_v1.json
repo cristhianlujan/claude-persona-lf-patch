@@ -1,0 +1,51 @@
+{
+  "schema_version": "lf-pase-control-system-route-registry/v1",
+  "authority": "CHANGESET_GOVERNANCE_LF_V1",
+  "entries": [
+    {
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pase_merge_route",
+      "candidate_id": "PASE_MERGE_ROUTE_V1"
+    },
+    {
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_pase_merge_route",
+      "candidate_id": "PASE_MERGE_ROUTE_V1"
+    },
+    {
+      "kind": "exact",
+      "value": "sandbox/lf_contract_gate_test/s28_ci_lane_router/README_PASE_MERGE_ROUTE_V1.md",
+      "candidate_id": "PASE_MERGE_ROUTE_V1"
+    },
+    {
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/pase_merge_gate/",
+      "candidate_id": "PASE_MERGE_GATE_V1"
+    },
+    {
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/pase_orchestrator/",
+      "candidate_id": "PASE_ORCHESTRATOR_V1"
+    },
+    {
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/pase_control_qualification/",
+      "candidate_id": "PASE_CONTROL_QUALIFICATION_V1"
+    },
+    {
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/",
+      "candidate_id": "LF_GOVERNANCE_SUPER_ADMIN_V1"
+    },
+    {
+      "kind": "exact",
+      "value": ".github/workflows/lf-contract-check.yml",
+      "candidate_id": "PASE_GITHUB_ENTRYPOINT_V1"
+    },
+    {
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/s28_ci_lane_router/",
+      "candidate_id": "CHANGESET_GOVERNANCE_LF_V1"
+    }
+  ]
+}
