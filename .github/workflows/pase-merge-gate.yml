@@ -63,6 +63,9 @@ jobs:
       - name: Evaluate base-anchored PASE merge gate
         env:
           PASE_REPOSITORY: ${{ github.repository }}
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
         run: |
           set -euo pipefail
           mkdir -p .lf_ci
