@@ -12,8 +12,12 @@ def main() -> int:
         "'CONTROL_SYSTEM'::text",
         "PASE_CONTROL_QUALIFICATION_V1",
         "lf_control_system_qualification_revision_sha256_v1",
+        "lf_record_control_system_qualification_v1",
         "lf_control_system_qualification_readback_v1",
+        "lf-control-system-qualification-record/v1",
         "lf-control-system-qualification-readback/v1",
+        "START_QUALIFICATION",
+        "PASS_QUALIFICATION",
         "status','MISSING'",
         "status','QUALIFIED'",
         "qualification_input",
@@ -25,7 +29,9 @@ def main() -> int:
     assert not missing, f"missing authority invariants: {missing}"
     assert "CREATE TABLE" not in text, "must extend canonical ledger, not create a parallel table"
     assert "target_type = 'PASE_CONTROL_QUALIFICATION'" not in text, "must not invent a synthetic operation target type"
-    print("PASS_PASE_CONTROL_SYSTEM_QUALIFICATION_AUTHORITY_V1 checks=14")
+    assert "'CONTROL_SYSTEM',p_candidate_id" in text, "producer must write the canonical CONTROL_SYSTEM subject"
+    assert "lifecycle_state_code=v_qualifying" in text and "lifecycle_state_code=v_qualified" in text, "producer must traverse canonical qualification lifecycle"
+    print("PASS_PASE_CONTROL_SYSTEM_QUALIFICATION_AUTHORITY_V1 checks=20")
     return 0
 
 
