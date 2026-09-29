@@ -1,0 +1,39 @@
+[Unit]
+Description=LF Profile Independent Semantic Judge Worker
+After=network.target lf-profile-runtime-api.service
+Requires=lf-profile-runtime-api.service
+
+[Service]
+Type=simple
+User=lfprofile
+Group=lfprofile
+WorkingDirectory=/opt/lf-profile-runtime-api/current/services/profile_runtime_api
+EnvironmentFile=/etc/lf-profile-runtime-api.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/opt/lf-profile-runtime-api/current/services/profile_runtime_api
+ExecStart=/opt/lf-profile-runtime-api/venv/bin/python /opt/lf-profile-runtime-api/current/services/profile_runtime_api/scripts/semantic_judge_worker.py --daemon
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=30s
+TimeoutStopSec=20s
+UMask=0077
+MemoryMax=768M
+TasksMax=32
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectHostname=true
+ProtectClock=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

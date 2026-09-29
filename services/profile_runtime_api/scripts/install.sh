@@ -48,6 +48,8 @@ fi
 for required in \
   "$source_dir/services/profile_runtime_api/requirements.in" \
   "$source_dir/services/profile_runtime_api/deploy/lf-profile-runtime-api.service" \
+  "$source_dir/services/profile_runtime_api/deploy/lf-profile-semantic-judge-worker.service" \
+  "$source_dir/services/profile_runtime_api/scripts/semantic_judge_worker.py" \
   "$source_dir/sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py"; do
   [[ -f "$required" ]] || { printf 'REQUIRED_SOURCE_MISSING=%s\n' "$required" >&2; exit 1; }
 done
@@ -143,14 +145,19 @@ ln -s "$release_dir" "$next_link"
 mv -Tf "$next_link" "$install_root/current"
 install -m 0644 "$release_dir/services/profile_runtime_api/deploy/lf-profile-runtime-api.service" \
   /etc/systemd/system/lf-profile-runtime-api.service
+install -m 0644 "$release_dir/services/profile_runtime_api/deploy/lf-profile-semantic-judge-worker.service" \
+  /etc/systemd/system/lf-profile-semantic-judge-worker.service
 systemctl daemon-reload
 
 if [[ "$start_service" == true ]]; then
-  systemctl enable lf-profile-runtime-api.service
+  systemctl enable lf-profile-runtime-api.service lf-profile-semantic-judge-worker.service
   systemctl restart lf-profile-runtime-api.service
+  systemctl restart lf-profile-semantic-judge-worker.service
   systemctl --no-pager --full status lf-profile-runtime-api.service
+  systemctl --no-pager --full status lf-profile-semantic-judge-worker.service
 else
-  printf 'SERVICE_NOT_STARTED: run systemctl enable --now lf-profile-runtime-api.service after config review\n'
+  printf 'SERVICES_NOT_STARTED: run systemctl enable --now lf-profile-runtime-api.service lf-profile-semantic-judge-worker.service after config review\n'
 fi
 printf 'INSTALL_COMPLETE source_sha=%s classification=INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY require_main=%s\n' "$source_sha" "$require_main"
+printf 'SEMANTIC_JUDGE_CONSUMER=lf-profile-semantic-judge-worker.service\n'
 printf 'LLAMA_OR_MODEL_MUTATIONS=NONE\n'
