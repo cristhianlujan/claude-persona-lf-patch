@@ -1,5 +1,7 @@
 name: Story Agent Evidence Verifier
 
+# Operational worker only during the PASE repair window. The former PR regression
+# jobs remain as repository test sources but no longer create a parallel PR entrypoint.
 on:
   push:
     branches:
@@ -8,14 +10,6 @@ on:
       - ".github/workflows/story-agent-evidence-verifier.yml"
       - "supabase/functions/story-agent-evidence-verifier-v1/**"
       - "supabase/migrations/*programacion_agent_task_external_evidence_verifier_v1.sql"
-  pull_request:
-    paths:
-      - ".github/workflows/story-agent-evidence-verifier.yml"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/semantic_mini_judge.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/evaluate_profile_strategy_ab.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/runtime_optimization_contract.py"
-      - "sandbox/lf_contract_gate_test/profile_execution_runtime/run_profile_runtime_optimization_tests.py"
 
 permissions:
   contents: read
@@ -24,7 +18,6 @@ permissions:
 
 jobs:
   verify-agent-task-worker-receipt:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -35,7 +28,7 @@ jobs:
           script: |
             const token = await core.getIDToken('story-agent-evidence-verifier-v1');
             core.setSecret(token);
-            core.setOutput('token', token);
+            core.setOutput('token', token)
 
       - name: Verify pending HU-HMO-001 worker evidence
         env:
@@ -64,43 +57,3 @@ jobs:
           print('authority_receipt_id='+str(result.get('authority_receipt_id')))
           print('evidence_verification_id='+str(result.get('evidence_verification_id')))
           PY
-
-  semantic-mini-judge-regressions:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Run deterministic mini-judge regressions
-        run: |
-          set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_semantic_mini_judge_tests.py
-
-  runtime-optimization-contract:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Run profile runtime optimization regressions
-        run: |
-          set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/profile_execution_runtime/run_profile_runtime_optimization_tests.py
