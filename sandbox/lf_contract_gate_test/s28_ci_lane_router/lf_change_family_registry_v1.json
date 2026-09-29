@@ -28,6 +28,7 @@
       ".github/workflows/lf-material-currentness.yml",
       ".github/workflows/lf-migration-source-parity-core.yml",
       ".github/workflows/lf-pack-validation-core.yml",
+      ".github/workflows/pase.yml",
       ".github/workflows/profile-driven-screen-generation.yml",
       ".github/workflows/story-agent-evidence-verifier.yml",
       ".github/workflows/validate-lf-packs.yml",
