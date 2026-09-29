@@ -1,0 +1,24 @@
+name: LF PASE Reconciliation Post1251 Hash Probe
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  exact-main-hash-readback:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+      - name: Assert exact main and print governed bytes
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "dbc07b79563e16095c04821a8f05edce21bada88"
+          printf 'RECONCILIATION_SHA256=%s\n' "$(sha256sum .github/workflows/lf-github-reconcile-v3.yml | awk '{print $1}')"
+          printf 'RECONCILIATION_GIT_BLOB=%s\n' "$(git hash-object .github/workflows/lf-github-reconcile-v3.yml)"
