@@ -15,6 +15,7 @@ ROUTER_PATH = HERE / "lf_ci_lane_router.py"
 PLAN_PATH = HERE / "lf_ci_execution_plan_v2.py"
 CURRENTNESS_PATH = HERE / "lf_ci_currentness_bridge_v1.py"
 HANDOFF_PATH = HERE / "lf_contract_check_resolution_handoff_v1.py"
+REPAIR_ENFORCEMENT_PATH = HERE / "lf_pase_control_repair_quarantine_v1.py"
 
 
 def _load(path: Path, name: str):
@@ -31,6 +32,10 @@ ROUTER = _load(ROUTER_PATH, "lf_ci_lane_router_runtime")
 PLAN = _load(PLAN_PATH, "lf_ci_execution_plan_v2_runtime")
 CURRENTNESS = _load(CURRENTNESS_PATH, "lf_ci_currentness_bridge_v1_runtime")
 HANDOFF = _load(HANDOFF_PATH, "lf_contract_check_resolution_handoff_v1_runtime")
+REPAIR_ENFORCEMENT = _load(
+    REPAIR_ENFORCEMENT_PATH,
+    "lf_pase_control_repair_quarantine_v1_runtime",
+)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -88,6 +93,10 @@ def main() -> int:
         plan=plan,
         repo_root=repo,
     )
+    plan["pase_control_enforcement"] = REPAIR_ENFORCEMENT.project_enforcement(
+        plan,
+        REPAIR_ENFORCEMENT.load_policy(),
+    )
     applicability_sha256 = plan["plan_sha256"]
     current_revision = args.authority_current_revision or args.base or args.head
     if not current_revision:
@@ -129,6 +138,7 @@ def main() -> int:
     if gh_out is not None:
         carrier = plan.get("carrier_controls") or {}
         handoff = plan["contract_check_resolution_request"]
+        enforcement = plan["pase_control_enforcement"]
         values = {
             "plan_sha256": plan["plan_sha256"],
             "applicability_sha256": plan["applicability_sha256"],
@@ -144,6 +154,10 @@ def main() -> int:
             "changed_paths_json": json.dumps(plan["changed_paths"], separators=(",", ":")),
             "contract_check_handoff_state": handoff["handoff_state"],
             "contract_check_resolution_request_json": json.dumps(handoff, separators=(",", ":"), sort_keys=True),
+            "pase_control_enforcement_json": json.dumps(enforcement, separators=(",", ":"), sort_keys=True),
+            "pase_blocking_controls_json": json.dumps(enforcement["blocking_controls"], separators=(",", ":")),
+            "pase_observe_only_controls_json": json.dumps(enforcement["observe_only_controls"], separators=(",", ":")),
+            "pase_repair_policy_id": enforcement["policy_id"],
         }
         with gh_out.open("a", encoding="utf-8") as handle:
             for key, value in values.items():
@@ -160,6 +174,9 @@ def main() -> int:
         "required_controls": plan["required_controls"],
         "changed_paths": plan["changed_paths"],
         "contract_check_handoff_state": plan["contract_check_resolution_request"]["handoff_state"],
+        "pase_repair_policy_id": plan["pase_control_enforcement"]["policy_id"],
+        "pase_blocking_controls": plan["pase_control_enforcement"]["blocking_controls"],
+        "pase_observe_only_controls": plan["pase_control_enforcement"]["observe_only_controls"],
         "coverage_complete": plan["coverage_complete"],
     }, sort_keys=True))
     return 0
