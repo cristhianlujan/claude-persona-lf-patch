@@ -78,3 +78,5 @@ jobs:
             --current-main-sha "$PASE_CURRENT_MAIN_SHA" \
             --output-json .lf_ci/lf_pase_merge_gate_carrier_result_v1.json
           cat .lf_ci/lf_pase_merge_gate_carrier_result_v1.json
+
+# live-fire probe: qualified CONTROL_SYSTEM change; do not merge
