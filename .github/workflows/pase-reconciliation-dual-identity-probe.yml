@@ -1,0 +1,27 @@
+name: LF PASE Reconciliation Dual Identity Probe
+
+on:
+  pull_request:
+    branches:
+      - lf/pase-reconciliation-dual-identity-v1-20260929
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-reconciliation-identity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+      - name: Assert exact candidate head
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "948d437a41b12c2b6a3b162f777d2880edd3e1e5"
+      - name: Run reconciliation identity invariant
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_github_entrypoint/test_single_pr_entrypoint_v1.py
+          grep -F 'workflows: ["lf-contract-check", "PASE"]' .github/workflows/lf-github-reconcile-v3.yml
