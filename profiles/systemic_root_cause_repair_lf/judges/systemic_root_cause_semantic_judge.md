@@ -135,6 +135,53 @@ For `DEEP_ARCHITECTURE_RESEARCH`, and for `BOUNDED` when current-practice resear
 
 The compact baseline/delta packet is evidence transport, not a second authority. Full research transcripts are not required when exact source refs can be hydrated JIT.
 
+## V0.4 transversal semantic checks
+
+These checks are generic and MUST be performed independently from producer declarations.
+
+### T1 — Current repair disposition
+Before accepting any proposed repair, independently determine whether the failure is still active/current and materially repair-worthy.
+- If current authority/readback proves the reported defect is already resolved, a proposed repair is an overrepair and must return to worker unless the candidate uses `NO_REPAIR_REQUIRED/ALREADY_RESOLVED`.
+- If evidence shows an observation/opportunity but not a material systemic failure, a proposed systemic repair is an overrepair and must return to worker unless the candidate uses `NO_REPAIR_REQUIRED/NOT_MATERIAL`.
+- Every V0.4 disposition must include an executable verification whose method can be run independently and whose expected result directly tests the claimed current disposition; a prose assertion or future-only plan is not verification.
+- `NO_REPAIR_REQUIRED` itself passes only with exact currentness/readback evidence, a successfully evidenced executable disposition verification proving `ALREADY_RESOLVED` or `NOT_MATERIAL`, and no hidden repair delta.
+
+### T2 — Quantitative policy grounding
+Independently extract every material numeric decision from the entire candidate, including prose: timeout, deadline, polling/backoff, retry limit, threshold, cutoff, sample size, quorum, tolerance, percentile/floor/ceiling or equivalent.
+Reconcile 100% of those decisions against `quantitative_decisions[]`.
+A material numeric decision fails `EVIDENCE_INTEGRITY` when:
+- it is absent from the inventory;
+- its claimed grounding is only the triggering incident/run/host/sample;
+- its grounding ref does not support the policy value or reusable calibration rule;
+- an ungrounded value is nevertheless fixed in the selected repair;
+- a PRECONDITION can still change architecture, authority, enforcement, wiring, rollout, rollback or acceptance.
+
+A single incident may demonstrate the existence of a failure mode. It does not by itself authorize a reusable numeric policy.
+
+### T3 — Material process graph completeness
+When the exact case or selected repair contains a material lifecycle, workflow, staged process or chain of stateful subprocesses, independently derive the material nodes from authority/evidence and reconcile them against `material_process_graph.nodes[]`.
+For every material node verify:
+- authority and real producer/consumer;
+- input/output contract;
+- state/transition when applicable;
+- physical wiring/control enforcement;
+- failure/recovery/terminal behavior;
+- evidence and acceptance/falsification;
+- explicit `IMPLEMENTABLE`, `REUSE_AS_IS` or `DESIGN_BLOCKING` disposition.
+
+Listing phase names or describing a high-level flow is not coverage. Missing material nodes, nominal-only wiring, or a `DESIGN_BLOCKING` node in a ready spec fails semantic closure.
+
+### T4 — V0.5 premature-stop verification
+For V0.5 non-ready candidates and every V0.5 `DESIGN_BLOCKING` uncertainty/process node, independently verify whether the producer stopped while accessible evidence could still close the gap.
+- Confirm `attempted_sources` covers the material surfaces that could plausibly resolve the uncertainty.
+- Hydrate each attempt's `evidence_id` and verify that the evidence at the bound locator supports the declared attempt result; otherwise add `ATTEMPT_RESULT_NOT_SUPPORTED` and return to worker.
+- When multiple blocked process nodes share one uncertainty, verify that its attempts materially cover every referenced node; a generic uncertainty spanning unrelated phases is `PREMATURE_DESIGN_BLOCKING`.
+- Probe at least one material accessible surface omitted from the attempts when such a surface exists. If it closes or materially narrows the gap, add `PREMATURE_DESIGN_BLOCKING` and return to worker, naming the omitted surface rather than supplying the answer.
+- If a blocker is derived from the test harness, requested profile revision, or another execution-context fact rather than the audited system, add `TEST_CONTEXT_AS_BLOCKER` and return to worker.
+- If a cited reference cannot be resolved in live authority, add `EVIDENCE_REFERENCE_NOT_FOUND`; fabricated evidence remains a BLOCK condition.
+
+For a semantic PASS, these checks are part of `EVIDENCE_INTEGRITY`; the invariant cannot PASS while any T4 blocking code remains. A legitimate `NEEDS_MORE_EVIDENCE` with supported attempts and no omitted closing surface is valid and must not be penalized.
+
 ## Verdict rules
 Return `PASS_INDEPENDENT_SEMANTIC` only when:
 - deterministic validation passed;
@@ -144,7 +191,10 @@ Return `PASS_INDEPENDENT_SEMANTIC` only when:
 - R3 has no OUT_OF_SCOPE_DESIGN_DELTA or UNRESOLVED_SCOPE;
 - no material contradiction/blocker remains;
 - independent closure review finds no material open design decision.
-- when incremental-value proof is applicable, its baseline is coherent and the reported MATERIAL_UPLIFT or NO_MATERIAL_UPLIFT disposition is independently supported; UNPROVEN is not acceptable for ready closure.
+- when incremental-value proof is applicable, its baseline is coherent and the reported MATERIAL_UPLIFT or NO_MATERIAL_UPLIFT disposition is independently supported; UNPROVEN is not acceptable for ready closure;
+- V0.4 repair disposition is currentness-bound and does not overrepair an already-resolved/non-material case;
+- every material quantitative decision is independently reconciled and sufficiently grounded;
+- every applicable material-process node is independently reconciled and semantically closed.
 
 Return `RETURN_TO_WORKER_FOR_SELF_REPAIR` when candidate quality can be repaired without changing authorized scope, including undeclared change, incomplete closure, unsupported research impact, weak falsification, or a selected repair that contains an out-of-scope delta which can be removed/reclassified as discovery.
 

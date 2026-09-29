@@ -12,10 +12,11 @@ REQUIRED = [
     "contracts/evidence_manifest.schema.json","contracts/closure_vocabulary.v2.json","contracts/incremental_value.v1.json",
     "schemas/quality_receipt.schema.json","schemas/runtime_output.schema.json",
     "validators/closure_proof.py","validators/incremental_value.py","validators/runtime_validate.py",
-    "validators/runtime_semantic_utility.py","validators/validate_quality_receipt.py",
+    "validators/runtime_semantic_utility.py","validators/validate_quality_receipt.py","validators/producer_depth.py",
     "evals/v03_contract_schema_cases.py","evals/v03_deterministic_floor_cases.py",
     "evals/v03_quality_receipt_cases.py","evals/v03_generalization_property_cases.py",
-    "evals/v03_original_escape_replay.py","evals/v03_transversal_contract_cases.py","evals/v03_incremental_value_cases.py"
+    "evals/v03_original_escape_replay.py","evals/v03_transversal_contract_cases.py","evals/v03_incremental_value_cases.py",
+    "evals/v04_transversal_closure_cases.py","evals/v05_producer_depth_cases.py","contracts/closure_proof_v2.md"
 ]
 
 def fail(code):
@@ -32,8 +33,28 @@ schema = json.loads((root/"schemas/output.schema.json").read_text())
 if schema.get("additionalProperties") is not False:
     fail("SCHEMA_NOT_STRICT")
 required = set(schema.get("required", []))
+repair_statuses = {
+    "SYSTEMIC_REPAIR_SPEC",
+    "NEEDS_MORE_EVIDENCE",
+    "RETURN_TO_WORKER_FOR_SELF_REPAIR",
+    "BLOCK_PIPELINE",
+}
+required_for_repair_paths = set()
+for rule in schema.get("allOf", []):
+    if not isinstance(rule, dict):
+        continue
+    status_rule = (
+        rule.get("if", {})
+        .get("properties", {})
+        .get("status", {})
+        .get("enum")
+    )
+    branch_required = rule.get("then", {}).get("required", [])
+    if isinstance(status_rule, list) and repair_statuses.issubset(set(status_rule)) and isinstance(branch_required, list):
+        required_for_repair_paths.update(branch_required)
+
 for key in ["systemic_root_cause","first_bad_control","alternatives","falsification_results","hard_guard","historical_regressions","evidence_map"]:
-    if key not in required:
+    if key not in required and key not in required_for_repair_paths:
         fail("SCHEMA_REQUIRED_KEY_MISSING:" + key)
 
 evals = json.loads((root/"evals/eval_matrix.json").read_text())
@@ -88,6 +109,8 @@ for rel in [
     "evals/v03_generalization_property_cases.py",
     "evals/v03_transversal_contract_cases.py",
     "evals/v03_incremental_value_cases.py",
+    "evals/v04_transversal_closure_cases.py",
+    "evals/v05_producer_depth_cases.py",
     "evals/sandbox_b/run_cases.py",
 ]:
     run_assurance(rel)

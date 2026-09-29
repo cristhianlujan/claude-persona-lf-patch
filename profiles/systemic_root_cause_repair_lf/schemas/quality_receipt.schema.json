@@ -22,7 +22,11 @@
       "const": "SRCR_QUALITY_RECEIPT_V1"
     },
     "profile_pack_id": {
-      "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+      "enum": [
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+      ]
     },
     "profile_code": {
       "const": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
