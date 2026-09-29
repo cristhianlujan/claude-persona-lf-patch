@@ -1,0 +1,77 @@
+name: PASE Merge Gate
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pase-merge-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pase-merge-gate:
+    name: pase-merge-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted PR base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Self-test trusted merge-gate carrier
+        run: python3 sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_carrier_v1.py self-test
+
+      - name: Resolve exact candidate objects without checkout
+        env:
+          REPOSITORY: ${{ github.repository }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$HEAD_REPOSITORY" != "$REPOSITORY" ]; then
+            echo "BLOCK_PASE_MERGE_GATE_HEAD_REPOSITORY repository=$REPOSITORY head_repository=$HEAD_REPOSITORY"
+            exit 2
+          fi
+          CURRENT_MAIN_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          if [ -z "$CURRENT_MAIN_SHA" ]; then
+            echo "BLOCK_PASE_MERGE_GATE_CURRENT_MAIN_SHA"
+            exit 2
+          fi
+          if [ "$BASE_SHA" != "$CURRENT_MAIN_SHA" ]; then
+            echo "BLOCK_PASE_MERGE_GATE_STALE_BASE base=$BASE_SHA current_main=$CURRENT_MAIN_SHA"
+            exit 2
+          fi
+          git fetch --no-tags --depth=200 origin "$HEAD_SHA"
+          echo "PASE_BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
+          echo "PASE_HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
+          echo "PASE_CURRENT_MAIN_SHA=$CURRENT_MAIN_SHA" >> "$GITHUB_ENV"
+          echo "PASE_HEAD_REPOSITORY=$HEAD_REPOSITORY" >> "$GITHUB_ENV"
+
+      - name: Evaluate base-anchored PASE merge gate
+        env:
+          PASE_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p .lf_ci
+          python3 sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_carrier_v1.py evaluate \
+            --repo-root . \
+            --repository "$PASE_REPOSITORY" \
+            --head-repository "$PASE_HEAD_REPOSITORY" \
+            --base-sha "$PASE_BASE_SHA" \
+            --head-sha "$PASE_HEAD_SHA" \
+            --current-main-sha "$PASE_CURRENT_MAIN_SHA" \
+            --output-json .lf_ci/lf_pase_merge_gate_carrier_result_v1.json
+          cat .lf_ci/lf_pase_merge_gate_carrier_result_v1.json
