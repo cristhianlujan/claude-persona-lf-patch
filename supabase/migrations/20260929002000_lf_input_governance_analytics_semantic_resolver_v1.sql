@@ -72,6 +72,16 @@ begin
         (select count(*) from provider_state where provider_id is not null)
         +
         (select count(*) from event_state where event_code is not null)
+      ),
+      exists(
+        select 1
+        from provider_state
+        where provider_id is null
+           or status not in ('VIGENTE','ACTIVO')
+           or not enabled
+           or integration_status not in (
+             'ACTIVE','READY','CONFIGURED','IMPLEMENTED','READY_FOR_QA','QA_VERIFIED'
+           )
       )
     into
       v_rule_count,
@@ -79,18 +89,8 @@ begin
       v_story_source_count,
       v_broken_ref_count,
       v_missing_source_count,
-      v_unresolved_count_b2b;
-
-    select exists(
-      select 1
-      from provider_state
-      where provider_id is null
-         or status not in ('VIGENTE','ACTIVO')
-         or not enabled
-         or integration_status not in (
-           'ACTIVE','READY','CONFIGURED','IMPLEMENTED','READY_FOR_QA','QA_VERIFIED'
-         )
-    ) into v_implementation_pending;
+      v_unresolved_count_b2b,
+      v_implementation_pending;
 
     if v_rule_count>0
        and v_story_source_count>0
@@ -232,6 +232,16 @@ begin
         (select count(*) from provider_state where provider_id is not null)
         +
         (select count(*) from event_state where event_code is not null)
+      ),
+      exists(
+        select 1
+        from provider_state
+        where provider_id is null
+           or status not in ('VIGENTE','ACTIVO')
+           or not enabled
+           or integration_status not in (
+             'ACTIVE','READY','CONFIGURED','IMPLEMENTED','READY_FOR_QA','QA_VERIFIED'
+           )
       )
     into
       v_rule_count,
@@ -239,18 +249,8 @@ begin
       v_story_source_count,
       v_broken_ref_count,
       v_missing_source_count,
-      v_unresolved_count_b2b;
-
-    select exists(
-      select 1
-      from provider_state
-      where provider_id is null
-         or status not in ('VIGENTE','ACTIVO')
-         or not enabled
-         or integration_status not in (
-           'ACTIVE','READY','CONFIGURED','IMPLEMENTED','READY_FOR_QA','QA_VERIFIED'
-         )
-    ) into v_implementation_pending;
+      v_unresolved_count_b2b,
+      v_implementation_pending;
 
     if v_rule_count>0
        and v_story_source_count>0
