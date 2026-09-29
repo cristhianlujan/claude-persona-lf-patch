@@ -20,7 +20,11 @@ La configuración YAML describe disparadores, pero no demuestra qué ejecuciones
 
 ### Criterio de aceptación
 
-`PR93_LOTE_E16_GITHUB_INVENTORY.py` debe consultar la API REST autenticada de Actions, filtrar por el SHA exacto `github.event.pull_request.head.sha` —no por el merge ref temporal—, paginar hasta el final y seleccionar la ejecución más reciente de cada par workflow/evento. Falla cuando falta un par, el head difiere, la respuesta no es íntegra o la ejecución seleccionada terminó sin `success`.
+`PR93_LOTE_E16_GITHUB_INVENTORY.py` debe consultar la API REST autenticada de Actions a través del boundary compartido de `GITHUB_CONTRACT_GATE_LF` (`transversal_assets/github_contract_gate_lf/github_api_readback_v1.py`), filtrar por el SHA exacto `github.event.pull_request.head.sha` —no por el merge ref temporal—, paginar hasta el final y seleccionar la ejecución más reciente de cada par workflow/evento. El consumer E.16 no posee un cliente HTTP GitHub independiente.
+
+El boundary común aplica máximo 3 intentos con backoff acotado exclusivamente para red y HTTP transitorio (`408/429/500/502/503/504`). DNS agotado se clasifica `BLOCKED_INFRA_DNS`; API transitoria agotada `BLOCKED_GITHUB_API`; `401/403` `FAIL_AUTH`; HTTP no reintentable `FAIL_GITHUB_API`; JSON/shape/tamaño inválido `FAIL_EVIDENCE_MISMATCH`. Todo resultado no-PASS conserva semántica fail-closed.
+
+E.16 falla cuando falta un par, el head difiere, la respuesta no es íntegra o la ejecución seleccionada terminó sin `success`.
 
 El registro generado declara:
 
@@ -28,7 +32,11 @@ El registro generado declara:
 MEASURED_AUTHENTICATED_API
 pagination_complete=true
 matrix_complete=true
+authority_asset=GITHUB_CONTRACT_GATE_LF
+resolver_registry_asset=EVIDENCE_RESOLVER_REGISTRY
 ```
+
+`EVIDENCE_RESOLVER_REGISTRY` sigue gobernando la identidad de resolvers provider-bound. El boundary de transporte no puede inventar ni reutilizar un `resolver_id` de semántica distinta; `LF_GITHUB_SOURCE_READBACK_V1` no se convierte implícitamente en resolver de Actions inventory.
 
 Durante la propia ejecución PR se permite que el run actual esté `queued` o `in_progress`; esos estados se registran mediante `selected_pending_present`, `selected_pending_count` y `selected_pending_runs`; el cierre CA-N93 exige readback independiente posterior que confirme los cuatro runs y sus conclusiones finales. El resultado sintético `10/10` valida la herramienta, no sustituye el inventario remoto.
 
