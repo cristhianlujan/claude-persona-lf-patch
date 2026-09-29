@@ -68,7 +68,7 @@ assert "  s30-owner-chatops-broker:\n" in profile
 assert not PULL_REQUEST.search(profile)
 
 reconcile = read("lf-github-reconcile-v3.yml")
-assert 'workflows: ["lf-contract-check"]' in reconcile
+assert 'workflows: ["lf-contract-check", "PASE"]' in reconcile
 assert PULL_REQUEST_TARGET.search(reconcile)
 
 merge_gate = read("pase-merge-gate.yml")
