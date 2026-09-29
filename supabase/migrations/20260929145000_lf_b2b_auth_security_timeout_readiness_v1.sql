@@ -146,12 +146,6 @@ update lf_ops.politicas_timeout
 set status='CANDIDATO',
     source_decision_id='DEC-B2B-HANDOFF-SCREEN-PACKAGE-001',
     source_decision_number=52,
-    parameter_provenance=coalesce(parameter_provenance,'{}'::jsonb)
-      || jsonb_build_object(
-        'readiness_reconciliation','LF_B2B_AUTH_TIMEOUT_POLICY_BINDING_V1',
-        'lifecycle','CANDIDATE_IMPLEMENTATION_QA_PENDING',
-        'threshold_source','EXISTING_AUTH_LOGIN_API_POLICY'
-      ),
     updated_at=now()
 where timeout_policy_id=10
   and operation_code='AUTH_LOGIN_API'
