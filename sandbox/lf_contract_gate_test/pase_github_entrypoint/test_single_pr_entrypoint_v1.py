@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 WORKFLOWS = ROOT / ".github" / "workflows"
+RECONCILER_EDGE = ROOT / "supabase" / "functions" / "lf-github-reconcile-v3" / "index.ts"
 
 PULL_REQUEST = re.compile(r"^  pull_request:\s*$", re.MULTILINE)
 PULL_REQUEST_TARGET = re.compile(r"^  pull_request_target:\s*$", re.MULTILINE)
@@ -84,6 +85,14 @@ assert not PULL_REQUEST.search(profile)
 reconcile = read("lf-github-reconcile-v3.yml")
 assert 'workflows: ["lf-contract-check", "PASE"]' in reconcile
 assert PULL_REQUEST_TARGET.search(reconcile)
+
+# During the coexistence window the reconciler must independently accept both
+# source workflow identities. This guard prevents trigger/read-path cutover from
+# drifting ahead of the Edge verifier predicate.
+edge = RECONCILER_EDGE.read_text(encoding="utf-8")
+assert 'const SOURCE_WORKFLOW_NAMES = new Set(["lf-contract-check", "PASE"]);' in edge
+assert '!SOURCE_WORKFLOW_NAMES.has(run?.name)' in edge
+assert 'run?.name !== "lf-contract-check"' not in edge
 
 merge_gate = read("pase-merge-gate.yml")
 assert merge_gate.startswith("name: PASE Merge Gate\n")
