@@ -1,0 +1,17 @@
+name: PASE
+
+# Staged identity only. This workflow is deliberately inert until the coordinated
+# PASE identity cutover migrates independent admission, reconciliation, evidence
+# broker and live repository-governance authority.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  staged-identity:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "PASE_IDENTITY_STAGED_NOT_ACTIVE"
