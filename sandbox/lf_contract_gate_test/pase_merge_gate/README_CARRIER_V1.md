@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Run `PASE_MERGE_GATE_V1` from trusted base-branch code, independently of candidate code, before any external required-status enforcement is activated.
+Run `PASE_MERGE_GATE_V1` from trusted base-branch code, independently of candidate code.
 
 ```text
 pull_request_target
@@ -21,28 +21,57 @@ CHANGESET_GOVERNANCE_LF_V1
       v
 PASE_MERGE_ROUTE_V1
       |
-      v
-PASE_MERGE_GATE_V1
+      +-- EXECUTION_PLAN --------------------------+
+      |                                            |
+      +-- CONTROL_SYSTEM_QUALIFICATION             |
+             |                                     |
+             v                                     |
+       canonical LF operation ledger               |
+       GITHUB_CONTRACT_GATE_LF                     |
+       target_type=PASE_CONTROL_QUALIFICATION      |
+             |                                     |
+             +-- exact candidate/base/repo         |
+             +-- COMPLETED + zero blockers         |
+             +-- contract_judge/report_output PASS |
+             +-- trusted-base validator recheck    |
+             |                                     |
+             +------------------+------------------+
+                                v
+                       PASE_MERGE_GATE_V1
 ```
 
-## Shadow behavior
+## Qualification readback
 
-The carrier is intentionally fail-closed and does not invent missing evidence:
+A control-system candidate is never allowed to provide its own authoritative PASS. The independent qualifier persists its assessment in the existing canonical LF operation ledger using `GITHUB_CONTRACT_GATE_LF` with:
 
-- ordinary `EXECUTION_PLAN` changes pass only when the repair-enforcement projection has no active blocker requiring missing evidence;
-- a control-system change routes to `CONTROL_SYSTEM_QUALIFICATION` and blocks until independent canonical `PASE_CONTROL_QUALIFICATION_V1` evidence is available;
-- an active blocker without canonical exact-head PASS evidence blocks;
-- stale base, repository drift, head drift or malformed canonical plan blocks.
+- `target_type = PASE_CONTROL_QUALIFICATION`;
+- `target_code = <candidate_id>`;
+- exact repository, base SHA and candidate head;
+- `qualification_authority = PASE_CONTROL_QUALIFICATION_V1`;
+- `independent_qualifier = true`;
+- canonical `qualification_input` and `qualification_result` in the execution manifest.
+
+The trusted carrier requires exactly one matching completed execution, zero canonical blockers, PASS terminal `contract_judge` and `report_output` steps, then re-runs the trusted-base `PASE_CONTROL_QUALIFICATION_V1` validator over that exact input/result. Only `CANDIDATE_QUALIFIED` can reach the merge policy.
+
+Persisting a record does not itself make it valid: stale base/head, candidate/repository drift, duplicate records, incomplete operation state, missing terminal evidence, invalid qualification shape/verdict or any canonical blocker all fail closed.
 
 ## Trust boundary
 
 The workflow checks out exactly `github.event.pull_request.base.sha`. Candidate objects are fetched only so trusted base code can compute the Git diff. Candidate workflows, Python modules, build hooks and package code are never executed by this carrier.
 
-The carrier does not depend on a candidate-declared PASS and does not mutate GitHub rulesets, Supabase, the repository, owner-runners, bindings, controls or production state.
+The database password is exposed only to trusted base code in the `pull_request_target` job. Candidate code is not checked out or executed in that context. The carrier performs readback only; it does not mutate qualification records, GitHub rulesets, Supabase state, bindings, controls or production state.
 
-## Activation boundary
+## Behavior
 
-This solution is **shadow only**. `external_enforcement_active=false` is emitted in the result. Adding `pase-merge-gate` as a required status in `protect-main` is a later, separate activation step and requires explicit authorization plus live-fire evidence.
+- ordinary `EXECUTION_PLAN` changes pass only when the repair-enforcement projection has no active blocker requiring missing evidence;
+- a control-system change without independent canonical qualification blocks;
+- the same control-system change can pass only after exact-head qualification is independently persisted and revalidated;
+- an active blocker without canonical exact-head PASS evidence blocks;
+- stale base, repository drift, head drift or malformed canonical plan blocks.
+
+## Enforcement boundary
+
+The carrier result retains `external_enforcement_active=false` because the carrier itself does not own the GitHub ruleset. External enforcement is a repository setting and is validated separately. During bootstrap repair the required status may be temporarily removed; after live PASS/BLOCK proof the same `pase-merge-gate` status can be restored as the only required PASE merge status.
 
 ## Self-test
 
@@ -50,9 +79,4 @@ This solution is **shadow only**. `external_enforcement_active=false` is emitted
 python3 sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_carrier_v1.py self-test
 ```
 
-The self-test proves:
-
-1. normal no-blocker route can PASS;
-2. control-system change without independent qualification blocks;
-3. active blocker without canonical PASS evidence blocks;
-4. stale base blocks.
+The self-test proves normal PASS, missing-qualification BLOCK, canonical qualification PASS, qualification head drift BLOCK, active-control evidence BLOCK and stale-base BLOCK.
