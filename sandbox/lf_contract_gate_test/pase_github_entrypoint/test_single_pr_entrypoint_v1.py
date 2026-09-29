@@ -48,7 +48,8 @@ assert '"workflow_name": "lf-contract-check"' not in entrypoint
 legacy = read("lf-contract-check.yml")
 assert legacy.startswith("name: lf-contract-check\n")
 assert not PULL_REQUEST.search(legacy)
-assert "  push:\n" in legacy
+assert "  workflow_dispatch:\n" in legacy
+assert "  push:\n" not in legacy
 assert "uses: ./.github/workflows/pase.yml" in legacy
 assert "Build canonical PASE applicability and repair-enforcement plan" not in legacy
 
@@ -86,13 +87,23 @@ reconcile = read("lf-github-reconcile-v3.yml")
 assert 'workflows: ["lf-contract-check", "PASE"]' in reconcile
 assert PULL_REQUEST_TARGET.search(reconcile)
 
-# During the coexistence window the reconciler must independently accept both
-# source workflow identities. This guard prevents trigger/read-path cutover from
-# drifting ahead of the Edge verifier predicate.
+# PASE is now the only accepted automatic post-merge source identity. The legacy
+# workflow remains manual-only, so the stale workflow_run listener cannot produce
+# an automatic reconciliation path.
 edge = RECONCILER_EDGE.read_text(encoding="utf-8")
-assert 'const SOURCE_WORKFLOW_NAMES = new Set(["lf-contract-check", "PASE"]);' in edge
+assert 'const SOURCE_WORKFLOW_NAMES = new Set(["PASE"]);' in edge
 assert '!SOURCE_WORKFLOW_NAMES.has(run?.name)' in edge
 assert 'run?.name !== "lf-contract-check"' not in edge
+
+# Reconciliation must not re-read and re-persist all governed artifacts when the
+# merge touched none of them. Only reported artifacts marked touched enter the
+# exact-head repository readback/promotion loop.
+assert "const targetInventory = inventory.filter(" in edge
+assert "?.file_touched_by_merge === true" in edge
+assert "repositoryFiles(verified.source.head_sha, targetInventory)" in edge
+assert "for (const item of targetInventory)" in edge
+assert "artifacts_expected: targetInventory.length" in edge
+assert "inventory_size: inventory.length" in edge
 
 merge_gate = read("pase-merge-gate.yml")
 assert merge_gate.startswith("name: PASE Merge Gate\n")
