@@ -1,0 +1,201 @@
+{
+  "schema": "SRCR_V05_LIFECYCLE_NATIVE_TRACE_PHASE3_V1",
+  "run_id": "EXEC-SRCR-V05-NATIVE-LIFECYCLE-REGRESSION-20260921-001",
+  "mode": "READ_ONLY_NONBLIND_REGRESSION",
+  "trace": [
+    {
+      "sequence": 1,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/models.py",
+      "request_digest": "sha256:2fa0ee9b5a658356ecee4b89a6cc38fb305c89ae31d551f1161afa2e0a546ba9",
+      "result_digest": "sha256:b4fb0b2b4415ce3c07c1d085fc818952f148ef87c0e31c07831c5b7319d271cc",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-026",
+      "consumer": "$.material_process_graph.transport.profile_task"
+    },
+    {
+      "sequence": 2,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/repository.py",
+      "request_digest": "sha256:72108fd377c0d512946dc12ea6e6abb1577e54a7f20f498778a82917affff96b",
+      "result_digest": "sha256:7f52972108c2f3415b2311907f1aebb0979bd4a9d84dee85f8fce3dacd2cf507",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-027",
+      "consumer": "$.material_process_graph.transport.runtime_binding_parser"
+    },
+    {
+      "sequence": 3,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/validation.py",
+      "request_digest": "sha256:5a2d09679775c73be0975d3b9d05a3d4623e64cc054373bd2de1cdfd89f0dd23",
+      "result_digest": "sha256:0aec13a82d24e07e343fe8a4edf344d83538f1a5c8fcf15a20821b86436e6dd0",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-028",
+      "consumer": "$.material_process_graph.output_validation.invocation"
+    },
+    {
+      "sequence": 4,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/profile_runtime_api/engine.py",
+      "request_digest": "sha256:e668ca56297f46ec4a2ce791b1cb880154aa3ab4e66406d105b66c4cbc115c5a",
+      "result_digest": "sha256:df3b7febceac80d2380b5f821e59e11d469079dbeca64689eea61835087b8f5d",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-029",
+      "consumer": "$.material_process_graph.downstream_authorization"
+    },
+    {
+      "sequence": 5,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json",
+      "request_digest": "sha256:5fb6ff2f932db9eaf37c8050462ef87b0829b5d7ecd5bfba2be5f9f25251fe85",
+      "result_digest": "sha256:fc4c61433622421a4b86327fa116c090d4b5d6c065d2fa4757d63e887edec439",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-030",
+      "consumer": "$.material_process_graph.quality_declared_contract"
+    },
+    {
+      "sequence": 6,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+      "request_digest": "sha256:dd1344873e7f1bebaf5176605229228f46886202e90fed6d9a95840955c97910",
+      "result_digest": "sha256:9371a5a1e709d072278aee39e83b9b8a8e5d8f01e2c7f8e3559346b3f893ed3b",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-031",
+      "consumer": "$.material_process_graph.output_validation.validator_signature"
+    },
+    {
+      "sequence": 7,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
+      "request_digest": "sha256:e29826b5fc5898dbf621229bde88df6f45a4390ea01db7ef48ec4fb168fec2ae",
+      "result_digest": "sha256:32288cb8cd3f85ab0ee53347479a7b57073468627bb2bc392fd9e86e512d54ec",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-032",
+      "consumer": "$.material_process_graph.output_validation.semantic_signature"
+    },
+    {
+      "sequence": 8,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/profiles/systemic_root_cause_repair_lf/validators/validate_quality_receipt.py",
+      "request_digest": "sha256:04ccdabc957324416e929f00e01d30655497039fd7af295f71b8525d47220d9c",
+      "result_digest": "sha256:f54b1a60a5cbe7e2c29bf7cbe5a43f73ed2b7281b64215d24fb4e1c7c2d1e2fb",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-033",
+      "consumer": "$.material_process_graph.quality_receipt_validator"
+    },
+    {
+      "sequence": 9,
+      "tool_permission": "READ_GITHUB",
+      "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+      "provider": "GITHUB",
+      "query_locator": "github://cristhianlujan/claude-persona-lf-patch@4ca67c29925ad5016158f56bf0e58ef1da2d6c71/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "request_digest": "sha256:3aa7a1e660bcfbdad68adc761a37217366b843f08b2fc3b23a99f11a516c3423",
+      "result_digest": "sha256:a14dd1d35f258683b4a1c9c39eff32ba92a60d7828274729bbcd0edbf7c74510",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-034",
+      "consumer": "$.material_process_graph.semantic_judge_handoff"
+    },
+    {
+      "sequence": 10,
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q26_srcr_quality_receipt_rows",
+      "request_digest": "sha256:42eb20f46503fa48efe939676818804bcff167913bf2fcff6f044360bf173cb6",
+      "result_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-035",
+      "consumer": "$.historical_regressions.persisted_quality_receipts"
+    },
+    {
+      "sequence": 11,
+      "tool_permission": "READ_SUPABASE",
+      "resolver_id": "LF_SUPABASE_READBACK_V1",
+      "provider": "SUPABASE",
+      "query_locator": "sql:Q27_srcr_semantic_judge_operation_binding",
+      "request_digest": "sha256:c1348770df580beaf20df0750605cad32258982181841156b6671141fc359759",
+      "result_digest": "sha256:05fc474e6995043e08322d6ddb6a00ed029999e260a6d108bf50eedef0768621",
+      "observed_at": "2026-09-21T22:45:00-05:00",
+      "evidence_id": "EV-LC-036",
+      "consumer": "$.material_process_graph.semantic_judge_enforcement"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "LC-F06",
+      "class": "EVIDENCE_MANIFEST_TRANSPORT_GAP",
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-026",
+        "EV-LC-028",
+        "EV-LC-031",
+        "EV-LC-032"
+      ],
+      "observation": "SRCR validators explicitly accept evidence_manifest, but ProfileTask has no evidence_manifest field and the runtime gate calls validator(payload) and evaluator(payload, contract_gate) only.",
+      "impact": "Externally resolved evidence is lost at the runtime boundary, causing false unresolved-evidence failures before semantic evaluation."
+    },
+    {
+      "finding_id": "LC-F07",
+      "class": "CANONICAL_QUALITY_DECLARED_NOT_CONSUMED",
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-027",
+        "EV-LC-030",
+        "EV-LC-033"
+      ],
+      "observation": "The raw SRCR binding requires canonical quality for V0.5 and names judge/result/receipt validators. RuntimeProfileBinding does not parse canonical_quality and service runtime contains no quality receipt consumer.",
+      "impact": "The authoritative quality contract is dead configuration in the operational service path."
+    },
+    {
+      "finding_id": "LC-F08",
+      "class": "SEMANTIC_JUDGE_BOUND_WITHOUT_AUTOMATIC_EXECUTOR",
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "evidence_ids": [
+        "EV-LC-028",
+        "EV-LC-034",
+        "EV-LC-036"
+      ],
+      "observation": "Supabase has an ACTIVE_ENFORCEMENT semantic_judge step requiring semantic_judge_result and unsupported_claims, while the worker returns READY_FOR_SEMANTIC_JUDGE with semantic_judge_auto_recorded=false and the runtime service reports independent_semantic_judge=NOT_EXECUTED.",
+      "impact": "The governed execution can reach the independent-quality boundary but cannot cross it automatically."
+    },
+    {
+      "finding_id": "LC-F09",
+      "class": "CANONICAL_QUALITY_RECEIPT_UNMATERIALIZED",
+      "status": "CONFIRMED_CONSEQUENCE",
+      "evidence_ids": [
+        "EV-LC-033",
+        "EV-LC-035"
+      ],
+      "observation": "A canonical quality receipt validator exists, but zero SRCR rows were found under the exact semantic/quality receipt types queried.",
+      "impact": "No durable canonical-quality readback currently closes the V0.5 path."
+    },
+    {
+      "finding_id": "LC-F10",
+      "class": "DOWNSTREAM_AUTHORIZATION_HAS_NO_TRUE_PATH",
+      "status": "CONFIRMED_CONSEQUENCE",
+      "evidence_ids": [
+        "EV-LC-028",
+        "EV-LC-029",
+        "EV-LC-030"
+      ],
+      "observation": "The runtime service returns downstream_authorized=false throughout and never consumes canonical_quality to derive a true state.",
+      "impact": "Even a hypothetical clean producer output cannot become downstream-authorized through the current service path."
+    }
+  ]
+}

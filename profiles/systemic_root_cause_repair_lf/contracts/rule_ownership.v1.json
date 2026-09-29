@@ -1,0 +1,37 @@
+{
+  "schema": "SRCR_RULE_OWNERSHIP_V1",
+  "profile_pack": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+  "owners": {
+    "STRUCTURAL": {
+      "path": "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+      "role": "PRE_QUALITY_STRUCTURAL_FLOOR",
+      "owns": "schema/shape/closure/evidence-structure/material-process structural blocking rules"
+    },
+    "SEMANTIC_UTILITY": {
+      "path": "profiles/systemic_root_cause_repair_lf/validators/runtime_semantic_utility.py",
+      "role": "PRE_QUALITY_SEMANTIC_UTILITY_FLOOR",
+      "owns": "utility-only checks after structural PASS"
+    },
+    "RESEARCH_TRACE": {
+      "path": "profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
+      "role": "LIVE_RESEARCH_TRACE_FLOOR",
+      "owns": "query trace shape, resolver identity, exact trace-to-manifest binding"
+    },
+    "INDEPENDENT_SEMANTIC": {
+      "path": "profiles/systemic_root_cause_repair_lf/judges/systemic_root_cause_semantic_judge.md",
+      "role": "FINAL_INDEPENDENT_SEMANTIC_AUTHORITY",
+      "owns": "scope/evidence/causal/decision semantic closure"
+    }
+  },
+  "invariants": [
+    "STRUCTURAL and SEMANTIC_UTILITY emitted blocking-code sets must have empty intersection.",
+    "RESEARCH_TRACE validation logic is implemented only in validators/research_trace.py; callers delegate.",
+    "Independent semantic judge may interpret structural/utility outputs but must not become a duplicate deterministic implementation."
+  ],
+  "static_test": {
+    "required": true,
+    "structural_utility_overlap_expected": 0,
+    "native_harness_must_delegate_research_trace": true,
+    "runtime_must_delegate_research_trace": true
+  }
+}

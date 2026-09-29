@@ -1,0 +1,754 @@
+{
+  "schema": "SRCR_MC12_INDEPENDENT_R2_REVIEW_V1",
+  "review_execution": {
+    "reviewer_execution_id": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+    "executor_mode": "GPT_NATIVE",
+    "provider": "OPENAI_CHATGPT_NATIVE",
+    "model_id": "GPT-5.6 Sol",
+    "reviewer_context_mode": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT",
+    "source_revision": "c8d0016df30a2480b2770604e047546415da5de5",
+    "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+    "producer_private_context_consumed": false,
+    "extraction_seed": "ENTIRE_CANDIDATE_EXCLUDING_IMPLEMENTATION_DELTA_AS_SEED"
+  },
+  "semantic_result": {
+    "verdict": "PASS_INDEPENDENT_SEMANTIC",
+    "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "reviewer_execution_id": "EXEC-MC12-INDEPENDENT-R2-20260922-001",
+    "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+    "reviewer_context_mode": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT",
+    "review_input_classes": [
+      "CURRENT_AUTHORITY_REFS",
+      "EVIDENCE_MANIFEST",
+      "EXACT_CANDIDATE",
+      "SCOPE_AUTHORITY_PACKET"
+    ],
+    "source_refs_inspected": [
+      "github://cristhianlujan/claude-persona-lf-patch@c8d0016df30a2480b2770604e047546415da5de5/sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/candidate_v06_repaired.json",
+      "github://cristhianlujan/claude-persona-lf-patch@c8d0016df30a2480b2770604e047546415da5de5/sandbox/lf_contract_gate_test/srcr_v06_candidate_20260922/evidence_manifest_v06_merged.json",
+      "github://cristhianlujan/claude-persona-lf-patch@c8d0016df30a2480b2770604e047546415da5de5/sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc03_scope_authority_packet.json",
+      "github://cristhianlujan/claude-persona-lf-patch@c8d0016df30a2480b2770604e047546415da5de5/profiles/systemic_root_cause_repair_lf/judges/systemic_root_cause_semantic_judge.md",
+      "github://cristhianlujan/claude-persona-lf-patch@c8d0016df30a2480b2770604e047546415da5de5/profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+      "supabase://public.lf_eventos/14795#CASE_PACKET"
+    ],
+    "observed_candidate_changes": [
+      {
+        "change_id": "MC12-CHG-001",
+        "action_class": "RELEASE_IDENTITY_CONTRACT",
+        "target": "PROFILE_RELEASE_CONTRACT_V1",
+        "candidate_paths": [
+          "$.implementation_package.architecture_decisions[1]",
+          "$.implementation_package.policy_contract_changes[0]",
+          "$.material_process_graph.edges[0]",
+          "$.material_process_graph.edges[1]",
+          "$.material_process_graph.edges[5]",
+          "$.material_process_graph.edges[6]"
+        ],
+        "statement": "Introduce an immutable profile-release envelope/identity that binds exact source, entrypoint, manifest, runtime/control/quality refs and predecessor.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-002",
+        "action_class": "CURRENT_RELEASE_BINDING",
+        "target": "profile_release_binding",
+        "candidate_paths": [
+          "$.implementation_package.deliverables[0]",
+          "$.implementation_package.observability_plan[0]",
+          "$.closure_proof.wiring_proofs[5]",
+          "$.acceptance_criteria[4]",
+          "$.acceptance_criteria[6]"
+        ],
+        "statement": "Add a minimal desired-versus-observed current release binding with CAS/currentness semantics while preserving immutable history in execution receipts.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-003",
+        "action_class": "LIFECYCLE_RECONCILER_OPERATION",
+        "target": "GESTION_RELEASE_PERFIL_LF",
+        "candidate_paths": [
+          "$.implementation_package.architecture_decisions[0]",
+          "$.hard_guard",
+          "$.implementation_package.deliverables[2]",
+          "$.implementation_package.control_matrix[0]",
+          "$.implementation_package.control_matrix[1]",
+          "$.implementation_package.control_matrix[2]"
+        ],
+        "statement": "Add a thin Supabase-governed lifecycle/reconciler boundary that composes existing phase operations instead of creating a second execution engine.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+          "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-004",
+        "action_class": "ROUTER_ACTION_BINDING",
+        "target": "public.lf_router_action_registry",
+        "candidate_paths": [
+          "$.implementation_package.deliverables[3]",
+          "$.implementation_package.architecture_decisions[0]"
+        ],
+        "statement": "Bind profile release promotion/deprecate/reconcile/rollback/retire actions to the governed lifecycle operation only after the relevant contracts are operational.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+          "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-005",
+        "action_class": "QUALIFICATION_BINDING",
+        "target": "PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
+        "candidate_paths": [
+          "$.implementation_package.architecture_decisions[2]",
+          "$.implementation_package.policy_contract_changes[1]",
+          "$.implementation_package.wiring[2]",
+          "$.acceptance_criteria[3]",
+          "$.material_process_graph.edges[2]"
+        ],
+        "statement": "Bind profile_release identity to the existing QUALIFICATION_LIFECYCLE without introducing a parallel qualification state machine.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+          "EV-LC-006",
+          "EV-LC-036"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-006",
+        "action_class": "QUALITY_AUTHORIZATION_SEPARATION",
+        "target": "PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
+        "candidate_paths": [
+          "$.implementation_package.architecture_decisions[3]",
+          "$.implementation_package.policy_contract_changes[3]",
+          "$.implementation_package.wiring[7]",
+          "$.implementation_package.wiring[8]",
+          "$.acceptance_criteria[10]",
+          "$.material_process_graph.edges[3]",
+          "$.material_process_graph.edges[7]"
+        ],
+        "statement": "Keep deterministic structural validation, independent semantic acceptance, canonical quality receipt and operational authorization as non-substitutable layers.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "github://services/profile_runtime_api/profile_runtime_api/validation.py",
+          "github://services/profile_runtime_api/profile_runtime_api/engine.py",
+          "supabase://public/lf_operation_step_judge_bindings",
+          "EV-LC-028",
+          "EV-LC-029",
+          "EV-LC-035",
+          "EV-LC-036"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-007",
+        "action_class": "RELEASE_TRANSITION_POLICY",
+        "target": "PROFILE_RELEASE_TRANSITION_POLICY_V1",
+        "candidate_paths": [
+          "$.hard_guard",
+          "$.implementation_package.policy_contract_changes[2]",
+          "$.implementation_package.wiring[3]",
+          "$.implementation_package.wiring[5]",
+          "$.implementation_package.wiring[6]",
+          "$.rollback_plan",
+          "$.material_process_graph.edges[4]",
+          "$.material_process_graph.edges[9]",
+          "$.material_process_graph.edges[11]",
+          "$.material_process_graph.edges[12]"
+        ],
+        "statement": "Define governed promote/deprecate/rollback/rollback-refresh/retire transition semantics with CAS, idempotency and exact readback.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://lf_ops/estados_catalogo+estados_transiciones",
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+          "EV-LC-006",
+          "EV-LC-011",
+          "EV-LC-021"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-008",
+        "action_class": "COMPATIBILITY_DRAIN",
+        "target": "PROFILE_RELEASE_COMPATIBILITY_WINDOW_V1",
+        "candidate_paths": [
+          "$.implementation_package.architecture_decisions[4]",
+          "$.implementation_package.policy_contract_changes[4]",
+          "$.implementation_package.control_matrix[5]",
+          "$.acceptance_criteria[7]",
+          "$.acceptance_criteria[8]",
+          "$.acceptance_criteria[11]",
+          "$.material_process_graph.edges[10]"
+        ],
+        "statement": "Add a deprecation drain stage that blocks new adoption, inventories active consumers and permits retirement only at zero consumers with terminal readback.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF",
+          "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+          "EV-LC-005",
+          "EV-LC-021"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-009",
+        "action_class": "RUNTIME_RELEASE_WIRING",
+        "target": "REFRESCO_RUNTIME_PERFIL_LF exact desired/observed release wiring",
+        "candidate_paths": [
+          "$.implementation_package.deliverables[5]",
+          "$.implementation_package.wiring[3]",
+          "$.implementation_package.wiring[4]",
+          "$.implementation_package.wiring[5]",
+          "$.acceptance_criteria[5]",
+          "$.acceptance_criteria[6]"
+        ],
+        "statement": "Modify runtime-refresh wiring so it consumes the exact desired release identity and emits observed-release/source/health/state readbacks without implicit promotion.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-010",
+        "action_class": "NEXT_GATE_CANARY_CONSUMER",
+        "target": "GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
+        "candidate_paths": [
+          "$.implementation_package.control_matrix[6]",
+          "$.implementation_package.deliverables[6]",
+          "$.implementation_package.wiring[9]",
+          "$.material_process_graph.edges[6]"
+        ],
+        "statement": "Bind PROFILE_RUNTIME_CANARY_REQUIRED to a governed verify-runtime-canary consumer before execution authorization.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "EV-LC-018",
+          "EV-LC-025"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-011",
+        "action_class": "QUEUE_TERMINAL_RECONCILIATION",
+        "target": "EJECUCION_PERFIL_LF/queue_terminal_bridge",
+        "candidate_paths": [
+          "$.implementation_package.control_matrix[7]",
+          "$.implementation_package.deliverables[7]",
+          "$.implementation_package.wiring[10]",
+          "$.material_process_graph.edges[8]"
+        ],
+        "statement": "Add idempotent reconciliation from authoritative runtime queue terminal outcomes to the canonical EJECUCION_PERFIL_LF terminal state.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "EV-LC-019",
+          "EV-LC-020",
+          "EV-LC-023"
+        ]
+      },
+      {
+        "change_id": "MC12-CHG-012",
+        "action_class": "DISCOVERY_ONLY_PRECONDITION",
+        "target": "RETIRO_ACTIVO_LF operational readiness",
+        "candidate_paths": [
+          "$.current_uncertainties[0]",
+          "$.implementation_package.decision_closure.implementation_preconditions[0]",
+          "$.implementation_package.control_matrix[3]"
+        ],
+        "statement": "RETIRO_ACTIVO_LF is not yet an operational retire authority; keep retirement enablement blocked rather than adding operationalization of that authority to the selected repair.",
+        "materiality": "MATERIAL_DISCOVERY_ONLY",
+        "evidence_refs": [
+          "supabase://public/lf_operation_registry/RETIRO_ACTIVO_LF"
+        ]
+      }
+    ],
+    "requirement_reconciliation": [
+      {
+        "scope_item_id": "REQ-LC-01",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-02",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-03",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-04",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-05",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-06",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-07",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-08",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-09",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate contains a closed implementation package with transition, rollback, acceptance, falsification and explicit selected-repair deltas."
+      },
+      {
+        "scope_item_id": "CON-LC-01",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The candidate addresses the Profile lifecycle end-to-end and does not collapse the problem into MR02 execution lifecycle."
+      },
+      {
+        "scope_item_id": "CON-LC-02",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The candidate evidence map and manifest bind current GitHub/Supabase/EKB authority refs without treating proposed artifacts as existing authority."
+      },
+      {
+        "scope_item_id": "FORBID-LC-01",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-02",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-03",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-04",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-05",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-06",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-07",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-08",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      }
+    ],
+    "change_declaration_reconciliation": [
+      {
+        "change_id": "MC12-CHG-001",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[0]",
+          "$.implementation_package.deliverables[1]",
+          "$.implementation_package.wiring[0]",
+          "$.implementation_package.wiring[1]",
+          "$.implementation_package.wiring[4]"
+        ],
+        "reason": "Release envelope change is explicitly declared across delta, deliverable and physical wiring."
+      },
+      {
+        "change_id": "MC12-CHG-002",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[1]",
+          "$.implementation_package.deliverables[0]",
+          "$.implementation_package.observability_plan[0]"
+        ],
+        "reason": "Desired/observed binding is explicitly declared with artifact, exact delta and observability."
+      },
+      {
+        "change_id": "MC12-CHG-003",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[2]",
+          "$.implementation_package.deliverables[2]",
+          "$.implementation_package.wiring[0]",
+          "$.implementation_package.wiring[8]"
+        ],
+        "reason": "Thin lifecycle/reconciler boundary is an explicit selected artifact and wiring destination."
+      },
+      {
+        "change_id": "MC12-CHG-004",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[3]",
+          "$.implementation_package.deliverables[3]"
+        ],
+        "reason": "Router actions are explicitly declared as BIND deliverable with dependencies and acceptance refs."
+      },
+      {
+        "change_id": "MC12-CHG-005",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[4]",
+          "$.implementation_package.deliverables[4]",
+          "$.implementation_package.wiring[2]"
+        ],
+        "reason": "Qualification reuse/binding is explicit and physically wired to QUALIFICATION_LIFECYCLE."
+      },
+      {
+        "change_id": "MC12-CHG-006",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[5]",
+          "$.implementation_package.policy_contract_changes[3]",
+          "$.implementation_package.wiring[7]",
+          "$.implementation_package.wiring[8]"
+        ],
+        "reason": "Acceptance layers are declared as a selected policy/contract change and have explicit judge-to-receipt/promotion wiring."
+      },
+      {
+        "change_id": "MC12-CHG-007",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[6]",
+          "$.implementation_package.policy_contract_changes[2]",
+          "$.implementation_package.wiring[3]",
+          "$.implementation_package.wiring[5]",
+          "$.implementation_package.wiring[6]"
+        ],
+        "reason": "Transition/rollback mechanics are fully declared in delta, policy and wiring."
+      },
+      {
+        "change_id": "MC12-CHG-008",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[7]",
+          "$.implementation_package.policy_contract_changes[4]",
+          "$.implementation_package.control_matrix[5]",
+          "$.implementation_package.deliverables[2]",
+          "$.implementation_package.deliverables[3]"
+        ],
+        "reason": "Consumer drain is declared as selected policy/control and implemented through lifecycle/route deliverables with retire/deprecate acceptance."
+      },
+      {
+        "change_id": "MC12-CHG-009",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_package.deliverables[5]",
+          "$.implementation_package.wiring[3]",
+          "$.implementation_package.wiring[4]",
+          "$.implementation_package.wiring[5]"
+        ],
+        "reason": "Runtime refresh modification is explicitly declared in the implementation package even though it is not a separate implementation_delta row."
+      },
+      {
+        "change_id": "MC12-CHG-010",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[8]",
+          "$.implementation_package.deliverables[6]",
+          "$.implementation_package.wiring[9]"
+        ],
+        "reason": "Canary consumer is declared in delta, deliverable and exact physical wiring."
+      },
+      {
+        "change_id": "MC12-CHG-011",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[9]",
+          "$.implementation_package.deliverables[7]",
+          "$.implementation_package.wiring[10]"
+        ],
+        "reason": "Queue terminal bridge is declared in delta, deliverable and exact physical wiring."
+      },
+      {
+        "change_id": "MC12-CHG-012",
+        "disposition": "DISCOVERY_ONLY_NOT_IN_SELECTED_REPAIR",
+        "declared_refs": [
+          "$.current_uncertainties[0]",
+          "$.implementation_package.decision_closure.implementation_preconditions[0]"
+        ],
+        "reason": "Operationalizing RETIRO_ACTIVO_LF is intentionally not selected; retirement remains disabled until that separate authority becomes operational."
+      }
+    ],
+    "scope_conformance_reconciliation": [
+      {
+        "change_id": "MC12-CHG-001",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-002",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-003",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-004",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-005",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-006",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-007",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-008",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-009",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-010",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-011",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "Selected Profile lifecycle repair change is within the authorized repair-spec scope and does not itself perform production/runtime mutation."
+      },
+      {
+        "change_id": "MC12-CHG-012",
+        "disposition": "DISCOVERY_OUT_OF_SCOPE",
+        "scope_item_ids": [
+          "CON-LC-01"
+        ],
+        "reason": "Retire-authority operationalization is retained only as an implementation precondition/discovery and is not promoted into the selected repair footprint."
+      }
+    ],
+    "invariant_results": [
+      {
+        "invariant": "SCOPE_AUTHORITY_INTEGRITY",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "Existing LF authorities remain evidence-bound; new release/reconciler artifacts are labeled proposed deliverables and no production/write action is performed."
+      },
+      {
+        "invariant": "EVIDENCE_INTEGRITY",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "The exact candidate is bound to the exact evidence manifest; material evidence refs are preserved and the manifest digest is fixed for review."
+      },
+      {
+        "invariant": "CAUSAL_CLOSURE",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "The repair ties the observed lifecycle gap to immutable release identity, desired/observed reconciliation, promotion/rollback wiring and explicit acceptance/rollback behavior."
+      },
+      {
+        "invariant": "CONTRADICTION_INTEGRITY",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "Selected alternative B, implementation_delta, transition plan, rollback plan and closure proof are mutually consistent; the retirement uncertainty is contained as an implementation precondition."
+      },
+      {
+        "invariant": "MINIMUM_SUFFICIENT_REUSE",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "The candidate reuses existing CREATE/UPDATE/EXECUTE/REFRESH/RETIRE and qualification primitives and adds a thin release/reconciler boundary rather than a second execution engine."
+      },
+      {
+        "invariant": "INDEPENDENT_DECISION_CLOSURE",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "Independent whole-candidate extraction found 11 material selected changes, all declared-equivalent in the implementation footprint, plus one discovery-only retire-authority precondition kept outside the selected repair."
+      },
+      {
+        "invariant": "FALSIFIABILITY_REGRESSION",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "The candidate defines executable positive/negative regressions, rollback triggers, state/readback checks and failure conditions sufficient to falsify the proposed repair."
+      }
+    ],
+    "open_design_decisions_found": [],
+    "unsupported_claims": [],
+    "blocking_codes": [],
+    "repair_instructions": [],
+    "next_gate": "MC13_FULL_UNGROUPED_REPLAY"
+  },
+  "deterministic_semantic_result_validation": {
+    "status": "PASS",
+    "blocking_codes": []
+  },
+  "r2_summary": {
+    "observed_change_count": 12,
+    "selected_declared_equivalent_count": 11,
+    "discovery_only_count": 1,
+    "undeclared_proposed_change_count": 0
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "SRCR_MC09_INDEPENDENT_REVIEW_READBACK_V1",
+  "status": "READBACK_CLOSED",
+  "source_revision": "ec81f80e72e391bcd6b56b66f8dea494cfaae987",
+  "observed_at": "2026-09-22T14:48:08.456881+00:00",
+  "execution_surfaces": {
+    "local_readback": "SENTINELX_EPHEMERAL_READ_ONLY",
+    "ci_workflow": "Validate LF Packs",
+    "ci_run_id": 35742637295,
+    "ci_runtime_test_step": "Test persistent Profile Runtime API",
+    "ci_runtime_test_result": "SUCCESS",
+    "ci_runtime_test_summary": "233 passed"
+  },
+  "closure_evidence": {
+    "distinct_execution_identity": "producer_execution_id == reviewer_execution_id is rejected by request model, materializer and quality receipt validator",
+    "distinct_receipt_identity": "producer_execution_receipt_ref == semantic_execution_receipt_ref is rejected",
+    "isolated_reviewer_context": "reviewer_context_mode is fixed to ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT and producer private reasoning/chat/hidden context are forbidden",
+    "allowed_input_boundary": [
+      "CURRENT_AUTHORITY_REFS",
+      "EVIDENCE_MANIFEST",
+      "EXACT_CANDIDATE",
+      "SCOPE_AUTHORITY_PACKET"
+    ],
+    "review_input_binding": "review_input_sha256 is derived from exact candidate, evidence manifest and scope packet and must match the semantic result and quality receipt",
+    "candidate_freeze_binding": "post-review candidate mutation invalidates candidate digest / semantic candidate SHA / persisted producer readback",
+    "separate_reviewer_entrypoint": "semantic-review relay tests prove reviewer entrypoint does not run producer execution",
+    "semantic_result_identity_binding": "semantic result must bind reviewer_execution_id and review_input_sha256"
+  },
+  "negative_tests": {
+    "same_execution_rejected": true,
+    "shared_receipt_rejected": true,
+    "producer_private_context_rejected": true,
+    "wrong_reviewer_execution_rejected": true,
+    "wrong_review_input_digest_rejected": true,
+    "wrong_reviewer_context_mode_rejected": true,
+    "forbidden_input_class_rejected": true,
+    "candidate_mutation_after_review_rejected": true
+  },
+  "targeted_results": {
+    "v06_quality_materialization": "SRCR_V06_QUALITY_RECEIPT_MATERIALIZATION=9/9",
+    "semantic_boundary": "MC09_SEMANTIC_BOUNDARY=PASS 5/5",
+    "generic_finalizer_unittest": "PASS"
+  },
+  "ownership_note": "Actual semantic-judge invocation is MC-10. MC-09 closes the mechanical independence boundary and must not duplicate MC-10 invocation ownership."
+}

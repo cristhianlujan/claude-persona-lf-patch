@@ -1,0 +1,87 @@
+{
+  "schema": "SRCR_MC02_MODEL_CONTEXT_READBACK_V1",
+  "status": "READBACK_CLOSED",
+  "source_revision": "5de5d6c66a2f014ae05e2ba912b69aaaf21b626d",
+  "execution_id": "EXEC-SRCR-MC02-GPT-NATIVE-20260922-001",
+  "executor_mode": "GPT_NATIVE",
+  "provider": "OPENAI_CHATGPT_NATIVE",
+  "model_id": "GPT-5.6 Sol",
+  "context_manifest_sha256": "7c948c7efb1b83b854f51145398c8f8f4b96bab37b4cb95dc148f10236071297",
+  "request_sha256": "a4e3ba52674909e9ac689abb37c02b3f89f67b2dc55dcd655936f0886c28da28",
+  "profile_source_sha256": "b0f3f88bbe8cc23f8415efbd4d5b495a9c23b380fb4b210305307131f87f4d31",
+  "raw_output_sha256": "e1c7596f18b02e74bb2b7941843f777bf29855eda59587338f1a48791fa2caf8",
+  "execution_receipt": {
+    "receipt_type": "PROFILE_EXECUTION_RECEIPT_V1",
+    "operation_code": "EJECUCION_PERFIL_LF",
+    "execution_id": "EXEC-SRCR-MC02-GPT-NATIVE-20260922-001",
+    "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    "profile_slug": "systemic_root_cause_repair_lf",
+    "profile_source_refs": [
+      "profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md"
+    ],
+    "profile_source_sha256": "b0f3f88bbe8cc23f8415efbd4d5b495a9c23b380fb4b210305307131f87f4d31",
+    "input_sha256": "45332206e94f498017f078b9d84ebcd6c319c9d829301391f30699b6f6ae7074",
+    "raw_output_sha256": "e1c7596f18b02e74bb2b7941843f777bf29855eda59587338f1a48791fa2caf8",
+    "raw_output_captured": true,
+    "execution_origin": "MODEL_RUNTIME",
+    "runtime_attestation": {
+      "provider": "OPENAI_CHATGPT_NATIVE",
+      "model_id": "GPT-5.6 Sol",
+      "run_id": "CHATGPT-NATIVE-SRCR-MC02-20260922-001",
+      "attested_at": "2026-09-22T15:24:00Z",
+      "attestation_verifier": "GITHUB_MATERIALIZATION_READBACK_V1",
+      "attestation_evidence_sha256": "3e79425a73f96d51b7a1a3b115831efb842292ce5d120850f3c1c646a073c19d",
+      "verified_request_sha256": "077abb4c1a577496abd8855b6f2ac904aaa2be26494620ea9f6bbece39882afc",
+      "verified_response_sha256": "4475dc318ab74f5044aa82f1bec3c8b2cc3fdae7b3e3a33265a27f67cdf68bb0",
+      "execution_mode": "GPT_NATIVE",
+      "context_manifest_sha256": "7c948c7efb1b83b854f51145398c8f8f4b96bab37b4cb95dc148f10236071297",
+      "source_revision": "5de5d6c66a2f014ae05e2ba912b69aaaf21b626d",
+      "materialization_commit_sha": "d56a1a5a8e15d508be889bff30af805ec53fe5ef",
+      "materialization_path": "sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc02_native_context_raw_output.json",
+      "attestation_boundary": "GitHub readback verifies the exact persisted native output, exact delivered context source bytes, context manifest and source revision. Native model internals and exact token telemetry are not independently observable."
+    },
+    "downstream_authorized": false,
+    "receipt_sha256": "8aa8cd60bc9c669b286ac0e023478d38b1ff060acee1a8abd8283a9371481028"
+  },
+  "positive_budget_test": {
+    "status": "PASS",
+    "delivered_chars": 37980,
+    "max_chars": 42000,
+    "source_count": 2
+  },
+  "overflow_negative_test": {
+    "status": "PASS",
+    "mutated_max_chars": 37979,
+    "blocking_code": "PROFILE_RUNTIME_MODEL_CONTEXT_BUDGET_EXCEEDED"
+  },
+  "delivery_readback": {
+    "source_count": 2,
+    "source_refs": [
+      "profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md"
+    ],
+    "source_content_sha256": {
+      "profiles/systemic_root_cause_repair_lf/SKILL.md": "e2fd770ccab99ee2c04d4b7fb02a58546a69b4cab020dfa5d820378adeb77bec",
+      "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md": "68968b57d57e1fba6ccbff21195dc32c100271698e92d9f42c9a1b2ff620d1a8"
+    },
+    "content_probe_count": 7,
+    "all_content_probes_resolved": true,
+    "full_source_to_model": false,
+    "excluded_payloads": {
+      "full_source_to_model": false,
+      "skill_excluded_sections": [
+        "Activation",
+        "Case mode (V0.5)",
+        "Output modes",
+        "Mandatory self-repair closure contract",
+        "Mandatory per-run progress table"
+      ],
+      "binary_artifacts": "EXCLUDED",
+      "producer_private_context": "EXCLUDED"
+    }
+  },
+  "downstream_authorized": false,
+  "production_mutation": false,
+  "database_write": false
+}

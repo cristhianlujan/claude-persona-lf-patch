@@ -1,0 +1,140 @@
+{
+  "schema": "SRCR_MC03_EVIDENCE_MANIFEST_E2E_READBACK_V1",
+  "status": "READBACK_CLOSED",
+  "source_revision": "5beb0c05a1b2c8aab07a744cf91ee10fc86501f3",
+  "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+  "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+  "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+  "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+  "producer_execution_id": "EXEC-SRCR-LIFECYCLE-PRODUCER-20260922-001",
+  "reviewer_execution_id": "EXEC-MC03-INDEPENDENT-REVIEW-20260922-001",
+  "reviewer_context_mode": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT",
+  "observed_candidate_change_count": 10,
+  "scope_item_count": 19,
+  "hop_digests": {
+    "resolver": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "deterministic_validator": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "semantic_utility": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "independent_semantic_judge": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "canonical_quality_finalizer": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "canonical_quality_receipt": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb"
+  },
+  "all_hops_same_digest": true,
+  "canonical_quality_status": "PASS",
+  "canonical_quality_accepted": true,
+  "quality_receipt": {
+    "receipt_version": "SRCR_QUALITY_RECEIPT_V1",
+    "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+    "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+    "decision": "PASS_TO_QUALITY_PACK",
+    "review_boundary": {
+      "issuer": "CANONICAL_SRCR_MINI_JUDGE",
+      "execution_mode": "INDEPENDENT_SEMANTIC_REVIEW",
+      "reviewer_is_producer": false,
+      "producer_context_available": false,
+      "semantic_execution_receipt_ref": "readback://mc03/semantic/EXEC-MC03-INDEPENDENT-REVIEW-20260922-001",
+      "producer_execution_id": "EXEC-SRCR-LIFECYCLE-PRODUCER-20260922-001",
+      "reviewer_execution_id": "EXEC-MC03-INDEPENDENT-REVIEW-20260922-001",
+      "producer_execution_receipt_ref": "readback://mc03/producer/EXEC-SRCR-LIFECYCLE-PRODUCER-20260922-001",
+      "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+      "reviewer_context_mode": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT",
+      "review_input_classes": [
+        "CURRENT_AUTHORITY_REFS",
+        "EVIDENCE_MANIFEST",
+        "EXACT_CANDIDATE",
+        "SCOPE_AUTHORITY_PACKET"
+      ],
+      "independence_evidence_refs": [
+        "readback://mc03/producer/EXEC-SRCR-LIFECYCLE-PRODUCER-20260922-001",
+        "readback://mc03/semantic/EXEC-MC03-INDEPENDENT-REVIEW-20260922-001"
+      ]
+    },
+    "candidate_binding": {
+      "candidate_revision": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+      "candidate_digest": "sha256:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16"
+    },
+    "evidence_binding": {
+      "bundle_id": "SRCR-V06-LIFECYCLE-MERGED-EVIDENCE-20260922",
+      "bundle_digest": "sha256:38527cfb43f1f06b713582c079a7b4a27e6828f2ef4796978d3f00e097cc1f7b",
+      "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb"
+    },
+    "semantic_binding": {
+      "semantic_result_digest": "sha256:001403873bf278ae73824a1f70fbef1cf6232d38a7f4f7af80a39bbab5347158",
+      "semantic_verdict": "PASS_INDEPENDENT_SEMANTIC",
+      "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+      "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+      "reviewer_execution_id": "EXEC-MC03-INDEPENDENT-REVIEW-20260922-001",
+      "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40"
+    },
+    "proof_binding": {
+      "required_obligation_ids": [
+        "PO-AUTH",
+        "PO-COMPAT",
+        "PO-CONCURRENCY",
+        "PO-DECISION",
+        "PO-EVIDENCE",
+        "PO-MIG",
+        "PO-OBS",
+        "PO-OPER",
+        "PO-POLICY",
+        "PO-STATE",
+        "PO-TEST",
+        "PO-WIRING"
+      ],
+      "closed_obligation_ids": [
+        "PO-AUTH",
+        "PO-COMPAT",
+        "PO-CONCURRENCY",
+        "PO-DECISION",
+        "PO-EVIDENCE",
+        "PO-MIG",
+        "PO-OBS",
+        "PO-OPER",
+        "PO-POLICY",
+        "PO-STATE",
+        "PO-TEST",
+        "PO-WIRING"
+      ],
+      "open_obligation_ids": []
+    },
+    "blocking_codes": [],
+    "issued_at": "2026-09-22T15:31:00Z"
+  },
+  "negative_matrix": {
+    "deterministic_omit": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "SRCR_AUTHORITY_EVIDENCE_ID_UNRESOLVED",
+        "SRCR_EVIDENCE_MANIFEST_REQUIRED",
+        "SRCR_EXISTING_AUTHORITY_EVIDENCE_UNRESOLVED",
+        "SRCR_PROOF_EVIDENCE_ID_UNRESOLVED",
+        "SRCR_WIRING_EVIDENCE_ID_UNRESOLVED",
+        "V06_EDGE_EVIDENCE_UNVERIFIABLE_WITHOUT_MANIFEST"
+      ]
+    },
+    "utility_omit": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "PROFILE_SEMANTIC_UTILITY_EVIDENCE_MANIFEST_REQUIRED"
+      ]
+    },
+    "semantic_manifest_mutate": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "SEMANTIC_JUDGE_EVIDENCE_MANIFEST_SHA_MISMATCH"
+      ]
+    },
+    "receipt_manifest_mutate": {
+      "status": "FAIL",
+      "blocking_codes": [
+        "SEMANTIC_JUDGE_EVIDENCE_MANIFEST_SHA_MISMATCH",
+        "SRCR_QUALITY_CLOSURE_FLOOR_FAILED",
+        "SRCR_QUALITY_EVIDENCE_BUNDLE_DIGEST_MISMATCH",
+        "SRCR_QUALITY_SEMANTIC_RESULT_INVALID",
+        "SRCR_V06_QUALITY_EVIDENCE_MANIFEST_SHA_MISMATCH",
+        "SRCR_V06_SEMANTIC_EVIDENCE_MANIFEST_SHA_MISMATCH"
+      ]
+    }
+  },
+  "downstream_authorized": false
+}

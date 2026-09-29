@@ -1,0 +1,9 @@
+{
+  "schema": "SRCR_V06_LIFECYCLE_POST_FREEZE_EXACT_HEAD_MARKER_V1",
+  "frozen_candidate_commit": "cb455027df2d2e2795ab66d41a539e217a04966f",
+  "candidate_file_sha256": "cbc05a3445ef27cfdca34a4103d79e640264e142efae3abae0cda253264e80cb",
+  "pre_quality_status": "PASS_PRE_QUALITY",
+  "canonical_quality_accepted": false,
+  "independent_quality": "PENDING_INDEPENDENT_REVIEW",
+  "purpose": "Trigger exact-head CI after durable frozen candidate persistence; evidence-only, no source/runtime/prod mutation."
+}

@@ -1,0 +1,20 @@
+.................................................................... [ 31%]
+........................................................................ [ 65%]
+........................................................................ [ 99%]
+.                                                                        [100%]
+=============================== warnings summary ===============================
+../test-deps/fastapi/testclient.py:1
+  /workspace/scratch/76997e16e4cb/test-deps/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+../test-deps/starlette/testclient.py:53
+  /workspace/scratch/76997e16e4cb/test-deps/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+tests/test_api.py::APITest::test_semantic_quality_finalize_is_authenticated_and_requires_independence
+tests/test_api.py::APITest::test_validation_error_does_not_echo_literal_input
+  /workspace/scratch/76997e16e4cb/test-deps/starlette/_exception_handler.py:59: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+    response = await handler(conn, exc)  # type: ignore[arg-type]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+213 passed, 4 warnings, 4 subtests passed in 1.81s

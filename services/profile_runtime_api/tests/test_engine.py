@@ -8,6 +8,7 @@ import types
 import unittest
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 # Work containers may omit optional service wheels. Use a narrow schema stub only
 # there; deployed/CI environments exercise the real pinned jsonschema package.
@@ -369,6 +370,32 @@ class EngineGateTest(unittest.TestCase):
         self.assertEqual(result["runtime_completion"]["status"], "PASS")
         self.assertEqual(result["profile_contract_valid"]["status"], "PASS")
         self.assertEqual(result["semantic_utility"]["status"], "PASS")
+
+    def test_both_execution_paths_preserve_canonical_quality_gate_result(self) -> None:
+        for route in ("queue", "artifact"):
+            for status in ("BLOCKED_BY_DETERMINISTIC_FLOORS", "PENDING_INDEPENDENT_SEMANTIC_REVIEW"):
+                with self.subTest(route=route, status=status):
+                    engine, _pipeline = self.engine(valid_quality_output())
+                    boundary = {
+                        "applicability": "REQUIRED",
+                        "status": status,
+                        "blocking_codes": ["FAILED_FLOOR"] if status.startswith("BLOCKED") else [],
+                        "canonical_quality_accepted": False,
+                        "downstream_authorized": False,
+                    }
+                    task = self.quality_task("quality-boundary-" + route)
+                    with patch.object(engine.gates, "canonical_quality_boundary", return_value=boundary) as gate:
+                        if route == "queue":
+                            result = engine.run_queue_execute(QueueExecuteRequest(profile=task))["result"]
+                        else:
+                            result = engine.run_execute(ExecuteRequest(
+                                artifact=self.artifact,
+                                input_governance=self.governance,
+                                profile=task,
+                            ))["result"]
+                    gate.assert_called_once()
+                    self.assertEqual(result["canonical_quality"], boundary)
+                    self.assertFalse(result["downstream_authorized"])
 
 
 if __name__ == "__main__":

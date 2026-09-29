@@ -1,0 +1,125 @@
+{
+  "schema": "SRCR_MC10_SEMANTIC_QUALITY_GOVERNED_READBACK_V1",
+  "status": "READBACK_CLOSED",
+  "source_revision": "f855f5317ba96baff2b4af1b186ed5da3d5071dc",
+  "producer_execution_id": "EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000011",
+  "producer_execution_status": "COMPLETED",
+  "reviewer_execution_id": "EXEC-MC10-INDEPENDENT-REVIEW-20260922-001",
+  "semantic_execution_receipt_ref": "github://cristhianlujan/claude-persona-lf-patch@f855f5317ba96baff2b4af1b186ed5da3d5071dc/sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc10_semantic_review_result.json",
+  "producer_execution_receipt_ref": "readback://mc10/EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000011/candidate@6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+  "bindings": {
+    "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+    "quality_receipt_sha256": "68311064c73ae1bf9732b07a4784eb0e668b4c13ad90a24aa3d9bf350be486f9",
+    "semantic_result_digest": "sha256:9429229bfda0551831274fd3ea75ec69e0a3204a8966525f5c87a506b479ac40"
+  },
+  "review": {
+    "executor_mode": "GPT_NATIVE",
+    "provider": "OPENAI_CHATGPT_NATIVE",
+    "model_id": "GPT-5.6 Sol",
+    "reviewer_context_mode": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT",
+    "verdict": "PASS_INDEPENDENT_SEMANTIC",
+    "blocking_codes": [],
+    "unsupported_claims": [],
+    "observed_candidate_change_count": 10,
+    "reconciled_scope_item_count": 19,
+    "open_design_decisions_found": []
+  },
+  "physical_caller_trace": [
+    {
+      "order": 1,
+      "hop": "execute_profile governed readback",
+      "status": "STEP_PASS_WITH_EVIDENCE"
+    },
+    {
+      "order": 2,
+      "hop": "output_validate governed readback",
+      "status": "STEP_PASS_WITH_EVIDENCE"
+    },
+    {
+      "order": 3,
+      "hop": "deterministic contract gate",
+      "status": "PASS"
+    },
+    {
+      "order": 4,
+      "hop": "semantic utility floor",
+      "status": "PASS"
+    },
+    {
+      "order": 5,
+      "hop": "independent semantic judge",
+      "status": "PASS"
+    },
+    {
+      "order": 6,
+      "hop": "semantic result validator",
+      "status": "PASS"
+    },
+    {
+      "order": 7,
+      "hop": "quality receipt materializer",
+      "status": "PASS"
+    },
+    {
+      "order": 8,
+      "hop": "quality receipt validator",
+      "status": "PASS"
+    },
+    {
+      "order": 9,
+      "hop": "semantic_judge governed recorder/readback",
+      "status": "STEP_PASS_WITH_EVIDENCE"
+    },
+    {
+      "order": 10,
+      "hop": "report_output governed recorder/readback",
+      "status": "STEP_PASS_WITH_EVIDENCE"
+    }
+  ],
+  "quality_receipt": {
+    "receipt_version": "SRCR_QUALITY_RECEIPT_V1",
+    "decision": "PASS_TO_QUALITY_PACK",
+    "issued_at": "2026-09-22T16:15:52.094361+00:00",
+    "canonical_quality_accepted": true,
+    "persisted_semantic_step": "supabase://public/lf_operation_execution_steps/EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000011/semantic_judge",
+    "persisted_report_step": "supabase://public/lf_operation_execution_steps/EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000011/report_output",
+    "same_receipt_semantic_and_report": true,
+    "open_proof_obligations": []
+  },
+  "negative_tests": {
+    "utility_pass_without_semantic_result": {
+      "contract_status": "PASS",
+      "utility_status": "PASS",
+      "canonical_finalizer_status": "FAIL",
+      "canonical_quality_accepted": false,
+      "representative_blocking_codes": [
+        "SEMANTIC_JUDGE_VERDICT_INVALID",
+        "SEMANTIC_JUDGE_CANDIDATE_SHA_INVALID",
+        "REQUIREMENT_RECONCILIATION_MISSING",
+        "INVARIANT_RESULTS_MISSING"
+      ]
+    },
+    "mutated_semantic_candidate_digest": {
+      "canonical_finalizer_status": "FAIL",
+      "canonical_quality_accepted": false,
+      "blocking_codes": [
+        "SEMANTIC_JUDGE_CANDIDATE_SHA_MISMATCH"
+      ]
+    }
+  },
+  "exact_supabase_readback": {
+    "execution_status": "COMPLETED",
+    "execute_profile": "STEP_PASS_WITH_EVIDENCE",
+    "output_validate": "STEP_PASS_WITH_EVIDENCE",
+    "semantic_judge": "STEP_PASS_WITH_EVIDENCE",
+    "report_output": "STEP_PASS_WITH_EVIDENCE",
+    "same_quality_receipt_at_steps_70_and_80": true
+  },
+  "no_production_mutation": true,
+  "no_runtime_activation": true,
+  "no_merge": true,
+  "downstream_authorized": false
+}

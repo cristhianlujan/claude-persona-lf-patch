@@ -33,9 +33,43 @@ except (ImportError, ModuleNotFoundError):
     _iv_spec.loader.exec_module(_iv_mod)
     validate_incremental_value = _iv_mod.validate_incremental_value
 
+try:
+    from .producer_depth import V05_PACK_ID, V06_PACK_ID, case_mode as _v05_case_mode, validate_producer_depth
+except (ImportError, ModuleNotFoundError):
+    import importlib.util as _pd_importlib_util
+    from pathlib import Path as _PDPath
+    _pd_path = _PDPath(__file__).with_name("producer_depth.py")
+    _pd_spec = _pd_importlib_util.spec_from_file_location("srcr_producer_depth", _pd_path)
+    _pd_mod = _pd_importlib_util.module_from_spec(_pd_spec)
+    assert _pd_spec and _pd_spec.loader
+    _pd_spec.loader.exec_module(_pd_mod)
+    V05_PACK_ID = _pd_mod.V05_PACK_ID
+    V06_PACK_ID = _pd_mod.V06_PACK_ID
+    _v05_case_mode = _pd_mod.case_mode
+    validate_producer_depth = _pd_mod.validate_producer_depth
+
+try:
+    from .edge_closure import validate_edge_closure
+except (ImportError, ModuleNotFoundError):
+    import importlib.util as _ec_importlib_util
+    from pathlib import Path as _ECPath
+    _ec_path = _ECPath(__file__).with_name("edge_closure.py")
+    _ec_spec = _ec_importlib_util.spec_from_file_location("srcr_edge_closure", _ec_path)
+    _ec_mod = _ec_importlib_util.module_from_spec(_ec_spec)
+    assert _ec_spec and _ec_spec.loader
+    _ec_spec.loader.exec_module(_ec_mod)
+    validate_edge_closure = _ec_mod.validate_edge_closure
+
+V04_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+# V0.5 inherits every V0.4 transversal guard; it only adds the producer-depth floor.
+V04_FAMILY_PACK_IDS = {V04_PACK_ID, V05_PACK_ID, V06_PACK_ID}
+
 ALLOWED_PROFILE_PACK_IDS = {
     "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_2",
     "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+    V04_PACK_ID,
+    V05_PACK_ID,
+    V06_PACK_ID,
 }
 
 ALLOWED_STATUS = {
@@ -43,6 +77,7 @@ ALLOWED_STATUS = {
     "NEEDS_MORE_EVIDENCE",
     "RETURN_TO_WORKER_FOR_SELF_REPAIR",
     "BLOCK_PIPELINE",
+    "NO_REPAIR_REQUIRED",
 }
 CLAIM_STATUS = {"OBSERVED", "ESTABLISHED", "HYPOTHESIS", "UNRESOLVED"}
 AUTHORITY_STATUS = {"RESOLVED", "UNRESOLVED"}
@@ -374,14 +409,39 @@ def _evidence_map_errors(payload):
     missing = sorted(CRITICAL_EVIDENCE_PATHS - paths)
     if missing:
         errors.append(_error("EVIDENCE_MAP_CRITICAL_CLAIMS_MISSING", "$.evidence_map", ",".join(missing)))
+    uncertainties = payload.get("current_uncertainties")
+    if (
+        payload.get("profile_pack_id") == V06_PACK_ID
+        and isinstance(uncertainties, list)
+        and uncertainties
+    ):
+        has_uncertainty_evidence = (
+            "$.current_uncertainties" in paths
+            or all(
+                f"$.current_uncertainties[{idx}]" in paths
+                for idx in range(len(uncertainties))
+            )
+        )
+        if not has_uncertainty_evidence:
+            errors.append(_error(
+                "CURRENT_UNCERTAINTY_EVIDENCE_MAP_REQUIRED",
+                "$.evidence_map",
+                "Material current uncertainties must be bound to exact evidence.",
+            ))
     return errors
 
 
-def _structured_list_errors(payload):
+def _structured_list_errors(payload, *, require_repair_artifacts=True):
     errors = []
-    for field in ("historical_regressions", "planned_regressions", "acceptance_criteria", "residual_risks", "implementation_delta"):
+    repair_fields = ("historical_regressions", "planned_regressions", "acceptance_criteria", "implementation_delta")
+    required_fields = ("residual_risks",) + (repair_fields if require_repair_artifacts else ())
+    for field in required_fields:
         if not isinstance(payload.get(field), list):
             errors.append(_error(f"{field.upper()}_INVALID", f"$.{field}"))
+    if not require_repair_artifacts:
+        for field in repair_fields:
+            if field in payload and not isinstance(payload.get(field), list):
+                errors.append(_error(f"{field.upper()}_INVALID", f"$.{field}"))
 
     for idx, row in enumerate(payload.get("historical_regressions") or []):
         path = f"$.historical_regressions[{idx}]"
@@ -645,6 +705,301 @@ def _solution_assurance_errors(payload, *, require_ready=False):
 
     return errors
 
+def _v04_transversal_errors(payload):
+    """V0.4 guards for no-repair disposition, quantitative grounding, and process depth."""
+    if payload.get("profile_pack_id") not in V04_FAMILY_PACK_IDS:
+        return []
+
+    errors = []
+    status = payload.get("status")
+    disposition = payload.get("repair_disposition")
+    if not isinstance(disposition, dict):
+        errors.append(_error("V04_REPAIR_DISPOSITION_REQUIRED", "$.repair_disposition"))
+        disposition = {}
+
+    decision = disposition.get("decision")
+    evidence_refs = disposition.get("evidence_refs")
+    currentness_refs = disposition.get("currentness_refs")
+    if decision not in {"REPAIR_REQUIRED", "ALREADY_RESOLVED", "NOT_MATERIAL", "UNDETERMINED"}:
+        errors.append(_error("V04_REPAIR_DISPOSITION_INVALID", "$.repair_disposition.decision"))
+    if not _string_list(evidence_refs, allow_empty=False):
+        errors.append(_error("V04_REPAIR_DISPOSITION_EVIDENCE_REQUIRED", "$.repair_disposition.evidence_refs"))
+    if not _string_list(currentness_refs, allow_empty=False):
+        errors.append(_error("V04_REPAIR_DISPOSITION_CURRENTNESS_REQUIRED", "$.repair_disposition.currentness_refs"))
+
+    verification = disposition.get("verification")
+    if not isinstance(verification, dict):
+        errors.append(_error("V04_REPAIR_DISPOSITION_VERIFICATION_REQUIRED", "$.repair_disposition.verification"))
+    else:
+        if verification.get("executable") is not True:
+            errors.append(_error("V04_REPAIR_DISPOSITION_VERIFICATION_NOT_EXECUTABLE", "$.repair_disposition.verification.executable"))
+        if not _nonempty_string(verification.get("method")):
+            errors.append(_error("V04_REPAIR_DISPOSITION_VERIFICATION_METHOD_REQUIRED", "$.repair_disposition.verification.method"))
+        if not _nonempty_string(verification.get("expected_result")):
+            errors.append(_error("V04_REPAIR_DISPOSITION_VERIFICATION_EXPECTED_RESULT_REQUIRED", "$.repair_disposition.verification.expected_result"))
+        if not _string_list(verification.get("evidence_refs"), allow_empty=False):
+            errors.append(_error("V04_REPAIR_DISPOSITION_VERIFICATION_EVIDENCE_REQUIRED", "$.repair_disposition.verification.evidence_refs"))
+
+    if status == "NO_REPAIR_REQUIRED":
+        if decision not in {"ALREADY_RESOLVED", "NOT_MATERIAL"}:
+            errors.append(_error("V04_NO_REPAIR_DISPOSITION_MISMATCH", "$.repair_disposition.decision"))
+        if decision == "ALREADY_RESOLVED":
+            if disposition.get("active_failure_present") is not False:
+                errors.append(_error("V04_ALREADY_RESOLVED_WITH_ACTIVE_FAILURE", "$.repair_disposition.active_failure_present"))
+            if disposition.get("material_repair_justified") is not False:
+                errors.append(_error("V04_ALREADY_RESOLVED_REPAIR_NOT_JUSTIFIED", "$.repair_disposition.material_repair_justified"))
+        if decision == "NOT_MATERIAL" and disposition.get("material_repair_justified") is not False:
+            errors.append(_error("V04_NOT_MATERIAL_BUT_REPAIR_JUSTIFIED", "$.repair_disposition.material_repair_justified"))
+        if payload.get("selected_alternative") is not None or payload.get("preferred_alternative") is not None:
+            errors.append(_error("V04_NO_REPAIR_WITH_SELECTED_ALTERNATIVE", "$.selected_alternative"))
+        for field in ("alternatives", "rejected_alternatives", "implementation_delta"):
+            if payload.get(field):
+                errors.append(_error("V04_NO_REPAIR_WITH_REPAIR_DELTA", f"$.{field}"))
+        for field in ("implementation_package", "transition_plan", "rollback_plan"):
+            if payload.get(field) is not None:
+                errors.append(_error("V04_NO_REPAIR_WITH_IMPLEMENTATION_PLAN", f"$.{field}"))
+        if payload.get("repair_level") != "UNDETERMINED":
+            errors.append(_error("V04_NO_REPAIR_REPAIR_LEVEL_MUST_BE_UNDETERMINED", "$.repair_level"))
+        if payload.get("blocking_codes"):
+            errors.append(_error("V04_NO_REPAIR_WITH_BLOCKERS", "$.blocking_codes"))
+    elif status == "SYSTEMIC_REPAIR_SPEC":
+        if decision != "REPAIR_REQUIRED":
+            errors.append(_error("V04_READY_SPEC_REQUIRES_REPAIR_DISPOSITION", "$.repair_disposition.decision"))
+        if disposition.get("material_repair_justified") is not True:
+            errors.append(_error("V04_REPAIR_NOT_JUSTIFIED", "$.repair_disposition.material_repair_justified"))
+        if disposition.get("active_failure_present") is not True:
+            errors.append(_error("V04_READY_SPEC_REQUIRES_ACTIVE_FAILURE", "$.repair_disposition.active_failure_present"))
+    else:
+        if decision not in {"REPAIR_REQUIRED", "UNDETERMINED"}:
+            errors.append(_error("V04_NONREADY_DISPOSITION_INVALID", "$.repair_disposition.decision"))
+        if decision == "REPAIR_REQUIRED":
+            if disposition.get("active_failure_present") is not True:
+                errors.append(_error("V04_NONREADY_REPAIR_REQUIRED_NEEDS_ACTIVE_FAILURE", "$.repair_disposition.active_failure_present"))
+            if disposition.get("material_repair_justified") is not True:
+                errors.append(_error("V04_NONREADY_REPAIR_REQUIRED_NEEDS_MATERIALITY", "$.repair_disposition.material_repair_justified"))
+
+    quantitative = payload.get("quantitative_decisions")
+    if not isinstance(quantitative, list):
+        errors.append(_error("V04_QUANTITATIVE_DECISIONS_REQUIRED", "$.quantitative_decisions"))
+        quantitative = []
+    seen_q = set()
+    for idx, row in enumerate(quantitative):
+        p = f"$.quantitative_decisions[{idx}]"
+        if not isinstance(row, dict):
+            errors.append(_error("V04_QUANTITATIVE_DECISION_INVALID", p))
+            continue
+        did = row.get("decision_id")
+        if not _nonempty_string(did) or did in seen_q:
+            errors.append(_error("V04_QUANTITATIVE_DECISION_ID_INVALID", f"{p}.decision_id"))
+        else:
+            seen_q.add(did)
+        if row.get("materiality") != "MATERIAL":
+            continue
+        state = row.get("closure_state")
+        grounding = row.get("grounding_type")
+        if state == "GROUNDED":
+            if grounding not in {"EXISTING_AUTHORITY", "CALIBRATION_RULE"}:
+                errors.append(_error("V04_MATERIAL_QUANT_GROUNDING_INVALID", f"{p}.grounding_type"))
+            if not _nonempty_string(row.get("grounding_ref")):
+                errors.append(_error("V04_MATERIAL_QUANT_GROUNDING_REF_REQUIRED", f"{p}.grounding_ref"))
+            if not _string_list(row.get("evidence_refs"), allow_empty=False):
+                errors.append(_error("V04_MATERIAL_QUANT_EVIDENCE_REQUIRED", f"{p}.evidence_refs"))
+            if row.get("incident_specific_only") is not False:
+                errors.append(_error("V04_MATERIAL_QUANT_INCIDENT_ONLY_CANNOT_CLOSE", f"{p}.incident_specific_only"))
+            if row.get("precondition_ref") is not None:
+                errors.append(_error("V04_GROUNDED_QUANT_WITH_PRECONDITION_REF", f"{p}.precondition_ref"))
+        elif state == "PRECONDITION":
+            if grounding != "IMPLEMENTATION_PRECONDITION":
+                errors.append(_error("V04_QUANT_PRECONDITION_GROUNDING_MISMATCH", f"{p}.grounding_type"))
+            ref = row.get("precondition_ref")
+            if not _nonempty_string(ref) or not ref.startswith("$.implementation_package.decision_closure.implementation_preconditions"):
+                errors.append(_error("V04_QUANT_PRECONDITION_NOT_LINKED", f"{p}.precondition_ref"))
+            if row.get("proposed_value") is not None:
+                errors.append(_error("V04_UNGROUNDED_QUANT_VALUE_MUST_REMAIN_OPEN", f"{p}.proposed_value"))
+        else:
+            errors.append(_error("V04_MATERIAL_QUANT_NOT_CLOSED", f"{p}.closure_state"))
+
+    graph = payload.get("material_process_graph")
+    if not isinstance(graph, dict):
+        errors.append(_error("V04_MATERIAL_PROCESS_GRAPH_REQUIRED", "$.material_process_graph"))
+        graph = {}
+    applies = graph.get("applies")
+    if not isinstance(applies, bool):
+        errors.append(_error("V04_MATERIAL_PROCESS_GRAPH_APPLICABILITY_REQUIRED", "$.material_process_graph.applies"))
+    nodes = graph.get("nodes")
+    if not isinstance(nodes, list):
+        errors.append(_error("V04_MATERIAL_PROCESS_GRAPH_NODES_INVALID", "$.material_process_graph.nodes"))
+        nodes = []
+    if applies is True and not nodes:
+        errors.append(_error("V04_MATERIAL_PROCESS_GRAPH_EMPTY", "$.material_process_graph.nodes"))
+    seen_nodes = set()
+    for idx, row in enumerate(nodes):
+        p = f"$.material_process_graph.nodes[{idx}]"
+        if not isinstance(row, dict):
+            errors.append(_error("V04_MATERIAL_PROCESS_NODE_INVALID", p))
+            continue
+        node_id = row.get("node_id")
+        if not _nonempty_string(node_id) or node_id in seen_nodes:
+            errors.append(_error("V04_MATERIAL_PROCESS_NODE_ID_INVALID", f"{p}.node_id"))
+        else:
+            seen_nodes.add(node_id)
+        if status == "SYSTEMIC_REPAIR_SPEC" and row.get("disposition") == "DESIGN_BLOCKING":
+            errors.append(_error("V04_SYSTEMIC_SPEC_WITH_BLOCKED_PROCESS_NODE", f"{p}.disposition"))
+
+    return errors
+
+
+
+def _normalize_change_ref(value):
+    if not _nonempty_string(value):
+        return None
+    text = value.strip()
+    for prefix in (
+        "supabase://proposed/",
+        "proposed://",
+        "github://proposed/",
+        "artifact://proposed/",
+    ):
+        if text.startswith(prefix):
+            text = text[len(prefix):]
+            break
+    return text.strip("/")
+
+
+def _is_proposed_change_ref(value):
+    if not _nonempty_string(value):
+        return False
+    text = value.strip()
+    return text.startswith((
+        "supabase://proposed/",
+        "proposed://",
+        "github://proposed/",
+        "artifact://proposed/",
+    ))
+
+
+def _collect_v06_candidate_change_refs(value, path="$", authority_anchor=None):
+    """Extract proposed material-change refs without seeding from implementation_delta.
+
+    A proposed authority_ref in the same structured object is carried as an anchor
+    for its concrete enforcement point. This keeps the rule generic while allowing
+    one declared mechanism to own a differently named physical method below it.
+    """
+    out = []
+    if isinstance(value, dict):
+        local_anchor = authority_anchor
+        if _is_proposed_change_ref(value.get("authority_ref")):
+            local_anchor = _normalize_change_ref(value.get("authority_ref"))
+        for key, item in value.items():
+            child = f"{path}.{key}"
+            if path == "$" and key == "implementation_delta":
+                continue
+            out.extend(_collect_v06_candidate_change_refs(item, child, local_anchor))
+    elif isinstance(value, list):
+        for idx, item in enumerate(value):
+            out.extend(_collect_v06_candidate_change_refs(item, f"{path}[{idx}]", authority_anchor))
+    elif _is_proposed_change_ref(value):
+        out.append((path, _normalize_change_ref(value), authority_anchor))
+    return out
+
+
+def _change_ref_is_declared(ref, declared_targets):
+    if not ref:
+        return False
+    return any(
+        ref == target
+        or ref.startswith(target + "/")
+        or ref.startswith(target + "->")
+        for target, _ in declared_targets
+    )
+
+
+def _v06_selected_change_errors(payload):
+    if payload.get("profile_pack_id") != V06_PACK_ID:
+        return []
+    if payload.get("status") != "SYSTEMIC_REPAIR_SPEC":
+        return []
+
+    errors = []
+    delta = payload.get("implementation_delta")
+    if not isinstance(delta, list) or not delta:
+        return [_error(
+            "V06_IMPLEMENTATION_DELTA_REQUIRED_FOR_SELECTED_REPAIR",
+            "$.implementation_delta",
+        )]
+
+    declared_targets = []
+    for idx, row in enumerate(delta):
+        path = f"$.implementation_delta[{idx}]"
+        if not isinstance(row, dict):
+            errors.append(_error("V06_IMPLEMENTATION_DELTA_ROW_INVALID", path))
+            continue
+        normalized = _normalize_change_ref(row.get("target"))
+        if not normalized:
+            errors.append(_error("V06_IMPLEMENTATION_DELTA_TARGET_REQUIRED", f"{path}.target"))
+            continue
+        if not _nonempty_string(row.get("action")):
+            errors.append(_error("V06_IMPLEMENTATION_DELTA_ACTION_REQUIRED", f"{path}.action"))
+        refs = row.get("evidence_refs")
+        if not isinstance(refs, list) or not refs or any(not _nonempty_string(x) for x in refs):
+            errors.append(_error("V06_IMPLEMENTATION_DELTA_EVIDENCE_REQUIRED", f"{path}.evidence_refs"))
+        declared_targets.append((normalized, idx))
+
+    # Independent structural extraction from the entire candidate except the
+    # declaration itself. This catches a proposed mechanism introduced in a hard
+    # guard, policy/control, wiring/deliverable, observability, closure proof or
+    # material graph even when the graph-only reconciliation would miss it.
+    seen = set()
+    for candidate_path, ref, authority_anchor in _collect_v06_candidate_change_refs(payload):
+        if not ref:
+            continue
+        key = (candidate_path, ref)
+        if key in seen:
+            continue
+        seen.add(key)
+        covered = _change_ref_is_declared(ref, declared_targets)
+        if not covered and authority_anchor:
+            covered = _change_ref_is_declared(authority_anchor, declared_targets)
+        if not covered:
+            errors.append(_error(
+                "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+                candidate_path,
+                ref,
+            ))
+
+    graph = payload.get("material_process_graph")
+    edges = graph.get("edges") if isinstance(graph, dict) else []
+    if not isinstance(edges, list):
+        return errors
+
+    for idx, edge in enumerate(edges):
+        if not isinstance(edge, dict) or edge.get("disposition") != "IMPLEMENTABLE":
+            continue
+        refs_to_reconcile = [
+            ("proposed_change_ref", _normalize_change_ref(edge.get("proposed_change_ref")))
+        ]
+        if edge.get("proposed_next_gate_consumer_ref") is not None:
+            refs_to_reconcile.append((
+                "proposed_next_gate_consumer_ref",
+                _normalize_change_ref(edge.get("proposed_next_gate_consumer_ref")),
+            ))
+        for field, ref in refs_to_reconcile:
+            if not ref:
+                errors.append(_error(
+                    "V06_IMPLEMENTABLE_EDGE_CHANGE_REF_REQUIRED",
+                    f"$.material_process_graph.edges[{idx}].{field}",
+                ))
+                continue
+            if not _change_ref_is_declared(ref, declared_targets):
+                error = _error(
+                    "V06_SELECTED_REPAIR_CHANGE_UNDECLARED",
+                    f"$.material_process_graph.edges[{idx}].{field}",
+                    ref,
+                )
+                if error not in errors:
+                    errors.append(error)
+    return errors
+
 def validate(payload, evidence_manifest=None):
     if evidence_manifest is None:
         candidate, embedded_manifest = unwrap_runtime_input(payload)
@@ -666,7 +1021,10 @@ def validate(payload, evidence_manifest=None):
         errors.extend(_claim_errors(field, payload.get(field)))
 
     chain = payload.get("causal_chain")
-    if not isinstance(chain, list) or len(chain) < 3:
+    audit_mode = _v05_case_mode(payload) == "ARCHITECTURE_AUDIT"
+    # An architecture audit has no single incident to explain; one evidence-bound gap link is enough.
+    min_chain = 0 if status == "NO_REPAIR_REQUIRED" else (1 if audit_mode else 3)
+    if not isinstance(chain, list) or len(chain) < min_chain:
         errors.append(_error("CAUSAL_CHAIN_INSUFFICIENT", "$.causal_chain"))
     else:
         for idx, item in enumerate(chain):
@@ -680,16 +1038,27 @@ def validate(payload, evidence_manifest=None):
 
     errors.extend(_live_packet_errors(payload))
     errors.extend(_reconciliation_errors(payload))
-    errors.extend(_falsification_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
+    repair_artifacts_required = status != "NO_REPAIR_REQUIRED"
+    if repair_artifacts_required:
+        errors.extend(_falsification_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
     errors.extend(_evidence_map_errors(payload))
-    errors.extend(_structured_list_errors(payload))
-    errors.extend(_decision_errors(payload))
-    errors.extend(_proposal_errors(payload))
-    errors.extend(_implementation_plan_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
+    errors.extend(_structured_list_errors(payload, require_repair_artifacts=repair_artifacts_required))
+    if repair_artifacts_required:
+        errors.extend(_decision_errors(payload))
+        errors.extend(_proposal_errors(payload))
+        errors.extend(_implementation_plan_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
+    errors.extend(_v04_transversal_errors(payload))
+    errors.extend(validate_producer_depth(payload, evidence_manifest))
+    errors.extend(validate_edge_closure(payload, evidence_manifest))
+    errors.extend(_v06_selected_change_errors(payload))
 
     closure_errors, closure_summary = validate_v03_closure(payload, evidence_manifest)
     errors.extend(closure_errors)
-    errors.extend(_solution_assurance_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
+    if payload.get("profile_pack_id") in V04_FAMILY_PACK_IDS and status in {"NEEDS_MORE_EVIDENCE", "RETURN_TO_WORKER_FOR_SELF_REPAIR", "BLOCK_PIPELINE"}:
+        if closure_summary.get("applies") and closure_summary.get("computed_handoff_ready") is True:
+            errors.append(_error("V04_NONREADY_WITH_DERIVED_HANDOFF_READY", "$.closure_proof.derived_decision_closure.handoff_ready"))
+    if repair_artifacts_required:
+        errors.extend(_solution_assurance_errors(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC"))
     incremental_errors, incremental_summary = validate_incremental_value(payload, require_ready=status == "SYSTEMIC_REPAIR_SPEC")
     errors.extend(incremental_errors)
 
@@ -698,7 +1067,9 @@ def validate(payload, evidence_manifest=None):
         errors.append(_error("AUTHORITY_CONTRADICTIONS_INVALID", "$.authority_contradictions"))
 
     recurrence = payload.get("recurrence_evidence")
-    if not isinstance(recurrence, list) or not recurrence:
+    # Recurrence proves an incident class is systemic; an architecture audit is not triggered by recurrence.
+    recurrence_required = status != "NO_REPAIR_REQUIRED" and not audit_mode
+    if not isinstance(recurrence, list) or (recurrence_required and not recurrence):
         errors.append(_error("RECURRENCE_EVIDENCE_INVALID", "$.recurrence_evidence"))
     else:
         for idx, item in enumerate(recurrence):
@@ -706,7 +1077,9 @@ def validate(payload, evidence_manifest=None):
                 errors.append(_error("RECURRENCE_EVIDENCE_NOT_TYPED", f"$.recurrence_evidence[{idx}]"))
 
     existence = payload.get("should_exist_assessment")
-    if not isinstance(existence, dict):
+    if status == "NO_REPAIR_REQUIRED":
+        pass
+    elif not isinstance(existence, dict):
         errors.append(_error("SHOULD_EXIST_ASSESSMENT_MISSING", "$.should_exist_assessment"))
     elif existence.get("verdict") == "INSUFFICIENT_EVIDENCE":
         if not _string_list(existence.get("missing_evidence"), allow_empty=False):

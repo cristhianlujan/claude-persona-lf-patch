@@ -1,0 +1,68 @@
+{
+  "schema": "SRCR_MC01_LIVE_RESEARCH_READBACK_V1",
+  "status": "READBACK_CLOSED",
+  "observed_at": "2026-09-22T15:03:58.689673+00:00",
+  "source_revision": "d0306fb1ae01443d370d1d77b21e9537f48ed0a0",
+  "caller_runtime_identity": {
+    "host_execution_surface": "SENTINELX_EPHEMERAL_READ_ONLY",
+    "python_executable": "/opt/lf-profile-runtime-api/venv/bin/python",
+    "queue_route": "QUEUE_NATIVE_RESEARCH",
+    "worker_entrypoints": [
+      "hetzner_queue_worker._queue_native_payload",
+      "hetzner_queue_worker._attach_governed_operation",
+      "hetzner_queue_worker._bind_external_authority_resolution"
+    ],
+    "runtime_validator_entrypoint": "profile_runtime_api.engine._validate_research_execution",
+    "model_context_compactor": "profile_runtime_api.llama.compact_model_context"
+  },
+  "declared_research_execution_mode": "EXTERNAL_AUTHORITY_RESOLVER",
+  "resolver_ref": "profiles/systemic_root_cause_repair_lf/contracts/evidence_manifest.schema.json",
+  "transport_source": {
+    "queue_envelope_schema": "LF_PROFILE_RUNTIME_QUEUE_RESEARCH_V1",
+    "enqueue_overload_candidate": "supabase/migrations/20260922150500_lf_profile_runtime_research_bundle_enqueue_v1.sql",
+    "production_applied": false
+  },
+  "live_lookup_readback": {
+    "query_count": 2,
+    "evidence_count": 2,
+    "resolved_authority_count": 2,
+    "evidence_manifest_sha256": "sha256:dd04c0d272e475c17be978ee282ede5042ef79b813895f6bd0129ee57520aa63",
+    "resolved_authority_context_sha256": "7f6796d7a56053fac2d7dfce92df3c4cab68497bccdb63361f7f93a9f4168d99",
+    "sources": [
+      {
+        "provider": "GITHUB",
+        "locator": "github://cristhianlujan/claude-persona-lf-patch@d0306fb1ae01443d370d1d77b21e9537f48ed0a0/profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json#research_execution",
+        "digest": "sha256:41fbe51b36731288b65dfa548b74c960fa85fd36ef30fde41488b3cbb69926f6",
+        "result_count": 1
+      },
+      {
+        "provider": "SUPABASE",
+        "locator": "supabase-sql://public.lf_error_knowledge/codes=PROFILE-RUNTIME-EKB-PREFLIGHT-BENCHMARK-001,PROFILE-RUNTIME-GOVERNED-STEP-BYPASS-001,PROFILE-RUNTIME-RESEARCH-BASELINE-TEMPORAL-BINDING-001@2026-09-22T15:00:44.961867Z",
+        "digest": "sha256:ac87de93bae43ecde8a89c604ae94f4d1e527db663c09e56ff267e5b071a142d",
+        "result_count": 3
+      }
+    ]
+  },
+  "model_context_delivery": {
+    "governed_operation_present": true,
+    "research_execution_mode": "EXTERNAL_AUTHORITY_RESOLVER",
+    "resolved_authority_count": 2,
+    "model_context_sha256": "958268d029dd691b1a3f7e889344e3ca6d1abdb49a54ed4a4d0b85ea9da2bece"
+  },
+  "negative_tests": {
+    "worker_without_external_resolver": "SRCR_LIVE_RESEARCH_EXECUTION_PATH_MISSING",
+    "engine_without_declared_capability": "SRCR_LIVE_RESEARCH_EXECUTION_PATH_MISSING",
+    "model_call_attempted": false
+  },
+  "ci_readback": {
+    "workflow": "Validate LF Packs",
+    "run_id": 35744244255,
+    "conclusion": "success",
+    "runtime_api_tests": "236 passed",
+    "bootstrap_workflow_run_id": 35744244227,
+    "bootstrap_conclusion": "success"
+  },
+  "production_mutation": false,
+  "database_write": false,
+  "closure_note": "MC-01 closes the executable and fail-closed research path on the candidate revision. The enqueue overload is source-candidate only and is not claimed as deployed production."
+}

@@ -1,0 +1,847 @@
+{
+  "schema": "SRCR_MC11_T5_INDEPENDENT_SEMANTIC_REVIEW_V1",
+  "review_execution": {
+    "reviewer_execution_id": "EXEC-MC11-T5-INDEPENDENT-REVIEW-20260922-001",
+    "executor_mode": "GPT_NATIVE",
+    "provider": "OPENAI_CHATGPT_NATIVE",
+    "model_id": "GPT-5.6 Sol",
+    "reviewer_context_mode": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT",
+    "source_revision": "d4540020144323a7a36b8266f890dd8850d8dbc5",
+    "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+    "producer_private_context_consumed": false
+  },
+  "semantic_result": {
+    "verdict": "PASS_INDEPENDENT_SEMANTIC",
+    "candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+    "scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+    "evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+    "reviewer_execution_id": "EXEC-MC11-T5-INDEPENDENT-REVIEW-20260922-001",
+    "review_input_sha256": "c043fdae38a51e856b9f605f661e876a4c8d498401a5e8417114938ff6eb1a40",
+    "reviewer_context_mode": "ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT",
+    "review_input_classes": [
+      "CURRENT_AUTHORITY_REFS",
+      "EVIDENCE_MANIFEST",
+      "EXACT_CANDIDATE",
+      "SCOPE_AUTHORITY_PACKET"
+    ],
+    "source_refs_inspected": [
+      "github://cristhianlujan/claude-persona-lf-patch@d4540020144323a7a36b8266f890dd8850d8dbc5/sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/candidate_v06_repaired.json",
+      "github://cristhianlujan/claude-persona-lf-patch@d4540020144323a7a36b8266f890dd8850d8dbc5/profiles/systemic_root_cause_repair_lf/judges/systemic_root_cause_semantic_judge.md",
+      "github://cristhianlujan/claude-persona-lf-patch@d4540020144323a7a36b8266f890dd8850d8dbc5/profiles/systemic_root_cause_repair_lf/validators/edge_closure.py",
+      "github://cristhianlujan/claude-persona-lf-patch@d4540020144323a7a36b8266f890dd8850d8dbc5/sandbox/lf_contract_gate_test/srcr_v06_native_harness/build_candidate_from_v05.py",
+      "github://cristhianlujan/claude-persona-lf-patch@d4540020144323a7a36b8266f890dd8850d8dbc5/services/profile_runtime_api/scripts/hetzner_queue_worker.py",
+      "github://cristhianlujan/claude-persona-lf-patch@d4540020144323a7a36b8266f890dd8850d8dbc5/supabase/migrations/20260922162500_lf_profile_execution_queue_terminal_reconcile_v1.sql",
+      "github://cristhianlujan/claude-persona-lf-patch@d4540020144323a7a36b8266f890dd8850d8dbc5/sandbox/lf_contract_gate_test/srcr_v06_candidate_repaired_20260922/mc11_terminality_readback.json",
+      "supabase://migration/20260922163720/lf_profile_execution_queue_terminal_reconcile_v1",
+      "supabase://private.lf_profile_runtime_queue_v1/23839099-ab5f-46a3-bc9d-200f16bdc0c2",
+      "supabase://public.lf_operation_execution/EXEC-PROFILE-RUNTIME-23839099-ab5f-46a3-bc9d-200f16bdc0c2"
+    ],
+    "observed_candidate_changes": [
+      {
+        "change_id": "JCHG-001",
+        "action_class": "IMPLEMENTATION_DELTA",
+        "target": "supabase://proposed/PROFILE_RELEASE_CONTRACT_V1",
+        "candidate_paths": [
+          "$.implementation_delta[0]"
+        ],
+        "statement": "Create immutable profile-release identity contract and provenance envelope from exact current primitives.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001",
+          "supabase://public/lf_activos/PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+        ]
+      },
+      {
+        "change_id": "JCHG-002",
+        "action_class": "IMPLEMENTATION_DELTA",
+        "target": "supabase://proposed/profile_release_binding",
+        "candidate_paths": [
+          "$.implementation_delta[1]"
+        ],
+        "statement": "Create minimal desired/observed current release binding; keep immutable history in operation executions.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://public/lf_operation_execution/EXEC-ACTUALIZACION-PERFIL-LF-OIDC-47dcbfca-c39a-48b7-80b2-32c8d0db9b84",
+          "supabase://public/lf_operation_execution/EXEC-REFRESCO-RUNTIME-PERFIL-SRCR-20260921-001"
+        ]
+      },
+      {
+        "change_id": "JCHG-003",
+        "action_class": "IMPLEMENTATION_DELTA",
+        "target": "supabase://proposed/GESTION_RELEASE_PERFIL_LF",
+        "candidate_paths": [
+          "$.implementation_delta[2]"
+        ],
+        "statement": "Create thin lifecycle/reconciler operation that composes existing phase operations and qualification.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://public/lf_operation_registry?operations=CREACION_PERFIL_LF,ACTUALIZACION_PERFIL_LF,EJECUCION_PERFIL_LF,REFRESCO_RUNTIME_PERFIL_LF,TRANSICION_RUNTIME_PERFIL_READ_ONLY_LF,RETIRO_ACTIVO_LF",
+          "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+          "supabase://lf_ops/estados_catalogo+estados_transiciones/QUALIFICATION_LIFECYCLE",
+          "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+        ]
+      },
+      {
+        "change_id": "JCHG-004",
+        "action_class": "IMPLEMENTATION_DELTA",
+        "target": "supabase://public/lf_router_action_registry",
+        "candidate_paths": [
+          "$.implementation_delta[3]"
+        ],
+        "statement": "Bind profile release promotion/deprecate/reconcile/rollback/retire actions to the lifecycle operation after contracts are operational.",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "supabase://public/lf_router_action_registry?asset_type=PERFIL",
+          "supabase-sql://lf_router_action_registry+lf_operation_registry/profile_publish_promote_activate_absence@2026-09-22T00:00Z"
+        ]
+      },
+      {
+        "change_id": "JCHG-005",
+        "action_class": "IMPLEMENTATION_DELTA",
+        "target": "supabase://proposed/PROFILE_RELEASE_QUALIFICATION_BINDING_V1",
+        "candidate_paths": [
+          "$.implementation_delta[4]"
+        ],
+        "statement": "bind release materialization to the existing qualification lifecycle before promotion",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "EV-LC-006",
+          "EV-LC-036"
+        ]
+      },
+      {
+        "change_id": "JCHG-006",
+        "action_class": "IMPLEMENTATION_DELTA",
+        "target": "supabase://proposed/PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1",
+        "candidate_paths": [
+          "$.implementation_delta[5]"
+        ],
+        "statement": "enforce distinct deterministic, independent semantic, canonical quality and operational authorization layers",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "EV-LC-028",
+          "EV-LC-029",
+          "EV-LC-035",
+          "EV-LC-036"
+        ]
+      },
+      {
+        "change_id": "JCHG-007",
+        "action_class": "IMPLEMENTATION_DELTA",
+        "target": "supabase://proposed/PROFILE_RELEASE_TRANSITION_POLICY_V1",
+        "candidate_paths": [
+          "$.implementation_delta[6]"
+        ],
+        "statement": "define governed promote, deprecate, rollback and rollback-refresh transitions for exact release identities",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "EV-LC-006",
+          "EV-LC-011",
+          "EV-LC-021"
+        ]
+      },
+      {
+        "change_id": "JCHG-008",
+        "action_class": "IMPLEMENTATION_DELTA",
+        "target": "supabase://proposed/PROFILE_RELEASE_COMPATIBILITY_WINDOW_V1",
+        "candidate_paths": [
+          "$.implementation_delta[7]"
+        ],
+        "statement": "enforce no-new-adoption and active-consumer drain before retirement",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "EV-LC-005",
+          "EV-LC-021"
+        ]
+      },
+      {
+        "change_id": "JCHG-009",
+        "action_class": "IMPLEMENTATION_DELTA",
+        "target": "supabase://proposed/GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
+        "candidate_paths": [
+          "$.implementation_delta[8]"
+        ],
+        "statement": "bind PROFILE_RUNTIME_CANARY_REQUIRED to a governed verify-runtime-canary consumer",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "EV-LC-018",
+          "EV-LC-025"
+        ]
+      },
+      {
+        "change_id": "JCHG-010",
+        "action_class": "IMPLEMENTATION_DELTA",
+        "target": "supabase://proposed/EJECUCION_PERFIL_LF/queue_terminal_bridge",
+        "candidate_paths": [
+          "$.implementation_delta[9]"
+        ],
+        "statement": "reconcile terminal queue outcomes into the canonical execution state",
+        "materiality": "MATERIAL",
+        "evidence_refs": [
+          "EV-LC-019",
+          "EV-LC-020",
+          "EV-LC-023"
+        ]
+      }
+    ],
+    "requirement_reconciliation": [
+      {
+        "scope_item_id": "REQ-LC-01",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-02",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-03",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-04",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-05",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-06",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-07",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-08",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The authorized requirement is represented in the exact candidate and supported by the bound evidence/decision package."
+      },
+      {
+        "scope_item_id": "REQ-LC-09",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate contains a closed implementation package with transition, rollback, acceptance, falsification and explicit selected-repair deltas."
+      },
+      {
+        "scope_item_id": "CON-LC-01",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The candidate addresses the Profile lifecycle end-to-end and does not collapse the problem into MR02 execution lifecycle."
+      },
+      {
+        "scope_item_id": "CON-LC-02",
+        "disposition": "SATISFIED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The candidate evidence map and manifest bind current GitHub/Supabase/EKB authority refs without treating proposed artifacts as existing authority."
+      },
+      {
+        "scope_item_id": "FORBID-LC-01",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-02",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-03",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-04",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-05",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-06",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-07",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      },
+      {
+        "scope_item_id": "FORBID-LC-08",
+        "disposition": "PRESERVED",
+        "evidence_refs": [
+          "supabase://public.lf_eventos/14795#CASE_PACKET"
+        ],
+        "reason": "The exact candidate is a read-only repair specification and does not perform the prohibited operational/write action."
+      }
+    ],
+    "change_declaration_reconciliation": [
+      {
+        "change_id": "JCHG-001",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[0]"
+        ],
+        "reason": "The material change observed by the reviewer is explicitly declared in implementation_delta."
+      },
+      {
+        "change_id": "JCHG-002",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[1]"
+        ],
+        "reason": "The material change observed by the reviewer is explicitly declared in implementation_delta."
+      },
+      {
+        "change_id": "JCHG-003",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[2]"
+        ],
+        "reason": "The material change observed by the reviewer is explicitly declared in implementation_delta."
+      },
+      {
+        "change_id": "JCHG-004",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[3]"
+        ],
+        "reason": "The material change observed by the reviewer is explicitly declared in implementation_delta."
+      },
+      {
+        "change_id": "JCHG-005",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[4]"
+        ],
+        "reason": "The material change observed by the reviewer is explicitly declared in implementation_delta."
+      },
+      {
+        "change_id": "JCHG-006",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[5]"
+        ],
+        "reason": "The material change observed by the reviewer is explicitly declared in implementation_delta."
+      },
+      {
+        "change_id": "JCHG-007",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[6]"
+        ],
+        "reason": "The material change observed by the reviewer is explicitly declared in implementation_delta."
+      },
+      {
+        "change_id": "JCHG-008",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[7]"
+        ],
+        "reason": "The material change observed by the reviewer is explicitly declared in implementation_delta."
+      },
+      {
+        "change_id": "JCHG-009",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[8]"
+        ],
+        "reason": "The material change observed by the reviewer is explicitly declared in implementation_delta."
+      },
+      {
+        "change_id": "JCHG-010",
+        "disposition": "DECLARED_EQUIVALENT",
+        "declared_refs": [
+          "$.implementation_delta[9]"
+        ],
+        "reason": "The material change observed by the reviewer is explicitly declared in implementation_delta."
+      }
+    ],
+    "scope_conformance_reconciliation": [
+      {
+        "change_id": "JCHG-001",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "The change belongs to the authorized Profile lifecycle repair specification and does not perform a prohibited operational mutation."
+      },
+      {
+        "change_id": "JCHG-002",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "The change belongs to the authorized Profile lifecycle repair specification and does not perform a prohibited operational mutation."
+      },
+      {
+        "change_id": "JCHG-003",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "The change belongs to the authorized Profile lifecycle repair specification and does not perform a prohibited operational mutation."
+      },
+      {
+        "change_id": "JCHG-004",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "The change belongs to the authorized Profile lifecycle repair specification and does not perform a prohibited operational mutation."
+      },
+      {
+        "change_id": "JCHG-005",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "The change belongs to the authorized Profile lifecycle repair specification and does not perform a prohibited operational mutation."
+      },
+      {
+        "change_id": "JCHG-006",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "The change belongs to the authorized Profile lifecycle repair specification and does not perform a prohibited operational mutation."
+      },
+      {
+        "change_id": "JCHG-007",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "The change belongs to the authorized Profile lifecycle repair specification and does not perform a prohibited operational mutation."
+      },
+      {
+        "change_id": "JCHG-008",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "The change belongs to the authorized Profile lifecycle repair specification and does not perform a prohibited operational mutation."
+      },
+      {
+        "change_id": "JCHG-009",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "The change belongs to the authorized Profile lifecycle repair specification and does not perform a prohibited operational mutation."
+      },
+      {
+        "change_id": "JCHG-010",
+        "disposition": "IN_SCOPE",
+        "scope_item_ids": [
+          "REQ-LC-09",
+          "CON-LC-01"
+        ],
+        "reason": "The change belongs to the authorized Profile lifecycle repair specification and does not perform a prohibited operational mutation."
+      }
+    ],
+    "invariant_results": [
+      {
+        "invariant": "SCOPE_AUTHORITY_INTEGRITY",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "Existing LF authorities remain evidence-bound; new release/reconciler artifacts are labeled proposed deliverables and no production/write action is performed."
+      },
+      {
+        "invariant": "EVIDENCE_INTEGRITY",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "The exact candidate is bound to the exact evidence manifest; material evidence refs are preserved and the manifest digest is fixed for review."
+      },
+      {
+        "invariant": "CAUSAL_CLOSURE",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "The repair ties the observed lifecycle gap to immutable release identity, desired/observed reconciliation, promotion/rollback wiring and explicit acceptance/rollback behavior."
+      },
+      {
+        "invariant": "CONTRADICTION_INTEGRITY",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "Selected alternative B, implementation_delta, transition plan, rollback plan and closure proof are mutually consistent; the retirement uncertainty is contained as an implementation precondition."
+      },
+      {
+        "invariant": "MINIMUM_SUFFICIENT_REUSE",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "The candidate reuses existing CREATE/UPDATE/EXECUTE/REFRESH/RETIRE and qualification primitives and adds a thin release/reconciler boundary rather than a second execution engine."
+      },
+      {
+        "invariant": "INDEPENDENT_DECISION_CLOSURE",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "No design-blocking decision remains open; implementation preconditions are separated from architecture decisions and all selected repair targets are declared."
+      },
+      {
+        "invariant": "FALSIFIABILITY_REGRESSION",
+        "result": "PASS",
+        "evidence_refs": [
+          "candidate:6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+          "evidence:feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+          "scope:49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f"
+        ],
+        "reason": "The candidate defines executable positive/negative regressions, rollback triggers, state/readback checks and failure conditions sufficient to falsify the proposed repair."
+      }
+    ],
+    "open_design_decisions_found": [],
+    "unsupported_claims": [],
+    "blocking_codes": [],
+    "repair_instructions": [],
+    "next_gate": "QUALITY_RECEIPT",
+    "t5_physical_edge_closure": {
+      "criterion": "T5_V06_PHYSICAL_EDGE_CLOSURE",
+      "result": "PASS",
+      "edge_count": 13,
+      "derived_edges": [
+        {
+          "edge_id": "EDGE-CREATE-REGISTER",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "OBSERVED_FAIL",
+          "post_transition_currentness_status": "OBSERVED_PASS",
+          "canonical_route_status": "OBSERVED_FAIL",
+          "identity_status": "OBSERVED_FAIL",
+          "rollback_status": "OBSERVED_FAIL",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_CONTRACT_V1/create_materialization"
+        },
+        {
+          "edge_id": "EDGE-UPDATE-MATERIALIZE",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "OBSERVED_PASS",
+          "post_transition_currentness_status": "OBSERVED_PASS",
+          "canonical_route_status": "OBSERVED_FAIL",
+          "identity_status": "OBSERVED_FAIL",
+          "rollback_status": "OBSERVED_FAIL",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_CONTRACT_V1/update_materialization"
+        },
+        {
+          "edge_id": "EDGE-MATERIALIZE-QUALIFY",
+          "observation_status": "PROPOSED_ONLY",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": "QUALIFICATION_LIFECYCLE",
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1/QUALIFICATION_LIFECYCLE",
+          "terminality_status": "PROPOSED_ONLY",
+          "post_transition_currentness_status": "PROPOSED_ONLY",
+          "canonical_route_status": "PROPOSED_ONLY",
+          "identity_status": "PROPOSED_ONLY",
+          "rollback_status": "PROPOSED_ONLY",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_QUALIFICATION_BINDING_V1"
+        },
+        {
+          "edge_id": "EDGE-QUALIFY-PROMOTE",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "PROPOSED_ONLY",
+          "post_transition_currentness_status": "PROPOSED_ONLY",
+          "canonical_route_status": "OBSERVED_FAIL",
+          "identity_status": "OBSERVED_FAIL",
+          "rollback_status": "PROPOSED_ONLY",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1"
+        },
+        {
+          "edge_id": "EDGE-PROMOTE-BOOTSTRAP",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "PROPOSED_ONLY",
+          "post_transition_currentness_status": "PROPOSED_ONLY",
+          "canonical_route_status": "OBSERVED_FAIL",
+          "identity_status": "PROPOSED_ONLY",
+          "rollback_status": "PROPOSED_ONLY",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_TRANSITION_POLICY_V1/promote_to_bootstrap"
+        },
+        {
+          "edge_id": "EDGE-BOOTSTRAP-REFRESH",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "PROPOSED_ONLY",
+          "post_transition_currentness_status": "OBSERVED_FAIL",
+          "canonical_route_status": "PROPOSED_ONLY",
+          "identity_status": "OBSERVED_FAIL",
+          "rollback_status": "PROPOSED_ONLY",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_CONTRACT_V1/runtime_release_binding"
+        },
+        {
+          "edge_id": "EDGE-REFRESH-VERIFY",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": "PROFILE_RUNTIME_CANARY_REQUIRED",
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": "proposed://GESTION_RELEASE_PERFIL_LF/runtime_canary_consumer",
+          "terminality_status": "OBSERVED_FAIL",
+          "post_transition_currentness_status": "OBSERVED_FAIL",
+          "canonical_route_status": "PROPOSED_ONLY",
+          "identity_status": "PROPOSED_ONLY",
+          "rollback_status": "PROPOSED_ONLY",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_CONTRACT_V1/post_refresh_reconcile"
+        },
+        {
+          "edge_id": "EDGE-VERIFY-EXECUTE",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "OBSERVED_FAIL",
+          "post_transition_currentness_status": "OBSERVED_FAIL",
+          "canonical_route_status": "OBSERVED_FAIL",
+          "identity_status": "OBSERVED_FAIL",
+          "rollback_status": "PROPOSED_ONLY",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_ACCEPTANCE_LAYERS_V1/downstream_authorization"
+        },
+        {
+          "edge_id": "EDGE-EXECUTE-TERMINAL-READBACK",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "OBSERVED_FAIL",
+          "post_transition_currentness_status": "PROPOSED_ONLY",
+          "canonical_route_status": "PROPOSED_ONLY",
+          "identity_status": "PROPOSED_ONLY",
+          "rollback_status": "PROPOSED_ONLY",
+          "proposed_change_ref": "proposed://EJECUCION_PERFIL_LF/queue_terminal_bridge"
+        },
+        {
+          "edge_id": "EDGE-EXECUTE-DEPRECATE",
+          "observation_status": "PROPOSED_ONLY",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "PROPOSED_ONLY",
+          "post_transition_currentness_status": "PROPOSED_ONLY",
+          "canonical_route_status": "PROPOSED_ONLY",
+          "identity_status": "PROPOSED_ONLY",
+          "rollback_status": "PROPOSED_ONLY",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_TRANSITION_POLICY_V1/deprecate"
+        },
+        {
+          "edge_id": "EDGE-DEPRECATE-RETIRE",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "OBSERVED_FAIL",
+          "post_transition_currentness_status": "PROPOSED_ONLY",
+          "canonical_route_status": "OBSERVED_FAIL",
+          "identity_status": "PROPOSED_ONLY",
+          "rollback_status": "OBSERVED_FAIL",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_COMPATIBILITY_WINDOW_V1/drain_then_retire"
+        },
+        {
+          "edge_id": "EDGE-VERIFY-ROLLBACK",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "PROPOSED_ONLY",
+          "post_transition_currentness_status": "PROPOSED_ONLY",
+          "canonical_route_status": "OBSERVED_FAIL",
+          "identity_status": "PROPOSED_ONLY",
+          "rollback_status": "OBSERVED_FAIL",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_TRANSITION_POLICY_V1/rollback"
+        },
+        {
+          "edge_id": "EDGE-ROLLBACK-REFRESH",
+          "observation_status": "PROPOSED_ONLY",
+          "disposition": "IMPLEMENTABLE",
+          "next_gate": null,
+          "current_next_gate_consumer_evidence_refs": [],
+          "proposed_next_gate_consumer_ref": null,
+          "terminality_status": "PROPOSED_ONLY",
+          "post_transition_currentness_status": "PROPOSED_ONLY",
+          "canonical_route_status": "PROPOSED_ONLY",
+          "identity_status": "PROPOSED_ONLY",
+          "rollback_status": "PROPOSED_ONLY",
+          "proposed_change_ref": "proposed://PROFILE_RELEASE_TRANSITION_POLICY_V1/rollback_refresh"
+        }
+      ],
+      "summary": {
+        "implementable_edges": 13,
+        "reuse_as_is_edges": 0,
+        "observed_open_edges": 10,
+        "proposed_only_edges": 3,
+        "next_gate_edges": 2
+      },
+      "checks": [
+        {
+          "check": "BUILDER_EXACT_REGENERATION",
+          "result": "PASS",
+          "reason": "Current builder regenerates the frozen candidate exactly; canonical digest remains 6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16."
+        },
+        {
+          "check": "NEXT_GATE_REAL_CONSUMER_POSITIVE",
+          "result": "PASS",
+          "reason": "An observed closed next-gate fixture with CURRENT consumer evidence passes edge_closure without errors."
+        },
+        {
+          "check": "NEXT_GATE_NO_CONSUMER_NEGATIVE",
+          "result": "PASS",
+          "reason": "Removing both current consumer evidence and the proposed consumer from an IMPLEMENTABLE next-gate edge fails with V06_IMPLEMENTABLE_NEXT_GATE_CONSUMER_REQUIRED."
+        },
+        {
+          "check": "NO_FALSE_AS_IS_CLOSURE",
+          "result": "PASS",
+          "reason": "The frozen lifecycle candidate marks all thirteen material edges IMPLEMENTABLE; open/proposed edges are not represented as REUSE_AS_IS or OBSERVED_CLOSED."
+        },
+        {
+          "check": "QUEUE_FAILURE_CANONICAL_TERMINALITY",
+          "result": "PASS",
+          "reason": "LF_SUPABASE_SANDBOX readback changed the exact canonical execution for a FAILED queue pair from IN_PROGRESS to BLOCKED and persisted PROFILE_RUNTIME_QUEUE_TERMINAL_RECONCILIATION_V1; replay is idempotent."
+        },
+        {
+          "check": "SEMANTIC_PENDING_NOT_FALSE_TERMINAL",
+          "result": "PASS",
+          "reason": "A BLOCKED queue row whose code is HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING remains canonical IN_PROGRESS and resolves to the real semantic_judge next gate."
+        },
+        {
+          "check": "NO_QUEUE_AUTHORITY_EXCEPTION",
+          "result": "PASS",
+          "reason": "MC-10 probe execution ...0010 has zero matching queue rows; the reconciler returns NO_QUEUE_ROW with queue_authoritative=false, so it is not evidence of an unreconciled auxiliary queue terminal state."
+        },
+        {
+          "check": "CANCELLED_CURRENT_APPLICABILITY",
+          "result": "PASS",
+          "reason": "Current queue constraint admits PENDING/RUNNING/SUCCEEDED/BLOCKED/FAILED but not CANCELLED; cancelled reconciliation is NOT_APPLICABLE now and the implementation contains a forward-compatible CANCELLED mapping."
+        },
+        {
+          "check": "ROLLBACK_OR_RECOVERY",
+          "result": "PASS",
+          "reason": "Queue terminal reconciliation changes only canonical execution metadata, not runtime/business effect; recovery proof is compare-and-set plus idempotent replay. Lifecycle rollback edges remain explicitly proposed and are not claimed live."
+        }
+      ],
+      "frozen_candidate_currentness_note": "The queue-terminal bridge was applied after the frozen candidate/evidence cutoff. The candidate's OBSERVED_FAIL terminality field is historical evidence, not a claim about the post-repair sandbox state; the overall edge remains OBSERVED_OPEN because other lifecycle proofs are still proposed.",
+      "blocking_findings": []
+    }
+  },
+  "deterministic_review_result_validation": {
+    "status": "PASS",
+    "blocking_codes": []
+  },
+  "downstream_authorized": false
+}

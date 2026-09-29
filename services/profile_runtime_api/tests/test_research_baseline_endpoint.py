@@ -54,9 +54,19 @@ class ResearchBaselineEndpointTest(unittest.TestCase):
         )
         self.client = FakeBaselineLlama()
         self.engine = ProfileRuntimeEngine(self.settings, llama_client=self.client)  # type: ignore[arg-type]
-        self.path = "profiles/systemic_root_cause_repair_lf/SKILL.md"
-        content = (self.repo / self.path).read_text(encoding="utf-8")
-        manifest = [{"ref": self.path, "content_sha256": sha256_text(content)}]
+        self.paths = [
+            "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md",
+        ]
+        manifest = [
+            {
+                "ref": source_path,
+                "content_sha256": sha256_text(
+                    (self.repo / source_path).read_text(encoding="utf-8")
+                ),
+            }
+            for source_path in sorted(self.paths)
+        ]
         self.source_digest = "sha256:" + canonical_json_sha256(manifest)
         self.literal = "Find the systemic repair using only the supplied internal input before research."
         self.input_digest = "sha256:" + sha256_text(self.literal)
@@ -104,7 +114,7 @@ class ResearchBaselineEndpointTest(unittest.TestCase):
             request_id="11111111-2222-3333-4444-555555555555",
             profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
             profile_slug="systemic_root_cause_repair_lf",
-            profile_source_paths=[self.path],
+            profile_source_paths=self.paths,
             input_literal=self.literal,
             input_digest=self.input_digest,
             profile_source_digest=self.source_digest,
@@ -151,7 +161,7 @@ class ResearchBaselineEndpointTest(unittest.TestCase):
                 request_id="11111111-2222-3333-4444-555555555555",
                 profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
                 profile_slug="systemic_root_cause_repair_lf",
-                profile_source_paths=[self.path],
+                profile_source_paths=self.paths,
                 input_literal=self.literal,
                 input_digest=self.input_digest,
                 profile_source_digest=self.source_digest,

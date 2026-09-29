@@ -1,0 +1,17 @@
+{
+  "candidate_bytes": 173247,
+  "candidate_file_sha256": "cbc05a3445ef27cfdca34a4103d79e640264e142efae3abae0cda253264e80cb",
+  "canonical_quality_accepted": false,
+  "independent_quality": "PENDING_INDEPENDENT_REVIEW",
+  "manifest_bundle_digest": "sha256:fc4c452e7b2e299276a96cb555f4513d0638e2a3cb8329b8a92e294792c2036e",
+  "merge_performed": false,
+  "oracle_evaluation_performed_in_this_run": false,
+  "pre_quality_status": "PASS_PRE_QUALITY",
+  "production_mutation": false,
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+  "receipt_kind": "NON_ACCEPTANCE_PRE_QUALITY_FREEZE",
+  "runtime_activation": false,
+  "schema": "SRCR_V06_LIFECYCLE_FROZEN_CANDIDATE_RECEIPT_V1",
+  "source_v05_candidate_sha256": "5236f4fa746290ee75b8d3892fa9a970b2e13adf9b3bf38e3b2d9352dac13c05",
+  "trace_count": 44
+}

@@ -1,0 +1,420 @@
+{
+  "schema": "SRCR_MC13_LIVE_AUTHORITY_READBACK_V1",
+  "observed_at": "2026-09-22T16:55:41.359237+00:00",
+  "purpose": "Fresh authority resolution for all 65 frozen evidence IDs before the MC-13 ungrouped replay.",
+  "frozen_candidate_sha256": "6ef37503ee1a41c84edca57faa163092eceb95184c609c23ea7bcbe9fb312f16",
+  "frozen_evidence_manifest_sha256": "feb2f9b6598ea7759fa79402d3bdfc1d6f0104ccf49016b1c7ad0fe23200e0cb",
+  "frozen_scope_packet_sha256": "49f647de508052d7bb16cd17b7052ba75321b787fcbf80373197a5665b2b768f",
+  "provider_summary": {
+    "SUPABASE": {
+      "expected": 39,
+      "verified": 39,
+      "status": "PASS"
+    },
+    "GITHUB": {
+      "expected": 23,
+      "verified": 23,
+      "status": "PASS"
+    },
+    "WEB": {
+      "expected": 3,
+      "verified": 3,
+      "status": "PASS"
+    }
+  },
+  "verified_evidence_ids": {
+    "SUPABASE": [
+      "EV-LC-001",
+      "EV-LC-002",
+      "EV-LC-003",
+      "EV-LC-004",
+      "EV-LC-005",
+      "EV-LC-006",
+      "EV-LC-007",
+      "EV-LC-008",
+      "EV-LC-009",
+      "EV-LC-010",
+      "EV-LC-011",
+      "EV-LC-012",
+      "EV-LC-013",
+      "EV-LC-014",
+      "EV-LC-015",
+      "EV-LC-016",
+      "EV-LC-017",
+      "EV-LC-018",
+      "EV-LC-019",
+      "EV-LC-020",
+      "EV-LC-021",
+      "EV-LC-035",
+      "EV-LC-036",
+      "EV-PROFILE-CURRENT",
+      "EV-CREATE",
+      "EV-UPDATE",
+      "EV-RUNTIME-REFRESH",
+      "EV-RUNTIME-BOOTSTRAP",
+      "EV-OPS",
+      "EV-ROUTER",
+      "EV-PROMOTION-ABSENCE",
+      "EV-RETIRE",
+      "EV-STATE-MODEL",
+      "EV-QUALIFICATION",
+      "EV-ACT0045",
+      "EV-DESTINATION",
+      "EV-RELATIONS",
+      "EV-EKB",
+      "EV-LIFECYCLE-POLICY"
+    ],
+    "GITHUB": [
+      "EV-LC-022",
+      "EV-LC-023",
+      "EV-LC-024",
+      "EV-LC-025",
+      "EV-LC-026",
+      "EV-LC-027",
+      "EV-LC-028",
+      "EV-LC-029",
+      "EV-LC-030",
+      "EV-LC-031",
+      "EV-LC-032",
+      "EV-LC-033",
+      "EV-LC-034",
+      "EV-LC-037",
+      "EV-LC-038",
+      "EV-LC-039",
+      "EV-LC-040",
+      "EV-LC-041",
+      "EV-LC-042",
+      "EV-LC-043",
+      "EV-LC-044",
+      "EV-WORKER",
+      "EV-V05-SOURCE"
+    ],
+    "WEB": [
+      "EV-WEB-OPENGITOPS",
+      "EV-WEB-K8S-CONTROLLERS",
+      "EV-WEB-SLSA-PROVENANCE"
+    ]
+  },
+  "supabase_replay": [
+    {
+      "evidence_id": "EV-LC-001",
+      "query_id": "Q5_profile_asset_exact",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-002",
+      "query_id": "Q6_profile_phase_operation_codes",
+      "result_count": 6,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-003",
+      "query_id": "Q7_step_counts_by_profile_operation",
+      "result_count": 6,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-004",
+      "query_id": "Q8_create_update_step_ids",
+      "result_count": 55,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-005",
+      "query_id": "Q9_retiro_activo_steps",
+      "result_count": 13,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-006",
+      "query_id": "Q10_profile_publish_promote_rollback_absence",
+      "result_count": 0,
+      "claim_support": "ABSENCE",
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-007",
+      "query_id": "Q11_profile_router_actions",
+      "result_count": 6,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-008",
+      "query_id": "Q12_creation_execution_summary",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-009",
+      "query_id": "Q13_creation_missing_step",
+      "result_count": 40,
+      "status": "PASS_WITH_CURRENTNESS_NOTE",
+      "note": "The historical creation execution predates the expanded 40-step current registry; it is retained as historical provenance and is not reused as proof of current step completeness."
+    },
+    {
+      "evidence_id": "EV-LC-010",
+      "query_id": "Q14_creation_asset_provenance",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-011",
+      "query_id": "Q15_activation_canary_actions_absent_corrected",
+      "result_count": 0,
+      "claim_support": "ABSENCE",
+      "status": "PASS",
+      "note": "Initial broad %ACTIV% probe was rejected because it matched ACTIVO inside RETIRO_ACTIVO_LF; corrected token-bound query returned zero."
+    },
+    {
+      "evidence_id": "EV-LC-012",
+      "query_id": "Q16_update_merge_edge",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-013",
+      "query_id": "Q17_execution_profile_step_chain",
+      "result_count": 11,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-014",
+      "query_id": "Q18_latest_srcr_profile_executions",
+      "result_count": 12,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-015",
+      "query_id": "Q19_runtime_refresh_execution",
+      "result_count": 1,
+      "status": "PASS",
+      "note": "Current manifest next_gate remains PROFILE_RUNTIME_CANARY_REQUIRED."
+    },
+    {
+      "evidence_id": "EV-LC-016",
+      "query_id": "Q20_db_functions_inserting_lf_activos",
+      "result_count": 0,
+      "claim_support": "ABSENCE",
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-017",
+      "query_id": "Q21_lifecycle_relevant_triggers",
+      "result_count": 19,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-018",
+      "query_id": "Q22_next_gate_function_refs",
+      "result_count": 2,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-019",
+      "query_id": "Q23_failed_queue_vs_operation_execution",
+      "result_count": 1,
+      "status": "PASS",
+      "note": "Authoritative FAILED queue pair is now canonical BLOCKED after MC-11 reconciliation."
+    },
+    {
+      "evidence_id": "EV-LC-020",
+      "query_id": "Q24_queue_operation_bridge_functions",
+      "result_count": 1,
+      "status": "PASS_SUPERSEDED_HISTORICAL_ABSENCE",
+      "note": "Historical candidate cutoff observed absence; current sandbox has lf_profile_execution_reconcile_queue_terminal_v1 from the MC-11 repair."
+    },
+    {
+      "evidence_id": "EV-LC-021",
+      "query_id": "Q25_retire_rollback_action_inventory",
+      "result_count": 5,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LC-035",
+      "query_id": "Q26_srcr_quality_receipt_rows",
+      "result_count": 2,
+      "status": "PASS_SUPERSEDED_HISTORICAL_ABSENCE",
+      "note": "Historical candidate cutoff observed no SRCR quality receipt; current sandbox persists semantic_judge and report_output with SRCR_QUALITY_RECEIPT_V1 after MC-10."
+    },
+    {
+      "evidence_id": "EV-LC-036",
+      "query_id": "Q27_srcr_semantic_judge_operation_binding",
+      "result_count": 1,
+      "status": "PASS",
+      "note": "semantic_judge step 70 is ACTIVE_ENFORCEMENT and BOUND_SEMANTIC_JUDGE."
+    },
+    {
+      "evidence_id": "EV-PROFILE-CURRENT",
+      "query_id": "EV_PROFILE_CURRENT_EXACT",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-CREATE",
+      "query_id": "EV_CREATE_EXECUTION_EXACT",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-UPDATE",
+      "query_id": "EV_UPDATE_EXECUTION_EXACT",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-RUNTIME-REFRESH",
+      "query_id": "EV_RUNTIME_REFRESH_EXACT",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-RUNTIME-BOOTSTRAP",
+      "query_id": "EV_RUNTIME_BOOTSTRAP_EXACT",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-OPS",
+      "query_id": "EV_OPERATION_REGISTRY_PROFILE_SET",
+      "result_count": 6,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-ROUTER",
+      "query_id": "EV_ROUTER_PROFILE_ACTIONS",
+      "result_count": 6,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-PROMOTION-ABSENCE",
+      "query_id": "EV_PROFILE_PROMOTION_OPERATION_ABSENCE",
+      "result_count": 0,
+      "claim_support": "ABSENCE",
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-RETIRE",
+      "query_id": "EV_RETIRE_OPERATION_EXACT",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-STATE-MODEL",
+      "query_id": "EV_STATE_MODEL_VIGENTE",
+      "result_count": 12,
+      "status": "PASS",
+      "note": "A first ACTIVE-status query was rejected as invalid because catalog status values are VIGENTE/CANDIDATO; corrected VIGENTE replay returned 12 current states."
+    },
+    {
+      "evidence_id": "EV-QUALIFICATION",
+      "query_id": "EV_QUALIFICATION_TRANSITIONS_VIGENTE",
+      "result_count": 6,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-ACT0045",
+      "query_id": "EV_ACT0045_EXACT",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-DESTINATION",
+      "query_id": "EV_PROFILE_DESTINATION_EXACT",
+      "result_count": 1,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-RELATIONS",
+      "query_id": "EV_PROFILE_RELATIONS_CURRENT",
+      "result_count": 0,
+      "claim_support": "ABSENCE",
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-EKB",
+      "query_id": "EV_EKB_PROFILE_CURRENT",
+      "result_count": 50,
+      "status": "PASS"
+    },
+    {
+      "evidence_id": "EV-LIFECYCLE-POLICY",
+      "query_id": "EV_LIFECYCLE_POLICY_BINDING",
+      "result_count": 1,
+      "status": "PASS"
+    }
+  ],
+  "github_replay": {
+    "git_object_checks": {
+      "count": 20,
+      "pass_count": 20,
+      "commits": [
+        "f5baa359bf22510af9961b151ab77e47c74bbcc5",
+        "37eeb13e980b1729350428caa8d2d55a8de21246",
+        "4ca67c29925ad5016158f56bf0e58ef1da2d6c71"
+      ]
+    },
+    "action_job_log_checks": [
+      {
+        "evidence_id": "EV-LC-039",
+        "job_id": 106607329745,
+        "decoded_log_bytes": 254873,
+        "status": "PASS"
+      },
+      {
+        "evidence_id": "EV-LC-042",
+        "job_id": 106601722653,
+        "decoded_log_bytes": 201970,
+        "status": "PASS"
+      },
+      {
+        "evidence_id": "EV-LC-043",
+        "job_id": 106601741367,
+        "decoded_log_bytes": 217159,
+        "status": "PASS"
+      }
+    ]
+  },
+  "web_replay": [
+    {
+      "evidence_id": "EV-WEB-OPENGITOPS",
+      "url": "https://opengitops.dev/",
+      "status": "PASS_CURRENT_CONTENT"
+    },
+    {
+      "evidence_id": "EV-WEB-K8S-CONTROLLERS",
+      "url": "https://kubernetes.io/docs/concepts/architecture/controller/",
+      "status": "PASS_CURRENT_CONTENT"
+    },
+    {
+      "evidence_id": "EV-WEB-SLSA-PROVENANCE",
+      "url": "https://slsa.dev/spec/v1.2/provenance",
+      "status": "PASS_CURRENT_CONTENT"
+    }
+  ],
+  "operational_residue_classification": {
+    "execution_id": "EXEC-PROFILE-RUNTIME-8e0a1000-0000-4000-8000-000000000010",
+    "status": "IN_PROGRESS",
+    "queue_row_count": 0,
+    "manifest_no_write": true,
+    "manifest_read_only": true,
+    "manifest_no_promotion": true,
+    "materiality": "NON_BLOCKING_CONTROLLED_PROBE",
+    "basis": "MC-11 T5 independent readback explicitly classifies ...0010 under NO_QUEUE_AUTHORITY_EXCEPTION: zero queue rows, reconciler returns NO_QUEUE_ROW with queue_authoritative=false, so it is not evidence of an unreconciled auxiliary queue terminal state."
+  },
+  "invalid_probe_rejections": [
+    {
+      "probe": "state-model status=ACTIVE",
+      "reason": "catalog uses VIGENTE/CANDIDATO; zero-row was not accepted as evidence",
+      "corrected": true
+    },
+    {
+      "probe": "activation pattern %ACTIV%",
+      "reason": "matched ACTIVO inside RETIRO_ACTIVO_LF; broad pattern was not accepted",
+      "corrected": true
+    }
+  ],
+  "unresolved_evidence_ids": [],
+  "fabricated_evidence_ids": [],
+  "status": "PASS"
+}

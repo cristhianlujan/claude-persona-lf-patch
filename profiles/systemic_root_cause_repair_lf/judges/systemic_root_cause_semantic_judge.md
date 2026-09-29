@@ -9,11 +9,13 @@ This judge evaluates the exact candidate after deterministic validation. It MUST
 The judge receives the same run authority resolved before producer execution. The producer cannot expand that authority by writing new claims into its output.
 
 ## Required inputs
+The reviewer input boundary is fail-closed and contains only:
 1. `exact_candidate` plus `candidate_sha256`.
-2. `scope_authority_packet` plus `scope_packet_sha256`, materialized by `input_validate` before profile execution.
-3. Exact current upstream sources referenced by material scope/authority items when needed to interpret them.
-4. Literal request/failure envelope and resolved run context.
-5. Deterministic validator result for the exact candidate.
+2. Exact `evidence_manifest` plus `evidence_manifest_sha256`; the reviewer must bind its result to the exact manifest bytes it consumed.
+3. `scope_authority_packet` plus `scope_packet_sha256`, materialized by `input_validate` before profile execution.
+4. Exact current authority refs hydrated from the evidence bundle only when needed to verify those three inputs.
+
+The orchestrator may require deterministic validation to PASS before opening review, but producer private reasoning, producer chat transcript, hidden producer context, or any other undeclared context MUST NOT be delivered to the reviewer. The review execution must use a distinct `reviewer_execution_id` from the producer and bind its output to `review_input_sha256`, the canonical digest of this exact allowed-input packet.
 
 The scope packet is a transport object, not a new canonical authority. It must preserve source refs and authority precedence.
 
@@ -135,6 +137,71 @@ For `DEEP_ARCHITECTURE_RESEARCH`, and for `BOUNDED` when current-practice resear
 
 The compact baseline/delta packet is evidence transport, not a second authority. Full research transcripts are not required when exact source refs can be hydrated JIT.
 
+## V0.4 transversal semantic checks
+
+These checks are generic and MUST be performed independently from producer declarations.
+
+### T1 — Current repair disposition
+Before accepting any proposed repair, independently determine whether the failure is still active/current and materially repair-worthy.
+- If current authority/readback proves the reported defect is already resolved, a proposed repair is an overrepair and must return to worker unless the candidate uses `NO_REPAIR_REQUIRED/ALREADY_RESOLVED`.
+- If evidence shows an observation/opportunity but not a material systemic failure, a proposed systemic repair is an overrepair and must return to worker unless the candidate uses `NO_REPAIR_REQUIRED/NOT_MATERIAL`.
+- Every V0.4 disposition must include an executable verification whose method can be run independently and whose expected result directly tests the claimed current disposition; a prose assertion or future-only plan is not verification.
+- `NO_REPAIR_REQUIRED` itself passes only with exact currentness/readback evidence, a successfully evidenced executable disposition verification proving `ALREADY_RESOLVED` or `NOT_MATERIAL`, and no hidden repair delta.
+
+### T2 — Quantitative policy grounding
+Independently extract every material numeric decision from the entire candidate, including prose: timeout, deadline, polling/backoff, retry limit, threshold, cutoff, sample size, quorum, tolerance, percentile/floor/ceiling or equivalent.
+Reconcile 100% of those decisions against `quantitative_decisions[]`.
+A material numeric decision fails `EVIDENCE_INTEGRITY` when:
+- it is absent from the inventory;
+- its claimed grounding is only the triggering incident/run/host/sample;
+- its grounding ref does not support the policy value or reusable calibration rule;
+- an ungrounded value is nevertheless fixed in the selected repair;
+- a PRECONDITION can still change architecture, authority, enforcement, wiring, rollout, rollback or acceptance.
+
+A single incident may demonstrate the existence of a failure mode. It does not by itself authorize a reusable numeric policy.
+
+### T3 — Material process graph completeness
+When the exact case or selected repair contains a material lifecycle, workflow, staged process or chain of stateful subprocesses, independently derive the material nodes from authority/evidence and reconcile them against `material_process_graph.nodes[]`.
+For every material node verify:
+- authority and real producer/consumer;
+- input/output contract;
+- state/transition when applicable;
+- physical wiring/control enforcement;
+- failure/recovery/terminal behavior;
+- evidence and acceptance/falsification;
+- explicit `IMPLEMENTABLE`, `REUSE_AS_IS` or `DESIGN_BLOCKING` disposition.
+
+Listing phase names or describing a high-level flow is not coverage. Missing material nodes, nominal-only wiring, or a `DESIGN_BLOCKING` node in a ready spec fails semantic closure.
+
+### T4 — V0.5 premature-stop verification
+For V0.5 non-ready candidates and every V0.5 `DESIGN_BLOCKING` uncertainty/process node, independently verify whether the producer stopped while accessible evidence could still close the gap.
+- Confirm `attempted_sources` covers the material surfaces that could plausibly resolve the uncertainty.
+- Hydrate each attempt's `evidence_id` and verify that the evidence at the bound locator supports the declared attempt result; otherwise add `ATTEMPT_RESULT_NOT_SUPPORTED` and return to worker.
+- When multiple blocked process nodes share one uncertainty, verify that its attempts materially cover every referenced node; a generic uncertainty spanning unrelated phases is `PREMATURE_DESIGN_BLOCKING`.
+- Probe at least one material accessible surface omitted from the attempts when such a surface exists. If it closes or materially narrows the gap, add `PREMATURE_DESIGN_BLOCKING` and return to worker, naming the omitted surface rather than supplying the answer.
+- If a blocker is derived from the test harness, requested profile revision, or another execution-context fact rather than the audited system, add `TEST_CONTEXT_AS_BLOCKER` and return to worker.
+- If a cited reference cannot be resolved in live authority, add `EVIDENCE_REFERENCE_NOT_FOUND`; fabricated evidence remains a BLOCK condition.
+
+For a semantic PASS, these checks are part of `EVIDENCE_INTEGRITY`; the invariant cannot PASS while any T4 blocking code remains. A legitimate `NEEDS_MORE_EVIDENCE` with supported attempts and no omitted closing surface is valid and must not be penalized.
+
+
+### T5 — V0.6 physical edge closure
+For V0.6, independently derive the material edges between the reconciled process nodes and compare them against `material_process_graph.edges[]`. Do not accept component existence as wiring.
+
+For every material edge:
+- hydrate the producer, transport, consumer, enforcement and effect/readback evidence;
+- verify that the evidence describes the same physical path and exact current revision/state, not merely nearby components;
+- when `next_gate` is present, independently resolve that gate to its real consumer; a textual next-gate label with no consumer is an open edge;
+- when canonical routing/authority applies, compare the canonical resolved route with the route actually consumed by the executor;
+- when the edge mutates state/version/binding, re-read currentness after the transition and verify that the transition did not invalidate its own qualification/receipt;
+- verify terminal behavior for success, blocked, return/retry and interruption paths when applicable;
+- verify release/asset/runtime identity consistency when more than one identity projection is exposed;
+- when rollback applies, require an executable inverse path and readback; a declaration such as `reversible=true` is not proof;
+- reject any `REUSE_AS_IS` edge whose evidence proves an open/unresolved path;
+- reject any candidate that uses a proposed implementation edge as evidence that the current AS-IS path is already closed.
+
+A material edge omitted from the graph, an unsupported OBSERVED_CLOSED classification, or evidence that resolves to a different producer/consumer/route/currentness boundary fails semantic closure.
+
 ## Verdict rules
 Return `PASS_INDEPENDENT_SEMANTIC` only when:
 - deterministic validation passed;
@@ -144,7 +211,11 @@ Return `PASS_INDEPENDENT_SEMANTIC` only when:
 - R3 has no OUT_OF_SCOPE_DESIGN_DELTA or UNRESOLVED_SCOPE;
 - no material contradiction/blocker remains;
 - independent closure review finds no material open design decision.
-- when incremental-value proof is applicable, its baseline is coherent and the reported MATERIAL_UPLIFT or NO_MATERIAL_UPLIFT disposition is independently supported; UNPROVEN is not acceptable for ready closure.
+- when incremental-value proof is applicable, its baseline is coherent and the reported MATERIAL_UPLIFT or NO_MATERIAL_UPLIFT disposition is independently supported; UNPROVEN is not acceptable for ready closure;
+- V0.4 repair disposition is currentness-bound and does not overrepair an already-resolved/non-material case;
+- every material quantitative decision is independently reconciled and sufficiently grounded;
+- every applicable material-process node is independently reconciled and semantically closed;
+- for V0.6, every applicable material edge is independently reconciled through the physical producer→transport→consumer→authority/enforcement→effect/readback path, with next-gate/currentness/terminality/identity/rollback proofs where applicable.
 
 Return `RETURN_TO_WORKER_FOR_SELF_REPAIR` when candidate quality can be repaired without changing authorized scope, including undeclared change, incomplete closure, unsupported research impact, weak falsification, or a selected repair that contains an out-of-scope delta which can be removed/reclassified as discovery.
 
@@ -156,6 +227,11 @@ Return `BLOCK_PIPELINE` for fabricated authority/evidence, unauthorized mutation
 - `verdict`
 - `candidate_sha256`
 - `scope_packet_sha256`
+- `evidence_manifest_sha256`
+- `reviewer_execution_id`
+- `review_input_sha256`
+- `reviewer_context_mode=ISOLATED_NO_PRODUCER_PRIVATE_CONTEXT`
+- `review_input_classes[]` exactly `SCOPE_AUTHORITY_PACKET|EXACT_CANDIDATE|EVIDENCE_MANIFEST|CURRENT_AUTHORITY_REFS`
 - `source_refs_inspected[]`
 - `observed_candidate_changes[]`
 - `requirement_reconciliation[]`
@@ -170,3 +246,8 @@ Return `BLOCK_PIPELINE` for fabricated authority/evidence, unauthorized mutation
 
 ## MR02-R2 discriminator
 A valid implementation of this judge must reject a candidate that incorporates a new readiness function into the selected implementation when the exact authorized child scope allows caller adoption/steps/contracts but does not authorize that new function. This is a generic scope-conformance rule; no function name, backlog ID, or MR02-specific term belongs in production judge logic.
+
+
+## V0.6 evidence-manifest identity binding
+
+The evidence-manifest digest is an input binding, not a producer claim. The independent semantic result MUST return the exact `evidence_manifest_sha256` it consumed. A V0.6 quality receipt is invalid if deterministic validation, semantic review and receipt do not bind to the same exact manifest digest.

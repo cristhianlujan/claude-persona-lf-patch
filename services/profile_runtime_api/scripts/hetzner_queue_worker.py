@@ -250,13 +250,16 @@ def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
         if envelope is None:
             payload["lf_adapter_sources"] = _adapter_sources(cur, payload["profile_code"])
         elif isinstance(envelope, dict):
-            governance = envelope.get("input_governance")
-            if (
-                isinstance(governance, dict)
-                and governance.get("subject_mode") == "NON_CANONICAL_ARTIFACT"
-                and (governance.get("current") is not True or governance.get("ready") is not True)
-            ):
+            if envelope.get("route_kind") == "QUEUE_NATIVE_RESEARCH":
                 payload["lf_adapter_sources"] = _adapter_sources(cur, payload["profile_code"])
+            else:
+                governance = envelope.get("input_governance")
+                if (
+                    isinstance(governance, dict)
+                    and governance.get("subject_mode") == "NON_CANONICAL_ARTIFACT"
+                    and (governance.get("current") is not True or governance.get("ready") is not True)
+                ):
+                    payload["lf_adapter_sources"] = _adapter_sources(cur, payload["profile_code"])
         conn.commit()
         return payload
 
@@ -674,13 +677,81 @@ def _baseline_envelope_from_job(job: dict[str, Any]) -> dict[str, Any]:
     return envelope
 
 
+
+def _bind_external_authority_resolution(
+    payload: dict[str, Any],
+    model_governance: dict[str, Any],
+    external_resolution: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    profile = payload.get("profile")
+    if not isinstance(profile, dict):
+        raise RuntimeError("HETZNER_GOVERNED_PROFILE_PAYLOAD_MISSING")
+    if profile.get("profile_code") != "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF":
+        return model_governance
+
+    manifest = profile.get("evidence_manifest")
+    if not isinstance(manifest, dict) or not manifest:
+        raise RuntimeError("SRCR_EVIDENCE_MANIFEST_REQUIRED_BEFORE_MODEL")
+    evidence = manifest.get("evidence")
+    query_trace = manifest.get("query_trace")
+    if not isinstance(evidence, list) or not evidence:
+        raise RuntimeError("SRCR_EVIDENCE_MANIFEST_EMPTY_BEFORE_MODEL")
+    if not isinstance(query_trace, list) or not query_trace:
+        raise RuntimeError("SRCR_QUERY_TRACE_REQUIRED_BEFORE_MODEL")
+    if (
+        not isinstance(external_resolution, dict)
+        or external_resolution.get("mode") != "EXTERNAL_AUTHORITY_RESOLVER"
+    ):
+        raise RuntimeError("SRCR_LIVE_RESEARCH_EXECUTION_PATH_MISSING")
+    resolved = external_resolution.get("resolved_authority_context")
+    if not isinstance(resolved, dict) or not resolved:
+        raise RuntimeError("SRCR_RESOLVED_AUTHORITY_CONTEXT_REQUIRED")
+
+    evidence_by_id: dict[str, dict[str, Any]] = {}
+    for row in evidence:
+        if not isinstance(row, dict):
+            raise RuntimeError("SRCR_EVIDENCE_MANIFEST_ROW_INVALID")
+        evidence_id = row.get("evidence_id")
+        if not isinstance(evidence_id, str) or not evidence_id:
+            raise RuntimeError("SRCR_EVIDENCE_MANIFEST_ID_INVALID")
+        if evidence_id in evidence_by_id:
+            raise RuntimeError("SRCR_EVIDENCE_MANIFEST_ID_DUPLICATE")
+        evidence_by_id[evidence_id] = row
+    if set(resolved) != set(evidence_by_id):
+        raise RuntimeError("SRCR_RESOLVED_AUTHORITY_EVIDENCE_SET_MISMATCH")
+    for evidence_id, evidence_row in evidence_by_id.items():
+        resolved_row = resolved.get(evidence_id)
+        if not isinstance(resolved_row, dict):
+            raise RuntimeError(f"SRCR_RESOLVED_AUTHORITY_ROW_INVALID:{evidence_id}")
+        if resolved_row.get("source_locator") != evidence_row.get("source_locator"):
+            raise RuntimeError(f"SRCR_RESOLVED_AUTHORITY_LOCATOR_MISMATCH:{evidence_id}")
+        if resolved_row.get("digest") != evidence_row.get("digest"):
+            raise RuntimeError(f"SRCR_RESOLVED_AUTHORITY_DIGEST_MISMATCH:{evidence_id}")
+        if "resolved_value" not in resolved_row:
+            raise RuntimeError(f"SRCR_RESOLVED_AUTHORITY_VALUE_MISSING:{evidence_id}")
+
+    bound = dict(model_governance)
+    capsule = dict(bound.get("context_capsule") or {})
+    capsule["research_execution_mode"] = "EXTERNAL_AUTHORITY_RESOLVER"
+    capsule["resolved_authority_context"] = resolved
+    capsule["evidence_manifest_sha256"] = "sha256:" + _canonical_json_sha256(manifest)
+    capsule["query_trace_count"] = len(query_trace)
+    capsule["evidence_count"] = len(evidence)
+    capsule["resolved_authority_count"] = len(resolved)
+    bound["context_capsule"] = capsule
+    return bound
+
+
 def _attach_governed_operation(
     payload: dict[str, Any], model_governance: dict[str, Any]
 ) -> dict[str, Any]:
     profile = payload.get("profile")
     if not isinstance(profile, dict):
         raise RuntimeError("HETZNER_GOVERNED_PROFILE_PAYLOAD_MISSING")
-    profile["governed_operation"] = model_governance
+    external_resolution = payload.pop("_external_authority_resolution", None)
+    profile["governed_operation"] = _bind_external_authority_resolution(
+        payload, model_governance, external_resolution=external_resolution
+    )
     return payload
 
 
@@ -757,6 +828,18 @@ def _record_post_model_governance(
 
         contract_gate = profile.get("profile_contract_valid")
         semantic_gate = profile.get("semantic_utility")
+        canonical_quality = profile.get("canonical_quality")
+        if isinstance(canonical_quality, dict) and canonical_quality.get("applicability") == "REQUIRED":
+            if (
+                canonical_quality.get("status") != "PENDING_INDEPENDENT_SEMANTIC_REVIEW"
+                or canonical_quality.get("deterministic_floors_can_accept_quality") is not False
+                or canonical_quality.get("receipt_required_for_pass_to_quality_pack") is not True
+            ):
+                conn.commit()
+                return {
+                    "status": "BLOCKED",
+                    "error_code": "HETZNER_CANONICAL_QUALITY_BOUNDARY_INVALID",
+                }
         contract_codes = _gate_blocking_codes(contract_gate if isinstance(contract_gate, dict) else {})
         output_payload = {
             "output_contract_result": (
@@ -766,6 +849,7 @@ def _record_post_model_governance(
                 "profile_contract_valid": contract_gate,
                 "runtime_semantic_utility": semantic_gate,
             },
+            "canonical_quality": canonical_quality,
             "blocking_codes": contract_codes,
         }
         output_result = _fetch_json_scalar(
@@ -792,7 +876,193 @@ def _record_post_model_governance(
         "next_gate": "semantic_judge",
         "semantic_judge_auto_recorded": False,
         "baseline_applicability": baseline["applicability"],
+        "canonical_quality": canonical_quality,
     }
+
+
+def _record_semantic_quality_result(
+    conn: psycopg.Connection,
+    *,
+    execution_id: str,
+    profile_code: str,
+    semantic_execution_receipt_ref: str,
+    semantic_result: dict[str, Any],
+    finalize_result: dict[str, Any],
+) -> dict[str, Any]:
+    """Persist only a fully validated independent semantic PASS and canonical receipt.
+
+    The independent semantic reviewer remains external to this worker. This function
+    is the deterministic consumer after the review has been validated and the
+    canonical quality receipt has been materialized.
+    """
+    if finalize_result.get("status") != "PASS":
+        return {
+            "status": "BLOCKED",
+            "error_code": "CANONICAL_QUALITY_FINALIZE_NOT_PASS",
+        }
+    if _gate_blocking_codes(finalize_result):
+        return {"status": "BLOCKED", "error_code": "CANONICAL_QUALITY_FINALIZE_HAS_BLOCKERS"}
+    if finalize_result.get("canonical_quality_accepted") is not True:
+        return {
+            "status": "BLOCKED",
+            "error_code": "CANONICAL_QUALITY_NOT_ACCEPTED",
+        }
+    receipt = finalize_result.get("quality_receipt")
+    if not isinstance(receipt, dict):
+        return {
+            "status": "BLOCKED",
+            "error_code": "CANONICAL_QUALITY_RECEIPT_MISSING",
+        }
+    if receipt.get("decision") != "PASS_TO_QUALITY_PACK":
+        return {"status": "BLOCKED", "error_code": "CANONICAL_QUALITY_RECEIPT_NOT_PASS"}
+    if _gate_blocking_codes(semantic_result):
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_REVIEW_HAS_BLOCKERS"}
+    unsupported_claims = semantic_result.get("unsupported_claims")
+    if unsupported_claims is None:
+        unsupported_claims = []
+    if not isinstance(unsupported_claims, list) or unsupported_claims:
+        return {
+            "status": "BLOCKED",
+            "error_code": "SEMANTIC_REVIEW_UNSUPPORTED_CLAIMS_PRESENT",
+        }
+    if semantic_result.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
+        return {
+            "status": "BLOCKED",
+            "error_code": "SEMANTIC_REVIEW_VERDICT_NOT_PASS",
+        }
+
+    semantic_payload = {
+        "semantic_judge_result": {
+            "status": "PASS",
+            "verdict": semantic_result.get("verdict"),
+            "candidate_sha256": semantic_result.get("candidate_sha256"),
+            "scope_packet_sha256": semantic_result.get("scope_packet_sha256"),
+            "canonical_quality_accepted": True,
+            "quality_receipt": receipt,
+        },
+        "unsupported_claims": [],
+    }
+    with conn.cursor() as cur:
+        semantic_step = _fetch_json_scalar(
+            cur,
+            "select public.lf_record_profile_execution_step_v1(%s,%s,%s,%s,%s)",
+            (
+                execution_id,
+                "semantic_judge",
+                semantic_execution_receipt_ref,
+                Jsonb(semantic_payload),
+                execution_id,
+            ),
+        )
+        if semantic_step.get("outcome") != "STEP_RECORDED":
+            conn.commit()
+            return {
+                "status": "BLOCKED",
+                "error_code": semantic_step.get("code")
+                or "SEMANTIC_JUDGE_STEP_NOT_CLEAN",
+            }
+
+        report_payload = {
+            "result": "PASS_TO_QUALITY_PACK",
+            "profile_code": profile_code,
+            "execution_id": execution_id,
+            "no_write_performed": True,
+            "canonical_quality_accepted": True,
+            "quality_receipt": receipt,
+        }
+        report_step = _fetch_json_scalar(
+            cur,
+            "select public.lf_record_profile_execution_step_v1(%s,%s,%s,%s,%s)",
+            (
+                execution_id,
+                "report_output",
+                f"{semantic_execution_receipt_ref}#quality-report",
+                Jsonb(report_payload),
+                execution_id,
+            ),
+        )
+    conn.commit()
+    if report_step.get("outcome") != "STEP_RECORDED":
+        return {
+            "status": "BLOCKED",
+            "error_code": report_step.get("code") or "REPORT_OUTPUT_STEP_NOT_CLEAN",
+        }
+    return {
+        "status": "COMPLETED",
+        "error_code": None,
+        "execution_id": execution_id,
+        "canonical_quality_accepted": True,
+        "quality_receipt": receipt,
+    }
+
+
+def finalize_semantic_quality_review(
+    conn: psycopg.Connection, review_request: dict[str, Any]
+) -> dict[str, Any]:
+    """Consume an external review through the pure API and the existing recorder.
+
+    No model is called here. The producer candidate must already be persisted by
+    EJECUCION_PERFIL_LF; an arbitrary candidate cannot finalize another execution.
+    """
+    execution_id = review_request.get("producer_execution_id")
+    if not isinstance(execution_id, str) or not execution_id:
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_REVIEW_PRODUCER_REQUIRED"}
+    with conn.cursor() as cur:
+        producer = _read_governed_step(cur, execution_id, "execute_profile")
+        output = _read_governed_step(cur, execution_id, "output_validate")
+    if (
+        not isinstance(producer, dict)
+        or not isinstance(output, dict)
+        or producer.get("status") != "STEP_PASS_WITH_EVIDENCE"
+        or output.get("status") != "STEP_PASS_WITH_EVIDENCE"
+    ):
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_REVIEW_PREDECESSORS_NOT_CLEAN"}
+    if (
+        producer.get("evidence_ref") != review_request.get("producer_execution_receipt_ref")
+        or producer.get("evidence_payload", {}).get("profile_output") != review_request.get("candidate")
+    ):
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_REVIEW_PRODUCER_READBACK_MISMATCH"}
+
+    response = _api_json("POST", "/v1/profile/semantic-quality-finalize", review_request)
+    if (
+        response.get("kind") != "semantic_quality_finalize"
+        or any(response.get(key) != review_request.get(key) for key in ("request_id", "profile_code", "profile_slug"))
+        or not isinstance(response.get("result"), dict)
+    ):
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_QUALITY_API_RESPONSE_MISMATCH"}
+    result = response["result"]
+    if result.get("status") != "PASS" or result.get("canonical_quality_accepted") is not True:
+        return {
+            "status": "BLOCKED",
+            "error_code": "CANONICAL_QUALITY_NOT_ACCEPTED",
+            "finalization": result,
+        }
+    # Reuse the same recorder path; no direct step-state writes or second judge.
+    recorded = _record_semantic_quality_result(
+        conn,
+        execution_id=execution_id,
+        profile_code=review_request["profile_code"],
+        semantic_execution_receipt_ref=review_request["semantic_execution_receipt_ref"],
+        semantic_result=review_request["semantic_result"],
+        finalize_result=result,
+    )
+    if recorded.get("status") != "COMPLETED":
+        return recorded
+    with conn.cursor() as cur:
+        semantic = _read_governed_step(cur, execution_id, "semantic_judge")
+        report = _read_governed_step(cur, execution_id, "report_output")
+    expected_receipt = result["quality_receipt"]
+    if (
+        not isinstance(semantic, dict)
+        or not isinstance(report, dict)
+        or semantic.get("status") != "STEP_PASS_WITH_EVIDENCE"
+        or report.get("status") != "STEP_PASS_WITH_EVIDENCE"
+        or semantic.get("evidence_ref") != review_request["semantic_execution_receipt_ref"]
+        or semantic.get("evidence_payload", {}).get("semantic_judge_result", {}).get("quality_receipt") != expected_receipt
+        or report.get("evidence_payload", {}).get("quality_receipt") != expected_receipt
+    ):
+        return {"status": "BLOCKED", "error_code": "SEMANTIC_QUALITY_PERSISTENCE_READBACK_MISMATCH"}
+    return {**recorded, "persistence_readback": "PASS", "downstream_authorized": False}
 
 
 def _validate_envelope(request_id: str, envelope: Any) -> dict[str, Any]:
@@ -975,18 +1245,37 @@ def _queue_native_payload(claimed: dict[str, Any]) -> dict[str, Any]:
         or claimed.get("input_image_media_type")
     ):
         raise RuntimeError("HETZNER_QUEUE_NATIVE_IMAGE_REQUIRES_GOVERNED_ENVELOPE")
-    return {
-        "profile": {
-            "request_id": claimed["request_id"],
-            "operation_code": claimed["operation_code"],
-            "profile_code": claimed["profile_code"],
-            "profile_slug": claimed["profile_slug"],
-            "profile_source_paths": claimed["profile_source_paths"],
-            "input_literal": claimed["input_literal"],
-            "lf_adapter_sources": claimed.get("lf_adapter_sources") or [],
-            "send_image_to_model": False,
-        }
+    profile = {
+        "request_id": claimed["request_id"],
+        "operation_code": claimed["operation_code"],
+        "profile_code": claimed["profile_code"],
+        "profile_slug": claimed["profile_slug"],
+        "profile_source_paths": claimed["profile_source_paths"],
+        "input_literal": claimed["input_literal"],
+        "lf_adapter_sources": claimed.get("lf_adapter_sources") or [],
+        "send_image_to_model": False,
     }
+    payload: dict[str, Any] = {"profile": profile}
+    envelope = claimed.get("runtime_request_envelope")
+    if isinstance(envelope, dict) and envelope.get("route_kind") == "QUEUE_NATIVE_RESEARCH":
+        if envelope.get("schema") != "LF_PROFILE_RUNTIME_QUEUE_RESEARCH_V1":
+            raise RuntimeError("SRCR_RESEARCH_QUEUE_ENVELOPE_SCHEMA_INVALID")
+        if envelope.get("research_execution_mode") != "EXTERNAL_AUTHORITY_RESOLVER":
+            raise RuntimeError("SRCR_LIVE_RESEARCH_EXECUTION_PATH_MISSING")
+        manifest = envelope.get("evidence_manifest")
+        resolved = envelope.get("resolved_authority_context")
+        if not isinstance(manifest, dict) or not manifest:
+            raise RuntimeError("SRCR_EVIDENCE_MANIFEST_REQUIRED_BEFORE_MODEL")
+        if not isinstance(resolved, dict) or not resolved:
+            raise RuntimeError("SRCR_RESOLVED_AUTHORITY_CONTEXT_REQUIRED")
+        if len(json.dumps(resolved, ensure_ascii=False)) > 120_000:
+            raise RuntimeError("SRCR_RESOLVED_AUTHORITY_CONTEXT_BUDGET_EXCEEDED")
+        profile["evidence_manifest"] = manifest
+        payload["_external_authority_resolution"] = {
+            "mode": "EXTERNAL_AUTHORITY_RESOLVER",
+            "resolved_authority_context": resolved,
+        }
+    return payload
 
 
 def _wait_job(job_id: str) -> dict[str, Any]:
@@ -1177,7 +1466,20 @@ def _persist_success(
         conn.commit()
 
 
-def _persist_failure(conn: psycopg.Connection, request_id: str, exc: BaseException) -> None:
+def _reconcile_queue_terminal(
+    cur: psycopg.Cursor, request_id: str
+) -> dict[str, Any]:
+    """Reconcile an auxiliary queue terminal state to the exact canonical execution."""
+    return _fetch_json_scalar(
+        cur,
+        "select public.lf_profile_execution_reconcile_queue_terminal_v1(%s::uuid,%s)",
+        (request_id, _governed_execution_id(request_id)),
+    )
+
+
+def _persist_failure(
+    conn: psycopg.Connection, request_id: str, exc: BaseException
+) -> dict[str, Any]:
     raw = str(exc)
     candidate = raw.split(":", 1)[0]
     error_code = (
@@ -1202,7 +1504,38 @@ def _persist_failure(conn: psycopg.Connection, request_id: str, exc: BaseExcepti
             """,
             (PROVIDER, error_code, detail, request_id),
         )
+        if cur.rowcount != 1:
+            conn.commit()
+            return {
+                "result": "QUEUE_FAILURE_NOT_PERSISTED",
+                "blocking_code": "PROFILE_EXECUTION_TERMINALITY_RECONCILIATION_FAILED",
+            }
+
+        terminal = _reconcile_queue_terminal(cur, request_id)
+        terminal_result = terminal.get("result")
+        accepted = {
+            "CANONICAL_TERMINAL_RECONCILED",
+            "TERMINAL_PAIR_ALREADY_RECONCILED",
+            "NO_CANONICAL_EXECUTION",
+        }
+        if terminal_result not in accepted:
+            detail_with_terminal = (
+                f"{detail};terminal_reconciliation={terminal_result or 'UNKNOWN'};"
+                f"terminal_blocking_code={terminal.get('blocking_code') or 'PROFILE_EXECUTION_TERMINALITY_RECONCILIATION_FAILED'}"
+            )[:1500]
+            cur.execute(
+                f"""
+                update {TABLE}
+                   set error_detail=%s,
+                       updated_at=now()
+                 where request_id=%s::uuid
+                   and status='FAILED'
+                   and runtime_target='HETZNER'
+                """,
+                (detail_with_terminal, request_id),
+            )
         conn.commit()
+        return terminal
 
 
 def run_once() -> bool:
@@ -1234,7 +1567,11 @@ def run_once() -> bool:
 
         model_governance = _read_model_governance(conn, governed)
         envelope = claimed.get("runtime_request_envelope")
-        if envelope is not None:
+        if isinstance(envelope, dict) and envelope.get("route_kind") == "QUEUE_NATIVE_RESEARCH":
+            payload = _queue_native_payload(claimed)
+            endpoint = "/v1/profile/queue-execute"
+            route = "QUEUE_NATIVE_RESEARCH"
+        elif envelope is not None:
             envelope = materialize_router_advisory_envelope(
                 request_id,
                 envelope,
@@ -1277,9 +1614,25 @@ def run_once() -> bool:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--daemon", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--daemon", action="store_true")
+    mode.add_argument("--semantic-review", type=Path, help="Consume an independently produced SemanticQualityFinalizeRequest JSON")
     parser.add_argument("--idle-seconds", type=float, default=3.0)
     args = parser.parse_args()
+    if args.semantic_review is not None:
+        request = json.loads(args.semantic_review.read_text(encoding="utf-8"))
+        if not isinstance(request, dict):
+            raise SystemExit("SEMANTIC_REVIEW_REQUEST_NOT_OBJECT")
+        conn = _connect()
+        try:
+            result = finalize_semantic_quality_review(conn, request)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0 if result.get("status") == "COMPLETED" else 1
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
     if not args.daemon:
         return 0 if run_once() else 4
     while True:

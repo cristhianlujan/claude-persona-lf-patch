@@ -1,0 +1,56 @@
+{
+  "schema": "SRCR_MC07_RULE_OWNERSHIP_EXACT_HEAD_READBACK_V1",
+  "status": "READBACK_CLOSED",
+  "source_revision": "45cdf0e6bececaae890775f851181b411e7c8ac5",
+  "ownership_contract": "profiles/systemic_root_cause_repair_lf/contracts/rule_ownership.v1.json",
+  "digests": {
+    "catalog_sha256": "3ef20bc94bf85a0b469867e37de51e54e56539c839dab039d14b123f5cb6eae4",
+    "structural_validator_sha256": "e683db2a3886b3044b9222e03490cba614b45ccb959baea8ca7914fac52da0f1",
+    "semantic_utility_sha256": "5403f1c533f9d4b0d53beff1378242a158f15b340969f2558d37f0f946c3b066",
+    "research_trace_sha256": "f6ff4d5a5fca087404635ea178dc00840e554bb331f5b90e22093e05ff7a9853"
+  },
+  "exact_head_scan": {
+    "structural_code_count_ast": 234,
+    "semantic_utility_code_count_ast": 19,
+    "structural_utility_overlap": [],
+    "owner_paths_unique": true
+  },
+  "existing_regression": {
+    "command": "profiles/systemic_root_cause_repair_lf/evals/v06_control_ownership_cases.py",
+    "result": "PASS",
+    "output": "SRCR_V06_CONTROL_OWNERSHIP=PASS deterministic=230 semantic=19 overlap=0 mutation_detected=1"
+  },
+  "mutation_negative": {
+    "injected_duplicate_code": "NOT_OBJECT",
+    "target_owner_violation": "SEMANTIC_UTILITY re-emits STRUCTURAL-owned code",
+    "detected_overlap": [
+      "NOT_OBJECT"
+    ],
+    "detected": true,
+    "expected_result": "FAIL ownership regression"
+  },
+  "research_trace_ownership": {
+    "canonical_owner": "profiles/systemic_root_cause_repair_lf/validators/research_trace.py",
+    "native_harness_delegates": true,
+    "runtime_engine_delegates": true
+  },
+  "conclusion": "No duplicate structural owner is present on the exact scanned revision. The negative mutation is detected fail-closed, and research-trace callers delegate to the single canonical owner.",
+  "mutation_scope": {
+    "production_mutation": false,
+    "database_write": false,
+    "runtime_activation": false,
+    "merge": false
+  },
+  "post_persistence_exact_head_scan": {
+    "source_revision": "f9cd0f172a14c2384e3e395a4f945a2926eefd2c",
+    "structural_code_count_ast": 234,
+    "semantic_utility_code_count_ast": 19,
+    "structural_utility_overlap": [],
+    "owner_paths_unique": true
+  },
+  "utility_emission_scan": {
+    "method": "AST scan of every literal codes.append(...) in runtime_semantic_utility.py against every literal _error(...) structural blocking code in runtime_validate.py",
+    "result": "PASS",
+    "overlap": []
+  }
+}
