@@ -233,11 +233,8 @@ jobs:
                 }
               }
 
-              const lfContractCheckRequired =
-                requiredChecks.has('lf-contract-check') ||
-                [...requiredWorkflowPaths].some(
-                  (path) => path === '.github/workflows/lf-contract-check.yml',
-                );
+              const paseRepairWindowRequiredChecksEmpty =
+                requiredChecks.size === 0 && requiredWorkflowPaths.size === 0;
               const soloBuilderReviewPolicy =
                 pullRequestRules.length > 0 &&
                 pullRequestRules.every(
@@ -246,7 +243,7 @@ jobs:
                 );
               const criteria = {
                 active_rules_present: rules.length > 0,
-                lf_contract_check_required: lfContractCheckRequired,
+                pase_repair_window_required_checks_empty: paseRepairWindowRequiredChecksEmpty,
                 strict_status_checks: strictStatusChecks,
                 solo_builder_review_policy: soloBuilderReviewPolicy,
                 non_fast_forward: rules.some((rule) => rule.type === 'non_fast_forward'),
@@ -266,7 +263,10 @@ jobs:
               }
               branchProtectionDetails = {
                 source: 'GET /repos/{owner}/{repo}/rules/branches/{branch}',
+                enforcement_phase: 'PASE_REPAIR_WINDOW',
                 criteria,
+                expected_required_checks: [],
+                expected_required_workflow_paths: [],
                 required_checks: [...requiredChecks].sort(),
                 required_workflow_paths: [...requiredWorkflowPaths].sort(),
                 review_policy: {
