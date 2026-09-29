@@ -1,0 +1,26 @@
+name: LF PASE Merge Gate Live PASS Owner Probe
+
+on:
+  pull_request:
+    branches:
+      - lf/pase-merge-gate-live-pass-probe-20260929
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-owner-local-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+      - name: Assert exact candidate head
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "b6fa5db35025ebd8430e66a29cbe5d20aff49f91"
+      - name: Run merge-gate carrier self-test
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_carrier_v1.py self-test
