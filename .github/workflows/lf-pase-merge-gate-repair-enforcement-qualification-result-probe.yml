@@ -1,0 +1,54 @@
+name: LF PASE Merge Gate Repair Enforcement Qualification Result Probe
+
+on:
+  push:
+    branches:
+      - lf/pase-control-qualification-pr1206-probe-20260928
+
+permissions:
+  contents: read
+
+jobs:
+  validate-pr1206-qualification-result:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact qualification result head
+        uses: actions/checkout@v4
+        with:
+          ref: a22dab6f3f45188ce1a4e899d2752f8330b9cc3c
+          persist-credentials: false
+
+      - name: Validate canonical qualification packet
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          root = Path.cwd()
+          qualification_dir = root / "sandbox/lf_contract_gate_test/pase_control_qualification"
+          sys.path.insert(0, str(qualification_dir))
+
+          from pase_control_qualification_v1 import validate_input, validate_result
+
+          input_path = qualification_dir / "inputs/pr1206_pase_merge_gate_repair_enforcement_v1_qualification.json"
+          result_path = qualification_dir / "results/pr1206_pase_merge_gate_repair_enforcement_v1_qualification.json"
+
+          packet = json.loads(input_path.read_text(encoding="utf-8"))
+          result = json.loads(result_path.read_text(encoding="utf-8"))
+
+          validate_input(packet)
+          verdict = validate_result(packet, result)
+          if verdict != "CANDIDATE_QUALIFIED":
+              raise SystemExit(f"unexpected verdict: {verdict}")
+          if packet["head_sha"] != "34b57b4ba1101b866822091aba1f36c9ab709a1a":
+              raise SystemExit("candidate head drift")
+          if result["head_sha"] != packet["head_sha"]:
+              raise SystemExit("result head drift")
+
+          print("PASS_PASE_MERGE_GATE_REPAIR_ENFORCEMENT_QUALIFICATION_RESULT_V1")
+          print(f"candidate_head={packet['head_sha']}")
+          print(f"verdict={verdict}")
+          PY
