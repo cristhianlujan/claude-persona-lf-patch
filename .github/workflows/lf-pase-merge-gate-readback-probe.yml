@@ -1,0 +1,39 @@
+name: LF PASE Merge Gate Qualification Readback Probe
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/lf-pase-merge-gate-readback-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-owner-local-test:
+    name: Execute PASE_MERGE_GATE_CARRIER_V1 exact-head self-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact PR1239 candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: e9e8b4d886a1c7ef5b9aafa991a29d5089845dda
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "e9e8b4d886a1c7ef5b9aafa991a29d5089845dda"
+          echo "PASE_MERGE_GATE_CANDIDATE_HEAD=$(git rev-parse HEAD)"
+
+      - name: Execute owner-local deterministic self-test
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_carrier_v1.py self-test
