@@ -120,6 +120,65 @@ jobs:
           fi
           "${args[@]}"
 
+      - name: Build canonical PASE dispatch plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util
+          import json
+          from pathlib import Path
+
+          plan_path = Path(".lf_ci/lf_ci_execution_plan_v2.json")
+          output_path = Path(".lf_ci/lf_pase_dispatch_plan_v1.json")
+          orchestrator_path = Path(
+              "sandbox/lf_contract_gate_test/pase_orchestrator/pase_orchestrator_v1.py"
+          )
+
+          if not plan_path.is_file():
+              raise SystemExit("FAIL_PASE_ORCHESTRATOR_SOURCE_PLAN_MISSING")
+          spec = importlib.util.spec_from_file_location(
+              "lf_pase_orchestrator_entrypoint", orchestrator_path
+          )
+          if spec is None or spec.loader is None:
+              raise SystemExit("FAIL_PASE_ORCHESTRATOR_LOAD")
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+
+          plan = json.loads(plan_path.read_text(encoding="utf-8"))
+          dispatch = module.build_dispatch_plan(plan)
+
+          if dispatch.get("schema_version") != "lf-pase-dispatch-plan/v1":
+              raise SystemExit("FAIL_PASE_DISPATCH_SCHEMA")
+          if dispatch.get("producer") != "PASE_ORCHESTRATOR_V1":
+              raise SystemExit("FAIL_PASE_DISPATCH_PRODUCER")
+          if dispatch.get("source_plan_sha256") != plan.get("plan_sha256"):
+              raise SystemExit("FAIL_PASE_DISPATCH_SOURCE_PLAN_DRIFT")
+          if dispatch.get("governance_admin") != plan.get("governance_admin"):
+              raise SystemExit("FAIL_PASE_DISPATCH_GOVERNANCE_ADMIN_DRIFT")
+          if dispatch.get("required_controls") != plan.get("required_controls"):
+              raise SystemExit("FAIL_PASE_DISPATCH_CONTROL_COVERAGE_DRIFT")
+          if dispatch.get("coverage_complete") is not True:
+              raise SystemExit("FAIL_PASE_DISPATCH_COVERAGE")
+          if dispatch.get("no_applicability_reclassification") is not True:
+              raise SystemExit("FAIL_PASE_DISPATCH_RECLASSIFICATION_GUARD")
+          if dispatch.get("no_owner_recalculation") is not True:
+              raise SystemExit("FAIL_PASE_DISPATCH_OWNER_RECALCULATION_GUARD")
+          if dispatch.get("no_domain_execution") is not True:
+              raise SystemExit("FAIL_PASE_DISPATCH_DOMAIN_EXECUTION_GUARD")
+
+          output_path.parent.mkdir(parents=True, exist_ok=True)
+          output_path.write_text(
+              json.dumps(dispatch, sort_keys=True, separators=(",", ":")) + "\n",
+              encoding="utf-8",
+          )
+          print(
+              "PASS_PASE_ORCHESTRATOR_ENTRYPOINT_V1 "
+              f"controls={dispatch['control_count']} dispatches={dispatch['dispatch_count']} "
+              f"sha256={dispatch['dispatch_sha256']}"
+          )
+          PY
+
       - name: Enforce PASE repair-window boundary
         shell: bash
         run: |
@@ -197,6 +256,14 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      - name: Persist canonical PASE dispatch plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-pase-dispatch-plan-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_ci/lf_pase_dispatch_plan_v1.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Build reconciliation compatibility manifest
         env:
           LF_WORKFLOW_EVENT: ${{ github.event_name }}
@@ -245,6 +312,7 @@ jobs:
               "validation_suite": [
                   "scripts/lf_contract_check.py:structural-admission-only",
                   "sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py",
+                  "sandbox/lf_contract_gate_test/pase_orchestrator/pase_orchestrator_v1.py",
                   "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pase_control_repair_quarantine_v1.py",
               ],
               "files": dict(sorted(files.items())),
