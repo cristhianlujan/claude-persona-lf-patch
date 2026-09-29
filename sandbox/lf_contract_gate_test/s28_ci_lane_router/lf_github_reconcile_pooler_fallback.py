@@ -60,7 +60,7 @@ def native_protection_verified(request: dict[str, Any]) -> bool:
     return bool(
         request.get("branch_protection_status") == "VERIFIED"
         and c.get("active_rules_present") is True
-        and c.get("lf_contract_check_required") is True
+        and c.get("pase_repair_window_required_checks_empty") is True
         and c.get("strict_status_checks") is True
         and c.get("solo_builder_review_policy") is True
         and c.get("non_fast_forward") is True
@@ -593,7 +593,7 @@ def self_test() -> None:
         "branch_protection_status": "VERIFIED",
         "branch_protection_details": {"criteria": {
             "active_rules_present": True,
-            "lf_contract_check_required": True,
+            "pase_repair_window_required_checks_empty": True,
             "strict_status_checks": True,
             "solo_builder_review_policy": True,
             "non_fast_forward": True,
