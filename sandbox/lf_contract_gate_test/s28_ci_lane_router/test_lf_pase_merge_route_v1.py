@@ -87,7 +87,26 @@ mode, candidate = classify_route(
     [".github/workflows/lf-contract-check.yml"],
     registry,
 )
-ok(mode == "CONTROL_SYSTEM_QUALIFICATION" and candidate == "PASE_GITHUB_ENTRYPOINT_V1", "workflow candidate")
+ok(mode == "CONTROL_SYSTEM_QUALIFICATION" and candidate == "PASE_GITHUB_ENTRYPOINT_V1", "legacy workflow candidate")
+
+# The staged canonical identity must have the same independent qualification owner
+# before any trigger cutover is allowed.
+mode, candidate = classify_route(
+    [".github/workflows/pase.yml"],
+    registry,
+)
+ok(mode == "CONTROL_SYSTEM_QUALIFICATION" and candidate == "PASE_GITHUB_ENTRYPOINT_V1", "canonical workflow candidate")
+
+# Both workflow identities are one control-system candidate during compatibility.
+mode, candidate = classify_route(
+    [".github/workflows/lf-contract-check.yml", ".github/workflows/pase.yml"],
+    registry,
+)
+ok(mode == "CONTROL_SYSTEM_QUALIFICATION" and candidate == "PASE_GITHUB_ENTRYPOINT_V1", "dual workflow identity candidate")
+
+# Exact matching must not accidentally capture lookalikes.
+mode, candidate = classify_route([".github/workflows/pase.yml.bak"], registry)
+ok(mode == "EXECUTION_PLAN" and candidate is None, "canonical workflow lookalike not bound")
 
 # The merge-route solution itself must beat the broader s28 Changeset Governance matcher.
 mode, candidate = classify_route(
