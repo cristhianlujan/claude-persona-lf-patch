@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpportunityExpanderOutputV01",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "reason_code",
+    "user_payload",
+    "internal_envelope",
+    "evidence_map",
+    "capability_requests"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "READY_FOR_REVIEW",
+        "NEEDS_CAPABILITY_CONTEXT",
+        "RETURN_TO_WORKER_FOR_DIVERGENCE",
+        "BLOCKED"
+      ]
+    },
+    "reason_code": {
+      "type": "string",
+      "enum": [
+        "READY",
+        "CAPABILITY_CONTEXT_REQUIRED",
+        "REDUNDANT_SET",
+        "INCOMPLETE_OPPORTUNITY",
+        "SCOPE_MUTATION",
+        "OUTPUT_CONTRACT",
+        "AUTHORITY_OVERREACH"
+      ]
+    },
+    "user_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline_preserved",
+        "opportunities"
+      ],
+      "properties": {
+        "baseline_preserved": {
+          "type": "boolean"
+        },
+        "opportunities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "lane",
+              "idea",
+              "mechanism",
+              "potential_value",
+              "required_data",
+              "risk",
+              "experiment",
+              "confidence",
+              "evidence_refs",
+              "requires_scope_change"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lane": {
+                "type": "string",
+                "enum": [
+                  "CORE",
+                  "ADJACENT",
+                  "BUSINESS",
+                  "DATA",
+                  "FRONTIER"
+                ]
+              },
+              "idea": {
+                "type": "string",
+                "minLength": 8
+              },
+              "mechanism": {
+                "type": "string",
+                "minLength": 8
+              },
+              "potential_value": {
+                "type": "string",
+                "minLength": 8
+              },
+              "required_data": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 2
+                }
+              },
+              "risk": {
+                "type": "string",
+                "minLength": 4
+              },
+              "experiment": {
+                "type": "string",
+                "minLength": 8
+              },
+              "confidence": {
+                "type": "string",
+                "enum": [
+                  "LOW",
+                  "MEDIUM",
+                  "HIGH"
+                ]
+              },
+              "evidence_refs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "requires_scope_change": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "internal_envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "novelty_distance",
+        "redundancy_check",
+        "frontier_present",
+        "scope_guard_passed",
+        "capability_context_status"
+      ],
+      "properties": {
+        "novelty_distance": {
+          "type": "string",
+          "enum": [
+            "CORE",
+            "ADJACENT",
+            "FRONTIER",
+            "MIXED"
+          ]
+        },
+        "redundancy_check": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "FAIL"
+          ]
+        },
+        "frontier_present": {
+          "type": "boolean"
+        },
+        "scope_guard_passed": {
+          "type": "boolean"
+        },
+        "capability_context_status": {
+          "type": "string",
+          "enum": [
+            "NOT_REQUIRED",
+            "REQUIRED",
+            "RESOLVED"
+          ]
+        }
+      }
+    },
+    "evidence_map": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_ref",
+          "supports"
+        ],
+        "properties": {
+          "source_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "supports": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 4
+            }
+          }
+        }
+      }
+    },
+    "capability_requests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "owner_domain",
+          "intent",
+          "reason",
+          "required_card_refs"
+        ],
+        "properties": {
+          "owner_domain": {
+            "type": "string",
+            "minLength": 2
+          },
+          "intent": {
+            "type": "string",
+            "minLength": 3
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 8
+          },
+          "required_card_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "READY_FOR_REVIEW"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason_code": {
+            "const": "READY"
+          },
+          "user_payload": {
+            "properties": {
+              "opportunities": {
+                "minItems": 1
+              }
+            }
+          },
+          "internal_envelope": {
+            "properties": {
+              "capability_context_status": {
+                "enum": [
+                  "NOT_REQUIRED",
+                  "RESOLVED"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "NEEDS_CAPABILITY_CONTEXT"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason_code": {
+            "const": "CAPABILITY_CONTEXT_REQUIRED"
+          },
+          "capability_requests": {
+            "minItems": 1
+          },
+          "internal_envelope": {
+            "properties": {
+              "capability_context_status": {
+                "const": "REQUIRED"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

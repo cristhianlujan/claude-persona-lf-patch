@@ -1,0 +1,55 @@
+{
+  "status": "RETURN_TO_WORKER_FOR_DIVERGENCE",
+  "reason_code": "REDUNDANT_SET",
+  "user_payload": {
+    "baseline_preserved": true,
+    "opportunities": [
+      {
+        "id": "CORE-FORMAT",
+        "lane": "CORE",
+        "idea": "Validate Excel columns and formats before ingestion.",
+        "mechanism": "Reject malformed uploads before ingestion.",
+        "potential_value": "Reduces operational file errors.",
+        "required_data": [],
+        "risk": "Only improves the commodity ingestion layer.",
+        "experiment": "Measure malformed upload rejection rate.",
+        "confidence": "HIGH",
+        "evidence_refs": [
+          "supabase://public/lf_strategy_snapshots/56"
+        ],
+        "requires_scope_change": false
+      },
+      {
+        "id": "CORE-FORMAT-2",
+        "lane": "CORE",
+        "idea": "Validate Excel columns with stricter formatting rules.",
+        "mechanism": "Reject malformed uploads with more formatting checks.",
+        "potential_value": "Reduces the same operational file errors.",
+        "required_data": [],
+        "risk": "Duplicates the first idea.",
+        "experiment": "Measure the same rejection rate with stricter checks.",
+        "confidence": "HIGH",
+        "evidence_refs": [
+          "supabase://public/lf_strategy_snapshots/56"
+        ],
+        "requires_scope_change": false
+      }
+    ]
+  },
+  "internal_envelope": {
+    "novelty_distance": "CORE",
+    "redundancy_check": "FAIL",
+    "frontier_present": false,
+    "scope_guard_passed": true,
+    "capability_context_status": "NOT_REQUIRED"
+  },
+  "evidence_map": [
+    {
+      "source_ref": "supabase://public/lf_strategy_snapshots/56",
+      "supports": [
+        "baseline preserved"
+      ]
+    }
+  ],
+  "capability_requests": []
+}

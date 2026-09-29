@@ -1,0 +1,115 @@
+{
+  "quality_pack": "EXPLORATORY_PROFILE_QUALITY_PACK_V0_1",
+  "threshold": 80,
+  "hard_block_overrides_score": true,
+  "cases": [
+    {
+      "id": "excel_bulk_upload_expands_beyond_commodity",
+      "fixture": "examples/good_output.json",
+      "expected": {
+        "status": "READY_FOR_REVIEW",
+        "reason_code": "READY"
+      },
+      "assertions": [
+        "baseline preserved",
+        "at least one ADJACENT/DATA opportunity",
+        "at least one FRONTIER opportunity",
+        "every opportunity has experiment and evidence_refs"
+      ]
+    },
+    {
+      "id": "commodity_only_set_is_rejected",
+      "fixture": "examples/bad_output.json",
+      "expected": {
+        "status": "RETURN_TO_WORKER_FOR_DIVERGENCE",
+        "reason_code": "REDUNDANT_SET"
+      },
+      "assertions": [
+        "commodity-only duplicate set cannot pass"
+      ]
+    },
+    {
+      "id": "missing_capability_context_fails_closed",
+      "input": {
+        "requires_domain_context": true,
+        "materialized_context": false
+      },
+      "expected": {
+        "status": "NEEDS_CAPABILITY_CONTEXT",
+        "reason_code": "CAPABILITY_CONTEXT_REQUIRED"
+      },
+      "assertions": [
+        "typed capability request required",
+        "no free-search Card discovery"
+      ]
+    },
+    {
+      "id": "capability_context_resolved_second_pass",
+      "input": {
+        "requires_domain_context": true,
+        "materialized_context": true
+      },
+      "expected": {
+        "status": "READY_FOR_REVIEW",
+        "reason_code": "READY"
+      },
+      "assertions": [
+        "materialized context may be consumed",
+        "profile remains consumer not owner"
+      ]
+    },
+    {
+      "id": "silent_scope_mutation_is_blocked",
+      "input": {
+        "scope_guard_passed": false
+      },
+      "expected": {
+        "status": "BLOCKED",
+        "reason_code": "SCOPE_MUTATION"
+      },
+      "assertions": [
+        "scope mutation hard-blocks regardless of novelty score"
+      ]
+    },
+    {
+      "id": "authority_overreach_is_blocked",
+      "input": {
+        "claims_runtime_or_production_authority": true
+      },
+      "expected": {
+        "status": "BLOCKED",
+        "reason_code": "AUTHORITY_OVERREACH"
+      },
+      "assertions": [
+        "runtime/production/scheduler/Golden authority forbidden"
+      ]
+    },
+    {
+      "id": "missing_opportunity_evidence_returns_for_repair",
+      "input": {
+        "opportunity_evidence_refs": []
+      },
+      "expected": {
+        "status": "RETURN_TO_WORKER_FOR_DIVERGENCE",
+        "reason_code": "INCOMPLETE_OPPORTUNITY"
+      },
+      "assertions": [
+        "each opportunity needs evidence_refs"
+      ]
+    },
+    {
+      "id": "frontier_missing_data_becomes_experiment_dependency",
+      "input": {
+        "frontier_hypothesis": true,
+        "current_data_missing": true
+      },
+      "expected": {
+        "frontier_retained": true
+      },
+      "assertions": [
+        "missing data does not automatically reject frontier idea",
+        "required data becomes experiment dependency"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "status": "READY_FOR_REVIEW",
+  "reason_code": "READY",
+  "user_payload": {
+    "baseline_preserved": true,
+    "opportunities": [
+      {
+        "id": "ADJ-SEGMENTATION",
+        "lane": "ADJACENT",
+        "idea": "Segment the uploaded portfolio after governed ingestion.",
+        "mechanism": "Use portfolio attributes to form actionable clusters before recovery treatments are selected.",
+        "potential_value": "Allows different recovery treatments to be tested by segment instead of applying one generic flow.",
+        "required_data": [
+          "portfolio attributes",
+          "historical outcome labels when available"
+        ],
+        "risk": "Weak segments may overfit small samples.",
+        "experiment": "Compare baseline handling with three governed segments on the same offline sample.",
+        "confidence": "MEDIUM",
+        "evidence_refs": [
+          "supabase://public/lf_strategy_snapshots/56"
+        ],
+        "requires_scope_change": true
+      },
+      {
+        "id": "DATA-LEARNING",
+        "lane": "DATA",
+        "idea": "Learn which portfolio attributes and treatments correlate with better outcomes.",
+        "mechanism": "Reuse historical upload and outcome data to improve future decision support.",
+        "potential_value": "Repeated portfolio loads can compound into reusable decision intelligence.",
+        "required_data": [
+          "historical portfolio attributes",
+          "treatment labels",
+          "outcome labels"
+        ],
+        "risk": "Correlation may be mistaken for causal effect.",
+        "experiment": "Backtest recommendations on historical labeled outcomes before any live automation.",
+        "confidence": "MEDIUM",
+        "evidence_refs": [
+          "supabase://public/lf_strategy_snapshots/56"
+        ],
+        "requires_scope_change": true
+      },
+      {
+        "id": "FRONTIER-SIMULATOR",
+        "lane": "FRONTIER",
+        "idea": "Evolve the upload entry point into an offline recovery-strategy simulator.",
+        "mechanism": "Compare alternative treatment policies on the same portfolio before operational commitment.",
+        "potential_value": "Changes the product from ingestion-only into a pre-execution decision surface.",
+        "required_data": [
+          "historical treatment outcomes",
+          "policy assumptions",
+          "uncertainty bounds"
+        ],
+        "risk": "Simulation validity depends on data quality and counterfactual assumptions.",
+        "experiment": "Build an offline sandbox that scores multiple treatment policies and records uncertainty.",
+        "confidence": "LOW",
+        "evidence_refs": [
+          "supabase://public/lf_strategy_snapshots/56"
+        ],
+        "requires_scope_change": true
+      }
+    ]
+  },
+  "internal_envelope": {
+    "novelty_distance": "MIXED",
+    "redundancy_check": "PASS",
+    "frontier_present": true,
+    "scope_guard_passed": true,
+    "capability_context_status": "NOT_REQUIRED"
+  },
+  "evidence_map": [
+    {
+      "source_ref": "supabase://public/lf_strategy_snapshots/56",
+      "supports": [
+        "S37 scope firewall and candidate-only claim ceiling"
+      ]
+    },
+    {
+      "source_ref": "supabase://public/lf_operation_mode_bindings/EJECUCION_PERFIL_LF/EVALUATE_EXISTING/EXPLORATION",
+      "supports": [
+        "exploration is read-only and no canonical write is allowed"
+      ]
+    }
+  ],
+  "capability_requests": []
+}

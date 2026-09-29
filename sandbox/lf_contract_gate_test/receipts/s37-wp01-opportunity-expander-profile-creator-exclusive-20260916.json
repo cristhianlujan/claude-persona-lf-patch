@@ -1,0 +1,22 @@
+{
+  "receipt_type": "LF_OPERATION_CONTRACT_RECEIPT",
+  "receipt_version": "v0.1",
+  "issued_by": "contract_judge",
+  "operation_code": "CREACION_PERFIL_LF",
+  "execution_id": "EXEC-S37-WP01-PROFILE-OPPORTUNITY-EXPANDER-20260916-EXCL-001",
+  "result": "PASS",
+  "all_required_steps_pass": true,
+  "contract_sha": "a7d0c2060933df7e5f13467ae846923e04d87842ce2f85a2a55620a06f6e0300",
+  "judge_sha": "157da6ca5d5c116438741d5d1d7f16017be728e41955ff15580920d568496e0c",
+  "source_sha_list": [
+    "1a5f437e21a1bf991056a315671f283512668426",
+    "a7d0c2060933df7e5f13467ae846923e04d87842ce2f85a2a55620a06f6e0300",
+    "157da6ca5d5c116438741d5d1d7f16017be728e41955ff15580920d568496e0c"
+  ],
+  "target_paths": [
+    "profiles/opportunity_expander/**"
+  ],
+  "blocking_codes": [],
+  "issued_at": "2026-09-16T02:59:18Z",
+  "notes": "Fresh S37-WP01 exclusive current-main revalidation. Governed operation requalification QUAL_QUALIFIED under execution EXEC-S37-WP01-REQUAL-CREACION-PERFIL-20260916-001. Profile creation execution has fresh github_write/readback STEP_CLEAN_PASS against profile content commit 1a5f437e21a1bf991056a315671f283512668426 and PR #864, followed by contract_judge STEP_CLEAN_PASS. Candidate-only: no runtime, production, scheduler, Golden promotion or automatic officialization authority."
+}
