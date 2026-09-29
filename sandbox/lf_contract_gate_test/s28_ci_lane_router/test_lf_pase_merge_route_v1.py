@@ -62,6 +62,7 @@ enforcement = {
 enforcement["result_sha256"] = _sha256(enforcement)
 head = "b" * 40
 
+# Normal product/docs change stays on the execution-plan route.
 route = build_merge_route(
     plan=plan,
     enforcement=enforcement,
@@ -75,6 +76,7 @@ ok(route["required_control_ids"] == ["LF_CONTRACT_CORE"], "route equals blocking
 ok(route["authority"] == "CHANGESET_GOVERNANCE_LF_V1", "route authority")
 ok(len(route["source_revision"]) == 64, "route source revision")
 
+# Known control-system surfaces are explicitly routed to independent qualification.
 mode, candidate = classify_route(
     ["sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_v1.py"],
     registry,
@@ -87,18 +89,21 @@ mode, candidate = classify_route(
 )
 ok(mode == "CONTROL_SYSTEM_QUALIFICATION" and candidate == "PASE_GITHUB_ENTRYPOINT_V1", "workflow candidate")
 
+# The merge-route solution itself must beat the broader s28 Changeset Governance matcher.
 mode, candidate = classify_route(
     ["sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pase_merge_route_v1.py"],
     registry,
 )
 ok(mode == "CONTROL_SYSTEM_QUALIFICATION" and candidate == "PASE_MERGE_ROUTE_V1", "longest specific match")
 
+# Other s28 mutations remain control-system changes owned by Changeset Governance.
 mode, candidate = classify_route(
     ["sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py"],
     registry,
 )
 ok(mode == "CONTROL_SYSTEM_QUALIFICATION" and candidate == "CHANGESET_GOVERNANCE_LF_V1", "s28 authority change")
 
+# One PR cannot silently combine two independent control-system candidates.
 fails(
     lambda: classify_route(
         [
@@ -110,6 +115,7 @@ fails(
     "FAIL_PASE_ROUTE_MULTIPLE_CONTROL_SYSTEM_CANDIDATES",
 )
 
+# Exact-head and trusted enforcement are mandatory.
 fails(
     lambda: build_merge_route(
         plan=plan,
@@ -140,6 +146,7 @@ fails(
 bad = copy.deepcopy(enforcement)
 bad["blocking_controls"] = ["MIGRATION_SOURCE_PARITY"]
 bad["observe_only_controls"] = ["LF_CONTRACT_CORE"]
+# Preserve a valid digest so the test targets policy partition semantics, not hashing.
 bad_without_digest = dict(bad)
 bad_without_digest.pop("result_sha256", None)
 bad["result_sha256"] = _sha256(bad_without_digest)
