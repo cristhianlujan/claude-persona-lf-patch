@@ -7,6 +7,7 @@ const REPOSITORY_ID = "1244397752";
 const AUDIENCE = "lf-supabase-github-reconcile-v3";
 const WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-github-reconcile-v3.yml@refs/heads/main`;
 const WORKFLOW_NAME = "LF GitHub Reconciliation V3";
+const SOURCE_WORKFLOW_NAMES = new Set(["lf-contract-check", "PASE"]);
 const ISSUER = "https://token.actions.githubusercontent.com";
 const WRITER_MODE = "GITHUB_OIDC_HMAC_NONCE_V7";
 
@@ -246,7 +247,7 @@ async function verifiedSource(input: ReconcileBody): Promise<{
   const run = await github(`actions/runs/${Number(input.source.id)}`);
   if (
     Number(run?.id) !== Number(input.source.id) ||
-    run?.name !== "lf-contract-check" ||
+    !SOURCE_WORKFLOW_NAMES.has(run?.name) ||
     run?.event !== "push" ||
     run?.head_branch !== "main" ||
     run?.head_sha !== input.source.head_sha ||
