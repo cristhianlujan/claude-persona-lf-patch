@@ -92,6 +92,7 @@ begin
     jsonb_build_object(
       'plan_id','IG_CURATOR_VALIDATOR_REFACTOR_V2',
       'plan_version',2,
+      'purpose','Codificar D-V2.3 como R16 del plan v2 y enlazar la prevención EKB Git-first.',
       'rule_code','R16',
       'extends_plan_event_id',19275,
       'codifies_decision_event_id',19529,
