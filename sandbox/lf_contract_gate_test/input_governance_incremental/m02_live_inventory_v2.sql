@@ -1,6 +1,7 @@
 -- IG_CURATOR_VALIDATOR_REFACTOR_V2 · L1 · M0.2 (PAULO-101)
--- Live inventory v2: separates IG proper from boundary functions and derives
--- transitive liveness from runtime roots. Read-only evidence; ends with ROLLBACK.
+-- Live inventory v2: separates IG proper from boundary functions, derives
+-- transitive liveness from runtime roots, and verifies post-#1324 registry closure.
+-- Read-only evidence; ends with ROLLBACK.
 --
 -- IMPORTANT:
 -- The historical "118 functions" member list was never preserved and is NOT
@@ -190,8 +191,11 @@ select jsonb_array_elements_text(
 ) member
 from public.lf_activos a
 where a.archived_at is null
-  and a.subtipo_activo='DB_FUNCTION_SET'
-  and a.codigo_activo like 'PROGRAMACION_FN_INPUT_GOVERNANCE_%';
+  and (
+    (a.subtipo_activo='DB_FUNCTION_SET'
+     and a.codigo_activo like 'PROGRAMACION_FN_INPUT_GOVERNANCE_%')
+    or a.codigo_activo='PROGRAMACION_INPUT_SOURCE_INVENTORY_L1'
+  );
 
 create temp table m02_function_rows on commit drop as
 select
@@ -331,14 +335,14 @@ begin
   if (
     select count(*) from m02_all_rows
     where registry_status='REGISTERED_FUNCTION_IDENTITY'
-  )<>99 then
+  )<>116 then
     raise exception 'M02_REGISTERED_FUNCTION_COUNT_DRIFT';
   end if;
 
   if (
     select count(*) from m02_all_rows
     where registry_status='UNREGISTERED_FUNCTION_IDENTITY'
-  )<>17 then
+  )<>0 then
     raise exception 'M02_UNREGISTERED_FUNCTION_COUNT_DRIFT';
   end if;
 
@@ -367,7 +371,7 @@ begin
     select 1
     from m02_function_rows
     where item_identity='programacion.fn_input_source_inventory_lookup_l1_v1(p_term text)'
-      and registry_status='UNREGISTERED_FUNCTION_IDENTITY'
+      and registry_status='REGISTERED_FUNCTION_IDENTITY'
   ) then
     raise exception 'M02_LOOKUP_FUNCTION_REGISTRY_STATUS_DRIFT';
   end if;
@@ -401,7 +405,7 @@ begin
     'hex'
   );
 
-  if v_sha<>'479c1e5f24436e078b47e1d545ab68d51f97e993f077bd04f460b1013bd2be1a' then
+  if v_sha<>'977178a13c06adec4b6c7033c7dc07519eeb2a63351d3c8a4ba5da2991222ae3' then
     raise exception 'M02_INVENTORY_SHA_DRIFT:%',v_sha;
   end if;
 end
