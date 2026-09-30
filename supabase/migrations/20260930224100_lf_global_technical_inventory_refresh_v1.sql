@@ -567,6 +567,122 @@ begin
 end;
 $$;
 
+create or replace function inventory.fn_refresh_tags_v1()
+returns jsonb
+language plpgsql
+security invoker
+set search_path=inventory,pg_catalog
+as $
+declare
+  v_start timestamptz:=clock_timestamp();
+begin
+  insert into inventory.tags(tag_code,tag_type,description) values
+  ('PAYMENTS','DOMAIN','Payments, Niubiz and collection-related technical objects'),
+  ('PROFILE','DOMAIN','Profile creation/update/runtime technical objects'),
+  ('ROUTER','CAPABILITY','Routing and entrypoint technical objects'),
+  ('PLAN','CAPABILITY','Engineering plan and planning technical objects'),
+  ('ASSURANCE','CAPABILITY','Assurance, qualification and review technical objects'),
+  ('PASE','CAPABILITY','Pase / controlled promotion technical objects'),
+  ('AWS_INFRA','DOMAIN','AWS, Terraform and infrastructure technical objects'),
+  ('GLOBAL_INVENTORY','DISCOVERY','LF global technical inventory capability'),
+  ('DEPENDENCY_GRAPH','DISCOVERY','Technical dependency graph capability'),
+  ('TECHNICAL_CATALOG','DISCOVERY','Technical object catalog capability')
+  on conflict(tag_code) do update set
+    tag_type=excluded.tag_type,
+    description=excluded.description;
+
+  delete from inventory.object_tags ot
+  where ot.source_system in ('INVENTORY_DERIVED','INVENTORY_SEMANTIC_CLASSIFIER_V1')
+    and not exists (
+      select 1 from inventory.objects o
+      where o.object_id=ot.object_id and o.active
+    );
+
+  insert into inventory.tags(tag_code,tag_type,description)
+  select distinct 'TYPE:'||object_type,'OBJECT_TYPE','Inventory object type'
+  from inventory.objects
+  where active
+  on conflict(tag_code) do nothing;
+
+  insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
+  select object_id,'TYPE:'||object_type,'Derived from object_type',1.0,'INVENTORY_DERIVED'
+  from inventory.objects
+  where active
+  on conflict(object_id,tag_code,source_system) do update set
+    evidence=excluded.evidence,
+    confidence=excluded.confidence;
+
+  insert into inventory.tags(tag_code,tag_type,description)
+  select distinct 'SCHEMA:'||upper(schema_name),'SCHEMA','Database schema'
+  from inventory.objects
+  where active and nullif(schema_name,'') is not null
+  on conflict(tag_code) do nothing;
+
+  insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
+  select object_id,'SCHEMA:'||upper(schema_name),'Derived from schema_name',1.0,'INVENTORY_DERIVED'
+  from inventory.objects
+  where active and nullif(schema_name,'') is not null
+  on conflict(object_id,tag_code,source_system) do update set
+    evidence=excluded.evidence,
+    confidence=excluded.confidence;
+
+  insert into inventory.tags(tag_code,tag_type,description)
+  select distinct 'DOMAIN:'||upper(domain),'DOMAIN','Declared or derived domain'
+  from inventory.objects
+  where active and nullif(domain,'') is not null
+  on conflict(tag_code) do nothing;
+
+  insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
+  select object_id,'DOMAIN:'||upper(domain),'Derived from domain',0.95,'INVENTORY_DERIVED'
+  from inventory.objects
+  where active and nullif(domain,'') is not null
+  on conflict(object_id,tag_code,source_system) do update set
+    evidence=excluded.evidence,
+    confidence=excluded.confidence;
+
+  delete from inventory.object_tags
+  where source_system='INVENTORY_SEMANTIC_CLASSIFIER_V1';
+
+  with classified as (
+    select object_id,
+      unnest(array_remove(array[
+        case when lower(object_ref||' '||object_name) ~ '(payment|payments|niubiz|cobranza|checkout)' then 'PAYMENTS' end,
+        case when lower(object_ref||' '||object_name) ~ '(profile|perfil)' then 'PROFILE' end,
+        case when lower(object_ref||' '||object_name) ~ '(router|routing)' then 'ROUTER' end,
+        case when lower(object_ref||' '||object_name) ~ '(engineering_plan|plan_units|\yplan\y)' then 'PLAN' end,
+        case when lower(object_ref||' '||object_name) ~ '(assurance|qualification|independent_review)' then 'ASSURANCE' end,
+        case when lower(object_ref||' '||object_name) ~ '(^|[/_.-])pase([/_.-]|$)' then 'PASE' end,
+        case when lower(object_ref||' '||object_name) ~ '(terraform|aws|cloudfront|fargate|route53)' then 'AWS_INFRA' end
+      ],null)) tag_code
+    from inventory.objects
+    where active
+  )
+  insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
+  select object_id,tag_code,'Name/path semantic classifier v1',0.80,'INVENTORY_SEMANTIC_CLASSIFIER_V1'
+  from classified
+  on conflict(object_id,tag_code,source_system) do update set
+    evidence=excluded.evidence,
+    confidence=excluded.confidence;
+
+  insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
+  select o.object_id,t.tag_code,'Registered global inventory capability',1.0,'LF_ACTIVOS'
+  from inventory.objects o
+  cross join (values('GLOBAL_INVENTORY'),('DEPENDENCY_GRAPH'),('TECHNICAL_CATALOG')) t(tag_code)
+  where o.object_ref='asset://LF_GLOBAL_TECHNICAL_INVENTORY_V1'
+    and o.active
+  on conflict(object_id,tag_code,source_system) do update set
+    evidence=excluded.evidence,
+    confidence=excluded.confidence;
+
+  return jsonb_build_object(
+    'status','COMPLETED',
+    'tag_definitions',(select count(*) from inventory.tags),
+    'object_tags',(select count(*) from inventory.object_tags),
+    'duration_ms',round(extract(epoch from clock_timestamp()-v_start)*1000)
+  );
+end;
+$;
+
 create or replace function inventory.fn_finalize_refresh_v1()
 returns jsonb
 language plpgsql
@@ -576,9 +692,11 @@ as $$
 declare
   v_start timestamptz:=clock_timestamp();
   v_reg jsonb;
+  v_tags jsonb;
   v_indexed bigint;
 begin
   v_reg := inventory.fn_refresh_registries_v1();
+  v_tags := inventory.fn_refresh_tags_v1();
   v_indexed := inventory.fn_refresh_search_index_v1();
 
   insert into inventory.snapshots(
@@ -593,6 +711,7 @@ begin
     (select count(*) from inventory.dependencies where active),
     jsonb_build_object(
       'registries',v_reg,
+      'tags',v_tags,
       'search_index_objects',v_indexed,
       'pg_catalog_drift',(select count(*) from inventory.v_pg_catalog_drift_v1),
       'external_repo_sync_included',false,
@@ -618,4 +737,5 @@ revoke all on function inventory.fn_refresh_db_details_v2() from public;
 revoke all on function inventory.fn_refresh_dependencies_exact_v1() from public;
 revoke all on function inventory.fn_refresh_static_incremental_v1() from public;
 revoke all on function inventory.fn_refresh_registries_v1() from public;
+revoke all on function inventory.fn_refresh_tags_v1() from public;
 revoke all on function inventory.fn_finalize_refresh_v1() from public;
