@@ -1,0 +1,86 @@
+{
+  "schema_version": "lf-assurance-evaluator-call-contract/v1",
+  "capability_code": "ASSURANCE_EVALUATOR",
+  "owner_scope": "SUPER_ADMIN",
+  "lifecycle_state": "CANDIDATE_DORMANT_NO_ACTIVE_BINDING",
+  "canonical_caller": "ORCHESTRATOR",
+  "entry_guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+  "canonical_entrypoint": {
+    "function": "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "signature": "public.fn_lf_capability_bind_from_orchestrator_v1(text,text,text,text,uuid,text)",
+    "arguments_in_order": [
+      "p_execution_id",
+      "p_capability_code",
+      "p_expected_manifest_sha256",
+      "p_plan_digest",
+      "p_dispatch_receipt_id",
+      "p_actor_execution_id"
+    ],
+    "fixed_capability_code": "ASSURANCE_EVALUATOR"
+  },
+  "dispatch_receipt_entrypoint": {
+    "function": "public.fn_lf_orchestrator_dispatch_receipt_v1",
+    "signature": "public.fn_lf_orchestrator_dispatch_receipt_v1(text,text,text,text,jsonb,text)",
+    "arguments_in_order": [
+      "p_orchestrator_execution_id",
+      "p_consumer_execution_id",
+      "p_capability_code",
+      "p_plan_digest",
+      "p_dispatch_scope",
+      "p_actor_execution_id"
+    ]
+  },
+  "required_call_sequence": [
+    "ROUTER_CHANGESET_GOVERNANCE determines applicability",
+    "public.fn_lf_orchestrator_dispatch_receipt_v1 issues exact dispatch receipt",
+    "public.fn_lf_capability_bind_from_orchestrator_v1 validates ORCHESTRATOR_EXECUTION_GUARD_V1 and binds CURRENT",
+    "ASSURANCE_ACTIVATION_GATE_V1 validates exact ACTIVE subject binding",
+    "assurance_evaluator_runner_v1.py invokes semantic core"
+  ],
+  "forbidden_new_entry": {
+    "function": "public.fn_lf_capability_bind_current_v1",
+    "reason": "New guarded bindings must originate from an exact orchestrator dispatch receipt",
+    "expected_decision": "BLOCK_ORCHESTRATOR_ENTRY_GUARD_REQUIRED"
+  },
+  "required_cross_bindings": [
+    "orchestrator_execution_id",
+    "consumer_execution_id",
+    "capability_code",
+    "plan_digest",
+    "dispatch_receipt_id"
+  ],
+  "fail_closed_decisions": [
+    "BLOCK_MISSING_ORCHESTRATOR_DISPATCH_RECEIPT",
+    "BLOCK_UNKNOWN_ORCHESTRATOR_DISPATCH_RECEIPT",
+    "BLOCK_DISPATCH_RECEIPT_CROSSBIND_MISMATCH",
+    "BLOCK_ENTRY_GUARD_POLICY_MISMATCH",
+    "BLOCK_ORCHESTRATOR_EXECUTION_NOT_ACTIVE",
+    "BLOCK_CONSUMER_EXECUTION_NOT_ACTIVE",
+    "BLOCK_NOT_OPERATIONAL_ORCHESTRATOR",
+    "BLOCK_CONSUMER_CROSSBIND_MISMATCH",
+    "BLOCK_DISPATCH_RECEIPT_DIGEST_MISMATCH",
+    "BLOCK_NO_CURRENT_CAPABILITY",
+    "BLOCK_CURRENTNESS_MISMATCH"
+  ],
+  "current_expected_state": {
+    "capability_registry": "ACTIVE",
+    "capability_current_present": false,
+    "active_subject_binding_count": 0,
+    "normal_pase_result": "NOT_APPLICABLE_NO_EXECUTION",
+    "valid_dispatch_before_promotion": "BLOCK_NO_CURRENT_CAPABILITY"
+  },
+  "activation_gate": {
+    "code": "ASSURANCE_ACTIVATION_GATE_V1",
+    "contract_ref": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_activation_contract_v1.json",
+    "gate_ref": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_activation_gate_v1.py"
+  },
+  "runner_ref": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_runner_v1.py",
+  "core_ref": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_core_v1.py",
+  "explicit_non_activation": [
+    "NO_CAPABILITY_VERSION",
+    "NO_CURRENT_POINTER",
+    "NO_SUBJECT_BINDING_ACTIVATION",
+    "NO_RUNTIME_ACTIVATION",
+    "NO_PRODUCTION_ACTIVATION"
+  ]
+}

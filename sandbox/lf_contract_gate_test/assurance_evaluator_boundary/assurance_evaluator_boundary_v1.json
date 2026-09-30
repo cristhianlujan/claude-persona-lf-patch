@@ -127,5 +127,13 @@
     "ASSURANCE-EVALUATOR-LEGACY-S36-REINTRODUCTION-RISK-001",
     "ASSURANCE-METHOD-CANDIDATE-NOT-PASE-CONTROL-001",
     "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001"
-  ]
+  ],
+  "invocation_contract": {
+    "schema_version": "lf-assurance-evaluator-call-contract/v1",
+    "ref": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_call_contract_v1.json",
+    "canonical_entrypoint": "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "entry_guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "direct_new_binding_policy": "BLOCK",
+    "expected_state_before_promotion": "BLOCK_NO_CURRENT_CAPABILITY"
+  }
 }
