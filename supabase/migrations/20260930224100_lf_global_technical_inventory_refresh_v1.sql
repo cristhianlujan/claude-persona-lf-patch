@@ -572,7 +572,7 @@ returns jsonb
 language plpgsql
 security invoker
 set search_path=inventory,pg_catalog
-as $
+as $$
 declare
   v_start timestamptz:=clock_timestamp();
 begin
@@ -681,7 +681,7 @@ begin
     'duration_ms',round(extract(epoch from clock_timestamp()-v_start)*1000)
   );
 end;
-$;
+$$;
 
 create or replace function inventory.fn_finalize_refresh_v1()
 returns jsonb
