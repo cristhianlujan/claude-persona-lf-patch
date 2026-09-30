@@ -141,7 +141,7 @@ row = next(item for item in bad["states"] if item["control_id"] == "MIGRATION_SO
 row["reentry_evidence"]["runner_binding"] = "NOT_REQUIRED"
 fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_REENTRY_OWNER_RUNNER")
 
-# 21: an INTERNAL_CI_CHECK may re-enter without inventing an owner-runner.
+# 21: an applicable INTERNAL_CI_CHECK may re-enter without inventing an owner-runner.
 internal = copy.deepcopy(policy)
 row = next(item for item in internal["states"] if item["control_id"] == "CI_ROUTER_SELFTEST")
 row["state"] = "ACTIVE_BLOCKING"
@@ -154,8 +154,21 @@ row["reentry_evidence"] = {
     "equivalent_replay": "PASS",
     "exact_head_readback": "PASS",
 }
-internal_result = project_enforcement(plan, internal)
-ok(internal_result["blocking_controls"] == [], "non-applicable internal control does not alter this plan")
+internal_required = ["CI_ROUTER_SELFTEST"]
+internal_plan = {
+    "schema_version": "lf-ci-execution-plan/v2",
+    "coverage_complete": True,
+    "control_universe": universe,
+    "required_controls": internal_required,
+    "not_applicable_controls": [
+        {"control_id": cid, "carrier": "LEGACY", "reason": "TEST_NOT_APPLICABLE"}
+        for cid in universe
+        if cid not in internal_required
+    ],
+    "plan_sha256": "d" * 64,
+}
+internal_result = project_enforcement(internal_plan, internal)
+ok(internal_result["blocking_controls"] == ["CI_ROUTER_SELFTEST"], "internal-check re-entry without runner")
 
 # 22: INTERNAL_CI_CHECK must not acquire an artificial owner-runner binding.
 bad = copy.deepcopy(internal)
