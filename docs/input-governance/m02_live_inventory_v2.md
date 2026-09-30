@@ -2,7 +2,7 @@
 
 Plan: `IG_CURATOR_VALIDATOR_REFACTOR_V2`  
 Unit/work: `M0.2 / PAULO-101`  
-Status: `IN_PROGRESS`
+Status: `READY_FOR_CLOSURE`
 
 ## 1. Correction of the historical “118 functions” claim
 
@@ -112,40 +112,24 @@ The function identity registry is evaluated separately from capability registrat
 
 | Registry status | Count |
 |---|---:|
-| REGISTERED_FUNCTION_IDENTITY | 99 |
-| UNREGISTERED_FUNCTION_IDENTITY | 17 |
+| REGISTERED_FUNCTION_IDENTITY | 116 |
+| UNREGISTERED_FUNCTION_IDENTITY | 0 |
 | EXTERNAL_OWNER_BOUNDARY | 6 |
 | **Total rows including 3 Edge** | **122** |
 
-### 17 IG function identities still unregistered
+### Registry closure after #1324
 
-Twelve trigger guards:
+Migration `20260930225000_lf_ig_register_17_function_gaps_v1.sql` extended the existing canonical capability sets and the explicit L1 candidate capability so every one of the 113 IG_PROPER function identities is now represented.
 
-- `programacion.fn_guard_input_family_assessment_insert()`
-- `programacion.fn_guard_input_family_assessment_update()`
-- `programacion.fn_guard_input_family_execution_insert()`
-- `programacion.fn_guard_input_family_execution_update()`
-- `programacion.fn_guard_input_family_semantic_depth()`
-- `programacion.fn_guard_input_family_semantic_depth_v510()`
-- `programacion.fn_guard_input_gap_proposal_insert_v512()`
-- `programacion.fn_guard_input_gap_proposal_update_v512()`
-- `programacion.fn_guard_input_na_positive_authority_v512()`
-- `programacion.fn_guard_input_parameter_provenance_v1()`
-- `programacion.fn_guard_input_stage_earliest_boundary()`
-- `programacion.fn_guard_input_validator_semantic_coherence_v512()`
+The closure did not create duplicate assets. It:
 
-Four public wrappers:
+- expanded Guard from 1 to 13 members;
+- added the four public wrappers to their existing functional sets;
+- added the L1 lookup as the function member of `PROGRAMACION_INPUT_SOURCE_INVENTORY_L1`;
+- added the five code-derived Guard cross-set `DEPENDE_DE` relations;
+- verified 0 cross-set call/relation gaps.
 
-- `public.fn_input_governance_curator_materialize_v1(integer,text,text)`
-- `public.fn_input_governance_execute(integer,text)`
-- `public.fn_input_governance_safe_autofix_v1(bigint)`
-- `public.fn_input_governance_validator_validate_v1(bigint,text)`
-
-And the newly reconciled lookup function:
-
-- `programacion.fn_input_source_inventory_lookup_l1_v1(text)`
-
-The candidate source-inventory capability asset does **not** remove this function-identity gap.
+The source inventory remains `CANDIDATO / READ_ONLY / NOT_APPROVED`; representation is not approval.
 
 ## 5. State authority
 
@@ -178,7 +162,7 @@ Run:
 
 Current inventory SHA-256:
 
-`479c1e5f24436e078b47e1d545ab68d51f97e993f077bd04f460b1013bd2be1a`
+`977178a13c06adec4b6c7033c7dc07519eeb2a63351d3c8a4ba5da2991222ae3`
 
 The script checks:
 
