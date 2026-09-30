@@ -88,53 +88,105 @@ bad = copy.deepcopy(policy)
 bad["states"][0]["state"] = "DISABLED"
 fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_POLICY_STATE")
 
-# 13: active blocking cannot return without re-entry evidence.
+# 13: administrative owner drift fails closed.
+bad = copy.deepcopy(policy)
+bad["administrative_owner"] = "LEGACY_OWNER"
+fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_POLICY_ADMIN_OWNER")
+
+# 14: runner-binding policy drift fails closed.
+bad = copy.deepcopy(policy)
+bad["runner_binding_policy"]["INTERNAL_CI_CHECK"] = "PASS"
+fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_POLICY_RUNNER_BINDING")
+
+# 15: active blocking cannot return without re-entry evidence.
 bad = copy.deepcopy(policy)
 bad["states"][0]["state"] = "ACTIVE_BLOCKING"
 fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_REENTRY_EVIDENCE_MISSING")
 
-# 14-15: a single control may return only with the full re-entry contract.
+# 16-17: a control requiring a canonical runner may return only with the full contract.
 reactivated = copy.deepcopy(policy)
-row = next(item for item in reactivated["states"] if item["control_id"] == "LF_CONTRACT_CORE")
+row = next(item for item in reactivated["states"] if item["control_id"] == "MIGRATION_SOURCE_PARITY")
 row["state"] = "ACTIVE_BLOCKING"
 row["reentry_evidence"] = {
     "qualification_verdict": "CANDIDATE_QUALIFIED",
     "qualification_head_sha": "b" * 40,
-    "owner_runner_binding": "PASS",
+    "administrative_owner": "LF_GOVERNANCE",
+    "reentry_class": "CANONICAL_RUNNER_REQUIRED",
+    "runner_binding": "PASS",
     "equivalent_replay": "PASS",
     "exact_head_readback": "PASS",
 }
 reactivated_result = project_enforcement(plan, reactivated)
-ok(reactivated_result["blocking_controls"] == ["LF_CONTRACT_CORE"], "one-control re-entry")
+ok(reactivated_result["blocking_controls"] == ["MIGRATION_SOURCE_PARITY"], "bound-control re-entry")
 ok(
-    reactivated_result["observe_only_controls"] == ["MIGRATION_SOURCE_PARITY", "PROFILE_RUNTIME_V3"],
+    reactivated_result["observe_only_controls"] == ["LF_CONTRACT_CORE", "PROFILE_RUNTIME_V3"],
     "others remain quarantined",
 )
 
-# 16: replay is mandatory for re-entry.
+# 18: every re-entry keeps LF_GOVERNANCE as the single administrative owner.
 bad = copy.deepcopy(reactivated)
-row = next(item for item in bad["states"] if item["control_id"] == "LF_CONTRACT_CORE")
+row = next(item for item in bad["states"] if item["control_id"] == "MIGRATION_SOURCE_PARITY")
+row["reentry_evidence"]["administrative_owner"] = "LF_GOVERNANCE_S30_DB"
+fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_REENTRY_ADMIN_OWNER")
+
+# 19: unknown re-entry class cannot bypass runner requirements.
+bad = copy.deepcopy(reactivated)
+row = next(item for item in bad["states"] if item["control_id"] == "MIGRATION_SOURCE_PARITY")
+row["reentry_evidence"]["reentry_class"] = "UNKNOWN"
+fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_REENTRY_CLASS")
+
+# 20: a canonical-runner-required control cannot claim runner NOT_REQUIRED.
+bad = copy.deepcopy(reactivated)
+row = next(item for item in bad["states"] if item["control_id"] == "MIGRATION_SOURCE_PARITY")
+row["reentry_evidence"]["runner_binding"] = "NOT_REQUIRED"
+fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_REENTRY_OWNER_RUNNER")
+
+# 21: an INTERNAL_CI_CHECK may re-enter without inventing an owner-runner.
+internal = copy.deepcopy(policy)
+row = next(item for item in internal["states"] if item["control_id"] == "CI_ROUTER_SELFTEST")
+row["state"] = "ACTIVE_BLOCKING"
+row["reentry_evidence"] = {
+    "qualification_verdict": "CANDIDATE_QUALIFIED",
+    "qualification_head_sha": "c" * 40,
+    "administrative_owner": "LF_GOVERNANCE",
+    "reentry_class": "INTERNAL_CI_CHECK",
+    "runner_binding": "NOT_REQUIRED",
+    "equivalent_replay": "PASS",
+    "exact_head_readback": "PASS",
+}
+internal_result = project_enforcement(plan, internal)
+ok(internal_result["blocking_controls"] == [], "non-applicable internal control does not alter this plan")
+
+# 22: INTERNAL_CI_CHECK must not acquire an artificial owner-runner binding.
+bad = copy.deepcopy(internal)
+row = next(item for item in bad["states"] if item["control_id"] == "CI_ROUTER_SELFTEST")
+row["reentry_evidence"]["runner_binding"] = "PASS"
+fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_REENTRY_INTERNAL_RUNNER_BINDING")
+
+# 23: replay is mandatory for re-entry.
+bad = copy.deepcopy(reactivated)
+row = next(item for item in bad["states"] if item["control_id"] == "MIGRATION_SOURCE_PARITY")
 row["reentry_evidence"]["equivalent_replay"] = "FAIL"
 fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_REENTRY_REPLAY")
 
-# 17: incomplete applicability coverage cannot be projected.
+# 24: incomplete applicability coverage cannot be projected.
 bad_plan = copy.deepcopy(plan)
 bad_plan["coverage_complete"] = False
 fails(lambda: project_enforcement(bad_plan, policy), "FAIL_REPAIR_PLAN_COVERAGE")
 
-# 18: overlapping applicable/not-applicable partition fails closed.
+# 25: overlapping applicable/not-applicable partition fails closed.
 bad_plan = copy.deepcopy(plan)
 bad_plan["not_applicable_controls"].append(
     {"control_id": "LF_CONTRACT_CORE", "carrier": "LEGACY", "reason": "BAD_OVERLAP"}
 )
 fails(lambda: project_enforcement(bad_plan, policy), "FAIL_REPAIR_PLAN_PARTITION_OVERLAP")
 
-# 19: invalid source-plan digest is rejected.
+# 26: invalid source-plan digest is rejected.
 bad_plan = copy.deepcopy(plan)
 bad_plan["plan_sha256"] = "not-a-digest"
 fails(lambda: project_enforcement(bad_plan, policy), "FAIL_REPAIR_PLAN_DIGEST")
 
-# 20: policy ordering is deterministic and enforced.
+# 27: policy ordering is deterministic and enforced.
 bad = copy.deepcopy(policy)
 bad["states"][0], bad["states"][1] = bad["states"][1], bad["states"][0]
 fails(lambda: validate_policy(bad, control_universe=universe), "FAIL_REPAIR_POLICY_STATE_ORDER")
