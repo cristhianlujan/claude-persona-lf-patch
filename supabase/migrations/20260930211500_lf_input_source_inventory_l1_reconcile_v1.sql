@@ -6,7 +6,7 @@
 -- changes fail closed instead of being silently normalized.
 --
 -- Expected live hashes at capture:
---   table:    aa6b38424a6e7dcaf6c2dad45094e9d6c56929a7c1a80c62aef45d18cbb54018
+--   table:    1e6d387bf41f443051ae023d28f251e7209a19dedabd9009e7b13c4792ad280d
 --   view:     17214d508ece399dd250252e3efaddbcb92d49f407b715c5604d7b5dd7406fe0
 --   function: 2939fae3252aaf08367b5e5a28dbf01ee411981e09fd80a786fa188697f7c782
 --   data:     71941b10ece0bb159fd05f77ec6c6848b100854705e627c28244541a58b0642e
@@ -87,7 +87,7 @@ begin
     ) into v_sha
     from table_shape;
 
-    if v_sha <> 'aa6b38424a6e7dcaf6c2dad45094e9d6c56929a7c1a80c62aef45d18cbb54018' then
+    if v_sha <> '1e6d387bf41f443051ae023d28f251e7209a19dedabd9009e7b13c4792ad280d' then
       raise exception 'INPUT_SOURCE_INVENTORY_TABLE_PREFLIGHT_DRIFT:%',v_sha;
     end if;
 
@@ -196,7 +196,7 @@ create table if not exists programacion.input_source_inventory_l1 (
 );
 
 comment on table programacion.input_source_inventory_l1 is
-'Input Governance L1 discovery index of canonical Supabase sources. Stores schema metadata and cached counts only; canonical business rows remain in their original tables.';
+'Compatibility/pilot discovery index created for Input Governance L1. Superseded for global discovery by inventory.objects + inventory.fn_lookup_v2; canonical business rows remain in original source tables.';
 
 alter table programacion.input_source_inventory_l1 enable row level security;
 
@@ -549,7 +549,7 @@ begin
   into v_count,v_data_sha
   from programacion.input_source_inventory_l1 i;
 
-  if v_table_sha <> 'aa6b38424a6e7dcaf6c2dad45094e9d6c56929a7c1a80c62aef45d18cbb54018'
+  if v_table_sha <> '1e6d387bf41f443051ae023d28f251e7209a19dedabd9009e7b13c4792ad280d'
      or v_view_sha <> '17214d508ece399dd250252e3efaddbcb92d49f407b715c5604d7b5dd7406fe0'
      or v_function_sha <> '2939fae3252aaf08367b5e5a28dbf01ee411981e09fd80a786fa188697f7c782'
      or v_count <> 54
