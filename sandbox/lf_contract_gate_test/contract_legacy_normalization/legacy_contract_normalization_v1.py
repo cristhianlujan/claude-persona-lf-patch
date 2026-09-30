@@ -61,13 +61,7 @@ def _json_equal(left: Any, right: Any) -> bool:
 
 
 def _source_contract_projection(contract: Mapping[str, Any]) -> dict[str, Any]:
-    """Return the exact semantic/identity source bound by a translation.
-
-    Authority snapshots may carry transport/audit columns such as created_at,
-    updated_at and execution ids. Those fields are not contract semantics and
-    must not invalidate an otherwise exact translation. Every semantic identity
-    field remains required and any change to it changes the projection digest.
-    """
+    """Return the exact semantic/identity source bound by a translation."""
     missing = [key for key in SOURCE_BINDING_KEYS if key not in contract]
     if missing:
         raise LegacyContractNormalizationError(
@@ -132,6 +126,24 @@ def _legacy_atoms(contract: Mapping[str, Any]) -> list[str]:
     return sorted(atoms)
 
 
+def _covered_atoms_for_pointer(
+    source_projection: Mapping[str, Any],
+    *,
+    pointer: str,
+    section: str,
+    source_atom_set: set[str],
+) -> tuple[Any, list[str]]:
+    if not pointer.startswith(f"/{section}/") and pointer != f"/{section}":
+        raise LegacyContractNormalizationError("mapping_section_pointer_mismatch")
+    observed = _pointer_get(source_projection, pointer)
+    covered_atoms = sorted(_source_atoms(observed, pointer))
+    if not covered_atoms or any(atom not in source_atom_set for atom in covered_atoms):
+        raise LegacyContractNormalizationError(
+            f"mapping_source_pointer_not_contractual_node:{pointer or '<missing>'}"
+        )
+    return observed, covered_atoms
+
+
 def _validate_typed_term(term: Mapping[str, Any]) -> None:
     allowed = {"id", "predicate", "applies_when"}
     extra = sorted(set(term) - allowed)
@@ -188,19 +200,22 @@ def normalize(packet: Mapping[str, Any]) -> dict[str, Any]:
         if section not in SECTIONS:
             raise LegacyContractNormalizationError(f"mapping_section_invalid:{section or '<missing>'}")
         pointer = _text(mapping, "source_pointer")
-        if pointer not in source_atom_set:
-            raise LegacyContractNormalizationError(f"mapping_source_pointer_not_atom:{pointer or '<missing>'}")
-        if not pointer.startswith(f"/{section}/") and pointer != f"/{section}":
-            raise LegacyContractNormalizationError("mapping_section_pointer_mismatch")
+        if not pointer:
+            raise LegacyContractNormalizationError("mapping_source_pointer_missing")
+        observed, mapping_atoms = _covered_atoms_for_pointer(
+            source_projection,
+            pointer=pointer,
+            section=section,
+            source_atom_set=source_atom_set,
+        )
         if "expected_source" not in mapping:
             raise LegacyContractNormalizationError("mapping_expected_source_missing")
-        observed = _pointer_get(source_projection, pointer)
         if not _json_equal(observed, mapping["expected_source"]):
             raise LegacyContractNormalizationError(f"mapping_source_value_mismatch:{pointer}")
         term = dict(_obj(mapping.get("typed_term"), "typed_term"))
         _validate_typed_term(term)
         semantic_ids[(section, _text(term, "id"))] += 1
-        covered.append(pointer)
+        covered.extend(mapping_atoms)
         terms_by_section[section].append(term)
 
     duplicates = sorted(pointer for pointer, count in Counter(covered).items() if count != 1)
