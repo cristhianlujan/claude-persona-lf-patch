@@ -1,6 +1,8 @@
 -- Retire the historical Contract Check compatibility bridge after zero functional consumers.
 -- Source-first: apply only after the GitHub retirement PR is merged and read back.
 -- No runtime, production, carrier activation, ruleset change, or automatic impact is enabled here.
+-- Provenance note: this migration does not invent/update *_by_execution_id on guarded operational rows;
+-- durable traceability is provided by the merged source, migration ledger, authority readback and closure event.
 
 do $migration$
 declare
@@ -38,7 +40,7 @@ begin
       '8358a14daaa9560d09ae1cfe1c4da54e86b29ded6739c95be33d760d60215b06',
       'ee5473e265bec09e7df8b9283c7e8daec918473e',
       'VALIDATOR', true,
-      'd5f2c7e3978d511e8bea1a9055d98974af664611', v_exec, clock_timestamp()
+      '89264951f250d697c13c7ef19298e65a45affc16', v_exec, clock_timestamp()
     );
   elsif (v_carrier_sha, v_carrier_blob) is distinct from
         ('8358a14daaa9560d09ae1cfe1c4da54e86b29ded6739c95be33d760d60215b06',
@@ -55,7 +57,7 @@ begin
     '91490d410062ecb9d08fe68e7d6cfcfac4632e57e722bceb3cf8cd5ebab2c83a',
     '5db1c733a001465c6d6a9b8d4c96d0bec48445ca',
     'VALIDATOR', false,
-    'd5f2c7e3978d511e8bea1a9055d98974af664611', v_exec, clock_timestamp()
+    '89264951f250d697c13c7ef19298e65a45affc16', v_exec, clock_timestamp()
   );
 
   update public.lf_operation_registry
@@ -66,7 +68,6 @@ begin
          ),
          notes = concat_ws(E'\n', nullif(notes,''),
            '2026-09-30: temporary scripts/lf_contract_check.py bridge retired after zero functional consumers and live-authority E2E closure. Canonical Contract Check source is the Final Thin Carrier -> semantic integration. Runtime/production/automatic impact remain unchanged.'),
-         updated_by_execution_id = v_exec,
          updated_at = clock_timestamp()
    where operation_code = 'GITHUB_CONTRACT_GATE_LF';
   if not found then raise exception 'CONTRACT_CHECK_BRIDGE_RETIREMENT_OPERATION_NOT_FOUND'; end if;
@@ -90,7 +91,6 @@ begin
                      where value <> 'scripts/lf_contract_check.py'),'[]'::jsonb),
            true
          ),
-         updated_by_execution_id=v_exec,
          updated_at=clock_timestamp()
    where codigo_activo='GITHUB_CONTRACT_GATE_LF' and archived_at is null;
   if not found then raise exception 'CONTRACT_CHECK_BRIDGE_RETIREMENT_ASSET_NOT_FOUND'; end if;
@@ -101,7 +101,6 @@ begin
            'legacy_bridge_retired_path','scripts/lf_contract_check.py',
            'legacy_bridge_retired_by_execution_id',v_exec
          ),
-         updated_by_execution_id=v_exec,
          updated_at=clock_timestamp()
    where codigo_activo='LF_CONTRACT_CHECK' and archived_at is null;
   if not found then raise exception 'LF_CONTRACT_CHECK_ASSET_NOT_FOUND'; end if;
