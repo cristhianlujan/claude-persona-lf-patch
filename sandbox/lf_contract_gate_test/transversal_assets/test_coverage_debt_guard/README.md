@@ -1,65 +1,70 @@
 # TEST_COVERAGE_DEBT_GUARD
 
-Capability candidate extracted from the historical `S36_ASSURANCE` umbrella.
+Capability transversal extraída del histórico `S36_ASSURANCE` umbrella.
 
-## Purpose
+## Propósito
 
-Protect the accepted **global operation test-coverage debt** from growing during Full Regression / audit execution.
+Proteger la **deuda global aceptada de cobertura estructural de tests** contra crecimiento durante Full Regression / auditoría.
 
-This capability is not an assurance-quality verdict and is not a normal changeset-scoped PASE control.
+No es un verdict de Assurance, calidad, ejecución de tests, Qualification ni seguridad del changeset.
 
-## Exact semantic contract
+## Contrato ejecutable
 
-A PASS means only:
+Runner canónico source:
 
-`ACCEPTED_TEST_COVERAGE_DEBT_NOT_GROWING`
+- `test_coverage_debt_guard_v1.py`
 
-It does **not** mean:
-
-- all operational operations are covered;
-- tests passed;
-- semantic quality passed;
-- Independent Review passed;
-- Qualification passed/current;
-- the current changeset is safe;
-- Assurance is complete.
-
-## Inputs
-
-- canonical operation structural-coverage rows supplied by the existing coverage provider;
-- an explicitly accepted global debt baseline;
-- current operational-operation universe.
-
-Current legacy provider during extraction:
-
-- `public.lf_s36_operation_assurance_coverage_v1()`
-
-Current legacy adapter during extraction:
+Carrier histórico conservado solo por compatibilidad:
 
 - `sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py`
 
-Those historical names are compatibility surfaces only. They must not define the target semantics.
+El carrier delega íntegramente al runner canónico y ya no contiene el query ni emite semántica de Assurance Completeness.
 
-## Applicability
+Resultados permitidos:
 
-Target owner: `FULL_REGRESSION`.
+- `DEBT_STABLE`
+- `DEBT_GROWTH_BLOCKED`
 
-Applicable:
+`DEBT_STABLE` significa únicamente:
 
-- explicit Full Regression;
-- global audit/reconciliation of operation test coverage;
-- controlled migration/cutover validation of the debt baseline itself.
+`ACCEPTED_TEST_COVERAGE_DEBT_NOT_GROWING`
 
-Not applicable:
+No significa:
 
-- ordinary PASE execution merely because a changeset exists;
-- Contract Check semantics;
-- Independent Review;
-- Qualification finalization;
-- lifecycle/stateful regression ownership;
-- Card-specific E2E ownership.
+- Assurance PASS;
+- Assurance completeness PASS;
+- todas las operaciones cubiertas;
+- tests ejecutados o aprobados;
+- calidad semántica aprobada;
+- Independent Review aprobada;
+- Qualification aprobada/current;
+- changeset seguro.
 
-## Failure classes preserved from the legacy adapter
+Los resultados siempre mantienen `material_assurance_pass=false`, `material_test_pass=false` y `material_qualification_pass=false`.
+
+## Inputs
+
+El guard reutiliza, sin duplicar:
+
+- `public.lf_s36_operation_assurance_coverage_v1()` como provider estructural legacy;
+- `lf_strategy_snapshots.id=61 -> test_assurance_coverage_ci.accepted_debt_baseline` como baseline aceptado;
+- el universo operacional del provider.
+
+No crea otro coverage engine, test matrix, baseline store ni applicability router.
+
+## Aplicabilidad
+
+Owner objetivo: `FULL_REGRESSION`.
+
+Aplica únicamente a:
+
+- Full Regression explícito;
+- auditoría/reconciliación global de deuda de cobertura;
+- validación controlada de cutover/migración del baseline.
+
+No aplica a PASE ordinario por el simple hecho de existir un changeset.
+
+## Clases de deuda preservadas
 
 - `NEW_REQUIRED_OPERATION_DEBT`
 - `LIVE_BLOCKED`
@@ -67,23 +72,19 @@ Not applicable:
 - `BINDING_ACTIVITY_WITHOUT_COVERAGE`
 - `NEW_RUN_ACTIVITY_WITHOUT_COVERAGE`
 
-## Migration rule
+Estas clases describen crecimiento/cambio de deuda. Ninguna es un verdict de calidad o Assurance.
 
-Do not create a second coverage engine, matrix, baseline store or applicability router.
+## Legacy SQL aggregate
 
-The extraction sequence is:
+`public.lf_s36_assurance_completeness_v1(boolean)` permanece como artefacto SQL histórico. No es autoridad del nuevo owner y no puede registrarse como nuevo consumer. La implementación ejecutable source del guard ya no lo llama.
 
-1. keep the existing global debt query as the compatibility implementation;
-2. freeze this narrower semantic owner;
-3. move the carrier only after `FULL_REGRESSION` cutover is authorized/current;
-4. retire `S36_ASSURANCE` naming only after consumers read back the new owner;
-5. preserve historical S36 artifacts as lineage, not as active ownership.
+El provider estructural `public.lf_s36_operation_assurance_coverage_v1()` sí se reutiliza porque contiene el cálculo estructural que corresponde a `OPERATION_TEST_COVERAGE`.
 
 ## EKB
 
 - `S36-ASSURANCE-BOUNDARY-CONTAMINATION-001`
 - `TEST-COVERAGE-DEBT-GUARD-SEMANTIC-OVERCLAIM-001`
 
-## Safety
+## Seguridad
 
-This candidate creates no DB object, workflow, router, registry, writer, coverage engine, baseline store, runtime activation or production behavior.
+Este cambio no crea objetos DB, workflows, routers, registries, writers, coverage engines, baseline stores ni activación runtime/producción. El runner ejecuta una consulta read-only y clasifica únicamente deuda global.
