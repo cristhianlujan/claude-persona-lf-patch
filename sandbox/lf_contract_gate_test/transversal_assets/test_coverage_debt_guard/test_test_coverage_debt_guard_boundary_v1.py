@@ -10,6 +10,7 @@ ROOT = HERE.parents[3]
 CONTRACT = HERE / "test_coverage_debt_guard_contract_v1.json"
 RUNNER = HERE / "test_coverage_debt_guard_v1.py"
 COMPAT = ROOT / "sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py"
+PROVIDER_SOURCE = ROOT / "supabase/migrations/20260914205435_s36_assurance_completeness_engine_v1.sql"
 
 spec = importlib.util.spec_from_file_location("test_coverage_debt_guard_v1", RUNNER)
 assert spec is not None and spec.loader is not None
@@ -21,6 +22,7 @@ def main() -> None:
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
     runner = RUNNER.read_text(encoding="utf-8")
     compat = COMPAT.read_text(encoding="utf-8")
+    provider_source = PROVIDER_SOURCE.read_text(encoding="utf-8")
 
     assert contract["capability"] == "TEST_COVERAGE_DEBT_GUARD"
     assert contract["status"] == "CANDIDATE_EXECUTABLE_DEBT_SEMANTICS"
@@ -59,6 +61,13 @@ def main() -> None:
     for code in contract["issue_codes"]:
         assert code in mod.SQL, f"FAIL_DEBT_GUARD_ISSUE_CODE_MISSING:{code}"
 
+    # Provider/consumer enum must be exact. Provider emits BLOCK, never BLOCKED.
+    assert "else 'COVERED'" in provider_source
+    assert "then 'BLOCK'" in provider_source
+    assert mod.PROVIDER_BLOCK_STATE == "BLOCK"
+    assert "l.coverage_state = 'BLOCK'" in mod.SQL
+    assert "l.coverage_state = 'BLOCKED'" not in mod.SQL
+
     stable = mod.classify_debt_rows([])
     assert stable["capability"] == "TEST_COVERAGE_DEBT_GUARD"
     assert stable["result"] == "DEBT_STABLE"
@@ -69,7 +78,7 @@ def main() -> None:
     assert stable["material_qualification_pass"] is False
 
     blocked = mod.classify_debt_rows([
-        ("OP-X", "NOT_COVERED", "NEW_REQUIRED_OPERATION_DEBT")
+        ("OP-X", "BLOCK", "LIVE_BLOCKED")
     ])
     assert blocked["result"] == "DEBT_GROWTH_BLOCKED"
     assert blocked["reason_code"] == "ACCEPTED_TEST_COVERAGE_DEBT_GREW"
@@ -104,7 +113,7 @@ def main() -> None:
     assert "PASS_S36_ASSURANCE_COMPLETENESS" not in runner
     assert "ASSURANCE_COMPLETENESS_PASS" not in runner
 
-    print("TEST_COVERAGE_DEBT_GUARD_BOUNDARY=PASS debt_semantics=true normal_pase=false")
+    print("TEST_COVERAGE_DEBT_GUARD_BOUNDARY=PASS debt_semantics=true normal_pase=false block_enum=BLOCK")
 
 
 if __name__ == "__main__":
