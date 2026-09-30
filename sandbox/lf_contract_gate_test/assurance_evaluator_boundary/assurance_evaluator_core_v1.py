@@ -171,6 +171,7 @@ def evaluate_assurance(packet: Mapping[str, Any]) -> dict[str, Any]:
         any_open = False
         any_unproven = False
         any_zero_effect = False
+        independent_review_receipt_gap = False
         evidence_refs: list[str] = []
 
         for item in evidence:
@@ -252,6 +253,12 @@ def evaluate_assurance(packet: Mapping[str, Any]) -> dict[str, Any]:
                 }
                 if not guarded_ids:
                     any_unproven = True
+                # A typed judge reference is not durable provenance by itself.
+                # Until the material adapter supplies a provider-bound
+                # LF_SUPABASE_READBACK_V1 / EVIDENCE_LEDGER receipt,
+                # Independent Review stays fail-closed as UNPROVEN.
+                independent_review_receipt_gap = True
+                any_unproven = True
 
         mandatory_defeaters = []
         open_defeaters: list[str] = []
@@ -299,6 +306,8 @@ def evaluate_assurance(packet: Mapping[str, Any]) -> dict[str, Any]:
         if closure_rule.get("independent_review_required") is True and not accepted_review_ids:
             any_unproven = True
             reasons.append("INDEPENDENT_REVIEW_UNPROVEN")
+        if independent_review_receipt_gap:
+            reasons.append("INDEPENDENT_REVIEW_PROVIDER_BOUND_RECEIPT_REQUIRED")
         if closure_rule.get("self_assessment_forbidden") not in (None, True, False):
             any_unproven = True
             reasons.append("SELF_ASSESSMENT_RULE_UNSUPPORTED")

@@ -221,15 +221,16 @@ def main() -> None:
     assert out["status"] == "BLOCKED" and out["reason_code"] == "BLOCKED_LEGACY_S36_NEW_WRITE_SEMANTICS", out
     checks += 1
 
-    # 15. Historical S36 readback may be consumed only through the existing legacy guard.
+    # 15. Historical S36 readback is type-valid lineage but cannot prove PASS without provider-bound receipt.
     p = packet()
     p["obligations"] = [obligation(verification_method="INDEPENDENT_REVIEW")]
     p["claim"] = claim(closure_rule={"open_defeater_blocks_pass": True, "independent_review_required": True})
     p["review_references"] = [review(mode="HISTORICAL_LEGACY_READBACK", review_type="S36_ASSURANCE")]
     p["evidence"] = [evidence(judge_result_id=JUDGE)]
     out = run_assurance_evaluator(p)
-    assert out["status"] == "EVALUATED" and out["evaluator_result"]["result"] == "PASS", out
+    assert out["status"] == "EVALUATED" and out["evaluator_result"]["result"] == "UNPROVEN", out
     assert out["review_decisions"][0]["legacy_readback_only"] is True, out
+    assert "INDEPENDENT_REVIEW_PROVIDER_BOUND_RECEIPT_REQUIRED" in out["evaluator_result"]["reasons"], out
     checks += 1
 
     # 16. No required obligations => never infer PASS from an empty model.
