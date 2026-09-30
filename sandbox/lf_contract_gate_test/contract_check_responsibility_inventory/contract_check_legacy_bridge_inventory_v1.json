@@ -1,7 +1,7 @@
 {
   "schema_version": "lf-contract-check-legacy-bridge-inventory/v1",
   "status": "TEMPORARY_COMPATIBILITY_BRIDGE",
-  "implementation_status": "CODED_ON_BRANCH_NOT_MERGED_NOT_APPLIED",
+  "implementation_status": "MERGED_AND_OFFICIAL_INVENTORY_APPLIED_READBACK_PASS",
   "purpose": "Keep the historical scripts/lf_contract_check.py entry path temporarily while routing legitimate Contract Check packets to the new Contract Check implementation, avoiding per-caller cutover churn.",
   "source_main_sha": "06dbacc7957140c359543eadd3128fd4f33a4d06",
   "bridge_path": "scripts/lf_contract_check.py",
@@ -14,7 +14,8 @@
     "inventory_created": "5a73fa42aa94ab54b35d6c53088c24119287d110",
     "bridge_replaced_v021": "d7adf137f9602fdcdd15dada55755a1a2cd43645",
     "bridge_guard_added": "0ceba431903b67c9e7f760fe36317a827f594d8b",
-    "official_inventory_transition_staged": "d7161542891f5bfd7bd860eb49a175ccc1ea09a6"
+    "bridge_pr_1263_merged_main": "aa966b62eaf736d206d28476a33b219c65ce1a5a",
+    "inventory_type_fix_pr_1264_merged_main": "f003eedfc0d15119f2d737cdca56cf3e05ea9e46"
   },
   "official_inventory_surfaces": {
     "operational_inventory": "public.v_lf_fuente_operativa",
@@ -23,8 +24,11 @@
     "operation_registry": "public.lf_operation_registry:GITHUB_CONTRACT_GATE_LF",
     "router_action_registry": "public.lf_router_action_registry",
     "router_binding_observed": "NONE_FOR_CONTRACT_CHECK",
-    "staged_transition_migration": "supabase/migrations/20260930002500_contract_check_legacy_bridge_inventory_v1.sql",
-    "productive_apply_status": "NOT_APPLIED"
+    "transition_migration": "supabase/migrations/20260930002500_contract_check_legacy_bridge_inventory_v1.sql",
+    "productive_apply_status": "APPLIED_READBACK_PASS",
+    "applied_main_sha": "f003eedfc0d15119f2d737cdca56cf3e05ea9e46",
+    "bridge_expected_sha256": "91490d410062ecb9d08fe68e7d6cfcfac4632e57e722bceb3cf8cd5ebab2c83a",
+    "bridge_expected_git_blob": "5db1c733a001465c6d6a9b8d4c96d0bec48445ca"
   },
   "design_invariants": [
     "The bridge path is a compatibility facade, not the Contract Check implementation.",
@@ -102,9 +106,14 @@
     "historical evidence, reports and PR documentation that describe the previous implementation"
   ],
   "live_authority_cleanup_required": {
-    "current_observation": "production authority still contains scripts/lf_contract_check.py as VALIDATOR until an authorized migration/repin is applied",
-    "branch_transition": "official inventory transition is staged but not productively applied",
-    "required_transition": "repin the historical path to the bridge hash/blob if still required, then remove it from active validator authority when all bridge consumers are retired"
+    "current_observation": "Repository governance now pins scripts/lf_contract_check.py to the temporary bridge bytes, not v0.21.",
+    "current_status": "BRIDGE_ACTIVE_AS_TEMPORARY_VALIDATOR_PATH",
+    "required_transition": "Remove the bridge path from active validator authority when all bridge consumers are retired."
+  },
+  "ekb": {
+    "schema_type_learning": "GOV-CONTRACT-CHECK-BRIDGE-SOURCE-PATHS-JSONB-001",
+    "status": "RESUELTO",
+    "prevention": "Read exact live information_schema types before every authority/inventory mutation."
   },
   "bridge_exit_criteria": [
     "0 workflows execute scripts/lf_contract_check.py",
