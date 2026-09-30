@@ -13,7 +13,7 @@ assert spec and spec.loader
 spec.loader.exec_module(guard)
 
 result = guard.self_test()
-assert result == {"status": "PASS_SELF_TEST", "checks": 9}, result
+assert result == {"status": "PASS_SELF_TEST", "checks": 10}, result
 
 fixture = guard._base_fixture()
 out = guard.evaluate_admission(fixture)
@@ -25,4 +25,4 @@ unrelated = guard.evaluate_admission({"changed_files": ["docs/architecture.md"]}
 assert unrelated["status"] == "PASS_NOT_APPLICABLE"
 assert unrelated["applicable"] is False
 
-print(json.dumps({"status": "PASS", "self_test_checks": 9, "integration_checks": 5}, sort_keys=True))
+print(json.dumps({"status": "PASS", "self_test_checks": 10, "integration_checks": 5}, sort_keys=True))
