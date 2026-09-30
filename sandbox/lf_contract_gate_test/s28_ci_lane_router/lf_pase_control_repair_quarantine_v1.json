@@ -4,6 +4,11 @@
   "authority": "CHANGESET_GOVERNANCE_LF_V1",
   "mode": "TEMPORARY_REPAIR_WINDOW",
   "reason": "LEGACY_VALIDATORS_UNDER_REPAIR",
+  "administrative_owner": "LF_GOVERNANCE",
+  "runner_binding_policy": {
+    "INTERNAL_CI_CHECK": "NOT_REQUIRED",
+    "CANONICAL_RUNNER_REQUIRED": "PASS"
+  },
   "control_universe_sha256": "57e19027335c7d052a3393403ac0d6c9f6cde1f7babf882ca99cd1d68748f7ea",
   "states": [
     {"control_id": "CI_ROUTER_SELFTEST", "state": "REPAIR_OBSERVE_ONLY", "reentry_evidence": null},
@@ -35,7 +40,8 @@
   "reentry_contract": {
     "required": [
       "CANDIDATE_QUALIFIED",
-      "OWNER_RUNNER_BOUND",
+      "LF_GOVERNANCE_OWNER",
+      "CLASSIFICATION_AWARE_RUNNER_BINDING",
       "EQUIVALENT_REPLAY_PASS",
       "EXACT_HEAD_READBACK_PASS"
     ],

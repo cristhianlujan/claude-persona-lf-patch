@@ -23,13 +23,19 @@ RESULT_SCHEMA = "lf-pase-control-enforcement/v1"
 AUTHORITY = "CHANGESET_GOVERNANCE_LF_V1"
 POLICY_ID = "PASE_CONTROL_REPAIR_QUARANTINE_V1"
 POLICY_PATH = Path(__file__).with_name("lf_pase_control_repair_quarantine_v1.json")
+SUPER_ADMIN = "LF_GOVERNANCE"
 STATES = {"REPAIR_OBSERVE_ONLY", "ACTIVE_BLOCKING"}
 CONTROL_ID = re.compile(r"^[A-Z][A-Z0-9_]*$")
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
+RUNNER_BINDING_POLICY = {
+    "INTERNAL_CI_CHECK": "NOT_REQUIRED",
+    "CANONICAL_RUNNER_REQUIRED": "PASS",
+}
 REENTRY_REQUIRED = (
     "CANDIDATE_QUALIFIED",
-    "OWNER_RUNNER_BOUND",
+    "LF_GOVERNANCE_OWNER",
+    "CLASSIFICATION_AWARE_RUNNER_BINDING",
     "EQUIVALENT_REPLAY_PASS",
     "EXACT_HEAD_READBACK_PASS",
 )
@@ -56,13 +62,20 @@ def _sorted_unique_controls(value: Any) -> bool:
     )
 
 
-def _validate_reentry_evidence(value: Any) -> None:
+def _validate_reentry_evidence(
+    value: Any,
+    *,
+    administrative_owner: str,
+    runner_binding_policy: Mapping[str, str],
+) -> None:
     if not isinstance(value, Mapping):
         raise RepairQuarantineError("FAIL_REPAIR_REENTRY_EVIDENCE_MISSING")
     expected = {
         "qualification_verdict",
         "qualification_head_sha",
-        "owner_runner_binding",
+        "administrative_owner",
+        "reentry_class",
+        "runner_binding",
         "equivalent_replay",
         "exact_head_readback",
     }
@@ -73,8 +86,18 @@ def _validate_reentry_evidence(value: Any) -> None:
     head = value.get("qualification_head_sha")
     if not isinstance(head, str) or SHA40.fullmatch(head) is None:
         raise RepairQuarantineError("FAIL_REPAIR_REENTRY_HEAD")
-    if value.get("owner_runner_binding") != "PASS":
+    if value.get("administrative_owner") != administrative_owner:
+        raise RepairQuarantineError("FAIL_REPAIR_REENTRY_ADMIN_OWNER")
+
+    reentry_class = value.get("reentry_class")
+    if reentry_class not in runner_binding_policy:
+        raise RepairQuarantineError("FAIL_REPAIR_REENTRY_CLASS")
+    expected_binding = runner_binding_policy[reentry_class]
+    if value.get("runner_binding") != expected_binding:
+        if reentry_class == "INTERNAL_CI_CHECK":
+            raise RepairQuarantineError("FAIL_REPAIR_REENTRY_INTERNAL_RUNNER_BINDING")
         raise RepairQuarantineError("FAIL_REPAIR_REENTRY_OWNER_RUNNER")
+
     if value.get("equivalent_replay") != "PASS":
         raise RepairQuarantineError("FAIL_REPAIR_REENTRY_REPLAY")
     if value.get("exact_head_readback") != "PASS":
@@ -90,6 +113,10 @@ def validate_policy(policy: Mapping[str, Any], *, control_universe: list[str]) -
         raise RepairQuarantineError("FAIL_REPAIR_POLICY_MODE")
     if not isinstance(policy.get("reason"), str) or not policy["reason"].strip():
         raise RepairQuarantineError("FAIL_REPAIR_POLICY_REASON")
+    if policy.get("administrative_owner") != SUPER_ADMIN:
+        raise RepairQuarantineError("FAIL_REPAIR_POLICY_ADMIN_OWNER")
+    if policy.get("runner_binding_policy") != RUNNER_BINDING_POLICY:
+        raise RepairQuarantineError("FAIL_REPAIR_POLICY_RUNNER_BINDING")
     if not _sorted_unique_controls(control_universe):
         raise RepairQuarantineError("FAIL_REPAIR_CONTROL_UNIVERSE")
 
@@ -115,7 +142,11 @@ def validate_policy(policy: Mapping[str, Any], *, control_universe: list[str]) -
             if row.get("reentry_evidence") is not None:
                 raise RepairQuarantineError(f"FAIL_REPAIR_OBSERVE_WITH_REENTRY:{cid}")
         else:
-            _validate_reentry_evidence(row.get("reentry_evidence"))
+            _validate_reentry_evidence(
+                row.get("reentry_evidence"),
+                administrative_owner=policy["administrative_owner"],
+                runner_binding_policy=policy["runner_binding_policy"],
+            )
         ordered_ids.append(cid)
         by_id[cid] = row
 
