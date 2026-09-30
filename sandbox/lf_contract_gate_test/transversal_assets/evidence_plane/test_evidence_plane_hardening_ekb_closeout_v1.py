@@ -2,7 +2,7 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
-SQL = (ROOT / "supabase/migrations/20260930221500_lf_evidence_plane_hardening_ekb_closeout_v1.sql").read_text()
+SQL = (ROOT / "supabase/migrations/20260930231033_lf_evidence_plane_hardening_ekb_closeout_v1.sql").read_text()
 lower = SQL.lower()
 executable = "\n".join(line for line in lower.splitlines() if not line.lstrip().startswith("--"))
 
