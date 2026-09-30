@@ -1,0 +1,1 @@
+alter table programacion.input_family_assessments drop constraint input_family_assessments_severity_check; alter table programacion.input_family_assessments add constraint input_family_assessments_severity_check check (severity in ('P0','P1','P2','P3','P4','UNRESOLVED'));
