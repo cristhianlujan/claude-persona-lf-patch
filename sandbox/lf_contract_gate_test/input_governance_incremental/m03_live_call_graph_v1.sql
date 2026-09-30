@@ -11,12 +11,15 @@
 --      second-hop incoming boundary so rule-exploration consumers remain in M0.3.
 --
 -- Current live scope:
---   108 IG/guard seed functions
+--   109 IG/guard seed functions
 --   + direct SQL neighbors
 --   + direct consumers of public IG wrappers
---   = 117 DB functions.
+--   = 118 DB functions.
 --
--- Historical M0.2 baseline=118 remains unresolved and is NOT asserted here.
+-- The current graph scope happens to total 118, but this does NOT reconstruct or
+-- assert equivalence with the historical M0.2 "118 functions" statement.
+-- New seed member: programacion.fn_input_source_inventory_lookup_l1_v1(text),
+-- reconciled in Git/ledger by migration 20260930211500.
 
 begin;
 
@@ -32,7 +35,7 @@ join pg_namespace n on n.oid=p.pronamespace
 where n.nspname in ('programacion','public','lf_ops')
   and p.prokind in ('f','p');
 
-create temp table m03_seed108 on commit drop as
+create temp table m03_seed109 on commit drop as
 select *
 from m03_allfunc
 where
@@ -75,15 +78,15 @@ join m03_allfunc c
  and (t.called_schema is null or c.schema_name=t.called_schema);
 
 create temp table m03_hop1 on commit drop as
-select oid from m03_seed108
+select oid from m03_seed109
 union
 select callee_oid oid
 from m03_resolved_edges
-where caller_oid in (select oid from m03_seed108)
+where caller_oid in (select oid from m03_seed109)
 union
 select caller_oid oid
 from m03_resolved_edges
-where callee_oid in (select oid from m03_seed108);
+where callee_oid in (select oid from m03_seed109);
 
 create temp table m03_public_wrappers on commit drop as
 select f.oid
@@ -97,7 +100,7 @@ select distinct e.caller_oid oid
 from m03_resolved_edges e
 where e.callee_oid in (select oid from m03_public_wrappers);
 
-create temp table m03_scope117 on commit drop as
+create temp table m03_scope118 on commit drop as
 select oid from m03_hop1
 union
 select oid from m03_wrapper_consumers;
@@ -105,8 +108,8 @@ select oid from m03_wrapper_consumers;
 create temp table m03_edges on commit drop as
 select *
 from m03_resolved_edges
-where caller_oid in (select oid from m03_scope117)
-   or callee_oid in (select oid from m03_scope117);
+where caller_oid in (select oid from m03_scope118)
+   or callee_oid in (select oid from m03_scope118);
 
 create temp table m03_trigger_edges on commit drop as
 select
@@ -134,7 +137,7 @@ join pg_namespace pn on pn.oid=p.pronamespace
 join pg_class c on c.oid=t.tgrelid
 join pg_namespace n on n.oid=c.relnamespace
 where not t.tgisinternal
-  and p.oid in (select oid from m03_scope117);
+  and p.oid in (select oid from m03_scope118);
 
 create temp table m03_constraint_edges on commit drop as
 select
@@ -146,7 +149,7 @@ select
   f.schema_name function_schema,
   f.proname function_name,
   f.args function_args
-from m03_scope117 s
+from m03_scope118 s
 join m03_allfunc f on f.oid=s.oid
 join pg_constraint con
   on pg_get_constraintdef(con.oid) ilike '%'||f.proname||'%'
@@ -163,7 +166,7 @@ select
   count(distinct eout.callee_oid) callee_count,
   count(distinct te.trigger_oid) trigger_binding_count,
   count(distinct ce.constraint_oid) constraint_binding_count
-from m03_scope117 s
+from m03_scope118 s
 join m03_allfunc f on f.oid=s.oid
 left join m03_edges ein on ein.callee_oid=f.oid
 left join m03_edges eout on eout.caller_oid=f.oid
@@ -180,7 +183,7 @@ declare
   v_sha text;
   v integer;
 begin
-  if (select count(*) from m03_seed108)<>108 then
+  if (select count(*) from m03_seed109)<>109 then
     raise exception 'M03_SEED_COUNT_DRIFT';
   end if;
 
@@ -196,30 +199,30 @@ begin
     raise exception 'M03_SECOND_HOP_WRAPPER_CONSUMER_COUNT_DRIFT';
   end if;
 
-  if (select count(*) from m03_scope117)<>117 then
+  if (select count(*) from m03_scope118)<>118 then
     raise exception 'M03_SCOPE_COUNT_DRIFT';
   end if;
 
   if (
     select count(*) from m03_edges
-    where caller_oid in (select oid from m03_scope117)
-      and callee_oid in (select oid from m03_scope117)
+    where caller_oid in (select oid from m03_scope118)
+      and callee_oid in (select oid from m03_scope118)
   )<>262 then
     raise exception 'M03_IN_SCOPE_EDGE_DRIFT';
   end if;
 
   if (
     select count(*) from m03_edges
-    where caller_oid in (select oid from m03_scope117)
-      and callee_oid not in (select oid from m03_scope117)
+    where caller_oid in (select oid from m03_scope118)
+      and callee_oid not in (select oid from m03_scope118)
   )<>2 then
     raise exception 'M03_OUT_BOUNDARY_EDGE_DRIFT';
   end if;
 
   if (
     select count(*) from m03_edges
-    where caller_oid not in (select oid from m03_scope117)
-      and callee_oid in (select oid from m03_scope117)
+    where caller_oid not in (select oid from m03_scope118)
+      and callee_oid in (select oid from m03_scope118)
   )<>33 then
     raise exception 'M03_IN_BOUNDARY_EDGE_DRIFT';
   end if;
@@ -246,7 +249,7 @@ begin
     where caller_count=0
       and trigger_binding_count=0
       and constraint_binding_count=0
-  )<>21 then
+   )<>22 then
     raise exception 'M03_NO_SQL_CALLER_COUNT_DRIFT';
   end if;
 
@@ -254,18 +257,18 @@ begin
     select count(*)
     from m03_degrees
     where callee_count=0
-  )<>18 then
+   )<>19 then
     raise exception 'M03_NO_SQL_CALLEE_COUNT_DRIFT';
   end if;
 
   select jsonb_build_object(
-    'scope_count',(select count(*) from m03_scope117),
+    'scope_count',(select count(*) from m03_scope118),
     'scope_members',(
       select jsonb_agg(
         f.schema_name||'.'||f.proname||'('||f.args||')'
         order by f.schema_name,f.proname,f.args
       )
-      from m03_scope117 s
+      from m03_scope118 s
       join m03_allfunc f on f.oid=s.oid
     ),
     'edges',(
@@ -273,8 +276,8 @@ begin
         jsonb_build_object(
           'caller',ca.schema_name||'.'||ca.proname||'('||ca.args||')',
           'callee',ce.schema_name||'.'||ce.proname||'('||ce.args||')',
-          'caller_in_scope',e.caller_oid in (select oid from m03_scope117),
-          'callee_in_scope',e.callee_oid in (select oid from m03_scope117)
+          'caller_in_scope',e.caller_oid in (select oid from m03_scope118),
+          'callee_in_scope',e.callee_oid in (select oid from m03_scope118)
         )
         order by ca.schema_name,ca.proname,ca.args,ce.schema_name,ce.proname,ce.args
       )
@@ -317,7 +320,7 @@ begin
     'hex'
   );
 
-  if v_sha<>'a70a01d28cf558bb9966208b0f12156cba57a9a33d7e347e0f63ae57b81d4e30' then
+  if v_sha<>'b55f76227fa15f08b7b1de8f2da776bde36fb7d26bc50b96765005b9cc318c3c' then
     raise exception 'M03_GRAPH_SHA_DRIFT:%',v_sha;
   end if;
 
@@ -347,7 +350,7 @@ begin
 end
 $m03$;
 
--- One row per scoped function. Empty arrays are explicit graph boundaries
+-- One row per scoped function (118 rows at this baseline). Empty arrays are explicit graph boundaries
 -- to be classified by M0.2; they are not silently converted into edges.
 select
   f.schema_name||'.'||f.proname||'('||f.args||')' function_name,
@@ -395,7 +398,7 @@ select
     from m03_constraint_edges ce
     where ce.function_oid=f.oid
   ),'[]'::jsonb) constraint_bindings
-from m03_scope117 s
+from m03_scope118 s
 join m03_allfunc f on f.oid=s.oid
 order by f.schema_name,f.proname,f.args;
 
