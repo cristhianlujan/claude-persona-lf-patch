@@ -1,7 +1,7 @@
 {
   "schema_version": "lf-contract-check-legacy-bridge-inventory/v1",
   "status": "RETIRED",
-  "implementation_status": "RETIREMENT_SOURCE_CANDIDATE",
+  "implementation_status": "RETIRED_LIVE_AUTHORITY_READBACK",
   "purpose": "Historical record of the retired scripts/lf_contract_check.py compatibility bridge. New and active Contract Check callers use the canonical carrier directly.",
   "source_main_sha": "06dbacc7957140c359543eadd3128fd4f33a4d06",
   "bridge_path": "scripts/lf_contract_check.py",
@@ -25,7 +25,7 @@
     "router_action_registry": "public.lf_router_action_registry",
     "router_binding_observed": "NONE_FOR_CONTRACT_CHECK",
     "transition_migration": "supabase/migrations/20260930002500_contract_check_legacy_bridge_inventory_v1.sql",
-    "productive_apply_status": "RETIREMENT_SOURCE_CANDIDATE_NOT_YET_APPLIED",
+    "productive_apply_status": "RETIREMENT_APPLIED_AND_READBACK",
     "bridge_transition_applied_main_sha": "f003eedfc0d15119f2d737cdca56cf3e05ea9e46",
     "retired_bridge_expected_sha256": "91490d410062ecb9d08fe68e7d6cfcfac4632e57e722bceb3cf8cd5ebab2c83a",
     "retired_bridge_expected_git_blob": "5db1c733a001465c6d6a9b8d4c96d0bec48445ca",
@@ -70,9 +70,9 @@
     "historical evidence, reports and PR documentation that describe the previous implementation"
   ],
   "live_authority_cleanup_required": {
-    "current_observation": "Source retirement candidate removes the bridge and repoints self-change/governance anchors to the canonical carrier.",
-    "current_status": "RETIREMENT_SOURCE_CANDIDATE",
-    "required_transition": "After merge, apply the source-first Supabase migration and verify the bridge path is absent from active authority."
+    "current_observation": "Live authority readback confirms scripts/lf_contract_check.py is absent from active governance authority and GITHUB_CONTRACT_GATE_LF source_paths; the canonical Final Thin Carrier is active.",
+    "current_status": "RETIRED_LIVE_AUTHORITY_READBACK",
+    "required_transition": "NONE_CLOSED"
   },
   "ekb": {
     "schema_type_learning": "GOV-CONTRACT-CHECK-BRIDGE-SOURCE-PATHS-JSONB-001",
@@ -106,11 +106,15 @@
     "exact_head_verification": "PR1283 main d5f2c7e3978d511e8bea1a9055d98974af664611: workflow_bridge_refs=0; deleted_consumer_name_refs=0"
   },
   "retirement": {
-    "status": "SOURCE_CANDIDATE",
+    "status": "RETIRED",
     "base_main_sha": "d5f2c7e3978d511e8bea1a9055d98974af664611",
     "retired_bridge_path": "scripts/lf_contract_check.py",
     "canonical_entrypoint": "sandbox/lf_contract_gate_test/contract_check_carrier/contract_check_carrier_v1.py",
-    "authority_migration": "supabase/migrations/20260930063000_contract_check_bridge_retirement_v1.sql",
+    "authority_migration": "supabase/migrations/20260930064736_contract_check_bridge_retirement_v1.sql",
+    "applied_ledger_version": "20260930064736",
+    "source_reconciliation_pr": 1300,
+    "source_reconciliation_main_sha": "5f12b66e3b461f09c307360ce95542a9ee58fa34",
+    "canonical_migration_source_parity": "PENDING_DOMAIN_EXECUTION",
     "runtime_activation": false,
     "production_activation": false,
     "automatic_impact_activation": false
