@@ -65,6 +65,33 @@ PASE con claim material y binding activo:
 
 `Router -> exact binding -> evaluator mínimo -> typed result/receipt -> Closure`
 
+## Gate mecánico de activación
+
+`ASSURANCE_ACTIVATION_GATE_V1` formaliza la entrada al evaluator sin convertirse en un segundo Router.
+
+Autoridades:
+
+- aplicabilidad: `CHANGESET_GOVERNANCE_LF_V1`;
+- bindings: `public.lf_assurance_subject_bindings`;
+- consumidor eventual: `ASSURANCE_EVALUATOR`.
+
+Regla determinista:
+
+`Router applicable=true + subject_type exacto + subject_code exacto + subject_revision + exactamente 1 binding ACTIVE exacto -> READY_FOR_ASSURANCE_EVALUATOR`.
+
+Cualquier otra situación queda tipada:
+
+- Router declara N/A -> `NOT_APPLICABLE_NO_EXECUTION`;
+- 0 binding `ACTIVE` exactos -> `NOT_APPLICABLE_NO_EXECUTION`;
+- binding `CANDIDATO` -> nunca ejecuta;
+- binding `ACTIVE` con `subject_code='*'` -> `BLOCKED_NON_EXACT_ACTIVE_BINDING`;
+- más de un binding `ACTIVE` exacto -> `BLOCKED_AMBIGUOUS_ACTIVE_BINDING`;
+- autoridad, subject o revision inválidos -> `BLOCKED`.
+
+El gate no consulta Supabase, no ejecuta el evaluator, no modifica Router, no activa runtime/producción y no crea bindings. Recibe como input un readback del binding authority y devuelve únicamente una decisión determinista.
+
+Readback live 2026-09-30: `lf_assurance_subject_bindings` = **4 total / 0 ACTIVE / 4 CANDIDATO**. Por tanto el estado real sigue siendo `NOT_APPLICABLE_NO_EXECUTION` para cualquier PASE normal.
+
 ## Qué se conserva de PR #879
 
 Se conserva únicamente la semántica útil:

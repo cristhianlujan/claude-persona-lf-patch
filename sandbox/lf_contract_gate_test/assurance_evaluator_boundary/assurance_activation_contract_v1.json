@@ -1,0 +1,45 @@
+{
+  "schema_version": "lf-assurance-activation-contract/v1",
+  "capability_code": "ASSURANCE_ACTIVATION_GATE",
+  "classification": "DETERMINISTIC_DORMANT_GATE",
+  "authority": {
+    "applicability_owner": "CHANGESET_GOVERNANCE_LF_V1",
+    "binding_authority": "public.lf_assurance_subject_bindings",
+    "consumer": "ASSURANCE_EVALUATOR"
+  },
+  "inputs": {
+    "router_decision_schema": "lf-assurance-router-decision/v1",
+    "binding_statuses": ["CANDIDATO", "ACTIVE", "RETIRED"],
+    "allowed_subject_types": ["WORKFLOW", "OPERATION", "STRATEGY", "PROFILE", "CARD", "ADAPTER", "SKILL", "CAPABILITY"]
+  },
+  "activation_rule": {
+    "router_must_mark_applicable": true,
+    "active_binding_required": true,
+    "exact_subject_type_required": true,
+    "exact_subject_code_required": true,
+    "wildcard_active_binding_forbidden": true,
+    "single_active_exact_binding_required": true,
+    "subject_revision_required": true,
+    "no_binding_result": "NOT_APPLICABLE_NO_EXECUTION"
+  },
+  "outputs": [
+    "NOT_APPLICABLE_NO_EXECUTION",
+    "READY_FOR_ASSURANCE_EVALUATOR",
+    "BLOCKED"
+  ],
+  "invariants": [
+    "NO_GLOBAL_ASSURANCE_ACTIVATION",
+    "NO_WILDCARD_ACTIVE_BINDING",
+    "NO_EVALUATOR_EXECUTION_INSIDE_GATE",
+    "NO_ROUTER_DISCOVERY_INSIDE_GATE",
+    "NO_SUPABASE_MUTATION",
+    "NO_RUNTIME_OR_PRODUCTION_ACTIVATION",
+    "CANDIDATE_BINDINGS_NEVER_EXECUTE",
+    "AMBIGUOUS_ACTIVE_BINDINGS_FAIL_CLOSED"
+  ],
+  "live_readback_2026_09_30": {
+    "subject_bindings_total": 4,
+    "subject_bindings_active": 0,
+    "subject_bindings_candidate": 4
+  }
+}
