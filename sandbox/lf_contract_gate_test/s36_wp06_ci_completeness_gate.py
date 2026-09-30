@@ -27,6 +27,7 @@ spec.loader.exec_module(mod)
 CAPABILITY_CODE = mod.CAPABILITY_CODE
 SUCCESS_RESULT = mod.SUCCESS_RESULT
 FAILURE_RESULT = mod.FAILURE_RESULT
+PROVIDER_BLOCK_STATE = mod.PROVIDER_BLOCK_STATE
 ISSUE_CODES = mod.ISSUE_CODES
 SQL = mod.SQL
 classify_debt_rows = mod.classify_debt_rows
