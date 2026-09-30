@@ -1,57 +1,67 @@
-# ASSURANCE_COMPLETENESS
+# ASSURANCE_COMPLETENESS — LEGACY LINEAGE
 
-Capability transversal LF: `ASSURANCE_COMPLETENESS` / `TRANSVERSAL_ASSURANCE_COMPLETENESS`.
+`ASSURANCE_COMPLETENESS` / `TRANSVERSAL_ASSURANCE_COMPLETENESS` is a historical umbrella capability retained only for lineage and compatibility readback.
 
-## Estado
+## Target state after governed cutover
 
-- Estado operativo esperado: `ACTIVO`
-- Inventory status requerido: `ACTIVE_SHARED_ENFORCEMENT`
-- Autoridad de currentness: `public.lf_activos`
-- README de consumo: `sandbox/lf_contract_gate_test/transversal_assets/assurance_completeness/README.md`
+- document state: `LEGACY`;
+- operational state: `READ_ONLY`;
+- transversal inventory status: `RETIRED_LEGACY_LINEAGE`;
+- new consumers: **forbidden**;
+- generic repository-CI context injection: **forbidden**;
+- physical historical function deletion: **not required**.
 
-## Propósito
+The governed cutover source is:
 
-Calcular y exigir completitud de assurance sin crear una matriz paralela.
+`supabase/migrations/20260930073000_lf_assurance_completeness_legacy_owner_retirement_v1.sql`
 
-## Cuándo consumirlo
+## Why it is retired
 
-Antes de declarar completa una evaluación, qualification o cierre que dependa de cobertura de assurance.
+The umbrella mixed responsibilities that now have separate canonical owners:
 
-Antes de usarlo, resolver el activo en `public.lf_activos` y confirmar que no esté archivado, que siga `ACTIVO` y que `metadata.transversal_inventory.inventory_status=ACTIVE_SHARED_ENFORCEMENT`.
+- `OPERATION_TEST_COVERAGE` — structural operation/test coverage only;
+- `TEST_COVERAGE_DEBT_GUARD` — accepted global structural-debt monotonicity, Full Regression/audit only;
+- `ASSURANCE_EVALUATOR` — exact-binding claim/evidence sufficiency only, dormant unless Router applicability plus exactly one ACTIVE exact subject binding authorize it.
 
-## Cómo consumirlo
+No one of these replacements is a global Assurance-completeness PASS engine.
 
-1. Resolver primero `ASSURANCE_COMPLETENESS` en el inventario transversal; no buscar una implementación nueva antes de revisar este activo.
-2. Entrar por `public.lf_s36_assurance_completeness_v1` o por la superficie canónica equivalente indicada por el contrato vigente.
-3. Conservar la identidad de la operación/consumer, source revision y evidencia que exige el contrato de la capability.
-4. Si el resultado es `FAIL` o `BLOCKED`, conservar el diagnóstico durable y seguir la ruta de error gobernada aplicable; no crear un writer o store paralelo.
-5. Cerrar únicamente con readback desde la superficie canónica y currentness suficiente para la decisión.
+## Historical surfaces
 
-## Superficies canónicas
+Historical lineage may still include:
 
-- `public.lf_s36_assurance_completeness_v1`
-- `20260914205435_s36_assurance_completeness_engine_v1`
+- `public.lf_s36_assurance_completeness_v1(boolean)`;
+- migration `20260914205435_s36_assurance_completeness_engine_v1`.
 
-Las superficies anteriores son referencias de consumo/implementación. Si existe discrepancia entre este README y el contrato/runtime vigente, prevalece la autoridad canónica y el README debe actualizarse.
+Those surfaces are **not canonical for new consumption**. They must not be registered into a new policy/context set, PASE control, workflow, owner, binding or runtime path.
 
-## Fail-closed / límites
+## Currentness rule
 
-No inventa evidencia faltante ni convierte NOT_COVERED/BLOCK en PASS.
+Consumers must resolve `public.lf_activos` before use. If the asset is `LEGACY`, `READ_ONLY`, `RETIRED_LEGACY_LINEAGE`, archived, or otherwise not active shared enforcement, the correct result is **do not consume this capability**.
 
-Si falta una dependencia, binding, currentness, permiso o evidencia requerida, el consumidor debe bloquear y reportar el primer punto no satisfecho.
+Historical references in migrations, evidence or prior executions do not reactivate ownership.
 
-## Validación y readback
+## Fail-closed replacement rule
 
-- Verificar currentness del activo antes de consumirlo.
-- Ejecutar los gates/tests propios de la capability y del consumer; no convertir un test local en cierre global.
-- Mantener source revision, execution/consumer identity y referencias de evidencia.
-- Leer de vuelta el resultado desde la superficie durable correspondiente.
-- Para cambios de contrato o comportamiento, revalidar consumidores afectados y actualizar este README.
+Do not substitute another global umbrella capability. Resolve the actual responsibility:
 
-## No duplicación
+- structural coverage question → `OPERATION_TEST_COVERAGE`;
+- global debt monotonicity during Full Regression/audit → `TEST_COVERAGE_DEBT_GUARD`;
+- material Assurance claim → Router applicability + exact ACTIVE binding + `ASSURANCE_EVALUATOR`;
+- no exact ACTIVE Assurance binding → `NOT_APPLICABLE_NO_EXECUTION`.
 
-No crear una segunda capability, tabla, runner, registry, writer o contrato que resuelva la misma responsabilidad. Si el contrato actual no cubre un caso válido, extender este activo por su owner y conservar lineage.
+## Readback required for retirement closure
 
-## Currentness
+Closure requires all of the following:
 
-Este README describe cómo consumir la capability, pero no fija su estado para siempre. El consumidor debe consultar `public.lf_activos` y la superficie runtime vigente en cada decisión material.
+1. active `POL-LF-POLICY-CONSUMPTION` context contains zero `ASSURANCE_COMPLETENESS` capability references;
+2. `public.lf_activos` exposes this asset as `LEGACY / READ_ONLY` with inventory status `RETIRED_LEGACY_LINEAGE`;
+3. zero active explicit operation-policy bindings reference the capability;
+4. no new executable consumer calls `public.lf_s36_assurance_completeness_v1`;
+5. Assurance subject bindings remain unchanged by this retirement lot;
+6. exact-head source gates and post-apply Supabase readback are clean.
+
+## EKB
+
+- `ASSURANCE-COMPLETENESS-LEGACY-OWNER-RESIDUE-001`
+- `OPERATION-TEST-COVERAGE-COVERED-OVERCLAIM-001`
+- `TEST-COVERAGE-DEBT-GUARD-SEMANTIC-OVERCLAIM-001`
