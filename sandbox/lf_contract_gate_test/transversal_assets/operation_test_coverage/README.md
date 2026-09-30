@@ -4,8 +4,9 @@ Capability transversal LF candidata: `OPERATION_TEST_COVERAGE`.
 
 ## Estado
 
-- Estado de esta definición: `CANDIDATE_BOUNDARY_ONLY`
-- Autoridad live actual: `ASSURANCE_COMPLETENESS` / `public.lf_s36_operation_assurance_coverage_v1()`
+- Estado de esta definición: `CANDIDATE_TYPED_PROJECTION`
+- Autoridad live actual: provider legacy read-only `public.lf_s36_operation_assurance_coverage_v1()`
+- Proyección tipada source: `operation_test_coverage_projection_v1.py`
 - Cutover live: **NO realizado por este cambio**
 - Motor paralelo: **prohibido**
 
@@ -15,23 +16,30 @@ Responder una sola pregunta:
 
 > Para una operación gobernada, ¿existe la estructura de cobertura de tests requerida en la matriz canónica LF?
 
-La cobertura estructural comprende únicamente la relación operación → binding requerido → suite existente → casos existentes. Puede exponer conteos de runs observados como diagnóstico, pero **no convierte esos runs en verdict, PASS ni assurance**.
+La cobertura estructural comprende únicamente la relación operación → binding requerido → suite existente → casos existentes. Los runs observados son un diagnóstico separado y jamás producen un verdict dentro de este owner.
 
-## Semántica
+## Salida tipada
 
-La salida legacy `coverage_state='COVERED'` se interpreta durante la transición exclusivamente como `STRUCTURALLY_COVERED`.
+La proyección canónica separa explícitamente:
 
-`STRUCTURALLY_COVERED` **NO significa**:
+- `structural_coverage_state`;
+- `execution_observation_state`;
+- `quality_verdict_state`;
+- `assurance_verdict_state`;
+- `qualification_verdict_state`;
+- `material_pass_claimed`.
 
-- test ejecutado;
-- test PASS;
-- evidencia current;
-- qualification aprobada;
-- independent review aprobado;
-- cierre del pase;
-- assurance completo.
+La traducción legacy es estricta:
 
-Una operación con binding + suite + casos y `observed_run_count=0` puede estar estructuralmente cubierta y, al mismo tiempo, no tener ninguna prueba ejecutada.
+- `COVERED` → `STRUCTURALLY_COVERED`;
+- `BLOCK` → `STRUCTURAL_BLOCKED`;
+- `NOT_COVERED` → `NOT_COVERED`;
+- `EVIDENCE_UNMAPPED` → `EVIDENCE_UNMAPPED`;
+- `DISCOVERED` → `DISCOVERED`.
+
+Los tres campos de verdict siempre son `NOT_EVALUATED` y `material_pass_claimed=false`.
+
+Una operación con binding + suite + casos y `observed_run_count=0` puede ser `STRUCTURALLY_COVERED` y, simultáneamente, `NO_EXECUTION_OBSERVED`. Incluso si `observed_run_count>0`, este owner solamente devuelve `EXECUTION_OBSERVED`; no infiere PASS, calidad, Assurance ni Qualification.
 
 ## Responsabilidad propia
 
@@ -42,7 +50,7 @@ Esta capability puede:
 3. leer `lf_test_suites`;
 4. leer `lf_test_suite_cases`;
 5. leer `lf_test_runs` solo para diagnóstico de evidencia no mapeada/conteo observado;
-6. devolver cobertura estructural y gaps.
+6. proyectar cobertura estructural y observación de ejecución en dimensiones separadas.
 
 ## Fuera de responsabilidad
 
@@ -64,20 +72,20 @@ Esta capability no debe:
 
 ## Superficie legacy reutilizada
 
-Hasta un cutover separado y gobernado, la implementación existente que contiene el cálculo útil es:
+Hasta un cutover separado y gobernado, el provider existente que contiene el cálculo estructural útil es:
 
 - `public.lf_s36_operation_assurance_coverage_v1()`
 - source: `supabase/migrations/20260914205435_s36_assurance_completeness_engine_v1.sql`
 
-`public.lf_s36_assurance_completeness_v1(boolean)` es un agregador global legacy y no define el contrato del pase normal.
+`public.lf_s36_assurance_completeness_v1(boolean)` sigue siendo un agregador global legacy que transforma ausencia de deuda estructural en `completeness_state=PASS`. Esa semántica **no pertenece** a `OPERATION_TEST_COVERAGE`; su retiro/normalización queda en `TEST_COVERAGE_DEBT_GUARD` (Paso 4). Mientras ese consumidor legacy exista, el EKB `OPERATION-TEST-COVERAGE-COVERED-OVERCLAIM-001` no debe declararse cerrado.
 
 ## Relación con otros owners
 
 - `CHANGESET_GOVERNANCE` / Router: decide applicability y entrega scope.
-- `OPERATION_TEST_COVERAGE`: informa cobertura estructural del scope.
+- `OPERATION_TEST_COVERAGE`: informa únicamente cobertura estructural del scope.
 - Test execution / validators: ejecutan pruebas y producen resultados.
 - `INDEPENDENT_REVIEW`: produce juicio independiente cuando la política lo exige.
-- `QUALIFICATION_FRAMEWORK`: owner canónico existente de materialización/currentness de qualification.
+- `QUALIFICATION_FRAMEWORK`: owner canónico de materialización/currentness de qualification.
 - `TEST_COVERAGE_DEBT_GUARD` / Full Regression: controla deuda global y monotonicidad; no pertenece al pase normal.
 
 ## EKB
@@ -87,4 +95,4 @@ Hasta un cutover separado y gobernado, la implementación existente que contiene
 
 ## Regla de no duplicación
 
-Este cambio define ownership y semántica. No crea función SQL nueva, tabla nueva, matriz nueva, runner de DB nuevo ni segundo applicability engine. El eventual rename/cutover debe reutilizar la implementación útil existente y conservar alias de compatibilidad solo durante una migración explícita. `QUALIFICATION_FINALIZATION` no se materializa como owner nuevo: se reutiliza `QUALIFICATION_FRAMEWORK`.
+La proyección tipada no crea función SQL, tabla, matriz, runner DB ni segundo applicability engine. Consume la fila del provider legacy y elimina la ambigüedad semántica antes de exponerla a nuevos consumidores. El eventual cutover live debe reutilizar el cálculo estructural útil y retirar la traducción legacy `COVERED → PASS` desde su owner correcto, no desde esta capability.
