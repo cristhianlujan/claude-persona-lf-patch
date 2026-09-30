@@ -17,6 +17,7 @@ SUCCESS_RESULT = "DEBT_STABLE"
 FAILURE_RESULT = "DEBT_GROWTH_BLOCKED"
 PROJECT_ID = "mhwmirqcgxxukpctffuv"
 POOLER_HOST = "aws-1-us-east-1.pooler.supabase.com"
+PROVIDER_BLOCK_STATE = "BLOCK"
 
 ISSUE_CODES = frozenset({
     "NEW_REQUIRED_OPERATION_DEBT",
@@ -51,7 +52,7 @@ with s as (
     case
       when b.operation_code is null and l.coverage_state <> 'COVERED'
         then 'NEW_REQUIRED_OPERATION_DEBT'
-      when l.coverage_state = 'BLOCKED'
+      when l.coverage_state = 'BLOCK'
         then 'LIVE_BLOCKED'
       when b.operation_code is not null
        and l.coverage_state <> 'COVERED'
