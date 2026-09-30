@@ -80,12 +80,16 @@
     "QUALIFICATION_FINALIZATION"
   ],
   "closure_dependency": {
-    "legacy_pass_aggregate_still_exists": true,
-    "owner": "TEST_COVERAGE_DEBT_GUARD",
-    "next_step": "REMOVE_LEGACY_COVERED_TO_PASS_CONSUMER_SEMANTICS_BEFORE_EKB_CLOSURE"
+    "legacy_pass_aggregate_physical_lineage_may_remain": true,
+    "legacy_pass_aggregate_new_consumer_allowed": false,
+    "legacy_umbrella_owner_must_be_retired": true,
+    "retirement_source": "supabase/migrations/20260930073000_lf_assurance_completeness_legacy_owner_retirement_v1.sql",
+    "closure_requires_live_readback": true,
+    "owner": "TEST_COVERAGE_DEBT_GUARD"
   },
   "ekb_refs": [
     "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001",
-    "OPERATION-TEST-COVERAGE-COVERED-OVERCLAIM-001"
+    "OPERATION-TEST-COVERAGE-COVERED-OVERCLAIM-001",
+    "ASSURANCE-COMPLETENESS-LEGACY-OWNER-RESIDUE-001"
   ]
 }
