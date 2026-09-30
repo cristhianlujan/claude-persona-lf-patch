@@ -315,7 +315,7 @@ begin
     from member_funcs f
     cross join lateral regexp_matches(
       f.prosrc,
-      '(^|[^A-Za-z0-9_])(?:(public|programacion|lf_ops)\\.)?(fn_[A-Za-z0-9_]+)[[:space:]]*\\(',
+      '(^|[^A-Za-z0-9_])(?:(public|programacion|lf_ops)\.)?(fn_[A-Za-z0-9_]+)[[:space:]]*\(',
       'g'
     ) x(m)
   ),
@@ -389,7 +389,7 @@ begin
     from member_funcs f
     cross join lateral regexp_matches(
       f.prosrc,
-      '(^|[^A-Za-z0-9_])(?:(public|programacion|lf_ops)\\.)?(fn_[A-Za-z0-9_]+)[[:space:]]*\\(',
+      '(^|[^A-Za-z0-9_])(?:(public|programacion|lf_ops)\.)?(fn_[A-Za-z0-9_]+)[[:space:]]*\(',
       'g'
     ) x(m)
   ),
@@ -525,7 +525,7 @@ begin
     from member_funcs f
     cross join lateral regexp_matches(
       f.prosrc,
-      '(^|[^A-Za-z0-9_])(?:(public|programacion|lf_ops)\\.)?(fn_[A-Za-z0-9_]+)[[:space:]]*\\(',
+      '(^|[^A-Za-z0-9_])(?:(public|programacion|lf_ops)\.)?(fn_[A-Za-z0-9_]+)[[:space:]]*\(',
       'g'
     ) x(m)
   ),
