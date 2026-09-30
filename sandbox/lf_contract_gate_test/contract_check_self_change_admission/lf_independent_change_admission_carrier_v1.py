@@ -324,7 +324,7 @@ select coalesce(jsonb_agg(to_jsonb(g) order by g.path),'[]'::jsonb)::text
 from public.get_lf_repository_governance_bundle_v4() g
 where g.path in (
   '.github/workflows/lf-contract-check.yml',
-  'scripts/lf_contract_check.py'
+  'sandbox/lf_contract_gate_test/contract_check_carrier/contract_check_carrier_v1.py'
 );
 """
     data = _psql_json(sql)
