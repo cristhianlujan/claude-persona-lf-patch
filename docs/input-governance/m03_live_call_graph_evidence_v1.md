@@ -13,15 +13,18 @@ The reproducible SQL evidence is:
 
 Current live DB scope:
 
-- 108 seed functions:
+- 109 seed functions:
   - the 96-function IG surface already mapped by PRs #1307/#1308;
-  - 12 additional `programacion.fn_guard_input_*` functions.
+  - 12 additional `programacion.fn_guard_input_*` functions;
+  - `programacion.fn_input_source_inventory_lookup_l1_v1(text)`, reconciled through migration `20260930211500`.
 - direct SQL neighbors of those seed functions;
 - direct incoming consumers of `public.fn_input_governance_*` wrappers, so rule-exploration consumers remain explicit M0.3 boundary nodes.
 
-Total live DB graph scope: **117 functions**.
+Total live DB graph scope: **118 functions**.
 
-This does **not** claim that the historical M0.2 baseline of 118 functions has been reconstructed. The 117-vs-118 delta remains M0.2 work.
+The current graph scope happens to total **118**, but this does **not** reconstruct or validate the historical M0.2 “118 functions” list. The original member list was not preserved. M0.2 must keep `IG_PROPER` and boundary functions separate instead of treating this numeric equality as historical recovery.
+
+The new lookup entered the seed only after the prior M0.3 readback. Its direct-DB drift was reconciled by #1314/#1315 and migration `20260930211500`; its source-inventory capability is separately registered as candidate asset `PROGRAMACION_INPUT_SOURCE_INVENTORY_L1` (id 352), without approval or runtime dependency assertion.
 
 ## 2. Call extraction and schema resolution
 
@@ -34,7 +37,7 @@ For calls matching `fn_name(`:
 - self edges are excluded;
 - current runtime inspection found no unqualified ambiguous `fn_*` calls across these three schemas.
 
-The previous head joined only by `proname`. On the fixed 117-function scope that produced exactly **7 false internal edges**:
+The previous head joined only by `proname`. On the prior fixed 117-function scope, that produced exactly **7 false internal edges**:
 
 1. `programacion.fn_input_governance_curator_materialize_v1 -> public.fn_input_governance_curator_materialize_v1`
 2. `programacion.fn_input_governance_execute -> public.fn_input_governance_execute`
@@ -52,17 +55,17 @@ is preserved. The call is schema-qualified and the target exists only in `public
 
 Current corrected receipt:
 
-- seed functions: **108**
-- scoped DB functions: **117**
+- seed functions: **109**
+- scoped DB functions: **118**
 - in-scope SQL edges: **262**
 - outgoing SQL boundary edges: **2**
 - incoming SQL boundary edges: **33**
 - trigger bindings: **21**
 - constraint bindings: **5**
-- functions with no SQL caller/trigger/constraint binding: **21**
-- functions with no `fn_*` SQL callee: **18**
+- functions with no SQL caller/trigger/constraint binding: **22**
+- functions with no `fn_*` SQL callee: **19**
 - canonical graph SHA-256:
-  `a70a01d28cf558bb9966208b0f12156cba57a9a33d7e347e0f63ae57b81d4e30`
+  `b55f76227fa15f08b7b1de8f2da776bde36fb7d26bc50b96765005b9cc318c3c`
 
 The canonical hash includes scope members, SQL edges, trigger bindings and constraint bindings. Trigger event arrays are emitted in the detailed presentation but intentionally do not alter the binding fingerprint.
 
@@ -185,7 +188,7 @@ The two rule-exploration functions are retained as controlled second-hop incomin
 
 What this PR can establish:
 
-- reproducible live SQL graph with explicit callers/callees for every one of the 117 scoped DB functions;
+- reproducible live SQL graph with explicit callers/callees for every one of the 118 scoped DB functions;
 - schema-aware call resolution with function headers excluded;
 - Edge source edges;
 - trigger and constraint bindings, including all trigger events;
