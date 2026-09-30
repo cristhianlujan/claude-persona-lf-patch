@@ -4,29 +4,32 @@ Capability transversal LF: `TYPED_EVIDENCE_REGISTRY` / `TRANSVERSAL_TYPED_EVIDEN
 
 ## Estado
 
-- Estado operativo esperado: `ACTIVO`
-- Inventory status requerido: `ACTIVE_SHARED_ENFORCEMENT`
-- Versión inventariada: `v3`
-- Autoridad de currentness: `public.lf_activos`
-- README de consumo: `sandbox/lf_contract_gate_test/transversal_assets/typed_evidence_registry/README.md`
+- Owner transversal: `SUPER_ADMIN`.
+- Estado operativo esperado: `ACTIVO`.
+- Inventory status requerido: `ACTIVE_SHARED_ENFORCEMENT`.
+- Versión funcional inventariada: `v3`; versión normalizada en capability registry: `3.0.0`.
+- Punto de entrada común para consumo gobernado: `public.fn_lf_capability_bind_from_orchestrator_v1`.
+- Guard obligatorio: `ORCHESTRATOR_EXECUTION_GUARD_V1`.
+- Autoridad de currentness: capability registry/current + `public.lf_activos` como inventario/lineage.
+
+## Punto de entrada
+
+Consumo explícito:
+`caller -> orchestrator -> dispatch receipt -> ORCHESTRATOR_EXECUTION_GUARD_V1 -> capability binding -> TYPED_EVIDENCE_REGISTRY`.
+
+El trigger interno que protege `lf_eventos` sigue siendo enforcement pasivo del motor canónico; no constituye un entrypoint alternativo para que un consumer se autoautorice.
 
 ## Propósito
 
-Registrar y validar schemas tipados de evidencia compartida.
-
-## Cuándo consumirlo
-
-Antes de aceptar/persistir evidencia cuyo contrato exige un evidence_schema conocido.
-
-Antes de usarlo, resolver el activo en `public.lf_activos` y confirmar que no esté archivado, que siga `ACTIVO` y que `metadata.transversal_inventory.inventory_status=ACTIVE_SHARED_ENFORCEMENT`.
+Registrar y validar schemas tipados de evidencia compartida antes de aceptar evidencia gobernada.
 
 ## Cómo consumirlo
 
-1. Resolver primero `TYPED_EVIDENCE_REGISTRY` en el inventario transversal; no buscar una implementación nueva antes de revisar este activo.
-2. Entrar por `private.fn_lf_typed_evidence_payload_valid_v3` o por la superficie canónica equivalente indicada por el contrato vigente.
-3. Conservar la identidad de la operación/consumer, source revision y evidencia que exige el contrato de la capability.
-4. Si el resultado es `FAIL` o `BLOCKED`, conservar el diagnóstico durable y seguir la ruta de error gobernada aplicable; no crear un writer o store paralelo.
-5. Cerrar únicamente con readback desde la superficie canónica y currentness suficiente para la decisión.
+1. El orquestador emite dispatch receipt ligado a consumer execution, capability y plan digest.
+2. El consumer obtiene binding mediante `fn_lf_capability_bind_from_orchestrator_v1`.
+3. La validación usa `private.fn_lf_typed_evidence_payload_valid_v3` y el schema registry vigente.
+4. Payload no registrado o estructuralmente inválido debe bloquear.
+5. No degradar a JSON libre ni crear un registry paralelo.
 
 ## Superficies canónicas
 
@@ -34,26 +37,12 @@ Antes de usarlo, resolver el activo en `public.lf_activos` y confirmar que no es
 - `private.fn_lf_typed_evidence_payload_valid_v3`
 - `private.fn_enforce_typed_evidence_registry_v3`
 
-Las superficies anteriores son referencias de consumo/implementación. Si existe discrepancia entre este README y el contrato/runtime vigente, prevalece la autoridad canónica y el README debe actualizarse.
-
 ## Fail-closed / límites
 
-Payload no registrado o inválido debe bloquear; no degradar a JSON libre para pasar el gate.
-
-Si falta una dependencia, binding, currentness, permiso o evidencia requerida, el consumidor debe bloquear y reportar el primer punto no satisfecho.
-
-## Validación y readback
-
-- Verificar currentness del activo antes de consumirlo.
-- Ejecutar los gates/tests propios de la capability y del consumer; no convertir un test local en cierre global.
-- Mantener source revision, execution/consumer identity y referencias de evidencia.
-- Leer de vuelta el resultado desde la superficie durable correspondiente.
-- Para cambios de contrato o comportamiento, revalidar consumidores afectados y actualizar este README.
+- Schema desconocido o payload inválido = `BLOCK`.
+- No decide aplicabilidad, cierre, promoción ni lifecycle.
+- El trigger pasivo valida persistencia; no sustituye la admisión del consumer por el orquestador.
 
 ## No duplicación
 
-No crear una segunda capability, tabla, runner, registry, writer o contrato que resuelva la misma responsabilidad. Si el contrato actual no cubre un caso válido, extender este activo por su owner y conservar lineage.
-
-## Currentness
-
-Este README describe cómo consumir la capability, pero no fija su estado para siempre. El consumidor debe consultar `public.lf_activos` y la superficie runtime vigente en cada decisión material.
+No crear una segunda capability, tabla, runner, registry, writer o contrato para esta responsabilidad. Extender este activo conservando lineage.
