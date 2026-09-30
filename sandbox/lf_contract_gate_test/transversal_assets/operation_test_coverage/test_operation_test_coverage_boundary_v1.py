@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[4]
 HERE = Path(__file__).resolve().parent
 CONTRACT = HERE / "operation_test_coverage_contract_v1.json"
+PROJECTION = HERE / "operation_test_coverage_projection_v1.py"
 LEGACY_SOURCE = ROOT / "supabase/migrations/20260914205435_s36_assurance_completeness_engine_v1.sql"
 
 
@@ -21,14 +22,22 @@ def forbid(text: str, token: str) -> None:
 def main() -> None:
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
     source = LEGACY_SOURCE.read_text(encoding="utf-8")
+    projection = PROJECTION.read_text(encoding="utf-8")
     lowered = source.lower()
 
     assert contract["schema_version"] == "lf-operation-test-coverage-owner/v1"
     assert contract["capability_code"] == "OPERATION_TEST_COVERAGE"
-    assert contract["status"] == "CANDIDATE_BOUNDARY_ONLY"
+    assert contract["status"] == "CANDIDATE_TYPED_PROJECTION"
     assert contract["live_cutover_performed"] is False
     assert contract["parallel_test_matrix_allowed"] is False
-    assert contract["legacy_state_semantics"]["COVERED"] == "STRUCTURALLY_COVERED_ONLY"
+    assert contract["legacy_state_semantics"]["COVERED"] == "STRUCTURALLY_COVERED"
+
+    typed = contract["typed_projection"]
+    assert typed["implementation"] == "operation_test_coverage_projection_v1.py"
+    assert typed["material_pass_value"] is False
+    assert typed["verdict_state"] == "NOT_EVALUATED"
+    assert contract["closure_dependency"]["legacy_pass_aggregate_still_exists"] is True
+    assert contract["closure_dependency"]["owner"] == "TEST_COVERAGE_DEBT_GUARD"
 
     required_owns = {
         "OPERATION_TEST_BINDING_COVERAGE",
@@ -56,7 +65,18 @@ def main() -> None:
     assert set(contract["does_not_own"]) == required_foreign
     assert contract["related_owners"]["qualification_materialization"] == "QUALIFICATION_FRAMEWORK"
     assert contract["forbidden_new_owner_names"] == ["QUALIFICATION_FINALIZATION"]
-    assert "QUALIFICATION_OWNER_IS_EXISTING_QUALIFICATION_FRAMEWORK" in contract["semantic_invariants"]
+
+    invariants = set(contract["semantic_invariants"])
+    for invariant in (
+        "QUALIFICATION_OWNER_IS_EXISTING_QUALIFICATION_FRAMEWORK",
+        "ZERO_OBSERVED_RUNS_MAY_STILL_BE_STRUCTURALLY_COVERED",
+        "STRUCTURAL_COVERAGE_NEVER_IMPLIES_TEST_PASS",
+        "STRUCTURAL_COVERAGE_NEVER_IMPLIES_ASSURANCE_PASS",
+        "OBSERVED_RUNS_NEVER_CREATE_A_VERDICT_IN_THIS_OWNER",
+        "PASS_IS_NOT_A_VALID_STRUCTURAL_COVERAGE_STATE",
+        "MATERIAL_PASS_CLAIM_IS_ALWAYS_FALSE",
+    ):
+        assert invariant in invariants
 
     for token in (
         "create or replace function public.lf_s36_operation_assurance_coverage_v1()",
@@ -70,8 +90,6 @@ def main() -> None:
     ):
         require(lowered, token.lower())
 
-    # The useful legacy engine is structural/read-only. Foreign S36 work packages
-    # must never be imported into the clean coverage owner.
     for token in (
         "lf_qualification_receipts",
         "lf_finalize_qualification_independent_review_v1",
@@ -88,17 +106,19 @@ def main() -> None:
     assert "update public." not in lowered
     assert "delete from public." not in lowered
 
-    # Critical semantic regression: the legacy COVERED branch does not require
-    # observed_run_count > 0. The clean owner must therefore never expose it as
-    # execution/pass/assurance evidence.
-    covered_branch = "else 'covered'"
-    require(lowered, covered_branch)
-    invariants = set(contract["semantic_invariants"])
-    assert "ZERO_OBSERVED_RUNS_MAY_STILL_BE_STRUCTURALLY_COVERED" in invariants
-    assert "STRUCTURAL_COVERAGE_NEVER_IMPLIES_TEST_PASS" in invariants
-    assert "STRUCTURAL_COVERAGE_NEVER_IMPLIES_ASSURANCE_PASS" in invariants
+    require(projection, '"STRUCTURALLY_COVERED"')
+    require(projection, '"NO_EXECUTION_OBSERVED"')
+    require(projection, '"NOT_EVALUATED"')
+    require(projection, '"material_pass_claimed": False')
+    for token in (
+        '"quality_verdict_state": "PASS"',
+        '"assurance_verdict_state": "PASS"',
+        '"qualification_verdict_state": "PASS"',
+        '"material_pass_claimed": True',
+    ):
+        assert token not in projection, f"MATERIAL_PASS_ASSIGNMENT_PRESENT:{token}"
 
-    print("OPERATION_TEST_COVERAGE_BOUNDARY_PASS owner=OPERATION_TEST_COVERAGE qualification_owner=QUALIFICATION_FRAMEWORK parallel_engine=false")
+    print("OPERATION_TEST_COVERAGE_BOUNDARY_PASS owner=OPERATION_TEST_COVERAGE typed_projection=true live_cutover=false")
 
 
 if __name__ == "__main__":
