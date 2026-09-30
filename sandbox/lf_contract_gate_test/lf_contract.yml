@@ -27,7 +27,7 @@ lf_contract:
     repository: "cristhianlujan/claude-persona-lf-patch"
     allowed_paths:
       - ".github/workflows/lf-contract-check.yml"
-      - "scripts/lf_contract_check.py"
+      - "sandbox/lf_contract_gate_test/contract_check_carrier/contract_check_carrier_v1.py"
       - "sandbox/lf_contract_gate_test/**"
       - "sandbox/story_creator_p0_visual/v1.1/**"
     blocked_paths:
