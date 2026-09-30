@@ -1,3 +1,13 @@
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-20260930064736-20260930-001
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- source_version=20260930064736
+-- source_name=contract_check_bridge_retirement_v1
+
 -- Retire the historical Contract Check compatibility bridge after zero functional consumers.
 -- Source-first: apply only after the GitHub retirement PR is merged and read back.
 -- No runtime, production, carrier activation, ruleset change, or automatic impact is enabled here.
