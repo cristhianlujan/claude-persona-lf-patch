@@ -11,12 +11,13 @@ REPOSITORY = "cristhianlujan/claude-persona-lf-patch"
 BASE_BRANCH = "main"
 PROTECTED_SURFACES = (
     ".github/workflows/lf-contract-check.yml",
-    "scripts/lf_contract_check.py",
+    "sandbox/lf_contract_gate_test/contract_check_carrier/contract_check_carrier_v1.py",
     "sandbox/lf_contract_gate_test/lf_contract.yml",
+    "scripts/lf_contract_check.py",  # retired-path tombstone: exact reintroduction remains governed
 )
 ANCHOR_SURFACES = (
     ".github/workflows/lf-contract-check.yml",
-    "scripts/lf_contract_check.py",
+    "sandbox/lf_contract_gate_test/contract_check_carrier/contract_check_carrier_v1.py",
 )
 GUARD_SURFACES = (
     ".github/workflows/lf-github-reconcile-v3.yml",
