@@ -37,6 +37,21 @@
   "legacy_readback_only": [
     "S36_ASSURANCE"
   ],
+  "legacy_s36_guard": {
+    "guard": "assurance_legacy_s36_guard_v1.py",
+    "canonical_judge_source": "public.lf_test_judge_results",
+    "new_reference_mode": "NEW_REVIEW_REFERENCE",
+    "historical_mode": "HISTORICAL_LEGACY_READBACK",
+    "new_review_types": [
+      "INDEPENDENT_REVIEW",
+      "INDEPENDENT_HOLDOUT"
+    ],
+    "legacy_review_type": "S36_ASSURANCE",
+    "legacy_new_write_allowed": false,
+    "legacy_historical_readback_allowed": true,
+    "evaluator_judge_write_allowed": false,
+    "parallel_judge_source_allowed": false
+  },
   "reuse": {
     "claim_catalog": "public.lf_assurance_claim_catalog",
     "obligation_catalog": "public.lf_assurance_obligation_catalog",
@@ -65,6 +80,7 @@
     "EXACT_SOURCE_CURRENTNESS",
     "CANONICAL_DOMAIN_OWNERS_UNCHANGED",
     "CANONICAL_REVIEW_TYPES_ONLY_FOR_NEW_WRITES",
+    "LEGACY_S36_GUARD_PASS",
     "NO_PARALLEL_EVALUATOR",
     "FAIL_CLOSED_UNPROVEN_REGRESSION",
     "EXPLICIT_ACTIVATION_CUTOVER"
