@@ -74,25 +74,45 @@ Grouping is never inferred by the normalizer. Overlapping mappings, source drift
 
 ## Exact live translation templates
 
-`legacy_translation_templates_v1.json` is the first explicit live-authoring batch. A template is reusable only when the four legacy contract sections match exactly. `legacy_translation_template_v1.py` performs exact structural matching and then materializes a normal translation bound to the exact operation, contract identity, and semantic-source SHA-256.
+The template catalogs are authoring shards of the single `LF_CONTRACT_CHECK` capability, not separate capabilities or parallel engines. A template is reusable only when the four legacy contract sections match exactly. `legacy_translation_template_v1.py` materializes a normal translation bound to exact operation, contract identity, and semantic-source SHA-256.
 
-It does not select a template by names, regex, semantic similarity, or model judgment.
+No template is selected by names, regex, semantic similarity, or model judgment.
 
-Latest read-only authority census used for this batch:
+### Batch 1
 
-- 40 active contracts;
-- 32 distinct semantic definitions;
-- 3 exact semantic definitions explicitly authored in this batch;
-- 11/40 active contracts covered by those three repeated definitions;
-- 29 semantic definitions / 29 contracts still require explicit authoring.
-
-The first three templates cover:
+`legacy_translation_templates_v1.json` covers the three repeated semantic definitions:
 
 - `RULE_MUTATION_V1`: create/update rule contracts (2 live contracts);
 - `APP_SHELL_MUTATION_V1`: create/update app-shell contracts (2 live contracts);
-- `PRE_EKB_GATE_V1`: the shared PRE-EKB contract definition (7 live contracts).
+- `PRE_EKB_GATE_V1`: shared PRE-EKB definition (7 live contracts).
 
-This is translation coverage only. It does not mutate live contract rows, switch any contract to `TYPED`, authorize runtime, or perform Contract Check cutover.
+Coverage after Batch 1: 11/40 active contracts and 3/32 semantic definitions.
+
+### Batch 2
+
+`legacy_translation_templates_batch2_v1.json` explicitly authors nine additional live definitions:
+
+- adapter depth;
+- adapter examples depth;
+- card examples depth;
+- profile general depth;
+- skill general depth;
+- Card no-close enforcement;
+- Skill no-close enforcement;
+- DS build no-close enforcement;
+- Profile no-close enforcement.
+
+The no-close templates use explicit closure applicability where the legacy field is closure-only, and blocked condition arrays become one explicit `ANY` predicate. Depth contract requirement arrays become explicit `ALL` predicates. This grouping is authored in the catalog; the normalizer does not infer it.
+
+Cumulative read-only authority coverage after Batch 2:
+
+- 40 active contracts;
+- 32 distinct semantic definitions;
+- 20/40 active contracts explicitly covered;
+- 12/32 semantic definitions explicitly authored;
+- 20 contracts / 20 semantic definitions still pending.
+
+This remains translation-authoring coverage only. No `lf_operation_contracts` row is changed to `TYPED`, and no runtime, production, carrier, or automatic-impact cutover is authorized.
 
 ## Evidence
 
@@ -100,7 +120,8 @@ This is translation coverage only. It does not mutate live contract rows, switch
 - `PASS_LEGACY_CONTRACT_SOURCE_PROJECTION_V1=8/8`
 - `PASS_LEGACY_CONTRACT_GROUPED_SOURCE_MAPPING_V1=9/9`
 - `PASS_LEGACY_TRANSLATION_TEMPLATE_V1=13/13`
+- candidate Batch 2 regression: `PASS_LEGACY_TRANSLATION_TEMPLATES_BATCH2_V1=10/10`
 
-The template regression proves exact reuse across different operation/contract identities, source-bound translation hashes, FULL normalization coverage, source-drift rejection, transport-metadata tolerance, and explicit grouped PRE-EKB semantics.
+Batch 2 regression is designed to instantiate all nine exact templates, normalize each with FULL coverage, generate evidence-backed satisfying/clear facts, evaluate Predicate Semantics at CLOSURE, and require Contract Check Core `PASS`; it also rejects semantic drift.
 
-No live contract, production workflow, runtime state, or automatic-impact state is modified by this candidate.
+No live contract, production workflow, runtime state, or automatic-impact state is modified by these authoring catalogs.
