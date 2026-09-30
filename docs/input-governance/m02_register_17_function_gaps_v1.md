@@ -28,9 +28,16 @@ The 17 functions are:
 
 ## Capability-first registration
 
-No new asset or relation is created.
+No new asset is created. Five new `DEPENDE_DE` relations are required because expanding the Guard set exposes previously unrepresented cross-set calls.
 
 - Guard set expands 1 → 13 members.
+- Guard set adds five code-derived dependencies:
+  - → Assertion Engine: 3 unique guard callers / 4 caller→callee pairs;
+  - → NA Authority: 2 / 2;
+  - → Security Expectations: 2 / 4;
+  - → Semantic Classification: 1 / 1;
+  - → Stage Authority: 1 / 1.
+- The existing Guard → Canonical Context relation remains valid; it is not duplicated.
 - Curation set expands 7 → 8 with its public wrapper.
 - Execution set expands 4 → 5 with its public wrapper.
 - Remediation set expands 1 → 2 with its public wrapper.
@@ -55,8 +62,14 @@ The source-inventory asset remains:
 | Validation | 7 | `4532074de481760ec0f801f27b7e2379a873fc4a2b41a9ed878c0dfcc163d729` |
 | Source Inventory L1 | 1 | `4d1bb266643b9ad1c849a7a6a1dd3e6ac6d89a461616929062f10c79701578ce` |
 
+## Metadata refresh
+
+The migration refreshes `rol_arquitectura` and `metadata.lectura_alcance` for all six modified assets so their descriptions and member counts match the resulting registry.
+
 ## Postflight
 
 Expected registry gap count after migration: **0**.
+
+In addition, the migration reconstructs schema-aware calls from `pg_proc.prosrc` across all registered IG member sets and requires **0 cross-set calls without a matching `DEPENDE_DE` relation**. Using `prosrc` avoids the historical false positives caused by parsing CREATE FUNCTION headers; qualified calls resolve only to their explicit schema.
 
 This does not mark M0.2 DONE by itself; liveness/classification and #1312 still require the separate review already identified.
