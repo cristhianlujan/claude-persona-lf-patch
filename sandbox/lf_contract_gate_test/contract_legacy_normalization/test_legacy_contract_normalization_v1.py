@@ -21,10 +21,13 @@ def contract(code: str, op: str, rbw: Any, allowed: Any, blocked: Any, raw: Any)
     return {
         "operation_code": op,
         "contract_code": code,
+        "contract_path": f"supabase://test/{op}/{code}",
+        "contract_sha": None,
         "required_before_write": rbw,
         "allowed": allowed,
         "blocked": blocked,
         "required_after_write": raw,
+        "status": "ACTIVE_ENFORCEMENT",
     }
 
 
@@ -42,7 +45,7 @@ def translation(c: dict[str, Any], mappings: list[dict[str, Any]], mode: str = "
         "schema_version": norm.TRANSLATION_SCHEMA_VERSION,
         "operation_code": c["operation_code"],
         "contract_code": c["contract_code"],
-        "source_contract_sha256": norm._sha(c),
+        "source_contract_sha256": norm._sha(norm._source_contract_projection(c)),
         "coverage_mode": mode,
         "mappings": mappings,
     }
@@ -191,10 +194,13 @@ def case_duplicate_typed_id_blocks() -> None:
     expect_error(lambda: norm.normalize(packet(c, translation(c, m))), "duplicate_typed_term_id")
 
 
-def case_non_atom_pointer_blocks() -> None:
-    c = contract("CONTRACT-SAMPLE-NON-ATOM-v1", "SAMPLE_NON_ATOM", {"gate": {"required": True}}, {}, [], [])
+def case_grouped_pointer_ready() -> None:
+    c = contract("CONTRACT-SAMPLE-GROUPED-v1", "SAMPLE_GROUPED", {"gate": {"required": True}}, {}, [], [])
     m = [mapping("required_before_write", "/required_before_write/gate", {"required": True}, "gate", {"op": "TRUE", "fact": "gate.pass"})]
-    expect_error(lambda: norm.normalize(packet(c, translation(c, m, "PARTIAL_SHADOW"))), "mapping_source_pointer_not_atom")
+    result = norm.normalize(packet(c, translation(c, m)))
+    assert result["status"] == "READY"
+    assert result["ready_for_contract_check"] is True
+    assert result["coverage"] == {"mode": "FULL", "source_atoms": 1, "covered_atoms": 1, "missing_atoms": []}
 
 
 def case_identity_mismatch_blocks() -> None:
@@ -244,7 +250,7 @@ CASES = [
     case_json_equality_is_type_strict,
     case_duplicate_source_mapping_blocks,
     case_duplicate_typed_id_blocks,
-    case_non_atom_pointer_blocks,
+    case_grouped_pointer_ready,
     case_identity_mismatch_blocks,
     case_end_to_end_semantics_and_core_pass,
 ]
