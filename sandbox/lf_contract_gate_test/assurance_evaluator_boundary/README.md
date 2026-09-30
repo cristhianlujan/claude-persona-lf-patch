@@ -215,3 +215,21 @@ El paquete #879 **no se integra** porque mezcla el evaluator con workflows, depl
 - `ASSURANCE-METHOD-CANDIDATE-NOT-PASE-CONTROL-001`
 - `S36-ASSURANCE-BOUNDARY-CONTAMINATION-001`
 - `ASSURANCE-ORCHESTRATOR-ENTRYPOINT-GAP-001`
+
+## Provider-bound Independent Review readback
+
+`ASSURANCE_EVALUATOR` no debe tratar un `judge_result_id` tipado como prueba material. El adaptador gobernado candidato es `public.fn_lf_assurance_independent_review_provider_readback_v1(...)`, documentado por `assurance_independent_review_provider_readback_contract_v1.json`.
+
+La secuencia material esperada es:
+
+```text
+INDEPENDENT_REVIEW
+  -> public.lf_test_judge_results
+  -> LF_SUPABASE_READBACK_V1
+  -> EVIDENCE_LEDGER + EVIDENCE_ANTIREPLAY
+  -> fn_lf_assurance_independent_review_provider_readback_v1(...)
+  -> VERIFIED_PROVIDER_BOUND
+  -> ASSURANCE_EVALUATOR semantic core
+```
+
+El adaptador es **read-only respecto de evidencia/judges**: recomputa el digest de la fila del judge dentro de Supabase y exige un receipt `VERIFIED` del Evidence Ledger cross-bound a la misma ejecución Assurance, obligación, judge, reviewer, revisión y source head. No puede crear el receipt, ejecutar Independent Review, decidir Assurance, promover `CURRENT` ni activar bindings. Mientras `EVIDENCE_LEDGER` y `EVIDENCE_ANTIREPLAY` no estén `CURRENT`, el resultado esperado es `BLOCK_ASSURANCE_REVIEW_PROVIDER_DEPENDENCY_NOT_CURRENT`.

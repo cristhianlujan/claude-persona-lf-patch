@@ -1,0 +1,87 @@
+{
+  "schema_version": "lf-assurance-independent-review-provider-readback-contract/v1",
+  "capability_code": "ASSURANCE_EVALUATOR",
+  "adapter_code": "ASSURANCE_INDEPENDENT_REVIEW_PROVIDER_READBACK_V1",
+  "authority": {
+    "judge_source": "public.lf_test_judge_results",
+    "evidence_ledger": "private.lf_evidence_ledger_v1",
+    "resolver_registry": "private.lf_evidence_resolver_registry_v1",
+    "resolver_id": "LF_SUPABASE_READBACK_V1",
+    "provider": "SUPABASE",
+    "verification_method": "SUPABASE_SQL_READBACK_PLUS_DB_DIGEST"
+  },
+  "function": {
+    "name": "public.fn_lf_assurance_independent_review_provider_readback_v1",
+    "signature": "public.fn_lf_assurance_independent_review_provider_readback_v1(text,text,uuid,uuid,text,text,text,text)",
+    "arguments_in_order": [
+      "p_assurance_execution_id",
+      "p_obligation_code",
+      "p_judge_result_id",
+      "p_evidence_receipt_id",
+      "p_expected_reviewer_execution_id",
+      "p_expected_subject_revision_sha256",
+      "p_expected_source_head_sha",
+      "p_actor_execution_id"
+    ]
+  },
+  "required_dependency_current": [
+    "EVIDENCE_RESOLVER_REGISTRY",
+    "EVIDENCE_LEDGER",
+    "EVIDENCE_ANTIREPLAY"
+  ],
+  "review_constraints": {
+    "new_review_types": [
+      "INDEPENDENT_REVIEW",
+      "INDEPENDENT_HOLDOUT"
+    ],
+    "legacy_s36_material_pass_allowed": false,
+    "reviewer_operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
+    "judge_recorder": "lf_record_test_judge_result_v1"
+  },
+  "ledger_cross_binding": [
+    "execution_id=assurance_execution_id",
+    "capability_code=ASSURANCE_EVALUATOR",
+    "gate_code=ASSURANCE_INDEPENDENT_REVIEW_PROVIDER_BOUND_V1",
+    "receipt_kind=INDEPENDENT_REVIEW_PROVIDER_READBACK",
+    "subject_type=LF_TEST_JUDGE_RESULT",
+    "subject_ref=supabase://public/lf_test_judge_results/<judge_result_id>",
+    "subject_sha256=db_row_sha256",
+    "source_head_sha=expected_source_head_sha",
+    "resolver_id=LF_SUPABASE_READBACK_V1",
+    "provider=SUPABASE",
+    "verification_method=SUPABASE_SQL_READBACK_PLUS_DB_DIGEST",
+    "verification_state=VERIFIED",
+    "receipt_payload.assurance_execution_id",
+    "receipt_payload.obligation_code",
+    "receipt_payload.judge_result_id",
+    "receipt_payload.reviewer_execution_id",
+    "receipt_payload.subject_revision_sha256",
+    "receipt_payload.source_head_sha"
+  ],
+  "fail_closed_codes": [
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_DEPENDENCY_NOT_CURRENT",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_EXECUTION_INVALID",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_ACTOR_INVALID",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_HASH_FORMAT",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_JUDGE_NOT_FOUND",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_TYPE_INVALID",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_REVIEWER_BINDING",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_REVIEWER_OPERATION",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_REVIEWER_STATE",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_REVISION_MISMATCH",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_EVIDENCE_REFS",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_RATIONALE_REQUIRED",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_LEDGER_NOT_FOUND",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_LEDGER_BINDING",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_LEDGER_VERIFICATION",
+    "BLOCK_ASSURANCE_REVIEW_PROVIDER_LEDGER_PAYLOAD_BINDING"
+  ],
+  "result": {
+    "verified_status": "VERIFIED_PROVIDER_BOUND",
+    "evaluator_effect": "MATERIAL_ADAPTER_ONLY_DOES_NOT_DECIDE_ASSURANCE",
+    "writes_evidence": false,
+    "writes_judge": false,
+    "activates_current": false,
+    "activates_binding": false
+  }
+}
