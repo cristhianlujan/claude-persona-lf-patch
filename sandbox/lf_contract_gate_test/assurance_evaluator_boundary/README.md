@@ -61,6 +61,32 @@ Source projection del primer cutover:
 
 Ese lote registra `ASSURANCE_EVALUATOR` en `public.lf_capability_registry` con `owner_scope=SUPER_ADMIN`, `entry_guard_required=true` y `entry_guard_code=ORCHESTRATOR_EXECUTION_GUARD_V1`, pero deliberadamente no crea versión ni `lf_capability_current`.
 
+## Contrato canónico de invocación
+
+La forma de llamar `ASSURANCE_EVALUATOR` no se infiere por nombre ni por workflow. El contrato machine-readable es `assurance_evaluator_call_contract_v1.json`.
+
+Secuencia obligatoria:
+
+```text
+Router / Changeset Governance
+  -> public.fn_lf_orchestrator_dispatch_receipt_v1(...)
+  -> ORCHESTRATOR_EXECUTION_GUARD_V1
+  -> public.fn_lf_capability_bind_from_orchestrator_v1(
+       execution_id,
+       'ASSURANCE_EVALUATOR',
+       expected_manifest_sha256,
+       plan_digest,
+       dispatch_receipt_id,
+       actor_execution_id
+     )
+  -> ASSURANCE_ACTIVATION_GATE_V1
+  -> assurance_evaluator_runner_v1.py
+```
+
+Para una **entrada nueva** está prohibido usar `public.fn_lf_capability_bind_current_v1(...)` como atajo. El resultado esperado es `BLOCK_ORCHESTRATOR_ENTRY_GUARD_REQUIRED`. Mientras no exista `lf_capability_current` para `ASSURANCE_EVALUATOR`, incluso una llamada válida del Orquestador debe terminar en `BLOCK_NO_CURRENT_CAPABILITY`; eso es el estado fail-closed esperado y no un error de wiring.
+
+El inventario canónico debe proyectar además el activo `ASSURANCE_EVALUATOR`, su gobierno por `ACT-0001`, su dependencia de `CURRENTNESS_AUTHORITY` y su relación de linaje con `ASSURANCE_COMPLETENESS` retirado.
+
 ## Responsabilidad única
 
 Cuando exista un binding activo y Router determine aplicabilidad, el evaluator transversal responde solamente:
