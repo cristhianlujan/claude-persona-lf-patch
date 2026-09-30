@@ -117,75 +117,8 @@ select inventory.fn_refresh_dependencies_exact_v1();
 select inventory.fn_refresh_registries_v1();
 select inventory.fn_finalize_refresh_v1();
 
--- Generic deterministic tags derived from the catalog itself.
-insert into inventory.tags(tag_code,tag_type,description)
-select distinct 'TYPE:'||object_type,'OBJECT_TYPE','Inventory object type'
-from inventory.objects
-where active
-on conflict(tag_code) do nothing;
+-- Tags are recalculated by inventory.fn_finalize_refresh_v1() on every staged refresh.
 
-insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
-select object_id,'TYPE:'||object_type,'Derived from object_type',1.0,'INVENTORY_DERIVED'
-from inventory.objects
-where active
-on conflict(object_id,tag_code,source_system) do update
-set evidence=excluded.evidence,confidence=excluded.confidence;
-
-insert into inventory.tags(tag_code,tag_type,description)
-select distinct 'SCHEMA:'||upper(schema_name),'SCHEMA','Database schema'
-from inventory.objects
-where active and nullif(schema_name,'') is not null
-on conflict(tag_code) do nothing;
-
-insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
-select object_id,'SCHEMA:'||upper(schema_name),'Derived from schema_name',1.0,'INVENTORY_DERIVED'
-from inventory.objects
-where active and nullif(schema_name,'') is not null
-on conflict(object_id,tag_code,source_system) do update
-set evidence=excluded.evidence,confidence=excluded.confidence;
-
-insert into inventory.tags(tag_code,tag_type,description)
-select distinct 'DOMAIN:'||upper(domain),'DOMAIN','Declared or derived domain'
-from inventory.objects
-where active and nullif(domain,'') is not null
-on conflict(tag_code) do nothing;
-
-insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
-select object_id,'DOMAIN:'||upper(domain),'Derived from domain',0.95,'INVENTORY_DERIVED'
-from inventory.objects
-where active and nullif(domain,'') is not null
-on conflict(object_id,tag_code,source_system) do update
-set evidence=excluded.evidence,confidence=excluded.confidence;
-
--- Semantic discovery tags. These are discovery hints, not canonical family authority.
-with classified as (
-  select object_id,
-    unnest(array_remove(array[
-      case when lower(object_ref||' '||object_name) ~ '(payment|payments|niubiz|cobranza|checkout)' then 'PAYMENTS' end,
-      case when lower(object_ref||' '||object_name) ~ '(profile|perfil)' then 'PROFILE' end,
-      case when lower(object_ref||' '||object_name) ~ '(router|routing)' then 'ROUTER' end,
-      case when lower(object_ref||' '||object_name) ~ '(engineering_plan|plan_units|\yplan\y)' then 'PLAN' end,
-      case when lower(object_ref||' '||object_name) ~ '(assurance|qualification|independent_review)' then 'ASSURANCE' end,
-      case when lower(object_ref||' '||object_name) ~ '(^|[/_.-])pase([/_.-]|$)' then 'PASE' end,
-      case when lower(object_ref||' '||object_name) ~ '(terraform|aws|cloudfront|fargate|route53)' then 'AWS_INFRA' end
-    ],null)) tag_code
-  from inventory.objects
-  where active
-)
-insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
-select object_id,tag_code,'Name/path semantic classifier v1',0.80,'INVENTORY_SEMANTIC_CLASSIFIER_V1'
-from classified
-on conflict(object_id,tag_code,source_system) do update
-set evidence=excluded.evidence,confidence=excluded.confidence;
-
-insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
-select o.object_id,t.tag_code,'Registered global inventory capability',1.0,'LF_ACTIVOS'
-from inventory.objects o
-cross join (values('GLOBAL_INVENTORY'),('DEPENDENCY_GRAPH'),('TECHNICAL_CATALOG')) t(tag_code)
-where o.object_ref='asset://LF_GLOBAL_TECHNICAL_INVENTORY_V1'
-on conflict(object_id,tag_code,source_system) do nothing;
-
-select inventory.fn_refresh_search_index_v1();
 
 -- Staged pg_cron maintenance avoids a single long-running refresh.
 do $$
