@@ -1,307 +1,71 @@
 #!/usr/bin/env python3
+"""Temporary compatibility bridge from the historical Contract Check path.
+
+This file intentionally preserves only the *path identity*
+``scripts/lf_contract_check.py`` while Contract Check callers are migrated.
+It is NOT the Contract Check implementation and MUST be removed after cutover.
+
+Canonical execution is delegated to the new Final Thin Carrier:
+
+    scripts/lf_contract_check.py (temporary bridge)
+      -> contract_check_carrier_v1.py
+      -> contract_check_semantic_integration_v1.py
+      -> predicate semantics / Contract Check Core
+
+No LF Contract Check v0.21 functional logic is retained here. Historical APIs
+that represented responsibilities outside the new Contract Check boundary fail
+closed instead of silently executing the retired implementation.
 """
-LF Contract Check v0.21
+from __future__ import annotations
 
-Sandbox validator for controlled LF governance gates.
-
-v0.21 changes:
-- Enforces the v0.20 ownership boundary operationally: `.github/*` paths are
-  delegated to upstream Changeset Governance instead of being re-decided by
-  Contract Check's sandbox/non-GitHub scope validator.
-- Keeps blocked prefixes, governed-path receipts and every non-GitHub scope
-  check unchanged.
-
-v0.20 changes:
-- Removes repository `.github` path admission from Contract Check; Changeset
-  Governance owns repository-path admission before this validator executes.
-- Removes the historical GitHub exact allowlist, retired-workflow guard, and
-  Profile Creator workflow admission invariant from the base validator.
-- Keeps contract, receipts, governed-path and non-GitHub scope validation intact.
-
-v0.19 changes:
-- Admits only the exact canonical Profile operation runtime Edge source path.
-- Keeps the broad supabase/functions/ prefix and sibling Edge Functions default-denied.
-
-v0.18 changes:
-- Admits only the exact Profile Creator governed caller Edge source path.
-- Keeps the broad supabase/functions/ prefix and sibling Edge Functions default-denied.
-- Pins lookalike negatives so this admission cannot broaden silently.
-
-v0.17 changes:
-- Admits only the exact LF Currentness Authority workflow path.
-- Keeps the broad .github/ prefix default-denied.
-
-v0.16 changes:
-- Admits only the exact Profile Creator customer governance caller workflow path.
-- Adds an intrinsic fail-closed invariant that keeps sibling/lookalike workflow paths denied.
-- Keeps the broad .github/ prefix default-denied.
-
-v0.15 changes:
-- Allows only the exact LF GitHub reconciler Edge Function source path.
-- Keeps the broad supabase/functions/ prefix and all sibling Edge Functions denied.
-
-v0.14 changes:
-- Allows only the exact Profile Driven Screen Generation workflow path for issue #402.
-- Keeps the broad .github/ prefix and workflow lookalikes denied.
-
-v0.13 changes:
-- Allows only the exact Profiles LF operational runbook path under ops/.
-- Keeps the broad ops/ prefix and runbook lookalikes denied.
-
-v0.12 changes:
-- Allows the exact historical compact-protocol locator under claude/ while
-  keeping the broad claude/ prefix and all lookalikes denied.
-
-v0.11 changes:
-- Runs the governed profile runtime provenance/runner regression intrinsically.
-- Keeps the runner inside the existing sandbox allowlist; no workflow path is widened.
-
-v0.10 changes:
-- Adds only the exact reconciled P0 source-derived documents and the exact V2
-  persistence contract test produced by PR #140.
-- Keeps both docs/p0 and supabase/tests default-denied as broad prefixes.
-- Adds intrinsic lookalike negatives for the new exact paths.
-
-v0.9 changes:
-- Allows only the exact P0 closure evidence documents produced by the durable
-  persistence/OCR completion scope.
-- Runs an intrinsic fail-closed invariant that keeps sibling/lookalike docs/p0
-  paths default-denied; the docs/ prefix is never broadly authorized.
-
-v0.8 changes:
-- Allows exactly three shared operational-protocol paths: CLAUDE.md,
-  .claude/operational-execution.md, and .claude/scripts/validate_artifact_output.py.
-- Runs an intrinsic fail-closed invariant that keeps sibling/lookalike .claude
-  paths default-denied on every contract-check execution.
-
-v0.7 changes:
-- Allows only the exact approved GitHub workflow paths in addition to the existing contract check workflow.
-- Keeps every other .github path default-denied.
-
-v0.6 changes:
-- Detects forbidden statuses only when they are assigned as actual output/state values.
-- Does not flag NOT_VALIDATED or control documents that enumerate forbidden outputs.
-
-v0.4 changes:
-- Supports pull_request, push and workflow_dispatch events.
-- Allows the sandbox NO BYPASS judge package path.
-- Avoids false positives when control documents list forbidden statuses as prohibited outputs.
-"""
-
-import fnmatch
-import json
-import os
-import re
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
-CONTRACT_PATH = Path("sandbox/lf_contract_gate_test/lf_contract.yml")
-RECEIPT_DIR = Path("sandbox/lf_contract_gate_test/receipts")
-PROFILE_RUNTIME_TEST_PATH = Path("sandbox/lf_contract_gate_test/profile_execution_runtime/run_tests.py")
-PROFILE_RUNTIME_PASS_MARKER = "PROFILE_RUNTIME_GATE_TESTS_PASS 23/23"
-VALIDATOR_SELF_PATH = "scripts/lf_contract_check.py"
-COMPACT_PROTOCOL_PATH = Path("docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md")
-COMPACT_PROTOCOL_LOCATOR_PATH = Path("claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md")
-COMPACT_PROTOCOL_TOP_LEVEL_FIELDS = [
-    "status",
-    "blocking_code",
-    "asset_code",
-    "asset_type",
-    "action_code",
-    "operation_code",
-    "operation_payload",
-    "adapter_payload",
-]
-PROFILE_CREATOR_CALLER_EDGE_PATH = "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts"
-PROFILE_CREATOR_CALLER_EDGE_DENIED_LOOKALIKES = {
-    "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts.bak",
-    "supabase/functions/lf-profile-creator-governance-caller-v1/index-copy.ts",
-    "supabase/functions/lf-profile-creator-governance-caller-v1-copy/index.ts",
-    "supabase/functions/lf-profile-creator-governance-caller-v1/child/index.ts",
-}
-PROFILE_OPERATION_RUNTIME_EDGE_PATH = "supabase/functions/run-creacion-perfil-lf/index.ts"
-PROFILE_OPERATION_RUNTIME_EDGE_DENIED_LOOKALIKES = {
-    "supabase/functions/run-creacion-perfil-lf/index.ts.bak",
-    "supabase/functions/run-creacion-perfil-lf/index-copy.ts",
-    "supabase/functions/run-creacion-perfil-lf-copy/index.ts",
-    "supabase/functions/run-creacion-perfil-lf/child/index.ts",
-}
+BRIDGE_STATUS = "TEMPORARY_COMPATIBILITY_BRIDGE"
+CLEANUP_REQUIRED = True
+NEW_CONSUMERS_ALLOWED = False
+RETIRED_IMPLEMENTATION = "LF_CONTRACT_CHECK_V0_21"
 
-OPERATIONAL_PROTOCOL_ALLOWED_EXACT = {
-    "CLAUDE.md",
-    ".claude/operational-execution.md",
-    ".claude/scripts/validate_artifact_output.py",
-    "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
-    "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
-    "ops/runbook-profiles-lf.md",
-}
-OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES = {
-    "CLAUDE.md.bak",
-    ".claude/operational-execution.md.bak",
-    ".claude/operational-execution/child.md",
-    ".claude/scripts/validate_artifact_output.py.bak",
-    ".claude/scripts/extra.py",
-    ".claude/other.md",
-    "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md.bak",
-    "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF/child.md",
-    "docs/operations/protocolo_consumo_compacto_router_lf.md",
-    "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md.bak",
-    "claude/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF/child.md",
-    "claude/protocolo_consumo_compacto_router_lf.md",
-    "claude/OTHER_PROTOCOL.md",
-    "ops/runbook-profiles-lf.md.bak",
-    "ops/runbook-profiles-lf/child.md",
-    "ops/RUNBOOK-PROFILES-LF.md",
-    "ops/other.md",
-}
-P0_CLOSURE_EVIDENCE_ALLOWED_EXACT = {
-    "docs/p0/CONTRATO_BENCHMARK_OCR_CV.md",
-    "docs/p0/MAPA_BRECHAS_OCR_CV.md",
-    "docs/p0/MATRIZ_OPCIONES_OCR_CV.md",
-    "docs/p0/PERSISTENCE_CONTRACT_AUDIT_20260812.md",
-    "docs/p0/REAL_PERSISTENCE_READBACK_20260812.md",
-    "docs/p0/RESEARCH_OCR_SCREEN_P0.md",
-    "docs/p0/persistence-normalization-config-v1.json",
-    "docs/p0/P0_EXECUTION_PERSISTENCE_CONTRACT_V2.md",
-    "docs/p0/ADR_OCR_UI_PIPELINE_20260812.md",
-    "docs/p0/OCR_BENCHMARK_PLAN.md",
-    "docs/p0/OCR_GAP_MATRIX.md",
-    "docs/p0/OCR_RESEARCH_REPORT.md",
-}
-P0_CLOSURE_EVIDENCE_DENIED_LOOKALIKES = {
-    "docs/p0/CONTRATO_BENCHMARK_OCR_CV.md.bak",
-    "docs/p0/P0_EXECUTION_PERSISTENCE_CONTRACT_V2.md.bak",
-    "docs/p0/OCR_RESEARCH_REPORT.md.tmp",
-    "docs/p0/OCR_BENCHMARK_PLAN/child.md",
-    "docs/p0/UNSCOPED.md",
-    "docs/p0/subdir/RESEARCH_OCR_SCREEN_P0.md",
-    "docs/P0/RESEARCH_OCR_SCREEN_P0.md",
-}
-P0_PERSISTENCE_TEST_ALLOWED_EXACT = {
-    "supabase/tests/p0_execution_persistence_v2_contract.sql",
-}
-P0_PERSISTENCE_TEST_DENIED_LOOKALIKES = {
-    "supabase/tests/p0_execution_persistence_v2_contract.sql.bak",
-    "supabase/tests/p0_execution_persistence_v1_contract.sql",
-    "supabase/tests/p0_execution_persistence_v3_contract.sql",
-    "supabase/tests/subdir/p0_execution_persistence_v2_contract.sql",
-}
-RECONCILER_EDGE_ALLOWED_EXACT = {
-    "supabase/functions/lf-github-reconcile-v3/index.ts",
-}
-ALLOWED_EXACT = {
-    VALIDATOR_SELF_PATH,
-    *OPERATIONAL_PROTOCOL_ALLOWED_EXACT,
-    *P0_CLOSURE_EVIDENCE_ALLOWED_EXACT,
-    *P0_PERSISTENCE_TEST_ALLOWED_EXACT,
-    *RECONCILER_EDGE_ALLOWED_EXACT,
-    PROFILE_CREATOR_CALLER_EDGE_PATH,
-    PROFILE_OPERATION_RUNTIME_EDGE_PATH,
-}
-ALLOWED_PREFIXES = [
-    "sandbox/lf_contract_gate_test/",
-    "sandbox/no_bypass_judge_profile_card_skill/",
-    "supabase/migrations/",
-    "services/profile_runtime_api/",
-]
-GOVERNED_PREFIXES = [
-    "profiles/",
-    "skills/",
-    "cards/",
-    "adapters/",
-    "gobernanza/procedimientos/",
-    "gobernanza/contratos/",
-    "gobernanza/judges/",
-    "gobernanza/activos/",
-]
-ALWAYS_BLOCKED_PREFIXES = [
-    "official/",
-    "production/",
-    "runtime/",
-]
-
-FORBIDDEN_TERM_EXEMPT_EXACT = {
-    VALIDATOR_SELF_PATH,
-    "sandbox/no_bypass_judge_profile_card_skill/GPT_INSTRUCTIONS_NO_BYPASS_v0_1.md",
-}
-FORBIDDEN_TERM_EXEMPT_PREFIXES = [
-    "sandbox/no_bypass_judge_profile_card_skill/",
-]
-
-VALID_RECEIPT_ISSUERS = {"contract_judge", "operation_judge"}
-VALID_RECEIPT_RESULTS = {"PASS", "PASS_SANDBOX"}
-CANDIDATE_RECEIPT_TYPE = "LF_OPERATION_CANDIDATE_RECEIPT"
-VALID_CANDIDATE_RECEIPT_RESULTS = {"PASS_CANDIDATE", "PASS_SANDBOX_CANDIDATE"}
-REQUIRED_RECEIPT_FIELDS = [
-    "receipt_type",
-    "receipt_version",
-    "issued_by",
-    "operation_code",
-    "execution_id",
-    "result",
-    "all_required_steps_pass",
-    "contract_sha",
-    "judge_sha",
-    "source_sha_list",
-    "target_paths",
-    "blocking_codes",
-    "issued_at",
-]
-REQUIRED_CANDIDATE_RECEIPT_FIELDS = [
-    "receipt_type",
-    "receipt_version",
-    "issued_by",
-    "operation_code",
-    "execution_id",
-    "result",
-    "all_pre_merge_required_steps_pass",
-    "pre_merge_terminal_step",
-    "contract_sha",
-    "judge_sha",
-    "source_sha_list",
-    "target_paths",
-    "target_blob_sha_by_path",
-    "blocking_codes",
-    "issued_at",
-    "candidate_code_head",
-    "operation_status_at_issue",
-    "next_gate",
-]
-
-FORBIDDEN_STATUS_ASSIGNMENT = re.compile(
-    r"(?:"
-    r"^\s*(?:[-*]\s*)?(?:status|estado|state|result|resultado)\s*[:=]\s*`?"
-    r"(?:VALIDATED|PRODUCTION|PRODUCTION_READY|PRODUCTION_AUTHORIZED|PRODUCCION|APROBADO_FINAL|OPERATIVO_GENERAL)\b"
-    r"|"
-    r'\"(?:status|estado|state|result|resultado)\"\s*:\s*\"'
-    r"(?:VALIDATED|PRODUCTION|PRODUCTION_READY|PRODUCTION_AUTHORIZED|PRODUCCION|APROBADO_FINAL|OPERATIVO_GENERAL)\""
-    r")",
-    re.IGNORECASE | re.MULTILINE,
+ROOT = Path(__file__).resolve().parents[1]
+CARRIER_PATH = (
+    ROOT
+    / "sandbox/lf_contract_gate_test/contract_check_carrier/contract_check_carrier_v1.py"
 )
 
-REQUIRED_TERMS = [
-    'contract_version: "v0.1"',
-    'contract_id: "LF-GH-GATE-INSTALL-SANDBOX-20260529-001"',
-    'activo_router: "ACT-0001"',
-    'vista: "public.v_lf_fuente_operativa"',
-    'operation_code: "GITHUB_CONTRACT_GATE_INSTALL_SANDBOX"',
-    'impacto_productivo: false',
-    'estado_salida_permitido: "GATE_INSTALL_SANDBOX_TESTED"',
-]
+
+class LegacyContractCheckApiRetired(RuntimeError):
+    """Raised when a caller still depends on a retired v0.21-only API."""
+
+
+def _load_carrier():
+    spec = importlib.util.spec_from_file_location(
+        "contract_check_final_thin_carrier_v1", CARRIER_PATH
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"contract_check_carrier_unloadable:{CARRIER_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+CARRIER = _load_carrier()
 
 
 def fail(code: str, message: str) -> None:
+    """Compatibility failure primitive used by historical importers.
+
+    Kept only so stale adapters fail deterministically rather than crashing on
+    import. It does not reproduce any v0.21 Contract Check behavior.
+    """
     print(f"{code}: {message}")
-    sys.exit(1)
-
-
-def pass_check(message: str) -> None:
-    print(f"PASS_CONTRACT_VALID: {message}")
-    sys.exit(0)
+    raise SystemExit(1)
 
 
 def run_git(args: list[str]) -> str:
+    """Compatibility utility for stale adapters; not Contract Check semantics."""
     result = subprocess.run(
         ["git", *args],
         check=True,
@@ -311,433 +75,43 @@ def run_git(args: list[str]) -> str:
     return result.stdout
 
 
-def event_payload() -> dict:
-    event_path = os.environ.get("GITHUB_EVENT_PATH")
-    if not event_path:
-        return {}
-    path = Path(event_path)
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-
-
-def get_changed_files() -> list[str]:
-    event_name = os.environ.get("GITHUB_EVENT_NAME", "pull_request")
-
-    if event_name == "pull_request":
-        base_ref = os.environ.get("GITHUB_BASE_REF", "main")
-        subprocess.run(["git", "fetch", "origin", base_ref], check=True)
-        output = run_git(["diff", "--name-only", f"origin/{base_ref}...HEAD"])
-        return [line.strip() for line in output.splitlines() if line.strip()]
-
-    if event_name == "push":
-        payload = event_payload()
-        before = payload.get("before")
-        after = payload.get("after") or os.environ.get("GITHUB_SHA", "HEAD")
-        if before and not set(before) <= {"0"}:
-            output = run_git(["diff", "--name-only", before, after])
-        else:
-            output = run_git(["diff", "--name-only", "HEAD~1", "HEAD"])
-        return [line.strip() for line in output.splitlines() if line.strip()]
-
-    if event_name == "workflow_dispatch":
-        print("workflow_dispatch event: no changed-file scope validation required; running static/self-tests only.")
-        return []
-
-    output = run_git(["diff", "--name-only", "HEAD~1", "HEAD"])
-    return [line.strip() for line in output.splitlines() if line.strip()]
-
-
-def validate_contract() -> str:
-    if not CONTRACT_PATH.exists():
-        fail("FAIL_CONTRACT_MISSING", "lf_contract.yml no existe")
-    contract_text = CONTRACT_PATH.read_text(encoding="utf-8")
-    for term in REQUIRED_TERMS:
-        if term not in contract_text:
-            fail("FAIL_CONTRACT_INVALID", f"Falta término obligatorio: {term}")
-    return contract_text
-
-
-def is_allowed_path(path: str) -> bool:
-    if path in ALLOWED_EXACT:
-        return True
-    return any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
-
-
-def validate_profile_creator_edge_admission_scope() -> None:
-    failures: list[str] = []
-    if "supabase/functions/" in ALLOWED_PREFIXES:
-        failures.append("supabase_functions_prefix_must_remain_denied")
-    if PROFILE_CREATOR_CALLER_EDGE_PATH not in ALLOWED_EXACT:
-        failures.append("profile_creator_edge_exact_missing")
-    for path in sorted(PROFILE_CREATOR_CALLER_EDGE_DENIED_LOOKALIKES):
-        statically_allowed = path in ALLOWED_EXACT or any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
-        if statically_allowed:
-            failures.append(f"lookalike_unexpectedly_allowed:{path}")
-    if failures:
-        fail("FAIL_PROFILE_CREATOR_EDGE_ADMISSION_SCOPE_INVARIANT", ",".join(failures))
-    print(
-        "PASS_PROFILE_CREATOR_EDGE_ADMISSION_SCOPE_INVARIANT: "
-        f"approved=1 denied={len(PROFILE_CREATOR_CALLER_EDGE_DENIED_LOOKALIKES)} broad_prefix=denied"
+def _retired_api(name: str) -> None:
+    raise LegacyContractCheckApiRetired(
+        f"LEGACY_CONTRACT_CHECK_API_RETIRED:{name};"
+        "migrate caller to its canonical capability or the new Contract Check carrier"
     )
-
-
-def validate_profile_operation_runtime_edge_admission_scope() -> None:
-    failures: list[str] = []
-    if "supabase/functions/" in ALLOWED_PREFIXES:
-        failures.append("supabase_functions_prefix_must_remain_denied")
-    if PROFILE_OPERATION_RUNTIME_EDGE_PATH not in ALLOWED_EXACT:
-        failures.append("profile_operation_runtime_edge_exact_missing")
-    for path in sorted(PROFILE_OPERATION_RUNTIME_EDGE_DENIED_LOOKALIKES):
-        statically_allowed = path in ALLOWED_EXACT or any(path.startswith(prefix) for prefix in ALLOWED_PREFIXES)
-        if statically_allowed:
-            failures.append(f"lookalike_unexpectedly_allowed:{path}")
-    if failures:
-        fail("FAIL_PROFILE_OPERATION_RUNTIME_EDGE_ADMISSION_SCOPE_INVARIANT", ",".join(failures))
-    print(
-        "PASS_PROFILE_OPERATION_RUNTIME_EDGE_ADMISSION_SCOPE_INVARIANT: "
-        f"approved=1 denied={len(PROFILE_OPERATION_RUNTIME_EDGE_DENIED_LOOKALIKES)} broad_prefix=denied"
-    )
-
-
-def validate_operational_protocol_scope() -> None:
-    failures: list[str] = []
-    if ".claude/" in ALLOWED_PREFIXES:
-        failures.append("dot_claude_prefix_must_remain_denied")
-    if "claude/" in ALLOWED_PREFIXES:
-        failures.append("claude_prefix_must_remain_denied")
-    if "ops/" in ALLOWED_PREFIXES:
-        failures.append("ops_prefix_must_remain_denied")
-    for path in sorted(OPERATIONAL_PROTOCOL_ALLOWED_EXACT):
-        if not is_allowed_path(path):
-            failures.append(f"approved_exact_missing:{path}")
-    for path in sorted(OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES):
-        if is_allowed_path(path):
-            failures.append(f"lookalike_unexpectedly_allowed:{path}")
-    if failures:
-        fail("FAIL_OPERATIONAL_PROTOCOL_SCOPE_INVARIANT", ",".join(failures))
-    print(
-        "PASS_OPERATIONAL_PROTOCOL_SCOPE_INVARIANT: "
-        f"approved={len(OPERATIONAL_PROTOCOL_ALLOWED_EXACT)} "
-        f"denied={len(OPERATIONAL_PROTOCOL_DENIED_LOOKALIKES)}"
-    )
-
-
-def validate_compact_protocol_contract() -> None:
-    if not COMPACT_PROTOCOL_PATH.exists():
-        fail("FAIL_COMPACT_PROTOCOL_MISSING", str(COMPACT_PROTOCOL_PATH))
-    if not COMPACT_PROTOCOL_LOCATOR_PATH.exists():
-        fail("FAIL_COMPACT_PROTOCOL_LOCATOR_MISSING", str(COMPACT_PROTOCOL_LOCATOR_PATH))
-
-    protocol = COMPACT_PROTOCOL_PATH.read_text(encoding="utf-8")
-    if "Estado del documento: PROMOVIDO v1.0" not in protocol:
-        fail("FAIL_COMPACT_PROTOCOL_STATUS", "El protocolo compacto no está promovido a v1.0")
-
-    projection_match = re.search(
-        r"## 3\. Proyección canónica(?P<body>.*?)(?:\n###|\n## )",
-        protocol,
-        re.DOTALL,
-    )
-    if not projection_match:
-        fail("FAIL_COMPACT_PROTOCOL_PROJECTION", "No se encontró la proyección canónica")
-    fields = re.findall(r"^\d+\. `([^`]+)`$", projection_match.group("body"), re.MULTILINE)
-    if fields != COMPACT_PROTOCOL_TOP_LEVEL_FIELDS:
-        fail("FAIL_COMPACT_PROTOCOL_FIELDS", f"Campos superiores inválidos: {fields}")
-    if "coalesce(raw.asset_code, raw.asset.codigo_activo)" not in protocol:
-        fail(
-            "FAIL_COMPACT_PROTOCOL_ASSET_NORMALIZATION",
-            "Falta la normalización de asset_code para la caché de adapters",
-        )
-
-    helper_match = re.search(
-        r"### 9\.2 Helper SQL de resolución\s*```sql(?P<sql>.*?)```",
-        protocol,
-        re.DOTALL,
-    )
-    if not helper_match:
-        fail("FAIL_COMPACT_PROTOCOL_HELPER", "No se encontró el helper SQL de §9.2")
-    helper_sql = helper_match.group("sql")
-    if "target_hint" in helper_sql:
-        fail("FAIL_COMPACT_PROTOCOL_TARGET_HINT", "El helper SQL no puede pasar target_hint")
-    if "p_action_hint => :action_hint" not in helper_sql:
-        fail("FAIL_COMPACT_PROTOCOL_ACTION_HINT", "El helper SQL debe pasar action_hint explícito")
-
-    locator = COMPACT_PROTOCOL_LOCATOR_PATH.read_text(encoding="utf-8")
-    if str(COMPACT_PROTOCOL_PATH).replace("\\", "/") not in locator:
-        fail("FAIL_COMPACT_PROTOCOL_LOCATOR_TARGET", "El localizador no apunta a la fuente canónica")
-
-    print("PASS_COMPACT_PROTOCOL_CONTRACT: promoted_v1 fields=8 target_hint=omitted locator=valid")
-
-
-def validate_p0_closure_evidence_scope() -> None:
-    failures: list[str] = []
-    if "docs/" in ALLOWED_PREFIXES or "docs/p0/" in ALLOWED_PREFIXES:
-        failures.append("docs_prefix_must_remain_denied")
-    for path in sorted(P0_CLOSURE_EVIDENCE_ALLOWED_EXACT):
-        if not is_allowed_path(path):
-            failures.append(f"approved_exact_missing:{path}")
-    for path in sorted(P0_CLOSURE_EVIDENCE_DENIED_LOOKALIKES):
-        if is_allowed_path(path):
-            failures.append(f"lookalike_unexpectedly_allowed:{path}")
-    if failures:
-        fail("FAIL_P0_CLOSURE_EVIDENCE_SCOPE_INVARIANT", ",".join(failures))
-    print(
-        "PASS_P0_CLOSURE_EVIDENCE_SCOPE_INVARIANT: "
-        f"approved={len(P0_CLOSURE_EVIDENCE_ALLOWED_EXACT)} "
-        f"denied={len(P0_CLOSURE_EVIDENCE_DENIED_LOOKALIKES)}"
-    )
-
-
-def validate_p0_persistence_test_scope() -> None:
-    failures: list[str] = []
-    if "supabase/tests/" in ALLOWED_PREFIXES:
-        failures.append("supabase_tests_prefix_must_remain_denied")
-    for path in sorted(P0_PERSISTENCE_TEST_ALLOWED_EXACT):
-        if not is_allowed_path(path):
-            failures.append(f"approved_exact_missing:{path}")
-    for path in sorted(P0_PERSISTENCE_TEST_DENIED_LOOKALIKES):
-        if is_allowed_path(path):
-            failures.append(f"lookalike_unexpectedly_allowed:{path}")
-    if failures:
-        fail("FAIL_P0_PERSISTENCE_TEST_SCOPE_INVARIANT", ",".join(failures))
-    print(
-        "PASS_P0_PERSISTENCE_TEST_SCOPE_INVARIANT: "
-        f"approved={len(P0_PERSISTENCE_TEST_ALLOWED_EXACT)} "
-        f"denied={len(P0_PERSISTENCE_TEST_DENIED_LOOKALIKES)}"
-    )
-
-
-def validate_profile_runtime_regression() -> None:
-    if not PROFILE_RUNTIME_TEST_PATH.exists():
-        fail("FAIL_PROFILE_RUNTIME_TEST_MISSING", str(PROFILE_RUNTIME_TEST_PATH))
-    result = subprocess.run(
-        [sys.executable, str(PROFILE_RUNTIME_TEST_PATH)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if result.stdout:
-        print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
-    if result.stderr:
-        print(result.stderr, file=sys.stderr, end="" if result.stderr.endswith("\n") else "\n")
-    if result.returncode != 0:
-        fail("FAIL_PROFILE_RUNTIME_REGRESSION", f"exit={result.returncode}")
-    if PROFILE_RUNTIME_PASS_MARKER not in result.stdout:
-        fail("FAIL_PROFILE_RUNTIME_REGRESSION_MARKER", PROFILE_RUNTIME_PASS_MARKER)
-    print(f"PASS_PROFILE_RUNTIME_REGRESSION: {PROFILE_RUNTIME_PASS_MARKER}")
-
-
-def is_governed_path(path: str) -> bool:
-    return any(path.startswith(prefix) for prefix in GOVERNED_PREFIXES)
 
 
 def validate_changed_files(changed_files: list[str]) -> list[str]:
-    event_name = os.environ.get("GITHUB_EVENT_NAME", "pull_request")
-    if not changed_files:
-        if event_name == "workflow_dispatch":
-            print("No changed files for workflow_dispatch; scope validation skipped.")
-            return []
-        fail("FAIL_NO_CHANGED_FILES", "No se detectaron archivos modificados")
-
-    governed_files: list[str] = []
-    for path in changed_files:
-        for blocked in ALWAYS_BLOCKED_PREFIXES:
-            if path.startswith(blocked):
-                fail("FAIL_BLOCKED_SCOPE_RISK", f"Ruta productiva/bloqueada tocada: {path}")
-
-        if path.startswith(".github/"):
-            print(f"REPOSITORY_PATH_ADMISSION=DELEGATED_TO_CHANGESET_GOVERNANCE:{path}")
-            continue
-
-        if is_governed_path(path):
-            governed_files.append(path)
-            continue
-
-        if not is_allowed_path(path):
-            fail("FAIL_SCOPE_INVALID", f"Archivo fuera de scope sandbox gate-install: {path}")
-    return governed_files
+    """Retired repository/scope API retained as a fail-closed compatibility stub."""
+    _ = changed_files
+    _retired_api("validate_changed_files")
+    return []
 
 
-def load_receipts_from_changed_files(changed_files: list[str]) -> list[tuple[str, dict]]:
-    receipts: list[tuple[str, dict]] = []
-    for path in changed_files:
-        if not path.startswith(str(RECEIPT_DIR) + "/") or not path.endswith(".json"):
-            continue
-        receipt_path = Path(path)
-        if not receipt_path.exists():
-            continue
-        try:
-            receipts.append((path, json.loads(receipt_path.read_text(encoding="utf-8"))))
-        except json.JSONDecodeError as exc:
-            fail("FAIL_RECEIPT_INVALID_JSON", f"Receipt JSON inválido en {path}: {exc}")
-    return receipts
+def get_changed_files() -> list[str]:
+    """Retired event/path-discovery API retained as a fail-closed stub."""
+    _retired_api("get_changed_files")
+    return []
 
 
-def receipt_covers_file(receipt: dict, changed_file: str) -> bool:
-    target_paths = receipt.get("target_paths", [])
-    if not isinstance(target_paths, list):
-        fail("FAIL_RECEIPT_INVALID", "target_paths debe ser lista")
-    return any(fnmatch.fnmatch(changed_file, pattern) for pattern in target_paths)
+def validate_candidate_receipt_shape(
+    path: str, receipt: dict[str, Any], governed_files: list[str]
+) -> None:
+    """Retired receipt API retained only to expose the migration boundary."""
+    _ = (path, receipt, governed_files)
+    _retired_api("validate_candidate_receipt_shape")
 
 
-def _git_blob_sha(path: str) -> str:
-    raw = run_git(["ls-files", "-s", "--", path]).strip()
-    rows = [line.strip() for line in raw.splitlines() if line.strip()]
-    if len(rows) != 1:
-        fail("FAIL_CANDIDATE_RECEIPT_BLOB_UNRESOLVED", f"No se pudo resolver blob exacto para {path}")
-    parts = rows[0].split(None, 3)
-    if len(parts) < 4 or not re.fullmatch(r"[0-9a-f]{40}", parts[1]):
-        fail("FAIL_CANDIDATE_RECEIPT_BLOB_UNRESOLVED", f"Blob inválido para {path}")
-    return parts[1]
+def run(packet: Any) -> dict[str, Any]:
+    """Canonical bridge API: delegate one packet to the Final Thin Carrier."""
+    return CARRIER.run(packet)
 
 
-def validate_candidate_receipt_shape(path: str, receipt: dict, governed_files: list[str]) -> None:
-    for field in REQUIRED_CANDIDATE_RECEIPT_FIELDS:
-        if field not in receipt:
-            fail("FAIL_CANDIDATE_RECEIPT_INVALID", f"Falta campo obligatorio {field} en {path}")
-
-    if receipt.get("receipt_type") != CANDIDATE_RECEIPT_TYPE:
-        fail("FAIL_CANDIDATE_RECEIPT_INVALID", f"receipt_type inválido en {path}")
-    if receipt.get("issued_by") not in VALID_RECEIPT_ISSUERS:
-        fail("FAIL_CANDIDATE_RECEIPT_INVALID_ISSUER", f"issued_by inválido en {path}")
-    if receipt.get("result") not in VALID_CANDIDATE_RECEIPT_RESULTS:
-        fail("FAIL_CANDIDATE_RECEIPT_RESULT_NOT_PASS", f"result inválido en {path}")
-    if receipt.get("all_pre_merge_required_steps_pass") is not True:
-        fail("FAIL_CANDIDATE_RECEIPT_INCOMPLETE_PRE_MERGE", f"all_pre_merge_required_steps_pass debe ser true en {path}")
-    if receipt.get("operation_status_at_issue") != "IN_PROGRESS":
-        fail("FAIL_CANDIDATE_RECEIPT_FINALITY_CONFUSION", f"candidate receipt debe preservar operation status IN_PROGRESS en {path}")
-    if receipt.get("blocking_codes") not in ([], None):
-        fail("FAIL_CANDIDATE_RECEIPT_BLOCKING_CODES", f"blocking_codes debe estar vacío en {path}")
-    if not receipt.get("contract_sha") or not receipt.get("judge_sha"):
-        fail("FAIL_CANDIDATE_RECEIPT_WEAK_EVIDENCE", f"contract_sha/judge_sha requeridos en {path}")
-    source_sha_list = receipt.get("source_sha_list")
-    if not isinstance(source_sha_list, list) or not source_sha_list:
-        fail("FAIL_CANDIDATE_RECEIPT_WEAK_EVIDENCE", f"source_sha_list requerido en {path}")
-    if not receipt.get("operation_code") or not receipt.get("execution_id"):
-        fail("FAIL_CANDIDATE_RECEIPT_INVALID", f"operation_code/execution_id requeridos en {path}")
-    if not isinstance(receipt.get("pre_merge_terminal_step"), str) or not receipt["pre_merge_terminal_step"].strip():
-        fail("FAIL_CANDIDATE_RECEIPT_INVALID", f"pre_merge_terminal_step requerido en {path}")
-    if not isinstance(receipt.get("next_gate"), str) or not receipt["next_gate"].strip():
-        fail("FAIL_CANDIDATE_RECEIPT_INVALID", f"next_gate requerido en {path}")
-
-    code_head = receipt.get("candidate_code_head")
-    if not isinstance(code_head, str) or not re.fullmatch(r"[0-9a-f]{40}", code_head):
-        fail("FAIL_CANDIDATE_RECEIPT_CODE_HEAD_INVALID", f"candidate_code_head inválido en {path}")
-    try:
-        run_git(["merge-base", "--is-ancestor", code_head, "HEAD"])
-    except subprocess.CalledProcessError:
-        fail("FAIL_CANDIDATE_RECEIPT_CODE_HEAD_NOT_ANCESTOR", f"candidate_code_head no es ancestro de HEAD en {path}")
-
-    receipt_only_delta = [line.strip() for line in run_git(["diff", "--name-only", code_head, "HEAD"]).splitlines() if line.strip()]
-    if not receipt_only_delta or path not in receipt_only_delta:
-        fail("FAIL_CANDIDATE_RECEIPT_NOT_POST_CODE_HEAD", f"El receipt debe materializarse después del code head en {path}")
-    illegal_delta = [p for p in receipt_only_delta if not (p.startswith(str(RECEIPT_DIR) + "/") and p.endswith(".json"))]
-    if illegal_delta:
-        fail("FAIL_CANDIDATE_RECEIPT_POST_HEAD_CONTAMINATION", f"Después de candidate_code_head sólo se permiten receipts: {illegal_delta}")
-
-    blob_map = receipt.get("target_blob_sha_by_path")
-    if not isinstance(blob_map, dict):
-        fail("FAIL_CANDIDATE_RECEIPT_BLOB_MAP_INVALID", f"target_blob_sha_by_path debe ser objeto en {path}")
-    covered = [p for p in governed_files if receipt_covers_file(receipt, p)]
-    if not covered:
-        fail("FAIL_CANDIDATE_RECEIPT_TARGET_MISMATCH", f"Candidate receipt no cubre ninguna ruta gobernada en {path}")
-    for governed_file in covered:
-        expected = blob_map.get(governed_file)
-        if not isinstance(expected, str) or not re.fullmatch(r"[0-9a-f]{40}", expected):
-            fail("FAIL_CANDIDATE_RECEIPT_BLOB_MAP_MISSING", f"Falta blob exacto para {governed_file} en {path}")
-        observed = _git_blob_sha(governed_file)
-        if observed != expected:
-            fail("FAIL_CANDIDATE_RECEIPT_BLOB_MISMATCH", f"{governed_file}: expected={expected} observed={observed}")
-
-
-def validate_receipt_shape(path: str, receipt: dict) -> None:
-    for field in REQUIRED_RECEIPT_FIELDS:
-        if field not in receipt:
-            fail("FAIL_RECEIPT_INVALID", f"Falta campo obligatorio {field} en {path}")
-
-    if receipt.get("receipt_type") != "LF_OPERATION_CONTRACT_RECEIPT":
-        fail("FAIL_RECEIPT_INVALID", f"receipt_type inválido en {path}")
-    if receipt.get("issued_by") not in VALID_RECEIPT_ISSUERS:
-        fail("FAIL_RECEIPT_INVALID_ISSUER", f"issued_by inválido en {path}")
-    if receipt.get("result") not in VALID_RECEIPT_RESULTS:
-        fail("FAIL_RECEIPT_RESULT_NOT_PASS", f"result inválido en {path}")
-    if receipt.get("all_required_steps_pass") is not True:
-        fail("FAIL_RECEIPT_INCOMPLETE_STEPS", f"all_required_steps_pass debe ser true en {path}")
-    if receipt.get("blocking_codes") not in ([], None):
-        fail("FAIL_RECEIPT_BLOCKING_CODES", f"blocking_codes debe estar vacío en {path}")
-    if not receipt.get("contract_sha") or not receipt.get("judge_sha"):
-        fail("FAIL_RECEIPT_WEAK_EVIDENCE", f"contract_sha/judge_sha requeridos en {path}")
-    source_sha_list = receipt.get("source_sha_list")
-    if not isinstance(source_sha_list, list) or not source_sha_list:
-        fail("FAIL_RECEIPT_WEAK_EVIDENCE", f"source_sha_list requerido en {path}")
-    if not receipt.get("operation_code") or not receipt.get("execution_id"):
-        fail("FAIL_RECEIPT_INVALID", f"operation_code/execution_id requeridos en {path}")
-
-
-def validate_governed_receipt(changed_files: list[str], governed_files: list[str]) -> None:
-    if not governed_files:
-        print("No governed LF paths touched; receipt not required.")
-        return
-
-    receipts = load_receipts_from_changed_files(changed_files)
-    if not receipts:
-        fail("FAIL_RECEIPT_MISSING", "Ruta gobernada tocada sin LF_OPERATION_CONTRACT_RECEIPT")
-
-    for receipt_path, receipt in receipts:
-        receipt_type = receipt.get("receipt_type")
-        if receipt_type == "LF_OPERATION_CONTRACT_RECEIPT":
-            validate_receipt_shape(receipt_path, receipt)
-        elif receipt_type == CANDIDATE_RECEIPT_TYPE:
-            validate_candidate_receipt_shape(receipt_path, receipt, governed_files)
-        else:
-            fail("FAIL_RECEIPT_INVALID", f"receipt_type desconocido en {receipt_path}: {receipt_type}")
-
-    for governed_file in governed_files:
-        if not any(receipt_covers_file(receipt, governed_file) for _, receipt in receipts):
-            fail("FAIL_RECEIPT_TARGET_MISMATCH", f"Ningún receipt cubre ruta gobernada: {governed_file}")
-
-
-def is_forbidden_term_exempt(path: str) -> bool:
-    if path in FORBIDDEN_TERM_EXEMPT_EXACT:
-        return True
-    return any(path.startswith(prefix) for prefix in FORBIDDEN_TERM_EXEMPT_PREFIXES)
-
-
-def validate_forbidden_terms(changed_files: list[str]) -> None:
-    for path in changed_files:
-        if is_forbidden_term_exempt(path):
-            print(f"Skipping forbidden-term scan for control/sandbox file: {path}")
-            continue
-
-        file_path = Path(path)
-        if file_path.exists() and file_path.is_file():
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
-            match = FORBIDDEN_STATUS_ASSIGNMENT.search(content)
-            if match:
-                excerpt = " ".join(match.group(0).split())
-                fail("FAIL_FORBIDDEN_STATUS", f"Asignación de estado prohibido encontrada en {path}: {excerpt}")
-
-
-def main() -> None:
-    validate_contract()
-    validate_profile_creator_edge_admission_scope()
-    validate_profile_operation_runtime_edge_admission_scope()
-    validate_operational_protocol_scope()
-    validate_compact_protocol_contract()
-    validate_p0_closure_evidence_scope()
-    validate_p0_persistence_test_scope()
-    validate_profile_runtime_regression()
-    changed_files = get_changed_files()
-    print("Changed files:")
-    for path in changed_files:
-        print(f"- {path}")
-    governed_files = validate_changed_files(changed_files)
-    validate_governed_receipt(changed_files, governed_files)
-    validate_forbidden_terms(changed_files)
-    pass_check("Contrato LF gate-install sandbox válido y scope respetado")
+def main(argv: list[str] | None = None) -> None:
+    """Delegate CLI execution to the Final Thin Carrier and preserve exit code."""
+    rc = int(CARRIER.main(argv))
+    raise SystemExit(rc)
 
 
 if __name__ == "__main__":
