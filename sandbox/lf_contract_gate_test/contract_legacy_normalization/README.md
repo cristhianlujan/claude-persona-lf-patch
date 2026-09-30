@@ -6,15 +6,18 @@ Status: `SHADOW_CANDIDATE`
 
 Provide a deterministic compatibility boundary between heterogeneous legacy contract payloads and the typed predicate schema consumed by the single Contract Check capability.
 
-This component does **not** infer contract meaning. Every translation must be explicit, source-bound, and fail closed on drift.
+This component does **not** infer contract meaning. Every translation must be explicit, source-bound, and fail closed on semantic drift.
 
 ```text
 resolved legacy contract
         |
         v
+canonical semantic source projection
+        |
+        v
 explicit translation spec
   - exact operation + contract
-  - exact source contract SHA-256
+  - exact semantic-source SHA-256
   - exact source pointer/value
   - explicit typed predicate
         |
@@ -40,16 +43,30 @@ V1 MUST NOT:
 - resolve or rank contracts;
 - infer `operation_code` or `contract_code`;
 - translate free-form strings by naming convention, regex, LLM judgment, or heuristics;
-- reinterpret a changed source contract under an old translation;
+- reinterpret a changed semantic source under an old translation;
 - mutate `lf_operation_contracts` or any live Supabase authority;
 - activate runtime or change workflow cutover behavior;
 - emit a partial translation as ready for Contract Check.
 
 ## Translation integrity
 
-A translation is bound to the canonical SHA-256 of the complete source contract. Every mapping also binds one atomic legacy JSON pointer to its exact expected JSON value and to one explicit typed term.
+A translation is bound to the SHA-256 of one fixed semantic/identity projection of the source contract:
 
-The normalizer deterministically enumerates legacy source atoms only for coverage accounting. That enumeration does not assign semantics.
+- `operation_code`;
+- `contract_code`;
+- `contract_path`;
+- `contract_sha`;
+- `required_before_write`;
+- `allowed`;
+- `blocked`;
+- `required_after_write`;
+- `status`.
+
+All nine keys are mandatory. A change to any of them changes the source digest and invalidates the old translation.
+
+Authority snapshots may also carry transport/audit fields such as `created_at`, `updated_at`, `created_by_execution_id`, `updated_by_execution_id`, or future snapshot metadata. Those fields are deliberately excluded from the translation digest because they are not contractual semantics. This prevents a semantically unchanged contract from invalidating its translation merely because the authority snapshot was transported with additional metadata.
+
+Every mapping separately binds one atomic legacy JSON pointer to its exact expected JSON value and to one explicit typed term. Source-atom coverage is still computed only from the four contractual sections; excluding audit metadata does not reduce semantic coverage.
 
 `coverage_mode=FULL` requires every atom in all four contract sections to be explicitly mapped. Missing coverage blocks normalization. `coverage_mode=PARTIAL_SHADOW` may be used for investigation, but `normalized_contract` remains `null` and `ready_for_contract_check=false`.
 
@@ -64,15 +81,21 @@ The active contract authority is heterogeneous. A read-only census on 2026-09-28
 
 Those shapes cannot be sent directly to `Contract Predicate Semantics V1`, which intentionally accepts typed term arrays only.
 
-The tests use four representative shadow fixtures matching those shape families. They prove normalization mechanics and fail-closed behavior; they do **not** claim that any live contract has already been semantically migrated.
+The tests use representative shadow fixtures matching those shape families. They prove normalization mechanics and fail-closed behavior; they do **not** claim that any live contract has already been semantically migrated.
 
 ## Evidence
 
-Candidate self-test marker:
+Existing candidate self-test marker:
 
 `PASS_LEGACY_CONTRACT_NORMALIZATION_V1=15/15`
 
-The self-test includes an end-to-end shadow path:
+Source-projection regression marker:
+
+`PASS_LEGACY_CONTRACT_SOURCE_PROJECTION_V1=8/8`
+
+The source-projection regression proves that audit/transport metadata does not invalidate a translation while semantic identity, section, and status drift still fail closed.
+
+The existing self-test includes an end-to-end shadow path:
 
 `legacy fixture -> FULL explicit translation -> typed predicate semantics -> Contract Check Core -> PASS`
 
