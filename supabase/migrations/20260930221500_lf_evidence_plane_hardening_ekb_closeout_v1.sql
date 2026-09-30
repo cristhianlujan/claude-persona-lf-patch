@@ -5,7 +5,7 @@
 
 do $preflight$
 declare
-  v_execution_id constant text := 'EXEC-SADM-EVIDENCE-PLANE-EKB-CLOSEOUT-20260930-001';
+  v_execution_id constant text := 'EXEC-SADM-EVIDENCE-PLANE-EKB-CLOSEOUT-20260930-002';
   v_target_path constant text := 'supabase/migrations/20260930221500_lf_evidence_plane_hardening_ekb_closeout_v1.sql';
   v_hardening_sha constant text := '7b1abd2d539a1b58403514d987ec0cdd156d15ff74d45212f74466e6c5dfee0a';
   v_count integer;
@@ -64,6 +64,14 @@ begin
     raise exception 'BLOCK_EVIDENCE_PLANE_EKB_PRESTATE_NOT_EXACT:%',v_count;
   end if;
 
+  if not exists (
+    select 1 from transversal.error_knowledge
+    where codigo='EXCEPTION-ACTUALIZACION-DB-LF-PATCH-BLOCK-EVIDENCE-PLANE-EKB-CLOSEOUT-READBACK'
+      and lower(estado) in ('activo','active','abierto','open')
+  ) then
+    raise exception 'BLOCK_EVIDENCE_PLANE_EKB_CLOSEOUT_EXCEPTION_PRESTATE';
+  end if;
+
   if exists (select 1 from public.lf_capability_current where capability_code in ('EVIDENCE_LEDGER','EVIDENCE_ANTIREPLAY')) then
     raise exception 'BLOCK_EVIDENCE_PLANE_EKB_CLOSEOUT_PREMATURE_CURRENT';
   end if;
@@ -73,7 +81,7 @@ $preflight$;
 do $patch$
 declare
   v_count integer;
-  v_marker constant text := '[RESOLVED_20260930] Applied hardening migration 20260930133539/evidence_ledger_crossbind_hardening_v1 has exact ledger statement SHA256=7b1abd2d539a1b58403514d987ec0cdd156d15ff74d45212f74466e6c5dfee0a. Source recovered to main by PR #1319 at f0f23037ef59749ac2589b8d063e190f5e5daae3 with exact payload parity and no DDL replay/ledger mutation. Live rollback canary PASS: positive provider-bound anchor accepted; source-head reanchor mismatch blocked; resolver identity spoof blocked; cross-execution replay/composition misuse blocked; execution/dispatch/binding/CURRENT residue=0. No CURRENT promotion is part of this closeout.';
+  v_marker constant text := '[RESOLVED_20260930][EVIDENCE_PLANE_HARDENING_V1] Applied hardening migration 20260930133539/evidence_ledger_crossbind_hardening_v1 has exact ledger statement SHA256=7b1abd2d539a1b58403514d987ec0cdd156d15ff74d45212f74466e6c5dfee0a. Source recovered to main by PR #1319 at f0f23037ef59749ac2589b8d063e190f5e5daae3 with exact payload parity and no DDL replay/ledger mutation. Live rollback canary PASS: positive provider-bound anchor accepted; source-head reanchor mismatch blocked; resolver identity spoof blocked; cross-execution replay/composition misuse blocked; execution/dispatch/binding/CURRENT residue=0. No CURRENT promotion is part of this closeout.';
   v_source_ref constant text := 'github://cristhianlujan/claude-persona-lf-patch@f0f23037ef59749ac2589b8d063e190f5e5daae3/supabase/migrations/20260930133539_evidence_ledger_crossbind_hardening_v1.sql';
 begin
   update transversal.error_knowledge
@@ -93,6 +101,20 @@ begin
   if v_count<>3 then
     raise exception 'BLOCK_EVIDENCE_PLANE_EKB_CLOSEOUT_ROWCOUNT:%',v_count;
   end if;
+
+  update transversal.error_knowledge
+     set estado='resuelto',
+         evidencia=concat_ws(E'\n\n',nullif(btrim(coalesce(evidencia,'')),''),
+           '[RESOLVED_CORRECTION_20260930] Corrected closeout source validates the field actually written and carries the explicit EVIDENCE_PLANE_HARDENING_V1 marker. Failed execution -001 rolled back with no persistent EKB or migration-ledger effect; replacement execution -002 is bound to the corrected exact source.'),
+         source_context='EVIDENCE_PLANE_EKB_CLOSEOUT_READBACK_FIELD_CORRECTION_V2',
+         source_ref='supabase://supabase_migrations.schema_migrations/20260930221500',
+         ultima_vez=clock_timestamp(),updated_at=clock_timestamp()
+   where codigo='EXCEPTION-ACTUALIZACION-DB-LF-PATCH-BLOCK-EVIDENCE-PLANE-EKB-CLOSEOUT-READBACK'
+     and lower(estado) in ('activo','active','abierto','open');
+  get diagnostics v_count=row_count;
+  if v_count<>1 then
+    raise exception 'BLOCK_EVIDENCE_PLANE_EKB_CLOSEOUT_EXCEPTION_ROWCOUNT:%',v_count;
+  end if;
 end
 $patch$;
 
@@ -111,6 +133,16 @@ begin
     and evidencia like '%EVIDENCE_PLANE_HARDENING_V1%';
   if v_count<>3 then
     raise exception 'BLOCK_EVIDENCE_PLANE_EKB_CLOSEOUT_READBACK:%',v_count;
+  end if;
+
+  if not exists (
+    select 1 from transversal.error_knowledge
+    where codigo='EXCEPTION-ACTUALIZACION-DB-LF-PATCH-BLOCK-EVIDENCE-PLANE-EKB-CLOSEOUT-READBACK'
+      and estado='resuelto'
+      and source_ref='supabase://supabase_migrations.schema_migrations/20260930221500'
+      and evidencia like '%RESOLVED_CORRECTION_20260930%'
+  ) then
+    raise exception 'BLOCK_EVIDENCE_PLANE_EKB_CLOSEOUT_EXCEPTION_READBACK';
   end if;
 
   if exists (select 1 from public.lf_capability_current where capability_code in ('EVIDENCE_LEDGER','EVIDENCE_ANTIREPLAY')) then

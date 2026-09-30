@@ -22,6 +22,10 @@ assert "BLOCK_LF_EVIDENCE_LEDGER_COMPOSITION_DIGEST_MISMATCH" in SQL
 assert "get diagnostics v_count=row_count" in lower
 assert "if v_count<>3" in lower
 assert "set estado='resuelto'" in lower
+assert "[resolved_20260930][evidence_plane_hardening_v1]" in lower
+assert "exception-actualizacion-db-lf-patch-block-evidence-plane-ekb-closeout-readback" in lower
+assert "resolved_correction_20260930" in lower
+assert "exec-sadm-evidence-plane-ekb-closeout-20260930-002" in lower
 assert "evidence_plane_hardening_v1_live_readback_and_rollback_canary" in lower
 assert "insert into transversal.error_knowledge" not in executable
 assert "delete from transversal.error_knowledge" not in executable
@@ -30,4 +34,4 @@ assert "insert into public.lf_capability_current" not in executable
 assert "update public.lf_capability_current" not in executable
 assert "runtime" not in executable
 assert "production" not in executable
-print("EVIDENCE_PLANE_HARDENING_EKB_CLOSEOUT_V1=PASS exact_codes=3 current_unchanged=true runtime_unchanged=true")
+print("EVIDENCE_PLANE_HARDENING_EKB_CLOSEOUT_V1=PASS exact_codes=3 correction_finding=1 current_unchanged=true runtime_unchanged=true")
