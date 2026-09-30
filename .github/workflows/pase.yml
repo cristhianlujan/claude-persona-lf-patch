@@ -218,8 +218,8 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags origin "$LF_MIGRATION_BASE_SHA" "$LF_MIGRATION_HEAD_SHA"
-          if git diff --name-only "$LF_MIGRATION_BASE_SHA" "$LF_MIGRATION_HEAD_SHA" -- supabase/migrations \
-            | grep -E '\.sql$' >/dev/null; then
+          if git diff --name-only "$LF_MIGRATION_BASE_SHA" "$LF_MIGRATION_HEAD_SHA" -- supabase/migrations .github/workflows/pase.yml \
+            | grep -E '(^supabase/migrations/.*\.sql$|^\.github/workflows/pase\.yml$)' >/dev/null; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "SQL migrations changed: local Supabase replay is required."
           else
