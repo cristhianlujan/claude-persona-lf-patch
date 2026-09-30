@@ -1,12 +1,24 @@
 {
   "schema_version": "lf-operation-test-coverage-owner/v1",
   "capability_code": "OPERATION_TEST_COVERAGE",
-  "status": "CANDIDATE_BOUNDARY_ONLY",
+  "status": "CANDIDATE_TYPED_PROJECTION",
   "live_cutover_performed": false,
   "legacy_implementation": {
     "function": "public.lf_s36_operation_assurance_coverage_v1()",
     "source": "supabase/migrations/20260914205435_s36_assurance_completeness_engine_v1.sql",
     "global_aggregate_function": "public.lf_s36_assurance_completeness_v1(boolean)"
+  },
+  "typed_projection": {
+    "implementation": "operation_test_coverage_projection_v1.py",
+    "schema_version": "lf-operation-test-coverage-projection/v1",
+    "structural_state_field": "structural_coverage_state",
+    "execution_observation_field": "execution_observation_state",
+    "quality_verdict_field": "quality_verdict_state",
+    "assurance_verdict_field": "assurance_verdict_state",
+    "qualification_verdict_field": "qualification_verdict_state",
+    "material_pass_field": "material_pass_claimed",
+    "material_pass_value": false,
+    "verdict_state": "NOT_EVALUATED"
   },
   "owns": [
     "OPERATION_TEST_BINDING_COVERAGE",
@@ -38,11 +50,11 @@
   ],
   "parallel_test_matrix_allowed": false,
   "legacy_state_semantics": {
-    "DISCOVERED": "OPERATION_VISIBLE_PENDING_REQUIRED_BINDING",
-    "EVIDENCE_UNMAPPED": "RUN_EXISTS_WITHOUT_REQUIRED_BINDING",
-    "NOT_COVERED": "REQUIRED_BINDING_ABSENT",
-    "BLOCK": "STRUCTURAL_COVERAGE_INVALID_OR_INCOMPLETE",
-    "COVERED": "STRUCTURALLY_COVERED_ONLY"
+    "DISCOVERED": "DISCOVERED",
+    "EVIDENCE_UNMAPPED": "EVIDENCE_UNMAPPED",
+    "NOT_COVERED": "NOT_COVERED",
+    "BLOCK": "STRUCTURAL_BLOCKED",
+    "COVERED": "STRUCTURALLY_COVERED"
   },
   "semantic_invariants": [
     "STRUCTURAL_COVERAGE_NEVER_IMPLIES_TEST_EXECUTED",
@@ -50,6 +62,9 @@
     "STRUCTURAL_COVERAGE_NEVER_IMPLIES_ASSURANCE_PASS",
     "STRUCTURAL_COVERAGE_NEVER_IMPLIES_QUALIFICATION_PASS",
     "ZERO_OBSERVED_RUNS_MAY_STILL_BE_STRUCTURALLY_COVERED",
+    "OBSERVED_RUNS_NEVER_CREATE_A_VERDICT_IN_THIS_OWNER",
+    "PASS_IS_NOT_A_VALID_STRUCTURAL_COVERAGE_STATE",
+    "MATERIAL_PASS_CLAIM_IS_ALWAYS_FALSE",
     "APPLICABILITY_IS_SUPPLIED_BY_CHANGESET_GOVERNANCE",
     "NO_PARALLEL_MATRIX_OR_STORE",
     "QUALIFICATION_OWNER_IS_EXISTING_QUALIFICATION_FRAMEWORK"
@@ -64,6 +79,11 @@
   "forbidden_new_owner_names": [
     "QUALIFICATION_FINALIZATION"
   ],
+  "closure_dependency": {
+    "legacy_pass_aggregate_still_exists": true,
+    "owner": "TEST_COVERAGE_DEBT_GUARD",
+    "next_step": "REMOVE_LEGACY_COVERED_TO_PASS_CONSUMER_SEMANTICS_BEFORE_EKB_CLOSURE"
+  },
   "ekb_refs": [
     "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001",
     "OPERATION-TEST-COVERAGE-COVERED-OVERCLAIM-001"
