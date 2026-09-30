@@ -1,0 +1,137 @@
+{
+  "schema_version": "lf-legacy-contract-translation-template-catalog/v1",
+  "authority_snapshot": {
+    "active_contracts": 40,
+    "semantic_definitions": 32,
+    "snapshot_scope": "public.lf_operation_contracts active statuses"
+  },
+  "coverage": {
+    "template_count": 3,
+    "contracts_covered": 11,
+    "semantic_definitions_covered": 3,
+    "contracts_remaining": 29,
+    "semantic_definitions_remaining": 29
+  },
+  "rules": {
+    "exact_section_match_only": true,
+    "no_name_heuristics": true,
+    "no_llm_runtime_translation": true,
+    "full_normalization_required": true
+  },
+  "templates": [
+    {
+      "template_id": "RULE_MUTATION_V1",
+      "expected_instances": 2,
+      "source_sections": {
+        "required_before_write": ["ekb_preflight", "rule_classified", "existing_checked", "destination_validated", "execution_bound"],
+        "allowed": {"destination":"lf_ops.reglas","single_rule":true,"write_state":"CANDIDATO","relation_mutation":false,"automatic_promotion":false},
+        "blocked": {"relation_delete":true,"duplicate_create":true,"production_promotion":true,"missing_update_target":true,"vigente_direct_update":true},
+        "required_after_write": ["exact_rule_readback", "estado_CANDIDATO", "execution_trace", "no_promotion"]
+      },
+      "mappings": [
+        {"section":"required_before_write","source_pointer":"/required_before_write/0","expected_source":"ekb_preflight","typed_term":{"id":"ekb_preflight","predicate":{"op":"TRUE","fact":"ekb_preflight"}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/1","expected_source":"rule_classified","typed_term":{"id":"rule_classified","predicate":{"op":"TRUE","fact":"rule_classified"}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/2","expected_source":"existing_checked","typed_term":{"id":"existing_checked","predicate":{"op":"TRUE","fact":"existing_checked"}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/3","expected_source":"destination_validated","typed_term":{"id":"destination_validated","predicate":{"op":"TRUE","fact":"destination_validated"}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/4","expected_source":"execution_bound","typed_term":{"id":"execution_bound","predicate":{"op":"TRUE","fact":"execution_bound"}}},
+        {"section":"allowed","source_pointer":"/allowed/destination","expected_source":"lf_ops.reglas","typed_term":{"id":"destination","predicate":{"op":"EQ","fact":"destination","value":"lf_ops.reglas"}}},
+        {"section":"allowed","source_pointer":"/allowed/single_rule","expected_source":true,"typed_term":{"id":"single_rule","predicate":{"op":"TRUE","fact":"single_rule"}}},
+        {"section":"allowed","source_pointer":"/allowed/write_state","expected_source":"CANDIDATO","typed_term":{"id":"write_state","predicate":{"op":"EQ","fact":"write_state","value":"CANDIDATO"}}},
+        {"section":"allowed","source_pointer":"/allowed/relation_mutation","expected_source":false,"typed_term":{"id":"relation_mutation","predicate":{"op":"FALSE","fact":"relation_mutation"}}},
+        {"section":"allowed","source_pointer":"/allowed/automatic_promotion","expected_source":false,"typed_term":{"id":"automatic_promotion","predicate":{"op":"FALSE","fact":"automatic_promotion"}}},
+        {"section":"blocked","source_pointer":"/blocked/relation_delete","expected_source":true,"typed_term":{"id":"relation_delete","predicate":{"op":"TRUE","fact":"relation_delete"}}},
+        {"section":"blocked","source_pointer":"/blocked/duplicate_create","expected_source":true,"typed_term":{"id":"duplicate_create","predicate":{"op":"TRUE","fact":"duplicate_create"}}},
+        {"section":"blocked","source_pointer":"/blocked/production_promotion","expected_source":true,"typed_term":{"id":"production_promotion","predicate":{"op":"TRUE","fact":"production_promotion"}}},
+        {"section":"blocked","source_pointer":"/blocked/missing_update_target","expected_source":true,"typed_term":{"id":"missing_update_target","predicate":{"op":"TRUE","fact":"missing_update_target"}}},
+        {"section":"blocked","source_pointer":"/blocked/vigente_direct_update","expected_source":true,"typed_term":{"id":"vigente_direct_update","predicate":{"op":"TRUE","fact":"vigente_direct_update"}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/0","expected_source":"exact_rule_readback","typed_term":{"id":"exact_rule_readback","predicate":{"op":"TRUE","fact":"exact_rule_readback"}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/1","expected_source":"estado_CANDIDATO","typed_term":{"id":"estado_CANDIDATO","predicate":{"op":"TRUE","fact":"estado_CANDIDATO"}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/2","expected_source":"execution_trace","typed_term":{"id":"execution_trace","predicate":{"op":"TRUE","fact":"execution_trace"}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/3","expected_source":"no_promotion","typed_term":{"id":"no_promotion","predicate":{"op":"TRUE","fact":"no_promotion"}}}
+      ]
+    },
+    {
+      "template_id": "APP_SHELL_MUTATION_V1",
+      "expected_instances": 2,
+      "source_sections": {
+        "required_before_write": ["router_read", "ekb_read", "shell_inventory_read", "design_system_resolved", "execution_bound", "rollback_plan"],
+        "allowed": {"destination":"lf_ops.app_shells","write_state":"CANDIDATO","single_shell":true,"production_allowed":false,"automatic_promotion":false,"direct_write_allowed":false,"visual_clone_allowed":true},
+        "blocked": ["production_promotion", "vigente_direct_update", "duplicate_create", "missing_update_target", "direct_write_bypass", "cross_shell_mutation"],
+        "required_after_write": ["exact_shell_readback", "status_CANDIDATO", "execution_trace", "no_promotion"]
+      },
+      "mappings": [
+        {"section":"required_before_write","source_pointer":"/required_before_write/0","expected_source":"router_read","typed_term":{"id":"router_read","predicate":{"op":"TRUE","fact":"router_read"}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/1","expected_source":"ekb_read","typed_term":{"id":"ekb_read","predicate":{"op":"TRUE","fact":"ekb_read"}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/2","expected_source":"shell_inventory_read","typed_term":{"id":"shell_inventory_read","predicate":{"op":"TRUE","fact":"shell_inventory_read"}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/3","expected_source":"design_system_resolved","typed_term":{"id":"design_system_resolved","predicate":{"op":"TRUE","fact":"design_system_resolved"}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/4","expected_source":"execution_bound","typed_term":{"id":"execution_bound","predicate":{"op":"TRUE","fact":"execution_bound"}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/5","expected_source":"rollback_plan","typed_term":{"id":"rollback_plan","predicate":{"op":"TRUE","fact":"rollback_plan"}}},
+        {"section":"allowed","source_pointer":"/allowed/destination","expected_source":"lf_ops.app_shells","typed_term":{"id":"destination","predicate":{"op":"EQ","fact":"destination","value":"lf_ops.app_shells"}}},
+        {"section":"allowed","source_pointer":"/allowed/write_state","expected_source":"CANDIDATO","typed_term":{"id":"write_state","predicate":{"op":"EQ","fact":"write_state","value":"CANDIDATO"}}},
+        {"section":"allowed","source_pointer":"/allowed/single_shell","expected_source":true,"typed_term":{"id":"single_shell","predicate":{"op":"TRUE","fact":"single_shell"}}},
+        {"section":"allowed","source_pointer":"/allowed/production_allowed","expected_source":false,"typed_term":{"id":"production_allowed","predicate":{"op":"FALSE","fact":"production_allowed"}}},
+        {"section":"allowed","source_pointer":"/allowed/automatic_promotion","expected_source":false,"typed_term":{"id":"automatic_promotion","predicate":{"op":"FALSE","fact":"automatic_promotion"}}},
+        {"section":"allowed","source_pointer":"/allowed/direct_write_allowed","expected_source":false,"typed_term":{"id":"direct_write_allowed","predicate":{"op":"FALSE","fact":"direct_write_allowed"}}},
+        {"section":"allowed","source_pointer":"/allowed/visual_clone_allowed","expected_source":true,"typed_term":{"id":"visual_clone_allowed","predicate":{"op":"TRUE","fact":"visual_clone_allowed"}}},
+        {"section":"blocked","source_pointer":"/blocked/0","expected_source":"production_promotion","typed_term":{"id":"production_promotion","predicate":{"op":"TRUE","fact":"production_promotion"}}},
+        {"section":"blocked","source_pointer":"/blocked/1","expected_source":"vigente_direct_update","typed_term":{"id":"vigente_direct_update","predicate":{"op":"TRUE","fact":"vigente_direct_update"}}},
+        {"section":"blocked","source_pointer":"/blocked/2","expected_source":"duplicate_create","typed_term":{"id":"duplicate_create","predicate":{"op":"TRUE","fact":"duplicate_create"}}},
+        {"section":"blocked","source_pointer":"/blocked/3","expected_source":"missing_update_target","typed_term":{"id":"missing_update_target","predicate":{"op":"TRUE","fact":"missing_update_target"}}},
+        {"section":"blocked","source_pointer":"/blocked/4","expected_source":"direct_write_bypass","typed_term":{"id":"direct_write_bypass","predicate":{"op":"TRUE","fact":"direct_write_bypass"}}},
+        {"section":"blocked","source_pointer":"/blocked/5","expected_source":"cross_shell_mutation","typed_term":{"id":"cross_shell_mutation","predicate":{"op":"TRUE","fact":"cross_shell_mutation"}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/0","expected_source":"exact_shell_readback","typed_term":{"id":"exact_shell_readback","predicate":{"op":"TRUE","fact":"exact_shell_readback"}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/1","expected_source":"status_CANDIDATO","typed_term":{"id":"status_CANDIDATO","predicate":{"op":"TRUE","fact":"status_CANDIDATO"}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/2","expected_source":"execution_trace","typed_term":{"id":"execution_trace","predicate":{"op":"TRUE","fact":"execution_trace"}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/3","expected_source":"no_promotion","typed_term":{"id":"no_promotion","predicate":{"op":"TRUE","fact":"no_promotion"}}}
+      ]
+    },
+    {
+      "template_id": "PRE_EKB_GATE_V1",
+      "expected_instances": 7,
+      "source_sections": {
+        "required_before_write": {
+          "evidence_required": ["ekb_readback", "applicable_rules", "controls_derived", "non_applicable_reason_if_any"],
+          "minimum_error_codes": ["CI-E16-001", "CI-MIG-001", "DB-001", "DB-EVT-001", "GOV-010", "KB-PROD-001", "OPS-002"],
+          "pre_ekb_gate_required": true,
+          "task_signature_required": ["operation_code", "asset_code", "domain", "tables", "execution_mode"],
+          "must_read_before_any_mutation": true
+        },
+        "allowed": {
+          "ekb_writer": "public.lf_write_pipeline_ekb_v1(text,jsonb,text)",
+          "ekb_write_policy": "NEW_ERROR_OR_RECURRENCE_ONLY",
+          "may_continue_when": ["ekb_readback_done", "applicable_rules_mapped_to_controls", "no_unhandled_high_critical_rule"],
+          "pantalla_id_required": false
+        },
+        "blocked": {
+          "blocked_when": ["ekb_not_read", "active_applicable_rule_without_control", "schema_assumed_without_catalog_read", "event_contract_not_verified"],
+          "ekb_duplicate_codigo": "DENY",
+          "ekb_malformed_new_error": "DENY",
+          "ekb_direct_write_for_pipeline": "DENY_BY_CONTRACT"
+        },
+        "required_after_write": {
+          "ekb_writer_event_type": "REMEDIACION_GOBERNANZA",
+          "required_close_evidence": ["pre_ekb_gate_result", "rules_applied", "rules_blocked", "event_id_or_batch_partial"],
+          "ekb_writer_receipt_required": true
+        }
+      },
+      "mappings": [
+        {"section":"required_before_write","source_pointer":"/required_before_write/evidence_required","expected_source":["ekb_readback","applicable_rules","controls_derived","non_applicable_reason_if_any"],"typed_term":{"id":"evidence_required","predicate":{"op":"ALL","args":[{"op":"TRUE","fact":"ekb_readback"},{"op":"TRUE","fact":"applicable_rules"},{"op":"TRUE","fact":"controls_derived"},{"op":"TRUE","fact":"non_applicable_reason_if_any"}]}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/minimum_error_codes","expected_source":["CI-E16-001","CI-MIG-001","DB-001","DB-EVT-001","GOV-010","KB-PROD-001","OPS-002"],"typed_term":{"id":"minimum_error_codes","predicate":{"op":"EQ","fact":"minimum_error_codes","value":["CI-E16-001","CI-MIG-001","DB-001","DB-EVT-001","GOV-010","KB-PROD-001","OPS-002"]}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/pre_ekb_gate_required","expected_source":true,"typed_term":{"id":"pre_ekb_gate_required","predicate":{"op":"TRUE","fact":"pre_ekb_gate_required"}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/task_signature_required","expected_source":["operation_code","asset_code","domain","tables","execution_mode"],"typed_term":{"id":"task_signature_required","predicate":{"op":"ALL","args":[{"op":"EXISTS","fact":"operation_code"},{"op":"EXISTS","fact":"asset_code"},{"op":"EXISTS","fact":"domain"},{"op":"EXISTS","fact":"tables"},{"op":"EXISTS","fact":"execution_mode"}]}}},
+        {"section":"required_before_write","source_pointer":"/required_before_write/must_read_before_any_mutation","expected_source":true,"typed_term":{"id":"must_read_before_any_mutation","predicate":{"op":"TRUE","fact":"must_read_before_any_mutation"}}},
+        {"section":"allowed","source_pointer":"/allowed/ekb_writer","expected_source":"public.lf_write_pipeline_ekb_v1(text,jsonb,text)","typed_term":{"id":"ekb_writer","predicate":{"op":"EQ","fact":"ekb_writer","value":"public.lf_write_pipeline_ekb_v1(text,jsonb,text)"}}},
+        {"section":"allowed","source_pointer":"/allowed/ekb_write_policy","expected_source":"NEW_ERROR_OR_RECURRENCE_ONLY","typed_term":{"id":"ekb_write_policy","predicate":{"op":"EQ","fact":"ekb_write_policy","value":"NEW_ERROR_OR_RECURRENCE_ONLY"}}},
+        {"section":"allowed","source_pointer":"/allowed/may_continue_when","expected_source":["ekb_readback_done","applicable_rules_mapped_to_controls","no_unhandled_high_critical_rule"],"typed_term":{"id":"may_continue_when","predicate":{"op":"ALL","args":[{"op":"TRUE","fact":"ekb_readback_done"},{"op":"TRUE","fact":"applicable_rules_mapped_to_controls"},{"op":"TRUE","fact":"no_unhandled_high_critical_rule"}]}}},
+        {"section":"allowed","source_pointer":"/allowed/pantalla_id_required","expected_source":false,"typed_term":{"id":"pantalla_id_required","predicate":{"op":"FALSE","fact":"pantalla_id_required"}}},
+        {"section":"blocked","source_pointer":"/blocked/blocked_when","expected_source":["ekb_not_read","active_applicable_rule_without_control","schema_assumed_without_catalog_read","event_contract_not_verified"],"typed_term":{"id":"blocked_when","predicate":{"op":"ANY","args":[{"op":"TRUE","fact":"ekb_not_read"},{"op":"TRUE","fact":"active_applicable_rule_without_control"},{"op":"TRUE","fact":"schema_assumed_without_catalog_read"},{"op":"TRUE","fact":"event_contract_not_verified"}]}}},
+        {"section":"blocked","source_pointer":"/blocked/ekb_duplicate_codigo","expected_source":"DENY","typed_term":{"id":"ekb_duplicate_codigo","predicate":{"op":"TRUE","fact":"ekb_duplicate_codigo_attempted"}}},
+        {"section":"blocked","source_pointer":"/blocked/ekb_malformed_new_error","expected_source":"DENY","typed_term":{"id":"ekb_malformed_new_error","predicate":{"op":"TRUE","fact":"ekb_malformed_new_error_attempted"}}},
+        {"section":"blocked","source_pointer":"/blocked/ekb_direct_write_for_pipeline","expected_source":"DENY_BY_CONTRACT","typed_term":{"id":"ekb_direct_write_for_pipeline","predicate":{"op":"TRUE","fact":"ekb_direct_write_for_pipeline_attempted"}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/ekb_writer_event_type","expected_source":"REMEDIACION_GOBERNANZA","typed_term":{"id":"ekb_writer_event_type","predicate":{"op":"EQ","fact":"ekb_writer_event_type","value":"REMEDIACION_GOBERNANZA"}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/required_close_evidence","expected_source":["pre_ekb_gate_result","rules_applied","rules_blocked","event_id_or_batch_partial"],"typed_term":{"id":"required_close_evidence","predicate":{"op":"ALL","args":[{"op":"TRUE","fact":"pre_ekb_gate_result"},{"op":"TRUE","fact":"rules_applied"},{"op":"TRUE","fact":"rules_blocked"},{"op":"TRUE","fact":"event_id_or_batch_partial"}]}}},
+        {"section":"required_after_write","source_pointer":"/required_after_write/ekb_writer_receipt_required","expected_source":true,"typed_term":{"id":"ekb_writer_receipt_required","predicate":{"op":"TRUE","fact":"ekb_writer_receipt_required"}}}
+      ]
+    }
+  ]
+}
