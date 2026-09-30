@@ -104,13 +104,34 @@ Coverage after Batch 1: 11/40 active contracts and 3/32 semantic definitions.
 
 The no-close templates use explicit closure applicability where the legacy field is closure-only, and blocked condition arrays become one explicit `ANY` predicate. Depth contract requirement arrays become explicit `ALL` predicates. This grouping is authored in the catalog; the normalizer does not infer it.
 
-Cumulative read-only authority coverage after Batch 2:
+Coverage after Batch 2: 20/40 active contracts and 12/32 semantic definitions.
+
+### Batch 3
+
+`legacy_translation_templates_batch3_v1.json` explicitly authors ten additional definitions:
+
+- adapter update;
+- profile update;
+- skill update;
+- router update;
+- profile-runtime update;
+- Input Governance execution;
+- profile execution;
+- skill execution;
+- Learning Bridge governance gate;
+- vulnerability coverage repair.
+
+Update contracts encode pre-write requirements as explicit `ALL`, prohibited states/actions as `FALSE`/blocking `ANY`, and closure evidence as `ALL`. Execution contracts preserve exact identity/config fields with `EQ`, bounded enumerations with `IN`, output-presence requirements with `EXISTS`, and no-write/runtime/production constraints explicitly.
+
+The vulnerability-coverage conditional is represented as an explicit implication: when a coverage claim is attempted, `regression_suite_pass` must be true. No condition is inferred from names.
+
+Cumulative read-only authority coverage after Batch 3:
 
 - 40 active contracts;
 - 32 distinct semantic definitions;
-- 20/40 active contracts explicitly covered;
-- 12/32 semantic definitions explicitly authored;
-- 20 contracts / 20 semantic definitions still pending.
+- 30/40 active contracts explicitly covered;
+- 22/32 semantic definitions explicitly authored;
+- 10 contracts / 10 semantic definitions still pending.
 
 This remains translation-authoring coverage only. No `lf_operation_contracts` row is changed to `TYPED`, and no runtime, production, carrier, or automatic-impact cutover is authorized.
 
@@ -121,7 +142,8 @@ This remains translation-authoring coverage only. No `lf_operation_contracts` ro
 - `PASS_LEGACY_CONTRACT_GROUPED_SOURCE_MAPPING_V1=9/9`
 - `PASS_LEGACY_TRANSLATION_TEMPLATE_V1=13/13`
 - candidate Batch 2 regression: `PASS_LEGACY_TRANSLATION_TEMPLATES_BATCH2_V1=10/10`
+- candidate Batch 3 regression: `PASS_LEGACY_TRANSLATION_TEMPLATES_BATCH3_V1=11/11`
 
-Batch 2 regression is designed to instantiate all nine exact templates, normalize each with FULL coverage, generate evidence-backed satisfying/clear facts, evaluate Predicate Semantics at CLOSURE, and require Contract Check Core `PASS`; it also rejects semantic drift.
+Batch regressions are designed to instantiate every exact template in their shard, normalize with FULL coverage, generate evidence-backed satisfying/clear facts, evaluate Predicate Semantics at CLOSURE, require Contract Check Core `PASS`, and reject semantic drift. These markers are candidate self-test markers; PASE remains plan-only and does not itself execute these Python regressions.
 
 No live contract, production workflow, runtime state, or automatic-impact state is modified by these authoring catalogs.
