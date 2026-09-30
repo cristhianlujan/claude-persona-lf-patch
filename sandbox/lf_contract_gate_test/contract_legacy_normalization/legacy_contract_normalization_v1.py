@@ -11,6 +11,17 @@ RESULT_SCHEMA_VERSION = "lf-legacy-contract-normalization-result/v1"
 TRANSLATION_SCHEMA_VERSION = "lf-legacy-contract-translation/v1"
 SECTIONS = ("required_before_write", "allowed", "blocked", "required_after_write")
 COVERAGE_MODES = frozenset({"FULL", "PARTIAL_SHADOW"})
+SOURCE_BINDING_KEYS = (
+    "operation_code",
+    "contract_code",
+    "contract_path",
+    "contract_sha",
+    "required_before_write",
+    "allowed",
+    "blocked",
+    "required_after_write",
+    "status",
+)
 
 
 class LegacyContractNormalizationError(ValueError):
@@ -47,6 +58,22 @@ def _sha(value: Any) -> str:
 
 def _json_equal(left: Any, right: Any) -> bool:
     return _canon(left) == _canon(right)
+
+
+def _source_contract_projection(contract: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the exact semantic/identity source bound by a translation.
+
+    Authority snapshots may carry transport/audit columns such as created_at,
+    updated_at and execution ids. Those fields are not contract semantics and
+    must not invalidate an otherwise exact translation. Every semantic identity
+    field remains required and any change to it changes the projection digest.
+    """
+    missing = [key for key in SOURCE_BINDING_KEYS if key not in contract]
+    if missing:
+        raise LegacyContractNormalizationError(
+            "source_binding_key_missing:" + ",".join(missing)
+        )
+    return {key: contract[key] for key in SOURCE_BINDING_KEYS}
 
 
 def _decode_pointer_token(token: str) -> str:
@@ -139,8 +166,9 @@ def normalize(packet: Mapping[str, Any]) -> dict[str, Any]:
     if _text(translation, "contract_code") != contract_code:
         raise LegacyContractNormalizationError("translation_contract_mismatch")
 
+    source_projection = _source_contract_projection(contract)
     expected_source_sha = _text(translation, "source_contract_sha256")
-    source_sha = _sha(contract)
+    source_sha = _sha(source_projection)
     if expected_source_sha != source_sha:
         raise LegacyContractNormalizationError("source_contract_sha256_mismatch")
 
@@ -149,7 +177,7 @@ def normalize(packet: Mapping[str, Any]) -> dict[str, Any]:
         raise LegacyContractNormalizationError("coverage_mode_invalid")
 
     mappings = [_obj(v, "mapping") for v in _arr(translation.get("mappings"), "mappings")]
-    source_atoms = _legacy_atoms(contract)
+    source_atoms = _legacy_atoms(source_projection)
     source_atom_set = set(source_atoms)
     covered: list[str] = []
     terms_by_section: dict[str, list[dict[str, Any]]] = {section: [] for section in SECTIONS}
@@ -166,7 +194,7 @@ def normalize(packet: Mapping[str, Any]) -> dict[str, Any]:
             raise LegacyContractNormalizationError("mapping_section_pointer_mismatch")
         if "expected_source" not in mapping:
             raise LegacyContractNormalizationError("mapping_expected_source_missing")
-        observed = _pointer_get(contract, pointer)
+        observed = _pointer_get(source_projection, pointer)
         if not _json_equal(observed, mapping["expected_source"]):
             raise LegacyContractNormalizationError(f"mapping_source_value_mismatch:{pointer}")
         term = dict(_obj(mapping.get("typed_term"), "typed_term"))
