@@ -7,7 +7,7 @@ Capability transversal LF candidata: `OPERATION_TEST_COVERAGE`.
 - Estado de esta definición: `CANDIDATE_TYPED_PROJECTION`
 - Autoridad live actual: provider legacy read-only `public.lf_s36_operation_assurance_coverage_v1()`
 - Proyección tipada source: `operation_test_coverage_projection_v1.py`
-- Cutover live: **NO realizado por este cambio**
+- Cutover live: **NO realizado por esta capability**
 - Motor paralelo: **prohibido**
 
 ## Propósito
@@ -72,12 +72,19 @@ Esta capability no debe:
 
 ## Superficie legacy reutilizada
 
-Hasta un cutover separado y gobernado, el provider existente que contiene el cálculo estructural útil es:
+El provider existente que contiene el cálculo estructural útil es:
 
 - `public.lf_s36_operation_assurance_coverage_v1()`
 - source: `supabase/migrations/20260914205435_s36_assurance_completeness_engine_v1.sql`
 
-`public.lf_s36_assurance_completeness_v1(boolean)` sigue siendo un agregador global legacy que transforma ausencia de deuda estructural en `completeness_state=PASS`. Esa semántica **no pertenece** a `OPERATION_TEST_COVERAGE`; su retiro/normalización queda en `TEST_COVERAGE_DEBT_GUARD` (Paso 4). Mientras ese consumidor legacy exista, el EKB `OPERATION-TEST-COVERAGE-COVERED-OVERCLAIM-001` no debe declararse cerrado.
+`public.lf_s36_assurance_completeness_v1(boolean)` puede permanecer físicamente como lineage histórico, pero **no puede tener nuevos consumers** y no es autoridad de esta capability. El owner umbrella `ASSURANCE_COMPLETENESS` se retira mediante `20260930073000_lf_assurance_completeness_legacy_owner_retirement_v1.sql`.
+
+Para cerrar `OPERATION-TEST-COVERAGE-COVERED-OVERCLAIM-001` no es necesario borrar la función histórica; sí es obligatorio demostrar en live readback que:
+
+- el contexto activo ya no inyecta `ASSURANCE_COMPLETENESS`;
+- el activo umbrella ya no es `ACTIVE_SHARED_ENFORCEMENT`;
+- nuevos consumers de la función legacy están prohibidos;
+- la salida nueva sigue separando estructura, ejecución y verdict.
 
 ## Relación con otros owners
 
@@ -92,7 +99,8 @@ Hasta un cutover separado y gobernado, el provider existente que contiene el cá
 
 - `S36-ASSURANCE-BOUNDARY-CONTAMINATION-001`
 - `OPERATION-TEST-COVERAGE-COVERED-OVERCLAIM-001`
+- `ASSURANCE-COMPLETENESS-LEGACY-OWNER-RESIDUE-001`
 
 ## Regla de no duplicación
 
-La proyección tipada no crea función SQL, tabla, matriz, runner DB ni segundo applicability engine. Consume la fila del provider legacy y elimina la ambigüedad semántica antes de exponerla a nuevos consumidores. El eventual cutover live debe reutilizar el cálculo estructural útil y retirar la traducción legacy `COVERED → PASS` desde su owner correcto, no desde esta capability.
+La proyección tipada no crea función SQL, tabla, matriz, runner DB ni segundo applicability engine. Consume la fila del provider legacy y elimina la ambigüedad semántica antes de exponerla a nuevos consumers. El cutover del umbrella legacy se hace desde la autoridad de policy/context e inventario, no creando otro Assurance engine.
