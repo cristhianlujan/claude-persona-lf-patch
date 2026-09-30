@@ -41,12 +41,12 @@ begin
   end if;
 
   update public.lf_operation_registry
-     set source_paths = array[
+     set source_paths = jsonb_build_array(
            '.github/workflows/lf-contract-check.yml',
            'scripts/lf_contract_check.py',
            'sandbox/lf_contract_gate_test/contract_check_carrier/contract_check_carrier_v1.py',
            'sandbox/lf_contract_gate_test/contract_check_semantic_integration/contract_check_semantic_integration_v1.py'
-         ]::text[],
+         ),
          notes = concat_ws(E'\n',
            nullif(notes, ''),
            '2026-09-29: scripts/lf_contract_check.py reclassified as TEMPORARY_COMPATIBILITY_BRIDGE. The retired v0.21 implementation must not execute. Canonical Contract Check execution delegates to contract_check_carrier_v1.py -> semantic integration. cleanup_required=true; new_consumers_allowed=false. No new router binding or runtime activation is introduced by this transition.'
