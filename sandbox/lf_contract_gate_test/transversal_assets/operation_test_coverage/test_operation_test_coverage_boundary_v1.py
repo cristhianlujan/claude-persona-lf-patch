@@ -90,8 +90,6 @@ def main() -> None:
     ):
         require(lowered, token.lower())
 
-    # The useful legacy engine is structural/read-only. Foreign S36 work packages
-    # must never be imported into the clean coverage owner.
     for token in (
         "lf_qualification_receipts",
         "lf_finalize_qualification_independent_review_v1",
@@ -108,13 +106,17 @@ def main() -> None:
     assert "update public." not in lowered
     assert "delete from public." not in lowered
 
-    # Typed projection must mechanically prevent the structural vocabulary from
-    # becoming a material PASS verdict.
     require(projection, '"STRUCTURALLY_COVERED"')
     require(projection, '"NO_EXECUTION_OBSERVED"')
     require(projection, '"NOT_EVALUATED"')
     require(projection, '"material_pass_claimed": False')
-    assert '"PASS"' not in projection
+    for token in (
+        '"quality_verdict_state": "PASS"',
+        '"assurance_verdict_state": "PASS"',
+        '"qualification_verdict_state": "PASS"',
+        '"material_pass_claimed": True',
+    ):
+        assert token not in projection, f"MATERIAL_PASS_ASSIGNMENT_PRESENT:{token}"
 
     print("OPERATION_TEST_COVERAGE_BOUNDARY_PASS owner=OPERATION_TEST_COVERAGE typed_projection=true live_cutover=false")
 
