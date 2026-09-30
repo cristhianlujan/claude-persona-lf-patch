@@ -57,7 +57,7 @@ assert "Enforce structural repository admission" not in entrypoint
 assert "lf_pase_structural_admission" not in entrypoint
 assert "validator.validate_changed_files" not in entrypoint
 assert "scripts/lf_contract_check.py:structural-admission-only" not in entrypoint
-assert "lf_changeset_governance.py:repository-path-admission" in entrypoint
+assert "s28_ci_lane_router/emit_ci_execution_plan_v2.py" in entrypoint
 
 # Historical validator carriers retired by the earlier PASE workflow cutover stay absent.
 assert not (WORKFLOWS / "validate-lf-packs.yml").exists()
