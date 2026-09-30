@@ -14,6 +14,7 @@ spec.loader.exec_module(mod)
 assert mod.CAPABILITY_CODE == "TEST_COVERAGE_DEBT_GUARD"
 assert mod.SUCCESS_RESULT == "DEBT_STABLE"
 assert mod.FAILURE_RESULT == "DEBT_GROWTH_BLOCKED"
+assert mod.PROVIDER_BLOCK_STATE == "BLOCK"
 
 # Compatibility surface preserves the exact debt query contract but delegates
 # ownership to the canonical transversal runner.
@@ -26,6 +27,8 @@ assert "lifecycle_state_code = 'OP_OPERATIONAL'" in mod.SQL
 assert "assurance_obligation = 'REQUIRED'" in mod.SQL
 assert "where id = 61" in mod.SQL
 assert "coverage_state <> 'COVERED'" in mod.SQL
+assert "l.coverage_state = 'BLOCK'" in mod.SQL
+assert "l.coverage_state = 'BLOCKED'" not in mod.SQL
 assert "x->>'accepted_state'" in mod.SQL
 assert "x->>'baseline_required_binding_count'" in mod.SQL
 assert "x->>'baseline_observed_run_count'" in mod.SQL
@@ -37,6 +40,10 @@ assert stable["result"] == "DEBT_STABLE"
 assert stable["material_assurance_pass"] is False
 assert stable["material_test_pass"] is False
 assert stable["material_qualification_pass"] is False
+
+blocked = mod.classify_debt_rows([("OP-X", "BLOCK", "LIVE_BLOCKED")])
+assert blocked["result"] == "DEBT_GROWTH_BLOCKED"
+assert blocked["material_assurance_pass"] is False
 
 source = MODULE_PATH.read_text(encoding="utf-8")
 for foreign_token in (
@@ -50,4 +57,4 @@ for foreign_token in (
 ):
     assert foreign_token not in source, f"FAIL_DEBT_GUARD_COMPAT_CONTAMINATION:{foreign_token}"
 
-print("TEST_COVERAGE_DEBT_GUARD_COMPAT_SELFTEST=PASS")
+print("TEST_COVERAGE_DEBT_GUARD_COMPAT_SELFTEST=PASS block_enum=BLOCK")
