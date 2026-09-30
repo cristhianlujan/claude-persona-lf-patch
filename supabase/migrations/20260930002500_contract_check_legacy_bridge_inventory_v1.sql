@@ -2,13 +2,18 @@
 --
 -- This migration does NOT create a second Contract Check asset or operation.
 -- It records that the historical path scripts/lf_contract_check.py is now a
--- temporary compatibility bridge to the new Final Thin Carrier, and that the
--- bridge must be removed after callers are migrated.
+-- temporary compatibility bridge to the new Final Thin Carrier, and repins the
+-- existing repository-governance path to the bridge bytes so v0.21 cannot remain
+-- the approved executable content.
 --
 -- No activation, ruleset change, runtime enablement, or new router binding is
 -- performed here.
 
 do $migration$
+declare
+  v_sha256 text;
+  v_git_blob text;
+  v_bundle_count bigint;
 begin
   update public.lf_activos
      set metadata = coalesce(metadata, '{}'::jsonb) || jsonb_build_object(
@@ -51,6 +56,57 @@ begin
 
   if not found then
     raise exception 'CONTRACT_CHECK_BRIDGE_OPERATION_NOT_FOUND';
+  end if;
+
+  select expected_sha256, expected_git_blob
+    into v_sha256, v_git_blob
+  from public.get_lf_repository_governance_bundle_v4()
+  where path = 'scripts/lf_contract_check.py';
+
+  if (v_sha256, v_git_blob) is not distinct from
+     ('91490d410062ecb9d08fe68e7d6cfcfac4632e57e722bceb3cf8cd5ebab2c83a',
+      '5db1c733a001465c6d6a9b8d4c96d0bec48445ca') then
+    null;
+  elsif (v_sha256, v_git_blob) is not distinct from
+        ('21311317378e295c1f3c6eda0ae4845343e73758575ec364aa7cb4ac0dbe665c',
+         'e623e64d966fc58d4731f2584c90ae9f98d653ae') then
+    insert into private.lf_repository_governance_bundle_v4(
+      path, expected_sha256, expected_git_blob, control_kind, active,
+      approved_commit_sha, approved_by_execution_id, approved_at
+    ) values (
+      'scripts/lf_contract_check.py',
+      '91490d410062ecb9d08fe68e7d6cfcfac4632e57e722bceb3cf8cd5ebab2c83a',
+      '5db1c733a001465c6d6a9b8d4c96d0bec48445ca',
+      'VALIDATOR',
+      true,
+      'd7adf137f9602fdcdd15dada55755a1a2cd43645',
+      'EXEC-CONTRACT-CHECK-LEGACY-BRIDGE-REPIN-20260929-001',
+      clock_timestamp()
+    );
+  else
+    raise exception
+      'CONTRACT_CHECK_BRIDGE_REPIN_STATE_MISMATCH sha256=% git_blob=%',
+      coalesce(v_sha256, '<NULL>'),
+      coalesce(v_git_blob, '<NULL>');
+  end if;
+
+  select count(*)
+    into v_bundle_count
+  from public.get_lf_repository_governance_bundle_v4();
+
+  if v_bundle_count <> 7 then
+    raise exception 'CONTRACT_CHECK_BRIDGE_GOVERNANCE_COUNT expected=7 observed=%', v_bundle_count;
+  end if;
+
+  if not exists (
+    select 1
+    from public.get_lf_repository_governance_bundle_v4()
+    where path = 'scripts/lf_contract_check.py'
+      and expected_sha256 = '91490d410062ecb9d08fe68e7d6cfcfac4632e57e722bceb3cf8cd5ebab2c83a'
+      and expected_git_blob = '5db1c733a001465c6d6a9b8d4c96d0bec48445ca'
+      and control_kind = 'VALIDATOR'
+  ) then
+    raise exception 'CONTRACT_CHECK_BRIDGE_REPIN_ASSERTION_FAILED';
   end if;
 end
 $migration$;
