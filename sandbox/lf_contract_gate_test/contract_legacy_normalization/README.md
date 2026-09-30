@@ -18,7 +18,7 @@ canonical semantic source projection
 explicit translation spec
   - exact operation + contract
   - exact semantic-source SHA-256
-  - exact source pointer/value
+  - exact source node/value
   - explicit typed predicate
         |
         v
@@ -64,11 +64,29 @@ A translation is bound to the SHA-256 of one fixed semantic/identity projection 
 
 All nine keys are mandatory. A change to any of them changes the source digest and invalidates the old translation.
 
-Authority snapshots may also carry transport/audit fields such as `created_at`, `updated_at`, `created_by_execution_id`, `updated_by_execution_id`, or future snapshot metadata. Those fields are deliberately excluded from the translation digest because they are not contractual semantics. This prevents a semantically unchanged contract from invalidating its translation merely because the authority snapshot was transported with additional metadata.
+Authority snapshots may also carry transport/audit fields such as `created_at`, `updated_at`, `created_by_execution_id`, `updated_by_execution_id`, or future snapshot metadata. Those fields are deliberately excluded from the translation digest because they are not contractual semantics.
 
-Every mapping separately binds one atomic legacy JSON pointer to its exact expected JSON value and to one explicit typed term. Source-atom coverage is still computed only from the four contractual sections; excluding audit metadata does not reduce semantic coverage.
+### Explicit grouped source mappings
 
-`coverage_mode=FULL` requires every atom in all four contract sections to be explicitly mapped. Missing coverage blocks normalization. `coverage_mode=PARTIAL_SHADOW` may be used for investigation, but `normalized_contract` remains `null` and `ready_for_contract_check=false`.
+A mapping may bind either one legacy leaf atom or an explicitly selected parent node such as an array/object. The selected node must remain inside the declared contractual section and its `expected_source` must match the complete node exactly.
+
+When a parent node is selected, every descendant leaf atom is counted as covered by that one mapping. This permits a semantic unit such as:
+
+```text
+/allowed/execution_modes = [READ_ONLY, SANDBOX]
+```
+
+to become one explicit typed predicate:
+
+```text
+execution.mode IN [READ_ONLY, SANDBOX]
+```
+
+instead of incorrectly requiring separate mutually exclusive typed terms for each array element.
+
+Grouping is never inferred by the normalizer: the translation author chooses the exact source node and exact typed predicate. Overlapping mappings are rejected because descendant atoms would be covered more than once. Cross-section mappings are rejected.
+
+`coverage_mode=FULL` still requires every leaf atom in all four contract sections to be covered exactly once. Missing or duplicate coverage blocks normalization. `coverage_mode=PARTIAL_SHADOW` may be used for investigation, but `normalized_contract` remains `null` and `ready_for_contract_check=false`.
 
 ## Why this exists
 
@@ -93,7 +111,11 @@ Source-projection regression marker:
 
 `PASS_LEGACY_CONTRACT_SOURCE_PROJECTION_V1=8/8`
 
-The source-projection regression proves that audit/transport metadata does not invalidate a translation while semantic identity, section, and status drift still fail closed.
+Grouped-source regression marker:
+
+`PASS_LEGACY_CONTRACT_GROUPED_SOURCE_MAPPING_V1=9/9`
+
+The grouped-source regression proves that an explicitly selected array node can produce one `IN` predicate while preserving exact descendant coverage; overlapping, mismatched, and cross-section mappings fail closed.
 
 The existing self-test includes an end-to-end shadow path:
 
