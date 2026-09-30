@@ -1,11 +1,15 @@
 {
   "schema_version": "lf-test-coverage-debt-guard/v1",
   "capability": "TEST_COVERAGE_DEBT_GUARD",
-  "status": "CANDIDATE_BOUNDARY_ONLY",
+  "status": "CANDIDATE_EXECUTABLE_DEBT_SEMANTICS",
   "target_owner": "FULL_REGRESSION",
-  "current_legacy_adapter": "sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py",
+  "canonical_runner": "sandbox/lf_contract_gate_test/transversal_assets/test_coverage_debt_guard/test_coverage_debt_guard_v1.py",
+  "compatibility_carrier": "sandbox/lf_contract_gate_test/s36_wp06_ci_completeness_gate.py",
   "canonical_coverage_provider": "public.lf_s36_operation_assurance_coverage_v1",
-  "pass_semantics": "ACCEPTED_TEST_COVERAGE_DEBT_NOT_GROWING",
+  "success_result": "DEBT_STABLE",
+  "failure_result": "DEBT_GROWTH_BLOCKED",
+  "success_semantics": "ACCEPTED_TEST_COVERAGE_DEBT_NOT_GROWING",
+  "material_pass_claimed": false,
   "applicability": {
     "normal_pase": false,
     "full_regression": true,
@@ -47,6 +51,21 @@
     "second_debt_baseline_store_allowed": false,
     "second_applicability_router_allowed": false
   },
+  "legacy": {
+    "historical_sql_aggregate": "public.lf_s36_assurance_completeness_v1(boolean)",
+    "historical_sql_aggregate_is_canonical": false,
+    "historical_sql_aggregate_allowed_as_new_consumer": false,
+    "compatibility_carrier_may_emit_assurance_pass": false
+  },
+  "semantic_invariants": [
+    "DEBT_STABLE_NEVER_IMPLIES_ASSURANCE_PASS",
+    "DEBT_STABLE_NEVER_IMPLIES_TEST_PASS",
+    "DEBT_STABLE_NEVER_IMPLIES_QUALIFICATION_PASS",
+    "DEBT_STABLE_NEVER_IMPLIES_ALL_OPERATIONS_COVERED",
+    "NORMAL_PASE_NEVER_APPLIES_GLOBAL_DEBT_BASELINE",
+    "COVERAGE_PROVIDER_IS_REUSED_NOT_DUPLICATED",
+    "BASELINE_STORE_IS_REUSED_NOT_DUPLICATED"
+  ],
   "ekb": [
     "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001",
     "TEST-COVERAGE-DEBT-GUARD-SEMANTIC-OVERCLAIM-001"
