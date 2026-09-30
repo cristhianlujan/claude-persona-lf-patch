@@ -8,6 +8,7 @@ Git-vs-ledger comparison to that core.
 """
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import pathlib
 import sys
@@ -44,9 +45,115 @@ for _name in dir(_legacy):
         globals()[_name] = getattr(_legacy, _name)
 
 
+_RECONCILIATION_IDENTITY_FIELDS = {
+    "reconciliation_owner_execution_id",
+    "source_version",
+    "source_name",
+}
+
+
+def _reconciliation_payload_for_parity(
+    *, version: str, name: str, source_sql: str
+) -> str:
+    """Remove only an exact validated reconciliation metadata envelope.
+
+    The envelope exists to classify/prove provenance for a DB-first recovery; it
+    is not part of the recovered migration SQL stored in the ledger. Any
+    malformed or incomplete envelope remains fail-closed and is never stripped.
+    """
+    if not _legacy.reconciliation_source_metadata(
+        source_sql, version=version, name=name
+    ):
+        return source_sql
+
+    normalized = source_sql.replace("\r\n", "\n").replace("\r", "\n")
+    lines = normalized.splitlines(keepends=True)
+    required_keys = set(_legacy.RECONCILIATION_REQUIRED_FIELDS) | _RECONCILIATION_IDENTITY_FIELDS
+    marker_seen = False
+    observed_keys: set[str] = set()
+    boundary: int | None = None
+
+    for index, raw in enumerate(lines):
+        stripped = raw.strip()
+        if not stripped:
+            if marker_seen and required_keys.issubset(observed_keys):
+                boundary = index + 1
+                break
+            if marker_seen:
+                _legacy.fail(
+                    "FAIL_LF_MIGRATION_RECONCILIATION_ENVELOPE",
+                    f"version={version} name={name} premature_separator=true",
+                )
+            continue
+        if not stripped.startswith("--"):
+            break
+
+        body = stripped[2:].strip()
+        if body == _legacy.RECONCILIATION_MARKER:
+            if marker_seen or observed_keys:
+                _legacy.fail(
+                    "FAIL_LF_MIGRATION_RECONCILIATION_ENVELOPE",
+                    f"version={version} name={name} duplicate_or_late_marker=true",
+                )
+            marker_seen = True
+            continue
+
+        if not marker_seen:
+            _legacy.fail(
+                "FAIL_LF_MIGRATION_RECONCILIATION_ENVELOPE",
+                f"version={version} name={name} marker_not_first=true",
+            )
+        if "=" not in body:
+            _legacy.fail(
+                "FAIL_LF_MIGRATION_RECONCILIATION_ENVELOPE",
+                f"version={version} name={name} unexpected_comment=true",
+            )
+
+        key, _value = body.split("=", 1)
+        key = key.strip()
+        if key not in required_keys:
+            _legacy.fail(
+                "FAIL_LF_MIGRATION_RECONCILIATION_ENVELOPE",
+                f"version={version} name={name} unexpected_field={key}",
+            )
+        if key in observed_keys:
+            _legacy.fail(
+                "FAIL_LF_MIGRATION_RECONCILIATION_ENVELOPE",
+                f"version={version} name={name} duplicate_field={key}",
+            )
+        observed_keys.add(key)
+
+    if boundary is None:
+        _legacy.fail(
+            "FAIL_LF_MIGRATION_RECONCILIATION_ENVELOPE",
+            f"version={version} name={name} separator_missing=true",
+        )
+
+    payload = "".join(lines[boundary:])
+    if not payload.strip():
+        _legacy.fail(
+            "FAIL_LF_MIGRATION_RECONCILIATION_ENVELOPE",
+            f"version={version} name={name} payload_empty=true",
+        )
+    return payload
+
+
 def evaluate_managed_transport(local, remote, statement_counts):
+    effective_local = {}
+    for version, (name, source_sha, source_sql) in local.items():
+        if _legacy.reconciliation_source_metadata(
+            source_sql, version=version, name=name
+        ):
+            source_sql = _reconciliation_payload_for_parity(
+                version=version, name=name, source_sql=source_sql
+            )
+            source_sha = hashlib.sha256(_legacy.canonical(source_sql)).hexdigest()
+        effective_local[version] = (name, source_sha, source_sql)
+
     try:
-        result = _core.evaluate_exact_parity(local, remote, statement_counts)
+        result = _core.evaluate_exact_parity(
+            effective_local, remote, statement_counts
+        )
     except _core.ParityCoreError as exc:
         _legacy.fail(exc.code, exc.detail)
     return (
