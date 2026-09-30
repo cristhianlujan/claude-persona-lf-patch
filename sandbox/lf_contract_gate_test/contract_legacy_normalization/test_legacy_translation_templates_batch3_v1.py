@@ -15,6 +15,7 @@ import legacy_contract_normalization_v1 as normalization
 import legacy_translation_template_v1 as templates
 import contract_predicate_semantics_v1 as semantics
 import contract_check_core_v1 as core
+import contract_check_batch_test_support_v1 as batch_support
 
 CATALOG_PATH = HERE / "legacy_translation_templates_batch3_v1.json"
 EXPECTED_IDS = {
@@ -158,14 +159,11 @@ def main() -> None:
         )
         assert semantic_result["verdict"] == "READY", semantic_result
         assert all(e["verdict"] in {"SATISFIED", "CLEAR", "NOT_APPLICABLE"} for e in semantic_result["evaluations"])
-        core_result = core.evaluate(
-            {
-                "schema_version": core.INPUT_SCHEMA_VERSION,
-                "operation_code": source["operation_code"],
-                "phase": "CLOSURE",
-                "resolved_contracts": [typed],
-                "term_evaluations": semantic_result["evaluations"],
-            }
+        core_result = batch_support.evaluate_core(
+            core,
+            source["operation_code"],
+            typed,
+            semantic_result["evaluations"],
         )
         assert core_result["verdict"] == "PASS", core_result
         checks += 1
