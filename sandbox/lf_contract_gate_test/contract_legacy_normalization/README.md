@@ -62,63 +62,45 @@ A translation is bound to the SHA-256 of one fixed semantic/identity projection 
 - `required_after_write`;
 - `status`.
 
-All nine keys are mandatory. A change to any of them changes the source digest and invalidates the old translation.
-
-Authority snapshots may also carry transport/audit fields such as `created_at`, `updated_at`, `created_by_execution_id`, `updated_by_execution_id`, or future snapshot metadata. Those fields are deliberately excluded from the translation digest because they are not contractual semantics.
+All nine keys are mandatory. A change to any of them changes the source digest and invalidates the old translation. Audit/transport fields such as timestamps and execution ids are deliberately excluded.
 
 ### Explicit grouped source mappings
 
 A mapping may bind either one legacy leaf atom or an explicitly selected parent node such as an array/object. The selected node must remain inside the declared contractual section and its `expected_source` must match the complete node exactly.
 
-When a parent node is selected, every descendant leaf atom is counted as covered by that one mapping. This permits a semantic unit such as:
+When a parent node is selected, every descendant leaf atom is counted as covered by that one mapping. This allows one semantic unit such as an allowed-value array to become one `IN`, `ALL`, `ANY`, or other explicitly authored predicate instead of splitting it mechanically.
 
-```text
-/allowed/execution_modes = [READ_ONLY, SANDBOX]
-```
+Grouping is never inferred by the normalizer. Overlapping mappings, source drift, cross-section mappings, missing coverage, and duplicate coverage fail closed. `coverage_mode=FULL` requires every leaf atom in all four contract sections to be covered exactly once.
 
-to become one explicit typed predicate:
+## Exact live translation templates
 
-```text
-execution.mode IN [READ_ONLY, SANDBOX]
-```
+`legacy_translation_templates_v1.json` is the first explicit live-authoring batch. A template is reusable only when the four legacy contract sections match exactly. `legacy_translation_template_v1.py` performs exact structural matching and then materializes a normal translation bound to the exact operation, contract identity, and semantic-source SHA-256.
 
-instead of incorrectly requiring separate mutually exclusive typed terms for each array element.
+It does not select a template by names, regex, semantic similarity, or model judgment.
 
-Grouping is never inferred by the normalizer: the translation author chooses the exact source node and exact typed predicate. Overlapping mappings are rejected because descendant atoms would be covered more than once. Cross-section mappings are rejected.
+Latest read-only authority census used for this batch:
 
-`coverage_mode=FULL` still requires every leaf atom in all four contract sections to be covered exactly once. Missing or duplicate coverage blocks normalization. `coverage_mode=PARTIAL_SHADOW` may be used for investigation, but `normalized_contract` remains `null` and `ready_for_contract_check=false`.
+- 40 active contracts;
+- 32 distinct semantic definitions;
+- 3 exact semantic definitions explicitly authored in this batch;
+- 11/40 active contracts covered by those three repeated definitions;
+- 29 semantic definitions / 29 contracts still require explicit authoring.
 
-## Why this exists
+The first three templates cover:
 
-The active contract authority is heterogeneous. A read-only census on 2026-09-28 found 39 `ACTIVE_ENFORCEMENT` contracts across four top-level section-shape families:
+- `RULE_MUTATION_V1`: create/update rule contracts (2 live contracts);
+- `APP_SHELL_MUTATION_V1`: create/update app-shell contracts (2 live contracts);
+- `PRE_EKB_GATE_V1`: the shared PRE-EKB contract definition (7 live contracts).
 
-- 26: array / object / array / array
-- 8: object / object / object / object
-- 4: array / object / object / array
-- 1: object / object / array / object
-
-Those shapes cannot be sent directly to `Contract Predicate Semantics V1`, which intentionally accepts typed term arrays only.
-
-The tests use representative shadow fixtures matching those shape families. They prove normalization mechanics and fail-closed behavior; they do **not** claim that any live contract has already been semantically migrated.
+This is translation coverage only. It does not mutate live contract rows, switch any contract to `TYPED`, authorize runtime, or perform Contract Check cutover.
 
 ## Evidence
 
-Existing candidate self-test marker:
+- `PASS_LEGACY_CONTRACT_NORMALIZATION_V1=15/15`
+- `PASS_LEGACY_CONTRACT_SOURCE_PROJECTION_V1=8/8`
+- `PASS_LEGACY_CONTRACT_GROUPED_SOURCE_MAPPING_V1=9/9`
+- `PASS_LEGACY_TRANSLATION_TEMPLATE_V1=13/13`
 
-`PASS_LEGACY_CONTRACT_NORMALIZATION_V1=15/15`
+The template regression proves exact reuse across different operation/contract identities, source-bound translation hashes, FULL normalization coverage, source-drift rejection, transport-metadata tolerance, and explicit grouped PRE-EKB semantics.
 
-Source-projection regression marker:
-
-`PASS_LEGACY_CONTRACT_SOURCE_PROJECTION_V1=8/8`
-
-Grouped-source regression marker:
-
-`PASS_LEGACY_CONTRACT_GROUPED_SOURCE_MAPPING_V1=9/9`
-
-The grouped-source regression proves that an explicitly selected array node can produce one `IN` predicate while preserving exact descendant coverage; overlapping, mismatched, and cross-section mappings fail closed.
-
-The existing self-test includes an end-to-end shadow path:
-
-`legacy fixture -> FULL explicit translation -> typed predicate semantics -> Contract Check Core -> PASS`
-
-No live contract, Supabase row, production workflow, or runtime state is modified by this candidate.
+No live contract, production workflow, runtime state, or automatic-impact state is modified by this candidate.
