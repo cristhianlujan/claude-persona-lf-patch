@@ -117,6 +117,46 @@ select inventory.fn_refresh_dependencies_exact_v1();
 select inventory.fn_refresh_registries_v1();
 select inventory.fn_finalize_refresh_v1();
 
+-- Generic deterministic tags derived from the catalog itself.
+insert into inventory.tags(tag_code,tag_type,description)
+select distinct 'TYPE:'||object_type,'OBJECT_TYPE','Inventory object type'
+from inventory.objects
+where active
+on conflict(tag_code) do nothing;
+
+insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
+select object_id,'TYPE:'||object_type,'Derived from object_type',1.0,'INVENTORY_DERIVED'
+from inventory.objects
+where active
+on conflict(object_id,tag_code,source_system) do update
+set evidence=excluded.evidence,confidence=excluded.confidence;
+
+insert into inventory.tags(tag_code,tag_type,description)
+select distinct 'SCHEMA:'||upper(schema_name),'SCHEMA','Database schema'
+from inventory.objects
+where active and nullif(schema_name,'') is not null
+on conflict(tag_code) do nothing;
+
+insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
+select object_id,'SCHEMA:'||upper(schema_name),'Derived from schema_name',1.0,'INVENTORY_DERIVED'
+from inventory.objects
+where active and nullif(schema_name,'') is not null
+on conflict(object_id,tag_code,source_system) do update
+set evidence=excluded.evidence,confidence=excluded.confidence;
+
+insert into inventory.tags(tag_code,tag_type,description)
+select distinct 'DOMAIN:'||upper(domain),'DOMAIN','Declared or derived domain'
+from inventory.objects
+where active and nullif(domain,'') is not null
+on conflict(tag_code) do nothing;
+
+insert into inventory.object_tags(object_id,tag_code,evidence,confidence,source_system)
+select object_id,'DOMAIN:'||upper(domain),'Derived from domain',0.95,'INVENTORY_DERIVED'
+from inventory.objects
+where active and nullif(domain,'') is not null
+on conflict(object_id,tag_code,source_system) do update
+set evidence=excluded.evidence,confidence=excluded.confidence;
+
 -- Semantic discovery tags. These are discovery hints, not canonical family authority.
 with classified as (
   select object_id,
