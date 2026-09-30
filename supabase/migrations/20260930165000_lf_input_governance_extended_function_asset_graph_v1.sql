@@ -154,6 +154,7 @@ begin
            case
              when n.nspname='public' and p.proname='fn_input_governance_validator_resume_context_v1' then 'REG_VALIDATION'
              when n.nspname='programacion' and p.proname='fn_lf_router_input_governance_resolve_v1' then 'REG_ENTRYPOINT'
+             when n.nspname='programacion' and p.proname='fn_guard_input_readiness_run' then 'REG_GUARD'
              when n.nspname='programacion' and (p.proname ilike 'fn_input_governance_%' or p.proname ilike 'fn_input_readiness_%') then
                case
                  when p.proname ilike '%shadow%' then 'REG_SHADOW'
@@ -182,14 +183,19 @@ begin
                end
            end grp
     from pg_proc p join pg_namespace n on n.oid=p.pronamespace
-    where (n.nspname='programacion' and (p.proname like 'fn_input_%' or p.proname='fn_lf_router_input_governance_resolve_v1'))
+    where (n.nspname='programacion' and (
+            p.proname like 'fn_input_%'
+            or p.proname='fn_lf_router_input_governance_resolve_v1'
+            or p.proname='fn_guard_input_readiness_run'
+          ))
        or (n.nspname='public' and p.proname='fn_input_governance_validator_resume_context_v1')
   ),
   raw_edges as (
     select distinct a.grp caller_group,b.grp callee_group,a.proname caller_fn,b.proname callee_fn
     from funcs a join funcs b
       on a.oid<>b.oid and a.grp is not null and b.grp is not null
-     and a.def ilike '%'||b.proname||'%'
+     and regexp_replace(a.def,'[[:space:]]+','','g') ~
+         ('(^|[^A-Za-z0-9_])' || b.proname || '\(')
     where a.grp<>b.grp and (a.grp like 'NEW_%' or b.grp like 'NEW_%')
   ),
   edge_pairs as (
@@ -213,7 +219,7 @@ begin
   into v_edge_count,v_edge_sha
   from canon;
 
-  if v_edge_count <> 29 or v_edge_sha <> 'd333c45a00208ffdf95748b86354200c5fcb7ba4224769e5c446e3b93cff7ed6' then
+  if v_edge_count <> 30 or v_edge_sha <> '1f1289e24894dd09aeecae8d48fe071b4345108f13a40e748743eaeaee58fe6a' then
     raise exception 'M04X_EDGE_GRAPH_DRIFT:count=% sha=%',v_edge_count,v_edge_sha;
   end if;
 
@@ -244,6 +250,7 @@ begin
            case
              when n.nspname='public' and p.proname='fn_input_governance_validator_resume_context_v1' then 'REG_VALIDATION'
              when n.nspname='programacion' and p.proname='fn_lf_router_input_governance_resolve_v1' then 'REG_ENTRYPOINT'
+             when n.nspname='programacion' and p.proname='fn_guard_input_readiness_run' then 'REG_GUARD'
              when n.nspname='programacion' and (p.proname ilike 'fn_input_governance_%' or p.proname ilike 'fn_input_readiness_%') then
                case
                  when p.proname ilike '%shadow%' then 'REG_SHADOW'
@@ -272,14 +279,19 @@ begin
                end
            end grp
     from pg_proc p join pg_namespace n on n.oid=p.pronamespace
-    where (n.nspname='programacion' and (p.proname like 'fn_input_%' or p.proname='fn_lf_router_input_governance_resolve_v1'))
+    where (n.nspname='programacion' and (
+            p.proname like 'fn_input_%'
+            or p.proname='fn_lf_router_input_governance_resolve_v1'
+            or p.proname='fn_guard_input_readiness_run'
+          ))
        or (n.nspname='public' and p.proname='fn_input_governance_validator_resume_context_v1')
   ),
   raw_edges as (
     select distinct a.grp caller_group,b.grp callee_group,a.proname caller_fn,b.proname callee_fn
     from funcs a join funcs b
       on a.oid<>b.oid and a.grp is not null and b.grp is not null
-     and a.def ilike '%'||b.proname||'%'
+     and regexp_replace(a.def,'[[:space:]]+','','g') ~
+         ('(^|[^A-Za-z0-9_])' || b.proname || '\(')
     where a.grp<>b.grp and (a.grp like 'NEW_%' or b.grp like 'NEW_%')
   ),
   edge_pairs as (
@@ -310,7 +322,7 @@ begin
   select count(*) into v_count
   from public.lf_activo_relaciones
   where migration_batch_id=v_batch;
-  if v_count <> 29 then
+  if v_count <> 30 then
     raise exception 'M04X_RELATION_COUNT:%',v_count;
   end if;
 
