@@ -27,6 +27,26 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Enumerate all post-baseline unclassified migration names
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util, pathlib, re, sys
+          p=pathlib.Path('sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py')
+          spec=importlib.util.spec_from_file_location('msp_diag',p)
+          m=importlib.util.module_from_spec(spec); sys.modules[spec.name]=m; spec.loader.exec_module(m)
+          rows=[]
+          for path in sorted(pathlib.Path('supabase/migrations').glob('*.sql')):
+              mm=m.FILENAME_RE.fullmatch(path.name)
+              if not mm: continue
+              version,name=mm.groups()
+              if version > '20260822195004' and not m.classified(name):
+                  rows.append(path.name)
+          print('UNCLASSIFIED_COUNT='+str(len(rows)))
+          for row in rows: print('UNCLASSIFIED='+row)
+          PY
+
       - name: Execute canonical Migration Source Parity flow
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
