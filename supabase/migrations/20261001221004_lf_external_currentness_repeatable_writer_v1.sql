@@ -541,7 +541,7 @@ begin
   end if;
 end $$;
 
-     or v_main_sha is distinct from p_report#>>'{repository,observed_main_sha}'
+     or v_main_sha is distinct from (p_report#>>'{repository,observed_main_sha}')
      or v_detector_version is null
      or coalesce(v_scope_policy_hash,'') !~ '^[0-9a-f]{64}
     raise exception using errcode='22023',message='REPORT_SCOPE_POLICY_MISMATCH';
