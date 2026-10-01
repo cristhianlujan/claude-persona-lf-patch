@@ -149,7 +149,6 @@ def build_final_evidence_manifest(request: Dict[str, Any]) -> Dict[str, Any]:
         "receipt_refs": receipt_refs,
         "receipt_count": len(receipt_refs),
         "raw_evidence_embedded": False,
-        "closure_verdict": None,
     }
     manifest["manifest_sha256"] = manifest_digest(manifest)
     return manifest
