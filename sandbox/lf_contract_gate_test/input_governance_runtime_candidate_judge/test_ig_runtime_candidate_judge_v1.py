@@ -27,7 +27,25 @@ def cap(**kw):
 
 class JudgeUnitTests(unittest.TestCase):
     def test_sql_guard_rejects_transaction_escape(self):
-        for sql in ("COMMIT;", " rollback;", "CREATE DATABASE x;", "ALTER SYSTEM SET x='y';"):
+        for sql in (
+            "COMMIT;",
+            " rollback;",
+            "CREATE DATABASE x;",
+            "ALTER SYSTEM SET x='y';",
+            "select 1; COMMIT;",
+            "select 1; /* evasive */ COMMIT;",
+            "PREPARE TRANSACTION 'x';",
+        ):
+            with self.assertRaises(judge.JudgeError):
+                judge.validate_transaction_bound_sql(sql)
+
+    def test_sql_guard_rejects_server_io_and_external_effects(self):
+        for sql in (
+            "select pg_read_file('/etc/passwd');",
+            "select lo_import('/tmp/x');",
+            "select dblink_exec('x','delete from t');",
+            "select net.http_post(url := 'https://example.test');",
+        ):
             with self.assertRaises(judge.JudgeError):
                 judge.validate_transaction_bound_sql(sql)
 
