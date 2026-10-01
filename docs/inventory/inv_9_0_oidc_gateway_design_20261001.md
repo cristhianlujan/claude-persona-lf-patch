@@ -310,3 +310,111 @@ No sustituye:
 - persistencia de observaciones.
 
 Toda unidad R sigue obligada a reportar estado recalculado + `observed_at` antes de cerrar.
+
+## 12. Addendum previo a INV-9.1 — ordering, stale-input, completeness y eventos
+
+Este addendum forma parte del contrato obligatorio de 9.1/9.2/9.4.
+
+### 12.1 Orden de observaciones
+
+Una observación nueva NO puede reemplazar una observación materialmente más reciente.
+
+El workflow debe resolver y transportar:
+- `observed_main_sha`;
+- `observed_main_committed_at` del commit de main observado.
+
+El writer compara `observed_main_committed_at` contra la última observación externa
+persistida que tenga commit time conocido.
+
+Reglas:
+- commit entrante anterior al último persistido → `REPORT_OLDER_THAN_CURRENT_OBSERVATION`;
+- mismo commit + misma identidad de observación → idempotencia;
+- mismo commit con inputs distintos → solo se admite si los hashes de inventario siguen vigentes y la observación no retrocede currentness por una captura vieja;
+- para el snapshot histórico #11, que no guarda commit time, la primera observación posterior puede actuar como baseline v2 y desde entonces el ordering es obligatorio.
+
+El workflow fijo de 9.4 debe declarar `concurrency` sobre la familia del detector, con cancelación
+de ejecuciones anteriores cuando un run más reciente de main las sustituya. El control de ordering
+en DB sigue siendo obligatorio aunque exista `concurrency`.
+
+### 12.2 Fingerprints DB del read-model
+
+`read_snapshot` debe devolver, además de las filas:
+
+```json
+{
+  "repo_inventory_sha256": "<64-hex>",
+  "edge_inventory_sha256": "<64-hex>"
+}
+```
+
+Ambos fingerprints se calculan sobre el read-model mínimo, ordenado determinísticamente por
+`object_ref`, usando `SHA256_CANONICAL_JSON_V1`.
+
+El workflow los transporta sin modificarlos hasta `write_observation`.
+
+Antes de escribir, 9.1 vuelve a materializar el read-model desde la BD y recalcula ambos hashes.
+
+Si cualquiera difiere:
+`REPORT_INPUT_STALE`.
+
+Esto evita aplicar un reporte calculado sobre una versión del inventario que cambió entre
+`read_snapshot` y `write_observation`.
+
+Los hashes DB del read-model son un control adicional. No sustituyen los cinco
+`input_sha256` producidos por el detector.
+
+### 12.3 Cobertura completa
+
+El reporte debe cubrir el universo completo capturado por `read_snapshot`.
+
+Para objetos ya inventariados:
+- cada `repo://` activo debe aparecer exactamente una vez en `repository.records` como no-NEW;
+- cada `edge://` activo debe aparecer exactamente una vez en `edge.records` como no-NEW;
+- ningún objeto activo puede faltar;
+- ningún objeto puede aparecer duplicado.
+
+Los registros `NEW` pueden aparecer como observación, pero no forman parte del conjunto
+inventariado esperado y nunca se insertan por 9.1.
+
+Si la igualdad de conjuntos o cardinalidades falla:
+`REPORT_INCOMPLETE`.
+
+El writer valida la cobertura nuevamente contra la BD en el mismo statement/transacción que
+persiste la observación.
+
+### 12.4 Eventos OIDC admitidos
+
+La puerta acepta exclusivamente ejecuciones del workflow fijo de main con:
+
+```text
+push
+schedule
+workflow_dispatch
+```
+
+y rechaza cualquier otro `event_name`.
+
+En todos los casos deben seguir coincidiendo:
+- repository;
+- repository_id;
+- `refs/heads/main`;
+- workflow/job_workflow_ref exacto;
+- audience;
+- issuer;
+- run_id;
+- workflow_sha.
+
+La lista de eventos es cerrada. No se admite `workflow_call` para la puerta del detector periódico.
+
+Código de rechazo:
+`OIDC_EVENT_NOT_ALLOWED`.
+
+### 12.5 Códigos adicionales obligatorios
+
+```text
+REPORT_INPUT_STALE
+REPORT_INCOMPLETE
+REPORT_OLDER_THAN_CURRENT_OBSERVATION
+OIDC_EVENT_NOT_ALLOWED
+```
+
