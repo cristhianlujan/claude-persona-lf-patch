@@ -5,6 +5,7 @@ declare
   v_readme constant text := 'sandbox/lf_contract_gate_test/authority_readback/README.md';
   v_contract constant text := 'sandbox/lf_contract_gate_test/authority_readback/authority_readback_v1.json';
   v_inventory constant text := 'sandbox/lf_contract_gate_test/authority_readback/authority_readback_inventory_v1.json';
+  v_adapters constant text := 'sandbox/lf_contract_gate_test/authority_readback/authority_readback_adapters_v1.py';
 begin
   if not exists(select 1 from public.lf_activos where codigo_activo='LF_GOVERNANCE') then
     raise exception 'BLOCK_AUTHORITY_READBACK_LF_GOVERNANCE_NOT_MATERIALIZED';
@@ -32,16 +33,19 @@ begin
     'NATIVE_SUPABASE','LF_TRANSVERSAL_CAPABILITY_INVENTORY','AUTHORITY_READBACK_20261001',1,
     jsonb_build_object(
       'solution_code','AUTHORITY_READBACK_V1','work_code','SADM-PP-L2-013',
-      'contract_ref',v_contract,'inventory_ref',v_inventory,'readme_ref',v_readme,
+      'contract_ref',v_contract,'inventory_ref',v_inventory,'readme_ref',v_readme,'adapters_ref',v_adapters,
       'mode','BOUNDED_DETERMINISTIC_AUTHORITY_READBACK',
+      'fast_lookup_map','inventory.fn_lookup_v2',
+      'direct_reuse_pattern','public.lf_control_system_qualification_readback_v1',
+      'profile_update_extraction_source','public.lf_profile_update_post_merge_reconcile_v1',
+      'profile_runtime_extraction_source','public.lf_profile_runtime_refresh_reconcile_asset_v1',
       'currentness_dependency','CURRENTNESS_AUTHORITY@1.0.0',
-      'observed_read_only_adapter_asset','EDGE_FN_RUN_GITHUB_READBACK_PERFIL_LF',
       'capability_registry_projection_forbidden',true,'supabase_applied',false,
       'cutover_authorized',false,'runtime_authorized',false,'production_authorized',false
     ),
     jsonb_build_object(
       'schema_version','AUTHORITY_READBACK_ASSET_METADATA_V1',
-      'purpose','Read-only deterministic validation of exact declared authority checks using normalized domain adapter observations.',
+      'purpose','Read-only deterministic validation of exact declared authority checks using normalized domain adapters.',
       'entry_contract',jsonb_build_object(
         'schema_version','LF_CAPABILITY_ENTRY_CONTRACT_V1','required',true,'owner','SUPER_ADMIN',
         'guard_code','ORCHESTRATOR_EXECUTION_GUARD_V1',

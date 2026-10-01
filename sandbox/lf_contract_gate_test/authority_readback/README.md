@@ -2,87 +2,90 @@
 
 ## Purpose
 
-`SADM-PP-L2-013` extracts the read-only portion of post-merge authority validation into one bounded transversal capability.
+`SADM-PP-L2-013` extracts post-merge authority validation into one bounded transversal **read-only** capability.
 
 Flow:
 
-`caller -> ORCHESTRATOR_EXECUTION_GUARD_V1 -> AUTHORITY_READBACK -> declared domain adapters -> CURRENTNESS_AUTHORITY when required -> LF_AUTHORITY_READBACK_RECEIPT_V1`
+`caller -> ORCHESTRATOR_EXECUTION_GUARD_V1 -> AUTHORITY_READBACK -> declared domain adapter -> READ-ONLY verification -> LF_AUTHORITY_READBACK_RECEIPT_V1`
 
-Without `ORCHESTRATOR_ENTRY_ACCEPTED`, the capability fails closed.
+Without `ORCHESTRATOR_ENTRY_ACCEPTED`, the capability fails closed. `POST_PASE_ROUTER_V1` remains the later applicability/continuation owner.
 
-`POST_PASE_ROUTER_V1` is a later consumer unit (`SADM-PP-L4-019`), so this candidate defines only the capability-specific scope contract. It does not invent applicability or a global POST_PASE plan.
+## FAST_LOOKUP_MAP preflight
 
-## Currentness anchors reused
+Per events `#19595/#19597`, this correction starts with `inventory.fn_lookup_v2` and only expands when live drift is demonstrated.
 
-The bounded currentness readback for this unit starts from the persisted Phase 03 handoff and current plan state. No repository-wide rediscovery or historical digest reconstruction is part of this capability.
+The bounded Supabase inventory for L2-013 is:
 
-Reusable authority already present:
+| Function | Live shape | Classification |
+|---|---|---|
+| `public.lf_control_system_qualification_readback_v1` | STABLE, JSONB, no DML, no lock, no next-gate | `DIRECT_REUSE` |
+| `programacion.fn_assert_worker_direct_readback_v2` | STABLE, no DML, fail-closed, returns void, verifier-specific | `REFERENCE_ONLY_NOT_GENERIC` |
+| `public.lf_profile_update_post_merge_reconcile_v1` | VOLATILE + DML + `FOR UPDATE` + next-gate | `EXTRACT_REQUIRED` |
+| `public.lf_profile_runtime_refresh_reconcile_asset_v1` | VOLATILE + DML + `FOR UPDATE` + next-gate | `EXTRACT_REQUIRED` |
 
-- `CURRENTNESS_AUTHORITY@1.0.0` for source/currentness decisions.
-- `CAPABILITY_EXECUTION_CONTRACT` for orchestrated request/receipt cross-binding.
-- `ORCHESTRATOR_EXECUTION_GUARD_V1` for guarded entry.
-- `EDGE_FN_RUN_GITHUB_READBACK_PERFIL_LF` as an observed read-only domain adapter candidate.
+Fingerprints and exact object refs are recorded in `authority_readback_inventory_v1.json`. They are evidence, not runtime hardcodes.
 
-## Contamination removed
+## Canonical reusable pattern
 
-EKB `POST-PASE-AUTHORITY-READBACK-MUTATION-COUPLING-001` proves that existing profile reconciliation functions combine readback with mutation and/or next-gate routing:
+`public.lf_control_system_qualification_readback_v1` is the direct reusable pattern:
+- stable/read-only;
+- validates exact identity/cardinality;
+- fails closed on drift;
+- returns typed JSONB;
+- does not mutate or decide the next gate.
 
-- `public.lf_profile_update_post_merge_reconcile_v1`
-- `public.lf_profile_runtime_refresh_reconcile_asset_v1`
+The generic engine preserves this separation. It does not duplicate the qualification authority.
 
-They remain untouched as governed mutation operations. They are not used as the generic readback engine.
+## Profile extraction
 
-`AUTHORITY_READBACK_V1` forbids:
+The legacy Profile functions stay untouched as mutation operations. Their **verification-only** portions are extracted into:
 
-- mutation of `lf_activos` or any canonical authority;
-- rebind/promotion;
-- next-gate selection;
-- applicability decisions;
-- gate recording;
-- deploy/runtime/production effects.
+- `PROFILE_UPDATE_AUTHORITY_READBACK`
+- `PROFILE_RUNTIME_REFRESH_AUTHORITY_READBACK`
 
-## Adapter model
+Implementation: `authority_readback_adapters_v1.py`.
 
-The engine does **not** hardcode domain adapter codes.
+The adapters only observe supplied read-only snapshots and emit `LF_AUTHORITY_ADAPTER_OBSERVATION_V1`. They never:
+- update `lf_activos`;
+- acquire `FOR UPDATE`;
+- rebind/promote;
+- choose `post_merge_next_gate`;
+- deploy or activate runtime.
 
-The router/orchestrator declares exact checks in `LF_AUTHORITY_READBACK_SCOPE_V1`. Each domain adapter returns a normalized `LF_AUTHORITY_ADAPTER_OBSERVATION_V1` containing:
+## Generic engine
 
-- exact `check_id`;
+`authority_readback_v1.py` remains domain-agnostic. The scope declares:
+- check ID;
 - adapter code;
-- subject and authority references;
-- observed source revision;
-- `AUTHORITY_MATCH` / mismatch decision;
-- explicit `read_only=true`;
-- explicit `mutation_performed=false`;
-- deterministic receipt digest;
-- `CURRENTNESS_AUTHORITY` receipt when the declared check requires it.
+- subject;
+- authority;
+- expected source revision;
+- whether currentness is required.
 
-Undeclared observations and missing observations fail closed.
+The engine validates normalized adapter observations, currentness receipts when declared, and exact scope cross-binding. Missing/extra/duplicate observations fail closed.
 
 ## Receipt
 
-`LF_AUTHORITY_READBACK_RECEIPT_V1` returns:
+`LF_AUTHORITY_READBACK_RECEIPT_V1` emits `READBACK_VERIFIED` only when all declared checks match. Otherwise it emits `READBACK_FAILED`.
 
-- `READBACK_VERIFIED`, `ready=true` only when every declared check matches;
-- `READBACK_FAILED`, `ready=false` otherwise;
-- typed failures per check;
-- deterministic receipt digest;
-- explicit `mutation_performed=false`, `promotion_performed=false`, `next_gate_selected=false`.
+The receipt is evidence only. `POST_PASE_ROUTER/ORCHESTRATOR` owns continuation; explicit governed operations own any mutation.
 
-The receipt is evidence only. It is not authority to mutate, promote, rebind or choose the next gate.
+## Tests
 
-## Test
+- `python sandbox/lf_contract_gate_test/authority_readback/test_authority_readback_v1.py`
+- `python sandbox/lf_contract_gate_test/authority_readback/test_authority_readback_adapters_v1.py`
 
-`python sandbox/lf_contract_gate_test/authority_readback/test_authority_readback_v1.py`
-
-Expected:
-
-`PASS_AUTHORITY_READBACK_V1 checks=16`
-
-The matrix covers guarded entry, exact scope, missing/extra observations, adapter/subject/authority/revision mismatch, read-only enforcement, mutation/routing contamination, stale currentness and digest tampering.
+The correction extends the matrix with 10 adapter checks covering:
+- canonical control-system readback normalization;
+- control-system identity drift;
+- Profile update read-only extraction;
+- Profile update mismatch without mutation/next-gate;
+- Profile runtime refresh read-only extraction;
+- runtime source/release mismatch;
+while retaining the original 16 engine checks for guarded entry/scope/currentness/digest failures.
 
 ## Materialization state
 
-Source candidate only. The registry projection is included for later governed application/readback but is **not applied by this unit**.
+Source-only candidate. Registry projection remains unapplied.
 
-No Supabase apply, owner-runner cutover, runtime activation, deploy, production activation or legacy retirement is authorized here.
+No Supabase apply, cutover, runtime, deploy, production activation or legacy retirement is performed by this correction.
