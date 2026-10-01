@@ -33,6 +33,7 @@ def main() -> int:
         ".github/workflows/visual-evidence-gate.yml",
         ".github/workflows/lf-pack-validation-core.yml",
         ".github/workflows/lf-migration-source-parity-core.yml",
+        ".github/workflows/lf-input-governance-recurate.yml",
     }
     assert expected_exact.issubset(policy.github_exact)
     checks += 1
