@@ -1,0 +1,65 @@
+{
+  "schema_version": "lf-consumer-bindings/v1",
+  "solution_code": "CONSUMER_BINDINGS_V1",
+  "work_code": "SADM-PP-L4-021",
+  "expected_target": "CONSUMERS_RESOLVE_SAME_CANONICAL_CAPABILITY_AUTHORITY_AND_CANNOT_BYPASS_BINDING",
+  "canonical_authority": {
+    "registry": "public.lf_capability_registry",
+    "current": "public.lf_capability_current",
+    "relations": "public.lf_activo_relaciones",
+    "owner_runner_carrier": "OWNER_RUNNER_CARRIER_AUTHORITY_V1",
+    "entry_guard": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "binding_entrypoint": "public.fn_lf_capability_bind_from_orchestrator_v1"
+  },
+  "invariants": {
+    "resolution_mode": "CANONICAL_CAPABILITY_AUTHORITY_ONLY",
+    "parallel_binding_registry": false,
+    "owner_recalculation": false,
+    "binding_bypass_allowed": false,
+    "applicability_rediscovery": false,
+    "cutover_executed": false,
+    "runtime_activated": false,
+    "production_activated": false,
+    "artifact_transport_policy": "PASE_POST_PASE_ARTIFACT_TRANSPORT_NO_ZIP_V1"
+  },
+  "consumers": [
+    {
+      "consumer_code": "POST_PASE_ORCHESTRATOR_V1",
+      "binding_mode": "SOURCE_READY_NO_CUTOVER",
+      "required_entrypoint": "public.fn_lf_capability_bind_from_orchestrator_v1",
+      "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+      "owner_resolution": "DELEGATE_TO_OWNER_RUNNER_CARRIER_AUTHORITY",
+      "legacy_execution_path_retained": true,
+      "binding_bypass_allowed": false,
+      "capabilities": [
+        "CURRENTNESS_AUTHORITY",
+        "GITHUB_RECONCILIATION",
+        "AUTHORITY_READBACK",
+        "RUNTIME_DEPLOY_VERIFICATION",
+        "EVIDENCE_LEDGER",
+        "FINAL_EVIDENCE",
+        "CLOSURE_GATE"
+      ]
+    },
+    {
+      "consumer_code": "PASE_ORCHESTRATOR_V1",
+      "reuse_validation": "FAIL_CLOSED_IF_BINDING_MATERIALIZED_BEFORE_QUALIFIED_CUTOVER",
+      "source_path": "sandbox/lf_contract_gate_test/pase_orchestrator/README.md",
+      "parallel_registry": false
+    },
+    {
+      "consumer_code": "ASSURANCE_EVALUATOR",
+      "reuse_validation": "CANONICAL_BIND_ENTRYPOINT_ALREADY_DECLARED",
+      "source_path": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/README.md",
+      "required_entrypoint": "public.fn_lf_capability_bind_from_orchestrator_v1"
+    }
+  ],
+  "materialization": {
+    "state": "SOURCE_ONLY_NOT_LIVE",
+    "supabase_apply_executed": false,
+    "promotion_executed": false,
+    "cutover_executed": false,
+    "runtime_activated": false,
+    "production_activated": false
+  }
+}
