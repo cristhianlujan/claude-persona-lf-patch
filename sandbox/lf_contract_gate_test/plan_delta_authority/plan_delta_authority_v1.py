@@ -9,6 +9,7 @@ from typing import Any
 SCHEMA_VERSION = "LF_PLAN_DELTA_AUTHORITY_READBACK_V1"
 AUTHORITY = "PLAN_AUTHORITY"
 GOVERNANCE_AUTHORITY = "LF_GOVERNANCE"
+AUTHORIZATION_TOKEN = "PLAN_DELTA_AUTHORITY"
 AUTHORIZED = "AUTHORIZED_PLAN_DELTA"
 BLOCKED = "PLAN_DELTA_NOT_AUTHORIZED"
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
@@ -62,9 +63,10 @@ def produce_plan_delta_authority(
         return _blocked("AUTHORIZATION_PAYLOAD_REQUIRED", event_id)
     if payload.get("authority") != GOVERNANCE_AUTHORITY:
         return _blocked("AUTHORIZATION_AUTHORITY_MISMATCH", event_id)
-    if payload.get("decision") != AUTHORIZED:
-        return _blocked("AUTHORIZATION_DECISION_MISMATCH", event_id)
-    if payload.get("authorization_scope") != "PLAN_DELTA_AUTHORITY":
+    authorizes = payload.get("authorizes")
+    if not isinstance(authorizes, list) or AUTHORIZATION_TOKEN not in authorizes:
+        return _blocked("AUTHORIZATION_TOKEN_MISSING", event_id)
+    if payload.get("authorization_scope") != AUTHORIZATION_TOKEN:
         return _blocked("AUTHORIZATION_SCOPE_MISMATCH", event_id)
     if payload.get("plan_id") != plan_id:
         return _blocked("AUTHORIZATION_PLAN_ID_MISMATCH", event_id)
