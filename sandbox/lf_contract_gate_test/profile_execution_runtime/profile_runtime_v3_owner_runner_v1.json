@@ -1,0 +1,64 @@
+{
+  "schema_version": "lf-profile-runtime-v3-owner-runner-contract/v1",
+  "durable_name": "PROFILE_RUNTIME_V3_OWNER_RUNNER_V1",
+  "owner": "PROFILE_RUNTIME",
+  "purpose": "Provide one owner-local deterministic execution surface for PROFILE_RUNTIME_V3 checks so PASE orchestration can invoke Runtime without embedding Runtime work in Validate Packs.",
+  "input_contract": {
+    "required": ["repository_source", "runtime_test_dependencies"],
+    "runtime_test_dependencies": "services/profile_runtime_api/requirements-dev.in must be installed by the execution environment before normal run",
+    "applicability_authority": "UPSTREAM_PASE_ROUTER_OR_EQUIVALENT_CANONICAL_CALLER",
+    "must_not_decide_run_skip": true
+  },
+  "owned_checks": [
+    "S26_E_GOVERNANCE_GATE",
+    "PERSISTENT_PROFILE_RUNTIME_API",
+    "SEMANTIC_TO_RENDER_BINDING",
+    "INDEPENDENT_RECEIPT_BUNDLE_BINDING",
+    "PROFILE_RUNTIME_STRUCTURAL_GROUPS"
+  ],
+  "transversal_dependencies": {
+    "GATE_CHECK_OBSERVABILITY": {
+      "role": "DETERMINISTIC_GROUP_EXECUTION_ENGINE_ONLY",
+      "surface": "sandbox/lf_contract_gate_test/gate_check_observability/run_gate_groups_v1.py",
+      "consumer_manifest": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/profile_runtime_v3_gate_manifest.json",
+      "ownership_transfer": false
+    }
+  },
+  "excluded": [
+    "CI applicability or currentness",
+    "PACK_VALIDATION or pack-local validators",
+    "S30 bounded regressions or broker",
+    "GATE_CHECK_OBSERVABILITY Claim/Excel qualification ownership",
+    "TRANSVERSAL_README validation",
+    "Contract Check",
+    "database or Supabase writes",
+    "Git writes",
+    "deployment",
+    "production activation"
+  ],
+  "ownership_invariants": [
+    "PROFILE_RUNTIME_V3 may consume the transversal gate-group engine but does not become the owner of GATE_CHECK_OBSERVABILITY.",
+    "The runner must not execute Claim or deep Excel qualification steps owned by GATE_CHECK_OBSERVABILITY.",
+    "The runner must not resolve whether PROFILE_RUNTIME_V3 applies; it receives that decision from PASE governance.",
+    "The runner must not execute PACK_VALIDATION, S30, DB regression, Assurance, Contract Check or transversal README controls.",
+    "The historical Validate LF Packs workflow is not an ownership authority for Profile Runtime.",
+    "Normal execution stops on the first owner-check failure and returns no merge/deploy/production authorization."
+  ],
+  "output_contract": {
+    "schema_version": "lf-profile-runtime-v3-owner-runner/v1",
+    "status_enum": ["PASS", "FAIL"],
+    "required_fields": ["owner", "status", "checks"],
+    "authorization_fields": {
+      "pack_validation_authorized": false,
+      "s30_authorized": false,
+      "db_write_authorized": false,
+      "git_write_authorized": false,
+      "deployment_authorized": false,
+      "production_authorized": false
+    }
+  },
+  "handoff": "PASE_ORCHESTRATOR_BIND_PROFILE_RUNTIME_V3",
+  "merge_authorized": false,
+  "deployment_authorized": false,
+  "production_authorized": false
+}
