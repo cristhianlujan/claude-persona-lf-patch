@@ -1,6 +1,6 @@
 # Protocolo normativo de descomposición de pantallas
 
-Versión operativa: `v0.5`. Juez independiente asociado: `J02_SCREEN_DECOMPOSITION v0.7`.
+Versión operativa: `v0.5`. Juez independiente asociado: `J02_SCREEN_DECOMPOSITION v0.8`.
 
 ## 1. Propósito
 
@@ -28,7 +28,7 @@ Convertir una pantalla y su fuente operativa en un objeto `screen_decomposition`
 4. Confirmar alcance autorizado de lectura y escritura.
 5. Confirmar independencia worker–juez: el worker no ejecuta ni sustituye a J02.
 6. Confirmar disponibilidad del schema, contrato J02 y runtime semántico.
-7. Reconciliar el SHA del runtime con `main` y su registro canónico.
+7. Reconciliar el SHA del runtime con `main` y el registro declarado por J02. En `CANDIDATE_CI_ONLY`, el URI `candidate://...` exacto es válido para ejecutar el candidato; una promoción exige además registro canónico en Supabase.
 8. Bloquear antes de assertions semánticas cuando falte identidad del ejecutor, versión del juez, inputs, inventarios, unidades, cobertura, schema, runtime, registro o SHA reconciliable.
 9. Detener con `BLOCKED` cuando exista una decisión `blocking=true` y `status=OPEN`.
 
@@ -50,7 +50,7 @@ Convertir una pantalla y su fuente operativa en un objeto `screen_decomposition`
 14. Recalcular `coverage_summary` desde `coverage_items`; no confiar en conteos autorreportados.
 15. Validar el objeto completo contra `schemas/screen-decomposition.schema.json`.
 16. Emitir evidencia y handoff al juez independiente.
-17. J02 ejecuta `scripts/validate_screen_decomposition.py`; el worker nunca ejecuta su propio juez.
+17. J02 v0.8 ejecuta `scripts/validate_screen_decomposition_visual.py`; el worker nunca ejecuta su propio juez.
 
 `coverage_items` forma parte de `screen_decomposition`. No existe una salida paralela llamada `coverage_matrix`.
 
