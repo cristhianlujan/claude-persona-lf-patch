@@ -1,0 +1,54 @@
+name: M1A6 Migration Source Parity Probe
+
+on:
+  push:
+    branches:
+      - lf/test-m1a6-migration-parity-20261001
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  migration-source-parity:
+    name: Execute MIGRATION_SOURCE_PARITY
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact M1.A6 candidate head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: b6986f02714fac5ff8d4c78c2a8c597d9d1ba863
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Execute canonical Migration Source Parity flow
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py \
+            --repo-root . \
+            --base-sha 1722bbc3e554344498631ef88dc12bb2e8b387cf \
+            --head-sha b6986f02714fac5ff8d4c78c2a8c597d9d1ba863 \
+            --base-ref main \
+            --event-name pull_request \
+            --output-dir .lf_migration_source_parity
+
+      - name: Emit bounded evidence to job log
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .lf_migration_source_parity/parity-output.txt && cat .lf_migration_source_parity/parity-output.txt || true
+          test -f .lf_migration_source_parity/parity-stderr.txt && cat .lf_migration_source_parity/parity-stderr.txt || true
+          test -f .lf_migration_source_parity/run-summary.json && cat .lf_migration_source_parity/run-summary.json || true
