@@ -1,0 +1,53 @@
+{
+  "schema_version": "LF_MIGRATION_ORCHESTRATED_SAGA_INVENTORY_V1",
+  "work_code": "SADM-PP-L2-011D",
+  "capability_code": "MIGRATION_ORCHESTRATED_SAGA_V1",
+  "version": "1.0.0",
+  "state": "REGISTERED_GUARDED_NOT_CURRENT",
+  "owner_scope": "SUPER_ADMIN",
+  "entry_guard": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "entrypoint": "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "direct_call_policy": "BLOCK"
+  },
+  "authority_readback": {
+    "asset": {
+      "estado_documental": "VIGENTE",
+      "estado_operativo": "READ_ONLY",
+      "runtime_estado": "REPOSITORY_BOUND"
+    },
+    "registry": {
+      "status": "ACTIVE",
+      "owner_scope": "SUPER_ADMIN",
+      "current_version": null
+    }
+  },
+  "material_relations": [
+    {"type": "GOBERNADO_POR", "target": "ACT-0001"},
+    {"type": "DEPENDE_DE", "target": "MIGRATION_WRITE_AHEAD_V1"},
+    {"type": "DEPENDE_DE", "target": "DB_WRITE_TRANSPORT"},
+    {"type": "DEPENDE_DE", "target": "MIGRATION_SOURCE_PARITY"},
+    {"incoming_from": "MIGRATION_SOURCE_RECONCILIATION_V1", "type": "RELACIONADO_CAPACIDADES"}
+  ],
+  "source_refs": {
+    "state_gate": "sandbox/lf_contract_gate_test/db_write_transport/lf_migration_orchestrated_saga.py",
+    "tests": "sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_orchestrated_saga.py",
+    "readme": "sandbox/lf_contract_gate_test/db_write_transport/MIGRATION_ORCHESTRATED_SAGA_V1.md",
+    "registry_projection": "sandbox/lf_contract_gate_test/db_write_transport/MIGRATION_ORCHESTRATED_SAGA_V1_registry_projection.sql"
+  },
+  "materialization": {
+    "source_reconciliation_only": true,
+    "db_apply_execution": false,
+    "parity_execution": false,
+    "git_write_execution": false,
+    "supabase_apply_in_this_unit": false,
+    "current_pointer_promotion": false,
+    "runtime_activation": false,
+    "production_activation": false
+  },
+  "ekb": {
+    "preflight_required": true,
+    "post_readback_required": true
+  }
+}
