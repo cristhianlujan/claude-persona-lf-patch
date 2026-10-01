@@ -417,4 +417,27 @@ REPORT_INCOMPLETE
 REPORT_OLDER_THAN_CURRENT_OBSERVATION
 OIDC_EVENT_NOT_ALLOWED
 ```
+## 13. Addendum previo a INV-9.2 — server clock + commit verification
+
+Para evitar falsos UNKNOWN por diferencias de reloj entre GitHub-hosted runners y PostgreSQL:
+
+- el runner NO envía el valor autoritativo de `observed_at`;
+- `write_observation` obtiene un `captured_at` generado por la BD inmediatamente antes de invocar el writer;
+- ese timestamp de servidor se pasa como `p_observed_at` y es el que se persiste;
+- el writer sigue validando que el tiempo no sea futuro respecto de su propia transacción.
+
+Además, la puerta no confía en una fecha de commit declarada por el workflow:
+
+- toma `observed_main_sha` del reporte;
+- consulta el commit exacto mediante la API pública de GitHub;
+- exige que la respuesta corresponda al mismo SHA;
+- usa la fecha del committer (fallback author) como `p_observed_main_committed_at`;
+- si no puede resolverla, falla cerrado con `GITHUB_COMMIT_METADATA_UNRESOLVED`.
+
+Esto mantiene dos relojes con autoridad distinta:
+
+```text
+ordering del source       -> fecha del commit verificada en GitHub
+observed_at persistido    -> reloj del servidor PostgreSQL
+```
 
