@@ -1,0 +1,70 @@
+{
+  "schema_version": "lf-post-pase-closure-gate/v1",
+  "solution_code": "POST_PASE_CLOSURE_GATE_V1",
+  "capability_code": "CLOSURE_GATE",
+  "owner": "LF_GOVERNANCE",
+  "status": "CANDIDATE_READ_ONLY",
+  "entry_guard": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "accepted_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
+    "direct_call_policy": "BLOCK"
+  },
+  "input_schema": "LF_POST_PASE_CLOSURE_REQUEST_V1",
+  "output_schema": "LF_POST_PASE_CLOSURE_VERDICT_V1",
+  "reuse_first": [
+    "FINAL_EVIDENCE",
+    "WAIVER_AUTHORITY",
+    "PLAN_AUTHORITY_DRIFT_GUARD_V1"
+  ],
+  "verdict_vocabulary": [
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "WAIVED"
+  ],
+  "terminal_status": {
+    "PASS": "CLOSED",
+    "WAIVED": "CLOSED",
+    "FAIL": "NOT_CLOSED",
+    "BLOCKED": "NOT_CLOSED"
+  },
+  "precedence": [
+    "BLOCKED",
+    "FAIL_OR_WAIVED",
+    "PASS"
+  ],
+  "final_evidence_contract": {
+    "schema_version": "LF_POST_PASE_FINAL_EVIDENCE_MANIFEST_V1",
+    "manifest_digest_required": true,
+    "terminal_outcome_source": "receipt_refs[].terminal_outcome",
+    "raw_evidence_forbidden": true,
+    "evidence_ledger_rehydration_forbidden": true
+  },
+  "waiver_contract": {
+    "authority": "WAIVER_AUTHORITY",
+    "receipt_schema": "LF_WAIVER_AUTHORITY_RECEIPT_V1",
+    "accepted_decision": "WAIVER_AUTHORIZED",
+    "eligible_terminal_outcome": "FAIL",
+    "blocked_control_waiver_forbidden": true,
+    "consumer_request_digest_crossbind_required": true,
+    "event_validation_exemption_is_not_waiver": true
+  },
+  "boundaries": {
+    "control_execution": false,
+    "evidence_collection": false,
+    "promotion": false,
+    "lifecycle_mutation": false,
+    "supabase_apply": false,
+    "cutover": false,
+    "runtime": false,
+    "production": false
+  },
+  "materialization": {
+    "supabase_projection_applied": false,
+    "current_pointer_promoted": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}

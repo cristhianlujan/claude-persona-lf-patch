@@ -1,0 +1,38 @@
+{
+  "schema_version": "lf-post-pase-closure-gate-inventory/v1",
+  "solution_code": "POST_PASE_CLOSURE_GATE_V1",
+  "capability_code": "CLOSURE_GATE",
+  "work_code": "SADM-PP-L3-017",
+  "owner": "LF_GOVERNANCE",
+  "status": "CANDIDATE_READ_ONLY",
+  "entry_guard": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+  "reuse_first": [
+    "FINAL_EVIDENCE",
+    "WAIVER_AUTHORITY",
+    "PLAN_AUTHORITY_DRIFT_GUARD_V1"
+  ],
+  "source_assets": [
+    "sandbox/lf_contract_gate_test/closure_gate/closure_gate_contract_v1.json",
+    "sandbox/lf_contract_gate_test/closure_gate/closure_gate_v1.py",
+    "sandbox/lf_contract_gate_test/closure_gate/test_closure_gate_v1.py",
+    "sandbox/lf_contract_gate_test/closure_gate/README.md",
+    "sandbox/lf_contract_gate_test/closure_gate/CLOSURE_GATE_source_projection_v1.sql"
+  ],
+  "verdicts": [
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "WAIVED"
+  ],
+  "boundaries": {
+    "evidence_collection": false,
+    "control_execution": false,
+    "promotion": false,
+    "lifecycle_mutation": false,
+    "supabase_apply": false,
+    "cutover": false,
+    "runtime": false,
+    "production": false
+  },
+  "materialization_policy": "SOURCE_ONLY_FAIL_CLOSED_UNTIL_DECLARED_DEPENDENCIES_ARE_MATERIALIZED"
+}
