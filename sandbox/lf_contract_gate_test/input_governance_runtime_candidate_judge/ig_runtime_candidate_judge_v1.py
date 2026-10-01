@@ -357,15 +357,14 @@ def _connect() -> Any:
         from psycopg.rows import dict_row
     except ImportError as exc:
         raise JudgeError("PSYCOPG_REQUIRED") from exc
-    project = os.environ.get("LF_SUPABASE_PROJECT_REF", "mhwmirqcgxxukpctffuv").strip()
+    project = os.environ.get("SUPABASE_PROJECT_ID", "mhwmirqcgxxukpctffuv").strip()
     password = os.environ.get("LF_SUPABASE_DB_PASSWORD", "").strip()
-    host = os.environ.get("LF_SUPABASE_DB_HOST", "aws-0-us-west-1.pooler.supabase.com").strip()
-    port = int(os.environ.get("LF_SUPABASE_DB_PORT", "6543"))
+    host = os.environ.get("SUPABASE_POOLER_HOST", "aws-1-us-east-1.pooler.supabase.com").strip()
     if not password:
         raise JudgeError("LF_SUPABASE_DB_PASSWORD_REQUIRED")
     return psycopg.connect(
         host=host,
-        port=port,
+        port=6543,
         dbname="postgres",
         user=f"postgres.{project}",
         password=password,
