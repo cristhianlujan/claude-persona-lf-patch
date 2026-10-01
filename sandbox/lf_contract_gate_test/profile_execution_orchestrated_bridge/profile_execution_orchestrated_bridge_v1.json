@@ -1,0 +1,45 @@
+{
+  "schema_version": "LF_PROFILE_EXECUTION_ORCHESTRATED_BRIDGE_CONTRACT_V1",
+  "solution_code": "PROFILE_EXECUTION_ORCHESTRATED_BRIDGE_V1",
+  "status": "CANDIDATE_READ_ONLY",
+  "capability_code": "PROFILE_EXECUTION_RUNTIME",
+  "purpose": "Plan an orchestrated profile child execution so the existing profile runtime can obtain an authentic dispatch receipt without creating a parallel runtime.",
+  "reused_authorities": {
+    "child_operation": "EJECUCION_PERFIL_LF",
+    "child_begin": "public.lf_profile_execution_begin_v1",
+    "dispatch_receipt": "public.fn_lf_orchestrator_dispatch_receipt_v1",
+    "entry_guard": "public.fn_lf_capability_orchestrator_entry_guard_v1",
+    "capability_binding": "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "runtime_queue": "private.lf_profile_runtime_queue_v1",
+    "profile_authority": "public.lf_activos",
+    "router": "ACT-0001",
+    "currentness": "CURRENTNESS_AUTHORITY"
+  },
+  "required_order": [
+    "BEGIN_CHILD_EXECUTION",
+    "ISSUE_DISPATCH_RECEIPT",
+    "BIND_CAPABILITY_ENTRY_GUARD",
+    "ENQUEUE_EXISTING_PROFILE_RUNTIME"
+  ],
+  "invariants": {
+    "consumer_execution_preexists_before_dispatch_receipt": true,
+    "consumer_manifest_crossbinds_orchestrator": true,
+    "consumer_manifest_crossbinds_plan_digest": true,
+    "consumer_manifest_capability_code": "PROFILE_EXECUTION_RUNTIME",
+    "queue_request_id_matches_consumer_execution_id": true,
+    "task_packet_is_exact_input": true,
+    "existing_profile_runtime_is_reused": true,
+    "new_queue_forbidden": true,
+    "new_profile_operation_forbidden": true,
+    "direct_dispatch_without_entry_guard_forbidden": true
+  },
+  "boundaries": {
+    "database_calls": false,
+    "writes_state": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "registers_capability": false,
+    "modifies_pase": false,
+    "modifies_post_pase": false
+  }
+}
