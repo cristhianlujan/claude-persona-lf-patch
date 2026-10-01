@@ -21,6 +21,21 @@
     "BIND_CAPABILITY_ENTRY_GUARD",
     "ENQUEUE_EXISTING_PROFILE_RUNTIME"
   ],
+  "worker_compatibility_contract": {
+    "consumer_execution_id": "EXEC-PROFILE-RUNTIME-<request_id-lowercase>",
+    "idempotency_key": "profile-runtime-queue:<request_id-lowercase>",
+    "request_sha256_preimage_fields": [
+      "input_sha256",
+      "profile_code",
+      "profile_slug",
+      "profile_source_digest",
+      "profile_source_revision",
+      "profile_source_paths"
+    ],
+    "input_literal": "canonical Task Packet JSON",
+    "target_path": "first profile_source_paths item",
+    "exact_replay_required": true
+  },
   "invariants": {
     "consumer_execution_preexists_before_dispatch_receipt": true,
     "consumer_manifest_crossbinds_orchestrator": true,
@@ -29,6 +44,7 @@
     "queue_request_id_matches_consumer_execution_id": true,
     "task_packet_is_exact_input": true,
     "existing_profile_runtime_is_reused": true,
+    "existing_worker_request_sha_algorithm_is_reused": true,
     "new_queue_forbidden": true,
     "new_profile_operation_forbidden": true,
     "direct_dispatch_without_entry_guard_forbidden": true
