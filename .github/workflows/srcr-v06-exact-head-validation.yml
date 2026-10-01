@@ -6,6 +6,8 @@ on:
 
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   validate-srcr-v06:
@@ -30,6 +32,8 @@ jobs:
           echo "PASS_EXACT_HEAD=4ef451ac7f9649ebc4709fb1ec7ebdcf8be47fba"
 
       - name: Run canonical pack validation against exact candidate
+        id: pack_validation
+        continue-on-error: true
         shell: bash
         env:
           BASE_SHA: be1ffbf8e5790d01bc19b376e35a99f72ce52fe1
@@ -46,9 +50,36 @@ jobs:
             --changed-paths-json "$CHANGED_PATHS_JSON" \
             --output-dir .lf_pack_validation \
             --timeout-seconds 120
-          cat .lf_pack_validation/summary.json
+
+      - name: Publish exact-head validation readback
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          test -f .lf_pack_validation/result.json
+          test -f .lf_pack_validation/summary.json
+          {
+            echo '### SRCR V0.6 exact-head validation readback'
+            echo
+            echo '- candidate: `4ef451ac7f9649ebc4709fb1ec7ebdcf8be47fba`'
+            echo '- base: `be1ffbf8e5790d01bc19b376e35a99f72ce52fe1`'
+            echo '- carrier only; no merge/apply/runtime activation'
+            echo
+            echo '```json'
+            cat .lf_pack_validation/result.json
+            echo '```'
+            echo
+            echo '```json'
+            cat .lf_pack_validation/summary.json
+            echo '```'
+          } > /tmp/readback.md
+          gh pr comment "$PR_NUMBER" --body-file /tmp/readback.md
 
       - name: Assert SRCR pack PASS
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
