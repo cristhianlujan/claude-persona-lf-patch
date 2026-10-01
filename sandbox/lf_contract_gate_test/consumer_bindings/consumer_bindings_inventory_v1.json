@@ -1,0 +1,21 @@
+{
+  "schema_version": "lf-consumer-bindings-inventory/v1",
+  "solution_code": "CONSUMER_BINDINGS_V1",
+  "work_code": "SADM-PP-L4-021",
+  "owner": "LF_GOVERNANCE",
+  "canonical_sources": [
+    "public.lf_capability_registry",
+    "public.lf_capability_current",
+    "public.lf_activo_relaciones",
+    "OWNER_RUNNER_CARRIER_AUTHORITY_V1",
+    "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "public.fn_lf_capability_bind_from_orchestrator_v1"
+  ],
+  "consumer_count": 3,
+  "post_pase_capability_count": 7,
+  "parallel_registry_count": 0,
+  "owner_recalculation_count": 0,
+  "binding_bypass_count": 0,
+  "zip_authority": false,
+  "materialization_state": "SOURCE_ONLY_NOT_LIVE"
+}
