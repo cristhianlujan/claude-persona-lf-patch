@@ -2,6 +2,7 @@ import json
 import subprocess
 from pathlib import Path
 
+import lf_material_currentness_v1 as material_currentness
 from lf_currentness_authority_v1 import compatibility_proof_sha256, evaluate_authority
 from lf_material_currentness_v1 import canonical_sha256, git_tree_material
 from lf_source_attestation_v1 import create_attestation, verify_attestation
@@ -162,3 +163,68 @@ def test_source_attestation_rejects_wrong_expected_authority(tmp_path):
     blocked = verify_attestation(repo=repo, receipt=receipt, expected_repo_identity="github://other/repo", expected_authority_ref="refs/heads/main", expected_binding=bind)
     assert not blocked["ready"]
     assert blocked["decision"] == "BLOCK_ATTESTATION_REPO_IDENTITY_MISMATCH"
+
+
+def _legacy_git_tree_material(repo: Path, rev: str, selectors: dict, required: bool = True):
+    out = sh(repo, "ls-tree", "-r", "--full-tree", rev)
+    entries = []
+    for line in out.splitlines():
+        if not line:
+            continue
+        meta, path = line.split("\t", 1)
+        mode, obj_type, sha = meta.split(" ", 2)
+        if obj_type == "blob" and material_currentness._matches(path, selectors):
+            entries.append({"path": path, "mode": mode, "blob_sha1": sha})
+    entries.sort(key=lambda row: row["path"])
+    if required and not entries:
+        raise AssertionError("legacy fixture unexpectedly empty")
+    return canonical_sha256(entries), entries
+
+
+def test_scoped_tree_reader_preserves_legacy_fingerprints(tmp_path):
+    repo, rev = setup_repo(tmp_path)
+    cases = [
+        {"paths": ["contract/api.json"]},
+        {"prefixes": ["contract/"]},
+        {"prefixes": ["impl/en"]},
+        {"globs": ["docs/*.md"]},
+        {"paths": ["contract/api.json"], "prefixes": ["impl/"], "globs": ["docs/*.md"]},
+        {"prefixes": ["impl/"], "globs": ["impl/*.py"]},
+    ]
+    for selectors in cases:
+        assert git_tree_material(repo, rev, selectors, True) == _legacy_git_tree_material(repo, rev, selectors, True)
+
+
+def test_scoped_tree_reader_passes_declared_pathspecs_to_git(tmp_path, monkeypatch):
+    repo, rev = setup_repo(tmp_path)
+    calls = []
+    original = material_currentness.run_git
+
+    def capture(repo_path, *args, **kwargs):
+        calls.append(args)
+        return original(repo_path, *args, **kwargs)
+
+    monkeypatch.setattr(material_currentness, "run_git", capture)
+    selectors = {"paths": ["contract/api.json"], "prefixes": ["impl/"], "globs": ["docs/*.md"]}
+    _, entries = git_tree_material(repo, rev, selectors, True)
+    tree_calls = [call for call in calls if call and call[0] == "ls-tree"]
+    assert len(tree_calls) == 1
+    args = tree_calls[0]
+    assert "--" in args
+    assert len(args[args.index("--") + 1:]) == 3
+    assert {row["path"] for row in entries} == {"contract/api.json", "impl/engine.py", "docs/readme.md"}
+
+
+def test_unbounded_or_invalid_tree_selectors_fail_closed(tmp_path):
+    repo, rev = setup_repo(tmp_path)
+    for selectors, expected in [
+        ({}, "GIT_TREE_SELECTOR_EMPTY"),
+        ({"prefixes": "impl/"}, "GIT_TREE_SELECTOR_PREFIXES_INVALID"),
+        ({"prefixes": ["impl"]}, "GIT_TREE_PREFIX_UNBOUNDED:impl"),
+        ({"globs": ["*.py"]}, "GIT_TREE_GLOB_UNBOUNDED:*.py"),
+    ]:
+        try:
+            git_tree_material(repo, rev, selectors, True)
+            raise AssertionError("selector should have failed closed")
+        except material_currentness.CurrentnessError as exc:
+            assert str(exc) == expected
