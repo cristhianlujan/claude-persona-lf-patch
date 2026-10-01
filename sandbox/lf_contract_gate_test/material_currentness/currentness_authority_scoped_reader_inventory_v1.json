@@ -1,0 +1,77 @@
+{
+  "schema_version": "lf-currentness-authority-scoped-reader-inventory/v1",
+  "solution_code": "CURRENTNESS_AUTHORITY_SCOPED_READER_V1",
+  "work_code": "SADM-PP-L2-011",
+  "capability_code": "CURRENTNESS_AUTHORITY",
+  "classification": "REUSE_EXTEND_EXISTING_ENGINE",
+  "owner": "LF_GOVERNANCE",
+  "fast_lookup_map": {
+    "authority": "inventory.fn_lookup_v2",
+    "resolved_object_ref": "asset://CURRENTNESS_AUTHORITY",
+    "source_of_truth": true,
+    "status": "ACTIVO"
+  },
+  "live_authority": {
+    "asset_version": "1.0.0",
+    "registry_status": "ACTIVE",
+    "registry_owner_scope_observed": "LF_GOVERNANCE_S31",
+    "target_owner_scope": "LF_GOVERNANCE",
+    "current_version": "1.0.0",
+    "current_manifest_sha256": "9f715dc226fd55a60c4002fa1960f848c4bf39e80b8863792eeef451073fce09",
+    "current_pointer_change_required": false,
+    "parallel_engine_created": false
+  },
+  "source_refs": {
+    "reader": "sandbox/lf_contract_gate_test/material_currentness/lf_material_currentness_v1.py",
+    "authority": "sandbox/lf_contract_gate_test/material_currentness/lf_currentness_authority_v1.py",
+    "contract": "sandbox/lf_contract_gate_test/material_currentness/LF_MATERIAL_CURRENTNESS_CONTRACT_V1.json",
+    "readme": "sandbox/lf_contract_gate_test/material_currentness/README.md",
+    "tests": "sandbox/lf_contract_gate_test/material_currentness/test_lf_currentness_authority_v1.py",
+    "live_manifest_unchanged": "sandbox/lf_contract_gate_test/material_currentness/CURRENTNESS_AUTHORITY_v1.manifest.json"
+  },
+  "scoped_reader": {
+    "mode": "DECLARED_BOUNDED_PATHSPECS_ONLY",
+    "legacy_mode": "FULL_REPOSITORY_TREE_THEN_FILTER",
+    "full_repository_tree_enumeration_forbidden": true,
+    "final_filter": "ORIGINAL_SELECTOR_MATCH_SEMANTICS",
+    "fingerprint_algorithm_unchanged": "SHA256_CANONICAL_SORTED_PATH_MODE_BLOB_SHA1",
+    "selector_rules": {
+      "paths": "EXACT_ROOT_LITERAL",
+      "prefixes": "CONTAINING_DIRECTORY_REQUIRED",
+      "globs": "BOUNDED_DIRECTORY_BEFORE_WILDCARD_REQUIRED",
+      "unbounded": "UNKNOWN_FAIL_CLOSED"
+    }
+  },
+  "observed_incoming_relations": [
+    {"from": "ASSET_RETIREMENT_GOVERNANCE", "type": "DEPENDE_DE", "to": "CURRENTNESS_AUTHORITY"},
+    {"from": "ASSURANCE_EVALUATOR", "type": "DEPENDE_DE", "to": "CURRENTNESS_AUTHORITY"},
+    {"from": "FULL_REGRESSION", "type": "DEPENDE_DE", "to": "CURRENTNESS_AUTHORITY"},
+    {"from": "LF_CONTRACT_CHECK", "type": "DEPENDE_DE", "to": "CURRENTNESS_AUTHORITY"},
+    {"from": "VISUAL_EVIDENCE_GATE", "type": "DEPENDE_DE", "to": "CURRENTNESS_AUTHORITY"}
+  ],
+  "source_only_relation_projection": {
+    "from": "CURRENTNESS_AUTHORITY",
+    "type": "RELACIONADO_CAPACIDADES",
+    "to": "LF_GOVERNANCE",
+    "semantics": "administrative ownership/discoverability only; not applicability or runtime ownership",
+    "applied": false
+  },
+  "ekb_refs": [
+    "POST-PASE-CURRENTNESS-GLOBAL-GIT-TREE-SCAN-001",
+    "PASE-HANDOFF-REDISCOVERY-FAST-PATH-001"
+  ],
+  "verification": {
+    "focused_regression": "PASS_CURRENTNESS_SCOPED_READER checks=9",
+    "legacy_fingerprint_equivalence": true,
+    "unrelated_paths_not_traversed_for_bounded_material": true,
+    "unbounded_selector_fail_closed": true
+  },
+  "materialization": {
+    "supabase_projection_applied": false,
+    "owner_scope_normalized_live": false,
+    "current_pointer_changed": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}
