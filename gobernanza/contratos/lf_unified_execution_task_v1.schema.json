@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:lf:unified-execution:task:v1",
+  "title": "LF Unified Execution Task V1",
+  "description": "Generic task envelope consumed by executors. It carries frozen execution identity and task inputs but never selects the next task.",
+  "type": "object",
+  "required": [
+    "schema",
+    "execution_id",
+    "operation_code",
+    "operation_spec_digest",
+    "task_id",
+    "step_id",
+    "attempt_no",
+    "profile_code",
+    "profile_source_sha",
+    "executor_binding_id",
+    "executor_binding_digest",
+    "required_capabilities",
+    "input_refs",
+    "evidence_refs",
+    "lease_required"
+  ],
+  "properties": {
+    "schema": {
+      "const": "LF_UNIFIED_EXECUTION_TASK_V1"
+    },
+    "execution_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operation_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operation_spec_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempt_no": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "profile_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profile_source_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "executor_binding_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "executor_binding_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "required_capabilities": {
+      "type": "array"
+    },
+    "input_refs": {
+      "type": "array"
+    },
+    "evidence_refs": {
+      "type": "array"
+    },
+    "lease_required": {
+      "const": true
+    }
+  },
+  "propertyNames": {
+    "not": {
+      "pattern": "^(next_|selected_next_|route$|routing$)"
+    }
+  },
+  "additionalProperties": true,
+  "x-lf-authority": {
+    "spec_id": "PILOT-SRCR-UNIFIED-EXECUTION-V1",
+    "gate": "G03_TASK_ENVELOPE",
+    "handoff_event_id": 15186,
+    "strict_sequence_event_id": 15188,
+    "scope_consolidation_event_id": 15197,
+    "g01_contract_pr": 1019,
+    "g01_contract_head": "ae1bcbb3c443396347805f38037556bce9e7f88b",
+    "g02_candidate_pr": 1020,
+    "g02_candidate_head": "6dea45eea313b46cfc3afed3cb369deab43dcab1",
+    "frozen_profile_source_sha": "cb455027df2d2e2795ab66d41a539e217a04966f",
+    "next_task_owner": "advance_execution",
+    "executor_selects_next_task": false,
+    "candidate_only": true
+  }
+}
