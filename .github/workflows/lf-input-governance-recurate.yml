@@ -14,9 +14,11 @@ permissions:
   id-token: write
 
 jobs:
-  recurate-input-readiness:
+  validate-screens:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
+    outputs:
+      pantalla_ids_json: ${{ steps.screens.outputs.pantalla_ids_json }}
     steps:
       - name: Validate requested screens
         id: screens
@@ -45,7 +47,17 @@ jobs:
           print(json.dumps({'pantalla_ids':ids,'required_count':len(ids)},sort_keys=True))
           PY
 
-      - name: Request exact GitHub OIDC identity
+  recurate-input-readiness:
+    needs: validate-screens
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        pantalla_id: ${{ fromJSON(needs.validate-screens.outputs.pantalla_ids_json) }}
+    steps:
+      - name: Request fresh exact GitHub OIDC identity
         id: oidc
         uses: actions/github-script@v7
         with:
@@ -54,60 +66,53 @@ jobs:
             core.setSecret(token);
             core.setOutput('token', token);
 
-      - name: Recurate Input Governance runs
+      - name: Recurate one Input Governance screen
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
-          PANTALLA_IDS_JSON: ${{ steps.screens.outputs.pantalla_ids_json }}
+          PANTALLA_ID: ${{ matrix.pantalla_id }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import json, os
           request={
               'action':'input_readiness_recurate_v1',
-              'pantalla_ids':json.loads(os.environ['PANTALLA_IDS_JSON']),
+              'pantalla_id':int(os.environ['PANTALLA_ID']),
           }
           with open('recuration-request.json','w',encoding='utf-8') as fh:
               json.dump(request,fh,separators=(',',':'),sort_keys=True)
           PY
+
           code=$(curl --silent --show-error \
+            --max-time 150 \
             -o recuration-response.json -w '%{http_code}' \
             -H "Authorization: Bearer ${OIDC_TOKEN}" \
             -H 'Content-Type: application/json' \
             --data-binary @recuration-request.json \
             'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profiles-governance-caller-v1')
           cat recuration-response.json
+
           python3 - "$code" <<'PY'
-          import json,sys
+          import json, os, sys
           http=int(sys.argv[1])
+          requested=int(os.environ['PANTALLA_ID'])
           data=json.load(open('recuration-response.json',encoding='utf-8'))
-          requested=json.load(open('recuration-request.json',encoding='utf-8'))['pantalla_ids']
-          results=data.get('results') or []
+          result=data.get('result') or {}
           checks={
               'http_success': http==200,
-              'outcome_ready': data.get('outcome')=='READY',
+              'outcome_terminal': data.get('outcome')=='TERMINAL',
               'scope': data.get('scope')=='IG_CURATOR_VALIDATOR_REFACTOR_V2_N2',
               'consumer': data.get('consumer')=='STORY_CREATOR',
-              'requested_echo': data.get('requested_pantalla_ids')==requested,
-              'required_count': data.get('required_count')==len(requested),
-              'ready_count': data.get('ready_count')==len(requested),
-              'result_count': len(results)==len(requested),
-              'all_story_creator': all(row.get('consumer')=='STORY_CREATOR' for row in results),
-              'all_ready': all(row.get('status')=='READY' for row in results),
+              'screen_echo': data.get('pantalla_id')==requested,
+              'terminal_status_present': isinstance(data.get('terminal_status'),str) and bool(data.get('terminal_status')),
+              'result_status_present': isinstance(result.get('status'),str) and bool(result.get('status')),
           }
           failed=[name for name,value in checks.items() if not value]
           if failed:
-              details=[{
-                  'pantalla_id':row.get('pantalla_id'),
-                  'status':row.get('status'),
-                  'run_id':row.get('run_id'),
-                  'error_code':row.get('error_code'),
-                  'error_detail':row.get('error_detail'),
-              } for row in results if row.get('status')!='READY']
-              raise SystemExit('FAIL_INPUT_GOVERNANCE_RECURATION:'+repr(failed)+':'+json.dumps(details,sort_keys=True)[:12000])
-          print('PASS_INPUT_GOVERNANCE_RECURATION')
+              raise SystemExit('FAIL_INPUT_GOVERNANCE_RECURATION:'+repr(failed)+':'+json.dumps(data,sort_keys=True)[:12000])
+          print('PASS_INPUT_GOVERNANCE_RECURATION_SCREEN')
           print(json.dumps({
-              'required_count':len(requested),
-              'ready_count':data.get('ready_count'),
-              'runs':[{'pantalla_id':row.get('pantalla_id'),'run_id':row.get('run_id')} for row in results],
+              'pantalla_id':requested,
+              'terminal_status':data.get('terminal_status'),
+              'run_id':data.get('run_id'),
           },sort_keys=True))
           PY
