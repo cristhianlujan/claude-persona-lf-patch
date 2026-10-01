@@ -1,0 +1,22 @@
+{
+  "schema_version": "lf-capability-cutover-inventory/v1",
+  "work_code": "SADM-PP-L5-022",
+  "cutover_code": "EVIDENCE_ANTIREPLAY_CUTOVER_V1",
+  "capability_code": "EVIDENCE_ANTIREPLAY",
+  "version": "1.1.0",
+  "mode": "ISOLATED_REVERSIBLE_EXACT_HEAD",
+  "source_revision": "407600b295781fcf065e89d4da0d447a957c58f0",
+  "hardening_source": {
+    "path": "supabase/migrations/20260930133539_evidence_ledger_crossbind_hardening_v1.sql",
+    "migration_version": "20260930133539",
+    "statement_sha256": "7b1abd2d539a1b58403514d987ec0cdd156d15ff74d45212f74466e6c5dfee0a"
+  },
+  "live_guard_md5": "2eba89c4c6c87904205564d39994f2e5",
+  "dependencies": ["EVIDENCE_LEDGER@1.1.0", "EVIDENCE_RESOLVER_REGISTRY@1.0.0"],
+  "ledger_rows_mutated": false,
+  "runtime_or_deploy_change": false,
+  "production_activation": false,
+  "bulk_cutover": false,
+  "artifact_transport_policy": "PASE_POST_PASE_ARTIFACT_TRANSPORT_NO_ZIP_V1",
+  "rollback_ref": "sandbox/lf_contract_gate_test/capability_cutover/evidence_antireplay/EVIDENCE_ANTIREPLAY_cutover_rollback_v1.sql"
+}
