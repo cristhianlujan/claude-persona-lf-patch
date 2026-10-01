@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import copy
 import importlib.util
 from pathlib import Path
 
@@ -24,7 +23,7 @@ def event() -> dict:
         "entidad_codigo": PLAN,
         "payload": {
             "authority": "LF_GOVERNANCE",
-            "decision": "AUTHORIZED_PLAN_DELTA",
+            "authorizes": ["PLAN_DELTA_AUTHORITY"],
             "authorization_scope": "PLAN_DELTA_AUTHORITY",
             "plan_id": PLAN,
             "previous_plan_digest": PREV,
@@ -59,17 +58,21 @@ for field, value, reason in [
     out = call(e)
     assert out["decision"] == "PLAN_DELTA_NOT_AUTHORIZED" and out["reason"] == reason; checks += 1
 
-for field, value, reason in [
+payload_cases = [
     ("authority", "OTHER_AUTHORITY", "AUTHORIZATION_AUTHORITY_MISMATCH"),
-    ("decision", "APPROVED", "AUTHORIZATION_DECISION_MISMATCH"),
     ("authorization_scope", "OTHER_SCOPE", "AUTHORIZATION_SCOPE_MISMATCH"),
     ("previous_plan_digest", "2" * 64, "AUTHORIZATION_PREVIOUS_DIGEST_MISMATCH"),
     ("next_plan_digest", "3" * 64, "AUTHORIZATION_NEXT_DIGEST_MISMATCH"),
     ("self_authorization", True, "SELF_AUTHORIZATION_NOT_EXPLICITLY_FORBIDDEN"),
-]:
+]
+for field, value, reason in payload_cases:
     e = event(); e["payload"][field] = value
     out = call(e)
     assert out["decision"] == "PLAN_DELTA_NOT_AUTHORIZED" and out["reason"] == reason; checks += 1
+
+e = event(); e["payload"]["authorizes"] = ["OTHER_SCOPE"]
+out = call(e)
+assert out["decision"] == "PLAN_DELTA_NOT_AUTHORIZED" and out["reason"] == "AUTHORIZATION_TOKEN_MISSING"; checks += 1
 
 assert checks == 12, checks
 print(f"PASS_PLAN_DELTA_AUTHORITY_V1 checks={checks}")
