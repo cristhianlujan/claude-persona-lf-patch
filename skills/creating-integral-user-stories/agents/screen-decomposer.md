@@ -33,13 +33,15 @@ El worker no puede:
 
 Ejecutar únicamente cuando:
 
-- `worker_profile = PERFIL_SCREEN_DECOMPOSER_LF`;
+- el `task_packet.worker_binding` fue resuelto por el orquestador y corresponde a este worker o a un worker compatible autorizado para la descomposición;
 - el Task Packet autoriza `screen_decomposition` y la evidencia asociada;
 - la pantalla objetivo, versión y snapshot están identificados;
 - J01 terminó en `PASS_WITH_EVIDENCE` y su evidencia es resoluble;
 - los inventarios requeridos están disponibles como arrays explícitos;
-- el perfil del worker es distinto de la identidad del juez;
+- la identidad del worker resuelto es distinta de la identidad del juez;
 - el contrato, schema y runtime de J02 están disponibles.
+
+`PERFIL_SCREEN_DECOMPOSER_LF` puede ser una proyección de compatibilidad del binding, pero no es la autoridad de selección del worker.
 
 No ejecutar para redacción libre, implementación de código, aprobación, producción, activación de runtime o merge.
 
@@ -47,7 +49,7 @@ No ejecutar para redacción libre, implementación de código, aprobación, prod
 
 | Entrada | Contenido mínimo |
 |---|---|
-| `task_packet` | worker, target, scopes, assertions, juez y `retry_limit` |
+| `task_packet` | binding de worker, target, scopes, assertions, juez y `retry_limit` |
 | `source_snapshot` | contenido íntegro, versión, SHA-256 y referencia resoluble |
 | `screen_identity` | `screen_code`, módulo, estado y responsabilidad principal |
 | `context_inventory` | contextos, zonas, modos, estados vacíos y variantes |
@@ -65,7 +67,7 @@ Todas las entradas deben corresponder al mismo target, versión y snapshot.
 
 Comprobar, en este orden:
 
-1. Task Packet válido y target exacto.
+1. Task Packet v0.4 válido, `worker_binding` con `ORCHESTRATOR_ENTRY_ACCEPTED` y target exacto.
 2. Fuente íntegra, versión y SHA-256 de 64 hexadecimales.
 3. `screen_identity.screen_code` presente y consistente con el target.
 4. J01 con `PASS_WITH_EVIDENCE`, identidad independiente y evidencia resoluble.
@@ -74,7 +76,7 @@ Comprobar, en este orden:
 7. Responsabilidad principal no vacía.
 8. Schema `schemas/screen-decomposition.schema.json` disponible.
 9. Juez `judges/screen-decomposition.yaml` disponible.
-10. Runtime `scripts/validate_screen_decomposition.py` disponible y con SHA reconciliable.
+10. Runtime candidato `scripts/validate_screen_decomposition_visual.py` (`J02 v0.8`) disponible y con SHA reconciliable contra el registro declarado por el juez.
 11. Ausencia de decisiones bloqueantes abiertas.
 12. Ausencia de cambios no autorizados.
 
@@ -82,6 +84,7 @@ Retornar `BLOCKED` sin producir cambios cuando se cumpla cualquiera de estas con
 
 ```text
 required_input_missing = true
+worker_binding_invalid = true
 source_hash_missing = true
 source_ref_unresolvable = true
 source_screen_not_found = true
@@ -126,12 +129,12 @@ required_decision_prevents_decomposition = true
 10. Clasificar controles transversales como `CROSS_CUTTING` salvo capacidad independiente demostrable.
 11. Crear un `coverage_item` para cada contexto, campo, permiso y transición.
 12. Si la ingesta es `screen-ingestion/v0.2`, copiar `visual_observation_inventory` sin mutarlo y verificar cobertura 1:1 por `(observation_code, source_ref)`; no convertir tokens, copy, responsive o accesibilidad en unidades funcionales solo por existir visualmente.
-12. Verificar que cada `mapped_to` resuelva a una unidad declarada.
-13. Registrar contradicciones como `CONFLICT` o `pending_decision`; no convertirlas en hechos.
-14. Recalcular `coverage_summary` desde los objetos, sin confiar en conteos autorreportados.
-15. Validar el objeto completo contra `schemas/screen-decomposition.schema.json`.
-16. Ejecutar las autoverificaciones de la sección 9.
-17. Emitir evidencia y handoff a J02 sin ejecutar ni sustituir al juez.
+13. Verificar que cada `mapped_to` resuelva a una unidad declarada.
+14. Registrar contradicciones como `CONFLICT` o `pending_decision`; no convertirlas en hechos.
+15. Recalcular `coverage_summary` desde los objetos, sin confiar en conteos autorreportados.
+16. Validar el objeto completo contra `schemas/screen-decomposition.schema.json`.
+17. Ejecutar las autoverificaciones de la sección 9.
+18. Emitir evidencia y handoff a J02 sin ejecutar ni sustituir al juez.
 
 ## 8. Contrato canónico de salida
 
@@ -198,7 +201,7 @@ La autoverificación prepara evidencia; no sustituye al juez.
 
 ```json
 {
-  "worker_profile": "PERFIL_SCREEN_DECOMPOSER_LF",
+  "worker_binding_ref": "task-packet://current/worker_binding",
   "worker_result": "READY_FOR_JUDGE",
   "target_ref": "SCR-CUSTOMER-SEARCH",
   "source_snapshot_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -240,7 +243,7 @@ Emitir `READY_FOR_JUDGE` únicamente cuando schema, autoverificaciones, cobertur
 
 Retornar `RETURN_TO_WORKER` cuando exista cobertura pendiente, duplicado, `mapped_to` desconocido, resumen inconsistente o unidad incompleta dentro del scope reparable.
 
-Retornar `BLOCKED` cuando falte fuente, J01, schema, juez, runtime, identidad independiente, SHA reconciliable o una decisión externa indispensable.
+Retornar `BLOCKED` cuando falte binding gobernado, fuente, J01, schema, juez, runtime, identidad independiente, SHA reconciliable o una decisión externa indispensable.
 
 ## 12. Reparación
 
@@ -274,6 +277,7 @@ Si la reparación exige cambiar la fuente, una decisión anterior, el juez, el r
 Entregar:
 
 - objeto completo validado por schema;
+- binding del worker resuelto por orquestador;
 - target, versión y SHA de fuente;
 - resultado y evidencia de J01;
 - inventarios y conteos recalculados;
