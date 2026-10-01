@@ -43,7 +43,7 @@ jobs:
           CHANGED_PATHS_JSON="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | python3 -c 'import json,sys; print(json.dumps([line.strip() for line in sys.stdin if line.strip()]))')"
           python3 sandbox/lf_contract_gate_test/pack_validation_contract/run_pack_validation_flow_v1.py \
             --repo-root . \
-            --validation-contract gobernanza/contratos/pack_validation_execute_pack_checks_v1.json \
+            --validation-contract gobernanza/contratos/pack_validation_define_contract_v1.json \
             --discovery-contract gobernanza/contratos/pack_discovery_resolve_affected_packs_v1.json \
             --base-sha "$BASE_SHA" \
             --head-sha "$HEAD_SHA" \
