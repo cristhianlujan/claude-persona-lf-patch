@@ -91,6 +91,38 @@ Cuando una capability real tenga binding canónico, el consumidor debe poder res
 
 Esta superficie todavía no materializa ese binding E2E. `binding_materialized=false` permanece correcto.
 
+## Fase 03 — proyección de registro candidata
+
+`LF_GOVERNANCE_registry_projection_v1.sql` añade una proyección **candidata y no aplicada** para que la identidad administrativa pueda quedar visible en `public.lf_activos` sin convertirla en capability ni operación.
+
+Clasificación prevista:
+
+- `codigo_activo = LF_GOVERNANCE`;
+- `tipo_activo = REGLA`;
+- `subtipo_activo = SUPER_ADMIN_GOVERNANCE_ROOT`;
+- documental `CANDIDATO`;
+- operativo `READ_ONLY`;
+- impacto automático `BLOQUEADO`;
+- `lf_capability_registry`: no aplica por clasificación;
+- `lf_operation_registry`: no aplica por clasificación.
+
+### Relaciones materiales
+
+En `SADM-PP-L1-007` no existe todavía evidencia canónica que autorice un tipo de relación asset-to-asset para ownership administrativo. Por eso **no se inventa una relación** para satisfacer el inventario.
+
+La autoridad que debe resolver `control -> super_admin -> capability -> owner-runner -> carrier -> state -> source_revision` es `SADM-PP-L1-008`. Hasta ese lote:
+
+- `public.lf_activo_relaciones` se lee para detectar conflictos;
+- no se crea un edge administrativo improvisado;
+- `GOBERNADO_POR` sigue reservado a la semántica ya observada del Router;
+- `binding_materialized=false` continúa correcto.
+
+### Estado de aplicación
+
+La proyección es source-only. No se ha ejecutado en Supabase y no cambia la afirmación contractual `supabase_registered=false`.
+
+Para aplicar o promover esta proyección se requiere autorización separada. Este lote no autoriza merge, cutover, runtime ni producción.
+
 ## No alcance
 
 - no edición de `lf_ci_control_impact_registry_v2.json`;
