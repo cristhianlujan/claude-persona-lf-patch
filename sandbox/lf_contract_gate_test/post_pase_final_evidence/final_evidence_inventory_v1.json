@@ -19,9 +19,18 @@
     "sandbox/lf_contract_gate_test/post_pase_final_evidence/README.md",
     "sandbox/lf_contract_gate_test/post_pase_final_evidence/FINAL_EVIDENCE_source_projection_v1.sql"
   ],
+  "terminal_outcome_projection": {
+    "source": "SAME_VALIDATED_TYPED_RECEIPT",
+    "allowed": ["PASS", "FAIL", "BLOCKED"],
+    "waived_forbidden": true,
+    "cross_bound_to": ["receipt_id", "receipt_sha256"],
+    "manifest_digest_includes_outcome": true
+  },
   "boundaries": {
     "new_evidence_store": false,
     "control_reexecution": false,
+    "evidence_collection": false,
+    "ledger_rehydration": false,
     "closure_verdict": false,
     "promotion": false,
     "lifecycle_mutation": false,
