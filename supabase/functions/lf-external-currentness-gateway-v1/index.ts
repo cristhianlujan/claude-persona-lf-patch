@@ -4,6 +4,7 @@ import {
   AUDIENCE,
   REPOSITORY,
   validateGatewayClaims,
+  requireObservedMainMatchesWorkflow,
   requireEdgeReadCredential,
   type GatewayIdentity,
 } from "./auth.ts";
@@ -197,6 +198,7 @@ async function readSnapshot(identity: GatewayIdentity): Promise<Response> {
 async function writeObservation(body: Record<string, unknown>, identity: GatewayIdentity): Promise<Response> {
   const report = reportObject(body.report);
   const observedMainSha = typeof report.observed_main_sha === "string" ? report.observed_main_sha : "";
+  requireObservedMainMatchesWorkflow(observedMainSha, identity);
   const verifiedCommit = await githubCommitMetadata(observedMainSha);
 
   // Get DB server time immediately before write. This timestamp, not a runner clock,

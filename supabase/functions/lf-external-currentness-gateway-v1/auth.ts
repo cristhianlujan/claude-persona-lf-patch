@@ -61,6 +61,16 @@ export function validateGatewayClaims(payload: Claims): GatewayIdentity {
   };
 }
 
+export function requireObservedMainMatchesWorkflow(
+  observedMainSha: string,
+  identity: GatewayIdentity,
+): string {
+  if (observedMainSha !== identity.workflowSha) {
+    throw new Error("REPORT_MAIN_SHA_MISMATCH");
+  }
+  return observedMainSha;
+}
+
 export function requireEdgeReadCredential(value: string): string {
   const token = value.trim();
   if (!token) throw new Error("EDGE_READ_CREDENTIAL_MISSING");
