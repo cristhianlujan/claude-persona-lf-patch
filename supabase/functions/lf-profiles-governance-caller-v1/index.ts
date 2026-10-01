@@ -16,6 +16,10 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
 const JWKS = createRemoteJWKSet(new URL(`${ISSUER}/.well-known/jwks`));
 
+// Hosted Edge requests must respond before the 150s idle timeout. Keep 1s for caller framing.
+const INPUT_GOV_RECURATION_TIMEOUT_MS = 149000;
+const DEFAULT_RUNTIME_TIMEOUT_MS = 120000;
+
 const OIDC_IDENTITIES = [
   {
     method: "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1",
@@ -89,7 +93,11 @@ async function requireOidc(req: Request): Promise<{ payload: JWTPayload; identit
   return { payload, identity };
 }
 
-async function callRuntime(slug: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+async function callRuntime(
+  slug: string,
+  body: Record<string, unknown>,
+  timeoutMs = DEFAULT_RUNTIME_TIMEOUT_MS,
+): Promise<Record<string, unknown>> {
   const response = await fetch(`${SUPABASE_URL}/functions/v1/${slug}`, {
     method: "POST",
     headers: {
@@ -97,7 +105,7 @@ async function callRuntime(slug: string, body: Record<string, unknown>): Promise
       "content-type": "application/json",
     },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(120000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   const text = await response.text();
   let payload: Record<string, unknown>;
@@ -110,11 +118,12 @@ async function callRuntime(slug: string, body: Record<string, unknown>): Promise
 async function materializeScreen(
   screen: { pantalla_id: number; codigo?: string },
   consumer = "STORY_CREATOR",
+  timeoutMs = DEFAULT_RUNTIME_TIMEOUT_MS,
 ) {
   const payload = await callRuntime("input-governance-agent-v1", {
     pantalla_id: screen.pantalla_id,
     consumer,
-  });
+  }, timeoutMs);
   const result = (payload.result ?? {}) as Record<string, unknown>;
   return {
     ...screen,
@@ -123,26 +132,6 @@ async function materializeScreen(
     run_id: result.run_id ?? result.latest_run_id ?? null,
     payload,
   };
-}
-
-async function recurateScreens(pantallaIds: number[]) {
-  const results: Record<string, unknown>[] = [];
-  for (const pantallaId of pantallaIds) {
-    try {
-      results.push(await materializeScreen({ pantalla_id: pantallaId }, "STORY_CREATOR"));
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      results.push({
-        pantalla_id: pantallaId,
-        consumer: "STORY_CREATOR",
-        status: "ERROR",
-        run_id: null,
-        error_code: "INPUT_GOVERNANCE_AGENT_CALL_FAILED",
-        error_detail: message.slice(0, 1800),
-      });
-    }
-  }
-  return results;
 }
 
 Deno.serve(async (req: Request) => {
@@ -175,42 +164,55 @@ Deno.serve(async (req: Request) => {
     };
 
     if (action === RECURATION_ACTION) {
-      const rawIds = body.pantalla_ids;
-      if (!Array.isArray(rawIds) || rawIds.length === 0) {
-        return json({ outcome: "BLOCKED", code: "RECURATION_SCREEN_LIST_REQUIRED", caller }, 400);
+      if (Object.prototype.hasOwnProperty.call(body, "pantalla_ids")) {
+        return json({
+          outcome: "BLOCKED",
+          code: "RECURATION_SINGLE_SCREEN_REQUIRED",
+          caller,
+          allowed_pantalla_ids: RECURATION_SCREEN_IDS,
+        }, 400);
       }
-      const pantallaIds = rawIds.map((value) => typeof value === "number" ? value : Number.NaN);
-      if (pantallaIds.some((value) => !Number.isInteger(value))) {
+      const pantallaId = typeof body.pantalla_id === "number" ? body.pantalla_id : Number.NaN;
+      if (!Number.isInteger(pantallaId)) {
         return json({ outcome: "BLOCKED", code: "RECURATION_SCREEN_ID_INVALID", caller }, 400);
       }
-      if (new Set(pantallaIds).size !== pantallaIds.length) {
-        return json({ outcome: "BLOCKED", code: "RECURATION_SCREEN_DUPLICATE", caller, pantalla_ids: pantallaIds }, 400);
-      }
-      const forbidden = pantallaIds.filter((value) => !RECURATION_SCREEN_SET.has(value));
-      if (forbidden.length > 0) {
+      if (!RECURATION_SCREEN_SET.has(pantallaId)) {
         return json({
           outcome: "BLOCKED",
           code: "RECURATION_SCREEN_NOT_ALLOWED",
           caller,
-          forbidden_pantalla_ids: forbidden,
+          pantalla_id: pantallaId,
           allowed_pantalla_ids: RECURATION_SCREEN_IDS,
         }, 400);
       }
 
-      const results = await recurateScreens(pantallaIds);
-      const readyCount = results.filter((item) => item.status === "READY").length;
-      const ready = readyCount === pantallaIds.length;
+      const result = await materializeScreen(
+        { pantalla_id: pantallaId },
+        "STORY_CREATOR",
+        INPUT_GOV_RECURATION_TIMEOUT_MS,
+      );
+      const terminal = typeof result.status === "string" && result.status.length > 0;
+      if (!terminal) {
+        return json({
+          outcome: "BLOCKED",
+          code: "INPUT_GOVERNANCE_AGENT_TERMINAL_STATUS_MISSING",
+          scope: "IG_CURATOR_VALIDATOR_REFACTOR_V2_N2",
+          caller,
+          consumer: "STORY_CREATOR",
+          pantalla_id: pantallaId,
+          result,
+        }, 409);
+      }
       return json({
-        outcome: ready ? "READY" : "BLOCKED",
+        outcome: "TERMINAL",
         scope: "IG_CURATOR_VALIDATOR_REFACTOR_V2_N2",
         caller,
         consumer: "STORY_CREATOR",
-        required_count: pantallaIds.length,
-        ready_count: readyCount,
-        requested_pantalla_ids: pantallaIds,
-        allowed_pantalla_ids: RECURATION_SCREEN_IDS,
-        results,
-      }, ready ? 200 : 409);
+        pantalla_id: pantallaId,
+        terminal_status: result.status,
+        run_id: result.run_id,
+        result,
+      });
     }
 
     if (action === "input_readiness_screen_v1") {
