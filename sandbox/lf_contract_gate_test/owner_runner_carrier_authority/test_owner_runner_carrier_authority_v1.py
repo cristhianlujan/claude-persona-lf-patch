@@ -64,6 +64,10 @@ def main() -> None:
     contract = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
     R.validate_contract(contract)
     assert contract["invariants"]["persistent_binding_catalog_forbidden"] is True
+    assert contract["invariants"]["local_guard_readback_is_not_authority"] is True
+    assert contract["invariants"]["invocation_authenticity_belongs_to_l1_009"] is True
+    assert contract["entry_contract"]["local_shape_validation_is_authority"] is False
+    assert contract["entry_contract"]["invocation_wiring_work_code"] == "SADM-PP-L1-009"
     assert contract["source_authorities"]["classification_evidence"].endswith("pase_control_binding_inventory_v1.json")
     checks += 1
 
