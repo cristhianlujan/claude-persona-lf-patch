@@ -62,7 +62,7 @@ Does not:
 - `plan_delta_authority_v1.py`: deterministic reference implementation.
 - `plan_delta_authority_contract_v1.json`: authority contract.
 - `test_plan_delta_authority_v1.py`: focused deterministic regression.
-- `supabase/migrations/20261001174500_lf_plan_delta_authority_readback_producer_v1.sql`: governed materialization.
+- `supabase/migrations/20261001174151_lf_plan_delta_authority_readback_producer_v1.sql`: governed materialization; filename matches the applied migration version.
 - `PLAN_DELTA_AUTHORITY_READBACK_rollback_v1.sql`: exact rollback script, not executed by this unit.
 
 ## Expected test

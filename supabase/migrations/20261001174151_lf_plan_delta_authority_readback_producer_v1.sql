@@ -74,8 +74,6 @@ begin
     return jsonb_build_object('schema_version','LF_PLAN_DELTA_AUTHORITY_READBACK_V1','authority','PLAN_AUTHORITY','decision','PLAN_DELTA_NOT_AUTHORIZED','ready',false,'reason','SELF_AUTHORIZATION_NOT_EXPLICITLY_FORBIDDEN','event_id',p_authorization_event_id);
   end if;
 
-  -- Exact canonical JSON used by PLAN_AUTHORITY_DRIFT_GUARD_V1:
-  -- json.dumps(sort_keys=True,separators=(',',':'),ensure_ascii=False)
   v_canonical := '{'
     || '"authority":' || to_jsonb('PLAN_AUTHORITY'::text)::text || ','
     || '"decision":' || to_jsonb('AUTHORIZED_PLAN_DELTA'::text)::text || ','
