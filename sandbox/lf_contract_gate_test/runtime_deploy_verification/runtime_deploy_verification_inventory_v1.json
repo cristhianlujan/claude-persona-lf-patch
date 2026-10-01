@@ -1,0 +1,86 @@
+{
+  "schema_version": "lf-runtime-deploy-verification-inventory/v1",
+  "solution_code": "RUNTIME_DEPLOY_VERIFICATION_V1",
+  "work_code": "SADM-PP-L2-014",
+  "owner": "LF_GOVERNANCE",
+  "asset_code": "RUNTIME_DEPLOY_VERIFICATION",
+  "classification": "CANDIDATE_READ_ONLY_CAPABILITY",
+  "source_state": "READY_FOR_REVIEW",
+  "runtime_state": "BLOCKED_NOT_MATERIALIZED_NOT_CUTOVER",
+  "sources_observed": [
+    "EKB:POST-PASE-RUNTIME-DEPLOY-VERIFY-COUPLING-001",
+    "EKB:POST-PASE-RUNTIME-FULL-REPO-TAR-SCOPE-001",
+    "EKB:POST-PASE-RUNTIME-HOST-DIAGNOSTIC-IN-DEPLOY-001",
+    "operation:REFRESCO_RUNTIME_PERFIL_LF",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_source_refresh_contract_v1.json",
+    "services/profile_runtime_api/scripts/install.sh"
+  ],
+  "preserved_responsibilities": [
+    "EXACT_DEPLOYMENT_EFFECT_RECEIPT_CROSSBIND",
+    "EXACT_REQUIRED_FILE_MANIFEST_READBACK",
+    "HEALTH_AND_RUNTIME_SOURCE_READBACK",
+    "LIFECYCLE_STATE_PRESERVATION_READBACK",
+    "TYPED_FAIL_CLOSED_RECEIPT"
+  ],
+  "removed_from_capability_boundary": [
+    "DEPLOY_EFFECT",
+    "SERVICE_RESTART",
+    "RELEASE_SYMLINK_SWITCH",
+    "CANONICAL_ASSET_MUTATION",
+    "REBIND",
+    "NEXT_GATE_SELECTION",
+    "PROMOTION",
+    "APPLICABILITY_DECISION"
+  ],
+  "initial_extraction_map": {
+    "effect_owner_kept": "REFRESCO_RUNTIME_PERFIL_LF.runtime_refresh",
+    "readback_semantics_extracted": [
+      "REFRESCO_RUNTIME_PERFIL_LF.health_readback",
+      "REFRESCO_RUNTIME_PERFIL_LF.source_readback",
+      "REFRESCO_RUNTIME_PERFIL_LF.state_preservation"
+    ],
+    "not_reused_as_verifier": [
+      "REFRESCO_RUNTIME_PERFIL_LF.asset_reconcile",
+      "REFRESCO_RUNTIME_PERFIL_LF.close",
+      "REFRESCO_RUNTIME_PERFIL_LF.report_output"
+    ]
+  },
+  "future_consumer": {
+    "code": "POST_PASE_ROUTER_V1",
+    "work_code": "SADM-PP-L4-019",
+    "state": "NOT_YET_MATERIALIZED"
+  },
+  "relations": [
+    {
+      "from": "RUNTIME_DEPLOY_VERIFICATION",
+      "type": "DEPENDE_DE",
+      "to": "CAPABILITY_EXECUTION_CONTRACT"
+    },
+    {
+      "from": "RUNTIME_DEPLOY_VERIFICATION",
+      "type": "RELACIONADO_CAPACIDADES",
+      "to": "LF_GOVERNANCE",
+      "semantics": "administrative discoverability only"
+    }
+  ],
+  "ekb_refs": [
+    "POST-PASE-RUNTIME-DEPLOY-VERIFY-COUPLING-001",
+    "POST-PASE-RUNTIME-FULL-REPO-TAR-SCOPE-001",
+    "POST-PASE-RUNTIME-HOST-DIAGNOSTIC-IN-DEPLOY-001",
+    "PASE-HANDOFF-REDISCOVERY-FAST-PATH-001",
+    "DB-001"
+  ],
+  "source_assets": [
+    "sandbox/lf_contract_gate_test/runtime_deploy_verification/runtime_deploy_verification_v1.json",
+    "sandbox/lf_contract_gate_test/runtime_deploy_verification/runtime_deploy_verification_v1.py",
+    "sandbox/lf_contract_gate_test/runtime_deploy_verification/test_runtime_deploy_verification_v1.py",
+    "sandbox/lf_contract_gate_test/runtime_deploy_verification/RUNTIME_DEPLOY_VERIFICATION_registry_projection_v1.sql",
+    "sandbox/lf_contract_gate_test/runtime_deploy_verification/README.md"
+  ],
+  "materialization": {
+    "supabase_projection_applied": false,
+    "capability_registry_registered": false,
+    "owner_runner_materialized": false,
+    "cutover_authorized": false
+  }
+}
