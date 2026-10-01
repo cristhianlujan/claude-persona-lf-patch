@@ -1,0 +1,43 @@
+{
+  "schema_version": "lf-inv-5-5-drive-citation-retirement/v1",
+  "observed_main_sha": "1f883ef738fff85cfeb6ba3e0f580ec0e5f78963",
+  "source_file": "repo://supabase/functions/lf-profiles-governance-caller-v1/index.ts",
+  "decisions": [
+    {
+      "dependency_id": 10115,
+      "dependency_key": "REPO_DEP|4677",
+      "action": "DEACTIVATE_PRESERVE_HISTORY",
+      "reason": "REPLACED_BY_GITHUB_CALLS",
+      "replacement_dependency_id": 95460,
+      "replacement_dependency_key": "GITHUB_CALLS|5775|5773",
+      "replacement_relation": "edge://lf-profiles-governance-caller-v1 CALLS edge://input-governance-agent-v1"
+    },
+    {
+      "dependency_id": 10116,
+      "dependency_key": "REPO_DEP|4678",
+      "action": "DEACTIVATE_PRESERVE_HISTORY",
+      "reason": "SELF_CITATION_NOT_A_CALL",
+      "replacement_dependency_id": null,
+      "replacement_dependency_key": null,
+      "note": "Historical Drive row points the caller source file to its own caller asset. It is not a runtime call edge."
+    },
+    {
+      "dependency_id": 10117,
+      "dependency_key": "REPO_DEP|4679",
+      "action": "DEACTIVATE_PRESERVE_HISTORY",
+      "reason": "REPLACED_BY_GITHUB_CALLS",
+      "replacement_dependency_id": 95461,
+      "replacement_dependency_key": "GITHUB_CALLS|5775|5744",
+      "replacement_relation": "edge://lf-profiles-governance-caller-v1 CALLS edge://run-creacion-perfil-lf"
+    }
+  ],
+  "preservation": {
+    "delete_rows": false,
+    "mutate_original_drive_evidence": false,
+    "fields_changed": [
+      "active",
+      "last_verified_at",
+      "metadata.inv_5_5_deactivation"
+    ]
+  }
+}
