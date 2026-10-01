@@ -40,6 +40,41 @@ def git_is_ancestor(repo: Path, old: str, new: str) -> bool:
     return cp.returncode == 0
 
 
+def _selector_values(selectors: dict[str, Any], key: str) -> list[str]:
+    values = selectors.get(key) or []
+    if not isinstance(values, list) or any(not isinstance(value, str) or not value for value in values):
+        raise CurrentnessError(f"GIT_TREE_SELECTOR_{key.upper()}_INVALID")
+    return values
+
+
+def _selector_directory(value: str, *, selector_kind: str) -> str:
+    if value.endswith("/"):
+        return value
+    if "/" in value:
+        return value.rsplit("/", 1)[0] + "/"
+    raise CurrentnessError(f"GIT_TREE_{selector_kind}_UNBOUNDED:{value}")
+
+
+def git_tree_pathspecs(selectors: dict[str, Any]) -> list[str]:
+    if not isinstance(selectors, dict):
+        raise CurrentnessError("GIT_TREE_SELECTORS_INVALID")
+    paths = _selector_values(selectors, "paths")
+    prefixes = _selector_values(selectors, "prefixes")
+    globs = _selector_values(selectors, "globs")
+    specs: set[str] = set()
+    for path in paths:
+        specs.add(f":(top,literal){path}")
+    for prefix in prefixes:
+        directory = _selector_directory(prefix, selector_kind="PREFIX")
+        specs.add(f":(top,literal){directory}")
+    for pattern in globs:
+        wildcard_positions = [i for token in ("*", "?", "[") if (i := pattern.find(token)) >= 0]
+        literal_prefix = pattern[:min(wildcard_positions)] if wildcard_positions else pattern
+        directory = _selector_directory(literal_prefix, selector_kind="GLOB")
+        specs.add(f":(top,literal){directory}")
+    return sorted(specs)
+
+
 def _matches(path: str, selectors: dict[str, Any]) -> bool:
     paths = selectors.get("paths") or []
     prefixes = selectors.get("prefixes") or []
@@ -48,10 +83,11 @@ def _matches(path: str, selectors: dict[str, Any]) -> bool:
 
 
 def git_tree_material(repo: Path, rev: str, selectors: dict[str, Any], required: bool) -> tuple[str, list[dict[str, str]]]:
-    if not any(selectors.get(k) for k in ("paths", "prefixes", "globs")):
+    pathspecs = git_tree_pathspecs(selectors)
+    if not pathspecs:
         raise CurrentnessError("GIT_TREE_SELECTOR_EMPTY")
-    out = run_git(repo, "ls-tree", "-r", "--full-tree", rev)
-    entries: list[dict[str, str]] = []
+    out = run_git(repo, "ls-tree", "-r", "--full-tree", rev, "--", *pathspecs)
+    entries_by_path: dict[str, dict[str, str]] = {}
     for line in out.splitlines():
         if not line:
             continue
@@ -59,8 +95,8 @@ def git_tree_material(repo: Path, rev: str, selectors: dict[str, Any], required:
         mode, obj_type, sha = meta.split(" ", 2)
         if obj_type != "blob" or not _matches(path, selectors):
             continue
-        entries.append({"path": path, "mode": mode, "blob_sha1": sha})
-    entries.sort(key=lambda x: x["path"])
+        entries_by_path[path] = {"path": path, "mode": mode, "blob_sha1": sha}
+    entries = sorted(entries_by_path.values(), key=lambda x: x["path"])
     if required and not entries:
         raise CurrentnessError("GIT_TREE_REQUIRED_MATERIAL_EMPTY")
     return canonical_sha256(entries), entries

@@ -2,7 +2,7 @@
   "contract_code": "CURRENTNESS_AUTHORITY",
   "schema_version": "LF_CURRENTNESS_AUTHORITY_CONTRACT_V1",
   "version": "1.0.0-candidate",
-  "owner": "S31",
+  "owner": "LF_GOVERNANCE",
   "origin": "S30_MATERIAL_CURRENTNESS_CANDIDATE_PR_774",
   "status": "CANDIDATE_READ_ONLY",
   "purpose": "Resolve moving source authority by declared materials, transitive dependencies and governed compatibility evidence instead of global main-SHA equality.",
@@ -32,6 +32,13 @@
     "dependency_completeness_required_for_auto_rebind": "COMPLETE",
     "supported_kinds": ["GIT_TREE", "DIGEST"],
     "git_tree_fingerprint": "SHA256_CANONICAL_SORTED_PATH_MODE_BLOB_SHA1",
+    "git_tree_reader_mode": "DECLARED_BOUNDED_PATHSPECS_ONLY",
+    "git_tree_final_filter": "ORIGINAL_SELECTOR_MATCH_SEMANTICS",
+    "full_repository_tree_enumeration_forbidden": true,
+    "exact_paths_supported": true,
+    "prefixes_require_bounded_directory": true,
+    "globs_require_bounded_directory": true,
+    "unbounded_selector_action": "UNKNOWN_FAIL_CLOSED",
     "digest_fingerprint": "PROVIDER_SUPPLIED_SHA256",
     "transitive_affected_closure_required": true,
     "unknown_or_unresolved_action": "UNKNOWN_FAIL_CLOSED"
@@ -67,6 +74,14 @@
     "durable_evidence_anchor_required_before_authoritative_cutover": true,
     "offline_or_mirror_verification_required": true,
     "github_rest_required_for_rebuild_or_tamper_test": false
+  },
+  "normalization": {
+    "single_engine": "CURRENTNESS_AUTHORITY",
+    "parallel_engine_forbidden": true,
+    "live_owner_scope_observed": "LF_GOVERNANCE_S31",
+    "target_administrative_owner": "LF_GOVERNANCE",
+    "current_pointer_change_in_this_unit": false,
+    "runtime_cutover_in_this_unit": false
   },
   "safety": {
     "network_access_in_evaluator": false,
