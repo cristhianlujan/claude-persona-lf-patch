@@ -35,7 +35,7 @@ insert into inventory.dependencies(
 )
 values
 (
-  54690,5775,null,'CALLS',
+  54690,5775,'edge://lf-profiles-governance-caller-v1','CALLS',
   'GITHUB_WORKFLOW_HTTP_CALL',
   'POST /functions/v1/lf-profiles-governance-caller-v1',
   1.0000,'GITHUB_MAIN_STATIC_ANALYSIS',
@@ -51,7 +51,7 @@ values
   clock_timestamp(),clock_timestamp(),true,'GITHUB_CALLS|54690|5775'
 ),
 (
-  5775,5773,null,'CALLS',
+  5775,5773,'edge://input-governance-agent-v1','CALLS',
   'GITHUB_TYPESCRIPT_CALL_RUNTIME',
   'callRuntime("input-governance-agent-v1", ...)',
   1.0000,'GITHUB_MAIN_STATIC_ANALYSIS',
@@ -68,7 +68,7 @@ values
   clock_timestamp(),clock_timestamp(),true,'GITHUB_CALLS|5775|5773'
 ),
 (
-  5775,5744,null,'CALLS',
+  5775,5744,'edge://run-creacion-perfil-lf','CALLS',
   'GITHUB_TYPESCRIPT_CALL_RUNTIME',
   'callRuntime("run-creacion-perfil-lf", ...)',
   1.0000,'GITHUB_MAIN_STATIC_ANALYSIS',
