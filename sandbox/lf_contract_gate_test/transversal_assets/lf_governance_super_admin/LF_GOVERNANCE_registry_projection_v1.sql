@@ -1,6 +1,7 @@
 do $$
 declare
   v_execution_id constant text := 'EXEC-LF-GOVERNANCE-SUPER-ADMIN-REGISTRY-PROJECTION-V1';
+  v_batch constant uuid := '8c1d2f6c-4a1c-4f80-9d1d-007000000001'::uuid;
   v_contract_ref constant text := 'sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/lf_governance_super_admin_contract_v1.json';
   v_readme_ref constant text := 'sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/README.md';
 begin
@@ -47,8 +48,13 @@ begin
     version,
     ruta_esperada,
     owner_name,
+    source_spreadsheet_id,
+    source_spreadsheet_title,
+    source_sheet_name,
+    source_row_number,
     raw_payload,
     metadata,
+    migration_batch_id,
     created_by_execution_id,
     updated_by_execution_id
   ) values (
@@ -64,6 +70,10 @@ begin
     '1.0.0-candidate',
     v_readme_ref,
     'LF_GOVERNANCE',
+    'NATIVE_SUPABASE',
+    'LF_TRANSVERSAL_CAPABILITY_INVENTORY',
+    'LF_GOVERNANCE_20260930',
+    1,
     jsonb_build_object(
       'solution_code','LF_GOVERNANCE_SUPER_ADMIN_REGISTRY_PROJECTION_V1',
       'role','SUPER_ADMIN_GOVERNANCE',
@@ -125,6 +135,7 @@ begin
         'production_authorized',false
       )
     ),
+    v_batch,
     v_execution_id,
     v_execution_id
   )
@@ -140,8 +151,13 @@ begin
     version = excluded.version,
     ruta_esperada = excluded.ruta_esperada,
     owner_name = excluded.owner_name,
+    source_spreadsheet_id = excluded.source_spreadsheet_id,
+    source_spreadsheet_title = excluded.source_spreadsheet_title,
+    source_sheet_name = excluded.source_sheet_name,
+    source_row_number = excluded.source_row_number,
     raw_payload = excluded.raw_payload,
     metadata = excluded.metadata,
+    migration_batch_id = excluded.migration_batch_id,
     updated_at = now(),
     updated_by_execution_id = excluded.updated_by_execution_id;
 end $$;

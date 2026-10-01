@@ -28,6 +28,20 @@ def main() -> int:
     assert "'READ_ONLY'" in sql
     assert "'BLOQUEADO'" in sql
 
+    # Current lf_activos requires source traceability and migration batch identity.
+    for required in (
+        "source_spreadsheet_id",
+        "source_spreadsheet_title",
+        "source_sheet_name",
+        "source_row_number",
+        "migration_batch_id",
+        "'NATIVE_SUPABASE'",
+        "'LF_TRANSVERSAL_CAPABILITY_INVENTORY'",
+        "'LF_GOVERNANCE_20260930'",
+        "8c1d2f6c-4a1c-4f80-9d1d-007000000001",
+    ):
+        assert required in sql
+
     assert "insert into public.lf_capability_registry" not in sql
     assert "insert into public.lf_operation_registry" not in sql
     assert "insert into public.lf_activo_relaciones" not in sql
@@ -48,7 +62,8 @@ def main() -> int:
 
     print(
         "PASS_LF_GOVERNANCE_REGISTRY_PROJECTION_V1 "
-        "asset=1 capability_registry=0 operation_registry=0 material_relations=0_deferred_to_L1_008"
+        "asset=1 traceability=complete capability_registry=0 operation_registry=0 "
+        "material_relations=0_deferred_to_L1_008"
     )
     return 0
 
