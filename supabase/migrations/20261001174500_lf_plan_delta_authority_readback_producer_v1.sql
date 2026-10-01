@@ -17,7 +17,6 @@ declare
   v_payload jsonb;
   v_canonical text;
   v_digest text;
-  v_block jsonb;
 begin
   if p_authorization_event_id is null or p_authorization_event_id <= 0 then
     return jsonb_build_object('schema_version','LF_PLAN_DELTA_AUTHORITY_READBACK_V1','authority','PLAN_AUTHORITY','decision','PLAN_DELTA_NOT_AUTHORIZED','ready',false,'reason','AUTHORIZATION_EVENT_ID_INVALID','event_id',p_authorization_event_id);
@@ -86,7 +85,7 @@ begin
     || '"previous_plan_digest":' || to_jsonb(p_previous_plan_digest)::text || ','
     || '"schema_version":' || to_jsonb('LF_PLAN_DELTA_AUTHORITY_READBACK_V1'::text)::text
     || '}';
-  v_digest := encode(digest(convert_to(v_canonical,'UTF8'),'sha256'),'hex');
+  v_digest := encode(extensions.digest(convert_to(v_canonical,'UTF8'),'sha256'),'hex');
 
   return jsonb_build_object(
     'schema_version','LF_PLAN_DELTA_AUTHORITY_READBACK_V1',
