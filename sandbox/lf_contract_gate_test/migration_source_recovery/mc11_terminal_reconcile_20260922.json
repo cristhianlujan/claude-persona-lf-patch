@@ -1,0 +1,21 @@
+{
+  "schema_version": "lf-migration-source-recovery-evidence/v1",
+  "migration_version": "20260922163720",
+  "migration_name": "lf_profile_execution_queue_terminal_reconcile_v1",
+  "recovered_from": {
+    "revision": "cb7e622a2abeee5331c444469fd1cbf9e93180e9",
+    "path": "supabase/migrations/20260922162500_lf_profile_execution_queue_terminal_reconcile_v1.sql",
+    "git_blob": "d25bf3f54e8838e23d50b71f805ec97395a9375c",
+    "full_sha256": "158b9d569125697e48e38a5bda62cedbcbf23c2c15d476b648a9cff21b23dadf",
+    "bytes": 6342
+  },
+  "applied_ledger": {
+    "version": "20260922163720",
+    "statement_count": 1,
+    "full_sha256": "158b9d569125697e48e38a5bda62cedbcbf23c2c15d476b648a9cff21b23dadf",
+    "bytes": 6342
+  },
+  "byte_identity": true,
+  "ddl_replayed": false,
+  "provenance": "MC-11 terminality readback references the historical source revision/path; recovery copies the exact historical Git blob under the applied ledger version."
+}
