@@ -1,6 +1,9 @@
 name: LF Input Governance Recuration
 
 on:
+  push:
+    branches:
+      - lf/ig-cv-n2-recuration-run-20261001
   workflow_call:
     inputs:
       pantalla_ids:
@@ -23,7 +26,7 @@ jobs:
       - name: Validate requested screens
         id: screens
         env:
-          RAW_SCREEN_IDS: ${{ inputs.pantalla_ids }}
+          RAW_SCREEN_IDS: ${{ inputs.pantalla_ids || '1,2,3,5,43,51,52,53,54,55,56,57,58' }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
