@@ -81,7 +81,7 @@ begin
       'CREATE POLICY','ALTER POLICY',
       'CREATE INDEX','ALTER INDEX'
     ]::text[]) then
-      perform inventory.fn_mark_dirty_v1();
+      select inventory.fn_mark_dirty_v1();
     end if;
   exception
     when others then
