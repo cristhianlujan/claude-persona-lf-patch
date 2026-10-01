@@ -29,15 +29,17 @@ El resolver únicamente compone esas fuentes y produce un snapshot con digest pr
 
 No se acepta una bandera local `valid=true`.
 
-El caller debe traer readback del entrypoint canónico:
+La **autoridad de autenticidad** es el guard vivo:
 
-`public.fn_lf_capability_bind_from_orchestrator_v1(...)`
+`public.fn_lf_capability_orchestrator_entry_guard_v1(...)`
 
-que a su vez ejecuta:
+invocado por el entrypoint canónico:
 
-`public.fn_lf_capability_orchestrator_entry_guard_v1(...)`.
+`public.fn_lf_capability_bind_from_orchestrator_v1(...)`.
 
-El resolver exige:
+El core de este lote valida la forma del readback para no consumir entradas incompletas, pero **esa validación local no autentica el receipt**. El cableado que debe obtener y entregar el readback vivo pertenece a `SADM-PP-L1-009`; no se duplica aquí.
+
+El resolver exige como precondición:
 
 - `ready=true` en el binding;
 - `entry_guard.ready=true`;
@@ -45,19 +47,22 @@ El resolver exige:
 - `guard_code=ORCHESTRATOR_EXECUTION_GUARD_V1`;
 - `orchestrator_execution_id` y `receipt_id` presentes.
 
-Si falta cualquiera, BLOCK.
+Si falta cualquiera, BLOCK. Hasta que `L1-009` materialice el wiring, este paquete permanece candidato/read-only y no es un entrypoint público activo.
 
-Flujo:
+Flujo objetivo:
 
 ```text
 cualquier caller
       |
       v
+ORCHESTRATOR_EXECUTION_GUARD_V1  <--- autoridad viva; L1-009 cablea receipt
+      |
+      +-- receipt inválido --------------------------> BLOCK
+      |
+      +-- receipt válido
+      v
 OWNER_RUNNER_CARRIER_AUTHORITY
       |
-      +-- trae binding/receipt válido del ORQUESTADOR? -- NO --> BLOCK
-      |
-      +-- SÍ
       v
 resuelve read-model sobre autoridades existentes
 ```
@@ -90,6 +95,7 @@ El edge de inventario no reemplaza el owner contract. La raíz administrativa se
 - no fila nueva en `lf_capability_registry`;
 - no current pointer;
 - no binding live;
+- no wiring de invocación live (`SADM-PP-L1-009`);
 - no cutover;
 - no runtime;
 - no producción.
