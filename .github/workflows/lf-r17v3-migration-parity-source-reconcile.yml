@@ -1,0 +1,45 @@
+name: LF R17v3 Migration Parity Source Reconcile
+
+on:
+  push:
+    branches:
+      - lf/r17v3-migration-parity-source-reconcile-20261001
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  migration-source-parity:
+    name: MIGRATION_SOURCE_PARITY exact-head judge
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact reconciliation head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: 58dd034f72ad4180951f003defee849ace77a2d0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Execute canonical MIGRATION_SOURCE_PARITY carrier
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py \
+            --repo-root . \
+            --base-sha cb7c6186253af5c5e208f363effd65609e32f809 \
+            --head-sha 58dd034f72ad4180951f003defee849ace77a2d0 \
+            --base-ref main \
+            --event-name pull_request \
+            --output-dir .lf_migration_source_parity
+          cat .lf_migration_source_parity/run-summary.json
+          cat .lf_migration_source_parity/parity-output.txt
