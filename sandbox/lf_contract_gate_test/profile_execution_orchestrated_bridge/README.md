@@ -24,24 +24,29 @@ fn_lf_capability_bind_from_orchestrator_v1
 private.lf_profile_runtime_queue_v1
         |
         v
-runtime existente (replay de begin, no segunda ejecución)
+runtime existente (replay del mismo begin)
 ```
 
 ## Capability lógica
 
-El receipt transversal es capability-scoped. Por ello el bridge usa `PROFILE_EXECUTION_RUNTIME` como identidad lógica de la lane existente `EJECUCION_PERFIL_LF`. Esta identidad no crea un segundo runtime; su eventual registro/cutover es otro lote y sigue bloqueado en este PR.
+El receipt transversal es capability-scoped. Por ello el bridge usa `PROFILE_EXECUTION_RUNTIME` como identidad lógica de la lane existente `EJECUCION_PERFIL_LF`. Esta identidad no crea un segundo runtime; su registro/cutover pertenece a otro PR y sigue bloqueado aquí.
 
-## Idempotencia
+## Idempotencia exacta con el worker existente
 
-El `request_id` UUID determina exactamente:
+El bridge no puede inventar un `request_sha256`. Debe precrear exactamente la ejecución que el worker Hetzner intentará abrir después.
 
-- consumer execution: `EXEC-PROFILE-RUNTIME-<request_id>`;
-- idempotency key: `profile-runtime-queue:<request_id>`.
+Se preservan literalmente las identidades actuales:
 
-Esto coincide con la identidad que usa el worker Hetzner actual. Si el child execution fue creado por el orquestador primero, el worker debe obtener `REPLAY_EXISTING_EXECUTION`, conservar el manifest cross-bound y continuar sobre la misma ejecución.
+- consumer execution: `EXEC-PROFILE-RUNTIME-<request_id-lowercase>`;
+- idempotency key: `profile-runtime-queue:<request_id-lowercase>`;
+- `input_literal`: JSON canónico del Task Packet;
+- `target_path`: primer `profile_source_paths`;
+- `request_sha256`: digest canónico de `input_sha256 + profile_code + profile_slug + profile_source_digest + profile_source_revision + profile_source_paths`.
+
+Así el `lf_profile_execution_begin_v1` posterior del worker debe resolver como `REPLAY_EXISTING_EXECUTION`, no como segunda ejecución ni como `IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_REQUEST`.
 
 ## Boundary
 
 Este paquete sólo construye y valida el plan. No llama SQL, no inserta queue rows, no registra `PROFILE_EXECUTION_RUNTIME`, no habilita runtime/producción y no modifica PASE/POST-PASE.
 
-La materialización posterior debe verificar además que la fuente del profile sea aceptada por el runtime. Los Story Creator profiles siguen residiendo bajo `skills/creating-integral-user-stories/perfiles/`, mientras el runtime actual exige `profiles/<profile_slug>/`; este PR no oculta ni resuelve ese gap.
+La materialización posterior debe verificar además que la fuente del Profile sea aceptada por el runtime. Los Story Creator profiles siguen residiendo bajo `skills/creating-integral-user-stories/perfiles/`, mientras el runtime actual exige `profiles/<profile_slug>/`; este PR no oculta ni resuelve ese gap.
