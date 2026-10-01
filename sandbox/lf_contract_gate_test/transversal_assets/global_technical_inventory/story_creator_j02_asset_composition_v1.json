@@ -1,0 +1,34 @@
+{
+  "schema_version": "ASSET_COMPOSITION_V1",
+  "asset_ref": "asset://SKILL-CREATING-INTEGRAL-USER-STORIES",
+  "authority": {
+    "source_ref": "artifact://skill/creating-integral-user-stories/ART_MANIFEST",
+    "source_sha256": "c953a122076bd785d3c29394dc8b3d0021515754f5e852cd8ae8cbdb45c8907f",
+    "source_version": "5",
+    "authority_class": "CANONICAL_ARTIFACT"
+  },
+  "scope": {
+    "mode": "COMPONENT_SET",
+    "component_codes": ["J02_SCREEN_DECOMPOSITION"]
+  },
+  "components": [
+    {
+      "component_code": "J02_SCREEN_DECOMPOSITION",
+      "component_type": "VALIDATION_STAGE",
+      "order": 2,
+      "status": "CANDIDATE_MIXED_CANONICALITY",
+      "members": [
+        {"member_ref":"artifact://skill/creating-integral-user-stories/ART_AGENT_SCREEN_DECOMPOSER","role":"AGENT","membership_class":"CANONICAL_ARTIFACT","required":true},
+        {"member_ref":"artifact://skill/creating-integral-user-stories/PERFIL_SCREEN_DECOMPOSER_LF","role":"PROFILE","membership_class":"CANONICAL_ARTIFACT","required":true},
+        {"member_ref":"artifact://skill/creating-integral-user-stories/JUDGES_SCREEN_DECOMPOSITION_YAML","role":"JUDGE","membership_class":"CANONICAL_ARTIFACT","required":true},
+        {"member_ref":"artifact://skill/creating-integral-user-stories/ART_SCHEMA_SCREEN_DECOMP","role":"SCHEMA","membership_class":"CANONICAL_ARTIFACT","required":true},
+        {"member_ref":"artifact://skill/creating-integral-user-stories/ART_REF_SCREEN_DECOMPOSITION","role":"PROTOCOL","membership_class":"CANONICAL_ARTIFACT","required":true},
+        {"member_ref":"artifact://skill/creating-integral-user-stories/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION","role":"LEGACY_VALIDATOR","membership_class":"CANONICAL_ARTIFACT","required":false},
+        {"member_ref":"repo://skills/creating-integral-user-stories/scripts/validate_screen_decomposition_v08.py","role":"CANDIDATE_VALIDATOR_BASE","membership_class":"CANDIDATE_OBJECT","required":true},
+        {"member_ref":"repo://skills/creating-integral-user-stories/scripts/validate_screen_decomposition_visual.py","role":"CANDIDATE_VALIDATOR","membership_class":"CANDIDATE_OBJECT","required":true},
+        {"member_ref":"repo://skills/creating-integral-user-stories/evals/fixtures/j02_external_positive.json","role":"POSITIVE_FIXTURE","membership_class":"CANDIDATE_OBJECT","required":true},
+        {"member_ref":"repo://skills/creating-integral-user-stories/evals/fixtures/j02_source_omission.json","role":"NEGATIVE_FIXTURE","membership_class":"CANDIDATE_OBJECT","required":true}
+      ]
+    }
+  ]
+}

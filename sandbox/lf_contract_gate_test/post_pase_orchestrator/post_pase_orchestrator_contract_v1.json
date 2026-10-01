@@ -1,0 +1,67 @@
+{
+  "schema_version": "lf-post-pase-orchestrator/v1",
+  "solution_code": "POST_PASE_ORCHESTRATOR_V1",
+  "asset_code": "POST_PASE_ORCHESTRATOR",
+  "classification": "CREATE_CONSUMER",
+  "owner": "LF_GOVERNANCE",
+  "status": "CANDIDATE_READ_ONLY",
+  "mode": "SEQUENTIAL_IMMUTABLE_PLAN_DISPATCH",
+  "input_schema": "LF_POST_PASE_PLAN_V1",
+  "output_schema": "LF_POST_PASE_ORCHESTRATION_RECEIPT_V1",
+  "canonical_dependencies": {
+    "plan_producer": "POST_PASE_ROUTER_V1",
+    "binding_authority": "OWNER_RUNNER_CARRIER_AUTHORITY_V1",
+    "execution_contract": "CAPABILITY_EXECUTION_CONTRACT_V1",
+    "entry_guard": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "evidence_ledger": "EVIDENCE_LEDGER"
+  },
+  "entry_guard": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "accepted_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
+    "direct_call_policy": "BLOCK"
+  },
+  "dispatch_policy": {
+    "order_source": "LF_POST_PASE_PLAN_V1.controls",
+    "required_disposition": "REQUIRED",
+    "not_applicable_disposition": "NOT_APPLICABLE",
+    "mode": "SEQUENTIAL_FAIL_CLOSED",
+    "parallel_dispatch": false,
+    "applicability_rediscovery": false,
+    "owner_runner_carrier_recalculation": false,
+    "embedded_control_logic": false
+  },
+  "persistence_policy": {
+    "new_store_created": false,
+    "persist_execution_receipts_only": true,
+    "persist_evidence_receipts_only": true,
+    "receipt_sink_is_injected_canonical_adapter": true,
+    "orchestrator_is_not_evidence_ledger": true
+  },
+  "invariants": {
+    "immutable_plan_verified_before_dispatch": true,
+    "plan_verification_delegated_to_post_pase_router": true,
+    "execute_exact_required_set_only": true,
+    "not_applicable_never_dispatched": true,
+    "sequential_order_preserved": true,
+    "stop_on_first_failure": true,
+    "binding_resolution_delegated_to_canonical_authority": true,
+    "capability_request_delegated_to_execution_contract": true,
+    "capability_receipt_validation_delegated_to_execution_contract": true,
+    "entry_guard_receipt_crossbind_required": true,
+    "plan_digest_crossbind_required": true,
+    "prior_receipt_chain_bound_into_next_input": true,
+    "self_authorization_forbidden": true,
+    "cutover_forbidden": true,
+    "runtime_activation_forbidden": true,
+    "production_activation_forbidden": true
+  },
+  "materialization": {
+    "source_only": true,
+    "supabase_projection_applied": false,
+    "promotion_authorized": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}

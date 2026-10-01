@@ -24,10 +24,12 @@ No se crea evidence store, registry de receipts ni engine paralelo.
 - identidad `post_pase_execution_id`, `orchestrator_execution_id`, `plan_id`, `plan_digest`, `merge_sha`;
 - `controls_digest` del conjunto exacto declarado por el plan;
 - controles `REQUIRED` y `NOT_APPLICABLE`;
-- para cada control REQUIRED: `receipt_id` + `receipt_sha256`;
+- para cada control REQUIRED: `receipt_id`, `receipt_sha256`, `terminal_outcome` (`PASS|FAIL|BLOCKED`) y `outcome_binding_sha256`;
 - `manifest_sha256` sobre JSON canónico.
 
-La evidencia cruda, `verification_payload` y payloads de dominio no se copian al manifest.
+`terminal_outcome` proviene de la misma proyección tipada validada del receipt (`LF_TYPED_CONTROL_TERMINAL_RECEIPT_V1`) y queda cross-bound con `receipt_id + receipt_sha256`. `WAIVED` no es un terminal outcome de FINAL_EVIDENCE y sigue gobernado exclusivamente por `WAIVER_AUTHORITY`.
+
+La evidencia cruda, `verification_payload` y payloads de dominio no se copian al manifest. FINAL_EVIDENCE no relee ni rehidrata `EVIDENCE_LEDGER`.
 
 ## Fail closed
 
@@ -41,11 +43,15 @@ Bloquea si ocurre cualquiera de estos casos:
 - receipt no `VERIFIED`;
 - receipt con `source_head_sha != merge_sha`;
 - receipt con `plan_digest` diferente;
-- receipt id duplicado o digests inválidos.
+- receipt id duplicado o digests inválidos;
+- proyección tipada ausente/no validada;
+- `terminal_outcome` ausente, inválido o `WAIVED`;
+- mismatch entre `terminal_outcome` y su binding a `receipt_id + receipt_sha256`;
+- tampering del manifest digest.
 
 ## Separación de responsabilidades
 
-FINAL_EVIDENCE no reejecuta controles, no calcula closure verdict, no promueve current pointers, no muta lifecycle y no activa runtime/cutover/producción. `SADM-PP-L3-017` conserva la responsabilidad de Closure Gate.
+FINAL_EVIDENCE no reejecuta controles, no calcula closure verdict, no recolecta ni rehidrata evidencia, no promueve current pointers, no muta lifecycle y no activa runtime/cutover/producción. `SADM-PP-L3-017` conserva la responsabilidad de Closure Gate y puede derivar `PASS/FAIL/BLOCKED` únicamente desde este manifest; `WAIVED` requiere `WAIVER_AUTHORITY`.
 
 ## Materialización
 

@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, List
 
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
+TERMINAL_OUTCOMES = {"PASS", "FAIL", "BLOCKED"}
 
 
 class FinalEvidenceBlocked(ValueError):
@@ -27,6 +28,17 @@ def controls_digest(controls: Iterable[Dict[str, str]]) -> str:
         key=lambda x: x["control_code"],
     )
     return _sha256(normalized)
+
+
+def outcome_binding_digest(receipt_id: str, receipt_sha256: str, terminal_outcome: str) -> str:
+    return _sha256(
+        {
+            "schema_version": "LF_TYPED_CONTROL_TERMINAL_OUTCOME_BINDING_V1",
+            "receipt_id": receipt_id,
+            "receipt_sha256": receipt_sha256,
+            "terminal_outcome": terminal_outcome,
+        }
+    )
 
 
 def manifest_digest(manifest_without_digest: Dict[str, Any]) -> str:
@@ -85,11 +97,30 @@ def _validate_plan_authority(request: Dict[str, Any], computed_controls_digest: 
     _require(proof.get("controls_digest") == computed_controls_digest, "PLAN_AUTHORITY_CONTROLS_DIGEST")
 
 
-def _receipt_ref(receipt: Dict[str, Any]) -> Dict[str, str]:
+def _typed_terminal_projection(receipt: Dict[str, Any]) -> Dict[str, str]:
+    typed = receipt.get("typed_receipt")
+    _require(isinstance(typed, dict), "TYPED_RECEIPT_REQUIRED")
+    _require(typed.get("schema_version") == "LF_TYPED_CONTROL_TERMINAL_RECEIPT_V1", "TYPED_RECEIPT_SCHEMA")
+    _require(typed.get("validation_decision") == "TYPED_RECEIPT_VALIDATED", "TYPED_RECEIPT_NOT_VALIDATED")
+    _require(typed.get("receipt_id") == receipt["receipt_id"], "TYPED_RECEIPT_ID_MISMATCH")
+    _require(typed.get("receipt_sha256") == receipt["receipt_sha256"], "TYPED_RECEIPT_SHA_MISMATCH")
+    _require("terminal_outcome" in typed, "TERMINAL_OUTCOME_REQUIRED")
+    outcome = typed.get("terminal_outcome")
+    _require(outcome in TERMINAL_OUTCOMES, "TERMINAL_OUTCOME_INVALID")
+    binding = typed.get("outcome_binding_sha256")
+    _require(isinstance(binding, str) and bool(HEX64.fullmatch(binding)), "TERMINAL_OUTCOME_BINDING_INVALID")
+    expected = outcome_binding_digest(receipt["receipt_id"], receipt["receipt_sha256"], outcome)
+    _require(binding == expected, "TERMINAL_OUTCOME_BINDING_MISMATCH")
+    return {"terminal_outcome": outcome, "outcome_binding_sha256": binding}
+
+
+def _receipt_ref(receipt: Dict[str, Any], typed_projection: Dict[str, str]) -> Dict[str, str]:
     return {
         "control_code": receipt["control_code"],
         "receipt_id": receipt["receipt_id"],
         "receipt_sha256": receipt["receipt_sha256"],
+        "terminal_outcome": typed_projection["terminal_outcome"],
+        "outcome_binding_sha256": typed_projection["outcome_binding_sha256"],
     }
 
 
@@ -117,12 +148,13 @@ def _validate_receipts(request: Dict[str, Any], controls: List[Dict[str, str]]) 
         for field in ("execution_id", "capability_code", "gate_code", "subject_ref", "subject_sha256", "authority_ref", "resolver_id"):
             _require(isinstance(receipt.get(field), str) and bool(receipt[field]), f"RECEIPT_{field.upper()}_REQUIRED")
         _require(bool(HEX64.fullmatch(receipt["subject_sha256"])), "RECEIPT_SUBJECT_SHA_INVALID")
-        by_control[control_code] = receipt
+        typed_projection = _typed_terminal_projection(receipt)
+        by_control[control_code] = _receipt_ref(receipt, typed_projection)
         seen_receipts.add(receipt_id)
 
     _require(set(by_control) == required, "REQUIRED_RECEIPT_SET_MISMATCH")
     _require(not (set(by_control) & not_applicable), "NA_CONTROL_HAS_RECEIPT")
-    return [_receipt_ref(by_control[code]) for code in sorted(by_control)]
+    return [by_control[code] for code in sorted(by_control)]
 
 
 def build_final_evidence_manifest(request: Dict[str, Any]) -> Dict[str, Any]:
@@ -152,3 +184,26 @@ def build_final_evidence_manifest(request: Dict[str, Any]) -> Dict[str, Any]:
     }
     manifest["manifest_sha256"] = manifest_digest(manifest)
     return manifest
+
+
+def verify_final_evidence_manifest(manifest: Dict[str, Any]) -> bool:
+    _require(isinstance(manifest, dict), "MANIFEST_SHAPE")
+    _require(manifest.get("schema_version") == "LF_POST_PASE_FINAL_EVIDENCE_MANIFEST_V1", "MANIFEST_SCHEMA")
+    _require(manifest.get("decision") == "FINAL_EVIDENCE_MANIFEST_READY", "MANIFEST_DECISION")
+    _require(manifest.get("raw_evidence_embedded") is False, "RAW_EVIDENCE_FORBIDDEN")
+    _require("verification_payload" not in manifest, "RAW_EVIDENCE_FORBIDDEN")
+    _require("closure_verdict" not in manifest, "CLOSURE_VERDICT_FORBIDDEN")
+    refs = manifest.get("receipt_refs")
+    _require(isinstance(refs, list), "MANIFEST_RECEIPT_REFS_REQUIRED")
+    for ref in refs:
+        _require(isinstance(ref, dict), "MANIFEST_RECEIPT_REF_SHAPE")
+        outcome = ref.get("terminal_outcome")
+        _require(outcome in TERMINAL_OUTCOMES, "MANIFEST_TERMINAL_OUTCOME_INVALID")
+        expected_binding = outcome_binding_digest(ref.get("receipt_id", ""), ref.get("receipt_sha256", ""), outcome)
+        _require(ref.get("outcome_binding_sha256") == expected_binding, "MANIFEST_OUTCOME_BINDING_MISMATCH")
+    stored = manifest.get("manifest_sha256")
+    _require(isinstance(stored, str) and bool(HEX64.fullmatch(stored)), "MANIFEST_DIGEST_INVALID")
+    copy_without_digest = dict(manifest)
+    copy_without_digest.pop("manifest_sha256", None)
+    _require(manifest_digest(copy_without_digest) == stored, "MANIFEST_DIGEST_MISMATCH")
+    return True

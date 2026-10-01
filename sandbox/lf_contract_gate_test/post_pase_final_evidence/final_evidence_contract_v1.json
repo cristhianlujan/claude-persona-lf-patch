@@ -39,6 +39,8 @@
     "dispositions": ["REQUIRED", "NOT_APPLICABLE"],
     "required_control_receipt_count": 1,
     "not_applicable_control_receipt_count": 0,
+    "required_terminal_outcomes": ["PASS", "FAIL", "BLOCKED"],
+    "waived_outcome_forbidden": true,
     "duplicate_control_policy": "BLOCK",
     "unknown_control_policy": "BLOCK",
     "missing_control_policy": "BLOCK",
@@ -58,19 +60,32 @@
       "subject_sha256",
       "authority_ref",
       "resolver_id",
-      "plan_digest"
+      "plan_digest",
+      "typed_receipt"
     ],
     "source_head_must_equal_merge_sha": true,
     "plan_digest_must_equal_request": true,
     "raw_evidence_copy_forbidden": true
   },
+  "typed_terminal_projection": {
+    "schema_version": "LF_TYPED_CONTROL_TERMINAL_RECEIPT_V1",
+    "validation_decision": "TYPED_RECEIPT_VALIDATED",
+    "terminal_outcomes": ["PASS", "FAIL", "BLOCKED"],
+    "binding_schema": "LF_TYPED_CONTROL_TERMINAL_OUTCOME_BINDING_V1",
+    "binding_fields": ["receipt_id", "receipt_sha256", "terminal_outcome"],
+    "binding_digest_algorithm": "SHA256_CANONICAL_JSON",
+    "must_be_same_validated_typed_receipt": true,
+    "ledger_rehydration_forbidden": true
+  },
   "manifest_contract": {
     "canonicalization": "UTF8_JSON_SORT_KEYS_COMPACT",
     "digest_algorithm": "SHA256",
-    "contains_only_receipt_refs_and_digests": true,
+    "receipt_ref_fields": ["control_code", "receipt_id", "receipt_sha256", "terminal_outcome", "outcome_binding_sha256"],
+    "contains_only_receipt_refs_digests_and_terminal_outcome": true,
     "closure_verdict_forbidden": true,
     "control_reexecution_forbidden": true,
-    "new_evidence_store_forbidden": true
+    "new_evidence_store_forbidden": true,
+    "ledger_rehydration_forbidden": true
   },
   "decisions": {
     "ready": "FINAL_EVIDENCE_MANIFEST_READY",

@@ -1,0 +1,67 @@
+{
+  "schema_version": "lf-post-pase-router/v1",
+  "solution_code": "POST_PASE_ROUTER_V1",
+  "asset_code": "POST_PASE_ROUTER",
+  "classification": "CREATE_CONSUMER",
+  "owner": "LF_GOVERNANCE",
+  "status": "CANDIDATE_READ_ONLY",
+  "target_capability_set_authority": {
+    "event_id": 19549,
+    "capability_codes": [
+      "GITHUB_RECONCILIATION",
+      "AUTHORITY_READBACK",
+      "RUNTIME_DEPLOY_VERIFICATION",
+      "FINAL_EVIDENCE",
+      "CLOSURE_GATE"
+    ]
+  },
+  "entry_guard": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "accepted_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
+    "direct_call_policy": "BLOCK"
+  },
+  "currentness_contract": {
+    "authority": "CURRENTNESS_AUTHORITY@1.0.0",
+    "schema": "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1",
+    "accepted_decisions": ["CURRENT", "CURRENT_REBOUND"],
+    "ready_required": true,
+    "current_revision_must_equal_merge_sha": true
+  },
+  "input_schema": "LF_POST_PASE_ROUTER_REQUEST_V1",
+  "output_schema": "LF_POST_PASE_PLAN_V1",
+  "applicability_inputs": {
+    "github": "declared_paths + repository_invariants",
+    "authority": "declared authority_scopes; empty means NOT_APPLICABLE",
+    "runtime_deploy": "declared runtime_deploy_scope; null means NOT_APPLICABLE",
+    "final_evidence": "always REQUIRED",
+    "closure_gate": "always REQUIRED"
+  },
+  "plan_contract": {
+    "immutable": true,
+    "canonicalization": "UTF8_JSON_SORT_KEYS_COMPACT",
+    "digest_algorithm": "SHA256",
+    "self_digest_normalization": "$SELF",
+    "scope_digest_required_for_required_control": true,
+    "controls_digest_required": true,
+    "dispositions": ["REQUIRED", "NOT_APPLICABLE"]
+  },
+  "boundaries": {
+    "control_execution": false,
+    "control_logic": false,
+    "owner_runner_carrier_recalculation": false,
+    "evidence_collection": false,
+    "promotion": false,
+    "lifecycle_mutation": false,
+    "supabase_apply": false,
+    "cutover": false,
+    "runtime": false,
+    "production": false
+  },
+  "materialization": {
+    "supabase_projection_applied": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}
