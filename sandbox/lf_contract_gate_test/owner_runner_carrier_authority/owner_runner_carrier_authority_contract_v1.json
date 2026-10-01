@@ -1,0 +1,76 @@
+{
+  "schema_version": "lf-owner-runner-carrier-authority/v1",
+  "capability_code": "OWNER_RUNNER_CARRIER_AUTHORITY",
+  "status": "CANDIDATE_READ_ONLY",
+  "mode": "DERIVED_READ_MODEL_ONLY",
+  "administrative_super_admin": "LF_GOVERNANCE",
+  "entry_contract": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "guard_function": "public.fn_lf_capability_orchestrator_entry_guard_v1",
+    "required_entrypoint": "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "direct_call_policy": "BLOCK",
+    "accepted_decision": "ORCHESTRATOR_ENTRY_ACCEPTED"
+  },
+  "source_authorities": {
+    "governance_admin": "lf-ci-execution-plan/v2.governance_admin",
+    "carrier": "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json",
+    "classification_evidence": "sandbox/lf_contract_gate_test/pase_control_binding_inventory/pase_control_binding_inventory_v1.json",
+    "asset_authority": "public.lf_activos",
+    "asset_relation_authority": "public.lf_activo_relaciones",
+    "capability_authority": [
+      "public.lf_capability_registry",
+      "public.lf_capability_version_registry",
+      "public.lf_capability_current",
+      "public.lf_capability_binding"
+    ]
+  },
+  "output_schema": "lf-owner-runner-carrier-read-model/v1",
+  "row_fields": [
+    "control_id",
+    "super_admin",
+    "classification",
+    "capability_id",
+    "runner_ref",
+    "runner_state",
+    "carrier",
+    "state",
+    "source_revision"
+  ],
+  "invariants": {
+    "single_administrative_owner": true,
+    "super_admin_equals": "LF_GOVERNANCE",
+    "carrier_is_not_owner": true,
+    "classification_inventory_is_evidence_only": true,
+    "persistent_binding_catalog_forbidden": true,
+    "impact_registry_remains_carrier_authority": true,
+    "internal_ci_check_requires_standalone_capability": false,
+    "internal_ci_check_runner_state": "CARRIER_INTERNAL",
+    "standalone_capability_requires_canonical_authority": true,
+    "candidate_runner_execution_forbidden": true,
+    "registered_not_cutover_execution_forbidden": true,
+    "unknown_control_fail_closed": true,
+    "unknown_owner_fail_closed": true,
+    "carrier_drift_fail_closed": true,
+    "duplicate_control_fail_closed": true,
+    "missing_or_invalid_orchestrator_receipt_fail_closed": true,
+    "read_model_is_not_activation": true,
+    "read_model_is_not_new_authority": true
+  },
+  "state_policy": {
+    "INTERNAL_CI_CHECK": "CARRIER_INTERNAL",
+    "CANONICAL_EXECUTABLE_PRESENT": "RESOLVED_CURRENT_CARRIER",
+    "REGISTERED_NOT_CUTOVER": "BLOCK_NOT_CUTOVER",
+    "CANDIDATE_UNMERGED_DIVERGED": "BLOCK_CANDIDATE_RUNNER",
+    "CANDIDATE_READ_ONLY": "BLOCK_CANDIDATE_RUNNER",
+    "OWNER_BOUNDARY_ONLY": "BLOCK_OWNER_RUNNER_NOT_MATERIALIZED",
+    "NOT_RESOLVED": "BLOCK_OWNER_RUNNER_NOT_RESOLVED"
+  },
+  "materialization": {
+    "binding_catalog_created": false,
+    "supabase_applied": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}
