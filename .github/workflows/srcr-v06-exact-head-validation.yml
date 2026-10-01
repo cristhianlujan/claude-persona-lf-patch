@@ -24,6 +24,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install canonical deterministic pack-validator dependency
+        run: python -m pip install --disable-pip-version-check jsonschema==4.23.0
+
       - name: Verify exact candidate identity
         shell: bash
         run: |
@@ -66,6 +69,7 @@ jobs:
             echo
             echo '- candidate: `4ef451ac7f9649ebc4709fb1ec7ebdcf8be47fba`'
             echo '- base: `be1ffbf8e5790d01bc19b376e35a99f72ce52fe1`'
+            echo '- runner dependency: `jsonschema==4.23.0` (canonical staged Pack Validation Core)'
             echo '- carrier only; no merge/apply/runtime activation'
             echo
             echo '```json'
@@ -90,6 +94,7 @@ jobs:
           assert summary['status']=='PASS', summary
           assert summary['affected_pack_count'] >= 1, summary
           assert summary['executed_pack_count'] >= 1, summary
+          assert summary['pass_count'] >= 1, summary
           assert summary['fail_count']==0, summary
           print('PASS_SRCR_V06_EXACT_HEAD_PACK_VALIDATION', summary)
           PY
