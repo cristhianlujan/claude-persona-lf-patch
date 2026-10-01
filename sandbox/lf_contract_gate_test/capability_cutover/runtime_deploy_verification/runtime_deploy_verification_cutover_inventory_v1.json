@@ -1,0 +1,35 @@
+{
+  "schema_version": "lf-capability-cutover-inventory/v1",
+  "work_code": "SADM-PP-L5-022",
+  "cutover_code": "RUNTIME_DEPLOY_VERIFICATION_CUTOVER_V1",
+  "capability_code": "RUNTIME_DEPLOY_VERIFICATION",
+  "version": "1.0.0",
+  "mode": "ISOLATED_REVERSIBLE_EXACT_HEAD",
+  "source_revision": "19dac34c45b41f0416e254e1ae2dc45a33d84444",
+  "functional_core": {
+    "path": "sandbox/lf_contract_gate_test/runtime_deploy_verification/runtime_deploy_verification_v1.py",
+    "git_blob_sha1": "af53b9221d15d27a8ff016e3ec1ada804594867a",
+    "unchanged": true
+  },
+  "validator": {
+    "path": "sandbox/lf_contract_gate_test/runtime_deploy_verification/test_runtime_deploy_verification_v1.py",
+    "git_blob_sha1": "6d9ff2a581840eee8844836d4099cd70b513fe3b",
+    "known_check_count": 19
+  },
+  "contract_ref": "sandbox/lf_contract_gate_test/runtime_deploy_verification/runtime_deploy_verification_v1.json",
+  "canonical_authorities": [
+    "public.lf_capability_registry",
+    "public.lf_capability_version_registry",
+    "public.lf_capability_current",
+    "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "CURRENTNESS_AUTHORITY",
+    "LF_GOVERNANCE"
+  ],
+  "deploy_effect_path_preserved": true,
+  "legacy_installer_preserved": true,
+  "artifact_transport_policy": "PASE_POST_PASE_ARTIFACT_TRANSPORT_NO_ZIP_V1",
+  "rollback_ref": "sandbox/lf_contract_gate_test/capability_cutover/runtime_deploy_verification/RUNTIME_DEPLOY_VERIFICATION_cutover_rollback_v1.sql",
+  "production_activation": false,
+  "runtime_or_deploy_effect_executed": false,
+  "bulk_cutover": false
+}
