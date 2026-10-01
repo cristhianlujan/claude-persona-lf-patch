@@ -1,0 +1,59 @@
+{
+  "schema_version": "LF_EXTERNAL_CURRENTNESS_SCOPE_V1",
+  "repository": {
+    "default_branch": "main",
+    "mode": "ALL_GIT_BLOBS",
+    "include_prefixes": [],
+    "exclude_prefixes": [],
+    "new_object_policy": "REPORT_ONLY_DO_NOT_INSERT",
+    "missing_object_policy": "REPORT_ONLY_DO_NOT_DEACTIVATE",
+    "explicit_scope_decisions": {
+      "sandbox/": "IN_SCOPE",
+      "supabase/migrations/": "IN_SCOPE",
+      "supabase/functions/": "IN_SCOPE",
+      ".github/workflows/": "IN_SCOPE"
+    },
+    "rationale": "The historical repo snapshot spans every current top-level repository family, including sandbox and supabase/migrations. A4a therefore treats every Git blob on observed main as repository scope. NEW entries are reported only; incorporation is deferred to A4b."
+  },
+  "edge_runtime": {
+    "mode": "ALL_LISTED_EDGE_FUNCTIONS",
+    "source_root": "supabase/functions/",
+    "source_presence_states": [
+      "SOURCE_PRESENT",
+      "RUNTIME_WITHOUT_SOURCE"
+    ],
+    "runtime_without_source_policy": "REPORT_DEBT_ONLY_DO_NOT_RETIRE",
+    "new_object_policy": "REPORT_ONLY_DO_NOT_INSERT",
+    "missing_object_policy": "REPORT_ONLY_DO_NOT_DEACTIVATE"
+  },
+  "currentness": {
+    "states": [
+      "CURRENT",
+      "STALE",
+      "MISSING",
+      "NEW"
+    ],
+    "diagnostic_state": "UNKNOWN",
+    "repository_comparator": "git_blob",
+    "edge_comparators": [
+      "source_version",
+      "definition_sha256"
+    ],
+    "pass_rule": "UNKNOWN_CURRENTNESS_EQ_0"
+  },
+  "input_evidence": {
+    "digest_contract": "SHA256_CANONICAL_JSON_V1",
+    "required_inputs": [
+      "git_tree",
+      "repo_inventory",
+      "edge_runtime",
+      "edge_inventory",
+      "scope_policy"
+    ]
+  },
+  "provenance": {
+    "drive_role": "HISTORICAL_PROVENANCE_ONLY",
+    "github_role": "LIVE_REPOSITORY_CURRENTNESS",
+    "supabase_edge_role": "LIVE_RUNTIME_CURRENTNESS"
+  }
+}
