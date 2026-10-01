@@ -1,0 +1,52 @@
+{
+  "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_CONTRACT_V1",
+  "capability_code": "IG_RUNTIME_CANDIDATE_JUDGE",
+  "owner_scope": "SUPER_ADMIN",
+  "work_code": "PAULO-174",
+  "unit_code": "N-9",
+  "purpose": "Compare a representative real Input Governance Curator->Validator flow before and after an exact candidate inside one rollback-only database transaction.",
+  "authority_boundary": {
+    "grants_runtime_authority": false,
+    "grants_production_authority": false,
+    "may_mutate_persistently": false,
+    "mutation_policy": "ROLLBACK_ONLY_NO_PERSISTENT_EFFECT"
+  },
+  "input_contract": {
+    "required": [
+      "exact_head_sha",
+      "candidate_path",
+      "candidate_sha256",
+      "representative_screen_id",
+      "consumer"
+    ],
+    "optional": ["prelude_path", "prelude_sha256"]
+  },
+  "comparison_contract": {
+    "must_match": [
+      "terminal_payload_excluding_volatile_identity",
+      "assessment_digest",
+      "family_count",
+      "pass_count",
+      "run_status",
+      "proposal_validation_keys",
+      "retry_status"
+    ],
+    "candidate_must_prove": [
+      "all_families_pass",
+      "timing_rows_present",
+      "timing_families_processed_equals_family_count",
+      "retry_returns_noop_completed"
+    ]
+  },
+  "dependencies": [
+    "MIGRATION_SOURCE_PARITY",
+    "RUNTIME_DEPLOY_VERIFICATION",
+    "INPUT_GOVERNANCE_REGRESSION"
+  ],
+  "prior_art": {
+    "source_ref": "github://cristhianlujan/claude-persona-lf-patch@b1a42b64dd4427e469a9e981da803cb7bfb0daba/sandbox/ig_cv/flow_judge_prior_art_n7.sql",
+    "evidence_event_id": 19780
+  },
+  "r17_role": "INDEPENDENT_FLOW_VERIFICATION_ONLY",
+  "fail_closed": true
+}
