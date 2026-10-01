@@ -59,9 +59,10 @@ assert "validator.validate_changed_files" not in entrypoint
 assert "scripts/lf_contract_check.py:structural-admission-only" not in entrypoint
 assert "s28_ci_lane_router/emit_ci_execution_plan_v2.py" in entrypoint
 
-# Historical validator carriers retired by the earlier PASE workflow cutover stay absent.
+# Historical validator and reconciliation carriers retired by cutover stay absent.
 assert not (WORKFLOWS / "validate-lf-packs.yml").exists()
 assert not (WORKFLOWS / "lf-db-regression.yml").exists()
+assert not (WORKFLOWS / "lf-github-reconcile-v3.yml").exists()
 
 # Operational capabilities remain available but cannot create a second ordinary PR entrypoint.
 currentness = read("lf-material-currentness.yml")
@@ -79,13 +80,6 @@ profile = read("profile-driven-screen-generation.yml")
 assert "  issue_comment:\n" in profile
 assert "  s30-owner-chatops-broker:\n" in profile
 assert not PULL_REQUEST.search(profile)
-
-# Reconciliation is POST-PASE only: it must no longer own any pre-merge PR admission.
-reconciliation = read("lf-github-reconcile-v3.yml")
-assert "  workflow_run:\n" in reconciliation
-assert not PULL_REQUEST_TARGET.search(reconciliation)
-assert not PULL_REQUEST.search(reconciliation)
-assert "independent-change-admission:" not in reconciliation
 
 merge_gate = read("pase-merge-gate.yml")
 assert merge_gate.startswith("name: PASE Merge Gate\n")
