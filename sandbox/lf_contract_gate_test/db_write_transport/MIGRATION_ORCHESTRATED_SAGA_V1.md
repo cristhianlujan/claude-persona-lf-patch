@@ -1,16 +1,54 @@
 # MIGRATION_ORCHESTRATED_SAGA_V1
 
+## Identidad y estado
+
+- Tipo: `CAPABILITY` transversal.
+- Owner canónico: `SUPER_ADMIN`.
+- Owner legacy previo: `LF_GOVERNANCE_S30_DB`.
+- Versión funcional: `1.0.0`.
+- Estado funcional actual: `READ_ONLY` / runtime no activado.
+- Registry state: `REGISTERED_GUARDED_NOT_CURRENT`.
+- Current pointer: **no debe existir** hasta una activación separada y explícita.
+
+## Punto de entrada obligatorio
+
+```text
+CALLER
+  |
+  v
+ORCHESTRATOR DISPATCH
+  |
+  v
+ORCHESTRATOR_EXECUTION_GUARD_V1
+  |
+  +-- receipt ausente/inválido -> BLOCK
+  +-- orchestrator no operacional -> BLOCK
+  +-- capability/consumer/plan_digest mismatch -> BLOCK
+  |
+  v
+public.fn_lf_capability_bind_from_orchestrator_v1
+  |
+  +-- capability sin current pointer -> BLOCK_NO_CURRENT_CAPABILITY
+  |
+  v
+MIGRATION_ORCHESTRATED_SAGA_V1
+```
+
+El guard es compartido. La capability no auto-admite callers ni decide su propia aplicabilidad. Registrar la capability no activa runtime, apply ni producción.
+
 ## Objetivo
 
 Gobernar secuencialmente la transición de una migration ya persistida en Git hacia apply exacto en Supabase y cierre verificado, sin crear un segundo writer ni otra autoridad.
 
 ## Dependencias obligatorias
 
-1. `MIGRATION_WRITE_AHEAD_V1` debe haber producido source durable + readback exacto.
-2. `DB_WRITE_TRANSPORT` conserva la autoridad de transporte material del apply.
-3. `MIGRATION_SOURCE_PARITY` debe producir evidencia canónica PASS antes de que la Saga pueda cerrar `CONSISTENT`.
+1. `MIGRATION_WRITE_AHEAD_V1` — source durable + readback exacto.
+2. `DB_WRITE_TRANSPORT` — autoridad material del apply.
+3. `MIGRATION_SOURCE_PARITY` — evidencia canónica PASS antes de `CONSISTENT`.
+4. `CURRENTNESS_AUTHORITY` — currentness.
+5. `ORCHESTRATOR_EXECUTION_GUARD_V1` — admisión transversal.
 
-La dependencia de `MIGRATION_SOURCE_PARITY` es de evidencia funcional; Saga no invoca ni depende de `lf-contract-check`, S30, E.16 ni de ningún carrier CI.
+La capability consume evidencia/estado; no depende funcionalmente de `lf-contract-check`, S30, E.16 ni carriers CI.
 
 ## Secuencia
 
@@ -18,61 +56,49 @@ La dependencia de `MIGRATION_SOURCE_PARITY` es de evidencia funcional; Saga no i
 2. `READY_TO_APPLY`
 3. `SUPABASE_APPLIED`
 4. `SUPABASE_LEDGER_READBACK`
-5. `MIGRATION_SOURCE_PARITY_PASS` con evidencia canónica ligada al mismo Git head
+5. `MIGRATION_SOURCE_PARITY_PASS`
 6. `CONSISTENT`
 
-Cada transición conserva la misma identidad:
-
-- `execution_id`;
-- `effect_scope=MIGRATION:<version>`;
-- target path;
-- version/name;
-- source SHA256.
+Cada transición conserva `execution_id`, `effect_scope`, target path, version/name y source SHA256.
 
 ## Evidencia de parity
 
-La saga no acepta un booleano/autodeclaración `status=PASS` como prueba suficiente. Para cerrar `CONSISTENT` consume la evidencia transversal existente `LF_GATE_ERROR_V1` producida por `LF_GATE_CHECK_OBSERVABILITY_V1` para el check canónico `MIGRATION_SOURCE_PARITY`.
-
-La evidencia debe:
-
-- corresponder al source path canónico `sandbox/lf_contract_gate_test/lf_migration_source_parity.py`;
-- tener exactamente un check ejecutado y PASS;
-- identificar el control por `gate_id`, `step_id` y `source_path`; en PASS, `downstream_impact` puede estar vacío porque el productor canónico lo reserva para enrutar fallos;
-- declarar `LF_GATE_CHECK_OBSERVABILITY_V1` como productor del envelope y el source path canónico como productor del check ejecutado;
-- tener `source_commit` y `tested_commit` iguales al `git.head_sha` de la migration persistida;
-- conservar un `manifest_sha256` válido sobre su contenido.
-
-La saga consume la evidencia del control, no depende del workflow/carrier que lo transportó.
+Para `CONSISTENT`, consume evidencia `LF_GATE_ERROR_V1` / `LF_GATE_CHECK_OBSERVABILITY_V1` del control `MIGRATION_SOURCE_PARITY`, ligada al mismo Git head. Un booleano autodeclarado no basta.
 
 ## Idempotencia / retry
 
-El state gate es puro y determinista: revaluar el mismo snapshot produce el mismo verdict. Las acciones materiales continúan en las autoridades existentes (`ACTUALIZACION_DB_LF` y `DB_WRITE_TRANSPORT`) y deben ser reintentables contra la misma identidad; la saga no acuña otra versión ni otro path.
+El state gate es puro y determinista. Las acciones materiales permanecen en `ACTUALIZACION_DB_LF` y `DB_WRITE_TRANSPORT`; Saga no acuña otro writer, path ni apply engine.
 
 ## Fail closed
 
 - DB-first sin write-ahead durable → `BLOCK_WRITE_AHEAD_NOT_DURABLE`.
-- apply sin readback ledger → `BLOCK_SUPABASE_READBACK_MISSING`.
+- apply sin ledger readback → `BLOCK_SUPABASE_READBACK_MISSING`.
 - parity distinto de PASS → `BLOCK_DUAL_SURFACE_PARITY_NOT_PASS`.
-- PASS sin evidencia canónica → error determinístico.
-- evidencia parity con digest/head/source inválido → error determinístico.
-- mismatch de execution/path/version/name/hash → error determinístico.
+- evidencia parity inválida → error determinístico.
+- identidad divergente → error determinístico.
+- sin current pointer → `BLOCK_NO_CURRENT_CAPABILITY` antes de ejecutar Saga.
 
 ## Implementación
 
 - State gate: `lf_migration_orchestrated_saga.py`.
 - Tests: `test_lf_migration_orchestrated_saga.py`.
+- Registry projection: `MIGRATION_ORCHESTRATED_SAGA_V1_registry_projection.sql`.
 - Autoridad material: Router `ACT-0001` + `ACTUALIZACION_DB_LF` + `DB_WRITE_TRANSPORT`.
-- Dependencia de validación: `MIGRATION_SOURCE_PARITY`.
-- Contrato de evidencia reutilizado: `LF_GATE_ERROR_V1` / `LF_GATE_CHECK_OBSERVABILITY_V1`.
 
 ## Relaciones canónicas
 
+- `OWNER -> SUPER_ADMIN`.
+- `ENTRY_GUARD -> ORCHESTRATOR_EXECUTION_GUARD_V1`.
 - `DEPENDE_DE -> DB_WRITE_TRANSPORT`.
 - `DEPENDE_DE -> MIGRATION_WRITE_AHEAD_V1`.
 - `DEPENDE_DE -> MIGRATION_SOURCE_PARITY`.
 - `GOBERNADO_POR -> ACT-0001`.
-- `MIGRATION_SOURCE_RECONCILIATION_V1` es una capacidad posterior y condicional ante un finding reparable; Saga no la invoca.
+- `MIGRATION_SOURCE_RECONCILIATION_V1` es posterior/condicional; Saga no la invoca.
 
 ## Límites
 
-No crea operación, tabla, writer, router, juez ni receipt engine paralelos. No llama S30, E.16 ni carriers CI como parte de su funcionamiento. No hace merge, no activa producción/runtime y no autoriza reconciliación automática; esa función pertenece a la tercera solución.
+No crea operación, tabla, writer, router, juez ni receipt engine paralelos. No hace merge, no activa producción/runtime y no autoriza reconciliación automática.
+
+## Activación
+
+Este cutover solo registra ownership/version/entry guard. No crea `lf_capability_current`. Activación requiere evidencia y autorización específica separada.
