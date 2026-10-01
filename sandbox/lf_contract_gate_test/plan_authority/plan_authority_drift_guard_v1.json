@@ -16,19 +16,31 @@
   "execution_contract": {
     "request_schema": "LF_CAPABILITY_EXECUTION_REQUEST_V1",
     "capability_code": "PLAN_AUTHORITY_DRIFT_GUARD",
-    "plan_digest_crossbind_required": true
+    "plan_digest_crossbind_required": true,
+    "authority_refs_required": true
   },
   "anchor_contract": {
+    "required_fields": [
+      "anchor_event_id",
+      "plan_id",
+      "legacy_plan_digest",
+      "workstream_sha256",
+      "work_items_sha256",
+      "dependencies_sha256"
+    ],
+    "legacy_plan_digest_semantics": "OPAQUE_IMMUTABLE_AUTHORITY_TOKEN",
+    "component_hash_algorithm": "SHA256_UTF8_OF_CANONICAL_JSONB_TEXT",
+    "anchor_token_recomputation_policy": "DO_NOT_INVENT_UNDOCUMENTED_FORMULA",
+    "anchor_is_runtime_parameter_not_hardcoded": true
+  },
+  "bootstrap_fixture": {
     "anchor_event_id": 19435,
     "plan_id": "LF_SUPER_ADMIN_POST_PASE_ARCHITECTURE_V1",
     "legacy_plan_digest": "9b234da6cdec56c141cc452e3997650c93cdf3a27f64d9b5858bea311476c648",
-    "legacy_plan_digest_semantics": "OPAQUE_IMMUTABLE_AUTHORITY_TOKEN",
-    "legacy_plan_digest_formula_documented": false,
-    "component_hash_algorithm": "SHA256_UTF8_OF_CANONICAL_JSONB_TEXT",
     "workstream_sha256": "5c0e0be6536ad6dd602327b3ffb95955f471bce8b88afad18c0918108820311b",
     "work_items_sha256": "67f64cdb37232bc34f77719988dfc47a9f1b9072cf1c0e358ff092d23256d744",
     "dependencies_sha256": "c136092312436cfce82e9e1ea5d7448b9fc036a8c88de3dc93f7f7f2555725e5",
-    "anchor_token_recomputation_forbidden": true
+    "legacy_plan_digest_formula_documented": false
   },
   "currentness_dependency": {
     "capability_code": "CURRENTNESS_AUTHORITY",
@@ -60,8 +72,14 @@
       "workstream_sha256",
       "work_items_sha256",
       "dependencies_sha256",
+      "authorization_proof",
       "delta_digest"
     ],
+    "authorization_proof_schema": "LF_PLAN_DELTA_AUTHORITY_READBACK_V1",
+    "authorization_proof_authority": "PLAN_AUTHORITY",
+    "authorization_proof_decision": "AUTHORIZED_PLAN_DELTA",
+    "authorization_proof_must_be_crossbound_in_request_authority_refs": true,
+    "local_shape_validation_is_authority": false,
     "delta_digest_algorithm": "LF_PLAN_AUTHORITY_DELTA_SHA256_V1",
     "chain_must_start_at_anchor": true,
     "chain_must_end_at_request_plan_digest": true,
@@ -69,13 +87,15 @@
   },
   "decision_vocabulary": {
     "MATCH": "live component hashes equal the immutable anchor and request.plan_digest equals anchor token",
-    "AUTHORIZED_DELTA": "an append-only valid delta chain links the anchor token to request.plan_digest and final component hashes equal live",
-    "UNREGISTERED_DRIFT": "currentness, entry, chain, plan identity or component proof is missing/invalid"
+    "AUTHORIZED_DELTA": "a resolver-backed append-only delta chain links the anchor token to request.plan_digest and final component hashes equal live",
+    "UNREGISTERED_DRIFT": "currentness, entry, plan identity, authority proof, chain or component proof is missing/invalid"
   },
   "invariants": {
     "currentness_authority_is_single_engine": true,
     "plan_guard_is_not_currentness_engine": true,
+    "anchor_is_runtime_parameter_not_hardcoded": true,
     "unknown_or_missing_delta_fail_closed": true,
+    "delta_authority_receipt_crossbind_required": true,
     "legacy_anchor_formula_must_not_be_invented": true,
     "no_plan_mutation": true,
     "no_new_ledger": true,

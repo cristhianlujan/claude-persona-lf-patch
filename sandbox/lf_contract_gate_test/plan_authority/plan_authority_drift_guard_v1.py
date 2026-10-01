@@ -10,6 +10,8 @@ HEX64 = re.compile(r"^[0-9a-f]{64}$")
 CAPABILITY_CODE = "PLAN_AUTHORITY_DRIFT_GUARD"
 CURRENTNESS_DECISIONS = {"CURRENT", "CURRENT_REBOUND"}
 ENTRY_ACCEPTED = "ORCHESTRATOR_ENTRY_ACCEPTED"
+DELTA_AUTH_SCHEMA = "LF_PLAN_DELTA_AUTHORITY_READBACK_V1"
+DELTA_AUTH_DECISION = "AUTHORIZED_PLAN_DELTA"
 
 
 def canonical_sha256(value: Any) -> str:
@@ -38,7 +40,13 @@ def component_hashes(live_snapshot: dict[str, Any]) -> dict[str, str]:
     return out
 
 
+def authority_proof_digest(proof: dict[str, Any]) -> str:
+    material = {k: v for k, v in proof.items() if k != "receipt_digest"}
+    return canonical_sha256(material)
+
+
 def delta_digest(delta: dict[str, Any]) -> str:
+    proof = delta.get("authorization_proof") or {}
     material = {
         "schema_version": "LF_PLAN_AUTHORITY_DELTA_SHA256_V1",
         "delta_event_id": delta.get("delta_event_id"),
@@ -48,6 +56,7 @@ def delta_digest(delta: dict[str, Any]) -> str:
         "workstream_sha256": delta.get("workstream_sha256"),
         "work_items_sha256": delta.get("work_items_sha256"),
         "dependencies_sha256": delta.get("dependencies_sha256"),
+        "authorization_receipt_digest": proof.get("receipt_digest"),
     }
     return canonical_sha256(material)
 
@@ -88,6 +97,8 @@ def _entry_is_valid(request: dict[str, Any]) -> tuple[bool, str]:
     ):
         if not isinstance(request.get(field), str) or not request.get(field):
             return False, f"REQUEST_FIELD_MISSING:{field}"
+    if not isinstance(request.get("authority_refs"), dict):
+        return False, "REQUEST_AUTHORITY_REFS_REQUIRED"
     return True, ""
 
 
@@ -103,6 +114,50 @@ def _currentness_is_valid(receipt: dict[str, Any]) -> tuple[bool, str]:
     digest = receipt.get("receipt_sha256")
     if not isinstance(digest, str) or not HEX64.fullmatch(digest):
         return False, "CURRENTNESS_RECEIPT_DIGEST_INVALID"
+    return True, ""
+
+
+def _anchor_is_valid(anchor: dict[str, Any]) -> tuple[bool, str]:
+    if not isinstance(anchor, dict):
+        return False, "ANCHOR_REQUIRED"
+    if not isinstance(anchor.get("anchor_event_id"), int) or anchor["anchor_event_id"] <= 0:
+        return False, "ANCHOR_EVENT_ID_INVALID"
+    if not isinstance(anchor.get("plan_id"), str) or not anchor["plan_id"]:
+        return False, "ANCHOR_PLAN_ID_INVALID"
+    for field in ("legacy_plan_digest", "workstream_sha256", "work_items_sha256", "dependencies_sha256"):
+        value = anchor.get(field)
+        if not isinstance(value, str) or not HEX64.fullmatch(value):
+            return False, f"ANCHOR_HASH_INVALID:{field}"
+    return True, ""
+
+
+def _delta_authorization_is_valid(delta: dict[str, Any], request: dict[str, Any]) -> tuple[bool, str]:
+    proof = delta.get("authorization_proof")
+    if not isinstance(proof, dict):
+        return False, "DELTA_AUTHORIZATION_PROOF_REQUIRED"
+    if proof.get("schema_version") != DELTA_AUTH_SCHEMA:
+        return False, "DELTA_AUTHORIZATION_SCHEMA_MISMATCH"
+    if proof.get("authority") != "PLAN_AUTHORITY":
+        return False, "DELTA_AUTHORIZATION_AUTHORITY_MISMATCH"
+    if proof.get("decision") != DELTA_AUTH_DECISION:
+        return False, "DELTA_AUTHORIZATION_DECISION_MISMATCH"
+    for proof_field, delta_field in (
+        ("event_id", "delta_event_id"),
+        ("plan_id", "plan_id"),
+        ("previous_plan_digest", "previous_plan_digest"),
+        ("next_plan_digest", "next_plan_digest"),
+    ):
+        if proof.get(proof_field) != delta.get(delta_field):
+            return False, f"DELTA_AUTHORIZATION_CROSSBIND_MISMATCH:{proof_field}"
+    digest = proof.get("receipt_digest")
+    if not isinstance(digest, str) or not HEX64.fullmatch(digest):
+        return False, "DELTA_AUTHORIZATION_DIGEST_INVALID"
+    if digest != authority_proof_digest(proof):
+        return False, "DELTA_AUTHORIZATION_DIGEST_MISMATCH"
+    refs = request.get("authority_refs") or {}
+    allowed = refs.get("plan_delta_authority_receipt_digests")
+    if not isinstance(allowed, list) or digest not in allowed:
+        return False, "DELTA_AUTHORIZATION_NOT_CROSSBOUND_TO_REQUEST"
     return True, ""
 
 
@@ -122,12 +177,10 @@ def evaluate_plan_authority(
     if not curr_ok:
         return _unregistered(curr_reason, anchor=anchor, request=request, currentness_receipt=currentness_receipt)
 
-    if anchor.get("anchor_event_id") != 19435:
-        return _unregistered("ANCHOR_EVENT_MISMATCH", anchor=anchor, request=request, currentness_receipt=currentness_receipt)
-    if anchor.get("plan_id") != "LF_SUPER_ADMIN_POST_PASE_ARCHITECTURE_V1":
-        return _unregistered("ANCHOR_PLAN_ID_MISMATCH", anchor=anchor, request=request, currentness_receipt=currentness_receipt)
-    if not HEX64.fullmatch(anchor.get("legacy_plan_digest") or ""):
-        return _unregistered("ANCHOR_PLAN_DIGEST_INVALID", anchor=anchor, request=request, currentness_receipt=currentness_receipt)
+    anchor_ok, anchor_reason = _anchor_is_valid(anchor)
+    if not anchor_ok:
+        return _unregistered(anchor_reason, anchor=anchor, request=request, currentness_receipt=currentness_receipt)
+
     if live_snapshot.get("plan_id") != anchor.get("plan_id"):
         return _unregistered("LIVE_PLAN_ID_MISMATCH", anchor=anchor, request=request, currentness_receipt=currentness_receipt)
 
@@ -137,12 +190,10 @@ def evaluate_plan_authority(
         return _unregistered(str(exc), anchor=anchor, request=request, currentness_receipt=currentness_receipt)
 
     anchor_components = {
-        "workstream_sha256": anchor.get("workstream_sha256"),
-        "work_items_sha256": anchor.get("work_items_sha256"),
-        "dependencies_sha256": anchor.get("dependencies_sha256"),
+        "workstream_sha256": anchor["workstream_sha256"],
+        "work_items_sha256": anchor["work_items_sha256"],
+        "dependencies_sha256": anchor["dependencies_sha256"],
     }
-    if not all(isinstance(v, str) and HEX64.fullmatch(v) for v in anchor_components.values()):
-        return _unregistered("ANCHOR_COMPONENT_HASH_INVALID", anchor=anchor, live_components=live_components, request=request, currentness_receipt=currentness_receipt)
 
     if live_components == anchor_components:
         if request.get("plan_digest") != anchor.get("legacy_plan_digest"):
@@ -182,6 +233,10 @@ def evaluate_plan_authority(
         if not HEX64.fullmatch(delta.get("next_plan_digest") or ""):
             return _unregistered("DELTA_NEXT_DIGEST_INVALID", anchor=anchor, live_components=live_components, request=request, currentness_receipt=currentness_receipt)
 
+        auth_ok, auth_reason = _delta_authorization_is_valid(delta, request)
+        if not auth_ok:
+            return _unregistered(auth_reason, anchor=anchor, live_components=live_components, request=request, currentness_receipt=currentness_receipt)
+
         components = {
             "workstream_sha256": delta.get("workstream_sha256"),
             "work_items_sha256": delta.get("work_items_sha256"),
@@ -206,7 +261,7 @@ def evaluate_plan_authority(
         "capability_code": CAPABILITY_CODE,
         "decision": "AUTHORIZED_DELTA",
         "ready": True,
-        "reason": "APPEND_ONLY_DELTA_CHAIN_PROVES_LIVE_PLAN",
+        "reason": "RESOLVER_BACKED_APPEND_ONLY_DELTA_CHAIN_PROVES_LIVE_PLAN",
         "plan_id": anchor["plan_id"],
         "anchor_event_id": anchor["anchor_event_id"],
         "anchor_plan_digest": anchor["legacy_plan_digest"],

@@ -2,12 +2,26 @@
   "schema_version": "lf-plan-authority-drift-guard-inventory/v1",
   "solution_code": "PLAN_AUTHORITY_DRIFT_GUARD_V1",
   "work_code": "SADM-PP-L1-010",
-  "plan_id": "LF_SUPER_ADMIN_POST_PASE_ARCHITECTURE_V1",
   "owner": "LF_GOVERNANCE",
   "asset_code": "PLAN_AUTHORITY_DRIFT_GUARD",
   "classification": "CANDIDATE_READ_ONLY_ADAPTER",
   "source_state": "READY_FOR_REVIEW",
   "runtime_state": "BLOCKED_NOT_MATERIALIZED_NOT_CUTOVER",
+  "runtime_anchor": {
+    "mode": "PARAMETERIZED_RESOLVER_BACKED",
+    "hardcoded_event_id": false,
+    "hardcoded_plan_id": false
+  },
+  "bootstrap_fixture": {
+    "plan_id": "LF_SUPER_ADMIN_POST_PASE_ARCHITECTURE_V1",
+    "event_id": 19435,
+    "legacy_plan_digest": "9b234da6cdec56c141cc452e3997650c93cdf3a27f64d9b5858bea311476c648",
+    "workstream_sha256": "5c0e0be6536ad6dd602327b3ffb95955f471bce8b88afad18c0918108820311b",
+    "work_items_sha256": "67f64cdb37232bc34f77719988dfc47a9f1b9072cf1c0e358ff092d23256d744",
+    "dependencies_sha256": "c136092312436cfce82e9e1ea5d7448b9fc036a8c88de3dc93f7f7f2555725e5",
+    "component_formula_verified": "SHA256_UTF8_OF_CANONICAL_JSONB_TEXT",
+    "legacy_composite_formula_documented": false
+  },
   "entry": {
     "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
     "accepted_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
@@ -26,12 +40,15 @@
     {
       "code": "LF_GOVERNANCE",
       "role": "administrative super-admin root"
-    },
-    {
-      "code": "lf_eventos#19435",
-      "role": "immutable legacy plan anchor"
     }
   ],
+  "delta_authorization": {
+    "receipt_schema": "LF_PLAN_DELTA_AUTHORITY_READBACK_V1",
+    "authority": "PLAN_AUTHORITY",
+    "accepted_decision": "AUTHORIZED_PLAN_DELTA",
+    "must_crossbind_request_authority_refs": true,
+    "local_shape_is_authority": false
+  },
   "relations": [
     {
       "from": "PLAN_AUTHORITY_DRIFT_GUARD",
@@ -57,15 +74,6 @@
     "sandbox/lf_contract_gate_test/plan_authority/PLAN_AUTHORITY_DRIFT_GUARD_registry_projection_v1.sql",
     "sandbox/lf_contract_gate_test/plan_authority/README.md"
   ],
-  "anchor_evidence": {
-    "event_id": 19435,
-    "legacy_plan_digest": "9b234da6cdec56c141cc452e3997650c93cdf3a27f64d9b5858bea311476c648",
-    "workstream_sha256": "5c0e0be6536ad6dd602327b3ffb95955f471bce8b88afad18c0918108820311b",
-    "work_items_sha256": "67f64cdb37232bc34f77719988dfc47a9f1b9072cf1c0e358ff092d23256d744",
-    "dependencies_sha256": "c136092312436cfce82e9e1ea5d7448b9fc036a8c88de3dc93f7f7f2555725e5",
-    "component_formula_verified": "SHA256_UTF8_OF_CANONICAL_JSONB_TEXT",
-    "legacy_composite_formula_documented": false
-  },
   "decisions": [
     "MATCH",
     "AUTHORIZED_DELTA",
@@ -74,6 +82,8 @@
   "forbidden": [
     "parallel_currentness_engine",
     "anchor_rewrite",
+    "hardcoded_runtime_anchor",
+    "self_authorized_delta",
     "unregistered_delta_acceptance",
     "direct_call_without_orchestrator",
     "runtime_activation",
