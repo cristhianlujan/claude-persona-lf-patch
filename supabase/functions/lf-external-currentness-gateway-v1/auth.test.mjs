@@ -6,6 +6,7 @@ import {
   WORKFLOW_NAME,
   WORKFLOW_REF,
   validateGatewayClaims,
+  requireObservedMainMatchesWorkflow,
   requireEdgeReadCredential,
 } from "./auth.ts";
 
@@ -33,6 +34,16 @@ assert.throws(() => validateGatewayClaims({ ...base, ref: "refs/heads/dev" }), /
 assert.throws(() => validateGatewayClaims({ ...base, workflow_ref: "other" }), /OIDC_WORKFLOW_IDENTITY_MISMATCH/);
 assert.throws(() => validateGatewayClaims({ ...base, job_workflow_ref: "other" }), /OIDC_WORKFLOW_IDENTITY_MISMATCH/);
 assert.throws(() => validateGatewayClaims({ ...base, workflow_sha: "bad" }), /OIDC_RUN_IDENTITY_INCOMPLETE/);
+const exactIdentity = validateGatewayClaims(base);
+assert.equal(
+  requireObservedMainMatchesWorkflow(exactIdentity.workflowSha, exactIdentity),
+  exactIdentity.workflowSha,
+);
+assert.throws(
+  () => requireObservedMainMatchesWorkflow("b".repeat(40), exactIdentity),
+  /REPORT_MAIN_SHA_MISMATCH/,
+);
+
 assert.throws(() => requireEdgeReadCredential(""), /EDGE_READ_CREDENTIAL_MISSING/);
 assert.equal(requireEdgeReadCredential(" scoped-pat "), "scoped-pat");
 
