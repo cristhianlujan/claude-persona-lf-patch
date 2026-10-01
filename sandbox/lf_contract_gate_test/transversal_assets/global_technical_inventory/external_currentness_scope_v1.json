@@ -17,6 +17,9 @@
   },
   "edge_runtime": {
     "mode": "ALL_LISTED_EDGE_FUNCTIONS",
+    "source_root": "supabase/functions/",
+    "source_presence_states": ["SOURCE_PRESENT", "RUNTIME_WITHOUT_SOURCE"],
+    "runtime_without_source_policy": "REPORT_DEBT_ONLY_DO_NOT_RETIRE",
     "new_object_policy": "REPORT_ONLY_DO_NOT_INSERT",
     "missing_object_policy": "REPORT_ONLY_DO_NOT_DEACTIVATE"
   },
@@ -26,6 +29,16 @@
     "repository_comparator": "git_blob",
     "edge_comparators": ["source_version", "definition_sha256"],
     "pass_rule": "UNKNOWN_CURRENTNESS_EQ_0"
+  },
+  "input_evidence": {
+    "digest_contract": "SHA256_CANONICAL_JSON_V1",
+    "required_inputs": [
+      "git_tree",
+      "repo_inventory",
+      "edge_runtime",
+      "edge_inventory",
+      "scope_policy"
+    ]
   },
   "provenance": {
     "drive_role": "HISTORICAL_PROVENANCE_ONLY",
