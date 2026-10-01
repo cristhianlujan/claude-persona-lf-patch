@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: 58dd034f72ad4180951f003defee849ace77a2d0
+          ref: 528789f4f0a73b830ca54391d933c3ec8618f638
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -37,7 +37,7 @@ jobs:
           python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py \
             --repo-root . \
             --base-sha cb7c6186253af5c5e208f363effd65609e32f809 \
-            --head-sha 58dd034f72ad4180951f003defee849ace77a2d0 \
+            --head-sha 528789f4f0a73b830ca54391d933c3ec8618f638 \
             --base-ref main \
             --event-name pull_request \
             --output-dir .lf_migration_source_parity
