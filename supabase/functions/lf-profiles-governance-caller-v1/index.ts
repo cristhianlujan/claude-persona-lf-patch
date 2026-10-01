@@ -10,6 +10,9 @@ const LEGACY_WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-profiles-governa
 const RECURATION_REF = "refs/heads/main";
 const RECURATION_WORKFLOW_NAME = "LF Input Governance Recuration";
 const RECURATION_WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-input-governance-recurate.yml@${RECURATION_REF}`;
+const RECURATION_BOOTSTRAP_BRANCH = "lf/ig-cv-n2-recuration-run-20261001";
+const RECURATION_BOOTSTRAP_REF = `refs/heads/${RECURATION_BOOTSTRAP_BRANCH}`;
+const RECURATION_BOOTSTRAP_WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-input-governance-recurate.yml@${RECURATION_BOOTSTRAP_REF}`;
 const AUDIENCE = "lf-profiles-governance-caller-v1";
 const ISSUER = "https://token.actions.githubusercontent.com";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
@@ -20,26 +23,43 @@ const JWKS = createRemoteJWKSet(new URL(`${ISSUER}/.well-known/jwks`));
 const INPUT_GOV_RECURATION_TIMEOUT_MS = 149000;
 const DEFAULT_RUNTIME_TIMEOUT_MS = 120000;
 
-const OIDC_IDENTITIES = [
-  {
-    method: "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1",
-    ref: LEGACY_REF,
-    workflow: LEGACY_WORKFLOW_NAME,
-    workflowRef: LEGACY_WORKFLOW_REF,
-    eventName: "push",
-    scope: "LEGACY_PROFILE_GOVERNANCE",
-  },
-  {
-    method: "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_V1",
-    ref: RECURATION_REF,
-    workflow: RECURATION_WORKFLOW_NAME,
-    workflowRef: RECURATION_WORKFLOW_REF,
-    eventName: "workflow_dispatch",
-    scope: "INPUT_GOVERNANCE_RECURATION_ONLY",
-  },
-] as const;
+type OidcIdentity = {
+  method: string;
+  ref: string;
+  workflow: string;
+  workflowRef: string;
+  eventName: string;
+  scope: "LEGACY_PROFILE_GOVERNANCE" | "INPUT_GOVERNANCE_RECURATION_ONLY";
+};
 
-type OidcIdentity = typeof OIDC_IDENTITIES[number];
+const LEGACY_IDENTITY: OidcIdentity = {
+  method: "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1",
+  ref: LEGACY_REF,
+  workflow: LEGACY_WORKFLOW_NAME,
+  workflowRef: LEGACY_WORKFLOW_REF,
+  eventName: "push",
+  scope: "LEGACY_PROFILE_GOVERNANCE",
+};
+
+const RECURATION_REUSABLE_IDENTITY: OidcIdentity = {
+  method: "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_REUSABLE_V1",
+  ref: RECURATION_REF,
+  workflow: RECURATION_WORKFLOW_NAME,
+  workflowRef: RECURATION_WORKFLOW_REF,
+  eventName: "workflow_call",
+  scope: "INPUT_GOVERNANCE_RECURATION_ONLY",
+};
+
+// Transitional bootstrap only. Main remains workflow_call-only; this exact branch
+// can execute one direct push run so N-2 can progress without workflow_dispatch.
+const RECURATION_BOOTSTRAP_IDENTITY: OidcIdentity = {
+  method: "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_BOOTSTRAP_PUSH_V1",
+  ref: RECURATION_BOOTSTRAP_REF,
+  workflow: RECURATION_WORKFLOW_NAME,
+  workflowRef: RECURATION_BOOTSTRAP_WORKFLOW_REF,
+  eventName: "push",
+  scope: "INPUT_GOVERNANCE_RECURATION_ONLY",
+};
 
 const PILOT_SCREENS = [
   { pantalla_id: 2, codigo: "ONB_002" },
@@ -65,6 +85,32 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+function resolveOidcIdentity(payload: JWTPayload): OidcIdentity {
+  if (
+    payload.ref === LEGACY_IDENTITY.ref &&
+    payload.workflow_ref === LEGACY_IDENTITY.workflowRef &&
+    payload.workflow === LEGACY_IDENTITY.workflow &&
+    payload.event_name === LEGACY_IDENTITY.eventName
+  ) return LEGACY_IDENTITY;
+
+  const eventName = typeof payload.event_name === "string" ? payload.event_name : "";
+  const jobWorkflowRef = typeof payload.job_workflow_ref === "string" ? payload.job_workflow_ref : "";
+  if (
+    payload.ref === RECURATION_REF &&
+    jobWorkflowRef === RECURATION_WORKFLOW_REF &&
+    (eventName === "push" || eventName === "workflow_call")
+  ) return RECURATION_REUSABLE_IDENTITY;
+
+  if (
+    payload.ref === RECURATION_BOOTSTRAP_IDENTITY.ref &&
+    payload.workflow_ref === RECURATION_BOOTSTRAP_IDENTITY.workflowRef &&
+    payload.workflow === RECURATION_BOOTSTRAP_IDENTITY.workflow &&
+    payload.event_name === RECURATION_BOOTSTRAP_IDENTITY.eventName
+  ) return RECURATION_BOOTSTRAP_IDENTITY;
+
+  throw new Error("OIDC_WORKFLOW_IDENTITY_MISMATCH");
+}
+
 async function requireOidc(req: Request): Promise<{ payload: JWTPayload; identity: OidcIdentity }> {
   const authorization = req.headers.get("authorization") ?? "";
   if (!authorization.startsWith("Bearer ")) throw new Error("OIDC_BEARER_MISSING");
@@ -82,15 +128,7 @@ async function requireOidc(req: Request): Promise<{ payload: JWTPayload; identit
   }
   if (payload.repository !== REPOSITORY || String(payload.repository_id ?? "") !== REPOSITORY_ID) throw new Error("OIDC_REPOSITORY_MISMATCH");
   if (!payload.run_id || !payload.workflow_sha || !/^[0-9a-f]{40}$/.test(String(payload.workflow_sha))) throw new Error("OIDC_RUN_IDENTITY_INCOMPLETE");
-
-  const identity = OIDC_IDENTITIES.find((item) =>
-    payload.ref === item.ref &&
-    payload.workflow_ref === item.workflowRef &&
-    payload.workflow === item.workflow &&
-    payload.event_name === item.eventName
-  );
-  if (!identity) throw new Error("OIDC_WORKFLOW_IDENTITY_MISMATCH");
-  return { payload, identity };
+  return { payload, identity: resolveOidcIdentity(payload) };
 }
 
 async function callRuntime(

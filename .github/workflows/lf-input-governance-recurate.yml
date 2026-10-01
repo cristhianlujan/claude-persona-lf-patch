@@ -1,11 +1,11 @@
 name: LF Input Governance Recuration
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       pantalla_ids:
         description: "Comma-separated allowed ids. Retry only non-current screens; max 2 retries/screen, then STOP and report screen/control."
-        required: true
+        required: false
         default: "1,2,3,5,43,51,52,53,54,55,56,57,58"
         type: string
 
@@ -53,11 +53,11 @@ jobs:
     timeout-minutes: 5
     strategy:
       # R17 / event #19650: one screen timing out must not cancel the rest.
-      # Retry policy is manual and currentness-driven: after readback with
-      # programacion.fn_input_readiness_run_is_current, rerun this workflow only
-      # with non-current pantalla_ids. Maximum 2 retries per screen. If a screen
-      # is still non-current after its second retry: STOP N-2 and report that
-      # pantalla_id plus the failing control; do not close the unit.
+      # Retry policy is currentness-driven: after readback with
+      # programacion.fn_input_readiness_run_is_current, invoke only non-current
+      # pantalla_ids. Maximum 2 retries per screen. If a screen is still
+      # non-current after its second retry: STOP N-2 and report pantalla_id plus
+      # the failing control; do not close the unit.
       fail-fast: false
       max-parallel: 1
       matrix:
