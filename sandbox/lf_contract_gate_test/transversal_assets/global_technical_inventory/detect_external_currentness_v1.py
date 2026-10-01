@@ -11,13 +11,21 @@ Repository states:
 - NEW: path exists in observed main but is absent from inventory.
 - UNKNOWN: diagnostic error state only; an inventory row lacks comparison data.
 
-Edge states use source_version + definition_sha256 against runtime version +
-ezbr_sha256 with the same semantics.
+Edge currentness uses source_version + definition_sha256 against runtime version +
+ezbr_sha256 with the same semantics. Runtime/source traceability is reported as a
+separate dimension:
+- SOURCE_PRESENT: main contains at least one blob under supabase/functions/<slug>/.
+- RUNTIME_WITHOUT_SOURCE: the function is deployed but no source directory exists
+  on the observed main tree. This is debt evidence only; A4a does not retire it.
+
+Every report hashes the exact five comparison inputs using canonical JSON SHA-256,
+so the dry-run result can be reproduced against the same evidence.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from collections import Counter
 from pathlib import Path
@@ -25,10 +33,23 @@ from typing import Any, Iterable
 
 KNOWN_STATES = ("CURRENT", "STALE", "MISSING", "NEW")
 DIAGNOSTIC_STATE = "UNKNOWN"
+EDGE_SOURCE_PRESENT = "SOURCE_PRESENT"
+EDGE_RUNTIME_WITHOUT_SOURCE = "RUNTIME_WITHOUT_SOURCE"
+INPUT_DIGEST_CONTRACT = "SHA256_CANONICAL_JSON_V1"
 
 
 def _load(path: str) -> Any:
     return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def _digest(value: Any) -> str:
+    payload = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _rows(value: Any, preferred_key: str | None = None) -> list[dict[str, Any]]:
@@ -85,6 +106,15 @@ def _in_scope(path: str, policy: dict[str, Any]) -> bool:
     if repo_policy.get("mode") == "ALL_GIT_BLOBS":
         return True
     return bool(include_prefixes) and path.startswith(include_prefixes)
+
+
+def _edge_source_root(policy: dict[str, Any]) -> str:
+    root = policy.get("edge_runtime", {}).get(
+        "source_root", "supabase/functions/"
+    )
+    if not isinstance(root, str) or not root:
+        raise ValueError("edge_runtime.source_root must be a non-empty string")
+    return root if root.endswith("/") else root + "/"
 
 
 def _count(records: Iterable[dict[str, Any]]) -> dict[str, int]:
@@ -172,9 +202,21 @@ def detect_repository(
 
 
 def detect_edge(
+    git_tree: dict[str, Any],
     runtime_snapshot: Any,
     inventory_snapshot: Any,
+    policy: dict[str, Any],
 ) -> dict[str, Any]:
+    tree_entries = git_tree.get("tree")
+    if not isinstance(tree_entries, list):
+        raise ValueError("git tree snapshot must contain a tree array")
+    main_paths = {
+        entry["path"]
+        for entry in tree_entries
+        if entry.get("type") == "blob" and isinstance(entry.get("path"), str)
+    }
+
+    source_root = _edge_source_root(policy)
     live_rows = _rows(runtime_snapshot, "functions")
     inventory_rows = _rows(inventory_snapshot)
 
@@ -186,6 +228,14 @@ def detect_edge(
     inventory_by_slug: dict[str, dict[str, Any]] = {}
     records: list[dict[str, Any]] = []
 
+    def source_state(slug: str) -> str:
+        prefix = f"{source_root}{slug}/"
+        return (
+            EDGE_SOURCE_PRESENT
+            if any(path.startswith(prefix) for path in main_paths)
+            else EDGE_RUNTIME_WITHOUT_SOURCE
+        )
+
     for row in inventory_rows:
         slug = _edge_slug(row)
         inventory_by_slug[slug] = row
@@ -194,19 +244,25 @@ def detect_edge(
         stored_hash = row.get("definition_sha256")
         if live is None:
             state = "MISSING"
+            runtime_source_state = None
         elif stored_version in (None, "") or stored_hash in (None, ""):
             state = DIAGNOSTIC_STATE
+            runtime_source_state = source_state(slug)
         elif (
             str(stored_version) == str(live.get("version"))
             and stored_hash == live.get("ezbr_sha256")
         ):
             state = "CURRENT"
+            runtime_source_state = source_state(slug)
         else:
             state = "STALE"
+            runtime_source_state = source_state(slug)
         records.append(
             {
                 "slug": slug,
                 "state": state,
+                "source_state": runtime_source_state,
+                "verify_jwt": live.get("verify_jwt") if live else None,
                 "inventory_active": row.get("active"),
                 "inventory_version": stored_version,
                 "runtime_version": live.get("version") if live else None,
@@ -221,6 +277,8 @@ def detect_edge(
                 {
                     "slug": slug,
                     "state": "NEW",
+                    "source_state": source_state(slug),
+                    "verify_jwt": live.get("verify_jwt"),
                     "inventory_active": None,
                     "inventory_version": None,
                     "runtime_version": live.get("version"),
@@ -231,10 +289,25 @@ def detect_edge(
 
     records.sort(key=lambda item: (item["state"], item["slug"]))
     counts = _count(records)
+    runtime_without_source = [
+        record
+        for record in records
+        if record.get("source_state") == EDGE_RUNTIME_WITHOUT_SOURCE
+    ]
     return {
         "counts": counts,
         "inventory_objects": len(inventory_by_slug),
         "runtime_functions": len(live_by_slug),
+        "source_root": source_root,
+        "runtime_without_source_count": len(runtime_without_source),
+        "runtime_without_source_verify_jwt_false_count": sum(
+            1
+            for record in runtime_without_source
+            if record.get("verify_jwt") is False
+        ),
+        "runtime_without_source": [
+            record["slug"] for record in runtime_without_source
+        ],
         "unknown_currentness": counts[DIAGNOSTIC_STATE],
         "pass_unknown_currentness": counts[DIAGNOSTIC_STATE] == 0,
         "records": records,
@@ -249,11 +322,19 @@ def build_report(
     policy: dict[str, Any],
 ) -> dict[str, Any]:
     repository = detect_repository(git_tree, repo_inventory, policy)
-    edge = detect_edge(edge_runtime, edge_inventory)
+    edge = detect_edge(git_tree, edge_runtime, edge_inventory, policy)
     return {
         "schema_version": "LF_EXTERNAL_CURRENTNESS_REPORT_V1",
         "mode": "DRY_RUN_READ_ONLY",
         "scope_policy_version": policy.get("schema_version"),
+        "input_digest_contract": INPUT_DIGEST_CONTRACT,
+        "input_sha256": {
+            "git_tree": _digest(git_tree),
+            "repo_inventory": _digest(repo_inventory),
+            "edge_runtime": _digest(edge_runtime),
+            "edge_inventory": _digest(edge_inventory),
+            "scope_policy": _digest(policy),
+        },
         "repository": repository,
         "edge": edge,
         "pass_unknown_currentness": (
