@@ -1,4 +1,12 @@
+import hashlib
+import json
+
 from profile_execution_orchestrated_bridge_v1 import build_plan
+
+
+def canonical_sha(value) -> str:
+    raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 def packet() -> dict:
@@ -27,8 +35,10 @@ def build(**updates):
         "orchestrator_execution_id": "EXEC-SKILL-ORCH-001",
         "request_id": "11111111-2222-4333-8444-555555555555",
         "profile_code": "PERFIL-SCREEN-DECOMPOSER-LF",
+        "profile_slug": "screen_decomposer_lf",
         "target_repo": "cristhianlujan/claude-persona-lf-patch",
-        "target_path": "skills/creating-integral-user-stories/perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md",
+        "profile_source_paths": ["profiles/screen_decomposer_lf/SKILL.md"],
+        "profile_source_digest": "sha256:" + "e" * 64,
         "source_revision": "a" * 40,
         "task_packet": packet(),
         "plan_digest": "c" * 64,
@@ -54,18 +64,36 @@ def main() -> None:
     ]
     checks += 5
 
+    task_json = json.dumps(packet(), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    expected_request_sha = canonical_sha(
+        {
+            "input_sha256": hashlib.sha256(task_json.encode("utf-8")).hexdigest(),
+            "profile_code": "PERFIL-SCREEN-DECOMPOSER-LF",
+            "profile_slug": "screen_decomposer_lf",
+            "profile_source_digest": "sha256:" + "e" * 64,
+            "profile_source_revision": "a" * 40,
+            "profile_source_paths": ["profiles/screen_decomposer_lf/SKILL.md"],
+        }
+    )
+    assert result["runtime_compatible_request_sha256"] == expected_request_sha
+    checks += 1
+
     begin = result["ordered_actions"][0]
     assert begin["rpc"] == "public.lf_profile_execution_begin_v1"
+    assert begin["args"]["request_sha256"] == expected_request_sha
+    assert begin["args"]["target_path"] == "profiles/screen_decomposer_lf/SKILL.md"
     assert begin["args"]["manifest"]["orchestrator_execution_id"] == "EXEC-SKILL-ORCH-001"
     assert begin["args"]["manifest"]["plan_digest"] == "c" * 64
     assert begin["args"]["manifest"]["capability_code"] == "PROFILE_EXECUTION_RUNTIME"
-    checks += 4
+    assert begin["args"]["manifest"]["profile_source_digest"] == "sha256:" + "e" * 64
+    checks += 7
 
     receipt = result["ordered_actions"][1]
     assert receipt["rpc"] == "public.fn_lf_orchestrator_dispatch_receipt_v1"
     assert receipt["args"]["consumer_execution_id"] == result["consumer_execution_id"]
     assert receipt["args"]["capability_code"] == "PROFILE_EXECUTION_RUNTIME"
-    checks += 3
+    assert receipt["args"]["dispatch_scope"]["profile_source_digest"] == "sha256:" + "e" * 64
+    checks += 4
 
     guard = result["ordered_actions"][2]
     assert guard["rpc"] == "public.fn_lf_capability_bind_from_orchestrator_v1"
@@ -76,13 +104,16 @@ def main() -> None:
     assert enqueue["target"] == "private.lf_profile_runtime_queue_v1"
     assert enqueue["request_id"] == result["request_id"]
     assert enqueue["consumer_execution_id"] == result["consumer_execution_id"]
+    assert enqueue["profile_slug"] == "screen_decomposer_lf"
+    assert enqueue["profile_source_paths"] == ["profiles/screen_decomposer_lf/SKILL.md"]
     assert enqueue["runtime_request_envelope"]["entry_guard_required"] is True
-    checks += 4
+    checks += 6
 
     repeated = build()
     assert repeated["plan_digest"] == result["plan_digest"]
     assert repeated["task_packet_digest"] == result["task_packet_digest"]
-    checks += 2
+    assert repeated["runtime_compatible_request_sha256"] == expected_request_sha
+    checks += 3
 
     bad_packet = packet()
     bad_packet["worker_binding"]["worker_kind"] = "AGENT"
@@ -102,10 +133,12 @@ def main() -> None:
     assert build(request_id="not-a-uuid")["decision"] == "BLOCK_PROFILE_RUNTIME_REQUEST_ID_INVALID"
     assert build(source_revision="x")["decision"] == "BLOCK_SOURCE_REVISION_INVALID"
     assert build(plan_digest="x")["decision"] == "BLOCK_PARENT_PLAN_DIGEST_INVALID"
-    checks += 3
+    assert build(profile_source_digest="x")["decision"] == "BLOCK_PROFILE_SOURCE_DIGEST_INVALID"
+    assert build(profile_source_paths=[])["decision"] == "BLOCK_PROFILE_SOURCE_PATHS_MISSING"
+    checks += 5
 
-    assert checks == 26
-    print("PASS_PROFILE_EXECUTION_ORCHESTRATED_BRIDGE_V1 checks=26")
+    assert checks == 36
+    print("PASS_PROFILE_EXECUTION_ORCHESTRATED_BRIDGE_V1 checks=36")
 
 
 if __name__ == "__main__":
