@@ -5,7 +5,6 @@
 **Purpose:** classify the responsibility of `classify_v1/v2` and `semantic_probe_v1/v2/v3`, and map cached variants without changing runtime behavior.  
 **Git base:** `6af74e930a98eaa4797a821539cdc473c3cc4dc9`  
 **Data companion:** `docs/input-governance/responsibility_block_map_v1.json`  
-**Data SHA-256 before Git publication:** `15cae7e8651761485eecfef8c61277ada87ce4d4165f97cead67962c3a6f270b`
 
 ## Scope and authority
 
