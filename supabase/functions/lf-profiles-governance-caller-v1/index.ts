@@ -10,9 +10,6 @@ const LEGACY_WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-profiles-governa
 const RECURATION_REF = "refs/heads/main";
 const RECURATION_WORKFLOW_NAME = "LF Input Governance Recuration";
 const RECURATION_WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-input-governance-recurate.yml@${RECURATION_REF}`;
-const RECURATION_BOOTSTRAP_BRANCH = "lf/ig-cv-n2-recuration-run-20261001";
-const RECURATION_BOOTSTRAP_REF = `refs/heads/${RECURATION_BOOTSTRAP_BRANCH}`;
-const RECURATION_BOOTSTRAP_WORKFLOW_REF = `${REPOSITORY}/.github/workflows/lf-input-governance-recurate.yml@${RECURATION_BOOTSTRAP_REF}`;
 const AUDIENCE = "lf-profiles-governance-caller-v1";
 const ISSUER = "https://token.actions.githubusercontent.com";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
@@ -47,17 +44,6 @@ const RECURATION_REUSABLE_IDENTITY: OidcIdentity = {
   workflow: RECURATION_WORKFLOW_NAME,
   workflowRef: RECURATION_WORKFLOW_REF,
   eventName: "workflow_call",
-  scope: "INPUT_GOVERNANCE_RECURATION_ONLY",
-};
-
-// Transitional bootstrap only. Main remains workflow_call-only; this exact branch
-// can execute one direct push run so N-2 can progress without workflow_dispatch.
-const RECURATION_BOOTSTRAP_IDENTITY: OidcIdentity = {
-  method: "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_BOOTSTRAP_PUSH_V1",
-  ref: RECURATION_BOOTSTRAP_REF,
-  workflow: RECURATION_WORKFLOW_NAME,
-  workflowRef: RECURATION_BOOTSTRAP_WORKFLOW_REF,
-  eventName: "push",
   scope: "INPUT_GOVERNANCE_RECURATION_ONLY",
 };
 
@@ -100,13 +86,6 @@ function resolveOidcIdentity(payload: JWTPayload): OidcIdentity {
     jobWorkflowRef === RECURATION_WORKFLOW_REF &&
     (eventName === "push" || eventName === "workflow_call")
   ) return RECURATION_REUSABLE_IDENTITY;
-
-  if (
-    payload.ref === RECURATION_BOOTSTRAP_IDENTITY.ref &&
-    payload.workflow_ref === RECURATION_BOOTSTRAP_IDENTITY.workflowRef &&
-    payload.workflow === RECURATION_BOOTSTRAP_IDENTITY.workflow &&
-    payload.event_name === RECURATION_BOOTSTRAP_IDENTITY.eventName
-  ) return RECURATION_BOOTSTRAP_IDENTITY;
 
   throw new Error("OIDC_WORKFLOW_IDENTITY_MISMATCH");
 }
