@@ -1,0 +1,84 @@
+{
+  "schema_version": "lf-waiver-authority/v1",
+  "capability_code": "WAIVER_AUTHORITY",
+  "status": "CANDIDATE_READ_ONLY_SOURCE_READY",
+  "owner": "LF_GOVERNANCE",
+  "purpose": "Authorize one exact POST-PASE waiver only after canonical approval, current plan/source proofs and atomic one-use consumption; never decide closure status.",
+  "entry_guard": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "accepted_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
+    "direct_call_policy": "BLOCK",
+    "local_shape_validation_is_authority": false
+  },
+  "request_contract": {
+    "schema_version": "LF_WAIVER_AUTHORITY_REQUEST_V1",
+    "required_identity": ["post_pase_execution_id", "control_id", "plan_digest", "merge_sha", "source_revision", "subject_ref", "request_digest"],
+    "authority_refs": ["plan_authority_receipt_digest", "currentness_receipt_sha256", "grant_readback_digest", "consumption_readback_digest"],
+    "exact_scope_required": true
+  },
+  "approval_contract": {
+    "authority": "LF_GOVERNANCE",
+    "approval_event_type": "POST_PASE_WAIVER_APPROVED",
+    "approval_evidence_schema": "post-pase-waiver-governance/v1",
+    "decision": "APPROVED",
+    "approval_is_external_to_waiver_request": true,
+    "self_approval_forbidden": true,
+    "event_validation_exemption_is_not_approval_authority": true
+  },
+  "grant_store_contract": {
+    "dedicated_store": "private.lf_post_pase_waivers",
+    "event_validation_exemption_store_reuse_forbidden": true,
+    "max_ttl": "PT1H",
+    "max_uses": 1,
+    "immutable_grant_fields": true,
+    "grant_readback_schema": "LF_POST_PASE_WAIVER_GRANT_READBACK_V1",
+    "atomic_consume_required_before_authorization": true,
+    "consumption_readback_schema": "LF_POST_PASE_WAIVER_CONSUMPTION_READBACK_V1",
+    "consumed_by_request_digest_required": true
+  },
+  "reused_patterns": {
+    "from": "VALIDATION_EXEMPTION_ONE_USE",
+    "semantic_authority_reused": false,
+    "patterns": ["EXACT_SCOPE_MATCH", "IMMUTABLE_HASH", "EXTERNAL_APPROVAL", "MAX_USES_1", "EXPIRY_MAX_1H", "ATOMIC_CONSUME_REJECT_REPLAY"],
+    "read_only_primitives_observed": ["private.fn_lf_exemption_hash_v2", "private.fn_lf_exemption_scope_matches_v3"]
+  },
+  "dependencies": {
+    "administrative_owner": "LF_GOVERNANCE",
+    "execution_envelope": "CAPABILITY_EXECUTION_CONTRACT",
+    "plan_authority": "PLAN_AUTHORITY_DRIFT_GUARD",
+    "source_currentness": "CURRENTNESS_AUTHORITY",
+    "approval_readback": "AUTHORITY_READBACK",
+    "evidence_ledger_dependency": false
+  },
+  "decision_vocabulary": {
+    "WAIVER_AUTHORIZED": "exact approved current grant has been atomically consumed once for this exact request",
+    "WAIVER_BLOCKED": "any entry, plan, currentness, approval, scope, expiry, one-use, consumption or cross-bind proof is missing or invalid"
+  },
+  "closure_boundary": {
+    "waiver_authority_may_emit_WAIVED": false,
+    "closure_gate_owner": "CLOSURE_GATE",
+    "closure_status_field_must_be_null": true,
+    "waiver_receipt_is_input_to_future_closure_gate": true
+  },
+  "invariants": {
+    "event_validation_exemptions_are_not_closure_waivers": true,
+    "grant_must_be_consumed_before_authorized_receipt": true,
+    "replay_fails_closed": true,
+    "approval_must_be_LF_GOVERNANCE": true,
+    "plan_and_source_currentness_required": true,
+    "no_lifecycle_mutation": true,
+    "no_next_gate_selection": true,
+    "no_closure_decision": true,
+    "no_runtime_deploy": true,
+    "no_production_activation": true
+  },
+  "materialization": {
+    "supabase_store_applied": false,
+    "asset_registered": false,
+    "capability_registry_registered": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}

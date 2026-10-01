@@ -1,0 +1,86 @@
+{
+  "schema_version": "lf-post-pase-final-evidence-contract/v1",
+  "solution_code": "POST_PASE_FINAL_EVIDENCE_V1",
+  "capability_code": "FINAL_EVIDENCE",
+  "owner": "LF_GOVERNANCE",
+  "status": "CANDIDATE_READ_ONLY",
+  "entry_guard": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "accepted_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
+    "direct_call_policy": "BLOCK"
+  },
+  "input_schema": "LF_POST_PASE_FINAL_EVIDENCE_REQUEST_V1",
+  "output_schema": "LF_POST_PASE_FINAL_EVIDENCE_MANIFEST_V1",
+  "required_authorities": {
+    "plan_authority": "PLAN_AUTHORITY_DRIFT_GUARD_V1",
+    "ledger": "EVIDENCE_LEDGER",
+    "resolver_registry": "EVIDENCE_RESOLVER_REGISTRY",
+    "typed_evidence_registry": "TYPED_EVIDENCE_REGISTRY"
+  },
+  "plan_authority": {
+    "accepted_decisions": ["MATCH", "AUTHORIZED_DELTA"],
+    "plan_digest_crossbind_required": true,
+    "controls_digest_crossbind_required": true
+  },
+  "manifest_identity": {
+    "required_fields": [
+      "post_pase_execution_id",
+      "orchestrator_execution_id",
+      "plan_id",
+      "plan_digest",
+      "merge_sha",
+      "controls_digest"
+    ],
+    "merge_sha_format": "GIT_SHA1_40_HEX",
+    "digest_format": "SHA256_64_HEX"
+  },
+  "control_contract": {
+    "dispositions": ["REQUIRED", "NOT_APPLICABLE"],
+    "required_control_receipt_count": 1,
+    "not_applicable_control_receipt_count": 0,
+    "duplicate_control_policy": "BLOCK",
+    "unknown_control_policy": "BLOCK",
+    "missing_control_policy": "BLOCK",
+    "extra_receipt_policy": "BLOCK"
+  },
+  "receipt_contract": {
+    "source": "private.lf_evidence_ledger_v1",
+    "required_state": "VERIFIED",
+    "required_fields": [
+      "receipt_id",
+      "receipt_sha256",
+      "execution_id",
+      "capability_code",
+      "gate_code",
+      "source_head_sha",
+      "subject_ref",
+      "subject_sha256",
+      "authority_ref",
+      "resolver_id",
+      "plan_digest"
+    ],
+    "source_head_must_equal_merge_sha": true,
+    "plan_digest_must_equal_request": true,
+    "raw_evidence_copy_forbidden": true
+  },
+  "manifest_contract": {
+    "canonicalization": "UTF8_JSON_SORT_KEYS_COMPACT",
+    "digest_algorithm": "SHA256",
+    "contains_only_receipt_refs_and_digests": true,
+    "closure_verdict_forbidden": true,
+    "control_reexecution_forbidden": true,
+    "new_evidence_store_forbidden": true
+  },
+  "decisions": {
+    "ready": "FINAL_EVIDENCE_MANIFEST_READY",
+    "blocked": "FINAL_EVIDENCE_BLOCKED"
+  },
+  "materialization": {
+    "supabase_projection_applied": false,
+    "current_pointer_promoted": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}

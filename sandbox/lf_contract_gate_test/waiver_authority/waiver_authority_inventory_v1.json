@@ -1,0 +1,63 @@
+{
+  "schema_version": "lf-waiver-authority-inventory/v1",
+  "solution_code": "WAIVER_AUTHORITY_V1",
+  "work_code": "SADM-PP-L3-018",
+  "owner": "LF_GOVERNANCE",
+  "asset_code": "WAIVER_AUTHORITY",
+  "classification": "NEW_CANONICAL_TRANSVERSAL_CAPABILITY",
+  "source_state": "READY_FOR_REVIEW",
+  "runtime_state": "BLOCKED_NOT_MATERIALIZED_NOT_CUTOVER",
+  "fast_lookup_map": {
+    "authority": "inventory.fn_lookup_v2",
+    "canonical_waiver_authority_found": false
+  },
+  "existing_pattern": {
+    "asset": "VALIDATION_EXEMPTION_ONE_USE",
+    "status": "ACTIVO",
+    "semantic_reuse": "FORBIDDEN",
+    "reusable_mechanisms": ["scope matching", "immutable hash", "approval binding", "TTL <= 1 hour", "max_uses=1", "atomic consumption"],
+    "physical_refs": [
+      "private.lf_event_validation_exemptions",
+      "private.fn_lf_exemption_hash_v2",
+      "private.fn_lf_exemption_scope_matches_v3",
+      "private.fn_create_lf_validation_exemption_v3",
+      "private.fn_consume_lf_event_validation_exemption_v3"
+    ],
+    "read_only_primitive_md5": {
+      "private.fn_lf_exemption_hash_v2": "3ce827e604f8f29bfeb5d99c0b88ddf5",
+      "private.fn_lf_exemption_scope_matches_v3": "0ea27732297c4ae0ead451e2a268bb70"
+    }
+  },
+  "new_store": {
+    "table": "private.lf_post_pase_waivers",
+    "issue_function": "private.fn_issue_lf_post_pase_waiver_v1",
+    "read_function": "private.fn_read_lf_post_pase_waiver_v1",
+    "consume_function": "private.fn_consume_lf_post_pase_waiver_v1",
+    "hash_function": "private.fn_lf_post_pase_waiver_hash_v1",
+    "applied": false
+  },
+  "relations": [
+    {"from": "WAIVER_AUTHORITY", "type": "RELACIONADO_CAPACIDADES", "to": "LF_GOVERNANCE", "semantics": "administrative owner and approval authority"},
+    {"from": "WAIVER_AUTHORITY", "type": "DEPENDE_DE", "to": "CAPABILITY_EXECUTION_CONTRACT"},
+    {"from": "WAIVER_AUTHORITY", "type": "DEPENDE_DE", "to": "PLAN_AUTHORITY_DRIFT_GUARD"},
+    {"from": "WAIVER_AUTHORITY", "type": "DEPENDE_DE", "to": "CURRENTNESS_AUTHORITY"},
+    {"from": "WAIVER_AUTHORITY", "type": "DEPENDE_DE", "to": "AUTHORITY_READBACK"},
+    {"from": "WAIVER_AUTHORITY", "type": "RELACIONADO_CAPACIDADES", "to": "VALIDATION_EXEMPTION_ONE_USE", "semantics": "pattern provenance only; not semantic authority or store reuse"}
+  ],
+  "ekb_refs": ["POST-PASE-CLOSURE-WAIVER-AUTHORITY-GAP-001", "PASE-HANDOFF-REDISCOVERY-FAST-PATH-001"],
+  "source_assets": [
+    "sandbox/lf_contract_gate_test/waiver_authority/waiver_authority_v1.json",
+    "sandbox/lf_contract_gate_test/waiver_authority/waiver_authority_v1.py",
+    "sandbox/lf_contract_gate_test/waiver_authority/test_waiver_authority_v1.py",
+    "sandbox/lf_contract_gate_test/waiver_authority/README.md",
+    "sandbox/lf_contract_gate_test/waiver_authority/waiver_authority_inventory_v1.json",
+    "sandbox/lf_contract_gate_test/waiver_authority/WAIVER_AUTHORITY_source_projection_v1.sql"
+  ],
+  "verification": {"deterministic_test": "PASS_WAIVER_AUTHORITY_V1 checks=12"},
+  "materialization": {
+    "supabase_projection_applied": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}

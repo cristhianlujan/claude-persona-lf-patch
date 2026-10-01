@@ -1,0 +1,40 @@
+{
+  "schema_version": "lf-post-pase-final-evidence-inventory/v1",
+  "solution_code": "POST_PASE_FINAL_EVIDENCE_V1",
+  "capability_code": "FINAL_EVIDENCE",
+  "work_code": "SADM-PP-L3-016",
+  "owner": "LF_GOVERNANCE",
+  "status": "CANDIDATE_READ_ONLY",
+  "entry_guard": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+  "reuse_first": [
+    "PLAN_AUTHORITY_DRIFT_GUARD_V1",
+    "EVIDENCE_LEDGER",
+    "EVIDENCE_RESOLVER_REGISTRY@1.0.0",
+    "TYPED_EVIDENCE_REGISTRY@3.0.0"
+  ],
+  "source_assets": [
+    "sandbox/lf_contract_gate_test/post_pase_final_evidence/final_evidence_contract_v1.json",
+    "sandbox/lf_contract_gate_test/post_pase_final_evidence/final_evidence_v1.py",
+    "sandbox/lf_contract_gate_test/post_pase_final_evidence/test_final_evidence_v1.py",
+    "sandbox/lf_contract_gate_test/post_pase_final_evidence/README.md",
+    "sandbox/lf_contract_gate_test/post_pase_final_evidence/FINAL_EVIDENCE_source_projection_v1.sql"
+  ],
+  "boundaries": {
+    "new_evidence_store": false,
+    "control_reexecution": false,
+    "closure_verdict": false,
+    "promotion": false,
+    "lifecycle_mutation": false,
+    "cutover": false,
+    "runtime": false,
+    "production": false
+  },
+  "live_authority_readback": {
+    "evidence_resolver_registry_current": "1.0.0",
+    "typed_evidence_registry_current": "3.0.0",
+    "evidence_ledger_registered": true,
+    "evidence_ledger_current": false,
+    "plan_authority_materialized": false
+  },
+  "materialization_policy": "FAIL_CLOSED_UNTIL_ALL_REQUIRED_AUTHORITIES_ARE_LIVE_AND_CURRENT"
+}
