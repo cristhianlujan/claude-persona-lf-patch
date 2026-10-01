@@ -1,0 +1,21 @@
+{
+  "schema_version":"lf-capability-cutover-inventory/v1",
+  "work_code":"SADM-PP-L5-022",
+  "cutover_code":"FINAL_EVIDENCE_CUTOVER_V1",
+  "capability_code":"FINAL_EVIDENCE",
+  "version":"1.0.0",
+  "mode":"ISOLATED_REVERSIBLE_EXACT_HEAD",
+  "source_revision":"f5d321cd97da254adab6f8f7d3284bd55a7d91b5",
+  "functional_core":{"path":"sandbox/lf_contract_gate_test/post_pase_final_evidence/final_evidence_v1.py","git_blob_sha1":"a5873b919e5668977cbae7d20ffb1ca156f7d0ad","unchanged":true},
+  "validator":{"path":"sandbox/lf_contract_gate_test/post_pase_final_evidence/test_final_evidence_v1.py","git_blob_sha1":"b811e450dbd0d7e2a9931b83cc8052ebf5a79ccf","known_check_count":29},
+  "terminal_source_event":19643,
+  "dependencies":["PLAN_AUTHORITY_DRIFT_GUARD@1.0.0","EVIDENCE_LEDGER@1.1.0","EVIDENCE_RESOLVER_REGISTRY@1.0.0","TYPED_EVIDENCE_REGISTRY@3.0.0"],
+  "evidence_collection":false,
+  "ledger_rehydration":false,
+  "control_reexecution":false,
+  "runtime_or_deploy_change":false,
+  "production_activation":false,
+  "bulk_cutover":false,
+  "artifact_transport_policy":"PASE_POST_PASE_ARTIFACT_TRANSPORT_NO_ZIP_V1",
+  "rollback_ref":"sandbox/lf_contract_gate_test/capability_cutover/final_evidence/FINAL_EVIDENCE_cutover_rollback_v1.sql"
+}
