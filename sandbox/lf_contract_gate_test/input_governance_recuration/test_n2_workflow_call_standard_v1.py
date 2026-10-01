@@ -25,12 +25,13 @@ def main() -> int:
 
     assert "job_workflow_ref" in caller
     assert "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_REUSABLE_V1" in caller
-    assert "lf/ig-cv-n2-recuration-run-20261001" in caller
-    assert "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_BOOTSTRAP_PUSH_V1" in caller
-    assert "eventName: \"push\"" in caller
+    assert "lf/ig-cv-n2-recuration-run-20261001" not in caller
+    assert "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_BOOTSTRAP_PUSH_V1" not in caller
+    assert "RECURATION_BOOTSTRAP_IDENTITY" not in caller
+    assert caller.count('eventName: "push"') == 1  # legacy profile-governance identity only
     assert "OIDC_ACTION_SCOPE_MISMATCH" in caller
     assert "RECURATION_CALLER_IDENTITY_REQUIRED" in caller
-    checks += 7
+    checks += 8
 
     print(f"PASS_N2_WORKFLOW_CALL_STANDARD_V1={checks}/{checks}")
     return 0
