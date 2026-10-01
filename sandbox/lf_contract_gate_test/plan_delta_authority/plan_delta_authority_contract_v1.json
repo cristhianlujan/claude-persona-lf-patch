@@ -1,0 +1,52 @@
+{
+  "schema_version": "lf-plan-delta-authority-producer/v1",
+  "solution_code": "PLAN_DELTA_AUTHORITY_READBACK_PRODUCER_V1",
+  "work_code": "SADM-PP-L6-025",
+  "purpose": "Emit the independent LF_PLAN_DELTA_AUTHORITY_READBACK_V1 proof consumed by PLAN_AUTHORITY_DRIFT_GUARD from an existing LF_GOVERNANCE append-only authorization event.",
+  "authority": {
+    "administrative_owner": "LF_GOVERNANCE",
+    "evidence_surface": "public.lf_eventos",
+    "producer_function": "public.fn_lf_plan_delta_authority_readback_v1",
+    "consumer": "PLAN_AUTHORITY_DRIFT_GUARD",
+    "output_schema": "LF_PLAN_DELTA_AUTHORITY_READBACK_V1"
+  },
+  "required_event": {
+    "evento_tipo": "DECISION_ESTRATEGICA",
+    "entidad_tipo": "PROGRAM_PLAN",
+    "payload_authority": "LF_GOVERNANCE",
+    "payload_decision": "AUTHORIZED_PLAN_DELTA",
+    "payload_authorization_scope": "PLAN_DELTA_AUTHORITY",
+    "exact_bindings": [
+      "event_id",
+      "plan_id",
+      "previous_plan_digest",
+      "next_plan_digest"
+    ]
+  },
+  "invariants": {
+    "read_only": true,
+    "new_store": false,
+    "new_plan_engine": false,
+    "new_capability_registry_row": false,
+    "new_current_pointer": false,
+    "self_authorization_allowed": false,
+    "local_shape_is_authority": false,
+    "runtime_or_deploy": false,
+    "production_activation": false,
+    "artifact_transport_policy": "PASE_POST_PASE_ARTIFACT_TRANSPORT_NO_ZIP_V1"
+  },
+  "receipt_digest": {
+    "algorithm": "sha256",
+    "canonicalization": "PYTHON_JSON_SORT_KEYS_COMPACT_UTF8_COMPATIBLE",
+    "fields": [
+      "authority",
+      "decision",
+      "event_id",
+      "next_plan_digest",
+      "plan_id",
+      "previous_plan_digest",
+      "schema_version"
+    ]
+  },
+  "fail_closed_decision": "PLAN_DELTA_NOT_AUTHORIZED"
+}
