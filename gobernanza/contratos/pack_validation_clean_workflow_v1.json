@@ -8,20 +8,33 @@
     "PACK_VALIDATION_EXECUTE_PACK_CHECKS",
     "PROFILE_PACK_VALIDATION_CLEAN_VALIDATOR"
   ],
-  "purpose": "Materialize a clean reusable Pack Validation workflow definition that consumes already-authorized exact-head change context, resolves affected packs once, executes only pack-local deterministic validators, and emits bounded evidence without owning unrelated CI controls.",
+  "purpose": "Materialize a clean reusable Pack Validation workflow that consumes already-authorized exact-head change context, resolves affected packs once, executes only pack-local deterministic validators, and emits bounded evidence without owning unrelated CI controls.",
   "workflow": {
     "staged_definition_path": "sandbox/lf_contract_gate_test/pack_validation_contract/lf-pack-validation-core.staged.yml",
-    "target_cutover_path": ".github/workflows/lf-pack-validation-core.yml",
-    "activation": "STAGED_DEFINITION_ONLY",
-    "allowed_triggers_after_cutover": ["workflow_call"],
-    "forbidden_triggers": ["pull_request", "push", "workflow_dispatch", "schedule"],
-    "cutover_owner": "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS",
-    "legacy_carrier_remains_active_until_cutover": ".github/workflows/validate-lf-packs.yml"
+    "target_path": ".github/workflows/lf-pack-validation-core.yml",
+    "activation": "REUSABLE_CORE_ADMITTED_UNWIRED",
+    "allowed_triggers": [
+      "workflow_call"
+    ],
+    "forbidden_triggers": [
+      "pull_request",
+      "push",
+      "workflow_dispatch",
+      "schedule"
+    ],
+    "consumer_wiring": "NOT_CHANGED_IN_THIS_SOLUTION"
   },
   "input_contract": {
-    "required": ["base_sha", "head_sha", "changed_paths_json"],
+    "required": [
+      "base_sha",
+      "head_sha",
+      "changed_paths_json"
+    ],
     "authority": "CI_FAST_DEEP_LANE_ROUTER_OR_EQUIVALENT_ALREADY_AUTHORIZED_PLAN",
-    "must_not_redecide": ["RUN_SKIP_APPLICABILITY", "UNRELATED_CONTROL_APPLICABILITY"]
+    "must_not_redecide": [
+      "RUN_SKIP_APPLICABILITY",
+      "UNRELATED_CONTROL_APPLICABILITY"
+    ]
   },
   "execution_sequence": [
     "CHECKOUT_EXACT_HEAD",
@@ -34,7 +47,7 @@
     "install deterministic pack-validator dependencies",
     "resolve affected governed packs",
     "execute pack-local validators/validate_pack.py",
-    "upload bounded Pack Validation evidence artifact after cutover"
+    "upload bounded Pack Validation evidence artifact"
   ],
   "forbidden_capabilities": [
     "profile runtime API tests",
@@ -48,13 +61,15 @@
     "deployment",
     "production activation"
   ],
-  "migration_safety": {
-    "parallel_active_engine_forbidden": true,
-    "staged_definition_is_not_github_actions_carrier": true,
-    "new_workflow_has_no_autonomous_trigger": true,
-    "old_carrier_not_removed_in_this_solution": true,
-    "target_github_path_not_admitted_until_cutover": true,
-    "removal_requires_destination_owner_and_wiring_proof": true
+  "scope_invariants": {
+    "parallel_active_pack_engine_forbidden": true,
+    "core_has_no_autonomous_trigger": true,
+    "core_must_match_qualified_staged_definition": true,
+    "foreign_control_rebinding_forbidden_in_this_solution": true,
+    "existing_foreign_carriers_unchanged_in_this_solution": true,
+    "caller_binding_required_before_replacing_existing_pack_execution": true,
+    "foreign_owner_work_forbidden": true,
+    "external_blocker_must_be_reported_not_repaired_here": true
   },
   "output_contract": {
     "artifact_name_prefix": "lf-pack-validation-",
@@ -63,7 +78,11 @@
       ".lf_pack_validation/result.json",
       ".lf_pack_validation/summary.json"
     ],
-    "status_enum": ["PASS", "FAIL", "SKIP"],
+    "status_enum": [
+      "PASS",
+      "FAIL",
+      "SKIP"
+    ],
     "authorizations": {
       "runtime_authorized": false,
       "git_write_authorized": false,
@@ -72,5 +91,69 @@
       "production_authorized": false
     }
   },
-  "next_handoff": "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS"
+  "operational_plan": {
+    "progress_semantics": "Percentages measure only PACK_VALIDATION-owned work. External controls, blockers, fixes, migrations, or owner responsibilities never count as Pack Validation progress.",
+    "global_progress_percent": 62.5,
+    "next_step": "STEP_06_CALLER_WIRING",
+    "steps": [
+      {
+        "id": "STEP_01_NATURE_AND_BOUNDARY",
+        "description": "Define Pack Validation nature and responsibility boundary.",
+        "progress_percent": 100,
+        "status": "CLOSED"
+      },
+      {
+        "id": "STEP_02_NATIVE_VS_FOREIGN_CLASSIFICATION",
+        "description": "Identify Pack Validation-owned capabilities versus foreign responsibilities.",
+        "progress_percent": 100,
+        "status": "CLOSED"
+      },
+      {
+        "id": "STEP_03_CLEAN_CORE",
+        "description": "Build the clean PACK_VALIDATION reusable core without foreign controls.",
+        "progress_percent": 100,
+        "status": "CLOSED"
+      },
+      {
+        "id": "STEP_04_CORE_TESTS",
+        "description": "Validate discovery, pack-local validators, exact-head handling, and bounded evidence.",
+        "progress_percent": 100,
+        "status": "CLOSED"
+      },
+      {
+        "id": "STEP_05_BOUNDARY_VERIFICATION",
+        "description": "Verify the clean core contains no Runtime, Assurance, DB, Contract Check, S30, EKB, deploy, or production responsibilities.",
+        "progress_percent": 100,
+        "status": "CLOSED"
+      },
+      {
+        "id": "STEP_06_CALLER_WIRING",
+        "description": "Connect Pack Validation to the pass orchestrator through its own interface without assuming caller or foreign-control responsibilities.",
+        "progress_percent": 0,
+        "status": "PENDING"
+      },
+      {
+        "id": "STEP_07_OWN_E2E",
+        "description": "Run Pack Validation-owned E2E: authorized input -> affected-pack discovery -> local validators -> evidence/verdict.",
+        "progress_percent": 0,
+        "status": "PENDING"
+      },
+      {
+        "id": "STEP_08_READBACK_TRACEABILITY_CLOSE",
+        "description": "Perform final readback, traceability, and closure for Pack Validation only.",
+        "progress_percent": 0,
+        "status": "PENDING"
+      }
+    ]
+  },
+  "external_dependencies": [
+    {
+      "control": "CONTRACT_CHECK",
+      "relationship": "EXTERNAL_CI_CONTROL",
+      "status": "BLOCKED_BY_EXTERNAL_OWNER",
+      "counts_toward_pack_validation_progress": false,
+      "rule": "Report the blocker and hand off to its owner; do not modify or repair Contract Check from Pack Validation."
+    }
+  ],
+  "handoff_status": "BLOCKED_UNTIL_EXTERNAL_CALLER_WIRING_IS_PROVEN"
 }

@@ -77,30 +77,30 @@ def git_repo() -> tuple[tempfile.TemporaryDirectory[str], Path, str, str, Path, 
     return td, repo, base, head, validation_path, discovery_path
 
 
-def test_contract_identity_and_handoff() -> None:
+def test_contract_identity_and_boundary() -> None:
     c = json.loads(CONTRACT.read_text(encoding="utf-8"))
     assert c["durable_name"] == "PACK_VALIDATION_CLEAN_WORKFLOW"
     assert c["owner"] == "PACK_VALIDATION"
-    assert c["workflow"]["activation"] == "STAGED_DEFINITION_ONLY"
+    assert c["workflow"]["activation"] == "REUSABLE_CORE_ADMITTED_UNWIRED"
     assert c["workflow"]["staged_definition_path"].endswith("lf-pack-validation-core.staged.yml")
-    assert c["workflow"]["target_cutover_path"] == ".github/workflows/lf-pack-validation-core.yml"
-    assert c["workflow"]["legacy_carrier_remains_active_until_cutover"] == ".github/workflows/validate-lf-packs.yml"
-    assert c["next_handoff"] == "CI_CONTROL_REBIND_VALIDATE_PACKS_CONTROLS"
+    assert c["workflow"]["target_path"] == ".github/workflows/lf-pack-validation-core.yml"
+    assert c["workflow"]["consumer_wiring"] == "NOT_CHANGED_IN_THIS_SOLUTION"
+    assert c["scope_invariants"]["foreign_control_rebinding_forbidden_in_this_solution"] is True
+    assert c["scope_invariants"]["existing_foreign_carriers_unchanged_in_this_solution"] is True
+    assert c["handoff_status"] == "BLOCKED_UNTIL_EXTERNAL_CALLER_WIRING_IS_PROVEN"
 
 
-def test_staged_definition_has_no_autonomous_trigger() -> None:
-    text = WORKFLOW.read_text(encoding="utf-8")
+def test_target_workflow_matches_qualified_definition_and_has_no_autonomous_trigger() -> None:
+    assert TARGET_WORKFLOW.is_file(), "clean reusable core must be materialized"
+    assert TARGET_WORKFLOW.read_text(encoding="utf-8") == WORKFLOW.read_text(encoding="utf-8")
+    text = TARGET_WORKFLOW.read_text(encoding="utf-8")
     assert "workflow_call:" in text
     for forbidden in ("pull_request:", "push:", "workflow_dispatch:", "schedule:"):
         assert forbidden not in text, forbidden
 
 
-def test_target_workflow_not_installed_before_cutover() -> None:
-    assert not TARGET_WORKFLOW.exists(), "target carrier must remain absent until PR-6 cutover"
-
-
 def test_workflow_contains_only_pack_validation_boundary() -> None:
-    text = WORKFLOW.read_text(encoding="utf-8")
+    text = TARGET_WORKFLOW.read_text(encoding="utf-8")
     required = [
         "Execute PACK_VALIDATION",
         "run_pack_validation_flow_v1.py",
@@ -169,6 +169,18 @@ def test_non_pack_change_skips_without_validator_execution() -> None:
         assert summary["executed_pack_count"] == 0, summary
     finally:
         td.cleanup()
+
+
+def test_authorizations_are_all_false() -> None:
+    c = json.loads(CONTRACT.read_text(encoding="utf-8"))
+    authorizations = c["output_contract"]["authorizations"]
+    assert authorizations == {
+        "runtime_authorized": False,
+        "git_write_authorized": False,
+        "db_write_authorized": False,
+        "deployment_authorized": False,
+        "production_authorized": False,
+    }
 
 
 def test_invalid_changed_paths_json_fails_closed() -> None:
