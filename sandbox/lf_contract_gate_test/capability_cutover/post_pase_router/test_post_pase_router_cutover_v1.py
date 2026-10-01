@@ -3,7 +3,7 @@ import json
 
 ROOT=Path(__file__).resolve().parent
 REPO=ROOT.parent.parent.parent.parent
-MIG=(REPO/'supabase'/'migrations'/'20261001131000_post_pase_router_cutover_v1.sql').read_text(encoding='utf-8')
+MIG=(REPO/'supabase'/'migrations'/'20261001132000_post_pase_router_cutover_v1.sql').read_text(encoding='utf-8')
 ROLLBACK=(ROOT/'POST_PASE_ROUTER_cutover_rollback_v1.sql').read_text(encoding='utf-8')
 INV=json.loads((ROOT/'post_pase_router_cutover_inventory_v1.json').read_text(encoding='utf-8'))
 checks=0
