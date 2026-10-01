@@ -15,6 +15,78 @@ Readback live 2026-09-28:
 
 Por lo tanto **no se activa un evaluator en el PASE normal**. Mientras no exista un binding exacto `ACTIVE`, Assurance evaluator es `NOT_APPLICABLE`.
 
+## Punto de entrada transversal obligatorio
+
+`ASSURANCE_EVALUATOR` no implementa un guard propio. Reutiliza el contrato compartido ya usado por las capabilities transversales:
+
+```text
+CALLER
+  |
+  v
+ORCHESTRATOR DISPATCH
+  |
+  v
+ORCHESTRATOR_EXECUTION_GUARD_V1
+  |
+  +-- dispatch receipt ausente/inválido -> BLOCK
+  +-- orchestrator no operacional -> BLOCK
+  +-- capability/consumer/plan_digest mismatch -> BLOCK
+  |
+  v
+public.fn_lf_capability_bind_from_orchestrator_v1
+  |
+  v
+ASSURANCE_EVALUATOR currentness
+  |
+  +-- sin current pointer -> BLOCK_NO_CURRENT_CAPABILITY
+  |
+  v
+ASSURANCE_ACTIVATION_GATE_V1
+```
+
+Reglas:
+
+- owner administrativo de la capability: `SUPER_ADMIN`;
+- nuevas entradas directas por `public.fn_lf_capability_bind_current_v1` deben bloquearse;
+- la capability no hardcodea un operation code de orquestador;
+- `ORCHESTRATOR_EXECUTION_GUARD_V1` resuelve dinámicamente una operación `operation_family='ORCHESTRATION'` en lifecycle operacional;
+- el dispatch receipt queda cross-bound a `orchestrator_execution_id`, `consumer_execution_id`, `capability_code` y `plan_digest`;
+- este guard responde solamente **de dónde viene la ejecución**; no sustituye Router ni `ASSURANCE_ACTIVATION_GATE_V1`;
+- `ASSURANCE_ACTIVATION_GATE_V1` sigue respondiendo **si Assurance aplica y existe exactamente un binding ACTIVE exacto**;
+- registrar la capability sin current pointer no activa el evaluator: el guarded caller debe fallar cerrado con `BLOCK_NO_CURRENT_CAPABILITY` hasta la promoción funcional separada.
+
+Source projection del primer cutover:
+
+- `sandbox/lf_contract_gate_test/assurance_evaluator_boundary/ASSURANCE_EVALUATOR_registry_entry_guard_v1.sql`.
+
+Ese lote registra `ASSURANCE_EVALUATOR` en `public.lf_capability_registry` con `owner_scope=SUPER_ADMIN`, `entry_guard_required=true` y `entry_guard_code=ORCHESTRATOR_EXECUTION_GUARD_V1`, pero deliberadamente no crea versión ni `lf_capability_current`.
+
+## Contrato canónico de invocación
+
+La forma de llamar `ASSURANCE_EVALUATOR` no se infiere por nombre ni por workflow. El contrato machine-readable es `assurance_evaluator_call_contract_v1.json`.
+
+Secuencia obligatoria:
+
+```text
+Router / Changeset Governance
+  -> public.fn_lf_orchestrator_dispatch_receipt_v1(...)
+  -> ORCHESTRATOR_EXECUTION_GUARD_V1
+  -> public.fn_lf_capability_bind_from_orchestrator_v1(
+       execution_id,
+       'ASSURANCE_EVALUATOR',
+       expected_manifest_sha256,
+       plan_digest,
+       dispatch_receipt_id,
+       actor_execution_id
+     )
+  -> ASSURANCE_ACTIVATION_GATE_V1
+  -> assurance_evaluator_runner_v1.py
+```
+
+Para una **entrada nueva** está prohibido usar `public.fn_lf_capability_bind_current_v1(...)` como atajo. El resultado esperado es `BLOCK_ORCHESTRATOR_ENTRY_GUARD_REQUIRED`. Mientras no exista `lf_capability_current` para `ASSURANCE_EVALUATOR`, incluso una llamada válida del Orquestador debe terminar en `BLOCK_NO_CURRENT_CAPABILITY`; eso es el estado fail-closed esperado y no un error de wiring.
+
+El inventario canónico debe proyectar además el activo `ASSURANCE_EVALUATOR`, su gobierno por `ACT-0001`, su dependencia de `CURRENTNESS_AUTHORITY` y su relación de linaje con `ASSURANCE_COMPLETENESS` retirado.
+
 ## Responsabilidad única
 
 Cuando exista un binding activo y Router determine aplicabilidad, el evaluator transversal responde solamente:
@@ -127,17 +199,19 @@ El paquete #879 **no se integra** porque mezcla el evaluator con workflows, depl
 
 ## Condiciones antes de una futura activación
 
-1. binding exacto `ACTIVE`;
-2. Router determina que el claim aplica;
-3. source/currentness exactos;
-4. canonical owners intactos;
-5. review nuevo usa `INDEPENDENT_REVIEW`/`INDEPENDENT_HOLDOUT`;
-6. no existe otro evaluator activo;
-7. regresión fail-closed demuestra `UNPROVEN` ante evidencia parcial/unsupported;
-8. activation/cutover se hace en un lote posterior explícito, no por nombre de metodología.
+1. entrada válida por `ORCHESTRATOR_EXECUTION_GUARD_V1`;
+2. binding exacto `ACTIVE`;
+3. Router determina que el claim aplica;
+4. source/currentness exactos;
+5. canonical owners intactos;
+6. review nuevo usa `INDEPENDENT_REVIEW`/`INDEPENDENT_HOLDOUT`;
+7. no existe otro evaluator activo;
+8. regresión fail-closed demuestra `UNPROVEN` ante evidencia parcial/unsupported;
+9. activation/cutover se hace en un lote posterior explícito, no por nombre de metodología.
 
 ## EKB
 
 - `ASSURANCE-EVALUATOR-LEGACY-S36-REINTRODUCTION-RISK-001`
 - `ASSURANCE-METHOD-CANDIDATE-NOT-PASE-CONTROL-001`
 - `S36-ASSURANCE-BOUNDARY-CONTAMINATION-001`
+- `ASSURANCE-ORCHESTRATOR-ENTRYPOINT-GAP-001`

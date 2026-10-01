@@ -12,6 +12,9 @@ def main() -> None:
     sql = MIGRATION.read_text(encoding="utf-8")
     readme = README.read_text(encoding="utf-8")
     lowered = sql.lower()
+    executable_lowered = "\n".join(
+        line for line in lowered.splitlines() if not line.lstrip().startswith("--")
+    )
 
     # Exact currentness and governed source identity.
     for token in (
@@ -56,7 +59,7 @@ def main() -> None:
         "runtime_estado = 'activo'",
         "production",
     ):
-        assert forbidden not in lowered, f"RETIREMENT_FORBIDDEN_SIDE_EFFECT:{forbidden}"
+        assert forbidden not in executable_lowered, f"RETIREMENT_FORBIDDEN_SIDE_EFFECT:{forbidden}"
 
     # Source docs cannot advertise the legacy umbrella as consumable.
     assert "LEGACY LINEAGE" in readme
