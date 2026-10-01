@@ -1,0 +1,47 @@
+{
+  "schema_version": "lf-transversal-readme-owner-runner-contract/v1",
+  "durable_name": "TRANSVERSAL_README_OWNER_RUNNER_V1",
+  "owner": "TRANSVERSAL_README",
+  "purpose": "Provide one owner-local deterministic execution surface for TRANSVERSAL_README validation using an authority inventory snapshot supplied by the caller.",
+  "input_contract": {
+    "required": ["repository_source", "inventory_json"],
+    "inventory_json_role": "Read-only snapshot of public.lf_activos transversal inventory rows produced by an authorized caller.",
+    "applicability_authority": "UPSTREAM_PASE_ROUTER_OR_EQUIVALENT_CANONICAL_CALLER",
+    "must_not_decide_run_skip": true,
+    "must_not_query_database": true
+  },
+  "owned_execution": {
+    "self_test": "sandbox/lf_contract_gate_test/transversal_asset_readme/test_validate_active_shared_readmes_v1.py",
+    "validator": "sandbox/lf_contract_gate_test/transversal_asset_readme/validate_active_shared_readmes_v1.py"
+  },
+  "excluded": [
+    "CI applicability or currentness",
+    "database credential handling",
+    "database or Supabase query execution",
+    "database or Supabase writes",
+    "PACK_VALIDATION",
+    "GATE_CHECK_OBSERVABILITY",
+    "PROFILE_RUNTIME_V3",
+    "Contract Check",
+    "S30",
+    "Git writes",
+    "deployment",
+    "production activation"
+  ],
+  "ownership_invariants": [
+    "Applicability is decided upstream.",
+    "The owner runner validates a supplied read-only inventory snapshot and does not acquire database credentials.",
+    "The canonical validator remains validate_active_shared_readmes_v1.py; this runner does not duplicate README policy.",
+    "The caller is responsible for producing a current authorized inventory snapshot and preserving its evidence/currentness.",
+    "Historical placement inside Validate LF Packs is not ownership authority."
+  ],
+  "output_contract": {
+    "schema_version": "lf-transversal-readme-owner-runner/v1",
+    "status_enum": ["PASS", "FAIL"],
+    "required_fields": ["owner", "status", "inventory_json"]
+  },
+  "handoff": "PASE_ORCHESTRATOR_BIND_TRANSVERSAL_README",
+  "merge_authorized": false,
+  "deployment_authorized": false,
+  "production_authorized": false
+}
