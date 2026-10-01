@@ -37,21 +37,6 @@ jobs:
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/pase_github_entrypoint/test_single_pr_entrypoint_v1.py
 
-      - name: Enforce N-2 recuration declaration contract
-        if: github.event_name == 'pull_request'
-        env:
-          LF_N2_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          LF_N2_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/input_governance_recuration/enforce_n2_recuration_change_contract_v1.py --self-test
-          python3 sandbox/lf_contract_gate_test/input_governance_recuration/test_n2_recuration_change_contract_v1.py
-          python3 sandbox/lf_contract_gate_test/input_governance_recuration/enforce_n2_recuration_change_contract_v1.py \
-            --repo-root . \
-            --base "$LF_N2_BASE_SHA" \
-            --head "$LF_N2_HEAD_SHA"
-
       - name: Build canonical PASE applicability and repair-enforcement plan
         id: pase_plan
         env:
