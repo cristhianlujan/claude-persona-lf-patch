@@ -1,0 +1,53 @@
+{
+  "schema_version": "LF_CURRENTNESS_AUTHORITY_SCOPED_SELECTOR_INVENTORY_V1",
+  "work_code": "SADM-PP-L2-011",
+  "solution_code": "CURRENTNESS_AUTHORITY_SCOPED_SELECTORS_V1",
+  "reuse_existing_capability": "CURRENTNESS_AUTHORITY",
+  "current_version_observed": "1.0.0",
+  "new_engine_created": false,
+  "entry_guard": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+  "source_contract": "sandbox/lf_contract_gate_test/material_currentness/CURRENTNESS_AUTHORITY_v1.manifest.json",
+  "source_implementation": "sandbox/lf_contract_gate_test/material_currentness/lf_material_currentness_v1.py",
+  "source_authority_wrapper": "sandbox/lf_contract_gate_test/material_currentness/lf_currentness_authority_v1.py",
+  "source_tests": [
+    "sandbox/lf_contract_gate_test/material_currentness/test_lf_material_currentness_v1.py",
+    "sandbox/lf_contract_gate_test/material_currentness/test_lf_currentness_authority_v1.py"
+  ],
+  "source_readme": "sandbox/lf_contract_gate_test/material_currentness/README.md",
+  "normalization": {
+    "before": "git ls-tree -r --full-tree <rev> then local selector filtering",
+    "after": "derive bounded pathspec roots from declared selectors, run git ls-tree only for those roots, then preserve local selector filtering",
+    "unbounded_glob_policy": "UNKNOWN_FAIL_CLOSED",
+    "decision_semantics_changed": false,
+    "receipt_schema_changed": false,
+    "dependency_closure_changed": false
+  },
+  "asset_readback": {
+    "codigo_activo": "CURRENTNESS_AUTHORITY",
+    "tipo_activo": "CAPABILITY",
+    "estado_documental": "VIGENTE",
+    "estado_operativo": "ACTIVO",
+    "version": "1.0.0"
+  },
+  "material_relations_observed": [
+    {"id": 86, "consumer": "FULL_REGRESSION", "relation": "DEPENDE_DE", "provider": "CURRENTNESS_AUTHORITY"},
+    {"id": 88, "consumer": "ASSET_RETIREMENT_GOVERNANCE", "relation": "DEPENDE_DE", "provider": "CURRENTNESS_AUTHORITY"},
+    {"id": 107, "consumer": "VISUAL_EVIDENCE_GATE", "relation": "DEPENDE_DE", "provider": "CURRENTNESS_AUTHORITY"},
+    {"id": 108, "consumer": "LF_CONTRACT_CHECK", "relation": "DEPENDE_DE", "provider": "CURRENTNESS_AUTHORITY"},
+    {"id": 370, "consumer": "ASSURANCE_EVALUATOR", "relation": "DEPENDE_DE", "provider": "CURRENTNESS_AUTHORITY"}
+  ],
+  "projection": {
+    "supabase_apply_required_for_source_normalization": false,
+    "capability_registry_mutation": false,
+    "capability_current_promotion": false,
+    "new_relation_insertion": false,
+    "inventory_mutation": false
+  },
+  "limits": {
+    "cutover": false,
+    "runtime": false,
+    "production": false,
+    "evidence_ledger_mutation": false,
+    "touch_l2_015": false
+  }
+}
