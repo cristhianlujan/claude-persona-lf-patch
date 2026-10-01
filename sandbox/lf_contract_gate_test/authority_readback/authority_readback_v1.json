@@ -65,6 +65,34 @@
       "RUNTIME_OR_DEPLOY"
     ]
   },
+  "adapter_registry_contract": {
+    "lookup_authority": "inventory.fn_lookup_v2",
+    "direct_reuse_pattern": {
+      "adapter_code": "CONTROL_SYSTEM_QUALIFICATION_READBACK",
+      "authority_ref": "PASE_CONTROL_QUALIFICATION_V1",
+      "readback_ref": "public.lf_control_system_qualification_readback_v1",
+      "classification": "DIRECT_REUSE"
+    },
+    "extracted_profile_adapters": [
+      {
+        "adapter_code": "PROFILE_UPDATE_AUTHORITY_READBACK",
+        "source_function": "public.lf_profile_update_post_merge_reconcile_v1",
+        "adapter_ref": "source://authority_readback_adapters_v1.profile_update_readonly_observation",
+        "classification": "READ_ONLY_EXTRACTION"
+      },
+      {
+        "adapter_code": "PROFILE_RUNTIME_REFRESH_AUTHORITY_READBACK",
+        "source_function": "public.lf_profile_runtime_refresh_reconcile_asset_v1",
+        "adapter_ref": "source://authority_readback_adapters_v1.profile_runtime_refresh_readonly_observation",
+        "classification": "READ_ONLY_EXTRACTION"
+      }
+    ],
+    "reference_only_pattern": {
+      "function": "programacion.fn_assert_worker_direct_readback_v2",
+      "classification": "REFERENCE_ONLY_NOT_GENERIC",
+      "reason": "read-only fail-closed pattern but returns void and embeds verifier identity"
+    }
+  },
   "currentness_contract": {
     "dependency": "CURRENTNESS_AUTHORITY@1.0.0",
     "schema": "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1",
@@ -90,7 +118,7 @@
   "legacy_separation": {
     "profile_update_mutation_function": "public.lf_profile_update_post_merge_reconcile_v1",
     "runtime_refresh_mutation_function": "public.lf_profile_runtime_refresh_reconcile_asset_v1",
-    "observed_read_only_adapter_asset": "EDGE_FN_RUN_GITHUB_READBACK_PERFIL_LF",
+    "canonical_read_only_pattern": "public.lf_control_system_qualification_readback_v1",
     "canonical_mutation_owner": "EXPLICIT_GOVERNED_OPERATION",
     "next_gate_owner": "POST_PASE_ROUTER_OR_ORCHESTRATOR",
     "readback_engine": "AUTHORITY_READBACK",
