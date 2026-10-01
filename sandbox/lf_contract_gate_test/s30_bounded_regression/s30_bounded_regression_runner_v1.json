@@ -1,0 +1,44 @@
+{
+  "schema_version": "lf-s30-bounded-regression-runner-contract/v1",
+  "durable_name": "S30_BOUNDED_REGRESSION_OWNER_RUNNER_V1",
+  "owner": "S30_BOUNDED_REGRESSION",
+  "purpose": "Provide an owner-local deterministic execution surface for existing bounded S30 sandbox regressions so PASE orchestration no longer needs S30 execution logic embedded inside Validate Packs.",
+  "input_contract": {
+    "required": ["repository_source"],
+    "applicability_authority": "UPSTREAM_PASE_ROUTER_OR_EQUIVALENT_CANONICAL_CALLER",
+    "must_not_decide_run_skip": true
+  },
+  "execution_contract": {
+    "discovery_glob": "sandbox/lf_contract_gate_test/s30_*/test_*.py",
+    "self_directory_excluded": "sandbox/lf_contract_gate_test/s30_bounded_regression/",
+    "stable_order": true,
+    "fail_if_zero_tests": true,
+    "stop_on_first_failure": true,
+    "python_interpreter": "current_interpreter"
+  },
+  "ownership_invariants": [
+    "The runner executes S30 bounded regression tests only.",
+    "The runner does not resolve CI applicability or currentness.",
+    "The runner does not execute PACK_VALIDATION or pack-local validators.",
+    "The runner does not perform Git writes, database writes, Supabase writes, runtime execution, deployment or production activation.",
+    "The runner may be invoked by the pass orchestrator after applicability has already been decided.",
+    "The historical Validate LF Packs carrier is not an ownership authority for S30 and must not be required by this runner."
+  ],
+  "output_contract": {
+    "schema_version": "lf-s30-bounded-regression-runner/v1",
+    "status_enum": ["PASS", "FAIL"],
+    "required_fields": ["owner", "test_count", "tests", "executed"],
+    "authorization_fields": {
+      "pack_validation_authorized": false,
+      "runtime_authorized": false,
+      "git_write_authorized": false,
+      "db_write_authorized": false,
+      "deployment_authorized": false,
+      "production_authorized": false
+    }
+  },
+  "handoff": "PASE_ORCHESTRATOR_BIND_S30_BOUNDED_REGRESSION",
+  "merge_authorized": false,
+  "deployment_authorized": false,
+  "production_authorized": false
+}
