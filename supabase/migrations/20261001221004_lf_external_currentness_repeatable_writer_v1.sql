@@ -208,7 +208,7 @@ begin
      or v_detector_version is null
      or coalesce(v_scope_policy_hash,'') !~ '^[0-9a-f]{64}$'
      or v_scope_policy_hash <> c_scope_policy_sha256
-     or v_scope_policy_hash is distinct from p_report#>>'{input_sha256,scope_policy}' then
+     or v_scope_policy_hash is distinct from (p_report#>>'{input_sha256,scope_policy}') then
     raise exception using errcode='22023',message='REPORT_SCOPE_POLICY_MISMATCH';
   end if;
 
