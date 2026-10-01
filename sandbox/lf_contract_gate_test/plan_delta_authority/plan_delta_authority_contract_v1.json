@@ -2,7 +2,7 @@
   "schema_version": "lf-plan-delta-authority-producer/v1",
   "solution_code": "PLAN_DELTA_AUTHORITY_READBACK_PRODUCER_V1",
   "work_code": "SADM-PP-L6-025",
-  "purpose": "Emit the independent LF_PLAN_DELTA_AUTHORITY_READBACK_V1 proof consumed by PLAN_AUTHORITY_DRIFT_GUARD from an existing LF_GOVERNANCE append-only authorization event.",
+  "purpose": "Emit the independent LF_PLAN_DELTA_AUTHORITY_READBACK_V1 proof consumed by PLAN_AUTHORITY_DRIFT_GUARD from an existing LF_GOVERNANCE append-only direction event.",
   "authority": {
     "administrative_owner": "LF_GOVERNANCE",
     "evidence_surface": "public.lf_eventos",
@@ -14,14 +14,15 @@
     "evento_tipo": "DECISION_ESTRATEGICA",
     "entidad_tipo": "PROGRAM_PLAN",
     "payload_authority": "LF_GOVERNANCE",
-    "payload_decision": "AUTHORIZED_PLAN_DELTA",
+    "payload_authorizes_token": "PLAN_DELTA_AUTHORITY",
     "payload_authorization_scope": "PLAN_DELTA_AUTHORITY",
     "exact_bindings": [
       "event_id",
       "plan_id",
       "previous_plan_digest",
       "next_plan_digest"
-    ]
+    ],
+    "event_contract_rule": "The operational event must not declare a validation/acceptance decision field; the producer maps the explicit governed authorizes token to the typed AUTHORIZED_PLAN_DELTA receipt."
   },
   "invariants": {
     "read_only": true,
@@ -48,5 +49,6 @@
       "schema_version"
     ]
   },
+  "success_receipt_decision": "AUTHORIZED_PLAN_DELTA",
   "fail_closed_decision": "PLAN_DELTA_NOT_AUTHORIZED"
 }
