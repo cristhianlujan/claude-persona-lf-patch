@@ -9,7 +9,7 @@ def cap(**kw):
     base = dict(
         phase="BASELINE",
         error=None,
-        statuses=("VALIDATOR_RUNTIME_REQUIRED", "COMPLETED", "NOOP_COMPLETED"),
+        statuses=("CURATOR_RUNTIME_REQUIRED", "VALIDATOR_RUNTIME_REQUIRED", "COMPLETED", "NOOP_COMPLETED"),
         terminal_payload={"status": "COMPLETED", "promotion_authorized": False},
         proposal_validation_keys=("a", "b"),
         assessment_digest="a" * 32,
@@ -23,6 +23,22 @@ def cap(**kw):
     )
     base.update(kw)
     return judge.FlowCapture(**base)
+
+
+class FakeCursor:
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = []
+        self.current = None
+
+    def execute(self, sql, params=()):
+        self.calls.append((sql, tuple(params)))
+        if not self.responses:
+            raise AssertionError("unexpected execute")
+        self.current = self.responses.pop(0)
+
+    def fetchone(self):
+        return self.current
 
 
 class JudgeUnitTests(unittest.TestCase):
@@ -67,6 +83,23 @@ class JudgeUnitTests(unittest.TestCase):
         raw = {"run_id": 5, "validator_identity": "v", "status": "COMPLETED", "x": 1}
         self.assertEqual(judge.normalize_terminal(raw), {"status": "COMPLETED", "x": 1})
 
+    def test_real_flow_entrypoint_is_dispatcher_then_curator(self):
+        cur = FakeCursor([
+            ({"status": "CURATOR_RUNTIME_REQUIRED"},),
+            ({"status": "VALIDATOR_RUNTIME_REQUIRED", "run_id": 77},),
+        ])
+        run_id, statuses = judge._start_governed_flow(cur, 1, "STORY_CREATOR", "INPUT_CURATOR:EDGE:input-governance-curator-v1:n9-test")
+        self.assertEqual(run_id, 77)
+        self.assertEqual(statuses, ("CURATOR_RUNTIME_REQUIRED", "VALIDATOR_RUNTIME_REQUIRED"))
+        self.assertIn("fn_input_governance_execute", cur.calls[0][0])
+        self.assertIn("fn_input_governance_curator_materialize_v1", cur.calls[1][0])
+        self.assertNotIn("curator_rebind", " ".join(call[0] for call in cur.calls))
+
+    def test_real_flow_entrypoint_fails_closed_when_dispatcher_not_ready(self):
+        cur = FakeCursor([({"status": "NOOP_COMPLETED"},)])
+        with self.assertRaisesRegex(judge.JudgeError, "DISPATCH_NOT_READY"):
+            judge._start_governed_flow(cur, 1, "STORY_CREATOR", "INPUT_CURATOR:EDGE:input-governance-curator-v1:n9-test")
+
     def test_equal_flow_has_no_blocking_findings(self):
         self.assertEqual(judge.compare_captures(cap(), cap(phase="CANDIDATE")), [])
 
@@ -88,6 +121,7 @@ class JudgeUnitTests(unittest.TestCase):
         identity = judge.CandidateIdentity("a" * 40, "x.sql", "b" * 64)
         receipt = judge.build_receipt(identity, 1, "STORY_CREATOR", cap(), cap(phase="CANDIDATE"), [])
         self.assertEqual(receipt["verdict"], "NO_BLOCKING_FINDINGS")
+        self.assertEqual(receipt["flow_entrypoint"], "DISPATCHER_CURATOR_VALIDATOR")
         self.assertFalse(receipt["production_authorized"])
         self.assertFalse(receipt["runtime_activation_authorized"])
         self.assertEqual(receipt["mutation_policy"], "ROLLBACK_ONLY_NO_PERSISTENT_EFFECT")

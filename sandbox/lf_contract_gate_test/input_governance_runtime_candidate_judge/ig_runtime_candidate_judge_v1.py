@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """IG runtime candidate flow judge v1.
 
-Runs a representative Input Governance Curator -> Validator flow before and after
-candidate SQL in one PostgreSQL transaction and always rolls the transaction back.
-It is a verification runner only: it grants no runtime/production authority.
+Runs a representative Input Governance Dispatcher -> Curator -> Validator flow
+before and after candidate SQL in one PostgreSQL transaction and always rolls
+the transaction back. It is a verification runner only: it grants no
+runtime/production authority.
 """
 from __future__ import annotations
 
@@ -124,6 +125,35 @@ def _execute_json(cur: Any, sql: str, params: Iterable[Any]) -> dict[str, Any]:
     return value
 
 
+def _start_governed_flow(cur: Any, screen_id: int, consumer: str, curator_id: str) -> tuple[int, tuple[str, str]]:
+    """Enter through the real governed Dispatcher -> Curator boundary.
+
+    R17 v3 and the N-7 prior art require the judge to exercise the same entry
+    route as the runtime, not to call curator_rebind directly. This helper keeps
+    that routing explicit and testable.
+    """
+    dispatched = _execute_json(
+        cur,
+        "select programacion.fn_input_governance_execute(%s,%s)",
+        (screen_id, consumer),
+    )
+    dispatch_status = str(dispatched.get("status") or "")
+    if dispatch_status != "CURATOR_RUNTIME_REQUIRED":
+        raise JudgeError(f"DISPATCH_NOT_READY:{dispatch_status or 'EMPTY'}")
+
+    materialized = _execute_json(
+        cur,
+        "select programacion.fn_input_governance_curator_materialize_v1(%s,%s,%s,true)",
+        (screen_id, consumer, curator_id),
+    )
+    curator_status = str(materialized.get("status") or "")
+    run_value = materialized.get("run_id") or materialized.get("latest_run_id")
+    run_id = int(run_value) if run_value is not None else None
+    if curator_status != "VALIDATOR_RUNTIME_REQUIRED" or run_id is None:
+        raise JudgeError(f"CURATOR_NOT_READY:{curator_status or 'EMPTY'}")
+    return run_id, (dispatch_status, curator_status)
+
+
 def capture_flow(cur: Any, screen_id: int, consumer: str, phase: str) -> FlowCapture:
     curator_id = f"INPUT_CURATOR:EDGE:input-governance-curator-v1:n9-{uuid.uuid4().hex[:20]}"
     validator_id = f"INPUT_VALIDATOR:EDGE:input-governance-validator-v1:n9-{uuid.uuid4().hex[:20]}"
@@ -132,17 +162,8 @@ def capture_flow(cur: Any, screen_id: int, consumer: str, phase: str) -> FlowCap
     last: dict[str, Any] | None = None
     run_id: int | None = None
     try:
-        materialized = _execute_json(
-            cur,
-            "select programacion.fn_input_governance_curator_rebind_v1(%s,%s,%s,true)",
-            (screen_id, consumer, curator_id),
-        )
-        status = str(materialized.get("status") or "")
-        statuses.append(status)
-        run_value = materialized.get("run_id") or materialized.get("latest_run_id")
-        run_id = int(run_value) if run_value is not None else None
-        if status != "VALIDATOR_RUNTIME_REQUIRED" or run_id is None:
-            raise JudgeError(f"CURATOR_NOT_READY:{status or 'EMPTY'}")
+        run_id, entry_statuses = _start_governed_flow(cur, screen_id, consumer, curator_id)
+        statuses.extend(entry_statuses)
 
         for _ in range(MAX_VALIDATOR_CALLS):
             last = _execute_json(
@@ -313,6 +334,7 @@ def build_receipt(identity: CandidateIdentity, screen_id: int, consumer: str,
         "prelude_sha256": identity.prelude_sha256,
         "screen_id": screen_id,
         "consumer": consumer,
+        "flow_entrypoint": "DISPATCHER_CURATOR_VALIDATOR",
         "baseline": asdict(baseline),
         "candidate": asdict(candidate),
         "findings": findings,
