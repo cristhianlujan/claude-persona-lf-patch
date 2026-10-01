@@ -1,0 +1,67 @@
+{
+  "schema_version": "lf-github-reconciliation-inventory/v1",
+  "solution_code": "GITHUB_RECONCILIATION_V1",
+  "work_code": "SADM-PP-L2-012",
+  "owner": "LF_GOVERNANCE",
+  "asset_code": "GITHUB_RECONCILIATION",
+  "classification": "CANDIDATE_READ_ONLY_CAPABILITY",
+  "source_state": "READY_FOR_REVIEW",
+  "runtime_state": "BLOCKED_NOT_MATERIALIZED_NOT_CUTOVER",
+  "extracted_from": [
+    ".github/workflows/lf-github-reconcile-v3.yml",
+    "supabase/functions/lf-github-reconcile-v3/index.ts"
+  ],
+  "preserved_checks": [
+    "SOURCE_WORKFLOW_EXACT_MERGE_SHA",
+    "MERGED_PR_EXACT_MERGE_SHA",
+    "MAIN_HEAD_EXACT_MERGE_SHA",
+    "DECLARED_FILE_SHA256",
+    "DECLARED_FILE_GIT_BLOB",
+    "DECLARED_FILE_SOURCE_REVISION",
+    "NAMED_REPOSITORY_INVARIANTS"
+  ],
+  "removed_from_capability_boundary": [
+    "PRE_MERGE_ADMISSION",
+    "APPLICABILITY_DECISION",
+    "GLOBAL_INVENTORY_ENUMERATION",
+    "GLOBAL_GOVERNANCE_BUNDLE_ENUMERATION",
+    "EVIDENCE_PERSISTENCE",
+    "GATE_RECORDING",
+    "ARTIFACT_PROMOTION"
+  ],
+  "future_consumer": {
+    "code": "POST_PASE_ROUTER_V1",
+    "work_code": "SADM-PP-L4-019",
+    "state": "NOT_YET_MATERIALIZED"
+  },
+  "relations": [
+    {
+      "from": "GITHUB_RECONCILIATION",
+      "type": "DEPENDE_DE",
+      "to": "CAPABILITY_EXECUTION_CONTRACT"
+    },
+    {
+      "from": "GITHUB_RECONCILIATION",
+      "type": "RELACIONADO_CAPACIDADES",
+      "to": "LF_GOVERNANCE",
+      "semantics": "administrative discoverability only"
+    }
+  ],
+  "ekb_refs": [
+    "POST-PASE-RECONCILIATION-PREMERGE-ADMISSION-CONTAMINATION-001",
+    "POST-PASE-RECONCILIATION-GLOBAL-FILE-SCOPE-001"
+  ],
+  "source_assets": [
+    "sandbox/lf_contract_gate_test/github_reconciliation/github_reconciliation_v1.json",
+    "sandbox/lf_contract_gate_test/github_reconciliation/github_reconciliation_v1.py",
+    "sandbox/lf_contract_gate_test/github_reconciliation/test_github_reconciliation_v1.py",
+    "sandbox/lf_contract_gate_test/github_reconciliation/GITHUB_RECONCILIATION_registry_projection_v1.sql",
+    "sandbox/lf_contract_gate_test/github_reconciliation/README.md"
+  ],
+  "materialization": {
+    "supabase_projection_applied": false,
+    "capability_registry_registered": false,
+    "owner_runner_materialized": false,
+    "cutover_authorized": false
+  }
+}
