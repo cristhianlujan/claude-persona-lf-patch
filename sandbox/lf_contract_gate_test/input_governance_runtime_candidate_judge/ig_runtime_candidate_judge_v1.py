@@ -30,8 +30,14 @@ VOLATILE_TERMINAL_KEYS = {
     "output_sha256",
 }
 FORBIDDEN_SQL = re.compile(
-    r"(?im)^\s*(?:commit|rollback|end\s+transaction|begin\s+transaction|start\s+transaction|"
-    r"vacuum|cluster|reindex\s+database|create\s+database|drop\s+database|alter\s+system|copy\s+.+\s+program)\b"
+    r"(?is)(?:^|;)\s*(?:(?:--[^\r\n]*(?:\r?\n|$)|/\*.*?\*/)\s*)*"
+    r"(?:commit\b|rollback\b|end\s+transaction\b|begin\s+transaction\b|start\s+transaction\b|"
+    r"prepare\s+transaction\b|vacuum\b|cluster\b|reindex\s+database\b|create\s+database\b|"
+    r"drop\s+database\b|alter\s+system\b|copy\b[^;]*\bprogram\b)"
+)
+FORBIDDEN_SERVER_IO = re.compile(
+    r"(?i)\b(?:pg_read_file|pg_read_binary_file|pg_ls_dir|pg_stat_file|lo_import|dblink|dblink_exec|"
+    r"http_get|http_post|http_put|http_delete|aws_lambda)\s*\(|\b(?:net|pg_net)\.http_[a-z_]+\s*\("
 )
 SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA64_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -87,10 +93,10 @@ def load_sql(path: pathlib.Path, expected_sha256: str | None = None) -> tuple[st
 def validate_transaction_bound_sql(sql: str) -> None:
     if not sql.strip():
         raise JudgeError("EMPTY_CANDIDATE_SQL")
-    match = FORBIDDEN_SQL.search(sql)
-    if match:
-        token = match.group(0).strip().split()[0].upper()
-        raise JudgeError(f"TRANSACTION_ESCAPE_FORBIDDEN:{token}")
+    if FORBIDDEN_SQL.search(sql):
+        raise JudgeError("TRANSACTION_ESCAPE_FORBIDDEN")
+    if FORBIDDEN_SERVER_IO.search(sql):
+        raise JudgeError("SERVER_IO_OR_EXTERNAL_EFFECT_FORBIDDEN")
 
 
 def normalize_terminal(payload: dict[str, Any] | None) -> dict[str, Any] | None:
