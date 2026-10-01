@@ -61,4 +61,32 @@ begin
 end
 $$;
 
+
+update inventory.snapshots
+set metadata=jsonb_set(
+  jsonb_set(
+    coalesce(metadata,'{}'::jsonb),
+    '{evidence_bundle}',
+    jsonb_build_object(
+      'repository','cristhianlujan/claude-persona-lf-patch',
+      'observed_main_sha','1f18636503cdaeda79a8df6cced0d0f2e5353c14',
+      'path','sandbox/lf_contract_gate_test/transversal_assets/global_technical_inventory/evidence/LF_EXTERNAL_CURRENTNESS_20261001171547971',
+      'inputs_persisted',true,
+      'operational_sql_persisted',true
+    ),
+    true
+  ),
+  '{dependency_cleanup}',
+  jsonb_build_object(
+    'active_inbound_before',104,
+    'active_outbound_before',142,
+    'unique_active_before',230,
+    'unresolved_target_ref_only_before',0,
+    'action','DEACTIVATE_PRESERVE_HISTORY'
+  ),
+  true
+)
+where snapshot_id=11
+  and snapshot_code='LF_EXTERNAL_CURRENTNESS_20261001171547971';
+
 commit;
