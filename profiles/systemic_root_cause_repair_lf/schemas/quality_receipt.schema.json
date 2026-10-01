@@ -22,7 +22,12 @@
       "const": "SRCR_QUALITY_RECEIPT_V1"
     },
     "profile_pack_id": {
-      "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+      "enum": [
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+        "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+      ]
     },
     "profile_code": {
       "const": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
@@ -61,6 +66,27 @@
         "semantic_execution_receipt_ref": {
           "type": "string",
           "minLength": 5
+        },
+        "producer_execution_id": {
+          "type": "string",
+          "minLength": 8
+        },
+        "reviewer_execution_id": {
+          "type": "string",
+          "minLength": 8
+        },
+        "producer_execution_receipt_ref": {
+          "type": "string",
+          "minLength": 5
+        },
+        "independence_evidence_refs": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 5
+          }
         }
       }
     },
@@ -211,6 +237,35 @@
           },
           "blocking_codes": {
             "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_pack_id": {
+            "const": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+          }
+        },
+        "required": [
+          "profile_pack_id"
+        ]
+      },
+      "then": {
+        "properties": {
+          "review_boundary": {
+            "required": [
+              "issuer",
+              "execution_mode",
+              "reviewer_is_producer",
+              "producer_context_available",
+              "semantic_execution_receipt_ref",
+              "producer_execution_id",
+              "reviewer_execution_id",
+              "producer_execution_receipt_ref",
+              "independence_evidence_refs"
+            ]
           }
         }
       }
