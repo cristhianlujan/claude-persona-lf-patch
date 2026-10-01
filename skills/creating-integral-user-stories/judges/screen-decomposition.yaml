@@ -1,7 +1,7 @@
 judge_code: J02_SCREEN_DECOMPOSITION
 judge_version: v0.8
 status: CANDIDATO_READ_ONLY
-scope: Verifica cobertura, atomicidad y trazabilidad de la descomposición y añade completitud contra una ingesta visual ciega, bloqueada e independiente.
+scope: Verifica cobertura, atomicidad, trazabilidad y validez epistémica de la descomposición contra una ingesta visual ciega, bloqueada e independiente.
 independence: worker_must_not_execute_own_judge
 retry_limit: 2
 
@@ -39,10 +39,13 @@ validators:
   semantic_validator_ref: scripts/validate_screen_decomposition_visual.py
   semantic_validator_name: screen_decomposition_semantic_validator_v08
   semantic_validator_registration_ref: candidate://creating-integral-user-stories/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION_VISUAL
+  semantic_validator_sha256: af30bd17d5c2fb91d1d2932b64e762bfc30cd27f963d0cbf215417c6dc95e7c2
+  semantic_validator_git_blob_sha1: 63bd13fc5158528c777ede56e2f2ad09d0827669
   promotion_registration_required: true
 
 runtime_status: CANDIDATE_CI_ONLY
 production_runtime_status: NOT_AUTHORIZED
+assertion_denominator: 26
 self_test_command: LF_EXECUTOR_IDENTITY=LF_J02_SELF_TEST LF_JUDGE_VERSION=v0.8 python scripts/validate_screen_decomposition_visual.py --self-test
 
 deterministic_procedure:
@@ -53,84 +56,40 @@ deterministic_procedure:
 - verify_ingestion_is_blind_and_locked
 - compare_each_ingestion_inventory_against_decomposition_inventory
 - recompute_decomposition_coverage_by_code_or_source_ref
+- preserve_all_v02_visual_observations_by_observation_code_and_source_ref
 - recompute_semantic_duplicates
 - validate_merge_target_and_confirmed_source_rules
+- reject_confirmed_units_inheriting_non_observed_or_uncertain_visual_evidence
 - validate_pending_decisions_and_ingestion_uncertainties
 - reject_any_missing_item_before_emitting_result
 
 assertions:
-- assertion_id: input_schema_valid
-  expected: 0
-  critical: true
-- assertion_id: ingestion_schema_valid
-  expected: 0
-  critical: true
-- assertion_id: source_snapshot_sha_present
-  expected: 0
-  critical: true
-- assertion_id: source_screen_code_matches_target
-  expected: 0
-  critical: true
-- assertion_id: ingestion_screen_code_matches_target
-  expected: 0
-  critical: true
-- assertion_id: ingestion_source_snapshot_hash_matches
-  expected: 0
-  critical: true
-- assertion_id: ingestion_locked
-  expected: 0
-  critical: true
-- assertion_id: inventory_complete_vs_ingestion
-  expected: 0
-  critical: true
-- assertion_id: context_coverage
-  expected: 0
-  critical: true
-- assertion_id: field_coverage
-  expected: 0
-  critical: true
-- assertion_id: permission_coverage
-  expected: 0
-  critical: true
-- assertion_id: transition_coverage
-  expected: 0
-  critical: true
-- assertion_id: visual_observation_coverage
-  expected: 0
-  critical: true
-- assertion_id: unmapped_count
-  expected: 0
-  critical: true
-- assertion_id: unjustified_count
-  expected: 0
-  critical: true
-- assertion_id: conflicting_count
-  expected: 0
-  critical: true
-- assertion_id: duplicate_functional_units
-  expected: 0
-  critical: true
-- assertion_id: functional_units_complete
-  expected: 0
-  critical: true
-- assertion_id: functional_units_without_code
-  expected: 0
-  critical: true
-- assertion_id: coverage_mapped_to_unknown_functional_unit
-  expected: 0
-  critical: true
-- assertion_id: confirmed_rules_have_source
-  expected: 0
-  critical: true
-- assertion_id: coverage_summary_mismatch
-  expected: 0
-  critical: true
-- assertion_id: blocking_pending_decisions
-  expected: 0
-  critical: true
-- assertion_id: blocking_ingestion_uncertainty
-  expected: 0
-  critical: true
+- {assertion_id: input_schema_valid, expected: 0, critical: true}
+- {assertion_id: ingestion_schema_valid, expected: 0, critical: true}
+- {assertion_id: source_snapshot_sha_present, expected: 0, critical: true}
+- {assertion_id: source_screen_code_matches_target, expected: 0, critical: true}
+- {assertion_id: ingestion_screen_code_matches_target, expected: 0, critical: true}
+- {assertion_id: ingestion_source_snapshot_hash_matches, expected: 0, critical: true}
+- {assertion_id: ingestion_locked, expected: 0, critical: true}
+- {assertion_id: inventory_complete_vs_ingestion, expected: 0, critical: true}
+- {assertion_id: context_coverage, expected: 0, critical: true}
+- {assertion_id: field_coverage, expected: 0, critical: true}
+- {assertion_id: permission_coverage, expected: 0, critical: true}
+- {assertion_id: transition_coverage, expected: 0, critical: true}
+- {assertion_id: unmapped_count, expected: 0, critical: true}
+- {assertion_id: unjustified_count, expected: 0, critical: true}
+- {assertion_id: conflicting_count, expected: 0, critical: true}
+- {assertion_id: duplicate_functional_units, expected: 0, critical: true}
+- {assertion_id: functional_units_complete, expected: 0, critical: true}
+- {assertion_id: functional_units_without_code, expected: 0, critical: true}
+- {assertion_id: coverage_mapped_to_unknown_functional_unit, expected: 0, critical: true}
+- {assertion_id: confirmed_rules_have_source, expected: 0, critical: true}
+- {assertion_id: coverage_summary_mismatch, expected: 0, critical: true}
+- {assertion_id: blocking_pending_decisions, expected: 0, critical: true}
+- {assertion_id: blocking_ingestion_uncertainty, expected: 0, critical: true}
+- {assertion_id: visual_observation_coverage, expected: 0, critical: true}
+- {assertion_id: confirmed_epistemic_invariants, expected: 0, critical: true}
+- {assertion_id: confirmed_inherited_inference, expected: 0, critical: true}
 
 assertion_semantics:
   visual_observation_passthrough: Para screen-ingestion/v0.2, toda observación visual debe preservarse en screen_decomposition por observation_code + source_ref; no se exige convertirla en unidad funcional.
@@ -138,19 +97,26 @@ assertion_semantics:
   ingestion_source_snapshot_hash_matches: El hash se recalcula desde el manifiesto de hashes de las imágenes y debe coincidir tanto con la ingesta como con source_snapshot_sha de la descomposición.
   ingestion_locked: La ingesta debe declarar locked=true y demostrar que no recibió contexto auxiliar ni action tools antes del lock.
   blocking_ingestion_uncertainty: Una incertidumbre crítica abierta impide continuar a J02.
+  confirmed_epistemic_invariants: Una unidad CONFIRMED requiere evidencia resoluble, sin incertidumbre de fuente y sin estados epistémicos incompatibles.
+  confirmed_inherited_inference: Una unidad CONFIRMED no puede heredar como autoridad una observación visual INFERRED o NOT_OBSERVABLE.
 
 pass_if:
 - candidate_ci_runtime_exit_code = 0
 - all_applicable_assertions_pass = true
-- assertions_passed = assertions_total
+- assertions_passed = 26
+- assertions_total = 26
 - evidence_refs_non_empty = true
 - inventory_complete_vs_ingestion = 0
+- visual_observation_coverage = 0
+- confirmed_epistemic_invariants = 0
+- confirmed_inherited_inference = 0
 
 fail_if:
 - coverage_by_cardinality_only = true
 - ingestion_item_missing_from_decomposition = true
 - source_snapshot_hash_is_decorative = true
 - invented_rule_marked_confirmed = true
+- confirmed_unit_promotes_non_observed_visual_evidence = true
 
 block_if:
 - required_input_missing = true
@@ -174,6 +140,9 @@ required_evidence:
 - ingestion_blind_read_id
 - ingestion_execution_id
 - missing_from_decomposition_vs_ingestion
+- missing_visual_observations
+- confirmed_epistemic_violations
+- confirmed_inherited_inference_refs
 - recomputed_coverage_summary
 - semantic_duplicate_keys
 - failed_assertions
@@ -187,56 +156,38 @@ required_evidence:
 
 positive_behavior:
   command: LF_EXECUTOR_IDENTITY=CI_EXTERNAL_FIXTURE LF_JUDGE_VERSION=v0.8 python scripts/validate_screen_decomposition_visual.py evals/fixtures/j02_external_positive.json --evidence-ref fixture://j02_external_positive --expected-validator-sha256 <computed-ci-sha256> --registration-ref candidate://creating-integral-user-stories/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION_VISUAL
-  expected: PASS_WITH_EVIDENCE and assertions_passed=24
+  expected: PASS_WITH_EVIDENCE with assertions_passed=26 and assertions_total=26
   fixture_is_external_to_validator: true
 
 negative_cases:
-- case: ingestion_field_omitted_from_decomposition
-  fixture: evals/fixtures/j02_source_omission.json
-  expected_result: RETURN_TO_WORKER
-  assertion: inventory_complete_vs_ingestion
-- case: schema_invalid_merge_without_target
-  expected_result: RETURN_TO_WORKER
-  assertion: input_schema_valid
-- case: pending_coverage_item
-  expected_result: RETURN_TO_WORKER
-  assertion: unmapped_count
-- case: duplicated_functional_unit
-  expected_result: RETURN_TO_WORKER
-  assertion: duplicate_functional_units
-- case: unrelated_context_coverage_same_cardinality
-  expected_result: RETURN_TO_WORKER
-  assertion: context_coverage
-- case: blocking_pending_decision
-  expected_result: BLOCKED
-  assertion: required_decision_prevents_decomposition
-- case: runtime_sha_mismatch
-  expected_result: BLOCKED
-  assertion: semantic_validator_sha_unreconciled
+- {case: ingestion_field_omitted_from_decomposition, expected_result: RETURN_TO_WORKER, assertion: inventory_complete_vs_ingestion}
+- {case: visual_observation_omitted, expected_result: RETURN_TO_WORKER, assertion: visual_observation_coverage}
+- {case: confirmed_from_non_observed_visual_source, expected_result: RETURN_TO_WORKER, assertion: confirmed_inherited_inference}
+- {case: confirmed_with_source_uncertainty, expected_result: RETURN_TO_WORKER, assertion: confirmed_epistemic_invariants}
+- {case: schema_invalid_merge_without_target, expected_result: RETURN_TO_WORKER, assertion: input_schema_valid}
+- {case: pending_coverage_item, expected_result: RETURN_TO_WORKER, assertion: unmapped_count}
+- {case: duplicated_functional_unit, expected_result: RETURN_TO_WORKER, assertion: duplicate_functional_units}
+- {case: unrelated_context_coverage_same_cardinality, expected_result: RETURN_TO_WORKER, assertion: context_coverage}
+- {case: blocking_pending_decision, expected_result: BLOCKED, assertion: required_decision_prevents_decomposition}
+- {case: runtime_sha_mismatch, expected_result: BLOCKED, assertion: semantic_validator_sha_unreconciled}
 
 repair_matrix:
 - assertion_id: inventory_complete_vs_ingestion
   target_path: screen_decomposition
   instruction: Incorporar o justificar cada observación de la ingesta bloqueada; nunca eliminar la observación para obtener cobertura.
-  prohibited_shortcuts:
-  - reduce_ingestion_inventory
-  - count_by_cardinality_only
-  - invent_source
-  - self_approve
-- assertion_id: field_coverage
-  target_path: screen_decomposition.coverage_items
-  instruction: Mapear cada campo declarado por código o source_ref verificable.
-  prohibited_shortcuts:
-  - ignore_field_inventory
-  - lower_threshold
-  - self_approve
+  prohibited_shortcuts: [reduce_ingestion_inventory, count_by_cardinality_only, invent_source, self_approve]
+- assertion_id: visual_observation_coverage
+  target_path: screen_decomposition.visual_observation_inventory
+  instruction: Preservar 1:1 cada observación v0.2 por observation_code + source_ref; no inventar sustitutos.
+  prohibited_shortcuts: [delete_source_observation, synthesize_replacement_ref, self_approve]
+- assertion_id: confirmed_epistemic_invariants
+  target_path: screen_decomposition.functional_units
+  instruction: Corregir la clasificación o resolver la evidencia fuente mediante una autoridad independiente; no promover evidencia incierta.
+  prohibited_shortcuts: [delete_uncertainty, relabel_without_evidence, self_approve]
 - assertion_id: blocking_ingestion_uncertainty
   target_path: screen_ingestion.uncertainties
   instruction: Resolver mediante nueva captura/adjudicación; no degradar critical para obtener resultado favorable.
-  prohibited_shortcuts:
-  - relabel_critical_without_evidence
-  - delete_uncertainty
-  - self_approve
+  prohibited_shortcuts: [relabel_critical_without_evidence, delete_uncertainty, self_approve]
 
 output:
   schema_ref: schemas/judge-result.schema.json

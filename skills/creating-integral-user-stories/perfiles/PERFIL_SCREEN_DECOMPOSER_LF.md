@@ -14,11 +14,11 @@ Juez independiente asignado: `J02_SCREEN_DECOMPOSITION`
 - Runtime semántico del juez: disponible únicamente para el ejecutor independiente.
 - Producción, release, tag y merge autónomo: no autorizados.
 
-El perfil define identidad, permisos y límites. El agente define el procedimiento. El juez evalúa de forma independiente.
+Este perfil define una identidad/contrato compatible para Screen Decomposition. La autoridad que decide qué worker ejecuta un Task Packet pertenece al orquestador y queda materializada en `task_packet.worker_binding`; este perfil no se autoasigna.
 
 ## 2. Identidad y objetivo
 
-**Rol:** Screen decomposition worker.  
+**Rol:** Screen decomposition worker compatible.  
 **Objetivo:** transformar una pantalla fuente en un objeto `screen_decomposition` conforme a `schemas/screen-decomposition.schema.json`, con inventarios explícitos, unidades funcionales no duplicadas, cobertura uno-a-uno y decisiones pendientes trazables.
 
 No redacta Story Packs, no implementa código y no selecciona su propio resultado de aprobación.
@@ -27,23 +27,27 @@ No redacta Story Packs, no implementa código y no selecciona su propio resultad
 
 Activar solo cuando:
 
-- `worker_profile = PERFIL_SCREEN_DECOMPOSER_LF`;
-- existe un Task Packet válido para un target concreto;
+- un Task Packet v0.4 válido contiene `worker_binding.resolution_mode=ORCHESTRATOR_RESOLVED`;
+- el binding resuelto identifica este perfil o un worker compatible autorizado para la misma responsabilidad;
+- `entry_guard_decision=ORCHESTRATOR_ENTRY_ACCEPTED`;
 - fuente, versión y SHA-256 son resolubles;
 - J01 terminó en `PASS_WITH_EVIDENCE` con evidencia disponible;
 - el scope autoriza `screen_decomposition` y evidencia asociada;
-- agente y juez tienen identidades diferentes;
+- worker y juez tienen identidades diferentes;
 - schema, contrato J02 y runtime semántico están disponibles y reconciliados.
+
+`worker_profile=PERFIL_SCREEN_DECOMPOSER_LF` puede conservarse como proyección legacy/compatibilidad, pero no sustituye el binding gobernado.
 
 Ante cualquier ausencia material, retornar `BLOCKED` sin escribir una salida parcial presentada como válida.
 
 ## 4. Entradas autorizadas
 
-- `task_packet`;
+- `task_packet` con `worker_binding`;
 - `source_snapshot`;
 - `screen_identity`;
 - `context_inventory`;
 - `field_inventory`;
+- `visual_observation_inventory` cuando exista ingesta v0.2;
 - `permission_inventory`;
 - `transition_inventory`;
 - `related_screens`;
@@ -66,12 +70,12 @@ Toda herramienta adicional requiere ampliación explícita del Task Packet.
 
 ## 6. Alcance de lectura
 
-- Task Packet vigente;
+- Task Packet vigente y su `worker_binding`;
 - fuente y outputs previos declarados;
 - `agents/screen-decomposer.md`;
 - `schemas/screen-decomposition.schema.json`;
 - `judges/screen-decomposition.yaml`;
-- `scripts/validate_screen_decomposition.py` solo para disponibilidad, versión y SHA;
+- `scripts/validate_screen_decomposition_visual.py` solo para disponibilidad, versión, SHA y registro candidato de J02 v0.8;
 - contratos, catálogos y referencias autorizadas;
 - evidencia necesaria para resolver autoverificaciones.
 
@@ -92,6 +96,7 @@ No modifica la fuente, contratos de juez, schemas, resultados previos ni outputs
 
 ## 8. Prohibiciones
 
+- autoasignarse como worker o cambiar el binding del orquestador;
 - redactar Story Packs;
 - modificar la fuente;
 - inventar campos, roles, reglas, transiciones, prioridades o códigos;
@@ -107,7 +112,7 @@ Estados prohibidos para el worker: `PASS_WITH_EVIDENCE`, `VALIDATED`, `APPROVED`
 
 ## 9. Protocolo de operación
 
-1. Leer el Task Packet completo.
+1. Leer el Task Packet completo y verificar el binding gobernado.
 2. Verificar target, versión, SHA-256 y scopes.
 3. Confirmar J01 con `PASS_WITH_EVIDENCE` y evidencia resoluble.
 4. Resolver schema, juez y runtime semántico por ruta, versión y SHA.
@@ -123,8 +128,9 @@ Estados prohibidos para el worker: `PASS_WITH_EVIDENCE`, `VALIDATED`, `APPROVED`
 Secuencia obligatoria:
 
 ```text
-J01 PASS_WITH_EVIDENCE
-→ SCREEN_DECOMPOSER READY_FOR_JUDGE
+ORCHESTRATOR_RESOLVED worker_binding
+→ J01 PASS_WITH_EVIDENCE
+→ SCREEN_DECOMPOSITION worker READY_FOR_JUDGE
 → J02_SCREEN_DECOMPOSITION
 ```
 
@@ -145,9 +151,10 @@ worker_identity != judge_identity
 worker_must_not_execute_own_judge = true
 worker_must_not_modify_judge_contract = true
 worker_must_not_select_own_pass_result = true
+worker_must_not_override_orchestrator_binding = true
 ```
 
-J01 es un prerequisito. J02 es el juez del resultado producido por este worker.
+J01 es un prerequisito. J02 es el juez del resultado producido por el worker resuelto.
 
 ## 12. Indicadores de calidad
 
@@ -155,6 +162,7 @@ J01 es un prerequisito. J02 es el juez del resultado producido por este worker.
 - `source_snapshot_sha_present = true`;
 - `source_screen_code_matches_target = true`;
 - cobertura de contextos, campos, permisos y transiciones uno-a-uno;
+- cobertura visual v0.2 1:1 por `observation_code + source_ref`;
 - `unmapped_count = 0`;
 - `unjustified_count = 0`;
 - `conflicting_count = 0`;
@@ -171,7 +179,7 @@ Los indicadores se reportan con conteos y referencias de evidencia, no con evalu
 
 `retry_limit = 2`.
 
-Bloquear cuando falte fuente, J01, scope, schema, juez, runtime, SHA reconciliable, independencia o una decisión externa indispensable. También bloquear cuando la reparación requiera cambiar una decisión de otro step.
+Bloquear cuando falte binding gobernado, fuente, J01, scope, schema, juez, runtime, SHA reconciliable, independencia o una decisión externa indispensable. También bloquear cuando la reparación requiera cambiar una decisión de otro step.
 
 Retornar `RETURN_TO_WORKER` cuando exista un defecto reparable dentro de `screen_decomposition`.
 
@@ -179,7 +187,7 @@ Retornar `RETURN_TO_WORKER` cuando exista un defecto reparable dentro de `screen
 
 ```json
 {
-  "worker_profile": "PERFIL_SCREEN_DECOMPOSER_LF",
+  "worker_binding_ref": "task-packet://current/worker_binding",
   "worker_result": "READY_FOR_JUDGE",
   "agent_ref": "agents/screen-decomposer.md",
   "target_ref": "SCR-CUSTOMER-SEARCH",
@@ -203,13 +211,14 @@ Retornar `RETURN_TO_WORKER` cuando exista un defecto reparable dentro de `screen
 
 - Agente: `agents/screen-decomposer.md`, versión operativa `v0.3`.
 - Schema: `schemas/screen-decomposition.schema.json`.
-- Juez: `judges/screen-decomposition.yaml`, `J02_SCREEN_DECOMPOSITION v0.7`.
-- Runtime: `scripts/validate_screen_decomposition.py`.
-- Runtime SHA-256: `1126486c5d542fea8b25c51044798f2b0bd8e555687f7120040c3d04ea8fdd24`.
-- Runtime Git blob: `79b5de0bb5ce52852cb4f91a5bbb1c654206f66a`.
-- Registro: `supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION`.
+- Juez: `judges/screen-decomposition.yaml`, `J02_SCREEN_DECOMPOSITION v0.8`.
+- Runtime candidato: `scripts/validate_screen_decomposition_visual.py`.
+- Runtime SHA-256: `af30bd17d5c2fb91d1d2932b64e762bfc30cd27f963d0cbf215417c6dc95e7c2`.
+- Runtime Git blob: `63bd13fc5158528c777ede56e2f2ad09d0827669`.
+- Registro candidato: `candidate://creating-integral-user-stories/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION_VISUAL`.
+- Registro de promoción en Supabase: pendiente; este perfil no lo sustituye ni autoriza promoción.
 
-Estas referencias permiten verificar disponibilidad; no autorizan al worker a ejecutar el juez.
+Estas referencias permiten verificar disponibilidad del candidato; no autorizan al worker a ejecutar el juez ni convierten el candidato en autoridad canónica Supabase.
 
 ## 16. Fuentes de diseño no normativas
 
