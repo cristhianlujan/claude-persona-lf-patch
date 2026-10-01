@@ -1,0 +1,118 @@
+{
+  "schema_version": "IG_REFERENCE_CORPUS_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M0.7",
+  "work_code": "PAULO-115",
+  "snapshot_sha256": "c06454ca6766e5bb7bf95f1fe2201a1a61d8a95617f26b3dee3fd3410e5d369c",
+  "currentness_rule": "programacion.fn_input_readiness_run_is_current(run_id)",
+  "corpus_run_ids": [191, 253, 265, 266],
+  "lineage_anchor_run_id": 264,
+  "all_reference_runs_current": false,
+  "cases": [
+    {
+      "run_id": 191,
+      "role": "CORPUS_CASE",
+      "pantalla_id": 51,
+      "contract_revision": "5.12",
+      "persisted_status": "COMPLETED",
+      "supersedes_run_id": 183,
+      "is_current": false,
+      "blocked_reason": null,
+      "expected_validator_state": "COMPLETED_HISTORICAL_OUTPUT",
+      "outcomes": [
+        {"coverage_status": "COMPLETE", "validator_outcome": "PASS", "count": 36},
+        {"coverage_status": "MISSING", "validator_outcome": "PASS", "count": 1},
+        {"coverage_status": "NOT_APPLICABLE", "validator_outcome": "PASS", "count": 2},
+        {"coverage_status": "PARTIAL", "validator_outcome": "PASS", "count": 8}
+      ]
+    },
+    {
+      "run_id": 253,
+      "role": "CORPUS_NEGATIVE",
+      "pantalla_id": 51,
+      "contract_revision": "5.13",
+      "persisted_status": "BLOCKED",
+      "supersedes_run_id": 191,
+      "is_current": false,
+      "blocked_reason": "SUPERSEDED_AFTER_ACCESSIBILITY_SEMANTIC_CLASSIFIER_FIX_V1",
+      "validator_identity": null,
+      "expected_validator_state": "PENDING_47_OF_47",
+      "outcomes": [
+        {"coverage_status": "COMPLETE", "validator_outcome": "PENDING", "count": 21},
+        {"coverage_status": "MISSING", "validator_outcome": "PENDING", "count": 8},
+        {"coverage_status": "NOT_APPLICABLE", "validator_outcome": "PENDING", "count": 2},
+        {"coverage_status": "PARTIAL", "validator_outcome": "PENDING", "count": 16}
+      ]
+    },
+    {
+      "run_id": 265,
+      "role": "LINEAGE_NEGATIVE",
+      "pantalla_id": 51,
+      "contract_revision": "5.13",
+      "persisted_status": "BLOCKED",
+      "supersedes_run_id": 264,
+      "is_current": false,
+      "blocked_reason": "VALIDATOR_CLASSIFIER_EQUIVALENCE_MISMATCH_API_DATA_CONTRACT_FIXED_BY_CACHED_CLASSIFIER_EQUIVALENCE_V1",
+      "validator_identity": null,
+      "expected_validator_state": "PENDING_47_OF_47",
+      "outcomes": [
+        {"coverage_status": "COMPLETE", "validator_outcome": "PENDING", "count": 33},
+        {"coverage_status": "NOT_APPLICABLE", "validator_outcome": "PENDING", "count": 2},
+        {"coverage_status": "PARTIAL", "validator_outcome": "PENDING", "count": 12}
+      ]
+    },
+    {
+      "run_id": 266,
+      "role": "LINEAGE_COMPLETED",
+      "pantalla_id": 51,
+      "contract_revision": "5.13",
+      "persisted_status": "COMPLETED",
+      "supersedes_run_id": 264,
+      "is_current": false,
+      "blocked_reason": null,
+      "expected_validator_state": "PASS_47_OF_47",
+      "outcomes": [
+        {"coverage_status": "COMPLETE", "validator_outcome": "PASS", "count": 34},
+        {"coverage_status": "NOT_APPLICABLE", "validator_outcome": "PASS", "count": 2},
+        {"coverage_status": "PARTIAL", "validator_outcome": "PASS", "count": 11}
+      ]
+    }
+  ],
+  "lineage_anchor": {
+    "run_id": 264,
+    "contract_revision": "5.13",
+    "persisted_status": "COMPLETED",
+    "supersedes_run_id": 263,
+    "is_current": false,
+    "invalidated_reason": "TERMINAL_SUCCESSOR",
+    "invalidated_by_run_id": 265
+  },
+  "lineage_265_vs_266": {
+    "validator_changed_family_count": 47,
+    "validator_transition": "PENDING_TO_PASS_ALL_47",
+    "coverage_changed_family_count": 1,
+    "coverage_changes": [
+      {"family_code": "API_DATA_CONTRACT", "run_265": "PARTIAL", "run_266": "COMPLETE"}
+    ],
+    "validator_changed_families": [
+      "ACCESSIBILITY", "ACTIONS", "ANALYTICS", "API_DATA_CONTRACT", "APPLICABILITY_READINESS", "ASSETS_ICONS", "AUDIT", "BROWSER_PLATFORM", "CONFLICT_PRECEDENCE", "CONTEXT_BUDGET_RETRIEVAL_POLICY", "DEPENDENCIES", "DESIGN_SYSTEM", "EKB", "ERRORS", "FEATURE_FLAGS", "FIELDS", "FORCED_COLORS_CONTRAST", "FRESHNESS_INVALIDATION", "I18N_FORMATS", "IDEMPOTENCY_CONCURRENCY", "LOADING_EMPTY_ERROR_STATES", "MFA_OTP_SSO", "NEGATIVE_REQUIREMENTS", "OBJECTIVE_OUTCOMES", "OBSERVABILITY", "PERFORMANCE", "PERMISSIONS", "PRIVACY_PII", "PROFILES", "RATE_LIMIT", "REDUCED_MOTION", "RESPONSIVE", "ROLLOUT_PRODUCTION_GATES", "ROUTING_NAVIGATION", "RUNTIME_CONFIG", "SCREEN_IDENTITY", "SECURITY", "SESSION", "SOURCE_AUTHORITY_PROVENANCE", "STATES", "TESTING_OBLIGATIONS", "THEME_LIGHT_DARK_SYSTEM", "TIMEOUT_RETRY", "TRANSITIONS", "UI_MESSAGES", "VALIDATIONS", "VISUAL_EVIDENCE"
+    ]
+  },
+  "test_suite": {
+    "suite_code": "INPUT_GOVERNANCE_REGRESSION",
+    "status": "CANDIDATO",
+    "existing_case_count": 10,
+    "existing_case_codes": [
+      "M7_1_BUILD_SHA", "M7_1_CONTRACT_SHA", "M7_1_REGISTRY_SHA", "M7_1_ROUTER_SHA", "M7_1_CURATOR_SHA", "M7_1_VALIDATOR_SHA", "M7_1_EXECUTION_SHA", "M7_1_SHADOW_SHA", "M7_1_SEMANTIC_SHA", "M7_1_CURRENTNESS_SHA"
+    ],
+    "missing_fixture_kinds": [
+      "BROKEN_REFERENCE", "CANDIDATE_AUTHORITY", "CONTRADICTION", "CACHED_VS_NON_CACHED"
+    ]
+  },
+  "source_pack_correction": {
+    "previous_missing": "blocked_reason persistido para runs BLOCKED (gap M0.9: motivo de run no persistido)",
+    "classification": "STALE_RESOLVED",
+    "readback": "runs 253 and 265 now carry persisted blocked_reason"
+  },
+  "r17_applicable": false
+}
