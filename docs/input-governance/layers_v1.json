@@ -1,0 +1,85 @@
+{
+  "schema_version": "IG_M1_1_LAYER_MAP_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M1.1",
+  "work_code": "PAULO-116",
+  "lot_code": "L4",
+  "source_m0_5": {
+    "merge_sha": "e3a08f2ba27fbe7ecd2d85a4f81778d3a0c09200",
+    "path": "docs/input-governance/responsibility_block_map_v1.json",
+    "blob_sha1": "679b1553a3bd929b7557a88a76164affd770645c"
+  },
+  "current_universe": {
+    "m0_2_baseline_ig_proper": 113,
+    "current_ig_proper": 112,
+    "current_active_reachable_ig_proper": 90,
+    "retired_identity": "programacion.fn_input_source_inventory_lookup_l1_v1(p_term text)",
+    "retired_asset": "PROGRAMACION_INPUT_SOURCE_INVENTORY_L1",
+    "retired_identity_live": false,
+    "retired_asset_live": false,
+    "external_consumer_boundary": 3,
+    "transversal_dependency_boundary": 3
+  },
+  "function_assignment": {
+    "active_functions": 90,
+    "unassigned": 0,
+    "non_single_assignments": 0,
+    "duplicate_registry_member_identities": 0,
+    "assignment_sha256": "0de2ca1cf31cea3d0a260d957faf4a1ba56d2f0ea29a9ea2a51acefa61312806",
+    "layer_counts": {
+      "CORE": 15,
+      "SEMANTIC": 28,
+      "READINESS_POLICY": 8,
+      "ORCHESTRATION": 20,
+      "EVIDENCE": 4,
+      "PERSISTENCE": 15
+    }
+  },
+  "responsibility_class_to_layer": {
+    "FACT": "CORE",
+    "HEURISTIC": "CORE",
+    "SEMANTIC": "SEMANTIC",
+    "POLICY": "READINESS_POLICY",
+    "READINESS": "READINESS_POLICY",
+    "ORCHESTRATION": "ORCHESTRATION",
+    "EVIDENCE": "EVIDENCE",
+    "PERSISTENCE": "PERSISTENCE"
+  },
+  "function_sets": [
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_ASSERTION_ENGINE_SET","layer":"SEMANTIC","active_count":7},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_CANONICAL_CONTEXT_SET","layer":"CORE","active_count":8},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_CURATION_SET","layer":"ORCHESTRATION","active_count":7},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_CURRENTNESS_INVALIDATION_SET","layer":"READINESS_POLICY","active_count":2},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_CURRENTNESS_SET","layer":"READINESS_POLICY","active_count":2},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_DESIGN_BINDING_SET","layer":"CORE","active_count":5},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_EKB_SET","layer":"EVIDENCE","active_count":1},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_EXECUTION_SET","layer":"ORCHESTRATION","active_count":5},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_GUARD_SET","layer":"PERSISTENCE","active_count":13},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_HEALTH_SET","layer":"EVIDENCE","active_count":0},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_NA_AUTHORITY_SET","layer":"CORE","active_count":2},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_OUTCOME_REMEDIATION_SET","layer":"EVIDENCE","active_count":3},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_REMEDIATION_SET","layer":"PERSISTENCE","active_count":2},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_SECURITY_EXPECTATIONS_SET","layer":"SEMANTIC","active_count":5},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_SEMANTIC_CLASSIFICATION_SET","layer":"SEMANTIC","active_count":16},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_SHADOW_SET","layer":"EVIDENCE","active_count":0},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_STAGE_AUTHORITY_SET","layer":"READINESS_POLICY","active_count":4},
+    {"set_code":"PROGRAMACION_FN_INPUT_GOVERNANCE_VALIDATION_SET","layer":"ORCHESTRATION","active_count":7},
+    {"set_code":"UNSET_SINGLETON:programacion.fn_lf_router_input_governance_resolve_v1","layer":"ORCHESTRATION","active_count":1}
+  ],
+  "edge_assets": [
+    {"asset":"EDGE_FN_INPUT_GOVERNANCE_AGENT_V1","layer":"ORCHESTRATION"},
+    {"asset":"EDGE_FN_INPUT_GOVERNANCE_CURATOR_V1","layer":"ORCHESTRATION"},
+    {"asset":"EDGE_FN_INPUT_GOVERNANCE_VALIDATOR_V1","layer":"ORCHESTRATION"}
+  ],
+  "current_violations": [
+    "classify/probe physical responsibility mixing",
+    "curation orchestration performs direct persistence",
+    "curator_rebind calls fn_input_v58_build_assertions",
+    "validation orchestration performs direct persistence",
+    "validator_rebind calls fn_input_v58_build_assertions",
+    "currentness invalidation policy performs direct update"
+  ],
+  "runtime_changed": false,
+  "migration_changed": false,
+  "production_changed": false
+}
