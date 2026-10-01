@@ -28,12 +28,8 @@ declare
   v_suite_revision_sha text;
   v_count integer;
 begin
-  if exists (select 1 from public.lf_test_suites where suite_code=v_suite) then
-    raise exception 'M7_1_SUITE_ALREADY_EXISTS';
-  end if;
-  if exists (select 1 from public.lf_activos where codigo_activo=v_asset and archived_at is null) then
-    raise exception 'M7_1_ASSET_ALREADY_EXISTS';
-  end if;
+  if exists (select 1 from public.lf_test_suites where suite_code=v_suite) then raise exception 'M7_1_SUITE_ALREADY_EXISTS'; end if;
+  if exists (select 1 from public.lf_activos where codigo_activo=v_asset and archived_at is null) then raise exception 'M7_1_ASSET_ALREADY_EXISTS'; end if;
 
   if exists (
     select 1
@@ -42,47 +38,25 @@ begin
     where u.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
       and u.unit_code in ('M0.2','M0.3','M0.4','N-3')
       and p.status<>'DONE'
-  ) then
-    raise exception 'M7_1_DEPENDENCY_NOT_DONE';
-  end if;
+  ) then raise exception 'M7_1_DEPENDENCY_NOT_DONE'; end if;
 
   if not exists (
     select 1 from programacion.input_readiness_runs
-    where contract_revision=v_contract_revision
-      and contract_snapshot_sha256=v_contract_sha
-  ) then
-    raise exception 'M7_1_CONTRACT_BINDING_MISSING';
-  end if;
+    where contract_revision=v_contract_revision and contract_snapshot_sha256=v_contract_sha
+  ) then raise exception 'M7_1_CONTRACT_BINDING_MISSING'; end if;
 
   select encode(extensions.digest(convert_to(operation_code||'|'||version||'|'||status||'|'||lifecycle_state_code||'|'||source_repo||'|'||source_paths::text,'UTF8'),'sha256'),'hex')
     into v_observed_registry_sha
-    from public.lf_operation_registry
-   where operation_code='EJECUCION_INPUT_GOVERNANCE_LF';
-  if v_observed_registry_sha is distinct from v_registry_sha then
-    raise exception 'M7_1_REGISTRY_SHA_DRIFT:%',coalesce(v_observed_registry_sha,'<null>');
-  end if;
+    from public.lf_operation_registry where operation_code='EJECUCION_INPUT_GOVERNANCE_LF';
+  if v_observed_registry_sha is distinct from v_registry_sha then raise exception 'M7_1_REGISTRY_SHA_DRIFT:%',coalesce(v_observed_registry_sha,'<null>'); end if;
 
-  if (select raw_payload->>'definition_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_LF_ROUTER_INPUT_GOVERNANCE_RESOLVE_V1' and archived_at is null) is distinct from v_router_sha then
-    raise exception 'M7_1_ROUTER_SHA_DRIFT';
-  end if;
-  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_CURATION_SET' and archived_at is null) is distinct from v_curator_sha then
-    raise exception 'M7_1_CURATOR_SHA_DRIFT';
-  end if;
-  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_VALIDATION_SET' and archived_at is null) is distinct from v_validator_sha then
-    raise exception 'M7_1_VALIDATOR_SHA_DRIFT';
-  end if;
-  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_EXECUTION_SET' and archived_at is null) is distinct from v_execution_sha then
-    raise exception 'M7_1_EXECUTION_SHA_DRIFT';
-  end if;
-  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_SHADOW_SET' and archived_at is null) is distinct from v_shadow_sha then
-    raise exception 'M7_1_SHADOW_SHA_DRIFT';
-  end if;
-  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_SEMANTIC_CLASSIFICATION_SET' and archived_at is null) is distinct from v_semantic_sha then
-    raise exception 'M7_1_SEMANTIC_SHA_DRIFT';
-  end if;
-  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_CURRENTNESS_SET' and archived_at is null) is distinct from v_currentness_sha then
-    raise exception 'M7_1_CURRENTNESS_SHA_DRIFT';
-  end if;
+  if (select raw_payload->>'definition_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_LF_ROUTER_INPUT_GOVERNANCE_RESOLVE_V1' and archived_at is null) is distinct from v_router_sha then raise exception 'M7_1_ROUTER_SHA_DRIFT'; end if;
+  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_CURATION_SET' and archived_at is null) is distinct from v_curator_sha then raise exception 'M7_1_CURATOR_SHA_DRIFT'; end if;
+  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_VALIDATION_SET' and archived_at is null) is distinct from v_validator_sha then raise exception 'M7_1_VALIDATOR_SHA_DRIFT'; end if;
+  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_EXECUTION_SET' and archived_at is null) is distinct from v_execution_sha then raise exception 'M7_1_EXECUTION_SHA_DRIFT'; end if;
+  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_SHADOW_SET' and archived_at is null) is distinct from v_shadow_sha then raise exception 'M7_1_SHADOW_SHA_DRIFT'; end if;
+  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_SEMANTIC_CLASSIFICATION_SET' and archived_at is null) is distinct from v_semantic_sha then raise exception 'M7_1_SEMANTIC_SHA_DRIFT'; end if;
+  if (select raw_payload->>'members_sha256' from public.lf_activos where codigo_activo='PROGRAMACION_FN_INPUT_GOVERNANCE_CURRENTNESS_SET' and archived_at is null) is distinct from v_currentness_sha then raise exception 'M7_1_CURRENTNESS_SHA_DRIFT'; end if;
 
   v_bindings := jsonb_build_object(
     'build_main_sha',v_base_main,
@@ -170,9 +144,13 @@ begin
     v_exec,v_exec
   );
 
-  insert into public.lf_activo_relaciones(codigo_activo,relacionado_codigo,relacion_tipo,valor_original,fuente,created_by_execution_id,updated_by_execution_id,updated_at)
+  insert into public.lf_activo_relaciones(
+    codigo_activo,relacionado_codigo,relacion_tipo,valor_original,fuente,migration_batch_id,
+    created_by_execution_id,updated_by_execution_id,updated_at
+  )
   select v_asset,x.asset_code,'DEPENDE_DE','M7.1_SHA_BINDING',
-         'supabase/migrations/20261001025112_ig_cv_m7_1_input_governance_regression_suite_v1.sql',v_exec,v_exec,now()
+         'supabase/migrations/20261001025112_ig_cv_m7_1_input_governance_regression_suite_v1.sql',v_batch,
+         v_exec,v_exec,now()
   from (values
     ('PROGRAMACION_FN_LF_ROUTER_INPUT_GOVERNANCE_RESOLVE_V1'),
     ('PROGRAMACION_FN_INPUT_GOVERNANCE_CURATION_SET'),
