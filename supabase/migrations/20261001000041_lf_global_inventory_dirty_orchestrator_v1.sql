@@ -81,7 +81,7 @@ begin
       'CREATE POLICY','ALTER POLICY',
       'CREATE INDEX','ALTER INDEX'
     ]::text[]) then
-      select inventory.fn_mark_dirty_v1();
+      perform inventory.fn_mark_dirty_v1();
     end if;
   exception
     when others then
@@ -364,4 +364,4 @@ $$;
 
 -- The migration intentionally leaves the state dirty.
 -- The first natural orchestrator run will reconcile pending catalog/static-analysis work.
-perform inventory.fn_mark_dirty_v1();
+select inventory.fn_mark_dirty_v1();
