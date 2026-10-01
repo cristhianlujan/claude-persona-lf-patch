@@ -74,7 +74,7 @@ Comprobar, en este orden:
 7. Responsabilidad principal no vacía.
 8. Schema `schemas/screen-decomposition.schema.json` disponible.
 9. Juez `judges/screen-decomposition.yaml` disponible.
-10. Runtime `scripts/validate_screen_decomposition.py` disponible y con SHA reconciliable.
+10. Runtime candidato `scripts/validate_screen_decomposition_visual.py` (`J02 v0.8`) disponible y con SHA reconciliable contra el registro declarado por el juez.
 11. Ausencia de decisiones bloqueantes abiertas.
 12. Ausencia de cambios no autorizados.
 

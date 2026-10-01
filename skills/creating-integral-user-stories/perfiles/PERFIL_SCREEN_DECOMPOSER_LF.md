@@ -71,7 +71,7 @@ Toda herramienta adicional requiere ampliación explícita del Task Packet.
 - `agents/screen-decomposer.md`;
 - `schemas/screen-decomposition.schema.json`;
 - `judges/screen-decomposition.yaml`;
-- `scripts/validate_screen_decomposition.py` solo para disponibilidad, versión y SHA;
+- `scripts/validate_screen_decomposition_visual.py` solo para disponibilidad, versión, SHA y registro candidato de J02 v0.8;
 - contratos, catálogos y referencias autorizadas;
 - evidencia necesaria para resolver autoverificaciones.
 
@@ -203,11 +203,12 @@ Retornar `RETURN_TO_WORKER` cuando exista un defecto reparable dentro de `screen
 
 - Agente: `agents/screen-decomposer.md`, versión operativa `v0.3`.
 - Schema: `schemas/screen-decomposition.schema.json`.
-- Juez: `judges/screen-decomposition.yaml`, `J02_SCREEN_DECOMPOSITION v0.7`.
-- Runtime: `scripts/validate_screen_decomposition.py`.
-- Runtime SHA-256: `1126486c5d542fea8b25c51044798f2b0bd8e555687f7120040c3d04ea8fdd24`.
-- Runtime Git blob: `79b5de0bb5ce52852cb4f91a5bbb1c654206f66a`.
-- Registro: `supabase://private.lf_skill_artifacts/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION`.
+- Juez: `judges/screen-decomposition.yaml`, `J02_SCREEN_DECOMPOSITION v0.8`.
+- Runtime candidato: `scripts/validate_screen_decomposition_visual.py`.
+- Runtime SHA-256: `af30bd17d5c2fb91d1d2932b64e762bfc30cd27f963d0cbf215417c6dc95e7c2`.
+- Runtime Git blob: `63bd13fc5158528c777ede56e2f2ad09d0827669`.
+- Registro candidato: `candidate://creating-integral-user-stories/ART_SCRIPT_VALIDATE_SCREEN_DECOMPOSITION_VISUAL`.
+- Registro de promoción en Supabase: pendiente; este perfil no lo sustituye ni autoriza promoción.
 
 Estas referencias permiten verificar disponibilidad; no autorizan al worker a ejecutar el juez.
 
