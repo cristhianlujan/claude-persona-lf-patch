@@ -1,0 +1,91 @@
+{
+  "schema_version": "lf-plan-authority-drift-guard/v1",
+  "asset_code": "PLAN_AUTHORITY_DRIFT_GUARD",
+  "status": "CANDIDATE_READ_ONLY",
+  "owner": "LF_GOVERNANCE",
+  "mode": "PLAN_AUTHORITY_ADAPTER_OVER_CURRENTNESS_AUTHORITY",
+  "entry_guard": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "entry_guard_function": "public.fn_lf_capability_orchestrator_entry_guard_v1",
+    "binding_entrypoint": "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "accepted_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
+    "direct_call_policy": "BLOCK",
+    "local_shape_validation_is_authority": false
+  },
+  "execution_contract": {
+    "request_schema": "LF_CAPABILITY_EXECUTION_REQUEST_V1",
+    "capability_code": "PLAN_AUTHORITY_DRIFT_GUARD",
+    "plan_digest_crossbind_required": true
+  },
+  "anchor_contract": {
+    "anchor_event_id": 19435,
+    "plan_id": "LF_SUPER_ADMIN_POST_PASE_ARCHITECTURE_V1",
+    "legacy_plan_digest": "9b234da6cdec56c141cc452e3997650c93cdf3a27f64d9b5858bea311476c648",
+    "legacy_plan_digest_semantics": "OPAQUE_IMMUTABLE_AUTHORITY_TOKEN",
+    "legacy_plan_digest_formula_documented": false,
+    "component_hash_algorithm": "SHA256_UTF8_OF_CANONICAL_JSONB_TEXT",
+    "workstream_sha256": "5c0e0be6536ad6dd602327b3ffb95955f471bce8b88afad18c0918108820311b",
+    "work_items_sha256": "67f64cdb37232bc34f77719988dfc47a9f1b9072cf1c0e358ff092d23256d744",
+    "dependencies_sha256": "c136092312436cfce82e9e1ea5d7448b9fc036a8c88de3dc93f7f7f2555725e5",
+    "anchor_token_recomputation_forbidden": true
+  },
+  "currentness_dependency": {
+    "capability_code": "CURRENTNESS_AUTHORITY",
+    "minimum_version": "1.0.0",
+    "receipt_schema": "LF_CURRENTNESS_AUTHORITY_RECEIPT_V1",
+    "accepted_decisions": [
+      "CURRENT",
+      "CURRENT_REBOUND"
+    ],
+    "not_ready_policy": "UNREGISTERED_DRIFT_BLOCK"
+  },
+  "live_snapshot_contract": {
+    "required_fields": [
+      "plan_id",
+      "workstream_canonical_text",
+      "work_items_canonical_text",
+      "dependencies_canonical_text"
+    ],
+    "canonical_text_source": "READ_ONLY_DB_JSONB_TEXT",
+    "status_is_material": true
+  },
+  "delta_contract": {
+    "append_only": true,
+    "required_fields": [
+      "delta_event_id",
+      "plan_id",
+      "previous_plan_digest",
+      "next_plan_digest",
+      "workstream_sha256",
+      "work_items_sha256",
+      "dependencies_sha256",
+      "delta_digest"
+    ],
+    "delta_digest_algorithm": "LF_PLAN_AUTHORITY_DELTA_SHA256_V1",
+    "chain_must_start_at_anchor": true,
+    "chain_must_end_at_request_plan_digest": true,
+    "final_components_must_match_live": true
+  },
+  "decision_vocabulary": {
+    "MATCH": "live component hashes equal the immutable anchor and request.plan_digest equals anchor token",
+    "AUTHORIZED_DELTA": "an append-only valid delta chain links the anchor token to request.plan_digest and final component hashes equal live",
+    "UNREGISTERED_DRIFT": "currentness, entry, chain, plan identity or component proof is missing/invalid"
+  },
+  "invariants": {
+    "currentness_authority_is_single_engine": true,
+    "plan_guard_is_not_currentness_engine": true,
+    "unknown_or_missing_delta_fail_closed": true,
+    "legacy_anchor_formula_must_not_be_invented": true,
+    "no_plan_mutation": true,
+    "no_new_ledger": true,
+    "no_runtime_activation": true,
+    "no_production_activation": true
+  },
+  "materialization": {
+    "supabase_projection_applied": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}
