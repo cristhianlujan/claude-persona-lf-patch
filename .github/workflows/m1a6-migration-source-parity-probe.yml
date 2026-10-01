@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - lf/test-m1a6-migration-parity-20261001
+    paths:
+      - .github/workflows/m1a6-migration-source-parity-probe.yml
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: read
 
 jobs:
@@ -27,6 +29,8 @@ jobs:
           python-version: "3.11"
 
       - name: Execute canonical Migration Source Parity flow
+        id: parity
+        continue-on-error: true
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -44,11 +48,31 @@ jobs:
             --event-name pull_request \
             --output-dir .lf_migration_source_parity
 
-      - name: Emit bounded evidence to job log
+      - name: Persist bounded evidence on ephemeral branch
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          test -f .lf_migration_source_parity/parity-output.txt && cat .lf_migration_source_parity/parity-output.txt || true
-          test -f .lf_migration_source_parity/parity-stderr.txt && cat .lf_migration_source_parity/parity-stderr.txt || true
-          test -f .lf_migration_source_parity/run-summary.json && cat .lf_migration_source_parity/run-summary.json || true
+          mkdir -p /tmp/m1a6-parity
+          for f in parity-output.txt parity-stderr.txt run-summary.json; do
+            if [ -f ".lf_migration_source_parity/$f" ]; then
+              cp ".lf_migration_source_parity/$f" "/tmp/m1a6-parity/$f"
+            fi
+          done
+          git fetch origin lf/test-m1a6-migration-parity-20261001
+          git switch -C lf/test-m1a6-migration-parity-20261001 origin/lf/test-m1a6-migration-parity-20261001
+          mkdir -p sandbox_runs/m1a6_parity_probe
+          cp -f /tmp/m1a6-parity/* sandbox_runs/m1a6_parity_probe/ 2>/dev/null || true
+          printf '%s\n' '${{ steps.parity.outcome }}' > sandbox_runs/m1a6_parity_probe/step-outcome.txt
+          git config user.name github-actions
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add sandbox_runs/m1a6_parity_probe
+          if ! git diff --cached --quiet; then
+            git commit -m 'test: persist M1.A6 parity diagnostic [skip ci]'
+            git push origin HEAD:lf/test-m1a6-migration-parity-20261001
+          fi
+
+      - name: Fail job when canonical parity failed
+        if: steps.parity.outcome == 'failure'
+        shell: bash
+        run: exit 1
