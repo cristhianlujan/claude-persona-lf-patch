@@ -10,6 +10,7 @@ declare
   v_exec constant text := 'CHATGPT-IG-CV-L1-M7.1-20261001';
   v_suite constant text := 'INPUT_GOVERNANCE_REGRESSION';
   v_asset constant text := 'TEST_SUITE_INPUT_GOVERNANCE_REGRESSION_V1';
+  v_batch constant uuid := '7a710001-2026-4000-8000-000000000001'::uuid;
   v_base_main constant text := '4068d3064e859e78c6aab194a63b55c053043d74';
   v_contract_revision constant text := '5.13';
   v_contract_sha constant text := '125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38';
@@ -34,7 +35,6 @@ begin
     raise exception 'M7_1_ASSET_ALREADY_EXISTS';
   end if;
 
-  -- UNIT_SOURCE_PACK_FIRST dependencies must already be terminal.
   if exists (
     select 1
     from programacion.engineering_plan_units u
@@ -46,7 +46,6 @@ begin
     raise exception 'M7_1_DEPENDENCY_NOT_DONE';
   end if;
 
-  -- Canonical contract snapshot already persisted by a 5.13 readiness run.
   if not exists (
     select 1 from programacion.input_readiness_runs
     where contract_revision=v_contract_revision
@@ -159,11 +158,13 @@ begin
   insert into public.lf_activos(
     codigo_activo,nombre_canonico,tipo_activo,subtipo_activo,estado_documental,estado_operativo,nivel_control,
     runtime_estado,impacto_automatico,version,ruta_esperada,url,owner_name,ultima_revision,rol_arquitectura,
+    source_spreadsheet_id,source_spreadsheet_title,source_sheet_name,source_row_number,migration_batch_id,
     raw_payload,metadata,created_by_execution_id,updated_by_execution_id
   ) values (
     v_asset,'INPUT_GOVERNANCE_REGRESSION','TEST_SUITE','REGRESSION_SUITE','CANDIDATO','READ_ONLY','FAIL_CLOSED',
     'CANDIDATE_READ_ONLY','BLOQUEADO','v1','supabase://public/lf_test_suites/INPUT_GOVERNANCE_REGRESSION',
     'supabase://public/lf_test_suites/INPUT_GOVERNANCE_REGRESSION','LF_SUPER_ADMIN',v_base_main,'INPUT_GOVERNANCE_REGRESSION_SUITE',
+    'NATIVE_SUPABASE','LF_TEST_SUITE_INVENTORY','IG_CURATOR_VALIDATOR_REFACTOR_V2_M7_1',1,v_batch,
     jsonb_build_object('suite_code',v_suite,'suite_revision_sha256',v_suite_revision_sha,'bindings',v_bindings,'first_suite_run_id',v_suite_run),
     jsonb_build_object('plan_id','IG_CURATOR_VALIDATOR_REFACTOR_V2','unit_code','M7.1','work_code','PAULO-012','semantic_pass_implied',false,'runtime_activation',false),
     v_exec,v_exec
