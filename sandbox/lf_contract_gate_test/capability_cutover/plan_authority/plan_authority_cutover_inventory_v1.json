@@ -1,0 +1,18 @@
+{
+  "schema_version": "lf-capability-cutover-inventory/v1",
+  "work_code": "SADM-PP-L5-022",
+  "cutover_code": "PLAN_AUTHORITY_DRIFT_GUARD_CUTOVER_V1",
+  "capability_code": "PLAN_AUTHORITY_DRIFT_GUARD",
+  "version": "1.0.0",
+  "mode": "ISOLATED_REVERSIBLE_EXACT_HEAD",
+  "source_revision": "4058845e74210043ef6fa9a13fc4e4885c738cad",
+  "functional_core": {"path":"sandbox/lf_contract_gate_test/plan_authority/plan_authority_drift_guard_v1.py","git_blob_sha1":"ff0d702b8d7f49235320ab923dd93fd222c54de2","unchanged":true},
+  "validator": {"path":"sandbox/lf_contract_gate_test/plan_authority/test_plan_authority_drift_guard_v1.py","git_blob_sha1":"501ba9088c30fc0cfe44b249d76529a84a491020","known_check_count":13},
+  "anchor_event_id": 19435,
+  "dependencies": ["CURRENTNESS_AUTHORITY@1.0.0", "CAPABILITY_EXECUTION_CONTRACT", "LF_GOVERNANCE"],
+  "runtime_or_deploy_change": false,
+  "production_activation": false,
+  "bulk_cutover": false,
+  "artifact_transport_policy": "PASE_POST_PASE_ARTIFACT_TRANSPORT_NO_ZIP_V1",
+  "rollback_ref": "sandbox/lf_contract_gate_test/capability_cutover/plan_authority/PLAN_AUTHORITY_DRIFT_GUARD_cutover_rollback_v1.sql"
+}
