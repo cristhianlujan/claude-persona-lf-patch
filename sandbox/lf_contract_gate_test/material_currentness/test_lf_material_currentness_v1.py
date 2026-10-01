@@ -3,7 +3,8 @@ import json
 import subprocess
 from pathlib import Path
 
-from lf_material_currentness_v1 import evaluate
+import lf_material_currentness_v1 as currentness
+from lf_material_currentness_v1 import evaluate, git_tree_material
 
 
 def sh(repo: Path, *args: str) -> str:
@@ -43,6 +44,40 @@ def binding(a, b, materials, completeness="COMPLETE", roots=None):
 
 def git_core(depends=None):
     return {"material_id":"core","kind":"GIT_TREE","selectors":{"prefixes":["core/"]},"required":True,"depends_on":depends or []}
+
+
+def test_git_tree_material_scopes_ls_tree_to_declared_prefix(monkeypatch):
+    calls = []
+
+    def fake_run_git(repo, *args, check=True):
+        calls.append(args)
+        return "100644 blob aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\tcore/a.txt\n100644 blob bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\tdocs/readme.md"
+
+    monkeypatch.setattr(currentness, "run_git", fake_run_git)
+    _, entries = git_tree_material(Path("."), "a" * 40, {"prefixes": ["core/"]}, True)
+    assert calls == [("ls-tree", "-r", "--full-tree", "a" * 40, "--", "core/")]
+    assert [row["path"] for row in entries] == ["core/a.txt"]
+
+
+def test_bounded_glob_uses_static_root(monkeypatch):
+    calls = []
+
+    def fake_run_git(repo, *args, check=True):
+        calls.append(args)
+        return "100644 blob aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\tcore/a.py\n100644 blob bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\tcore/a.txt"
+
+    monkeypatch.setattr(currentness, "run_git", fake_run_git)
+    _, entries = git_tree_material(Path("."), "b" * 40, {"globs": ["core/*.py"]}, True)
+    assert calls == [("ls-tree", "-r", "--full-tree", "b" * 40, "--", "core/")]
+    assert [row["path"] for row in entries] == ["core/a.py"]
+
+
+def test_unbounded_root_glob_fails_closed(tmp_path):
+    repo,a=setup_repo(tmp_path)
+    spec={"material_id":"root-glob","kind":"GIT_TREE","selectors":{"globs":["*.py"]},"required":False,"depends_on":[]}
+    r=evaluate(binding(a,a,[spec]),repo)
+    assert r["decision"]=="UNKNOWN_FAIL_CLOSED"
+    assert r["reason"]=="GIT_TREE_GLOB_UNBOUNDED:*.py"
 
 
 def test_unrelated_main_change_auto_rebind(tmp_path):
