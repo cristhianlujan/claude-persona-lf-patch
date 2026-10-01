@@ -1,0 +1,100 @@
+{
+  "schema_version": "lf-capability-execution-contract/v1",
+  "asset_code": "CAPABILITY_EXECUTION_CONTRACT",
+  "status": "CANDIDATE_READ_ONLY",
+  "owner": "LF_GOVERNANCE",
+  "mode": "SHARED_ENVELOPE_DEFINITION_ONLY",
+  "entry_guard": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "dispatch_receipt_function": "public.fn_lf_orchestrator_dispatch_receipt_v1",
+    "entry_guard_function": "public.fn_lf_capability_orchestrator_entry_guard_v1",
+    "binding_entrypoint": "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "accepted_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
+    "direct_call_policy": "BLOCK",
+    "local_shape_validation_is_authority": false
+  },
+  "request_schema": "LF_CAPABILITY_EXECUTION_REQUEST_V1",
+  "receipt_schema": "LF_CAPABILITY_EXECUTION_RECEIPT_V1",
+  "required_request_fields": [
+    "orchestrator_execution_id",
+    "consumer_execution_id",
+    "capability_code",
+    "plan_digest",
+    "dispatch_receipt_id",
+    "dispatch_scope",
+    "dispatch_scope_digest",
+    "entry_guard_readback",
+    "authority_refs",
+    "input_ref",
+    "input_digest",
+    "source_revision",
+    "request_digest"
+  ],
+  "required_receipt_fields": [
+    "orchestrator_execution_id",
+    "consumer_execution_id",
+    "capability_code",
+    "plan_digest",
+    "dispatch_receipt_id",
+    "consumed_request_digest",
+    "authority_refs",
+    "input_digest",
+    "output_ref",
+    "output_digest",
+    "evidence_refs",
+    "source_revision",
+    "receipt_digest"
+  ],
+  "required_authority_refs": [
+    "governance_admin",
+    "owner_runner_carrier",
+    "entry_guard",
+    "evidence_ledger"
+  ],
+  "cross_bindings": [
+    "orchestrator_execution_id",
+    "consumer_execution_id",
+    "capability_code",
+    "plan_digest",
+    "dispatch_receipt_id",
+    "input_digest",
+    "source_revision",
+    "authority_refs"
+  ],
+  "canonical_authorities": {
+    "governance_admin": "LF_GOVERNANCE_SUPER_ADMIN_V1",
+    "owner_runner_carrier": "OWNER_RUNNER_CARRIER_AUTHORITY_V1",
+    "dispatch_receipt": "private.lf_orchestrator_dispatch_receipts_v1",
+    "entry_guard": "public.fn_lf_capability_orchestrator_entry_guard_v1",
+    "binding_entrypoint": "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "operation_execution": "public.lf_operation_execution",
+    "evidence_ledger": "private.lf_evidence_ledger_v1",
+    "evidence_anchor": "public.fn_lf_evidence_ledger_anchor_v1"
+  },
+  "invariants": {
+    "one_orchestrator_entry": true,
+    "missing_or_invalid_orchestrator_receipt_fail_closed": true,
+    "plan_digest_crossbind_required": true,
+    "dispatch_scope_digest_required": true,
+    "authority_refs_versioned_and_digested": true,
+    "input_output_digests_required": true,
+    "evidence_refs_required": true,
+    "receipt_must_consume_exact_request": true,
+    "self_authorization_forbidden": true,
+    "contract_is_not_ledger": true,
+    "contract_is_not_owner_registry": true,
+    "contract_is_not_carrier": true,
+    "contract_is_not_runtime_activation": true,
+    "no_parallel_receipt_store": true
+  },
+  "materialization": {
+    "new_table_created": false,
+    "new_rpc_created": false,
+    "new_ledger_created": false,
+    "supabase_projection_applied": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}

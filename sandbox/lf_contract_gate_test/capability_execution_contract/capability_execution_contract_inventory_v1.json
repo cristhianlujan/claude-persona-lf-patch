@@ -1,0 +1,55 @@
+{
+  "schema_version": "lf-capability-execution-contract-inventory/v1",
+  "asset_code": "CAPABILITY_EXECUTION_CONTRACT",
+  "work_code": "SADM-PP-L1-009",
+  "owner": "LF_GOVERNANCE",
+  "inventory_status": "CANDIDATE_READ_ONLY_SOURCE_READY_NOT_APPLIED",
+  "physical_assets": [
+    "sandbox/lf_contract_gate_test/capability_execution_contract/capability_execution_contract_v1.json",
+    "sandbox/lf_contract_gate_test/capability_execution_contract/capability_execution_contract_v1.py",
+    "sandbox/lf_contract_gate_test/capability_execution_contract/test_capability_execution_contract_v1.py",
+    "sandbox/lf_contract_gate_test/capability_execution_contract/README.md",
+    "sandbox/lf_contract_gate_test/capability_execution_contract/CAPABILITY_EXECUTION_CONTRACT_registry_projection_v1.sql"
+  ],
+  "reused_authorities": [
+    "LF_GOVERNANCE_SUPER_ADMIN_V1",
+    "OWNER_RUNNER_CARRIER_AUTHORITY_V1",
+    "private.lf_orchestrator_dispatch_receipts_v1",
+    "public.fn_lf_capability_orchestrator_entry_guard_v1",
+    "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "public.lf_operation_execution",
+    "private.lf_evidence_ledger_v1",
+    "public.fn_lf_evidence_ledger_anchor_v1"
+  ],
+  "relation_intents": [
+    {
+      "relation_type": "DEPENDE_DE",
+      "target": "OWNER_RUNNER_CARRIER_AUTHORITY",
+      "meaning": "derived owner/runner/carrier read-model"
+    },
+    {
+      "relation_type": "DEPENDE_DE",
+      "target": "EVIDENCE_LEDGER",
+      "meaning": "provider-bound evidence and anti-replay composition"
+    },
+    {
+      "relation_type": "RELACIONADO_CAPACIDADES",
+      "target": "LF_GOVERNANCE",
+      "meaning": "administrative discoverability only"
+    }
+  ],
+  "forbidden_parallel_authorities": [
+    "OWNER_REGISTRY",
+    "DISPATCH_RECEIPT_STORE",
+    "EVIDENCE_LEDGER",
+    "ORCHESTRATOR_ENTRY_GUARD"
+  ],
+  "materialization": {
+    "asset_projection_applied": false,
+    "relations_applied": false,
+    "capability_registry_entry_created": false,
+    "current_pointer_created": false,
+    "runtime_activated": false,
+    "production_activated": false
+  }
+}
