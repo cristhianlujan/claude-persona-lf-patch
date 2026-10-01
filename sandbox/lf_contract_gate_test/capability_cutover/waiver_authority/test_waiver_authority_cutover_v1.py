@@ -13,7 +13,7 @@ assert INV['validator']['git_blob_sha1']=='397a612f044332b359f251f8d8101948be73a
 assert INV['validator']['known_check_count']==12; checks+=1
 assert INV['validation_exemption_semantic_reuse'] is False; checks+=1
 assert INV['max_uses']==1 and INV['max_ttl_seconds']==3600; checks+=1
-for x in ('private.lf_post_pase_waivers','lf_post_pase_waiver_readback_v1','lf_post_pase_waiver_consume_v1','max_uses = 1','approval_authority = \'LF_GOVERNANCE\'','public.fn_lf_capability_promote_v1','ORCHESTRATOR_EXECUTION_GUARD_V1'):
+for x in ('private.lf_post_pase_waivers','lf_post_pase_waiver_readback_v1','lf_post_pase_waiver_consume_v1','max_uses = 1','approval_authority = \'LF_GOVERNANCE\'','public.fn_lf_capability_promote_v1','ORCHESTRATOR_EXECUTION_GUARD_V1',"'rollback',jsonb_build_object"):
     assert x in SQL; checks+=1
 assert 'lf_event_validation_exemptions' not in SQL; checks+=1
 assert 'delete from public.lf_capability_current' in ROLLBACK; checks+=1
