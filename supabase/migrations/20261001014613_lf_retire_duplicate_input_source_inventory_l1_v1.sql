@@ -1,6 +1,6 @@
 -- R16 Git-first retirement of the duplicate Input Governance L1 discovery index.
 -- Canonical Router discovery authority after this migration: inventory.*
--- Preflight snapshot: 54 active source rows, 129 L1_PILOT_MIGRATION tags,
+-- Preflight snapshot: 54 active source rows, 129 L1_PILOT_MIGRATION tags on 54 objects,
 -- source digest md5=4c4d949f3643a440febca594a10309cb.
 
 DO $$
@@ -9,6 +9,7 @@ DECLARE
   v_matched_rows integer;
   v_distinct_targets integer;
   v_tag_rows integer;
+  v_tagged_objects integer;
   v_existing_keys integer;
   v_source_digest text;
 BEGIN
@@ -58,13 +59,13 @@ BEGIN
     RAISE EXCEPTION 'R16 preflight failed: % target objects already contain one of the migration metadata keys', v_existing_keys;
   END IF;
 
-  SELECT count(*)
-    INTO v_tag_rows
+  SELECT count(*), count(DISTINCT object_id)
+    INTO v_tag_rows, v_tagged_objects
     FROM inventory.object_tags
    WHERE source_system = 'L1_PILOT_MIGRATION';
 
-  IF v_tag_rows <> 129 THEN
-    RAISE EXCEPTION 'R16 preflight failed: expected 129 L1_PILOT_MIGRATION tags, got %', v_tag_rows;
+  IF v_tag_rows <> 129 OR v_tagged_objects <> 54 THEN
+    RAISE EXCEPTION 'R16 preflight failed: expected 129 L1_PILOT_MIGRATION tags on 54 objects, got tags=% objects=%', v_tag_rows, v_tagged_objects;
   END IF;
 
   SELECT md5(string_agg(
@@ -164,6 +165,7 @@ DROP TABLE programacion.input_source_inventory_l1;
 DO $$
 DECLARE
   v_tag_rows integer;
+  v_tagged_objects integer;
   v_metadata_rows integer;
   v_target_digest text;
   v_lookup_rows integer;
@@ -174,15 +176,20 @@ BEGIN
     RAISE EXCEPTION 'R16 postflight failed: one or more duplicate L1 inventory objects remain';
   END IF;
 
-  SELECT count(*)
-    INTO v_tag_rows
+  SELECT count(*), count(DISTINCT object_id)
+    INTO v_tag_rows, v_tagged_objects
     FROM inventory.object_tags
    WHERE source_system = 'L1_PILOT_MIGRATION';
 
-  IF v_tag_rows <> 129 THEN
-    RAISE EXCEPTION 'R16 postflight failed: expected 129 L1_PILOT_MIGRATION tags, got %', v_tag_rows;
+  IF v_tag_rows <> 129 OR v_tagged_objects <> 54 THEN
+    RAISE EXCEPTION 'R16 postflight failed: expected 129 L1_PILOT_MIGRATION tags on 54 objects, got tags=% objects=%', v_tag_rows, v_tagged_objects;
   END IF;
 
+  WITH tagged AS (
+    SELECT DISTINCT object_id
+      FROM inventory.object_tags
+     WHERE source_system = 'L1_PILOT_MIGRATION'
+  )
   SELECT count(*), md5(string_agg(
            coalesce(o.schema_name,'') || '.' || coalesce(o.object_name,'') || '|' ||
            coalesce(o.metadata->>'source_ref','') || '|' ||
@@ -190,15 +197,15 @@ BEGIN
            coalesce((o.metadata->'query_hints')::text,'null'),
            E'\n' ORDER BY o.schema_name, o.object_name))
     INTO v_metadata_rows, v_target_digest
-    FROM inventory.objects o
+    FROM tagged t
+    JOIN inventory.objects o ON o.object_id = t.object_id
    WHERE o.object_type = 'DB_TABLE'
      AND o.metadata ? 'query_hints'
      AND o.metadata ? 'is_canonical'
-     AND o.metadata ? 'source_ref'
-     AND o.metadata->>'source_ref' = o.schema_name || '.' || o.object_name;
+     AND o.metadata ? 'source_ref';
 
-  IF v_metadata_rows < 54 OR v_target_digest IS NULL THEN
-    RAISE EXCEPTION 'R16 postflight failed: migrated metadata is incomplete';
+  IF v_metadata_rows <> 54 OR v_target_digest <> '4c4d949f3643a440febca594a10309cb' THEN
+    RAISE EXCEPTION 'R16 postflight failed: expected 54 migrated tagged objects with digest 4c4d949f3643a440febca594a10309cb, got rows=% digest=%', v_metadata_rows, v_target_digest;
   END IF;
 
   SELECT count(*)
