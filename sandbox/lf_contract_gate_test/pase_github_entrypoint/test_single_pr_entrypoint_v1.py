@@ -29,7 +29,7 @@ for path in files:
         trusted_pr.append(path.name)
 
 assert ordinary_pr == ["pase.yml"], ordinary_pr
-assert trusted_pr == ["lf-github-reconcile-v3.yml", "pase-merge-gate.yml"], trusted_pr
+assert trusted_pr == ["pase-merge-gate.yml"], trusted_pr
 
 entrypoint = read("pase.yml")
 assert entrypoint.startswith("name: PASE\n")
@@ -59,9 +59,10 @@ assert "validator.validate_changed_files" not in entrypoint
 assert "scripts/lf_contract_check.py:structural-admission-only" not in entrypoint
 assert "s28_ci_lane_router/emit_ci_execution_plan_v2.py" in entrypoint
 
-# Historical validator carriers retired by the earlier PASE workflow cutover stay absent.
+# Historical validator and reconciliation carriers retired by cutover stay absent.
 assert not (WORKFLOWS / "validate-lf-packs.yml").exists()
 assert not (WORKFLOWS / "lf-db-regression.yml").exists()
+assert not (WORKFLOWS / "lf-github-reconcile-v3.yml").exists()
 
 # Operational capabilities remain available but cannot create a second ordinary PR entrypoint.
 currentness = read("lf-material-currentness.yml")
@@ -80,9 +81,6 @@ assert "  issue_comment:\n" in profile
 assert "  s30-owner-chatops-broker:\n" in profile
 assert not PULL_REQUEST.search(profile)
 
-# Reconciliation is intentionally not asserted here. It is a post-PASE concern
-# and must not be a structural invariant of the PASE entrypoint.
-
 merge_gate = read("pase-merge-gate.yml")
 assert merge_gate.startswith("name: PASE Merge Gate\n")
 assert PULL_REQUEST_TARGET.search(merge_gate)
@@ -90,6 +88,10 @@ assert not PULL_REQUEST.search(merge_gate)
 assert "Checkout trusted PR base" in merge_gate
 assert "github.event.pull_request.base.sha" in merge_gate
 assert "Evaluate base-anchored PASE merge gate" in merge_gate
+assert "independent-change-admission:" in merge_gate
+assert "lf_independent_change_admission_carrier_v1.py self-test" in merge_gate
+assert "lf_independent_change_admission_carrier_v1.py classify" in merge_gate
+assert "lf_independent_change_admission_carrier_v1.py validate" in merge_gate
 
 print(
     "PASS_PASE_SINGLE_PR_ENTRYPOINT_V1 "

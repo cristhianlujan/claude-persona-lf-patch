@@ -192,6 +192,26 @@ jobs:
           )
           PY
 
+      - name: Run POST-PASE L6 multi-scenario E2E when changed
+        if: github.event_name == 'pull_request'
+        env:
+          LF_E2E_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          LF_E2E_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_sha="${LF_E2E_BASE_SHA:-}"
+          head_sha="${LF_E2E_HEAD_SHA:-$(git rev-parse HEAD)}"
+          if [[ -z "$base_sha" || "$base_sha" =~ ^0+$ ]]; then
+            echo "SKIP_POST_PASE_L6_E2E_NO_BASE_SHA"
+            exit 0
+          fi
+          if ! git diff --name-only "$base_sha" "$head_sha" | grep -q '^sandbox/lf_contract_gate_test/post_pase_e2e/'; then
+            echo "SKIP_POST_PASE_L6_E2E_NOT_CHANGED"
+            exit 0
+          fi
+          PYTHONPATH=. python3 sandbox/lf_contract_gate_test/post_pase_e2e/test_post_pase_multi_scenario_e2e_v1.py
+
       - name: Persist canonical PASE plan
         uses: actions/upload-artifact@v4
         with:

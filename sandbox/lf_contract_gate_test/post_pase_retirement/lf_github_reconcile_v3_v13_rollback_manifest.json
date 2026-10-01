@@ -1,0 +1,22 @@
+{
+  "schema_version": "lf-runtime-rollback-manifest/v1",
+  "work_code": "SADM-PP-L5-023",
+  "target_slug": "lf-github-reconcile-v3",
+  "target_id": "e755573c-2c43-40f7-9f31-48f08886b544",
+  "rollback_version": 13,
+  "rollback_status": "ACTIVE",
+  "rollback_verify_jwt": false,
+  "rollback_ezbr_sha256": "0fd6881bd3e2770433f4d06b43a9ad6fd2d067c75c1886bedddb9c010b116d38",
+  "rollback_source_commit": "e6de3b66bf3f4a3764c2541d149421bc5d7ba78e",
+  "rollback_files": {
+    "supabase/functions/lf-github-reconcile-v3/index.ts": "54f9e7688f7c24b557186bef318685cc29a90551",
+    "supabase/functions/lf-github-reconcile-v3/canonical_payload_v7.ts": "2eb32d646fae7d36a50b2bf0087924a8bc5ff9d4",
+    "supabase/functions/lf-github-reconcile-v3/deno.json": "26f214064a9165492dfd8a2cf6dc143dd8b29c63"
+  },
+  "neutralized_version": 14,
+  "neutralized_ezbr_sha256": "9c3d914d26c914b84e8410f5fafdceb830e7e5b09369939759ca60c3954f3be8",
+  "neutralized_behavior": "UNCONDITIONAL_HTTP_410_RETIRED_FAIL_CLOSED",
+  "preflight_event_id": 19755,
+  "readback_event_id": 19756,
+  "rollback_rule": "Redeploy exactly the three v13 blobs from rollback_source_commit; do not reconstruct from later source."
+}
