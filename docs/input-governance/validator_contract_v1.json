@@ -1,0 +1,74 @@
+{
+  "schema_version": "IG_M1_3_VALIDATOR_LOGICAL_CONTRACT_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M1.3",
+  "work_code": "PAULO-118",
+  "lot_code": "L4",
+  "contracts": {"readiness":"5.13","execution":"1.5"},
+  "adr": "DEC-INPUT-GOV-VALIDATOR-CLAIMS-NOT-CONCLUSIONS-001",
+  "source_inputs": {
+    "m1_2_curator_contract": {
+      "merge_sha": "5d9c0c53544dcca0d75ea2540b6deeb1dd4a6480",
+      "blob_sha1": "e63baa25fb79d79fb2e4b4c038ceaafd22e423b3",
+      "field_map_sha256": "88f9290cc99a02cc75ba7e0db65b880c5423ce7b283ecdc5e07e399d8f59c868"
+    },
+    "m4_1_events": [19381,19388],
+    "m4_1_corrected_correlation": {
+      "validator_rebind_v1": "17/17",
+      "validate_v2": "29/31",
+      "bootstrap_validate_v1": "16/17"
+    }
+  },
+  "must_not": "Validator MUST NOT use Curator semantic/readiness/proposal conclusions as authoritative truth or sufficient evidence for PASS/readiness. Candidate claims may be read only for independent comparison/adjudication.",
+  "independence_rules": [
+    "source_refs/evidence_refs/canonical_target/source_manifest are locators and MUST be re-resolved against current canonical authority with readback digest",
+    "curator/source/contract hashes are integrity bindings and do not prove semantic correctness",
+    "curator_evidence is candidate/provenance evidence; semantic payload is not authority",
+    "same-classifier or highly-correlated replay is consistency/equivalence, not an independent oracle",
+    "proposal_is_canonical_source=false and proposal validation cannot silently promote it",
+    "validator identity/execution MUST differ from Curator identity/execution"
+  ],
+  "field_classification_sha256": "cf11f65a5c629dc811bd953ffb60fefb0cf997914c2858edbd6a9c94d60e2ced",
+  "classified_curator_field_count": 55,
+  "classification_counts": {
+    "REFERENCE_ALLOWED": 20,
+    "INTEGRITY_BINDING_ALLOWED": 6,
+    "RERESOLVE_REQUIRED": 5,
+    "STATE_PRECONDITION_ONLY": 2,
+    "CANDIDATE_CLAIM_ONLY": 22
+  },
+  "field_classes": {
+    "REFERENCE_ALLOWED": [
+      "input_readiness_runs.version_id","input_readiness_runs.pantalla_id","input_readiness_runs.universe_rule_id","input_readiness_runs.supersedes_run_id","input_readiness_runs.scope","input_readiness_runs.family_count","input_readiness_runs.curator_identity","input_readiness_runs.curator_completed_at","input_readiness_runs.contract_version","input_readiness_runs.source_observed_at","input_readiness_runs.curator_component_id","input_readiness_runs.contract_revision","input_readiness_runs.curator_duration_ms","input_family_assessments.run_id","input_family_assessments.family_code","input_gap_proposals.run_id","input_gap_proposals.assessment_id","input_gap_proposals.family_code","input_gap_proposals.curator_identity","input_gap_proposals.curator_execution_id"
+    ],
+    "INTEGRITY_BINDING_ALLOWED": [
+      "input_readiness_runs.source_snapshot_sha256","input_readiness_runs.universe_snapshot_sha256","input_readiness_runs.contract_snapshot_sha256","input_family_assessments.curator_sha256","input_family_assessments.semantic_depth_sha256","input_gap_proposals.curator_sha256"
+    ],
+    "RERESOLVE_REQUIRED": [
+      "input_readiness_runs.source_manifest","input_family_assessments.source_refs","input_gap_proposals.canonical_target","input_gap_proposals.source_refs","input_gap_proposals.evidence_refs"
+    ],
+    "STATE_PRECONDITION_ONLY": [
+      "input_readiness_runs.status","input_gap_proposals.status"
+    ],
+    "CANDIDATE_CLAIM_ONLY": [
+      "input_family_assessments.severity","input_family_assessments.applicability","input_family_assessments.coverage_status","input_family_assessments.well_defined_status","input_family_assessments.story_ready_status","input_family_assessments.implementation_ready_status","input_family_assessments.qa_ready_status","input_family_assessments.production_ready_status","input_family_assessments.rationale","input_family_assessments.blockers","input_family_assessments.negative_requirements","input_family_assessments.test_obligations","input_family_assessments.freshness","input_family_assessments.curator_evidence","input_family_assessments.subject_coverage","input_family_assessments.threat_coverage","input_gap_proposals.gap_code","input_gap_proposals.proposal_kind","input_gap_proposals.proposed_payload","input_gap_proposals.confidence","input_gap_proposals.stage_impact","input_gap_proposals.contradictions_checked"
+    ]
+  },
+  "validator_paths": [
+    {"signature":"programacion.fn_input_governance_validator_validate_v1(bigint,text)","prosrc_md5":"22212901a0d64947fda27eeae5f3191d","role":"dispatcher"},
+    {"signature":"programacion.fn_input_governance_validate_v2(bigint,text)","prosrc_md5":"b4b186c5a832d1f83bcb6db45230c0d7","shared_programacion":"29/31","finding":"VALIDATE_V2_CORRELATED_CONCLUSION_REPLAY"},
+    {"signature":"programacion.fn_input_governance_validator_rebind_v1(bigint,text)","prosrc_md5":"dbe48a41e796a401d39099b035400283","shared_programacion":"17/17","finding":"VALIDATOR_REBIND_NO_INDEPENDENT_ORACLE"},
+    {"signature":"programacion.fn_input_v58_build_assertions(bigint,bigint,text)","prosrc_md5":"e0993c9ed287d632bc5107cb77ac62b6","finding":"SHARED_BUILDER_BOUNDARY_DEBT"},
+    {"signature":"programacion.fn_input_governance_shadow_priority_oracle_v2(integer,text,bigint)","prosrc_md5":"6e4a524ccd85e691a2e81a4559df0e0c","role":"shadow_oracle_candidate_not_credited_as_independent_by_existence"}
+  ],
+  "current_findings": [
+    {"code":"VALIDATE_V2_CORRELATED_CONCLUSION_REPLAY","status":"CURRENT_DEBT","detail":"Curator conclusions are compared to fn_input_governance_bootstrap_classify_v2; M4.1 shows 29/31 shared programacion dependencies and shared classifier, so this is consistency rather than independent correctness."},
+    {"code":"VALIDATOR_REBIND_NO_INDEPENDENT_ORACLE","status":"CURRENT_DEBT","detail":"validator_rebind_v1 shares 17/17 programacion dependencies with Curator; rebind integrity/assertion replay cannot by itself establish independent semantic truth."},
+    {"code":"BOOTSTRAP_VALIDATE_HIGH_CORRELATION","status":"CURRENT_DEBT","detail":"bootstrap_validate_v1 shares 16/17 programacion dependencies; a different classifier version alone is not proof of independent authority."},
+    {"code":"SHARED_BUILDER_BOUNDARY_DEBT","status":"CURRENT_DEBT","detail":"Curator rebind and Validator rebind both use fn_input_v58_build_assertions; implementation refactor remains for later units."}
+  ],
+  "runtime_changed": false,
+  "runtime_executed": false,
+  "production_changed": false,
+  "r17_applicable": false
+}
