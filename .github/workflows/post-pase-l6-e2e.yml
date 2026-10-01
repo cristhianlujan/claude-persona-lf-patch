@@ -1,0 +1,33 @@
+name: POST-PASE L6 E2E
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'sandbox/lf_contract_gate_test/post_pase_e2e/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  post-pase-l6-e2e:
+    name: post-pase-l6-e2e
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact candidate source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run deterministic multi-scenario POST-PASE E2E
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python3 sandbox/lf_contract_gate_test/post_pase_e2e/test_post_pase_multi_scenario_e2e_v1.py
