@@ -3,7 +3,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 PASE = ROOT / ".github/workflows/pase.yml"
-TEMPLATE = ROOT / ".github/pull_request_template.md"
+TEMPLATE = ROOT / "sandbox/lf_contract_gate_test/input_governance_recuration/N2_RECURATION_PR_CHECKLIST.md"
 CHECK = ROOT / "sandbox/lf_contract_gate_test/input_governance_recuration/enforce_n2_recuration_change_contract_v1.py"
 
 
