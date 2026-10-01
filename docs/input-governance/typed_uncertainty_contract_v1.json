@@ -1,0 +1,82 @@
+{
+  "schema_version": "IG_TYPED_UNCERTAINTY_CONTRACT_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M1.5",
+  "work_code": "PAULO-120",
+  "readiness_contract": {"revision": "5.13", "spec_md5": "1d9709b94d20ee8036ad985edffaaf01"},
+  "decision_authority": {"adr": "DEC-INPUT-GOV-IMPL-DEPENDENCY-001", "event_id": 19725, "pr": 1369},
+  "current_readback": {
+    "partial_assessments": 1948,
+    "partial_without_blockers": 0,
+    "blocker_elements": 5300,
+    "distinct_markers": 120,
+    "normalized_pattern_rows": 161,
+    "untyped_elements": 0,
+    "untyped_markers": 0,
+    "partial_assessments_with_untyped": 0,
+    "blocking_stage_unresolved": 0,
+    "evidence_envelope_unresolved": 0,
+    "current_ready_with_dependency_eligible": 0,
+    "pattern_map_sha256": "71b2b5c8494be02e0bbdfed158d3e7ececcd896867c3585a15ec741389f90442"
+  },
+  "states": ["BLOCKED", "READY_WITH_DEPENDENCY", "INFORMATIONAL"],
+  "blocking_stages": ["STORY", "IMPLEMENTATION", "QA", "PRODUCTION", "NONE"],
+  "type_counts": {
+    "MISSING_SOURCE": 1606,
+    "SOURCE_CONFLICT": 49,
+    "CANDIDATE_AUTHORITY": 258,
+    "DELIVERY_DEPENDENCY": 250,
+    "INCOMPLETE_EVIDENCE": 765,
+    "QA_EVIDENCE_PENDING": 356,
+    "UNRESOLVED_SEMANTIC": 241,
+    "HUMAN_DECISION_REQUIRED": 109,
+    "POLICY_RECLASSIFICATION": 611,
+    "IMPLEMENTATION_DEPENDENCY": 721,
+    "EXTERNAL_ARTIFACT_UNRESOLVED": 48,
+    "APPLICABILITY_AUTHORITY_MISSING": 110,
+    "PRODUCTION_AUTHORIZATION_MISSING": 176
+  },
+  "stage_counts": {"STORY": 509, "IMPLEMENTATION": 3285, "QA": 971, "PRODUCTION": 176, "NONE": 359},
+  "classification_precedence": [
+    {"order":1,"type":"POLICY_RECLASSIFICATION","match":"code in [R3_SEMANTIC_FAIL_CLOSED_RECLASSIFICATION,V59_STAGE_SPECIFIC_RECLASSIFICATION]"},
+    {"order":2,"type":"HUMAN_DECISION_REQUIRED","match":"status=HUMAN_DECISION_REQUIRED OR code contains DECISION_REQUIRED OR human_decision_required=true OR required_decision exists"},
+    {"order":3,"type":"SOURCE_CONFLICT","match":"code contains CONFLICT or RECONCILIATION"},
+    {"order":4,"type":"PRODUCTION_AUTHORIZATION_MISSING","match":"code=PRODUCTION_NOT_AUTHORIZED"},
+    {"order":5,"type":"CANDIDATE_AUTHORITY","match":"candidate-not-implementation-ready or design source not production status"},
+    {"order":6,"type":"EXTERNAL_ARTIFACT_UNRESOLVED","match":"binary/visual artifact unresolved markers"},
+    {"order":7,"type":"APPLICABILITY_AUTHORITY_MISSING","match":"applicability authority/scope unresolved markers"},
+    {"order":8,"type":"UNRESOLVED_SEMANTIC","match":"semantic/subject/threat/component semantic unresolved markers"},
+    {"order":9,"type":"IMPLEMENTATION_DEPENDENCY","match":"binding/provider/runtime/platform implementation dependency markers"},
+    {"order":10,"type":"QA_EVIDENCE_PENDING","match":"QA_REQUIRED/QA_PENDING/E2E_PENDING/VALIDATION_PENDING/test-evidence markers"},
+    {"order":11,"type":"MISSING_SOURCE","match":"missing/not-linked/source-incomplete/source-identification/canonical-missing/requirement-missing markers"},
+    {"order":12,"type":"INCOMPLETE_EVIDENCE","match":"remaining PARTIAL or INCOMPLETE markers"},
+    {"order":13,"type":"DELIVERY_DEPENDENCY","match":"remaining PENDING/NOT_READY/NOT_AUTHORIZED markers"}
+  ],
+  "stage_precedence": [
+    "blocker.earliest_blocking_stage",
+    "blocks_story/blocks_implementation/blocks_qa/blocks_production",
+    "type override",
+    "INPUT_READINESS_CONTRACT 5.13 family_stage_requirements[family_code].coverage_required_by"
+  ],
+  "type_stage_overrides": {
+    "POLICY_RECLASSIFICATION":"NONE",
+    "PRODUCTION_AUTHORIZATION_MISSING":"PRODUCTION",
+    "QA_EVIDENCE_PENDING":"QA",
+    "CANDIDATE_AUTHORITY":"IMPLEMENTATION",
+    "IMPLEMENTATION_DEPENDENCY":"IMPLEMENTATION",
+    "APPLICABILITY_AUTHORITY_MISSING":"STORY",
+    "EXTERNAL_ARTIFACT_UNRESOLVED":"QA"
+  },
+  "default_state": {"POLICY_RECLASSIFICATION":"INFORMATIONAL", "ALL_OTHER_TYPES":"BLOCKED"},
+  "ready_with_dependency": {
+    "allowed_types": ["IMPLEMENTATION_DEPENDENCY","QA_EVIDENCE_PENDING","DELIVERY_DEPENDENCY"],
+    "required_reference_any": ["dependency_ref","work_item_ref","platform_work_ref"],
+    "forbidden_causes": ["MISSING_SOURCE","HUMAN_DECISION_REQUIRED","SOURCE_CONFLICT","UNRESOLVED_SEMANTIC","APPLICABILITY_AUTHORITY_MISSING","INCOMPLETE_EVIDENCE"],
+    "later_stages_remain_fail_closed": true,
+    "current_eligible": 0
+  },
+  "evidence_minimum": ["assessment_id","run_id","family_code","original_blocker_payload"],
+  "no_generic_fallback": true,
+  "runtime_change": false,
+  "production_change": false
+}
