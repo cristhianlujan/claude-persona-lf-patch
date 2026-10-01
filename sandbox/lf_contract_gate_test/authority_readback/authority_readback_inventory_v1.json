@@ -1,0 +1,81 @@
+{
+  "schema_version": "lf-authority-readback-inventory/v1",
+  "solution_code": "AUTHORITY_READBACK_V1",
+  "work_code": "SADM-PP-L2-013",
+  "owner": "LF_GOVERNANCE",
+  "asset_code": "AUTHORITY_READBACK",
+  "classification": "CANDIDATE_READ_ONLY_CAPABILITY",
+  "source_state": "READY_FOR_REVIEW",
+  "runtime_state": "BLOCKED_NOT_MATERIALIZED_NOT_CUTOVER",
+  "authority_sources_observed": [
+    "EKB:POST-PASE-AUTHORITY-READBACK-MUTATION-COUPLING-001",
+    "public.lf_profile_update_post_merge_reconcile_v1",
+    "public.lf_profile_runtime_refresh_reconcile_asset_v1",
+    "public.lf_activos:EDGE_FN_RUN_GITHUB_READBACK_PERFIL_LF",
+    "CURRENTNESS_AUTHORITY@1.0.0"
+  ],
+  "preserved_responsibilities": [
+    "DECLARED_AUTHORITY_SCOPE_ONLY",
+    "EXACT_SUBJECT_AUTHORITY_SOURCE_REVISION_CROSSBIND",
+    "READ_ONLY_ADAPTER_RECEIPT_VALIDATION",
+    "CURRENTNESS_RECEIPT_VALIDATION_WHEN_DECLARED",
+    "TYPED_FAIL_CLOSED_RECEIPT"
+  ],
+  "removed_from_capability_boundary": [
+    "CANONICAL_ASSET_MUTATION",
+    "REBIND",
+    "NEXT_GATE_SELECTION",
+    "PROMOTION",
+    "APPLICABILITY_DECISION",
+    "RUNTIME_OR_DEPLOY"
+  ],
+  "adapter_model": {
+    "engine_hardcodes_adapter_codes": false,
+    "adapter_contract": "LF_AUTHORITY_ADAPTER_OBSERVATION_V1",
+    "observed_existing_adapter_candidate": "EDGE_FN_RUN_GITHUB_READBACK_PERFIL_LF",
+    "control_plane_adapter_family": "SUPABASE_CONTROL_PLANE_READBACK",
+    "future_domain_adapters": "MUST_CONFORM_TO_STANDARD_OBSERVATION_CONTRACT"
+  },
+  "future_consumer": {
+    "code": "POST_PASE_ROUTER_V1",
+    "work_code": "SADM-PP-L4-019",
+    "state": "NOT_YET_MATERIALIZED"
+  },
+  "relations": [
+    {
+      "from": "AUTHORITY_READBACK",
+      "type": "DEPENDE_DE",
+      "to": "CAPABILITY_EXECUTION_CONTRACT"
+    },
+    {
+      "from": "AUTHORITY_READBACK",
+      "type": "RELACIONADO_CAPACIDADES",
+      "to": "CURRENTNESS_AUTHORITY",
+      "semantics": "used only for checks declaring currentness_required=true"
+    },
+    {
+      "from": "AUTHORITY_READBACK",
+      "type": "RELACIONADO_CAPACIDADES",
+      "to": "LF_GOVERNANCE",
+      "semantics": "administrative discoverability only"
+    }
+  ],
+  "ekb_refs": [
+    "POST-PASE-AUTHORITY-READBACK-MUTATION-COUPLING-001",
+    "PASE-HANDOFF-REDISCOVERY-FAST-PATH-001",
+    "DB-001"
+  ],
+  "source_assets": [
+    "sandbox/lf_contract_gate_test/authority_readback/authority_readback_v1.json",
+    "sandbox/lf_contract_gate_test/authority_readback/authority_readback_v1.py",
+    "sandbox/lf_contract_gate_test/authority_readback/test_authority_readback_v1.py",
+    "sandbox/lf_contract_gate_test/authority_readback/AUTHORITY_READBACK_registry_projection_v1.sql",
+    "sandbox/lf_contract_gate_test/authority_readback/README.md"
+  ],
+  "materialization": {
+    "supabase_projection_applied": false,
+    "capability_registry_registered": false,
+    "owner_runner_materialized": false,
+    "cutover_authorized": false
+  }
+}
