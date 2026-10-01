@@ -1,0 +1,19 @@
+{
+  "schema_version": "lf-post-pase-orchestrator-inventory/v1",
+  "solution_code": "POST_PASE_ORCHESTRATOR_V1",
+  "asset_code": "POST_PASE_ORCHESTRATOR",
+  "work_code": "SADM-PP-L4-020",
+  "classification": "CREATE_CONSUMER",
+  "owner": "LF_GOVERNANCE",
+  "status": "CANDIDATE_READ_ONLY",
+  "reuse_first": ["POST_PASE_ROUTER_V1", "OWNER_RUNNER_CARRIER_AUTHORITY_V1", "CAPABILITY_EXECUTION_CONTRACT_V1", "ORCHESTRATOR_EXECUTION_GUARD_V1", "EVIDENCE_LEDGER"],
+  "source_assets": [
+    "sandbox/lf_contract_gate_test/post_pase_orchestrator/post_pase_orchestrator_contract_v1.json",
+    "sandbox/lf_contract_gate_test/post_pase_orchestrator/post_pase_orchestrator_v1.py",
+    "sandbox/lf_contract_gate_test/post_pase_orchestrator/test_post_pase_orchestrator_v1.py",
+    "sandbox/lf_contract_gate_test/post_pase_orchestrator/README.md",
+    "sandbox/lf_contract_gate_test/post_pase_orchestrator/POST_PASE_ORCHESTRATOR_source_projection_v1.sql"
+  ],
+  "artifact_transport_policy": "PASE_POST_PASE_ARTIFACT_TRANSPORT_NO_ZIP_V1",
+  "source_only": true
+}
