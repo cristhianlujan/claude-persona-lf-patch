@@ -1,0 +1,93 @@
+{
+  "schema_version": "lf-github-reconciliation/v1",
+  "capability_code": "GITHUB_RECONCILIATION",
+  "status": "CANDIDATE_READ_ONLY",
+  "owner": "LF_GOVERNANCE",
+  "mode": "BOUNDED_DETERMINISTIC_POST_MERGE_READBACK",
+  "entry_guard": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "accepted_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
+    "direct_call_policy": "BLOCK",
+    "local_shape_validation_is_authority": false
+  },
+  "execution_contract": {
+    "request_schema": "LF_CAPABILITY_EXECUTION_REQUEST_V1",
+    "capability_code": "GITHUB_RECONCILIATION",
+    "plan_digest_crossbind_required": true,
+    "source_revision_crossbind_required": true
+  },
+  "scope_contract": {
+    "schema_version": "LF_GITHUB_RECONCILIATION_SCOPE_V1",
+    "producer_expected": "POST_PASE_ROUTER_V1",
+    "producer_not_yet_materialized": true,
+    "required_fields": [
+      "repository",
+      "target_branch",
+      "plan_digest",
+      "expected_merge_commit_sha",
+      "declared_paths",
+      "repository_invariants",
+      "scope_digest"
+    ],
+    "declared_path_kinds": ["CHANGED", "ANCHOR"],
+    "global_repository_enumeration_forbidden": true,
+    "undeclared_file_evidence_policy": "FAIL_CLOSED"
+  },
+  "observation_contract": {
+    "carrier_resolves_external_facts": true,
+    "required_sections": [
+      "source_workflow",
+      "pull_request",
+      "branch_readback",
+      "files",
+      "repository_invariants"
+    ],
+    "source_workflow_required": {
+      "event": "push",
+      "head_branch": "main",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "merge_commit_crossbind_required": true,
+    "file_hashes_required": ["sha256", "git_blob", "commit_sha"]
+  },
+  "receipt_contract": {
+    "schema_version": "LF_GITHUB_RECONCILIATION_RECEIPT_V1",
+    "decisions": ["RECONCILED", "RECONCILIATION_FAILED"],
+    "ready_only_when_reconciled": true,
+    "receipt_digest_required": true,
+    "receipt_is_evidence_not_promotion": true
+  },
+  "legacy_separation": {
+    "pre_merge_independent_admission_owner": "CONTRACT_CHECK_SELF_CHANGE_ADMISSION",
+    "applicability_owner": "POST_PASE_ROUTER_V1",
+    "global_audit_manifest_dependency": "REMOVED_FROM_CAPABILITY_CONTRACT",
+    "global_governance_bundle_dependency": "REMOVED_FROM_CAPABILITY_CONTRACT",
+    "evidence_persistence_owner": "EVIDENCE_LEDGER_OR_CALLER",
+    "artifact_promotion_owner": "ARTIFACT_LIFECYCLE_NOT_RECONCILIATION",
+    "legacy_workflow": ".github/workflows/lf-github-reconcile-v3.yml",
+    "legacy_edge_function": "supabase/functions/lf-github-reconcile-v3/index.ts"
+  },
+  "invariants": {
+    "post_merge_only": true,
+    "no_applicability_decision": true,
+    "no_pre_merge_admission": true,
+    "no_repository_global_inventory": true,
+    "no_global_git_ls_files_manifest": true,
+    "no_persistence": true,
+    "no_gate_recording": true,
+    "no_promotion": true,
+    "no_mutation": true,
+    "no_deploy": true,
+    "no_runtime_activation": true,
+    "no_production_activation": true
+  },
+  "materialization": {
+    "supabase_projection_applied": false,
+    "owner_runner_materialized": false,
+    "cutover_authorized": false,
+    "runtime_authorized": false,
+    "production_authorized": false
+  }
+}
