@@ -1,0 +1,7 @@
+{
+  "solution_ref": "N5_N9_REVERIFY",
+  "paths": {
+    "sandbox/ig_cv/n9_requests/request.json": "IG_N9_REQUEST",
+    "sandbox/ig_cv/fixtures/n5_family_complete_preimage_v1.sql": "IG_N9_ROLLBACK_FIXTURE"
+  }
+}
