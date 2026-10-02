@@ -11,7 +11,6 @@ Authority: EKB CI-MIGRATION-LEDGER-BROAD-SCAN-001.
 from __future__ import annotations
 
 import argparse
-import csv
 import importlib.util
 import json
 from pathlib import Path
@@ -94,6 +93,22 @@ def _checkpoint_source() -> Path:
     return matches[0]
 
 
+def _checkpoint_identity() -> tuple[Path, str, str, tuple[str, ...]]:
+    adapter = FULL._load_parity_adapter()
+    checkpoint = _checkpoint_source()
+    filename = adapter.FILENAME_RE.fullmatch(checkpoint.name)
+    if filename is None:
+        raise RuntimeError("FAIL_MIGRATION_PARITY_FOCAL_CHECKPOINT_FILENAME")
+    version, name = filename.groups()
+    first = checkpoint.read_text(encoding="utf-8").splitlines()[0]
+    marker = adapter.MARKER_RE.fullmatch(first)
+    if marker is None:
+        raise RuntimeError("FAIL_MIGRATION_PARITY_FOCAL_CHECKPOINT_MARKER")
+    if not adapter.managed_source(checkpoint, version, name):
+        raise RuntimeError("FAIL_MIGRATION_PARITY_FOCAL_CHECKPOINT_NOT_MANAGED")
+    return checkpoint, version, name, marker.groups()
+
+
 def _build_scoped_snapshot(
     *, output_dir: Path, changed_paths: list[str]
 ) -> tuple[Path, list[str], list[str]]:
@@ -103,7 +118,7 @@ def _build_scoped_snapshot(
         shutil.rmtree(scoped)
     scoped.mkdir(parents=True, exist_ok=True)
 
-    checkpoint = _checkpoint_source()
+    checkpoint, _checkpoint_version, _checkpoint_name, _marker = _checkpoint_identity()
     shutil.copy2(checkpoint, scoped / checkpoint.name)
 
     focal_versions: list[str] = []
@@ -136,10 +151,21 @@ def _pg_array(versions: list[str]) -> str:
 def _prepare_focal_inputs(
     *, output_dir: Path, focal_versions: list[str], managed_versions: list[str]
 ) -> dict[str, Path]:
+    """Prepare only focal rows plus the structural checkpoint anchor.
+
+    The checkpoint is not part of the focal blocking set, but the canonical
+    adapter legitimately sees its source because it carries the legacy integrity
+    marker. Therefore its exact ledger row must accompany the scoped snapshot;
+    otherwise source-first would falsely classify the anchor itself as pending.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
     env = FULL._pg_env()
-    focal_literal = _pg_array(focal_versions)
-    managed_literal = _pg_array(managed_versions)
+    checkpoint, checkpoint_version, _checkpoint_name, marker_groups = _checkpoint_identity()
+
+    context_versions = sorted(set(focal_versions) | {checkpoint_version})
+    context_managed_versions = sorted(set(managed_versions) | {checkpoint_version})
+    context_literal = _pg_array(context_versions)
+    managed_literal = _pg_array(context_managed_versions)
 
     post_cutover = output_dir / "lf-post-cutover-migrations-compact.csv"
     grandfathered = output_dir / "lf-grandfathered-migrations.csv"
@@ -147,7 +173,7 @@ def _prepare_focal_inputs(
     statement_counts = output_dir / "lf-migration-statement-counts.csv"
     owner_json = output_dir / "lf-migration-external-owner-currentness.json"
 
-    post_sql = f"""select version,coalesce(name,''),'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\\n' order by ord),''),E'\\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\\n'),''),E'\\r\\n',E'\\n'),E'\\r',E'\\n'),E'\\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') from supabase_migrations.schema_migrations sm where version=any('{focal_literal}'::text[]) order by version"""
+    post_sql = f"""select version,coalesce(name,''),'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\\n' order by ord),''),E'\\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\\n'),''),E'\\r\\n',E'\\n'),E'\\r',E'\\n'),E'\\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') from supabase_migrations.schema_migrations sm where version=any('{context_literal}'::text[]) order by version"""
     FULL._write_text(post_cutover, FULL._psql(post_sql, env=env), max_bytes=131072)
 
     statement_sql = f"""select version,coalesce(cardinality(statements),0)::text from supabase_migrations.schema_migrations where version=any('{managed_literal}'::text[]) order by version"""
@@ -160,13 +186,7 @@ def _prepare_focal_inputs(
         grandfathered,
         f"{FULL.GRANDFATHERED_COUNT},{FULL.GRANDFATHERED_SHA256}\n",
     )
-    checkpoint = _checkpoint_source()
-    first = checkpoint.read_text(encoding="utf-8").splitlines()[0]
-    adapter = FULL._load_parity_adapter()
-    marker = adapter.MARKER_RE.fullmatch(first)
-    if marker is None:
-        raise RuntimeError("FAIL_MIGRATION_PARITY_FOCAL_CHECKPOINT_MARKER")
-    _marker_cutover, _legacy_start, _legacy_end, legacy_count, legacy_sha = marker.groups()
+    _marker_cutover, _legacy_start, _legacy_end, legacy_count, legacy_sha = marker_groups
     FULL._write_text(legacy, f"{legacy_count},{legacy_sha}\n")
 
     owner_json.write_text(
@@ -194,6 +214,7 @@ def _prepare_focal_inputs(
 def _write_scope_manifest(
     *, output_dir: Path, base_sha: str, head_sha: str, changed_paths: list[str], focal_versions: list[str]
 ) -> None:
+    _checkpoint, checkpoint_version, _checkpoint_name, _marker = _checkpoint_identity()
     payload = {
         "schema_version": "lf-migration-source-parity-scope/v1",
         "scope": FOCAL_SCOPE,
@@ -201,6 +222,7 @@ def _write_scope_manifest(
         "head_sha": head_sha,
         "changed_migration_paths": changed_paths,
         "focal_versions": focal_versions,
+        "structural_checkpoint_version": checkpoint_version,
         "historical_full_audit": "OUT_OF_BAND_NOT_BLOCKING",
         "authority": "EKB:CI-MIGRATION-LEDGER-BROAD-SCAN-001",
     }
@@ -227,7 +249,10 @@ def self_test() -> int:
                 raise
         else:
             raise RuntimeError("FAIL_MIGRATION_PARITY_FOCAL_SELFTEST_DESTRUCTIVE_ACCEPTED")
-    print("PASS_MIGRATION_SOURCE_PARITY_FOCAL_SELFTEST=4/4")
+    _checkpoint, checkpoint_version, _checkpoint_name, _marker = _checkpoint_identity()
+    if checkpoint_version <= FULL.CUTOVER:
+        raise RuntimeError("FAIL_MIGRATION_PARITY_FOCAL_SELFTEST_CHECKPOINT_CONTEXT")
+    print("PASS_MIGRATION_SOURCE_PARITY_FOCAL_SELFTEST=5/5")
     return 0
 
 
