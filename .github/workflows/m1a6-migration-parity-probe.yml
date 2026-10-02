@@ -1,0 +1,73 @@
+name: M1A6 Migration Source Parity Probe
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/m1a6-migration-parity-probe.yml'
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  migration-source-parity:
+    name: Execute MIGRATION_SOURCE_PARITY for M1.A6
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact M1.A6 candidate head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: b88fc876124836ed057fd9e6001777a3de7455b1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Enumerate actual post-baseline taxonomy blockers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util, pathlib, subprocess, sys
+          module_dir=pathlib.Path('sandbox/lf_contract_gate_test').resolve()
+          sys.path.insert(0,str(module_dir))
+          p=module_dir/'migration_source_parity'/'lf_migration_source_parity_ci_context.py'
+          spec=importlib.util.spec_from_file_location('msp_diag',p)
+          m=importlib.util.module_from_spec(spec); sys.modules[spec.name]=m; spec.loader.exec_module(m)
+          rows=[]
+          for path in sorted(pathlib.Path('supabase/migrations').glob('*.sql')):
+              mm=m.FILENAME_RE.fullmatch(path.name)
+              if not mm: continue
+              version,name=mm.groups()
+              if version <= '20260822195004': continue
+              sql=path.read_text(encoding='utf-8')
+              reconciliation=m.reconciliation_source_metadata(sql,version=version,name=name)
+              if not m.managed(name) and not reconciliation and not m.classified(name):
+                  blob=subprocess.run(['git','rev-parse',f'HEAD:{path.as_posix()}'],check=True,text=True,stdout=subprocess.PIPE).stdout.strip()
+                  rows.append((path.name,blob))
+          print('ACTUAL_UNCLASSIFIED_COUNT='+str(len(rows)))
+          for name,blob in rows:
+              print(f'ACTUAL_UNCLASSIFIED={name} blob={blob}')
+          PY
+
+      - name: Execute canonical Migration Source Parity flow
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py \
+            --repo-root . \
+            --base-sha acd9895d1b8c4f7d44f11eae5e943618e9baa16f \
+            --head-sha b88fc876124836ed057fd9e6001777a3de7455b1 \
+            --base-ref main \
+            --event-name pull_request \
+            --output-dir .lf_migration_source_parity
