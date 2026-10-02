@@ -30,26 +30,62 @@ def _require(condition: bool, code: str) -> None:
         raise CompositionError(code)
 
 
-def _object_refs(inventory_snapshot: Any) -> set[str]:
+def _object_index(inventory_snapshot: Any) -> dict[str, dict[str, Any]]:
     if isinstance(inventory_snapshot, dict):
         rows = inventory_snapshot.get("objects", [])
     else:
         rows = inventory_snapshot
     _require(isinstance(rows, list), "INVENTORY_OBJECTS_NOT_LIST")
-    refs: set[str] = set()
+
+    indexed: dict[str, dict[str, Any]] = {}
     for row in rows:
         if isinstance(row, str):
-            refs.add(row)
+            ref = row
+            normalized = {"object_ref": ref, "_legacy_ref_only": True}
         elif isinstance(row, dict) and isinstance(row.get("object_ref"), str):
-            if row.get("active", True):
-                refs.add(row["object_ref"])
+            if not row.get("active", True):
+                continue
+            ref = row["object_ref"]
+            normalized = row
         else:
             raise CompositionError("INVENTORY_OBJECT_INVALID")
-    return refs
+        _require(ref not in indexed, "INVENTORY_OBJECT_REF_DUPLICATE")
+        indexed[ref] = normalized
+    return indexed
+
+
+def _require_structured(row: dict[str, Any], code: str) -> None:
+    _require(not row.get("_legacy_ref_only", False), code)
+
+
+def _validate_authority_binding(authority: dict[str, Any], objects: dict[str, dict[str, Any]]) -> None:
+    source_ref = authority["source_ref"]
+    source = objects[source_ref]
+    _require_structured(source, "AUTHORITY_SOURCE_METADATA_REQUIRED")
+    _require(source.get("source_of_truth") is True, "AUTHORITY_SOURCE_NOT_SOURCE_OF_TRUTH")
+    _require(source.get("definition_sha256") == authority["source_sha256"], "AUTHORITY_SOURCE_SHA256_MISMATCH")
+    _require(str(source.get("source_version", "")) == authority["source_version"], "AUTHORITY_SOURCE_VERSION_MISMATCH")
+
+
+def _validate_member_binding(
+    member_ref: str,
+    membership_class: str,
+    objects: dict[str, dict[str, Any]],
+) -> None:
+    row = objects[member_ref]
+    if membership_class == "CANONICAL_ARTIFACT":
+        _require(member_ref.startswith("artifact://"), "CANONICAL_ARTIFACT_REF_INVALID")
+        _require_structured(row, "CANONICAL_ARTIFACT_METADATA_REQUIRED")
+        _require(row.get("source_of_truth") is True, "CANONICAL_ARTIFACT_NOT_SOURCE_OF_TRUTH")
+    elif membership_class == "CANDIDATE_OBJECT":
+        _require(not member_ref.startswith("artifact://"), "CANDIDATE_OBJECT_MUST_NOT_USE_CANONICAL_ARTIFACT_REF")
+        _require_structured(row, "CANDIDATE_OBJECT_METADATA_REQUIRED")
+        _require(row.get("source_of_truth") is False, "CANDIDATE_OBJECT_SOURCE_OF_TRUTH_FORBIDDEN")
 
 
 def validate_and_project(payload: dict[str, Any], inventory_snapshot: Any) -> dict[str, Any]:
-    refs = _object_refs(inventory_snapshot)
+    objects = _object_index(inventory_snapshot)
+    refs = set(objects)
     _require(isinstance(payload, dict), "PAYLOAD_NOT_OBJECT")
     _require(payload.get("schema_version") == SCHEMA_VERSION, "SCHEMA_VERSION_MISMATCH")
 
@@ -63,12 +99,26 @@ def validate_and_project(payload: dict[str, Any], inventory_snapshot: Any) -> di
 
     authority = payload.get("authority")
     _require(isinstance(authority, dict), "AUTHORITY_INVALID")
-    _require(set(authority) == {"source_ref", "source_sha256", "source_version", "authority_class"}, "AUTHORITY_KEYS_MISMATCH")
-    _require(isinstance(authority.get("source_ref"), str) and len(authority["source_ref"]) >= 5, "AUTHORITY_SOURCE_REF_INVALID")
-    _require(isinstance(authority.get("source_version"), str) and authority["source_version"], "AUTHORITY_SOURCE_VERSION_INVALID")
+    _require(
+        set(authority) == {"source_ref", "source_sha256", "source_version", "authority_class"},
+        "AUTHORITY_KEYS_MISMATCH",
+    )
+    _require(
+        isinstance(authority.get("source_ref"), str) and len(authority["source_ref"]) >= 5,
+        "AUTHORITY_SOURCE_REF_INVALID",
+    )
+    _require(
+        isinstance(authority.get("source_version"), str) and authority["source_version"],
+        "AUTHORITY_SOURCE_VERSION_INVALID",
+    )
     _require(authority.get("authority_class") in AUTHORITY_CLASSES, "AUTHORITY_CLASS_INVALID")
-    _require(isinstance(authority.get("source_sha256"), str) and SHA_RE.fullmatch(authority["source_sha256"]) is not None, "AUTHORITY_SHA256_INVALID")
+    _require(
+        isinstance(authority.get("source_sha256"), str)
+        and SHA_RE.fullmatch(authority["source_sha256"]) is not None,
+        "AUTHORITY_SHA256_INVALID",
+    )
     _require(authority["source_ref"] in refs, "AUTHORITY_SOURCE_REF_NOT_IN_INVENTORY")
+    _validate_authority_binding(authority, objects)
 
     scope = payload.get("scope")
     _require(isinstance(scope, dict), "SCOPE_INVALID")
@@ -76,7 +126,10 @@ def validate_and_project(payload: dict[str, Any], inventory_snapshot: Any) -> di
     _require(scope.get("mode") in SCOPE_MODES, "SCOPE_MODE_INVALID")
     scope_codes = scope.get("component_codes")
     _require(isinstance(scope_codes, list), "SCOPE_COMPONENT_CODES_NOT_LIST")
-    _require(all(isinstance(code, str) and CODE_RE.fullmatch(code) for code in scope_codes), "SCOPE_COMPONENT_CODE_INVALID")
+    _require(
+        all(isinstance(code, str) and CODE_RE.fullmatch(code) for code in scope_codes),
+        "SCOPE_COMPONENT_CODE_INVALID",
+    )
     _require(len(scope_codes) == len(set(scope_codes)), "SCOPE_COMPONENT_CODE_DUPLICATE")
 
     components = payload.get("components")
@@ -84,7 +137,10 @@ def validate_and_project(payload: dict[str, Any], inventory_snapshot: Any) -> di
     codes = [c.get("component_code") for c in components if isinstance(c, dict)]
     _require(len(codes) == len(components), "COMPONENT_INVALID")
     _require(len(codes) == len(set(codes)), "COMPONENT_CODE_DUPLICATE")
-    _require(all(isinstance(code, str) and CODE_RE.fullmatch(code) for code in codes), "COMPONENT_CODE_INVALID")
+    _require(
+        all(isinstance(code, str) and CODE_RE.fullmatch(code) for code in codes),
+        "COMPONENT_CODE_INVALID",
+    )
 
     if scope["mode"] == "COMPONENT_SET":
         _require(scope_codes, "COMPONENT_SET_EMPTY")
@@ -95,67 +151,89 @@ def validate_and_project(payload: dict[str, Any], inventory_snapshot: Any) -> di
     out_objects: list[dict[str, Any]] = []
     out_edges: list[dict[str, Any]] = []
     for component in components:
-        _require(set(component) == {"component_code", "component_type", "order", "status", "members"}, "COMPONENT_KEYS_MISMATCH")
+        _require(
+            set(component) == {"component_code", "component_type", "order", "status", "members"},
+            "COMPONENT_KEYS_MISMATCH",
+        )
         code = component["component_code"]
-        _require(isinstance(component.get("component_type"), str) and CODE_RE.fullmatch(component["component_type"]) is not None, "COMPONENT_TYPE_INVALID")
-        _require(isinstance(component.get("order"), int) and component["order"] >= 0, "COMPONENT_ORDER_INVALID")
-        _require(isinstance(component.get("status"), str) and component["status"], "COMPONENT_STATUS_INVALID")
+        _require(
+            isinstance(component.get("component_type"), str)
+            and CODE_RE.fullmatch(component["component_type"]) is not None,
+            "COMPONENT_TYPE_INVALID",
+        )
+        _require(
+            isinstance(component.get("order"), int) and component["order"] >= 0,
+            "COMPONENT_ORDER_INVALID",
+        )
+        _require(
+            isinstance(component.get("status"), str) and component["status"],
+            "COMPONENT_STATUS_INVALID",
+        )
         members = component.get("members")
         _require(isinstance(members, list), "COMPONENT_MEMBERS_NOT_LIST")
 
         component_ref = f"component://{asset_code}/{code}"
-        out_objects.append({
-            "object_ref": component_ref,
-            "object_type": "COMPONENT",
-            "parent_ref": asset_ref,
-            "source_system": "ASSET_COMPOSITION_PROJECTION",
-            "source_of_truth": False,
-            "status": component["status"],
-            "metadata": {
-                "component_code": code,
-                "component_type": component["component_type"],
-                "order": component["order"],
-                "authority_source_ref": authority["source_ref"],
-                "authority_source_sha256": authority["source_sha256"],
-                "authority_source_version": authority["source_version"],
-                "projection_scope_mode": scope["mode"],
-            },
-        })
-        out_edges.append({
-            "source_ref": asset_ref,
-            "target_ref": component_ref,
-            "relation_type": "HAS_COMPONENT",
-            "evidence_type": SCHEMA_VERSION,
-        })
+        out_objects.append(
+            {
+                "object_ref": component_ref,
+                "object_type": "COMPONENT",
+                "parent_ref": asset_ref,
+                "source_system": "ASSET_COMPOSITION_PROJECTION",
+                "source_of_truth": False,
+                "status": component["status"],
+                "metadata": {
+                    "component_code": code,
+                    "component_type": component["component_type"],
+                    "order": component["order"],
+                    "authority_source_ref": authority["source_ref"],
+                    "authority_source_sha256": authority["source_sha256"],
+                    "authority_source_version": authority["source_version"],
+                    "projection_scope_mode": scope["mode"],
+                },
+            }
+        )
+        out_edges.append(
+            {
+                "source_ref": asset_ref,
+                "target_ref": component_ref,
+                "relation_type": "HAS_COMPONENT",
+                "evidence_type": SCHEMA_VERSION,
+            }
+        )
 
         seen_member_refs: set[str] = set()
         for member in members:
             _require(isinstance(member, dict), "MEMBER_INVALID")
-            _require(set(member) == {"member_ref", "role", "membership_class", "required"}, "MEMBER_KEYS_MISMATCH")
+            _require(
+                set(member) == {"member_ref", "role", "membership_class", "required"},
+                "MEMBER_KEYS_MISMATCH",
+            )
             member_ref = member.get("member_ref")
             _require(isinstance(member_ref, str) and len(member_ref) >= 5, "MEMBER_REF_INVALID")
             _require(member_ref not in seen_member_refs, "MEMBER_REF_DUPLICATE")
             seen_member_refs.add(member_ref)
             _require(member_ref in refs, "MEMBER_REF_NOT_IN_INVENTORY")
-            _require(isinstance(member.get("role"), str) and CODE_RE.fullmatch(member["role"]) is not None, "MEMBER_ROLE_INVALID")
+            _require(
+                isinstance(member.get("role"), str) and CODE_RE.fullmatch(member["role"]) is not None,
+                "MEMBER_ROLE_INVALID",
+            )
             klass = member.get("membership_class")
             _require(klass in MEMBERSHIP_CLASSES, "MEMBERSHIP_CLASS_INVALID")
             _require(isinstance(member.get("required"), bool), "MEMBER_REQUIRED_INVALID")
-            if klass == "CANONICAL_ARTIFACT":
-                _require(member_ref.startswith("artifact://"), "CANONICAL_ARTIFACT_REF_INVALID")
-            if klass == "CANDIDATE_OBJECT":
-                _require(not member_ref.startswith("artifact://"), "CANDIDATE_OBJECT_MUST_NOT_USE_CANONICAL_ARTIFACT_REF")
-            out_edges.append({
-                "source_ref": component_ref,
-                "target_ref": member_ref,
-                "relation_type": "COMPOSED_OF",
-                "evidence_type": SCHEMA_VERSION,
-                "metadata": {
-                    "role": member["role"],
-                    "membership_class": klass,
-                    "required": member["required"],
-                },
-            })
+            _validate_member_binding(member_ref, klass, objects)
+            out_edges.append(
+                {
+                    "source_ref": component_ref,
+                    "target_ref": member_ref,
+                    "relation_type": "COMPOSED_OF",
+                    "evidence_type": SCHEMA_VERSION,
+                    "metadata": {
+                        "role": member["role"],
+                        "membership_class": klass,
+                        "required": member["required"],
+                    },
+                }
+            )
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -163,7 +241,10 @@ def validate_and_project(payload: dict[str, Any], inventory_snapshot: Any) -> di
         "authority": authority,
         "scope": scope,
         "objects": sorted(out_objects, key=lambda item: item["object_ref"]),
-        "dependencies": sorted(out_edges, key=lambda item: (item["source_ref"], item["relation_type"], item["target_ref"])),
+        "dependencies": sorted(
+            out_edges,
+            key=lambda item: (item["source_ref"], item["relation_type"], item["target_ref"]),
+        ),
     }
 
 
