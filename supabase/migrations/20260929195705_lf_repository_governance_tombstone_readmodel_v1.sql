@@ -7,6 +7,7 @@
 -- source_authority=supabase_migrations.schema_migrations
 -- source_version=20260929195705
 -- source_name=lf_repository_governance_tombstone_readmodel_v1
+
 -- Make append-only repository-governance tombstones effective.
 -- The latest revision per path is resolved first; only then is active=true exposed.
 -- This enables a later PASE source-workflow identity cutover without UPDATE/DELETE
