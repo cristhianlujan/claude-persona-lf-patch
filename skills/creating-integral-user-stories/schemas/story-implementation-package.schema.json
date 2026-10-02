@@ -1,0 +1,284 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lf.local/schemas/story-implementation-package.schema.json",
+  "title": "STORY_IMPLEMENTATION_PACKAGE_V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "canonical_story",
+    "outcome",
+    "reuse_discovery",
+    "hard_boundaries",
+    "story_contracts",
+    "implementation_preconditions",
+    "context_transport",
+    "wiring",
+    "implementation_tasks",
+    "test_plan",
+    "transition_and_rollback",
+    "observability_and_evidence",
+    "decision_closure"
+  ],
+  "properties": {
+    "schema_version": {"const": "STORY_IMPLEMENTATION_PACKAGE_V1"},
+    "canonical_story": {"$ref": "#/definitions/canonicalStory"},
+    "outcome": {"$ref": "#/definitions/sourceBoundSection"},
+    "reuse_discovery": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/definitions/reuseDecision"}
+    },
+    "hard_boundaries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/definitions/hardBoundary"}
+    },
+    "story_contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "story_identity",
+        "functional_contract",
+        "design_system_contract",
+        "field_validation_contract",
+        "state_navigation_contract",
+        "error_recovery_contract",
+        "security_privacy_contract",
+        "integration_contract",
+        "story_test_obligations"
+      ],
+      "properties": {
+        "story_identity": {"$ref": "#/definitions/sourceBoundSection"},
+        "functional_contract": {"$ref": "#/definitions/sourceBoundSection"},
+        "design_system_contract": {"$ref": "#/definitions/sourceBoundSection"},
+        "field_validation_contract": {"$ref": "#/definitions/sourceBoundSection"},
+        "state_navigation_contract": {"$ref": "#/definitions/sourceBoundSection"},
+        "error_recovery_contract": {"$ref": "#/definitions/sourceBoundSection"},
+        "security_privacy_contract": {"$ref": "#/definitions/sourceBoundSection"},
+        "integration_contract": {"$ref": "#/definitions/sourceBoundSection"},
+        "story_test_obligations": {"$ref": "#/definitions/sourceBoundSection"}
+      }
+    },
+    "implementation_preconditions": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/implementationPrecondition"}
+    },
+    "context_transport": {"$ref": "#/definitions/contextTransport"},
+    "wiring": {"$ref": "#/definitions/sourceBoundSection"},
+    "implementation_tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/definitions/implementationTask"}
+    },
+    "test_plan": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/definitions/testCase"}
+    },
+    "transition_and_rollback": {"$ref": "#/definitions/sourceBoundSection"},
+    "observability_and_evidence": {"$ref": "#/definitions/observabilityEvidence"},
+    "decision_closure": {"$ref": "#/definitions/decisionClosure"}
+  },
+  "definitions": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "refArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 3}
+    },
+    "canonicalStory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "story_code",
+        "story_pack_version",
+        "canonical_story_sha256",
+        "source_snapshot_sha256",
+        "evidence_refs"
+      ],
+      "properties": {
+        "story_code": {"type": "string", "minLength": 3},
+        "story_pack_version": {"type": "string", "minLength": 1},
+        "canonical_story_sha256": {"$ref": "#/definitions/sha256"},
+        "source_snapshot_sha256": {"$ref": "#/definitions/sha256"},
+        "evidence_refs": {"allOf": [{"$ref": "#/definitions/refArray"}, {"minItems": 1}]}
+      }
+    },
+    "sourceBoundSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "source_refs", "content"],
+      "properties": {
+        "status": {"enum": ["RESOLVED", "PENDING", "NOT_APPLICABLE"]},
+        "source_refs": {"$ref": "#/definitions/refArray"},
+        "pending_code": {"type": "string", "minLength": 3},
+        "content": {"type": "object"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "RESOLVED"}}},
+          "then": {"properties": {"source_refs": {"minItems": 1}}}
+        },
+        {
+          "if": {"properties": {"status": {"const": "NOT_APPLICABLE"}}},
+          "then": {"properties": {"source_refs": {"minItems": 1}}}
+        },
+        {
+          "if": {"properties": {"status": {"const": "PENDING"}}},
+          "then": {"required": ["pending_code"]}
+        }
+      ]
+    },
+    "reuseDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "need_code",
+        "classification",
+        "inventory_queries",
+        "candidate_assets",
+        "owner_state",
+        "currentness_state",
+        "evidence_refs",
+        "rationale"
+      ],
+      "properties": {
+        "need_code": {"type": "string", "minLength": 2},
+        "classification": {
+          "enum": ["REUSE_AS_IS", "EXTEND_TRANSVERSAL", "DOMAIN_SPECIALIZATION", "CREATE_NEW", "BLOCKED"]
+        },
+        "inventory_queries": {"allOf": [{"$ref": "#/definitions/refArray"}, {"minItems": 1}]},
+        "candidate_assets": {"$ref": "#/definitions/refArray"},
+        "selected_asset_ref": {"type": "string", "minLength": 3},
+        "base_asset_ref": {"type": "string", "minLength": 3},
+        "owner": {"type": "string", "minLength": 2},
+        "owner_state": {"type": "string", "minLength": 2},
+        "currentness_state": {"type": "string", "minLength": 2},
+        "consumer_refs": {"$ref": "#/definitions/refArray"},
+        "absence_evidence": {"$ref": "#/definitions/refArray"},
+        "proposed_owner": {"type": "string", "minLength": 2},
+        "duplicate_engine_check": {"type": "boolean"},
+        "extension_delta": {"type": "string", "minLength": 3},
+        "domain_delta": {"type": "string", "minLength": 3},
+        "blocker_code": {"type": "string", "minLength": 3},
+        "next_resolver": {"type": "string", "minLength": 3},
+        "evidence_refs": {"allOf": [{"$ref": "#/definitions/refArray"}, {"minItems": 1}]},
+        "rationale": {"type": "string", "minLength": 8}
+      }
+    },
+    "hardBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["boundary_code", "rule", "source_refs"],
+      "properties": {
+        "boundary_code": {"type": "string", "minLength": 3},
+        "rule": {"type": "string", "minLength": 8},
+        "source_refs": {"allOf": [{"$ref": "#/definitions/refArray"}, {"minItems": 1}]}
+      }
+    },
+    "implementationPrecondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "precondition_code",
+        "target_material",
+        "exact_resolver",
+        "expected_shape",
+        "deterministic_resolution_rule",
+        "bounded_stage",
+        "evidence_required",
+        "blocking_scope",
+        "design_effect"
+      ],
+      "properties": {
+        "precondition_code": {"type": "string", "minLength": 3},
+        "target_material": {"type": "string", "minLength": 3},
+        "exact_resolver": {"type": "string", "minLength": 3},
+        "expected_shape": {"type": "string", "minLength": 3},
+        "deterministic_resolution_rule": {"type": "string", "minLength": 8},
+        "bounded_stage": {"type": "string", "minLength": 3},
+        "evidence_required": {"allOf": [{"$ref": "#/definitions/refArray"}, {"minItems": 1}]},
+        "blocking_scope": {"enum": ["WHOLE_HANDOFF", "TASK", "DELIVERABLE", "NON_BLOCKING"]},
+        "design_effect": {"const": "NONE"}
+      }
+    },
+    "contextTransport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy",
+        "context_pack_version",
+        "context_path_patterns",
+        "max_context_bytes",
+        "source_refs"
+      ],
+      "properties": {
+        "strategy": {"enum": ["DIRECT_TASK_VIEW", "JIT_REFERENCES", "SPLIT_REQUIRED"]},
+        "context_pack_version": {"type": "integer", "minimum": 1},
+        "context_path_patterns": {"$ref": "#/definitions/refArray"},
+        "max_context_bytes": {"type": "integer", "minimum": 1},
+        "source_refs": {"allOf": [{"$ref": "#/definitions/refArray"}, {"minItems": 1}]}
+      }
+    },
+    "implementationTask": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_code", "title", "task_class", "source_refs"],
+      "properties": {
+        "task_code": {"type": "string", "minLength": 3},
+        "title": {"type": "string", "minLength": 5},
+        "task_class": {"enum": ["DISCOVERY_REUSE", "UI_IMPLEMENTATION", "INTEGRATION_IMPLEMENTATION", "TEST_IMPLEMENTATION", "TASK_DELTA"]},
+        "depends_on": {"$ref": "#/definitions/refArray"},
+        "source_refs": {"allOf": [{"$ref": "#/definitions/refArray"}, {"minItems": 1}]}
+      }
+    },
+    "testCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["test_code", "kind", "assertion", "source_refs"],
+      "properties": {
+        "test_code": {"type": "string", "minLength": 3},
+        "kind": {"enum": ["POSITIVE", "NEGATIVE", "EDGE", "PRIVACY_SECURITY", "STATE", "INTEGRATION", "STRUCTURAL"]},
+        "assertion": {"type": "string", "minLength": 8},
+        "source_refs": {"allOf": [{"$ref": "#/definitions/refArray"}, {"minItems": 1}]}
+      }
+    },
+    "observabilityEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_refs", "evidence_refs", "required_readbacks"],
+      "properties": {
+        "source_refs": {"$ref": "#/definitions/refArray"},
+        "evidence_refs": {"allOf": [{"$ref": "#/definitions/refArray"}, {"minItems": 1}]},
+        "required_readbacks": {"allOf": [{"$ref": "#/definitions/refArray"}, {"minItems": 1}]}
+      }
+    },
+    "decisionClosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["handoff_ready", "open_design_decisions", "unresolved_materials"],
+      "properties": {
+        "handoff_ready": {"type": "boolean"},
+        "open_design_decisions": {"type": "array", "items": {"type": "string", "minLength": 3}},
+        "unresolved_materials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["material_code", "state", "blocking_scope", "source_refs"],
+            "properties": {
+              "material_code": {"type": "string", "minLength": 3},
+              "state": {"enum": ["IMPLEMENTATION_PRECONDITION", "PENDING_SOURCE_DEFINITION", "SOURCE_CONFLICT", "PENDING_OWNER_DECISION"]},
+              "blocking_scope": {"enum": ["WHOLE_HANDOFF", "TASK", "DELIVERABLE", "NON_BLOCKING"]},
+              "source_refs": {"$ref": "#/definitions/refArray"}
+            }
+          }
+        }
+      }
+    }
+  }
+}
