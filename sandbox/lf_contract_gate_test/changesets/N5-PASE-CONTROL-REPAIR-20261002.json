@@ -1,0 +1,7 @@
+{
+  "solution_ref": "N5-PASE-CONTROL-REPAIR-20261002",
+  "paths": {
+    "sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_request_v1.py": "GOVERNED_CONTROL_CARRIER",
+    "sandbox/lf_contract_gate_test/pase_temporary_disable/REACTIVATION_N5_20261002.json": "GOVERNED_CONTROL_EVIDENCE"
+  }
+}
