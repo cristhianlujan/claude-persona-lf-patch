@@ -12,7 +12,7 @@ declare
   v_status text;
   v_rows integer;
   v_def text;
-  v_bad text;
+  v_curator_def text;
   v_occurrences integer;
   v_freshness jsonb;
   i integer;
@@ -65,6 +65,21 @@ begin
     raise exception 'N9_M81_SEED_EXPECTED_STALE_GOT:%', v_freshness->>'run_state';
   end if;
 
+  -- Isolation shim for the N-9 v1 harness only. The harness currently calls
+  -- curator_materialize with p_force_selftest=true; that routes to the known
+  -- rebind path covered by INPUT-GOV-REBIND-CLASSIFIER-FINGERPRINT-001 and can
+  -- mask M8.1 before the terminal-successor guard is exercised. Within this
+  -- rollback-only candidate transaction, force the same function to evaluate
+  -- its normal runtime stale-source branch instead. No production/runtime
+  -- authority is changed and the outer judge rollback restores the definition.
+  v_curator_def := pg_get_functiondef(
+    'programacion.fn_input_governance_curator_materialize_v1(integer,text,text,boolean)'::regprocedure
+  );
+  if strpos(v_curator_def, 'if not p_force_selftest') = 0 then
+    raise exception 'N9_M81_CURATOR_ISOLATION_PATTERN_MISSING';
+  end if;
+  execute replace(v_curator_def, 'if not p_force_selftest', 'if true');
+
   -- Reintroduce exactly the M8.1 generated-column guard regression.
   v_def := pg_get_functiondef('programacion.fn_guard_input_readiness_run()'::regprocedure);
   v_occurrences :=
@@ -75,11 +90,11 @@ begin
     raise exception 'N9_M81_NEGATIVE_FIXTURE_EXPECTED_2_HOTFIX_OCCURRENCES_GOT:%', v_occurrences;
   end if;
 
-  v_bad := replace(
+  v_def := replace(
     v_def,
     '-''curator_duration_ms''-''validator_duration_ms''',
     ''
   );
-  execute v_bad;
+  execute v_def;
 end
 $$;
