@@ -1,0 +1,37 @@
+{
+  "schema_version": "STORY_PROGRAMMING_UTILITY_JUDGE_CONTRACT_V1",
+  "consumer": "PROGRAMMING_AGENT",
+  "subject": "STORY_IMPLEMENTATION_PACKAGE",
+  "reuse": {
+    "review_capability": "INDEPENDENT_ASSURANCE",
+    "qualification_owner": "QUALIFICATION_FRAMEWORK",
+    "completeness_predecessor": "ASSURANCE_COMPLETENESS",
+    "new_capability_created": false
+  },
+  "independence": {
+    "builder_must_differ_from_reviewer": true,
+    "reviewer_operation": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
+    "router_action": "STRATEGY_INDEPENDENT_REVIEW"
+  },
+  "required_subject_bindings": [
+    "subject_sha256",
+    "source_revision",
+    "builder_execution_id",
+    "reviewer_execution_id",
+    "structural_evidence_ref",
+    "authority_evidence_ref"
+  ],
+  "utility_dimensions": [
+    "implementation_actionability",
+    "source_fidelity",
+    "reuse_correctness",
+    "context_sufficiency",
+    "acceptance_executability"
+  ],
+  "closure_rule": {
+    "structural_pass_alone_is_sufficient": false,
+    "independent_review_required": true,
+    "review_receipt_required": true,
+    "qualification_materialization_owned_elsewhere": true
+  }
+}
