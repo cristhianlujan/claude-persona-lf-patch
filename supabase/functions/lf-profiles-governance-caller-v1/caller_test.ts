@@ -167,6 +167,7 @@ Deno.test("positive: exact workflow_dispatch identity from main", async () => {
   assertEquals(payload.outcome, "TERMINAL");
   assertEquals(payload.caller.method, "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_DISPATCH_V1");
   assertEquals(payload.caller.workflow_ref, DISPATCH);
+  assertEquals(payload.caller.workflow_name, "LF Input Governance Recuration");
   assertEquals(payload.caller.recuration_rule_id, 661);
   assertEquals(payload.caller.recuration_rule_observed_at, "2026-10-02T17:30:00.000000+00:00");
   assertEquals(h.calls[0].url, "https://project.supabase.co/rest/v1/rpc/lf_input_gov_recuration_allowlist_v1");
