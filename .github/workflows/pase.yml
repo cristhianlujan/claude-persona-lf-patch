@@ -249,6 +249,6 @@ jobs:
     with:
       base_sha: ${{ needs.lf-pase.outputs.resolved_base_sha }}
       head_sha: ${{ needs.lf-pase.outputs.resolved_head_sha }}
-      base_ref: main
+      base_ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || 'main' }}
       event_name: ${{ github.event_name }}
     secrets: inherit
