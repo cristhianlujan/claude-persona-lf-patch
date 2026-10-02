@@ -2,10 +2,10 @@
 """Bounded producer for CI Currentness compatibility assessments.
 
 This producer is deliberately separate from CURRENTNESS_AUTHORITY. It proves
-consumer-specific semantic equivalence by replaying the same changeset against
-the bound and current CI authority revisions. Only then does it emit a
-CONTRACT_COMPATIBLE assessment whose proof is recomputed from material
-fingerprints by the canonical Currentness contract.
+consumer-specific semantic equivalence by replaying the same exact changeset
+against the bound and current CI authority revisions. Only then does it emit a
+CONTRACT_COMPATIBLE assessment whose proof is recomputed from canonical
+material fingerprints.
 
 It never activates runtime, mutates authority, or treats path similarity as
 compatibility evidence.
@@ -26,6 +26,17 @@ CURRENTNESS_DIR = HERE.parent / "material_currentness"
 CURRENTNESS_IMPL = CURRENTNESS_DIR / "lf_currentness_authority_v1.py"
 EMITTER_REL = Path("sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py")
 MATERIAL_ID = "ci_applicability_authority"
+CI_AUTHORITY_EXACT = {
+    ".github/workflows/lf-contract-check.yml",
+    ".github/workflows/validate-lf-packs.yml",
+    ".github/workflows/lf-db-regression.yml",
+}
+CI_AUTHORITY_PREFIXES = (
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/",
+    "sandbox/lf_contract_gate_test/gate_check_observability/",
+    "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/",
+    "sandbox/lf_contract_gate_test/material_currentness/",
+)
 
 
 def _load_currentness():
@@ -68,12 +79,45 @@ def _observable_projection(plan: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _changed_paths(repo: Path, base: str, head: str) -> list[str]:
+    raw = subprocess.check_output(
+        ["git", "-C", str(repo), "diff", "--name-only", "--no-renames", base, head],
+        text=True,
+    )
+    return sorted({line.strip() for line in raw.splitlines() if line.strip()})
+
+
+def _touches_ci_authority(path: str) -> bool:
+    return path in CI_AUTHORITY_EXACT or any(path.startswith(prefix) for prefix in CI_AUTHORITY_PREFIXES)
+
+
+def _overlay_candidate_files(
+    *, repo: Path, worktree: Path, candidate_head_revision: str, changed_paths: list[str]
+) -> None:
+    """Materialize candidate files without changing the authority code revision."""
+    for rel in changed_paths:
+        target = worktree / rel
+        cp = subprocess.run(
+            ["git", "-C", str(repo), "show", f"{candidate_head_revision}:{rel}"],
+            capture_output=True,
+        )
+        if cp.returncode == 0:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(cp.stdout)
+        elif target.exists():
+            if target.is_file() or target.is_symlink():
+                target.unlink()
+            else:
+                raise RuntimeError(f"FAIL_CI_COMPAT_OVERLAY_NONFILE:{rel}")
+
+
 def _run_projection(
     *,
     repo: Path,
     authority_revision: str,
     diff_base_revision: str,
     candidate_head_revision: str,
+    changed_paths: list[str],
 ) -> dict[str, Any]:
     """Replay one changeset with authority=current to avoid recursive currentness."""
     with tempfile.TemporaryDirectory(prefix="lf-ci-compat-") as td:
@@ -86,6 +130,12 @@ def _run_projection(
         if add.returncode != 0:
             raise RuntimeError(f"FAIL_CI_COMPAT_WORKTREE_ADD:{authority_revision}:{add.stderr.strip()}")
         try:
+            _overlay_candidate_files(
+                repo=repo,
+                worktree=worktree,
+                candidate_head_revision=candidate_head_revision,
+                changed_paths=changed_paths,
+            )
             emitter = worktree / EMITTER_REL
             if not emitter.is_file():
                 raise RuntimeError(f"FAIL_CI_COMPAT_EMITTER_MISSING:{authority_revision}")
@@ -101,7 +151,7 @@ def _run_projection(
                 "--ref-name", "compatibility-replay",
                 "--output-json", str(output),
             ]
-            cp = subprocess.run(cmd, text=True, capture_output=True)
+            cp = subprocess.run(cmd, text=True, capture_output=True, cwd=worktree)
             if cp.returncode != 0:
                 raise RuntimeError(
                     f"FAIL_CI_COMPAT_REPLAY:{authority_revision}:"
@@ -159,21 +209,43 @@ def assess_ci_compatibility(
             "assessment": None,
         }
 
+    candidate_paths = _changed_paths(repo, diff_base_revision, candidate_head_revision)
+    authority_overlap = sorted(path for path in candidate_paths if _touches_ci_authority(path))
+    if authority_overlap:
+        return {
+            "schema_version": "LF_CI_COMPATIBILITY_ASSESSMENT_V1",
+            "ready": False,
+            "reason": "CANDIDATE_TOUCHES_CI_AUTHORITY",
+            "authority_overlap": authority_overlap,
+            "assessment": None,
+        }
+
     authority = binding_without_assessments.get("authority") or {}
     bound_revision = authority.get("bound_revision")
     current_revision = authority.get("current_revision")
-    old_projection = _run_projection(
-        repo=repo,
-        authority_revision=bound_revision,
-        diff_base_revision=diff_base_revision,
-        candidate_head_revision=candidate_head_revision,
-    )
-    new_projection = _run_projection(
-        repo=repo,
-        authority_revision=current_revision,
-        diff_base_revision=diff_base_revision,
-        candidate_head_revision=candidate_head_revision,
-    )
+    try:
+        old_projection = _run_projection(
+            repo=repo,
+            authority_revision=bound_revision,
+            diff_base_revision=diff_base_revision,
+            candidate_head_revision=candidate_head_revision,
+            changed_paths=candidate_paths,
+        )
+        new_projection = _run_projection(
+            repo=repo,
+            authority_revision=current_revision,
+            diff_base_revision=diff_base_revision,
+            candidate_head_revision=candidate_head_revision,
+            changed_paths=candidate_paths,
+        )
+    except RuntimeError as exc:
+        return {
+            "schema_version": "LF_CI_COMPATIBILITY_ASSESSMENT_V1",
+            "ready": False,
+            "reason": str(exc),
+            "assessment": None,
+        }
+
     old_sha = _sha(old_projection)
     new_sha = _sha(new_projection)
     if old_sha != new_sha:
@@ -191,6 +263,8 @@ def assess_ci_compatibility(
                 "current_authority_revision": current_revision,
                 "bound_projection_sha256": old_sha,
                 "current_projection_sha256": new_sha,
+                "bound_projection": old_projection,
+                "current_projection": new_projection,
             },
         }
 
@@ -215,6 +289,7 @@ def assess_ci_compatibility(
         "current_authority_revision": current_revision,
         "bound_projection_sha256": old_sha,
         "current_projection_sha256": new_sha,
+        "candidate_changed_paths": candidate_paths,
         "projection_fields": sorted(old_projection),
     }
     replay_receipt["receipt_sha256"] = _sha(replay_receipt)
