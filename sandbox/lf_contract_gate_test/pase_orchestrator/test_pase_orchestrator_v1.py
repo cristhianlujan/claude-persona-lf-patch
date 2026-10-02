@@ -69,13 +69,13 @@ def main() -> int:
     payload = plan(
         ["DB_CANDIDATE_APPLY_ROLLBACK", "MIGRATION_SOURCE_PARITY"],
         {
-            "LF_CONTRACT_CHECK": ["MIGRATION_SOURCE_PARITY"],
+            "MIGRATION_SOURCE_PARITY": ["MIGRATION_SOURCE_PARITY"],
             "LF_DB_REGRESSION": ["DB_CANDIDATE_APPLY_ROLLBACK"],
         },
     )
     got = module.build_dispatch_plan(payload)
     assert [row["carrier"] for row in got["dispatches"]] == [
-        "LF_CONTRACT_CHECK",
+        "MIGRATION_SOURCE_PARITY",
         "LF_DB_REGRESSION",
     ], got
     assert got["applicability_authority"] == "UPSTREAM_PLAN_ONLY"
@@ -148,7 +148,7 @@ def main() -> int:
         module,
         plan(
             ["MIGRATION_SOURCE_PARITY", "PROFILE_PACK"],
-            {"LF_CONTRACT_CHECK": ["MIGRATION_SOURCE_PARITY"]},
+            {"MIGRATION_SOURCE_PARITY": ["MIGRATION_SOURCE_PARITY"]},
         ),
         "FAIL_PASE_CARRIER_COVERAGE",
     )
@@ -159,7 +159,7 @@ def main() -> int:
         plan(
             ["MIGRATION_SOURCE_PARITY"],
             {
-                "LF_CONTRACT_CHECK": ["MIGRATION_SOURCE_PARITY"],
+                "MIGRATION_SOURCE_PARITY": ["MIGRATION_SOURCE_PARITY"],
                 "VALIDATE_LF_PACKS": ["MIGRATION_SOURCE_PARITY"],
             },
         ),
@@ -171,7 +171,7 @@ def main() -> int:
         module,
         plan(
             ["MIGRATION_SOURCE_PARITY"],
-            {"VALIDATE_LF_PACKS": ["MIGRATION_SOURCE_PARITY"]},
+            {"LF_CONTRACT_CHECK": ["MIGRATION_SOURCE_PARITY"]},
         ),
         "FAIL_PASE_CARRIER_DRIFT",
     )
@@ -181,7 +181,7 @@ def main() -> int:
         module,
         plan(
             ["MIGRATION_SOURCE_PARITY"],
-            {"LF_CONTRACT_CHECK": ["MIGRATION_SOURCE_PARITY"]},
+            {"MIGRATION_SOURCE_PARITY": ["MIGRATION_SOURCE_PARITY"]},
             coverage=False,
         ),
         "FAIL_PASE_PLAN_COVERAGE_INCOMPLETE",

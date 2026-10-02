@@ -18,6 +18,10 @@ jobs:
   lf-pase:
     name: PASE
     runs-on: ubuntu-latest
+    outputs:
+      required_controls_json: ${{ steps.pase_plan.outputs.required_controls_json }}
+      resolved_base_sha: ${{ steps.pase_plan.outputs.resolved_base_sha }}
+      resolved_head_sha: ${{ steps.pase_plan.outputs.resolved_head_sha }}
 
     steps:
       - name: Checkout exact candidate source
@@ -67,6 +71,15 @@ jobs:
             args+=(--base "$base_sha")
           fi
           "${args[@]}"
+
+          resolved_base_sha="$base_sha"
+          if [[ -z "$resolved_base_sha" || "$resolved_base_sha" =~ ^0+$ ]]; then
+            resolved_base_sha="$current_main"
+          fi
+          {
+            echo "resolved_base_sha=$resolved_base_sha"
+            echo "resolved_head_sha=$head_sha"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build canonical PASE dispatch plan
         shell: bash
@@ -227,3 +240,15 @@ jobs:
           path: .lf_ci/lf_pase_dispatch_plan_v1.json
           if-no-files-found: error
           retention-days: 30
+
+  migration-source-parity:
+    name: PASE / MIGRATION_SOURCE_PARITY
+    needs: lf-pase
+    if: ${{ contains(fromJSON(needs.lf-pase.outputs.required_controls_json), 'MIGRATION_SOURCE_PARITY') }}
+    uses: ./.github/workflows/lf-migration-source-parity-core.yml
+    with:
+      base_sha: ${{ needs.lf-pase.outputs.resolved_base_sha }}
+      head_sha: ${{ needs.lf-pase.outputs.resolved_head_sha }}
+      base_ref: main
+      event_name: ${{ github.event_name }}
+    secrets: inherit
