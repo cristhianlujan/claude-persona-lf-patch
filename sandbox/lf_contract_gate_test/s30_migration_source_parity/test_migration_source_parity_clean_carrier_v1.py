@@ -47,24 +47,25 @@ def main() -> int:
             raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_FOREIGN_TOKEN:{token}")
     checks += 1
 
-    required_full = (
+    for token in (
         "lf_migration_source_parity.py",
         "FAIL_MIGRATION_PARITY_BASE_CURRENTNESS",
         "FAIL_MIGRATION_PARITY_EXACT_HEAD",
         "MIGRATION_OWNER_CURRENTNESS:%",
         "lf-migration-source-parity-run/v1",
         "functional_core_duplicated",
-    )
-    for token in required_full:
+    ):
         if token not in full_runner:
             raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_FULL_AUDIT_REQUIRED_TOKEN:{token}")
     checks += 1
 
     for token in (
-        "FOCAL_CHANGESET",
-        "CI-MIGRATION-LEDGER-BROAD-SCAN-001",
-        "historical_full_audit",
-        "OUT_OF_BAND_NOT_BLOCKING",
+        "PASE_EVALUATION_SCOPE_POLICY_V1",
+        "PASE-CONTEXT-AWARE-EVALUATION-NO-HISTORICAL-DRAG-001",
+        "CHANGESET_SCOPED",
+        "RECONCILIATION_WORK_ITEM",
+        "NO_UNBOUNDED_HISTORICAL_SCAN_IN_CRITICAL_PATH",
+        "REQUIRED_BOUNDED_AGGREGATE",
         "FAIL_MIGRATION_PARITY_FOCAL_MIGRATION_CHANGE_STATUS",
     ):
         if token not in focal_runner:
@@ -81,9 +82,18 @@ def main() -> int:
         "base_sha:",
         "head_sha:",
         "base_ref:",
+        "control_maturity:",
+        'default: "CUTOVER"',
+        "evaluation_scope:",
+        'default: "CHANGESET_SCOPED"',
+        "historical_debt_disposition:",
+        'default: "RECONCILIATION_WORK_ITEM"',
         "LF_SUPABASE_DB_PASSWORD:",
         "Execute MIGRATION_SOURCE_PARITY",
         "run_migration_source_parity_focal_v1.py",
+        "--control-maturity",
+        "--evaluation-scope",
+        "--historical-debt-disposition",
         'ref: ${{ inputs.head_sha }}',
     ):
         if token not in workflow:
@@ -92,14 +102,13 @@ def main() -> int:
         raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_CARRIER_BROAD_SCAN_RUNNER_ACTIVE")
     checks += 1
 
-    forbidden_workflow = (
+    for token in (
         "lf-contract-check.yml",
         "validate-lf-packs.yml",
         "required_controls",
         "LF_CONTRACT_CHECK",
         "CI_FAST_DEEP_LANE_ROUTER",
-    )
-    for token in forbidden_workflow:
+    ):
         if token in workflow:
             raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_CARRIER_FOREIGN_TOKEN:{token}")
     checks += 1
