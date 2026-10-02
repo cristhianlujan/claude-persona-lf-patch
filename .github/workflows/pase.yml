@@ -1,8 +1,5 @@
 name: PASE
 
-# TEMPORARILY DISABLED 2026-10-02.
-# Keep the workflow source and triggers intact while PASE is rebuilt/qualified.
-# No PASE or POST-PASE execution is allowed from this workflow until explicitly re-enabled.
 on:
   workflow_call:
   workflow_dispatch:
@@ -19,7 +16,6 @@ permissions:
 
 jobs:
   lf-pase:
-    if: ${{ false }}
     name: PASE
     runs-on: ubuntu-latest
     outputs:
@@ -246,9 +242,9 @@ jobs:
           retention-days: 30
 
   migration-source-parity:
-    if: ${{ false }}
     name: PASE / MIGRATION_SOURCE_PARITY
     needs: lf-pase
+    if: ${{ contains(fromJSON(needs.lf-pase.outputs.required_controls_json), 'MIGRATION_SOURCE_PARITY') }}
     uses: ./.github/workflows/lf-migration-source-parity-core.yml
     with:
       base_sha: ${{ needs.lf-pase.outputs.resolved_base_sha }}

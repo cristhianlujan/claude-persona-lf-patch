@@ -5,6 +5,12 @@ The helper itself is checked out from the trusted pull-request base. A PR may
 supply only a small JSON request plus candidate/prelude SQL objects. Candidate
 SQL is always executed by the rollback-only N-9 judge and never imported as
 Python or shell code.
+
+Migration files may carry one outer BEGIN/COMMIT wrapper because that wrapper is
+part of the governed Git source applied by the migration client. The N-9 judge
+already owns the surrounding rollback-only transaction, so this carrier removes
+only that single outer wrapper before execution. The digest remains pinned to
+the original Git bytes and every inner transaction escape remains forbidden.
 """
 from __future__ import annotations
 
@@ -26,6 +32,11 @@ MAX_CASES = 4
 ALLOWED_CANDIDATE_PREFIXES = ("supabase/migrations/", "sandbox/ig_cv/fixtures/")
 ALLOWED_PRELUDE_PREFIXES = ("sandbox/ig_cv/fixtures/",)
 ALLOWED_VERDICTS = {"NO_BLOCKING_FINDINGS", "BLOCKING_FINDINGS"}
+_SQL_TRIVIA = r"(?:\s|--[^\r\n]*(?:\r?\n|$)|/\*.*?\*/)*"
+_OUTER_TRANSACTION_RE = re.compile(
+    rf"\A(?P<prefix>{_SQL_TRIVIA})begin\s*;(?P<body>.*)commit\s*;(?P<suffix>{_SQL_TRIVIA})\Z",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 class RequestError(RuntimeError):
@@ -71,14 +82,34 @@ def _git_object(ref: str, path: str) -> bytes:
     return proc.stdout
 
 
+def _transaction_bound_sql(sql: str, label: str) -> str:
+    """Return SQL safe to execute inside N-9's own rollback transaction.
+
+    A single whole-file BEGIN/COMMIT wrapper is transport syntax, not candidate
+    authority. It is removed deterministically. The original bytes remain the
+    identity source for the SHA-256 receipt. Any transaction escape left inside
+    the body is rejected by the unchanged judge guard.
+    """
+    if not sql.strip():
+        raise RequestError(f"{label}_EMPTY_SQL")
+    match = _OUTER_TRANSACTION_RE.fullmatch(sql)
+    executable = match.group("body") if match else sql
+    if not executable.strip():
+        raise RequestError(f"{label}_EMPTY_TRANSACTION_BODY")
+    try:
+        judge.validate_transaction_bound_sql(executable)
+    except judge.JudgeError as exc:
+        raise RequestError(f"{label}_{exc}") from exc
+    return executable
+
+
 def _decode_sql(raw: bytes, label: str) -> tuple[str, str]:
     digest = hashlib.sha256(raw).hexdigest()
     try:
         sql = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
         raise RequestError(f"{label}_NOT_UTF8") from exc
-    judge.validate_transaction_bound_sql(sql)
-    return sql, digest
+    return _transaction_bound_sql(sql, label), digest
 
 
 def _run_case(case: dict[str, Any], head_sha: str) -> dict[str, Any]:
@@ -150,6 +181,23 @@ def self_test() -> None:
             pass
         else:
             raise AssertionError(f"unsafe path accepted:{bad}")
+
+    wrapped = "-- governed source\nbegin;\nselect 1;\ncommit;\n"
+    prepared, digest = _decode_sql(wrapped.encode("utf-8"), "CANDIDATE")
+    assert prepared.strip() == "select 1;"
+    assert digest == hashlib.sha256(wrapped.encode("utf-8")).hexdigest()
+    assert _transaction_bound_sql("select 1;", "CANDIDATE") == "select 1;"
+    for bad_sql in (
+        "begin; select 1; commit; commit;",
+        "begin; select 1; rollback; commit;",
+        "commit;",
+    ):
+        try:
+            _transaction_bound_sql(bad_sql, "CANDIDATE")
+        except RequestError:
+            pass
+        else:
+            raise AssertionError(f"transaction escape accepted:{bad_sql}")
     print("IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_SELFTEST_PASS")
 
 
