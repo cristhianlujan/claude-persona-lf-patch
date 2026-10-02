@@ -104,7 +104,7 @@ function harness(options: HarnessOptions = {}) {
   const env = { ...BASE_ENV, ...(options.env ?? {}) };
   let claims = options.claims ?? DISPATCH_CLAIMS;
   let allowlistStatus = options.allowlistStatus ?? 200;
-  let allowlistPayload = options.allowlistPayload ?? goodAllowlist();
+  let allowlistPayload: unknown = options.allowlistPayload ?? goodAllowlist();
   let inputStatus = options.inputStatus ?? "READY";
   const calls: Array<{ url: string; init?: RequestInit; body?: Record<string, unknown> }> = [];
 
