@@ -11,47 +11,65 @@ Effective semantic responsibility: **`INDEPENDENT_REVIEW`**.
 - Estado operativo esperado: `ACTIVO`
 - Inventory status requerido: `ACTIVE_SHARED_ENFORCEMENT`
 - Currentness authority: `public.lf_activos`
+- Owner transversal vigente: `SUPER_ADMIN`
 - Canonical reviewer operation: `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`
-- Router action: `STRATEGY_INDEPENDENT_REVIEW`
 - Live operation type: `INDEPENDENT_REVIEW`
-- `owner_name` in the current inventory is unresolved/null and is therefore a governance gap, not a value to infer in this README.
+- Current live specialization: `STRATEGY` through `STRATEGY_INDEPENDENT_REVIEW`
+- Generic subject contract: `independent_review_subject_contract_v2.json`
+- Extension executor: `T-INDEP / PAULO-035`
+
+The Strategy route is a compatibility specialization, not the generic caller contract. A non-Strategy consumer must never hardcode `STRATEGY_INDEPENDENT_REVIEW` or reinterpret its subject as `STRATEGY` merely to obtain a review receipt.
 
 ## Propósito
 
 Produce an independent, execution-bound review verdict and durable review evidence when a governing contract requires a reviewer distinct from the producer.
 
-Its responsibility ends at the review handoff. It does not own the downstream Qualification state transition/materialization.
+Its responsibility ends at the review handoff. It does not own downstream Qualification state transition/materialization.
 
 ## Cuándo consumirlo
 
 Consume only when a qualification, claim or closure explicitly requires independent evaluation rather than self-review by the producer.
 
-Before use, resolve `INDEPENDENT_ASSURANCE` in `public.lf_activos` and confirm that it is not archived, remains `ACTIVO`, and has `metadata.transversal_inventory.inventory_status=ACTIVE_SHARED_ENFORCEMENT`.
+Before use, resolve `INDEPENDENT_ASSURANCE` in `public.lf_activos` and confirm that it is not archived, remains `ACTIVO`, has `owner_name=SUPER_ADMIN`, and has `metadata.transversal_inventory.inventory_status=ACTIVE_SHARED_ENFORCEMENT`.
+
+Every new consumer must resolve the exact subject type through the current transversal subject contract. Unsupported subject types fail closed.
 
 ## Cómo consumirlo
 
 1. Resolve the current inventory identity `INDEPENDENT_ASSURANCE`; do not create a parallel reviewer capability.
-2. Route the review through ACT-0001 to `STRATEGY_INDEPENDENT_REVIEW` / `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`.
-3. Bind exact producer/reviewer identity, qualification/subject identity, source revision, suite fingerprint, REVIEW_REQUIRED case and evidence references.
-4. Execute the six governed reviewer steps: route binding, target currentness, semantic review, judge record, reviewer readback and report output.
-5. The reviewer output is a durable review receipt/evidence package plus `next_gate`; it must not directly declare Qualification current or materialize Qualification state.
-6. If downstream Qualification materialization is required, hand off through the separate `QUALIFICATION_FRAMEWORK` contract and read back its result independently.
+2. Enter through the governed orchestration/capability binding contract for new consumers. Preserve the existing Strategy route only as backward-compatible specialization.
+3. Resolve the exact subject specialization from `independent_review_subject_contract_v2.json` or its promoted successor; do not hardcode another subject's route or operation.
+4. Bind exact subject identity/revision, producer identity, reviewer identity and provider-bound evidence references. Reviewer identity must differ from the producer when independence is required.
+5. Reuse the canonical reviewer operation `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`, its six governed step ids and existing step judges. Generalization must occur in place; do not create another review operation, route or judge set.
+6. Persist `review_receipt`, `evidence_refs`, terminal authority readback and `next_gate`. A structural/local PASS alone is never sufficient.
+7. If downstream Qualification materialization is actually required by the consumer contract, hand off separately through `QUALIFICATION_FRAMEWORK` and read back its result independently. Qualification is not implicitly required for every independent review.
 
 ## Superficies canónicas
 
-- `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`
-- Router action `STRATEGY_INDEPENDENT_REVIEW`
-- reviewer-operation RPCs/step/judge surfaces bound to that operation
+- Capability identity `INDEPENDENT_ASSURANCE`
+- Subject contract `independent_review_subject_contract_v2.json`
+- Existing reviewer operation `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`
+- Existing six step ids: `route_bind`, `target_currentness`, `semantic_review`, `judge_record`, `reviewer_readback`, `report_output`
+- Existing `OPERATION_STEP_CONTRACT_JUDGE_ENFORCEMENT`
+- Existing Strategy compatibility route `STRATEGY_INDEPENDENT_REVIEW`
 
-The live operation is explicitly typed `INDEPENDENT_REVIEW`. Its final governed step emits `review_receipt`, `evidence_refs` and `next_gate`.
+`public.lf_finalize_qualification_independent_review_v1` is intentionally excluded from the generic review surface because it belongs to downstream `QUALIFICATION_FRAMEWORK` and is only used when the consumer contract actually requires Qualification.
 
-`public.lf_finalize_qualification_independent_review_v1` is intentionally excluded from this canonical-surface list because it belongs to the downstream `QUALIFICATION_FRAMEWORK` handoff described below.
+## Soporte de sujetos
+
+The current contract is explicit and fail-closed:
+
+- `STRATEGY`: existing live specialization remains supported and must regress zero.
+- `STORY_IMPLEMENTATION_PACKAGE`: target of the T-INDEP extension. It must use the existing operation/judges, `EVIDENCE_LEDGER + CURRENTNESS_AUTHORITY`, and does not require Strategy Qualification merely to produce a durable independent-review receipt.
+- Any other subject: supported only when the current transversal subject contract declares an exact specialization; otherwise block with `BLOCK_UNSUPPORTED_SUBJECT_REQUIRES_OWNER_EXTENSION`.
+
+No caller may infer generic support from the capability name alone.
 
 ## Integración downstream — no ownership
 
-`public.lf_finalize_qualification_independent_review_v1` is a downstream **Qualification Framework dependency**, not a canonical physical asset owned by Independent Review.
+Independent Review may provide evidence/receipt consumed by a Qualification finalizer when qualification is part of the consumer's contract. Test/suite materialization, Qualification state transition and Qualification-current readback remain owned by `QUALIFICATION_FRAMEWORK`.
 
-Independent Review may provide the evidence/receipt consumed by that finalizer. The finalizer's responsibilities — test/suite materialization, qualification state transition and qualification-current readback — remain owned by `QUALIFICATION_FRAMEWORK`.
+A consumer that only requires a durable independent-review verdict and authority readback must not be forced into a Strategy qualification path just to obtain a receipt.
 
 ## No responsabilidades
 
@@ -67,12 +85,15 @@ This capability does not own or imply:
 - Router applicability decisions;
 - runtime, scheduler, orchestrator or production activation.
 
+`ASSURANCE_EVALUATOR` is a separate evidence-sufficiency capability. It may consume independent-review evidence but does not own Independent Review.
+
 ## Fail-closed / límites
 
+- Unsupported subject specialization must block; it must never fall back to Strategy by name or approximation.
 - Reviewer execution must be distinct from the producer when independence is required.
-- Missing/stale revision, suite fingerprint, qualification binding, reviewer identity, judge receipt or evidence must block.
+- Missing/stale subject revision, reviewer identity, provider-bound receipt or authority readback must block.
 - A review PASS is only the review verdict for the bound review case. It is not Qualification PASS, Assurance PASS, changeset safety, deployment approval or production authorization.
-- Independent Review must not mutate Strategy snapshots or perform business writes.
+- Independent Review must not perform business writes.
 
 ## Qualification handoff invariant
 
@@ -81,27 +102,30 @@ producer evidence
       ↓
 INDEPENDENT_REVIEW
       ↓
-review_receipt + evidence_refs + next_gate
+review_receipt + evidence_refs + authority_readback
       ↓
-QUALIFICATION_FRAMEWORK
-      ↓
-materialization / qualification state / currentness
+¿consumer contract requires Qualification?
+      ├─ NO → closure consumer may evaluate the review receipt
+      └─ SÍ → QUALIFICATION_FRAMEWORK
+                ↓
+              materialization / qualification state / currentness
 ```
 
-The two stages must remain independently traceable. A downstream finalizer call does not make the finalizer an Independent Review asset.
+The stages must remain independently traceable. A downstream finalizer call does not make the finalizer an Independent Review asset.
 
 ## Validación y readback
 
-- Verify active/current asset identity before consumption.
-- Verify Router action and operation are current and operational.
-- Verify all six reviewer steps remain governed and that the report output carries `review_receipt`, `evidence_refs` and `next_gate`.
-- Verify the Qualification finalizer remains downstream and separately owned.
+- Verify active/current asset identity and `owner_name=SUPER_ADMIN` before consumption.
+- Verify the exact subject specialization is supported; do not infer support from capability name.
+- Verify no second `INDEPENDENT_REVIEW` operation, route or judge set was introduced.
+- Verify Strategy specialization behavior remains unchanged.
+- Verify durable review receipt, exact evidence references and terminal authority readback for closure-required consumers.
 - Preserve source revision, execution identities, evidence references and exact reviewer receipt.
 - Do not turn a local reviewer test into a global closure claim.
 
 ## No duplicación
 
-Do not create a second independent-review capability, operation, table, runner, reviewer writer or route. Extend the existing governed operation through its owner and preserve lineage.
+Do not create a second independent-review capability, operation, table, runner, reviewer writer, route or judge set. Extend the existing governed capability through `SUPER_ADMIN` and preserve lineage. Execution units such as `T-INDEP / PAULO-035` materialize and test the extension but do not become the capability owner.
 
 ## EKB
 
@@ -110,7 +134,9 @@ Do not create a second independent-review capability, operation, table, runner, 
 - `INDEPENDENT-REVIEW-FINALIZER-RESULT-CONTRACT-MISMATCH-001`
 - `STRATEGY-QUALIFICATION-INDEPENDENT-REVIEW-BOOTSTRAP-DEADLOCK-001`
 - `GOV-FULL-REGRESSION-TRANSVERSAL-README-CONTRACT-001`
+- `STORY-CREATOR-INDEPENDENT-REVIEW-SUBJECT-GAP-001`
+- `T-INDEP-PARALLEL-REVIEW-STACK-001`
 
 ## Currentness
 
-This README describes the ownership boundary, not a permanent lifecycle assertion. Consumers must read the live inventory and operation contract for every material decision. The unresolved inventory `owner_name` must be repaired only from an authoritative owner decision; it must not be guessed during this boundary cleanup.
+This README describes the ownership and consumption boundary, not a permanent lifecycle assertion. Consumers must read the live inventory and promoted subject contract for every material decision.
