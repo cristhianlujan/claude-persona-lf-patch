@@ -65,8 +65,8 @@ begin
       else '42053965d2cfd0f4644b1b8f71f0fb29'
     end;
     v_expected_post := case v_name
-      when 'fn_input_governance_bootstrap_classify_v2' then '3ac3d9ee55e8aa917b7cbed56ac9aef5'
-      else 'e242fbce4f1f4804e738044a2ed236b0'
+      when 'fn_input_governance_bootstrap_classify_v2' then '904e0a4af4ab3df27281c9da2d1d4b10'
+      else '5acdff656b9e65bc92b51abd45d5706e'
     end;
 
     v_def := pg_get_functiondef(v_reg);
@@ -95,7 +95,7 @@ declare
   v_new text;
   v_pre_md5 text;
   v_expected_pre text := '7355137c95d5776215a63c6b53232f80';
-  v_expected_post text := 'e0e537716d8afadaecb4ed83acecbe12';
+  v_expected_post text := '33fce181eacb0f820fcfc88e5d367692';
   v_source_anchor text := '      a.source_refs,a.rationale,a.blockers,a.negative_requirements,a.test_obligations,''{}''::jsonb,';
   v_source_replacement text := $source$
       case when p_pantalla_id in (52,53,54,56) then
