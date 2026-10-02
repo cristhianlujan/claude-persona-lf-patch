@@ -9,6 +9,10 @@ import sys
 from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[3]
+TRANSPORT_ROOT = ROOT / "sandbox/lf_contract_gate_test"
+if str(TRANSPORT_ROOT) not in sys.path:
+    sys.path.insert(0, str(TRANSPORT_ROOT))
+
 ENTRY_PATH = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_pase_entry_v1.py"
 CI_CONTEXT_PATH = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py"
 
@@ -111,8 +115,7 @@ def main() -> int:
         raise AssertionError("divergent same-version content accepted")
     print("PASS_SCENARIO_MSP_SAME_VERSION_DIVERGENT_BLOCK"); checks += 1
 
-    # Reuse the canonical owner modules for authority/transport behavior instead
-    # of re-implementing those rules in the scenario matrix.
+    # Reuse canonical owner/transport self-tests rather than duplicating rules.
     CI_CONTEXT.external_owner_self_test()
     print("PASS_SCENARIO_MSP_AUTHORITY_WRONG_BLOCK"); checks += 1
     CI_CONTEXT.transport_self_test()
