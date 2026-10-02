@@ -359,11 +359,7 @@ async function callRuntime(
     payload = { raw: text.slice(0, 1000) };
   }
   if (!response.ok) {
-    throw new CallerFault("DOWNSTREAM_RUNTIME_ERROR", 409, {
-      downstream_slug: slug,
-      downstream_status: response.status,
-      downstream_payload: payload,
-    });
+    throw new Error(`${slug.toUpperCase()}_${response.status}:${JSON.stringify(payload).slice(0, 1500)}`);
   }
   return payload;
 }
@@ -572,7 +568,8 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       }
       const message = error instanceof Error ? error.message : String(error);
       console.error(message.replace(/Bearer\s+\S+/g, "Bearer [REDACTED]"));
-      return json({ outcome: "BLOCKED", code: "CALLER_INTERNAL_ERROR" }, 409);
+      const unauthorized = message.startsWith("OIDC_");
+      return json({ outcome: "BLOCKED", code: message.slice(0, 1000) }, unauthorized ? 401 : 409);
     }
   };
 }
