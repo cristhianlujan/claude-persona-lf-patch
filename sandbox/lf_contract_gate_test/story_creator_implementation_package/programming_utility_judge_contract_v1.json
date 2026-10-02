@@ -10,8 +10,15 @@
   },
   "independence": {
     "builder_must_differ_from_reviewer": true,
-    "reviewer_operation": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
-    "router_action": "STRATEGY_INDEPENDENT_REVIEW"
+    "reviewer_operation_resolution": "FROM_INDEPENDENT_ASSURANCE_CURRENT_SUBJECT_CONTRACT",
+    "router_action_resolution": "FROM_INDEPENDENT_ASSURANCE_CURRENT_SUBJECT_CONTRACT",
+    "hardcoded_strategy_specialization_forbidden": true
+  },
+  "subject_resolution": {
+    "contract_ref": "sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/independent_review_subject_contract_v2.json",
+    "subject_type": "STORY_IMPLEMENTATION_PACKAGE",
+    "unsupported_subject_result": "BLOCK_UNSUPPORTED_SUBJECT_REQUIRES_OWNER_EXTENSION",
+    "required_path": "GENERIC_SUBJECT_EXTENSION"
   },
   "required_subject_bindings": [
     "subject_sha256",
@@ -32,6 +39,9 @@
     "structural_pass_alone_is_sufficient": false,
     "independent_review_required": true,
     "review_receipt_required": true,
-    "qualification_materialization_owned_elsewhere": true
+    "provider_bound_receipt_required": true,
+    "authority_readback_required": true,
+    "qualification_materialization_owned_elsewhere": true,
+    "qualification_required_for_story_closure": false
   }
 }
