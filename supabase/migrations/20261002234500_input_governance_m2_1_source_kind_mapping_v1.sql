@@ -22,11 +22,11 @@ begin
   end if;
 
   if md5(pg_get_functiondef('programacion.fn_input_resolve_source_ref_v510(jsonb,integer,bigint)'::regprocedure))
-       <> 'ae48babb67fcbd4f60937932dc8d8f51' then
+       <> '50073e4d4d4dd0dfeaf091b3df763fb3' then
     raise exception 'M2_1_RESOLVER_V510_PREIMAGE_DRIFT';
   end if;
   if md5(pg_get_functiondef('programacion.fn_input_resolve_source_ref(jsonb,integer,bigint)'::regprocedure))
-       <> '4bcc3bfff640ee86005389835f61389c' then
+       <> '7c79c5f5bc42fbc2d9ff2b0134f5a7ee' then
     raise exception 'M2_1_RESOLVER_WRAPPER_PREIMAGE_DRIFT';
   end if;
   if not exists(
