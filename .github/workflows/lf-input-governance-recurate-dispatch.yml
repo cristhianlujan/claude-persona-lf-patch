@@ -1,0 +1,23 @@
+name: LF Input Governance Recuration Dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      pantalla_ids:
+        description: "Comma-separated screen ids to recurate through the governed reusable workflow."
+        required: false
+        default: "1,2,3,5,43,51,52,53,54,55,56,57,58"
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  recurate:
+    uses: ./.github/workflows/lf-input-governance-recurate.yml
+    with:
+      pantalla_ids: ${{ inputs.pantalla_ids }}
+    permissions:
+      contents: read
+      id-token: write
