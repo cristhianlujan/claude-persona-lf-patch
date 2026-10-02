@@ -1,0 +1,168 @@
+name: M1.A6 Exact Version Apply Ephemeral
+
+on:
+  push:
+    branches:
+      - lf/m1-a6-exact-version-apply-20261002
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m1-a6-exact-version-20261001204500
+  cancel-in-progress: false
+
+jobs:
+  apply-exact-version:
+    name: Apply 20261001204500 exact version
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+      PGHOST: aws-1-us-east-1.pooler.supabase.com
+      PGPORT: "5432"
+      PGDATABASE: postgres
+      PGUSER: postgres.mhwmirqcgxxukpctffuv
+      MIGRATION_PATH: supabase/migrations/20261001204500_lf_contract_clause_traceability_v1.sql
+      EXPECTED_SOURCE_COMMIT: f6519a6b787172e1c6028de42d6d47d11d6c77df
+      EXPECTED_BLOB: ef006aed465190ac89e1174d04f3c813c93b05ef
+      EXECUTION_ID: EXEC-DB-M1A6-APPLY-20261001204500-20261002-001
+
+    steps:
+      - name: Checkout exact merged source
+        uses: actions/checkout@v4
+        with:
+          ref: f6519a6b787172e1c6028de42d6d47d11d6c77df
+          fetch-depth: 1
+
+      - name: Verify source identity and DB secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${PGPASSWORD:-}" || { echo "BLOCK_M1A6_DB_PASSWORD_MISSING"; exit 1; }
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_COMMIT"
+          test "$(git hash-object "$MIGRATION_PATH")" = "$EXPECTED_BLOB"
+          grep -q '^-- M1.A6 / PAULO-125$' "$MIGRATION_PATH"
+          echo "PASS_M1A6_EXACT_SOURCE commit=$EXPECTED_SOURCE_COMMIT blob=$EXPECTED_BLOB"
+
+      - name: Build atomic exact-version fallback transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, os
+
+          path = Path(os.environ['MIGRATION_PATH'])
+          source = path.read_text(encoding='utf-8')
+          delimiter = '$lf_m1a6_source$'
+          if delimiter in source:
+              raise SystemExit('BLOCK_M1A6_LEDGER_DELIMITER_COLLISION')
+          source_md5 = hashlib.md5(source.encode('utf-8')).hexdigest()
+          exec_id = os.environ['EXECUTION_ID']
+          blob = os.environ['EXPECTED_BLOB']
+
+          pre = r'''\set ON_ERROR_STOP on
+          begin;
+          do $pre$
+          begin
+            if exists (select 1 from supabase_migrations.schema_migrations where version='20261001204500') then
+              raise exception 'BLOCK_M1A6_VERSION_ALREADY_PRESENT';
+            end if;
+            if to_regclass('programacion.contract_traceability_matrices') is not null
+               or to_regclass('programacion.contract_traceability_rows') is not null then
+              raise exception 'BLOCK_M1A6_PARTIAL_SCHEMA_RESIDUE';
+            end if;
+          end
+          $pre$;
+          '''
+
+          ledger = f'''
+          insert into supabase_migrations.schema_migrations(
+            version,statements,name,created_by,idempotency_key,rollback
+          ) values (
+            '20261001204500',
+            array[{delimiter}{source}{delimiter}]::text[],
+            'lf_contract_clause_traceability_v1',
+            '{exec_id}',
+            'gitblob:{blob}',
+            array[]::text[]
+          );
+          '''
+
+          post = f'''
+          do $post$
+          declare
+            v_rows integer;
+            v_unowned integer;
+            v_matrices integer;
+            v_md5 text;
+            v_name text;
+            v_sha text;
+            v_clause_count integer;
+            v_pending integer;
+            v_covered integer;
+          begin
+            select md5(statements[1]),name into v_md5,v_name
+            from supabase_migrations.schema_migrations
+            where version='20261001204500';
+            if v_md5 is distinct from '{source_md5}' or v_name is distinct from 'lf_contract_clause_traceability_v1' then
+              raise exception 'BLOCK_M1A6_LEDGER_IDENTITY md5=% name=%',v_md5,v_name;
+            end if;
+
+            if to_regclass('programacion.contract_traceability_matrices') is null
+               or to_regclass('programacion.contract_traceability_rows') is null then
+              raise exception 'BLOCK_M1A6_STRUCTURE_READBACK';
+            end if;
+
+            select count(*),max(matrix_sha256),max(clause_count),max(semantic_test_pending_count),max(semantic_test_covered_count)
+              into v_matrices,v_sha,v_clause_count,v_pending,v_covered
+            from programacion.contract_traceability_matrices
+            where matrix_code='INPUT_READINESS_CONTRACT_5_13_TRACEABILITY'
+              and matrix_revision=1
+              and contract_id=37
+              and contract_revision='5.13'
+              and status='DEFINED';
+            if v_matrices<>1
+               or v_sha is distinct from '9ccf8537bd96de7d30e05d5493711a1b99b7858fa573bf7541ebf456f12e30b4'
+               or v_clause_count<>60 or v_pending<>60 or v_covered<>0 then
+              raise exception 'BLOCK_M1A6_MATRIX_READBACK matrices=% sha=% clauses=% pending=% covered=%',v_matrices,v_sha,v_clause_count,v_pending,v_covered;
+            end if;
+
+            select count(*),count(*) filter(where target_layer is null or target_owner is null or target_enforcement is null)
+              into v_rows,v_unowned
+            from programacion.contract_traceability_rows r
+            join programacion.contract_traceability_matrices m on m.id=r.matrix_id
+            where m.matrix_code='INPUT_READINESS_CONTRACT_5_13_TRACEABILITY'
+              and m.matrix_revision=1;
+            if v_rows<>60 or v_unowned<>0 then
+              raise exception 'BLOCK_M1A6_ROWS_READBACK rows=% unowned=%',v_rows,v_unowned;
+            end if;
+          end
+          $post$;
+          commit;
+          '''
+
+          Path('/tmp/m1a6_exact_apply.sql').write_text(pre + source + '\n' + ledger + post, encoding='utf-8')
+          print(f'PASS_M1A6_ATOMIC_WRAPPER source_md5={source_md5}')
+          PY
+
+      - name: Apply exact source and exact ledger atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f /tmp/m1a6_exact_apply.sql
+
+      - name: Read back terminal M1.A6 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -Atc "
+            select 'LEDGER|'||version||'|'||coalesce(name,'')||'|'||md5(statements[1])||'|'||coalesce(created_by,'')||'|'||coalesce(idempotency_key,'')
+            from supabase_migrations.schema_migrations where version='20261001204500';
+            select 'MATRIX|'||matrix_code||'|'||matrix_revision||'|'||contract_revision||'|'||matrix_sha256||'|'||clause_count||'|'||semantic_test_pending_count
+            from programacion.contract_traceability_matrices where matrix_code='INPUT_READINESS_CONTRACT_5_13_TRACEABILITY' and matrix_revision=1;
+            select 'ROWS|'||count(*)||'|UNOWNED|'||count(*) filter(where target_layer is null or target_owner is null or target_enforcement is null)
+            from programacion.contract_traceability_rows r join programacion.contract_traceability_matrices m on m.id=r.matrix_id
+            where m.matrix_code='INPUT_READINESS_CONTRACT_5_13_TRACEABILITY' and m.matrix_revision=1;
+          "
