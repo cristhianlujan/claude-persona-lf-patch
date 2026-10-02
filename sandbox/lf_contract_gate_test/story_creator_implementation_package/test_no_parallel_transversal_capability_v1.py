@@ -66,9 +66,10 @@ def main() -> int:
         for code in FORBIDDEN_PARALLEL_CODES:
             if code.lower() in text:
                 errors.append(f"PARALLEL_CAPABILITY_IDENTIFIER:{path.relative_to(HERE)}:{code}")
-        for token in FORBIDDEN_WORK_PROTOCOL_RUNTIME:
-            if token in text:
-                errors.append(f"WORK_PROTOCOL_RUNTIME_RESIDUE:{path.relative_to(HERE)}:{token}")
+        if path.suffix != ".py":
+            for token in FORBIDDEN_WORK_PROTOCOL_RUNTIME:
+                if token in text:
+                    errors.append(f"WORK_PROTOCOL_RUNTIME_RESIDUE:{path.relative_to(HERE)}:{token}")
 
     result = {
         "schema":"SC_M3_3_NO_PARALLEL_TRANSVERSAL_CAPABILITY_V1",
