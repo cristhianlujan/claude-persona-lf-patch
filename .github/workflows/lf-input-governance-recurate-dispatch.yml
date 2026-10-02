@@ -13,6 +13,10 @@ permissions:
   contents: read
   id-token: write
 
+concurrency:
+  group: lf-input-governance-recuration
+  cancel-in-progress: false
+
 jobs:
   recurate:
     uses: ./.github/workflows/lf-input-governance-recurate.yml
