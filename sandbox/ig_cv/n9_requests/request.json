@@ -1,0 +1,16 @@
+{
+  "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
+  "cases": [
+    {
+      "case_id": "N9_N7_PR1386_POSITIVE_REPLAY",
+      "candidate_ref": "2c0b324d338bfdbd7876ba0b739b909f154edb15",
+      "candidate_path": "supabase/migrations/20261001152500_ig_cv_n7_validator_detailed_chunk_timings_v1.sql",
+      "prelude_ref": "HEAD",
+      "prelude_path": "sandbox/ig_cv/fixtures/n9_n7_historical_prestate.sql",
+      "screen_id": 4,
+      "consumer": "STORY_CREATOR",
+      "expected_verdict": "NO_BLOCKING_FINDINGS",
+      "expected_finding_codes": []
+    }
+  ]
+}
