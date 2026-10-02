@@ -25,6 +25,7 @@
       ".github/workflows/lf-customer-profile-creator-governance-caller.yml",
       ".github/workflows/lf-db-regression.yml",
       ".github/workflows/lf-github-reconcile-v3.yml",
+      ".github/workflows/lf-input-governance-recurate-dispatch.yml",
       ".github/workflows/lf-input-governance-recurate.yml",
       ".github/workflows/lf-material-currentness.yml",
       ".github/workflows/lf-migration-source-parity-core.yml",
