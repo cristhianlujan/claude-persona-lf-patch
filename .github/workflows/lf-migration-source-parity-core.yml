@@ -72,7 +72,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_focal_v1.py \
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_pase_entry_v1.py \
             --repo-root . \
             --base-sha "${{ inputs.base_sha }}" \
             --head-sha "${{ inputs.head_sha }}" \
