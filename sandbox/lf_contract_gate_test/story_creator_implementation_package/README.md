@@ -1,8 +1,8 @@
-# Story Implementation Package V1.1 — candidate structural gate
+# Story Implementation Package V1.1 — candidate validator
 
 Status: `CANDIDATE / READ_ONLY / NO RUNTIME ACTIVATION`
 
-Purpose: materialize SC-M2.5 without changing the canonical Story Pack A–Q or creating a parallel runtime/gate engine.
+Purpose: validate the derived Programming Agent consumer view without changing canonical Story Pack A–Q or creating parallel source/currentness/qualification engines.
 
 ## Authority
 
@@ -10,31 +10,40 @@ Purpose: materialize SC-M2.5 without changing the canonical Story Pack A–Q or 
 - This package is a derived consumer view for Programming Agent.
 - Structured-output transport is owned by `PROFILE_STRUCTURED_OUTPUT_BOUNDARY`.
 - Judge/gate enforcement remains owned by `OPERATION_STEP_CONTRACT_JUDGE_ENFORCEMENT`.
-- Source/currentness/evidence remain owned by their existing transversal capabilities.
-- Deprecated Work Protocol V1 is prior art only and must remain non-executable.
+- Source resolution remains owned by `SOURCE_RESOLUTION_POLICY`.
+- Currentness remains owned by `CURRENTNESS_AUTHORITY`.
+- Qualification lifecycle/state remains owned by `QUALIFICATION_FRAMEWORK`.
+- Deprecated Work Protocol V1 is prior art only and remains non-executable.
 
 ## SC-M2.4B deltas included
 
-1. `hard_boundaries` carries typed `allowed_path_patterns`, `protected_path_patterns`, `allowed_effects`, and `authorization_refs`.
-2. `blocked_if` is explicit and derived from typed unresolved/conflict/currentness/evidence states.
-3. `decision_closure` is machine-checkable through `ready`, `ready_when`, `blocked_when`, `open_decisions`, `source_currentness_state`, and `evidence_completeness_state`.
+1. `hard_boundaries`: typed `allowed_path_patterns`, `protected_path_patterns`, `allowed_effects`, `authorization_refs`.
+2. `blocked_if`: derived from typed unresolved/conflict/currentness/evidence states.
+3. `decision_closure`: machine-checkable readiness/blocking/currentness/evidence semantics.
 
-## Structural validator
+## SC-M2.5 structural checks
 
-`validate_story_implementation_package_v1.py` checks:
+`validate_story_implementation_package_v1.py --self-test` verifies required shape, canonical evidence preservation, Task 0 reuse guards, typed preconditions, false-ready prevention, path collisions, and rejection of Work Protocol runtime/controller residues.
 
-- required contract sections and SHA/ref shapes;
-- canonical evidence cannot be replaced;
-- Task 0 reuse classification guards;
-- material preconditions remain typed;
-- `decision_closure.ready=true` cannot coexist with blockers, open decisions, stale/unproven source currentness, or incomplete evidence;
-- protected/allowed path collisions are rejected;
-- Work Protocol runtime/controller keys are rejected.
+## SC-M3.1 anti-invention / no-duplicate checks
+
+The same validator consumes an authority snapshot produced from existing canonical surfaces. `story_implementation_authority_checks_v1.py` is only a domain check module; it does not resolve sources or mutate qualification.
+
+It rejects deterministically:
+
+- values that differ from the exact authority assertion (`INVENTED_OR_STALE_VALUE`);
+- missing package material or missing required authority assertion;
+- unproven currentness or non-current source decision;
+- `CREATE_NEW` when a matching active capability already exists;
+- non-current source-resolution/currentness/qualification capabilities.
+
+The checked ONB_004 fixture is a frozen readback from `lf_ops` plus source-decision currentness observed on 2026-10-02; it is test evidence, not a new authority.
 
 Run:
 
 ```bash
 python sandbox/lf_contract_gate_test/story_creator_implementation_package/validate_story_implementation_package_v1.py --self-test
+python sandbox/lf_contract_gate_test/story_creator_implementation_package/validate_story_implementation_package_v1.py --anti-invention-self-test
 ```
 
-A structural PASS is not Programming Utility PASS and does not authorize promotion, merge-to-runtime, deploy, or production.
+Any PASS here is a candidate validation result only. It does not authorize promotion, runtime activation, deploy, production, or qualification mutation.

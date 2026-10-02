@@ -1,0 +1,31 @@
+{
+  "schema_version": "STORY_SOURCE_AUTHORITY_SNAPSHOT_V1",
+  "snapshot_id": "ONB_004_AUTHORITY_20261002T134302Z",
+  "observed_at": "2026-10-02T13:43:02.704069Z",
+  "source_resolution_policy": {"capability_code":"SOURCE_RESOLUTION_POLICY","state":"ACTIVE","source_ref":"public.lf_activos://SOURCE_RESOLUTION_POLICY"},
+  "currentness_authority": {"capability_code":"CURRENTNESS_AUTHORITY","state":"ACTIVE","source_ref":"public.lf_activos://CURRENTNESS_AUTHORITY"},
+  "qualification_framework": {"capability_code":"QUALIFICATION_FRAMEWORK","state":"ACTIVE","source_ref":"public.lf_activos://QUALIFICATION_FRAMEWORK"},
+  "authority_assertions": [
+    {"package_pointer":"/story_identity/screen_code","family":"SCREEN","authority_value":"ONB_004","authority_ref":"lf_ops.pantallas://57#codigo","source_currentness_state":"PROVEN_CURRENT","source_decision_id":"DEC-CLIENT-ONB004-WEB-V04-001","source_decision_number":114,"source_decision_state":"VIGENTE"},
+    {"package_pointer":"/story_identity/source_version","family":"SCREEN","authority_value":"v0.4","authority_ref":"lf_ops.pantallas://57#version","source_currentness_state":"PROVEN_CURRENT","source_decision_id":"DEC-CLIENT-ONB004-WEB-V04-001","source_decision_number":114,"source_decision_state":"VIGENTE"},
+    {"package_pointer":"/story_contracts/state_navigation_contract/route_code","family":"ROUTE","authority_value":"CLIENT_NEW_DATA_COMPLETION","authority_ref":"lf_ops.rutas://22#route_code","source_currentness_state":"PROVEN_CURRENT","source_decision_id":"DEC-CLIENT-AUTH-SESSION-RUNTIME-001","source_decision_number":105,"source_decision_state":"VIGENTE"},
+    {"package_pointer":"/story_contracts/state_navigation_contract/route_pattern","family":"ROUTE","authority_value":"/onboarding/completar-datos","authority_ref":"lf_ops.rutas://22#route_pattern","source_currentness_state":"PROVEN_CURRENT","source_decision_id":"DEC-CLIENT-AUTH-SESSION-RUNTIME-001","source_decision_number":105,"source_decision_state":"VIGENTE"},
+    {"package_pointer":"/story_contracts/design_system_contract/layout_component_token_code","family":"DESIGN_SYSTEM","authority_value":"client_auth_mockup_frame","authority_ref":"lf_ops.pantalla_variantes://75#layout_component_token_code","source_currentness_state":"PROVEN_CURRENT","source_decision_id":"DEC-CLIENT-ONB004-WEB-V04-001","source_decision_number":114,"source_decision_state":"VIGENTE"},
+    {"package_pointer":"/story_contracts/design_system_contract/theme_binding_code","family":"DESIGN_SYSTEM","authority_value":"theme_lf_light_global","authority_ref":"lf_ops.pantalla_variantes://75#theme_binding_code","source_currentness_state":"PROVEN_CURRENT","source_decision_id":"DEC-CLIENT-ONB004-WEB-V04-001","source_decision_number":114,"source_decision_state":"VIGENTE"},
+    {"package_pointer":"/story_contracts/design_system_contract/responsive_token_name","family":"DESIGN_SYSTEM","authority_value":"viewport_desktop","authority_ref":"lf_ops.pantalla_variantes://75#responsive_token_name","source_currentness_state":"PROVEN_CURRENT","source_decision_id":"DEC-CLIENT-ONB004-WEB-V04-001","source_decision_number":114,"source_decision_state":"VIGENTE"},
+    {"package_pointer":"/story_contracts/field_validation_contract/name_component_token_code","family":"DESIGN_SYSTEM","authority_value":"input_default","authority_ref":"lf_ops.campos_pantallas://266#component_token_code","source_currentness_state":"PROVEN_CURRENT","source_decision_id":"DEC-CLIENT-ONB004-WEB-V04-001","source_decision_number":114,"source_decision_state":"VIGENTE"},
+    {"package_pointer":"/story_contracts/field_validation_contract/terms_component_token_code","family":"DESIGN_SYSTEM","authority_value":"consent_checkbox_default","authority_ref":"lf_ops.campos_pantallas://268#component_token_code","source_currentness_state":"PROVEN_CURRENT","source_decision_id":"DEC-CLIENT-ONB004-WEB-V04-001","source_decision_number":114,"source_decision_state":"VIGENTE"}
+  ],
+  "required_package_pointers": [
+    "/story_identity/screen_code","/story_identity/source_version","/story_contracts/state_navigation_contract/route_code","/story_contracts/state_navigation_contract/route_pattern","/story_contracts/design_system_contract/layout_component_token_code","/story_contracts/design_system_contract/theme_binding_code","/story_contracts/design_system_contract/responsive_token_name","/story_contracts/field_validation_contract/name_component_token_code","/story_contracts/field_validation_contract/terms_component_token_code"
+  ],
+  "existing_capabilities": [
+    {"need_code":"SOURCE_RESOLUTION","capability_code":"SOURCE_RESOLUTION_POLICY","state":"ACTIVE","owner_scope":"LF_GOVERNANCE_OR_EXISTING_POLICY_OWNER","source_ref":"public.lf_activos://SOURCE_RESOLUTION_POLICY"},
+    {"need_code":"CURRENTNESS","capability_code":"CURRENTNESS_AUTHORITY","state":"ACTIVE","owner_scope":"LF_GOVERNANCE","source_ref":"public.lf_activos://CURRENTNESS_AUTHORITY"},
+    {"need_code":"QUALIFICATION","capability_code":"QUALIFICATION_FRAMEWORK","state":"ACTIVE","owner_scope":"EXISTING_TRANSVERSAL_OWNER","source_ref":"public.lf_activos://QUALIFICATION_FRAMEWORK"},
+    {"need_code":"STRUCTURED_OUTPUT","capability_code":"PROFILE_STRUCTURED_OUTPUT_BOUNDARY","state":"READ_ONLY","owner_scope":"EXISTING_PROFILE_RUNTIME_OWNER","source_ref":"public.lf_activos://PROFILE_STRUCTURED_OUTPUT_BOUNDARY"}
+  ],
+  "source_readback": {
+    "screen_updated_at":"2026-10-01T13:25:39.991516Z","route_updated_at":"2026-08-19T22:47:32.490955Z","variant_updated_at":"2026-08-21T17:26:14.725103Z","screen_state":"CANDIDATO","screen_active":true,"route_state":"VIGENTE","variant_state":"VIGENTE","decision_105_state":"VIGENTE","decision_114_state":"VIGENTE"
+  }
+}

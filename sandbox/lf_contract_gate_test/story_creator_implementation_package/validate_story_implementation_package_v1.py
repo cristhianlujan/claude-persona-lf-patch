@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""SC-M2.5 structural validator for STORY_IMPLEMENTATION_PACKAGE_V1_1."""
+"""Structural + authority-bound validator for STORY_IMPLEMENTATION_PACKAGE_V1_1.
+
+The package validator remains a domain consumer of LF source resolution,
+currentness and qualification capabilities. It does not replace those owners.
+"""
 from __future__ import annotations
 
 import argparse
@@ -13,8 +17,11 @@ try:
 except ImportError as exc:
     raise SystemExit("BLOCKED_DEPENDENCY_MISSING: jsonschema") from exc
 
+from story_implementation_authority_checks_v1 import authority_self_test, validate_authority
+
 HERE = Path(__file__).resolve().parent
 SCHEMA = HERE / "story_implementation_package_v1.schema.json"
+AUTHORITY_FIXTURE = HERE / "fixtures" / "onb_004_authority_snapshot_20261002.json"
 FORBIDDEN = {
     "work_protocol_manifest_v1", "work_protocol_runtime", "work_protocol_orchestrator",
     "g07_controller", "g08_closure_controller", "g09_cold_replay",
@@ -205,13 +212,28 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("package", nargs="?")
     ap.add_argument("--self-test", action="store_true")
+    ap.add_argument("--anti-invention-self-test", action="store_true")
+    ap.add_argument("--authority-snapshot")
     args = ap.parse_args()
+
     if args.self_test:
-        out = self_test(); print(json.dumps(out, indent=2, sort_keys=True)); return 0 if out["result"] == "PASS" else 1
+        out = self_test()
+        print(json.dumps(out, indent=2, sort_keys=True))
+        return 0 if out["result"] == "PASS" else 1
+
+    if args.anti_invention_self_test:
+        snapshot = json.loads(AUTHORITY_FIXTURE.read_text(encoding="utf-8"))
+        out = authority_self_test(valid_fixture(), snapshot)
+        print(json.dumps(out, indent=2, sort_keys=True))
+        return 0 if out["result"] == "PASS" else 1
+
     if not args.package:
-        ap.error("package path required unless --self-test is used")
+        ap.error("package path required unless a self-test flag is used")
     payload = json.loads(Path(args.package).read_text(encoding="utf-8"))
     errors = validate_package(payload)
+    if args.authority_snapshot and not errors:
+        snapshot = json.loads(Path(args.authority_snapshot).read_text(encoding="utf-8"))
+        errors.extend(validate_authority(payload, snapshot))
     print(json.dumps({"result": "PASS" if not errors else "BLOCKED", "errors": errors}, indent=2, sort_keys=True))
     return 0 if not errors else 1
 
