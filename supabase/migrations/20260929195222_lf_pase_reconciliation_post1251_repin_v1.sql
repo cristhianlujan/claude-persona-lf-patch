@@ -7,6 +7,7 @@
 -- source_authority=supabase_migrations.schema_migrations
 -- source_version=20260929195222
 -- source_name=lf_pase_reconciliation_post1251_repin_v1
+
 -- Post-PR1251 governance repin for .github/workflows/lf-github-reconcile-v3.yml.
 -- Advances only the canonical governance fingerprint to exact main
 -- dbc07b79563e16095c04821a8f05edce21bada88 bytes.
