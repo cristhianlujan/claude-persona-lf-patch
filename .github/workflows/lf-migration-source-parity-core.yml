@@ -21,6 +21,21 @@ on:
         required: false
         default: "pull_request"
         type: string
+      control_maturity:
+        description: "PASE control lifecycle stage; Phase 04 Migration Parity is CUTOVER"
+        required: false
+        default: "CUTOVER"
+        type: string
+      evaluation_scope:
+        description: "Explicit PASE evaluation scope; no implicit historical broad scan"
+        required: false
+        default: "CHANGESET_SCOPED"
+        type: string
+      historical_debt_disposition:
+        description: "Disposition for non-causal historical debt during this cutover"
+        required: false
+        default: "RECONCILIATION_WORK_ITEM"
+        type: string
     secrets:
       LF_SUPABASE_DB_PASSWORD:
         required: true
@@ -47,7 +62,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Execute focal canonical Migration Source Parity flow
+      - name: Execute context-aware canonical Migration Source Parity flow
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -63,6 +78,9 @@ jobs:
             --head-sha "${{ inputs.head_sha }}" \
             --base-ref "${{ inputs.base_ref }}" \
             --event-name "${{ inputs.event_name }}" \
+            --control-maturity "${{ inputs.control_maturity }}" \
+            --evaluation-scope "${{ inputs.evaluation_scope }}" \
+            --historical-debt-disposition "${{ inputs.historical_debt_disposition }}" \
             --output-dir .lf_migration_source_parity
 
       - name: Persist bounded Migration Source Parity evidence
