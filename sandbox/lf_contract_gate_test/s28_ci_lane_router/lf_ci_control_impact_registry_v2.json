@@ -215,11 +215,15 @@
     },
     {
       "control_id": "MIGRATION_SOURCE_PARITY",
-      "carrier": "LF_CONTRACT_CHECK",
+      "carrier": "MIGRATION_SOURCE_PARITY",
       "path_matchers": [
         {
           "kind": "prefix",
           "value": "supabase/migrations/"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-migration-source-parity-core.yml"
         }
       ],
       "material_matchers": [],

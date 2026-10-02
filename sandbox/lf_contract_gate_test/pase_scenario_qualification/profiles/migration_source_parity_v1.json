@@ -1,0 +1,39 @@
+{
+  "schema_version": "lf-pase-scenario-profile/v1",
+  "policy_id": "PASE_SCENARIO_QUALIFICATION_MATRIX_V1",
+  "control_id": "MIGRATION_SOURCE_PARITY",
+  "maturity": "CUTOVER",
+  "traits": ["AUTHORITY_GUARDED","CANONICAL_CARRIER","CHANGE_SCOPED","DATABASE_MIGRATION","EXACT_HEAD","EXTERNAL_DEPENDENCY","HISTORICAL_STATE","LEGACY_DECONTAMINATION","POST_MERGE_READBACK","READ_ONLY_CONTROL","RETRYABLE","ROUTER_APPLICABILITY"],
+  "evidence_commands": {
+    "MSP_SCENARIO_EVIDENCE": {"argv":["python3","sandbox/lf_contract_gate_test/pase_scenario_qualification/test_migration_source_parity_scenario_evidence_v1.py"]},
+    "MSP_CLEAN_CARRIER": {"argv":["python3","sandbox/lf_contract_gate_test/s30_migration_source_parity/test_migration_source_parity_clean_carrier_v1.py"]},
+    "PASE_PLAN_SELFTEST": {"argv":["python3","sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py"]}
+  },
+  "assertions": {
+    "SCN-LIFECYCLE-PR-CURRENTNESS":{"disposition":"TESTED","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_PR_CURRENTNESS"}]},
+    "SCN-LIFECYCLE-PUSH-CURRENTNESS":{"disposition":"TESTED","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_PUSH_CURRENTNESS"}]},
+    "SCN-LIFECYCLE-UNKNOWN-EVENT-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_UNKNOWN_EVENT_BLOCK"}]},
+    "SCN-CURRENTNESS-STALE-HEAD-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_STALE_HEAD_BLOCK"}]},
+    "SCN-CURRENTNESS-BASE-NOT-ANCESTOR-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_BASE_NOT_ANCESTOR_BLOCK"}]},
+    "SCN-APPLICABILITY-NOT-APPLICABLE":{"disposition":"TESTED","evidence":[{"command_id":"PASE_PLAN_SELFTEST","marker":"LF_CI_EXECUTION_PLAN_V2_PASS="}]},
+    "SCN-AUTHORITY-MISSING-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_AUTHORITY_CONTEXT_MISSING_BLOCK"}]},
+    "SCN-AUTHORITY-WRONG-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_AUTHORITY_WRONG_BLOCK"}]},
+    "SCN-CARRIER-CANONICAL":{"disposition":"TESTED","evidence":[{"command_id":"MSP_CLEAN_CARRIER","marker":"PASS_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_V1 checks="}]},
+    "SCN-CARRIER-FOREIGN-DEPENDENCY-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_CLEAN_CARRIER","marker":"PASS_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_V1 checks="}]},
+    "SCN-EVIDENCE-EXACT-HEAD":{"disposition":"TESTED","evidence":[{"runtime_assertion":"SCOPE_MANIFEST_EXACT"}]},
+    "SCN-EVIDENCE-STALE-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_STALE_HEAD_BLOCK"}]},
+    "SCN-RETRY-IDEMPOTENT":{"disposition":"TESTED","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_TRANSPORT_RETRY_IDEMPOTENT"}]},
+    "SCN-CONCURRENCY-MAIN-ADVANCE-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_CONCURRENT_MAIN_ADVANCE_BLOCK"}]},
+    "SCN-HISTORICAL-NONCAUSAL-OUT-OF-CRITICAL-PATH":{"disposition":"TESTED","evidence":[{"runtime_assertion":"SCOPE_MANIFEST_EXACT"}]},
+    "SCN-HISTORICAL-CAUSAL-ESCALATION":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_HISTORICAL_CAUSAL_BLOCK"}]},
+    "SCN-MIGRATION-ADD":{"disposition":"TESTED","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_MIGRATION_ADD"}]},
+    "SCN-MIGRATION-MODIFY":{"disposition":"TESTED","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_MIGRATION_MODIFY"}]},
+    "SCN-MIGRATION-DELETE-RENAME-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_MIGRATION_DELETE_RENAME_BLOCK"}]},
+    "SCN-MIGRATION-VERSION-CONTENT-PARITY":{"disposition":"TESTED","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_VERSION_CONTENT_PARITY"}]},
+    "SCN-MIGRATION-ALREADY-APPLIED-EXACT":{"disposition":"TESTED","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_ALREADY_APPLIED_EXACT"}]},
+    "SCN-MIGRATION-SAME-VERSION-DIVERGENT-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_SAME_VERSION_DIVERGENT_BLOCK"}]},
+    "SCN-DEPENDENCY-UNAVAILABLE-BLOCK":{"disposition":"BLOCKED_EXPLICITLY","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_DEPENDENCY_UNAVAILABLE_BLOCK"}]},
+    "SCN-RECOVERY-PRE-EFFECT-RETRY":{"disposition":"TESTED","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_TRANSPORT_RETRY_IDEMPOTENT"}]},
+    "SCN-POSTMERGE-READBACK":{"disposition":"TESTED","evidence":[{"command_id":"MSP_SCENARIO_EVIDENCE","marker":"PASS_SCENARIO_MSP_PUSH_CURRENTNESS"},{"runtime_assertion":"RUN_SUMMARY_SCOPE"}]}
+  }
+}

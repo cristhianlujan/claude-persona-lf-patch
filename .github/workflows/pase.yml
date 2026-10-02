@@ -18,6 +18,10 @@ jobs:
   lf-pase:
     name: PASE
     runs-on: ubuntu-latest
+    outputs:
+      required_controls_json: ${{ steps.pase_plan.outputs.required_controls_json }}
+      resolved_base_sha: ${{ steps.pase_plan.outputs.resolved_base_sha }}
+      resolved_head_sha: ${{ steps.pase_plan.outputs.resolved_head_sha }}
 
     steps:
       - name: Checkout exact candidate source
@@ -67,6 +71,15 @@ jobs:
             args+=(--base "$base_sha")
           fi
           "${args[@]}"
+
+          resolved_base_sha="$base_sha"
+          if [[ -z "$resolved_base_sha" || "$resolved_base_sha" =~ ^0+$ ]]; then
+            resolved_base_sha="$current_main"
+          fi
+          {
+            echo "resolved_base_sha=$resolved_base_sha"
+            echo "resolved_head_sha=$head_sha"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build canonical PASE dispatch plan
         shell: bash
@@ -192,6 +205,26 @@ jobs:
           )
           PY
 
+      - name: Run POST-PASE L6 multi-scenario E2E when changed
+        if: github.event_name == 'pull_request'
+        env:
+          LF_E2E_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          LF_E2E_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_sha="${LF_E2E_BASE_SHA:-}"
+          head_sha="${LF_E2E_HEAD_SHA:-$(git rev-parse HEAD)}"
+          if [[ -z "$base_sha" || "$base_sha" =~ ^0+$ ]]; then
+            echo "SKIP_POST_PASE_L6_E2E_NO_BASE_SHA"
+            exit 0
+          fi
+          if ! git diff --name-only "$base_sha" "$head_sha" | grep -q '^sandbox/lf_contract_gate_test/post_pase_e2e/'; then
+            echo "SKIP_POST_PASE_L6_E2E_NOT_CHANGED"
+            exit 0
+          fi
+          PYTHONPATH=. python3 sandbox/lf_contract_gate_test/post_pase_e2e/test_post_pase_multi_scenario_e2e_v1.py
+
       - name: Persist canonical PASE plan
         uses: actions/upload-artifact@v4
         with:
@@ -207,3 +240,15 @@ jobs:
           path: .lf_ci/lf_pase_dispatch_plan_v1.json
           if-no-files-found: error
           retention-days: 30
+
+  migration-source-parity:
+    name: PASE / MIGRATION_SOURCE_PARITY
+    needs: lf-pase
+    if: ${{ contains(fromJSON(needs.lf-pase.outputs.required_controls_json), 'MIGRATION_SOURCE_PARITY') }}
+    uses: ./.github/workflows/lf-migration-source-parity-core.yml
+    with:
+      base_sha: ${{ needs.lf-pase.outputs.resolved_base_sha }}
+      head_sha: ${{ needs.lf-pase.outputs.resolved_head_sha }}
+      base_ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || 'main' }}
+      event_name: ${{ github.event_name }}
+    secrets: inherit

@@ -38,6 +38,64 @@ def _load(name: str, path: pathlib.Path):
 _legacy = _load("lf_migration_source_parity_ci_context", _CONTEXT_PATH)
 _core = _load("migration_source_parity_core", _CORE_PATH)
 
+# SADM-PP-L5-022 established post_pase_* as a governed LF_GOVERNANCE-owned
+# migration family (terminal readbacks include lf_eventos #19718 and #19733).
+# Classify the family, never an individual filename, while preserving the
+# fail-closed unknown-family negative in the legacy context.
+POST_PASE_EXTERNAL_MIGRATION_PREFIX = "post_pase_"
+if POST_PASE_EXTERNAL_MIGRATION_PREFIX not in _legacy.CLASSIFIED_EXTERNAL_PREFIXES:
+    _legacy.CLASSIFIED_EXTERNAL_PREFIXES = (
+        *_legacy.CLASSIFIED_EXTERNAL_PREFIXES,
+        POST_PASE_EXTERNAL_MIGRATION_PREFIX,
+    )
+if not _legacy.classified("post_pase_waiver_authority_cutover_v1"):
+    _legacy.fail("FAIL_CI009_SELFTEST_POST_PASE_EXTERNAL_OWNER_FAMILY")
+
+# INV-6.2 used the shorter input_gov_* source prefix for a governed Input
+# Governance migration. PR #1450, lf_eventos #19834/#19722 and exact-version
+# source-first ledger identity establish it as an authority alias of the existing
+# input_governance_* family, not a filename exception.
+INPUT_GOV_EXTERNAL_MIGRATION_PREFIX = "input_gov_"
+if INPUT_GOV_EXTERNAL_MIGRATION_PREFIX not in _legacy.CLASSIFIED_EXTERNAL_PREFIXES:
+    _legacy.CLASSIFIED_EXTERNAL_PREFIXES = (
+        *_legacy.CLASSIFIED_EXTERNAL_PREFIXES,
+        INPUT_GOV_EXTERNAL_MIGRATION_PREFIX,
+    )
+if not _legacy.classified("input_gov_recuration_authorized_screens_v1"):
+    _legacy.fail("FAIL_CI009_SELFTEST_INPUT_GOV_EXTERNAL_AUTHORITY_ALIAS")
+
+# Two applied JIT inventory projections use the verb-prefixed
+# add_input_governance_* naming family. Live view comments explicitly keep
+# public.lf_activos + public.lf_activo_relaciones as canonical authority and mark
+# repository/Drive material as evidence only, so this is an external IG projection
+# family rather than a new migration owner or a per-file exception.
+INPUT_GOV_PROJECTION_EXTERNAL_PREFIX = "add_input_governance_"
+if INPUT_GOV_PROJECTION_EXTERNAL_PREFIX not in _legacy.CLASSIFIED_EXTERNAL_PREFIXES:
+    _legacy.CLASSIFIED_EXTERNAL_PREFIXES = (
+        *_legacy.CLASSIFIED_EXTERNAL_PREFIXES,
+        INPUT_GOV_PROJECTION_EXTERNAL_PREFIX,
+    )
+for _sample in (
+    "add_input_governance_inventory_plan_view_v1",
+    "add_input_governance_repo_inventory_plan_view_v1",
+):
+    if not _legacy.classified(_sample):
+        _legacy.fail("FAIL_CI009_SELFTEST_INPUT_GOV_PROJECTION_EXTERNAL_FAMILY", _sample)
+
+# The 2026-09-30 Contract Check bridge migration is historical transition
+# evidence only: its own SQL declares TEMPORARY_COMPATIBILITY_BRIDGE,
+# cleanup_required=true and new_consumers_allowed=false; lf_eventos #19403
+# confirms that legacy carriers cannot be valid re-entry targets. Classifying this
+# narrow family preserves ledger history without restoring Contract Check ownership.
+CONTRACT_CHECK_LEGACY_BRIDGE_EXTERNAL_PREFIX = "contract_check_legacy_bridge_"
+if CONTRACT_CHECK_LEGACY_BRIDGE_EXTERNAL_PREFIX not in _legacy.CLASSIFIED_EXTERNAL_PREFIXES:
+    _legacy.CLASSIFIED_EXTERNAL_PREFIXES = (
+        *_legacy.CLASSIFIED_EXTERNAL_PREFIXES,
+        CONTRACT_CHECK_LEGACY_BRIDGE_EXTERNAL_PREFIX,
+    )
+if not _legacy.classified("contract_check_legacy_bridge_inventory_v1_fix"):
+    _legacy.fail("FAIL_CI009_SELFTEST_CONTRACT_CHECK_LEGACY_BRIDGE_HISTORY")
+
 # Preserve the existing module surface for current tests/consumers. The active
 # parity comparator below intentionally replaces the legacy implementation.
 for _name in dir(_legacy):

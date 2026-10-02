@@ -1,0 +1,114 @@
+name: LF Migration Source Parity Core
+
+on:
+  workflow_call:
+    inputs:
+      base_sha:
+        description: "Exact PR/pass base already resolved by CI Governance"
+        required: true
+        type: string
+      head_sha:
+        description: "Exact candidate head"
+        required: true
+        type: string
+      base_ref:
+        description: "Base branch ref used only for live currentness readback"
+        required: false
+        default: "main"
+        type: string
+      event_name:
+        description: "Original pass event semantics for source-first handling"
+        required: false
+        default: "pull_request"
+        type: string
+      control_maturity:
+        description: "PASE control lifecycle stage; Phase 04 Migration Parity is CUTOVER"
+        required: false
+        default: "CUTOVER"
+        type: string
+      evaluation_scope:
+        description: "Explicit PASE evaluation scope; no implicit historical broad scan"
+        required: false
+        default: "CHANGESET_SCOPED"
+        type: string
+      historical_debt_disposition:
+        description: "Disposition for non-causal historical debt during this cutover"
+        required: false
+        default: "RECONCILIATION_WORK_ITEM"
+        type: string
+    secrets:
+      LF_SUPABASE_DB_PASSWORD:
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  migration-source-parity:
+    name: Execute MIGRATION_SOURCE_PARITY
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout exact candidate head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.head_sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Execute context-aware canonical Migration Source Parity flow
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_pase_entry_v1.py \
+            --repo-root . \
+            --base-sha "${{ inputs.base_sha }}" \
+            --head-sha "${{ inputs.head_sha }}" \
+            --base-ref "${{ inputs.base_ref }}" \
+            --event-name "${{ inputs.event_name }}" \
+            --control-maturity "${{ inputs.control_maturity }}" \
+            --evaluation-scope "${{ inputs.evaluation_scope }}" \
+            --historical-debt-disposition "${{ inputs.historical_debt_disposition }}" \
+            --output-dir .lf_migration_source_parity
+
+      - name: Validate reusable scenario qualification resolver
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_scenario_qualification/test_pase_scenario_qualification_v1.py
+
+      - name: Qualify selected Migration Source Parity scenarios
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_qualification_v1.py \
+            --repo-root . \
+            --catalog sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_catalog_v1.json \
+            --profile sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/migration_source_parity_v1.json \
+            --maturity "${{ inputs.control_maturity }}" \
+            --base-sha "${{ inputs.base_sha }}" \
+            --head-sha "${{ inputs.head_sha }}" \
+            --runtime-dir .lf_migration_source_parity \
+            --output .lf_migration_source_parity/scenario-qualification.json
+
+      - name: Persist bounded Migration Source Parity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-migration-source-parity-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_migration_source_parity
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

@@ -95,6 +95,13 @@ def test_staged_definition_has_no_autonomous_trigger() -> None:
         assert forbidden not in text, forbidden
 
 
+def test_hidden_evidence_artifact_is_uploaded_explicitly() -> None:
+    text = WORKFLOW.read_text(encoding="utf-8")
+    assert "path: .lf_pack_validation" in text
+    assert "include-hidden-files: true" in text
+    assert "if-no-files-found: error" in text
+
+
 def test_target_workflow_not_installed_before_cutover() -> None:
     assert not TARGET_WORKFLOW.exists(), "target carrier must remain absent until PR-6 cutover"
 

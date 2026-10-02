@@ -23,7 +23,10 @@
   },
   "canonical_quality": {
     "required_for_profile_pack_ids": [
-      "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+      "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3",
+      "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4",
+      "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5",
+      "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
     ],
     "judge_path": "judges/mini_judge.md",
     "semantic_judge_path": "judges/systemic_root_cause_semantic_judge.md",
@@ -37,6 +40,34 @@
       "callable": "validate_quality_receipt"
     },
     "deterministic_floors_can_accept_quality": false,
-    "receipt_required_for_pass_to_quality_pack": true
+    "receipt_required_for_pass_to_quality_pack": true,
+    "quality_receipt_materializer": {
+      "path": "validators/materialize_quality_receipt.py",
+      "callable": "materialize_quality_receipt"
+    }
+  },
+  "model_context": {
+    "full_source_to_model": false,
+    "required_source_refs": [
+      "profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md"
+    ],
+    "allow_additional_sources": true,
+    "source_projection": {
+      "mode": "MARKDOWN_SECTIONS",
+      "include_sections": [
+        "Purpose",
+        "Working method (do this first; the rules below are how the result is checked)",
+        "Output trajectory (field order for the typed output)",
+        "Claim semantics",
+        "Status semantics",
+        "Required inputs",
+        "Non-negotiable rules",
+        "Typed output",
+        "Claim ceiling",
+        "Closure-proof contract"
+      ],
+      "max_chars": 42000
+    }
   }
 }

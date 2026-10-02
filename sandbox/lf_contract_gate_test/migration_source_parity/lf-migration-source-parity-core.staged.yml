@@ -47,7 +47,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Execute canonical Migration Source Parity flow
+      - name: Execute focal canonical Migration Source Parity flow
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -57,7 +57,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py \
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_focal_v1.py \
             --repo-root . \
             --base-sha "${{ inputs.base_sha }}" \
             --head-sha "${{ inputs.head_sha }}" \
@@ -71,5 +71,6 @@ jobs:
         with:
           name: lf-migration-source-parity-${{ github.run_id }}-${{ github.run_attempt }}
           path: .lf_migration_source_parity
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 30

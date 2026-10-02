@@ -19,7 +19,11 @@
     "residual_risks",
     "evidence_map",
     "blocking_codes",
-    "next_gate"
+    "next_gate",
+    "case_mode",
+    "live_authority_packet",
+    "material_process_graph",
+    "current_uncertainties"
   ],
   "required_quality_boundary": {
     "canonical_semantic_gate_required": true,

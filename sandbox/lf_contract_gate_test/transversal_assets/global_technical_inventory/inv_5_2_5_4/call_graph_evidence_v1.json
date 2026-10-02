@@ -1,0 +1,85 @@
+{
+  "schema_version": "lf-inv-5-2-5-4-call-graph-evidence/v1",
+  "observed_main_sha": "cbf486c4d60dc3d266a516d5e5fa62ec971dceba",
+  "extractor": {
+    "path": "sandbox/lf_contract_gate_test/global_technical_inventory/extract_caller_workflow_calls_v1.py",
+    "blob_sha": "9feab5e4f504b134439b9de66718139f51a8b01a"
+  },
+  "sources": [
+    {
+      "path": ".github/workflows/lf-input-governance-recurate.yml",
+      "blob_sha": "eeb5f355aee393c59d543c1de80c455285e2073e",
+      "object_id": 54690,
+      "object_ref": "repo://.github/workflows/lf-input-governance-recurate.yml"
+    },
+    {
+      "path": "supabase/functions/lf-profiles-governance-caller-v1/index.ts",
+      "blob_sha": "2da23953cb8dc15640a346b18aeed90d10518a83",
+      "object_id": 5775,
+      "object_ref": "edge://lf-profiles-governance-caller-v1",
+      "source_code_object_ref": "repo://supabase/functions/lf-profiles-governance-caller-v1/index.ts"
+    }
+  ],
+  "calls": [
+    {
+      "unit": "INV-5.2",
+      "source_object_id": 54690,
+      "source_ref": "repo://.github/workflows/lf-input-governance-recurate.yml",
+      "target_object_id": 5775,
+      "target_ref": "edge://lf-profiles-governance-caller-v1",
+      "relation_type": "CALLS",
+      "evidence_type": "GITHUB_WORKFLOW_HTTP_CALL",
+      "evidence": "POST /functions/v1/lf-profiles-governance-caller-v1",
+      "dependency_key": "GITHUB_CALLS|54690|5775",
+      "source_path": ".github/workflows/lf-input-governance-recurate.yml",
+      "source_blob": "eeb5f355aee393c59d543c1de80c455285e2073e"
+    },
+    {
+      "unit": "INV-5.4",
+      "source_object_id": 5775,
+      "source_ref": "edge://lf-profiles-governance-caller-v1",
+      "target_object_id": 5773,
+      "target_ref": "edge://input-governance-agent-v1",
+      "relation_type": "CALLS",
+      "evidence_type": "GITHUB_TYPESCRIPT_CALL_RUNTIME",
+      "evidence": "callRuntime(\"input-governance-agent-v1\", ...)",
+      "dependency_key": "GITHUB_CALLS|5775|5773",
+      "source_path": "supabase/functions/lf-profiles-governance-caller-v1/index.ts",
+      "source_blob": "2da23953cb8dc15640a346b18aeed90d10518a83"
+    },
+    {
+      "unit": "INV-5.4",
+      "source_object_id": 5775,
+      "source_ref": "edge://lf-profiles-governance-caller-v1",
+      "target_object_id": 5744,
+      "target_ref": "edge://run-creacion-perfil-lf",
+      "relation_type": "CALLS",
+      "evidence_type": "GITHUB_TYPESCRIPT_CALL_RUNTIME",
+      "evidence": "callRuntime(\"run-creacion-perfil-lf\", ...)",
+      "dependency_key": "GITHUB_CALLS|5775|5744",
+      "source_path": "supabase/functions/lf-profiles-governance-caller-v1/index.ts",
+      "source_blob": "2da23953cb8dc15640a346b18aeed90d10518a83"
+    }
+  ],
+  "inv_5_3": {
+    "reusable_workflow_object_id": 54690,
+    "reusable_workflow_ref": "repo://.github/workflows/lf-input-governance-recurate.yml",
+    "callers_in_main_tree": [],
+    "relation_created": false,
+    "reason": "NO_CALLER_IN_MAIN_TREE",
+    "decision_issue": 1423,
+    "verification": {
+      "exact_local_uses_search_results": [],
+      "exact_remote_uses_search_results": []
+    }
+  },
+  "deferred_drive_citations": {
+    "unit": "INV-5.5",
+    "dependency_ids": [
+      10115,
+      10116,
+      10117
+    ],
+    "action_now": "NONE"
+  }
+}

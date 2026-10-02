@@ -72,6 +72,26 @@ Q10 coverage preserved: all responsibilities claimed as preserved/replaced are a
 
 Q11 exact-head evidence/readback: every material PASS claim cites evidence generated/read against exact head. Stale/head-mismatched evidence blocks qualification.
 
+## Scenario-aware qualification overlay
+
+`PASE_SCENARIO_QUALIFICATION_MATRIX_V1` is mandatory before terminal control-set qualification and before ACTIVE_BLOCKING transition. It is an evidence/coverage overlay for Q06, Q10 and activation readiness; it does **not** change this contract's input/result schema and it does not become a second applicability authority.
+
+Scenario selection is derived only from:
+
+`control maturity + declared control traits + deterministic scenario catalog predicates`.
+
+For every scenario in the canonical catalog:
+- selected -> terminal disposition must be `TESTED` or `BLOCKED_EXPLICITLY`, backed by bounded exact-head evidence;
+- unselected -> `NOT_APPLICABLE` with machine-derived predicate reason;
+- selected without evidence/assertion -> `BLOCK_SCENARIO_SELECTED_UNKNOWN`;
+- selected `UNKNOWN` is forbidden.
+
+The resolver MUST deduplicate shared evidence probes and execute only selected scenario evidence. It MUST NOT infer a universal mega-suite or historical broad scan.
+
+Maturity transitions are material. A scenario that is `NOT_APPLICABLE` during BUILD/QUALIFICATION/CUTOVER may become selected during ACTIVE. Therefore the activation gate must re-resolve the scenario matrix against ACTIVE maturity before any `ACTIVE_BLOCKING` transition.
+
+This is the enforcement form of `NO_FIRST_DISCOVERY_IN_PRODUCTION`: every realistic reachable state represented by the canonical catalog is either proven, explicitly fail-closed, or deterministically not applicable before activation.
+
 ## External findings
 Every external finding MUST be represented as:
 ```json

@@ -12,6 +12,10 @@ import json
 from typing import Any
 
 V03_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_3"
+V04_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_4"
+V05_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_5"
+V06_PACK_ID = "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+INCREMENTAL_VALUE_PACK_IDS = {V03_PACK_ID, V04_PACK_ID, V05_PACK_ID, V06_PACK_ID}
 BASELINE_VERSION = "SRCR_BASELINE_SOLUTION_V1"
 BASELINE_CAPTURE_STAGE = "PRE_RESEARCH_CHALLENGER"
 OUTCOMES = {"MATERIAL_UPLIFT", "NO_MATERIAL_UPLIFT", "UNPROVEN"}
@@ -47,7 +51,7 @@ def canonical_baseline_digest(snapshot: dict[str, Any]) -> str:
 
 
 def incremental_value_applicable(payload: dict[str, Any]) -> bool:
-    if not isinstance(payload, dict) or payload.get("profile_pack_id") != V03_PACK_ID:
+    if not isinstance(payload, dict) or payload.get("profile_pack_id") not in INCREMENTAL_VALUE_PACK_IDS:
         return False
     depth = payload.get("solution_depth") if isinstance(payload.get("solution_depth"), dict) else {}
     research = payload.get("research_assurance") if isinstance(payload.get("research_assurance"), dict) else {}

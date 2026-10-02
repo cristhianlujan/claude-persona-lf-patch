@@ -1,0 +1,298 @@
+[
+  {
+    "object_id": 5742,
+    "object_ref": "edge://audit-skill-protocols",
+    "active": true,
+    "source_version": "3",
+    "definition_sha256": "8b837fd4298699e37d0638b31853f1e2ddb5b06a2a17b9cf3bb695928cf319a5",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5743,
+    "object_ref": "edge://audit-skill-protocols-strict",
+    "active": true,
+    "source_version": "3",
+    "definition_sha256": "daf365c1992b8b0360037a69178c64575d763c9574a3c4eb00b770624946b933",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5746,
+    "object_ref": "edge://get-perfil-lf-runtime-protocol",
+    "active": true,
+    "source_version": "6",
+    "definition_sha256": "b2f40d1b5b38b431e34753727108fe737241a5c366ae711d321c4a633e26bed8",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5747,
+    "object_ref": "edge://get-perfil-lf-runtime-protocol-public-test",
+    "active": true,
+    "source_version": "4",
+    "definition_sha256": "de1c2d2179cbc33886981be852bf052788be2d2c4c601f8754ec76aad0c2a3dd",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5773,
+    "object_ref": "edge://input-governance-agent-v1",
+    "active": true,
+    "source_version": "2",
+    "definition_sha256": "2b2091358cfae7d0685180bad02a2315b7e005c683ecfa3493858a25b7ba7982",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5771,
+    "object_ref": "edge://input-governance-curator-v1",
+    "active": true,
+    "source_version": "1",
+    "definition_sha256": "0fa8d5bea9667e88133e22ce476f9a9fbba7b5fd9a1104c077097e4c544d1fa4",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5772,
+    "object_ref": "edge://input-governance-validator-v1",
+    "active": true,
+    "source_version": "3",
+    "definition_sha256": "3d27b115631d504a1f35cdf146996bfc3207f0dd43f0b9c2ea507c26c70fedd8",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5752,
+    "object_ref": "edge://lf-architecture-alert-sink-v4",
+    "active": true,
+    "source_version": "4",
+    "definition_sha256": "83665fc789c2e1eb1848c90d9d8f7f261ef6af8a334da7586a15361af378ebf8",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5759,
+    "object_ref": "edge://lf-brand-assets-sync-v1",
+    "active": true,
+    "source_version": "9",
+    "definition_sha256": "3c7756c14f01d1778949ac6002730d5ab400c02f8952bd14d5df660f5fb24405",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5753,
+    "object_ref": "edge://lf-github-admin-remediation-v1",
+    "active": true,
+    "source_version": "3",
+    "definition_sha256": "ea6ea8b2523e7a9b2730e4db2d616739d5e0e69b2061056f4f301bfa49206c6a",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5754,
+    "object_ref": "edge://lf-github-branch-cleanup-v1",
+    "active": true,
+    "source_version": "4",
+    "definition_sha256": "2ba47214f2966f9448c57d661365c23251a893bb4235d1b31730fc90390c7015",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5751,
+    "object_ref": "edge://lf-github-reconcile-v3",
+    "active": true,
+    "source_version": "13",
+    "definition_sha256": "0fd6881bd3e2770433f4d06b43a9ad6fd2d067c75c1886bedddb9c010b116d38",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5757,
+    "object_ref": "edge://lf-p0-exact-head-evidence-broker-v1",
+    "active": true,
+    "source_version": "1",
+    "definition_sha256": "9aed52129d6b2f657ad1bcd002563bdaf9fd332d8376c473ba326a33d31a8294",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5758,
+    "object_ref": "edge://lf-p0-exact-head-evidence-broker-v2",
+    "active": true,
+    "source_version": "3",
+    "definition_sha256": "2350a51929ca21e3284b5d214d09b411156bca23efe71db389408b08225437af",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5766,
+    "object_ref": "edge://lf-p0-human-review-canonical-transfer-once",
+    "active": true,
+    "source_version": "2",
+    "definition_sha256": "9afc25b9fa2320075f972c1ac2628748c8e3fe8581c2b6555c1c7fd977f55c77",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5763,
+    "object_ref": "edge://lf-p0-human-review-v42-download-temp",
+    "active": true,
+    "source_version": "1",
+    "definition_sha256": "647781ca9241fb78af88603bc85ba885d1e6449c864248ed24965dbdaf0a7b32",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5762,
+    "object_ref": "edge://lf-p0-human-review-v42-export-temp",
+    "active": true,
+    "source_version": "6",
+    "definition_sha256": "ef6cd9bda56ef5a7d7b86a4d27b798d452270eb9343c78770c7491aa95700ea8",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5765,
+    "object_ref": "edge://lf-p0-human-review-v42-materialize-once",
+    "active": true,
+    "source_version": "7",
+    "definition_sha256": "e4f25050737f6126659e2b1a579e7ad1235c9bd04791359309c1902ac05f5b26",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5764,
+    "object_ref": "edge://lf-p0-human-review-v42-materialize-v1",
+    "active": true,
+    "source_version": "2",
+    "definition_sha256": "45956f1e39efa8735d2f788573413723857017725b1f88195ab42a8740783feb",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5761,
+    "object_ref": "edge://lf-p0-human-review-web-v1",
+    "active": true,
+    "source_version": "4",
+    "definition_sha256": "515a9bad94a857db8eb4f74b99a23fc3c7e145655817cfaa5772247e3d7e119c",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5756,
+    "object_ref": "edge://lf-p0-private-source-ingest-v1",
+    "active": true,
+    "source_version": "2",
+    "definition_sha256": "08370a06618f83b12cc50c49f3d5029e97107f5969547d924eea379d8e7c153a",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5755,
+    "object_ref": "edge://lf-pr93-source-patcher-v1",
+    "active": true,
+    "source_version": "6",
+    "definition_sha256": "bc0c9932ad2dd8a4dd3c829453b7b8f0923a4c4e427f1c3a5760e95d70cd003c",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5777,
+    "object_ref": "edge://lf-profile-creator-governance-caller-v1",
+    "active": true,
+    "source_version": "5",
+    "definition_sha256": "6198f6d1de8ea04ebb258a012c3f80f8df4989fca44a243047ea35c27d8d1f6e",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5775,
+    "object_ref": "edge://lf-profiles-governance-caller-v1",
+    "active": true,
+    "source_version": "6",
+    "definition_sha256": "2ec5bc1f5b59a820a5adc8046ebfa7a0d6be1c8cd08c0bd694782a64d4c54c07",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5760,
+    "object_ref": "edge://lf-screen-assets-onb001-sync-v1",
+    "active": true,
+    "source_version": "5",
+    "definition_sha256": "859d80bc71d1f15d590049da5ad7d5ed508565191ae25ce99193f8e0e6918de4",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5769,
+    "object_ref": "edge://programming-agent-baseline-authority-v1",
+    "active": true,
+    "source_version": "8",
+    "definition_sha256": "42fd2431070e0815b4ee8948468639b04d8a01879f18376288116bd5c116a11c",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5776,
+    "object_ref": "edge://programming-agent-f05-receipt-consumer-v1",
+    "active": true,
+    "source_version": "2",
+    "definition_sha256": "55c443d129816b6eb66f845e227ee64eec079fd54b9e15caed05ce397561a0d5",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5767,
+    "object_ref": "edge://programming-agent-hidden-oracle-v1",
+    "active": true,
+    "source_version": "1",
+    "definition_sha256": "31b06afc77daf383c91c8f1c459c97d498a8bc138726e946b89052b9c25e1724",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5768,
+    "object_ref": "edge://programming-agent-hidden-oracle-v2",
+    "active": true,
+    "source_version": "3",
+    "definition_sha256": "99d86dbf27e447d05294c2bd8890587296c38a5a3040041d091ac2f89073eb1b",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5750,
+    "object_ref": "edge://r8-sync-integral-stories-one-shot",
+    "active": true,
+    "source_version": "4",
+    "definition_sha256": "140f771bbc138a58d146153d16f2fa5ff5bf6d6977e76b9e1078d7cba9d138e7",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5744,
+    "object_ref": "edge://run-creacion-perfil-lf",
+    "active": true,
+    "source_version": "23",
+    "definition_sha256": "1aceef7b151fd13b84d7971eb06a79798a7494ed9da998a5a13f844920966224",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5745,
+    "object_ref": "edge://run-formalizacion-perfil-lf",
+    "active": true,
+    "source_version": "5",
+    "definition_sha256": "eebaed53853c85568b1ee8289bdebc0c70b3ec5911fe465e05bd7b35c1ffcd3d",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5749,
+    "object_ref": "edge://run-github-readback-perfil-lf",
+    "active": true,
+    "source_version": "8",
+    "definition_sha256": "b5f2c5e0d0e6a907d518d347a468b774cf21e2ac81fdb91ebfd8511cee383cc6",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5748,
+    "object_ref": "edge://run-github-write-perfil-lf",
+    "active": true,
+    "source_version": "8",
+    "definition_sha256": "6025405e3052b4186cc11c70febc3d91ac947cf0f4e380f92a4d80a0c7cba9b6",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5778,
+    "object_ref": "edge://s30-github-admin-capability-probe-v1",
+    "active": true,
+    "source_version": "2",
+    "definition_sha256": "960aefa125354bc776fcfc30fa128f93be467a88707a1d87875307680f21b325",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5770,
+    "object_ref": "edge://story-agent-evidence-verifier-v1",
+    "active": true,
+    "source_version": "11",
+    "definition_sha256": "87159aa5bc64e6a954a4b0256a30f8ac90cc0c04e1bd3fefa188b1f5195c0d2b",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  },
+  {
+    "object_id": 5774,
+    "object_ref": "edge://story-agent-hidden-authority-verifier-v1",
+    "active": true,
+    "source_version": "2",
+    "definition_sha256": "685e8b269bb9f5bc831b4588e2707e617a8e1c2dea95a35fccb2f282977f7c47",
+    "source_system": "SUPABASE_EDGE_RUNTIME"
+  }
+]

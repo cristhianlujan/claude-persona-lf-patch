@@ -68,5 +68,6 @@ jobs:
         with:
           name: lf-pack-validation-${{ github.run_id }}-${{ github.run_attempt }}
           path: .lf_pack_validation
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
