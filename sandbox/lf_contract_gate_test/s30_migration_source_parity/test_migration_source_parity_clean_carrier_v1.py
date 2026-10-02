@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 RUNNER = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py"
-CARRIER = ROOT / ".github/workflows/lf-migration-source-parity.yml"
+CARRIER = ROOT / ".github/workflows/lf-migration-source-parity-core.yml"
 
 
 def load_runner():
