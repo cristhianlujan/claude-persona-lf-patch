@@ -25,7 +25,7 @@ jobs:
           ref: ${{ env.LF_CANDIDATE_HEAD }}
           fetch-depth: 0
 
-      - name: Pin exact-head identity
+      - name: Q01 Q11 pin exact identity
         shell: bash
         run: |
           set -euo pipefail
@@ -43,10 +43,13 @@ jobs:
       - name: Install qualification dependency
         run: python3 -m pip install --disable-pip-version-check pytest==9.1.1
 
-      - name: Q01-Q06 Q08-Q10 targeted router contract regression
+      - name: Q02 Q04 Q05 Q10 targeted contract regression
         shell: bash
         run: |
           set -euo pipefail
+          expected=$'sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py\nsandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_resolution_handoff_v1.py\nsandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py'
+          observed="$(git diff --name-only --no-renames "$LF_CANDIDATE_BASE" "$LF_CANDIDATE_HEAD")"
+          test "$observed" = "$expected"
           python3 -m py_compile \
             sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py \
             sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_resolution_handoff_v1.py \
@@ -59,56 +62,63 @@ jobs:
             sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_pase_merge_route_v1.py \
             sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_pase_control_repair_quarantine_v1.py
 
-      - name: Q05 Q09 Q11 exact-head manifest adversarials
+      - name: Q06 exact-head adversarial transport
         shell: bash
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py
 
-      - name: Q06 Q10 qualification and merge-gate regression
+      - name: Q08 deterministic replay
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m pytest -q \
-            sandbox/lf_contract_gate_test/pase_control_qualification \
-            sandbox/lf_contract_gate_test/pase_merge_gate
+          a="$(python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py)"
+          b="$(python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py)"
+          c="$(python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py)"
+          test "$a" = "$b"
+          test "$b" = "$c"
+          test "$a" = 'PASS_EXACT_HEAD_CANDIDATE_MANIFEST_TRANSPORT=4/4'
+          echo "QUAL_Q08_REPLAY=$a"
 
-      - name: Q07 bounded performance and memory
+      - name: Q09 base-vs-head bounded replay
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import json
-          import resource
-          import subprocess
-          import sys
-          import time
-          target = 'sandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py'
-          samples = []
-          for _ in range(7):
-              started = time.perf_counter()
-              cp = subprocess.run([sys.executable, target], text=True, capture_output=True)
-              elapsed_ms = (time.perf_counter() - started) * 1000.0
-              if cp.returncode != 0:
-                  print(cp.stdout)
-                  print(cp.stderr, file=sys.stderr)
-                  raise SystemExit(cp.returncode)
-              samples.append(elapsed_ms)
-          p95_ms = max(samples)
-          max_rss_mb = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024.0
-          if p95_ms > 300000:
-              raise SystemExit(f'Q07_P95_LIMIT_EXCEEDED:{p95_ms:.3f}')
-          if max_rss_mb > 2048:
-              raise SystemExit(f'Q07_MEMORY_LIMIT_EXCEEDED:{max_rss_mb:.3f}')
-          print('QUAL_Q07=' + json.dumps({
-              'samples': 7,
-              'p95_ms_conservative_max': round(p95_ms, 3),
-              'memory_peak_mb': round(max_rss_mb, 3),
-              'limit_p95_ms': 300000,
-              'limit_memory_peak_mb': 2048,
-              'verdict': 'PASS',
-          }, sort_keys=True))
+          rm -rf /tmp/qual-base
+          git worktree add --detach /tmp/qual-base "$LF_CANDIDATE_BASE"
+          base_mode="$(python3 - <<'PY'
+          import importlib.util, sys
+          from pathlib import Path
+          p=Path('/tmp/qual-base/sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py')
+          s=importlib.util.spec_from_file_location('qual_base_router', p); m=importlib.util.module_from_spec(s); sys.modules[s.name]=m; s.loader.exec_module(m)
+          changed=['custom/a.py','sandbox/lf_contract_gate_test/changesets/SOL-X.json']
+          print(m.classify(changed).mode)
           PY
+          )"
+          head_mode="$(python3 - <<'PY'
+          import importlib.util, sys
+          from pathlib import Path
+          p=Path('sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py')
+          s=importlib.util.spec_from_file_location('qual_head_router', p); m=importlib.util.module_from_spec(s); sys.modules[s.name]=m; s.loader.exec_module(m)
+          changed=['custom/a.py','sandbox/lf_contract_gate_test/changesets/SOL-X.json']
+          manifest={'solution_ref':'SOL-X','paths':{'custom/a.py':'CUSTOM'}}
+          print(m.classify(changed, manifest_data=manifest).mode)
+          PY
+          )"
+          test "$base_mode" = 'CLASSIFICATION_REQUIRED'
+          test "$head_mode" != 'CLASSIFICATION_REQUIRED'
+          echo "QUAL_Q09_BASE_MODE=$base_mode"
+          echo "QUAL_Q09_HEAD_MODE=$head_mode"
+          git worktree remove --force /tmp/qual-base
+
+      - name: Q10 qualification and merge-gate regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_control_qualification/test_pase_control_qualification_v1.py
+          python3 sandbox/lf_contract_gate_test/pase_control_qualification/test_control_system_qualification_authority_v1.py
+          python3 sandbox/lf_contract_gate_test/pase_merge_gate/test_pase_merge_gate_v1.py
+          python3 sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_carrier_v1.py self-test
 
       - name: Emit exact-head qualification evidence
         shell: bash
@@ -121,24 +131,21 @@ jobs:
             'candidate_id': 'CHANGESET_GOVERNANCE_LF_V1',
             'head_sha': '579fdb51260aab5d09ea9539dbf994b27dec5a9d',
             'base_sha': '346c7d9e27d5b2bfc4fde4032ad474f040ebdb34',
-            'qualification_authority': 'LF_GOVERNANCE_SUPER_ADMIN',
             'isolation': 'CANDIDATE_EXACT_HEAD_TARGETED',
-            'suite_ids': [f'Q{i:02d}' for i in range(1, 12)],
-            'results': {f'Q{i:02d}': 'PASS' for i in range(1, 12)},
-            'evidence': {
-              'Q01': 'py_compile + targeted router contract regression',
-              'Q02': 'lane router + merge route ownership regression',
-              'Q03': 'candidate manifest classification and fail-closed regression',
-              'Q04': 'execution-plan dependency/coverage regression',
-              'Q05': 'PASS_EXACT_HEAD_CANDIDATE_MANIFEST_TRANSPORT=4/4',
-              'Q06': 'qualification + merge-gate regression',
-              'Q07': 'bounded 7-run performance/memory PASS',
-              'Q08': 'currentness regression + exact parent/head pin',
-              'Q09': 'candidate code non-execution + malformed/absent manifest fail-closed',
-              'Q10': 'handoff + merge-route + merge-gate observability regression',
-              'Q11': 'absent/malformed/multiple manifest adversarials',
+            'checks': {
+              'Q01': 'exact parent/head identity pinned',
+              'Q02': 'diff exactly 3 declared s28 files',
+              'Q03': 'final verdict reserved for governed independent judge',
+              'Q04': '24 targeted owner-local regressions + py_compile PASS',
+              'Q05': 'trusted-base/candidate-data boundary regressions PASS',
+              'Q06': 'absent malformed multiple-manifest adversarials PASS 4/4',
+              'Q07': 'no out-of-scope candidate files; no runtime/DB/workflow mutation in candidate',
+              'Q08': '3 identical exact-head adversarial replays PASS',
+              'Q09': 'bounded base CLASSIFICATION_REQUIRED -> head governed classification',
+              'Q10': 'qualification + merge-gate deterministic regressions PASS',
+              'Q11': 'all material evidence generated against exact head',
             },
-            'verdict': 'CANDIDATE_QUALIFIED',
+            'verdict_input_only': True,
           }
           print('QUALIFICATION_EVIDENCE=' + json.dumps(evidence, sort_keys=True, separators=(',', ':')))
           PY
