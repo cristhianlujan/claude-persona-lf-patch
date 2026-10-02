@@ -29,6 +29,7 @@ jobs:
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_authority_snapshot_20261002.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_adversarial_cases_v1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/transversal_capability_inventory_20261002.json >/dev/null
+          python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/programming_utility_judge_contract_v1.json >/dev/null
       - name: SC-M2.5 structural regression
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/validate_story_implementation_package_v1.py --self-test
       - name: SC-M3.1 anti-invention and no-duplicate regression
@@ -37,3 +38,5 @@ jobs:
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_onb_004_adversarial_suite_v1.py
       - name: SC-M3.3 no parallel transversal capability regression
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_no_parallel_transversal_capability_v1.py
+      - name: SC-M3.4 independent programming utility judge contract
+        run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_programming_utility_judge_contract_v1.py
