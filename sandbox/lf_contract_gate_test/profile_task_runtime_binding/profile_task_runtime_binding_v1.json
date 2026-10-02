@@ -1,0 +1,60 @@
+{
+  "schema_version": "LF_PROFILE_TASK_RUNTIME_BINDING_CONTRACT_V1",
+  "solution_code": "PROFILE_TASK_RUNTIME_BINDING_V1",
+  "status": "CANDIDATE_READ_ONLY",
+  "purpose": "Derive one exact task-scoped Profile Runtime binding from existing profile, Skill, Router, currentness, schema, validator and judge authorities without copying an embedded profile into a second package.",
+  "source_modes": ["STANDALONE_PROFILE", "EMBEDDED_SKILL_PROFILE"],
+  "required_inputs": {
+    "step_contract": ["step_id", "worker_role", "judge_code"],
+    "worker_binding": ["worker_ref", "worker_kind", "binding_authority_ref", "binding_revision", "binding_digest", "source_revision"],
+    "profile_authority": ["profile_code", "profile_slug", "worker_roles", "route_status", "downstream_execution_allowed", "currentness_state", "source_revision"],
+    "task_authority": ["source_mode", "source_root", "source_refs", "runtime_schema", "deterministic_validator", "judge_binding", "authority_refs"]
+  },
+  "task_authority_contract": {
+    "source_refs": "non-empty exact repo-relative paths with sha256 and source_revision",
+    "runtime_schema": "one exact repo-relative schema ref with sha256; no schema synthesis",
+    "deterministic_validator": "one exact ref with sha256 and invocation contract",
+    "judge_binding": "exact independent judge ref/code/sha256; worker cannot self-judge",
+    "authority_refs": "non-empty refs with revision/digest proving derivation from current authorities"
+  },
+  "decision_policy": {
+    "valid_exact_binding": "TASK_RUNTIME_BINDING_RESOLVED",
+    "profile_not_current": "BLOCK_PROFILE_NOT_CURRENT",
+    "router_not_ready": "BLOCK_PROFILE_ROUTER_NOT_READY",
+    "worker_role_mismatch": "BLOCK_PROFILE_WORKER_ROLE_MISMATCH",
+    "source_revision_mismatch": "BLOCK_SOURCE_REVISION_MISMATCH",
+    "source_outside_root": "BLOCK_SOURCE_PATH_OUTSIDE_ROOT",
+    "schema_missing_or_ambiguous": "BLOCK_RUNTIME_SCHEMA_UNRESOLVED",
+    "validator_missing": "BLOCK_DETERMINISTIC_VALIDATOR_UNRESOLVED",
+    "judge_missing_or_mismatch": "BLOCK_JUDGE_BINDING_UNRESOLVED",
+    "authority_incomplete": "BLOCK_BINDING_AUTHORITY_INCOMPLETE"
+  },
+  "invariants": {
+    "profile_identity_remains_lf_activos_authority": true,
+    "embedded_profile_remains_skill_artifact_authority": true,
+    "task_binding_is_derived_not_registry": true,
+    "exact_schema_required": true,
+    "schema_synthesis_forbidden": true,
+    "validator_copy_forbidden": true,
+    "judge_copy_forbidden": true,
+    "same_profile_may_have_distinct_step_bindings": true,
+    "worker_and_judge_independent": true,
+    "currentness_required": true,
+    "router_downstream_authority_required": true,
+    "source_revision_crossbind_required": true
+  },
+  "boundaries": {
+    "queries_database": false,
+    "calls_router": false,
+    "calls_currentness": false,
+    "writes_state": false,
+    "creates_profile_package": false,
+    "copies_embedded_profile": false,
+    "creates_registry": false,
+    "modifies_shared_runtime": false,
+    "activates_runtime": false,
+    "activates_production": false,
+    "modifies_pase": false,
+    "modifies_post_pase": false
+  }
+}
