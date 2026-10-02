@@ -428,6 +428,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         run_id: runId,
         workflow_sha: workflowSha,
       };
+      if (isRecurationIdentity) caller.workflow_name = config.recurationWorkflowName;
 
       if (action === RECURATION_ACTION) {
         if (Object.prototype.hasOwnProperty.call(body, "pantalla_ids")) {
