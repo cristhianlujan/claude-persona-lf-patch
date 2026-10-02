@@ -1,0 +1,1 @@
+Temporary freeze scope is limited to executable PASE entrypoints and PASE-owned jobs. It does not disable unrelated repository CI, independent change admission, or IG runtime candidate judging. It does not mutate Supabase or production/runtime state.
