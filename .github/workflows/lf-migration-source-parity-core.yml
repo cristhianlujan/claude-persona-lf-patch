@@ -83,6 +83,26 @@ jobs:
             --historical-debt-disposition "${{ inputs.historical_debt_disposition }}" \
             --output-dir .lf_migration_source_parity
 
+      - name: Validate reusable scenario qualification resolver
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_scenario_qualification/test_pase_scenario_qualification_v1.py
+
+      - name: Qualify selected Migration Source Parity scenarios
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_qualification_v1.py \
+            --repo-root . \
+            --catalog sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_catalog_v1.json \
+            --profile sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/migration_source_parity_v1.json \
+            --maturity "${{ inputs.control_maturity }}" \
+            --base-sha "${{ inputs.base_sha }}" \
+            --head-sha "${{ inputs.head_sha }}" \
+            --runtime-dir .lf_migration_source_parity \
+            --output .lf_migration_source_parity/scenario-qualification.json
+
       - name: Persist bounded Migration Source Parity evidence
         if: always()
         uses: actions/upload-artifact@v4
