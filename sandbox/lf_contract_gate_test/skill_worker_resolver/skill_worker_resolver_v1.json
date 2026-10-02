@@ -1,0 +1,53 @@
+{
+  "schema_version": "LF_SKILL_WORKER_RESOLVER_CONTRACT_V1",
+  "solution_code": "SKILL_WORKER_RESOLVER_V1",
+  "status": "CANDIDATE_READ_ONLY",
+  "purpose": "Resolve one governed worker identity from a logical worker_role without duplicating Router, currentness, profile runtime or capability authority.",
+  "input": {
+    "step_contract": {
+      "required": ["step_id", "worker_role", "allowed_worker_kinds"],
+      "forbidden": ["worker_ref", "worker_profile", "capability_code"]
+    },
+    "authority_snapshot": {
+      "required": ["binding_authority_ref", "binding_revision", "source_revision", "candidates"],
+      "candidate_required": ["worker_ref", "worker_kind", "worker_roles", "route_status", "downstream_execution_allowed", "currentness_state", "source_ref", "source_revision"]
+    }
+  },
+  "eligible_candidate": {
+    "worker_role_must_match": true,
+    "worker_kind_must_be_allowed": true,
+    "route_status": "READY_TO_EXECUTE",
+    "downstream_execution_allowed": true,
+    "currentness_state": "CURRENT",
+    "source_revision_must_match_snapshot": true,
+    "capability_requires": {
+      "capability_code": true,
+      "capability_execution_contract": "CAPABILITY_EXECUTION_CONTRACT_V1"
+    }
+  },
+  "decision_policy": {
+    "zero_eligible": "BLOCK_WORKER_UNRESOLVED",
+    "one_eligible": "WORKER_RESOLVED",
+    "multiple_eligible": "BLOCK_WORKER_AMBIGUOUS",
+    "concrete_identity_in_step_contract": "BLOCK_CONCRETE_WORKER_IDENTITY_IN_MANIFEST",
+    "invalid_capability_binding": "BLOCK_CAPABILITY_CONTRACT_MISSING"
+  },
+  "output": {
+    "status_values": ["RESOLVED", "BLOCKED"],
+    "binding_seed_fields": ["worker_ref", "worker_kind", "binding_authority_ref", "binding_revision", "binding_digest", "source_revision"],
+    "capability_optional_fields": ["capability_code", "capability_execution_contract"]
+  },
+  "boundaries": {
+    "queries_database": false,
+    "calls_router": false,
+    "calls_currentness": false,
+    "creates_execution": false,
+    "emits_dispatch_receipt": false,
+    "invokes_worker": false,
+    "writes_state": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "new_registry": false,
+    "new_queue": false
+  }
+}
