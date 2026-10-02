@@ -3,7 +3,7 @@
 Estado: CANDIDATO / READ_ONLY / NO_HABILITADO
 
 ## Objetivo
-Unificar cómo los adapters consumen gobernanza de inputs sin duplicar prompts ni crear lógica paralela. La autoridad sigue siendo `INPUT_READINESS_CONTRACT`; al 2026-08-29 la revisión observada vigente es `5.12`. Cada ejecución debe resolver la revisión vigente y registrar la versión realmente consumida.
+Unificar cómo los adapters consumen gobernanza de inputs sin duplicar prompts ni crear lógica paralela. La autoridad sigue siendo `INPUT_READINESS_CONTRACT`; al 2026-10-02 la revisión observada vigente es `5.13`. Cada ejecución debe resolver la revisión vigente y registrar la versión realmente consumida.
 
 ## Regla canónica
 Todo adapter que reciba requisitos funcionales, fuentes autoritativas, freshness, requisitos negativos, conflictos/precedencia o una decisión de elegibilidad/readiness debe consumir selectivamente `INPUT_GOVERNANCE_AGENT` mediante `INPUT_READINESS_CONTRACT` antes de aplicar su función técnica.
