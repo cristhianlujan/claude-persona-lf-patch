@@ -1,0 +1,16 @@
+{
+  "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
+  "cases": [
+    {
+      "case_id": "N9_M81_GENERATED_DURATION_GUARD_NEGATIVE",
+      "candidate_ref": "HEAD",
+      "candidate_path": "sandbox/ig_cv/fixtures/n9_m81_bad_generated_duration_guard.sql",
+      "prelude_ref": "HEAD",
+      "prelude_path": "sandbox/ig_cv/fixtures/n9_m81_source_stale_prelude.sql",
+      "screen_id": 57,
+      "consumer": "STORY_CREATOR",
+      "expected_verdict": "BLOCKING_FINDINGS",
+      "expected_finding_codes": ["CANDIDATE_FLOW_ERROR"]
+    }
+  ]
+}
