@@ -1,0 +1,137 @@
+name: PASE Control Qualification PR1517
+
+on:
+  push:
+    paths:
+      - '.github/workflows/pase-control-qual-pr1517.yml'
+  workflow_dispatch:
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      LF_CANDIDATE_HEAD: 579fdb51260aab5d09ea9539dbf994b27dec5a9d
+      LF_CANDIDATE_BASE: 346c7d9e27d5b2bfc4fde4032ad474f040ebdb34
+      LF_CANDIDATE_ID: CHANGESET_GOVERNANCE_LF_V1
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.LF_CANDIDATE_HEAD }}
+          fetch-depth: 0
+
+      - name: Q01 Q11 pin exact identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$LF_CANDIDATE_HEAD"
+          git cat-file -e "$LF_CANDIDATE_BASE^{commit}"
+          test "$(git rev-parse "$LF_CANDIDATE_HEAD^")" = "$LF_CANDIDATE_BASE"
+          printf 'QUAL_EXACT_HEAD=%s\nQUAL_BASE_HEAD=%s\nQUAL_CANDIDATE=%s\n' "$actual" "$LF_CANDIDATE_BASE" "$LF_CANDIDATE_ID"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install qualification dependency
+        run: python3 -m pip install --disable-pip-version-check pytest==9.1.1
+
+      - name: Q02 Q04 Q05 Q07 Q10 targeted contract regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=$'sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py\nsandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_resolution_handoff_v1.py\nsandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py'
+          observed="$(git diff --name-only --no-renames "$LF_CANDIDATE_BASE" "$LF_CANDIDATE_HEAD")"
+          test "$observed" = "$expected"
+          python3 -m py_compile \
+            sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py \
+            sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_contract_check_resolution_handoff_v1.py \
+            sandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py
+          python3 -m pytest -q \
+            sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py \
+            sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py \
+            sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_currentness_bridge_v1.py \
+            sandbox/lf_contract_gate_test/s28_ci_lane_router/test_contract_check_resolution_handoff_v1.py \
+            sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_pase_merge_route_v1.py \
+            sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_pase_control_repair_quarantine_v1.py
+
+      - name: Q06 exact-head adversarial transport
+        run: python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py
+
+      - name: Q08 deterministic replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          a="$(python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py)"
+          b="$(python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py)"
+          c="$(python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_exact_head_candidate_manifest_transport_v1.py)"
+          test "$a" = "$b" && test "$b" = "$c"
+          test "$a" = 'PASS_EXACT_HEAD_CANDIDATE_MANIFEST_TRANSPORT=4/4'
+          echo "QUAL_Q08_REPLAY=$a"
+
+      - name: Q09 base-vs-head bounded replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/qual-base
+          git worktree add --detach /tmp/qual-base "$LF_CANDIDATE_BASE"
+          base_mode="$(python3 - <<'PY'
+          import importlib.util, sys
+          from pathlib import Path
+          p=Path('/tmp/qual-base/sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py')
+          s=importlib.util.spec_from_file_location('qual_base_router', p); m=importlib.util.module_from_spec(s); sys.modules[s.name]=m; s.loader.exec_module(m)
+          changed=['custom/a.py','sandbox/lf_contract_gate_test/changesets/SOL-X.json']
+          print(m.classify(changed).mode)
+          PY
+          )"
+          head_mode="$(python3 - <<'PY'
+          import importlib.util, sys
+          from pathlib import Path
+          p=Path('sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py')
+          s=importlib.util.spec_from_file_location('qual_head_router', p); m=importlib.util.module_from_spec(s); sys.modules[s.name]=m; s.loader.exec_module(m)
+          changed=['custom/a.py','sandbox/lf_contract_gate_test/changesets/SOL-X.json']
+          manifest={'solution_ref':'SOL-X','paths':{'custom/a.py':'CUSTOM'}}
+          print(m.classify(changed, manifest_data=manifest).mode)
+          PY
+          )"
+          test "$base_mode" = 'CLASSIFICATION_REQUIRED'
+          test "$head_mode" != 'CLASSIFICATION_REQUIRED'
+          echo "QUAL_Q09_BASE_MODE=$base_mode"
+          echo "QUAL_Q09_HEAD_MODE=$head_mode"
+          git worktree remove --force /tmp/qual-base
+
+      - name: Q10 qualification and merge-gate regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_control_qualification/test_pase_control_qualification_v1.py
+          python3 sandbox/lf_contract_gate_test/pase_control_qualification/test_control_system_qualification_authority_v1.py
+          python3 sandbox/lf_contract_gate_test/pase_merge_gate/test_pase_merge_gate_v1.py
+          python3 sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_carrier_v1.py self-test
+
+      - name: Emit exact-head evidence input
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          print('QUALIFICATION_EVIDENCE=' + json.dumps({
+            'candidate_id':'CHANGESET_GOVERNANCE_LF_V1',
+            'base_sha':'346c7d9e27d5b2bfc4fde4032ad474f040ebdb34',
+            'head_sha':'579fdb51260aab5d09ea9539dbf994b27dec5a9d',
+            'Q01':'exact identity pinned',
+            'Q02':'exact diff = 3 declared files',
+            'Q03':'verdict reserved for governed independent judge',
+            'Q04':'owner-local tests passed',
+            'Q05':'trusted-base/candidate-data boundary passed',
+            'Q06':'4/4 adversarial fail-closed cases passed',
+            'Q07':'no out-of-scope candidate mutation',
+            'Q08':'3 deterministic replays identical',
+            'Q09':'base CLASSIFICATION_REQUIRED -> head governed classification',
+            'Q10':'coverage/merge-gate/qualification regressions passed',
+            'Q11':'all material evidence exact-head bound'
+          }, sort_keys=True, separators=(',', ':')))
+          PY
