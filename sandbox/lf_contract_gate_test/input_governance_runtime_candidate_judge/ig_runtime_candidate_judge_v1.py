@@ -100,10 +100,34 @@ def validate_transaction_bound_sql(sql: str) -> None:
         raise JudgeError("SERVER_IO_OR_EXTERNAL_EFFECT_FORBIDDEN")
 
 
+def _normalize_terminal_value(value: Any) -> Any:
+    """Remove execution-local identity fields at any nesting depth.
+
+    Terminal payloads may embed proposal_validation.run_id. Baseline and
+    candidate necessarily receive different transaction-local run IDs, so those
+    identities are not semantic drift and must not block an otherwise equal
+    flow. All non-volatile values and collection structure remain comparable.
+    """
+    if isinstance(value, dict):
+        return {
+            key: _normalize_terminal_value(item)
+            for key, item in value.items()
+            if key not in VOLATILE_TERMINAL_KEYS
+        }
+    if isinstance(value, list):
+        return [_normalize_terminal_value(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_normalize_terminal_value(item) for item in value)
+    return value
+
+
 def normalize_terminal(payload: dict[str, Any] | None) -> dict[str, Any] | None:
     if payload is None:
         return None
-    return {k: v for k, v in payload.items() if k not in VOLATILE_TERMINAL_KEYS}
+    normalized = _normalize_terminal_value(payload)
+    if not isinstance(normalized, dict):
+        raise JudgeError("NORMALIZED_TERMINAL_NOT_OBJECT")
+    return normalized
 
 
 def _fetchone_value(cur: Any) -> Any:

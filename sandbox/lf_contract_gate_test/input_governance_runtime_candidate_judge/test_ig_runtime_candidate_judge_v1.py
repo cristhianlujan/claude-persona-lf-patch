@@ -83,6 +83,35 @@ class JudgeUnitTests(unittest.TestCase):
         raw = {"run_id": 5, "validator_identity": "v", "status": "COMPLETED", "x": 1}
         self.assertEqual(judge.normalize_terminal(raw), {"status": "COMPLETED", "x": 1})
 
+    def test_normalize_terminal_removes_nested_volatile_identity(self):
+        baseline = {
+            "status": "COMPLETED",
+            "proposal_validation": {
+                "run_id": 312,
+                "validated_proposal_count": 37,
+                "details": [{"latest_run_id": 311, "decision": "KEEP"}],
+            },
+        }
+        candidate = {
+            "status": "COMPLETED",
+            "proposal_validation": {
+                "run_id": 313,
+                "validated_proposal_count": 37,
+                "details": [{"latest_run_id": 999, "decision": "KEEP"}],
+            },
+        }
+        self.assertEqual(judge.normalize_terminal(baseline), judge.normalize_terminal(candidate))
+        self.assertEqual(
+            judge.normalize_terminal(baseline),
+            {
+                "status": "COMPLETED",
+                "proposal_validation": {
+                    "validated_proposal_count": 37,
+                    "details": [{"decision": "KEEP"}],
+                },
+            },
+        )
+
     def test_real_flow_entrypoint_is_dispatcher_then_curator(self):
         cur = FakeCursor([
             ({"status": "CURATOR_RUNTIME_REQUIRED"},),
