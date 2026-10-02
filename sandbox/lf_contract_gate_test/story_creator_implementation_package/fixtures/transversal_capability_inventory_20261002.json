@@ -1,0 +1,27 @@
+{
+  "schema_version": "TRANSVERSAL_CAPABILITY_INVENTORY_SNAPSHOT_V1",
+  "observed_at": "2026-10-02T18:40:00Z",
+  "assets": [
+    {"code":"ASSET_RETIREMENT_GOVERNANCE","type":"CAPABILITY","state":"READ_ONLY","version":"1.0.0-candidate","owner":"LF_GOVERNANCE"},
+    {"code":"CONSUMER_BINDINGS","type":"CONTRACT","state":"ACTIVO","version":"1.0.0","owner":"LF_GOVERNANCE"},
+    {"code":"CURRENTNESS_AUTHORITY","type":"CAPABILITY","state":"ACTIVO","version":"1.0.0","owner":"LF_GOVERNANCE"},
+    {"code":"PROFILE_STRUCTURED_OUTPUT_BOUNDARY","type":"CAPABILITY","state":"READ_ONLY","version":"v1","owner":null},
+    {"code":"QUALIFICATION_FRAMEWORK","type":"CAPABILITY","state":"ACTIVO","version":null,"owner":null},
+    {"code":"SOURCE_RESOLUTION_POLICY","type":"CAPABILITY","state":"ACTIVO","version":"v1.4-transversal-supabase-authority-visual-support","owner":null}
+  ],
+  "relations": [
+    {"from":"ASSET_RETIREMENT_GOVERNANCE","type":"DEPENDE_DE","to":"CURRENTNESS_AUTHORITY"},
+    {"from":"CONSUMER_BINDINGS","type":"DEPENDE_DE","to":"OWNER_RUNNER_CARRIER_AUTHORITY"},
+    {"from":"CONSUMER_BINDINGS","type":"RELACIONADO_CAPACIDADES","to":"LF_GOVERNANCE"},
+    {"from":"CURRENTNESS_AUTHORITY","type":"RELACIONADO_CAPACIDADES","to":"LF_GOVERNANCE"},
+    {"from":"SOURCE_RESOLUTION_POLICY","type":"IMPLEMENTADO_POR_ACTIVO","to":"POL-LF-SOURCE-RESOLUTION"}
+  ],
+  "protected_needs": {
+    "SOURCE_RESOLUTION":"SOURCE_RESOLUTION_POLICY",
+    "CURRENTNESS":"CURRENTNESS_AUTHORITY",
+    "QUALIFICATION":"QUALIFICATION_FRAMEWORK",
+    "STRUCTURED_OUTPUT":"PROFILE_STRUCTURED_OUTPUT_BOUNDARY",
+    "CONSUMER_BINDING":"CONSUMER_BINDINGS",
+    "ASSET_RETIREMENT":"ASSET_RETIREMENT_GOVERNANCE"
+  }
+}
