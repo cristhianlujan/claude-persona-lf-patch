@@ -4,6 +4,8 @@
 -- No rule-code hardcoding, no GLOBAL/FRONT/MODULE enum, no automatic scope inference.
 -- Canonical selector lives in lf_ops.reglas.valor_config->'applicability_v1'.
 -- Existing lf_ops.reglas_pantallas rows remain an explicit legacy binding surface only.
+-- Legacy bindings preserve their current visibility, including CANDIDATO rows used as evidence;
+-- lifecycle VIGENTE is required only for NEW declarative auto-applicability.
 
 begin;
 
@@ -186,9 +188,7 @@ as $function$
   legacy as (
     select rp.pantalla_id,rp.regla_id,'LEGACY_EXPLICIT'::text as binding_source
     from lf_ops.reglas_pantallas rp
-    join lf_ops.reglas r on r.id=rp.regla_id
     where rp.pantalla_id=p_pantalla_id
-      and (not coalesce(r.es_transversal,false) or r.estado='VIGENTE')
   ),
   declared as (
     select p_pantalla_id as pantalla_id,r.id as regla_id,'DECLARATIVE_SELECTOR'::text as binding_source
@@ -211,7 +211,7 @@ $function$;
 comment on function programacion.fn_input_rule_selector_matches_v1(jsonb,jsonb) is
   'N-4 domain-local dynamic selector evaluator. No business scope enum and no rule-code hardcoding.';
 comment on function programacion.fn_input_effective_rule_links_v1(integer,text) is
-  'Effective IG rule links = explicit legacy bindings + VIGENTE transversal rules whose applicability_v1 selector matches canonical target context.';
+  'Effective IG rule links = all explicit legacy bindings unchanged + NEW VIGENTE transversal rules whose applicability_v1 selector matches canonical target context.';
 
 -- Deterministic contract tests over synthetic context. These do not seed or infer rule scopes.
 do $tests$
@@ -266,6 +266,18 @@ begin
     v_ctx
   ) is true then
     raise exception 'N4_DYNAMIC_SELECTOR_SCHEMA_NEGATIVE_FAILED';
+  end if;
+
+  if exists (
+    select 1
+    from lf_ops.reglas_pantallas rp
+    where not exists (
+      select 1
+      from programacion.fn_input_effective_rule_links_v1(rp.pantalla_id,'INPUT_GOVERNANCE') e
+      where e.regla_id=rp.regla_id
+    )
+  ) then
+    raise exception 'N4_LEGACY_BINDING_PRESERVATION_FAILED';
   end if;
 end;
 $tests$;
