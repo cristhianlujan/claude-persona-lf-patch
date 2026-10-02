@@ -37,7 +37,8 @@
       ".github/workflows/visual-evidence-gate.yml"
     ],
     "github_retired_delete_only": [
-      ".github/workflows/lf-bootstrap-reproducibility.yml"
+      ".github/workflows/lf-bootstrap-reproducibility.yml",
+      ".github/workflows/story-creator-sc-m2-5-structural-validator.yml"
     ]
   }
 }
