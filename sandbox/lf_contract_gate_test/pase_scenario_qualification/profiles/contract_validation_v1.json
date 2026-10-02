@@ -1,0 +1,116 @@
+{
+  "schema_version": "lf-pase-scenario-profile/v1",
+  "policy_id": "PASE_SCENARIO_QUALIFICATION_MATRIX_V1",
+  "control_id": "LF_CONTRACT_CHECK",
+  "maturity": "CUTOVER",
+  "traits": [
+    "AUTHORITY_GUARDED",
+    "CANONICAL_CARRIER",
+    "CHANGE_SCOPED",
+    "EXACT_HEAD",
+    "HISTORICAL_STATE",
+    "LEGACY_DECONTAMINATION",
+    "ORCHESTRATOR_ENTRY",
+    "POST_MERGE_READBACK",
+    "READ_ONLY_CONTROL",
+    "RETRYABLE",
+    "ROUTER_APPLICABILITY"
+  ],
+  "evidence_commands": {
+    "BRIDGE_RETIREMENT": {
+      "argv": ["python3", "sandbox/lf_contract_gate_test/contract_check_responsibility_inventory/test_contract_check_bridge_retirement_v1.py"]
+    },
+    "CONTRACT_EXECUTION": {
+      "argv": ["python3", "sandbox/lf_contract_gate_test/contract_check_execution/test_contract_check_execution_v1.py"]
+    },
+    "CURRENTNESS_BRIDGE": {
+      "argv": ["python3", "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_currentness_bridge_v1.py"]
+    },
+    "LEGACY_NORMALIZATION": {
+      "argv": ["python3", "sandbox/lf_contract_gate_test/contract_legacy_normalization/test_legacy_contract_normalization_v1.py"]
+    },
+    "PASE_PLAN": {
+      "argv": ["python3", "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py"]
+    },
+    "PARITY_EQUIVALENCE": {
+      "argv": ["python3", "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_contract_check_parity_equivalence_v1.py"]
+    }
+  },
+  "assertions": {
+    "SCN-LIFECYCLE-PR-CURRENTNESS": {
+      "disposition": "TESTED",
+      "evidence": [{"command_id": "CURRENTNESS_BRIDGE", "marker": "LF_CI_CURRENTNESS_BRIDGE_V1_PASS=8/8"}]
+    },
+    "SCN-LIFECYCLE-PUSH-CURRENTNESS": {
+      "disposition": "TESTED",
+      "evidence": [{"command_id": "CURRENTNESS_BRIDGE", "marker": "LF_CI_CURRENTNESS_BRIDGE_V1_PASS=8/8"}]
+    },
+    "SCN-LIFECYCLE-UNKNOWN-EVENT-BLOCK": {
+      "disposition": "BLOCKED_EXPLICITLY",
+      "evidence": [{"command_id": "CURRENTNESS_BRIDGE", "marker": "LF_CI_CURRENTNESS_BRIDGE_V1_PASS=8/8"}]
+    },
+    "SCN-CURRENTNESS-STALE-HEAD-BLOCK": {
+      "disposition": "BLOCKED_EXPLICITLY",
+      "evidence": [{"command_id": "CURRENTNESS_BRIDGE", "marker": "LF_CI_CURRENTNESS_BRIDGE_V1_PASS=8/8"}]
+    },
+    "SCN-CURRENTNESS-BASE-NOT-ANCESTOR-BLOCK": {
+      "disposition": "BLOCKED_EXPLICITLY",
+      "evidence": [{"command_id": "CURRENTNESS_BRIDGE", "marker": "LF_CI_CURRENTNESS_BRIDGE_V1_PASS=8/8"}]
+    },
+    "SCN-APPLICABILITY-NOT-APPLICABLE": {
+      "disposition": "TESTED",
+      "evidence": [{"command_id": "PASE_PLAN", "marker": "LF_CI_EXECUTION_PLAN_V2_PASS="}]
+    },
+    "SCN-AUTHORITY-MISSING-BLOCK": {
+      "disposition": "BLOCKED_EXPLICITLY",
+      "evidence": [{"command_id": "CONTRACT_EXECUTION", "marker": "PASS_CONTRACT_CHECK_EXECUTION_CHAIN_V1=18/18"}]
+    },
+    "SCN-AUTHORITY-WRONG-BLOCK": {
+      "disposition": "BLOCKED_EXPLICITLY",
+      "evidence": [{"command_id": "CONTRACT_EXECUTION", "marker": "PASS_CONTRACT_CHECK_EXECUTION_CHAIN_V1=18/18"}]
+    },
+    "SCN-CARRIER-CANONICAL": {
+      "disposition": "TESTED",
+      "evidence": [{"command_id": "BRIDGE_RETIREMENT", "marker": "PASS_CONTRACT_CHECK_BRIDGE_RETIREMENT_V1=13/13"}]
+    },
+    "SCN-CARRIER-FOREIGN-DEPENDENCY-BLOCK": {
+      "disposition": "BLOCKED_EXPLICITLY",
+      "evidence": [{"command_id": "BRIDGE_RETIREMENT", "marker": "PASS_CONTRACT_CHECK_BRIDGE_RETIREMENT_V1=13/13"}]
+    },
+    "SCN-EVIDENCE-EXACT-HEAD": {
+      "disposition": "TESTED",
+      "evidence": [{"runtime_assertion": "SCOPE_MANIFEST_EXACT"}]
+    },
+    "SCN-EVIDENCE-STALE-BLOCK": {
+      "disposition": "BLOCKED_EXPLICITLY",
+      "evidence": [{"command_id": "CURRENTNESS_BRIDGE", "marker": "LF_CI_CURRENTNESS_BRIDGE_V1_PASS=8/8"}]
+    },
+    "SCN-RETRY-IDEMPOTENT": {
+      "disposition": "TESTED",
+      "evidence": [{"command_id": "PARITY_EQUIVALENCE", "marker": "PASS_LF_CONTRACT_CHECK_PARITY_EQUIVALENCE_TESTS=8/8"}]
+    },
+    "SCN-CONCURRENCY-MAIN-ADVANCE-BLOCK": {
+      "disposition": "BLOCKED_EXPLICITLY",
+      "evidence": [{"command_id": "CURRENTNESS_BRIDGE", "marker": "LF_CI_CURRENTNESS_BRIDGE_V1_PASS=8/8"}]
+    },
+    "SCN-HISTORICAL-NONCAUSAL-OUT-OF-CRITICAL-PATH": {
+      "disposition": "TESTED",
+      "evidence": [{"runtime_assertion": "SCOPE_MANIFEST_EXACT"}]
+    },
+    "SCN-HISTORICAL-CAUSAL-ESCALATION": {
+      "disposition": "BLOCKED_EXPLICITLY",
+      "evidence": [{"command_id": "LEGACY_NORMALIZATION", "marker": "PASS_LEGACY_CONTRACT_NORMALIZATION_V1=15/15"}]
+    },
+    "SCN-RECOVERY-PRE-EFFECT-RETRY": {
+      "disposition": "TESTED",
+      "evidence": [{"command_id": "PARITY_EQUIVALENCE", "marker": "PASS_LF_CONTRACT_CHECK_PARITY_EQUIVALENCE_TESTS=8/8"}]
+    },
+    "SCN-POSTMERGE-READBACK": {
+      "disposition": "TESTED",
+      "evidence": [
+        {"command_id": "CURRENTNESS_BRIDGE", "marker": "LF_CI_CURRENTNESS_BRIDGE_V1_PASS=8/8"},
+        {"runtime_assertion": "RUN_SUMMARY_SCOPE"}
+      ]
+    }
+  }
+}
