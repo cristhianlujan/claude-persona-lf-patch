@@ -1,0 +1,123 @@
+{
+  "schema_version": "LF_INDEPENDENT_ASSURANCE_PREEXTENSION_BASELINE_V1",
+  "captured_at": "2026-10-02",
+  "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
+  "operation_revision_sha256": "fb59333049740f13332d68b07d38493dff0732545e856facea817f6d3ad34811",
+  "qualification": {
+    "qualification_id": "11419a46-7184-46c8-8d41-b96c47e666af",
+    "suite_set_fingerprint": "d6590661e088a00d5510decac19840b3c9984b10f05d4105a3852fa9596077d2",
+    "lifecycle_state_code": "QUAL_QUALIFIED",
+    "binding_code": "BIND-OP-STRATEGY-INDEPENDENT-REVIEW-V1",
+    "suite_code": "TS-STRATEGY-OP-INDEPENDENT-REVIEW-V1"
+  },
+  "registry": {
+    "applies_to_asset_type": "STRATEGY",
+    "notes": "Transversal independent review for Strategy qualification REVIEW_REQUIRED cases. Reviewer identity is its own governed operation execution; it does not require another Strategy to be qualification_current."
+  },
+  "contract": {
+    "contract_code": "CONTRACT-REVISION-INDEPENDIENTE-ESTRATEGIA-LF-v1",
+    "required_before_write": [
+      "router_receipt",
+      "operation_qualification_current",
+      "qualification_bound",
+      "exact_strategy_revision",
+      "exact_suite_fingerprint",
+      "review_required_test",
+      "independent_reviewer_execution",
+      "evidence_refs"
+    ],
+    "allowed": {
+      "runtime_activation": false,
+      "scheduler_activation": false,
+      "production_activation": false,
+      "orchestrator_activation": false,
+      "independent_review_required": true,
+      "direct_business_write_allowed": false,
+      "strategy_snapshot_mutation_allowed": false,
+      "qualification_evidence_write_allowed": true,
+      "reviewer_must_be_operation_execution": true,
+      "reviewer_must_complete_before_finalizer": true
+    },
+    "blocked": [
+      "direct_strategy_snapshot_write",
+      "runtime_enable",
+      "production_enable",
+      "scheduler_enable",
+      "orchestrator_enable",
+      "stale_revision",
+      "stale_suite_fingerprint",
+      "reviewer_equals_producer",
+      "judge_without_evidence",
+      "finalize_before_reviewer_completed",
+      "unrouted_execution"
+    ],
+    "required_after_write": [
+      "judge_receipt",
+      "reviewer_execution_completed",
+      "qualification_finalizer_receipt",
+      "qualification_readback"
+    ]
+  },
+  "steps": {
+    "route_bind": {
+      "purpose": "Bind ACT-0001 route and exact independent-review operation.",
+      "required_evidence_keys": ["router_receipt", "operation_code"],
+      "output_payload": ["router_receipt", "operation_code"]
+    },
+    "target_currentness": {
+      "purpose": "Bind current Strategy qualification, revision, fingerprint, suite and REVIEW_REQUIRED test.",
+      "required_evidence_keys": ["qualification_id", "snapshot_id", "revision_sha256", "suite_set_fingerprint", "suite_run_id", "test_run_id"],
+      "output_payload": ["qualification_id", "snapshot_id", "revision_sha256", "suite_set_fingerprint", "suite_run_id", "test_run_id"]
+    },
+    "semantic_review": {
+      "purpose": "Persist independent semantic verdict rationale and evidence references before judge recording.",
+      "required_evidence_keys": ["verdict", "review_type", "review_context", "rationale_summary", "evidence_refs"],
+      "output_payload": ["verdict", "review_type", "review_context", "rationale_summary", "evidence_refs"]
+    },
+    "judge_record": {
+      "purpose": "Prove canonical judge result was recorded by this reviewer execution.",
+      "required_evidence_keys": ["judge_result_id", "verdict", "test_run_id"],
+      "output_payload": ["judge_result_id", "verdict", "test_run_id"]
+    },
+    "reviewer_readback": {
+      "purpose": "Re-read judge and target currentness before reviewer completion.",
+      "required_evidence_keys": ["judge_result_id", "qualification_id", "revision_sha256", "suite_set_fingerprint"],
+      "output_payload": ["judge_result_id", "qualification_id", "revision_sha256", "suite_set_fingerprint"]
+    },
+    "report_output": {
+      "purpose": "Close reviewer execution only after all required review steps are clean.",
+      "required_evidence_keys": ["review_receipt", "evidence_refs", "next_gate"],
+      "output_payload": ["review_receipt", "evidence_refs", "next_gate"]
+    }
+  },
+  "judges": {
+    "JUDGE-INDEPENDENT-STRATEGY-REVIEW-ROUTE-v1": {
+      "pass_if": ["router_ready", "operation_exact"],
+      "fail_if": ["route_invalid"]
+    },
+    "JUDGE-INDEPENDENT-STRATEGY-REVIEW-CURRENTNESS-v1": {
+      "pass_if": ["qualification_bound", "revision_current", "suite_fingerprint_current", "test_review_required"],
+      "fail_if": ["target_stale"]
+    },
+    "JUDGE-INDEPENDENT-STRATEGY-REVIEW-SEMANTIC-v1": {
+      "pass_if": ["review_receipt_shape_valid", "review_context_independent", "evidence_refs_present", "verdict_allowed"],
+      "fail_if": ["review_receipt_invalid"]
+    },
+    "JUDGE-INDEPENDENT-STRATEGY-REVIEW-JUDGE-v1": {
+      "pass_if": ["judge_persisted", "judge_bound", "judge_verdict_matches"],
+      "fail_if": ["judge_invalid"]
+    },
+    "JUDGE-INDEPENDENT-STRATEGY-REVIEW-READBACK-v1": {
+      "pass_if": ["judge_readback", "target_still_current", "test_still_review_required"],
+      "fail_if": ["readback_invalid"]
+    },
+    "JUDGE-INDEPENDENT-STRATEGY-REVIEW-REPORT-v1": {
+      "pass_if": ["all_prior_clean", "reviewer_ready_to_complete", "target_still_current"],
+      "fail_if": ["completion_invalid"]
+    }
+  },
+  "capability_registry_prestate": {
+    "registry_row_exists": false,
+    "current_pointer_exists": false
+  }
+}
