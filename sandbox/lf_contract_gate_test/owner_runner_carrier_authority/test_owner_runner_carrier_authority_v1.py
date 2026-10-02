@@ -71,7 +71,10 @@ def main() -> None:
     assert contract["source_authorities"]["classification_evidence"].endswith("pase_control_binding_inventory_v1.json")
     checks += 1
 
-    parity = R.resolve(plan(["MIGRATION_SOURCE_PARITY"]), accepted_entry())
+    parity = R.resolve(
+        plan(["MIGRATION_SOURCE_PARITY"], carrier="MIGRATION_SOURCE_PARITY"),
+        accepted_entry(),
+    )
     assert parity["ready"] is True
     assert parity["decision"] == "OWNER_RUNNER_CARRIER_RESOLVED"
     assert len(parity["rows"]) == 1
@@ -79,7 +82,7 @@ def main() -> None:
     assert row["control_id"] == "MIGRATION_SOURCE_PARITY"
     assert row["super_admin"] == "LF_GOVERNANCE"
     assert row["capability_id"] == "MIGRATION_SOURCE_PARITY"
-    assert row["carrier"] == "LF_CONTRACT_CHECK"
+    assert row["carrier"] == "MIGRATION_SOURCE_PARITY"
     assert row["state"] == "RESOLVED_CURRENT_CARRIER"
     checks += 1
 
@@ -100,15 +103,15 @@ def main() -> None:
 
     bad_guard = accepted_entry()
     bad_guard["entry_guard"]["decision"] = "OTHER"
-    expect_block(R, lambda: R.resolve(plan(["MIGRATION_SOURCE_PARITY"]), bad_guard), "BLOCK_ORCHESTRATOR_ENTRY_DECISION")
+    expect_block(R, lambda: R.resolve(plan(["MIGRATION_SOURCE_PARITY"], carrier="MIGRATION_SOURCE_PARITY"), bad_guard), "BLOCK_ORCHESTRATOR_ENTRY_DECISION")
     checks += 1
 
     missing_binding = accepted_entry()
     missing_binding["binding"]["ready"] = False
-    expect_block(R, lambda: R.resolve(plan(["MIGRATION_SOURCE_PARITY"]), missing_binding), "BLOCK_CAPABILITY_BINDING_NOT_READY")
+    expect_block(R, lambda: R.resolve(plan(["MIGRATION_SOURCE_PARITY"], carrier="MIGRATION_SOURCE_PARITY"), missing_binding), "BLOCK_CAPABILITY_BINDING_NOT_READY")
     checks += 1
 
-    wrong_admin = plan(["MIGRATION_SOURCE_PARITY"])
+    wrong_admin = plan(["MIGRATION_SOURCE_PARITY"], carrier="MIGRATION_SOURCE_PARITY")
     wrong_admin["governance_admin"]["super_admin"] = "OTHER"
     expect_block(R, lambda: R.resolve(wrong_admin, accepted_entry()), "BLOCK_PLAN_SUPER_ADMIN")
     checks += 1
@@ -121,7 +124,7 @@ def main() -> None:
     expect_block(R, lambda: R.resolve(unknown, accepted_entry()), "BLOCK_UNKNOWN_CONTROL:UNKNOWN_CONTROL")
     checks += 1
 
-    duplicate = plan(["MIGRATION_SOURCE_PARITY", "MIGRATION_SOURCE_PARITY"])
+    duplicate = plan(["MIGRATION_SOURCE_PARITY", "MIGRATION_SOURCE_PARITY"], carrier="MIGRATION_SOURCE_PARITY")
     expect_block(R, lambda: R.resolve(duplicate, accepted_entry()), "BLOCK_DUPLICATE_REQUIRED_CONTROL")
     checks += 1
 

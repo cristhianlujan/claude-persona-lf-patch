@@ -71,6 +71,7 @@ MANAGED_EXACT_NAMES = {
 CLASSIFIED_EXTERNAL_PREFIXES = (
     "input_governance_",
     "programacion_input_governance_",
+    "ig_cv_",
     "gov_router_act0001_",
     "router_ui_capability_canary_",
     "router_keyword_verification_canary_",
@@ -925,6 +926,8 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_MANAGED_WORKER_SPEC")
     if not classified("input_governance_probe"):
         fail("FAIL_CI009_SELFTEST_EXTERNAL_OWNER")
+    if not classified("ig_cv_r16_git_first_database_governance_v1"):
+        fail("FAIL_CI009_SELFTEST_IG_CV_EXTERNAL_OWNER_FAMILY")
     if classified("totally_unknown_future_migration"):
         fail("FAIL_CI009_SELFTEST_UNKNOWN_ACCEPTED")
 
@@ -1150,7 +1153,7 @@ def main() -> int:
         )
     print("PASS_LF_MIGRATION_TRANSPORT_SELFTEST=3/3")
     print("PASS_LF_MIGRATION_EXTERNAL_OWNER_CURRENTNESS=ENFORCED")
-    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=36/36")
+    print("PASS_CI009_MIGRATION_CLASSIFICATION_SELFTEST=37/37")
     return 0
 
 
