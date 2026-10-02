@@ -9,6 +9,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 HERE = Path(__file__).resolve().parent
 ROUTER_PATH = HERE / "lf_ci_lane_router.py"
@@ -17,6 +18,7 @@ CURRENTNESS_PATH = HERE / "lf_ci_currentness_bridge_v1.py"
 COMPAT_PATH = HERE / "lf_ci_compatibility_assessment_v1.py"
 HANDOFF_PATH = HERE / "lf_contract_check_resolution_handoff_v1.py"
 REPAIR_ENFORCEMENT_PATH = HERE / "lf_pase_control_repair_quarantine_v1.py"
+CHANGESET_MANIFEST_PREFIX = "sandbox/lf_contract_gate_test/changesets/"
 
 
 def _load(path: Path, name: str):
@@ -66,6 +68,42 @@ def _changed(repo: Path, base: str | None, head: str | None) -> list[str]:
     return sorted({line.strip() for line in raw.splitlines() if line.strip()})
 
 
+def _candidate_manifest(
+    repo: Path,
+    changed: list[str],
+    head: str | None,
+) -> dict[str, Any] | None:
+    """Read one changeset manifest from the exact candidate object, not cwd.
+
+    This keeps current governance code able to evaluate an older exact-head
+    candidate without copying/rebasing that candidate into main.
+    """
+    manifests = sorted(
+        path for path in changed
+        if path.startswith(CHANGESET_MANIFEST_PREFIX) and path.endswith(".json")
+    )
+    if not manifests:
+        return None
+    if len(manifests) != 1:
+        raise RuntimeError("FAIL_CHANGESET_MULTIPLE_SOLUTIONS")
+    if not head:
+        raise RuntimeError("FAIL_CHANGESET_MANIFEST_HEAD_MISSING")
+    cp = subprocess.run(
+        ["git", "-C", str(repo), "show", f"{head}:{manifests[0]}"],
+        text=True,
+        capture_output=True,
+    )
+    if cp.returncode != 0:
+        raise RuntimeError(f"FAIL_CHANGESET_MANIFEST_EXACT_HEAD_READ:{manifests[0]}")
+    try:
+        value = json.loads(cp.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"FAIL_CHANGESET_MANIFEST_JSON:{manifests[0]}") from exc
+    if not isinstance(value, dict):
+        raise RuntimeError(f"FAIL_CHANGESET_MANIFEST_SHAPE:{manifests[0]}")
+    return value
+
+
 def main() -> int:
     args = parser().parse_args()
     repo = Path(args.repo_root).resolve()
@@ -80,7 +118,8 @@ def main() -> int:
         force_full = True
         force_reason = force_reason or "MAIN_PUSH_FULL_REGRESSION"
 
-    lane = ROUTER.classify(changed)
+    manifest_data = _candidate_manifest(repo, changed, args.head)
+    lane = ROUTER.classify(changed, manifest_data=manifest_data)
     plan = PLAN.build_plan(
         changed_paths=changed,
         lane_required_controls=lane.required_controls,
