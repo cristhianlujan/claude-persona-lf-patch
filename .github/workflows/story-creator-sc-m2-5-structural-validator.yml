@@ -31,6 +31,7 @@ jobs:
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/transversal_capability_inventory_20261002.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/programming_utility_judge_contract_v1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_implementation_package_v1_1.json >/dev/null
+          python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/programming_consumer_v2_contract_snapshot_20261002.json >/dev/null
       - name: SC-M2.5 structural regression
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/validate_story_implementation_package_v1.py --self-test
       - name: SC-M3.1 anti-invention and no-duplicate regression
@@ -47,3 +48,5 @@ jobs:
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_onb_004_compiled_package_v1.py
       - name: SC-M4.2 compiled structural anti-invention and adversarial gates
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_onb_004_compiled_gates_v1.py
+      - name: SC-M4.3 Programming Agent format-contract A/B
+        run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_programming_consumer_ab_v1.py
