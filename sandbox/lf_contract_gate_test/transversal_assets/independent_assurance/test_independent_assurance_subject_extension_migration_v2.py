@@ -5,11 +5,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 MIGRATION = ROOT / "supabase" / "migrations" / "20261002222500_independent_assurance_subject_extension_v2.sql"
+REQUALIFICATION_DEP = ROOT / "supabase" / "migrations" / "20261002222400_operation_requalification_multisubject_scope_v2.sql"
 
 
 def main() -> None:
     sql = MIGRATION.read_text(encoding="utf-8")
     lower = sql.lower()
+    req = REQUALIFICATION_DEP.read_text(encoding="utf-8")
+    req_lower = req.lower()
 
     # Existing engine only.
     assert "operation_code='revision_independiente_estrategia_lf'" in lower
@@ -45,6 +48,14 @@ def main() -> None:
     assert "fn_lf_capability_promote_v1(" not in lower
     assert "block_t_indep_premature_current_pointer" in lower
     assert "block_t_indep_expected_requalification_gate_not_observed" in lower
+
+    # Requalification is extended in place; no second qualification engine is introduced.
+    assert "create or replace function public.lf_operation_requalification_bootstrap_v1" in req_lower
+    assert "route_asset_type" in req_lower
+    assert "applies_to_asset_type is not null" in req_lower
+    assert "insert into public.lf_router_action_registry" not in req_lower
+    assert "create or replace function public.lf_run_operation_qualification" not in req_lower
+    assert "operation_requalification_bootstrap_v2" not in req_lower
 
     print("INDEPENDENT_ASSURANCE_SUBJECT_EXTENSION_MIGRATION_V2=PASS")
 
