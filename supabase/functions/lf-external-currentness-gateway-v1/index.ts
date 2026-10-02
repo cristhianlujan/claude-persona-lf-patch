@@ -80,8 +80,6 @@ async function inventoryRpc(name: string, args: Record<string, unknown>): Promis
       authorization: `Bearer ${SERVICE_ROLE_KEY}`,
       apikey: SERVICE_ROLE_KEY,
       "content-type": "application/json",
-      "content-profile": "inventory",
-      "accept-profile": "inventory",
     },
     body: JSON.stringify(args),
     signal: AbortSignal.timeout(TIMEOUT_MS),
@@ -177,7 +175,7 @@ function nestedString(value: Record<string, unknown>, first: string, second: str
 
 async function readSnapshot(identity: GatewayIdentity): Promise<Response> {
   const edgeRuntime = await listEdgeRuntime();
-  const readModel = asObject(await inventoryRpc("fn_external_currentness_read_model_v1", {}));
+  const readModel = asObject(await inventoryRpc("lf_external_currentness_read_model_v1", {}));
 
   return json({
     outcome: "SNAPSHOT",
@@ -204,7 +202,7 @@ async function writeObservation(body: Record<string, unknown>, identity: Gateway
   // Get DB server time immediately before write. This timestamp, not a runner clock,
   // becomes the persisted observed_at. The fresh read-model also closes the
   // read_snapshot -> write_observation race before the writer repeats the check.
-  const freshReadModel = asObject(await inventoryRpc("fn_external_currentness_read_model_v1", {}));
+  const freshReadModel = asObject(await inventoryRpc("lf_external_currentness_read_model_v1", {}));
   const dbObservedAt = typeof freshReadModel.captured_at === "string" ? freshReadModel.captured_at : "";
   if (!dbObservedAt || Number.isNaN(new Date(dbObservedAt).getTime())) {
     throw new GatewayError("DB_SERVER_TIME_UNRESOLVED", 502);
@@ -219,7 +217,7 @@ async function writeObservation(body: Record<string, unknown>, identity: Gateway
     throw new GatewayError("REPORT_INPUT_STALE", 409);
   }
 
-  const result = await inventoryRpc("fn_apply_external_currentness_observation_v1", {
+  const result = await inventoryRpc("lf_external_currentness_apply_observation_v1", {
     p_report: report,
     p_observed_main_committed_at: verifiedCommit.committedAt,
     p_observed_at: dbObservedAt,
