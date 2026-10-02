@@ -1,0 +1,14 @@
+{
+  "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
+  "cases": [
+    {
+      "case_id": "N9_LIVE_CARRIER_NOOP_FRESH_SCREEN_V3",
+      "candidate_ref": "HEAD",
+      "candidate_path": "sandbox/ig_cv/fixtures/n9_noop_candidate.sql",
+      "screen_id": 4,
+      "consumer": "STORY_CREATOR",
+      "expected_verdict": "NO_BLOCKING_FINDINGS",
+      "expected_finding_codes": []
+    }
+  ]
+}
