@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lf.local/story-implementation-package/v1.1",
+  "title": "Story Implementation Package V1.1 Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "package_version",
+    "canonical_evidence",
+    "canonical_story_sha256",
+    "source_refs",
+    "story_identity",
+    "story_contracts",
+    "outcome",
+    "architecture_and_reuse_decisions",
+    "hard_boundaries",
+    "implementation_preconditions",
+    "context_transport",
+    "wiring",
+    "implementation_delta_and_deliverables",
+    "executable_acceptance",
+    "transition_and_rollback",
+    "observability_and_evidence",
+    "decision_closure",
+    "blocked_if",
+    "task0_reuse_discovery",
+    "task_views"
+  ],
+  "properties": {
+    "package_version": {"const": "STORY_IMPLEMENTATION_PACKAGE_V1_1"},
+    "canonical_evidence": {"const": "STORY_PACK_A_Q"},
+    "canonical_story_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 3}
+    },
+    "story_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["story_code", "module_code", "screen_code", "source_version", "source_snapshot_sha256"],
+      "properties": {
+        "story_code": {"type": "string", "minLength": 1},
+        "module_code": {"type": ["string", "null"]},
+        "screen_code": {"type": ["string", "null"]},
+        "functional_unit_code": {"type": ["string", "null"]},
+        "source_version": {"type": "string", "minLength": 1},
+        "source_snapshot_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "story_contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "functional_contract",
+        "design_system_contract",
+        "field_validation_contract",
+        "state_navigation_contract",
+        "error_recovery_contract",
+        "security_privacy_contract",
+        "integration_contract",
+        "story_test_obligations"
+      ],
+      "properties": {
+        "functional_contract": {"type": "object"},
+        "design_system_contract": {"type": "object"},
+        "field_validation_contract": {"type": "object"},
+        "state_navigation_contract": {"type": "object"},
+        "error_recovery_contract": {"type": "object"},
+        "security_privacy_contract": {"type": "object"},
+        "integration_contract": {"type": "object"},
+        "story_test_obligations": {"type": "object"}
+      }
+    },
+    "outcome": {"type": "object"},
+    "architecture_and_reuse_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["need_code", "classification", "owner_state", "currentness_state", "consumer_refs", "evidence_refs", "rationale"],
+        "properties": {
+          "need_code": {"type": "string", "minLength": 1},
+          "classification": {"enum": ["REUSE_AS_IS", "EXTEND_TRANSVERSAL", "DOMAIN_SPECIALIZATION", "CREATE_NEW", "BLOCKED"]},
+          "selected_asset_ref": {"type": ["string", "null"]},
+          "owner_state": {"enum": ["RESOLVED", "UNRESOLVED"]},
+          "currentness_state": {"enum": ["PROVEN_CURRENT", "STALE", "UNPROVEN"]},
+          "consumer_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}},
+          "rationale": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "hard_boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed_path_patterns", "protected_path_patterns", "allowed_effects", "authorization_refs"],
+      "properties": {
+        "allowed_path_patterns": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "protected_path_patterns": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "allowed_effects": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"enum": ["NO_EFFECT", "READ_ONLY", "CONTROL_STATE_ONLY", "BOUNDED_WRITE"]}
+        },
+        "authorization_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 3}}
+      }
+    },
+    "implementation_preconditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["precondition_code", "target_material", "state", "blocking_scope", "design_effect", "evidence_required"],
+        "properties": {
+          "precondition_code": {"type": "string", "minLength": 1},
+          "target_material": {"type": "string", "minLength": 1},
+          "state": {"enum": ["RESOLVED_FROM_AUTHORITY", "IMPLEMENTATION_PRECONDITION", "PENDING_SOURCE_DEFINITION", "SOURCE_CONFLICT", "PENDING_OWNER_DECISION", "NOT_APPLICABLE"]},
+          "exact_resolver": {"type": ["string", "null"]},
+          "expected_shape": {},
+          "deterministic_resolution_rule": {"type": ["string", "null"]},
+          "bounded_stage": {"type": ["string", "null"]},
+          "evidence_required": {"type": "array", "items": {"type": "string"}},
+          "blocking_scope": {"enum": ["WHOLE_HANDOFF", "TASK", "DELIVERABLE", "NON_BLOCKING"]},
+          "design_effect": {"enum": ["NONE", "MAY_CHANGE_DESIGN"]}
+        }
+      }
+    },
+    "context_transport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context_path_patterns", "max_context_bytes", "transport_ref"],
+      "properties": {
+        "context_path_patterns": {"type": "array", "items": {"type": "string"}},
+        "max_context_bytes": {"type": "integer", "minimum": 1},
+        "transport_ref": {"type": "string", "minLength": 3}
+      }
+    },
+    "wiring": {"type": "object"},
+    "implementation_delta_and_deliverables": {"type": "object"},
+    "executable_acceptance": {"type": "object"},
+    "transition_and_rollback": {"type": "object"},
+    "observability_and_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_refs", "source_currentness_refs"],
+      "properties": {
+        "evidence_refs": {"type": "array", "items": {"type": "string"}},
+        "source_currentness_refs": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "decision_closure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ready", "ready_when", "blocked_when", "open_decisions", "source_currentness_state", "evidence_completeness_state"],
+      "properties": {
+        "ready": {"type": "boolean"},
+        "ready_when": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "blocked_when": {"type": "array", "items": {"type": "string"}},
+        "open_decisions": {"type": "array", "items": {"type": "string"}},
+        "source_currentness_state": {"enum": ["PROVEN_CURRENT", "STALE", "UNPROVEN"]},
+        "evidence_completeness_state": {"enum": ["COMPLETE", "INCOMPLETE", "UNPROVEN"]}
+      }
+    },
+    "blocked_if": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "state", "affected_scope", "resolver_or_owner_ref"],
+        "properties": {
+          "code": {"type": "string", "minLength": 1},
+          "state": {"enum": ["PENDING_SOURCE_DEFINITION", "SOURCE_CONFLICT", "PENDING_OWNER_DECISION", "BLOCKED_CURRENTNESS_UNPROVEN", "BLOCKED_EVIDENCE_MISSING", "BLOCKED_CONSUMER_PACKET_UNRESOLVED", "BLOCKED_CONTEXT_BUDGET", "OTHER_TYPED_BLOCKER"]},
+          "affected_scope": {"enum": ["WHOLE_HANDOFF", "TASK", "DELIVERABLE"]},
+          "resolver_or_owner_ref": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "task0_reuse_discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "inventory_queries", "candidate_assets", "owner_state", "currentness_state", "consumer_refs", "evidence_refs", "verified_absence", "owner_separation"],
+      "properties": {
+        "classification": {"enum": ["REUSE_AS_IS", "EXTEND_TRANSVERSAL", "DOMAIN_SPECIALIZATION", "CREATE_NEW", "BLOCKED"]},
+        "inventory_queries": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "candidate_assets": {"type": "array", "items": {"type": "string"}},
+        "selected_asset_ref": {"type": ["string", "null"]},
+        "owner_state": {"enum": ["RESOLVED", "UNRESOLVED"]},
+        "currentness_state": {"enum": ["PROVEN_CURRENT", "STALE", "UNPROVEN"]},
+        "consumer_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "verified_absence": {"type": "boolean"},
+        "owner_separation": {"type": "boolean"}
+      }
+    },
+    "task_views": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task_code", "task_class", "selected_sections", "max_context_bytes", "view_sha256"],
+        "properties": {
+          "task_code": {"type": "string", "minLength": 1},
+          "task_class": {"enum": ["TASK_DELTA", "DISCOVERY_REUSE", "UI_IMPLEMENTATION", "TEST_IMPLEMENTATION", "INTEGRATION_IMPLEMENTATION"]},
+          "selected_sections": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "max_context_bytes": {"type": "integer", "minimum": 1},
+          "view_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}
