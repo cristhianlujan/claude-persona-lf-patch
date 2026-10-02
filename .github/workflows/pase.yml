@@ -245,7 +245,7 @@ jobs:
     name: PASE / MIGRATION_SOURCE_PARITY
     needs: lf-pase
     if: ${{ contains(fromJSON(needs.lf-pase.outputs.required_controls_json), 'MIGRATION_SOURCE_PARITY') }}
-    uses: ./.github/workflows/lf-migration-source-parity.yml
+    uses: ./.github/workflows/lf-migration-source-parity-core.yml
     with:
       base_sha: ${{ needs.lf-pase.outputs.resolved_base_sha }}
       head_sha: ${{ needs.lf-pase.outputs.resolved_head_sha }}
