@@ -1,6 +1,7 @@
 {
   "solution_ref": "PILOT-SRCR-G11-FAILURE-INJECTION-247-ACCEPTANCE",
   "paths": {
-    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g11/test_g11_failure_injection_247_acceptance_candidate.py": "PILOT_GATE_TEST"
+    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g11/test_g11_failure_injection_247_acceptance_candidate.py": "PILOT_GATE_TEST",
+    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g11/g11_247_acceptance_readback.json": "PILOT_GATE_TEST"
   }
 }
