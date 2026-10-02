@@ -1,0 +1,14 @@
+{
+  "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
+  "cases": [
+    {
+      "case_id": "N5_FAMILY_COMPLETE_CRITERIA",
+      "candidate_ref": "0c3df451674a0c003b7b6f4eaeac649d2b84023b",
+      "candidate_path": "supabase/migrations/20261002192000_ig_n5_family_complete_criteria_v1.sql",
+      "screen_id": 1,
+      "consumer": "STORY_CREATOR",
+      "expected_verdict": "NO_BLOCKING_FINDINGS",
+      "expected_finding_codes": []
+    }
+  ]
+}
