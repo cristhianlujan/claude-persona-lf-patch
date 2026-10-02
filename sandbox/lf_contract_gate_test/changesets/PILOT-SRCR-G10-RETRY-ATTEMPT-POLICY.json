@@ -1,0 +1,6 @@
+{
+  "solution_ref": "PILOT-SRCR-G10-RETRY-ATTEMPT-POLICY",
+  "paths": {
+    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g10/test_g10_retry_attempt_policy_candidate.py": "PILOT_GATE_TEST"
+  }
+}

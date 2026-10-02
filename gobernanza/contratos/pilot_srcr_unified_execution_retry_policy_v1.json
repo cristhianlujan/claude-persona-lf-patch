@@ -1,0 +1,26 @@
+{
+  "schema": "LF_UNIFIED_EXECUTION_RETRY_POLICY_V1",
+  "policy_code": "POL-LF-UNIFIED-EXECUTION-RETRY-V1",
+  "policy_version": "v1.0-candidate",
+  "policy_role": "RETRY_POLICY",
+  "status": "CANDIDATE_ONLY",
+  "candidate_binding": {
+    "operation_code": "EJECUCION_PERFIL_LF",
+    "distribution_modes": ["ROUTER", "DIRECT"],
+    "required": true
+  },
+  "retryable_outcomes": ["RETRYABLE_FAILURE"],
+  "non_retryable_outcomes": ["FAILED", "BLOCKED", "SUCCEEDED"],
+  "max_attempts": 3,
+  "backoff_seconds_by_retry": [30, 120],
+  "new_attempt_identity_required": true,
+  "new_fence_required": true,
+  "policy_snapshot_view": "public.v_lf_operation_policy_snapshot",
+  "authority_boundary": {
+    "policy_decides_retry_eligibility": true,
+    "lease_fence_owned_by_g05": true,
+    "next_task_materialization_owned_by_g07": true,
+    "retry_rpc_must_not_write_execution_current_task": true,
+    "runtime_dispatch_forbidden": true
+  }
+}
