@@ -18,7 +18,18 @@ def load(path: Path, name: str):
         raise SystemExit("FAIL_MSP_SCENARIO_EVIDENCE_LOAD")
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
-    spec.loader.exec_module(module)
+    module_dir = str(path.parent)
+    inserted = module_dir not in sys.path
+    if inserted:
+        sys.path.insert(0, module_dir)
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        if inserted:
+            try:
+                sys.path.remove(module_dir)
+            except ValueError:
+                pass
     return module
 
 ENTRY = load(ENTRY_PATH, "msp_scenario_evidence_entry")
