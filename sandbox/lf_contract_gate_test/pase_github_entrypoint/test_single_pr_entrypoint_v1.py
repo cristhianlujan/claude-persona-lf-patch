@@ -93,6 +93,17 @@ assert "lf_independent_change_admission_carrier_v1.py self-test" in merge_gate
 assert "lf_independent_change_admission_carrier_v1.py classify" in merge_gate
 assert "lf_independent_change_admission_carrier_v1.py validate" in merge_gate
 
+# N-9 reuses the already-trusted pull_request_target carrier instead of creating
+# another trusted PR entrypoint. Candidate code is data-only and the judge helper
+# is always sourced from the trusted base.
+assert "  ig-runtime-candidate-judge:\n" in merge_gate
+assert "Checkout trusted base judge source" in merge_gate
+assert "git diff --quiet \"$BASE_SHA\" \"$HEAD_SHA\" -- \"$REQUEST_PATH\"" in merge_gate
+assert "ig_runtime_candidate_judge_request_v1.py self-test" in merge_gate
+assert "ig_runtime_candidate_judge_request_v1.py run" in merge_gate
+assert "IG_N9_APPLICABLE=false" in merge_gate
+assert "IG_N9_APPLICABLE=true" in merge_gate
+
 print(
     "PASS_PASE_SINGLE_PR_ENTRYPOINT_V1 "
     f"workflow_count={len(files)} ordinary_pr={ordinary_pr[0]} "
