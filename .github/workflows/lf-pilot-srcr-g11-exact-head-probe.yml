@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: 54ed2555e6225ac64bb3c9aed985c7d37b3c0d3a
-          fetch-depth: 5
+          fetch-depth: 20
           persist-credentials: false
 
       - name: Set up Python
