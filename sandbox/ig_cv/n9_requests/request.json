@@ -1,0 +1,23 @@
+{
+  "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
+  "cases": [
+    {
+      "case_id": "N8_GRAPH_ONCE_SCREEN_1",
+      "candidate_ref": "HEAD",
+      "candidate_path": "supabase/migrations/20261002083500_ig_cv_n8_validator_graph_once_per_chunk_v1.sql",
+      "screen_id": 1,
+      "consumer": "STORY_CREATOR",
+      "expected_verdict": "NO_BLOCKING_FINDINGS",
+      "expected_finding_codes": []
+    },
+    {
+      "case_id": "N8_GRAPH_ONCE_SCREEN_51",
+      "candidate_ref": "HEAD",
+      "candidate_path": "supabase/migrations/20261002083500_ig_cv_n8_validator_graph_once_per_chunk_v1.sql",
+      "screen_id": 51,
+      "consumer": "STORY_CREATOR",
+      "expected_verdict": "NO_BLOCKING_FINDINGS",
+      "expected_finding_codes": []
+    }
+  ]
+}
