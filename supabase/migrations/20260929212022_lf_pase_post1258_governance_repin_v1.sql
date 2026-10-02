@@ -7,6 +7,7 @@
 -- source_authority=supabase_migrations.schema_migrations
 -- source_version=20260929212022
 -- source_name=lf_pase_post1258_governance_repin_v1
+
 -- Repin only the two governed workflow fingerprints changed by the PASE cutover.
 -- Exact-main evidence comes from source run 36631790668 at
 -- 0edb84e8eaf5f6e167e0f33f6559922a31ef3bfb.
