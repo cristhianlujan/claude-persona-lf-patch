@@ -1,0 +1,6 @@
+{
+  "solution_ref": "PILOT-SRCR-G07-ADVANCE-EXECUTION",
+  "paths": {
+    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g07/test_g07_advance_execution_candidate.py": "PILOT_GATE_TEST"
+  }
+}
