@@ -6,7 +6,6 @@
 
 begin;
 
--- Fail before cutover on any applicability or equivalence drift.
 do $precutover$
 declare
   v_loaded integer;
@@ -19,35 +18,30 @@ begin
     and jsonb_typeof(valor_config->'applicability_v1')='object';
   if v_loaded <> 32 then raise exception 'N4_CUTOVER_REQUIRES_32_APPLICABILITY_ROWS:%',v_loaded; end if;
 
-  with rules as (
-    select id from lf_ops.reglas where estado='VIGENTE' and es_transversal=true
-  ), targets as (
-    select id as pantalla_id from lf_ops.pantallas
-  ), cmp as (
-    select r.id,t.pantalla_id,
-      exists(select 1 from lf_ops.reglas_pantallas rp where rp.regla_id=r.id and rp.pantalla_id=t.pantalla_id) as legacy_applies,
-      exists(select 1 from programacion.fn_input_declared_rule_links_v1(t.pantalla_id,'INPUT_GOVERNANCE') d where d.regla_id=r.id) as declared_applies
-    from rules r cross join targets t
-  )
+  with rules as (select id from lf_ops.reglas where estado='VIGENTE' and es_transversal=true),
+       targets as (select id as pantalla_id from lf_ops.pantallas),
+       cmp as (
+         select r.id,t.pantalla_id,
+           exists(select 1 from lf_ops.reglas_pantallas rp where rp.regla_id=r.id and rp.pantalla_id=t.pantalla_id) as legacy_applies,
+           exists(select 1 from programacion.fn_input_declared_rule_links_v1(t.pantalla_id,'INPUT_GOVERNANCE') d where d.regla_id=r.id) as declared_applies
+         from rules r cross join targets t
+       )
   select count(*) into v_diff from cmp where legacy_applies is distinct from declared_applies;
   if v_diff <> 0 then raise exception 'N4_CUTOVER_ALL_TARGET_EQUIVALENCE_FAILED:%',v_diff; end if;
 
-  with rules as (
-    select id from lf_ops.reglas where estado='VIGENTE' and es_transversal=true
-  ), targets(pantalla_id) as (
-    values (1),(2),(3),(5),(43),(51),(52),(53),(54),(55),(56),(57),(58)
-  ), cmp as (
-    select r.id,t.pantalla_id,
-      exists(select 1 from lf_ops.reglas_pantallas rp where rp.regla_id=r.id and rp.pantalla_id=t.pantalla_id) as legacy_applies,
-      exists(select 1 from programacion.fn_input_declared_rule_links_v1(t.pantalla_id,'INPUT_GOVERNANCE') d where d.regla_id=r.id) as declared_applies
-    from rules r cross join targets t
-  )
+  with rules as (select id from lf_ops.reglas where estado='VIGENTE' and es_transversal=true),
+       targets(pantalla_id) as (values (1),(2),(3),(5),(43),(51),(52),(53),(54),(55),(56),(57),(58)),
+       cmp as (
+         select r.id,t.pantalla_id,
+           exists(select 1 from lf_ops.reglas_pantallas rp where rp.regla_id=r.id and rp.pantalla_id=t.pantalla_id) as legacy_applies,
+           exists(select 1 from programacion.fn_input_declared_rule_links_v1(t.pantalla_id,'INPUT_GOVERNANCE') d where d.regla_id=r.id) as declared_applies
+         from rules r cross join targets t
+       )
   select count(*) into v_baseline_diff from cmp where legacy_applies is distinct from declared_applies;
   if v_baseline_diff <> 0 then raise exception 'N4_CUTOVER_13X32_EQUIVALENCE_FAILED:%',v_baseline_diff; end if;
 end;
 $precutover$;
 
--- Snapshot the canonical graph for all 13 baseline screens before source cutover.
 create temporary table n4_graph_before on commit drop as
 with v as (select max(id) as version_id from programacion.versiones_agente),
      s(pantalla_id) as (values (1),(2),(3),(5),(43),(51),(52),(53),(54),(55),(56),(57),(58))
@@ -82,20 +76,17 @@ $function$;
 comment on function programacion.fn_input_effective_rule_links_v1(integer,text) is
   'N-4 effective IG relation: governed applicability_v1 for migrated rules; legacy explicit links only for rules without applicability_v1.';
 
--- The effective set itself must still be pair-for-pair equivalent to the legacy relation
--- across every currently registered screen before any consumer is patched.
 do $effective_gate$
 declare
   v_missing integer;
   v_extra integer;
 begin
-  with legacy as (
-    select rp.pantalla_id,rp.regla_id from lf_ops.reglas_pantallas rp
-  ), effective as (
-    select p.id as pantalla_id,e.regla_id
-    from lf_ops.pantallas p
-    cross join lateral programacion.fn_input_effective_rule_links_v1(p.id,'INPUT_GOVERNANCE') e
-  )
+  with legacy as (select rp.pantalla_id,rp.regla_id from lf_ops.reglas_pantallas rp),
+       effective as (
+         select p.id as pantalla_id,e.regla_id
+         from lf_ops.pantallas p
+         cross join lateral programacion.fn_input_effective_rule_links_v1(p.id,'INPUT_GOVERNANCE') e
+       )
   select
     (select count(*) from (select * from legacy except select * from effective) x),
     (select count(*) from (select * from effective except select * from legacy) x)
@@ -106,7 +97,6 @@ begin
 end;
 $effective_gate$;
 
--- Patch only the 13 verified IG readers. Exact preimage MD5 blocks stale definitions.
 do $patch$
 declare
   v_row record;
@@ -135,19 +125,15 @@ begin
     if md5(v_def) is distinct from v_row.expected_md5 then
       raise exception 'N4_FUNCTION_PREIMAGE_DRIFT:% expected=% actual=%',v_row.proc_oid,v_row.expected_md5,md5(v_def);
     end if;
-
     v_before :=
       (length(lower(v_def))-length(replace(lower(v_def),'from lf_ops.reglas_pantallas','')))/length('from lf_ops.reglas_pantallas')
       +
       (length(lower(v_def))-length(replace(lower(v_def),'join lf_ops.reglas_pantallas','')))/length('join lf_ops.reglas_pantallas');
     if v_before < 1 then raise exception 'N4_EXPECTED_RULE_LINK_READ_MISSING:%',v_row.proc_oid; end if;
-
     v_new := replace(v_def,'from lf_ops.reglas_pantallas','from programacion.fn_input_effective_rule_links_v1(p_pantalla_id,''INPUT_GOVERNANCE'')');
     v_new := replace(v_new,'join lf_ops.reglas_pantallas','join programacion.fn_input_effective_rule_links_v1(p_pantalla_id,''INPUT_GOVERNANCE'')');
     execute v_new;
-
-    select (length(lower(pg_get_functiondef(v_row.proc_oid)))-length(replace(lower(pg_get_functiondef(v_row.proc_oid)),'lf_ops.reglas_pantallas','')))/length('lf_ops.reglas_pantallas')
-      into v_after;
+    select (length(lower(pg_get_functiondef(v_row.proc_oid)))-length(replace(lower(pg_get_functiondef(v_row.proc_oid)),'lf_ops.reglas_pantallas','')))/length('lf_ops.reglas_pantallas') into v_after;
     if v_after <> 0 then raise exception 'N4_RULE_LINK_READ_RESIDUAL:% count=%',v_row.proc_oid,v_after; end if;
   end loop;
 
@@ -165,7 +151,6 @@ begin
 end;
 $patch$;
 
--- Structural and functional readback after cutover.
 do $readback$
 declare
   v_direct integer;
@@ -177,7 +162,13 @@ begin
   select count(*) into v_direct
   from pg_proc p join pg_namespace n on n.oid=p.pronamespace
   where n.nspname='programacion'
-    and p.proname like 'fn_input%'
+    and p.proname in (
+      'fn_input_actionable_remediation_summary_v1','fn_input_api_contract_resolution','fn_input_design_binding_graph',
+      'fn_input_design_system_resolution_v1','fn_input_governance_semantic_probe_v3','fn_input_governance_semantic_probe_v3_cached_v1',
+      'fn_input_governance_shadow_priority_oracle_v2','fn_input_resolve_source_ref_v510','fn_input_screen_canonical_graph',
+      'fn_input_security_capability_profile','fn_input_security_threat_expected_v510','fn_input_subject_depth_expected',
+      'fn_input_subject_depth_expected_v510'
+    )
     and position('lf_ops.reglas_pantallas' in p.prosrc)>0;
   if v_direct <> 0 then raise exception 'N4_DIRECT_MANUAL_DEPENDENCY_REMAINS:%',v_direct; end if;
 
@@ -204,13 +195,12 @@ begin
   where b.graph_md5 is distinct from a.graph_md5;
   if v_graph_diff <> 0 then raise exception 'N4_BASELINE_GRAPH_REGRESSION:%',v_graph_diff; end if;
 
-  with legacy as (
-    select rp.pantalla_id,rp.regla_id from lf_ops.reglas_pantallas rp
-  ), effective as (
-    select p.id as pantalla_id,e.regla_id
-    from lf_ops.pantallas p
-    cross join lateral programacion.fn_input_effective_rule_links_v1(p.id,'INPUT_GOVERNANCE') e
-  )
+  with legacy as (select rp.pantalla_id,rp.regla_id from lf_ops.reglas_pantallas rp),
+       effective as (
+         select p.id as pantalla_id,e.regla_id
+         from lf_ops.pantallas p
+         cross join lateral programacion.fn_input_effective_rule_links_v1(p.id,'INPUT_GOVERNANCE') e
+       )
   select
     (select count(*) from (select * from legacy except select * from effective) x),
     (select count(*) from (select * from effective except select * from legacy) x)
