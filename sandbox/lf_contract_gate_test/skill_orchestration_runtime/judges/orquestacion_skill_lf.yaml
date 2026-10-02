@@ -1,0 +1,49 @@
+judge_code: JUDGE-ORQUESTACION-SKILL-LF-v0.1
+version: v0.1
+status: CANDIDATO_READ_ONLY
+scope: ORQUESTACION_SKILL_LF
+independent_from_worker: true
+pass_if:
+  - parent_skill_execution_is_exact_and_in_progress
+  - skill_source_revision_is_current
+  - manifest_step_and_worker_role_are_exact
+  - worker_resolution_is_unique_and_current
+  - task_runtime_binding_is_exact_or_explicitly_not_applicable
+  - child_execution_is_reserved_before_dispatch_receipt
+  - dispatch_receipt_is_real_and_cross_bound
+  - entry_guard_decision_is_ORCHESTRATOR_ENTRY_ACCEPTED
+  - final_task_packet_static_projection_matches_work_digest
+  - worker_result_is_bound_to_same_child_execution
+  - step_judge_is_independent_from_worker
+  - no_runtime_or_production_activation_is_inferred
+fail_if:
+  - fabricated_or_premature_receipt_or_guard
+  - stale_or_ambiguous_worker_binding
+  - source_revision_drift
+  - child_execution_missing_before_receipt
+  - receipt_consumer_plan_or_capability_mismatch
+  - final_task_packet_static_projection_drift
+  - worker_result_execution_mismatch
+  - self_judging
+  - missing_required_evidence
+result_values:
+  - PASS
+  - FAIL
+  - BLOCKED
+required_evidence_keys:
+  - parent_execution_id
+  - skill_code
+  - source_revision
+  - step_id
+  - worker_role
+  - worker_resolution_digest
+  - task_packet_work_digest
+  - child_execution_id
+  - dispatch_receipt_ref
+  - entry_guard_decision
+  - final_task_packet_digest
+  - worker_result_ref
+  - step_judge_ref
+notes: >-
+  Candidate judge for generic Skill orchestration. It does not judge the business output of the Skill;
+  it judges orchestration integrity, authority cross-binding and fail-closed sequencing only.
