@@ -25,6 +25,7 @@ Todo activo transversal documentable en estado `ACTIVE_SHARED_ENFORCEMENT` o `AC
 - `EVENT_CONTRACT_GOVERNANCE` — `TRANSVERSAL_EVENT_CONTRACT_GOVERNANCE` → `sandbox/lf_contract_gate_test/transversal_assets/event_contract_governance/README.md`
 - `EVIDENCE_RESOLVER_REGISTRY` — `TRANSVERSAL_EVIDENCE_RESOLVER_REGISTRY` → `sandbox/lf_contract_gate_test/transversal_assets/evidence_resolver_registry/README.md`
 - `EXECUTION_EVENT_READBACK_INDEX` — `TRANSVERSAL_EXECUTION_EVENT_READBACK_INDEX` → `sandbox/lf_contract_gate_test/transversal_assets/execution_event_readback_index/README.md`
+- `FULL_REGRESSION` — `TRANSVERSAL_FULL_REGRESSION` → `sandbox/lf_contract_gate_test/transversal_assets/full_regression/README.md` (source qualified candidate; no F04 activation/cutover)
 - `GATE_CHECK_OBSERVABILITY` — `TRANSVERSAL_GATE_CHECK_OBSERVABILITY` → `sandbox/lf_contract_gate_test/gate_check_observability/README.md`
 - `GITHUB_CONTRACT_GATE_LF` — `TRANSVERSAL_GITHUB_CONTRACT_GATE_LF` → `sandbox/lf_contract_gate_test/transversal_assets/github_contract_gate_lf/README.md`
 - `INDEPENDENT_ASSURANCE` — `TRANSVERSAL_INDEPENDENT_ASSURANCE` → `sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/README.md`
