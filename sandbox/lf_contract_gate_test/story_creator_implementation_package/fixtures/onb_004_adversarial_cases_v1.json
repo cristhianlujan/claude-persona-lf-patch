@@ -1,0 +1,20 @@
+{
+  "schema_version": "ONB_004_ADVERSARIAL_SUITE_V1",
+  "authority_fixture": "onb_004_authority_snapshot_20261002.json",
+  "cases": [
+    {"case":"screen_code_invented","mutation":{"kind":"package_pointer","pointer":"/story_identity/screen_code","value":"ONB_999"},"expected_error":"INVENTED_OR_STALE_VALUE:/story_identity/screen_code"},
+    {"case":"source_version_invented","mutation":{"kind":"package_pointer","pointer":"/story_identity/source_version","value":"v99"},"expected_error":"INVENTED_OR_STALE_VALUE:/story_identity/source_version"},
+    {"case":"route_code_invented","mutation":{"kind":"package_pointer","pointer":"/story_contracts/state_navigation_contract/route_code","value":"ROUTE_NOT_REGISTERED"},"expected_error":"INVENTED_OR_STALE_VALUE:/story_contracts/state_navigation_contract/route_code"},
+    {"case":"route_pattern_invented","mutation":{"kind":"package_pointer","pointer":"/story_contracts/state_navigation_contract/route_pattern","value":"/invented/route"},"expected_error":"INVENTED_OR_STALE_VALUE:/story_contracts/state_navigation_contract/route_pattern"},
+    {"case":"layout_token_invented","mutation":{"kind":"package_pointer","pointer":"/story_contracts/design_system_contract/layout_component_token_code","value":"invented_card_v99"},"expected_error":"INVENTED_OR_STALE_VALUE:/story_contracts/design_system_contract/layout_component_token_code"},
+    {"case":"theme_binding_invented","mutation":{"kind":"package_pointer","pointer":"/story_contracts/design_system_contract/theme_binding_code","value":"theme_unknown"},"expected_error":"INVENTED_OR_STALE_VALUE:/story_contracts/design_system_contract/theme_binding_code"},
+    {"case":"responsive_token_invented","mutation":{"kind":"package_pointer","pointer":"/story_contracts/design_system_contract/responsive_token_name","value":"viewport_magic"},"expected_error":"INVENTED_OR_STALE_VALUE:/story_contracts/design_system_contract/responsive_token_name"},
+    {"case":"name_component_invented","mutation":{"kind":"package_pointer","pointer":"/story_contracts/field_validation_contract/name_component_token_code","value":"input_magic"},"expected_error":"INVENTED_OR_STALE_VALUE:/story_contracts/field_validation_contract/name_component_token_code"},
+    {"case":"terms_component_invented","mutation":{"kind":"package_pointer","pointer":"/story_contracts/field_validation_contract/terms_component_token_code","value":"checkbox_magic"},"expected_error":"INVENTED_OR_STALE_VALUE:/story_contracts/field_validation_contract/terms_component_token_code"},
+    {"case":"route_currentness_unproven","mutation":{"kind":"assertion_field","pointer":"/story_contracts/state_navigation_contract/route_pattern","field":"source_currentness_state","value":"UNPROVEN"},"expected_error":"SOURCE_CURRENTNESS_UNPROVEN:/story_contracts/state_navigation_contract/route_pattern"},
+    {"case":"design_source_decision_stale","mutation":{"kind":"assertion_field","pointer":"/story_contracts/design_system_contract/layout_component_token_code","field":"source_decision_state","value":"SUPERADA"},"expected_error":"SOURCE_DECISION_NOT_CURRENT:/story_contracts/design_system_contract/layout_component_token_code"},
+    {"case":"required_route_assertion_removed","mutation":{"kind":"remove_assertion","pointer":"/story_contracts/state_navigation_contract/route_code"},"expected_error":"REQUIRED_AUTHORITY_ASSERTION_MISSING:/story_contracts/state_navigation_contract/route_code"},
+    {"case":"duplicate_source_resolution_created","mutation":{"kind":"append_reuse_decision","value":{"need_code":"SOURCE_RESOLUTION","classification":"CREATE_NEW","selected_asset_ref":null,"owner_state":"RESOLVED","currentness_state":"PROVEN_CURRENT","consumer_refs":["STORY_CREATOR","PROGRAMMING_AGENT"],"evidence_refs":["inventory://checked"],"rationale":"adversarial duplicate"}},"expected_error":"DUPLICATE_CAPABILITY_EXISTS:SOURCE_RESOLUTION:SOURCE_RESOLUTION_POLICY"},
+    {"case":"qualification_owner_stale","mutation":{"kind":"capability_state","key":"qualification_framework","value":"STALE"},"expected_error":"CAPABILITY_NOT_CURRENT:QUALIFICATION_FRAMEWORK"}
+  ]
+}
