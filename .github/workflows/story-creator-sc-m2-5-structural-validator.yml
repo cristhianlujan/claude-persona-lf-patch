@@ -45,3 +45,5 @@ jobs:
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_context_budget_gate_v1.py
       - name: SC-M4.1 compiled ONB_004 package readback
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_onb_004_compiled_package_v1.py
+      - name: SC-M4.2 compiled structural anti-invention and adversarial gates
+        run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_onb_004_compiled_gates_v1.py
