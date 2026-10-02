@@ -51,6 +51,19 @@ if POST_PASE_EXTERNAL_MIGRATION_PREFIX not in _legacy.CLASSIFIED_EXTERNAL_PREFIX
 if not _legacy.classified("post_pase_waiver_authority_cutover_v1"):
     _legacy.fail("FAIL_CI009_SELFTEST_POST_PASE_EXTERNAL_OWNER_FAMILY")
 
+# INV-6.2 used the shorter input_gov_* source prefix for a governed Input
+# Governance migration. PR #1450, lf_eventos #19834/#19722 and exact-version
+# source-first ledger identity establish it as an authority alias of the existing
+# input_governance_* family, not a filename exception.
+INPUT_GOV_EXTERNAL_MIGRATION_PREFIX = "input_gov_"
+if INPUT_GOV_EXTERNAL_MIGRATION_PREFIX not in _legacy.CLASSIFIED_EXTERNAL_PREFIXES:
+    _legacy.CLASSIFIED_EXTERNAL_PREFIXES = (
+        *_legacy.CLASSIFIED_EXTERNAL_PREFIXES,
+        INPUT_GOV_EXTERNAL_MIGRATION_PREFIX,
+    )
+if not _legacy.classified("input_gov_recuration_authorized_screens_v1"):
+    _legacy.fail("FAIL_CI009_SELFTEST_INPUT_GOV_EXTERNAL_AUTHORITY_ALIAS")
+
 # Preserve the existing module surface for current tests/consumers. The active
 # parity comparator below intentionally replaces the legacy implementation.
 for _name in dir(_legacy):
