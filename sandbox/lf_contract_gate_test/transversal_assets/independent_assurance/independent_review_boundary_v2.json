@@ -1,0 +1,85 @@
+{
+  "schema_version": "lf-independent-review-boundary/v2",
+  "inventory_code": "INDEPENDENT_ASSURANCE",
+  "inventory_canonical_name": "TRANSVERSAL_INDEPENDENT_ASSURANCE",
+  "owner": "SUPER_ADMIN",
+  "semantic_role": "INDEPENDENT_REVIEW",
+  "declaration_key": "capability_consumption_v1",
+  "consumption_modes": {
+    "PREFLIGHT_ONLY": {
+      "closure_satisfying": false,
+      "purpose": "Resolve active/current capability identity and exact subject support without producing a closure verdict.",
+      "required_outputs": [
+        "capability_currentness",
+        "subject_support_status"
+      ]
+    },
+    "CLOSURE_REQUIRED": {
+      "closure_satisfying": true,
+      "purpose": "Require an exact independent-review receipt and authority readback before consumer closure.",
+      "required_inputs": [
+        "subject_type",
+        "subject_code",
+        "subject_revision",
+        "producer_execution_id",
+        "reviewer_execution_id",
+        "evidence_refs"
+      ],
+      "required_outputs": [
+        "review_receipt",
+        "evidence_refs",
+        "authority_readback"
+      ],
+      "closure_requirements": [
+        "SUPPORTED_EXACT_SUBJECT_SPECIALIZATION",
+        "PRODUCER_REVIEWER_INDEPENDENCE",
+        "EXACT_SUBJECT_REVISION_CURRENTNESS",
+        "DURABLE_REVIEW_RECEIPT",
+        "DURABLE_AUTHORITY_READBACK"
+      ]
+    }
+  },
+  "resolution": {
+    "consumer_must_not_hardcode_subject_specialization": true,
+    "unsupported_subject_result": "BLOCK_UNSUPPORTED_SUBJECT_REQUIRES_OWNER_EXTENSION",
+    "no_approximate_fallback": true,
+    "no_strategy_fallback_for_non_strategy_subjects": true
+  },
+  "supported_subjects_current": [
+    {
+      "subject_type": "STRATEGY",
+      "status": "ACTIVE_SHARED_ENFORCEMENT",
+      "router_action": "STRATEGY_INDEPENDENT_REVIEW",
+      "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
+      "operation_type": "INDEPENDENT_REVIEW"
+    },
+    {
+      "subject_type": "STORY_IMPLEMENTATION_PACKAGE",
+      "status": "PENDING_T_INDEP_EXTENSION",
+      "router_action": null,
+      "operation_code": null,
+      "closure_allowed": false,
+      "block_code": "BLOCK_UNSUPPORTED_SUBJECT_REQUIRES_OWNER_EXTENSION"
+    }
+  ],
+  "extension": {
+    "owner": "SUPER_ADMIN",
+    "executor_unit": "T-INDEP",
+    "executor_work_code": "PAULO-035",
+    "goal": "SUBJECT_AGNOSTIC_CONSUMPTION_WITH_REAL_ORACLE_INDEPENDENCE",
+    "no_parallel_engine": true,
+    "consumer_regression_required": true
+  },
+  "downstream_qualification": {
+    "capability_owner": "QUALIFICATION_FRAMEWORK",
+    "relationship": "OPTIONAL_CONSUMER_HANDOFF_WHEN_REQUIRED_BY_CONSUMER_CONTRACT",
+    "strategy_finalizer": "public.lf_finalize_qualification_independent_review_v1",
+    "qualification_is_implicit_for_all_reviews": false
+  },
+  "engineering_closure_guard": {
+    "function": "programacion.fn_guard_engineering_capability_closure_v1",
+    "declaration_key": "capability_consumption_v1",
+    "rule": "CLOSURE_REQUIRED entries must have all declared required checkpoints DONE with nonblank evidence_ref before a work item may transition to DONE"
+  },
+  "no_duplicate_engine": true
+}

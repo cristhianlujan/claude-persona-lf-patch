@@ -4,14 +4,25 @@
   "subject": "STORY_IMPLEMENTATION_PACKAGE",
   "reuse": {
     "review_capability": "INDEPENDENT_ASSURANCE",
+    "review_contract": "sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/independent_review_boundary_v2.json",
     "qualification_owner": "QUALIFICATION_FRAMEWORK",
+    "qualification_required_for_this_review": false,
     "completeness_predecessor": "ASSURANCE_COMPLETENESS",
     "new_capability_created": false
   },
+  "capability_consumption": {
+    "mode": "CLOSURE_REQUIRED",
+    "binding_resolution": "TRANSVERSAL_CONTRACT_AT_EXECUTION",
+    "hardcoded_subject_route_forbidden": true,
+    "current_subject_support": "PENDING_T_INDEP_EXTENSION",
+    "unsupported_subject_result": "BLOCK_UNSUPPORTED_SUBJECT_REQUIRES_OWNER_EXTENSION",
+    "extension_owner": "SUPER_ADMIN",
+    "extension_executor": "T-INDEP / PAULO-035"
+  },
   "independence": {
     "builder_must_differ_from_reviewer": true,
-    "reviewer_operation": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
-    "router_action": "STRATEGY_INDEPENDENT_REVIEW"
+    "reviewer_route_resolution": "FROM_INDEPENDENT_ASSURANCE_CURRENT_SUBJECT_SPECIALIZATION",
+    "real_oracle_independence_required": true
   },
   "required_subject_bindings": [
     "subject_sha256",
@@ -32,6 +43,12 @@
     "structural_pass_alone_is_sufficient": false,
     "independent_review_required": true,
     "review_receipt_required": true,
-    "qualification_materialization_owned_elsewhere": true
+    "authority_readback_required": true,
+    "required_checkpoints": [
+      "INDEPENDENT_REVIEW_RECEIPT",
+      "AUTHORITY_READBACK"
+    ],
+    "qualification_materialization_owned_elsewhere": true,
+    "qualification_materialization_required_here": false
   }
 }
