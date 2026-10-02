@@ -32,7 +32,7 @@ begin
     raise exception 'INV_7_2_LF_ACTIVO_226_NOT_ACTIVE';
   end if;
 
-  v_entry_sha := encode(digest(v_entry_contract::text,'sha256'),'hex');
+  v_entry_sha := encode(extensions.digest(v_entry_contract::text,'sha256'),'hex');
   if v_entry_sha <> '19fb5d15b533fcab6a1fc46a23d442f29a015201648fed41ff65f4d7180d81b0' then
     raise exception 'INV_7_2_ENTRY_CONTRACT_PRECONDITION_FAILED expected=% actual=%',
       '19fb5d15b533fcab6a1fc46a23d442f29a015201648fed41ff65f4d7180d81b0',
@@ -132,7 +132,8 @@ begin
           v_entry_contract,
           true
         ),
-      updated_at=clock_timestamp()
+      updated_at=clock_timestamp(),
+      updated_by_execution_id='INV-7.2-CALLER-V8-RECONCILE-20261002'
   where id=226
     and codigo_activo='EDGE_FN_LF_PROFILES_GOVERNANCE_CALLER_V1'
     and archived_at is null;
@@ -141,7 +142,7 @@ begin
     raise exception 'INV_7_2_LF_ACTIVO_226_UPDATE_MISSING';
   end if;
 
-  select encode(digest((metadata->'entry_contract')::text,'sha256'),'hex')
+  select encode(extensions.digest((metadata->'entry_contract')::text,'sha256'),'hex')
     into v_entry_sha
   from public.lf_activos
   where id=226;
@@ -240,8 +241,9 @@ begin
     and raw_payload->>'runtime_sha256'='022f49c56d4a715023959a10e2b0ad602331de27ce142185f073e6e0e1d31936'
     and raw_payload->>'merge_commit_sha'='fe7e91ef2553b2604349a16010d49eed759dbf20'
     and raw_payload->>'index_blob'='c77e2759640b9465eb11e0a10d00b8d102332253'
-    and raw_payload->>'caller_blob'='e21da4660dd9fd3ab24b6abf9f03da98f58a67fe',
-    encode(digest((metadata->'entry_contract')::text,'sha256'),'hex')
+    and raw_payload->>'caller_blob'='e21da4660dd9fd3ab24b6abf9f03da98f58a67fe'
+    and updated_by_execution_id='INV-7.2-CALLER-V8-RECONCILE-20261002',
+    encode(extensions.digest((metadata->'entry_contract')::text,'sha256'),'hex')
   into v_asset_ok,v_entry_sha
   from public.lf_activos
   where id=226
