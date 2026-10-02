@@ -38,6 +38,19 @@ def _load(name: str, path: pathlib.Path):
 _legacy = _load("lf_migration_source_parity_ci_context", _CONTEXT_PATH)
 _core = _load("migration_source_parity_core", _CORE_PATH)
 
+# SADM-PP-L5-022 established post_pase_* as a governed LF_GOVERNANCE-owned
+# migration family (terminal readbacks include lf_eventos #19718 and #19733).
+# Classify the family, never an individual filename, while preserving the
+# fail-closed unknown-family negative in the legacy context.
+POST_PASE_EXTERNAL_MIGRATION_PREFIX = "post_pase_"
+if POST_PASE_EXTERNAL_MIGRATION_PREFIX not in _legacy.CLASSIFIED_EXTERNAL_PREFIXES:
+    _legacy.CLASSIFIED_EXTERNAL_PREFIXES = (
+        *_legacy.CLASSIFIED_EXTERNAL_PREFIXES,
+        POST_PASE_EXTERNAL_MIGRATION_PREFIX,
+    )
+if not _legacy.classified("post_pase_waiver_authority_cutover_v1"):
+    _legacy.fail("FAIL_CI009_SELFTEST_POST_PASE_EXTERNAL_OWNER_FAMILY")
+
 # Preserve the existing module surface for current tests/consumers. The active
 # parity comparator below intentionally replaces the legacy implementation.
 for _name in dir(_legacy):
