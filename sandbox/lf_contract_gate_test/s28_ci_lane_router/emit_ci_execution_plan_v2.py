@@ -73,11 +73,6 @@ def _candidate_manifest(
     changed: list[str],
     head: str | None,
 ) -> dict[str, Any] | None:
-    """Read one changeset manifest from the exact candidate object, not cwd.
-
-    This keeps current governance code able to evaluate an older exact-head
-    candidate without copying/rebasing that candidate into main.
-    """
     manifests = sorted(
         path for path in changed
         if path.startswith(CHANGESET_MANIFEST_PREFIX) and path.endswith(".json")
@@ -133,6 +128,7 @@ def main() -> int:
         lane=lane,
         plan=plan,
         repo_root=repo,
+        manifest_data=manifest_data,
     )
     plan["pase_control_enforcement"] = REPAIR_ENFORCEMENT.project_enforcement(
         plan,
