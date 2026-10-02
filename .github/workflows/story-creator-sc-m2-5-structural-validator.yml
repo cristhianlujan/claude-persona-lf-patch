@@ -1,7 +1,10 @@
-name: Story Creator SC-M2.5 Structural Validator
+name: Story Creator Implementation Package Validators
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'lf/story-creator-*'
     paths:
       - 'sandbox/lf_contract_gate_test/story_creator_implementation_package/**'
       - '.github/workflows/story-creator-sc-m2-5-structural-validator.yml'
@@ -10,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  structural-self-test:
+  implementation-package-validation:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -20,7 +23,11 @@ jobs:
           python-version: '3.12'
       - name: Install declared structural dependency
         run: python -m pip install --disable-pip-version-check jsonschema==4.23.0
-      - name: Parse schema
-        run: python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_implementation_package_v1.schema.json >/dev/null
-      - name: Positive and negative structural self-test
+      - name: Parse contracts and authority fixture
+        run: |
+          python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_implementation_package_v1.schema.json >/dev/null
+          python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_authority_snapshot_20261002.json >/dev/null
+      - name: SC-M2.5 structural regression
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/validate_story_implementation_package_v1.py --self-test
+      - name: SC-M3.1 anti-invention and no-duplicate regression
+        run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/validate_story_implementation_package_v1.py --anti-invention-self-test
