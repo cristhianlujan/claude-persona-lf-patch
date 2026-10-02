@@ -1,1 +1,0 @@
-PASE was temporarily disabled after an ordinary PR workflow introduced a second PR entrypoint and caused `PASE_SINGLE_PR_ENTRYPOINT` to fail on merged main. The freeze prevents PASE/Post-PASE execution from interfering with ongoing work while the architecture is completed and requalified. This is an execution freeze, not a rollback or deletion of the implemented architecture.
