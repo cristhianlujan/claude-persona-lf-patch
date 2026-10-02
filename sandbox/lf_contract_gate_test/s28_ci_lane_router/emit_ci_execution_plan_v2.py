@@ -9,13 +9,16 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 HERE = Path(__file__).resolve().parent
 ROUTER_PATH = HERE / "lf_ci_lane_router.py"
 PLAN_PATH = HERE / "lf_ci_execution_plan_v2.py"
 CURRENTNESS_PATH = HERE / "lf_ci_currentness_bridge_v1.py"
+COMPAT_PATH = HERE / "lf_ci_compatibility_assessment_v1.py"
 HANDOFF_PATH = HERE / "lf_contract_check_resolution_handoff_v1.py"
 REPAIR_ENFORCEMENT_PATH = HERE / "lf_pase_control_repair_quarantine_v1.py"
+CHANGESET_MANIFEST_PREFIX = "sandbox/lf_contract_gate_test/changesets/"
 
 
 def _load(path: Path, name: str):
@@ -31,6 +34,7 @@ def _load(path: Path, name: str):
 ROUTER = _load(ROUTER_PATH, "lf_ci_lane_router_runtime")
 PLAN = _load(PLAN_PATH, "lf_ci_execution_plan_v2_runtime")
 CURRENTNESS = _load(CURRENTNESS_PATH, "lf_ci_currentness_bridge_v1_runtime")
+COMPAT = _load(COMPAT_PATH, "lf_ci_compatibility_assessment_v1_runtime")
 HANDOFF = _load(HANDOFF_PATH, "lf_contract_check_resolution_handoff_v1_runtime")
 REPAIR_ENFORCEMENT = _load(
     REPAIR_ENFORCEMENT_PATH,
@@ -64,6 +68,37 @@ def _changed(repo: Path, base: str | None, head: str | None) -> list[str]:
     return sorted({line.strip() for line in raw.splitlines() if line.strip()})
 
 
+def _candidate_manifest(
+    repo: Path,
+    changed: list[str],
+    head: str | None,
+) -> dict[str, Any] | None:
+    manifests = sorted(
+        path for path in changed
+        if path.startswith(CHANGESET_MANIFEST_PREFIX) and path.endswith(".json")
+    )
+    if not manifests:
+        return None
+    if len(manifests) != 1:
+        raise RuntimeError("FAIL_CHANGESET_MULTIPLE_SOLUTIONS")
+    if not head:
+        raise RuntimeError("FAIL_CHANGESET_MANIFEST_HEAD_MISSING")
+    cp = subprocess.run(
+        ["git", "-C", str(repo), "show", f"{head}:{manifests[0]}"],
+        text=True,
+        capture_output=True,
+    )
+    if cp.returncode != 0:
+        raise RuntimeError(f"FAIL_CHANGESET_MANIFEST_EXACT_HEAD_READ:{manifests[0]}")
+    try:
+        value = json.loads(cp.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"FAIL_CHANGESET_MANIFEST_JSON:{manifests[0]}") from exc
+    if not isinstance(value, dict):
+        raise RuntimeError(f"FAIL_CHANGESET_MANIFEST_SHAPE:{manifests[0]}")
+    return value
+
+
 def main() -> int:
     args = parser().parse_args()
     repo = Path(args.repo_root).resolve()
@@ -78,7 +113,8 @@ def main() -> int:
         force_full = True
         force_reason = force_reason or "MAIN_PUSH_FULL_REGRESSION"
 
-    lane = ROUTER.classify(changed)
+    manifest_data = _candidate_manifest(repo, changed, args.head)
+    lane = ROUTER.classify(changed, manifest_data=manifest_data)
     plan = PLAN.build_plan(
         changed_paths=changed,
         lane_required_controls=lane.required_controls,
@@ -92,6 +128,7 @@ def main() -> int:
         lane=lane,
         plan=plan,
         repo_root=repo,
+        manifest_data=manifest_data,
     )
     plan["pase_control_enforcement"] = REPAIR_ENFORCEMENT.project_enforcement(
         plan,
@@ -109,16 +146,40 @@ def main() -> int:
         candidate_head_revision=args.head,
         current_revision=current_revision,
     )
+
+    probe_binding = CURRENTNESS.build_binding(
+        bound_revision=bound_revision,
+        current_revision=current_revision,
+    )
+    compatibility = COMPAT.assess_ci_compatibility(
+        repo=repo,
+        binding_without_assessments=probe_binding,
+        diff_base_revision=args.base,
+        candidate_head_revision=args.head,
+    )
+    if compatibility.get("ready") is not True:
+        raise RuntimeError(
+            "BLOCK_CI_AUTHORITY_COMPATIBILITY:"
+            + str(compatibility.get("reason") or "UNKNOWN_FAIL_CLOSED")
+        )
+    assessment = compatibility.get("assessment")
+    assessments = [assessment] if isinstance(assessment, dict) else []
     currentness = CURRENTNESS.evaluate_ci_authority_currentness(
         repo=repo,
         bound_revision=bound_revision,
         current_revision=current_revision,
+        compatibility_assessments=assessments,
     )
     CURRENTNESS.require_ready(currentness)
+    if currentness.get("bounded_validation_required"):
+        bounded = compatibility.get("bounded_validation") or {}
+        if bounded.get("verdict") != "PASS":
+            raise RuntimeError("BLOCK_CI_AUTHORITY_BOUNDED_VALIDATION_MISSING")
 
     plan["plan_sha256"] = applicability_sha256
     plan["applicability_sha256"] = applicability_sha256
     plan["source_authority"] = currentness
+    plan["ci_compatibility_assessment"] = compatibility
     plan["authority_evidence_revision"] = bound_revision
     plan["base_sha"] = args.base
     plan["head_sha"] = args.head
@@ -139,12 +200,16 @@ def main() -> int:
         carrier = plan.get("carrier_controls") or {}
         handoff = plan["contract_check_resolution_request"]
         enforcement = plan["pase_control_enforcement"]
+        bounded = compatibility.get("bounded_validation") or {}
         values = {
             "plan_sha256": plan["plan_sha256"],
             "applicability_sha256": plan["applicability_sha256"],
             "evidence_sha256": plan["evidence_sha256"],
             "authority_current_revision": plan["source_authority"]["resolved_revision"],
             "currentness_decision": plan["source_authority"]["decision"],
+            "ci_compatibility_reason": compatibility.get("reason") or "",
+            "ci_compatibility_bounded_verdict": bounded.get("verdict") or "NOT_REQUIRED",
+            "ci_compatibility_receipt_sha256": bounded.get("receipt_sha256") or "",
             "lane_mode": plan["lane_mode"],
             "full_regression": str(plan["full_regression"]).lower(),
             "required_controls_json": json.dumps(plan["required_controls"], separators=(",", ":")),
@@ -169,6 +234,8 @@ def main() -> int:
         "applicability_sha256": plan["applicability_sha256"],
         "evidence_sha256": plan["evidence_sha256"],
         "currentness_decision": plan["source_authority"]["decision"],
+        "ci_compatibility_reason": compatibility.get("reason"),
+        "ci_compatibility_bounded_verdict": (compatibility.get("bounded_validation") or {}).get("verdict", "NOT_REQUIRED"),
         "lane_mode": plan["lane_mode"],
         "full_regression": plan["full_regression"],
         "required_controls": plan["required_controls"],
