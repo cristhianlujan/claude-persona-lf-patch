@@ -11,10 +11,10 @@ Effective semantic responsibility: **`INDEPENDENT_REVIEW`**.
 - Estado operativo esperado: `ACTIVO`
 - Inventory status requerido: `ACTIVE_SHARED_ENFORCEMENT`
 - Currentness authority: `public.lf_activos`
+- Owner transversal: `SUPER_ADMIN`
 - Canonical reviewer operation: `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`
 - Router action: `STRATEGY_INDEPENDENT_REVIEW`
 - Live operation type: `INDEPENDENT_REVIEW`
-- `owner_name` in the current inventory is unresolved/null and is therefore a governance gap, not a value to infer in this README.
 
 ## Propósito
 
@@ -26,7 +26,7 @@ Its responsibility ends at the review handoff. It does not own the downstream Qu
 
 Consume only when a qualification, claim or closure explicitly requires independent evaluation rather than self-review by the producer.
 
-Before use, resolve `INDEPENDENT_ASSURANCE` in `public.lf_activos` and confirm that it is not archived, remains `ACTIVO`, and has `metadata.transversal_inventory.inventory_status=ACTIVE_SHARED_ENFORCEMENT`.
+Before use, resolve `INDEPENDENT_ASSURANCE` in `public.lf_activos` and confirm that it is not archived, remains `ACTIVO`, has `owner_name=SUPER_ADMIN`, and has `metadata.transversal_inventory.inventory_status=ACTIVE_SHARED_ENFORCEMENT`.
 
 ## Cómo consumirlo
 
@@ -92,7 +92,7 @@ The two stages must remain independently traceable. A downstream finalizer call 
 
 ## Validación y readback
 
-- Verify active/current asset identity before consumption.
+- Verify active/current asset identity and `owner_name=SUPER_ADMIN` before consumption.
 - Verify Router action and operation are current and operational.
 - Verify all six reviewer steps remain governed and that the report output carries `review_receipt`, `evidence_refs` and `next_gate`.
 - Verify the Qualification finalizer remains downstream and separately owned.
@@ -101,7 +101,7 @@ The two stages must remain independently traceable. A downstream finalizer call 
 
 ## No duplicación
 
-Do not create a second independent-review capability, operation, table, runner, reviewer writer or route. Extend the existing governed operation through its owner and preserve lineage.
+Do not create a second independent-review capability, operation, table, runner, reviewer writer or route. Extend the existing governed operation through `SUPER_ADMIN` and preserve lineage. Execution units such as `T-INDEP / PAULO-035` may materialize and test an approved extension, but do not become the capability owner.
 
 ## EKB
 
@@ -113,4 +113,4 @@ Do not create a second independent-review capability, operation, table, runner, 
 
 ## Currentness
 
-This README describes the ownership boundary, not a permanent lifecycle assertion. Consumers must read the live inventory and operation contract for every material decision. The unresolved inventory `owner_name` must be repaired only from an authoritative owner decision; it must not be guessed during this boundary cleanup.
+This README describes the ownership boundary, not a permanent lifecycle assertion. Consumers must read the live inventory and operation contract for every material decision. The canonical owner for this transversal capability is `SUPER_ADMIN`; execution units or consumers must not reinterpret executor identity as capability ownership.
