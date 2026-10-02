@@ -29,7 +29,7 @@ _CHANGESET_SPEC = importlib.util.spec_from_file_location(
     "lf_changeset_governance_for_contract_handoff", _CHANGESET_PATH
 )
 if _CHANGESET_SPEC is None or _CHANGESET_SPEC.loader is None:
-    raise ImportError(f"cannot load Changeset Governance helper: {_CHANGESET_PATH}")
+    raise ImportError(f"cannot load LF changeset governance helper: {_CHANGESET_PATH}")
 _CHANGESET = importlib.util.module_from_spec(_CHANGESET_SPEC)
 sys.modules[_CHANGESET_SPEC.name] = _CHANGESET
 _CHANGESET_SPEC.loader.exec_module(_CHANGESET)
@@ -73,20 +73,27 @@ def _manifest_path(families: Mapping[str, str]) -> str | None:
     return paths[0] if paths else None
 
 
-def _solution_ref(repo_root: Path, manifest_path: str | None) -> str | None:
+def _solution_ref(
+    repo_root: Path,
+    manifest_path: str | None,
+    manifest_data: Mapping[str, Any] | None = None,
+) -> str | None:
     if manifest_path is None:
         return None
-    target = repo_root / manifest_path
-    if not target.is_file():
-        raise ContractCheckHandoffError(
-            f"FAIL_CONTRACT_CHECK_HANDOFF_MANIFEST_MISSING:{manifest_path}"
-        )
-    try:
-        data = json.loads(target.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise ContractCheckHandoffError(
-            f"FAIL_CONTRACT_CHECK_HANDOFF_MANIFEST_READ:{manifest_path}:{exc.__class__.__name__}"
-        ) from exc
+    if manifest_data is None:
+        target = repo_root / manifest_path
+        if not target.is_file():
+            raise ContractCheckHandoffError(
+                f"FAIL_CONTRACT_CHECK_HANDOFF_MANIFEST_MISSING:{manifest_path}"
+            )
+        try:
+            data: Mapping[str, Any] = json.loads(target.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise ContractCheckHandoffError(
+                f"FAIL_CONTRACT_CHECK_HANDOFF_MANIFEST_READ:{manifest_path}:{exc.__class__.__name__}"
+            ) from exc
+    else:
+        data = manifest_data
     try:
         solution_ref, _ = _CHANGESET.parse_manifest(data, manifest_path=manifest_path)
     except Exception as exc:
@@ -97,7 +104,13 @@ def _solution_ref(repo_root: Path, manifest_path: str | None) -> str | None:
     return solution_ref
 
 
-def build_resolution_request(*, lane: Any, plan: Mapping[str, Any], repo_root: Path) -> dict[str, Any]:
+def build_resolution_request(
+    *,
+    lane: Any,
+    plan: Mapping[str, Any],
+    repo_root: Path,
+    manifest_data: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     if not isinstance(plan, Mapping) or plan.get("schema_version") != PLAN_SCHEMA_VERSION:
         raise ContractCheckHandoffError("FAIL_CONTRACT_CHECK_HANDOFF_PLAN_SCHEMA")
     changed_paths = plan.get("changed_paths")
@@ -121,7 +134,11 @@ def build_resolution_request(*, lane: Any, plan: Mapping[str, Any], repo_root: P
 
     families = _families_from_lane_reasons(lane_reasons)
     manifest_path = _manifest_path(families)
-    solution_ref = _solution_ref(Path(repo_root), manifest_path)
+    solution_ref = _solution_ref(
+        Path(repo_root),
+        manifest_path,
+        manifest_data=manifest_data,
+    )
     applicable = CONTROL_ID in required_controls
     classification_required = lane_mode == "CLASSIFICATION_REQUIRED"
 
