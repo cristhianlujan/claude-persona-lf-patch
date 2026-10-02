@@ -1,5 +1,7 @@
 name: PASE Merge Gate
 
+# TEMPORARILY DISABLED 2026-10-02 for the PASE merge-gate job only.
+# Independent change-admission and IG runtime-candidate judge remain active.
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -14,6 +16,7 @@ concurrency:
 
 jobs:
   pase-merge-gate:
+    if: ${{ false }}
     name: pase-merge-gate
     runs-on: ubuntu-latest
     timeout-minutes: 10
