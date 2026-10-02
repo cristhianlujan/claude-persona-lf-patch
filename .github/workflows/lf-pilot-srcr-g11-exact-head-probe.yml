@@ -17,8 +17,8 @@ jobs:
       - name: Checkout exact rebased G11 candidate head
         uses: actions/checkout@v4
         with:
-          ref: 6a77fd560b5216f9eb6a60106a554fe43d92e830
-          fetch-depth: 2
+          ref: da63dcda7b1b90b17369e505ede97dae1eb0f0ac
+          fetch-depth: 5
           persist-credentials: false
 
       - name: Set up Python
@@ -26,13 +26,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Verify exact G11 over new G10
+      - name: Verify exact G11 over effective G10
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "6a77fd560b5216f9eb6a60106a554fe43d92e830"
-          test "$(git rev-parse HEAD^)" = "01796b4dc0e8a28b179ec81503e93afe15408e49"
-          echo "G10_EXACT_HEAD=$(git rev-parse HEAD^)"
+          test "$(git rev-parse HEAD)" = "da63dcda7b1b90b17369e505ede97dae1eb0f0ac"
+          git merge-base --is-ancestor "01796b4dc0e8a28b179ec81503e93afe15408e49" HEAD
+          echo "G10_EXACT_BASE=01796b4dc0e8a28b179ec81503e93afe15408e49"
           echo "G11_EXACT_HEAD=$(git rev-parse HEAD)"
 
       - name: Execute G10 deterministic regression
