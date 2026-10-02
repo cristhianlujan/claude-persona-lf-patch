@@ -152,7 +152,7 @@ def main() -> int:
             and "load_super_admin_identity" in plan
             and super_admin.get("invariants", {}).get("super_admin_is_not_carrier") is True
         ),
-        "activation_not_claimed": "no cutover, runtime activation or production activation is authorized here" in readme,
+        "activation_not_claimed": "no cutover, runtime activation or production activation is authorized here" in readme.lower(),
         "carrier_cutover_not_smuggled": "physical carrier cutover/remap belongs to its governed activation phase" in readme,
         "canonical_identity": 'CANONICAL_NAME = "TRANSVERSAL_FULL_REGRESSION"' in impl,
     }

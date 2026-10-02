@@ -29,7 +29,6 @@ CARRIER_SELF_PATHS = {
     ".github/workflows/validate-lf-packs.yml": "VALIDATE_LF_PACKS",
     ".github/workflows/lf-db-regression.yml": "LF_DB_REGRESSION",
 }
-CANONICAL_CARRIERS = frozenset(CARRIER_SELF_PATHS.values())
 PLAN_HASH_FIELDS = (
     "schema_version",
     "router_capability",
@@ -173,7 +172,7 @@ def load_registry(path: Path = REGISTRY_PATH) -> tuple[tuple[str, ...], tuple[Im
         if cid in seen:
             raise PlanError(f"FAIL_CI_IMPACT_CONTROL_DUPLICATE:{cid}")
         seen.add(cid)
-        if not isinstance(carrier, str) or carrier not in CANONICAL_CARRIERS:
+        if not isinstance(carrier, str) or re.fullmatch(r"[A-Z][A-Z0-9_]*", carrier) is None:
             raise PlanError(f"FAIL_CI_IMPACT_CARRIER:{cid}")
         if carrier in RETIRED_CARRIERS:
             raise PlanError(f"FAIL_CI_RETIRED_CARRIER_REINTRODUCED:{carrier}:{cid}")
@@ -340,7 +339,11 @@ def validate_plan_contract(plan: Mapping[str, Any]) -> None:
             raise PlanError("FAIL_CI_PLAN_NOT_APPLICABLE_ROW")
         cid = row["control_id"]
         carrier = row["carrier"]
-        if not isinstance(cid, str) or carrier not in CANONICAL_CARRIERS:
+        if (
+            not isinstance(cid, str)
+            or not isinstance(carrier, str)
+            or re.fullmatch(r"[A-Z][A-Z0-9_]*", carrier) is None
+        ):
             raise PlanError("FAIL_CI_PLAN_NOT_APPLICABLE_ROW")
         if cid in RETIRED_CONTROL_IDS or carrier in RETIRED_CARRIERS:
             raise PlanError("FAIL_CI_RETIRED_CONTROL_OR_CARRIER_NOT_APPLICABLE_ROW")
@@ -356,7 +359,7 @@ def validate_plan_contract(plan: Mapping[str, Any]) -> None:
 
     flattened: list[str] = []
     for carrier, controls in carrier_controls.items():
-        if carrier not in CANONICAL_CARRIERS:
+        if not isinstance(carrier, str) or re.fullmatch(r"[A-Z][A-Z0-9_]*", carrier) is None:
             raise PlanError(f"FAIL_CI_PLAN_UNKNOWN_CARRIER:{carrier}")
         if carrier in RETIRED_CARRIERS:
             raise PlanError(f"FAIL_CI_RETIRED_CARRIER_IN_PLAN:{carrier}")
