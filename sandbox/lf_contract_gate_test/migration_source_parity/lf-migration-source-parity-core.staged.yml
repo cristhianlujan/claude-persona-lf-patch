@@ -71,5 +71,6 @@ jobs:
         with:
           name: lf-migration-source-parity-${{ github.run_id }}-${{ github.run_attempt }}
           path: .lf_migration_source_parity
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
