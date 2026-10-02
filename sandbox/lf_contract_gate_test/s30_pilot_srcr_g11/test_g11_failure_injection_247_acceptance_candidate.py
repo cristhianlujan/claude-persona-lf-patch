@@ -130,7 +130,7 @@ class G11FailureInjectionAnd247AcceptanceTests(unittest.TestCase):
 
     def test_contract_is_bound_to_g10_stack_and_v06_profile(self) -> None:
         self.assertEqual(self.contract["gate_id"], "G11")
-        self.assertEqual(self.contract["base_candidate_head_sha"], "e03418cfd98d493dce5e3c28eaa356a0f2189602")
+        self.assertEqual(self.contract["base_candidate_head_sha"], "01796b4dc0e8a28b179ec81503e93afe15408e49")
         self.assertEqual(self.contract["profile_pack_id"], "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6")
         self.assertEqual(self.contract["pilot_profile_source_sha"], "cb455027df2d2e2795ab66d41a539e217a04966f")
         self.assertEqual(self.profile_manifest["profile_pack_id"], "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6")
