@@ -223,7 +223,7 @@
         },
         {
           "kind": "exact",
-          "value": ".github/workflows/lf-migration-source-parity.yml"
+          "value": ".github/workflows/lf-migration-source-parity-core.yml"
         }
       ],
       "material_matchers": [],
