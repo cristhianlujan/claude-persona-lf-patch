@@ -5,8 +5,10 @@ on:
   push:
     branches:
       - 'lf/story-creator-*'
+      - 'lf/t-indep-*'
     paths:
       - 'sandbox/lf_contract_gate_test/story_creator_implementation_package/**'
+      - 'sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/**'
       - '.github/workflows/story-creator-sc-m2-5-structural-validator.yml'
 
 permissions:
@@ -32,6 +34,9 @@ jobs:
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/programming_utility_judge_contract_v1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_implementation_package_v1_1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/programming_consumer_v2_contract_snapshot_20261002.json >/dev/null
+          python -m json.tool sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/independent_review_subject_contract_v2.json >/dev/null
+      - name: T-INDEP subject-aware independent review contract
+        run: python sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/test_independent_review_subject_contract_v2.py
       - name: SC-M2.5 structural regression
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/validate_story_implementation_package_v1.py --self-test
       - name: SC-M3.1 anti-invention and no-duplicate regression
