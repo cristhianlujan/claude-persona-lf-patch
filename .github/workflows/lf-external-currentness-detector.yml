@@ -1,0 +1,224 @@
+name: LF External Currentness Detector
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: lf-external-currentness-detector
+  cancel-in-progress: false
+
+jobs:
+  detect-external-currentness:
+    name: Detect external currentness
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GATEWAY_URL: https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-external-currentness-gateway-v1
+      DETECTOR_PATH: sandbox/lf_contract_gate_test/transversal_assets/global_technical_inventory/detect_external_currentness_v1.py
+      SCOPE_POLICY_PATH: sandbox/lf_contract_gate_test/transversal_assets/global_technical_inventory/evidence/LF_EXTERNAL_CURRENTNESS_20261001171547971/inputs/scope_policy.json
+
+    steps:
+      - name: Checkout exact main revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Acquire gateway OIDC token
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          response="$(
+            curl --fail-with-body --silent --show-error               -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}"               "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=lf-external-currentness-gateway-v1"
+          )"
+          token="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"$response")"
+          test -n "$token"
+          echo "::add-mask::$token"
+          printf 'token=%s\n' "$token" >> "$GITHUB_OUTPUT"
+
+      - name: Read governed external snapshot
+        shell: bash
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          status="$(
+            curl --silent --show-error               -o "$RUNNER_TEMP/read_snapshot.json"               -w '%{http_code}'               -X POST               -H "Authorization: Bearer ${OIDC_TOKEN}"               -H 'Content-Type: application/json'               --data '{"action":"read_snapshot"}'               "$GATEWAY_URL"
+          )"
+          python3 - "$status" "$RUNNER_TEMP/read_snapshot.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          status = int(sys.argv[1])
+          payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          if status != 200 or payload.get("outcome") != "SNAPSHOT":
+              raise SystemExit(f"GATEWAY_READ_SNAPSHOT_FAILED:http={status}:code={payload.get('code')}")
+          for key, filename in (
+              ("repo_inventory", "repo_inventory.json"),
+              ("edge_runtime", "edge_runtime.json"),
+              ("edge_inventory", "edge_inventory.json"),
+          ):
+              Path(Path(sys.argv[2]).parent / filename).write_text(
+                  json.dumps(payload.get(key), sort_keys=True, ensure_ascii=False) + "\n",
+                  encoding="utf-8",
+              )
+          PY
+
+      - name: Fetch exact public Git tree with bounded rate-limit backoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://api.github.com/repos/${GITHUB_REPOSITORY}/git/trees/${GITHUB_SHA}?recursive=1"
+          body="$RUNNER_TEMP/git_tree.json"
+          headers="$RUNNER_TEMP/git_tree.headers"
+          status=""
+          for attempt in 1 2 3 4; do
+            status="$(
+              curl --silent --show-error                 -D "$headers"                 -o "$body"                 -w '%{http_code}'                 -H 'Accept: application/vnd.github+json'                 -H 'X-GitHub-Api-Version: 2022-11-28'                 "$url"
+            )"
+            if [[ "$status" == "200" ]]; then
+              break
+            fi
+            if [[ "$status" != "403" && "$status" != "429" ]]; then
+              echo "GITHUB_TREE_FETCH_FAILED:http=$status"
+              exit 1
+            fi
+            if [[ "$attempt" == "4" ]]; then
+              echo "GITHUB_TREE_RATE_LIMIT_EXHAUSTED:http=$status"
+              exit 1
+            fi
+            sleep "$((2 ** attempt))"
+          done
+          python3 - "$body" "$GITHUB_SHA" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          if payload.get("sha") != sys.argv[2]:
+              raise SystemExit("GITHUB_TREE_SHA_MISMATCH")
+          if payload.get("truncated") is True:
+              raise SystemExit("GITHUB_TREE_TRUNCATED")
+          PY
+
+      - name: Run external currentness detector
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$SCOPE_POLICY_PATH" "$RUNNER_TEMP/scope_policy.json"
+          set +e
+          python3 "$DETECTOR_PATH"             --git-tree "$RUNNER_TEMP/git_tree.json"             --repo-inventory "$RUNNER_TEMP/repo_inventory.json"             --edge-runtime "$RUNNER_TEMP/edge_runtime.json"             --edge-inventory "$RUNNER_TEMP/edge_inventory.json"             --scope-policy "$RUNNER_TEMP/scope_policy.json"             --output "$RUNNER_TEMP/report.raw.json"
+          detector_rc=$?
+          set -e
+          test -s "$RUNNER_TEMP/report.raw.json"
+          if [[ "$detector_rc" -ne 0 ]]; then
+            python3 - "$RUNNER_TEMP/report.raw.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          print(json.dumps({
+              "pass_unknown_currentness": report.get("pass_unknown_currentness"),
+              "repository_counts": report.get("repository", {}).get("counts"),
+              "edge_counts": report.get("edge", {}).get("counts"),
+              "tree_truncated": report.get("repository", {}).get("tree_truncated"),
+          }, sort_keys=True))
+          PY
+            exit "$detector_rc"
+          fi
+
+      - name: Bind report to exact workflow revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          detector_version="$(git rev-parse "${GITHUB_SHA}:${DETECTOR_PATH}")"
+          export DETECTOR_VERSION="$detector_version"
+          python3 - "$RUNNER_TEMP/report.raw.json" "$RUNNER_TEMP/scope_policy.json" "$RUNNER_TEMP/report.json" <<'PY'
+          import hashlib
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          def digest(value):
+              encoded = json.dumps(
+                  value,
+                  sort_keys=True,
+                  separators=(",", ":"),
+                  ensure_ascii=False,
+              ).encode("utf-8")
+              return hashlib.sha256(encoded).hexdigest()
+
+          raw_path, policy_path, output_path = map(Path, sys.argv[1:4])
+          report = json.loads(raw_path.read_text(encoding="utf-8"))
+          policy = json.loads(policy_path.read_text(encoding="utf-8"))
+          scope_hash = digest(policy)
+          if report.get("repository", {}).get("observed_main_sha") != os.environ["GITHUB_SHA"]:
+              raise SystemExit("REPORT_MAIN_SHA_MISMATCH")
+          if report.get("repository", {}).get("tree_truncated") is True:
+              raise SystemExit("REPORT_TREE_TRUNCATED")
+          if report.get("repository", {}).get("unknown_currentness") != 0:
+              raise SystemExit("REPORT_REPOSITORY_UNKNOWN_CURRENTNESS")
+          if report.get("edge", {}).get("unknown_currentness") != 0:
+              raise SystemExit("REPORT_EDGE_UNKNOWN_CURRENTNESS")
+          if report.get("pass_unknown_currentness") is not True:
+              raise SystemExit("REPORT_UNKNOWN_CURRENTNESS")
+          if report.get("input_sha256", {}).get("scope_policy") != scope_hash:
+              raise SystemExit("REPORT_SCOPE_POLICY_DIGEST_MISMATCH")
+
+          report["observed_main_sha"] = os.environ["GITHUB_SHA"]
+          report["detector_version"] = os.environ["DETECTOR_VERSION"]
+          report["scope_policy_hash"] = scope_hash
+          output_path.write_text(
+              json.dumps(report, sort_keys=True, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps({
+              "repository_counts": report["repository"]["counts"],
+              "edge_counts": report["edge"]["counts"],
+              "runtime_without_source_count": report["edge"]["runtime_without_source_count"],
+          }, sort_keys=True))
+          PY
+
+      - name: Persist governed observation
+        shell: bash
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/report.json" "$RUNNER_TEMP/write_observation.request.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          Path(sys.argv[2]).write_text(
+              json.dumps({"action": "write_observation", "report": report}, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          status="$(
+            curl --silent --show-error               -o "$RUNNER_TEMP/write_observation.response.json"               -w '%{http_code}'               -X POST               -H "Authorization: Bearer ${OIDC_TOKEN}"               -H 'Content-Type: application/json'               --data-binary "@$RUNNER_TEMP/write_observation.request.json"               "$GATEWAY_URL"
+          )"
+          python3 - "$status" "$RUNNER_TEMP/write_observation.response.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          status = int(sys.argv[1])
+          payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          if status != 200 or payload.get("outcome") != "WRITE_OBSERVATION_RESULT":
+              raise SystemExit(f"GATEWAY_WRITE_OBSERVATION_FAILED:http={status}:code={payload.get('code')}")
+          result = payload.get("result")
+          print(json.dumps({"outcome": payload.get("outcome"), "result": result}, sort_keys=True))
+          PY
