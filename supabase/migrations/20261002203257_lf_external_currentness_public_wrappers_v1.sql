@@ -59,7 +59,7 @@ returns table(
 )
 language sql
 volatile
-security invoker
+security definer
 set search_path = pg_catalog, pg_temp
 as $function$
   select *
@@ -69,6 +69,12 @@ as $function$
     p_observed_at
   );
 $function$;
+
+alter function public.lf_external_currentness_apply_observation_v1(
+  jsonb,
+  timestamptz,
+  timestamptz
+) owner to postgres;
 
 revoke all on function public.lf_external_currentness_read_model_v1()
 from public, anon, authenticated;
