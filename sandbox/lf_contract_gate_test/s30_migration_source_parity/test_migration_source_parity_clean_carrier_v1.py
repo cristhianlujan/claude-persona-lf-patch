@@ -5,12 +5,13 @@ import importlib.util
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-RUNNER = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py"
+FULL_RUNNER = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py"
+FOCAL_RUNNER = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_focal_v1.py"
 CARRIER = ROOT / ".github/workflows/lf-migration-source-parity-core.yml"
 
 
-def load_runner():
-    spec = importlib.util.spec_from_file_location("migration_source_parity_clean_carrier_test_target", RUNNER)
+def load_runner(path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
         raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_LOAD")
     module = importlib.util.module_from_spec(spec)
@@ -20,12 +21,18 @@ def load_runner():
 
 def main() -> int:
     checks = 0
-    module = load_runner()
-    if module.self_test() != 0:
-        raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_SELFTEST")
+    full = load_runner(FULL_RUNNER, "migration_source_parity_full_audit_test_target")
+    if full.self_test() != 0:
+        raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_FULL_AUDIT_SELFTEST")
     checks += 1
 
-    runner = RUNNER.read_text(encoding="utf-8")
+    focal = load_runner(FOCAL_RUNNER, "migration_source_parity_focal_test_target")
+    if focal.self_test() != 0:
+        raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_FOCAL_SELFTEST")
+    checks += 1
+
+    full_runner = FULL_RUNNER.read_text(encoding="utf-8")
+    focal_runner = FOCAL_RUNNER.read_text(encoding="utf-8")
     workflow = CARRIER.read_text(encoding="utf-8")
 
     forbidden_runner = (
@@ -36,11 +43,11 @@ def main() -> int:
         ".github/workflows/lf-contract-check.yml",
     )
     for token in forbidden_runner:
-        if token in runner:
+        if token in full_runner or token in focal_runner:
             raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_FOREIGN_TOKEN:{token}")
     checks += 1
 
-    required_runner = (
+    required_full = (
         "lf_migration_source_parity.py",
         "FAIL_MIGRATION_PARITY_BASE_CURRENTNESS",
         "FAIL_MIGRATION_PARITY_EXACT_HEAD",
@@ -48,9 +55,20 @@ def main() -> int:
         "lf-migration-source-parity-run/v1",
         "functional_core_duplicated",
     )
-    for token in required_runner:
-        if token not in runner:
-            raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_REQUIRED_TOKEN:{token}")
+    for token in required_full:
+        if token not in full_runner:
+            raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_FULL_AUDIT_REQUIRED_TOKEN:{token}")
+    checks += 1
+
+    for token in (
+        "FOCAL_CHANGESET",
+        "CI-MIGRATION-LEDGER-BROAD-SCAN-001",
+        "historical_full_audit",
+        "OUT_OF_BAND_NOT_BLOCKING",
+        "FAIL_MIGRATION_PARITY_FOCAL_MIGRATION_CHANGE_STATUS",
+    ):
+        if token not in focal_runner:
+            raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_FOCAL_REQUIRED_TOKEN:{token}")
     checks += 1
 
     if "workflow_call:" not in workflow:
@@ -65,11 +83,13 @@ def main() -> int:
         "base_ref:",
         "LF_SUPABASE_DB_PASSWORD:",
         "Execute MIGRATION_SOURCE_PARITY",
-        "run_migration_source_parity_flow_v1.py",
+        "run_migration_source_parity_focal_v1.py",
         'ref: ${{ inputs.head_sha }}',
     ):
         if token not in workflow:
             raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_CARRIER_REQUIRED_TOKEN:{token}")
+    if "run_migration_source_parity_flow_v1.py" in workflow:
+        raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_CARRIER_BROAD_SCAN_RUNNER_ACTIVE")
     checks += 1
 
     forbidden_workflow = (
