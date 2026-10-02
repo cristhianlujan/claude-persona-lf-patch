@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 MIGRATION = ROOT / "supabase" / "migrations" / "20261002222500_independent_assurance_subject_extension_v2.sql"
 REQUALIFICATION_DEP = ROOT / "supabase" / "migrations" / "20261002222400_operation_requalification_multisubject_scope_v2.sql"
+HERE = Path(__file__).resolve().parent
+ROLLBACK = HERE / "rollback_independent_assurance_subject_extension_v2.sql"
+BASELINE = HERE / "independent_assurance_preextension_baseline_20261002.json"
 
 
 def main() -> None:
@@ -13,6 +17,9 @@ def main() -> None:
     lower = sql.lower()
     req = REQUALIFICATION_DEP.read_text(encoding="utf-8")
     req_lower = req.lower()
+    rollback = ROLLBACK.read_text(encoding="utf-8")
+    rollback_lower = rollback.lower()
+    baseline = json.loads(BASELINE.read_text(encoding="utf-8"))
 
     # Existing engine only.
     assert "operation_code='revision_independiente_estrategia_lf'" in lower
@@ -56,6 +63,20 @@ def main() -> None:
     assert "insert into public.lf_router_action_registry" not in req_lower
     assert "create or replace function public.lf_run_operation_qualification" not in req_lower
     assert "operation_requalification_bootstrap_v2" not in req_lower
+
+    # Rollback is bounded, preserves audit evidence and restores the exact pre-extension operation revision.
+    assert baseline["operation_revision_sha256"] == "fb59333049740f13332d68b07d38493dff0732545e856facea817f6d3ad34811"
+    assert baseline["registry"]["applies_to_asset_type"] == "STRATEGY"
+    assert baseline["capability_registry_prestate"]["current_pointer_exists"] is False
+    assert "block_t_indep_rollback_active_story_reviews" in rollback_lower
+    assert "delete from public.lf_capability_current" in rollback_lower
+    assert "drop function if exists public.lf_independent_review_begin_v2" in rollback_lower
+    assert "drop function if exists public.lf_record_independent_review_step_v2" in rollback_lower
+    assert "applies_to_asset_type='strategy'" in rollback_lower
+    assert "release_state='retired'" in rollback_lower
+    assert baseline["operation_revision_sha256"] in rollback
+    assert "block_t_indep_rollback_old_qualification_not_current" in rollback_lower
+    assert "delete from private.lf_evidence_ledger_v1" not in rollback_lower
 
     print("INDEPENDENT_ASSURANCE_SUBJECT_EXTENSION_MIGRATION_V2=PASS")
 
