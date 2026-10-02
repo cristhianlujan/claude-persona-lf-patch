@@ -1,10 +1,13 @@
 {
   "schema_version": "lf-independent-review-boundary/v1",
+  "lifecycle_state": "SUPERSEDED_BY_V2_FOR_GENERIC_CONSUMPTION",
+  "superseded_by": "independent_review_boundary_v2.json",
   "inventory_code": "INDEPENDENT_ASSURANCE",
   "inventory_canonical_name": "TRANSVERSAL_INDEPENDENT_ASSURANCE",
   "semantic_role": "INDEPENDENT_REVIEW",
   "rename_mode": "NO_PARALLEL_CAPABILITY_USE_EXISTING_IDENTITY_UNTIL_GOVERNED_CUTOVER",
   "canonical_execution": {
+    "scope": "STRATEGY_SPECIALIZATION_ONLY",
     "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
     "operation_type": "INDEPENDENT_REVIEW",
     "router_action": "STRATEGY_INDEPENDENT_REVIEW",
@@ -54,8 +57,8 @@
     "PRODUCTION_APPROVED"
   ],
   "inventory_owner_name": {
-    "current_state": "UNRESOLVED_NULL",
-    "repair_rule": "AUTHORITATIVE_OWNER_DECISION_REQUIRED_DO_NOT_INFER"
+    "current_state": "SUPER_ADMIN",
+    "resolved_by_execution": "CHATGPT-INDEPENDENT-ASSURANCE-OWNER-CORRECTION-20261002"
   },
   "no_duplicate_engine": true,
   "ekb": [
