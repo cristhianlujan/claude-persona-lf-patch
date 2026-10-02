@@ -10,6 +10,10 @@ FULL_RUNNER = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/run_
 FOCAL_RUNNER = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_focal_v1.py"
 PASE_ENTRY = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_pase_entry_v1.py"
 CARRIER = ROOT / ".github/workflows/lf-migration-source-parity-core.yml"
+SCENARIO_ENGINE = ROOT / "sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_qualification_v1.py"
+SCENARIO_CATALOG = ROOT / "sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_catalog_v1.json"
+SCENARIO_PROFILE = ROOT / "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/migration_source_parity_v1.json"
+SCENARIO_EVIDENCE_TEST = ROOT / "sandbox/lf_contract_gate_test/pase_scenario_qualification/test_migration_source_parity_scenario_evidence_v1.py"
 
 
 def load_runner(path: Path, name: str):
@@ -40,10 +44,17 @@ def main() -> int:
         raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_PASE_ENTRY_SELFTEST")
     checks += 1
 
+    for path in (SCENARIO_ENGINE, SCENARIO_CATALOG, SCENARIO_PROFILE, SCENARIO_EVIDENCE_TEST):
+        if not path.is_file():
+            raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_SCENARIO_ASSET_MISSING:{path.relative_to(ROOT)}")
+    checks += 1
+
     full_runner = FULL_RUNNER.read_text(encoding="utf-8")
     focal_runner = FOCAL_RUNNER.read_text(encoding="utf-8")
     entry_runner = PASE_ENTRY.read_text(encoding="utf-8")
     workflow = CARRIER.read_text(encoding="utf-8")
+    scenario_engine = SCENARIO_ENGINE.read_text(encoding="utf-8")
+    scenario_profile = SCENARIO_PROFILE.read_text(encoding="utf-8")
 
     forbidden_runner = (
         "required_controls",
@@ -118,6 +129,10 @@ def main() -> int:
         "--evaluation-scope",
         "--historical-debt-disposition",
         'ref: ${{ inputs.head_sha }}',
+        "pase_scenario_qualification_v1.py",
+        "pase_scenario_catalog_v1.json",
+        "profiles/migration_source_parity_v1.json",
+        "scenario-qualification.json",
     ):
         if token not in workflow:
             raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_CARRIER_REQUIRED_TOKEN:{token}")
@@ -134,6 +149,30 @@ def main() -> int:
     ):
         if token in workflow:
             raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_CARRIER_FOREIGN_TOKEN:{token}")
+    checks += 1
+
+    for token in (
+        "PASE_SCENARIO_QUALIFICATION_MATRIX_V1",
+        "BLOCK_SCENARIO_SELECTED_UNKNOWN",
+        "NOT_APPLICABLE",
+        "UNCHANGED_EXTERNAL_CHANGESET_GOVERNANCE",
+        "bounded_execution",
+    ):
+        if token not in scenario_engine:
+            raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_SCENARIO_ENGINE_TOKEN:{token}")
+    checks += 1
+
+    for token in (
+        '"control_id": "MIGRATION_SOURCE_PARITY"',
+        '"maturity": "CUTOVER"',
+        '"CHANGE_SCOPED"',
+        '"POST_MERGE_READBACK"',
+        '"DATABASE_MIGRATION"',
+    ):
+        if token not in scenario_profile:
+            raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_SCENARIO_PROFILE_TOKEN:{token}")
+    if '"ORCHESTRATOR_ENTRY"' in scenario_profile or '"MUTATING_CONTROL"' in scenario_profile:
+        raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_SCENARIO_PREMATURE_ACTIVE_OR_MUTATING_TRAIT")
     checks += 1
 
     print(f"PASS_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_V1 checks={checks}")
