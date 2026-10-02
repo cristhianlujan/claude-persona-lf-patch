@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 RUNNER = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py"
-STAGED = ROOT / "sandbox/lf_contract_gate_test/migration_source_parity/lf-migration-source-parity-core.staged.yml"
+CARRIER = ROOT / ".github/workflows/lf-migration-source-parity.yml"
 
 
 def load_runner():
@@ -26,7 +26,7 @@ def main() -> int:
     checks += 1
 
     runner = RUNNER.read_text(encoding="utf-8")
-    workflow = STAGED.read_text(encoding="utf-8")
+    workflow = CARRIER.read_text(encoding="utf-8")
 
     forbidden_runner = (
         "required_controls",
@@ -54,9 +54,9 @@ def main() -> int:
     checks += 1
 
     if "workflow_call:" not in workflow:
-        raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_STAGED_NOT_REUSABLE")
+        raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_CARRIER_NOT_REUSABLE")
     if "pull_request:" in workflow or "\npush:" in workflow or "workflow_dispatch:" in workflow:
-        raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_STAGED_HAS_DIRECT_TRIGGER")
+        raise SystemExit("FAIL_MIGRATION_SOURCE_PARITY_CARRIER_HAS_DIRECT_TRIGGER")
     checks += 1
 
     for token in (
@@ -69,7 +69,7 @@ def main() -> int:
         'ref: ${{ inputs.head_sha }}',
     ):
         if token not in workflow:
-            raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_STAGED_REQUIRED_TOKEN:{token}")
+            raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_CARRIER_REQUIRED_TOKEN:{token}")
     checks += 1
 
     forbidden_workflow = (
@@ -81,7 +81,7 @@ def main() -> int:
     )
     for token in forbidden_workflow:
         if token in workflow:
-            raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_STAGED_FOREIGN_TOKEN:{token}")
+            raise SystemExit(f"FAIL_MIGRATION_SOURCE_PARITY_CARRIER_FOREIGN_TOKEN:{token}")
     checks += 1
 
     print(f"PASS_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_V1 checks={checks}")
