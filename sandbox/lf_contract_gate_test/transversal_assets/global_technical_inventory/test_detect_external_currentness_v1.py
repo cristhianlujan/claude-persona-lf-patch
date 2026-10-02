@@ -131,6 +131,74 @@ class ExternalCurrentnessDetectorTest(unittest.TestCase):
         self.assertTrue(all(len(value) == 64 for value in report["input_sha256"].values()))
         self.assertTrue(report["pass_unknown_currentness"])
 
+    def test_edge_hash_is_authority_and_version_drift_is_informational(self):
+        git_tree = {
+            "sha": "main-sha",
+            "truncated": False,
+            "tree": [
+                {
+                    "path": "supabase/functions/same-hash/index.ts",
+                    "type": "blob",
+                    "sha": "a",
+                },
+                {
+                    "path": "supabase/functions/different-hash/index.ts",
+                    "type": "blob",
+                    "sha": "b",
+                },
+            ],
+        }
+        edge_runtime = {
+            "functions": [
+                {
+                    "slug": "same-hash",
+                    "version": 19,
+                    "ezbr_sha256": "same-code-hash",
+                    "verify_jwt": False,
+                },
+                {
+                    "slug": "different-hash",
+                    "version": 7,
+                    "ezbr_sha256": "runtime-code-hash",
+                    "verify_jwt": True,
+                },
+            ]
+        }
+        edge_inventory = [
+            {
+                "object_ref": "edge://same-hash",
+                "source_version": "18",
+                "definition_sha256": "same-code-hash",
+                "active": True,
+            },
+            {
+                "object_ref": "edge://different-hash",
+                "source_version": "7",
+                "definition_sha256": "inventory-code-hash",
+                "active": True,
+            },
+        ]
+
+        report = build_report(
+            git_tree, [], edge_runtime, edge_inventory, policy()
+        )
+        by_slug = {
+            record["slug"]: record for record in report["edge"]["records"]
+        }
+
+        self.assertEqual(by_slug["same-hash"]["state"], "CURRENT")
+        self.assertEqual(by_slug["same-hash"]["inventory_version"], "18")
+        self.assertEqual(by_slug["same-hash"]["runtime_version"], 19)
+        self.assertTrue(by_slug["same-hash"]["version_drift"])
+
+        self.assertEqual(by_slug["different-hash"]["state"], "STALE")
+        self.assertFalse(by_slug["different-hash"]["version_drift"])
+        self.assertEqual(
+            report["edge"]["counts"],
+            {"CURRENT": 1, "STALE": 1, "MISSING": 0, "NEW": 0, "UNKNOWN": 0},
+        )
+        self.assertTrue(report["pass_unknown_currentness"])
+
     def test_unknown_currentness_fails_closed(self):
         git_tree = {
             "sha": "main-sha",

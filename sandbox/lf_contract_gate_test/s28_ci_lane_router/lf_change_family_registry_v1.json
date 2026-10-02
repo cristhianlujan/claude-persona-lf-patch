@@ -24,6 +24,7 @@
       ".github/workflows/lf-contract-check.yml",
       ".github/workflows/lf-customer-profile-creator-governance-caller.yml",
       ".github/workflows/lf-db-regression.yml",
+      ".github/workflows/lf-external-currentness-detector.yml",
       ".github/workflows/lf-github-reconcile-v3.yml",
       ".github/workflows/lf-input-governance-recurate-dispatch.yml",
       ".github/workflows/lf-input-governance-recurate.yml",

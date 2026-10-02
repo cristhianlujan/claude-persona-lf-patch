@@ -11,9 +11,10 @@ Repository states:
 - NEW: path exists in observed main but is absent from inventory.
 - UNKNOWN: diagnostic error state only; an inventory row lacks comparison data.
 
-Edge currentness uses source_version + definition_sha256 against runtime version +
-ezbr_sha256 with the same semantics. Runtime/source traceability is reported as a
-separate dimension:
+Edge currentness uses definition_sha256 against runtime ezbr_sha256 as the code
+authority. Runtime version is informational only and version_drift reports whether
+inventory/runtime version labels differ without affecting CURRENT/STALE. Runtime/source
+traceability is reported as a separate dimension:
 - SOURCE_PRESENT: main contains at least one blob under supabase/functions/<slug>/.
 - RUNTIME_WITHOUT_SOURCE: the function is deployed but no source directory exists
   on the observed main tree. This is debt evidence only; A4a does not retire it.
@@ -242,16 +243,16 @@ def detect_edge(
         live = live_by_slug.get(slug)
         stored_version = row.get("source_version")
         stored_hash = row.get("definition_sha256")
+        runtime_version = live.get("version") if live else None
+        runtime_hash = live.get("ezbr_sha256") if live else None
+        version_drift = str(stored_version) != str(runtime_version)
         if live is None:
             state = "MISSING"
             runtime_source_state = None
-        elif stored_version in (None, "") or stored_hash in (None, ""):
+        elif stored_hash in (None, "") or runtime_hash in (None, ""):
             state = DIAGNOSTIC_STATE
             runtime_source_state = source_state(slug)
-        elif (
-            str(stored_version) == str(live.get("version"))
-            and stored_hash == live.get("ezbr_sha256")
-        ):
+        elif stored_hash == runtime_hash:
             state = "CURRENT"
             runtime_source_state = source_state(slug)
         else:
@@ -265,9 +266,10 @@ def detect_edge(
                 "verify_jwt": live.get("verify_jwt") if live else None,
                 "inventory_active": row.get("active"),
                 "inventory_version": stored_version,
-                "runtime_version": live.get("version") if live else None,
+                "runtime_version": runtime_version,
+                "version_drift": version_drift,
                 "inventory_sha256": stored_hash,
-                "runtime_sha256": live.get("ezbr_sha256") if live else None,
+                "runtime_sha256": runtime_hash,
             }
         )
 
@@ -282,6 +284,7 @@ def detect_edge(
                     "inventory_active": None,
                     "inventory_version": None,
                     "runtime_version": live.get("version"),
+                    "version_drift": live.get("version") not in (None, ""),
                     "inventory_sha256": None,
                     "runtime_sha256": live.get("ezbr_sha256"),
                 }
