@@ -9,6 +9,14 @@
   "applies_to_asset_type": "SKILL",
   "lifecycle_state_code": "OP_CANDIDATE",
   "purpose": "Coordinate delegated Skill steps using existing Router, currentness, worker resolution, child execution, dispatch receipt, Profile Runtime and independent step judges without becoming a second Skill or Profile runtime.",
+  "implementation": {
+    "runner": "sandbox/lf_contract_gate_test/skill_orchestration_runtime/skill_orchestration_runner_v1.py",
+    "execution_model": "FAIL_CLOSED_PORT_ADAPTER_STATE_MACHINE",
+    "ports_are_authority_adapters_not_new_authorities": true,
+    "runner_owns_ordering_not_external_effects": true,
+    "runtime_activation": false,
+    "production_activation": false
+  },
   "parent_contract": {
     "required_parent_operation": "EJECUCION_SKILL_LF",
     "parent_status": "IN_PROGRESS",
