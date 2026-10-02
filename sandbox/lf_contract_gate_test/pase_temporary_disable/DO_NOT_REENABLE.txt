@@ -1,1 +1,0 @@
-Do not re-enable PASE by removing `if: false` guards until the reactivation checklist is fully evidenced and the reactivation is reviewed in a dedicated PR.
