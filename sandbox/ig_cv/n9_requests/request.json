@@ -2,7 +2,7 @@
   "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
   "cases": [
     {
-      "case_id": "N9_LIVE_CARRIER_NOOP_FRESH_SCREEN",
+      "case_id": "N9_LIVE_CARRIER_NOOP_FRESH_SCREEN_V2",
       "candidate_ref": "HEAD",
       "candidate_path": "sandbox/ig_cv/fixtures/n9_noop_candidate.sql",
       "screen_id": 4,
