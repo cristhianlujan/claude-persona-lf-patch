@@ -25,6 +25,25 @@ ORQUESTACION_SKILL_LF
 checkpoint / next step / close
 ```
 
+## Runner determinista
+
+`skill_orchestration_runner_v1.py` implementa el orden como state machine fail-closed. No contiene SQL ni llamadas de red: todos los efectos entran mediante puertos explícitos (`read_parent`, `resolve_worker`, `reserve_child`, `issue_receipt`, `dispatch_worker`, etc.).
+
+Esto permite probar que una falla corta la cadena exactamente donde corresponde y evita que el runner se convierta en otra autoridad. Los puertos deben adaptarse a ACT-0001, Currentness, Supabase y runtimes existentes durante la integración posterior.
+
+El runner exige, entre otros invariantes:
+
+- parent `EJECUCION_SKILL_LF` exacto e `IN_PROGRESS`;
+- source revision igual entre parent/step/worker;
+- worker único y permitido;
+- Profile task binding resuelto cuando el worker es `PROFILE`;
+- child reservado antes de emitir receipt;
+- receipt y guard aceptados antes del Task Packet final;
+- resultado del worker ligado al mismo child;
+- `runtime_completion=PASS` y `profile_contract_valid=PASS`;
+- juez de step independiente del worker;
+- checkpoint sin activar runtime ni producción.
+
 ## No es otro runtime
 
 La operación no ejecuta modelos ni reemplaza:
