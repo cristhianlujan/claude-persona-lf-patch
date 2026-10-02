@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 import tempfile
@@ -97,21 +96,18 @@ def test_equivalent_replay_transports_exact_assessment() -> None:
     repo, base, candidate, current = setup_repo(drift=False)
     binding = BRIDGE.build_binding(bound_revision=base, current_revision=current)
     compat = COMPAT.assess_ci_compatibility(
-        repo=repo,
-        binding_without_assessments=binding,
-        diff_base_revision=base,
-        candidate_head_revision=candidate,
+        repo=repo, binding_without_assessments=binding,
+        diff_base_revision=base, candidate_head_revision=candidate,
     )
     assert compat["ready"] is True, compat
-    assert compat["reason"] == "BOUNDED_REPLAY_EQUIVALENT", compat
+    assert compat["reason"] == "BOUNDED_REPLAY_COMPATIBLE", compat
     assert compat["bounded_validation"]["verdict"] == "PASS", compat
+    assert compat["bounded_validation"]["replay_mode"] == "EXACT_EQUIVALENCE", compat
     assessment = compat["assessment"]
     assert assessment["change_class"] == "CONTRACT_COMPATIBLE", assessment
 
     receipt = BRIDGE.evaluate_ci_authority_currentness(
-        repo=repo,
-        bound_revision=base,
-        current_revision=current,
+        repo=repo, bound_revision=base, current_revision=current,
         compatibility_assessments=[assessment],
     )
     assert receipt["ready"] is True, receipt
@@ -132,17 +128,13 @@ def test_tampered_proof_is_rejected() -> None:
     repo, base, candidate, current = setup_repo(drift=False)
     binding = BRIDGE.build_binding(bound_revision=base, current_revision=current)
     compat = COMPAT.assess_ci_compatibility(
-        repo=repo,
-        binding_without_assessments=binding,
-        diff_base_revision=base,
-        candidate_head_revision=candidate,
+        repo=repo, binding_without_assessments=binding,
+        diff_base_revision=base, candidate_head_revision=candidate,
     )
     bad = dict(compat["assessment"])
     bad["proof_sha256"] = "0" * 64
     receipt = BRIDGE.evaluate_ci_authority_currentness(
-        repo=repo,
-        bound_revision=base,
-        current_revision=current,
+        repo=repo, bound_revision=base, current_revision=current,
         compatibility_assessments=[bad],
     )
     assert receipt["ready"] is False, receipt
@@ -153,14 +145,41 @@ def test_semantic_drift_blocks_assessment() -> None:
     repo, base, candidate, current = setup_repo(drift=True)
     binding = BRIDGE.build_binding(bound_revision=base, current_revision=current)
     compat = COMPAT.assess_ci_compatibility(
-        repo=repo,
-        binding_without_assessments=binding,
-        diff_base_revision=base,
-        candidate_head_revision=candidate,
+        repo=repo, binding_without_assessments=binding,
+        diff_base_revision=base, candidate_head_revision=candidate,
     )
     assert compat["ready"] is False, compat
     assert compat["reason"] == "BOUNDED_REPLAY_SEMANTIC_DRIFT", compat
     assert compat["bounded_validation"]["verdict"] == "FAIL", compat
+
+
+def _projection(required: list[str], *, full: bool, blocking: list[str], observe: list[str]) -> dict:
+    return {
+        "lane_mode": "CI_ROUTER_SELFTEST_ONLY",
+        "full_regression": full,
+        "required_controls": required,
+        "carrier_controls": {"LF_CONTRACT_CHECK": required},
+        "coverage_complete": True,
+        "contract_check_handoff_state": "READY_FOR_OPERATION_CONTEXT_BINDING",
+        "pase_blocking_controls": blocking,
+        "pase_observe_only_controls": observe,
+    }
+
+
+def test_safe_refinement_can_remove_only_observe_only_diagnostics() -> None:
+    old = _projection(["A", "B", "C"], full=True, blocking=[], observe=["A", "B", "C"])
+    new = _projection(["A"], full=False, blocking=[], observe=["A"])
+    ok, proof = COMPAT._safe_observe_only_refinement(old, new)
+    assert ok is True, proof
+    assert proof["removed_observe_only_controls"] == ["B", "C"], proof
+
+
+def test_safe_refinement_cannot_remove_blocking_control() -> None:
+    old = _projection(["A", "B"], full=True, blocking=["B"], observe=["A"])
+    new = _projection(["A"], full=False, blocking=[], observe=["A"])
+    ok, proof = COMPAT._safe_observe_only_refinement(old, new)
+    assert ok is False, proof
+    assert proof["checks"]["no_blocking_control_removed"] is False, proof
 
 
 def main() -> None:
@@ -169,6 +188,8 @@ def main() -> None:
         test_missing_transport_still_fails_closed,
         test_tampered_proof_is_rejected,
         test_semantic_drift_blocks_assessment,
+        test_safe_refinement_can_remove_only_observe_only_diagnostics,
+        test_safe_refinement_cannot_remove_blocking_control,
     ]
     for test in tests:
         test()
