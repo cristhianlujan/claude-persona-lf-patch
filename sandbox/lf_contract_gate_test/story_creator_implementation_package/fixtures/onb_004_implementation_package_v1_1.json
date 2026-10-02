@@ -1,0 +1,424 @@
+{
+  "architecture_and_reuse_decisions": [
+    {
+      "classification": "REUSE_AS_IS",
+      "consumer_refs": [
+        "STORY_CREATOR",
+        "PROGRAMMING_AGENT"
+      ],
+      "currentness_state": "PROVEN_CURRENT",
+      "evidence_refs": [
+        "public.lf_activos://SOURCE_RESOLUTION_POLICY"
+      ],
+      "need_code": "SOURCE_RESOLUTION",
+      "owner_state": "RESOLVED",
+      "rationale": "Canonical source resolution capability already active.",
+      "selected_asset_ref": "SOURCE_RESOLUTION_POLICY"
+    },
+    {
+      "classification": "REUSE_AS_IS",
+      "consumer_refs": [
+        "STORY_CREATOR",
+        "PROGRAMMING_AGENT"
+      ],
+      "currentness_state": "PROVEN_CURRENT",
+      "evidence_refs": [
+        "public.lf_activos://CURRENTNESS_AUTHORITY"
+      ],
+      "need_code": "CURRENTNESS",
+      "owner_state": "RESOLVED",
+      "rationale": "Canonical currentness capability already active.",
+      "selected_asset_ref": "CURRENTNESS_AUTHORITY"
+    },
+    {
+      "classification": "REUSE_AS_IS",
+      "consumer_refs": [
+        "STORY_CREATOR",
+        "PROGRAMMING_AGENT"
+      ],
+      "currentness_state": "PROVEN_CURRENT",
+      "evidence_refs": [
+        "public.lf_activos://QUALIFICATION_FRAMEWORK"
+      ],
+      "need_code": "QUALIFICATION",
+      "owner_state": "RESOLVED",
+      "rationale": "Qualification remains with existing transversal owner.",
+      "selected_asset_ref": "QUALIFICATION_FRAMEWORK"
+    },
+    {
+      "classification": "REUSE_AS_IS",
+      "consumer_refs": [
+        "STORY_CREATOR",
+        "PROGRAMMING_AGENT"
+      ],
+      "currentness_state": "PROVEN_CURRENT",
+      "evidence_refs": [
+        "public.lf_activos://PROFILE_STRUCTURED_OUTPUT_BOUNDARY"
+      ],
+      "need_code": "STRUCTURED_OUTPUT",
+      "owner_state": "RESOLVED",
+      "rationale": "Existing structured output boundary is reused.",
+      "selected_asset_ref": "PROFILE_STRUCTURED_OUTPUT_BOUNDARY"
+    }
+  ],
+  "blocked_if": [
+    {
+      "affected_scope": "DELIVERABLE",
+      "code": "ONB004_EMAIL_REQUIREMENT_CONFLICT",
+      "resolver_or_owner_ref": "owner-decision://DEC-CLIENT-ONB004-EMAIL-REQUIREMENT",
+      "state": "SOURCE_CONFLICT"
+    },
+    {
+      "affected_scope": "DELIVERABLE",
+      "code": "ONB004_LEGAL_ROUTES_PENDING",
+      "resolver_or_owner_ref": "lf_ops.rutas://CLIENTE/legal",
+      "state": "PENDING_SOURCE_DEFINITION"
+    },
+    {
+      "affected_scope": "TASK",
+      "code": "PROGRAMMING_TARGET_SCOPE_UNRESOLVED",
+      "resolver_or_owner_ref": "consumer-binding://PROGRAMMING_AGENT",
+      "state": "BLOCKED_CONSUMER_PACKET_UNRESOLVED"
+    }
+  ],
+  "canonical_evidence": "STORY_PACK_A_Q",
+  "canonical_story_sha256": "e24475612abd6b4011339621a9c8628005ef2f1c4111711d06ac03dd0b18a472",
+  "context_transport": {
+    "context_path_patterns": [
+      "story_contracts",
+      "outcome",
+      "hard_boundaries",
+      "implementation_preconditions",
+      "executable_acceptance"
+    ],
+    "max_context_bytes": 65536,
+    "transport_ref": "CONTEXT_BUDGET_GOVERNANCE"
+  },
+  "decision_closure": {
+    "blocked_when": [
+      "SOURCE_CONFLICT",
+      "PENDING_SOURCE_DEFINITION",
+      "consumer target binding unresolved"
+    ],
+    "evidence_completeness_state": "COMPLETE",
+    "open_decisions": [
+      "CAMPO_EMAIL required-vs-optional source conflict",
+      "canonical CLIENTE legal route patterns"
+    ],
+    "ready": false,
+    "ready_when": [
+      "email requirement conflict resolved by current authority",
+      "canonical CLIENTE legal routes available",
+      "Programming Agent target repo/path binding resolved",
+      "structural and authority validation pass"
+    ],
+    "source_currentness_state": "PROVEN_CURRENT"
+  },
+  "executable_acceptance": {
+    "negative": [
+      "invented route/design token rejected",
+      "email invalid/too long rejected",
+      "terms missing rejected",
+      "hardcoded missing legal route rejected",
+      "retry with new idempotency key not automatic"
+    ],
+    "positive": [
+      "A_NORMAL renders source-bound registered components",
+      "valid submit remains atomic and idempotent",
+      "marketing modal preserves form state"
+    ]
+  },
+  "hard_boundaries": {
+    "allowed_effects": [
+      "READ_ONLY"
+    ],
+    "allowed_path_patterns": [],
+    "authorization_refs": [
+      "lf_eventos://19902#source_pack",
+      "plan://STORY_CREATOR_IMPLEMENTATION_SPEC_REFACTOR_V1#SC-M4.1"
+    ],
+    "protected_path_patterns": []
+  },
+  "implementation_delta_and_deliverables": {
+    "deliverables": [
+      "ONB_004 UI/state implementation",
+      "field validation wiring",
+      "atomic/idempotent submit integration",
+      "executable tests"
+    ],
+    "excluded_until_resolved": [
+      "final legal route wiring",
+      "email requirement behavior where source conflict matters"
+    ],
+    "mode": "SOURCE_BOUND_CANDIDATE"
+  },
+  "implementation_preconditions": [
+    {
+      "blocking_scope": "TASK",
+      "bounded_stage": "before first implementation edit",
+      "design_effect": "NONE",
+      "deterministic_resolution_rule": "resolve one current consumer binding or BLOCKED",
+      "evidence_required": [
+        "repo",
+        "path set",
+        "source revision"
+      ],
+      "exact_resolver": "consumer-binding://PROGRAMMING_AGENT",
+      "expected_shape": "one current target repo plus bounded path set",
+      "precondition_code": "TARGET_REPO_PATH_RESOLUTION",
+      "state": "IMPLEMENTATION_PRECONDITION",
+      "target_material": "Programming Agent target repository/path scope"
+    },
+    {
+      "blocking_scope": "DELIVERABLE",
+      "bounded_stage": "before field behavior implementation",
+      "design_effect": "MAY_CHANGE_DESIGN",
+      "deterministic_resolution_rule": "preserve conflict until authority resolves it",
+      "evidence_required": [
+        "current decision",
+        "source refs"
+      ],
+      "exact_resolver": "owner-decision://DEC-CLIENT-ONB004-EMAIL-REQUIREMENT",
+      "expected_shape": "one current source decision resolving required vs optional",
+      "precondition_code": "EMAIL_REQUIREMENT_CONFLICT",
+      "state": "SOURCE_CONFLICT",
+      "target_material": "CAMPO_EMAIL requirement semantics"
+    },
+    {
+      "blocking_scope": "DELIVERABLE",
+      "bounded_stage": "before legal-link wiring",
+      "design_effect": "NONE",
+      "deterministic_resolution_rule": "do not hardcode or infer missing route patterns",
+      "evidence_required": [
+        "route code",
+        "route pattern",
+        "status"
+      ],
+      "exact_resolver": "lf_ops.rutas://CLIENTE/legal",
+      "expected_shape": "canonical CLIENTE route codes and route patterns",
+      "precondition_code": "LEGAL_CLIENT_ROUTES",
+      "state": "PENDING_SOURCE_DEFINITION",
+      "target_material": "Términos/legal public destinations"
+    }
+  ],
+  "observability_and_evidence": {
+    "evidence_refs": [
+      "lf_eventos://19902",
+      "github-actions://story-implementation-package-validator"
+    ],
+    "source_currentness_refs": [
+      "CURRENTNESS_AUTHORITY://ONB_004",
+      "decision://DEC-CLIENT-ONB004-WEB-V04-001#114",
+      "decision://DEC-CLIENT-AUTH-SESSION-RUNTIME-001#105"
+    ]
+  },
+  "outcome": {
+    "implementation_readiness": "BLOCKED_BY_TYPED_SOURCE_ITEMS",
+    "post_success_access": "AUTHENTICATED_CLIENT_ACCOUNT",
+    "target": "CLIENT_ONBOARDING_COMPLETED"
+  },
+  "package_version": "STORY_IMPLEMENTATION_PACKAGE_V1_1",
+  "source_refs": [
+    "lf_eventos://19902",
+    "lf_ops.pantallas://57",
+    "lf_ops.rutas://22",
+    "lf_ops.pantalla_variantes://75",
+    "decision://DEC-CLIENT-ONB004-WEB-V04-001#114",
+    "decision://DEC-CLIENT-AUTH-SESSION-RUNTIME-001#105"
+  ],
+  "story_contracts": {
+    "design_system_contract": {
+      "background_token": "warm_surface",
+      "design_reuse_rule": "USE_REGISTERED_COMPONENT_TOKENS_AND_BINDINGS; DO_NOT_REBUILD_EQUIVALENTS",
+      "inline_link_component_token": "link_inline_default",
+      "layout_component_token_code": "client_auth_mockup_frame",
+      "marketing_modal_component_token": "info_modal_default",
+      "primary_cta_component_token": "cta_primary_default",
+      "responsive_token_name": "viewport_desktop",
+      "stepper_component_token": "client_auth_stepper_4",
+      "theme_binding_code": "theme_lf_light_global"
+    },
+    "error_recovery_contract": {
+      "automatic_retry": "DENY_UNLESS_SAME_IDEMPOTENCY_KEY",
+      "client_validation": "IMMEDIATE_FEEDBACK",
+      "process_failed_message_code": "MSG-CLIENT-ONB004-PROCESS-FAILED",
+      "server_validation": "AUTHORITATIVE"
+    },
+    "field_validation_contract": {
+      "fields": {
+        "CAMPO_CONSENT_MKT": {
+          "blocking": false,
+          "component_token": "consent_checkbox_default",
+          "required": false
+        },
+        "CAMPO_CONSENT_TERMS": {
+          "component_token": "consent_checkbox_default",
+          "required": true,
+          "validations": [
+            "VAL_CONSENT_TERMS_REQUERIDO"
+          ]
+        },
+        "CAMPO_EMAIL": {
+          "component_token": "input_default",
+          "required_override": true,
+          "source_conflict": "PRESERVED",
+          "validations": [
+            "VAL_EMAIL_FORMATO",
+            "VAL_EMAIL_MAX"
+          ]
+        },
+        "CAMPO_NOMBRE_COMPLETO": {
+          "component_token": "input_default",
+          "required": true,
+          "validations": [
+            "VAL_NOMBRE_REQUERIDO",
+            "VAL_NOMBRE_MIN",
+            "VAL_NOMBRE_SOLO_TEXTO"
+          ]
+        }
+      },
+      "name_component_token_code": "input_default",
+      "terms_component_token_code": "consent_checkbox_default"
+    },
+    "functional_contract": {
+      "atomic_submit": "REQUIRED",
+      "do_not_reask": [
+        "CAMPO_CELULAR",
+        "CAMPO_NRO_DOC",
+        "CAMPO_CONSENT_DATA"
+      ],
+      "email_conflict_ref": "lf_eventos://19902#email_source_conflict",
+      "email_requirement_state": "SOURCE_CONFLICT_PRESERVED",
+      "idempotency": "REQUIRED",
+      "optional_fields": [
+        "CAMPO_CONSENT_MKT"
+      ],
+      "required_fields": [
+        "CAMPO_NOMBRE_COMPLETO",
+        "CAMPO_EMAIL",
+        "CAMPO_CONSENT_TERMS"
+      ],
+      "required_prior_context": [
+        "ONB003_CONSENT_DATA_ACCEPTED",
+        "OTP_VERIFIED",
+        "DOCUMENT_RESOLVED"
+      ],
+      "screen_objective": "Completar el alta de cliente nuevo sin volver a solicitar datos ya capturados.",
+      "source_state": "NEW_CLIENT_DATA_COMPLETION",
+      "success_business_outcome": "CLIENT_ONBOARDING_COMPLETED"
+    },
+    "integration_contract": {
+      "account_store": "lf_client.client_accounts",
+      "auth_provider": "SUPABASE_AUTH",
+      "phone_binding_store": "lf_client.client_phone_bindings",
+      "recheck_before_commit": [
+        "DNI_UNIQUENESS",
+        "VERIFIED_PHONE_UNIQUENESS",
+        "SESSION_ACTIVE",
+        "SOURCE_STATE_NEW_CLIENT_DATA_COMPLETION"
+      ],
+      "session_context_contract": "public.fn_lf_client_session_context"
+    },
+    "security_privacy_contract": {
+      "analytics_allowed_for_pii": false,
+      "logs_allowed_for_pii": false,
+      "masking": {
+        "CAMPO_EMAIL": "MASK_EMAIL",
+        "CAMPO_NOMBRE_COMPLETO": "MASK_INITIALS"
+      },
+      "pii_fields": [
+        "CAMPO_NOMBRE_COMPLETO",
+        "CAMPO_EMAIL"
+      ],
+      "session_creation_authority": "SERVER_ONLY"
+    },
+    "state_navigation_contract": {
+      "hardcoded_legal_url": "DENY",
+      "legal_route_state": "PENDING_CANONICAL_CLIENT_ROUTES",
+      "post_success_route_code": "CLIENT_HOME_ENTRY",
+      "route_code": "CLIENT_NEW_DATA_COMPLETION",
+      "route_pattern": "/onboarding/completar-datos"
+    },
+    "story_test_obligations": {
+      "cta_y_invariant": true,
+      "layout_shift": false,
+      "legal_links_must_not_invent_route_pattern": true,
+      "marketing_modal_preserves_form_state": true,
+      "supported_errors": [
+        "LF-CLIENT-ONB-004-NAME-REQUIRED",
+        "LF-CLIENT-ONB-004-NAME-TOO-SHORT",
+        "LF-CLIENT-ONB-004-NAME-INVALID",
+        "LF-CLIENT-ONB-004-EMAIL-REQUIRED",
+        "LF-CLIENT-ONB-004-EMAIL-INVALID",
+        "LF-CLIENT-ONB-004-EMAIL-TOO-LONG",
+        "LF-CLIENT-ONB-004-TERMS-REQUIRED"
+      ],
+      "ui_states": [
+        "A_NORMAL",
+        "B_ERROR"
+      ]
+    }
+  },
+  "story_identity": {
+    "functional_unit_code": "NEW_CLIENT_DATA_COMPLETION",
+    "module_code": "CLIENT_ONBOARDING",
+    "screen_code": "ONB_004",
+    "source_snapshot_sha256": "e24475612abd6b4011339621a9c8628005ef2f1c4111711d06ac03dd0b18a472",
+    "source_version": "v0.4",
+    "story_code": "ONB_004"
+  },
+  "task0_reuse_discovery": {
+    "candidate_assets": [
+      "SOURCE_RESOLUTION_POLICY",
+      "CURRENTNESS_AUTHORITY",
+      "QUALIFICATION_FRAMEWORK",
+      "PROFILE_STRUCTURED_OUTPUT_BOUNDARY"
+    ],
+    "classification": "REUSE_AS_IS",
+    "consumer_refs": [
+      "STORY_CREATOR",
+      "PROGRAMMING_AGENT"
+    ],
+    "currentness_state": "PROVEN_CURRENT",
+    "evidence_refs": [
+      "public.lf_activos://SOURCE_RESOLUTION_POLICY",
+      "public.lf_activos://CURRENTNESS_AUTHORITY",
+      "public.lf_activos://QUALIFICATION_FRAMEWORK",
+      "public.lf_activos://PROFILE_STRUCTURED_OUTPUT_BOUNDARY"
+    ],
+    "inventory_queries": [
+      "public.lf_activos",
+      "public.lf_activo_relaciones",
+      "public.lf_capability_binding"
+    ],
+    "owner_separation": true,
+    "owner_state": "RESOLVED",
+    "selected_asset_ref": "PROFILE_STRUCTURED_OUTPUT_BOUNDARY",
+    "verified_absence": false
+  },
+  "task_views": [
+    {
+      "max_context_bytes": 65536,
+      "selected_sections": [
+        "outcome",
+        "hard_boundaries",
+        "story_contracts",
+        "implementation_preconditions",
+        "executable_acceptance"
+      ],
+      "task_class": "UI_IMPLEMENTATION",
+      "task_code": "ONB_004_IMPLEMENTATION",
+      "view_sha256": "350c2a3846e3489148e4c0e4d7f2aee2e60d0bbfa6f8943e7d9fa460cf9fd3d7"
+    }
+  ],
+  "transition_and_rollback": {
+    "required": true,
+    "rollback": "remove candidate consumer package; canonical STORY_PACK_A_Q remains unchanged",
+    "strategy": "candidate-only; no runtime or production activation"
+  },
+  "wiring": {
+    "binding_state": "RESOLVE_BEFORE_IMPLEMENTATION",
+    "consumer": "programacion.fn_agent_task_execution_bundle",
+    "consumer_role": "PROGRAMMING_AGENT"
+  }
+}
