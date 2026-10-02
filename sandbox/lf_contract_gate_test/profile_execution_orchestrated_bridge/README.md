@@ -1,15 +1,21 @@
 # PROFILE_EXECUTION_ORCHESTRATED_BRIDGE_V1
 
-Puente source-only para conectar un orquestador gobernado con el runtime de perfiles ya existente, sin crear otra operación ni otra queue.
+Puente source-only para conectar un orquestador gobernado con el runtime de perfiles existente sin crear otra operación, queue ni runtime.
 
-## Problema que resuelve
+## Problema resuelto
 
-`ORCHESTRATOR_EXECUTION_GUARD_V1` exige un consumer execution activo antes de emitir el dispatch receipt. El runtime de perfiles actual crea `EJECUCION_PERFIL_LF` dentro del queue worker, demasiado tarde para que un Task Packet gobernado llegue al worker con receipt ya autenticado.
+El `Task Packet` final exige `dispatch_receipt_ref` y `ORCHESTRATOR_ENTRY_ACCEPTED`, pero `fn_lf_orchestrator_dispatch_receipt_v1` sólo puede emitir un receipt cuando el consumer execution ya existe y está `IN_PROGRESS`. Por tanto, reservar el child usando el Task Packet final forma una circularidad de autoridad.
 
-Este bridge fija el orden correcto:
+El bridge separa **trabajo estático** de **autoridad dinámica de ejecución**.
+
+## Protocolo de dos fases
 
 ```text
-resolver worker PROFILE
+Task Packet seed
+(sin receipt/guard)
+        |
+        v
+task_packet_work_digest
         |
         v
 lf_profile_execution_begin_v1
@@ -21,32 +27,64 @@ fn_lf_orchestrator_dispatch_receipt_v1
 fn_lf_capability_bind_from_orchestrator_v1
         |
         v
-private.lf_profile_runtime_queue_v1
+readback ORCHESTRATOR_ENTRY_ACCEPTED
         |
         v
-runtime existente (replay del mismo begin)
+Task Packet final
+(receipt + guard reales)
+        |
+        v
+verificar proyección estática == work digest
+        |
+        v
+queue/runtime de perfiles existente
 ```
 
-## Capability lógica
+## Fase 1 — seed estático
 
-El receipt transversal es capability-scoped. Por ello el bridge usa `PROFILE_EXECUTION_RUNTIME` como identidad lógica de la lane existente `EJECUCION_PERFIL_LF`. Esta identidad no crea un segundo runtime; su registro/cutover pertenece a otro PR y sigue bloqueado aquí.
+El seed puede contener sólo la identidad lógica del worker resuelto:
 
-## Idempotencia exacta con el worker existente
+- `resolution_mode`;
+- `worker_ref`;
+- `worker_kind`;
+- `binding_authority_ref`;
+- `binding_revision`;
+- `binding_digest`.
 
-El bridge no puede inventar un `request_sha256`. Debe precrear exactamente la ejecución que el worker Hetzner intentará abrir después.
+Antes del dispatch están prohibidos:
 
-Se preservan literalmente las identidades actuales:
+- `orchestrator_execution_id` dentro del binding;
+- `dispatch_receipt_ref`;
+- `entry_guard_code`;
+- `entry_guard_decision`.
 
-- consumer execution: `EXEC-PROFILE-RUNTIME-<request_id-lowercase>`;
-- idempotency key: `profile-runtime-queue:<request_id-lowercase>`;
-- `input_literal`: JSON canónico del Task Packet;
-- `target_path`: primer `profile_source_paths`;
-- `request_sha256`: digest canónico de `input_sha256 + profile_code + profile_slug + profile_source_digest + profile_source_revision + profile_source_paths`.
+De ese seed se deriva `task_packet_work_digest`. El child `EJECUCION_PERFIL_LF` queda cross-bound a ese digest, al orquestador, al `plan_digest`, a `PROFILE_EXECUTION_RUNTIME`, a la revisión fuente y al digest del Profile.
 
-Así el `lf_profile_execution_begin_v1` posterior del worker debe resolver como `REPLAY_EXISTING_EXECUTION`, no como segunda ejecución ni como `IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_REQUEST`.
+## Fase 2 — autoridad dinámica
+
+Sólo después del readback real del receipt y del entry guard se agregan al Task Packet:
+
+- `orchestrator_execution_id`;
+- `dispatch_receipt_ref` con `receipt_id` y SHA-256;
+- `entry_guard_code=ORCHESTRATOR_EXECUTION_GUARD_V1`;
+- `entry_guard_decision=ORCHESTRATOR_ENTRY_ACCEPTED`.
+
+El bridge vuelve a quitar esos cuatro campos y exige que el digest resultante sea exactamente el `task_packet_work_digest` original. Cualquier drift bloquea.
+
+## Reutilización
+
+Se reutilizan sin reemplazo:
+
+- `EJECUCION_PERFIL_LF`;
+- `public.lf_profile_execution_begin_v1`;
+- `public.fn_lf_orchestrator_dispatch_receipt_v1`;
+- `public.fn_lf_capability_bind_from_orchestrator_v1`;
+- `private.lf_profile_runtime_queue_v1`;
+- `ACT-0001`;
+- `CURRENTNESS_AUTHORITY`.
 
 ## Boundary
 
-Este paquete sólo construye y valida el plan. No llama SQL, no inserta queue rows, no registra `PROFILE_EXECUTION_RUNTIME`, no habilita runtime/producción y no modifica PASE/POST-PASE.
+Este paquete construye/valida el protocolo y no llama SQL, no encola trabajo, no registra `PROFILE_EXECUTION_RUNTIME`, no activa runtime/producción y no modifica PASE/POST-PASE.
 
-La materialización posterior debe verificar además que la fuente del Profile sea aceptada por el runtime. Los Story Creator profiles siguen residiendo bajo `skills/creating-integral-user-stories/perfiles/`, mientras el runtime actual exige `profiles/<profile_slug>/`; este PR no oculta ni resuelve ese gap.
+El worker compartido aún debe incorporar, en otro PR, un modo explícito `attach_existing_child_execution=true` para no intentar un segundo `begin`. La compatibilidad de Profiles embebidos bajo `skills/.../perfiles/` también se resuelve en soluciones separadas.
