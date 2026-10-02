@@ -7,6 +7,9 @@ the existing material_currentness/CURRENTNESS_AUTHORITY implementation.
 
 The historical base SHA is evidence context only. The moving authority is
 refs/heads/main, resolved at execution time.
+
+Compatibility assessments are accepted only as explicit producer output. The
+bridge never invents a compatibility class and the default remains fail-closed.
 """
 from __future__ import annotations
 
@@ -66,12 +69,7 @@ def resolve_authority_evidence_revision(
     candidate_head_revision: str | None,
     current_revision: str,
 ) -> str:
-    """Resolve the historical authority revision for currentness.
-
-    The diff base and the moving authority are intentionally distinct.
-    A push to main creates *new* evidence for the just-materialized main and
-    therefore binds currentness to current_revision, not event.before.
-    """
+    """Resolve the historical authority revision for currentness."""
     if not HEX40.fullmatch(current_revision or ""):
         raise ValueError("FAIL_CI_CURRENTNESS_CURRENT_REVISION")
     event_name = (event_name or "").strip()
@@ -85,28 +83,17 @@ def resolve_authority_evidence_revision(
         try:
             subprocess.run(
                 [
-                    "git",
-                    "-C",
-                    str(repo),
-                    "merge-base",
-                    "--is-ancestor",
-                    current_revision,
-                    str(candidate_head_revision),
+                    "git", "-C", str(repo), "merge-base", "--is-ancestor",
+                    current_revision, str(candidate_head_revision),
                 ],
-                check=True,
-                text=True,
-                capture_output=True,
+                check=True, text=True, capture_output=True,
             )
             return current_revision
         except subprocess.CalledProcessError:
             merge_base = subprocess.check_output(
                 [
-                    "git",
-                    "-C",
-                    str(repo),
-                    "merge-base",
-                    str(candidate_head_revision),
-                    current_revision,
+                    "git", "-C", str(repo), "merge-base",
+                    str(candidate_head_revision), current_revision,
                 ],
                 text=True,
             ).strip()
@@ -122,12 +109,8 @@ def resolve_authority_evidence_revision(
             raise ValueError("FAIL_CI_CURRENTNESS_PUSH_HEAD")
         value = subprocess.check_output(
             [
-                "git",
-                "-C",
-                str(repo),
-                "merge-base",
-                str(candidate_head_revision),
-                current_revision,
+                "git", "-C", str(repo), "merge-base",
+                str(candidate_head_revision), current_revision,
             ],
             text=True,
         ).strip()
@@ -138,11 +121,19 @@ def resolve_authority_evidence_revision(
     return current_revision
 
 
-def build_binding(*, bound_revision: str, current_revision: str) -> dict[str, Any]:
+def build_binding(
+    *,
+    bound_revision: str,
+    current_revision: str,
+    compatibility_assessments: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     if not HEX40.fullmatch(bound_revision or ""):
         raise ValueError("FAIL_CI_CURRENTNESS_BOUND_REVISION")
     if not HEX40.fullmatch(current_revision or ""):
         raise ValueError("FAIL_CI_CURRENTNESS_CURRENT_REVISION")
+    assessments = compatibility_assessments or []
+    if not isinstance(assessments, list) or any(not isinstance(row, dict) for row in assessments):
+        raise ValueError("FAIL_CI_CURRENTNESS_COMPATIBILITY_ASSESSMENTS")
     return {
         "schema_version": "LF_MATERIAL_CURRENTNESS_BINDING_V1",
         "authority": {
@@ -155,7 +146,7 @@ def build_binding(*, bound_revision: str, current_revision: str) -> dict[str, An
         "require_ancestor": True,
         "contract_identity": "CI_FAST_DEEP_LANE_ROUTER",
         "implementation_binding": "LF_CI_APPLICABILITY_AUTHORITY_V2",
-        "compatibility_contract": {"assessments": []},
+        "compatibility_contract": {"assessments": assessments},
         "materials": [
             {
                 "material_id": "ci_applicability_authority",
@@ -175,19 +166,14 @@ def evaluate_ci_authority_currentness(
     repo: Path,
     bound_revision: str,
     current_revision: str,
+    compatibility_assessments: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    if bound_revision == current_revision:
-        binding = build_binding(
-            bound_revision=bound_revision,
-            current_revision=current_revision,
-        )
-        result = CURRENTNESS.evaluate_authority(binding, repo)
-    else:
-        binding = build_binding(
-            bound_revision=bound_revision,
-            current_revision=current_revision,
-        )
-        result = CURRENTNESS.evaluate_authority(binding, repo)
+    binding = build_binding(
+        bound_revision=bound_revision,
+        current_revision=current_revision,
+        compatibility_assessments=compatibility_assessments,
+    )
+    result = CURRENTNESS.evaluate_authority(binding, repo)
 
     out = {
         "schema_version": "LF_CI_AUTHORITY_CURRENTNESS_RECEIPT_V1",
@@ -201,6 +187,10 @@ def evaluate_ci_authority_currentness(
         "changed_material_ids": result.get("changed_material_ids") or [],
         "affected_material_ids": result.get("affected_material_ids") or [],
         "affected_root_material_ids": result.get("affected_root_material_ids") or [],
+        "bounded_validation_required": bool(result.get("bounded_validation_required", False)),
+        "bounded_validation_material_ids": result.get("bounded_validation_material_ids") or [],
+        "bounded_validation_gate_ids": result.get("bounded_validation_gate_ids") or [],
+        "compatibility_contract": result.get("compatibility_contract") or {"assessments": []},
         "authority_receipt_sha256": result.get("receipt_sha256"),
         "evidence_semantics": "HISTORICAL_IMMUTABLE_REFERENCE_NOT_MOVING_AUTHORITY",
     }
@@ -211,9 +201,7 @@ def require_ready(receipt: dict[str, Any]) -> None:
     if receipt.get("ready") is not True:
         decision = receipt.get("decision") or "UNKNOWN"
         reason = receipt.get("reason") or ""
-        raise RuntimeError(
-            f"BLOCK_CI_AUTHORITY_CURRENTNESS:{decision}:{reason}"
-        )
+        raise RuntimeError(f"BLOCK_CI_AUTHORITY_CURRENTNESS:{decision}:{reason}")
 
 
 def main() -> int:
@@ -223,13 +211,20 @@ def main() -> int:
     ap.add_argument("--repo", type=Path, default=Path("."))
     ap.add_argument("--bound-revision", required=True)
     ap.add_argument("--current-revision", required=True)
+    ap.add_argument("--compatibility-assessment-json")
     ap.add_argument("--output")
     ns = ap.parse_args()
-
+    assessments: list[dict[str, Any]] = []
+    if ns.compatibility_assessment_json:
+        row = json.loads(ns.compatibility_assessment_json)
+        if not isinstance(row, dict):
+            raise SystemExit("FAIL_CI_CURRENTNESS_COMPATIBILITY_ASSESSMENT_JSON")
+        assessments = [row]
     receipt = evaluate_ci_authority_currentness(
         repo=ns.repo,
         bound_revision=ns.bound_revision,
         current_revision=ns.current_revision,
+        compatibility_assessments=assessments,
     )
     text = json.dumps(receipt, sort_keys=True, indent=2)
     if ns.output:
