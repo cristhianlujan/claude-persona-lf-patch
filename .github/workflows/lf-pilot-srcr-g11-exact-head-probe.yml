@@ -17,7 +17,7 @@ jobs:
       - name: Checkout exact rebased G11 candidate head
         uses: actions/checkout@v4
         with:
-          ref: da63dcda7b1b90b17369e505ede97dae1eb0f0ac
+          ref: 54ed2555e6225ac64bb3c9aed985c7d37b3c0d3a
           fetch-depth: 5
           persist-credentials: false
 
@@ -30,7 +30,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "da63dcda7b1b90b17369e505ede97dae1eb0f0ac"
+          test "$(git rev-parse HEAD)" = "54ed2555e6225ac64bb3c9aed985c7d37b3c0d3a"
           git merge-base --is-ancestor "01796b4dc0e8a28b179ec81503e93afe15408e49" HEAD
           echo "G10_EXACT_BASE=01796b4dc0e8a28b179ec81503e93afe15408e49"
           echo "G11_EXACT_HEAD=$(git rev-parse HEAD)"
