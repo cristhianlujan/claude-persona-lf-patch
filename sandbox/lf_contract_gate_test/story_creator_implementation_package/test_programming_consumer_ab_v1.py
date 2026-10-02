@@ -57,7 +57,7 @@ def main() -> int:
         "implementation_task_view_bytes": len(json.dumps(selected, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")),
         "typed_blocker_count": len(package.get("blocked_if", [])),
         "source_ref_count": len(package.get("source_refs", [])),
-        "model_runtime_executed": false,
+        "model_runtime_executed": False,
         "comparison_kind": "FORMAT_CONTRACT_AB",
     }
 
