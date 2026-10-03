@@ -1,0 +1,35 @@
+{
+  "model_code": "M11_RECONSTRUCTED_SRCR_V0_1",
+  "name": "Reconstructed Systemic Repair Model v0.1",
+  "status": "EXPERIMENTAL_FROZEN_CANDIDATE",
+  "purpose": "Benchmark-only reconstructed reasoning workflow for systemic repair.",
+  "baseline": "SRCR_V0_6",
+  "producer": "GPT",
+  "activation": {
+    "runtime": false,
+    "profile_binding": false,
+    "production": false
+  },
+  "parents": [
+    "Graph of Thoughts",
+    "VerMCTS",
+    "Anthropic Multi-Agent Research",
+    "MultiFixer",
+    "Mixture-of-Agents",
+    "Tree Search for LM Agents"
+  ],
+  "benchmark_policy": {
+    "frozen_during_cases": true,
+    "oracle_visible_before_output": false,
+    "input_mutation_allowed": false,
+    "case_order_constraint": "RC-001 first",
+    "batch_1_scope": ["RC-001","RC-002","RC-003","RC-004","RC-005","RC-006","RC-007","RC-008","RC-009","RC-010"],
+    "other_external_models_enabled_in_batch_1": false
+  },
+  "terminal_states": [
+    "SYSTEMIC_REPAIR_SPEC",
+    "NEEDS_MORE_EVIDENCE",
+    "NO_REPAIR_REQUIRED"
+  ],
+  "mutation_rule": "Any change creates a new model version; M11_RECONSTRUCTED_SRCR_V0_1 is immutable for the 80-case benchmark."
+}
