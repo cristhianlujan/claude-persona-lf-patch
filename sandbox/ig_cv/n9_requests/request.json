@@ -2,10 +2,9 @@
   "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
   "cases": [
     {
-      "case_id": "M8_7_FRESHNESS_ONCE_PER_REQUEST",
-      "candidate_ref": "aec43896a297b17b7c93a3d4f8600536bc9b1d71",
-      "candidate_path": "supabase/migrations/20261003053000_ig_m8_7_freshness_once_per_request_v1.sql",
-      "prelude_path": "sandbox/ig_cv/fixtures/m8_7_freshness_once_preimage_v1.sql",
+      "case_id": "RC001_N10_CURATOR_VALIDATOR_BOUNDARY",
+      "candidate_ref": "HEAD",
+      "candidate_path": "supabase/migrations/20261003174500_ig_rc001_n10_curator_rebind_boundary_v1.sql",
       "screen_id": 4,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
