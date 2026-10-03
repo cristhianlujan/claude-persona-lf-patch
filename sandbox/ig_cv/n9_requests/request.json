@@ -2,10 +2,10 @@
   "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
   "cases": [
     {
-      "case_id": "M1_A9_CONTRACT_CLAUSE_ACCESSOR",
-      "candidate_ref": "c33f6e7e02f36d54e7ee3d66edea80827bd0459f",
-      "candidate_path": "supabase/migrations/20261003023000_ig_m1_a9_contract_clause_accessor_v1.sql",
-      "prelude_path": "sandbox/ig_cv/fixtures/m1_a9_contract_clause_preimage_v1.sql",
+      "case_id": "M8_7_FRESHNESS_ONCE_PER_REQUEST",
+      "candidate_ref": "aec43896a297b17b7c93a3d4f8600536bc9b1d71",
+      "candidate_path": "supabase/migrations/20261003053000_ig_m8_7_freshness_once_per_request_v1.sql",
+      "prelude_path": "sandbox/ig_cv/fixtures/m8_7_freshness_once_preimage_v1.sql",
       "screen_id": 4,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
