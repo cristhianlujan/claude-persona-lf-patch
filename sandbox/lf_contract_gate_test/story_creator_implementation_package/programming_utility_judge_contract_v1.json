@@ -10,12 +10,14 @@
   },
   "independence": {
     "builder_must_differ_from_reviewer": true,
-    "reviewer_operation": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
-    "router_action": "STRATEGY_INDEPENDENT_REVIEW"
+    "reviewer_binding_resolution": "TRANSVERSAL_SUBJECT_BINDING_AT_EXECUTION_TIME",
+    "strategy_specific_route_forbidden_for_non_strategy_subject": true
   },
   "required_subject_bindings": [
     "subject_sha256",
     "source_revision",
+    "review_subject",
+    "reviewer_binding_ref",
     "builder_execution_id",
     "reviewer_execution_id",
     "structural_evidence_ref",
