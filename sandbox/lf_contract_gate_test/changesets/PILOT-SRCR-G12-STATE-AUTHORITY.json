@@ -1,0 +1,6 @@
+{
+  "solution_ref": "PILOT-SRCR-G12-STATE-AUTHORITY",
+  "paths": {
+    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g12/test_g12_state_authority_candidate.py": "PILOT_GATE_TEST"
+  }
+}
