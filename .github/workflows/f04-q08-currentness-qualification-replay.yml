@@ -29,27 +29,19 @@ jobs:
           from pathlib import Path
           path = Path('sandbox/lf_contract_gate_test/material_currentness/lf_material_currentness_v1.py')
           text = path.read_text(encoding='utf-8')
-          old = '''    for pattern in globs:
-              wildcard_positions = [i for token in ("*", "?", "[") if (i := pattern.find(token)) >= 0]
-              literal_prefix = pattern[:min(wildcard_positions)] if wildcard_positions else pattern
-              directory = _selector_directory(literal_prefix, selector_kind="GLOB")
-              specs.add(f":(top,literal){directory}")
-          '''
-          new = '''    for pattern in globs:
-              wildcard_positions = [i for token in ("*", "?", "[") if (i := pattern.find(token)) >= 0]
-              literal_prefix = pattern[:min(wildcard_positions)] if wildcard_positions else pattern
-              if "/" not in literal_prefix:
-                  raise CurrentnessError(f"GIT_TREE_GLOB_UNBOUNDED:{pattern}")
-              directory = _selector_directory(literal_prefix, selector_kind="GLOB")
-              specs.add(f":(top,literal){directory}")
-          '''
-          if old in text:
-              path.write_text(text.replace(old, new, 1), encoding='utf-8')
-              print('Q08_PATCH_APPLIED=1')
-          elif new in text:
+          anchor = '        directory = _selector_directory(literal_prefix, selector_kind="GLOB")\n'
+          replacement = (
+              '        if "/" not in literal_prefix:\n'
+              '            raise CurrentnessError(f"GIT_TREE_GLOB_UNBOUNDED:{pattern}")\n'
+              + anchor
+          )
+          if replacement in text:
               print('Q08_PATCH_ALREADY_PRESENT=1')
           else:
-              raise SystemExit('BLOCK_Q08_PATCH_ANCHOR_DRIFT')
+              if text.count(anchor) != 1:
+                  raise SystemExit(f'BLOCK_Q08_PATCH_ANCHOR_COUNT:{text.count(anchor)}')
+              path.write_text(text.replace(anchor, replacement, 1), encoding='utf-8')
+              print('Q08_PATCH_APPLIED=1')
           PY
       - name: Bind functional source blobs under test
         shell: bash
