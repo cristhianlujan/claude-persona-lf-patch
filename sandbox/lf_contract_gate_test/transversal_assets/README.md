@@ -17,6 +17,7 @@ Todo activo transversal documentable en estado `ACTIVE_SHARED_ENFORCEMENT` o `AC
 ## Activos
 
 - `ACT-0001` — `DOC_ROUTER_OPERATIVO_GOBERNANZA_LF` → `sandbox/lf_contract_gate_test/transversal_assets/act_0001/README.md`
+- `ASSET_RETIREMENT_GOVERNANCE` — `TRANSVERSAL_ASSET_RETIREMENT_GOVERNANCE` → `sandbox/lf_contract_gate_test/transversal_assets/asset_retirement_governance/README.md`
 - `ASSURANCE_COMPLETENESS` — `TRANSVERSAL_ASSURANCE_COMPLETENESS` → `sandbox/lf_contract_gate_test/transversal_assets/assurance_completeness/README.md`
 - `C05_GENERIC_EXECUTION_RELIABILITY` — `TRANSVERSAL_C05_GENERIC_EXECUTION_RELIABILITY` → `sandbox/lf_contract_gate_test/transversal_assets/c05_generic_execution_reliability/README.md`
 - `CAPABILITY_VERSION_COMPATIBILITY` — `TRANSVERSAL_CAPABILITY_VERSION_COMPATIBILITY` → `sandbox/lf_contract_gate_test/transversal_assets/capability_version_compatibility/README.md`
