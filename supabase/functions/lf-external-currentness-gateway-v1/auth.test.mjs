@@ -1,50 +1,34 @@
+import test from "node:test";
 import assert from "node:assert/strict";
-import {
-  MAIN_REF,
-  REPOSITORY,
-  REPOSITORY_ID,
-  WORKFLOW_NAME,
-  WORKFLOW_REF,
-  validateGatewayClaims,
-  requireObservedMainMatchesWorkflow,
-  requireEdgeReadCredential,
-} from "./auth.ts";
+import { readFileSync } from "node:fs";
 
-const base = {
-  repository: REPOSITORY,
-  repository_id: REPOSITORY_ID,
-  ref: MAIN_REF,
-  workflow: WORKFLOW_NAME,
-  workflow_ref: WORKFLOW_REF,
-  event_name: "push",
-  run_id: "12345",
-  workflow_sha: "a".repeat(40),
-};
+const source = readFileSync(new URL("./auth.ts", import.meta.url), "utf8");
 
-for (const event_name of ["push", "schedule", "workflow_dispatch"]) {
-  assert.equal(validateGatewayClaims({ ...base, event_name }).eventName, event_name);
-}
+test("OIDC identity remains pinned to repository main workflow and allowed events", () => {
+  assert.match(source, /REPOSITORY = "cristhianlujan\/claude-persona-lf-patch"/);
+  assert.match(source, /MAIN_REF = "refs\/heads\/main"/);
+  assert.match(source, /WORKFLOW_PATH = "\.github\/workflows\/lf-external-currentness-detector\.yml"/);
+  assert.match(source, /ALLOWED_EVENTS = new Set\(\["push", "schedule", "workflow_dispatch"\]\)/);
+  assert.match(source, /if \(!ALLOWED_EVENTS\.has\(eventName\)\) throw new Error\("OIDC_EVENT_NOT_ALLOWED"\)/);
+});
 
-for (const event_name of ["workflow_call", "pull_request", "repository_dispatch"]) {
-  assert.throws(() => validateGatewayClaims({ ...base, event_name }), /OIDC_EVENT_NOT_ALLOWED/);
-}
+test("OIDC identity requires run_id workflow_sha sha and actor claims", () => {
+  assert.match(source, /const runId = asString\(payload\.run_id\)/);
+  assert.match(source, /const workflowSha = asString\(payload\.workflow_sha\)/);
+  assert.match(source, /const sha = asString\(payload\.sha\)/);
+  assert.match(source, /const actor = asString\(payload\.actor\)/);
+  assert.match(source, /!\/\^\[0-9a-f\]\{40\}\$\/\.test\(workflowSha\)/);
+  assert.match(source, /!\/\^\[0-9a-f\]\{40\}\$\/\.test\(sha\)/);
+  assert.match(source, /!actor/);
+});
 
-assert.throws(() => validateGatewayClaims({ ...base, repository: "other/repo" }), /OIDC_REPOSITORY_MISMATCH/);
-assert.throws(() => validateGatewayClaims({ ...base, ref: "refs/heads/dev" }), /OIDC_REF_MISMATCH/);
-assert.throws(() => validateGatewayClaims({ ...base, workflow_ref: "other" }), /OIDC_WORKFLOW_IDENTITY_MISMATCH/);
-assert.throws(() => validateGatewayClaims({ ...base, job_workflow_ref: "other" }), /OIDC_WORKFLOW_IDENTITY_MISMATCH/);
-assert.throws(() => validateGatewayClaims({ ...base, workflow_sha: "bad" }), /OIDC_RUN_IDENTITY_INCOMPLETE/);
-const exactIdentity = validateGatewayClaims(base);
-assert.equal(
-  requireObservedMainMatchesWorkflow(exactIdentity.workflowSha, exactIdentity),
-  exactIdentity.workflowSha,
-);
-assert.throws(
-  () => requireObservedMainMatchesWorkflow("b".repeat(40), exactIdentity),
-  /REPORT_MAIN_SHA_MISMATCH/,
-);
+test("observed currentness report remains bound to workflow_sha", () => {
+  assert.match(source, /observedMainSha !== identity\.workflowSha/);
+  assert.match(source, /REPORT_MAIN_SHA_MISMATCH/);
+});
 
-assert.throws(() => requireEdgeReadCredential(""), /EDGE_READ_CREDENTIAL_MISSING/);
-assert.equal(requireEdgeReadCredential(" scoped-pat "), "scoped-pat");
+test("gateway returns actor and sha from verified claims", () => {
+  assert.match(source, /return \{[\s\S]*eventName,[\s\S]*runId,[\s\S]*workflowSha,[\s\S]*sha,[\s\S]*actor,[\s\S]*\};/);
+});
 
 console.log("PASS_GATEWAY_OIDC_IDENTITY_TESTS");

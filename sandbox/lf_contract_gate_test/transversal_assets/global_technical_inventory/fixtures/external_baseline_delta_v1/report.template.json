@@ -1,0 +1,62 @@
+{
+  "schema_version": "LF_EXTERNAL_CURRENTNESS_REPORT_V1",
+  "observed_main_sha": "$HEAD",
+  "pass_unknown_currentness": true,
+  "repository": {
+    "observed_main_sha": "$HEAD",
+    "tree_truncated": false,
+    "unknown_currentness": 0,
+    "counts": {"CURRENT": 0, "STALE": 1, "MISSING": 1, "NEW": 1, "UNKNOWN": 0},
+    "records": [
+      {
+        "path": "repo/new.txt",
+        "state": "NEW",
+        "inventory_git_blob": null,
+        "observed_git_blob": "$NEW_BLOB"
+      },
+      {
+        "path": "repo/stale.py",
+        "state": "STALE",
+        "inventory_git_blob": "$STALE_OLD_BLOB",
+        "observed_git_blob": "$STALE_NEW_BLOB"
+      },
+      {
+        "path": "repo/missing.sql",
+        "state": "MISSING",
+        "inventory_git_blob": "$MISSING_OLD_BLOB",
+        "observed_git_blob": null
+      }
+    ]
+  },
+  "edge": {
+    "unknown_currentness": 0,
+    "counts": {"CURRENT": 0, "STALE": 1, "MISSING": 1, "NEW": 1, "UNKNOWN": 0},
+    "runtime_without_source_count": 1,
+    "records": [
+      {
+        "slug": "edge-new",
+        "state": "NEW",
+        "runtime_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runtime_version": 7,
+        "verify_jwt": false,
+        "source_state": "RUNTIME_WITHOUT_SOURCE"
+      },
+      {
+        "slug": "edge-stale",
+        "state": "STALE",
+        "runtime_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "runtime_version": 9,
+        "verify_jwt": true,
+        "source_state": "SOURCE_PRESENT"
+      },
+      {
+        "slug": "edge-missing",
+        "state": "MISSING",
+        "runtime_sha256": null,
+        "runtime_version": null,
+        "verify_jwt": null,
+        "source_state": null
+      }
+    ]
+  }
+}
