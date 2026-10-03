@@ -1,0 +1,53 @@
+name: PASE Q08 Currentness Evidence
+
+on:
+  push:
+    branches:
+      - evidence/pase-f04-q08-currentness-20261003-001
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-currentness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact evidence head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+
+      - name: Verify evidence-only delta from qualified main snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin 99aa44c7688d5e06637547b39bf1eeefcaf4f0f5
+          mapfile -t changed < <(git diff --name-only 99aa44c7688d5e06637547b39bf1eeefcaf4f0f5 "${GITHUB_SHA}")
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = ".github/workflows/pase-q08-currentness-evidence.yml"
+          echo "PASS_Q08_EVIDENCE_ONLY_DELTA=1/1"
+
+      - name: Execute CI currentness bridge regressions
+        run: python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_currentness_bridge_v1.py
+
+      - name: Execute CURRENTNESS_AUTHORITY negative regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd sandbox/lf_contract_gate_test/material_currentness
+          python3 - <<'PY'
+          import tempfile
+          from pathlib import Path
+          import test_lf_currentness_authority_v1 as t
+
+          tests = [
+              t.test_missing_assessment_fails_closed_instead_of_assuming_breaking,
+              t.test_unknown_compatibility_fails_closed,
+              t.test_replayed_or_wrong_context_proof_fails_closed,
+          ]
+          for test in tests:
+              test(Path(tempfile.mkdtemp(prefix="q08-currentness-")))
+          print(f"CURRENTNESS_AUTHORITY_NEGATIVE_PASS={len(tests)}/{len(tests)}")
+          PY
