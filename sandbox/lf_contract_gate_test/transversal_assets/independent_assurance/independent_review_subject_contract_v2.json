@@ -1,0 +1,91 @@
+{
+  "schema_version": "lf-independent-review-subject-contract/v2",
+  "capability_code": "INDEPENDENT_ASSURANCE",
+  "owner_scope": "SUPER_ADMIN",
+  "semantic_role": "INDEPENDENT_REVIEW",
+  "extension_class": "EXTEND_EXISTING_CAPABILITY",
+  "execution": {
+    "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
+    "operation_type": "INDEPENDENT_REVIEW",
+    "reuse_existing_operation": true,
+    "reuse_existing_step_judges": true,
+    "reuse_existing_step_ids": [
+      "route_bind",
+      "target_currentness",
+      "semantic_review",
+      "judge_record",
+      "reviewer_readback",
+      "report_output"
+    ],
+    "new_operation_allowed": false,
+    "new_router_action_allowed": false,
+    "new_judge_engine_allowed": false,
+    "new_judge_codes_allowed": false,
+    "new_evidence_store_allowed": false
+  },
+  "entry": {
+    "generic_entrypoint": "ORCHESTRATOR_EXECUTION_GUARD_V1 + public.fn_lf_capability_bind_from_orchestrator_v1",
+    "capability_registry_required": true,
+    "current_pointer_required": true,
+    "legacy_strategy_route_preserved": {
+      "asset_type": "STRATEGY",
+      "action_code": "STRATEGY_INDEPENDENT_REVIEW",
+      "mode": "BACKWARD_COMPATIBLE_SPECIALIZATION"
+    },
+    "consumer_must_not_hardcode_legacy_strategy_route": true
+  },
+  "subject_resolution": {
+    "source": "current capability manifest",
+    "mode": "EXACT_SUBJECT_TYPE",
+    "fallback": "BLOCK_UNSUPPORTED_SUBJECT_REQUIRES_OWNER_EXTENSION",
+    "supported_subjects": {
+      "STRATEGY": {
+        "path": "LEGACY_SPECIALIZATION",
+        "qualification_handoff": "REQUIRED_BY_EXISTING_STRATEGY_CONTRACT",
+        "review_receipt_store": "existing governed operation evidence"
+      },
+      "STORY_IMPLEMENTATION_PACKAGE": {
+        "path": "GENERIC_SUBJECT_EXTENSION",
+        "qualification_handoff": "NOT_REQUIRED_FOR_STORY_CLOSURE",
+        "subject_authority": "EVIDENCE_LEDGER + CURRENTNESS_AUTHORITY",
+        "review_receipt_store": "EVIDENCE_LEDGER",
+        "required_dimensions": [
+          "implementation_actionability",
+          "source_fidelity",
+          "reuse_correctness",
+          "context_sufficiency",
+          "acceptance_executability"
+        ]
+      }
+    }
+  },
+  "independence": {
+    "builder_must_differ_from_reviewer": true,
+    "reviewer_execution_must_be_governed": true,
+    "subject_revision_must_be_exact": true,
+    "authority_readback_required": true,
+    "provider_bound_receipt_required": true
+  },
+  "durable_outputs": [
+    "verdict",
+    "review_receipt",
+    "evidence_refs",
+    "authority_readback",
+    "next_gate"
+  ],
+  "compatibility": {
+    "strategy_behavior_must_regress_zero": true,
+    "story_consumer_must_resolve_capability_dynamically": true,
+    "qualification_framework_remains_separate_owner": true,
+    "assurance_evaluator_is_not_independent_review_owner": true
+  },
+  "forbidden": [
+    "CREATE_SECOND_INDEPENDENT_REVIEW_OPERATION",
+    "CREATE_SECOND_INDEPENDENT_REVIEW_ROUTE",
+    "CREATE_PARALLEL_JUDGE_SET",
+    "CREATE_PARALLEL_REVIEW_RECEIPT_STORE",
+    "MAP_STORY_IMPLEMENTATION_PACKAGE_TO_STRATEGY",
+    "SELF_ISSUE_REVIEW_RECEIPT",
+    "STRUCTURAL_PASS_AS_CLOSURE"
+  ]
+}

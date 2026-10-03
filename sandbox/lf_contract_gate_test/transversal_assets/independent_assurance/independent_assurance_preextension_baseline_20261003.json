@@ -1,0 +1,22 @@
+{
+  "schema_version": "LF_INDEPENDENT_ASSURANCE_PREEXTENSION_BASELINE_V2",
+  "captured_at": "2026-10-03",
+  "source_main_sha": "b345ce4f3d5e4a695dec3a97d388491128e6bda7",
+  "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
+  "operation_revision_sha256": "fb59333049740f13332d68b07d38493dff0732545e856facea817f6d3ad34811",
+  "qualification": {
+    "qualification_id": "31f2b7c9-4bfd-4379-99ce-dc339fcf9ccc",
+    "suite_set_fingerprint": "1261d1be0f12de882194272f9f5c371ff73a7e87606659d4e2db053d6e6c7a3e",
+    "lifecycle_state_code": "QUAL_QUALIFIED"
+  },
+  "registry": {
+    "applies_to_asset_type": "STRATEGY",
+    "notes": "Transversal independent review for Strategy qualification REVIEW_REQUIRED cases. Reviewer identity is its own governed operation execution; it does not require another Strategy to be qualification_current."
+  },
+  "capability_registry_prestate": {
+    "registry_row_exists": true,
+    "current_pointer_exists": true,
+    "current_version": "1.0.0",
+    "current_manifest_sha256": "a6f5e2fe21ed305b6d47e8722035685b243cfc4e697ff397d1724e5d34f6c6e8"
+  }
+}
