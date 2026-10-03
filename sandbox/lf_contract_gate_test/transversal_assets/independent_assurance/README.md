@@ -4,34 +4,84 @@ Transversal LF inventory identity: `INDEPENDENT_ASSURANCE` / `TRANSVERSAL_INDEPE
 
 Effective semantic responsibility: **`INDEPENDENT_REVIEW`**.
 
-`INDEPENDENT_ASSURANCE` remains the current inventory code for compatibility/currentness. Do not create a second capability merely to rename it; a durable rename, if later required, belongs to an explicit governed cutover.
+`INDEPENDENT_ASSURANCE` remains the current inventory code for compatibility/currentness. Do not create a second capability merely to rename or generalize it.
 
 ## Estado
 
-- Estado operativo esperado: `ACTIVO`
-- Inventory status requerido: `ACTIVE_SHARED_ENFORCEMENT`
-- Currentness authority: `public.lf_activos`
-- Canonical reviewer operation: `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`
-- Router action: `STRATEGY_INDEPENDENT_REVIEW`
-- Live operation type: `INDEPENDENT_REVIEW`
-- `owner_name` in the current inventory is unresolved/null and is therefore a governance gap, not a value to infer in this README.
+- Owner vigente: `SUPER_ADMIN` (D-V2.2 / `lf_eventos#19472`).
+- Estado operativo esperado: `ACTIVO`.
+- Inventory status requerido: `ACTIVE_SHARED_ENFORCEMENT`.
+- Inventory identity authority: `public.lf_activos`.
+- Version/currentness authority: `public.lf_capability_registry` + `public.lf_capability_current`.
+- Canonical reviewer operation: `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`.
+- Router action vigente para la especialización Strategy: `STRATEGY_INDEPENDENT_REVIEW`.
+- Live operation type: `INDEPENDENT_REVIEW`.
+- Real-oracle measure: `public.lf_independent_assurance_measure_v1`.
 
 ## Propósito
 
 Produce an independent, execution-bound review verdict and durable review evidence when a governing contract requires a reviewer distinct from the producer.
 
-Its responsibility ends at the review handoff. It does not own the downstream Qualification state transition/materialization.
+T-INDEP adds a separate **measurement responsibility inside the same capability identity**: prove whether the proposed reviewer/oracle is materially independent from its producer before a consumer treats it as an independent oracle.
+
+The measurement is read-only. It does not execute the review, qualify a subject, activate runtime, or create a second review operation.
+
+## Criterio de independencia real
+
+The measurable contract is:
+
+```text
+producer_root + reviewer_root
+        ↓
+transitive dependency closure (pg_proc, bounded depth)
+        ↓
+shared dependencies − adjudicated exceptions
+        ↓
+DEPENDENCY: INDEPENDENT / NOT_INDEPENDENT
+        +
+provider-bound data references
+        ↓
+DATA: INDEPENDENT / NOT_INDEPENDENT / UNPROVEN
+        +
+producer author identity vs reviewer author identity
+        ↓
+AUTHOR: INDEPENDENT / NOT_INDEPENDENT / UNPROVEN
+        ↓
+overall state
+```
+
+Overall rules:
+
+- `INDEPENDENT`: zero unresolved shared transitive dependencies **and** disjoint data sources **and** distinct producer/reviewer author identities are all proven.
+- `NOT_INDEPENDENT`: any proven dimension is shared/non-independent.
+- `UNPROVEN`: no dimension proves non-independence, but data or author evidence is missing.
+- `BLOCKED`: malformed input, missing/non-unique roots, invalid exception declarations, or another fail-closed input error.
+
+An exception is valid only when it is explicitly adjudicated and is actually present in the measured shared dependency set. Unknown exceptions block; they cannot be used to launder overlap.
+
+### Measurement limits
+
+`PG_PROC_STATIC_CLOSURE_V1` is reproducible and deterministic for direct function-name references inside the declared PostgreSQL schema. It does **not** claim to discover dynamic SQL or Edge/runtime call graphs. Those require provider-bound evidence from the consumer and otherwise remain `UNPROVEN`.
 
 ## Cuándo consumirlo
 
-Consume only when a qualification, claim or closure explicitly requires independent evaluation rather than self-review by the producer.
+Consume the measurement whenever a flow claims that a validator, reviewer, holdout or oracle is materially independent from the producer.
 
-Before use, resolve `INDEPENDENT_ASSURANCE` in `public.lf_activos` and confirm that it is not archived, remains `ACTIVO`, and has `metadata.transversal_inventory.inventory_status=ACTIVE_SHARED_ENFORCEMENT`.
+T-INDEP materializes the criterion; `M4.4` is the IG consumer that must use it. A consumer must not translate a distinct operation name or a distinct execution id into “independent” without this material test.
 
-## Cómo consumirlo
+For the review lifecycle itself, consume Independent Review only when a qualification, claim or closure explicitly requires independent evaluation rather than self-review by the producer.
+
+Before material consumption:
+
+1. Resolve `INDEPENDENT_ASSURANCE` in `public.lf_activos`; require non-archived, `ACTIVO`, `VIGENTE`, `ACTIVE_SHARED_ENFORCEMENT`.
+2. Resolve `INDEPENDENT_ASSURANCE` in `public.lf_capability_current` and bind the exact manifest through `public.fn_lf_capability_bind_from_orchestrator_v1` when the governed consumer executes it.
+3. Run `public.lf_independent_assurance_measure_v1` with exact roots and provider-bound data/author context when available.
+4. Fail closed on `UNPROVEN` whenever the governing contract requires positive independence.
+
+## Cómo consumir el review existente
 
 1. Resolve the current inventory identity `INDEPENDENT_ASSURANCE`; do not create a parallel reviewer capability.
-2. Route the review through ACT-0001 to `STRATEGY_INDEPENDENT_REVIEW` / `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`.
+2. For the existing Strategy specialization, route through ACT-0001 to `STRATEGY_INDEPENDENT_REVIEW` / `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`.
 3. Bind exact producer/reviewer identity, qualification/subject identity, source revision, suite fingerprint, REVIEW_REQUIRED case and evidence references.
 4. Execute the six governed reviewer steps: route binding, target currentness, semantic review, judge record, reviewer readback and report output.
 5. The reviewer output is a durable review receipt/evidence package plus `next_gate`; it must not directly declare Qualification current or materialize Qualification state.
@@ -42,6 +92,8 @@ Before use, resolve `INDEPENDENT_ASSURANCE` in `public.lf_activos` and confirm t
 - `REVISION_INDEPENDIENTE_ESTRATEGIA_LF`
 - Router action `STRATEGY_INDEPENDENT_REVIEW`
 - reviewer-operation RPCs/step/judge surfaces bound to that operation
+- `public.lf_independent_assurance_measure_v1` for read-only real-oracle independence measurement
+- `public.lf_capability_registry` / `public.lf_capability_current` for capability version/currentness
 
 The live operation is explicitly typed `INDEPENDENT_REVIEW`. Its final governed step emits `review_receipt`, `evidence_refs` and `next_gate`.
 
@@ -67,10 +119,14 @@ This capability does not own or imply:
 - Router applicability decisions;
 - runtime, scheduler, orchestrator or production activation.
 
+The T-INDEP measurement does not create a generic review operation or general-purpose review route. Subject-specific lifecycle generalization, if ever required, is a separate governed change and must preserve the canonical operation rather than duplicating it.
+
 ## Fail-closed / límites
 
 - Reviewer execution must be distinct from the producer when independence is required.
-- Missing/stale revision, suite fingerprint, qualification binding, reviewer identity, judge receipt or evidence must block.
+- Distinct identity alone is insufficient; material dependency/data/author independence must be proven by the governing contract.
+- Missing/stale revision, suite fingerprint, qualification binding, reviewer identity, judge receipt or evidence must block the review lifecycle.
+- Missing data/author evidence returns `UNPROVEN` for positive real-oracle independence unless another dimension already proves `NOT_INDEPENDENT`.
 - A review PASS is only the review verdict for the bound review case. It is not Qualification PASS, Assurance PASS, changeset safety, deployment approval or production authorization.
 - Independent Review must not mutate Strategy snapshots or perform business writes.
 
@@ -90,21 +146,32 @@ materialization / qualification state / currentness
 
 The two stages must remain independently traceable. A downstream finalizer call does not make the finalizer an Independent Review asset.
 
+## T-INDEP operation-revision invariant
+
+T-INDEP must not modify the active `REVISION_INDEPENDIENTE_ESTRATEGIA_LF` registry row, contract, step contracts, judges or active Router binding. `public.lf_operation_revision_sha256_v1` must return the same hash before and after the capability measurement cutover.
+
+If a future change must alter those surfaces, it is a different governed change and must prepare exact operation requalification before apply, per `T-INDEP-OPERATION-REVISION-REQUALIFICATION-001`.
+
 ## Validación y readback
 
-- Verify active/current asset identity before consumption.
-- Verify Router action and operation are current and operational.
+- Verify active/current asset identity and capability current pointer before consumption.
+- Verify Router action and canonical operation remain current and operational.
 - Verify all six reviewer steps remain governed and that the report output carries `review_receipt`, `evidence_refs` and `next_gate`.
 - Verify the Qualification finalizer remains downstream and separately owned.
+- Verify the measurement returns the exact dependency sets/digests and its limitations.
+- Verify a known shared classifier/path returns `NOT_INDEPENDENT`.
+- Verify an unbound adjudicated exception returns `BLOCKED`.
 - Preserve source revision, execution identities, evidence references and exact reviewer receipt.
 - Do not turn a local reviewer test into a global closure claim.
 
 ## No duplicación
 
-Do not create a second independent-review capability, operation, table, runner, reviewer writer or route. Extend the existing governed operation through its owner and preserve lineage.
+Do not create a second independent-review capability, operation, table, runner, reviewer writer, route or judge stack. Extend the existing capability identity through its owner and preserve lineage.
 
 ## EKB
 
+- `T-INDEP-PARALLEL-REVIEW-STACK-001`
+- `T-INDEP-OPERATION-REVISION-REQUALIFICATION-001`
 - `S36-ASSURANCE-BOUNDARY-CONTAMINATION-001`
 - `INDEPENDENT-REVIEW-LEGACY-RPC-BYPASS-001`
 - `INDEPENDENT-REVIEW-FINALIZER-RESULT-CONTRACT-MISMATCH-001`
@@ -113,4 +180,4 @@ Do not create a second independent-review capability, operation, table, runner, 
 
 ## Currentness
 
-This README describes the ownership boundary, not a permanent lifecycle assertion. Consumers must read the live inventory and operation contract for every material decision. The unresolved inventory `owner_name` must be repaired only from an authoritative owner decision; it must not be guessed during this boundary cleanup.
+This README describes the ownership and semantic boundary, not a permanent lifecycle assertion. Consumers must read live inventory, `lf_capability_current` and the operation contract for every material decision.
