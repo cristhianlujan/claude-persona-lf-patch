@@ -2,10 +2,10 @@
   "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
   "cases": [
     {
-      "case_id": "RC001_N11_DYNAMIC_COMPONENT_BINDING",
+      "case_id": "RC001_N12_DYNAMIC_SOURCE_SELECTORS",
       "candidate_ref": "HEAD",
-      "candidate_path": "supabase/migrations/20261003182500_ig_rc001_n11_dynamic_component_binding_v1.sql",
-      "screen_id": 4,
+      "candidate_path": "supabase/migrations/20261003183500_ig_rc001_n12_dynamic_source_selectors_v1.sql",
+      "screen_id": 52,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
       "expected_finding_codes": []
