@@ -1,0 +1,49 @@
+{
+  "schema_version": "srcr-benchmark-blind-execution/v1",
+  "batch": 2,
+  "case_range": ["RC-011","RC-020"],
+  "global_progress_before": "10/80",
+  "execution_order_per_case": [
+    "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+    "M11_RECONSTRUCTED_SRCR_V0_1"
+  ],
+  "v06": {
+    "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "revision": "a0f58ad1a1219f0c4dc9a70f167a1908418e5491",
+    "skill_path": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+  },
+  "m11": {
+    "model_code": "M11_RECONSTRUCTED_SRCR_V0_1",
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "revision": "ff31b709aa33dc1b3ce5afcdd2cd320909e6bc76",
+    "skill_path": "sandbox/srcr_benchmark/models/m11_reconstructed_srcr_v0_1/SKILL.md",
+    "frozen": true
+  },
+  "producer": "GPT",
+  "oracle_policy": "The execution context must receive inputs_only.json and the referenced model skill only. It must not read 02_ORACULO, Oracle_Obligatorio, Oracle_WOW, expected results, previous scored outputs, or this conversation's oracle-bearing messages until both raw outputs for the case are frozen.",
+  "raw_output_policy": "Preserve the complete unmodified raw response separately for each case/model and bind it to case_id, model_id, input digest, model revision and output digest.",
+  "normalization_policy": "Normalize only after raw output freeze. Common comparison fields: case, root_cause, invariants, mandatory_findings, gaps, false_positives, proposed_repair, evidence, score, status.",
+  "evaluation_order": [
+    "freeze_v06_raw",
+    "freeze_m11_raw",
+    "open_case_oracle",
+    "evaluate_invariants",
+    "evaluate_mandatory_findings",
+    "evaluate_gaps",
+    "evaluate_false_positives",
+    "evaluate_root_cause",
+    "evaluate_repair",
+    "evaluate_evidence",
+    "score"
+  ],
+  "mutations": {
+    "production": false,
+    "runtime_activation": false,
+    "control_activation": false,
+    "merge": false,
+    "allowed": ["READ_ONLY","SANDBOX","ROLLBACK_ONLY_WHEN_CASE_REQUIRES"]
+  },
+  "external_comparator_models_enabled": false,
+  "stop_after": "RC-020"
+}
