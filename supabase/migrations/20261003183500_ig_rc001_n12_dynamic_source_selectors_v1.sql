@@ -87,12 +87,17 @@ BEGIN
     'programacion.fn_input_governance_bootstrap_classify_v2(integer,text,bigint)'::regprocedure,
     'programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)'::regprocedure
   ] LOOP
-    v_expected_md5 := CASE v_reg::text
-      WHEN 'fn_input_governance_bootstrap_classify_v2(integer,text,bigint)'
+    v_expected_md5 := CASE
+      WHEN v_reg='programacion.fn_input_governance_bootstrap_classify_v2(integer,text,bigint)'::regprocedure
         THEN '904e0a4af4ab3df27281c9da2d1d4b10'
-      ELSE '5acdff656b9e65bc92b51abd45d5706e'
+      WHEN v_reg='programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)'::regprocedure
+        THEN '5acdff656b9e65bc92b51abd45d5706e'
+      ELSE null
     END;
 
+    IF v_expected_md5 IS NULL THEN
+      RAISE EXCEPTION 'N12_CLASSIFIER_UNEXPECTED_REGPROCEDURE:%',v_reg;
+    END IF;
     v_def := pg_get_functiondef(v_reg);
     IF md5(v_def) <> v_expected_md5 THEN
       RAISE EXCEPTION 'N12_CLASSIFIER_BASELINE_DRIFT:% expected=% actual=%',v_reg,v_expected_md5,md5(v_def);
