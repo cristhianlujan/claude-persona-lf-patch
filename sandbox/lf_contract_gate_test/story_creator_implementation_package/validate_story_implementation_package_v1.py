@@ -77,8 +77,15 @@ def validate_package(pkg: dict[str, Any]) -> list[str]:
         if closure["evidence_completeness_state"] != "COMPLETE":
             errors.append("FALSE_READY_WITHOUT_COMPLETE_EVIDENCE")
 
+    unresolved_material_states = {
+        "SOURCE_CONFLICT", "PENDING_OWNER_DECISION", "PENDING_SOURCE_DEFINITION",
+    }
     for pre in pkg["implementation_preconditions"]:
         state = pre["state"]
+        if closure["ready"] and state in unresolved_material_states and pre["blocking_scope"] != "NON_BLOCKING":
+            errors.append(
+                f"FALSE_READY_WITH_UNRESOLVED_MATERIAL_PRECONDITION:{pre['precondition_code']}"
+            )
         if state == "IMPLEMENTATION_PRECONDITION":
             if pre["design_effect"] != "NONE":
                 errors.append(f"PRECONDITION_MAY_CHANGE_DESIGN:{pre['precondition_code']}")
@@ -88,7 +95,7 @@ def validate_package(pkg: dict[str, Any]) -> list[str]:
                 errors.append(f"PRECONDITION_RULE_MISSING:{pre['precondition_code']}")
             if not pre.get("bounded_stage"):
                 errors.append(f"PRECONDITION_STAGE_MISSING:{pre['precondition_code']}")
-        if state in {"SOURCE_CONFLICT", "PENDING_OWNER_DECISION", "PENDING_SOURCE_DEFINITION"} and pre["blocking_scope"] == "NON_BLOCKING":
+        if state in unresolved_material_states and pre["blocking_scope"] == "NON_BLOCKING":
             errors.append(f"MATERIAL_PENDING_MARKED_NON_BLOCKING:{pre['precondition_code']}")
 
     reuse = pkg["task0_reuse_discovery"]
@@ -196,6 +203,7 @@ def self_test() -> dict[str, Any]:
     neg("ready_with_blocker", lambda p: p["blocked_if"].append({"code":"B1","state":"SOURCE_CONFLICT","affected_scope":"TASK","resolver_or_owner_ref":"owner://x"}), "FALSE_READY_WITH_BLOCKERS")
     neg("ready_with_open_decision", lambda p: p["decision_closure"]["open_decisions"].append("route choice"), "FALSE_READY_WITH_OPEN_DECISIONS")
     neg("stale_ready", lambda p: p["decision_closure"].__setitem__("source_currentness_state", "STALE"), "FALSE_READY_WITHOUT_CURRENT_SOURCE")
+    neg("ready_with_unresolved_material_precondition", lambda p: p["implementation_preconditions"][0].__setitem__("state", "PENDING_SOURCE_DEFINITION"), "FALSE_READY_WITH_UNRESOLVED_MATERIAL_PRECONDITION")
     neg("create_new_one_consumer", lambda p: p["task0_reuse_discovery"].update({"classification":"CREATE_NEW","candidate_assets":[],"selected_asset_ref":None,"verified_absence":True,"consumer_refs":["STORY_CREATOR"]}), "CREATE_NEW_WITH_FEWER_THAN_TWO_CONSUMERS")
     neg("extend_owner_unresolved", lambda p: p["task0_reuse_discovery"].update({"classification":"EXTEND_TRANSVERSAL","owner_state":"UNRESOLVED"}), "EXTEND_TRANSVERSAL_OWNER_UNRESOLVED")
     neg("precondition_without_resolver", lambda p: p["implementation_preconditions"][0].__setitem__("exact_resolver", None), "PRECONDITION_RESOLVER_MISSING")
