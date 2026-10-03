@@ -2,9 +2,9 @@
   "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
   "cases": [
     {
-      "case_id": "RC001_N12_DYNAMIC_SOURCE_SELECTORS",
+      "case_id": "IG_CV_M6_1_COMPACT_SOURCE_RECEIPT",
       "candidate_ref": "HEAD",
-      "candidate_path": "supabase/migrations/20261003183500_ig_rc001_n12_dynamic_source_selectors_v1.sql",
+      "candidate_path": "supabase/migrations/20261003190000_ig_cv_m6_1_compact_source_receipt_v1.sql",
       "screen_id": 52,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
