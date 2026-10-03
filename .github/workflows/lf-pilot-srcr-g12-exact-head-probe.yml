@@ -1,0 +1,48 @@
+name: LF Pilot SRCR G11 G12 Exact Head Probe
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/lf-pilot-srcr-g12-exact-head-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-g11-g12:
+    name: Execute G11 + G12 exact-head deterministic regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact G12 candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: 5ddb038ce06221a83c0f35f9870788348e2507a0
+          fetch-depth: 30
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify exact G12 over merged G11
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "5ddb038ce06221a83c0f35f9870788348e2507a0"
+          git merge-base --is-ancestor "7216843bcf8bef39e90f31cefa5a33b36fb15a10" HEAD
+          echo "G11_MERGED_BASE=7216843bcf8bef39e90f31cefa5a33b36fb15a10"
+          echo "G12_EXACT_HEAD=$(git rev-parse HEAD)"
+
+      - name: Execute G11 deterministic acceptance regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/s30_pilot_srcr_g11/test_g11_failure_injection_247_acceptance_candidate.py
+
+      - name: Execute G12 state-authority regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/s30_pilot_srcr_g12/test_g12_state_authority_candidate.py
