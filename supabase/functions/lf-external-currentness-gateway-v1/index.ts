@@ -8,6 +8,7 @@ import {
   requireEdgeReadCredential,
   type GatewayIdentity,
 } from "./auth.ts";
+import { buildEnabledBaselineRpcRequest } from "./baseline.mjs";
 
 const PROJECT_REF = "mhwmirqcgxxukpctffuv";
 const ISSUER = "https://token.actions.githubusercontent.com";
@@ -93,7 +94,7 @@ async function inventoryRpc(name: string, args: Record<string, unknown>): Promis
     const message = payload && typeof payload === "object" && !Array.isArray(payload)
       ? String((payload as Record<string, unknown>).message ?? "")
       : "";
-    if (/^(REPORT_|OBSERVATION_)/.test(message)) throw new GatewayError(message, 409);
+    if (/^(REPORT_|OBSERVATION_|BASELINE_)/.test(message)) throw new GatewayError(message, 409);
     throw new GatewayError(`DB_RPC_FAILED:${name}:${response.status}`, 502);
   }
   return payload;
@@ -232,6 +233,31 @@ async function writeObservation(body: Record<string, unknown>, identity: Gateway
   });
 }
 
+async function writeBaseline(body: Record<string, unknown>, identity: GatewayIdentity): Promise<Response> {
+  let plan: { phase: string; rpc: string; args: Record<string, unknown> };
+  try {
+    plan = buildEnabledBaselineRpcRequest(
+      body,
+      identity,
+      Deno.env.get("LF_BASELINE_WRITE_ENABLED"),
+    ) as {
+      phase: string;
+      rpc: string;
+      args: Record<string, unknown>;
+    };
+  } catch (error) {
+    const code = error instanceof Error ? error.message : String(error);
+    throw new GatewayError(code, 409);
+  }
+  const result = await inventoryRpc(plan.rpc, plan.args);
+  return json({
+    outcome: "WRITE_BASELINE_RESULT",
+    phase: plan.phase,
+    caller: identity,
+    result,
+  });
+}
+
 Deno.serve(async (req: Request) => {
   try {
     if (req.method !== "POST") return json({ outcome: "BLOCKED", code: "METHOD_NOT_ALLOWED" }, 405);
@@ -243,6 +269,7 @@ Deno.serve(async (req: Request) => {
 
     if (body.action === "read_snapshot") return await readSnapshot(identity);
     if (body.action === "write_observation") return await writeObservation(body, identity);
+    if (body.action === "write_baseline") return await writeBaseline(body, identity);
     return json({ outcome: "BLOCKED", code: "ACTION_NOT_ALLOWED" }, 400);
   } catch (error) {
     const code = error instanceof Error ? error.message : String(error);

@@ -16,6 +16,8 @@ export type GatewayIdentity = {
   eventName: string;
   runId: string;
   workflowSha: string;
+  sha: string;
+  actor: string;
 };
 
 function asString(value: unknown): string {
@@ -46,7 +48,14 @@ export function validateGatewayClaims(payload: Claims): GatewayIdentity {
 
   const runId = asString(payload.run_id);
   const workflowSha = asString(payload.workflow_sha);
-  if (!runId || !/^[0-9a-f]{40}$/.test(workflowSha)) {
+  const sha = asString(payload.sha);
+  const actor = asString(payload.actor);
+  if (
+    !runId ||
+    !/^[0-9a-f]{40}$/.test(workflowSha) ||
+    !/^[0-9a-f]{40}$/.test(sha) ||
+    !actor
+  ) {
     throw new Error("OIDC_RUN_IDENTITY_INCOMPLETE");
   }
 
@@ -58,6 +67,8 @@ export function validateGatewayClaims(payload: Claims): GatewayIdentity {
     eventName,
     runId,
     workflowSha,
+    sha,
+    actor,
   };
 }
 

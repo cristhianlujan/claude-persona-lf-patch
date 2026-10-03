@@ -7,6 +7,20 @@ on:
   schedule:
     - cron: '17 */6 * * *'
   workflow_dispatch:
+    inputs:
+      baseline_sync_mode:
+        description: External baseline sync mode
+        required: false
+        default: PLAN_ONLY
+        type: choice
+        options:
+          - PLAN_ONLY
+          - APPLY
+      approve_sync_key:
+        description: Exact sync_key to approve when APPLY returns REQUIRES_APPROVAL
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -20,17 +34,43 @@ jobs:
   detect-external-currentness:
     name: Detect external currentness
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 18
     env:
       GATEWAY_URL: https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-external-currentness-gateway-v1
       DETECTOR_PATH: sandbox/lf_contract_gate_test/transversal_assets/global_technical_inventory/detect_external_currentness_v1.py
+      DELTA_BUILDER_PATH: sandbox/lf_contract_gate_test/transversal_assets/global_technical_inventory/build_external_baseline_delta_v1.py
       SCOPE_POLICY_PATH: sandbox/lf_contract_gate_test/transversal_assets/global_technical_inventory/evidence/LF_EXTERNAL_CURRENTNESS_20261001171547971/inputs/scope_policy.json
+      BASELINE_SYNC_MODE: ${{ github.event.inputs.baseline_sync_mode || 'PLAN_ONLY' }}
+      APPROVE_SYNC_KEY: ${{ github.event.inputs.approve_sync_key || '' }}
 
     steps:
-      - name: Checkout exact main revision
+      - name: Checkout exact main revision with history
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+
+      - name: Validate baseline sync controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$BASELINE_SYNC_MODE" in
+            PLAN_ONLY|APPLY) ;;
+            *) echo "BASELINE_SYNC_MODE_INVALID:$BASELINE_SYNC_MODE"; exit 1 ;;
+          esac
+          if [[ -n "$APPROVE_SYNC_KEY" ]]; then
+            [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]] || {
+              echo "BASELINE_APPROVAL_EVENT_NOT_ALLOWED"
+              exit 1
+            }
+            [[ "$APPROVE_SYNC_KEY" =~ ^[0-9a-f]{64}$ ]] || {
+              echo "BASELINE_APPROVAL_SYNC_KEY_INVALID"
+              exit 1
+            }
+            [[ "$BASELINE_SYNC_MODE" == "APPLY" ]] || {
+              echo "BASELINE_APPROVAL_REQUIRES_APPLY"
+              exit 1
+            }
+          fi
 
       - name: Acquire gateway OIDC token
         id: oidc
@@ -38,7 +78,9 @@ jobs:
         run: |
           set -euo pipefail
           response="$(
-            curl --fail-with-body --silent --show-error               -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}"               "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=lf-external-currentness-gateway-v1"
+            curl --fail-with-body --silent --show-error \
+              -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=lf-external-currentness-gateway-v1"
           )"
           token="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"$response")"
           test -n "$token"
@@ -52,7 +94,14 @@ jobs:
         run: |
           set -euo pipefail
           status="$(
-            curl --silent --show-error               -o "$RUNNER_TEMP/read_snapshot.json"               -w '%{http_code}'               -X POST               -H "Authorization: Bearer ${OIDC_TOKEN}"               -H 'Content-Type: application/json'               --data '{"action":"read_snapshot"}'               "$GATEWAY_URL"
+            curl --silent --show-error \
+              -o "$RUNNER_TEMP/read_snapshot.json" \
+              -w '%{http_code}' \
+              -X POST \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              --data '{"action":"read_snapshot"}' \
+              "$GATEWAY_URL"
           )"
           python3 - "$status" "$RUNNER_TEMP/read_snapshot.json" <<'PY'
           import json
@@ -84,7 +133,13 @@ jobs:
           status=""
           for attempt in 1 2 3 4; do
             status="$(
-              curl --silent --show-error                 -D "$headers"                 -o "$body"                 -w '%{http_code}'                 -H 'Accept: application/vnd.github+json'                 -H 'X-GitHub-Api-Version: 2022-11-28'                 "$url"
+              curl --silent --show-error \
+                -D "$headers" \
+                -o "$body" \
+                -w '%{http_code}' \
+                -H 'Accept: application/vnd.github+json' \
+                -H 'X-GitHub-Api-Version: 2022-11-28' \
+                "$url"
             )"
             if [[ "$status" == "200" ]]; then
               break
@@ -117,7 +172,13 @@ jobs:
           set -euo pipefail
           cp "$SCOPE_POLICY_PATH" "$RUNNER_TEMP/scope_policy.json"
           set +e
-          python3 "$DETECTOR_PATH"             --git-tree "$RUNNER_TEMP/git_tree.json"             --repo-inventory "$RUNNER_TEMP/repo_inventory.json"             --edge-runtime "$RUNNER_TEMP/edge_runtime.json"             --edge-inventory "$RUNNER_TEMP/edge_inventory.json"             --scope-policy "$RUNNER_TEMP/scope_policy.json"             --output "$RUNNER_TEMP/report.raw.json"
+          python3 "$DETECTOR_PATH" \
+            --git-tree "$RUNNER_TEMP/git_tree.json" \
+            --repo-inventory "$RUNNER_TEMP/repo_inventory.json" \
+            --edge-runtime "$RUNNER_TEMP/edge_runtime.json" \
+            --edge-inventory "$RUNNER_TEMP/edge_inventory.json" \
+            --scope-policy "$RUNNER_TEMP/scope_policy.json" \
+            --output "$RUNNER_TEMP/report.raw.json"
           detector_rc=$?
           set -e
           test -s "$RUNNER_TEMP/report.raw.json"
@@ -190,7 +251,8 @@ jobs:
           }, sort_keys=True))
           PY
 
-      - name: Persist governed observation
+      - name: Persist governed observation in PLAN_ONLY
+        if: env.BASELINE_SYNC_MODE == 'PLAN_ONLY'
         shell: bash
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
@@ -208,7 +270,14 @@ jobs:
           )
           PY
           status="$(
-            curl --silent --show-error               -o "$RUNNER_TEMP/write_observation.response.json"               -w '%{http_code}'               -X POST               -H "Authorization: Bearer ${OIDC_TOKEN}"               -H 'Content-Type: application/json'               --data-binary "@$RUNNER_TEMP/write_observation.request.json"               "$GATEWAY_URL"
+            curl --silent --show-error \
+              -o "$RUNNER_TEMP/write_observation.response.json" \
+              -w '%{http_code}' \
+              -X POST \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              --data-binary "@$RUNNER_TEMP/write_observation.request.json" \
+              "$GATEWAY_URL"
           )"
           python3 - "$status" "$RUNNER_TEMP/write_observation.response.json" <<'PY'
           import json
@@ -219,6 +288,445 @@ jobs:
           payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
           if status != 200 or payload.get("outcome") != "WRITE_OBSERVATION_RESULT":
               raise SystemExit(f"GATEWAY_WRITE_OBSERVATION_FAILED:http={status}:code={payload.get('code')}")
+          print(json.dumps({"outcome": payload.get("outcome"), "result": payload.get("result")}, sort_keys=True))
+          PY
+
+      - name: Build exact external baseline delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$DELTA_BUILDER_PATH" \
+            --report "$RUNNER_TEMP/report.json" \
+            --checkout "$GITHUB_WORKSPACE" \
+            --github-sha "$GITHUB_SHA" \
+            --output "$RUNNER_TEMP/baseline_delta.json"
+
+      - name: Publish baseline plan summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/baseline_delta.json" "$GITHUB_STEP_SUMMARY" <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          delta = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          repo = delta["counts"]["repository"]
+          edge = delta["counts"]["edge"]
+          lines = [
+              "## External baseline delta",
+              "",
+              f"- mode: `{os.environ['BASELINE_SYNC_MODE']}`",
+              f"- observed_main_sha: `{delta['observed_main_sha']}`",
+              f"- sync_key: `{delta['sync_key']}`",
+              f"- repo: NEW={repo['NEW']} STALE={repo['STALE']} MISSING={repo['MISSING']}",
+              f"- edge: NEW={edge['NEW']} STALE={edge['STALE']} MISSING={edge['MISSING']}",
+              f"- runtime_without_source: {delta['counts']['runtime_without_source']}",
+              f"- total delta items: {delta['counts']['total']}",
+              "",
+              "### Sample (first 5 items)",
+              "```json",
+              json.dumps(delta["items"][:5], indent=2, sort_keys=True, ensure_ascii=False),
+              "```",
+          ]
+          with Path(sys.argv[2]).open("a", encoding="utf-8") as handle:
+              handle.write("\n".join(lines) + "\n")
+          print(json.dumps({"sync_key": delta["sync_key"], "counts": delta["counts"]}, sort_keys=True))
+          PY
+
+      - name: Begin governed baseline sync in APPLY
+        id: baseline_begin
+        if: env.BASELINE_SYNC_MODE == 'APPLY'
+        shell: bash
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/baseline_delta.json" "$RUNNER_TEMP/baseline_begin.request.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          delta = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          repo = delta["counts"]["repository"]
+          edge = delta["counts"]["edge"]
+          body = {
+              "action": "write_baseline",
+              "phase": "begin",
+              "observed_main_sha": delta["observed_main_sha"],
+              "report_sha256": delta["report_sha256"],
+              "repo_new": repo["NEW"],
+              "repo_stale": repo["STALE"],
+              "repo_missing": repo["MISSING"],
+              "edge_new": edge["NEW"],
+              "edge_stale": edge["STALE"],
+              "edge_missing": edge["MISSING"],
+              "runtime_without_source_count": delta["counts"]["runtime_without_source"],
+          }
+          Path(sys.argv[2]).write_text(json.dumps(body, separators=(",", ":")) + "\n", encoding="utf-8")
+          PY
+          status="$(
+            curl --silent --show-error \
+              -o "$RUNNER_TEMP/baseline_begin.response.json" \
+              -w '%{http_code}' \
+              -X POST \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              --data-binary "@$RUNNER_TEMP/baseline_begin.request.json" \
+              "$GATEWAY_URL"
+          )"
+          python3 - "$status" "$RUNNER_TEMP/baseline_begin.response.json" "$RUNNER_TEMP/baseline_delta.json" "$GITHUB_OUTPUT" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          status = int(sys.argv[1])
+          payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          delta = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
+          if status != 200 or payload.get("outcome") != "WRITE_BASELINE_RESULT" or payload.get("phase") != "begin":
+              raise SystemExit(f"BASELINE_BEGIN_FAILED:http={status}:code={payload.get('code')}")
           result = payload.get("result")
-          print(json.dumps({"outcome": payload.get("outcome"), "result": result}, sort_keys=True))
+          row = result[0] if isinstance(result, list) and len(result) == 1 else result
+          if not isinstance(row, dict):
+              raise SystemExit("BASELINE_BEGIN_RESPONSE_INVALID")
+          if row.get("sync_key") != delta.get("sync_key"):
+              raise SystemExit("BASELINE_BEGIN_SYNC_KEY_MISMATCH")
+          if row.get("batch_size") != 100:
+              raise SystemExit(f"BASELINE_BATCH_SIZE_UNEXPECTED:{row.get('batch_size')}")
+          requires = row.get("requires_approval") is True
+          with Path(sys.argv[4]).open("a", encoding="utf-8") as output:
+              output.write(f"sync_key={row['sync_key']}\n")
+              output.write(f"requires_approval={'true' if requires else 'false'}\n")
+              output.write(f"sync_state={row.get('sync_state')}\n")
+          print(json.dumps(row, sort_keys=True))
+          PY
+
+      - name: Stage baseline delta in batches of 100
+        if: env.BASELINE_SYNC_MODE == 'APPLY'
+        shell: bash
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          SYNC_KEY: ${{ steps.baseline_begin.outputs.sync_key }}
+        run: |
+          set -euo pipefail
+          rm -rf "$RUNNER_TEMP/baseline_batches"
+          mkdir -p "$RUNNER_TEMP/baseline_batches"
+          python3 - "$RUNNER_TEMP/baseline_delta.json" "$RUNNER_TEMP/baseline_batches" "$SYNC_KEY" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          delta = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          target = Path(sys.argv[2])
+          sync_key = sys.argv[3]
+          items = delta["items"]
+          for offset in range(0, len(items), 100):
+              batch_no = offset // 100 + 1
+              body = {
+                  "action": "write_baseline",
+                  "phase": "stage_batch",
+                  "sync_key": sync_key,
+                  "batch_no": batch_no,
+                  "items": items[offset:offset + 100],
+              }
+              (target / f"{batch_no:04d}.json").write_text(
+                  json.dumps(body, separators=(",", ":"), ensure_ascii=False) + "\n",
+                  encoding="utf-8",
+              )
+          PY
+          staged=0
+          for request in "$RUNNER_TEMP"/baseline_batches/*.json; do
+            response="${request%.json}.response.json"
+            status="$(
+              curl --silent --show-error \
+                -o "$response" \
+                -w '%{http_code}' \
+                -X POST \
+                -H "Authorization: Bearer ${OIDC_TOKEN}" \
+                -H 'Content-Type: application/json' \
+                --data-binary "@$request" \
+                "$GATEWAY_URL"
+            )"
+            staged="$(python3 - "$status" "$response" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          status = int(sys.argv[1])
+          payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          if status != 200 or payload.get("outcome") != "WRITE_BASELINE_RESULT" or payload.get("phase") != "stage_batch":
+              raise SystemExit(f"BASELINE_STAGE_FAILED:http={status}:code={payload.get('code')}")
+          result = payload.get("result")
+          row = result[0] if isinstance(result, list) and len(result) == 1 else result
+          if not isinstance(row, dict):
+              raise SystemExit("BASELINE_STAGE_RESPONSE_INVALID")
+          print(row.get("staged_item_count"))
+          PY
+            )"
+          done
+          expected="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["counts"]["total"])' "$RUNNER_TEMP/baseline_delta.json")"
+          [[ "$staged" == "$expected" ]] || {
+            echo "BASELINE_STAGE_COUNT_MISMATCH:expected=$expected actual=$staged"
+            exit 1
+          }
+
+      - name: Stop APPLY at approval boundary when no approval key was supplied
+        if: env.BASELINE_SYNC_MODE == 'APPLY' && steps.baseline_begin.outputs.requires_approval == 'true' && env.APPROVE_SYNC_KEY == ''
+        shell: bash
+        env:
+          SYNC_KEY: ${{ steps.baseline_begin.outputs.sync_key }}
+        run: |
+          set -euo pipefail
+          {
+            echo ""
+            echo "### APPLY stopped at governed approval boundary"
+            echo "- state: \`REQUIRES_APPROVAL\`"
+            echo "- sync_key: \`$SYNC_KEY\`"
+            echo "- no finalize or currentness post-write was attempted"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "BASELINE_REQUIRES_APPROVAL:$SYNC_KEY"
+
+      - name: Approve governed baseline sync
+        id: baseline_approve
+        if: env.BASELINE_SYNC_MODE == 'APPLY' && steps.baseline_begin.outputs.requires_approval == 'true' && env.APPROVE_SYNC_KEY != ''
+        shell: bash
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          SYNC_KEY: ${{ steps.baseline_begin.outputs.sync_key }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]] || {
+            echo "BASELINE_APPROVAL_EVENT_NOT_ALLOWED"
+            exit 1
+          }
+          [[ "$APPROVE_SYNC_KEY" == "$SYNC_KEY" ]] || {
+            echo "BASELINE_APPROVAL_SYNC_KEY_MISMATCH"
+            exit 1
+          }
+          python3 - "$APPROVE_SYNC_KEY" "$RUNNER_TEMP/baseline_approve.request.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          Path(sys.argv[2]).write_text(
+              json.dumps({
+                  "action": "write_baseline",
+                  "phase": "approve",
+                  "approve_sync_key": sys.argv[1],
+              }, separators=(",", ":")) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          status="$(
+            curl --silent --show-error \
+              -o "$RUNNER_TEMP/baseline_approve.response.json" \
+              -w '%{http_code}' \
+              -X POST \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              --data-binary "@$RUNNER_TEMP/baseline_approve.request.json" \
+              "$GATEWAY_URL"
+          )"
+          python3 - "$status" "$RUNNER_TEMP/baseline_approve.response.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          status = int(sys.argv[1])
+          payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          if status != 200 or payload.get("outcome") != "WRITE_BASELINE_RESULT" or payload.get("phase") != "approve":
+              raise SystemExit(f"BASELINE_APPROVE_FAILED:http={status}:code={payload.get('code')}")
+          result = payload.get("result")
+          row = result[0] if isinstance(result, list) and len(result) == 1 else result
+          if not isinstance(row, dict) or row.get("sync_state") != "APPROVED":
+              raise SystemExit("BASELINE_APPROVE_RESPONSE_INVALID")
+          print(json.dumps(row, sort_keys=True))
+          PY
+          echo "approved=true" >> "$GITHUB_OUTPUT"
+
+      - name: Reject approval key when approval is not required
+        if: env.BASELINE_SYNC_MODE == 'APPLY' && steps.baseline_begin.outputs.requires_approval == 'false' && env.APPROVE_SYNC_KEY != ''
+        shell: bash
+        run: |
+          echo "BASELINE_APPROVAL_NOT_REQUIRED"
+          exit 1
+
+      - name: Finalize governed baseline sync
+        id: baseline_finalize
+        if: env.BASELINE_SYNC_MODE == 'APPLY' && (steps.baseline_begin.outputs.requires_approval == 'false' || steps.baseline_approve.outputs.approved == 'true')
+        shell: bash
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          SYNC_KEY: ${{ steps.baseline_begin.outputs.sync_key }}
+        run: |
+          set -euo pipefail
+          python3 - "$SYNC_KEY" "$RUNNER_TEMP/baseline_finalize.request.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          Path(sys.argv[2]).write_text(
+              json.dumps({
+                  "action": "write_baseline",
+                  "phase": "finalize",
+                  "sync_key": sys.argv[1],
+              }, separators=(",", ":")) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          status="$(
+            curl --silent --show-error \
+              -o "$RUNNER_TEMP/baseline_finalize.response.json" \
+              -w '%{http_code}' \
+              -X POST \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              --data-binary "@$RUNNER_TEMP/baseline_finalize.request.json" \
+              "$GATEWAY_URL"
+          )"
+          python3 - "$status" "$RUNNER_TEMP/baseline_finalize.response.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          status = int(sys.argv[1])
+          payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          if status != 200 or payload.get("outcome") != "WRITE_BASELINE_RESULT" or payload.get("phase") != "finalize":
+              raise SystemExit(f"BASELINE_FINALIZE_FAILED:http={status}:code={payload.get('code')}")
+          result = payload.get("result")
+          row = result[0] if isinstance(result, list) and len(result) == 1 else result
+          if not isinstance(row, dict) or row.get("outcome") not in ("APPLIED", "ALREADY_COMPLETED"):
+              raise SystemExit("BASELINE_FINALIZE_RESPONSE_INVALID")
+          print(json.dumps(row, sort_keys=True))
+          PY
+          echo "finalized=true" >> "$GITHUB_OUTPUT"
+
+      - name: Acquire fresh OIDC token after baseline finalize
+        id: oidc_after
+        if: env.BASELINE_SYNC_MODE == 'APPLY' && steps.baseline_finalize.outputs.finalized == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          response="$(
+            curl --fail-with-body --silent --show-error \
+              -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=lf-external-currentness-gateway-v1"
+          )"
+          token="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"$response")"
+          test -n "$token"
+          echo "::add-mask::$token"
+          printf 'token=%s\n' "$token" >> "$GITHUB_OUTPUT"
+
+      - name: Read post-baseline governed snapshot
+        if: env.BASELINE_SYNC_MODE == 'APPLY' && steps.baseline_finalize.outputs.finalized == 'true'
+        shell: bash
+        env:
+          OIDC_TOKEN: ${{ steps.oidc_after.outputs.token }}
+        run: |
+          set -euo pipefail
+          status="$(
+            curl --silent --show-error \
+              -o "$RUNNER_TEMP/read_snapshot.after.json" \
+              -w '%{http_code}' \
+              -X POST \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              --data '{"action":"read_snapshot"}' \
+              "$GATEWAY_URL"
+          )"
+          python3 - "$status" "$RUNNER_TEMP/read_snapshot.after.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          status = int(sys.argv[1])
+          payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          if status != 200 or payload.get("outcome") != "SNAPSHOT":
+              raise SystemExit(f"GATEWAY_POST_BASELINE_READ_FAILED:http={status}:code={payload.get('code')}")
+          for key, filename in (
+              ("repo_inventory", "repo_inventory.after.json"),
+              ("edge_runtime", "edge_runtime.after.json"),
+              ("edge_inventory", "edge_inventory.after.json"),
+          ):
+              Path(Path(sys.argv[2]).parent / filename).write_text(
+                  json.dumps(payload.get(key), sort_keys=True, ensure_ascii=False) + "\n",
+                  encoding="utf-8",
+              )
+          PY
+
+      - name: Detect post-baseline currentness
+        if: env.BASELINE_SYNC_MODE == 'APPLY' && steps.baseline_finalize.outputs.finalized == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$DETECTOR_PATH" \
+            --git-tree "$RUNNER_TEMP/git_tree.json" \
+            --repo-inventory "$RUNNER_TEMP/repo_inventory.after.json" \
+            --edge-runtime "$RUNNER_TEMP/edge_runtime.after.json" \
+            --edge-inventory "$RUNNER_TEMP/edge_inventory.after.json" \
+            --scope-policy "$RUNNER_TEMP/scope_policy.json" \
+            --output "$RUNNER_TEMP/report.after.raw.json"
+          detector_version="$(git rev-parse "${GITHUB_SHA}:${DETECTOR_PATH}")"
+          export DETECTOR_VERSION="$detector_version"
+          python3 - "$RUNNER_TEMP/report.after.raw.json" "$RUNNER_TEMP/scope_policy.json" "$RUNNER_TEMP/report.after.json" <<'PY'
+          import hashlib
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          def digest(value):
+              return hashlib.sha256(json.dumps(
+                  value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+              ).encode("utf-8")).hexdigest()
+
+          raw_path, policy_path, output_path = map(Path, sys.argv[1:4])
+          report = json.loads(raw_path.read_text(encoding="utf-8"))
+          policy = json.loads(policy_path.read_text(encoding="utf-8"))
+          scope_hash = digest(policy)
+          if report.get("repository", {}).get("observed_main_sha") != os.environ["GITHUB_SHA"]:
+              raise SystemExit("REPORT_MAIN_SHA_MISMATCH")
+          if report.get("repository", {}).get("tree_truncated") is True:
+              raise SystemExit("REPORT_TREE_TRUNCATED")
+          if report.get("pass_unknown_currentness") is not True:
+              raise SystemExit("REPORT_UNKNOWN_CURRENTNESS")
+          if report.get("input_sha256", {}).get("scope_policy") != scope_hash:
+              raise SystemExit("REPORT_SCOPE_POLICY_DIGEST_MISMATCH")
+          report["observed_main_sha"] = os.environ["GITHUB_SHA"]
+          report["detector_version"] = os.environ["DETECTOR_VERSION"]
+          report["scope_policy_hash"] = scope_hash
+          output_path.write_text(json.dumps(report, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
+          PY
+
+      - name: Persist post-baseline governed observation
+        if: env.BASELINE_SYNC_MODE == 'APPLY' && steps.baseline_finalize.outputs.finalized == 'true'
+        shell: bash
+        env:
+          OIDC_TOKEN: ${{ steps.oidc_after.outputs.token }}
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/report.after.json" "$RUNNER_TEMP/write_observation.after.request.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          Path(sys.argv[2]).write_text(
+              json.dumps({"action": "write_observation", "report": report}, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          status="$(
+            curl --silent --show-error \
+              -o "$RUNNER_TEMP/write_observation.after.response.json" \
+              -w '%{http_code}' \
+              -X POST \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              --data-binary "@$RUNNER_TEMP/write_observation.after.request.json" \
+              "$GATEWAY_URL"
+          )"
+          python3 - "$status" "$RUNNER_TEMP/write_observation.after.response.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          status = int(sys.argv[1])
+          payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          if status != 200 or payload.get("outcome") != "WRITE_OBSERVATION_RESULT":
+              raise SystemExit(f"GATEWAY_POST_BASELINE_WRITE_FAILED:http={status}:code={payload.get('code')}")
+          print(json.dumps({"outcome": payload.get("outcome"), "result": payload.get("result")}, sort_keys=True))
           PY
