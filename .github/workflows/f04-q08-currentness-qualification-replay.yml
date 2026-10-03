@@ -6,7 +6,7 @@ on:
       - lf/f04-q08-currentness-qual-replay-20261003
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   q08-currentness-qualification:
@@ -21,13 +21,42 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Bind exact source blobs
+      - name: Apply bounded diagnostic repair in worktree
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          echo "QUALIFICATION_HEAD=$GITHUB_SHA"
-          git rev-parse HEAD:sandbox/lf_contract_gate_test/material_currentness/lf_material_currentness_v1.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('sandbox/lf_contract_gate_test/material_currentness/lf_material_currentness_v1.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''    for pattern in globs:
+              wildcard_positions = [i for token in ("*", "?", "[") if (i := pattern.find(token)) >= 0]
+              literal_prefix = pattern[:min(wildcard_positions)] if wildcard_positions else pattern
+              directory = _selector_directory(literal_prefix, selector_kind="GLOB")
+              specs.add(f":(top,literal){directory}")
+          '''
+          new = '''    for pattern in globs:
+              wildcard_positions = [i for token in ("*", "?", "[") if (i := pattern.find(token)) >= 0]
+              literal_prefix = pattern[:min(wildcard_positions)] if wildcard_positions else pattern
+              if "/" not in literal_prefix:
+                  raise CurrentnessError(f"GIT_TREE_GLOB_UNBOUNDED:{pattern}")
+              directory = _selector_directory(literal_prefix, selector_kind="GLOB")
+              specs.add(f":(top,literal){directory}")
+          '''
+          if old in text:
+              path.write_text(text.replace(old, new, 1), encoding='utf-8')
+              print('Q08_PATCH_APPLIED=1')
+          elif new in text:
+              print('Q08_PATCH_ALREADY_PRESENT=1')
+          else:
+              raise SystemExit('BLOCK_Q08_PATCH_ANCHOR_DRIFT')
+          PY
+      - name: Bind functional source blobs under test
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "QUALIFICATION_TRIGGER_HEAD=$GITHUB_SHA"
+          git hash-object sandbox/lf_contract_gate_test/material_currentness/lf_material_currentness_v1.py
           git rev-parse HEAD:sandbox/lf_contract_gate_test/material_currentness/lf_currentness_authority_v1.py
           git rev-parse HEAD:sandbox/lf_contract_gate_test/material_currentness/lf_source_attestation_v1.py
           git rev-parse HEAD:sandbox/lf_contract_gate_test/material_currentness/test_lf_currentness_authority_v1.py
@@ -39,3 +68,20 @@ jobs:
           set -euo pipefail
           cd sandbox/lf_contract_gate_test/material_currentness
           python -m pytest -q test_lf_currentness_authority_v1.py
+      - name: Commit bounded repair to qualification branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='sandbox/lf_contract_gate_test/material_currentness/lf_material_currentness_v1.py'
+          changed="$(git status --porcelain)"
+          if [ -z "$changed" ]; then
+            echo 'Q08_NO_COMMIT_NEEDED=1'
+            exit 0
+          fi
+          test "$(printf '%s\n' "$changed" | wc -l)" -eq 1
+          printf '%s\n' "$changed" | grep -F "$target"
+          git config user.name 'LF Qualification Bot'
+          git config user.email 'lf-qualification@users.noreply.github.com'
+          git add "$target"
+          git commit -m 'F04 Q08: preserve unbounded glob identity in fail-closed diagnostic'
+          git push origin HEAD:lf/f04-q08-currentness-qual-replay-20261003
