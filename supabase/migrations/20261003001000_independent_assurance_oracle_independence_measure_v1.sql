@@ -299,7 +299,6 @@ BEGIN
     'schema_version','LF_CAPABILITY_MANIFEST_V1',
     'capability_code','INDEPENDENT_ASSURANCE',
     'version','1.0.0',
-    'owner','SUPER_ADMIN',
     'contract',jsonb_build_object(
       'input','dependency_schema + producer_root + reviewer_root + optional provider-bound data/author evidence + adjudicated exceptions',
       'output','LF_INDEPENDENT_ASSURANCE_MEASURE_V1',
@@ -309,6 +308,11 @@ BEGIN
       'mode','SUPABASE_NATIVE_READ_ONLY_MEASURE_PLUS_EXISTING_REVIEW_OPERATION',
       'measure_function','public.lf_independent_assurance_measure_v1',
       'canonical_review_operation','REVISION_INDEPENDIENTE_ESTRATEGIA_LF'
+    ),
+    'installation',jsonb_build_object(
+      'required',false,
+      'reinstall_required',false,
+      'package_update_mode','DATABASE_NATIVE_CUTOVER'
     ),
     'dependencies',jsonb_build_object(
       'governance',jsonb_build_array('LF_GOVERNANCE','ORCHESTRATOR_EXECUTION_GUARD_V1'),
@@ -334,6 +338,11 @@ BEGIN
       'entrypoint','public.fn_lf_capability_bind_from_orchestrator_v1',
       'measure','public.lf_independent_assurance_measure_v1',
       'docs','sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/README.md'
+    ),
+    'currentness',jsonb_build_object(
+      'authority_ref','github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261003001000_independent_assurance_oracle_independence_measure_v1.sql',
+      'source_revision_immutable',false,
+      'verification','MIGRATION_SOURCE_PARITY_REQUIRED_POST_MERGE'
     ),
     'migration',jsonb_build_object(
       'work_code','PAULO-035',
