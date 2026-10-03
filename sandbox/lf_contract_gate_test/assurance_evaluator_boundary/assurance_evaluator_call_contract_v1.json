@@ -2,7 +2,7 @@
   "schema_version": "lf-assurance-evaluator-call-contract/v1",
   "capability_code": "ASSURANCE_EVALUATOR",
   "owner_scope": "SUPER_ADMIN",
-  "lifecycle_state": "CURRENT_SUBJECT_SCOPED_FAIL_CLOSED",
+  "lifecycle_state": "CURRENT_AVAILABLE_EXECUTION_DEFERRED",
   "canonical_caller": "ORCHESTRATOR",
   "entry_guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
   "canonical_entrypoint": {
@@ -32,6 +32,7 @@
   },
   "required_call_sequence": [
     "ROUTER_CHANGESET_GOVERNANCE determines applicability",
+    "PASE pre-activation/activation gates authorize entry-guard enforcement",
     "public.fn_lf_orchestrator_dispatch_receipt_v1 issues exact dispatch receipt",
     "public.fn_lf_capability_bind_from_orchestrator_v1 validates ORCHESTRATOR_EXECUTION_GUARD_V1 and binds CURRENT",
     "ASSURANCE_ACTIVATION_GATE_V1 validates exactly one ACTIVE exact subject binding",
@@ -67,9 +68,13 @@
   "current_expected_state": {
     "capability_registry": "ACTIVE",
     "capability_current_present": true,
+    "entry_guard_contract_declared": true,
+    "entry_guard_enforcement_before_active_binding": "REQUIRED",
+    "entry_guard_enforcement_currently_deferred": true,
+    "entry_guard_activation_authority": "PASE_F06_F09_F10_PLUS_EXPLICIT_HUMAN_GO",
+    "active_subject_binding_count": 0,
     "subject_binding_policy": "EXACT_ACTIVE_BINDING_ONLY",
     "wildcard_active_binding_policy": "BLOCK",
-    "normal_pase_result_without_router_applicability": "NOT_APPLICABLE_NO_EXECUTION",
     "global_assurance_gate": false,
     "assurance_completeness_owner": false
   },
@@ -86,6 +91,8 @@
     "no direct database discovery or authority mutation is owned by the evaluator core"
   ],
   "explicit_non_activation": [
+    "CURRENT_POINTER_DOES_NOT_AUTHORIZE_EXECUTION",
+    "NO_ACTIVE_SUBJECT_BINDING_BEFORE_PASE_ACTIVATION_AUTHORITY",
     "NO_GLOBAL_PASE_CONTROL",
     "NO_WILDCARD_SUBJECT_BINDING",
     "NO_ASSURANCE_COMPLETENESS_REINTRODUCTION",
