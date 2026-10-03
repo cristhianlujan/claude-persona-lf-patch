@@ -1,0 +1,32 @@
+{
+  "schema_version": "srcr-benchmark-model-contract/v1",
+  "model_code": "M11_RECONSTRUCTED_SRCR_V0_1",
+  "producer_family": "GPT",
+  "read_only": true,
+  "oracle_policy": "HIDDEN_UNTIL_RAW_OUTPUT_FROZEN",
+  "input_policy": "BYTE_OR_SEMANTIC_EXACT_AS_DEFINED_BY_CASE",
+  "raw_output_required": true,
+  "batch_1": {
+    "cases": ["RC-001","RC-002","RC-003","RC-004","RC-005","RC-006","RC-007","RC-008","RC-009","RC-010"],
+    "required_order": ["RC-001","RC-002","RC-003","RC-004","RC-005","RC-006","RC-007","RC-008","RC-009","RC-010"],
+    "per_case_execution_order": ["SRCR_V0_6","M11_RECONSTRUCTED_SRCR_V0_1"],
+    "disabled_models": "ALL_OTHER_10_EXTERNAL_MODELS"
+  },
+  "post_freeze_evaluation": [
+    "invariants",
+    "mandatory_findings",
+    "gaps_detected",
+    "false_positives",
+    "root_cause",
+    "proposed_repair",
+    "evidence",
+    "score"
+  ],
+  "mutation_policy": {
+    "production_changes": false,
+    "control_activation": false,
+    "runtime_activation": false,
+    "allowed_effects": ["READ_ONLY","ROLLBACK_ONLY_WHEN_CASE_REQUIRES"]
+  },
+  "freeze_rule": "Do not modify M11 during RC-001..RC-080. Any change creates a new version and separate benchmark candidate."
+}
