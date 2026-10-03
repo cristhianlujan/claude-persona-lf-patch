@@ -1,0 +1,36 @@
+name: PASE Q06 Full Regression Evidence
+
+on:
+  push:
+    branches:
+      - evidence/pase-f04-q06-full-regression-20261003-001
+
+permissions:
+  contents: read
+
+jobs:
+  qualify-full-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact evidence head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+
+      - name: Verify evidence-only delta from qualified main snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin 99aa44c7688d5e06637547b39bf1eeefcaf4f0f5
+          mapfile -t changed < <(git diff --name-only 99aa44c7688d5e06637547b39bf1eeefcaf4f0f5 "${GITHUB_SHA}")
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = ".github/workflows/pase-q06-full-regression-evidence.yml"
+          echo "PASS_Q06_EVIDENCE_ONLY_DELTA=1/1"
+
+      - name: Execute canonical FULL_REGRESSION deterministic suite
+        run: python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_execution_plan_v2.py
+
+      - name: Execute existing FULL_REGRESSION semantic judge P1-P8
+        run: python3 sandbox/lf_contract_gate_test/transversal_assets/full_regression/judge_full_regression_semantics_v1.py
