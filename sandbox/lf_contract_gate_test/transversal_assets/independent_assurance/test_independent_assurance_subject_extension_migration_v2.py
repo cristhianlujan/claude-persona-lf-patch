@@ -72,6 +72,9 @@ def main() -> None:
     assert baseline["capability_registry_prestate"]["current_manifest_sha256"] == "a6f5e2fe21ed305b6d47e8722035685b243cfc4e697ff397d1724e5d34f6c6e8"
     assert "block_t_indep_rollback_active_story_reviews" in rollback_lower
     assert "delete from public.lf_capability_current" in rollback_lower
+    assert "block_t_indep_rollback_current_v1_not_restored" in rollback_lower
+    assert "block_t_indep_rollback_current_pointer_residue" not in rollback_lower
+    assert "version='1.0.0'" in rollback_lower
     assert "drop function if exists public.lf_independent_review_begin_v2" in rollback_lower
     assert "drop function if exists public.lf_record_independent_review_step_v2" in rollback_lower
     assert "applies_to_asset_type='strategy'" in rollback_lower

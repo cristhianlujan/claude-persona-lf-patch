@@ -427,8 +427,19 @@ begin
   end if;
   select count(*) into v_count from public.lf_operation_registry where operation_type='INDEPENDENT_REVIEW';
   if v_count<>1 then raise exception 'BLOCK_T_INDEP_ROLLBACK_OPERATION_COUNT:%',v_count; end if;
-  if exists(select 1 from public.lf_capability_current where capability_code='INDEPENDENT_ASSURANCE') then
-    raise exception 'BLOCK_T_INDEP_ROLLBACK_CURRENT_POINTER_RESIDUE';
+  if not exists(
+    select 1 from public.lf_capability_current
+    where capability_code='INDEPENDENT_ASSURANCE'
+      and version='1.0.0'
+      and manifest_sha256='a6f5e2fe21ed305b6d47e8722035685b243cfc4e697ff397d1724e5d34f6c6e8'
+  ) then
+    raise exception 'BLOCK_T_INDEP_ROLLBACK_CURRENT_V1_NOT_RESTORED';
+  end if;
+  if exists(
+    select 1 from public.lf_capability_current
+    where capability_code='INDEPENDENT_ASSURANCE' and version<>'1.0.0'
+  ) then
+    raise exception 'BLOCK_T_INDEP_ROLLBACK_UNEXPECTED_CURRENT_VERSION';
   end if;
 end
 $post$;
