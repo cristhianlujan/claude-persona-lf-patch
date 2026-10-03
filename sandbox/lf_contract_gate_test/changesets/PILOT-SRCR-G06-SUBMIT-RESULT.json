@@ -1,0 +1,6 @@
+{
+  "solution_ref": "PILOT-SRCR-G06-SUBMIT-RESULT",
+  "paths": {
+    "sandbox/lf_contract_gate_test/s30_pilot_srcr_g06/test_g06_submit_result_candidate.py": "PILOT_GATE_TEST"
+  }
+}
