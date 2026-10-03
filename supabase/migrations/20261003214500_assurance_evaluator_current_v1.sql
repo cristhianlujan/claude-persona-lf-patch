@@ -77,6 +77,52 @@ BEGIN
       'result_states',jsonb_build_array('PASS','FAIL','OPEN','UNPROVEN','FALSE_PASS_RISK'),
       'no_global_gate',true
     ),
+    'delivery',jsonb_build_object(
+      'mode','REPOSITORY_BOUND_PURE_PYTHON_RUNNER',
+      'runner','sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_runner_v1.py',
+      'core','sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_core_v1.py'
+    ),
+    'installation',jsonb_build_object(
+      'required',false,
+      'reinstall_required',false,
+      'package_update_mode','SOURCE_PINNED_CURRENT_POINTER_ONLY'
+    ),
+    'dependencies',jsonb_build_object(
+      'governance',jsonb_build_array('CHANGESET_GOVERNANCE_LF_V1','ORCHESTRATOR_EXECUTION_GUARD_V1'),
+      'tables',jsonb_build_array('public.lf_assurance_claim_catalog','public.lf_assurance_obligation_catalog','public.lf_assurance_defeater_catalog','public.lf_assurance_subject_bindings','public.lf_assurance_evaluations'),
+      'evidence',jsonb_build_array('EVIDENCE_LEDGER','LF_SUPABASE_READBACK_V1')
+    ),
+    'compatibility',jsonb_build_object(
+      'assurance_completeness_reintroduced',false,
+      'global_pase_control',false,
+      'active_subject_binding_count',0,
+      'entry_guard_required_live',false,
+      'runtime_activation',false,
+      'production_activation',false
+    ),
+    'migration',jsonb_build_object(
+      'mode','CAPABILITY_VERSION_AND_CURRENT_POINTER_ONLY',
+      'source_path','supabase/migrations/20261003214500_assurance_evaluator_current_v1.sql',
+      'subject_binding_activation',false,
+      'entry_guard_activation',false
+    ),
+    'rollback',jsonb_build_object(
+      'supported',true,
+      'mode','CURRENT_POINTER_AND_VERSION_ROW_RESTORE',
+      'subject_bindings_untouched',true,
+      'entry_guard_untouched',true
+    ),
+    'usage',jsonb_build_object(
+      'dispatch_entrypoint','public.fn_lf_orchestrator_dispatch_receipt_v1',
+      'bind_entrypoint','public.fn_lf_capability_bind_from_orchestrator_v1',
+      'activation_gate','ASSURANCE_ACTIVATION_GATE_V1',
+      'subject_binding_policy','EXACT_ACTIVE_ONLY'
+    ),
+    'currentness',jsonb_build_object(
+      'authority_ref','github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261003214500_assurance_evaluator_current_v1.sql',
+      'source_revision_immutable',false,
+      'verification','MIGRATION_SOURCE_PARITY_REQUIRED_POST_MERGE'
+    ),
     'source_bundle',jsonb_build_object(
       'base_head','3f275d5f2bc114afe46ef94672cc34d57f33ebf2',
       'core',jsonb_build_object('path','sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_core_v1.py','git_blob_sha1','640a21915751bb31b21a38bf137995faf4872c6b'),
@@ -107,25 +153,11 @@ BEGIN
       'evidence_write_owner',false,
       'pase_closure_owner',false
     ),
-    'compatibility',jsonb_build_object(
-      'assurance_completeness_reintroduced',false,
-      'global_pase_control',false,
-      'active_subject_binding_count',0,
-      'entry_guard_required_live',false,
-      'runtime_activation',false,
-      'production_activation',false
-    ),
     'qualification',jsonb_build_object(
       'core_regression','PASS_16_OF_16',
       'activation_boundary','PASS_9_CHECKS_REPLAYED_TWICE',
       'activation_event_id',19934,
       'exact_blob_pinning',true
-    ),
-    'rollback',jsonb_build_object(
-      'supported',true,
-      'mode','CURRENT_POINTER_AND_VERSION_ROW_RESTORE',
-      'subject_bindings_untouched',true,
-      'entry_guard_untouched',true
     )
   );
   v_manifest_sha := encode(extensions.digest(convert_to(v_manifest::text,'UTF8'),'sha256'),'hex');
