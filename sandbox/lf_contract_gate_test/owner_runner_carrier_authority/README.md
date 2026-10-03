@@ -37,7 +37,7 @@ invocado por el entrypoint canónico:
 
 `public.fn_lf_capability_bind_from_orchestrator_v1(...)`.
 
-El core de este lote valida la forma del readback para no consumir entradas incompletas, pero **esa validación local no autentica el receipt**. El cableado que debe obtener y entregar el readback vivo pertenece a `SADM-PP-L1-009`; no se duplica aquí.
+El core de este lote valida la forma del readback para no consumir entradas incompletas, pero **esa validación local no autentica el receipt**. El cableado que obtiene y entrega el readback vivo pertenece a `SADM-PP-L1-009`; ya está materializado y no se duplica aquí.
 
 El resolver exige como precondición:
 
@@ -47,7 +47,7 @@ El resolver exige como precondición:
 - `guard_code=ORCHESTRATOR_EXECUTION_GUARD_V1`;
 - `orchestrator_execution_id` y `receipt_id` presentes.
 
-Si falta cualquiera, BLOCK. Hasta que `L1-009` materialice el wiring, este paquete permanece candidato/read-only y no es un entrypoint público activo.
+Si falta cualquiera, BLOCK. Aunque `L1-009` ya materializó el wiring de invocación/receipt, este paquete permanece candidato/read-only y no es por sí mismo un entrypoint público activo.
 
 Flujo objetivo:
 
@@ -90,14 +90,13 @@ El edge de inventario no reemplaza el owner contract. La raíz administrativa se
 
 ## Estado de este lote
 
-- source-only;
-- no aplicación Supabase;
-- no fila nueva en `lf_capability_registry`;
-- no current pointer;
-- no binding live;
-- no wiring de invocación live (`SADM-PP-L1-009`);
-- no cutover;
-- no runtime;
+- source-only para este read-model;
+- no fila nueva de `OWNER_RUNNER_CARRIER_AUTHORITY` en `lf_capability_registry`;
+- no current pointer propio;
+- no binding live propio;
+- wiring live de invocación/receipt disponible vía `SADM-PP-L1-009`, sin duplicarlo en este paquete;
+- no cutover propio;
+- no runtime propio;
 - no producción.
 
 La proyección de `lf_activos`/`lf_activo_relaciones` queda preparada para una aplicación separadamente autorizada. La activación como capability registrable pertenece a un paso posterior, después de calificación y contrato de invocación/receipt.
