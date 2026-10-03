@@ -101,8 +101,21 @@ def validate_authority(pkg: dict[str, Any], snapshot: dict[str, Any]) -> list[st
         if not isinstance(decision, dict):
             continue
         need = str(decision.get("need_code") or "")
-        if decision.get("classification") == "CREATE_NEW" and current_capabilities.get(need):
-            codes = ",".join(sorted(str(c.get("capability_code")) for c in current_capabilities[need]))
+        classification = decision.get("classification")
+        current_for_need = current_capabilities.get(need, [])
+        if classification in {"REUSE_AS_IS", "EXTEND_TRANSVERSAL"}:
+            selected = str(decision.get("selected_asset_ref") or "")
+            if decision.get("owner_state") != "RESOLVED":
+                errors.append(f"REUSE_DECISION_OWNER_UNRESOLVED:{need}")
+            if decision.get("currentness_state") != "PROVEN_CURRENT":
+                errors.append(f"REUSE_DECISION_CURRENTNESS_UNPROVEN:{need}")
+            matched = [cap for cap in current_for_need if str(cap.get("capability_code") or "") == selected]
+            if not matched:
+                errors.append(f"REUSE_DECISION_ASSET_NOT_CURRENT:{need}:{selected or 'NONE'}")
+            elif not all(cap.get("owner_scope") for cap in matched):
+                errors.append(f"REUSE_DECISION_AUTHORITY_OWNER_MISSING:{need}:{selected}")
+        if classification == "CREATE_NEW" and current_for_need:
+            codes = ",".join(sorted(str(c.get("capability_code")) for c in current_for_need))
             errors.append(f"DUPLICATE_CAPABILITY_EXISTS:{need}:{codes}")
 
     return errors
@@ -136,6 +149,10 @@ def authority_self_test(base_pkg: dict[str, Any], snapshot: dict[str, Any]) -> d
     neg("source_decision_stale", snap_mut=lambda s: s["authority_assertions"][4].__setitem__("source_decision_state", "SUPERADA"), expected="SOURCE_DECISION_NOT_CURRENT:/story_contracts/design_system_contract/layout_component_token_code")
     neg("required_assertion_missing", snap_mut=lambda s: s["authority_assertions"].pop(2), expected="REQUIRED_AUTHORITY_ASSERTION_MISSING:/story_contracts/state_navigation_contract/route_code")
     neg("package_pointer_missing", pkg_mut=lambda p: p["story_contracts"]["design_system_contract"].pop("theme_binding_code"), expected="PACKAGE_POINTER_MISSING:/story_contracts/design_system_contract/theme_binding_code")
+    neg("reuse_asset_not_current", pkg_mut=lambda p: p["architecture_and_reuse_decisions"][0].__setitem__("selected_asset_ref", "PROFILE_STRUCTURED_OUTPUT_BOUNDARY_STALE"), expected="REUSE_DECISION_ASSET_NOT_CURRENT:STRUCTURED_OUTPUT:PROFILE_STRUCTURED_OUTPUT_BOUNDARY_STALE")
+    neg("reuse_currentness_unproven", pkg_mut=lambda p: p["architecture_and_reuse_decisions"][0].__setitem__("currentness_state", "STALE"), expected="REUSE_DECISION_CURRENTNESS_UNPROVEN:STRUCTURED_OUTPUT")
+    neg("reuse_owner_unresolved", pkg_mut=lambda p: p["architecture_and_reuse_decisions"][0].__setitem__("owner_state", "UNRESOLVED"), expected="REUSE_DECISION_OWNER_UNRESOLVED:STRUCTURED_OUTPUT")
+    neg("reuse_authority_owner_missing", snap_mut=lambda s: s["existing_capabilities"][3].__setitem__("owner_scope", None), expected="REUSE_DECISION_AUTHORITY_OWNER_MISSING:STRUCTURED_OUTPUT:PROFILE_STRUCTURED_OUTPUT_BOUNDARY")
     neg("duplicate_source_resolution_capability", pkg_mut=lambda p: p["architecture_and_reuse_decisions"].append({"need_code":"SOURCE_RESOLUTION","classification":"CREATE_NEW","selected_asset_ref":None,"owner_state":"RESOLVED","currentness_state":"PROVEN_CURRENT","consumer_refs":["STORY_CREATOR","PROGRAMMING_AGENT"],"evidence_refs":["inventory://checked"],"rationale":"negative duplicate case"}), expected="DUPLICATE_CAPABILITY_EXISTS:SOURCE_RESOLUTION:SOURCE_RESOLUTION_POLICY")
     neg("qualification_capability_not_current", snap_mut=lambda s: s["qualification_framework"].__setitem__("state", "STALE"), expected="CAPABILITY_NOT_CURRENT:QUALIFICATION_FRAMEWORK")
 
