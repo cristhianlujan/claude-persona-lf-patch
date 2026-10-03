@@ -1,0 +1,10 @@
+{
+  "solution_ref": "T_INDEP_PAULO_035",
+  "paths": {
+    "supabase/migrations/20261003001000_independent_assurance_oracle_independence_measure_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/README.md": "TRANSVERSAL_CAPABILITY_CONTRACT",
+    "sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/independent_review_boundary_v1.json": "TRANSVERSAL_CAPABILITY_CONTRACT",
+    "sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/test_independent_review_boundary_v1.py": "TRANSVERSAL_CAPABILITY_TEST",
+    "sandbox/lf_contract_gate_test/changesets/T_INDEP_PAULO_035.json": "CHANGESET_MANIFEST"
+  }
+}

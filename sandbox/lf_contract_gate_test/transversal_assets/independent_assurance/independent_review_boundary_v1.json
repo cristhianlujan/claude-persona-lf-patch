@@ -1,9 +1,10 @@
 {
-  "schema_version": "lf-independent-review-boundary/v1",
+  "schema_version": "lf-independent-review-boundary/v2",
   "inventory_code": "INDEPENDENT_ASSURANCE",
   "inventory_canonical_name": "TRANSVERSAL_INDEPENDENT_ASSURANCE",
   "semantic_role": "INDEPENDENT_REVIEW",
   "rename_mode": "NO_PARALLEL_CAPABILITY_USE_EXISTING_IDENTITY_UNTIL_GOVERNED_CUTOVER",
+  "owner_scope": "SUPER_ADMIN",
   "canonical_execution": {
     "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
     "operation_type": "INDEPENDENT_REVIEW",
@@ -22,6 +23,34 @@
       "evidence_refs",
       "next_gate"
     ]
+  },
+  "oracle_independence": {
+    "measure_function": "public.lf_independent_assurance_measure_v1",
+    "schema_version": "LF_INDEPENDENT_ASSURANCE_MEASURE_V1",
+    "method": "PG_PROC_STATIC_CLOSURE_V1",
+    "default_max_depth": 8,
+    "dimensions": [
+      "DEPENDENCIES",
+      "DATA",
+      "AUTHOR"
+    ],
+    "decision_states": [
+      "INDEPENDENT",
+      "NOT_INDEPENDENT",
+      "UNPROVEN",
+      "BLOCKED"
+    ],
+    "dependency_pass_condition": "ZERO_UNRESOLVED_SHARED_TRANSITIVE_DEPENDENCIES",
+    "exception_policy": "ONLY_EXPLICIT_ADJUDICATED_SHARED_DEPENDENCIES",
+    "overall_rule": "INDEPENDENT requires dependency, data and author dimensions independently proven; any proven shared dimension is NOT_INDEPENDENT; missing data/author evidence is UNPROVEN unless another dimension already proves NOT_INDEPENDENT",
+    "limitations": [
+      "NO_DYNAMIC_SQL",
+      "NO_EDGE_RUNTIME_CALL_GRAPH",
+      "FUNCTION_NAME_MATCH_WITHIN_DECLARED_SCHEMA"
+    ],
+    "consumer_unit": "M4.4",
+    "executor_unit": "T-INDEP",
+    "work_code": "PAULO-035"
   },
   "downstream_integration": {
     "capability_owner": "QUALIFICATION_FRAMEWORK",
@@ -54,11 +83,14 @@
     "PRODUCTION_APPROVED"
   ],
   "inventory_owner_name": {
-    "current_state": "UNRESOLVED_NULL",
-    "repair_rule": "AUTHORITATIVE_OWNER_DECISION_REQUIRED_DO_NOT_INFER"
+    "current_state": "RESOLVED_SUPER_ADMIN",
+    "authority": "IG_CURATOR_VALIDATOR_REFACTOR_V2_D_V2_2 / lf_eventos#19472"
   },
   "no_duplicate_engine": true,
+  "operation_revision_mutation_allowed_by_t_indep": false,
   "ekb": [
+    "T-INDEP-PARALLEL-REVIEW-STACK-001",
+    "T-INDEP-OPERATION-REVISION-REQUALIFICATION-001",
     "S36-ASSURANCE-BOUNDARY-CONTAMINATION-001",
     "INDEPENDENT-REVIEW-LEGACY-RPC-BYPASS-001",
     "INDEPENDENT-REVIEW-FINALIZER-RESULT-CONTRACT-MISMATCH-001",
