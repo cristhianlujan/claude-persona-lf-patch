@@ -2,10 +2,9 @@
   "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
   "cases": [
     {
-      "case_id": "N5_FAMILY_COMPLETE_CRITERIA",
-      "candidate_ref": "0c3df451674a0c003b7b6f4eaeac649d2b84023b",
-      "candidate_path": "supabase/migrations/20261002192000_ig_n5_family_complete_criteria_v1.sql",
-      "prelude_path": "sandbox/ig_cv/fixtures/n5_family_complete_preimage_v1.sql",
+      "case_id": "M2_2_EMPTY_COLLECTION_SEMANTICS",
+      "candidate_ref": "b588e85fcacd141ae330805709025ac8c2eb071f",
+      "candidate_path": "supabase/migrations/20261003001000_ig_cv_m2_2_empty_collection_semantics_v1.sql",
       "screen_id": 4,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
