@@ -70,6 +70,8 @@ def git_tree_pathspecs(selectors: dict[str, Any]) -> list[str]:
     for pattern in globs:
         wildcard_positions = [i for token in ("*", "?", "[") if (i := pattern.find(token)) >= 0]
         literal_prefix = pattern[:min(wildcard_positions)] if wildcard_positions else pattern
+        if "/" not in literal_prefix:
+            raise CurrentnessError(f"GIT_TREE_GLOB_UNBOUNDED:{pattern}")
         directory = _selector_directory(literal_prefix, selector_kind="GLOB")
         specs.add(f":(top,literal){directory}")
     return sorted(specs)
