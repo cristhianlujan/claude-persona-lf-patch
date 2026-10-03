@@ -102,11 +102,26 @@ carrier(A) -> carrier(B)
 
 A cross-carrier cycle blocks fail-closed.
 
+## F05-010 materialization readiness
+
+F05-010 adds a **source-only canonical materialization candidate** without activating it.
+The package is:
+
+- `pase_orchestrator_materialization_contract_v1.json`;
+- `pase_orchestrator_materialization_inventory_v1.json`;
+- `PASE_ORCHESTRATOR_source_projection_v1.sql`.
+
+The projection is deliberately bounded to one candidate asset row plus two existing-authority relations. It creates **no** capability-registry row, version row, current pointer, live binding, operation registration, workflow cutover, runtime change or production change.
+
+The candidate state is `CANDIDATO / READ_ONLY / BLOQUEADO`. Applicability remains owned by `CHANGESET_GOVERNANCE_LF_V1`; source currentness remains a dependency of `CURRENTNESS_AUTHORITY`; `LF_GOVERNANCE` remains the administrative root. Carrier identity never implies ownership.
+
+Readiness must be demonstrated with a rollback-only database probe and exact source parity before this unit can close. A future persistent apply, capability registration, current pointer, binding or activation is a separate governed action and is not authorized by F05-010.
+
 ## Staging status
 
-`PASE_ORCHESTRATOR_V1` is a repository candidate only in this PR.
+`PASE_ORCHESTRATOR_V1` remains non-active during F05 qualification.
 
-No `.github/workflows/*` cutover is performed here. No Supabase/live authority is mutated. The later cutover must prove exact-head E2E before replacing historical carrier wiring.
+No `.github/workflows/*` cutover is performed here. The source projection is a candidate only and is not applied persistently. The later cutover must prove exact-head E2E before replacing historical carrier wiring.
 
 ## Test
 
