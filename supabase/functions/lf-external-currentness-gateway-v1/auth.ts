@@ -16,6 +16,7 @@ export type GatewayIdentity = {
   eventName: string;
   runId: string;
   workflowSha: string;
+  actor: string;
 };
 
 function asString(value: unknown): string {
@@ -58,6 +59,7 @@ export function validateGatewayClaims(payload: Claims): GatewayIdentity {
     eventName,
     runId,
     workflowSha,
+    actor: asString(payload.actor),
   };
 }
 
@@ -75,4 +77,36 @@ export function requireEdgeReadCredential(value: string): string {
   const token = value.trim();
   if (!token) throw new Error("EDGE_READ_CREDENTIAL_MISSING");
   return token;
+}
+
+export function baselineApprovalArgs(
+  identity: GatewayIdentity,
+  body: Record<string, unknown>,
+): {
+  p_sync_key: string;
+  p_actor: string;
+  p_github_run_id: number;
+  p_workflow_sha: string;
+} {
+  if (identity.eventName !== "workflow_dispatch") {
+    throw new Error("BASELINE_APPROVAL_EVENT_REQUIRED");
+  }
+  const syncKey = asString(body.approve_sync_key).trim();
+  if (!/^[0-9a-f]{64}$/.test(syncKey)) {
+    throw new Error("BASELINE_APPROVAL_SYNC_KEY_INVALID");
+  }
+  if (!identity.actor) throw new Error("BASELINE_APPROVAL_ACTOR_MISSING");
+  if (!/^\d+$/.test(identity.runId)) throw new Error("BASELINE_APPROVAL_RUN_ID_INVALID");
+  const runId = Number(identity.runId);
+  if (!Number.isSafeInteger(runId) || runId <= 0) {
+    throw new Error("BASELINE_APPROVAL_RUN_ID_INVALID");
+  }
+  // Intentionally ignore body.actor/body.run_id/body.workflow_sha. Approval identity
+  // is derived only from verified GitHub OIDC claims.
+  return {
+    p_sync_key: syncKey,
+    p_actor: identity.actor,
+    p_github_run_id: runId,
+    p_workflow_sha: identity.workflowSha,
+  };
 }

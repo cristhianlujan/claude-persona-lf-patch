@@ -3,6 +3,7 @@ import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "npm:jose@6.0.11"
 import {
   AUDIENCE,
   REPOSITORY,
+  baselineApprovalArgs,
   validateGatewayClaims,
   requireObservedMainMatchesWorkflow,
   requireEdgeReadCredential,
@@ -18,6 +19,15 @@ const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? ""
 const EDGE_READ_PAT = Deno.env.get("LF_SUPABASE_EDGE_FUNCTIONS_READ_PAT")?.trim() ?? "";
 const JWKS = createRemoteJWKSet(new URL(`${ISSUER}/.well-known/jwks`));
 const TIMEOUT_MS = 20000;
+const SYNC_KEY_RE = /^[0-9a-f]{64}$/;
+const BASELINE_DELTA_SCHEMA = "LF_EXTERNAL_BASELINE_DELTA_V1";
+const FORBIDDEN_CURRENTNESS_FIELDS = new Set([
+  "currentness",
+  "currentness_source",
+  "observed_at",
+  "observed_main_sha",
+  "source_traceability_state",
+]);
 
 class GatewayError extends Error {
   status: number;
@@ -44,6 +54,38 @@ function asObject(value: unknown): Record<string, unknown> {
     return value[0] as Record<string, unknown>;
   }
   throw new GatewayError("DB_RPC_RESPONSE_INVALID", 502);
+}
+
+function bodyObject(value: unknown, code: string): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new GatewayError(code, 400);
+  return value as Record<string, unknown>;
+}
+
+function positiveInt(value: unknown, code: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) throw new GatewayError(code, 400);
+  return value;
+}
+
+function nonNegativeInt(value: unknown, code: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) throw new GatewayError(code, 400);
+  return value;
+}
+
+function syncKey(value: unknown): string {
+  const result = typeof value === "string" ? value.trim() : "";
+  if (!SYNC_KEY_RE.test(result)) throw new GatewayError("BASELINE_SYNC_KEY_INVALID", 400);
+  return result;
+}
+
+function rejectCurrentnessFields(items: unknown[]): void {
+  for (const value of items) {
+    const item = bodyObject(value, "BASELINE_STAGE_ITEM_INVALID");
+    for (const key of FORBIDDEN_CURRENTNESS_FIELDS) {
+      if (Object.prototype.hasOwnProperty.call(item, key)) {
+        throw new GatewayError("BASELINE_CURRENTNESS_FIELD_FORBIDDEN", 400);
+      }
+    }
+  }
 }
 
 async function requireOidc(req: Request): Promise<{ payload: JWTPayload; identity: GatewayIdentity }> {
@@ -93,7 +135,7 @@ async function inventoryRpc(name: string, args: Record<string, unknown>): Promis
     const message = payload && typeof payload === "object" && !Array.isArray(payload)
       ? String((payload as Record<string, unknown>).message ?? "")
       : "";
-    if (/^(REPORT_|OBSERVATION_)/.test(message)) throw new GatewayError(message, 409);
+    if (/^(REPORT_|OBSERVATION_|BASELINE_)/.test(message)) throw new GatewayError(message, 409);
     throw new GatewayError(`DB_RPC_FAILED:${name}:${response.status}`, 502);
   }
   return payload;
@@ -232,6 +274,69 @@ async function writeObservation(body: Record<string, unknown>, identity: Gateway
   });
 }
 
+function countFromDelta(delta: Record<string, unknown>, section: "repository" | "edge", state: "NEW" | "STALE" | "MISSING"): number {
+  const counts = bodyObject(delta.counts, "BASELINE_DELTA_COUNTS_INVALID");
+  const sectionCounts = bodyObject(counts[section], "BASELINE_DELTA_COUNTS_INVALID");
+  return nonNegativeInt(sectionCounts[state], "BASELINE_DELTA_COUNTS_INVALID");
+}
+
+async function writeBaseline(body: Record<string, unknown>, identity: GatewayIdentity): Promise<Response> {
+  const phase = typeof body.phase === "string" ? body.phase : "";
+  let result: unknown;
+
+  if (phase === "begin") {
+    const delta = bodyObject(body.delta, "BASELINE_DELTA_SCHEMA_INVALID");
+    if (delta.schema_version !== BASELINE_DELTA_SCHEMA) throw new GatewayError("BASELINE_DELTA_SCHEMA_INVALID", 400);
+    const observedMainSha = typeof delta.observed_main_sha === "string" ? delta.observed_main_sha : "";
+    requireObservedMainMatchesWorkflow(observedMainSha, identity);
+    const reportSha256 = typeof delta.report_sha256 === "string" ? delta.report_sha256 : "";
+    if (!/^[0-9a-f]{64}$/.test(reportSha256)) throw new GatewayError("BASELINE_REPORT_SHA_INVALID", 400);
+    const runtimeWithoutSource = nonNegativeInt(
+      delta.runtime_without_source_count,
+      "BASELINE_RUNTIME_WITHOUT_SOURCE_COUNT_INVALID",
+    );
+    result = await inventoryRpc("lf_external_baseline_begin_v1", {
+      p_observed_main_sha: observedMainSha,
+      p_report_sha256: reportSha256,
+      p_expected_repo_new: countFromDelta(delta, "repository", "NEW"),
+      p_expected_repo_stale: countFromDelta(delta, "repository", "STALE"),
+      p_expected_repo_missing: countFromDelta(delta, "repository", "MISSING"),
+      p_expected_edge_new: countFromDelta(delta, "edge", "NEW"),
+      p_expected_edge_stale: countFromDelta(delta, "edge", "STALE"),
+      p_expected_edge_missing: countFromDelta(delta, "edge", "MISSING"),
+      p_runtime_without_source_count: runtimeWithoutSource,
+    });
+  } else if (phase === "stage_batch") {
+    const key = syncKey(body.sync_key);
+    const batchNo = positiveInt(body.batch_no, "BASELINE_BATCH_NO_INVALID");
+    if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 100) {
+      throw new GatewayError("BASELINE_BATCH_ITEMS_INVALID", 400);
+    }
+    rejectCurrentnessFields(body.items);
+    result = await inventoryRpc("lf_external_baseline_stage_batch_v1", {
+      p_sync_key: key,
+      p_batch_no: batchNo,
+      p_items: body.items,
+    });
+  } else if (phase === "approve") {
+    const args = baselineApprovalArgs(identity, body);
+    result = await inventoryRpc("lf_external_baseline_approve_v1", args);
+  } else if (phase === "finalize") {
+    result = await inventoryRpc("lf_external_baseline_finalize_v1", {
+      p_sync_key: syncKey(body.sync_key),
+    });
+  } else {
+    throw new GatewayError("BASELINE_PHASE_NOT_ALLOWED", 400);
+  }
+
+  return json({
+    outcome: "WRITE_BASELINE_RESULT",
+    phase,
+    caller: identity,
+    result,
+  });
+}
+
 Deno.serve(async (req: Request) => {
   try {
     if (req.method !== "POST") return json({ outcome: "BLOCKED", code: "METHOD_NOT_ALLOWED" }, 405);
@@ -243,6 +348,7 @@ Deno.serve(async (req: Request) => {
 
     if (body.action === "read_snapshot") return await readSnapshot(identity);
     if (body.action === "write_observation") return await writeObservation(body, identity);
+    if (body.action === "write_baseline") return await writeBaseline(body, identity);
     return json({ outcome: "BLOCKED", code: "ACTION_NOT_ALLOWED" }, 400);
   } catch (error) {
     const code = error instanceof Error ? error.message : String(error);

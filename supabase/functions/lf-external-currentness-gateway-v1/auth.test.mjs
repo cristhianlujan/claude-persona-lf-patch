@@ -19,10 +19,13 @@ const base = {
   event_name: "push",
   run_id: "12345",
   workflow_sha: "a".repeat(40),
+  actor: "paulozterra",
 };
 
 for (const event_name of ["push", "schedule", "workflow_dispatch"]) {
-  assert.equal(validateGatewayClaims({ ...base, event_name }).eventName, event_name);
+  const identity = validateGatewayClaims({ ...base, event_name });
+  assert.equal(identity.eventName, event_name);
+  assert.equal(identity.actor, "paulozterra");
 }
 
 for (const event_name of ["workflow_call", "pull_request", "repository_dispatch"]) {
