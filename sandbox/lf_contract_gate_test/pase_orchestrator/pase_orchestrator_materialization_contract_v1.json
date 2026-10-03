@@ -1,0 +1,54 @@
+{
+  "schema_version": "lf-pase-orchestrator-materialization/v1",
+  "solution_code": "PASE_ORCHESTRATOR_V1",
+  "asset_code": "PASE_ORCHESTRATOR",
+  "work_code": "PASE-ATOM-F05-010",
+  "classification": "CREATE_ORCHESTRATOR_CANDIDATE",
+  "owner": "LF_GOVERNANCE",
+  "status": "CANDIDATE_READ_ONLY",
+  "source_only": true,
+  "canonical_sources": {
+    "implementation": "sandbox/lf_contract_gate_test/pase_orchestrator/pase_orchestrator_v1.py",
+    "deterministic_test": "sandbox/lf_contract_gate_test/pase_orchestrator/test_pase_orchestrator_v1.py",
+    "documentation": "sandbox/lf_contract_gate_test/pase_orchestrator/README.md",
+    "applicability_plan": "lf-ci-execution-plan/v2",
+    "carrier_registry": "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json"
+  },
+  "authority_boundaries": {
+    "applicability_authority": "CHANGESET_GOVERNANCE_LF_V1",
+    "governance_admin_authority": "LF_GOVERNANCE",
+    "currentness_authority": "CURRENTNESS_AUTHORITY",
+    "owner_inference_from_carrier": false,
+    "applicability_reclassification": false,
+    "owner_recalculation": false,
+    "domain_control_execution": false
+  },
+  "candidate_materialization": {
+    "asset_rows": 1,
+    "relation_rows": 2,
+    "capability_registry_rows": 0,
+    "capability_version_rows": 0,
+    "current_pointer_rows": 0,
+    "binding_rows": 0,
+    "operation_registry_rows": 0,
+    "runtime_changes": 0,
+    "production_changes": 0,
+    "estado_documental": "CANDIDATO",
+    "estado_operativo": "READ_ONLY",
+    "impacto_automatico": "BLOQUEADO"
+  },
+  "reversibility": {
+    "rollback_only_probe_required": true,
+    "persistent_apply_authorized": false,
+    "cutover_authorized": false,
+    "activation_authorized": false,
+    "binding_authorized": false
+  },
+  "invariants": {
+    "existing_active_controls_unchanged": true,
+    "no_bulk_cutover": true,
+    "no_new_mandatory_consumption": true,
+    "no_zip_authority": true,
+    "source_module_semantics_unchanged": true
+  }
+}

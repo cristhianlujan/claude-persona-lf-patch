@@ -1,0 +1,32 @@
+{
+  "schema_version": "lf-pase-orchestrator-materialization-inventory/v1",
+  "solution_code": "PASE_ORCHESTRATOR_V1",
+  "asset_code": "PASE_ORCHESTRATOR",
+  "work_code": "PASE-ATOM-F05-010",
+  "classification": "CREATE_ORCHESTRATOR_CANDIDATE",
+  "owner": "LF_GOVERNANCE",
+  "status": "CANDIDATE_READ_ONLY",
+  "reuse_first": [
+    "CHANGESET_GOVERNANCE_LF_V1",
+    "LF_GOVERNANCE",
+    "CURRENTNESS_AUTHORITY",
+    "lf_ci_control_impact_registry_v2.json"
+  ],
+  "source_assets": [
+    "sandbox/lf_contract_gate_test/pase_orchestrator/pase_orchestrator_v1.py",
+    "sandbox/lf_contract_gate_test/pase_orchestrator/test_pase_orchestrator_v1.py",
+    "sandbox/lf_contract_gate_test/pase_orchestrator/README.md",
+    "sandbox/lf_contract_gate_test/pase_orchestrator/pase_orchestrator_materialization_contract_v1.json",
+    "sandbox/lf_contract_gate_test/pase_orchestrator/PASE_ORCHESTRATOR_source_projection_v1.sql"
+  ],
+  "materialization_scope": {
+    "asset_rows": 1,
+    "relation_rows": 2,
+    "live_capability_registration": false,
+    "current_pointer": false,
+    "live_binding": false,
+    "operation_registration": false
+  },
+  "artifact_transport_policy": "NO_ZIP_AUTHORITY",
+  "source_only": true
+}
