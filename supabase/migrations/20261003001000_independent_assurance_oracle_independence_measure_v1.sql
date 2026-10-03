@@ -299,6 +299,7 @@ BEGIN
     'schema_version','LF_CAPABILITY_MANIFEST_V1',
     'capability_code','INDEPENDENT_ASSURANCE',
     'version','1.0.0',
+    'owner','SUPER_ADMIN',
     'contract',jsonb_build_object(
       'input','dependency_schema + producer_root + reviewer_root + optional provider-bound data/author evidence + adjudicated exceptions',
       'output','LF_INDEPENDENT_ASSURANCE_MEASURE_V1',
