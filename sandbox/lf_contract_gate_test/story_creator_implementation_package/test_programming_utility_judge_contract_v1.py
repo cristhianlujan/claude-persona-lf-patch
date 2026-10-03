@@ -21,6 +21,15 @@ def validate(contract: dict, evidence: dict) -> list[str]:
     if reuse.get("new_capability_created") is not False:
         errors.append("PARALLEL_JUDGE_CAPABILITY_FORBIDDEN")
 
+    independence = contract.get("independence", {})
+    if independence.get("reviewer_binding_resolution") != "TRANSVERSAL_SUBJECT_BINDING_AT_EXECUTION_TIME":
+        errors.append("SUBJECT_BINDING_RESOLUTION_DRIFT")
+    if contract.get("subject") != "STRATEGY" and (
+        independence.get("reviewer_operation") == "REVISION_INDEPENDIENTE_ESTRATEGIA_LF"
+        or independence.get("router_action") == "STRATEGY_INDEPENDENT_REVIEW"
+    ):
+        errors.append("STRATEGY_SPECIFIC_REVIEW_ROUTE_FORBIDDEN")
+
     closure = contract.get("closure_rule", {})
     if closure.get("structural_pass_alone_is_sufficient") is not False:
         errors.append("STRUCTURAL_PASS_MUST_NOT_CLOSE")
@@ -33,6 +42,8 @@ def validate(contract: dict, evidence: dict) -> list[str]:
         if not evidence.get(key):
             errors.append(f"SUBJECT_BINDING_MISSING:{key}")
 
+    if evidence.get("review_subject") != contract.get("subject"):
+        errors.append("REVIEW_SUBJECT_MISMATCH")
     if evidence.get("structural_result") != "PASS":
         errors.append("STRUCTURAL_EVIDENCE_NOT_PASS")
     if evidence.get("review_capability") != "INDEPENDENT_ASSURANCE":
@@ -55,6 +66,8 @@ def valid_evidence() -> dict:
     return {
         "subject_sha256": "a" * 64,
         "source_revision": "ONB_004@v0.4",
+        "review_subject": "STORY_IMPLEMENTATION_PACKAGE",
+        "reviewer_binding_ref": "assurance-subject-binding://story-implementation-package/current",
         "builder_execution_id": "EXEC-STORY-BUILDER-001",
         "reviewer_execution_id": "EXEC-INDEPENDENT-REVIEW-001",
         "structural_evidence_ref": "github-actions://story-structural/1",
@@ -76,22 +89,35 @@ def valid_evidence() -> dict:
 def main() -> int:
     contract = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
     base = valid_evidence()
-    cases: list[tuple[str, dict, str | None]] = [("positive_independent_review", base, None)]
+    cases: list[tuple[str, dict, dict, str | None]] = [
+        ("positive_independent_review", contract, base, None)
+    ]
 
-    def neg(name: str, mutate, expected: str) -> None:
+    def neg(name: str, evidence_mutate, expected: str) -> None:
+        c = copy.deepcopy(contract)
         e = copy.deepcopy(base)
-        mutate(e)
-        cases.append((name, e, expected))
+        evidence_mutate(e)
+        cases.append((name, c, e, expected))
+
+    def contract_neg(name: str, contract_mutate, expected: str) -> None:
+        c = copy.deepcopy(contract)
+        e = copy.deepcopy(base)
+        contract_mutate(c)
+        cases.append((name, c, e, expected))
 
     neg("structural_only_no_receipt", lambda e: (e.__setitem__("review_result", None), e.__setitem__("review_receipt_ref", None)), "INDEPENDENT_REVIEW_NOT_PASS_WITH_EVIDENCE")
     neg("same_builder_and_reviewer", lambda e: e.__setitem__("reviewer_execution_id", e["builder_execution_id"]), "BUILDER_REVIEWER_NOT_INDEPENDENT")
     neg("wrong_review_capability", lambda e: e.__setitem__("review_capability", "LOCAL_STORY_JUDGE"), "REVIEW_CAPABILITY_MISMATCH")
     neg("missing_source_revision", lambda e: e.pop("source_revision"), "SUBJECT_BINDING_MISSING:source_revision")
+    neg("missing_reviewer_binding", lambda e: e.pop("reviewer_binding_ref"), "SUBJECT_BINDING_MISSING:reviewer_binding_ref")
+    neg("wrong_subject", lambda e: e.__setitem__("review_subject", "STRATEGY"), "REVIEW_SUBJECT_MISMATCH")
     neg("missing_utility_dimension", lambda e: e["utility_dimensions_checked"].remove("context_sufficiency"), "UTILITY_DIMENSION_MISSING:context_sufficiency")
+    contract_neg("strategy_specific_router_hardcode", lambda c: c["independence"].__setitem__("router_action", "STRATEGY_INDEPENDENT_REVIEW"), "STRATEGY_SPECIFIC_REVIEW_ROUTE_FORBIDDEN")
+    contract_neg("strategy_specific_operation_hardcode", lambda c: c["independence"].__setitem__("reviewer_operation", "REVISION_INDEPENDIENTE_ESTRATEGIA_LF"), "STRATEGY_SPECIFIC_REVIEW_ROUTE_FORBIDDEN")
 
     results = []
-    for name, evidence, expected in cases:
-        errors = validate(contract, evidence)
+    for name, case_contract, evidence, expected in cases:
+        errors = validate(case_contract, evidence)
         ok = (not errors) if expected is None else expected in errors
         results.append({"case": name, "expected": expected or "PASS", "ok": ok, "errors": errors})
 
