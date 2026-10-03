@@ -87,5 +87,5 @@ python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_pase_merge_rout
 Expected marker:
 
 ```text
-PASS_PASE_MERGE_ROUTE_V1 checks=17
+PASS_PASE_MERGE_ROUTE_V1 checks=20
 ```
