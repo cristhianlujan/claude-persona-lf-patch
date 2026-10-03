@@ -1,0 +1,47 @@
+name: LF F04 Q08 Exact Head Probe
+
+on:
+  push:
+    branches:
+      - lf/f04-q08-exact-head-probe-20261003
+
+permissions:
+  contents: read
+
+jobs:
+  q08-exact-head:
+    name: Execute F04 Q08 exact-head currentness qualification
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact Q08 candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: 812037fbde87914cc30306b3c4f82793a83ab90c
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Bind exact candidate and source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "812037fbde87914cc30306b3c4f82793a83ab90c"
+          test "$(git rev-parse HEAD:sandbox/lf_contract_gate_test/material_currentness/lf_material_currentness_v1.py)" = "1038962660bd6ec95781807a92469a3edf7be4e6"
+          echo "F04_Q08_EXACT_HEAD=$(git rev-parse HEAD)"
+          echo "F04_Q08_MATERIAL_BLOB=$(git rev-parse HEAD:sandbox/lf_contract_gate_test/material_currentness/lf_material_currentness_v1.py)"
+
+      - name: Install bounded test dependency
+        run: python -m pip install --disable-pip-version-check pytest==8.3.5
+
+      - name: Execute CURRENTNESS_AUTHORITY positives and fail-closed negatives
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd sandbox/lf_contract_gate_test/material_currentness
+          python -m pytest -q test_lf_currentness_authority_v1.py
+          echo "F04_Q08_EXACT_HEAD_QUALIFICATION=PASS"
