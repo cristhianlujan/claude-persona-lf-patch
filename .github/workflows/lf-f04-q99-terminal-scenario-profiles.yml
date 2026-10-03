@@ -1,0 +1,61 @@
+name: LF F04 Q99 Terminal Scenario Profiles
+
+on:
+  push:
+    branches:
+      - lf/f04-q99-terminal-scenario-profiles-20261003
+
+permissions:
+  contents: read
+
+jobs:
+  f04-q99-terminal-scenarios:
+    name: Qualify F04 terminal scenario profiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve live main and exact candidate
+        id: refs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          echo "base_sha=$(git rev-parse refs/remotes/origin/main)" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Execute F04 Q99 terminal scenario qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/pase_scenario_qualification/run_f04_terminal_scenario_profiles_v1.py \
+            --base-sha "${{ steps.refs.outputs.base_sha }}" \
+            --head-sha "${{ steps.refs.outputs.head_sha }}" \
+            --output-dir .f04-q99-scenario-results
+
+      - name: Readback summary without ZIP authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path(".f04-q99-scenario-results/summary.json")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          assert data["verdict"] == "PASS"
+          assert data["control_count"] == 11
+          assert data["unknown_selected_count"] == 0
+          assert data["zip_used_as_authority"] is False
+          assert data["activation_authorized"] is False
+          assert data["runtime_or_production_touched"] is False
+          print(
+              "PASS_F04_Q99_TERMINAL_READBACK "
+              f"controls={data['control_count']} selected={data['selected_count']} "
+              f"not_applicable={data['not_applicable_count']} unknown=0"
+          )
+          PY
