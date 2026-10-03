@@ -9,6 +9,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any, Mapping
 
 HERE = Path(__file__).resolve().parent
 ROUTER_PATH = HERE / "lf_ci_lane_router.py"
@@ -64,10 +65,58 @@ def _changed(repo: Path, base: str | None, head: str | None) -> list[str]:
     return sorted({line.strip() for line in raw.splitlines() if line.strip()})
 
 
+def _candidate_manifest_data(
+    repo: Path,
+    changed: list[str],
+    head: str | None,
+) -> Mapping[str, Any] | None:
+    """Read one changeset manifest from the exact candidate Git object as data.
+
+    This keeps base-anchored consumers on trusted base code while allowing the
+    candidate's declarative classification manifest to participate in routing.
+    Candidate Python/workflow code is never imported or executed here.
+    """
+    family_registry = ROUTER.load_family_registry()
+    manifest_paths = sorted(
+        path for path in changed
+        if family_registry.family_for(path) == "CHANGESET_MANIFEST"
+    )
+    if len(manifest_paths) != 1:
+        return None
+
+    manifest_path = manifest_paths[0]
+    if head:
+        completed = subprocess.run(
+            ["git", "-C", str(repo), "show", f"{head}:{manifest_path}"],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            raise SystemExit(f"BLOCK_CI_CHANGESET_MANIFEST_EXACT_HEAD_READ:{manifest_path}")
+        raw = completed.stdout
+    else:
+        target = repo / manifest_path
+        if not target.is_file():
+            return None
+        raw = target.read_text(encoding="utf-8")
+
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(
+            f"BLOCK_CI_CHANGESET_MANIFEST_JSON:{manifest_path}:{exc.__class__.__name__}"
+        ) from exc
+    if not isinstance(data, Mapping):
+        raise SystemExit(f"BLOCK_CI_CHANGESET_MANIFEST_SHAPE:{manifest_path}")
+    return data
+
+
 def main() -> int:
     args = parser().parse_args()
     repo = Path(args.repo_root).resolve()
     changed = _changed(repo, args.base, args.head)
+    manifest_data = _candidate_manifest_data(repo, changed, args.head)
 
     force_full = args.force_full
     force_reason = args.force_full_reason
@@ -78,7 +127,7 @@ def main() -> int:
         force_full = True
         force_reason = force_reason or "MAIN_PUSH_FULL_REGRESSION"
 
-    lane = ROUTER.classify(changed)
+    lane = ROUTER.classify(changed, manifest_data=manifest_data)
     plan = PLAN.build_plan(
         changed_paths=changed,
         lane_required_controls=lane.required_controls,
@@ -92,6 +141,7 @@ def main() -> int:
         lane=lane,
         plan=plan,
         repo_root=repo,
+        manifest_data=manifest_data,
     )
     plan["pase_control_enforcement"] = REPAIR_ENFORCEMENT.project_enforcement(
         plan,
