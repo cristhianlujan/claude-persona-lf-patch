@@ -2,7 +2,7 @@
   "schema_version": "lf-assurance-evaluator-call-contract/v1",
   "capability_code": "ASSURANCE_EVALUATOR",
   "owner_scope": "SUPER_ADMIN",
-  "lifecycle_state": "CANDIDATE_DORMANT_NO_ACTIVE_BINDING",
+  "lifecycle_state": "CURRENT_AVAILABLE_EXECUTION_DEFERRED",
   "canonical_caller": "ORCHESTRATOR",
   "entry_guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
   "canonical_entrypoint": {
@@ -32,10 +32,11 @@
   },
   "required_call_sequence": [
     "ROUTER_CHANGESET_GOVERNANCE determines applicability",
+    "PASE pre-activation/activation gates authorize entry-guard enforcement",
     "public.fn_lf_orchestrator_dispatch_receipt_v1 issues exact dispatch receipt",
     "public.fn_lf_capability_bind_from_orchestrator_v1 validates ORCHESTRATOR_EXECUTION_GUARD_V1 and binds CURRENT",
-    "ASSURANCE_ACTIVATION_GATE_V1 validates exact ACTIVE subject binding",
-    "assurance_evaluator_runner_v1.py invokes semantic core"
+    "ASSURANCE_ACTIVATION_GATE_V1 validates exactly one ACTIVE exact subject binding",
+    "assurance_evaluator_runner_v1.py invokes the fail-closed semantic core"
   ],
   "forbidden_new_entry": {
     "function": "public.fn_lf_capability_bind_current_v1",
@@ -60,14 +61,22 @@
     "BLOCK_CONSUMER_CROSSBIND_MISMATCH",
     "BLOCK_DISPATCH_RECEIPT_DIGEST_MISMATCH",
     "BLOCK_NO_CURRENT_CAPABILITY",
-    "BLOCK_CURRENTNESS_MISMATCH"
+    "BLOCK_CURRENTNESS_MISMATCH",
+    "BLOCKED_NON_EXACT_ACTIVE_BINDING",
+    "BLOCKED_AMBIGUOUS_ACTIVE_BINDING"
   ],
   "current_expected_state": {
     "capability_registry": "ACTIVE",
-    "capability_current_present": false,
+    "capability_current_present": true,
+    "entry_guard_contract_declared": true,
+    "entry_guard_enforcement_before_active_binding": "REQUIRED",
+    "entry_guard_enforcement_currently_deferred": true,
+    "entry_guard_activation_authority": "PASE_F06_F09_F10_PLUS_EXPLICIT_HUMAN_GO",
     "active_subject_binding_count": 0,
-    "normal_pase_result": "NOT_APPLICABLE_NO_EXECUTION",
-    "valid_dispatch_before_promotion": "BLOCK_NO_CURRENT_CAPABILITY"
+    "subject_binding_policy": "EXACT_ACTIVE_BINDING_ONLY",
+    "wildcard_active_binding_policy": "BLOCK",
+    "global_assurance_gate": false,
+    "assurance_completeness_owner": false
   },
   "activation_gate": {
     "code": "ASSURANCE_ACTIVATION_GATE_V1",
@@ -76,11 +85,17 @@
   },
   "runner_ref": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_runner_v1.py",
   "core_ref": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_core_v1.py",
+  "known_fail_closed_limitations": [
+    "INDEPENDENT_REVIEW remains UNPROVEN without provider-bound LF_SUPABASE_READBACK_V1 / Evidence Ledger proof",
+    "unsupported closure semantics return UNPROVEN",
+    "no direct database discovery or authority mutation is owned by the evaluator core"
+  ],
   "explicit_non_activation": [
-    "NO_CAPABILITY_VERSION",
-    "NO_CURRENT_POINTER",
-    "NO_SUBJECT_BINDING_ACTIVATION",
-    "NO_RUNTIME_ACTIVATION",
-    "NO_PRODUCTION_ACTIVATION"
+    "CURRENT_POINTER_DOES_NOT_AUTHORIZE_EXECUTION",
+    "NO_ACTIVE_SUBJECT_BINDING_BEFORE_PASE_ACTIVATION_AUTHORITY",
+    "NO_GLOBAL_PASE_CONTROL",
+    "NO_WILDCARD_SUBJECT_BINDING",
+    "NO_ASSURANCE_COMPLETENESS_REINTRODUCTION",
+    "NO_RUNTIME_OR_PRODUCTION_CUTOVER_BY_CAPABILITY_PROMOTION_ALONE"
   ]
 }
