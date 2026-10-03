@@ -1,0 +1,41 @@
+name: F04 Q08 Currentness Qualification Replay
+
+on:
+  push:
+    branches:
+      - lf/f04-q08-currentness-qual-replay-20261003
+
+permissions:
+  contents: read
+
+jobs:
+  q08-currentness-qualification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact qualification head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Bind exact source blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          echo "QUALIFICATION_HEAD=$GITHUB_SHA"
+          git rev-parse HEAD:sandbox/lf_contract_gate_test/material_currentness/lf_material_currentness_v1.py
+          git rev-parse HEAD:sandbox/lf_contract_gate_test/material_currentness/lf_currentness_authority_v1.py
+          git rev-parse HEAD:sandbox/lf_contract_gate_test/material_currentness/lf_source_attestation_v1.py
+          git rev-parse HEAD:sandbox/lf_contract_gate_test/material_currentness/test_lf_currentness_authority_v1.py
+      - name: Install bounded test dependency
+        run: python -m pip install --disable-pip-version-check pytest==8.3.5
+      - name: Execute CURRENTNESS_AUTHORITY positives and fail-closed negatives
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd sandbox/lf_contract_gate_test/material_currentness
+          python -m pytest -q test_lf_currentness_authority_v1.py
