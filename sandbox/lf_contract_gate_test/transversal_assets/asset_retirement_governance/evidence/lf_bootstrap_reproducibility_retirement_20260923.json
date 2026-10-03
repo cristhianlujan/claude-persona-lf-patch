@@ -1,0 +1,169 @@
+{
+  "schema_version": "lf-asset-retirement-evidence/v1",
+  "retirement_case": "LF_BOOTSTRAP_REPRODUCIBILITY_20260923",
+  "retired_identity": {
+    "carrier": "LF_BOOTSTRAP_REPRODUCIBILITY",
+    "workflow_name": "LF Bootstrap Reproducibility Probe",
+    "workflow_path": ".github/workflows/lf-bootstrap-reproducibility.yml",
+    "retired_control": "REMOTE_SCHEMA_REPRODUCIBILITY"
+  },
+  "baseline_authority": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "main_sha": "b1e2dc96fc8725cb220997727c59d27755416a5b"
+  },
+  "promoted_authority": {
+    "pull_request": 1041,
+    "candidate_exact_head": "94b1394c52bfd6958807ff83d2e89e1203de53b2",
+    "merged_main_sha": "27154819b649af9bc5db383aa442d8f881f72c7e",
+    "merge_status": "MERGED_AND_READBACK"
+  },
+  "responsibility_map": [
+    {
+      "responsibility": "REMOTE_SCHEMA_REPRODUCIBILITY",
+      "disposition": "RETIRE",
+      "reason": "full remote schema reconstruction had no causal operational consumer for the governed changes and could create unrelated blocking"
+    },
+    {
+      "responsibility": "DB_CANDIDATE_APPLY_ROLLBACK",
+      "disposition": "KEEP_AND_REHOME",
+      "new_carrier": "LF_DB_REGRESSION",
+      "semantics": "candidate-bound blocking when migration material changes"
+    },
+    {
+      "responsibility": "POLICY_RESOLVER_REGRESSION",
+      "disposition": "KEEP_AND_REHOME",
+      "new_carrier": "LF_DB_REGRESSION",
+      "semantics": "material-bound blocking when applicable; depends on DB candidate"
+    },
+    {
+      "responsibility": "V7_RUNTIME_REGRESSION",
+      "disposition": "KEEP_AND_REHOME",
+      "new_carrier": "LF_DB_REGRESSION",
+      "semantics": "reusable V7 regression"
+    }
+  ],
+  "consumer_map": {
+    "canonical_assets": [
+      {
+        "asset": "CI_FAST_DEEP_LANE_ROUTER",
+        "role": "logical owner/router of controls historically transported by Bootstrap",
+        "current_state": "ACTIVO"
+      },
+      {
+        "asset": "FULL_REGRESSION",
+        "role": "direct historical consumer persisted in metadata.canonical_dependencies",
+        "current_state": "READ_ONLY_RECONCILED",
+        "reconciliation_pr": 1042,
+        "reconciled_exact_head": "74a1b1ddacbb8a35c0d23d4f8a28549f0589559f"
+      },
+      {
+        "asset": "GITHUB_CONTRACT_GATE_LF",
+        "role": "upstream/transitive consumer through CI router/full regression",
+        "current_state": "ACTIVO"
+      },
+      {
+        "asset": "CURRENTNESS_AUTHORITY",
+        "role": "currentness participant; not proven as direct caller",
+        "current_state": "ACTIVO"
+      }
+    ],
+    "historical_required_check_consumers": "Multiple SRCR, Work Protocol, profile and other PR flows inherited Bootstrap as a universal/required CI check; they are historical CI consumers, not independent architectural callers."
+  },
+  "github_evidence": {
+    "pr_1041_candidate_runs": {
+      "validate_lf_packs": {"run_id": 35936660873, "conclusion": "success"},
+      "lf_db_regression": {"run_id": 35936660866, "conclusion": "success"},
+      "lf_contract_check": {"run_id": 35936660882, "conclusion": "success"}
+    },
+    "post_merge_runs": {
+      "validate_lf_packs": {"run_id": 35941413773, "conclusion": "success"},
+      "lf_contract_check": {"run_id": 35941413734, "conclusion": "success"}
+    },
+    "old_workflow_on_promoted_main": "ABSENT_404",
+    "replacement_workflow": ".github/workflows/lf-db-regression.yml",
+    "reintroduction_guards": [
+      "RETIRED_CONTROL_IDS contains REMOTE_SCHEMA_REPRODUCIBILITY",
+      "RETIRED_CARRIERS contains LF_BOOTSTRAP_REPRODUCIBILITY",
+      "RETIRED_WORKFLOW_PATHS contains .github/workflows/lf-bootstrap-reproducibility.yml",
+      "carrier wiring test forbids stale bootstrap receipt output and executable remote-schema job"
+    ]
+  },
+  "supabase_readback": {
+    "canonical_router": {
+      "id": 131,
+      "codigo_activo": "CI_FAST_DEEP_LANE_ROUTER",
+      "estado_documental": "VIGENTE",
+      "estado_operativo": "ACTIVO"
+    },
+    "full_regression": {
+      "id": 244,
+      "estado_operativo": "READ_ONLY",
+      "canonical_dependencies": [
+        "CHANGESET_GOVERNANCE_LF_V1",
+        "CI_FAST_DEEP_LANE_ROUTER",
+        "LF_CI_EXECUTION_PLAN_V2",
+        "CURRENTNESS_AUTHORITY",
+        "LF_CONTRACT_CHECK",
+        "VALIDATE_LF_PACKS",
+        "LF_DB_REGRESSION"
+      ],
+      "historical_bootstrap_reference_policy": "retained only in retirement_reconciliation/historical evidence; no operational dependency"
+    },
+    "zero_residuals": {
+      "retired_asset_identity_rows": 0,
+      "stale_relations": 0,
+      "stale_canonical_dependency_rows": 0
+    }
+  },
+  "ekb_refs": [
+    "CI-REMOTE-SCHEMA-REPRODUCIBILITY-NONCONSUMER-001",
+    "CI-RETIREMENT-CANONICAL-DEPENDENCY-SWEEP-001",
+    "CI-RETIREMENT-HISTORICAL-CONSUMER-TRACE-001",
+    "CI-CARRIER-JUDGE-NEGATIVE-GUARD-FALSE-POSITIVE-001",
+    "CI-CARRIER-JUDGE-YAML-JOB-BOUNDARY-001"
+  ],
+  "ekb_historical_sweep": {
+    "direct_related_records": 35,
+    "summed_frequency": 151,
+    "interpretation": "incident count is not caller count; it demonstrates historical coupling and repeated required-check inheritance"
+  },
+  "support_inventory_refs": [
+    {
+      "provider": "Google Drive",
+      "role": "SUPPORT_ONLY_NOT_AUTHORITY",
+      "folder_id": "1jEfR3JhOnUmoltoDmUmUA3nbCAyouL5i",
+      "file": "INVENTARIO_LF_REPO_GITHUB_DEPENDENCIAS_20260923",
+      "file_id": "1-gHUh7rMwvSu3T_sG0Zo6nUTWFe-NT4QJmp_GKZGlBk",
+      "observed_old_workflow_matches": 0,
+      "observed_replacement_workflow_relations": 18
+    },
+    {
+      "provider": "Google Drive",
+      "role": "SUPPORT_ONLY_NOT_AUTHORITY",
+      "file": "INVENTARIO_LF_NO_DECLARADO_DEPENDENCIAS_20260923",
+      "file_id": "12vMCIdOBtoKIVB97G9Mx5ygKVwlLPWqKNzN1MRioUSI",
+      "observed_old_workflow_matches": 0
+    },
+    {
+      "provider": "Google Drive",
+      "role": "SUPPORT_ONLY_NOT_AUTHORITY",
+      "file": "INVENTARIO_LF_FAMILIA_USO_UBICACION_DEPENDENCIAS_20260923",
+      "file_id": "1t_2SHI8NG7fS6Tgbuad4UQ5aw8YyJWw_VuLOeoSY3hU",
+      "observed_retired_asset_rows": 0
+    }
+  ],
+  "closure_verdict": {
+    "status": "COMPROBADO",
+    "ZERO_OPERATIONAL_REMOTE_SCHEMA_REPRODUCIBILITY": true,
+    "ZERO_STALE_ROUTING": true,
+    "ZERO_STALE_RECEIPT_CONSUMERS": true,
+    "ZERO_STALE_RELATIONS": true,
+    "ZERO_STALE_CANONICAL_DEPENDENCIES": true,
+    "REINTRODUCTION_GUARD": "ACTIVE",
+    "post_promotion_readback": "PASS"
+  },
+  "limitations": [
+    "DB_CANDIDATE_APPLY_ROLLBACK did not execute candidate DDL in PR 1041 because that retirement PR contained no migration changes; this does not weaken the retirement proof.",
+    "FULL_REGRESSION PR 1042 remains a separate lifecycle: reconciled and exact-head CI green, but not merged or activated; comprobado=false for that capability itself."
+  ]
+}

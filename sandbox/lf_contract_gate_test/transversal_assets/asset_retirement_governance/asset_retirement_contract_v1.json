@@ -1,0 +1,87 @@
+{
+  "schema_version": "lf-asset-retirement-governance/v1",
+  "asset_code": "ASSET_RETIREMENT_GOVERNANCE",
+  "canonical_name": "TRANSVERSAL_ASSET_RETIREMENT_GOVERNANCE",
+  "authority": {
+    "git": "refs/heads/main",
+    "inventory": "public.lf_activos",
+    "relations": "public.lf_activo_relaciones",
+    "learning": "public.lf_error_knowledge",
+    "drive_role": "SUPPORT_ONLY_NOT_AUTHORITY"
+  },
+  "lifecycle": [
+    "DISCOVER",
+    "MAP_CONSUMERS",
+    "CLASSIFY_RESPONSIBILITIES",
+    "DISCONNECT",
+    "REHOME",
+    "GUARD",
+    "PROMOTE",
+    "POST_PROMOTION_READBACK",
+    "CLOSE"
+  ],
+  "required_inventory_surfaces": [
+    "asset_identity_and_aliases",
+    "github_workflows_and_source",
+    "registries_and_manifests",
+    "required_checks_and_receipts",
+    "supabase_asset_relations",
+    "metadata_canonical_dependencies",
+    "currentness_and_ownership",
+    "ekb_historical_incidents",
+    "open_prs_and_branches_from_previous_authority",
+    "drive_support_inventories"
+  ],
+  "responsibility_dispositions": [
+    "RETIRE",
+    "KEEP_AND_REHOME",
+    "HISTORICAL_ONLY"
+  ],
+  "closure_invariants": {
+    "ZERO_OPERATIONAL_CONSUMERS": true,
+    "ZERO_STALE_ROUTING": true,
+    "ZERO_STALE_RECEIPT_CONSUMERS": true,
+    "ZERO_STALE_RELATIONS": true,
+    "ZERO_STALE_CANONICAL_DEPENDENCIES": true,
+    "ZERO_RETIRED_ASSET_IDENTITY_ROWS": true,
+    "VALID_RESPONSIBILITIES_HAVE_SINGLE_OWNER": true,
+    "REINTRODUCTION_GUARD_ACTIVE_WHEN_APPLICABLE": true,
+    "EXACT_HEAD_CI_READBACK": true,
+    "POST_PROMOTION_GITHUB_SUPABASE_READBACK": true,
+    "OLD_DESCENDANT_PRS_RECONCILED_OR_BLOCKED": true,
+    "RETIREMENT_EVIDENCE_PERSISTED": true
+  },
+  "historical_reference_policy": {
+    "allowed": [
+      "ekb",
+      "immutable_receipts",
+      "retirement_reconciliation_metadata",
+      "negative_guards",
+      "tests_that_forbid_reintroduction"
+    ],
+    "condition": "reference_has_no_operational_routing_blocking_or_receipt_power"
+  },
+  "prohibitions": [
+    "DELETE_BEFORE_ZERO_CONSUMERS",
+    "CREATE_PARALLEL_RUNTIME",
+    "CREATE_PARALLEL_ROUTER",
+    "CREATE_PARALLEL_CURRENTNESS_ENGINE",
+    "CREATE_PARALLEL_CI_REGISTRY",
+    "TREAT_DRIVE_AS_AUTHORITY",
+    "DECLARE_COMPROBADO_WITHOUT_POST_PROMOTION_READBACK"
+  ],
+  "evidence_schema": {
+    "required": [
+      "retired_identity",
+      "baseline_authority",
+      "promoted_authority",
+      "consumer_map",
+      "responsibility_map",
+      "github_evidence",
+      "supabase_readback",
+      "ekb_refs",
+      "support_inventory_refs",
+      "closure_verdict"
+    ]
+  }
+}
