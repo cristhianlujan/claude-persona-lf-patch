@@ -6,7 +6,7 @@
       "candidate_ref": "aec43896a297b17b7c93a3d4f8600536bc9b1d71",
       "candidate_path": "supabase/migrations/20261003053000_ig_m8_7_freshness_once_per_request_v1.sql",
       "prelude_path": "sandbox/ig_cv/fixtures/m8_7_freshness_once_preimage_v1.sql",
-      "screen_id": 1,
+      "screen_id": 4,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
       "expected_finding_codes": []
