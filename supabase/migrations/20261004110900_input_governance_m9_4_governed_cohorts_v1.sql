@@ -286,9 +286,9 @@ begin
     'Persistir tipos y membresías; exigir pantalla activa y module_id; registrar observable selection_basis y authority_ref; escanear funciones shadow/canary para detectar literales usados como mecanismo de selección.',
     'PASS cuando hay cobertura 7/7, 0 tipos sin pantalla activa/unible, fn_input_governance_shadow_sweep_v2 consume v_input_governance_representative_cohort_v1 y no contiene p.codigo IN ni CASE p.codigo ni códigos de pantalla de la muestra.',
     'HIGH',1,now(),now(),'IG_CURATOR_VALIDATOR_REFACTOR_V2',null,'ACTIVO',
-    'M9.4 / PAULO-154; AS-IS 8 fixed screen codes; governed model 7 types/7 active joinable representatives; source blob 3caf20a9b8c6d1444930383361b614bfbf32c266.',
+    'M9.4 / PAULO-154; AS-IS 8 fixed screen codes; governed model 7 types/7 active joinable representatives; source blob 3caf20a9b8c6d1444930383361b614bfbf32c266; first live apply rejected unsupported EKB root_cause_family and rolled back fully before this taxonomy-aligned retry.',
     now(),now(),'RELEASE_GOVERNANCE',array['INPUT_GOVERNANCE','CURATOR','VALIDATOR','AUDITOR'],
-    'HARDCODED_SELECTION_AUTHORITY','LOUD_EARLY',
+    'UNCLASSIFIED_WITH_REASON','LOUD_EARLY',
     'IG_CURATOR_VALIDATOR_REFACTOR_V2 M9.4 / PAULO-154',v_source_ref
   );
 
@@ -378,9 +378,9 @@ begin
     and (p.proname ilike '%shadow%' or p.proname ilike '%canary%')
     and p.prosrc ~ '''(REC_[0-9]+|ONB_[0-9]+|HOME_[0-9]+|B2B-[A-Z]+-[0-9]+)'''
     and (
-      p.prosrc ~* 'codigo[[:space:]]+in[[:space:]]*\\('
+      p.prosrc ~* 'codigo[[:space:]]+in[[:space:]]*\('
       or p.prosrc ~* 'order[[:space:]]+by[[:space:]]+case[[:space:]]+[^;]*codigo'
-      or p.prosrc ~* 'pantalla_id[[:space:]]+in[[:space:]]*\\('
+      or p.prosrc ~* 'pantalla_id[[:space:]]+in[[:space:]]*\('
     );
   if v_literal_selectors<>0 then
     raise exception 'M9_4_LITERAL_SELECTOR_NEGATIVE_FAILED:%',v_literal_selectors;
