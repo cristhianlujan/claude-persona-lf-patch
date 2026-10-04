@@ -1,9 +1,17 @@
 {
   "schema_version": "lf-plan-authority-drift-guard/v1",
   "asset_code": "PLAN_AUTHORITY_DRIFT_GUARD",
-  "status": "CANDIDATE_READ_ONLY",
+  "status": "FUNCTIONAL_SOURCE_CURRENT_LIFECYCLE_DELEGATED",
   "owner": "LF_GOVERNANCE",
   "mode": "PLAN_AUTHORITY_ADAPTER_OVER_CURRENTNESS_AUTHORITY",
+  "lifecycle_authority": {
+    "source_declares_mutable_lifecycle": false,
+    "asset": "public.lf_activos",
+    "registry": "public.lf_capability_registry",
+    "current": "public.lf_capability_current",
+    "readback_rule": "MUTABLE_LIFECYCLE_MUST_BE_READ_FROM_CANONICAL_DB_AUTHORITY",
+    "stale_source_lifecycle_must_not_authorize": true
+  },
   "entry_guard": {
     "required": true,
     "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
@@ -100,11 +108,13 @@
     "no_plan_mutation": true,
     "no_new_ledger": true,
     "no_runtime_activation": true,
-    "no_production_activation": true
+    "no_production_activation": true,
+    "mutable_lifecycle_owned_by_canonical_db": true
   },
   "materialization": {
-    "supabase_projection_applied": false,
-    "cutover_authorized": false,
+    "source_projection_mode": "DELEGATE_TO_CANONICAL_DB",
+    "source_declares_live_materialization_state": false,
+    "source_declares_cutover_state": false,
     "runtime_authorized": false,
     "production_authorized": false
   }
