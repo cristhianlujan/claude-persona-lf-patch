@@ -1,0 +1,119 @@
+{
+  "schema_version": "PASE_F08_R02_CONTRACT_CHECK_WORKFLOW_RETIREMENT_READINESS_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F08-R02",
+  "target": "LF_CONTRACT_CHECK_WORKFLOW",
+  "target_path": ".github/workflows/lf-contract-check.yml",
+  "mode": "RETIREMENT_READINESS_ONLY",
+  "destructive_retirement_executed": false,
+  "actual_retirement_deferred_until_final_activation": true,
+  "authority": {
+    "exact_main_sha": "4cf5353165e01cb25601275f3e53cb6fa6f496d2",
+    "predecessor_terminal_event_id": 20294,
+    "canonical_contract_check_capability": "LF_CONTRACT_CHECK",
+    "canonical_contract_check_version": "1.4.1",
+    "canonical_contract_check_manifest_sha256": "fd3bd1583b65f6a44d8ddde816573815ecd8c6e380e9adf36c77020ea4591a20",
+    "retirement_governance_capability": "ASSET_RETIREMENT_GOVERNANCE"
+  },
+  "current_source_state": {
+    "legacy_workflow_blob_sha1": "a9b0098a11e42365d1af910ad61c018c7d379fb6",
+    "legacy_workflow_trigger_mode": "WORKFLOW_DISPATCH_ONLY",
+    "delegates_to": ".github/workflows/pase.yml",
+    "delegated_pase_blob_sha1": "b3b2cf286ece91498ed3cf68b198ab8eb83d4660",
+    "delegated_pase_enabled": false,
+    "legacy_bridge_source_present": false,
+    "canonical_execution_blob_sha1": "f197eec21a536500c8952c9e17c5774a05e4f516",
+    "canonical_carrier_blob_sha1": "ee5473e265bec09e7df8b9283c7e8daec918473e",
+    "canonical_semantic_blob_sha1": "d44dc77553efd749c441eb91afbdf5b098b9db5a"
+  },
+  "current_live_references": {
+    "active_db_asset_refs": [
+      {
+        "asset_code": "GITHUB_CONTRACT_GATE_LF",
+        "reference_kind": "ruta_esperada_and_transversal_inventory_physical_asset",
+        "operational_state": "ACTIVO",
+        "canonical_contract_check_capability": "LF_CONTRACT_CHECK"
+      },
+      {
+        "asset_code": "CI_FAST_DEEP_LANE_ROUTER",
+        "reference_kind": "transversal_inventory_physical_asset",
+        "operational_state": "ACTIVO"
+      }
+    ],
+    "source_registry_ref": {
+      "path": "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_shared_ci_control_ownership_registry_v1.json",
+      "blob_sha1": "0ee4a589413f9a711f72071cba9d8b048615cc4a",
+      "control_id": "LF_CONTRACT_CHECK_WORKFLOW"
+    },
+    "classification": "NON_EXECUTING_COMPATIBILITY_OR_INVENTORY_REFERENCE_PENDING_FINAL_RETIREMENT",
+    "unclassified_operational_caller_count": 0
+  },
+  "replacement_responsibilities": {
+    "automatic_entry_authority": "PASE after separately authorized control-scoped activation",
+    "contractual_verdict_authority": "LF_CONTRACT_CHECK current capability",
+    "canonical_execution_path": "sandbox/lf_contract_gate_test/contract_check_execution/contract_check_execution_v1.py",
+    "canonical_carrier_path": "sandbox/lf_contract_gate_test/contract_check_carrier/contract_check_carrier_v1.py",
+    "canonical_semantic_path": "sandbox/lf_contract_gate_test/contract_check_semantic_integration/contract_check_semantic_integration_v1.py",
+    "legacy_manual_workflow_required_for_steady_state": false
+  },
+  "future_retirement_preconditions": [
+    "FINAL_ACTIVATION_AUTHORITY_SATISFIED",
+    "REFRESH_EXACT_MAIN_AND_ALL_TARGET_BLOBS",
+    "RERUN_EXACT_TARGET_REFERENCE_SEARCH",
+    "ZERO_UNCLASSIFIED_OPERATIONAL_CALLERS",
+    "CANONICAL_PASE_ENTRY_CURRENT_AND_AUTHORIZED",
+    "LF_CONTRACT_CHECK_CURRENTNESS_VALID",
+    "PRESERVE_ACTIVE_SHARED_CONTROLS",
+    "NO_CASCADE"
+  ],
+  "future_apply_contract": {
+    "git_actions": [
+      "REMOVE_OR_NEUTRALIZE_LEGACY_MANUAL_WORKFLOW",
+      "REMOVE_OR_RECLASSIFY_LF_CONTRACT_CHECK_WORKFLOW_FROM_SHARED_CONTROL_OWNERSHIP_REGISTRY",
+      "UPDATE_ONLY_CURRENT_DIRECT_SOURCE_REFERENCES_DISCOVERED_AT_EXECUTION_HEAD"
+    ],
+    "db_authority_actions": [
+      "UPDATE_GITHUB_CONTRACT_GATE_LF_ROUTE_AND_PHYSICAL_ASSET_PROJECTION_WITHOUT_RETIRING_THE_CANONICAL_GATE_ASSET",
+      "UPDATE_CI_FAST_DEEP_LANE_ROUTER_PHYSICAL_ASSET_PROJECTION_WITHOUT_CHANGING_ROUTER_SEMANTICS",
+      "PRESERVE_LF_CONTRACT_CHECK_CURRENT_CAPABILITY_AND_ENTRY_GUARD"
+    ],
+    "forbidden": [
+      "DELETE_LF_CONTRACT_CHECK_CAPABILITY",
+      "DISABLE_CANONICAL_PASE_ENTRYPOINT_AS_PART_OF_RETIREMENT",
+      "RETIRE_CI_FAST_DEEP_LANE_ROUTER",
+      "CASCADE_RETIREMENT",
+      "BULK_CONTROL_STATE_CHANGE"
+    ]
+  },
+  "rollback_contract": {
+    "git_strategy": "CAPTURE_EXECUTION_TIME_EXACT_PREIMAGE_BLOBS_FOR_EVERY_CHANGED_PATH",
+    "db_strategy": "CAPTURE_EXECUTION_TIME_EXACT_JSONB_AND_ROUTE_PREIMAGES_FOR_EVERY_CHANGED_ASSET",
+    "historical_baselines_are_rollback_authority": false,
+    "restore_only_execution_time_preimages": true,
+    "fail_closed_if_head_moves": true,
+    "fail_closed_if_db_currentness_moves": true,
+    "persist_preimage_manifest_and_digest": true
+  },
+  "anti_reintroduction": {
+    "required": true,
+    "negative_condition": "NO_ACTIVE_WORKFLOW_OR_OPERATIONAL_REGISTRY_MAY_REINTRODUCE_LF_CONTRACT_CHECK_WORKFLOW_AFTER_RETIREMENT",
+    "historical_docs_and_migrations_may_reference_target": true,
+    "historical_reference_condition": "NO_OPERATIONAL_ROUTING_BINDING_OR_AUTHORITY_POWER"
+  },
+  "post_apply_readback": [
+    "TARGET_WORKFLOW_ABSENT_OR_NEUTRALIZED",
+    "ZERO_ACTIVE_OPERATIONAL_CALLERS_TO_TARGET_WORKFLOW",
+    "ZERO_STALE_DB_PHYSICAL_ASSET_REFERENCES",
+    "SHARED_CONTROL_OWNERSHIP_REGISTRY_CURRENT",
+    "PASE_ENTRYPOINT_CURRENT_AND_UNCHANGED_EXCEPT_AUTHORIZED_ACTIVATION_STATE",
+    "LF_CONTRACT_CHECK_CURRENT_AND_UNCHANGED_FUNCTIONALLY",
+    "ROLLBACK_PREIMAGE_MANIFEST_DIGEST_PERSISTED"
+  ],
+  "restrictions": {
+    "no_runtime_activation_now": true,
+    "no_production_activation_now": true,
+    "no_destructive_retirement_now": true,
+    "no_cascade": true,
+    "no_zip_authority": true
+  }
+}
