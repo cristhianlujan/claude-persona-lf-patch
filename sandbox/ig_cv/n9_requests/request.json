@@ -6,7 +6,7 @@
       "candidate_ref": "HEAD",
       "candidate_path": "supabase/migrations/20261004031000_ig_n14_b2b_carga_v4_due_date_projection_reconcile_v1.sql",
       "screen_id": 44,
-      "consumer": "INPUT_GOVERNANCE",
+      "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
       "expected_finding_codes": []
     }
