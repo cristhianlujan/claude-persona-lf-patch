@@ -2,12 +2,98 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+
+from story_independent_assurance_adapter_v1 import (
+    consume_story_independent_review,
+    prepare_story_independent_review,
+)
 
 HERE = Path(__file__).resolve().parent
 CONTRACT = HERE / "fixtures" / "programming_consumer_v2_contract_snapshot_20261002.json"
 PACKAGE = HERE / "fixtures" / "onb_004_implementation_package_v1_1.json"
 SOURCE_PACK_SHA = "e24475612abd6b4011339621a9c8628005ef2f1c4111711d06ac03dd0b18a472"
+CURRENT_INDEPENDENT_ASSURANCE = {
+    "capability_code": "INDEPENDENT_ASSURANCE",
+    "status": "ACTIVE",
+    "version": "1.0.0",
+    "manifest_sha256": "a6f5e2fe21ed305b6d47e8722035685b243cfc4e697ff397d1724e5d34f6c6e8",
+}
+
+
+def _adapter_checks(package: dict, source_head_sha: str) -> list[str]:
+    errors: list[str] = []
+    prepared = prepare_story_independent_review(
+        package,
+        source_head_sha=source_head_sha,
+        capability_current=CURRENT_INDEPENDENT_ASSURANCE,
+    )
+    if prepared.get("result") != "REVIEW_REQUIRED":
+        return [f"M43D_PREPARE_FAILED:{prepared}"]
+    if prepared.get("subject_type") != "STORY_IMPLEMENTATION_PACKAGE":
+        errors.append("M43D_SUBJECT_TYPE_INVALID")
+    if prepared.get("capability_version") != "1.0.0":
+        errors.append("M43D_CURRENT_CAPABILITY_NOT_RESOLVED")
+
+    missing = consume_story_independent_review(
+        package,
+        source_head_sha=source_head_sha,
+        capability_current=CURRENT_INDEPENDENT_ASSURANCE,
+        ledger_receipt=None,
+    )
+    if missing.get("code") != "INDEPENDENT_REVIEW_RECEIPT_REQUIRED":
+        errors.append("M43D_MISSING_RECEIPT_NOT_FAIL_CLOSED")
+
+    receipt = {
+        "receipt_id": "11111111-1111-4111-8111-111111111111",
+        "receipt_sha256": "1" * 64,
+        "capability_code": "INDEPENDENT_ASSURANCE",
+        "receipt_kind": "AUDIT_VERDICT",
+        "subject_type": prepared["subject_type"],
+        "subject_ref": prepared["subject_ref"],
+        "subject_sha256": prepared["subject_sha256"],
+        "source_head_sha": source_head_sha,
+        "authority_ref": prepared["authority_ref"],
+        "verification_state": "VERIFIED",
+        "receipt_payload": {
+            "capability_version": CURRENT_INDEPENDENT_ASSURANCE["version"],
+            "capability_manifest_sha256": CURRENT_INDEPENDENT_ASSURANCE["manifest_sha256"],
+            "producer_identity": "STORY_CREATOR",
+            "reviewer_identity": "INDEPENDENT_REVIEWER_A",
+            "independent": True,
+            "independence_measure": {"state": "INDEPENDENT"},
+            "verdict": "PASS",
+            "review_dimensions": {
+                "implementation_actionability": "PASS",
+                "source_fidelity": "PASS",
+                "reuse_correctness": "PASS",
+                "context_sufficiency": "PASS",
+                "acceptance_executability": "PASS",
+            },
+            "evidence_refs": ["provider-bound://test-evidence"],
+        },
+    }
+    consumed = consume_story_independent_review(
+        package,
+        source_head_sha=source_head_sha,
+        capability_current=CURRENT_INDEPENDENT_ASSURANCE,
+        ledger_receipt=receipt,
+    )
+    if consumed.get("result") != "PASS":
+        errors.append(f"M43D_EXACT_RECEIPT_NOT_ACCEPTED:{consumed}")
+
+    self_receipt = json.loads(json.dumps(receipt))
+    self_receipt["receipt_payload"]["reviewer_identity"] = "STORY_CREATOR"
+    rejected = consume_story_independent_review(
+        package,
+        source_head_sha=source_head_sha,
+        capability_current=CURRENT_INDEPENDENT_ASSURANCE,
+        ledger_receipt=self_receipt,
+    )
+    if rejected.get("code") != "INDEPENDENT_REVIEW_INDEPENDENCE_INVALID":
+        errors.append("M43D_SELF_REVIEW_NOT_REJECTED")
+    return errors
 
 
 def main() -> int:
@@ -42,6 +128,9 @@ def main() -> int:
     if implementation["ABSENT"] > legacy["ABSENT"]:
         errors.append("IMPLEMENTATION_ABSENCE_REGRESSION")
 
+    source_head_sha = os.environ.get("GITHUB_SHA", "85bb733e73b9d21222f4e86b618ef1a099208051")
+    errors.extend(_adapter_checks(package, source_head_sha))
+
     task_view = package["task_views"][0]
     selected = {key: package[key] for key in task_view["selected_sections"]}
     metrics = {
@@ -59,6 +148,8 @@ def main() -> int:
         "source_ref_count": len(package.get("source_refs", [])),
         "model_runtime_executed": False,
         "comparison_kind": "FORMAT_CONTRACT_AB",
+        "m43d_adapter_checked": True,
+        "m43d_current_capability_version": CURRENT_INDEPENDENT_ASSURANCE["version"],
     }
 
     out = {
