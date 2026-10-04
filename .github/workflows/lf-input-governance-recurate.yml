@@ -28,7 +28,9 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import json, os
-          allowed={1,2,3,5,43,51,52,53,54,55,56,57,58}
+          # M9.1 live joinable universe read back from lf_ops.pantallas on 2026-10-04.
+          # universe_sha256=b06500cf01e3844bb16fbef5d6ec3d5539065c3b4e72dbb67e56b7b1b6ebaaf3
+          allowed={1,2,3,4,5,6,11,18,19,21,24,25,27,28,30,33,34,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67}
           raw=os.environ['RAW_SCREEN_IDS']
           try:
               ids=[int(part.strip()) for part in raw.split(',') if part.strip()]
