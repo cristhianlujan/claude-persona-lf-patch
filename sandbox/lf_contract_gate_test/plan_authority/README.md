@@ -65,9 +65,9 @@ Cada delta cross-bindea `delta_event_id`, `plan_id`, `previous_plan_digest`, `ne
 
 ## Owner / runner / carrier
 
-El asset queda source-ready pero `CANDIDATE_READ_ONLY`. `OWNER_RUNNER_CARRIER_AUTHORITY_V1` exige que un standalone resuelva por autoridad canónica; por eso esta unidad no declara runner ejecutable ni cutover.
+El source define el contrato funcional, pero no declara el lifecycle mutable. Estado operativo, registro activo y current pointer se leen exclusivamente desde `public.lf_activos`, `public.lf_capability_registry` y `public.lf_capability_current`.
 
-La proyección source-only falla cerrada si `LF_GOVERNANCE`, `CAPABILITY_EXECUTION_CONTRACT` o `CURRENTNESS_AUTHORITY` no están materializados en `lf_activos`.
+Una etiqueta histórica `CANDIDATE_READ_ONLY` en source no puede autorizar ni invalidar el estado live. El source actual delega explícitamente esa decisión al readback canónico y bloquea cualquier intento de usar una proyección stale como autoridad.
 
 ## Test
 
