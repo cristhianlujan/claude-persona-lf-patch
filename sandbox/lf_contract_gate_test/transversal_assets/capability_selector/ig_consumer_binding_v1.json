@@ -1,0 +1,19 @@
+{
+  "signals": [
+    {"type": "evidence_state", "value": "INSUFFICIENT", "confidence": 0.74},
+    {"type": "replay_need", "value": "REQUIRED", "confidence": 0.81}
+  ],
+  "catalog": [
+    {"capability_code": "TARGETED_EVIDENCE_ACQUISITION", "signal_type": "evidence_state", "accepted_values": ["INSUFFICIENT"], "rank": 20, "state": "AVAILABLE"},
+    {"capability_code": "REPLAY_REGEN_ROLLBACK_PROOF", "signal_type": "replay_need", "accepted_values": ["REQUIRED"], "rank": 10, "state": "AVAILABLE"}
+  ],
+  "policy": {
+    "consumer_ref": "IG_CURATOR_M5_4",
+    "fallback_capabilities": ["FULL_SAFE_MIX_V1_CANDIDATE"],
+    "typed_evidence_registry": "TYPED_EVIDENCE_REGISTRY",
+    "currentness_authority": "CURRENTNESS_AUTHORITY",
+    "selection_only": true,
+    "admission_owned_here": false,
+    "source_event": "event://20170"
+  }
+}
