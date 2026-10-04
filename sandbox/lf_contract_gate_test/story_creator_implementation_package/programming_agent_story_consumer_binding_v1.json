@@ -1,0 +1,84 @@
+{
+  "schema_version": "PROGRAMMING_AGENT_STORY_CONSUMER_BINDING_V1",
+  "state": "CURRENT_CANDIDATE",
+  "owner_scope": "SUPER_ADMIN",
+  "consumer": "PROGRAMMING_AGENT",
+  "consumer_runtime": {
+    "execution_bundle_function": "programacion.fn_agent_task_execution_bundle(bigint,text,text)",
+    "runtime_context_function": "programacion.fn_agent_task_runtime_context(bigint)",
+    "execution_bundle_schema_version": 2,
+    "context_pack_digest_version": 2,
+    "new_runtime_created": false,
+    "new_task_store_created": false,
+    "new_context_store_created": false
+  },
+  "source_contract": {
+    "current_pointer_path": "sandbox/lf_contract_gate_test/story_creator_implementation_package/story_creator_current_contract.json",
+    "current_contract": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2",
+    "legacy_carrier": "STORY_IMPLEMENTATION_PACKAGE_V1_1",
+    "legacy_direct_semantics_consumption_allowed": false
+  },
+  "handoff_projection": {
+    "projection_mode": "LOSSLESS_TASK_SCOPED_PROJECTION",
+    "lossy_summary_forbidden": true,
+    "canonical_source_identity_preserved": true,
+    "canonical_authority_refs_preserved": true,
+    "open_decisions_preserved": true,
+    "typed_blockers_preserved": true,
+    "task_view_selected_sections_preserved": true,
+    "current_contract_ref_preserved": true,
+    "material_requirement_semantics_preserved": true,
+    "executable_acceptance_semantics_preserved": true,
+    "mapping": [
+      {"story_path":"canonical_story_sha256","consumer_path":"worker_task_spec.source_snapshot_sha256"},
+      {"story_path":"story_identity","consumer_path":"worker_task_spec.human_story + platform_refs + interface_refs"},
+      {"story_path":"story_contracts","consumer_path":"worker_task_spec.functional_contract + platform_refs + interface_refs"},
+      {"story_path":"hard_boundaries","consumer_path":"worker_task_spec.scope + write_path_patterns + protected_path_patterns"},
+      {"story_path":"implementation_preconditions","consumer_path":"worker_task_spec.dependency_resolution + blocked_if"},
+      {"story_path":"executable_acceptance","consumer_path":"worker_task_spec.cases + required_tests + acceptance_commands"},
+      {"story_path":"blocked_if","consumer_path":"worker_task_spec.blocked_if"},
+      {"story_path":"context_transport.max_context_bytes","consumer_path":"worker_task_spec.max_context_bytes"},
+      {"story_path":"task_views","consumer_path":"worker_task_spec.context_path_patterns + task-scoped projection"}
+    ]
+  },
+  "implementation_target_binding": {
+    "required_fields": [
+      "repo_full_name",
+      "base_head_sha",
+      "source_snapshot_sha256",
+      "context_path_patterns",
+      "write_path_patterns",
+      "protected_path_patterns"
+    ],
+    "missing_required_binding_result": "BLOCKED_AFFECTED_TASK",
+    "repo_or_path_inference_forbidden": true,
+    "cross_repo_default_forbidden": true,
+    "exact_head_required": true
+  },
+  "currentness_and_reread": {
+    "reuse_current_handoff_first": true,
+    "downstream_reinference_forbidden": true,
+    "downstream_refetch_forbidden_without_trigger": true,
+    "allowed_refresh_triggers": [
+      "SOURCE_CURRENTNESS_CHANGED",
+      "TARGET_HEAD_CHANGED",
+      "TARGET_BINDING_CHANGED",
+      "AUTHORITY_REF_CHANGED",
+      "MISSING_REQUIRED_CONTEXT"
+    ]
+  },
+  "compatibility": {
+    "existing_programming_agent_contract_snapshot": "PROGRAMMING_CONSUMER_V2_CONTRACT_SNAPSHOT_V1",
+    "existing_worker_task_spec_retained": true,
+    "existing_runtime_context_retained": true,
+    "cutover_or_runtime_activation_performed": false
+  },
+  "source_refs": [
+    "plan://STORY_CREATOR_IMPLEMENTATION_SPEC_REFACTOR_V1#SC-M5.2",
+    "supabase://programacion.fn_agent_task_execution_bundle(bigint,text,text)",
+    "supabase://programacion.fn_agent_task_runtime_context(bigint)",
+    "github://cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/story_creator_implementation_package/story_creator_current_contract.json",
+    "ekb://STORY-CREATOR-IMPLEMENTATION-HANDOFF-CONTRACT-GAP-001",
+    "ekb://STORY-CREATOR-M51-CURRENT-CONTRACT-001"
+  ]
+}
