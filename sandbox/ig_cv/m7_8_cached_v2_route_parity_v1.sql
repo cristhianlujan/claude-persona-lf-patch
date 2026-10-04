@@ -1,6 +1,9 @@
 -- M7.8 permanent cached/no-cached parity regression.
 -- T-EQUIV is the semantic authority: IG is exact-only, so the permitted
 -- non-semantic exception list is intentionally empty.
+-- Permanent behavioral sampling is intentionally bounded to exactly 3 screens:
+-- one AUTH representative, one FORMS representative, and one highest-complexity
+-- current screen distinct from those representatives. Screen identity is incidental.
 -- Unchanged pair evidence is reused only while source fingerprints remain exact;
 -- the demonstrated drift surface is behaviorally refreshed on each execution.
 DO $test$
@@ -63,29 +66,38 @@ BEGIN
     'PROGRAMACION_CONTRACT','INPUT_READINESS_CONTRACT','INPUT_GOVERNANCE_AGENT'
   );
 
-  -- Behavior-first fixture selection: governed representatives plus the strongest
-  -- current eligible screen. Screen identity remains incidental evidence.
+  -- Exactly 3 dynamic screens: AUTH + FORMS + strongest current complexity.
   FOR v_screen IN
-    WITH latest AS (
+    WITH base_roles AS (
+      SELECT 'AUTH'::text AS sample_role,pantalla_id
+      FROM programacion.v_input_governance_representative_cohort_v1
+      WHERE representative_rank=1 AND cohort_type_code='AUTH'
+      UNION ALL
+      SELECT 'FORMS'::text,pantalla_id
+      FROM programacion.v_input_governance_representative_cohort_v1
+      WHERE representative_rank=1 AND cohort_type_code='FORMS'
+    ), latest AS (
       SELECT DISTINCT ON (r.pantalla_id) r.pantalla_id,r.id,r.source_manifest
       FROM programacion.input_readiness_runs r
       JOIN lf_ops.pantallas p ON p.id=r.pantalla_id AND p.activa
       WHERE r.version_id=v_version AND r.status='COMPLETED' AND r.invalidated_at IS NULL
       ORDER BY r.pantalla_id,r.id DESC
     ), complexity AS (
-      SELECT l.pantalla_id,
+      SELECT 'COMPLEXITY'::text AS sample_role,l.pantalla_id,
              coalesce(jsonb_array_length(l.source_manifest),0)
              + coalesce(sum(CASE WHEN jsonb_typeof(a.source_refs)='array' THEN jsonb_array_length(a.source_refs) ELSE 0 END),0)
              + coalesce(sum(CASE WHEN jsonb_typeof(a.blockers)='array' THEN jsonb_array_length(a.blockers) ELSE 0 END),0) AS complexity_score
       FROM latest l JOIN programacion.input_family_assessments a ON a.run_id=l.id
       WHERE programacion.fn_input_readiness_run_is_current(l.id)
+        AND l.pantalla_id NOT IN (SELECT pantalla_id FROM base_roles)
       GROUP BY l.pantalla_id,l.source_manifest
       ORDER BY complexity_score DESC,l.pantalla_id LIMIT 1
     ), targets AS (
-      SELECT pantalla_id FROM programacion.v_input_governance_representative_cohort_v1 WHERE representative_rank=1
-      UNION SELECT pantalla_id FROM complexity
+      SELECT sample_role,pantalla_id FROM base_roles
+      UNION ALL
+      SELECT sample_role,pantalla_id FROM complexity
     )
-    SELECT DISTINCT pantalla_id FROM targets ORDER BY pantalla_id
+    SELECT pantalla_id FROM targets ORDER BY sample_role,pantalla_id
   LOOP
     v_target_count:=v_target_count+1;
     v_graph:=programacion.fn_input_screen_canonical_graph(v_screen,v_version);
@@ -101,7 +113,7 @@ BEGIN
     END IF;
   END LOOP;
 
-  IF v_target_count=0 THEN RAISE EXCEPTION 'M7_8_NO_ELIGIBLE_BEHAVIOR_FIXTURE'; END IF;
+  IF v_target_count<>3 THEN RAISE EXCEPTION 'M7_8_SAMPLE_SIZE_DRIFT:expected=3:got=%',v_target_count; END IF;
   IF EXISTS (
     SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
     WHERE n.nspname IN ('programacion','public','private')
