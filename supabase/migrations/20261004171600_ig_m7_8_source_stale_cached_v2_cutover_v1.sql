@@ -93,15 +93,34 @@ BEGIN
   END IF;
 
   INSERT INTO public.lf_test_suite_cases(
-    suite_code,test_code,test_order,title,test_type,execution_mode,target_ref,
-    expected_outcome,severity,status,metadata,created_by_execution_id,updated_by_execution_id
+    suite_code,test_code,test_order,story_code,rule_codes,title,test_type,execution_mode,severity,
+    preconditions,input_payload,expected_output,prohibited_output,status,metadata,
+    created_by_execution_id,updated_by_execution_id
   ) VALUES (
-    'INPUT_GOVERNANCE_REGRESSION','M7_8_VISUAL_CACHED_V2_PARITY',780,
+    'INPUT_GOVERNANCE_REGRESSION','M7_8_VISUAL_CACHED_V2_PARITY',780,null,ARRAY[]::text[],
     'M7.8 behavior-driven cached/base VISUAL_EVIDENCE parity and zero cached_v1 live callers',
-    'PARITY','CUSTOM_SQL',
-    'sandbox/ig_cv/m7_8_cached_v2_route_parity_v1.sql',
-    'Governed representative cohort plus highest-complexity eligible screen: base == cached_v2; zero live callers of cached_v1',
-    'P0','ACTIVE',
+    'DETERMINISTIC','AUTOMATED','CRITICAL',
+    jsonb_build_object(
+      'contract_revision','5.13',
+      'fixture_selection','BEHAVIOR_PRECONDITION_THEN_COMPLEXITY',
+      'representative_cohort_required',true,
+      'highest_complexity_current_required',true
+    ),
+    jsonb_build_object(
+      'target_ref','sandbox/ig_cv/m7_8_cached_v2_route_parity_v1.sql',
+      'consumer','IG_CURATOR_VALIDATOR_REFACTOR_V2:M7.8'
+    ),
+    jsonb_build_object(
+      'cached_base_visual_parity',true,
+      'cached_v1_live_callers',0,
+      'fixed_screen_ids',false
+    ),
+    jsonb_build_object(
+      'cached_v1_live_callers','>0',
+      'visual_parity_mismatch',true,
+      'fixed_screen_fixture_for_generic_control',true
+    ),
+    'CANDIDATO',
     jsonb_build_object(
       'consumer','IG_CURATOR_VALIDATOR_REFACTOR_V2:M7.8',
       'equivalence_capability','CONTROL_EQUIVALENCE_JUDGE@1.0.0',
@@ -109,13 +128,25 @@ BEGIN
       'fixture_selection','BEHAVIOR_PRECONDITION_THEN_COMPLEXITY',
       'fixed_screen_ids',false,
       'root_cause','cached_v1 omitted CURRENT_VISUAL_ARTIFACT source_ref while cached_v2 matches base',
-      'rollback','sandbox/ig_cv/m7_8_source_stale_cached_v2_rollback_v1.sql'
+      'rollback','sandbox/ig_cv/m7_8_source_stale_cached_v2_rollback_v1.sql',
+      'schema_adapter','LF_TEST_SUITE_CASES_CURRENT_SCHEMA_V1'
     ),
     'CHATGPT-IG-M7-8-PAULO054-20261004','CHATGPT-IG-M7-8-PAULO054-20261004'
   ) ON CONFLICT(suite_code,test_code) DO UPDATE SET
-    title=excluded.title,test_order=excluded.test_order,test_type=excluded.test_type,
-    execution_mode=excluded.execution_mode,target_ref=excluded.target_ref,
-    expected_outcome=excluded.expected_outcome,severity=excluded.severity,status='ACTIVE',
-    metadata=excluded.metadata,updated_at=clock_timestamp(),updated_by_execution_id=excluded.updated_by_execution_id;
+    test_order=excluded.test_order,
+    story_code=excluded.story_code,
+    rule_codes=excluded.rule_codes,
+    title=excluded.title,
+    test_type=excluded.test_type,
+    execution_mode=excluded.execution_mode,
+    severity=excluded.severity,
+    preconditions=excluded.preconditions,
+    input_payload=excluded.input_payload,
+    expected_output=excluded.expected_output,
+    prohibited_output=excluded.prohibited_output,
+    status=excluded.status,
+    metadata=excluded.metadata,
+    updated_at=clock_timestamp(),
+    updated_by_execution_id=excluded.updated_by_execution_id;
 END
 $cutover$;
