@@ -1,0 +1,127 @@
+{
+  "schema_version": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2",
+  "contract_state": "CURRENT",
+  "owner_scope": "SUPER_ADMIN",
+  "supersedes": [
+    "STORY_IMPLEMENTATION_PACKAGE_V1_1_PILOT_SEMANTICS"
+  ],
+  "carrier_compatibility": {
+    "accepted_input_carriers": [
+      "STORY_IMPLEMENTATION_PACKAGE_V1_1"
+    ],
+    "direct_legacy_semantics_consumption_allowed": false,
+    "current_projection_required": true,
+    "projection_mode": "DETERMINISTIC_CONTRACT_OVERLAY",
+    "consumer_must_bind_current_contract_ref": true
+  },
+  "validation_model": {
+    "semantic_judges_per_candidate": 1,
+    "governed_judge_required": true,
+    "second_judge_required": false,
+    "second_semantic_review_required": false,
+    "structural_and_authority_checks_are_evidence_not_extra_judges": true,
+    "strategy_specific_review_route_for_story_forbidden": true
+  },
+  "authority_precedence": {
+    "business_rule_from_visual_only_forbidden": true,
+    "screenshot_or_mock_may_supply_visual_reference_only": true,
+    "design_literals_require_canonical_design_authority": true,
+    "domain_and_app_shell_must_match_exact_target": true,
+    "cross_frontend_context_contamination_must_block": true
+  },
+  "material_requirement_classes": [
+    "API_ENDPOINT",
+    "FILE_LIMIT",
+    "NFR",
+    "RESPONSIVE",
+    "MOBILE",
+    "ANALYTICS",
+    "DESIGN_TOKEN",
+    "PHYSICAL_BINDING",
+    "DOMAIN_APP_SHELL"
+  ],
+  "material_requirement_contract": {
+    "required_fields": [
+      "requirement_code",
+      "requirement_class",
+      "applicability",
+      "requiredness",
+      "state",
+      "affected_scope",
+      "authority_ref",
+      "evidence_refs",
+      "resolution_rule"
+    ],
+    "allowed_applicability": [
+      "APPLICABLE",
+      "NOT_APPLICABLE",
+      "UNKNOWN"
+    ],
+    "allowed_requiredness": [
+      "REQUIRED",
+      "OPTIONAL",
+      "NOT_REQUIRED"
+    ],
+    "allowed_states": [
+      "RESOLVED_FROM_AUTHORITY",
+      "IMPLEMENTATION_PRECONDITION",
+      "PENDING_SOURCE_DEFINITION",
+      "SOURCE_CONFLICT",
+      "NOT_APPLICABLE"
+    ],
+    "blocking_rule": "UNRESOLVED_REQUIRED_BLOCKS_AFFECTED_SCOPE_ONLY",
+    "global_story_block_from_local_gap_forbidden": true,
+    "silent_default_or_inference_forbidden": true
+  },
+  "implementation_action_contract": {
+    "required_fields": [
+      "action_code",
+      "action_type",
+      "affected_surface_refs",
+      "evidence_refs"
+    ],
+    "high_impact_action_types": [
+      "MIGRATION",
+      "DEPLOY",
+      "RESTART"
+    ],
+    "high_impact_action_requires_affected_surface_evidence": true,
+    "scope_inflation_forbidden": true
+  },
+  "executable_acceptance_contract": {
+    "free_text_only_forbidden": true,
+    "required_case_fields": [
+      "case_code",
+      "kind",
+      "fixture_ref",
+      "expected_result",
+      "error_behavior"
+    ],
+    "allowed_kinds": [
+      "POSITIVE",
+      "NEGATIVE"
+    ],
+    "unknown_policy": "UNKNOWN_MATERIAL_ACCEPTANCE_MUST_BE_EXPLICIT_AND_BLOCK_AFFECTED_SCOPE",
+    "open_phrases_without_fixture_expected_or_error_behavior_forbidden": true
+  },
+  "required_programming_content": {
+    "payloads_explicit_or_blocked": true,
+    "states_explicit_or_blocked": true,
+    "interfaces_explicit_or_blocked": true,
+    "verifiable_outcomes_explicit_or_blocked": true,
+    "error_behavior_explicit_or_blocked": true
+  },
+  "reuse_and_creation": {
+    "reuse_before_create": true,
+    "parallel_transversal_engine_forbidden": true,
+    "owner_separation_requirement_for_story_forbidden": true,
+    "owner_scope": "SUPER_ADMIN"
+  },
+  "source_refs": [
+    "plan://STORY_CREATOR_IMPLEMENTATION_SPEC_REFACTOR_V1#SC-M5.1",
+    "supabase://srcr_benchmark/cases/RC-007",
+    "supabase://srcr_benchmark/cases/RC-025..RC-035",
+    "ekb://STORY-CREATOR-SINGLE-JUDGE-NO-DUPLICATE-REVIEW-001",
+    "ekb://STORY-CREATOR-WORK-PROTOCOL-PRIOR-ART-REUSE-001"
+  ]
+}
