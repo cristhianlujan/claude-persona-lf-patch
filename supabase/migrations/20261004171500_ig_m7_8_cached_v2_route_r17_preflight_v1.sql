@@ -1,7 +1,8 @@
 -- IG_CURATOR_VALIDATOR_REFACTOR_V2 / M7.8 / PAULO-054
 -- R17 rollback-only preflight with behavior-first fixture selection.
--- Select any live target satisfying the stale-routing precondition; when several
--- qualify, prefer the highest-complexity target. No screen id is authoritative.
+-- Prefer a live target satisfying the stale-routing precondition. If none exists,
+-- create a controlled rollback-only stale condition on the highest-complexity
+-- current screen with visual evidence. No screen id is authoritative.
 
 DO $preflight$
 DECLARE
@@ -15,9 +16,15 @@ DECLARE
   v_dispatch jsonb;
   v_curator jsonb;
   v_validator jsonb;
+  v_fixture_delta jsonb;
   v_run_id bigint;
   v_target_screen integer;
   v_target_parent bigint;
+  v_fixture_mode text := 'LIVE_STALE';
+  v_visual_current_before integer:=0;
+  v_visual_current_after integer:=0;
+  v_visual_rows_changed integer:=0;
+  v_resolution_errors integer:=0;
   v_i integer;
   v_err text;
   v_rolled_back boolean := false;
@@ -36,8 +43,7 @@ BEGIN
     RAISE EXCEPTION 'BLOCK_M78_R17_CANDIDATE_BUILD expected=% got=%',v_candidate_md5,md5(v_candidate_def);
   END IF;
 
-  -- Behavior-first selector: only a target that currently satisfies the stale
-  -- routing contract may be used. Complexity breaks ties; identity never does.
+  -- First choice: any live target that already exhibits the behavior.
   WITH latest AS (
     SELECT DISTINCT ON (r.pantalla_id)
            r.*
@@ -70,27 +76,90 @@ BEGIN
   ORDER BY affected_families DESC,complexity_score DESC,run_id DESC
   LIMIT 1;
 
+  -- Fallback: dynamically choose the strongest current screen and create the
+  -- stale precondition only inside the rollback subtransaction.
   IF v_target_screen IS NULL OR v_target_parent IS NULL THEN
-    RAISE EXCEPTION 'BLOCK_M78_R17_NO_ELIGIBLE_STALE_BEHAVIOR_FIXTURE';
+    v_fixture_mode := 'CONTROLLED_ROLLBACK_VISUAL_STALE';
+    WITH latest AS (
+      SELECT DISTINCT ON (r.pantalla_id)
+             r.pantalla_id,r.id,r.source_manifest
+      FROM programacion.input_readiness_runs r
+      JOIN lf_ops.pantallas p ON p.id=r.pantalla_id AND p.activa
+      WHERE r.status='COMPLETED' AND r.invalidated_at IS NULL
+      ORDER BY r.pantalla_id,r.id DESC
+    ), complexity AS (
+      SELECT l.pantalla_id,l.id,
+             coalesce(jsonb_array_length(l.source_manifest),0)
+             + coalesce(sum(CASE WHEN jsonb_typeof(a.source_refs)='array' THEN jsonb_array_length(a.source_refs) ELSE 0 END),0)
+             + coalesce(sum(CASE WHEN jsonb_typeof(a.blockers)='array' THEN jsonb_array_length(a.blockers) ELSE 0 END),0) AS complexity_score
+      FROM latest l
+      JOIN programacion.input_family_assessments a ON a.run_id=l.id
+      WHERE programacion.fn_input_readiness_run_is_current(l.id)
+        AND EXISTS (
+          SELECT 1 FROM lf_ops.pantalla_artefactos pa
+          WHERE pa.pantalla_id=l.pantalla_id AND pa.is_current=true
+        )
+      GROUP BY l.pantalla_id,l.id,l.source_manifest
+    )
+    SELECT pantalla_id,id
+      INTO v_target_screen,v_target_parent
+    FROM complexity
+    ORDER BY complexity_score DESC,pantalla_id
+    LIMIT 1;
+
+    IF v_target_screen IS NULL OR v_target_parent IS NULL THEN
+      RAISE EXCEPTION 'BLOCK_M78_R17_NO_ELIGIBLE_BEHAVIOR_FIXTURE';
+    END IF;
+
+    SELECT count(*) INTO v_visual_current_before
+    FROM lf_ops.pantalla_artefactos
+    WHERE pantalla_id=v_target_screen AND is_current=true;
+    IF v_visual_current_before=0 THEN
+      RAISE EXCEPTION 'BLOCK_M78_R17_CONTROLLED_FIXTURE_HAS_NO_VISUAL:%',v_target_screen;
+    END IF;
   END IF;
 
   -- PostgreSQL exception blocks are subtransactions. The deliberate terminal
-  -- exception rolls back DDL + all run/assessment/proposal writes.
+  -- exception rolls back candidate DDL, controlled source mutation, runs,
+  -- assessments and proposals.
   BEGIN
     EXECUTE v_candidate_def;
     IF md5(pg_get_functiondef(v_sig)) <> v_candidate_md5 THEN
       RAISE EXCEPTION 'BLOCK_M78_R17_CANDIDATE_NOT_EXACT';
     END IF;
 
+    IF v_fixture_mode='CONTROLLED_ROLLBACK_VISUAL_STALE' THEN
+      UPDATE lf_ops.pantalla_artefactos
+      SET is_current=false
+      WHERE pantalla_id=v_target_screen AND is_current=true;
+      GET DIAGNOSTICS v_visual_rows_changed = ROW_COUNT;
+      IF v_visual_rows_changed<>v_visual_current_before THEN
+        RAISE EXCEPTION 'BLOCK_M78_R17_CONTROLLED_FIXTURE_MUTATION_CARDINALITY expected=% got=%',v_visual_current_before,v_visual_rows_changed;
+      END IF;
+
+      v_fixture_delta:=programacion.fn_input_freshness_delta(v_target_parent);
+      SELECT count(*) INTO v_resolution_errors
+      FROM jsonb_array_elements(coalesce(v_fixture_delta->'source_changes','[]'::jsonb)) x(value)
+      WHERE x.value->>'state'='RESOLUTION_ERROR';
+
+      IF v_fixture_delta->>'run_state'<>'STALE'
+         OR coalesce((v_fixture_delta#>>'{summary,changed_source_count}')::integer,0)<=0
+         OR coalesce((v_fixture_delta#>>'{summary,affected_family_count}')::integer,0)<=0
+         OR coalesce((v_fixture_delta#>>'{summary,use_successor_required}')::boolean,false)
+         OR v_resolution_errors<>0 THEN
+        RAISE EXCEPTION 'BLOCK_M78_R17_CONTROLLED_FIXTURE_PRECONDITION_NOT_CREATED:screen=% summary=%',v_target_screen,v_fixture_delta->'summary';
+      END IF;
+    END IF;
+
     v_dispatch := programacion.fn_input_governance_execute(v_target_screen,'STORY_CREATOR');
     IF coalesce(v_dispatch->>'status','') <> 'CURATOR_RUNTIME_REQUIRED' THEN
-      RAISE EXCEPTION 'BLOCK_M78_R17_DISPATCH:screen=% payload=%',v_target_screen,left(v_dispatch::text,500);
+      RAISE EXCEPTION 'BLOCK_M78_R17_DISPATCH:screen=% fixture=% payload=%',v_target_screen,v_fixture_mode,left(v_dispatch::text,500);
     END IF;
 
     v_curator := public.fn_input_governance_curator_materialize_v1(v_target_screen,'STORY_CREATOR',v_curator_identity);
     v_run_id := coalesce((v_curator->>'run_id')::bigint,(v_curator->>'latest_run_id')::bigint);
     IF coalesce(v_curator->>'status','') <> 'VALIDATOR_RUNTIME_REQUIRED' OR v_run_id IS NULL THEN
-      RAISE EXCEPTION 'BLOCK_M78_R17_CURATOR:screen=% payload=%',v_target_screen,left(v_curator::text,500);
+      RAISE EXCEPTION 'BLOCK_M78_R17_CURATOR:screen=% fixture=% payload=%',v_target_screen,v_fixture_mode,left(v_curator::text,500);
     END IF;
 
     FOR v_i IN 1..8 LOOP
@@ -111,7 +180,7 @@ BEGIN
       RAISE EXCEPTION 'BLOCK_M78_R17_CANDIDATE_RUN_NOT_CURRENT';
     END IF;
 
-    RAISE EXCEPTION 'M78_R17_ROLLBACK_OK:screen=% run=%',v_target_screen,v_run_id;
+    RAISE EXCEPTION 'M78_R17_ROLLBACK_OK:fixture=% screen=% run=%',v_fixture_mode,v_target_screen,v_run_id;
   EXCEPTION WHEN OTHERS THEN
     v_err := SQLERRM;
     IF v_err LIKE 'M78_R17_ROLLBACK_OK:%' THEN
@@ -132,6 +201,15 @@ BEGIN
     WHERE curator_identity=v_curator_identity OR validator_identity=v_validator_identity
   ) THEN
     RAISE EXCEPTION 'BLOCK_M78_R17_RUN_RESIDUE';
+  END IF;
+
+  IF v_fixture_mode='CONTROLLED_ROLLBACK_VISUAL_STALE' THEN
+    SELECT count(*) INTO v_visual_current_after
+    FROM lf_ops.pantalla_artefactos
+    WHERE pantalla_id=v_target_screen AND is_current=true;
+    IF v_visual_current_after<>v_visual_current_before THEN
+      RAISE EXCEPTION 'BLOCK_M78_R17_SOURCE_ROLLBACK_RESIDUE:screen=% before=% after=%',v_target_screen,v_visual_current_before,v_visual_current_after;
+    END IF;
   END IF;
 END
 $preflight$;
