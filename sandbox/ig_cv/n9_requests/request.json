@@ -7,8 +7,10 @@
       "candidate_path": "supabase/migrations/20261004070100_ig_cv_n14_b2b_due_date_projection_v4.sql",
       "screen_id": 44,
       "consumer": "STORY_CREATOR",
-      "expected_verdict": "NO_BLOCKING_FINDINGS",
-      "expected_finding_codes": []
+      "expected_verdict": "BLOCKING_FINDINGS",
+      "expected_finding_codes": [
+        "ASSESSMENT_DIGEST_DRIFT"
+      ]
     }
   ]
 }
