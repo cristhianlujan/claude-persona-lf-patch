@@ -1,0 +1,82 @@
+{
+  "capability_code": "CAPABILITY_SELECTOR",
+  "dependencies": [
+    {
+      "capability_code": "TYPED_EVIDENCE_REGISTRY",
+      "role": "UPSTREAM_SIGNAL_TYPING",
+      "version": "3.0.0"
+    },
+    {
+      "capability_code": "CURRENTNESS_AUTHORITY",
+      "role": "UPSTREAM_CATALOG_CURRENTNESS",
+      "version": "1.0.0"
+    }
+  ],
+  "input": {
+    "catalog": {
+      "availability_state_source": "CURRENTNESS_AUTHORITY@1.0.0_UPSTREAM",
+      "item_required": [
+        "capability_code",
+        "signal_types",
+        "availability_state"
+      ],
+      "rank_optional": true,
+      "type": "array"
+    },
+    "policy": {
+      "contradiction_sets": "consumer_configured_array",
+      "require_current_catalog": "boolean_default_true",
+      "safe_fallback": "consumer_configured_non_empty_array"
+    },
+    "required": [
+      "signals",
+      "catalog",
+      "policy"
+    ],
+    "signals": {
+      "confidence_optional": true,
+      "item_required": [
+        "signal_type",
+        "state"
+      ],
+      "state_enum": [
+        "ACTIVE",
+        "INACTIVE"
+      ],
+      "type": "array",
+      "typing_authority": "TYPED_EVIDENCE_REGISTRY@3.0.0_UPSTREAM"
+    }
+  },
+  "output": {
+    "exact_top_level_fields": [
+      "selected_capabilities",
+      "reasons",
+      "fallback_state"
+    ],
+    "fallback_state_enum": [
+      "CLEAR",
+      "MULTI",
+      "NO_SIGNAL",
+      "CONTRADICTORY",
+      "CAPABILITY_FAILURE"
+    ],
+    "reasons": "deterministic_reason_records",
+    "selected_capabilities": "deterministic_deduplicated_ordered_array"
+  },
+  "owner_scope": "SUPER_ADMIN",
+  "schema_version": "capability-selector-contract/v1",
+  "semantics": {
+    "admission_authority": false,
+    "capability_failure_uses_consumer_fallback": true,
+    "confidence_grants_execution_permission": false,
+    "contradictory_uses_consumer_fallback": true,
+    "currentness_resolution": false,
+    "evidence_typing_authority": false,
+    "execution_permission_output": false,
+    "multi_label_allowed": true,
+    "no_signal_uses_consumer_fallback": true,
+    "ranking_grants_execution_permission": false,
+    "selection_basis": "typed_signal_type_only"
+  },
+  "version": "1.0.0"
+}
