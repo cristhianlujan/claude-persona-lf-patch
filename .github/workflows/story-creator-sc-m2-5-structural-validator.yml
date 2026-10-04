@@ -35,6 +35,7 @@ jobs:
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/programming_agent_story_consumer_binding_v1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_implementation_package_v1_1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/programming_consumer_v2_contract_snapshot_20261002.json >/dev/null
+          python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/three_real_archetype_adversarial_matrix_v1.json >/dev/null
       - name: SC-M2.5 structural regression
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/validate_story_implementation_package_v1.py --self-test
       - name: SC-M3.1 anti-invention and no-duplicate regression
@@ -57,3 +58,5 @@ jobs:
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_story_creator_implementation_contract_v2.py
       - name: SC-M5.2 Programming Agent consumer binding
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_programming_agent_story_consumer_binding_v1.py
+      - name: SC-M5.3 three real archetypes adversarial matrix
+        run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_three_real_archetype_adversarial_matrix_v1.py
