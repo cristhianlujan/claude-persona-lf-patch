@@ -37,6 +37,7 @@ jobs:
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_m54_qualification_contract_v1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_m55_candidate_closure_v1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_onb004_email_requirement_resolution_v1.json >/dev/null
+          python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_onb004_legal_demo_routes_v1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_implementation_package_v1_1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/programming_consumer_v2_contract_snapshot_20261002.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/three_real_archetype_adversarial_matrix_v1.json >/dev/null
@@ -71,3 +72,5 @@ jobs:
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_story_m55_candidate_closure_v1.py
       - name: ONB_004 current required-email reconciliation
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_story_onb004_email_requirement_resolution_v1.py
+      - name: ONB_004 candidate legal demo routes and LF business guardrails
+        run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_story_onb004_legal_demo_routes_v1.py
