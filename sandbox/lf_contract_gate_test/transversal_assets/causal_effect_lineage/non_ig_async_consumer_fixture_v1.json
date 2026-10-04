@@ -1,0 +1,11 @@
+{
+  "schema_version": "LF_CAUSAL_EFFECT_LINEAGE_NON_IG_PROOF_V1",
+  "consumer_ref": "POST_PASE_PROOF_CONSUMER",
+  "domain": "POST_PASE_PROOF_ONLY",
+  "role": "NON_IG_CONSUMER_PROOF",
+  "boundary": "ASYNC_EVENT",
+  "same_provider_contract": "LF_CAUSAL_EFFECT_LINEAGE_V1",
+  "receiver_readback_required": true,
+  "runtime_cutover": false,
+  "business_authority": false
+}
