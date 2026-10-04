@@ -1,0 +1,15 @@
+{
+  "signals": [
+    {"type": "document_state", "value": "INCOMPLETE", "confidence": 0.62},
+    {"type": "delivery_state", "value": "READY", "confidence": 0.91}
+  ],
+  "catalog": [
+    {"capability_code": "DOCUMENT_REPAIR", "signal_type": "document_state", "accepted_values": ["INCOMPLETE"], "rank": 20, "state": "AVAILABLE"},
+    {"capability_code": "DOCUMENT_DELIVERY_CHECK", "signal_type": "delivery_state", "accepted_values": ["READY"], "rank": 10, "state": "AVAILABLE"}
+  ],
+  "policy": {
+    "consumer_ref": "DOCUMENT_PIPELINE_FIXTURE",
+    "fallback_capabilities": ["DOCUMENT_SAFE_REVIEW"],
+    "selection_only": true
+  }
+}
