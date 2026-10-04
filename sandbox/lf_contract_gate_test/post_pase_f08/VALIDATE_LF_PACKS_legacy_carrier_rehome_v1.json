@@ -1,0 +1,51 @@
+{
+  "schema_version": "PASE_F08_P03_VALIDATE_LF_PACKS_REHOME_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F08-P03",
+  "target": "VALIDATE_LF_PACKS_LEGACY_CARRIER_REFERENCES",
+  "base_main_sha": "09b55dd186fa982a4863ca89c98be4c0eb7d3dc3",
+  "legacy_carrier": {
+    "path": ".github/workflows/validate-lf-packs.yml",
+    "present_at_base_main": false,
+    "db_authority_count": 0,
+    "db_relation_count": 0,
+    "dispatch_receipt_count": 0,
+    "binding_count": 0,
+    "operation_count": 0,
+    "evidence_receipt_count": 0
+  },
+  "canonical_replacements": {
+    "pack_validation_definition": "gobernanza/contratos/pack_validation_clean_workflow_v1.json",
+    "pack_validation_staged_workflow": "sandbox/lf_contract_gate_test/pack_validation_contract/lf-pack-validation-core.staged.yml",
+    "future_cutover_target": ".github/workflows/lf-pack-validation-core.yml",
+    "future_trigger_contract": "workflow_call only",
+    "s30_broker_current_workflow": ".github/workflows/profile-driven-screen-generation.yml",
+    "s30_exact_head_parent_evidence": "PASE"
+  },
+  "operational_dependency_repair": {
+    "ekb_code": "PASE-S30-RETIRED-CHECK-DEPENDENCY-001",
+    "before_required_checks": ["Run LF pack validators", "lf-contract-check"],
+    "after_required_checks": ["PASE"],
+    "missing_current_pase_evidence_action": "BLOCK_S30_CHATOPS_EXACT_HEAD_PASE_EVIDENCE_MISSING_OR_FAILED",
+    "retired_check_identity_required_after_repair": false,
+    "s30_broker_contract_rebound_to_current_workflow": true,
+    "s30_broker_dispatch_event": "issue_comment"
+  },
+  "remaining_legacy_identity_references": {
+    "allowed_classes": [
+      "HISTORICAL_MIGRATION_OR_DOC",
+      "NEGATIVE_TEST_OR_RETIREMENT_ASSERTION",
+      "INVENTORY_OR_ROUTER_REFERENCE_PENDING_R03_RETIREMENT_READINESS"
+    ],
+    "operational_execution_power_allowed": false,
+    "active_legacy_carrier_required": false
+  },
+  "safety": {
+    "legacy_carrier_reactivated": false,
+    "pack_validation_core_activated": false,
+    "pase_activated": false,
+    "runtime_or_production_touched": false,
+    "no_cascade": true,
+    "no_zip_authority": true
+  }
+}
