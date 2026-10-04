@@ -31,16 +31,18 @@ comment on function programacion.fn_input_governance_curator_materialize_v1(inte
 do $verify$
 declare
   v_def text := pg_get_functiondef('programacion.fn_input_governance_curator_materialize_v1(integer,text,text,boolean)'::regprocedure);
+  v_compact text := replace(lower(v_def),' ','');
 begin
-  if position($$'RUNTIME_ASSERTION_REBIND_SAFE_SUCCESSOR_V1'$$ in v_def)=0 then
+  if position($$'runtime_assertion_rebind_safe_successor_v1'$$ in lower(v_def))=0 then
     raise exception 'M9_1_TRANSVERSAL_STALE_ROUTE_POSTCONDITION_MISSING';
   end if;
 
   if position('fn_input_freshness_delta' in v_def)=0
      or position('fn_input_governance_recurate_source_stale_v1' in v_def)=0
-     or position('v_changed_sources>0' in replace(v_def,' ',''))=0
-     or position('v_affected_families>0' in replace(v_def,' ',''))=0
-     or position('not v_successor_required' in lower(v_def))=0 then
+     or position('v_changed_sources>0' in v_compact)=0
+     or position('ifv_affected_families=0then' in v_compact)=0
+     or position('notv_successor_required' in v_compact)=0
+     or position('v_resolution_errors=0' in v_compact)=0 then
     raise exception 'M9_1_TRANSVERSAL_STALE_ROUTE_GUARDS_REGRESSED';
   end if;
 end
