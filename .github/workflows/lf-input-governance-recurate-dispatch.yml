@@ -1,6 +1,12 @@
 name: LF Input Governance Recuration Dispatch
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/lf-input-governance-recurate-dispatch.yml"
+      - ".github/workflows/lf-input-governance-recurate.yml"
   workflow_dispatch:
     inputs:
       pantalla_ids:
@@ -19,9 +25,10 @@ concurrency:
 
 jobs:
   recurate:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'M9.1-BASELINE-ONE-SHOT') }}
     uses: ./.github/workflows/lf-input-governance-recurate.yml
     with:
-      pantalla_ids: ${{ inputs.pantalla_ids }}
+      pantalla_ids: ${{ github.event_name == 'workflow_dispatch' && inputs.pantalla_ids || '3,4,5,6,11,18,19,21,24,25,27,28,30,33,34,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67' }}
     permissions:
       contents: read
       id-token: write
