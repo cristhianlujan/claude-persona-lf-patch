@@ -1,0 +1,184 @@
+{
+  "schema_version": "IG_M3_1_SEMANTIC_DECISION_INVENTORY_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M3.1",
+  "work_code": "PAULO-130",
+  "observed_at": "2026-10-04T05:51:23Z",
+  "authority": "LF_SUPABASE_SANDBOX.pg_proc",
+  "git_base": "17f8289e5ec95689d84bd18a7254d36081febf99",
+  "stable_id_contract": "For each source group: decision_id = id_prefix + decision key. Keys are logical names, never line numbers or hashes.",
+  "module_contract": "module=DYNAMIC_FROM_PANTALLA.module_code unless module_override is declared; SECURITY threat decisions resolve dynamically from the canonical security capability profile.",
+  "granularity": "Logical decision nodes. Repeated CASE projections of one semantic decision into severity/readiness are folded into the owning decision rather than double-counted.",
+  "class_basis": "M0.5/M2.0 reused where applicable; additional SOURCE_PACK functions classified directly from current pg_proc source.",
+  "source_pack_gap": {
+    "trigger": "MISSING_CANONICAL_OBJECT",
+    "detail": "M3.1 explicitly requires subject/threat_expected. source_pack_v1 listed threat_expected but omitted fn_input_subject_depth_expected and fn_input_subject_depth_expected_v510. Targeted lookup found both; both are inventoried without mutating SOURCE_PACK or runtime."
+  },
+  "negative_prefix_test": {
+    "functions_checked": 14,
+    "literal_B2B_percent_total": 0,
+    "screen_code_prefix_predicate_total": 0,
+    "result": "PASS"
+  },
+  "known_non_prefix_specialization": {
+    "function": "fn_input_subject_depth_expected",
+    "condition": "pantalla_id=56",
+    "pantalla": "B2B-AUTH-006",
+    "module": "B2B_AUTENTICACION",
+    "classification": "EXACT_SCREEN_SPECIALIZATION_NOT_PREFIX",
+    "action_in_M3_1": "INVENTORY_ONLY_NO_REFACTOR"
+  },
+  "counts": {
+    "decisions": 197,
+    "sources": 14,
+    "by_class": {"FACT":20,"HEURISTIC":25,"ORCHESTRATION":1,"POLICY":14,"READINESS":4,"SEMANTIC":133}
+  },
+  "sources": [
+    {
+      "function": "fn_input_governance_bootstrap_classify_v1",
+      "sha256": "410ddc535be6e13dbbee449c4c196d41c777b6056eb8faa0feb7309527e74745",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-C1-",
+      "decisions": [
+        ["SCREEN_IDENTITY","FACT"],["OBJECTIVE_OUTCOMES","FACT"],["FIELDS","FACT"],["VALIDATIONS","FACT"],["STATES","FACT"],["TRANSITIONS","HEURISTIC"],["PROFILES","FACT"],["PERMISSIONS","FACT"],["ERRORS","FACT"],["UI_MESSAGES","FACT"],["ANALYTICS","HEURISTIC"],["RESPONSIVE","FACT"],["DESIGN_SYSTEM","FACT"],["ASSETS_ICONS","FACT"],["API_DATA_CONTRACT","SEMANTIC"],["DEPENDENCIES","FACT"],["VISUAL_EVIDENCE","FACT"],["EKB","POLICY"],["SOURCE_AUTHORITY_PROVENANCE","POLICY"],["FRESHNESS_INVALIDATION","POLICY"],["NEGATIVE_REQUIREMENTS","POLICY"],["CONFLICT_PRECEDENCE","POLICY"],["APPLICABILITY_READINESS","POLICY"],["CONTEXT_BUDGET_RETRIEVAL_POLICY","POLICY"],["ROLLOUT_PRODUCTION_GATES","POLICY"],["ACTIONS","HEURISTIC"],["ROUTING_NAVIGATION","HEURISTIC"],["SESSION","HEURISTIC"],["RATE_LIMIT","HEURISTIC"],["TIMEOUT_RETRY","HEURISTIC"],["SECURITY","HEURISTIC"],["MFA_OTP_SSO","HEURISTIC"],["PRIVACY_PII","HEURISTIC"],["AUDIT","HEURISTIC"],["OBSERVABILITY","HEURISTIC"],["PERFORMANCE","HEURISTIC"],["THEME_LIGHT_DARK_SYSTEM","FACT"],["FORCED_COLORS_CONTRAST","HEURISTIC"],["REDUCED_MOTION","HEURISTIC"],["ACCESSIBILITY","HEURISTIC"],["LOADING_EMPTY_ERROR_STATES","HEURISTIC"],["IDEMPOTENCY_CONCURRENCY","HEURISTIC"],["FEATURE_FLAGS","HEURISTIC"],["TESTING_OBLIGATIONS","HEURISTIC"],["BROWSER_PLATFORM","HEURISTIC"],["I18N_FORMATS","HEURISTIC"],["RUNTIME_CONFIG","HEURISTIC"]
+      ],
+      "family": "decision_key",
+      "module": "DYNAMIC_FROM_PANTALLA.module_code",
+      "basis": "M0.5/M2.0 responsibility map reused; live source SHA refreshed"
+    },
+    {
+      "function": "fn_input_governance_bootstrap_classify_v2",
+      "sha256": "4649e9935f3ed87a6ee9df08d8fc7d95f545374b7f79fcec89edcbfe335ea3e3",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-C2-",
+      "decisions": [["DESIGN_SYSTEM","SEMANTIC"],["API_DATA_CONTRACT","SEMANTIC"],["MFA_OTP_SSO","SEMANTIC"],["SEMANTIC-DELEGATE","ORCHESTRATION"],["SEMANTIC-APPLY","SEMANTIC"],["READINESS-APPLY","READINESS"]],
+      "family_map": {"SEMANTIC-DELEGATE":"MULTI_FAMILY","SEMANTIC-APPLY":"MULTI_FAMILY","READINESS-APPLY":"MULTI_FAMILY"},
+      "module": "DYNAMIC_FROM_PANTALLA.module_code"
+    },
+    {
+      "function": "fn_input_governance_semantic_probe_v1",
+      "sha256": "e58a738bccda3c53c781e6b4eb776b2683a690fab8a70a08c3152654df3d513a",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-P1-",
+      "class": "SEMANTIC",
+      "decisions": ["I18N_FORMATS","LOADING_EMPTY_ERROR_STATES","SESSION","RUNTIME_CONFIG","SECURITY","TIMEOUT_RETRY","ASSETS_ICONS"],
+      "family": "decision_key",
+      "module": "DYNAMIC_FROM_PANTALLA.module_code"
+    },
+    {
+      "function": "fn_input_governance_semantic_probe_v2",
+      "sha256": "bda3b929fb0f79306c56676dd81ac3ce2293aa8733f96bb2cdb3478f1fd8d652",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-P2-",
+      "class": "SEMANTIC",
+      "decisions": ["ROUTING_NAVIGATION","RESPONSIVE"],
+      "family": "decision_key",
+      "module": "DYNAMIC_FROM_PANTALLA.module_code"
+    },
+    {
+      "function": "fn_input_governance_semantic_probe_v3",
+      "sha256": "bbae8d1a064f8612daa66abbac505ba5426119b9dce84f94b724bca0070706fa",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-P3-",
+      "class": "SEMANTIC",
+      "decisions": ["SESSION","SECURITY","TIMEOUT_RETRY","RATE_LIMIT","OBSERVABILITY","RUNTIME_CONFIG","ANALYTICS","FORCED_COLORS_CONTRAST","REDUCED_MOTION","AUDIT","ACCESSIBILITY","FIELDS","VALIDATIONS","ROUTING_NAVIGATION","TRANSITIONS","MFA_OTP_SSO","ACTIONS"],
+      "family": "decision_key",
+      "module": "DYNAMIC_FROM_PANTALLA.module_code"
+    },
+    {
+      "function": "fn_input_bootstrap_rule_probe_v1",
+      "sha256": "6c64f9e46915b86538d915107289b413fa5a8fd061a84094bef77fad795d133f",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-RULEPROBE-",
+      "class": "HEURISTIC",
+      "decisions": ["CATEGORY_MATCH","REGEX_MATCH"],
+      "family": "MULTI_FAMILY",
+      "module": "DYNAMIC_FROM_PANTALLA.module_code"
+    },
+    {
+      "function": "fn_input_governance_field_reference_probe_v1",
+      "sha256": "e14a9d761cb81b72756c07743b853203b4776a6f883ae3619803c1d4a37bbdd3",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-FIELDREF-",
+      "class": "SEMANTIC",
+      "decisions": ["CANONICAL-GRAPH","RULE-REFERENCES","UNRESOLVED_REFERENCE","INACTIVE_FIELD","FIELD_METADATA_MISSING","REQUIRED_WITHOUT_VALIDATION","VALIDATION_METADATA_MISSING"],
+      "family": "FIELDS|VALIDATIONS",
+      "module": "DYNAMIC_FROM_PANTALLA.module_code"
+    },
+    {
+      "function": "fn_input_na_positive_authority_v512",
+      "sha256": "13609f6093951710082748cd1bbe870bda5c102f67de24fd5f27c96c1f8674f6",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-NA-",
+      "class": "POLICY",
+      "decisions": ["SESSION","PERMISSIONS","PROFILES","FEATURE_FLAGS","I18N_FORMATS","MFA_OTP_SSO"],
+      "family": "decision_key",
+      "module": "DYNAMIC_FROM_PANTALLA.module_code"
+    },
+    {
+      "function": "fn_input_api_contract_resolution",
+      "sha256": "9a0d3daee329821b16a79699e356268fda09ad14ed6e546c6aff924c95034ba7",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-API-",
+      "decisions": [["BEHAVIORAL_CONTRACT","SEMANTIC"],["SCHEMA_AUTHORITY","SEMANTIC"],["EXECUTABLE_BINDING","SEMANTIC"],["BROKEN_CONTRACT_REF","READINESS"],["SOURCE_INCOMPLETE","READINESS"],["EXECUTABLE_PENDING","READINESS"]],
+      "family": "API_DATA_CONTRACT",
+      "module": "DYNAMIC_FROM_PANTALLA.module_code"
+    },
+    {
+      "function": "fn_input_design_binding_graph_v2",
+      "sha256": "a58c68051ea09745fc0eaa6c77966867bd90c8a5870bd4badce6e046adc4e1a9",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-DESIGN-",
+      "class": "FACT",
+      "decisions": ["SCREEN_EXISTS","FIELD_COMPONENT_BINDING","VARIANT_LAYOUT_BINDING","ELEMENT_COMPONENT_BINDING","REFERENTIAL_INTEGRITY_FAILURES"],
+      "family": "DESIGN_SYSTEM",
+      "module": "DYNAMIC_FROM_PANTALLA.module_code"
+    },
+    {
+      "function": "fn_input_security_threat_expected",
+      "sha256": "4c0a19d2c0d82ce79f8e3231c7103ace0c2b802e6eea96d2e046f27fcbcf38b7",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-THREAT-CURRENT-",
+      "class": "SEMANTIC",
+      "decisions": ["AUTOMATION_BOT_ABUSE","MFA_BYPASS","OPEN_REDIRECT","OTP_GUESSING","OTP_REPLAY_SINGLE_USE","OTP_RESEND_ABUSE","RECOVERY_CONTEXT_REPLAY","SECRET_CREDENTIAL_EXPOSURE","USER_ENUMERATION"],
+      "family": "SECURITY",
+      "module": "DYNAMIC_FROM_SECURITY_CAPABILITY_PROFILE"
+    },
+    {
+      "function": "fn_input_security_threat_expected_v510",
+      "sha256": "b968c86679068da38dbd989d0a6559507694e920f58142d412799ffcff660a87",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-THREAT-V510-",
+      "class": "SEMANTIC",
+      "decisions": ["AUTH_BRUTE_FORCE","AUTOMATION_BOT_ABUSE","CLICKJACKING","CORS_ORIGIN_CONTROL","CREDENTIAL_STUFFING","CSRF_REQUEST","DEPENDENCY_SUPPLY_CHAIN","DOS_DDOS_RESOURCE_EXHAUSTION","LEGACY_FACTOR_REACTIVATION","MFA_BYPASS","OPEN_REDIRECT","OTP_GUESSING","OTP_REPLAY_SINGLE_USE","OTP_RESEND_ABUSE","PASSWORD_POLICY_BYPASS","PASSWORD_SPRAYING","PASSWORD_VALUE_EXPOSURE","RECOVERY_CONTEXT_REPLAY","RECOVERY_LOCKOUT_DOS","RECOVERY_REQUEST_FLOODING","REQUEST_PAYLOAD_RESOURCE_LIMIT","SECRET_CREDENTIAL_EXPOSURE","SECURITY_HEADERS_TLS","SERVER_INPUT_INJECTION","SESSION_FIXATION_REPLAY","SSRF_BACKEND_FETCH","TOTP_SECRET_QR_EXPOSURE","UNAUTHORIZED_FACTOR_ENROLLMENT","USER_ENUMERATION","XSS_SCRIPT_INJECTION"],
+      "family": "SECURITY",
+      "module": "DYNAMIC_FROM_SECURITY_CAPABILITY_PROFILE"
+    },
+    {
+      "function": "fn_input_subject_depth_expected",
+      "sha256": "a40ab63d185c2ef4293995770d50e3bea8403ed9e0f02f033f2c32a2ee0b99b3",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefix": "M3D-SUBJECT-CURRENT-",
+      "class": "SEMANTIC",
+      "decisions": ["MASKING","NO_ANALYTICS","NO_LOGS","OTP_POLICY_BOUND","OTP_VALUE_ANALYTICS_DENY","OTP_VALUE_LOGS_DENY","RETENTION_CLASS","SENSITIVITY_CLASSIFICATION","SERVER_SIDE_OTP_VERIFICATION"],
+      "family": "SECURITY",
+      "module": "B2B_AUTENTICACION",
+      "condition": "exact pantalla_id=56 / B2B-AUTH-006; no prefix"
+    },
+    {
+      "function": "fn_input_subject_depth_expected_v510",
+      "sha256": "f1a1f6926cefab0487081793ce9fd27d9446991ce4ca65e9dcddeebcef447606",
+      "currentness": "LIVE_PG_PROC_OBSERVED",
+      "id_prefixes": {"role":"M3D-SUBJECT-V510-ROLE-","check":"M3D-SUBJECT-V510-"},
+      "class": "SEMANTIC",
+      "role_decisions": ["QR_DISPLAY","GENERATED_SECRET","OTP_INPUT","PASSWORD_INPUT","TOTP_CODE_INPUT","INPUT_DEFAULT"],
+      "role_family": "DESIGN_SYSTEM|SECURITY",
+      "check_decisions": ["AUTOCOMPLETE","BACKGROUND_COLOR","BORDER_COLOR","BORDER_DEFAULT","BORDER_FOCUS","COMPONENT_TOKEN","DISPLAY_TYPOGRAPHY","ERROR_STATE_TOKEN","HTTPS_TRANSPORT","INPUT_MODE","INPUT_TYPOGRAPHY","LABEL_TYPOGRAPHY","MASKING","NO_ANALYTICS","NO_LOGS","NO_URL_QUERY_EXPOSURE","OTP_POLICY_BOUND","OTP_VALUE_ANALYTICS_DENY","OTP_VALUE_LOGS_DENY","PASSWORD_PERSISTENCE_DENY","PLACEHOLDER_STYLE","POLICY_DRIVEN_LENGTH","QR_ANALYTICS_DENY","QR_LOGS_DENY","QR_RENDER_COMPONENT","QR_TRANSIENT","RADIUS","RETENTION_CLASS","SECRET_ANALYTICS_DENY","SECRET_LOGS_DENY","SECRET_TRANSIENT","SENSITIVITY_CLASSIFICATION","SERVER_RECHECK_AFTER_VERIFY","SERVER_SIDE_OTP_VERIFICATION","SUCCESS_STATE_TOKEN","TEXT_COLOR","TOTP_CODE_ANALYTICS_DENY","TOTP_CODE_LOGS_DENY"],
+      "check_family_map": {
+        "SECURITY": ["HTTPS_TRANSPORT","MASKING","NO_ANALYTICS","NO_LOGS","NO_URL_QUERY_EXPOSURE","OTP_POLICY_BOUND","OTP_VALUE_ANALYTICS_DENY","OTP_VALUE_LOGS_DENY","PASSWORD_PERSISTENCE_DENY","QR_ANALYTICS_DENY","QR_LOGS_DENY","QR_TRANSIENT","RETENTION_CLASS","SECRET_ANALYTICS_DENY","SECRET_LOGS_DENY","SECRET_TRANSIENT","SENSITIVITY_CLASSIFICATION","SERVER_RECHECK_AFTER_VERIFY","SERVER_SIDE_OTP_VERIFICATION","TOTP_CODE_ANALYTICS_DENY","TOTP_CODE_LOGS_DENY"],
+        "DESIGN_SYSTEM": ["AUTOCOMPLETE","BACKGROUND_COLOR","BORDER_COLOR","BORDER_DEFAULT","BORDER_FOCUS","COMPONENT_TOKEN","DISPLAY_TYPOGRAPHY","ERROR_STATE_TOKEN","INPUT_MODE","INPUT_TYPOGRAPHY","LABEL_TYPOGRAPHY","PLACEHOLDER_STYLE","POLICY_DRIVEN_LENGTH","QR_RENDER_COMPONENT","RADIUS","SUCCESS_STATE_TOKEN","TEXT_COLOR"]
+      },
+      "module": "DYNAMIC_FROM_PANTALLA.module_code"
+    }
+  ]
+}
