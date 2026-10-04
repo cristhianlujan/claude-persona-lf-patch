@@ -1,0 +1,50 @@
+{
+  "artifact_schema": "IG_M0_6_PRECONDITION_BLOCK_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M0.6",
+  "work_code": "PAULO-114",
+  "observed_at": "2026-10-04T11:20:16.514524+00:00",
+  "source_pack_policy": "SOURCE_PACK_LOOKUP_V2",
+  "preferred_input": "programacion.input_readiness_runs?mode=latest_completed_per_screen&contract_revision=5.13&currentness_fn=programacion.fn_input_readiness_run_is_current",
+  "dependencies": {
+    "M1.A1": "DONE",
+    "N-2": "DONE",
+    "N-14": "DONE"
+  },
+  "currentness_authority": "programacion.fn_input_readiness_run_is_current(run_id)",
+  "precondition": "13/13 latest material runs must be COMPLETED, contract_revision=5.13, family_count=47 and current=true",
+  "result": "BLOCKED",
+  "baseline_generated": false,
+  "counts": {
+    "screens": 13,
+    "revision_5_13": 13,
+    "families_47": 13,
+    "current": 2,
+    "noncurrent": 11,
+    "stale": 11,
+    "missing": 0,
+    "contradiction": 0
+  },
+  "passing": [
+    {"pantalla_id":1,"pantalla":"ONB_001","run_id":373,"contract_revision":"5.13","family_count":47,"classification":"CURRENT","contract_snapshot_sha256":"e2db44d0bc4aeb6f5205d95f84c3366d37cf1644b5ec69dfd3240c4c82bbf25b","stored_manifest_sha256":"03cec647242fec4164850f6f4c9bdb3ab183fe9c04b1f9704accb56095046a0d","current_manifest_sha256":"03cec647242fec4164850f6f4c9bdb3ab183fe9c04b1f9704accb56095046a0d"},
+    {"pantalla_id":2,"pantalla":"ONB_002","run_id":374,"contract_revision":"5.13","family_count":47,"classification":"CURRENT","contract_snapshot_sha256":"e2db44d0bc4aeb6f5205d95f84c3366d37cf1644b5ec69dfd3240c4c82bbf25b","stored_manifest_sha256":"e325421fb99beda83f4727e8dde99a88219f5336735e96fe4b5147ddeee7a5d5","current_manifest_sha256":"e325421fb99beda83f4727e8dde99a88219f5336735e96fe4b5147ddeee7a5d5"}
+  ],
+  "failing": [
+    {"pantalla_id":3,"pantalla":"ONB_003","run_id":306,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"e49f37772fee7ee5f122cdd0cc7109133dad2ae651a043c8aee1eefb533821be","current_manifest_sha256":"d9d2a708682cbce19aa8b83f5b9a58ce314e4af6722e5500abbd81678242e455"},
+    {"pantalla_id":5,"pantalla":"HOME_002","run_id":307,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"e377534cc39936fcd9abc0e2c748f61ca1997d6e5a5a934c4456624291744b9f","current_manifest_sha256":"55c73784ca96929676276ae4fc04295c2775e75390af151f060c252bb47c6e1f"},
+    {"pantalla_id":43,"pantalla":"B2B-CARGA-001","run_id":335,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"454cd2ec89bbace7a5ac609d702663b954213feb0e8b9d3f88a432e33e3eb761","current_manifest_sha256":"649b3c6a43e926a86e8902cccf8653b37f7827b6be83a50140de07356bdb876f"},
+    {"pantalla_id":51,"pantalla":"B2B-AUTH-001","run_id":340,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"ababb9841ccd63108f760623587a5337316f9e1c1c9d7a7eeb42b68324b3743f","current_manifest_sha256":"0adf7403de8aa3d205be4866093f1b0d32ae4249651cca4339df7031e9a74ee2"},
+    {"pantalla_id":52,"pantalla":"B2B-AUTH-002","run_id":366,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"246fb6c4e33ea2bde2cad57e90e2a5c2920dfa4c378f216dad9cae210ad96c58","current_manifest_sha256":"38aa819c6f19490d33b06faaf10724d189ad9af077d79ffc95f0b638fe4a5c4d"},
+    {"pantalla_id":53,"pantalla":"B2B-AUTH-003","run_id":368,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"d8925b5bf6f44e9139b6d0559fdcad0765a556785b846121347b02bb32b8bc0f","current_manifest_sha256":"0f3672d2b5cf8975fcb24f2838410708ab9ffff5b945fc9eb57e25a422c5bfc6"},
+    {"pantalla_id":54,"pantalla":"B2B-AUTH-004","run_id":369,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"4d9e3d80bc02a1e3350156091681f1b494048631041f9fcc5363b56d6520060f","current_manifest_sha256":"19f56c5b8c931a1b3da6dc49a523a13808f35c93be60cac7898c37b8dbda3ab0"},
+    {"pantalla_id":55,"pantalla":"B2B-AUTH-005","run_id":334,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"479956617abdcda5531cedf76ce2f0a45a671ed9c9555a0c56d9fdd7fed9b0b0","current_manifest_sha256":"1093a2b3e81d25947f51bdeb83a5e19c0de6ca249d49eb71b6fdd3faeddbe5b7"},
+    {"pantalla_id":56,"pantalla":"B2B-AUTH-006","run_id":370,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"fb8746839bb185d0498efcb5b61814b6a956294a73ef66331a7d115181f125cd","current_manifest_sha256":"3563a7fffe1abf0324ad9f638019c79a0b6e6c59d0c61e98166883378a5f804c"},
+    {"pantalla_id":57,"pantalla":"ONB_004","run_id":308,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"4f251f19ded3c4441b35ded8b85a1e9fbb045972fc9a0ab2dd2150f874940407","current_manifest_sha256":"3e7fa3be45ca529083a97de8e2079a8e04c0dc903c99ecc27577f63f12ae259d"},
+    {"pantalla_id":58,"pantalla":"REC_001","run_id":339,"classification":"STALE","lifecycle_current":true,"contract_current":false,"execution_policy_current":true,"source_manifest_current":false,"contract_snapshot_sha256":"125e73215036c76f79847d6821e97942b38f80e3ca46206786d8f96dae1c6c38","stored_manifest_sha256":"70ce1d0e2f29a76e61647c049f88e1af387e883f1fa10e706d172ec1828cc63b","current_manifest_sha256":"1b594585069d901a21dbfabedb4bfcae7c8637e4c83ab47a577a432653017907"}
+  ],
+  "db_payload_digest": {
+    "md5": "eea3cd6a77a4e14f6c7720f9c0049408",
+    "sha256": "66d4b2412b56bc1734ab54af4e55233a41f83537c8a9b10c6b5e7bb83f397531"
+  },
+  "governed_action": "Do not generate Golden Baseline T0; do not rerun or repair screens inside M0.6; persist blocker and stop."
+}
