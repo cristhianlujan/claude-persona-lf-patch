@@ -65,12 +65,60 @@ def _router_adapter_payload(conn, profile_code: str) -> list[dict[str, Any]]:
         return list(cur.fetchone()[0] or [])
 
 
-def _governance_result(conn, payload: dict[str, Any], cache: dict[str, dict[str, Any]]) -> tuple[dict[str, Any], str | None]:
+def _governance_contract_identity(conn) -> tuple[str, str]:
+    """Resolve current contract identity from the shared M2.4 authority; never from local constants."""
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            select public.fn_lf_version_compatibility_resolve_source_v1(
+              'PROGRAMACION_CONTRACT','INPUT_READINESS_CONTRACT','INPUT_GOVERNANCE_AGENT'
+            )
+            """
+        )
+        pin = cur.fetchone()[0]
+    if not isinstance(pin, dict) or pin.get("resolved") is not True:
+        raise ValueError("INPUT_GOVERNANCE_CONTRACT_IDENTITY_UNRESOLVED")
+    lifecycle = pin.get("lifecycle") or {}
+    version = pin.get("version") or {}
+    digest = pin.get("digest") or {}
+    revision = version.get("revision")
+    sha256 = digest.get("sha256")
+    if lifecycle.get("fail_closed") is not True:
+        raise ValueError("INPUT_GOVERNANCE_CONTRACT_IDENTITY_NOT_FAIL_CLOSED")
+    if not isinstance(revision, str) or not revision.strip():
+        raise ValueError("INPUT_GOVERNANCE_CONTRACT_REVISION_MISSING")
+    if not isinstance(sha256, str) or len(sha256) != 64 or any(ch not in "0123456789abcdef" for ch in sha256):
+        raise ValueError("INPUT_GOVERNANCE_CONTRACT_DIGEST_INVALID")
+    return revision, sha256
+
+
+def _governance_result(
+    conn,
+    payload: dict[str, Any],
+    cache: dict[str, dict[str, Any]],
+) -> tuple[dict[str, Any], str | None, str | None, str | None]:
     _, screen_code = _screen_identity(conn, payload["input_literal"])
     adapters = _router_adapter_payload(conn, payload["profile_code"])
-    key = governance_cache_key(screen_code=screen_code, adapters=adapters, input_literal=payload["input_literal"])
+    try:
+        contract_revision, contract_snapshot_sha256 = _governance_contract_identity(conn)
+    except ValueError as exc:
+        return ({
+            "applicable": True,
+            "status": "BLOCKED",
+            "blocking_code": "BLOCK_INPUT_GOVERNANCE_CONTRACT_IDENTITY_UNRESOLVED",
+            "decision": "BLOCKED",
+            "continuation_allowed": False,
+            "receiver_detail": str(exc),
+        }, screen_code, None, None)
+    key = governance_cache_key(
+        screen_code=screen_code,
+        adapters=adapters,
+        input_literal=payload["input_literal"],
+        contract_revision=contract_revision,
+        contract_snapshot_sha256=contract_snapshot_sha256,
+    )
     if key in cache:
-        return cache[key], screen_code
+        return cache[key], screen_code, contract_revision, contract_snapshot_sha256
     with conn.cursor() as cur:
         cur.execute(
             "select programacion.fn_lf_router_input_governance_resolve_v1(%s,%s,'STORY_CREATOR')",
@@ -78,11 +126,11 @@ def _governance_result(conn, payload: dict[str, Any], cache: dict[str, dict[str,
         )
         result = cur.fetchone()[0]
     cache[key] = result
-    return result, screen_code
+    return result, screen_code, contract_revision, contract_snapshot_sha256
 
 
 def _preflight(conn, payload: dict[str, Any], cache: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
-    governance, screen_code = _governance_result(conn, payload, cache)
+    governance, screen_code, contract_revision, contract_snapshot_sha256 = _governance_result(conn, payload, cache)
     payload["screen_code"] = screen_code
     payload["input_governance_result"] = governance
     if governance.get("applicable") and not governance.get("continuation_allowed"):
@@ -94,13 +142,18 @@ def _preflight(conn, payload: dict[str, Any], cache: dict[str, dict[str, Any]]) 
             "error_detail": governance.get("status"),
             "input_governance": governance,
         }
-    if governance.get("applicable") and not governance_receipt_reusable(governance, screen_code=screen_code):
+    if governance.get("applicable") and not governance_receipt_reusable(
+        governance,
+        screen_code=screen_code,
+        expected_contract_revision=contract_revision,
+        expected_contract_snapshot_sha256=contract_snapshot_sha256,
+    ):
         return {
             "schema": "LF_PROFILE_RUNTIME_QUEUE_RESULT_V1",
             "status": "BLOCKED",
             "request_id": payload["request_id"],
             "error_code": "BLOCK_INPUT_GOVERNANCE_RECEIPT_INVALID",
-            "error_detail": "READY receipt was not reusable/current",
+            "error_detail": "READY receipt was not reusable/current for the resolved contract identity",
             "input_governance": governance,
         }
     decision = artifact_verification_decision(

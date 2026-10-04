@@ -2,9 +2,9 @@
   "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
   "cases": [
     {
-      "case_id": "IG_CV_M6_1_COMPACT_SOURCE_RECEIPT",
+      "case_id": "IG_CV_N15_CONSUMER_COMPATIBILITY_ROLLBACK_ONLY",
       "candidate_ref": "HEAD",
-      "candidate_path": "supabase/migrations/20261003190000_ig_cv_m6_1_compact_source_receipt_v1.sql",
+      "candidate_path": "sandbox/ig_cv/fixtures/n15_consumer_compatibility_noop.sql",
       "screen_id": 52,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
