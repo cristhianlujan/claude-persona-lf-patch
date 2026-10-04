@@ -1,0 +1,61 @@
+{
+  "schema_version": "SC_M5_4_AUTHORITY_SNAPSHOT_V1",
+  "observed_at": "2026-10-04T16:22:15.564257Z",
+  "source_main_preflight_sha": "21b90211477f6850f9c311bfe7d45f59bf932b37",
+  "context_authority": {
+    "policy_code": "POL-LF-POLICY-CONSUMPTION",
+    "policy_version": "v1.3-assurance-cutover",
+    "policy_sha": "a6bd42d3f6d94c4ae9c16bf1792d26fe85300d038382906f81cca079e77aa22f",
+    "status": "ACTIVE",
+    "effective_at": "2026-09-30T19:01:59.981942Z",
+    "schema_version": "lf-context-admission/v1",
+    "estimator": "UTF8_BYTES_DIV_4",
+    "soft_limit_tokens": 1500,
+    "hard_limit_tokens": 3000,
+    "jit_only": true,
+    "router_preflight_function": "public.fn_lf_router_preflight_v1(text)",
+    "router_preflight_function_sha256": "d81b7e33554958e9358398847659aa42d6406e85cd68ba58bf7283fb62f790ca",
+    "authority_ref": "supabase://public.lf_policy_versions/POL-LF-POLICY-CONSUMPTION@v1.3-assurance-cutover"
+  },
+  "story_context_transport": {
+    "source_ref": "sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_implementation_package_v1_1.json#context_transport",
+    "declared_max_context_bytes": 65536,
+    "transport_ref": "CONTEXT_BUDGET_GOVERNANCE"
+  },
+  "blind_evaluation_provenance_sample": {
+    "benchmark_id": "LF_IG_QUAL_2026_V1_CORR_IGQ001_R1",
+    "run_order": 7,
+    "case_id": "IGQ-001",
+    "method_id": "IG06",
+    "status": "SCORED",
+    "raw_frozen": true,
+    "raw_frozen_at": "2026-10-04T04:05:09.837725Z",
+    "raw_output_sha256": "66faaac87109cf58e136db42b849e80f79c0fb9a26de4140f502381720b0b5fe",
+    "oracle_opened_at": "2026-10-04T04:05:39.361049Z",
+    "scoring_eligible": true,
+    "gpt_runtime_stamp": "GPT-5.6 Sol | IG06 | method_rev=TRACEDEV2607+MNEMOSYNE2607__IG_MIX_V1__2026-10-03 | input=8c0e6f391d02aab85e888a08b3c7e6ce37e168a5e80a93147b7c8b6fb49eaa61 | phase1_sha=4519be87221ca456b38b95df3ba5275cbf1a223ae0ca745f458ced26879432b1 | evidence_cut=Supabase_live+GitHub_393e3409e8aa407f85deb779d365f059c88c432b | oracle=CLOSED | corrective=R1",
+    "authority_ref": "supabase://srcr_benchmark.results/LF_IG_QUAL_2026_V1_CORR_IGQ001_R1/7"
+  },
+  "pase_observation": {
+    "source_head_sha": "1c159a3a253b78eb46ab7093a424c4eff19de2b3",
+    "workflow_run_id": 37216158291,
+    "workflow": "PASE",
+    "workflow_status": "completed",
+    "workflow_conclusion": "skipped",
+    "pase_job_conclusion": "skipped",
+    "migration_source_parity_job_conclusion": "skipped",
+    "interpretation": "NOT_APPLICABLE_OBSERVED_FOR_SOURCE_ONLY_STORY_CHANGE",
+    "dispatch_receipt_claimed": false,
+    "terminal_control_verdict_claimed": false
+  },
+  "single_judge_evidence": {
+    "judge_contract": "STORY_PROGRAMMING_UTILITY_JUDGE_CONTRACT_V1",
+    "validation_model": "GOVERNED_SINGLE_JUDGE",
+    "owner_scope": "SUPER_ADMIN",
+    "second_judge_required": false,
+    "story_ci_run_id": 37212787743,
+    "story_ci_head_sha": "8c6c4ae41b0ab17f9384c883bf17c1b11845fd47",
+    "judge_step": "SC-M3.4 single governed programming utility judge contract",
+    "judge_step_conclusion": "success"
+  }
+}
