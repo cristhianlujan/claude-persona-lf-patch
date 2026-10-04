@@ -34,6 +34,7 @@ jobs:
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_creator_current_contract.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/programming_agent_story_consumer_binding_v1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_m54_qualification_contract_v1.json >/dev/null
+          python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_m55_candidate_closure_v1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_implementation_package_v1_1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/programming_consumer_v2_contract_snapshot_20261002.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/three_real_archetype_adversarial_matrix_v1.json >/dev/null
@@ -64,3 +65,5 @@ jobs:
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_three_real_archetype_adversarial_matrix_v1.py
       - name: SC-M5.4 qualification currentness and readback
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_story_m54_qualification_readback_v1.py
+      - name: SC-M5.5 candidate closure and terminal coherence
+        run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_story_m55_candidate_closure_v1.py
