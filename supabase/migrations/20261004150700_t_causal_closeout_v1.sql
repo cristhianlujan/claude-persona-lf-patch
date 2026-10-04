@@ -134,7 +134,7 @@ BEGIN
     'CAUSAL_EFFECT_LINEAGE CURRENT 1.0.0 sha 3794208d7ff52fec77c6703616be1a5b67e96c4290845910d31ec200609fe8d0; PASS_CAUSAL_EFFECT_LINEAGE_V1 checks=24 states=3 async_consumers=2 heuristic_negative=PASS receiver_readbacks=2; N-17 remains BACKLOG consumer-only.',
     'construction',
     ARRAY['Architect','Builder','Verifier']::text[],
-    'CAUSAL_ATTRIBUTION_WEAK_EVIDENCE',
+    'R4_NO_CUESTIONA',
     'LOUD_EARLY',
     'IG_CURATOR_VALIDATOR_REFACTOR_V2:T-CAUSAL',
     'github://cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/transversal_assets/causal_effect_lineage/README.md',
