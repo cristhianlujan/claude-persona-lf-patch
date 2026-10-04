@@ -76,18 +76,24 @@ def validate(matrix: dict, contract: dict, binding: dict) -> list[str]:
         if not c.get("trigger") or not c.get("required_evidence") or not c.get("authority_rule_ref"):
             errors.append(f"CASE_NOT_AUDITABLE:{cid}")
 
-    by_id = {c["case_id"]: c for c in cases}
-    if "DESIGN_AUTHORITY" not in by_id["RC-027"]["coverage_tags"]:
+    by_id = {c.get("case_id"): c for c in cases if c.get("case_id")}
+    rc027 = by_id.get("RC-027")
+    if rc027 is not None and "DESIGN_AUTHORITY" not in rc027.get("coverage_tags", []):
         errors.append("RC027_DESIGN_AUTHORITY_NOT_COVERED")
-    if by_id["RC-028"]["archetype_code"] != "BULK_UPLOAD_WIZARD":
+    rc028 = by_id.get("RC-028")
+    if rc028 is not None and rc028.get("archetype_code") != "BULK_UPLOAD_WIZARD":
         errors.append("RC028_NOT_BOUND_TO_B2B_ARCHETYPE")
-    if not {"NFR", "MOBILE", "ANALYTICS"}.issubset(by_id["RC-033"]["coverage_tags"]):
+    rc033 = by_id.get("RC-033")
+    if rc033 is not None and not {"NFR", "MOBILE", "ANALYTICS"}.issubset(rc033.get("coverage_tags", [])):
         errors.append("RC033_NFR_MOBILE_ANALYTICS_COVERAGE_MISSING")
-    if by_id["RC-031"]["authority_rule_ref"] != "system-invariant://I12-ORACLE-ISOLATION":
+    rc031 = by_id.get("RC-031")
+    if rc031 is not None and rc031.get("authority_rule_ref") != "system-invariant://I12-ORACLE-ISOLATION":
         errors.append("RC031_ORACLE_ISOLATION_AUTHORITY_DRIFT")
-    if not by_id["RC-030"]["authority_rule_ref"].startswith(binding.get("schema_version", "") + "#"):
+    rc030 = by_id.get("RC-030")
+    if rc030 is not None and not rc030.get("authority_rule_ref", "").startswith(binding.get("schema_version", "") + "#"):
         errors.append("RC030_LOSSLESS_BINDING_AUTHORITY_DRIFT")
-    if not by_id["RC-036"]["authority_rule_ref"].startswith(binding.get("schema_version", "") + "#"):
+    rc036 = by_id.get("RC-036")
+    if rc036 is not None and not rc036.get("authority_rule_ref", "").startswith(binding.get("schema_version", "") + "#"):
         errors.append("RC036_COMPATIBILITY_AUTHORITY_DRIFT")
 
     if contract.get("material_requirement_contract", {}).get("blocking_rule") != "UNRESOLVED_REQUIRED_BLOCKS_AFFECTED_SCOPE_ONLY":
