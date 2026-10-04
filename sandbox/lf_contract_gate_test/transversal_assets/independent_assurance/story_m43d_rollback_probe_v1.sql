@@ -53,7 +53,7 @@ BEGIN
 
   IF to_regprocedure('public.lf_independent_review_begin_v2(text,text,text,text,text,uuid,text,text,text,uuid,text,text,text,jsonb)') IS NULL
      OR to_regprocedure('public.lf_record_independent_review_step_v2(text,text,text,jsonb,text,text)') IS NULL
-     OR to_regprocedure('public.lf_independent_strategy_review_begin_v1(text,text,bigint,text,text,text,text,text)') IS NULL
+     OR to_regprocedure('public.lf_independent_strategy_review_begin_v1(text,uuid,uuid,bigint,text,text,text,jsonb)') IS NULL
      OR to_regprocedure('public.lf_record_independent_strategy_review_step_v1(text,text,text,jsonb,text)') IS NULL THEN
     RAISE EXCEPTION 'SC_M43D_REQUIRED_ENTRYPOINT_MISSING';
   END IF;
