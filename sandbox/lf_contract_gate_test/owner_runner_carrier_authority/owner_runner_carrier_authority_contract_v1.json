@@ -26,7 +26,10 @@
       "public.lf_capability_version_registry",
       "public.lf_capability_current",
       "public.lf_capability_binding"
-    ]
+    ],
+    "dispatch_authority": "private.lf_orchestrator_dispatch_receipts_v1",
+    "execution_authority": "public.lf_operation_execution",
+    "live_binding_readback_schema": "lf-owner-runner-live-binding-readback/v1"
   },
   "output_schema": "lf-owner-runner-carrier-read-model/v1",
   "row_fields": [
@@ -38,18 +41,31 @@
     "runner_state",
     "carrier",
     "state",
-    "source_revision"
+    "source_revision",
+    "current_version",
+    "current_manifest_sha256",
+    "consumer_execution_id",
+    "orchestrator_execution_id",
+    "dispatch_receipt_id",
+    "binding_execution_id",
+    "operation_status"
   ],
   "invariants": {
     "single_administrative_owner": true,
     "super_admin_equals": "LF_GOVERNANCE",
     "carrier_is_not_owner": true,
     "classification_inventory_is_evidence_only": true,
+    "classification_evidence_cannot_authorize_execution": true,
     "persistent_binding_catalog_forbidden": true,
     "impact_registry_remains_carrier_authority": true,
     "internal_ci_check_requires_standalone_capability": false,
     "internal_ci_check_runner_state": "CARRIER_INTERNAL",
     "standalone_capability_requires_canonical_authority": true,
+    "live_current_binding_required_for_resolved_capability": true,
+    "exact_consumer_binding_unique": true,
+    "historical_bindings_do_not_count_as_current_multiplicity": true,
+    "dispatch_execution_crossbind_required": true,
+    "current_version_manifest_crossbind_required": true,
     "candidate_runner_execution_forbidden": true,
     "registered_not_cutover_execution_forbidden": true,
     "unknown_control_fail_closed": true,
@@ -70,6 +86,17 @@
     "CANDIDATE_READ_ONLY": "BLOCK_CANDIDATE_RUNNER",
     "OWNER_BOUNDARY_ONLY": "BLOCK_OWNER_RUNNER_NOT_MATERIALIZED",
     "NOT_RESOLVED": "BLOCK_OWNER_RUNNER_NOT_RESOLVED"
+  },
+  "live_binding_policy": {
+    "required_for_state": "RESOLVED_CURRENT_CARRIER",
+    "registry_status": "ACTIVE",
+    "version_release_state": "RELEASED",
+    "entry_guard_required": true,
+    "entry_guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "matching_current_binding_count": 1,
+    "binding_selection": "EXACT_CONSUMER_EXECUTION_PLUS_CURRENT_VERSION_AND_MANIFEST",
+    "allowed_operation_status": ["IN_PROGRESS", "COMPLETED"],
+    "historical_binding_rows": "IGNORED_UNLESS_EXACT_CONSUMER_EXECUTION_MATCHES"
   },
   "materialization": {
     "binding_catalog_created": false,
