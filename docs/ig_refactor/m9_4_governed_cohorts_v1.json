@@ -1,0 +1,130 @@
+{
+  "schema_version": "IG_COHORT_SELECTION_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M9.4",
+  "work_code": "PAULO-154",
+  "status": "APPROVED_SELECTION_MODEL",
+  "source_main_sha": "449420bb1676dde460fbb048f749f790eab1b2f9",
+  "purpose": "Replace fixed screen literals used by shadow/canary/sweep selection with governed data relations.",
+  "as_is": {
+    "function": "programacion.fn_input_governance_shadow_sweep_v2",
+    "fixed_screen_codes": [
+      "REC_001",
+      "ONB_001",
+      "ONB_002",
+      "ONB_003",
+      "ONB_004",
+      "HOME_001",
+      "B2B-AUTH-001",
+      "B2B-AUTH-002"
+    ],
+    "mechanism": "p.codigo IN (...) plus CASE p.codigo ordering",
+    "effective_authority": "function body",
+    "distinction": "Other screen literals in shadow oracle functions are semantic/oracle logic, not cohort selection, and are out of scope for M9.4."
+  },
+  "model": {
+    "type_catalog": "programacion.input_governance_cohort_types",
+    "membership_authority": "programacion.input_governance_cohort_memberships",
+    "read_model": "programacion.v_input_governance_representative_cohort_v1",
+    "screen_authority": "lf_ops.pantallas",
+    "module_authority": "lf_ops.modulos",
+    "runtime_rule": "Shadow/canary/sweep consumers resolve active screens from the governed relation; screen IDs/codes are not embedded in runtime selection code.",
+    "evolution": "Memberships and observable selection evidence can change as data without redeploying screen literals."
+  },
+  "types": [
+    {
+      "code": "AUTH",
+      "label": "auth",
+      "representative_screen": "B2B-AUTH-001",
+      "observable_basis": {
+        "module_code": "B2B_AUTENTICACION",
+        "name": "Iniciar sesión"
+      },
+      "authority_ref": "lf_ops.pantallas+lf_ops.modulos"
+    },
+    {
+      "code": "FORMS",
+      "label": "formularios",
+      "representative_screen": "ONB_004",
+      "observable_basis": {
+        "flow": "onboarding",
+        "step": "4 de 4",
+        "description_property": "captures name, email and Terms acceptance"
+      },
+      "authority_ref": "lf_ops.pantallas"
+    },
+    {
+      "code": "NAVIGATION",
+      "label": "navegación",
+      "representative_screen": "HOME_001",
+      "observable_basis": {
+        "module_code": "CLIENT_HOME",
+        "flow": "home",
+        "description_property": "public entry surface with CTA routing into onboarding"
+      },
+      "authority_ref": "lf_ops.pantallas+lf_ops.modulos"
+    },
+    {
+      "code": "DESIGN",
+      "label": "diseño",
+      "representative_screen": "B2B-SIMULA-002",
+      "observable_basis": {
+        "module_code": "B2B_SIMULA",
+        "description_properties": [
+          "matrix/heatmap",
+          "multi-cell selection",
+          "range editing"
+        ]
+      },
+      "authority_ref": "lf_ops.pantallas+lf_ops.modulos"
+    },
+    {
+      "code": "ONBOARDING",
+      "label": "onboarding",
+      "representative_screen": "ONB_001",
+      "observable_basis": {
+        "flow": "onboarding",
+        "step": "1 de 3"
+      },
+      "authority_ref": "lf_ops.pantallas"
+    },
+    {
+      "code": "RECOVERY",
+      "label": "recuperación",
+      "representative_screen": "REC_001",
+      "observable_basis": {
+        "flow": "recovery",
+        "step": "post-DNI recovery"
+      },
+      "authority_ref": "lf_ops.pantallas"
+    },
+    {
+      "code": "API",
+      "label": "API",
+      "representative_screen": "ONB_002",
+      "observable_basis": {
+        "api_data_contract_story_ready": true,
+        "decision": "DEC-INPUT-GOV-512-API-STAGE-HUMAN-001"
+      },
+      "authority_ref": "transversal.decision_log/DEC-INPUT-GOV-512-API-STAGE-HUMAN-001"
+    }
+  ],
+  "coverage_contract": {
+    "required_types": 7,
+    "required_active_joinable_per_type": 1,
+    "screen_must_be_active": true,
+    "screen_must_have_module_relation": true,
+    "duplicate_runtime_screen_literals_allowed": false
+  },
+  "negative_contract": {
+    "shadow_canary_selection_screen_literals": 0,
+    "history_deleted": false,
+    "oracle_specific_screen_semantics_changed": false
+  },
+  "execution_limits": {
+    "soak_executed": false,
+    "canary_executed": false,
+    "release_candidate_executed": false,
+    "production_authorized": false
+  }
+}
