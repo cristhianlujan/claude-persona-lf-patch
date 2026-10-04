@@ -44,7 +44,6 @@ def build_model_cache_key(*, runner_os: str, runner_arch: str, model_id: str, re
         raise ValueError("MODEL_CACHE_KEY_FIELD_MISSING")
     if not SHA256_RE.fullmatch(model_sha256) or not SHA256_RE.fullmatch(mmproj_sha256):
         raise ValueError("MODEL_CACHE_KEY_SHA_INVALID")
-    # Avoid unsafe/path-like cache key fragments while still binding the exact model id.
     safe_model = re.sub(r"[^A-Za-z0-9_.-]+", "_", model_id)
     return "-".join([namespace, "model", runner_os, runner_arch, safe_model, revision, model_sha256, mmproj_sha256])
 
@@ -99,26 +98,41 @@ def artifact_verification_decision(*, profile_code: str, screen_code: str | None
 
 
 def governance_cache_key(*, screen_code: str | None, adapters: list[dict[str, Any]],
-                         input_literal: str) -> str:
+                         input_literal: str, contract_revision: str | None = None,
+                         contract_snapshot_sha256: str | None = None) -> str:
     adapter_ids = sorted(
         str((item.get("adapter_metadata") or {}).get("canonical_adapter_id") or item.get("adapter_code") or "")
         for item in adapters
     )
+    if (contract_revision is None) != (contract_snapshot_sha256 is None):
+        raise ValueError("GOVERNANCE_CONTRACT_IDENTITY_INCOMPLETE")
+    if contract_snapshot_sha256 is not None and not SHA256_RE.fullmatch(contract_snapshot_sha256):
+        raise ValueError("GOVERNANCE_CONTRACT_DIGEST_INVALID")
     payload = {
         "screen_code": screen_code or "",
         "adapter_ids": adapter_ids,
         "input_literal_sha256": _sha256_text(input_literal),
+        "contract_revision": contract_revision or "",
+        "contract_snapshot_sha256": contract_snapshot_sha256 or "",
     }
     return _sha256_text(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
 
 
-def governance_receipt_reusable(result: dict[str, Any], *, screen_code: str | None) -> bool:
+def governance_receipt_reusable(
+    result: dict[str, Any], *, screen_code: str | None,
+    expected_contract_revision: str | None = None,
+    expected_contract_snapshot_sha256: str | None = None,
+) -> bool:
     if not isinstance(result, dict):
         return False
     if not result.get("applicable"):
         return result.get("status") == "NOT_REQUIRED" and result.get("continuation_allowed") is True
+    if (expected_contract_revision is None) != (expected_contract_snapshot_sha256 is None):
+        return False
+    if expected_contract_snapshot_sha256 is not None and not SHA256_RE.fullmatch(expected_contract_snapshot_sha256):
+        return False
     receipt = result.get("governance_receipt")
-    return (
+    base_ok = (
         result.get("status") == "READY"
         and result.get("continuation_allowed") is True
         and isinstance(receipt, dict)
@@ -126,6 +140,19 @@ def governance_receipt_reusable(result: dict[str, Any], *, screen_code: str | No
         and receipt.get("currentness") == "LIVE_CURRENT"
         and (screen_code is None or receipt.get("screen_code") == screen_code)
         and _nonempty(receipt.get("snapshot_hash"))
+    )
+    if not base_ok:
+        return False
+    if expected_contract_revision is None:
+        return True
+    receipt_digest = receipt.get("contract_snapshot_sha256")
+    receipt_hash = receipt.get("contract_snapshot_hash")
+    return (
+        receipt.get("governance_version") == expected_contract_revision
+        and receipt_digest == expected_contract_snapshot_sha256
+        and receipt_hash == expected_contract_snapshot_sha256
+        and isinstance(receipt_digest, str)
+        and SHA256_RE.fullmatch(receipt_digest) is not None
     )
 
 
