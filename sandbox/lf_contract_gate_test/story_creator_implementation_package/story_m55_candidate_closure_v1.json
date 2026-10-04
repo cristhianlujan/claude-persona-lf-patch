@@ -1,0 +1,102 @@
+{
+  "schema_version": "STORY_M55_CANDIDATE_CLOSURE_V1",
+  "plan_id": "STORY_CREATOR_IMPLEMENTATION_SPEC_REFACTOR_V1",
+  "unit_code": "SC-M5.5",
+  "work_code": "SC-IMP-029",
+  "owner_scope": "SUPER_ADMIN",
+  "closure": {
+    "candidate_state": "CANDIDATE_CLOSED_PENDING_ACTIVATION",
+    "implementation_readiness": "BLOCKED_BY_TYPED_SOURCE_ITEMS",
+    "ready": false,
+    "terminal_state_coherent": true,
+    "pending_activation_explicit": true
+  },
+  "activation_guard": {
+    "runtime_activation_performed": false,
+    "production_activation_performed": false,
+    "promotion_performed": false,
+    "deploy_performed": false,
+    "future_activation_requires_separate_authority": true
+  },
+  "capability_first": {
+    "final_evidence": "REUSE_AS_IS",
+    "authority_readback": "REUSE_AS_IS",
+    "programming_target_binding": "DOMAIN_SPECIALIZATION",
+    "new_transversal_engine_created": false,
+    "new_programming_runtime_created": false,
+    "new_task_store_created": false,
+    "new_context_store_created": false
+  },
+  "governed_judge_currentness": {
+    "judge_contract_path": "sandbox/lf_contract_gate_test/story_creator_implementation_package/programming_utility_judge_contract_v1.json",
+    "m44_evidence_commit": "4f103669a496e202b3ff1750c611fdbaa1d1d385",
+    "m44_evidence_blob_sha": "d091ef6cc507a960aa4fdcb74fca314c4a0dfe11",
+    "m55_readback_blob_sha": "d091ef6cc507a960aa4fdcb74fca314c4a0dfe11",
+    "currentness_result": "CURRENT_UNCHANGED",
+    "single_governed_judge_only": true,
+    "second_semantic_review_required": false
+  },
+  "programming_target_binding": {
+    "status": "RESOLVED_CANDIDATE_BINDING",
+    "binding_origin": "SC-M5.5_SUPER_ADMIN_DOMAIN_SPECIALIZATION",
+    "preexisting_binding": false,
+    "silent_inference_used": false,
+    "consumer": "PROGRAMMING_AGENT",
+    "repo_full_name": "cristhianlujan/libertad-financiera",
+    "base_head_sha": "e3a116db67ff4637fdd6dee4fee150b96a4d959d",
+    "source_snapshot_sha256": "e24475612abd6b4011339621a9c8628005ef2f1c4111711d06ac03dd0b18a472",
+    "route_authority": {
+      "route_code": "CLIENT_NEW_DATA_COMPLETION",
+      "route_pattern": "/onboarding/completar-datos",
+      "screen_code": "ONB_004"
+    },
+    "context_path_patterns": [
+      "src/app/**",
+      "src/lib/auth/**",
+      "package.json",
+      "next.config.ts"
+    ],
+    "write_path_patterns": [
+      "src/app/onboarding/completar-datos/**",
+      "src/app/api/client/onboarding/**"
+    ],
+    "protected_path_patterns": [
+      "src/lib/auth/**",
+      ".github/**",
+      "supabase/**"
+    ],
+    "binding_rule": "EXACT_REPO_HEAD_AND_BOUNDED_PATHS_REQUIRED_BEFORE_IMPLEMENTATION_EDIT",
+    "target_repo_write_performed_by_this_unit": false
+  },
+  "retained_typed_source_items": [
+    {
+      "code": "ONB004_EMAIL_REQUIREMENT_CONFLICT",
+      "scope": "DELIVERABLE",
+      "state": "SOURCE_CONFLICT",
+      "resolution_rule": "PRESERVE_UNTIL_CURRENT_AUTHORITY_RESOLVES"
+    },
+    {
+      "code": "ONB004_LEGAL_ROUTES_PENDING",
+      "scope": "DELIVERABLE",
+      "state": "PENDING_SOURCE_DEFINITION",
+      "resolution_rule": "DO_NOT_INVENT_LEGAL_ROUTE_PATTERN"
+    }
+  ],
+  "resolved_candidate_item": {
+    "code": "PROGRAMMING_TARGET_SCOPE_UNRESOLVED",
+    "previous_state": "BLOCKED_CONSUMER_PACKET_UNRESOLVED",
+    "candidate_state": "RESOLVED_BY_GOVERNED_TARGET_BINDING",
+    "does_not_override_other_typed_blockers": true
+  },
+  "evidence_refs": [
+    "plan://STORY_CREATOR_IMPLEMENTATION_SPEC_REFACTOR_V1#SC-M5.5",
+    "supabase://programacion.engineering_work_items/821",
+    "supabase://programacion.engineering_work_checkpoints/TERMINAL_STATE_COHERENCE",
+    "supabase://programacion.engineering_work_items/816#SC-M4.4",
+    "github-actions://cristhianlujan/claude-persona-lf-patch/run/37212787743",
+    "github://cristhianlujan/claude-persona-lf-patch@4f103669a496e202b3ff1750c611fdbaa1d1d385/sandbox/lf_contract_gate_test/story_creator_implementation_package/programming_utility_judge_contract_v1.json",
+    "github://cristhianlujan/libertad-financiera@e3a116db67ff4637fdd6dee4fee150b96a4d959d",
+    "supabase://public.lf_eventos/19902#ONB004_GOLD_V1",
+    "supabase://srcr_benchmark/results/RC-002"
+  ]
+}
