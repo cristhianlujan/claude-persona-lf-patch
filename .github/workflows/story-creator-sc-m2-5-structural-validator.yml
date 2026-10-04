@@ -30,6 +30,8 @@ jobs:
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_adversarial_cases_v1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/transversal_capability_inventory_20261002.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/programming_utility_judge_contract_v1.json >/dev/null
+          python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_creator_implementation_contract_v2.json >/dev/null
+          python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/story_creator_current_contract.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/onb_004_implementation_package_v1_1.json >/dev/null
           python -m json.tool sandbox/lf_contract_gate_test/story_creator_implementation_package/fixtures/programming_consumer_v2_contract_snapshot_20261002.json >/dev/null
       - name: SC-M2.5 structural regression
@@ -50,3 +52,5 @@ jobs:
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_onb_004_compiled_gates_v1.py
       - name: SC-M4.3 Programming Agent format-contract A/B
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_programming_consumer_ab_v1.py
+      - name: SC-M5.1 current post-pilot contract
+        run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_story_creator_implementation_contract_v2.py
