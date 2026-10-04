@@ -4,9 +4,16 @@
   "work_code": "SADM-PP-L1-010",
   "owner": "LF_GOVERNANCE",
   "asset_code": "PLAN_AUTHORITY_DRIFT_GUARD",
-  "classification": "CANDIDATE_READ_ONLY_ADAPTER",
-  "source_state": "READY_FOR_REVIEW",
-  "runtime_state": "BLOCKED_NOT_MATERIALIZED_NOT_CUTOVER",
+  "classification": "READ_ONLY_ADAPTER_LIFECYCLE_DELEGATED",
+  "source_state": "FUNCTIONAL_SOURCE_CURRENT",
+  "runtime_state": "READ_FROM_CANONICAL_AUTHORITY",
+  "lifecycle_authority": {
+    "source_declares_mutable_lifecycle": false,
+    "asset": "public.lf_activos",
+    "registry": "public.lf_capability_registry",
+    "current": "public.lf_capability_current",
+    "stale_source_projection_authority": false
+  },
   "runtime_anchor": {
     "mode": "PARAMETERIZED_RESOLVER_BACKED",
     "hardcoded_event_id": false,
@@ -87,12 +94,13 @@
     "unregistered_delta_acceptance",
     "direct_call_without_orchestrator",
     "runtime_activation",
-    "production_activation"
+    "production_activation",
+    "source_lifecycle_as_live_authority"
   ],
   "materialization": {
-    "supabase_projection_applied": false,
-    "capability_registry_registered": false,
-    "owner_runner_materialized": false,
-    "cutover_authorized": false
+    "source_projection_mode": "DELEGATE_TO_CANONICAL_DB",
+    "source_declares_registry_state": false,
+    "source_declares_current_pointer": false,
+    "source_declares_cutover_state": false
   }
 }
