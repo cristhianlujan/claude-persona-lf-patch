@@ -1,0 +1,75 @@
+{
+  "schema_version": "STORY_M5_4_QUALIFICATION_CONTRACT_V1",
+  "owner_scope": "SUPER_ADMIN",
+  "qualification_scope": "SOURCE_AND_CONSUMER_CONTRACT_ONLY",
+  "runtime_activation": false,
+  "production_activation": false,
+  "judge_policy": {
+    "governed_semantic_judges_per_candidate": 1,
+    "reuse_existing_story_judge": true,
+    "second_judge_required": false,
+    "second_semantic_review_required": false
+  },
+  "exact_head": {
+    "required": true,
+    "source_currentness_readback_required": true,
+    "current_contract_pointer_required": true,
+    "consumer_binding_currentness_required": true
+  },
+  "context_budget": {
+    "live_policy_authority_required": true,
+    "policy_code": "POL-LF-POLICY-CONSUMPTION",
+    "policy_schema": "lf-context-admission/v1",
+    "story_transport_cap_must_be_source_bound": true,
+    "effective_estimator_must_match_live_policy": true,
+    "red_context_forbidden": true,
+    "reread_reduction_requires_measured_trace": true,
+    "design_only_efficiency_claim_forbidden": true,
+    "runtime_latency_or_token_savings_claim_allowed": false
+  },
+  "reread_trace": {
+    "baseline_mode": "RC030_REFETCH_EACH_CANONICAL_FACT",
+    "candidate_mode": "READ_PINNED_HANDOFF_ONCE",
+    "source_mapping": "PROGRAMMING_AGENT_STORY_CONSUMER_BINDING_V1#handoff_projection.mapping",
+    "candidate_source_refetch_without_currentness_trigger_forbidden": true,
+    "semantic_fact_loss_forbidden": true
+  },
+  "blind_evaluation": {
+    "raw_output_must_be_frozen": true,
+    "raw_output_sha256_required": true,
+    "runtime_stamp_required": true,
+    "oracle_opened_after_raw_freeze_required": true,
+    "oracle_preexposure_forbidden": true,
+    "observed_provider_bound_sample_required": true,
+    "story_model_execution_required_by_this_unit": false
+  },
+  "pase_control_state_machine": {
+    "states": ["NOT_APPLICABLE", "APPLICABLE_NOT_DISPATCHED", "DISPATCHED", "TERMINAL"],
+    "not_applicable_must_not_be_reported_as_pass": true,
+    "applicable_requires_dispatch_receipt": true,
+    "dispatched_requires_typed_terminal_verdict_for_closure": true,
+    "source_only_observed_skipped_may_resolve_to_not_applicable": true,
+    "dispatch_or_terminal_receipt_must_not_be_fabricated": true
+  },
+  "closure": {
+    "requires": [
+      "EXACT_HEAD_SOURCE_READBACK",
+      "CURRENT_CONTRACT_POINTER_READBACK",
+      "PROGRAMMING_CONSUMER_BINDING_READBACK",
+      "LIVE_CONTEXT_POLICY_READBACK",
+      "CONTEXT_BUDGET_MEASUREMENT",
+      "REREAD_TRACE_MEASUREMENT",
+      "BLIND_PROVENANCE_VALIDATION",
+      "PASE_APPLICABILITY_CLASSIFICATION",
+      "SINGLE_GOVERNED_JUDGE_EVIDENCE"
+    ],
+    "forbids": [
+      "SECOND_SEMANTIC_JUDGE",
+      "STRATEGY_REVIEW_FOR_STORY",
+      "RUNTIME_ACTIVATION",
+      "PRODUCTION_ACTIVATION",
+      "UNMEASURED_EFFICIENCY_CLAIM",
+      "PASE_SKIPPED_RELABELED_AS_PASS"
+    ]
+  }
+}
