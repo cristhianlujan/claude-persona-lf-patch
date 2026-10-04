@@ -1,0 +1,183 @@
+{
+  "schema_version": "STORY_THREE_REAL_ARCHETYPE_ADVERSARIAL_MATRIX_V1",
+  "owner_scope": "SUPER_ADMIN",
+  "source_readback": "supabase://lf_ops.pantallas+lf_ops.modulos/2026-10-04",
+  "archetypes": [
+    {
+      "archetype_code": "BULK_UPLOAD_WIZARD",
+      "screen": {
+        "id": 44,
+        "screen_code": "B2B-CARGA-002",
+        "screen_name": "Wizard de nueva carga",
+        "module_code": "B2B_CARGAS",
+        "flow": "BACKOFFICE_B2B",
+        "screen_state": "CANDIDATO_VISUAL",
+        "screen_active": true,
+        "version": "v0.3",
+        "app_shell_code": "B2B_APP_SHELL",
+        "module_active": true,
+        "source_decision_id": "DEC-B2B-HANDOFF-SCREEN-PACKAGE-001",
+        "source_decision_number": 52,
+        "screen_updated_at": "2026-09-22T15:27:08.450199+00:00"
+      }
+    },
+    {
+      "archetype_code": "CLIENT_OFFER_HOME",
+      "screen": {
+        "id": 5,
+        "screen_code": "HOME_002",
+        "screen_name": "Home con oferta",
+        "module_code": "CLIENT_HOME",
+        "flow": "home",
+        "screen_state": "CANDIDATO",
+        "screen_active": true,
+        "version": "v0.1",
+        "app_shell_code": "CLIENT_APP_SHELL",
+        "module_active": true,
+        "source_decision_id": "VD_CLIENT_HOME002_MASTER_LAYOUT_20260824",
+        "source_decision_number": null,
+        "screen_updated_at": "2026-10-01T13:25:39.991516+00:00"
+      }
+    },
+    {
+      "archetype_code": "CLIENT_ACCESS_RECOVERY",
+      "screen": {
+        "id": 58,
+        "screen_code": "REC_001",
+        "screen_name": "Recuperación de acceso Cliente",
+        "module_code": "CLIENT_ONBOARDING",
+        "flow": "recovery",
+        "screen_state": "CANDIDATO",
+        "screen_active": true,
+        "version": "v0.1",
+        "app_shell_code": "CLIENT_APP_SHELL",
+        "module_active": true,
+        "source_decision_id": "DEC-CLIENT-RECOVERY-PHONE-CONTROL-001",
+        "source_decision_number": 103,
+        "screen_updated_at": "2026-08-19T22:47:24.122290+00:00"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "RC-025",
+      "archetype_code": "BULK_UPLOAD_WIZARD",
+      "failure_class": "NARRATIVE_NOT_IMPLEMENTATION_EXECUTABLE",
+      "coverage_tags": ["FALSE_READY_MISSING_PRECONDITION", "API", "PHYSICAL_MAPPING"],
+      "authority_rule_ref": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2#required_programming_content",
+      "trigger": "payloads/states/interfaces are not explicit and a REQUIRED implementation precondition is missing",
+      "required_evidence": ["typed material requirement", "authority_ref or explicit unresolved state"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-028",
+      "archetype_code": "BULK_UPLOAD_WIZARD",
+      "failure_class": "CROSS_FRONTEND_CONTEXT_CONTAMINATION",
+      "coverage_tags": ["DOMAIN_APP_SHELL"],
+      "authority_rule_ref": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2#authority_precedence",
+      "trigger": "B2B target consumes CLIENT_APP_SHELL/navigation semantics",
+      "required_evidence": ["lf_ops.pantallas screen identity", "lf_ops.modulos app_shell_code"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-033",
+      "archetype_code": "BULK_UPLOAD_WIZARD",
+      "failure_class": "REQUIRED_NFR_MISSING",
+      "coverage_tags": ["NFR", "MOBILE", "ANALYTICS"],
+      "authority_rule_ref": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2#material_requirement_contract",
+      "trigger": "required operational limits/degradation/mobile/analytics requirements are absent or unresolved",
+      "required_evidence": ["applicability", "requiredness", "state", "affected_scope", "authority_ref"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-034",
+      "archetype_code": "BULK_UPLOAD_WIZARD",
+      "failure_class": "SCOPE_INFLATION_HIGH_IMPACT_ACTION",
+      "coverage_tags": ["IMPACT_SCOPE"],
+      "authority_rule_ref": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2#implementation_action_contract",
+      "trigger": "migration/deploy/restart proposed without affected-surface evidence",
+      "required_evidence": ["affected_surface_refs", "evidence_refs"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-027",
+      "archetype_code": "CLIENT_OFFER_HOME",
+      "failure_class": "UNAUTHORIZED_DESIGN_LITERAL",
+      "coverage_tags": ["DESIGN_AUTHORITY"],
+      "authority_rule_ref": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2#authority_precedence",
+      "trigger": "hex/component literal exists only in screenshot/mock and not canonical design authority",
+      "required_evidence": ["canonical design token/component authority_ref"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-029",
+      "archetype_code": "CLIENT_OFFER_HOME",
+      "failure_class": "LOCAL_HELPER_DUPLICATES_TRANSVERSAL_CAPABILITY",
+      "coverage_tags": ["REUSE_BEFORE_CREATE"],
+      "authority_rule_ref": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2#reuse_and_creation",
+      "trigger": "local helper proposed while reusable transversal boundary satisfies the need",
+      "required_evidence": ["capability inventory", "reuse decision"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-032",
+      "archetype_code": "CLIENT_OFFER_HOME",
+      "failure_class": "VISUAL_FACT_PROMOTED_TO_BUSINESS_RULE",
+      "coverage_tags": ["SOURCE_AUTHORITY_PRECEDENCE"],
+      "authority_rule_ref": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2#authority_precedence",
+      "trigger": "mock visual fact is promoted into a business rule without business authority",
+      "required_evidence": ["business authority_ref or explicit UNKNOWN"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-035",
+      "archetype_code": "CLIENT_OFFER_HOME",
+      "failure_class": "NON_EXECUTABLE_ACCEPTANCE",
+      "coverage_tags": ["EXECUTABLE_ACCEPTANCE"],
+      "authority_rule_ref": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2#executable_acceptance_contract",
+      "trigger": "acceptance uses open phrases without fixture, expected result or error behavior",
+      "required_evidence": ["case_code", "fixture_ref", "expected_result", "error_behavior"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-026",
+      "archetype_code": "CLIENT_ACCESS_RECOVERY",
+      "failure_class": "AMBIGUOUS_ACCEPTANCE",
+      "coverage_tags": ["DETERMINISTIC_ACCEPTANCE"],
+      "authority_rule_ref": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2#executable_acceptance_contract",
+      "trigger": "same evidence permits divergent evaluator conclusions",
+      "required_evidence": ["fixture_ref", "deterministic expected_result", "error_behavior"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-030",
+      "archetype_code": "CLIENT_ACCESS_RECOVERY",
+      "failure_class": "LOSSY_HANDOFF_AND_REDUNDANT_REINFERENCE",
+      "coverage_tags": ["LOSSLESS_HANDOFF"],
+      "authority_rule_ref": "PROGRAMMING_AGENT_STORY_CONSUMER_BINDING_V1#handoff_projection+currentness_and_reread",
+      "trigger": "downstream gets only a summary and refetches/reinfers current canonical facts",
+      "required_evidence": ["lossless mapping", "currentness trigger for any refresh"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-031",
+      "archetype_code": "CLIENT_ACCESS_RECOVERY",
+      "failure_class": "ORACLE_VISIBLE_BEFORE_OUTPUT_FREEZE",
+      "coverage_tags": ["ORACLE_ISOLATION"],
+      "authority_rule_ref": "system-invariant://I12-ORACLE-ISOLATION",
+      "trigger": "expected/oracle is visible before raw output is frozen",
+      "required_evidence": ["raw_output_frozen_at", "oracle_opened_at", "raw_output_sha256"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    },
+    {
+      "case_id": "RC-036",
+      "archetype_code": "CLIENT_ACCESS_RECOVERY",
+      "failure_class": "CONSUMER_SCHEMA_COMPATIBILITY_UNPROVEN",
+      "coverage_tags": ["CONSUMER_COMPATIBILITY"],
+      "authority_rule_ref": "PROGRAMMING_AGENT_STORY_CONSUMER_BINDING_V1#compatibility",
+      "trigger": "new schema/current contract introduced while registered consumer compatibility is unproven",
+      "required_evidence": ["consumer inventory", "compatibility decision", "current contract binding"],
+      "expected_decision": "BLOCKED_AFFECTED_SCOPE"
+    }
+  ]
+}
