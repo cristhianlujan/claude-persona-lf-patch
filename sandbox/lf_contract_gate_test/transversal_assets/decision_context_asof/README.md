@@ -10,9 +10,10 @@ Persist the exact decision context that applied when a decision was taken and re
 
 ## Canonical contract
 
-Input schema: `decision-context-asof/v1`.
+Input schema: `LF_DECISION_CONTEXT_ASOF_INPUT_V1`.
 
 Required branches:
+- `schema_version`
 - `decision_ref`
 - `consumer_code`
 - `subject.ref` + `subject.version`
@@ -33,7 +34,7 @@ The capability does not replace temporal/currentness/version/evidence authoritie
 - `CAPABILITY_VERSION_COMPATIBILITY`
 - `TYPED_EVIDENCE_REGISTRY`
 
-`TYPED_EVIDENCE_REGISTRY` validates `decision-context-asof/v1`.
+`TYPED_EVIDENCE_REGISTRY` remains read-only. If a consumer supplies `extensions.typed_evidence[]`, each attachment is validated by `private.fn_lf_typed_evidence_payload_valid_v3`; DECISION_CONTEXT_ASOF never creates a second evidence registry or writes the canonical registry.
 
 ## Entry points
 
@@ -52,6 +53,7 @@ The resolver reads the immutable historical receipt whose `decided_at <= as_of`.
 5. No IG-specific branch exists in record/resolve logic.
 6. Consumer extensions are non-authoritative metadata only.
 7. Unknown/drift blocks new recording; historical resolution remains readable.
+8. Canonical currentness/version/evidence authorities are reused by reference; no shadow authority is created.
 
 ## Verification
 
