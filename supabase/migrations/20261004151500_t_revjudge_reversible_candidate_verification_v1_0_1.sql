@@ -136,7 +136,7 @@ BEGIN
     v_exec
   );
 
-  v_promote := public.fn_lf_capability_promote_v1('REVERSIBLE_CANDIDATE_VERIFICATION','1.0.1','1.0.0',v_exec,'T-REVJUDGE v1.0.1 enforces INDEPENDENT_ASSURANCE receipt; no candidate/runtime promotion or cutover.');
+  v_promote := public.fn_lf_capability_promote_v1('REVERSIBLE_CANDIDATE_VERIFICATION','1.0.1','394518804a92123d410348cdba4af570481f3922bd8fc9d6e2a7916a1b860815',v_exec,'T-REVJUDGE v1.0.1 enforces INDEPENDENT_ASSURANCE receipt; no candidate/runtime promotion or cutover.');
   IF coalesce((v_promote->>'ready')::boolean,false) IS NOT TRUE THEN
     RAISE EXCEPTION 'BLOCK_T_REVJUDGE_V101_PROMOTION:%',v_promote::text;
   END IF;
