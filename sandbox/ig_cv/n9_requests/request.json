@@ -2,21 +2,21 @@
   "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
   "cases": [
     {
-      "case_id": "IG_M9_1_RECURATION_AUTHORITY_HOME_001",
+      "case_id": "IG_M9_1_STALE_REBIND_ROUTE_SCREEN_003",
       "candidate_ref": "HEAD",
-      "candidate_path": "supabase/migrations/20261004121000_ig_m9_1_recuration_authority_live_universe_v1.sql",
-      "screen_id": 4,
+      "candidate_path": "supabase/migrations/20261004122500_ig_m9_1_stale_rebind_route_v1.sql",
+      "screen_id": 3,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
       "expected_finding_codes": []
     },
     {
-      "case_id": "IG_M9_1_RECURATION_AUTHORITY_B2B_DASH_001",
+      "case_id": "IG_M9_1_ORPHAN_FAIL_CLOSED_SCREEN_007",
       "candidate_ref": "HEAD",
-      "candidate_path": "supabase/migrations/20261004121000_ig_m9_1_recuration_authority_live_universe_v1.sql",
-      "screen_id": 60,
+      "candidate_path": "supabase/migrations/20261004122500_ig_m9_1_stale_rebind_route_v1.sql",
+      "screen_id": 7,
       "consumer": "STORY_CREATOR",
-      "expected_verdict": "NO_BLOCKING_FINDINGS",
+      "expected_verdict": "BLOCKING_FINDINGS",
       "expected_finding_codes": []
     }
   ]
