@@ -1,5 +1,5 @@
 -- T-CAUSAL / PAULO-188 terminal closeout.
--- Evidence/state closure only. No N-17 execution and no runtime cutover.
+-- Evidence/state closure only. No N-17 execution, no runtime cutover, no new event type.
 
 DO $closeout$
 DECLARE
@@ -9,7 +9,6 @@ DECLARE
   v_dep_done integer;
   v_terminal_count integer;
 BEGIN
-  -- Refresh/guard dependencies immediately before terminal writes.
   SELECT count(*) INTO v_dep_done
   FROM programacion.engineering_work_dependencies d
   JOIN programacion.engineering_work_items wi ON wi.id=d.work_item_id
@@ -31,7 +30,6 @@ BEGIN
     RAISE EXCEPTION 'BLOCK_T_CAUSAL_SOURCE_EVENT_20170_NOT_CURRENT';
   END IF;
 
-  -- Capability/currentness + generic contract readback.
   IF NOT EXISTS (
     SELECT 1
     FROM public.lf_capability_registry r
@@ -65,7 +63,6 @@ BEGIN
     RAISE EXCEPTION 'BLOCK_T_CAUSAL_CLOSEOUT_CAPABILITY_READBACK';
   END IF;
 
-  -- Both canonical evidence dependencies remain exact/current.
   IF NOT EXISTS (
     SELECT 1 FROM public.lf_capability_current
     WHERE capability_code='TYPED_EVIDENCE_REGISTRY'
@@ -80,7 +77,6 @@ BEGIN
     RAISE EXCEPTION 'BLOCK_T_CAUSAL_CLOSEOUT_EVIDENCE_DEPENDENCY_DRIFT';
   END IF;
 
-  -- N-17 is bound as an IG consumer only and remains unexecuted/BACKLOG.
   IF NOT EXISTS (
     SELECT 1
     FROM programacion.engineering_plan_units pu
@@ -102,7 +98,6 @@ BEGIN
     RAISE EXCEPTION 'BLOCK_T_CAUSAL_CLOSEOUT_N17_CONSUMER_READBACK';
   END IF;
 
-  -- Applied migration ledger parity by canonical migration names.
   IF NOT EXISTS (
     SELECT 1 FROM supabase_migrations.schema_migrations
     WHERE name='t_causal_causal_effect_lineage_v1'
@@ -113,7 +108,6 @@ BEGIN
     RAISE EXCEPTION 'BLOCK_T_CAUSAL_CLOSEOUT_MIGRATION_LEDGER_PARITY';
   END IF;
 
-  -- EKB post: causal continuity must be demonstrated, never inferred from weak co-occurrence.
   INSERT INTO transversal.error_knowledge(
     codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,severidad,
     lote_origen,pr,estado,evidencia,lifecycle_phase,consumer_role,root_cause_family,detectability,
@@ -127,40 +121,22 @@ BEGIN
     'Name-match, mismo objeto o timestamp cercano pueden coincidir sin que exista una transición causal demostrada.',
     'Fail closed: sin prueba explícita devolver UNLINKED; si receipts explícitos se contradicen devolver AMBIGUOUS; nunca elevar heurísticas a LINKED.',
     'Ejecutar el negativo heurístico y demostrar dos consumers async distintos con receiver readback; verificar además que el provider no asume autoridad de negocio ni introduce PII.',
-    'ALTA',
-    'T-CAUSAL/PAULO-188',
-    '#1614',
-    'activo',
+    'ALTA','T-CAUSAL/PAULO-188','#1614','activo',
     'CAUSAL_EFFECT_LINEAGE CURRENT 1.0.0 sha 3794208d7ff52fec77c6703616be1a5b67e96c4290845910d31ec200609fe8d0; PASS_CAUSAL_EFFECT_LINEAGE_V1 checks=24 states=3 async_consumers=2 heuristic_negative=PASS receiver_readbacks=2; N-17 remains BACKLOG consumer-only.',
-    'construction',
-    ARRAY['Architect','Builder','Verifier']::text[],
-    'R4_NO_CUESTIONA',
-    'LOUD_EARLY',
+    'construction',ARRAY['Architect','Builder','Verifier']::text[],'R4_NO_CUESTIONA','LOUD_EARLY',
     'IG_CURATOR_VALIDATOR_REFACTOR_V2:T-CAUSAL',
     'github://cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/transversal_assets/causal_effect_lineage/README.md',
     clock_timestamp(),clock_timestamp()
   )
   ON CONFLICT(codigo) DO UPDATE SET
-    categoria=excluded.categoria,
-    titulo=excluded.titulo,
-    descripcion=excluded.descripcion,
-    causa_raiz=excluded.causa_raiz,
-    patron=excluded.patron,
-    prevencion=excluded.prevencion,
-    validacion=excluded.validacion,
-    severidad=excluded.severidad,
-    lote_origen=excluded.lote_origen,
-    pr=excluded.pr,
-    estado=excluded.estado,
-    evidencia=excluded.evidencia,
-    lifecycle_phase=excluded.lifecycle_phase,
-    consumer_role=excluded.consumer_role,
-    root_cause_family=excluded.root_cause_family,
-    detectability=excluded.detectability,
-    source_context=excluded.source_context,
-    source_ref=excluded.source_ref,
-    updated_at=clock_timestamp(),
-    ultima_vez=clock_timestamp();
+    categoria=excluded.categoria,titulo=excluded.titulo,descripcion=excluded.descripcion,
+    causa_raiz=excluded.causa_raiz,patron=excluded.patron,prevencion=excluded.prevencion,
+    validacion=excluded.validacion,severidad=excluded.severidad,lote_origen=excluded.lote_origen,
+    pr=excluded.pr,estado=excluded.estado,evidencia=excluded.evidencia,
+    lifecycle_phase=excluded.lifecycle_phase,consumer_role=excluded.consumer_role,
+    root_cause_family=excluded.root_cause_family,detectability=excluded.detectability,
+    source_context=excluded.source_context,source_ref=excluded.source_ref,
+    updated_at=clock_timestamp(),ultima_vez=clock_timestamp();
 
   UPDATE programacion.engineering_work_checkpoints
   SET status='DONE',
@@ -178,10 +154,7 @@ BEGIN
 
   SELECT count(*) INTO v_done_count
   FROM programacion.engineering_work_checkpoints
-  WHERE work_item_id=884
-    AND required=true
-    AND status='DONE'
-    AND evidence_ref IS NOT NULL;
+  WHERE work_item_id=884 AND required=true AND status='DONE' AND evidence_ref IS NOT NULL;
   IF v_done_count<>4 THEN
     RAISE EXCEPTION 'BLOCK_T_CAUSAL_CLOSEOUT_CHECKPOINTS:%',v_done_count;
   END IF;
@@ -194,56 +167,11 @@ BEGIN
       updated_by_execution_id=v_exec
   WHERE id=884 AND work_code='PAULO-188' AND status IN ('BACKLOG','IN_PROGRESS');
 
-  IF NOT EXISTS (
-    SELECT 1 FROM programacion.engineering_work_items
-    WHERE id=884 AND work_code='PAULO-188' AND status='DONE' AND completed_at IS NOT NULL
-  ) THEN
-    RAISE EXCEPTION 'BLOCK_T_CAUSAL_CLOSEOUT_TERMINAL_STATE';
-  END IF;
-
-  -- One and only one terminal closeout event for this work item.
   SELECT count(*) INTO v_terminal_count
-  FROM public.lf_eventos
-  WHERE evento_tipo='ENGINEERING_WORK_CLOSED'
-    AND entidad_tipo='ENGINEERING_WORK_ITEM'
-    AND entidad_codigo='PAULO-188:T-CAUSAL';
-  IF v_terminal_count<>0 THEN
-    RAISE EXCEPTION 'BLOCK_T_CAUSAL_PREEXISTING_TERMINAL_EVENT:%',v_terminal_count;
-  END IF;
-
-  INSERT INTO public.lf_eventos(
-    evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id
-  ) VALUES (
-    'ENGINEERING_WORK_CLOSED','ENGINEERING_WORK_ITEM','PAULO-188:T-CAUSAL',
-    'T-CAUSAL closed with CAUSAL_EFFECT_LINEAGE CURRENT, heuristic-negative proof, two async receiver readbacks and N-17 bound consumer-only without execution.',
-    'INFO',
-    jsonb_build_object(
-      'plan_code','IG_CURATOR_VALIDATOR_REFACTOR_V2',
-      'unit_code','T-CAUSAL',
-      'work_code','PAULO-188',
-      'terminal_state','DONE',
-      'capability_code','CAUSAL_EFFECT_LINEAGE',
-      'version','1.0.0',
-      'manifest_sha256',v_cap_sha,
-      'source_event','event://20170',
-      'checkpoints','4/4',
-      'heuristic_negative','PASS',
-      'async_consumers',2,
-      'receiver_readbacks',2,
-      'n17_status','BACKLOG',
-      'n17_executed',false,
-      'pr','#1614'
-    ),
-    'MIGRATION_T_CAUSAL_CLOSEOUT_V1',v_exec
-  );
-
-  SELECT count(*) INTO v_terminal_count
-  FROM public.lf_eventos
-  WHERE evento_tipo='ENGINEERING_WORK_CLOSED'
-    AND entidad_tipo='ENGINEERING_WORK_ITEM'
-    AND entidad_codigo='PAULO-188:T-CAUSAL';
+  FROM programacion.engineering_work_items
+  WHERE id=884 AND work_code='PAULO-188' AND status='DONE' AND completed_at IS NOT NULL;
   IF v_terminal_count<>1 THEN
-    RAISE EXCEPTION 'BLOCK_T_CAUSAL_TERMINAL_EVENT_CARDINALITY:%',v_terminal_count;
+    RAISE EXCEPTION 'BLOCK_T_CAUSAL_CLOSEOUT_TERMINAL_STATE:%',v_terminal_count;
   END IF;
 END
 $closeout$;
