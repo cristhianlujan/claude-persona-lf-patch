@@ -40,7 +40,7 @@ jobs:
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_onb_004_adversarial_suite_v1.py
       - name: SC-M3.3 no parallel transversal capability regression
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_no_parallel_transversal_capability_v1.py
-      - name: SC-M3.4 independent programming utility judge contract
+      - name: SC-M3.4 single governed programming utility judge contract
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_programming_utility_judge_contract_v1.py
       - name: SC-M3.5 context budget GOLD and overload probes
         run: python sandbox/lf_contract_gate_test/story_creator_implementation_package/test_context_budget_gate_v1.py
