@@ -1,0 +1,89 @@
+{
+  "schema_version": "PASE_F08_R03_VALIDATE_LF_PACKS_RETIREMENT_READINESS_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F08-R03",
+  "target": "VALIDATE_LF_PACKS_LEGACY_CARRIER_REFERENCES",
+  "mode": "RETIREMENT_READINESS_ONLY",
+  "destructive_retirement_executed": false,
+  "actual_retirement_deferred_until_final_activation": true,
+  "authority": {
+    "exact_main_sha": "0daab9933b4efb45a742c4c54ceb4382f01e8b78",
+    "predecessor_terminal_work_code": "PASE-ATOM-F08-P03",
+    "replacement_map_path": "sandbox/lf_contract_gate_test/post_pase_f08/VALIDATE_LF_PACKS_legacy_carrier_rehome_v1.json"
+  },
+  "current_state": {
+    "legacy_workflow_path": ".github/workflows/validate-lf-packs.yml",
+    "legacy_workflow_present": false,
+    "live_db_authority_count": 0,
+    "live_dispatch_receipt_count": 0,
+    "live_binding_count": 0,
+    "operational_dependency_count": 0,
+    "s30_dependency_rehomed": true,
+    "current_s30_broker_workflow": ".github/workflows/profile-driven-screen-generation.yml",
+    "current_parent_exact_head_evidence": "PASE"
+  },
+  "keep_authority": {
+    "pack_validation_definition": "gobernanza/contratos/pack_validation_clean_workflow_v1.json",
+    "pack_validation_staged_workflow": "sandbox/lf_contract_gate_test/pack_validation_contract/lf-pack-validation-core.staged.yml",
+    "future_pack_validation_workflow": ".github/workflows/lf-pack-validation-core.yml",
+    "future_trigger": "workflow_call",
+    "valid_pack_validation_responsibility_must_be_preserved": true
+  },
+  "remaining_reference_classes": {
+    "shared_control_registry": "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_shared_ci_control_ownership_registry_v1.json",
+    "historical_migrations_and_docs": "PRESERVE_AS_HISTORY_UNLESS_THEY_HAVE_OPERATIONAL_POWER",
+    "negative_tests_and_retirement_assertions": "PRESERVE_IF_SEMANTICALLY_CURRENT",
+    "old_s30_receipts": "IMMUTABLE_HISTORICAL_EVIDENCE_NOT_CURRENT_BINDINGS",
+    "active_operational_legacy_reference_allowed": false
+  },
+  "future_retirement_preconditions": [
+    "FINAL_ACTIVATION_AUTHORITY_SATISFIED",
+    "REFRESH_EXACT_MAIN_AND_REFERENCE_SEARCH",
+    "PACK_VALIDATION_CLEAN_OWNER_RUNNER_QUALIFIED_IF_ACTIVATED",
+    "ZERO_LEGACY_OPERATIONAL_CALLERS",
+    "ZERO_LEGACY_BINDINGS_AND_RECEIPTS",
+    "S30_CURRENT_BINDING_USES_CURRENT_BROKER_WORKFLOW",
+    "NO_CASCADE",
+    "PRESERVE_VALID_PACK_VALIDATION_RESPONSIBILITY"
+  ],
+  "future_apply_contract": {
+    "source_actions": [
+      "REMOVE_OR_RECLASSIFY_VALIDATE_LF_PACKS_WORKFLOW_FROM_CURRENT_SHARED_CONTROL_REGISTRY",
+      "UPDATE_ONLY_CURRENT_NONHISTORICAL_REFERENCES_WITH_OPERATIONAL_OR_CURRENTNESS_SEMANTICS",
+      "DO_NOT_DELETE_HISTORICAL_MIGRATIONS_OR_RECEIPTS_SOLELY_FOR_NAME_MATCH"
+    ],
+    "db_actions": [
+      "REMOVE_ONLY_STALE_ACTIVE_PROJECTIONS_IF_ANY_EXIST_AT_EXECUTION_TIME",
+      "PRESERVE_UNRELATED_PACK_VALIDATION_AUTHORITIES"
+    ],
+    "forbidden": [
+      "DELETE_PACK_VALIDATION_CAPABILITY_BY_NAME_MATCH",
+      "CASCADE_RETIREMENT",
+      "REACTIVATE_LEGACY_VALIDATE_LF_PACKS_WORKFLOW",
+      "BULK_CONTROL_STATE_CHANGE"
+    ]
+  },
+  "rollback_contract": {
+    "strategy": "CAPTURE_EXECUTION_TIME_EXACT_GIT_AND_DB_PREIMAGES_BEFORE_WRITE",
+    "restore_only_execution_time_preimages": true,
+    "historical_baselines_are_rollback_authority": false,
+    "fail_closed_if_head_or_authority_moves": true,
+    "persist_preimage_manifest_and_digest": true
+  },
+  "post_apply_readback": [
+    "ZERO_LEGACY_VALIDATE_LF_PACKS_OPERATIONAL_REFERENCES",
+    "ZERO_LEGACY_BINDINGS_AND_RECEIPTS",
+    "PACK_VALIDATION_CLEAN_RESPONSIBILITY_PRESERVED",
+    "S30_BROKER_CURRENT_BINDING_PRESERVED",
+    "PASE_PARENT_EVIDENCE_CONTRACT_PRESERVED",
+    "NO_CASCADE_CONFIRMED",
+    "ROLLBACK_PREIMAGE_MANIFEST_DIGEST_PERSISTED"
+  ],
+  "restrictions": {
+    "no_runtime_activation_now": true,
+    "no_production_activation_now": true,
+    "no_destructive_retirement_now": true,
+    "no_cascade": true,
+    "no_zip_authority": true
+  }
+}
