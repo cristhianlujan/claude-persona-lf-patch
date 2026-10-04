@@ -117,7 +117,7 @@ insert into public.lf_error_knowledge(
   'MEDIUM',1,now(),now(),'IG_CURATOR_VALIDATOR_REFACTOR_V2',null,'ACTIVO',
   'M5.0 / PAULO-132; SOURCE_PACK_LOOKUP_V2 preferred_input + current crossings. N-10 PR#1546 merged; N-11 PR#1547; N-12 PR#1548; N-13 y N-15 DONE con readbacks. ADR extendida in-place para evitar duplicacion.',
   now(),now(),'BOUNDARY_GOVERNANCE',array['INPUT_GOVERNANCE','AGENT','CURATOR','VALIDATOR','AUDITOR'],
-  'ARCHITECTURE_BOUNDARY_DRIFT','STRUCTURAL',
+  'UNCLASSIFIED_WITH_REASON','LOUD_EARLY',
   'IG_CURATOR_VALIDATOR_REFACTOR_V2 M5.0 / PAULO-132',
   'supabase://transversal.decision_log/DEC-INPUT-GOV-RUNTIME-001|supabase://programacion.engineering_plan_units/M5.0|github://cristhianlujan/claude-persona-lf-patch/pull/1546|github://cristhianlujan/claude-persona-lf-patch/pull/1547|github://cristhianlujan/claude-persona-lf-patch/pull/1548'
 );
