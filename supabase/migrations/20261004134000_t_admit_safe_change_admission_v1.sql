@@ -324,6 +324,15 @@ BEGIN
       'authority','READ_ONLY_FAIL_CLOSED_ADMISSION_CLASSIFICATION',
       'recommendation_is_permission',false
     ),
+    'delivery',jsonb_build_object(
+      'mode','SUPABASE_NATIVE_READ_ONLY_CLASSIFIER',
+      'function','public.lf_safe_change_admission_classify_v1'
+    ),
+    'installation',jsonb_build_object(
+      'required',false,
+      'reinstall_required',false,
+      'package_update_mode','DATABASE_NATIVE_CUTOVER'
+    ),
     'classification_states',jsonb_build_array('AUTOMATIZABLE','RECOMENDADA','REQUIERE_DECISION','UNKNOWN','VERIFY_NO_CHANGE'),
     'dependencies',jsonb_build_object(
       'TYPED_EVIDENCE_REGISTRY',jsonb_build_object('version',v_typed_version,'manifest_sha256',v_typed_sha),
