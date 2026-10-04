@@ -1,0 +1,7 @@
+{
+  "schema_version": "STORY_CREATOR_CURRENT_CONTRACT_POINTER_V1",
+  "current_contract": "STORY_CREATOR_IMPLEMENTATION_CONTRACT_V2",
+  "current_contract_path": "sandbox/lf_contract_gate_test/story_creator_implementation_package/story_creator_implementation_contract_v2.json",
+  "legacy_direct_consumption_allowed": false,
+  "owner_scope": "SUPER_ADMIN"
+}
