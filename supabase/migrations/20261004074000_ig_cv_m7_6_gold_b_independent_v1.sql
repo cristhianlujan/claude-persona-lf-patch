@@ -187,7 +187,7 @@ SELECT 'IG-M7-6-GOLD-B-INDEPENDENT-001','INPUT_GOVERNANCE',
  '7 Gold B AUDIT_VERDICT + 1 self-adjudication EVIDENCE_VERIFICATION; cases_sha256=5540c8b369c80ceb15003c0a9b90a6ffaadcb03b68f0f781bfbc0e6221a5f60e.',
  'HIGH','ACTIVO',
  'supabase://programacion.provenance_receipts?issuer_identity=OPENAI_CHATGPT:GPT-5.6_SOL:PAULO-145',
- 'github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261004073000_ig_cv_m7_6_gold_b_independent_v1.sql',now()
+ 'github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261004074000_ig_cv_m7_6_gold_b_independent_v1.sql',now()
 WHERE NOT EXISTS(SELECT 1 FROM public.lf_error_knowledge WHERE codigo='IG-M7-6-GOLD-B-INDEPENDENT-001');
 
 COMMIT;
