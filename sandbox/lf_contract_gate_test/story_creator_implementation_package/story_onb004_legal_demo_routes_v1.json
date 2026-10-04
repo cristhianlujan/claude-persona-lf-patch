@@ -1,0 +1,249 @@
+{
+  "schema_version": "STORY_ONB004_LEGAL_DEMO_ROUTES_V1",
+  "owner_scope": "SUPER_ADMIN",
+  "status": "CANDIDATO",
+  "purpose": "Provide non-production legal destinations for Story Creator and ONB_004 demo validation without presenting draft legal text as production-approved.",
+  "legal_review": {
+    "required": true,
+    "state": "PENDING_LEGAL_REVIEW",
+    "production_use_allowed": false,
+    "runtime_activation_allowed": false,
+    "promotion_allowed": false,
+    "review_scope": [
+      "legal_entity_identity_and_ruc",
+      "domicile_and_contact_channels",
+      "privacy_banks_and_cross_border_transfers",
+      "retention_periods",
+      "cookie_vendor_inventory_and_durations",
+      "consumer_terms_and_liability_clauses",
+      "complaints_form_and_current_regulatory_requirements",
+      "payment_processor_disclosures",
+      "carta_de_no_adeudo_commitments"
+    ]
+  },
+  "benchmark_basis": [
+    {
+      "name": "Reevalua",
+      "refs": [
+        "https://reevalua.com/terms",
+        "https://reevalua.com/privacy",
+        "https://reevalua.com/negociacion-de-deudas"
+      ],
+      "patterns_reused_only_as_structure": [
+        "service_nature_and_limits",
+        "privacy_purposes_and_recipient_categories",
+        "clear_separation_between_orientation_platform_and_regulated_financial_activity",
+        "legal_links_accessible_from_customer_flows"
+      ],
+      "copy_reuse": "DENY"
+    },
+    {
+      "name": "Resuelve tu Deuda",
+      "refs": [
+        "https://resuelvetudeuda.com/terminos-y-condiciones/",
+        "https://www.resuelve.info/"
+      ],
+      "patterns_reused_only_as_structure": [
+        "separate_terms_privacy_cookies_surfaces",
+        "explicit_contact_and_acceptance_sections",
+        "debt_program_service_scope_disclosures"
+      ],
+      "copy_reuse": "DENY"
+    },
+    {
+      "name": "Peru official legal references",
+      "refs": [
+        "https://www.gob.pe/institucion/anpd/normas-legales/6554453-16-2024-jus",
+        "https://consumidor.gob.pe/libro-de-reclamaciones/",
+        "https://www.gob.pe/institucion/indecopi/normas-legales/1244218-29571"
+      ],
+      "patterns_reused_only_as_structure": [
+        "peruvian_personal_data_framework",
+        "consumer_complaints_book_access",
+        "current_15_business_day_response_reference"
+      ],
+      "copy_reuse": "DENY"
+    }
+  ],
+  "service_model_guardrails": {
+    "marketplace_role": "Libertad Financiera facilitates matching and transaction support between the customer and the current debt owner or authorized counterparty; it does not silently replace the creditor relationship.",
+    "original_and_current_owner_must_be_visible": true,
+    "offer_exists_only_after_match": true,
+    "customer_decides_whether_to_accept": true,
+    "no_automatic_acceptance": true,
+    "no_debt_consolidation_claim": true,
+    "no_guaranteed_discount": true,
+    "no_guaranteed_score_improvement": true,
+    "no_guaranteed_credit_bureau_removal": true,
+    "one_time_or_installment_payment_only_if_offered": true,
+    "carta_de_no_adeudo_support_after_fulfillment": true,
+    "marketing_consent_optional": true,
+    "operational_communications_not_conditioned_on_marketing_consent": true
+  },
+  "routes": [
+    {
+      "route_code": "LEGAL_POLITICA_PRIVACIDAD",
+      "route_name": "Política de Privacidad Cliente — DEMO",
+      "route_pattern": "/legal/politica-de-privacidad",
+      "route_type": "INTERNAL",
+      "authentication_required": false,
+      "status": "CANDIDATO",
+      "legal_review_state": "PENDING_LEGAL_REVIEW"
+    },
+    {
+      "route_code": "LEGAL_TERMINOS_CONDICIONES",
+      "route_name": "Términos y Condiciones Cliente — DEMO",
+      "route_pattern": "/legal/terminos-y-condiciones",
+      "route_type": "INTERNAL",
+      "authentication_required": false,
+      "status": "CANDIDATO",
+      "legal_review_state": "PENDING_LEGAL_REVIEW"
+    },
+    {
+      "route_code": "LEGAL_POLITICA_COOKIES",
+      "route_name": "Política de Cookies Cliente — DEMO",
+      "route_pattern": "/legal/politica-de-cookies",
+      "route_type": "INTERNAL",
+      "authentication_required": false,
+      "status": "CANDIDATO",
+      "legal_review_state": "PENDING_LEGAL_REVIEW"
+    },
+    {
+      "route_code": "PANT_LIBRO_RECLAMACIONES",
+      "route_name": "Libro de Reclamaciones Cliente — DEMO",
+      "route_pattern": "/libro-de-reclamaciones",
+      "route_type": "INTERNAL",
+      "authentication_required": false,
+      "status": "CANDIDATO",
+      "legal_review_state": "PENDING_LEGAL_REVIEW",
+      "pantalla_id": 36
+    }
+  ],
+  "candidate_copy": {
+    "terms": {
+      "title": "Términos y Condiciones de Libertad Financiera",
+      "sections": [
+        {
+          "code": "IDENTITY",
+          "text": "Libertad Financiera es la marca de una plataforma digital cuyo titular legal, RUC, domicilio y canales formales deben ser completados y aprobados por Legal antes de producción."
+        },
+        {
+          "code": "SERVICE_NATURE",
+          "text": "La plataforma facilita el encuentro entre personas con determinadas obligaciones y los titulares actuales de esas obligaciones o contrapartes autorizadas. Libertad Financiera puede mostrar alternativas, facilitar el flujo digital y brindar información de apoyo; no otorga crédito, no consolida deudas y no convierte una sugerencia en una decisión obligatoria para el cliente."
+        },
+        {
+          "code": "DEBT_OWNERSHIP",
+          "text": "Cuando una obligación haya sido transferida, la experiencia debe distinguir de forma clara al acreedor original y al titular actual. El cliente debe conocer quién formula la oferta y quién recibirá el pago antes de aceptar."
+        },
+        {
+          "code": "OFFERS",
+          "text": "Una oferta solo se muestra cuando existe un match elegible con una contraparte y bajo las condiciones vigentes para ese caso. La disponibilidad, el porcentaje de descuento, el monto final, el plazo y cualquier facilidad de pago dependen de la contraparte y del caso concreto; Libertad Financiera no garantiza descuentos ni resultados mínimos."
+        },
+        {
+          "code": "CUSTOMER_CHOICE",
+          "text": "El cliente decide si acepta o rechaza una oferta. Antes de confirmar, debe visualizarse el titular actual, monto final, modalidad de pago, calendario cuando corresponda, cargos aplicables y condiciones relevantes. No existe aceptación automática."
+        },
+        {
+          "code": "PAYMENTS",
+          "text": "El pago puede ser único o en cuotas únicamente cuando esa modalidad haya sido ofrecida para el caso. Los medios y proveedores de pago habilitados deben mostrarse antes de confirmar. Cualquier referencia a Niubiz u otro procesador queda sujeta a la configuración operativa vigente y a revisión Legal antes de producción."
+        },
+        {
+          "code": "NO_GUARANTEES",
+          "text": "Libertad Financiera no garantiza la mejora del score crediticio, la eliminación de registros en centrales de riesgo, la obtención futura de crédito ni un descuento determinado. Los efectos de un pago y las actualizaciones de información dependen del titular de la obligación, las fuentes reportantes y las reglas aplicables."
+        },
+        {
+          "code": "NO_DEBT_LETTER",
+          "text": "Cuando el cliente cumpla las condiciones de cierre acordadas, la plataforma puede apoyar el seguimiento de la Carta de No Adeudo. La emisión corresponde al titular de la obligación o a quien legalmente resulte responsable; los plazos y compromisos definitivos deben ser validados por Legal."
+        },
+        {
+          "code": "COMPLAINTS",
+          "text": "El cliente puede presentar reclamos o quejas relacionados con el servicio de Libertad Financiera a través del Libro de Reclamaciones. Las controversias que correspondan exclusivamente al producto o actuación de un tercero pueden requerir también el canal de dicho tercero, sin afectar los derechos del consumidor."
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Política de Privacidad de Libertad Financiera",
+      "sections": [
+        {
+          "code": "DATA_CATEGORIES",
+          "text": "La plataforma puede tratar datos de identificación y contacto, información necesaria para conocer la obligación y su estado, datos transaccionales, evidencias de consentimiento, señales técnicas de seguridad y la información estrictamente necesaria para ejecutar el servicio."
+        },
+        {
+          "code": "PURPOSES",
+          "text": "Los datos se usan para registro y seguridad, evaluación y match con titulares actuales de obligaciones, presentación de alternativas, soporte a pagos, seguimiento de cierre y Carta de No Adeudo, prevención de fraude, atención al cliente, cumplimiento de obligaciones y mejora del servicio bajo criterios de minimización."
+        },
+        {
+          "code": "SHARING",
+          "text": "La información puede compartirse, según necesidad y base jurídica aplicable, con el titular actual de la obligación o contraparte autorizada, procesadores de pago, proveedores tecnológicos y de seguridad, y autoridades cuando corresponda. No debe utilizarse para una venta ajena a las finalidades informadas."
+        },
+        {
+          "code": "MARKETING",
+          "text": "Las comunicaciones comerciales requieren una autorización separada cuando corresponda y no son requisito para acceder al servicio. Las comunicaciones operativas necesarias para ejecutar una transacción o atender una solicitud no dependen de aceptar marketing."
+        },
+        {
+          "code": "RIGHTS",
+          "text": "El titular debe contar con un canal para ejercer sus derechos de información, acceso, rectificación, cancelación y oposición conforme a la normativa peruana aplicable. Los datos de contacto definitivos y el procedimiento serán completados por Legal antes de producción."
+        },
+        {
+          "code": "PENDING_LEGAL_DETAILS",
+          "text": "La identificación del responsable, bancos de datos, plazos de conservación, transferencias nacionales o internacionales, proveedores específicos y demás información obligatoria quedan sujetos a revisión Legal y al inventario técnico vigente."
+        }
+      ],
+      "legal_framework": [
+        "Ley 29733 - Ley de Protección de Datos Personales",
+        "DS 016-2024-JUS - Reglamento de la Ley 29733"
+      ]
+    },
+    "cookies": {
+      "title": "Política de Cookies de Libertad Financiera",
+      "sections": [
+        {
+          "code": "NECESSARY",
+          "text": "Las cookies o tecnologías estrictamente necesarias pueden utilizarse para seguridad, sesión y funcionamiento esencial de la plataforma."
+        },
+        {
+          "code": "OPTIONAL",
+          "text": "Las tecnologías de analítica, preferencias o marketing solo deben habilitarse cuando sean aplicables y exista la configuración o consentimiento requerido. Rechazar las opcionales no debe impedir las funciones esenciales."
+        },
+        {
+          "code": "CONTROL",
+          "text": "El usuario debe disponer de un mecanismo para revisar o cambiar sus preferencias cuando existan tecnologías opcionales. El inventario de proveedores, finalidades y duraciones queda pendiente de validación técnica y Legal."
+        }
+      ]
+    },
+    "complaints": {
+      "title": "Libro de Reclamaciones",
+      "public_without_authentication": true,
+      "current_reference_response_days_business": 15,
+      "response_period_state": "PENDING_LEGAL_REVALIDATION_BEFORE_PRODUCTION",
+      "sections": [
+        {
+          "code": "ACCESS",
+          "text": "El Libro de Reclamaciones debe estar disponible públicamente y sin exigir autenticación."
+        },
+        {
+          "code": "FORM",
+          "text": "La demo debe permitir registrar la identificación del consumidor, el servicio involucrado, el detalle del reclamo o queja, el pedido concreto, datos de contacto y, cuando corresponda, información complementaria o adjuntos."
+        },
+        {
+          "code": "RECEIPT",
+          "text": "Tras el registro debe entregarse un código o constancia para seguimiento y, cuando corresponda, una copia por el canal informado por el consumidor."
+        },
+        {
+          "code": "RESPONSE_REFERENCE",
+          "text": "La referencia vigente utilizada para la demo es de hasta 15 días hábiles para responder reclamos y quejas. Legal debe revalidar este plazo y el formato antes de producción, incluyendo cualquier cambio regulatorio posterior."
+        }
+      ],
+      "official_refs": [
+        "https://consumidor.gob.pe/libro-de-reclamaciones/",
+        "https://www.gob.pe/institucion/indecopi/normas-legales/1244218-29571"
+      ]
+    }
+  },
+  "story_effect": {
+    "demo_route_pattern_blocker": "RESOLVED_FOR_DEMO_CANDIDATE",
+    "production_legal_readiness": "BLOCKED_PENDING_LEGAL_REVIEW",
+    "onb004_terms_link_can_target_candidate_route": true,
+    "do_not_mark_story_production_ready": true
+  }
+}
