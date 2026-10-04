@@ -93,7 +93,7 @@ jobs:
           cp gobernanza/judges/validate_s30_self_governance_gate.py /tmp/s30-control/validator.py
           python3 /tmp/s30-control/validator.py --contract /tmp/s30-control/contract.json --self-test
 
-      - name: Resolve source and require exact-head CI
+      - name: Resolve source and require current exact-head PASE evidence
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -111,12 +111,12 @@ jobs:
           import json
           from pathlib import Path
           runs=json.loads(Path('/tmp/s30-checks.json').read_text(encoding='utf-8')).get('check_runs') or []
-          required={'Run LF pack validators','lf-contract-check'}
+          required={'PASE'}
           passed={x.get('name') for x in runs if x.get('status')=='completed' and x.get('conclusion')=='success'}
           missing=sorted(required-passed)
           if missing:
-              raise SystemExit('BLOCK_S30_CHATOPS_EXACT_HEAD_CI_MISSING_OR_FAILED:'+','.join(missing))
-          print('PASS_S30_CHATOPS_EXACT_HEAD_CI=' + ','.join(sorted(required)))
+              raise SystemExit('BLOCK_S30_CHATOPS_EXACT_HEAD_PASE_EVIDENCE_MISSING_OR_FAILED:'+','.join(missing))
+          print('PASS_S30_CHATOPS_EXACT_HEAD_PASE_EVIDENCE=' + ','.join(sorted(required)))
           PY
           git checkout --detach "$source_sha"
 
