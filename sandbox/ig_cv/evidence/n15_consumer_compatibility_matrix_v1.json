@@ -1,0 +1,105 @@
+{
+  "schema_version": "LF_IG_N15_CONSUMER_COMPATIBILITY_EVIDENCE_V1",
+  "scope": "IG_CURATOR_VALIDATOR_REFACTOR_V2:N-15:PAULO-180",
+  "authority_policy": {
+    "consumer_inventory": "T-CONSUMERS",
+    "contract_version_authority": "CAPABILITY_VERSION_COMPATIBILITY",
+    "currentness_authority": "CURRENTNESS_AUTHORITY",
+    "local_semantic_fallback": "FORBIDDEN",
+    "history_is_authority": false
+  },
+  "authority_snapshot": {
+    "readiness_contract": {
+      "revision": "5.13",
+      "version_id": 19,
+      "sha256": "efe32eeb40a0df337897e7c33c462f17cddcea29a705c85d501dbc5c711200ba"
+    },
+    "execution_contract": {
+      "revision": "1.5",
+      "version_id": 19,
+      "sha256": "c103655bac51fe8c9de1dd8dce8aee2fd3fbe5e42c0f94b7e899002dbe06feca"
+    },
+    "capability_version_compatibility": {
+      "version": "1.0.0",
+      "manifest_sha256": "f2894a7f433ccd1c92f6f1bd4783c3e27b7f9b94ab28b4ab08b6732c92259bf1"
+    },
+    "currentness_authority": {
+      "version": "1.0.0",
+      "manifest_sha256": "9f715dc226fd55a60c4002fa1960f848c4bf39e80b8863792eeef451073fce09"
+    },
+    "snapshot_role": "EVIDENCE_ONLY_NOT_AUTHORITY"
+  },
+  "decision_contract": {
+    "PASS": "material and reachable consumer proves current governed contract identity plus receiver currentness/readback",
+    "HOLD": "consumer is not currently materially reachable or is intentionally disabled; history is retained but cannot authorize continuation",
+    "BLOCK": "material reachable effect lacks current identity/readback, has stale authorizing projection/cache, or has UNKNOWN required capability",
+    "UNKNOWN": "blocks only the dependent material consumer/effect; it must not globally block unrelated non-applicable consumers"
+  },
+  "consumers": [
+    {
+      "consumer": "ADAPTER-LF-SHELL-PROFILE-20260827",
+      "consumer_version": "v0.1",
+      "requiredness": "REQUIRED_WHEN_ROUTER_BOUND_AND_RUNTIME_ENABLED",
+      "capability": "INPUT_READINESS_CONTRACT:LIVE_CURRENT",
+      "currentness": "RECEIVER_RECEIPT_REQUIRED",
+      "decision": "PASS",
+      "evidence": "adapter contract resolves current INPUT_READINESS_CONTRACT and forbids application without PASS receipt/snapshot refs",
+      "history": "input_governance_observed_revision=5.12 is preserved as non-authorizing historical projection"
+    },
+    {
+      "consumer": "ADAPTER-PROJECT-BRAND-MOCKUP-RENDER-LF-20260827",
+      "consumer_version": "v0.1",
+      "requiredness": "NOT_CURRENTLY_REACHABLE_RUNTIME_DISABLED",
+      "capability": "INPUT_READINESS_CONTRACT:LIVE_CURRENT",
+      "currentness": "MUST_RECHECK_BEFORE_ENABLE",
+      "decision": "HOLD",
+      "evidence": "runtime disabled / production disabled; adapter contract forbids local governance fork and requires PASS receipt when applicable",
+      "history": "input_governance_observed_revision=5.12 retained; it cannot authorize future enablement"
+    },
+    {
+      "consumer": "EDGE_FN_LF_PROFILES_GOVERNANCE_CALLER_V1",
+      "consumer_version": "v8",
+      "requiredness": "MATERIAL_REACHABLE_CANDIDATE",
+      "capability": "INPUT_GOVERNANCE_AGENT->fn_input_governance_execute",
+      "currentness": "UPSTREAM_FAIL_CLOSED_CURRENT_RUN",
+      "decision": "PASS",
+      "evidence": "live edge digest matches registered runtime digest and READY originates from fn_input_governance_execute currentness/freshness gates",
+      "history": "no local readiness-contract revision fallback is used"
+    },
+    {
+      "consumer": "PROFILES_GITHUB_ACTIONS_BATCH_QUEUE_WORKER_V1",
+      "consumer_version": "v1",
+      "requiredness": "MATERIAL_REACHABLE_CANDIDATE",
+      "capability": "CAPABILITY_VERSION_COMPATIBILITY:INPUT_READINESS_CONTRACT",
+      "currentness": "EXACT_REVISION_AND_DIGEST_BOUND_CACHE_AND_RECEIPT",
+      "decision": "PASS",
+      "evidence": "N-15 source candidate resolves shared current identity, includes revision+digest in cache key, and rejects receipt mismatch",
+      "candidate_source_blob_sha": "9ea498d372203207f2bd6ae1880c227749e257cb",
+      "history": "old cache entries cannot match a changed contract identity"
+    }
+  ],
+  "coverage": {
+    "material_consumers": 4,
+    "classified_consumers": 4,
+    "coverage_pct": 100,
+    "pass": 3,
+    "hold": 1,
+    "block": 0
+  },
+  "drain_criteria": {
+    "required_reachable_old_contract_consumers": 0,
+    "stale_authorizing_projection_or_cache_count": 0,
+    "unknown_required_reachable_consumers": 0,
+    "required_receiver_current_readback_failures": 0,
+    "negative_stale_revision_digest_tests_must_pass": true,
+    "history_retention_required": true,
+    "retire_rule": "RETIRE/CUTOVER may be considered only when all numeric blockers above are zero at the cutover readback and negative tests pass on that exact candidate; historical V1 rows/artifacts remain readable and non-authorizing."
+  },
+  "drain_demonstration": {
+    "observed_revision_5_12_runtime_routine_consumers": 0,
+    "old_revision_field_role": "HISTORY_ONLY",
+    "n15_retire_action": "NOT_AUTHORIZED",
+    "verdict": "HOLD_RETIRE_PRESERVE_V1",
+    "reason": "N-15 proves the drain predicate and prevents stale history from authorizing; actual retirement/cutover belongs to a separately authorized later unit."
+  }
+}
