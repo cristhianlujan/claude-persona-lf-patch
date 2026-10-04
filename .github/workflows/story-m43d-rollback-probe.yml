@@ -19,7 +19,7 @@ jobs:
       LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
       SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
-      EXPECTED_MAIN_SHA: 5cb641d8a187d3926698a750823ad13074694fad
+      EXPECTED_MAIN_SHA: 449420bb1676dde460fbb048f749f790eab1b2f9
       SOURCE_BASE_SHA: b345ce4f3d5e4a695dec3a97d388491128e6bda7
       SOURCE_HEAD_SHA: 653383ac9eaa5595ef42d1e802a0c3421064ad04
     steps:
@@ -52,7 +52,7 @@ jobs:
           git checkout --detach "$SOURCE_HEAD_SHA"
           cp /tmp/story_m43d_rollback_probe_v1.sql sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/story_m43d_rollback_probe_v1.sql
 
-      - name: Diagnostic only - expose pre-requalification state
+      - name: Diagnostic only - bootstrap provenance actor and expose post-source state
         shell: bash
         run: |
           set -euo pipefail
@@ -64,8 +64,37 @@ jobs:
           new="raise notice 'DIAG_T_INDEP_EXPECTED_REQUALIFICATION_GATE_ALREADY_CURRENT:%',v_revision"
           if s.count(old) != 1:
               raise SystemExit('BLOCK_SC_M43D_DIAGNOSTIC_PATCH_TARGET_NOT_EXACT')
-          p.write_text(s.replace(old,new),encoding='utf-8')
-          print('DIAGNOSTIC_NON_AUTHORITATIVE_POSTCONDITION_PATCH_APPLIED')
+          actor="""DO $diag_actor$
+          DECLARE
+            r jsonb;
+          BEGIN
+            r:=public.fn_lf_operation_reserve_execution_v1(
+              'CHATGPT-T-INDEP-PAULO-035-20261002',
+              'REVISION_INDEPENDIENTE_ESTRATEGIA_LF',
+              'OPERATION',
+              'REVISION_INDEPENDIENTE_ESTRATEGIA_LF',
+              'ci:t-indep:paulo-035:actor-bootstrap:20261004',
+              'a35c9e9f1266cd2b97f6c0034d7cccb2d5b97a6c2f7a824e3a03d3d4c159776e',
+              'CHATGPT-T-INDEP-PAULO-035-20261002',
+              null,
+              'supabase/migrations/20261003213100_independent_assurance_subject_extension_v2.sql',
+              jsonb_build_object(
+                'mode','T_INDEP_MIGRATION_GOVERNED_ACTOR',
+                'ci_candidate_rollback_actor',true,
+                'runtime_activation',false,
+                'production_activation',false,
+                'promotion_authorized',false
+              )
+            );
+            IF r->>'result' NOT IN ('RESERVED_NEW_EXECUTION','REPLAY_EXISTING_EXECUTION') THEN
+              RAISE EXCEPTION 'BLOCK_SC_M43D_DIAGNOSTIC_ACTOR_BOOTSTRAP:%',r;
+            END IF;
+          END
+          $diag_actor$;
+
+          """
+          p.write_text(actor+s.replace(old,new),encoding='utf-8')
+          print('DIAGNOSTIC_NON_AUTHORITATIVE_ACTOR_BOOTSTRAP_AND_POSTCONDITION_PATCH_APPLIED')
           PY
 
       - name: Build diagnostic rollback payload
@@ -105,6 +134,7 @@ jobs:
             'judge_count',(select count(*) from public.lf_operation_judges where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF' and status='ACTIVE_ENFORCEMENT'),
             'generic_begin_exists',to_regprocedure('public.lf_independent_review_begin_v2(text,text,text,text,text,uuid,text,text,text,uuid,text,text,text,jsonb)') is not null,
             'generic_recorder_exists',to_regprocedure('public.lf_record_independent_review_step_v2(text,text,text,jsonb,text,text)') is not null,
+            'source_actor_exec_count',(select count(*) from public.lf_operation_execution where execution_id='CHATGPT-T-INDEP-PAULO-035-20261002'),
             'probe_exec_count',(select count(*) from public.lf_operation_execution where execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003'),
             'probe_event_count',(select count(*) from public.lf_eventos where created_by_execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003' or updated_by_execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003' or payload::text like '%SC-M4.3D-ROLLBACK-PROBE-20261003%'),
             'trigger_digest',(select coalesce(md5(string_agg(n.nspname||'.'||c.relname||':'||t.tgname||':'||pg_get_triggerdef(t.oid),E'\n' order by n.nspname,c.relname,t.tgname)),'') from pg_trigger t join pg_class c on c.oid=t.tgrelid join pg_namespace n on n.oid=c.relnamespace where not t.tgisinternal and n.nspname in ('public','private') and c.relname in ('lf_operation_registry','lf_operation_contracts','lf_operation_step_contracts','lf_operation_step_judge_bindings','lf_operation_judges','lf_capability_registry','lf_capability_version_registry','lf_capability_current','lf_operation_execution','lf_operation_execution_steps'))
@@ -133,6 +163,7 @@ jobs:
             'judge_count',(select count(*) from public.lf_operation_judges where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF' and status='ACTIVE_ENFORCEMENT'),
             'generic_begin_exists',to_regprocedure('public.lf_independent_review_begin_v2(text,text,text,text,text,uuid,text,text,text,uuid,text,text,text,jsonb)') is not null,
             'generic_recorder_exists',to_regprocedure('public.lf_record_independent_review_step_v2(text,text,text,jsonb,text,text)') is not null,
+            'source_actor_exec_count',(select count(*) from public.lf_operation_execution where execution_id='CHATGPT-T-INDEP-PAULO-035-20261002'),
             'probe_exec_count',(select count(*) from public.lf_operation_execution where execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003'),
             'probe_event_count',(select count(*) from public.lf_eventos where created_by_execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003' or updated_by_execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003' or payload::text like '%SC-M4.3D-ROLLBACK-PROBE-20261003%'),
             'trigger_digest',(select coalesce(md5(string_agg(n.nspname||'.'||c.relname||':'||t.tgname||':'||pg_get_triggerdef(t.oid),E'\n' order by n.nspname,c.relname,t.tgname)),'') from pg_trigger t join pg_class c on c.oid=t.tgrelid join pg_namespace n on n.oid=c.relnamespace where not t.tgisinternal and n.nspname in ('public','private') and c.relname in ('lf_operation_registry','lf_operation_contracts','lf_operation_step_contracts','lf_operation_step_judge_bindings','lf_operation_judges','lf_capability_registry','lf_capability_version_registry','lf_capability_current','lf_operation_execution','lf_operation_execution_steps'))
