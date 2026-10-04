@@ -1,0 +1,71 @@
+{
+  "binding_code": "INPUT_GOVERNANCE_M5_4_CAPABILITY_SELECTOR_V1",
+  "catalog": [
+    {
+      "availability_state": "CURRENT",
+      "capability_code": "TYPED_EVIDENCE_REGISTRY",
+      "rank": 20,
+      "signal_types": [
+        "EVIDENCE_TYPING_REQUIRED"
+      ]
+    },
+    {
+      "availability_state": "CURRENT",
+      "capability_code": "CURRENTNESS_AUTHORITY",
+      "rank": 20,
+      "signal_types": [
+        "CURRENTNESS_REQUIRED"
+      ]
+    }
+  ],
+  "consumer": "INPUT_GOVERNANCE",
+  "consumer_role": "CONSUMER_ONLY",
+  "policy": {
+    "contradiction_sets": [
+      [
+        "MATERIAL_CURRENT",
+        "MATERIAL_STALE"
+      ]
+    ],
+    "require_current_catalog": true,
+    "safe_fallback": [
+      "FULL_SAFE_MIX_V1_CANDIDATE"
+    ]
+  },
+  "readback_case": {
+    "expected": {
+      "fallback_state": "MULTI",
+      "selected_capabilities": [
+        "CURRENTNESS_AUTHORITY",
+        "TYPED_EVIDENCE_REGISTRY"
+      ]
+    },
+    "signals": [
+      {
+        "confidence": 0.1,
+        "signal_type": "EVIDENCE_TYPING_REQUIRED",
+        "state": "ACTIVE"
+      },
+      {
+        "confidence": 0.95,
+        "signal_type": "CURRENTNESS_REQUIRED",
+        "state": "ACTIVE"
+      }
+    ]
+  },
+  "schema_version": "capability-selector-consumer-binding/v1",
+  "selector": {
+    "capability_code": "CAPABILITY_SELECTOR",
+    "version": "1.0.0"
+  },
+  "separation": {
+    "admission_authority": false,
+    "execution_permission_from_rank_or_confidence": false,
+    "safe_change_admission_duplicated": false,
+    "selection_only": true
+  },
+  "upstream_authorities": {
+    "catalog_currentness": "CURRENTNESS_AUTHORITY@1.0.0",
+    "typed_signals": "TYPED_EVIDENCE_REGISTRY@3.0.0"
+  }
+}
