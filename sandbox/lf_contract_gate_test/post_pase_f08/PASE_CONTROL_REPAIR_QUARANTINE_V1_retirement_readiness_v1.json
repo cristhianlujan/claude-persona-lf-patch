@@ -1,0 +1,101 @@
+{
+  "schema_version": "PASE_F08_R01_QUARANTINE_RETIREMENT_READINESS_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F08-R01",
+  "target": "PASE_CONTROL_REPAIR_QUARANTINE_V1",
+  "mode": "RETIREMENT_READINESS_ONLY",
+  "destructive_retirement_executed": false,
+  "actual_retirement_deferred_until_final_activation": true,
+  "authority": {
+    "current_main_sha": "8077215a1c33730460f3cfb0bb9e56b918020dc2",
+    "predecessor_terminal_event_id": 20291,
+    "retirement_governance_capability": "ASSET_RETIREMENT_GOVERNANCE",
+    "retirement_governance_version": "1.0.0",
+    "retirement_governance_current_manifest_sha256": "5ae32390ee2743f74cf00b0fd4fdbfcea17162f637024e2856bdc6fd261fa9e6"
+  },
+  "current_readiness": {
+    "live_operational_authority_count": 0,
+    "live_relation_count": 0,
+    "live_dispatch_receipt_count": 0,
+    "live_binding_count": 0,
+    "live_operation_registry_count": 0,
+    "live_operation_execution_count": 0,
+    "live_evidence_receipt_count": 0,
+    "exact_identity_source_file_count": 15,
+    "remaining_source_classification": "INTENTIONAL_PREACTIVATION_FAILSAFE_OR_TEST_DOCUMENTATION",
+    "active_operational_caller_count": 0,
+    "unclassified_source_reference_count": 0
+  },
+  "replacement_responsibilities": {
+    "applicability": "CHANGESET_GOVERNANCE_LF_V1 + lf-ci-execution-plan/v2",
+    "structural_fail_closed": "repository admission + execution-plan coverage + exact qualification + repository rules",
+    "control_scoped_activation": "PASE_POST_PASE_CONTROL_GUARD_V2",
+    "capability_entry": "ORCHESTRATOR_EXECUTION_GUARD_V1 when capability entry applies"
+  },
+  "current_disabled_routes": [
+    ".github/workflows/pase.yml",
+    ".github/workflows/pase-merge-gate.yml:pase-merge-gate"
+  ],
+  "active_jobs_to_preserve": [
+    ".github/workflows/pase-merge-gate.yml:independent-change-admission",
+    ".github/workflows/pase-merge-gate.yml:ig-runtime-candidate-judge"
+  ],
+  "future_operational_mutation_set": [
+    ".github/workflows/pase.yml",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py",
+    "sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_v1.py",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pase_merge_route_v1.py",
+    "sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_carrier_v1.py"
+  ],
+  "historical_baseline_blobs": {
+    "historical_baseline_only": true,
+    ".github/workflows/pase.yml": "b3b2cf286ece91498ed3cf68b198ab8eb83d4660",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py": "bc878204322dd758d1199b77b3368fa56a36d953",
+    "sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_v1.py": "47bcb9cdbed83311cd904d72183b6c2ec5540898",
+    "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_pase_merge_route_v1.py": "aa3f36cc27cecade19dc1ffdf01c95a4819b434f",
+    "sandbox/lf_contract_gate_test/pase_merge_gate/pase_merge_gate_carrier_v1.py": "9e55c4b14af9931aa2de65d68b0d2ea51e94c71d"
+  },
+  "future_retirement_preconditions": [
+    "FINAL_ACTIVATION_AUTHORITY_SATISFIED",
+    "REFRESH_EXACT_MAIN_AND_TARGET_BLOBS",
+    "ZERO_LIVE_OPERATIONAL_AUTHORITY",
+    "ZERO_LIVE_CALLERS",
+    "ZERO_LIVE_RECEIPTS",
+    "ZERO_LIVE_RELATIONS",
+    "ZERO_UNCLASSIFIED_ROUTING",
+    "PRESERVE_INDEPENDENT_ACTIVE_JOBS",
+    "NO_CASCADE"
+  ],
+  "future_apply_contract": {
+    "scope": "REMOVE_OR_NEUTRALIZE_QUARANTINE_ONLY_FROM_OPERATIONAL_WIRING",
+    "historical_docs_tests_may_remain": true,
+    "historical_reference_condition": "NO_OPERATIONAL_ROUTING_BLOCKING_OR_RECEIPT_POWER",
+    "anti_reintroduction_guard_required": true,
+    "unrelated_keep_authority_removal_forbidden": true
+  },
+  "rollback_contract": {
+    "strategy": "CAPTURE_EXECUTION_TIME_EXACT_PREIMAGE_BLOBS_BEFORE_WRITE",
+    "historical_baseline_blobs_are_rollback_authority": false,
+    "restore_only_execution_time_preimages": true,
+    "fail_closed_if_head_moves": true,
+    "fail_closed_if_preimage_mismatch": true,
+    "persist_preimage_manifest_and_digest": true
+  },
+  "post_apply_readback": [
+    "ZERO_QUARANTINE_IDENTITY_IN_ACTIVE_WORKFLOW_ROUTING",
+    "ZERO_QUARANTINE_OPERATIONAL_CALLERS",
+    "ZERO_DB_AUTHORITY_RECEIPTS_BINDINGS_RELATIONS",
+    "INDEPENDENT_ACTIVE_JOBS_UNCHANGED",
+    "ANTI_REINTRODUCTION_GUARD_ACTIVE",
+    "EXACT_HEAD_CURRENTNESS_READBACK",
+    "ROLLBACK_MANIFEST_DIGEST_PERSISTED"
+  ],
+  "restrictions": {
+    "no_runtime_activation": true,
+    "no_production_activation": true,
+    "no_destructive_retirement_now": true,
+    "no_bulk_activation": true,
+    "no_cascade": true,
+    "no_zip_authority": true
+  }
+}
