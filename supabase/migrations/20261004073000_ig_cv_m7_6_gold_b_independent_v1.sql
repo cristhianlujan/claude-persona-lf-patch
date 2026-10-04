@@ -31,17 +31,18 @@ END $$;
 
 CREATE TEMP TABLE _m76_gold_b(
  run_id bigint,pantalla_id int,family_code text,coverage text,well_defined text,
- source_observed_sha256 text,evidence_sha256 text,adjudication_sha256 text,source_refs text,rationale text
+ source_observed_sha256_primary text,source_observed_sha256_secondary text,
+ evidence_sha256 text,adjudication_sha256 text,source_refs text,rationale text
 ) ON COMMIT DROP;
 
 INSERT INTO _m76_gold_b VALUES
-(373,1,'MFA_OTP_SSO','PARTIAL','PARTIAL','dab8019047812ac275d1f5df3c860c180311acc7e407ad99ffd8ffa2b608fd5a','ee4a84eba2e925b71c0abf2cd4d73af83de05856c7d7623c9441064450e3b473','59f1668262b5f7583f7e18ccffff93bae78f1b4a16adc8ca49d348cae8197b47','SCREEN_CANONICAL_GRAPH','Direct graph contains governed phone-control authority but does not establish complete MFA/OTP/SSO coverage; family requires complete coverage by STORY.'),
-(373,1,'STATES','MISSING','MISSING','4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945','fde076b4a85c7280f3376f003f0e946573a580d0544313ab79725945a29b0f18','71c14e3396a739cf5bfa5fcf969ead7d57a2fd6cf5554623f0e308e1de2e3273','SCREEN_STATE_SET','Direct canonical state-set readback is an empty array (0 states).'),
-(373,1,'TRANSITIONS','PARTIAL','PARTIAL','4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945','a2ce5ff7fb6995cdf0af0a73ac83ad76c62a7cfb279265d836f5e86d25460907','7f7dcd44dbfd013e00a40a1687221f805479e31268fd84cb83d0015249584954','SCREEN_CANONICAL_GRAPH,SCREEN_STATE_SET','Transition rules exist in the canonical graph, while the canonical state set is empty; transition definition cannot be complete.'),
-(374,2,'MFA_OTP_SSO','PARTIAL','PARTIAL','761e375a646f163048f6bd160f2a3ed641abfbf0e2f4e6c72ba18040b6a0a1b4','183b3e7e6ee002b20ecb65e2b0d97d6525429b4963df25eda6ffb595231ed969','48bfc4462ea96d99f2e44130a88053ffba54e2fc6643ec8d6ebce3decf1d3a11','SCREEN_CANONICAL_GRAPH','Direct graph contains governed phone-control authority and OTP-related rules but does not establish complete MFA/OTP/SSO coverage; family requires complete coverage by STORY.'),
-(374,2,'OBJECTIVE_OUTCOMES','MISSING','MISSING','761e375a646f163048f6bd160f2a3ed641abfbf0e2f4e6c72ba18040b6a0a1b4','183b3e7e6ee002b20ecb65e2b0d97d6525429b4963df25eda6ffb595231ed969','d9be382b7b08f16a83296023004698bed62cdb0d54b20fe273167677be085b7b','SCREEN_CANONICAL_GRAPH','Direct canonical graph readback has screen.objective = null.'),
-(374,2,'STATES','MISSING','MISSING','4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945','ca643e5ae0ab2c03a8abd0ecefaaf3e4df1290d070c02e322d658e9f416e75b3','a0d76adb6b0f3607ef2eb4420bcfe85980ba385523640bc9703bfd2b99411f1b','SCREEN_STATE_SET','Direct canonical state-set readback is an empty array (0 states).'),
-(374,2,'TRANSITIONS','PARTIAL','PARTIAL','4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945','da8895d5eccc9902d1b744b64ce2562abad0141fb189ed760af191515b224bb5','1d8c7682e801b3be105e0537f9fdfe945929ac83a9b0bae419905bc78e05d2ca','SCREEN_CANONICAL_GRAPH,SCREEN_STATE_SET','Transition rules exist in the canonical graph, while the canonical state set is empty; transition definition cannot be complete.');
+(373,1,'MFA_OTP_SSO','PARTIAL','PARTIAL','dab8019047812ac275d1f5df3c860c180311acc7e407ad99ffd8ffa2b608fd5a',NULL,'ee4a84eba2e925b71c0abf2cd4d73af83de05856c7d7623c9441064450e3b473','59f1668262b5f7583f7e18ccffff93bae78f1b4a16adc8ca49d348cae8197b47','SCREEN_CANONICAL_GRAPH','Direct graph contains governed phone-control authority but does not establish complete MFA/OTP/SSO coverage; family requires complete coverage by STORY.'),
+(373,1,'STATES','MISSING','MISSING','4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945',NULL,'fde076b4a85c7280f3376f003f0e946573a580d0544313ab79725945a29b0f18','71c14e3396a739cf5bfa5fcf969ead7d57a2fd6cf5554623f0e308e1de2e3273','SCREEN_STATE_SET','Direct canonical state-set readback is an empty array (0 states).'),
+(373,1,'TRANSITIONS','PARTIAL','PARTIAL','dab8019047812ac275d1f5df3c860c180311acc7e407ad99ffd8ffa2b608fd5a','4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945','a2ce5ff7fb6995cdf0af0a73ac83ad76c62a7cfb279265d836f5e86d25460907','7f7dcd44dbfd013e00a40a1687221f805479e31268fd84cb83d0015249584954','SCREEN_CANONICAL_GRAPH,SCREEN_STATE_SET','Transition rules exist in the canonical graph, while the canonical state set is empty; transition definition cannot be complete.'),
+(374,2,'MFA_OTP_SSO','PARTIAL','PARTIAL','761e375a646f163048f6bd160f2a3ed641abfbf0e2f4e6c72ba18040b6a0a1b4',NULL,'183b3e7e6ee002b20ecb65e2b0d97d6525429b4963df25eda6ffb595231ed969','48bfc4462ea96d99f2e44130a88053ffba54e2fc6643ec8d6ebce3decf1d3a11','SCREEN_CANONICAL_GRAPH','Direct graph contains governed phone-control authority and OTP-related rules but does not establish complete MFA/OTP/SSO coverage; family requires complete coverage by STORY.'),
+(374,2,'OBJECTIVE_OUTCOMES','MISSING','MISSING','761e375a646f163048f6bd160f2a3ed641abfbf0e2f4e6c72ba18040b6a0a1b4',NULL,'183b3e7e6ee002b20ecb65e2b0d97d6525429b4963df25eda6ffb595231ed969','d9be382b7b08f16a83296023004698bed62cdb0d54b20fe273167677be085b7b','SCREEN_CANONICAL_GRAPH','Direct canonical graph readback has screen.objective = null.'),
+(374,2,'STATES','MISSING','MISSING','4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945',NULL,'ca643e5ae0ab2c03a8abd0ecefaaf3e4df1290d070c02e322d658e9f416e75b3','a0d76adb6b0f3607ef2eb4420bcfe85980ba385523640bc9703bfd2b99411f1b','SCREEN_STATE_SET','Direct canonical state-set readback is an empty array (0 states).'),
+(374,2,'TRANSITIONS','PARTIAL','PARTIAL','761e375a646f163048f6bd160f2a3ed641abfbf0e2f4e6c72ba18040b6a0a1b4','4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945','da8895d5eccc9902d1b744b64ce2562abad0141fb189ed760af191515b224bb5','1d8c7682e801b3be105e0537f9fdfe945929ac83a9b0bae419905bc78e05d2ca','SCREEN_CANONICAL_GRAPH,SCREEN_STATE_SET','Transition rules exist in the canonical graph, while the canonical state set is empty; transition definition cannot be complete.');
 
 DO $$
 DECLARE v_n int;
@@ -52,6 +53,10 @@ BEGIN
   LEFT JOIN programacion.input_family_assessments a ON a.run_id=g.run_id AND a.family_code=g.family_code
   WHERE a.run_id IS NULL OR a.severity<>'P0'
  ) THEN RAISE EXCEPTION 'Gold B includes non-governed critical case'; END IF;
+ IF EXISTS(
+   SELECT 1 FROM _m76_gold_b
+   WHERE family_code='TRANSITIONS' AND source_observed_sha256_secondary IS NULL
+ ) THEN RAISE EXCEPTION 'TRANSITIONS evidence missing secondary digest'; END IF;
 END $$;
 
 WITH p AS (
@@ -66,7 +71,9 @@ WITH p AS (
   'oracle',jsonb_build_object('contract_revision','5.13','story_rule','NO_STORY_STAGE_OPEN',
       'obligation_ref','supabase://public.lf_assurance_obligation_catalog/IG-C5_13-STORY_READY_RULE@1'),
   'evidence',jsonb_build_object('mode','DIRECT_CANONICAL_READBACK_NOT_CURATOR_VALIDATOR_CONCLUSION',
-      'source_refs',string_to_array(g.source_refs,','),'source_observed_sha256',g.source_observed_sha256,
+      'source_refs',string_to_array(g.source_refs,','),
+      'source_observed_sha256_primary',g.source_observed_sha256_primary,
+      'source_observed_sha256_secondary',g.source_observed_sha256_secondary,
       'evidence_sha256',g.evidence_sha256,'contract_ref','supabase://programacion.contratos/37#5.13'),
   'adjudicator',jsonb_build_object('identity','OPENAI_CHATGPT:GPT-5.6_SOL:PAULO-145','role','INDEPENDENT_READ_ONLY_GOLD_B_ADJUDICATOR',
       'actor_separation',true,'direct_source_separation',true,'provider_bound_execution_claimed',false),
@@ -103,7 +110,11 @@ WITH bad AS (
   'schema','INPUT_GOV_M7_6_SELF_ADJUDICATION_NEGATIVE_V1',
   'test_code','M7_3_NEG_009_SELF_AUTHORITY','candidate_adjudicator',candidate,
   'curator_identity',curator_identity,'validator_identity',validator_identity,
-  'observed',CASE WHEN candidate IN(curator_identity,validator_identity) THEN 'REJECT_MUTATION_FAIL_CLOSED' ELSE 'INVALID_TEST' END,
+  'observed_precondition',CASE WHEN candidate IN(curator_identity,validator_identity) THEN 'IDENTITY_COLLISION_DETECTED' ELSE 'NO_COLLISION' END,
+  'expected','REJECT_MUTATION_FAIL_CLOSED',
+  'result',CASE WHEN candidate IN(curator_identity,validator_identity) THEN 'PASS' ELSE 'FAIL' END,
+  'execution_claimed',false,
+  'proof_mode','IDENTITY_COLLISION_PRECHECK_PLUS_REUSED_EXECUTABLE_M7_3_CASE',
   'oracle_ref','supabase://public.lf_assurance_obligation_catalog/IG-C5_13-CANDIDATE_AS_OWN_AUTHORITY@1',
   'companions',jsonb_build_array('M7_3_NEG_035_CURATOR_VALIDATOR_SAME_EXECUTION_ID','M7_3_NEG_075_CURATOR_SELF_VALIDATES_PROPOSAL')
  ) payload FROM bad
@@ -117,7 +128,7 @@ SELECT 'EVIDENCE_VERIFICATION',NULL,'792a741968610c1951cdc0ea3e7fb07475932d7a','
  programacion.fn_v09_sha256_jsonb(payload),'INDEPENDENT_AUDITOR_V1','OPENAI_CHATGPT:GPT-5.6_SOL:PAULO-145',
  'supabase://public.lf_assurance_obligation_catalog/IG-C5_13-CANDIDATE_AS_OWN_AUTHORITY@1',
  payload,programacion.fn_v09_sha256_jsonb(payload||jsonb_build_object('head_sha','792a741968610c1951cdc0ea3e7fb07475932d7a'))
-FROM p WHERE payload->>'observed'='REJECT_MUTATION_FAIL_CLOSED'
+FROM p WHERE payload->>'observed_precondition'='IDENTITY_COLLISION_DETECTED' AND payload->>'result'='PASS'
 AND NOT EXISTS(
  SELECT 1 FROM programacion.provenance_receipts r
  WHERE r.subject_ref='INPUT_GOVERNANCE_REGRESSION/M7_3_NEG_009_SELF_AUTHORITY'
@@ -132,9 +143,11 @@ BEGIN
  AND subject_ref LIKE 'IG_CURATOR_VALIDATOR_REFACTOR_V2/M7.6/%';
  SELECT count(*) INTO v_neg FROM programacion.provenance_receipts
  WHERE issuer_identity='OPENAI_CHATGPT:GPT-5.6_SOL:PAULO-145' AND subject_ref='INPUT_GOVERNANCE_REGRESSION/M7_3_NEG_009_SELF_AUTHORITY'
- AND payload->>'observed'='REJECT_MUTATION_FAIL_CLOSED';
+ AND payload->>'observed_precondition'='IDENTITY_COLLISION_DETECTED' AND payload->>'result'='PASS';
  SELECT count(*) INTO v_self
- FROM programacion.provenance_receipts p JOIN programacion.input_readiness_runs r ON (p.payload->>'run_id')::bigint=r.id
+ FROM programacion.provenance_receipts p
+ JOIN programacion.input_readiness_runs r
+   ON r.id=CASE WHEN jsonb_typeof(p.payload->'run_id')='number' THEN (p.payload->>'run_id')::bigint ELSE NULL END
  WHERE p.issuer_identity='OPENAI_CHATGPT:GPT-5.6_SOL:PAULO-145' AND p.subject_type='INPUT_GOV_GOLD_B_CRITICAL_CASE'
  AND p.issuer_identity IN(r.curator_identity,r.validator_identity);
  IF v_gold<>7 OR v_neg<>1 OR v_self<>0 THEN
