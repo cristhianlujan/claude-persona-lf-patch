@@ -2,10 +2,10 @@
   "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
   "cases": [
     {
-      "case_id": "IG_M9_1_STALE_REBIND_ROUTE_SCREEN_003",
+      "case_id": "IG_M9_1_STALE_REBIND_ROUTE_SCREEN_043",
       "candidate_ref": "HEAD",
       "candidate_path": "supabase/migrations/20261004122500_ig_m9_1_stale_rebind_route_v1.sql",
-      "screen_id": 3,
+      "screen_id": 43,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
       "expected_finding_codes": []
