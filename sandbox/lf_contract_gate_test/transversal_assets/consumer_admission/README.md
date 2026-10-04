@@ -101,5 +101,5 @@ N-13 y N-15 no son modificados por esta entrega.
 
 ## Fuentes
 
-- `supabase/migrations/20261004145730_t_cons_adm_consumer_admission_v1.sql`
+- `supabase/migrations/20261004150650_t_cons_adm_consumer_admission_v1.sql`
 - `sandbox/lf_contract_gate_test/transversal_assets/consumer_admission/README.md`
