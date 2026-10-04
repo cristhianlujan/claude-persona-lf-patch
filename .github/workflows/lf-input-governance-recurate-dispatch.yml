@@ -1,4 +1,5 @@
 name: LF Input Governance Recuration Dispatch
+# M9.1 one-shot trigger receipt: authority rule 661 read back at 42 live joinable screens.
 
 on:
   push:
