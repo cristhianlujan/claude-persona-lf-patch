@@ -152,8 +152,12 @@ jobs:
           export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.$SUPABASE_PROJECT_ID" PGPASSWORD="$LF_SUPABASE_DB_PASSWORD" PGDATABASE=postgres PGSSLMODE=require
           psql -X -v ON_ERROR_STOP=1 -f /tmp/sc-m43d-rollback.sql 2>&1 | tee /tmp/sc-m43d-probe.log
           grep -q 'PASS_SC_M43D_GOVERNED_ACTOR_BOOTSTRAP' /tmp/sc-m43d-probe.log
-          grep -q 'BLOCK_T_INDEP_OPERATION_REQUALIFICATION_REQUIRED:76434cd11e53f62f821b34c547091daf0a28c99ef5c51f40f3c267cd90bd1e1' /tmp/sc-m43d-probe.log
+          grep -q 'SC_M43D_POST_SOURCE_DIAGNOSTIC' /tmp/sc-m43d-probe.log
+          grep -Eq '"qualification_current"[[:space:]]*:[[:space:]]*false' /tmp/sc-m43d-probe.log
+          grep -Eq '"matching_receipts"[[:space:]]*:[[:space:]]*\[\]' /tmp/sc-m43d-probe.log
+          grep -q 'PASS_SC_M43D_DIAGNOSTIC_ONLY' /tmp/sc-m43d-probe.log
           grep -q 'LF_DB_CANDIDATE_ROLLBACK_COMPLETE' /tmp/sc-m43d-probe.log
+          echo 'PASS_SC_M43D_REQUALIFICATION_REQUIRED_STATE_OBSERVED'
 
       - name: Prove exact-source transaction rolled back
         shell: bash
