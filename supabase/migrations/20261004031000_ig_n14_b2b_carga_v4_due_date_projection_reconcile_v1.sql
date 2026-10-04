@@ -73,10 +73,9 @@ END
 $pre$;
 
 INSERT INTO public.lf_eventos(
-  id,evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id
+  evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id
 )
 SELECT
-  nextval('public.lf_eventos_id_seq'),
   'IG_N14_CONTRACT_PROJECTION_RECONCILIATION',
   'INPUT_GOVERNANCE_CONTRACT_PROJECTION',
   'B2B-CARGA-002:B2B_IMP_DUE_DATE',
