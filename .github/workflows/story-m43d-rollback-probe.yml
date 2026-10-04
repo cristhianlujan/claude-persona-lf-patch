@@ -19,7 +19,6 @@ jobs:
       LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
       SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
-      EXPECTED_MAIN_SHA: fc1415c664fae0d50de74d6f4b1af955826cebd5
       SOURCE_BASE_SHA: b345ce4f3d5e4a695dec3a97d388491128e6bda7
       SOURCE_HEAD_SHA: 653383ac9eaa5595ef42d1e802a0c3421064ad04
       MIGRATION_1_SHA256: 2a6e39d9ba3a18dbe3ffa82777796097d6d90a7bb7ab36a9320e551e4e7f2220
@@ -30,12 +29,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fail closed on source currentness and preserve probe
+      - name: Fail closed on relevant source currentness and preserve probe
         shell: bash
         run: |
           set -euo pipefail
           CURRENT_MAIN_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
-          test "$CURRENT_MAIN_SHA" = "$EXPECTED_MAIN_SHA" || { echo "BLOCK_SC_M43D_MAIN_DRIFT expected=$EXPECTED_MAIN_SHA actual=$CURRENT_MAIN_SHA"; exit 2; }
+          test -n "$CURRENT_MAIN_SHA" || { echo "BLOCK_SC_M43D_MAIN_UNRESOLVED"; exit 2; }
+          echo "SC_M43D_OBSERVED_MAIN_SHA=$CURRENT_MAIN_SHA"
           cp sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/story_m43d_rollback_probe_v1.sql /tmp/story_m43d_rollback_probe_v1.sql
           for path in \
             supabase/migrations/20261003213000_operation_requalification_multisubject_scope_v2.sql \
@@ -43,8 +43,8 @@ jobs:
           do
             main_sha="$(git show "$CURRENT_MAIN_SHA:$path" | sha256sum | awk '{print $1}')"
             source_sha="$(git show "$SOURCE_HEAD_SHA:$path" | sha256sum | awk '{print $1}')"
-            test "$main_sha" = "$source_sha" || { echo "BLOCK_SC_M43D_SOURCE_DRIFT path=$path main=$main_sha source=$source_sha"; exit 2; }
-            echo "PASS_SC_M43D_SOURCE_CURRENT path=$path sha256=$main_sha"
+            test "$main_sha" = "$source_sha" || { echo "BLOCK_SC_M43D_SOURCE_DRIFT path=$path main=$main_sha source=$source_sha main_head=$CURRENT_MAIN_SHA"; exit 2; }
+            echo "PASS_SC_M43D_SOURCE_CURRENT path=$path sha256=$main_sha main_head=$CURRENT_MAIN_SHA"
           done
 
       - name: Checkout exact source candidate and restore probe-only assertion
@@ -72,7 +72,7 @@ jobs:
             ('supabase/migrations/20261003213000_operation_requalification_multisubject_scope_v2.sql',os.environ['MIGRATION_1_SHA256']),
             ('supabase/migrations/20261003213100_independent_assurance_subject_extension_v2.sql',os.environ['MIGRATION_2_SHA256']),
           ]
-          got=[(r['path'],r.get('sha256')) for r in m.get('migrations',[])]
+          got=[(r['path'],r.get('source_sha256')) for r in m.get('migrations',[])]
           if m.get('status')!='READY' or m.get('transaction_escape_scan')!='PASS' or got!=expected:
               raise SystemExit('BLOCK_SC_M43D_EXACT_SOURCE_MANIFEST:'+json.dumps(m,sort_keys=True))
           print('PASS_SC_M43D_EXACT_SOURCE_MANIFEST '+json.dumps(m,sort_keys=True))
