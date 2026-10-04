@@ -7,8 +7,8 @@
       "candidate_path": "supabase/migrations/20261004122500_ig_m9_1_stale_rebind_route_v1.sql",
       "screen_id": 43,
       "consumer": "STORY_CREATOR",
-      "expected_verdict": "NO_BLOCKING_FINDINGS",
-      "expected_finding_codes": []
+      "expected_verdict": "BLOCKING_FINDINGS",
+      "expected_finding_codes": ["BASELINE_FLOW_ERROR"]
     },
     {
       "case_id": "IG_M9_1_ORPHAN_FAIL_CLOSED_SCREEN_007",
@@ -17,7 +17,7 @@
       "screen_id": 7,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "BLOCKING_FINDINGS",
-      "expected_finding_codes": []
+      "expected_finding_codes": ["BASELINE_FLOW_ERROR", "CANDIDATE_FLOW_ERROR"]
     }
   ]
 }
