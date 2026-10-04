@@ -1,0 +1,61 @@
+{
+  "catalog": [
+    {
+      "availability_state": "CURRENT",
+      "capability_code": "NORMALIZE_STRUCTURE",
+      "rank": 20,
+      "signal_types": [
+        "FORMAT_DRIFT"
+      ]
+    },
+    {
+      "availability_state": "CURRENT",
+      "capability_code": "REFRESH_SOURCE",
+      "rank": 10,
+      "signal_types": [
+        "SOURCE_STALE"
+      ]
+    },
+    {
+      "availability_state": "CURRENT",
+      "capability_code": "CHECK_PROVENANCE",
+      "rank": 5,
+      "signal_types": [
+        "SOURCE_STALE"
+      ]
+    }
+  ],
+  "expected": {
+    "fallback_state": "MULTI",
+    "selected_capabilities": [
+      "NORMALIZE_STRUCTURE",
+      "REFRESH_SOURCE",
+      "CHECK_PROVENANCE"
+    ]
+  },
+  "fixture_code": "NON_IG_DOCUMENT_PIPELINE_V1",
+  "policy": {
+    "contradiction_sets": [
+      [
+        "SOURCE_STALE",
+        "SOURCE_CONFIRMED_CURRENT"
+      ]
+    ],
+    "require_current_catalog": true,
+    "safe_fallback": [
+      "SAFE_FULL_REVIEW"
+    ]
+  },
+  "signals": [
+    {
+      "confidence": 0.02,
+      "signal_type": "FORMAT_DRIFT",
+      "state": "ACTIVE"
+    },
+    {
+      "confidence": 0.99,
+      "signal_type": "SOURCE_STALE",
+      "state": "ACTIVE"
+    }
+  ]
+}
