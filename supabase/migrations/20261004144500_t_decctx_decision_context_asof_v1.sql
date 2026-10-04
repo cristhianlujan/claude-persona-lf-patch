@@ -46,9 +46,23 @@ CREATE TABLE private.lf_decision_context_asof_v1 (
 CREATE INDEX lf_decision_context_asof_subject_idx
   ON private.lf_decision_context_asof_v1(consumer_code,subject_ref,decided_at DESC,created_at DESC);
 
+CREATE OR REPLACE FUNCTION private.fn_lf_decision_context_asof_immutable_v1()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = pg_catalog, private
+AS $guard$
+BEGIN
+  IF TG_OP IN ('UPDATE','DELETE') THEN
+    RAISE EXCEPTION 'BLOCK_DECISION_CONTEXT_ASOF_APPEND_ONLY:%',TG_OP;
+  END IF;
+  RETURN NEW;
+END
+$guard$;
+
 CREATE TRIGGER trg_00_guard_lf_decision_context_asof_v1
 BEFORE INSERT OR UPDATE OR DELETE ON private.lf_decision_context_asof_v1
-FOR EACH ROW EXECUTE FUNCTION private.fn_guard_governed_relation_v3('APPEND_ONLY');
+FOR EACH ROW EXECUTE FUNCTION private.fn_lf_decision_context_asof_immutable_v1();
 ALTER TABLE private.lf_decision_context_asof_v1
   ENABLE ALWAYS TRIGGER trg_00_guard_lf_decision_context_asof_v1;
 
@@ -119,7 +133,6 @@ BEGIN
      OR nullif(btrim(coalesce(p_context#>>'{governing,terms_version}','')),'') IS NULL
      OR coalesce(p_context#>>'{governing,terms_sha256}','') !~ '^[0-9a-f]{64}$' THEN RETURN false; END IF;
 
-  -- Core authority branches are refs/digests only. Copies/snapshots are not accepted as historical authority.
   IF (p_context->'actor_authority') ?| ARRAY['payload','content','snapshot','document','body']
      OR (p_context->'governing') ?| ARRAY['policy_payload','terms_payload','payload','content','snapshot','document','body'] THEN RETURN false; END IF;
 
@@ -193,7 +206,6 @@ BEGIN
     RETURN jsonb_build_object('schema_version','LF_DECISION_CONTEXT_ASOF_RECEIPT_V1','state','BLOCKED','code','CONTEXT_SCHEMA_INVALID');
   END IF;
 
-  -- Reuse exact current dependency revisions; do not build a temporal/currentness authority here.
   FOREACH v_code IN ARRAY ARRAY['CURRENTNESS_AUTHORITY','CAPABILITY_VERSION_COMPATIBILITY','TYPED_EVIDENCE_REGISTRY'] LOOP
     v_expected_version := v_manifest#>>ARRAY['dependencies',v_code,'version'];
     v_expected_sha := v_manifest#>>ARRAY['dependencies',v_code,'manifest_sha256'];
