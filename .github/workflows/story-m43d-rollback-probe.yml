@@ -72,7 +72,7 @@ jobs:
             ('supabase/migrations/20261003213000_operation_requalification_multisubject_scope_v2.sql',os.environ['MIGRATION_1_SHA256']),
             ('supabase/migrations/20261003213100_independent_assurance_subject_extension_v2.sql',os.environ['MIGRATION_2_SHA256']),
           ]
-          got=[(r['path'],r.get('source_sha256')) for r in m.get('migrations',[])]
+          got=[(r['path'],r.get('sha256')) for r in m.get('migrations',[])]
           if m.get('status')!='READY' or m.get('transaction_escape_scan')!='PASS' or got!=expected:
               raise SystemExit('BLOCK_SC_M43D_EXACT_SOURCE_MANIFEST:'+json.dumps(m,sort_keys=True))
           print('PASS_SC_M43D_EXACT_SOURCE_MANIFEST '+json.dumps(m,sort_keys=True))
