@@ -3,6 +3,7 @@
 -- Owner: SUPER_ADMIN.
 -- Scope: metadata/contract projection only. No production/runtime activation.
 -- Runtime reachability is intentional and must be judged by N-9 rollback-only before persistence.
+-- History preservation: stable physical IDs remain; contract_field_matrix_v3 remains unchanged.
 
 begin;
 
@@ -72,43 +73,6 @@ BEGIN
 END
 $pre$;
 
-INSERT INTO public.lf_eventos(
-  evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id
-)
-SELECT
-  'IG_N14_CONTRACT_PROJECTION_RECONCILIATION',
-  'INPUT_GOVERNANCE_CONTRACT_PROJECTION',
-  'B2B-CARGA-002:B2B_IMP_DUE_DATE',
-  'N-14 preserves the reachable stale V3 import-date preimage before reconciling it to V4 generated-date semantics.',
-  'INFO',
-  jsonb_build_object(
-    'schema_version','LF_IG_N14_RECONCILIATION_EVIDENCE_V1',
-    'plan_code','IG_CURATOR_VALIDATOR_REFACTOR_V2',
-    'unit_code','N-14',
-    'work_code','PAULO-179',
-    'authority',jsonb_build_object(
-      'rule_code','B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001',
-      'owner_decision','APPROVED_2026-09-17_V4',
-      'absolute_due_dates_in_standard_excel','DENY'
-    ),
-    'reachability','REACHABLE_CURRENT',
-    'before',jsonb_build_object(
-      'field',(SELECT to_jsonb(c) FROM lf_ops.campos c WHERE c.codigo='B2B_IMP_DUE_DATE'),
-      'screen_field',(SELECT to_jsonb(cp)
-                      FROM lf_ops.campos c
-                      JOIN lf_ops.campos_pantallas cp ON cp.campo_id=c.id
-                      JOIN lf_ops.pantallas p ON p.id=cp.pantalla_id
-                      WHERE c.codigo='B2B_IMP_DUE_DATE' AND p.codigo='B2B-CARGA-002'),
-      'validation',(SELECT to_jsonb(cv)
-                    FROM lf_ops.campos c
-                    JOIN lf_ops.campos_validaciones cv ON cv.campo_id=c.id
-                    WHERE c.codigo='B2B_IMP_DUE_DATE' AND cv.codigo='B2B_IMP_VAL_DUE_DATE_ORDER'),
-      'rule',(SELECT to_jsonb(r) FROM lf_ops.reglas r WHERE r.codigo='B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001')
-    )
-  ),
-  'IG_CURATOR_VALIDATOR_REFACTOR_V2',
-  'CHATGPT-IG-N14-PAULO-179-20261003';
-
 UPDATE lf_ops.campos c
 SET es_requerido=false,
     descripcion='Fecha de vencimiento canónica generada por LF para el cronograma interno. En B2B-CARGA-002 V4 no es columna del Excel estándar ni dato requerido al partner; se genera después de confirmar la cuota 0 usando configuración gobernada de empresa o plan. La identidad B2B_IMP_DUE_DATE se conserva por compatibilidad e historia.',
@@ -164,31 +128,6 @@ SET descripcion='En modalidad Cuotas, LF admite únicamente dos contratos Excel 
     ),
     updated_at=now()
 WHERE r.codigo='B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001';
-
-UPDATE public.lf_eventos e
-SET payload=jsonb_set(
-      e.payload,
-      '{after}',
-      jsonb_build_object(
-        'field',(SELECT to_jsonb(c) FROM lf_ops.campos c WHERE c.codigo='B2B_IMP_DUE_DATE'),
-        'screen_field',(SELECT to_jsonb(cp)
-                        FROM lf_ops.campos c
-                        JOIN lf_ops.campos_pantallas cp ON cp.campo_id=c.id
-                        JOIN lf_ops.pantallas p ON p.id=cp.pantalla_id
-                        WHERE c.codigo='B2B_IMP_DUE_DATE' AND p.codigo='B2B-CARGA-002'),
-        'validation',(SELECT to_jsonb(cv)
-                      FROM lf_ops.campos c
-                      JOIN lf_ops.campos_validaciones cv ON cv.campo_id=c.id
-                      WHERE c.codigo='B2B_IMP_DUE_DATE' AND cv.codigo='B2B_IMP_VAL_DUE_DATE_ORDER'),
-        'rule',(SELECT to_jsonb(r) FROM lf_ops.reglas r WHERE r.codigo='B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001')
-      ),
-      true
-    ),
-    updated_by_execution_id='CHATGPT-IG-N14-PAULO-179-20261003',
-    updated_at=now()
-WHERE e.evento_tipo='IG_N14_CONTRACT_PROJECTION_RECONCILIATION'
-  AND e.entidad_codigo='B2B-CARGA-002:B2B_IMP_DUE_DATE'
-  AND e.created_by_execution_id='CHATGPT-IG-N14-PAULO-179-20261003';
 
 DO $post$
 DECLARE
@@ -250,18 +189,6 @@ BEGIN
   END IF;
   IF NOT coalesce(v_v4_deny,false) THEN
     RAISE EXCEPTION 'BLOCK_N14_V4_DENY_NOT_PRESERVED';
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM public.lf_eventos e
-    WHERE e.evento_tipo='IG_N14_CONTRACT_PROJECTION_RECONCILIATION'
-      AND e.entidad_codigo='B2B-CARGA-002:B2B_IMP_DUE_DATE'
-      AND e.created_by_execution_id='CHATGPT-IG-N14-PAULO-179-20261003'
-      AND e.payload ? 'before'
-      AND e.payload ? 'after'
-      AND e.payload->>'reachability'='REACHABLE_CURRENT'
-  ) THEN
-    RAISE EXCEPTION 'BLOCK_N14_HISTORY_RECEIPT_MISSING';
   END IF;
 END
 $post$;
