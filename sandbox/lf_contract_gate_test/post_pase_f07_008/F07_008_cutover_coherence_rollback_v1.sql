@@ -27,7 +27,7 @@ DECLARE
   v_ready integer;
   v_updated integer;
 BEGIN
-  v_expected := jsonb_object_length(v_snapshot);
+  SELECT count(*) INTO v_expected FROM jsonb_object_keys(v_snapshot);
 
   SELECT count(*) INTO v_ready
   FROM public.lf_activos a
