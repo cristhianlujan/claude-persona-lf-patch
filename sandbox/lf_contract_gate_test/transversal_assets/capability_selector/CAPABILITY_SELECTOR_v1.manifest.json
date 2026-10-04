@@ -1,0 +1,87 @@
+{
+  "capability_code": "CAPABILITY_SELECTOR",
+  "compatibility": {
+    "domain_specific_branches": false,
+    "model_or_method_router": false,
+    "ranking_or_confidence_authorizes_execution": false,
+    "safe_change_admission_duplicated": false,
+    "screen_or_family_literals": false
+  },
+  "contract": {
+    "admission_authority": false,
+    "execution_permission": false,
+    "input": [
+      "signals",
+      "catalog",
+      "policy"
+    ],
+    "multi_label": true,
+    "output": [
+      "selected_capabilities",
+      "reasons",
+      "fallback_state"
+    ],
+    "selection_basis": "TYPED_SIGNAL_TYPE",
+    "states": [
+      "CLEAR",
+      "MULTI",
+      "NO_SIGNAL",
+      "CONTRADICTORY",
+      "CAPABILITY_FAILURE"
+    ]
+  },
+  "currentness": {
+    "dependency_authority": "CURRENTNESS_AUTHORITY@1.0.0",
+    "ig_binding_git_blob_sha1": "611c81a2c809019a5a953a376e7c74d08fece2cf",
+    "non_ig_fixture_git_blob_sha1": "dc5f488a7efed4a5d2358fda6bfd7ad54ff2a190",
+    "test_git_blob_sha1": "a602339d741f06b2cc5dfe67c07a456b86935ae2",
+    "test_observation": "PASS_T_SELECT_CAPABILITY_SELECTOR_V1 checks=9",
+    "typed_signal_authority": "TYPED_EVIDENCE_REGISTRY@3.0.0"
+  },
+  "delivery": {
+    "contract_git_blob_sha1": "dadc5e6874588e5cf324154088a81cbfae0bade7",
+    "contract_path": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/capability_selector_contract_v1.json",
+    "mode": "REPOSITORY_BOUND_PURE_PYTHON",
+    "source_bundle_sha256": "e4b993b812ad99bfdd8d9626712b93d81b814d939ad6ff8f5f648a5600b1a887",
+    "source_git_blob_sha1": "6b984ce7442814aeb6b3f5c1651c15b7ef1e9936",
+    "source_path": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/capability_selector_v1.py"
+  },
+  "dependencies": {
+    "capabilities": [
+      {
+        "capability_code": "TYPED_EVIDENCE_REGISTRY",
+        "role": "UPSTREAM_SIGNAL_TYPING",
+        "version": "3.0.0"
+      },
+      {
+        "capability_code": "CURRENTNESS_AUTHORITY",
+        "role": "UPSTREAM_CATALOG_CURRENTNESS",
+        "version": "1.0.0"
+      }
+    ],
+    "consumer_policy_required": true
+  },
+  "installation": {
+    "reinstall_required": false,
+    "required": false,
+    "runtime_deploy_required": false
+  },
+  "migration": {
+    "mode": "CAPABILITY_REGISTRY_AND_CURRENT_POINTER_ONLY",
+    "subject_runtime_cutover": false
+  },
+  "owner": "SUPER_ADMIN",
+  "rollback": {
+    "mode": "RESTORE_CURRENT_POINTER_OR_REMOVE_T_SELECT_REGISTRY_ROWS",
+    "runtime_state_untouched": true,
+    "supported": true
+  },
+  "schema_version": "LF_CAPABILITY_MANIFEST_V1",
+  "usage": {
+    "entrypoint": "capability_selector_v1.select_capabilities",
+    "fallback_configured_by_consumer": true,
+    "ig_binding": "ig_m5_4_selector_binding_v1.json",
+    "non_ig_fixture": "non_ig_consumer_fixture_v1.json"
+  },
+  "version": "1.0.0"
+}
