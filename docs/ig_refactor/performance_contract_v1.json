@@ -1,0 +1,113 @@
+{
+  "schema_version": "LF_IG_PERFORMANCE_ASSURANCE_CONTRACT_V1",
+  "contract_code": "INPUT_GOVERNANCE_PERFORMANCE_ASSURANCE_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M8.0",
+  "work_code": "PAULO-110",
+  "owner": "SUPER_ADMIN",
+  "mode": "CONTRACT_ONLY_NO_RUNTIME_TUNING",
+  "authorities": {
+    "timeout_policy": "TIMEOUT_PHASE_BUDGET_POLICY@1.0.0",
+    "benchmark": "PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0",
+    "quality_taxonomy": "M7.0/Q_TAXONOMY_V1",
+    "negative_suite": "M7.3/INPUT_GOVERNANCE_REGRESSION"
+  },
+  "performance": {
+    "edge_limit_ms": 150000,
+    "total_screen_budget_ms": 120000,
+    "edge_margin_ms": 30000,
+    "edge_margin_pct": 20,
+    "p90_target_ms": 100000,
+    "p90_scope": "EACH_AFFECTED_SCREEN_COHORT_AND_AGGREGATE_AFFECTED_COHORT",
+    "mean_or_p50_is_not_sufficient": true,
+    "phase_budgets_ms": {
+      "CONNECT": 10000,
+      "READ": 20000,
+      "CURATOR": 30000,
+      "VALIDATOR": 45000,
+      "ORCHESTRATION": 15000
+    },
+    "inference_phase": "NOT_APPLICABLE_AND_NOT_BUDGETED_WITHOUT_NEW_GOVERNED_CONTRACT_REVISION",
+    "timeout_policy": "NO_BLIND_TIMEOUT_EXTENSION",
+    "phase_timeout_result": "FAIL_CLOSED_WITH_FIRST_BAD_HOP_EVIDENCE",
+    "over_budget_extension": "ONLY_EVIDENCE_BOUND_EXTENSION_CANDIDATE_FROM_T_PERF_WITH_EXACT_SOURCE_BENCHMARK_AND_HIGHER_AUTHORITY; NEVER_AUTO_MUTATE_TIMEOUT"
+  },
+  "quality": {
+    "validator_required": true,
+    "curator_conclusion_is_validator_authority": false,
+    "required_q_classes": ["Q0", "Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8"],
+    "required_case_metadata": ["q_class", "dimension", "property", "oracle", "expected", "evidence"],
+    "current_suite_baseline_cases": 168,
+    "m7_3_negative_baseline_cases": 91,
+    "blocked_or_unproven_must_not_be_promoted_to_pass_without_authorized_oracle_evidence": true,
+    "parity_is_not_correctness": true,
+    "structural_is_not_semantic_or_readiness": true,
+    "applicable_assurance_must_be_equivalent_or_stronger": true
+  },
+  "cache": {
+    "stale_cache_policy": "FAIL",
+    "unknown_currentness_policy": "FAIL_CLOSED",
+    "reuse_requires": [
+      "EXACT_SOURCE_IDENTITY",
+      "EXACT_CONTRACT_IDENTITY",
+      "VALID_CURRENTNESS_FRESHNESS_GUARD",
+      "SAME_REQUEST_OR_EXPLICITLY_GOVERNED_CACHE_SCOPE",
+      "PRESERVED_EVIDENCE_AND_CLASSIFIER_FINGERPRINTS"
+    ]
+  },
+  "valid_improvement_evidence": {
+    "required": [
+      "T_PERF_EXACT_SOURCE_BENCHMARK_RECEIPT",
+      "SAME_OR_GOVERNED_EQUIVALENT_WORKLOAD_COHORT",
+      "EFFECTIVE_CALL_COUNT_AND_NO_HARNESS_REEVALUATION",
+      "PHASE_TIMINGS_AND_TOTAL_SCREEN_TIMING",
+      "P90_FOR_EACH_AFFECTED_SCREEN_AND_AGGREGATE_AFFECTED_COHORT",
+      "M7_Q0_Q8_RESULTS_WITH_ORACLE_EXPECTED_EVIDENCE",
+      "VALIDATOR_EXECUTION_EVIDENCE",
+      "CURRENTNESS_AND_CACHE_FRESHNESS_EVIDENCE",
+      "EXACT_SOURCE_AND_CONTRACT_IDENTITIES"
+    ],
+    "acceptance_rule": "PERFORMANCE_IMPROVES_AND_P90_TARGET_MET_AND_TOTAL_BUDGET_MET_AND_ASSURANCE_EQUIVALENT_OR_STRONGER"
+  },
+  "invalidation_rules": [
+    "VALIDATOR_OMITTED_OR_SHORT_CIRCUITED",
+    "ANY_APPLICABLE_M7_Q_CLASS_SKIPPED",
+    "ASSURANCE_FAIL_WITH_PERFORMANCE_PASS",
+    "BLOCKED_OR_UNPROVEN_FALSELY_PROMOTED_TO_PASS",
+    "BLIND_TIMEOUT_EXTENSION",
+    "STALE_OR_UNKNOWN_CACHE_REUSED",
+    "MEAN_OR_P50_IMPROVES_BUT_CRITICAL_P90_WORSENS_OR_EXCEEDS_TARGET",
+    "TOTAL_SCREEN_BUDGET_EXCEEDED",
+    "ANY_PHASE_BUDGET_EXCEEDED_WITHOUT_GOVERNED_EXCEPTION",
+    "EXACT_SOURCE_OR_CONTRACT_IDENTITY_MISMATCH",
+    "HARNESS_REEVALUATION_OR_CALL_COUNT_MISMATCH",
+    "TEST_COHORT_REDUCED_WITHOUT_GOVERNED_EQUIVALENCE",
+    "M7_METADATA_OR_EVIDENCE_COVERAGE_REDUCED",
+    "CURRENTNESS_OR_FAIL_CLOSED_SEMANTICS_WEAKENED"
+  ],
+  "negative_tests": [
+    {"case": "OMIT_VALIDATOR", "expected": "FAIL"},
+    {"case": "RAISE_TIMEOUT_WITHOUT_DIAGNOSIS", "expected": "FAIL"},
+    {"case": "REUSE_STALE_CACHE", "expected": "FAIL"},
+    {"case": "MEAN_BETTER_P90_WORSE", "expected": "FAIL"},
+    {"case": "PERFORMANCE_PASS_ASSURANCE_FAIL", "expected": "FAIL"}
+  ],
+  "current_as_is": {
+    "observed_completed_runs": 168,
+    "observed_screen_count": 13,
+    "observed_overall_p50_s": 21.9785245,
+    "observed_overall_p90_s": 184.5244698,
+    "observed_overall_p95_s": 569.3620532,
+    "observed_overall_p99_s": 1967.641109,
+    "observed_max_s": 2163.317522,
+    "screens_p90_over_edge_limit": 8,
+    "contract_target_currently_met": false,
+    "note": "AS-IS context only; historical run timings are not retroactive exact-code benchmark receipts."
+  },
+  "scope_guards": {
+    "runtime_change": false,
+    "timeout_tuning": false,
+    "production_activation": false,
+    "new_performance_engine": false
+  }
+}
