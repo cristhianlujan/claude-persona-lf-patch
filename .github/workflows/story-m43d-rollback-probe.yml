@@ -1,0 +1,129 @@
+name: Story M4.3D Rollback Probe
+
+on:
+  push:
+    branches:
+      - story-m43d-rollback-probe-20261003
+    paths:
+      - ".github/workflows/story-m43d-rollback-probe.yml"
+      - "sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/story_m43d_rollback_probe_v1.sql"
+
+permissions:
+  contents: read
+
+jobs:
+  rollback-requalification-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+      SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+      EXPECTED_MAIN_SHA: 5cb641d8a187d3926698a750823ad13074694fad
+      SOURCE_BASE_SHA: b345ce4f3d5e4a695dec3a97d388491128e6bda7
+      SOURCE_HEAD_SHA: 653383ac9eaa5595ef42d1e802a0c3421064ad04
+    steps:
+      - name: Checkout probe carrier branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fail closed on source currentness and preserve probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          CURRENT_MAIN_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          test "$CURRENT_MAIN_SHA" = "$EXPECTED_MAIN_SHA" || { echo "BLOCK_SC_M43D_MAIN_DRIFT expected=$EXPECTED_MAIN_SHA actual=$CURRENT_MAIN_SHA"; exit 2; }
+          cp sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/story_m43d_rollback_probe_v1.sql /tmp/story_m43d_rollback_probe_v1.sql
+          for path in \
+            supabase/migrations/20261003213000_operation_requalification_multisubject_scope_v2.sql \
+            supabase/migrations/20261003213100_independent_assurance_subject_extension_v2.sql
+          do
+            main_sha="$(git show "$CURRENT_MAIN_SHA:$path" | sha256sum | awk '{print $1}')"
+            source_sha="$(git show "$SOURCE_HEAD_SHA:$path" | sha256sum | awk '{print $1}')"
+            test "$main_sha" = "$source_sha" || { echo "BLOCK_SC_M43D_SOURCE_DRIFT path=$path main=$main_sha source=$source_sha"; exit 2; }
+            echo "PASS_SC_M43D_SOURCE_CURRENT path=$path sha256=$main_sha"
+          done
+
+      - name: Checkout exact source candidate and restore probe-only assertion
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout --detach "$SOURCE_HEAD_SHA"
+          cp /tmp/story_m43d_rollback_probe_v1.sql sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/story_m43d_rollback_probe_v1.sql
+
+      - name: Build exact-source canonical rollback payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/run_changed_migrations_rollback_v1.py \
+            --repo-root . \
+            --base "$SOURCE_BASE_SHA" \
+            --head "$SOURCE_HEAD_SHA" \
+            --sql-out /tmp/sc-m43d-rollback.sql \
+            --manifest-out /tmp/sc-m43d-manifest.json \
+            --probe-sql sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/story_m43d_rollback_probe_v1.sql
+          python3 - <<'PY'
+          import json
+          m=json.load(open('/tmp/sc-m43d-manifest.json',encoding='utf-8'))
+          expected=[
+            'supabase/migrations/20261003213000_operation_requalification_multisubject_scope_v2.sql',
+            'supabase/migrations/20261003213100_independent_assurance_subject_extension_v2.sql',
+          ]
+          got=[r['path'] for r in m.get('migrations',[])]
+          if m.get('status')!='READY' or m.get('transaction_escape_scan')!='PASS' or got!=expected:
+              raise SystemExit('BLOCK_SC_M43D_MANIFEST:'+json.dumps(m,sort_keys=True))
+          print('PASS_SC_M43D_MANIFEST '+json.dumps(m,sort_keys=True))
+          PY
+
+      - name: Capture baseline effect manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.$SUPABASE_PROJECT_ID" PGPASSWORD="$LF_SUPABASE_DB_PASSWORD" PGDATABASE=postgres PGSSLMODE=require
+          psql -X -At -v ON_ERROR_STOP=1 <<'SQL' > /tmp/sc-m43d-before.json
+          select jsonb_build_object(
+            'current',(select to_jsonb(c) from public.lf_capability_current c where capability_code='INDEPENDENT_ASSURANCE'),
+            'v2_count',(select count(*) from public.lf_capability_version_registry where capability_code='INDEPENDENT_ASSURANCE' and version='2.0.0'),
+            'operation',(select jsonb_build_object('applies_to_asset_type',applies_to_asset_type,'revision_sha256',public.lf_operation_revision_sha256_v1(operation_code),'qualification_current',public.lf_qualification_current_v1('OPERATION',operation_code,public.lf_operation_revision_sha256_v1(operation_code))) from public.lf_operation_registry where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF'),
+            'judge_count',(select count(*) from public.lf_operation_judges where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF' and status='ACTIVE_ENFORCEMENT'),
+            'generic_begin_exists',to_regprocedure('public.lf_independent_review_begin_v2(text,text,text,text,text,uuid,text,text,text,uuid,text,text,text,jsonb)') is not null,
+            'generic_recorder_exists',to_regprocedure('public.lf_record_independent_review_step_v2(text,text,text,jsonb,text,text)') is not null,
+            'probe_exec_count',(select count(*) from public.lf_operation_execution where execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003'),
+            'probe_event_count',(select count(*) from public.lf_eventos where created_by_execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003' or updated_by_execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003' or payload::text like '%SC-M4.3D-ROLLBACK-PROBE-20261003%'),
+            'trigger_digest',(select coalesce(md5(string_agg(n.nspname||'.'||c.relname||':'||t.tgname||':'||pg_get_triggerdef(t.oid),E'\n' order by n.nspname,c.relname,t.tgname)),'') from pg_trigger t join pg_class c on c.oid=t.tgrelid join pg_namespace n on n.oid=c.relnamespace where not t.tgisinternal and n.nspname in ('public','private') and c.relname in ('lf_operation_registry','lf_operation_contracts','lf_operation_step_contracts','lf_operation_step_judge_bindings','lf_operation_judges','lf_capability_registry','lf_capability_version_registry','lf_capability_current','lf_operation_execution','lf_operation_execution_steps'))
+          );
+          SQL
+          cat /tmp/sc-m43d-before.json
+
+      - name: Execute rollback-only probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.$SUPABASE_PROJECT_ID" PGPASSWORD="$LF_SUPABASE_DB_PASSWORD" PGDATABASE=postgres PGSSLMODE=require
+          psql -X -v ON_ERROR_STOP=1 -f /tmp/sc-m43d-rollback.sql | tee /tmp/sc-m43d-probe.log
+          grep -q 'PASS_SC_M43D_ROLLBACK_REQUALIFICATION_PROBE' /tmp/sc-m43d-probe.log
+          grep -q 'LF_DB_CANDIDATE_ROLLBACK_COMPLETE' /tmp/sc-m43d-probe.log
+
+      - name: Prove zero unauthorized material delta after rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.$SUPABASE_PROJECT_ID" PGPASSWORD="$LF_SUPABASE_DB_PASSWORD" PGDATABASE=postgres PGSSLMODE=require
+          psql -X -At -v ON_ERROR_STOP=1 <<'SQL' > /tmp/sc-m43d-after.json
+          select jsonb_build_object(
+            'current',(select to_jsonb(c) from public.lf_capability_current c where capability_code='INDEPENDENT_ASSURANCE'),
+            'v2_count',(select count(*) from public.lf_capability_version_registry where capability_code='INDEPENDENT_ASSURANCE' and version='2.0.0'),
+            'operation',(select jsonb_build_object('applies_to_asset_type',applies_to_asset_type,'revision_sha256',public.lf_operation_revision_sha256_v1(operation_code),'qualification_current',public.lf_qualification_current_v1('OPERATION',operation_code,public.lf_operation_revision_sha256_v1(operation_code))) from public.lf_operation_registry where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF'),
+            'judge_count',(select count(*) from public.lf_operation_judges where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF' and status='ACTIVE_ENFORCEMENT'),
+            'generic_begin_exists',to_regprocedure('public.lf_independent_review_begin_v2(text,text,text,text,text,uuid,text,text,text,uuid,text,text,text,jsonb)') is not null,
+            'generic_recorder_exists',to_regprocedure('public.lf_record_independent_review_step_v2(text,text,text,jsonb,text,text)') is not null,
+            'probe_exec_count',(select count(*) from public.lf_operation_execution where execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003'),
+            'probe_event_count',(select count(*) from public.lf_eventos where created_by_execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003' or updated_by_execution_id='SC-M4.3D-ROLLBACK-PROBE-20261003' or payload::text like '%SC-M4.3D-ROLLBACK-PROBE-20261003%'),
+            'trigger_digest',(select coalesce(md5(string_agg(n.nspname||'.'||c.relname||':'||t.tgname||':'||pg_get_triggerdef(t.oid),E'\n' order by n.nspname,c.relname,t.tgname)),'') from pg_trigger t join pg_class c on c.oid=t.tgrelid join pg_namespace n on n.oid=c.relnamespace where not t.tgisinternal and n.nspname in ('public','private') and c.relname in ('lf_operation_registry','lf_operation_contracts','lf_operation_step_contracts','lf_operation_step_judge_bindings','lf_operation_judges','lf_capability_registry','lf_capability_version_registry','lf_capability_current','lf_operation_execution','lf_operation_execution_steps'))
+          );
+          SQL
+          cat /tmp/sc-m43d-after.json
+          cmp -s /tmp/sc-m43d-before.json /tmp/sc-m43d-after.json || { echo 'BLOCK_SC_M43D_ROLLBACK_MATERIAL_DELTA'; diff -u /tmp/sc-m43d-before.json /tmp/sc-m43d-after.json || true; exit 2; }
+          echo 'PASS_SC_M43D_ZERO_UNAUTHORIZED_MATERIAL_DELTA'
+          echo 'PASS_SC_M43D_TRIGGER_EVENT_LEASE_RECONCILIATION'
