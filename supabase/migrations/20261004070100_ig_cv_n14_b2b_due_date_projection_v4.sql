@@ -28,7 +28,8 @@ begin
   if v_rule is null
      or coalesce(v_rule->>'owner_decision','')<>'APPROVED_2026-09-17_V4'
      or coalesce(v_rule#>>'{contract_field_matrix_v4,absolute_due_dates_in_standard_excel}','')<>'DENY'
-     or coalesce(v_rule#>>'{contract_field_matrix_v4,first_installment_date_policy}','')<>'DERIVED_BY_LF_AFTER_CUOTA0_PAYMENT_CONFIRMED_NOT_FILE_INPUT' then
+     or coalesce(v_rule->>'first_installment_date_policy','')<>'DERIVED_BY_LF_AFTER_CUOTA0_PAYMENT_CONFIRMED_NOT_FILE_INPUT'
+     or coalesce(v_rule->>'date_source_policy','')<>'GOVERNED_CONFIGURATION_AFTER_CUOTA0_PAYMENT_CONFIRMED_FOR_STANDARD_DYNAMIC_DATE_MODEL' then
     raise exception 'N14_CONTRACT_AUTHORITY_NOT_V4';
   end if;
 
@@ -111,6 +112,7 @@ begin
     where r.codigo='B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001'
       and r.valor_config->>'owner_decision'='APPROVED_2026-09-17_V4'
       and r.valor_config#>>'{contract_field_matrix_v4,absolute_due_dates_in_standard_excel}'='DENY'
+      and r.valor_config->>'first_installment_date_policy'='DERIVED_BY_LF_AFTER_CUOTA0_PAYMENT_CONFIRMED_NOT_FILE_INPUT'
   ) then
     raise exception 'N14_POST_CONTRACT_AUTHORITY_DRIFT';
   end if;
