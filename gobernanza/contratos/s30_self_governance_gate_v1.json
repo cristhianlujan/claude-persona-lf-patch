@@ -185,7 +185,7 @@
   "ci_enforcement": {
     "always_run_self_test": true,
     "fresh_receipt_trigger_paths": [
-      ".github/workflows/validate-lf-packs.yml",
+      ".github/workflows/profile-driven-screen-generation.yml",
       "gobernanza/contratos/s30_self_governance_gate_v1.json",
       "gobernanza/judges/validate_s30_self_governance_gate.py"
     ],
@@ -195,7 +195,7 @@
     "s30_governed_path_namespace": {
       "protected_branch_prefix": "lf/s30-",
       "governed_paths": [
-        ".github/workflows/validate-lf-packs.yml",
+        ".github/workflows/profile-driven-screen-generation.yml",
         "gobernanza/contratos/s30_self_governance_gate_v1.json",
         "gobernanza/judges/validate_s30_self_governance_gate.py",
         "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
@@ -256,7 +256,7 @@
       "READBACK"
     ],
     "allowed_changed_paths": [
-      ".github/workflows/validate-lf-packs.yml",
+      ".github/workflows/profile-driven-screen-generation.yml",
       "gobernanza/contratos/s30_self_governance_gate_v1.json",
       "gobernanza/judges/validate_s30_self_governance_gate.py",
       "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
@@ -356,8 +356,10 @@
       "deploy_key_title": "s30-governed-git-broker"
     },
     "current_user_can_bypass": "never",
-    "broker_workflow": ".github/workflows/validate-lf-packs.yml",
-    "dispatch_event": "workflow_dispatch",
+    "broker_workflow": ".github/workflows/profile-driven-screen-generation.yml",
+    "dispatch_event": "issue_comment",
+    "dispatch_request_transport": "ISSUE_COMMENT_JSON_PREFIX",
+    "dispatch_request_prefix": "/s30-broker ",
     "request_schema": "s30-git-broker/v1",
     "protected_branch_prefix": "lf/s30-",
     "staging_prefix": "lf/staging-s30-",
@@ -366,7 +368,7 @@
     "ruleset_readback_required": true,
     "broker_secret_name": "S30_BROKER_DEPLOY_KEY",
     "repair_allowed_paths": [
-      ".github/workflows/validate-lf-packs.yml",
+      ".github/workflows/profile-driven-screen-generation.yml",
       "gobernanza/contratos/s30_self_governance_gate_v1.json",
       "gobernanza/judges/validate_s30_self_governance_gate.py",
       "sandbox/lf_contract_gate_test/s30_self_governance/s30_a_prewrite_receipt.json",
@@ -474,5 +476,5 @@
     ],
     "candidate_receipt_git_mode": "100644"
   },
-  "contract_version": "v0.6.1-candidate"
+  "contract_version": "v0.6.2-candidate"
 }
