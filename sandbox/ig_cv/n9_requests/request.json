@@ -4,7 +4,7 @@
     {
       "case_id": "IG_N13_CURRENTNESS_CONTINUATION_S52",
       "candidate_ref": "HEAD",
-      "candidate_path": "supabase/migrations/20261004040500_ig_n13_continuation_currentness_requiredness_v1.sql",
+      "candidate_path": "supabase/migrations/20261004040500_ig_cv_n13_continuation_currentness_requiredness_v1.sql",
       "screen_id": 52,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
@@ -13,7 +13,7 @@
     {
       "case_id": "IG_N13_CURRENTNESS_CONTINUATION_S56",
       "candidate_ref": "HEAD",
-      "candidate_path": "supabase/migrations/20261004040500_ig_n13_continuation_currentness_requiredness_v1.sql",
+      "candidate_path": "supabase/migrations/20261004040500_ig_cv_n13_continuation_currentness_requiredness_v1.sql",
       "screen_id": 56,
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
