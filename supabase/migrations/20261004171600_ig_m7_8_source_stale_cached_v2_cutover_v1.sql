@@ -1,5 +1,6 @@
 -- IG_CURATOR_VALIDATOR_REFACTOR_V2 / M7.8 / PAULO-054
--- Minimal runtime repair: the only live caller of cached_v1 is moved to cached_v2.
+-- Runtime repair: the only live caller of cached_v1 is moved to cached_v2.
+-- Fixture selection is behavior/cohort driven, never pinned to screen identities.
 -- Does not relax Validator checks and does not change screen semantic states.
 
 DO $cutover$
@@ -14,6 +15,7 @@ DECLARE
   v_graph jsonb;
   v_base jsonb;
   v_cached jsonb;
+  v_target_count integer:=0;
 BEGIN
   v_def := pg_get_functiondef(v_sig);
   IF md5(v_def) <> v_baseline_md5 THEN
@@ -33,8 +35,37 @@ BEGIN
     'PROGRAMACION_CONTRACT','INPUT_READINESS_CONTRACT','INPUT_GOVERNANCE_AGENT'
   );
 
-  -- Bounded semantic/evidence parity on every screen currently blocking M0.6.
-  FOREACH v_screen IN ARRAY ARRAY[3,5,43,51,57] LOOP
+  -- Bounded parity uses governed representative coverage plus one strongest
+  -- current eligible screen by structural complexity. Screen identity is incidental.
+  FOR v_screen IN
+    WITH latest AS (
+      SELECT DISTINCT ON (r.pantalla_id)
+             r.pantalla_id,r.id,r.source_manifest
+      FROM programacion.input_readiness_runs r
+      JOIN lf_ops.pantallas p ON p.id=r.pantalla_id AND p.activa
+      WHERE r.version_id=v_version AND r.status='COMPLETED' AND r.invalidated_at IS NULL
+      ORDER BY r.pantalla_id,r.id DESC
+    ), complexity AS (
+      SELECT l.pantalla_id,
+             coalesce(jsonb_array_length(l.source_manifest),0)
+             + coalesce(sum(CASE WHEN jsonb_typeof(a.source_refs)='array' THEN jsonb_array_length(a.source_refs) ELSE 0 END),0)
+             + coalesce(sum(CASE WHEN jsonb_typeof(a.blockers)='array' THEN jsonb_array_length(a.blockers) ELSE 0 END),0) AS complexity_score
+      FROM latest l
+      JOIN programacion.input_family_assessments a ON a.run_id=l.id
+      WHERE programacion.fn_input_readiness_run_is_current(l.id)
+      GROUP BY l.pantalla_id,l.source_manifest
+      ORDER BY complexity_score DESC,l.pantalla_id
+      LIMIT 1
+    ), targets AS (
+      SELECT pantalla_id
+      FROM programacion.v_input_governance_representative_cohort_v1
+      WHERE representative_rank=1
+      UNION
+      SELECT pantalla_id FROM complexity
+    )
+    SELECT DISTINCT pantalla_id FROM targets ORDER BY pantalla_id
+  LOOP
+    v_target_count:=v_target_count+1;
     v_graph := programacion.fn_input_screen_canonical_graph(v_screen,v_version);
     v_base := programacion.fn_input_governance_bootstrap_classify_v2(v_screen,'VISUAL_EVIDENCE',v_version);
     v_cached := programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(v_screen,'VISUAL_EVIDENCE',v_version,v_graph);
@@ -42,6 +73,10 @@ BEGIN
       RAISE EXCEPTION 'BLOCK_M78_CUTOVER_CACHED_V2_VISUAL_PARITY:%',v_screen;
     END IF;
   END LOOP;
+
+  IF v_target_count=0 THEN
+    RAISE EXCEPTION 'BLOCK_M78_CUTOVER_NO_ELIGIBLE_BEHAVIOR_FIXTURE';
+  END IF;
 
   EXECUTE v_candidate;
 
@@ -62,15 +97,17 @@ BEGIN
     expected_outcome,severity,status,metadata,created_by_execution_id,updated_by_execution_id
   ) VALUES (
     'INPUT_GOVERNANCE_REGRESSION','M7_8_VISUAL_CACHED_V2_PARITY',780,
-    'M7.8 cached/base VISUAL_EVIDENCE parity and zero cached_v1 live callers',
+    'M7.8 behavior-driven cached/base VISUAL_EVIDENCE parity and zero cached_v1 live callers',
     'PARITY','CUSTOM_SQL',
     'sandbox/ig_cv/m7_8_cached_v2_route_parity_v1.sql',
-    '13 target screens: base == cached_v2 for VISUAL_EVIDENCE; zero live callers of cached_v1',
+    'Governed representative cohort plus highest-complexity eligible screen: base == cached_v2; zero live callers of cached_v1',
     'P0','ACTIVE',
     jsonb_build_object(
       'consumer','IG_CURATOR_VALIDATOR_REFACTOR_V2:M7.8',
       'equivalence_capability','CONTROL_EQUIVALENCE_JUDGE@1.0.0',
       'policy_mode','EXACT_ONLY_ALL_DIVERGENCE_BLOCKS',
+      'fixture_selection','BEHAVIOR_PRECONDITION_THEN_COMPLEXITY',
+      'fixed_screen_ids',false,
       'root_cause','cached_v1 omitted CURRENT_VISUAL_ARTIFACT source_ref while cached_v2 matches base',
       'rollback','sandbox/ig_cv/m7_8_source_stale_cached_v2_rollback_v1.sql'
     ),
