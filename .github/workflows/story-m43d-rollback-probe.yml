@@ -19,9 +19,11 @@ jobs:
       LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
       SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
       SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
-      EXPECTED_MAIN_SHA: 449420bb1676dde460fbb048f749f790eab1b2f9
+      EXPECTED_MAIN_SHA: fc1415c664fae0d50de74d6f4b1af955826cebd5
       SOURCE_BASE_SHA: b345ce4f3d5e4a695dec3a97d388491128e6bda7
       SOURCE_HEAD_SHA: 653383ac9eaa5595ef42d1e802a0c3421064ad04
+      MIGRATION_1_SHA256: 2a6e39d9ba3a18dbe3ffa82777796097d6d90a7bb7ab36a9320e551e4e7f2220
+      MIGRATION_2_SHA256: a35c9e9f1266cd2b97f6c0034d7cccb2d5b97a6c2f7a824e3a03d3d4c159776e
     steps:
       - name: Checkout probe carrier branch
         uses: actions/checkout@v4
@@ -52,52 +54,7 @@ jobs:
           git checkout --detach "$SOURCE_HEAD_SHA"
           cp /tmp/story_m43d_rollback_probe_v1.sql sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/story_m43d_rollback_probe_v1.sql
 
-      - name: Diagnostic only - bootstrap provenance actor and expose post-source state
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('supabase/migrations/20261003213100_independent_assurance_subject_extension_v2.sql')
-          s=p.read_text(encoding='utf-8')
-          old="raise exception 'BLOCK_T_INDEP_EXPECTED_REQUALIFICATION_GATE_NOT_OBSERVED:%',v_revision"
-          new="raise notice 'DIAG_T_INDEP_EXPECTED_REQUALIFICATION_GATE_ALREADY_CURRENT:%',v_revision"
-          if s.count(old) != 1:
-              raise SystemExit('BLOCK_SC_M43D_DIAGNOSTIC_PATCH_TARGET_NOT_EXACT')
-          actor="""DO $diag_actor$
-          DECLARE
-            r jsonb;
-          BEGIN
-            r:=public.fn_lf_operation_reserve_execution_v1(
-              'CHATGPT-T-INDEP-PAULO-035-20261002',
-              'REVISION_INDEPENDIENTE_ESTRATEGIA_LF',
-              'OPERATION',
-              'REVISION_INDEPENDIENTE_ESTRATEGIA_LF',
-              'ci:t-indep:paulo-035:actor-bootstrap:20261004',
-              'a35c9e9f1266cd2b97f6c0034d7cccb2d5b97a6c2f7a824e3a03d3d4c159776e',
-              'CHATGPT-T-INDEP-PAULO-035-20261002',
-              null,
-              'supabase/migrations/20261003213100_independent_assurance_subject_extension_v2.sql',
-              jsonb_build_object(
-                'mode','T_INDEP_MIGRATION_GOVERNED_ACTOR',
-                'ci_candidate_rollback_actor',true,
-                'runtime_activation',false,
-                'production_activation',false,
-                'promotion_authorized',false
-              )
-            );
-            IF r->>'result' NOT IN ('RESERVED_NEW_EXECUTION','REPLAY_EXISTING_EXECUTION') THEN
-              RAISE EXCEPTION 'BLOCK_SC_M43D_DIAGNOSTIC_ACTOR_BOOTSTRAP:%',r;
-            END IF;
-          END
-          $diag_actor$;
-
-          """
-          p.write_text(actor+s.replace(old,new),encoding='utf-8')
-          print('DIAGNOSTIC_NON_AUTHORITATIVE_ACTOR_BOOTSTRAP_AND_POSTCONDITION_PATCH_APPLIED')
-          PY
-
-      - name: Build diagnostic rollback payload
+      - name: Build exact-source rollback payload
         shell: bash
         run: |
           set -euo pipefail
@@ -109,16 +66,62 @@ jobs:
             --manifest-out /tmp/sc-m43d-manifest.json \
             --probe-sql sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/story_m43d_rollback_probe_v1.sql
           python3 - <<'PY'
-          import json
+          import json, os
           m=json.load(open('/tmp/sc-m43d-manifest.json',encoding='utf-8'))
           expected=[
-            'supabase/migrations/20261003213000_operation_requalification_multisubject_scope_v2.sql',
-            'supabase/migrations/20261003213100_independent_assurance_subject_extension_v2.sql',
+            ('supabase/migrations/20261003213000_operation_requalification_multisubject_scope_v2.sql',os.environ['MIGRATION_1_SHA256']),
+            ('supabase/migrations/20261003213100_independent_assurance_subject_extension_v2.sql',os.environ['MIGRATION_2_SHA256']),
           ]
-          got=[r['path'] for r in m.get('migrations',[])]
+          got=[(r['path'],r.get('source_sha256')) for r in m.get('migrations',[])]
           if m.get('status')!='READY' or m.get('transaction_escape_scan')!='PASS' or got!=expected:
-              raise SystemExit('BLOCK_SC_M43D_MANIFEST:'+json.dumps(m,sort_keys=True))
-          print('PASS_SC_M43D_DIAGNOSTIC_MANIFEST '+json.dumps(m,sort_keys=True))
+              raise SystemExit('BLOCK_SC_M43D_EXACT_SOURCE_MANIFEST:'+json.dumps(m,sort_keys=True))
+          print('PASS_SC_M43D_EXACT_SOURCE_MANIFEST '+json.dumps(m,sort_keys=True))
+          PY
+
+      - name: Inject governed provenance actor in rollback harness only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/sc-m43d-rollback.sql')
+          s=p.read_text(encoding='utf-8')
+          needle="SET LOCAL lock_timeout = '15s';\n"
+          if s.count(needle) != 1:
+              raise SystemExit('BLOCK_SC_M43D_HARNESS_INSERTION_POINT_NOT_EXACT')
+          actor="""\echo SC_M43D_GOVERNED_ACTOR_BOOTSTRAP_BEGIN
+          DO $sc_m43d_actor$
+          DECLARE
+            r jsonb;
+          BEGIN
+            r:=public.fn_lf_operation_reserve_execution_v1(
+              'CHATGPT-T-INDEP-PAULO-035-20261002',
+              'REVISION_INDEPENDIENTE_ESTRATEGIA_LF',
+              'OPERATION',
+              'REVISION_INDEPENDIENTE_ESTRATEGIA_LF',
+              'ci:t-indep:paulo-035:actor-bootstrap:exact-source:20261004',
+              'a35c9e9f1266cd2b97f6c0034d7cccb2d5b97a6c2f7a824e3a03d3d4c159776e',
+              'CHATGPT-T-INDEP-PAULO-035-20261002',
+              null,
+              'supabase/migrations/20261003213100_independent_assurance_subject_extension_v2.sql',
+              jsonb_build_object(
+                'mode','T_INDEP_MIGRATION_GOVERNED_ACTOR',
+                'ci_candidate_rollback_actor',true,
+                'exact_source_migrations',true,
+                'runtime_activation',false,
+                'production_activation',false,
+                'promotion_authorized',false
+              )
+            );
+            IF r->>'result' NOT IN ('RESERVED_NEW_EXECUTION','REPLAY_EXISTING_EXECUTION') THEN
+              RAISE EXCEPTION 'BLOCK_SC_M43D_HARNESS_ACTOR_BOOTSTRAP:%',r;
+            END IF;
+          END
+          $sc_m43d_actor$;
+          \echo PASS_SC_M43D_GOVERNED_ACTOR_BOOTSTRAP
+          """
+          p.write_text(s.replace(needle,needle+actor,1),encoding='utf-8')
+          print('PASS_SC_M43D_HARNESS_ONLY_ACTOR_INJECTED')
           PY
 
       - name: Capture baseline effect manifest
@@ -142,15 +145,17 @@ jobs:
           SQL
           cat /tmp/sc-m43d-before.json
 
-      - name: Execute diagnostic rollback-only probe
+      - name: Execute exact-source rollback-only probe
         shell: bash
         run: |
           set -euo pipefail
           export PGHOST="$SUPABASE_POOLER_HOST" PGPORT=5432 PGUSER="postgres.$SUPABASE_PROJECT_ID" PGPASSWORD="$LF_SUPABASE_DB_PASSWORD" PGDATABASE=postgres PGSSLMODE=require
-          psql -X -v ON_ERROR_STOP=1 -f /tmp/sc-m43d-rollback.sql | tee /tmp/sc-m43d-probe.log
+          psql -X -v ON_ERROR_STOP=1 -f /tmp/sc-m43d-rollback.sql 2>&1 | tee /tmp/sc-m43d-probe.log
+          grep -q 'PASS_SC_M43D_GOVERNED_ACTOR_BOOTSTRAP' /tmp/sc-m43d-probe.log
+          grep -q 'BLOCK_T_INDEP_OPERATION_REQUALIFICATION_REQUIRED:76434cd11e53f62f821b34c547091daf0a28c99ef5c51f40f3c267cd90bd1e1' /tmp/sc-m43d-probe.log
           grep -q 'LF_DB_CANDIDATE_ROLLBACK_COMPLETE' /tmp/sc-m43d-probe.log
 
-      - name: Prove diagnostic transaction rolled back
+      - name: Prove exact-source transaction rolled back
         shell: bash
         run: |
           set -euo pipefail
@@ -170,5 +175,5 @@ jobs:
           );
           SQL
           cat /tmp/sc-m43d-after.json
-          cmp -s /tmp/sc-m43d-before.json /tmp/sc-m43d-after.json || { echo 'BLOCK_SC_M43D_DIAGNOSTIC_ROLLBACK_MATERIAL_DELTA'; diff -u /tmp/sc-m43d-before.json /tmp/sc-m43d-after.json || true; exit 2; }
-          echo 'PASS_SC_M43D_DIAGNOSTIC_ZERO_MATERIAL_DELTA'
+          cmp -s /tmp/sc-m43d-before.json /tmp/sc-m43d-after.json || { echo 'BLOCK_SC_M43D_EXACT_SOURCE_ROLLBACK_MATERIAL_DELTA'; diff -u /tmp/sc-m43d-before.json /tmp/sc-m43d-after.json || true; exit 2; }
+          echo 'PASS_SC_M43D_EXACT_SOURCE_ZERO_MATERIAL_DELTA'
