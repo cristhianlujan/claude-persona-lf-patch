@@ -1,0 +1,13 @@
+{
+  "schema_version": "LF_CAUSAL_EFFECT_LINEAGE_CONSUMER_BINDING_V1",
+  "consumer_plan": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "consumer_unit": "N-17",
+  "consumer_work_code": "PAULO-182",
+  "role": "CONSUMER",
+  "capability_code": "CAUSAL_EFFECT_LINEAGE",
+  "provider_contract": "LF_CAUSAL_EFFECT_LINEAGE_V1",
+  "execution_authorized": false,
+  "unit_executed_by_binding": false,
+  "boundary_proof": "ASYNC_JOB",
+  "receiver_readback_required": true
+}
