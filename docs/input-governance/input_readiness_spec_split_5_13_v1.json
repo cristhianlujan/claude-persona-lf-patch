@@ -1,0 +1,494 @@
+{
+  "schema_version": "INPUT_READINESS_SPEC_SPLIT_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M1.A7",
+  "work_code": "PAULO-126",
+  "contract_revision": "5.13",
+  "source_contract": {
+    "contract_id": 37,
+    "contract_code": "INPUT_READINESS_CONTRACT",
+    "version_id": 19,
+    "spec_md5_observed": "e83bd83135bece8b704c7e7872671673",
+    "authority": "CANONICAL_CLAUSE_BODY_SOURCE",
+    "clause_bodies_duplicated": false
+  },
+  "family_policy": {
+    "contract_id": 46,
+    "contract_code": "INPUT_FAMILY_POLICY_REGISTRY",
+    "version_id": 19,
+    "family_count": 47,
+    "stage_policy_parity": "47/47",
+    "stage_policy_mismatches": 0,
+    "authority_chain": [
+      "DEC-INPUT-GOV-D-M1.4",
+      "B2B-RULE-STORY-READINESS-001@VIGENTE",
+      "INPUT_FAMILY_POLICY_REGISTRY@19"
+    ],
+    "note": "M1.A7 consumes family ownership only; it does not refresh resolver/oracle fingerprints."
+  },
+  "partition_contract": {
+    "classes": {
+      "PRODUCTION": {
+        "owner": "CURATOR",
+        "count": 45
+      },
+      "ACCEPTANCE": {
+        "owner": "VALIDATOR",
+        "count": 12
+      },
+      "FAMILY": {
+        "owner": "FAMILY_POLICY_AUTHORITY",
+        "count": 3
+      }
+    },
+    "rules": [
+      "Each clause_key has exactly one primary rule_class.",
+      "Clause bodies remain only in their canonical authority; this file stores references/ownership, not duplicated semantics.",
+      "Validator may verify PRODUCTION claims with an independent oracle without becoming the owner of the production rule.",
+      "Curator must not implement ACCEPTANCE rules.",
+      "FAMILY rules resolve through the family registry/authority chain."
+    ]
+  },
+  "currentness_reconciliation": {
+    "m1a6_matrix_id": 1,
+    "m1a6_matrix_sha256": "9ccf8537bd96de7d30e05d5493711a1b99b7858fa573bf7541ebf456f12e30b4",
+    "m1a6_bound_spec_md5": "1d9709b94d20ee8036ad985edffaaf01",
+    "live_spec_md5": "e83bd83135bece8b704c7e7872671673",
+    "reason": "M1.A4 changed canonical_universe_rule from B2B-RULE-STORY-READINESS-001 to DEC-INPUT-GOV-D-M1.4; clause keyset remained 60/60.",
+    "clause_keyset_missing": 0,
+    "clause_keyset_extra": 0
+  },
+  "negative_evidence": {
+    "acceptance_clause_count": 12,
+    "curator_direct_acceptance_clause_refs": 0,
+    "curator_calls_fn_input_v58_build_assertions": false,
+    "family_stage_policy_mismatches": 0
+  },
+  "runtime": {
+    "changes_runtime": false,
+    "production_activation": false,
+    "r17_required": false
+  },
+  "classification": [
+    {
+      "clause_key": "api_data_contract_readiness",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/api_data_contract_readiness"
+    },
+    {
+      "clause_key": "applicability_source_grounding",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/applicability_source_grounding"
+    },
+    {
+      "clause_key": "applicability_status_invariants",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/applicability_status_invariants"
+    },
+    {
+      "clause_key": "assertion_contract",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/assertion_contract"
+    },
+    {
+      "clause_key": "assertion_relevance_policy",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/assertion_relevance_policy"
+    },
+    {
+      "clause_key": "assertion_required_fields",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/assertion_required_fields"
+    },
+    {
+      "clause_key": "assertion_truth_evaluated",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/assertion_truth_evaluated"
+    },
+    {
+      "clause_key": "audit_remediation",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/audit_remediation"
+    },
+    {
+      "clause_key": "auto_promotion",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/auto_promotion"
+    },
+    {
+      "clause_key": "builder_regression_v2",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/builder_regression_v2"
+    },
+    {
+      "clause_key": "builder_regression_v3",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/builder_regression_v3"
+    },
+    {
+      "clause_key": "candidate_as_own_authority",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/candidate_as_own_authority"
+    },
+    {
+      "clause_key": "canon_vs_proposal_separation",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/canon_vs_proposal_separation"
+    },
+    {
+      "clause_key": "canonical_universe_rule",
+      "rule_class": "FAMILY",
+      "responsibility_owner": "FAMILY_POLICY_AUTHORITY",
+      "enforcement_owner": "CANONICAL_CONTEXT",
+      "authority_ref": "transversal.decision_log#DEC-INPUT-GOV-D-M1.4"
+    },
+    {
+      "clause_key": "consumer",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/consumer"
+    },
+    {
+      "clause_key": "contract_revision",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/contract_revision"
+    },
+    {
+      "clause_key": "curator_fields_immutable_after_insert",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "PERSISTENCE_GUARD",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/curator_fields_immutable_after_insert"
+    },
+    {
+      "clause_key": "data_placement",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "PERSISTENCE_GUARD",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/data_placement"
+    },
+    {
+      "clause_key": "design_system_readiness",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/design_system_readiness"
+    },
+    {
+      "clause_key": "deterministic_stage_summary",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/deterministic_stage_summary"
+    },
+    {
+      "clause_key": "direct_source_readback_required",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/direct_source_readback_required"
+    },
+    {
+      "clause_key": "empty_collection_semantics",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/empty_collection_semantics"
+    },
+    {
+      "clause_key": "family_stage_requirements",
+      "rule_class": "FAMILY",
+      "responsibility_owner": "FAMILY_POLICY_AUTHORITY",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_FAMILY_POLICY_REGISTRY@19/families/*/stage_policy"
+    },
+    {
+      "clause_key": "family_universe_source",
+      "rule_class": "FAMILY",
+      "responsibility_owner": "FAMILY_POLICY_AUTHORITY",
+      "enforcement_owner": "CANONICAL_CONTEXT",
+      "authority_ref": "lf_ops.reglas#B2B-RULE-STORY-READINESS-001@VIGENTE"
+    },
+    {
+      "clause_key": "freshness_gate",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/freshness_gate"
+    },
+    {
+      "clause_key": "governance_authority_policy",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/governance_authority_policy"
+    },
+    {
+      "clause_key": "legacy_contract_v1_authoritative",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/legacy_contract_v1_authoritative"
+    },
+    {
+      "clause_key": "legacy_contract_v2_authoritative",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/legacy_contract_v2_authoritative"
+    },
+    {
+      "clause_key": "llm_as_sole_gate",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/llm_as_sole_gate"
+    },
+    {
+      "clause_key": "negative_tests",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/negative_tests"
+    },
+    {
+      "clause_key": "not_applicable_positive_authority_contract",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/not_applicable_positive_authority_contract"
+    },
+    {
+      "clause_key": "not_applicable_requires_reason",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/not_applicable_requires_reason"
+    },
+    {
+      "clause_key": "parameterization_contract",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/parameterization_contract"
+    },
+    {
+      "clause_key": "production_activation",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/production_activation"
+    },
+    {
+      "clause_key": "proposal_contract",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/proposal_contract"
+    },
+    {
+      "clause_key": "readiness_levels",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/readiness_levels"
+    },
+    {
+      "clause_key": "readiness_stage_hierarchy",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/readiness_stage_hierarchy"
+    },
+    {
+      "clause_key": "remediation_revision",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/remediation_revision"
+    },
+    {
+      "clause_key": "revision_lineage",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/revision_lineage"
+    },
+    {
+      "clause_key": "schema_version",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/schema_version"
+    },
+    {
+      "clause_key": "screen_graph_contract",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "CANONICAL_CONTEXT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/screen_graph_contract"
+    },
+    {
+      "clause_key": "screen_graph_scoping",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "CANONICAL_CONTEXT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/screen_graph_scoping"
+    },
+    {
+      "clause_key": "semantic_coherence_contract",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/semantic_coherence_contract"
+    },
+    {
+      "clause_key": "semantic_component_sufficiency",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/semantic_component_sufficiency"
+    },
+    {
+      "clause_key": "semantic_depth_contract",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "SEMANTIC_RESOLVER",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/semantic_depth_contract"
+    },
+    {
+      "clause_key": "semantic_fail_closed",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/semantic_fail_closed"
+    },
+    {
+      "clause_key": "source_manifest",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/source_manifest"
+    },
+    {
+      "clause_key": "source_precedence",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "CANONICAL_CONTEXT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/source_precedence"
+    },
+    {
+      "clause_key": "source_ref_contract",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/source_ref_contract"
+    },
+    {
+      "clause_key": "source_refs_required_per_family",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/source_refs_required_per_family"
+    },
+    {
+      "clause_key": "source_snapshot_binding",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/source_snapshot_binding"
+    },
+    {
+      "clause_key": "stage_authority_policy",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/stage_authority_policy"
+    },
+    {
+      "clause_key": "stage_boundary_contract",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/stage_boundary_contract"
+    },
+    {
+      "clause_key": "statuses",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/statuses"
+    },
+    {
+      "clause_key": "story_ready_rule",
+      "rule_class": "PRODUCTION",
+      "responsibility_owner": "CURATOR",
+      "enforcement_owner": "READINESS_POLICY",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/story_ready_rule"
+    },
+    {
+      "clause_key": "validator_component_binding",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/validator_component_binding"
+    },
+    {
+      "clause_key": "validator_evidence_required_fields",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "EVIDENCE_AND_ASSURANCE",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/validator_evidence_required_fields"
+    },
+    {
+      "clause_key": "validator_identity_must_differ_from_curator",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/validator_identity_must_differ_from_curator"
+    },
+    {
+      "clause_key": "validator_independence_required",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/validator_independence_required"
+    },
+    {
+      "clause_key": "validator_requires_run_status",
+      "rule_class": "ACCEPTANCE",
+      "responsibility_owner": "VALIDATOR",
+      "enforcement_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+      "authority_ref": "programacion.contratos#INPUT_READINESS_CONTRACT@19/validator_requires_run_status"
+    }
+  ]
+}
