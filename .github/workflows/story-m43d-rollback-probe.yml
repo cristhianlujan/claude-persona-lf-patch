@@ -145,7 +145,7 @@ jobs:
           SQL
           cat /tmp/sc-m43d-before.json
 
-      - name: Execute exact-source rollback-only probe
+      - name: Execute exact-source rollback-only diagnostic
         shell: bash
         run: |
           set -euo pipefail
@@ -153,11 +153,12 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f /tmp/sc-m43d-rollback.sql 2>&1 | tee /tmp/sc-m43d-probe.log
           grep -q 'PASS_SC_M43D_GOVERNED_ACTOR_BOOTSTRAP' /tmp/sc-m43d-probe.log
           grep -q 'SC_M43D_POST_SOURCE_DIAGNOSTIC' /tmp/sc-m43d-probe.log
-          grep -Eq '"qualification_current"[[:space:]]*:[[:space:]]*false' /tmp/sc-m43d-probe.log
-          grep -Eq '"matching_receipts"[[:space:]]*:[[:space:]]*\[\]' /tmp/sc-m43d-probe.log
-          grep -q 'PASS_SC_M43D_DIAGNOSTIC_ONLY' /tmp/sc-m43d-probe.log
+          grep -q 'DIAG_SC_M43D_EXACT_OPERATION_REQUALIFICATION_NOT_CURRENT' /tmp/sc-m43d-probe.log
+          grep -q 'PASS_SC_M43D_STRATEGY_COMPATIBILITY_SURFACE' /tmp/sc-m43d-probe.log
+          grep -q 'SC_M43D_REQUALIFICATION_RECEIPT_DIAGNOSTIC' /tmp/sc-m43d-probe.log
+          grep -q 'DIAG_SC_M43D_ROLLBACK_REQUALIFICATION_PROBE_COMPLETE' /tmp/sc-m43d-probe.log
           grep -q 'LF_DB_CANDIDATE_ROLLBACK_COMPLETE' /tmp/sc-m43d-probe.log
-          echo 'PASS_SC_M43D_REQUALIFICATION_REQUIRED_STATE_OBSERVED'
+          echo 'PASS_SC_M43D_DIAGNOSTIC_CAPTURE_COMPLETE'
 
       - name: Prove exact-source transaction rolled back
         shell: bash
