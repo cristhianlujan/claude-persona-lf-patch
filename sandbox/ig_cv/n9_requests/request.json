@@ -2,13 +2,13 @@
   "schema_version": "LF_IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_V1",
   "cases": [
     {
-      "case_id": "IG_CV_N15_CONSUMER_COMPATIBILITY_ROLLBACK_ONLY",
+      "case_id": "IG_N14_B2B_CARGA_V4_DUE_DATE_RECONCILIATION",
       "candidate_ref": "HEAD",
-      "candidate_path": "sandbox/ig_cv/fixtures/n15_consumer_compatibility_noop.sql",
-      "screen_id": 52,
+      "candidate_path": "supabase/migrations/20261004031000_ig_n14_b2b_carga_v4_due_date_projection_reconcile_v1.sql",
+      "screen_id": 44,
       "consumer": "STORY_CREATOR",
-      "expected_verdict": "NO_BLOCKING_FINDINGS",
-      "expected_finding_codes": []
+      "expected_verdict": "BLOCKING_FINDINGS",
+      "expected_finding_codes": ["ASSESSMENT_DIGEST_DRIFT"]
     }
   ]
 }
