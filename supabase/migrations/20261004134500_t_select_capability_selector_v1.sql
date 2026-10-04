@@ -68,6 +68,11 @@ BEGIN
       'source_blob_sha1',v_source_blob,
       'test_blob_sha1',v_test_blob
     ),
+    'installation',jsonb_build_object(
+      'required',false,
+      'reinstall_required',false,
+      'runtime_deploy_required',false
+    ),
     'dependencies',jsonb_build_object(
       'typed_evidence_registry',jsonb_build_object(
         'capability_code','TYPED_EVIDENCE_REGISTRY',
@@ -79,6 +84,17 @@ BEGIN
         'version','1.0.0',
         'manifest_sha256','9f715dc226fd55a60c4002fa1960f848c4bf39e80b8863792eeef451073fce09'
       )
+    ),
+    'compatibility',jsonb_build_object(
+      'provider_contract','CAPABILITY_SELECTOR_V1',
+      'consumer_policy_external',true,
+      'selection_admission_separated',true,
+      'active_runtime_cutover',false
+    ),
+    'migration',jsonb_build_object(
+      'id','T_SELECT_CAPABILITY_SELECTOR_V1',
+      'mode','CAPABILITY_REGISTRY_AND_CURRENT_POINTER_ONLY',
+      'runtime_cutover',false
     ),
     'consumer_proofs',jsonb_build_object(
       'non_domain_fixture','sandbox/lf_contract_gate_test/transversal_assets/capability_selector/non_ig_consumer_fixture_v1.json',
@@ -98,6 +114,12 @@ BEGIN
       'provider_domain_branches',0,
       'states_covered',5,
       'consumers_covered',2
+    ),
+    'usage',jsonb_build_object(
+      'call','select_capabilities(signals,catalog,policy)',
+      'consumer_supplies_catalog',true,
+      'consumer_supplies_fallback',true,
+      'selected_capabilities_are_execution_permission',false
     ),
     'currentness',jsonb_build_object(
       'source_event','event://20170',
