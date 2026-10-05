@@ -141,26 +141,26 @@ INSERT INTO public.lf_test_suite_cases(
   suite_code,test_code,test_order,story_code,rule_codes,title,test_type,execution_mode,severity,
   preconditions,input_payload,expected_output,prohibited_output,status,metadata,created_by_execution_id,updated_by_execution_id
 ) VALUES
-('INPUT_GOVERNANCE_REGRESSION','M3_8_BASE_VALID_CONTEXT',380800,NULL,ARRAY[]::text[],'M3.8 resolver base — valid governed context','POSITIVE','AUTOMATED','HIGH',ARRAY[]::text[],
+('INPUT_GOVERNANCE_REGRESSION','M3_8_BASE_VALID_CONTEXT',380800,NULL,ARRAY[]::text[],'M3.8 resolver base — valid governed context','POSITIVE','AUTOMATED','HIGH','[]'::jsonb,
  jsonb_build_object('pantalla_id',54,'version_id',19,'run_id',525,'family_codes',jsonb_build_array('VALIDATIONS','SECURITY')),
  jsonb_build_object('outcome','PASS','requirement','CANONICAL_RESOLVERS_RETURN_GOVERNED_RESULT'), '{}'::jsonb,'CANDIDATO',
  jsonb_build_object('unit_code','M3.8','scope_policy','APPLICABLE_BY_RESOLVER_NOT_CARTESIAN','coverage','BASE_VALID_CONTEXT'),'GPT-5.6-SOL-M3.8-RUNTEST-V1','GPT-5.6-SOL-M3.8-RUNTEST-V1'),
-('INPUT_GOVERNANCE_REGRESSION','M3_8_MISSING_FAIL_CLOSED',380801,NULL,ARRAY[]::text[],'M3.8 resolver base — missing input fails closed','NEGATIVE','AUTOMATED','HIGH',ARRAY[]::text[],
+('INPUT_GOVERNANCE_REGRESSION','M3_8_MISSING_FAIL_CLOSED',380801,NULL,ARRAY[]::text[],'M3.8 resolver base — missing input fails closed','NEGATIVE','AUTOMATED','HIGH','[]'::jsonb,
  jsonb_build_object('scenario','MISSING','invalid_pantalla_id',-1),jsonb_build_object('outcome','FAIL_CLOSED_OR_EXPLICIT_MISSING'), '{}'::jsonb,'CANDIDATO',
  jsonb_build_object('unit_code','M3.8','coverage','MISSING'),'GPT-5.6-SOL-M3.8-RUNTEST-V1','GPT-5.6-SOL-M3.8-RUNTEST-V1'),
-('INPUT_GOVERNANCE_REGRESSION','M3_8_BROKEN_REF_FAIL_CLOSED',380802,NULL,ARRAY[]::text[],'M3.8 source resolver — broken ref fails closed','NEGATIVE','AUTOMATED','HIGH',ARRAY[]::text[],
+('INPUT_GOVERNANCE_REGRESSION','M3_8_BROKEN_REF_FAIL_CLOSED',380802,NULL,ARRAY[]::text[],'M3.8 source resolver — broken ref fails closed','NEGATIVE','AUTOMATED','HIGH','[]'::jsonb,
  jsonb_build_object('scenario','BROKEN_REF','ref',jsonb_build_object('kind','RULE','codigo','__M3_8_BROKEN__'),'pantalla_id',54,'version_id',19),jsonb_build_object('error_family','SOURCE_REF_UNRESOLVED'), '{}'::jsonb,'CANDIDATO',
  jsonb_build_object('unit_code','M3.8','resolver_surface','programacion.fn_input_resolve_source_ref','coverage','BROKEN_REF'),'GPT-5.6-SOL-M3.8-RUNTEST-V1','GPT-5.6-SOL-M3.8-RUNTEST-V1'),
-('INPUT_GOVERNANCE_REGRESSION','M3_8_CANDIDATE_PRESERVED',380803,NULL,ARRAY[]::text[],'M3.8 source resolver — candidate remains read-only candidate','DETERMINISTIC','AUTOMATED','HIGH',ARRAY[]::text[],
+('INPUT_GOVERNANCE_REGRESSION','M3_8_CANDIDATE_PRESERVED',380803,NULL,ARRAY[]::text[],'M3.8 source resolver — candidate remains read-only candidate','DETERMINISTIC','AUTOMATED','HIGH','[]'::jsonb,
  jsonb_build_object('scenario','CANDIDATE','ref',jsonb_build_object('kind','RULE','codigo','B2B-RULE-AUTH-033'),'pantalla_id',54,'version_id',19),jsonb_build_object('observed_state','CANDIDATO','auto_promoted',false), '{}'::jsonb,'CANDIDATO',
  jsonb_build_object('unit_code','M3.8','resolver_surface','programacion.fn_input_resolve_source_ref','coverage','CANDIDATE'),'GPT-5.6-SOL-M3.8-RUNTEST-V1','GPT-5.6-SOL-M3.8-RUNTEST-V1'),
-('INPUT_GOVERNANCE_REGRESSION','M3_8_PARTIAL_PRESERVED',380804,NULL,ARRAY[]::text[],'M3.8 security resolver — partial state remains explicit','DETERMINISTIC','AUTOMATED','HIGH',ARRAY[]::text[],
+('INPUT_GOVERNANCE_REGRESSION','M3_8_PARTIAL_PRESERVED',380804,NULL,ARRAY[]::text[],'M3.8 security resolver — partial state remains explicit','DETERMINISTIC','AUTOMATED','HIGH','[]'::jsonb,
  jsonb_build_object('scenario','PARTIAL','pantalla_id',54),jsonb_build_object('contains_status','PARTIAL'), '{}'::jsonb,'CANDIDATO',
  jsonb_build_object('unit_code','M3.8','resolver_surface','programacion.fn_input_security_threat_expected','coverage','PARTIAL'),'GPT-5.6-SOL-M3.8-RUNTEST-V1','GPT-5.6-SOL-M3.8-RUNTEST-V1'),
-('INPUT_GOVERNANCE_REGRESSION','M3_8_LEGACY_PARITY',380805,NULL,ARRAY[]::text[],'M3.8 legacy resolver variants — parity only','DETERMINISTIC','AUTOMATED','MEDIUM',ARRAY[]::text[],
+('INPUT_GOVERNANCE_REGRESSION','M3_8_LEGACY_PARITY',380805,NULL,ARRAY[]::text[],'M3.8 legacy resolver variants — parity only','DETERMINISTIC','AUTOMATED','MEDIUM','[]'::jsonb,
  jsonb_build_object('pantalla_id',54,'version_id',19,'family_code','SECURITY'),jsonb_build_object('source_ref_v510','EQUAL_CURRENT','security_threat_v510','EQUAL_CURRENT','subject_depth_v510','EQUAL_CURRENT'), '{}'::jsonb,'CANDIDATO',
  jsonb_build_object('unit_code','M3.8','coverage','LEGACY_PARITY','cached_vs_non_cached','DELEGATED_M7.8'),'GPT-5.6-SOL-M3.8-RUNTEST-V1','GPT-5.6-SOL-M3.8-RUNTEST-V1'),
-('INPUT_GOVERNANCE_REGRESSION','M3_8_CONTRADICTION_BOUNDARY',380806,NULL,ARRAY[]::text[],'M3.8 contradiction ownership — semantic layer, not primitive resolver','DETERMINISTIC','AUTOMATED','HIGH',ARRAY[]::text[],
+('INPUT_GOVERNANCE_REGRESSION','M3_8_CONTRADICTION_BOUNDARY',380806,NULL,ARRAY[]::text[],'M3.8 contradiction ownership — semantic layer, not primitive resolver','DETERMINISTIC','AUTOMATED','HIGH','[]'::jsonb,
  jsonb_build_object('scenario','CONTRADICTION','primitive_layer',true),jsonb_build_object('owner','SEMANTIC_LAYER','primitive_synthetic_contradiction','FORBIDDEN'), '{}'::jsonb,'CANDIDATO',
  jsonb_build_object('unit_code','M3.8','coverage','CONTRADICTION_BOUNDARY','reason','PRIMITIVE_RESOLVERS_DO_NOT_SHARE_A_NATIVE_CONTRADICTION_STATE'),'GPT-5.6-SOL-M3.8-RUNTEST-V1','GPT-5.6-SOL-M3.8-RUNTEST-V1')
 ON CONFLICT (suite_code,test_code) DO UPDATE SET
@@ -209,7 +209,7 @@ BEGIN
   IF v_boot#>>'{execution_packet,schema_version}' IS DISTINCT FROM 'ENGINEERING_EXECUTION_PACKET_V2' THEN
     RAISE EXCEPTION 'ROUTER_SCHEMA_REGRESSION schema=%',v_boot#>>'{execution_packet,schema_version}';
   END IF;
-  SELECT count(*) INTO v_cases FROM public.lf_test_suite_cases WHERE suite_code='INPUT_GOVERNANCE_REGRESSION' AND test_code like 'M3_8_%';
+  SELECT count(*) INTO v_cases FROM public.lf_test_suite_cases WHERE suite_code='INPUT_GOVERNANCE_REGRESSION' AND test_code ~ '^M3_8_';
   IF v_cases<>7 THEN RAISE EXCEPTION 'M3_8_CASE_SET_INVALID count=%',v_cases; END IF;
   SELECT exit_criterion INTO v_exit FROM programacion.engineering_plan_units WHERE plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' AND unit_code='M3.8';
   IF position('cobertura aplicable por resolver' in v_exit)=0 THEN RAISE EXCEPTION 'M3_8_EXIT_CRITERION_NOT_SIMPLIFIED'; END IF;
