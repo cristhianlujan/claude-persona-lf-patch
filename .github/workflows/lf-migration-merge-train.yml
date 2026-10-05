@@ -125,28 +125,44 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
-          PR: ${{ steps.admission.outputs.pr_number }}
+          HEAD_REF: ${{ steps.admission.outputs.head_ref }}
           EXPECTED_HEAD: ${{ steps.admission.outputs.head_sha }}
           CURRENT_MAIN: ${{ steps.admission.outputs.current_main }}
         shell: bash
         run: |
           set -euo pipefail
-          base_sha="$(gh api "repos/$REPO/pulls/$PR" --jq '.base.sha')"
-          if [ "$base_sha" != "$CURRENT_MAIN" ]; then
-            gh api --method PUT "repos/$REPO/pulls/$PR/update-branch" -f expected_head_sha="$EXPECTED_HEAD" >/dev/null
-            for _ in $(seq 1 60); do
-              sleep 2
-              base_sha="$(gh api "repos/$REPO/pulls/$PR" --jq '.base.sha')"
-              head_sha="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')"
-              if [ "$base_sha" = "$CURRENT_MAIN" ]; then
-                echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
-                exit 0
-              fi
-            done
-            echo "FAIL_TRAIN_SYNC_TIMEOUT"
+          git remote set-url origin "https://x-access-token:$GH_TOKEN@github.com/$REPO.git"
+          git fetch --no-tags origin "$EXPECTED_HEAD" "$CURRENT_MAIN"
+
+          if git merge-base --is-ancestor "$CURRENT_MAIN" "$EXPECTED_HEAD"; then
+            echo "head_sha=$EXPECTED_HEAD" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          merge_output=.lf_train/merge-tree-output.txt
+          mkdir -p .lf_train
+          set +e
+          git merge-tree --write-tree "$EXPECTED_HEAD" "$CURRENT_MAIN" >"$merge_output" 2>&1
+          merge_rc=$?
+          set -e
+          if [ "$merge_rc" -ne 0 ]; then
+            cat "$merge_output"
+            echo "FAIL_TRAIN_SYNC_CONFLICT rc=$merge_rc"
             exit 2
           fi
-          echo "head_sha=$EXPECTED_HEAD" >> "$GITHUB_OUTPUT"
+
+          tree_sha="$(head -n 1 "$merge_output" | tr -d '\r\n')"
+          [[ "$tree_sha" =~ ^[0-9a-f]{40}$|^[0-9a-f]{64}$ ]] || {
+            cat "$merge_output"
+            echo "FAIL_TRAIN_SYNC_TREE_INVALID"
+            exit 2
+          }
+
+          new_head="$(printf '%s\n' "chore(migrations): sync merge train with main" | \
+            git commit-tree "$tree_sha" -p "$EXPECTED_HEAD" -p "$CURRENT_MAIN")"
+          git push --force-with-lease="refs/heads/$HEAD_REF:$EXPECTED_HEAD" \
+            origin "$new_head:refs/heads/$HEAD_REF"
+          echo "head_sha=$new_head" >> "$GITHUB_OUTPUT"
 
       - name: Resolve exact PR files and migration blob
         id: source
