@@ -56,7 +56,7 @@ $patch$;
   v_graph jsonb;
 BEGIN
   v_def:=pg_get_functiondef('programacion.fn_input_governance_bootstrap_classify_v2(integer,text,bigint)'::regprocedure);
-  IF md5(v_def)<>'6dea9e0756942181a5adec56b4dba94e' THEN
+  IF md5(v_def)<>'e5294bb83eddec260f31b6ea237fa55c' THEN
     RAISE EXCEPTION 'M34_BASE_CLASSIFIER_PREIMAGE_DRIFT:%',md5(v_def);
   END IF;
   IF position(v_token in v_def)=0 THEN
@@ -69,7 +69,7 @@ BEGIN
   EXECUTE v_new;
 
   v_def:=pg_get_functiondef('programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)'::regprocedure);
-  IF md5(v_def)<>'3f63a9b2da1c22e9753f06803d88b9f0' THEN
+  IF md5(v_def)<>'af6eafcad9db5c2ba0c3558eaf6a3908' THEN
     RAISE EXCEPTION 'M34_CACHED_CLASSIFIER_PREIMAGE_DRIFT:%',md5(v_def);
   END IF;
   IF position(v_token in v_def)=0 THEN
