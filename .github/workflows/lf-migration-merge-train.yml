@@ -277,9 +277,11 @@ jobs:
           if [ "${MIGRATION_COUNT:-0}" = "0" ]; then
             body="DRY-RUN lf-migrations: PR sin migration; misma fila; no apply, no merge."
           else
-            body="DRY-RUN lf-migrations: migration objetivo `$TARGET_PATH`; floor main=`$MAIN_MAX`, ledger=`$LEDGER_MAX`; version check PASS. No persist/apply/merge ejecutado."
+            body="DRY-RUN lf-migrations: migration objetivo=$TARGET_PATH; floor main=$MAIN_MAX, ledger=$LEDGER_MAX; version check PASS. No persist/apply/merge ejecutado."
           fi
-          gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null
+          if ! gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1; then
+            echo "WARN_TRAIN_COMMENT_UNAVAILABLE"
+          fi
           echo "$body"
 
       - name: Retimestamp migration atomically on PR head in REAL mode
@@ -488,6 +490,7 @@ jobs:
             body="LF migration merge train PRE-APPLY STOP. No DB apply or merge executed; inspect run $GITHUB_RUN_ID before re-labeling."
           fi
           gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1
+          exit 0
 
   lf-migration-merge:
     name: lf-migration-merge
