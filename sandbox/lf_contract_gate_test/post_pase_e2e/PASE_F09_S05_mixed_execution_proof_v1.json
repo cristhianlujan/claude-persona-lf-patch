@@ -1,0 +1,39 @@
+{
+  "applicability": {
+    "combined_required": ["MIGRATION_SOURCE_PARITY","GITHUB_RECONCILIATION","AUTHORITY_READBACK","RUNTIME_DEPLOY_VERIFICATION","FINAL_EVIDENCE","CLOSURE_GATE"],
+    "duplicate_execution_count": 0,
+    "incidental_full_regression_count": 0,
+    "not_applicable": [],
+    "post_pase_required": ["GITHUB_RECONCILIATION","AUTHORITY_READBACK","RUNTIME_DEPLOY_VERIFICATION","FINAL_EVIDENCE","CLOSURE_GATE"],
+    "unplanned_control_count": 0
+  },
+  "closure": {"terminal_status":"CLOSED","verdict":"PASS","verdict_sha256":"bbac735443a60a960ae3e6361d305308fb9a5f711e920cda0c96f0faa138aa97"},
+  "dispatch": {
+    "execution_order": ["GITHUB_RECONCILIATION","AUTHORITY_READBACK","RUNTIME_DEPLOY_VERIFICATION","FINAL_EVIDENCE","CLOSURE_GATE"],
+    "persisted_receipt_count": 5,
+    "plan_digest": "f7114d63e25ba9751184bbc322a88c03376c5095bf7ae62d90da2f90d3da8f35",
+    "receipt_digests": ["dd3eeddda46f6ef0a368a92fd5e5f2f434ffca1a3b70f41d6fcd99254374bbfb","c364c3076de673482f324aa653fab3bc7781a09cd6c63bf17f0f8649974debec","af7a4c5e52c5dd8cb320a241ea612ef0f2604ae2f9a5a478c4b966ed089378ca","b0d3fd443e96d28fb3f930d5743f31a05e3d2b256584bbc9119b5cf5e4eeb75f","e4c782f5f1d8e8d8cdd45b3cbf11a0284631bb7ca98b555acf9e1e2ab5a96502"]
+  },
+  "final_evidence": {"manifest_sha256":"7040f3152a3ad54601b4765fcd781560b374fdd9add6551071c2d15b6c7bd6c1","receipt_count":3},
+  "pase_db": {
+    "candidate_apply_rollback":"NOT_APPLICABLE_NO_DDL_EXECUTION",
+    "db_write_transport":"NOT_APPLICABLE_SANDBOX_NO_APPLY",
+    "migration_source_parity": {
+      "core_blob_sha1":"3cd169b21a36add58f526424add48103142b9b54",
+      "core_result":{"cli_statement_storage_count":0,"code":"PASS_LF_MIGRATION_SOURCE_PARITY","comparisons":{"20261005190000":{"cli_storage_sha256":"2f4a193a4c5828b9ab018e346b09c5ffd9e47e5ec13792753cacc441baa620c0","direct_sha256":"9322f4ec969bafe939953a098fb287a1cb917d6ffbfe76e4713658eccbf82e22","name":"f09_s05_mixed_fixture","remote_sha256":"9322f4ec969bafe939953a098fb287a1cb917d6ffbfe76e4713658eccbf82e22","remote_statement_count":1,"representation":"DIRECT_SOURCE","source_statement_count":2,"version":"20261005190000"}},"direct_count":1,"schema_version":"lf-migration-source-parity-result/v1","status":"PASS","version_count":1},
+      "negative_mismatch_code":"FAIL_LF_MIGRATION_CONTENT_PARITY",
+      "transport_blob_sha1":"1ccb13299c12acf666a2c8a28b1cf21cb373b83c"
+    }
+  },
+  "plan_code":"LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "readiness_execution_identity_sha256":"f1f6cec44b6bd6b9c00dfdb44e65ed56922aebbdf5c3504785842edc61180148",
+  "readiness_plan_digest_sha256":"4e3ded57442922da1d9858fd89cc10cccd1b716d19f36d00e18b9ddb38c7d7df",
+  "readiness_source_head":"6ae891bb51c0531cf5b573e1df395ab0a1917c84",
+  "runtime_scope":{"deployment_execution_id":"DEPLOY-F09-S05-6898c6ec9e398c27","effect_operation_code":"REFRESCO_RUNTIME_PERFIL_LF","release_ref":"release://profile-runtime/f09-s05","required_files":[{"path":"runtime/app.py","sha256":"4c509218349cd436d05a9a46bf74f09c548257af447aa25f22e74a443187d842"},{"path":"runtime/config.json","sha256":"599586cf157a82869da9367c474ba6ac247ac5555b69302ae06b129b4a461c0a"}],"source_sha":"9c9c0215dad03860ccdb249e3216b58ed3a9ca03","target_code":"PROFILE_RUNTIME"},
+  "safety":{"ddl_executed":false,"deploy_executed":false,"live_runtime_execution":false,"pase_workflow_activated":false,"production_touched":false,"restart_executed":false,"sandbox_only":true,"zip_used_as_authority":false},
+  "scenario":"MIXED",
+  "scenario_exact_head":"9c9c0215dad03860ccdb249e3216b58ed3a9ca03",
+  "scenario_run_identity_sha256":"6898c6ec9e398c275383f708e1ede78102e4bd61c8a335f47a2a682738076a91",
+  "schema_version":"PASE_F09_S05_MIXED_EXECUTION_PROOF_V1",
+  "work_code":"PASE-ATOM-F09-S05"
+}
