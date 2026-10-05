@@ -77,7 +77,7 @@ def _parse_name_status(text: str) -> list[str]:
         match = re.fullmatch(r"(\d{14})_(.+)\.sql", filename)
         if match is None:
             raise RuntimeError(f"FAIL_MIGRATION_PARITY_FOCAL_FILENAME:{path}")
-        if match.group(1) <= FULL.CLASSIFICATION_BASELINE_END:
+        if match.group(1) <= FULL.CUTOVER:
             raise RuntimeError(
                 "FAIL_MIGRATION_PARITY_FOCAL_HISTORICAL_MUTATION:"
                 f"{path}"
@@ -147,10 +147,22 @@ def _build_scoped_snapshot(
         if match is None:
             raise RuntimeError(f"FAIL_MIGRATION_PARITY_FOCAL_FILENAME:{repo_path}")
         version, name = match.groups()
+        source_sql = source.read_text(encoding="utf-8")
+        reconciliation_source = adapter.reconciliation_source_metadata(
+            source_sql, version=version, name=name
+        )
+        if version <= FULL.CLASSIFICATION_BASELINE_END and not reconciliation_source:
+            raise RuntimeError(
+                "FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE:"
+                f"path={repo_path} baseline_end={FULL.CLASSIFICATION_BASELINE_END}"
+            )
         focal_versions.append(version)
         destination = scoped / source.name
         shutil.copy2(source, destination)
-        if adapter.managed_source(destination, version, name):
+        if (
+            version > FULL.CLASSIFICATION_BASELINE_END
+            and adapter.managed_source(destination, version, name)
+        ):
             managed_versions.append(version)
 
     if len(focal_versions) != len(set(focal_versions)):
