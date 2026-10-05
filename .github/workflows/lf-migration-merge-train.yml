@@ -5,8 +5,8 @@ on:
     types: [labeled]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
   issues: write
   actions: read
   checks: read
@@ -49,6 +49,22 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Set up Supabase CLI for REAL mode
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install PostgreSQL client for REAL mode
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          supabase db push --help >/dev/null
+          psql --version
 
       - name: Acquire GitHub App token for REAL mode
         id: app_token
@@ -256,6 +272,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # FASE 4 only: keep dry runs long enough to make queue serialization observable.
+          sleep 10
           if [ "${MIGRATION_COUNT:-0}" = "0" ]; then
             body="DRY-RUN lf-migrations: PR sin migration; misma fila; no apply, no merge."
           else
