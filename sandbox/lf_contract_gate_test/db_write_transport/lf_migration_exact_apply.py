@@ -78,7 +78,8 @@ def _psql(db_url: str, sql: str, *, cwd: Path) -> str:
         cwd=cwd,
     )
     if proc.returncode != 0:
-        detail = proc.stderr.strip().splitlines()[-1] if proc.stderr.strip() else f"rc={proc.returncode}"
+        stderr_lines = proc.stderr.strip().splitlines()
+        detail = " | ".join(stderr_lines[-6:]) if stderr_lines else f"rc={proc.returncode}"
         raise RuntimeError(f"EXACT_APPLY_PSQL_FAILED:{detail}")
     return proc.stdout.strip()
 
