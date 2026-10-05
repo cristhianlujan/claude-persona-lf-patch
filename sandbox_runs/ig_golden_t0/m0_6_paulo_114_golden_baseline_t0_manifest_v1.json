@@ -1,0 +1,73 @@
+{
+  "artifact_schema": "IG_M0_6_GOLDEN_BASELINE_T0_MANIFEST_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M0.6",
+  "work_code": "PAULO-114",
+  "source_pack_policy": "SOURCE_PACK_LOOKUP_V2",
+  "run_history_policy": "RUN_HISTORY_EFFECTIVENESS_SAMPLE_V1",
+  "baseline_semantics": "Historical snapshot frozen by exact run_id set from N-19. Later screen evolution must not rewrite or invalidate this T0 unless an explicit historical-integrity contradiction is demonstrated.",
+  "n19_closure_ref": "event://20283",
+  "contract_revision": "5.13",
+  "snapshot": {
+    "rows": 611,
+    "screens": 13,
+    "families_per_screen": 47,
+    "canonical_fields": [
+      "pantalla_id",
+      "run_id",
+      "family_code",
+      "coverage_status",
+      "story_ready_status",
+      "implementation_ready_status",
+      "qa_ready_status",
+      "production_ready_status",
+      "validator_outcome",
+      "contract_revision",
+      "curator_sha256",
+      "validator_sha256"
+    ],
+    "ordering": ["pantalla_id", "family_code"],
+    "md5": "92434c2a0837b4579aa720e3366ccc2b",
+    "sha256": "476710dd85f597e30e94995dea2f168112c1798f69aed73c7720dd7b6dc4d0e9",
+    "canonical_bytes": 122290
+  },
+  "frozen_runs": [
+    {"pantalla_id":1,"pantalla":"ONB_001","run_id":373,"rows":47,"run_md5":"f52343305a42e1a61413f3bec6ed67ed"},
+    {"pantalla_id":2,"pantalla":"ONB_002","run_id":374,"rows":47,"run_md5":"0b40d0b414761e5222a39aebb296d145"},
+    {"pantalla_id":3,"pantalla":"ONB_003","run_id":507,"rows":47,"run_md5":"f978a6a57bf98e80ccd8367547d218c5"},
+    {"pantalla_id":5,"pantalla":"HOME_002","run_id":508,"rows":47,"run_md5":"76af2520db3f696be3a193d7c2df15df"},
+    {"pantalla_id":43,"pantalla":"B2B-CARGA-001","run_id":510,"rows":47,"run_md5":"46acfd11e275fbfe9e893baeb7369860"},
+    {"pantalla_id":51,"pantalla":"B2B-AUTH-001","run_id":511,"rows":47,"run_md5":"50c6c697e924618dfa621c8f9440eb7b"},
+    {"pantalla_id":52,"pantalla":"B2B-AUTH-002","run_id":490,"rows":47,"run_md5":"6512c51c1b38a7ca67f1ef8d28d47682"},
+    {"pantalla_id":53,"pantalla":"B2B-AUTH-003","run_id":491,"rows":47,"run_md5":"f41bfc3108349988ee10189ea3b5b9e8"},
+    {"pantalla_id":54,"pantalla":"B2B-AUTH-004","run_id":492,"rows":47,"run_md5":"a8850349db0620ccb02976dffa8ddef7"},
+    {"pantalla_id":55,"pantalla":"B2B-AUTH-005","run_id":493,"rows":47,"run_md5":"cf8b420e20c77372a2c6cbd3707b8bef"},
+    {"pantalla_id":56,"pantalla":"B2B-AUTH-006","run_id":494,"rows":47,"run_md5":"887bca27f8f72e0416b957a2177337c0"},
+    {"pantalla_id":57,"pantalla":"ONB_004","run_id":512,"rows":47,"run_md5":"5187b347e44e9c675fc99d122ce97e37"},
+    {"pantalla_id":58,"pantalla":"REC_001","run_id":496,"rows":47,"run_md5":"7f879318d2c3072217f5b0be984e2529"}
+  ],
+  "historical_negative_readback": {
+    "rows_without_validator_outcome": 0,
+    "rows_without_curator_sha256": 0,
+    "rows_without_validator_sha256": 0,
+    "screens_with_family_count_not_47": 0
+  },
+  "effectiveness_sample": {
+    "scope": "3 representative screens only; proves procedure effectiveness, not exhaustive current-state correctness",
+    "selection_basis": "behavior_and_complexity",
+    "screens": [
+      {"pantalla_id":3,"pantalla":"ONB_003","run_id":507,"current":true,"rows":47,"validator_path":"input-governance-validator-v1"},
+      {"pantalla_id":43,"pantalla":"B2B-CARGA-001","run_id":510,"current":true,"rows":47,"validator_path":"input-governance-validator-v1"},
+      {"pantalla_id":57,"pantalla":"ONB_004","run_id":512,"current":true,"rows":47,"validator_path":"input-governance-validator-v1"}
+    ],
+    "result": "PASS",
+    "fanout_after_sample": false
+  },
+  "prohibited_interpretation": [
+    "Do not revalidate all 13 screens merely because their current content evolves.",
+    "Do not replace the frozen run set with latest mutable runs.",
+    "Do not treat a new chat or execution as invalidating prior current evidence.",
+    "Expand beyond the 3-screen sample only on MISSING, CONTRADICTION, STALE, DRIFT, material fingerprint change, sample failure, or explicit integral campaign."
+  ],
+  "status": "GOLDEN_T0_CANDIDATE_READY_FOR_READBACK"
+}
