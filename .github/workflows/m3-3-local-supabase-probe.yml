@@ -1,0 +1,27 @@
+name: M3.3 Local Supabase Probe
+
+on:
+  push:
+    branches:
+      - m3-3-exact-apply-wrapper-v1
+    paths:
+      - 'sandbox/lf_contract_gate_test/db_write_transport/lf_migration_exact_apply.py'
+      - 'sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_exact_apply.py'
+      - 'sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_exact_apply_local.sh'
+      - '.github/workflows/m3-3-local-supabase-probe.yml'
+
+jobs:
+  local-supabase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Unit tests
+        run: python sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_exact_apply.py
+      - name: Local Supabase integration
+        run: bash sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_exact_apply_local.sh
