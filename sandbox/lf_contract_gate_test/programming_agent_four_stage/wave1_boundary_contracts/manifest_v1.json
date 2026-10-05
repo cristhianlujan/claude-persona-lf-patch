@@ -3,18 +3,45 @@
   "state": "SOURCE_ONLY_CANDIDATE",
   "owner_scope": "SUPER_ADMIN",
   "base_main_sha": "1f467cbb771372b645378960485ab0931f53eb46",
-  "scope": ["A1", "PG-01", "TST-01"],
+  "scope": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "PG-01",
+    "TST-01",
+    "TST-02",
+    "TST-03",
+    "TST-04",
+    "TST-05"
+  ],
   "contracts": {
     "A1": "analysis_request_context_v1.schema.json",
+    "A2": "analysis_change_classification_contract_v1.json",
+    "A3": "analysis_targeted_evidence_contract_v1.json",
+    "A4": "shared_change_impact_contract_v1.json",
     "PG-01": "programming_entry_contract_v1.json",
-    "TST-01": "testing_admission_contract_v1.json"
+    "TST-01": "testing_admission_contract_v1.json",
+    "TST-02": "testing_wave1_design_pipeline_contract_v1.json",
+    "TST-03": "testing_wave1_design_pipeline_contract_v1.json",
+    "TST-04": "testing_wave1_design_pipeline_contract_v1.json",
+    "TST-05": "shared_change_impact_contract_v1.json"
   },
   "principles": [
     "NO_PARALLEL_ENGINE",
+    "REUSE_OR_TRANSVERSALIZE_BEFORE_BUILD",
     "NO_STORY_OR_AGENT_TASK_REQUIREMENT_FOR_ANALYSIS_INTAKE",
     "CAPABILITY_SELECTOR_SELECTION_IS_NOT_EXECUTION_PERMISSION",
+    "DYNAMIC_LATE_BOUND_SPECIALIST_RESOLUTION",
+    "TARGETED_EVIDENCE_NO_OVER_SEARCH",
+    "SHARED_CHANGE_IMPACT_CORE_FOR_ANALYSIS_AND_TESTING",
     "LOSSLESS_STAGE_BOUNDARY_PROJECTION",
     "NO_RUNTIME_OR_PRODUCTION_ACTIVATION"
   ],
-  "evidence_refs": ["lf_eventos://20333", "lf_eventos://20334", "lf_eventos://20335"]
+  "evidence_refs": [
+    "lf_eventos://20333",
+    "lf_eventos://20334",
+    "lf_eventos://20335",
+    "lf_eventos://20315"
+  ]
 }
