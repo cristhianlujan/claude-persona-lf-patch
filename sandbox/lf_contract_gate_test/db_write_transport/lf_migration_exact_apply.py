@@ -84,7 +84,20 @@ def _psql(db_url: str, sql: str, *, cwd: Path) -> str:
     return proc.stdout.strip()
 
 
+def _ledger_exists(db_url: str, *, cwd: Path) -> bool:
+    raw = _psql(
+        db_url,
+        "select case when to_regclass('supabase_migrations.schema_migrations') is null then '0' else '1' end;",
+        cwd=cwd,
+    )
+    if raw not in {"0", "1"}:
+        raise RuntimeError(f"EXACT_APPLY_LEDGER_EXISTS_INVALID:{raw!r}")
+    return raw == "1"
+
+
 def read_ledger(db_url: str, version: str, *, cwd: Path) -> tuple[str | None, str | None, str | None]:
+    if not _ledger_exists(db_url, cwd=cwd):
+        return None, None, None
     sql = (
         "select coalesce(to_jsonb(sm)->>'version',''),"
         "coalesce(to_jsonb(sm)->>'name',''),"
@@ -102,6 +115,8 @@ def read_ledger(db_url: str, version: str, *, cwd: Path) -> tuple[str | None, st
 
 
 def read_ledger_max(db_url: str, *, cwd: Path) -> str:
+    if not _ledger_exists(db_url, cwd=cwd):
+        return "00000000000000"
     raw = _psql(
         db_url,
         "select coalesce(max(to_jsonb(sm)->>'version'),'00000000000000') from supabase_migrations.schema_migrations sm;",
