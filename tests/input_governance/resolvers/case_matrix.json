@@ -1,0 +1,30 @@
+{
+  "schema_version": "IG_RESOLVER_CASE_MATRIX_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M3.8",
+  "checkpoint_code": "CASE_MATRIX",
+  "matrix": {
+    "resolver_selection": {
+      "namespace": "programacion",
+      "name_regex": "^fn_input_(resolve_|security_|subject_depth|api_contract|design_system_resolution|source_authority|governance_semantic_probe_v3$|governance_field_reference)",
+      "expansion": "ALL_MATCHING_RESOLVERS_X_ALL_CASES"
+    },
+    "cases": [
+      {"case_id":"positive","expected":"ACCEPT"},
+      {"case_id":"partial","expected":"PARTIAL_OR_EXPLICITLY_INCOMPLETE"},
+      {"case_id":"missing","expected":"REJECT_OR_UNRESOLVED"},
+      {"case_id":"broken_ref","expected":"REJECT_OR_UNRESOLVED"},
+      {"case_id":"candidate","expected":"CANDIDATE"},
+      {"case_id":"contradiction","expected":"CONTRADICTION"}
+    ]
+  },
+  "fixture_boundary": "OUTSIDE_MIGRATIONS",
+  "delegations": {
+    "cached_vs_non_cached": "M7.8"
+  },
+  "invariants": [
+    "Every resolver selected by resolver_selection receives all six cases.",
+    "Fixtures remain outside supabase/migrations.",
+    "Cached-vs-non-cached coverage is delegated to M7.8."
+  ]
+}
