@@ -48,3 +48,19 @@ El App token es obligatorio porque cambios/merge hechos con `GITHUB_TOKEN` no de
 ## Activación
 FASE 4 mantiene `LF_MIGRATION_TRAIN_MODE=DRY_RUN`.
 FASE 5 arma REAL en un PR separado después de tres dry-runs correctos y de validar los secrets/App.
+
+
+## Requisito de Actions policy
+
+Este repositorio público depende de `pull_request_target` para mantener el workflow y los secretos en código confiable de `main`. GitHub anunció enforcement del bloqueo por defecto de `pull_request_target` en repos públicos desde 2026-11-02. Antes de esa fecha, el administrador debe crear una Actions workflow-execution policy aplicable a este workflow que permita explícitamente el evento `pull_request_target`.
+
+No habilitar `allow-unsafe-pr-checkout`. Este workflow no hace checkout ni ejecución del head del PR.
+
+## Configuración previa a REAL
+
+1. GitHub App instalado en el repo.
+2. Secrets `LF_MIGRATION_TRAIN_APP_ID` y `LF_MIGRATION_TRAIN_APP_PRIVATE_KEY`.
+3. El secret existente `LF_SUPABASE_DB_PASSWORD`.
+4. Actions event policy que permita `pull_request_target`.
+5. Label `ready-to-merge`.
+6. Opcional: variable `LF_MIGRATION_TRAIN_ALLOWED_ACTORS` para identidades de agentes adicionales; Paulo y Cristhian están admitidos explícitamente.
