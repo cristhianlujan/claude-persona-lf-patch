@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import tempfile
 from urllib.parse import quote
 
@@ -36,6 +37,7 @@ def _load_transport():
     if spec is None or spec.loader is None:
         raise RuntimeError("DB_WRITE_TRANSPORT_LOAD_FAILED")
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
@@ -84,8 +86,8 @@ def _psql(db_url: str, sql: str, *, cwd: Path) -> str:
 def read_ledger(db_url: str, version: str, *, cwd: Path) -> tuple[str | None, str | None, str | None]:
     sql = (
         "select coalesce(version,''),coalesce(name,''),"
-        "coalesce(created_by,'') "
-        "from supabase_migrations.schema_migrations "
+        "coalesce(to_jsonb(sm)->>'created_by','') "
+        "from supabase_migrations.schema_migrations sm "
         f"where version='{version}' limit 1;"
     )
     raw = _psql(db_url, sql, cwd=cwd)
