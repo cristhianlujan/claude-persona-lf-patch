@@ -5,8 +5,8 @@ on:
     types: [labeled]
 
 permissions:
-  contents: read
-  pull-requests: read
+  contents: write
+  pull-requests: write
   issues: write
   actions: read
   checks: read
@@ -27,6 +27,12 @@ jobs:
     name: lf-migration-merge-train
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: read
+      checks: read
     outputs:
       pr_number: ${{ steps.plan.outputs.pr_number }}
       final_head_sha: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
@@ -79,23 +85,21 @@ jobs:
       - name: Admission and current-main readback
         id: admission
         env:
-          EVENT_PATH: ${{ github.event_path }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           ACTOR: ${{ github.actor }}
           EXTRA_ALLOWED_ACTORS: ${{ vars.LF_MIGRATION_TRAIN_ALLOWED_ACTORS }}
         shell: bash
         run: |
           set -euo pipefail
-          repo="$(jq -r '.repository.full_name' "$EVENT_PATH")"
-          head_repo="$(jq -r '.pull_request.head.repo.full_name' "$EVENT_PATH")"
-          base_ref="$(jq -r '.pull_request.base.ref' "$EVENT_PATH")"
-          draft="$(jq -r '.pull_request.draft' "$EVENT_PATH")"
-          pr="$(jq -r '.pull_request.number' "$EVENT_PATH")"
-          head_sha="$(jq -r '.pull_request.head.sha' "$EVENT_PATH")"
-          head_ref="$(jq -r '.pull_request.head.ref' "$EVENT_PATH")"
-
-          [ "$head_repo" = "$repo" ] || { echo "FAIL_TRAIN_FOREIGN_HEAD"; exit 2; }
-          [ "$base_ref" = "main" ] || { echo "FAIL_TRAIN_BASE_NOT_MAIN"; exit 2; }
-          [ "$draft" = "false" ] || { echo "FAIL_TRAIN_DRAFT_PR"; exit 2; }
+          [ "$HEAD_REPOSITORY" = "$REPOSITORY" ] || { echo "FAIL_TRAIN_FOREIGN_HEAD"; exit 2; }
+          [ "$BASE_REF" = "main" ] || { echo "FAIL_TRAIN_BASE_NOT_MAIN"; exit 2; }
+          [ "$PR_DRAFT" = "false" ] || { echo "FAIL_TRAIN_DRAFT_PR"; exit 2; }
 
           allowed=",paulozterra,cristhianlujan,"
           if [ -n "${EXTRA_ALLOWED_ACTORS:-}" ]; then
@@ -112,11 +116,11 @@ jobs:
           git checkout --detach "$current_main"
 
           {
-            echo "repository=$repo"
-            echo "pr_number=$pr"
-            echo "head_sha=$head_sha"
-            echo "head_ref=$head_ref"
-            echo "current_main=$current_main"
+            printf '%s\n' "repository=$REPOSITORY"
+            printf '%s\n' "pr_number=$PR_NUMBER"
+            printf '%s\n' "head_sha=$PR_HEAD_SHA"
+            printf '%s\n' "head_ref=$PR_HEAD_REF"
+            printf '%s\n' "current_main=$current_main"
           } >> "$GITHUB_OUTPUT"
 
       - name: Sync PR branch with current main in REAL mode
@@ -278,9 +282,6 @@ jobs:
       - name: Report DRY-RUN plan
         if: env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
         env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ steps.admission.outputs.repository }}
-          PR: ${{ steps.admission.outputs.pr_number }}
           MIGRATION_COUNT: ${{ steps.plan.outputs.migration_count }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
           MAIN_MAX: ${{ steps.plan.outputs.main_max }}
@@ -290,15 +291,18 @@ jobs:
           set -euo pipefail
           # FASE 4 only: keep dry runs long enough to make queue serialization observable.
           sleep 10
+          mkdir -p .lf_train
+          summary_file=".lf_train/dry-run-summary.md"
           if [ "${MIGRATION_COUNT:-0}" = "0" ]; then
-            body="DRY-RUN lf-migrations: PR sin migration; misma fila; no apply, no merge."
+            message="DRY-RUN lf-migrations: PR sin migration; misma fila; no GitHub write, no DB write, no apply, no merge."
           else
-            body="DRY-RUN lf-migrations: migration objetivo=$TARGET_PATH; floor main=$MAIN_MAX, ledger=$LEDGER_MAX; version check PASS. No persist/apply/merge ejecutado."
+            message="DRY-RUN lf-migrations: migration objetivo=$TARGET_PATH; floor main=$MAIN_MAX, ledger=$LEDGER_MAX; version check PASS. No GitHub write, no DB write, no persist/apply/merge."
           fi
-          if ! gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1; then
-            echo "WARN_TRAIN_COMMENT_UNAVAILABLE"
-          fi
-          echo "$body"
+          printf '%s\n' "### LF Migration Merge Train — DRY_RUN" > "$summary_file"
+          printf '%s\n' "" >> "$summary_file"
+          printf '%s\n' "$message" >> "$summary_file"
+          cat "$summary_file" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$message"
 
       - name: Retimestamp migration atomically on PR head in REAL mode
         id: retimestamp
@@ -489,10 +493,10 @@ jobs:
           echo "Workflow ordering enforces write-ahead -> exact apply/readback -> parity -> merge."
           echo "PASE-GLOBAL-04 hook remains contract-compatible for later governed bind/current activation."
 
-      - name: Failure handling
-        if: failure()
+      - name: REAL failure handling
+        if: failure() && env.LF_MIGRATION_TRAIN_MODE == 'REAL'
         env:
-          GH_TOKEN: ${{ env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.app_token.outputs.token || github.token }}
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
           PR: ${{ steps.admission.outputs.pr_number }}
           APPLIED: ${{ steps.real_apply.outputs.applied || 'false' }}
@@ -508,12 +512,32 @@ jobs:
           gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1
           exit 0
 
+      - name: DRY_RUN failure summary
+        if: failure() && env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .lf_train
+          summary_file=".lf_train/dry-run-failure.md"
+          message="DRY_RUN STOP: no GitHub write, no DB write, no apply y no merge. Revisar este run antes de volver a etiquetar."
+          printf '%s\n' "### LF Migration Merge Train — DRY_RUN STOP" > "$summary_file"
+          printf '%s\n' "" >> "$summary_file"
+          printf '%s\n' "$message" >> "$summary_file"
+          cat "$summary_file" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$message"
+
   lf-migration-merge:
     name: lf-migration-merge
     needs: lf-migration-merge-train
     if: needs.lf-migration-merge-train.result == 'success' && needs.lf-migration-merge-train.outputs.mode == 'REAL'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: read
+      checks: read
     steps:
       - name: Acquire GitHub App token
         id: app_token
