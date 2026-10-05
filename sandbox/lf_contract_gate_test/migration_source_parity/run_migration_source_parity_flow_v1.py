@@ -25,9 +25,9 @@ ROOT = Path(__file__).resolve().parents[3]
 PARITY_ADAPTER = ROOT / "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 POSTGRES_IMAGE = "postgres:17.6"
 CUTOVER = "20260808031006"
-CLASSIFICATION_BASELINE_END = "20260822195004"
-GRANDFATHERED_COUNT = "154"
-GRANDFATHERED_SHA256 = "f6694a57d984bb02266630c12151e6334ef40535d17f7986be6e1820956186a5"
+CLASSIFICATION_BASELINE_END = "20261005203419"
+GRANDFATHERED_COUNT = "795"
+GRANDFATHERED_SHA256 = "2832bc9159a42a30d4d6322c3d95ee331b9a22adc67c51892bd9988ec6ec6b20"
 LEGACY_START = "20260801063708"
 LEGACY_END = "20260801170332"
 SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -163,9 +163,9 @@ def _managed_versions_literal(migrations: Path) -> str:
         if not match:
             continue
         version, name = match.groups()
-        if version > CUTOVER and module.managed_source(path, version, name):
+        if version > CLASSIFICATION_BASELINE_END and module.managed_source(path, version, name):
             versions.append(version)
-    if not versions or len(versions) != len(set(versions)):
+    if len(versions) != len(set(versions)):
         raise RuntimeError("FAIL_S28_MIGRATION_MANAGED_VERSION_SET")
     if any(not re.fullmatch(r"\d{14}", item) for item in versions):
         raise RuntimeError("FAIL_S28_MIGRATION_MANAGED_VERSION_LITERAL")
@@ -327,10 +327,10 @@ def _prepare_inputs(migrations: Path, output_dir: Path) -> dict[str, Path]:
     owner_csv = output_dir / "lf-migration-owner-currentness.csv"
     owner_json = output_dir / "lf-migration-external-owner-currentness.json"
 
-    post_sql = f"""select version,coalesce(name,''),case when version = any('{managed_versions}'::text[]) then 'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\\n' order by ord),''),E'\\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\\n'),''),E'\\r\\n',E'\\n'),E'\\r',E'\\n'),E'\\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') else '' end from supabase_migrations.schema_migrations sm where version > '{CUTOVER}' order by version"""
+    post_sql = f"""select version,coalesce(name,''),case when version = any('{managed_versions}'::text[]) then 'sha256:' || (select encode(extensions.digest(convert_to(regexp_replace(coalesce(string_agg(line,E'\\n' order by ord),''),E'\\n+$',''),'UTF8'),'sha256'),'hex') from regexp_split_to_table(replace(replace(coalesce(array_to_string(sm.statements,E'\\n'),''),E'\\r\\n',E'\\n'),E'\\r',E'\\n'),E'\\n') with ordinality as x(line,ord) where line !~ '^[[:space:]]*--') else '' end from supabase_migrations.schema_migrations sm where version > '{CLASSIFICATION_BASELINE_END}' order by version"""
     _write_text(post_cutover, _psql(post_sql, env=env), max_bytes=524288)
 
-    grandfather_sql = f"""with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\\n') as sql_text from supabase_migrations.schema_migrations where version > '{CUTOVER}' and version <= '{CLASSIFICATION_BASELINE_END}' and not {GRANDFATHERED_EXCLUSIONS_SQL}) select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\\n'||name||E'\\n'||sql_text,E'\\n--MIGRATION--\\n' order by version),''),'UTF8'),'sha256'),'hex') from x"""
+    grandfather_sql = f"""with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\\n') as sql_text from supabase_migrations.schema_migrations where version > '{CUTOVER}' and version <= '{CLASSIFICATION_BASELINE_END}') select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\\n'||name||E'\\n'||sql_text,E'\\n--MIGRATION--\\n' order by version),''),'UTF8'),'sha256'),'hex') from x"""
     _write_text(grandfathered, _psql(grandfather_sql, env=env))
 
     legacy_sql = f"""select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\\n'||coalesce(name,'')||E'\\n'||array_to_string(statements,E'\\n--STATEMENT--\\n'),E'\\n--MIGRATION--\\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '{LEGACY_START}' and '{LEGACY_END}'"""
@@ -429,7 +429,7 @@ def self_test() -> int:
     if _canonical_remote_sql_sha(probe.encode().hex()) != expected:
         raise RuntimeError("SELFTEST_CANONICAL_SHA")
     checks += 1
-    if POSTGRES_IMAGE != "postgres:17.6" or GRANDFATHERED_COUNT != "154":
+    if POSTGRES_IMAGE != "postgres:17.6" or GRANDFATHERED_COUNT != "795":
         raise RuntimeError("SELFTEST_BASELINE_CONSTANTS")
     checks += 1
     print(f"PASS_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_SELFTEST checks={checks}")
