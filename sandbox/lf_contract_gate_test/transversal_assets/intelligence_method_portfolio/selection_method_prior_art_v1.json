@@ -1,0 +1,117 @@
+{
+  "schema_version": "SELECTION_METHOD_PRIOR_ART_V1",
+  "purpose": "Anchor previously benchmarked reasoning methods and mixes as qualification prior art without treating historical benchmark identity as current runtime authority.",
+  "evidence_refs": [
+    "lf_eventos://20135",
+    "lf_eventos://20148",
+    "lf_eventos://20151",
+    "lf_eventos://20154",
+    "lf_eventos://20155",
+    "lf_eventos://20163",
+    "lf_eventos://20167",
+    "lf_eventos://20168"
+  ],
+  "identity_warning": {
+    "event_ref": "lf_eventos://20135",
+    "finding": "Historical IGQ execution initially exposed method-identity divergence for IG01..IG06; corrective append-only re-freeze was required before comparison.",
+    "rule": "Historical names and scores never establish current method identity. Exact source/version/currentness must be re-proven before portfolio eligibility."
+  },
+  "methods": [
+    {
+      "method_id": "IG00",
+      "historical_identity": "SRCR V0.2 — control",
+      "role": "BROAD_SYSTEMIC_CONTROL",
+      "observed_profile": "Causal reconstruction, falsification, reuse and rollback/readback discipline.",
+      "benchmark_avg": 96.42,
+      "eligibility_state": "HISTORICAL_BENCHMARK_PROVEN_REQUALIFY_EXACT_IDENTITY"
+    },
+    {
+      "method_id": "IG01",
+      "historical_identity": "RIG 2026 — Evidence-backed Project Graph",
+      "role": "EVIDENCE_GRAPH",
+      "observed_profile": "Provenance, missing edges and explicit UNKNOWN over an evidence-backed graph.",
+      "benchmark_avg": 94.92,
+      "eligibility_state": "HISTORICAL_BENCHMARK_PROVEN_REQUALIFY_EXACT_IDENTITY"
+    },
+    {
+      "method_id": "IG02",
+      "historical_identity": "MAAD 2026",
+      "role": "BUSINESS_FUTURE_REQUIREMENT_INFERENCE",
+      "observed_profile": "Implicit needs, quality attributes, downstream/future capability and anti-overdesign tradeoffs after evidence is grounded.",
+      "benchmark_avg": 94.42,
+      "eligibility_state": "HISTORICAL_BENCHMARK_PROVEN_REQUALIFY_EXACT_IDENTITY"
+    },
+    {
+      "method_id": "IG03",
+      "historical_identity": "TraceDev 2026",
+      "role": "TRACEABILITY_ORPHAN_CONTRADICTION",
+      "observed_profile": "Backward/forward need-to-effect trace, orphan detection and contradiction detection.",
+      "benchmark_avg": 95.54,
+      "eligibility_state": "HISTORICAL_BENCHMARK_PROVEN_REQUALIFY_EXACT_IDENTITY"
+    },
+    {
+      "method_id": "IG04",
+      "historical_identity": "Mnemosyne 2026",
+      "role": "SAFE_PROPOSAL_ADMISSION",
+      "observed_profile": "Confidence-versus-permission boundary and proposal-by-proposal safe admission.",
+      "benchmark_avg": 94.42,
+      "eligibility_state": "HISTORICAL_BENCHMARK_PROVEN_REQUALIFY_EXACT_IDENTITY"
+    },
+    {
+      "method_id": "IG05",
+      "historical_identity": "RIG + MAAD",
+      "role": "EVIDENCE_GRAPH_THEN_BUSINESS_INFERENCE_MIX",
+      "mix_mode": "UNION_COMPLEMENTARY",
+      "observed_profile": "Freeze evidence graph first, then derive future/business implications.",
+      "benchmark_avg": 97.92,
+      "benchmark_min": 94,
+      "wins_vs_best_component": "11/12",
+      "increment_vs_best_component_avg": 2.33,
+      "eligibility_state": "HISTORICAL_BENCHMARK_PROVEN_MIX_REQUALIFY_COMPONENTS_AND_MIX"
+    },
+    {
+      "method_id": "IG06",
+      "historical_identity": "TraceDev + Mnemosyne",
+      "role": "TRACE_THEN_SAFE_ADMISSION_MIX",
+      "mix_mode": "UNION_COMPLEMENTARY",
+      "observed_profile": "Freeze material trace first, then map trace gaps to safe action/admission classes.",
+      "benchmark_avg": 98.13,
+      "benchmark_min": 93,
+      "wins_vs_best_component": "11/12",
+      "increment_vs_best_component_avg": 2.08,
+      "eligibility_state": "HISTORICAL_BENCHMARK_PROVEN_MIX_REQUALIFY_COMPONENTS_AND_MIX"
+    }
+  ],
+  "architecture_prior_art": {
+    "selection_model": "MULTI_LABEL_CAPABILITY_ACTIVATION_NOT_SINGLE_METHOD_ROUTER",
+    "preferred_candidate_hypothesis": "CORE_PLUS_CAPABILITIES",
+    "winner_take_all_forbidden": true,
+    "uncertainty_policy": "CLEAR_SIGNAL_NARROW_CAPABILITY; MULTI_SIGNAL_UNION; NO_SIGNAL_OR_CONTRADICTION_OR_FAILURE_ROBUST_SAFE_MIX",
+    "shared_evidence_base": true,
+    "selector_plus_fallback_frozen_comparison": {
+      "coverage_hits": 24,
+      "coverage_possible": 24,
+      "critical_false_green": 0,
+      "depth_units": 25,
+      "full_safe_mix_depth_units": 32,
+      "depth_reduction_vs_full_safe_mix": 7,
+      "evidence_ref": "lf_eventos://20167"
+    },
+    "selector_stress": {
+      "route_matches": "8/8",
+      "forced_misclassification_critical_false_green": 0,
+      "out_of_distribution_critical_false_green": 0,
+      "evidence_ref": "lf_eventos://20168"
+    }
+  },
+  "limits": [
+    "Benchmark execution used the same assistant runtime; it is reproducible comparative evidence, not external independent-model assurance.",
+    "Historical method identity must be rebound to exact current source/version before any registry eligibility.",
+    "No token/duration telemetry was available for the historical selector/full-safe comparison.",
+    "Family-specific Champion status is not inherited from global benchmark average."
+  ],
+  "portfolio_result": {
+    "champions_promoted": 0,
+    "use": "PRIOR_ART_FOR_FRESH_FAMILY_QUALIFICATION_ONLY"
+  }
+}
