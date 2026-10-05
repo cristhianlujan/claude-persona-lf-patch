@@ -1,0 +1,77 @@
+{
+  "applicability": {
+    "duplicate_execution_count": 0,
+    "not_applicable": [
+      "AUTHORITY_READBACK",
+      "RUNTIME_DEPLOY_VERIFICATION"
+    ],
+    "required": [
+      "GITHUB_RECONCILIATION",
+      "FINAL_EVIDENCE",
+      "CLOSURE_GATE"
+    ],
+    "unplanned_control_count": 0
+  },
+  "closure": {
+    "terminal_status": "CLOSED",
+    "verdict": "PASS",
+    "verdict_sha256": "471d6b10996738d2e3dd9e6f34f42c17139bf00405f57501a024a26ef35ef4e5"
+  },
+  "dispatch": {
+    "execution_order": [
+      "GITHUB_RECONCILIATION",
+      "FINAL_EVIDENCE",
+      "CLOSURE_GATE"
+    ],
+    "persisted_receipt_count": 3,
+    "plan_digest": "a179fe35a5a34466d2c4fe0a2789a0804f0e2063c581a79a55717f503408cde7",
+    "receipt_digests": [
+      "17fba3d328ac12d4f60f551c8a471698f2c3ea8b69e9fac4ce608a148a677881",
+      "35b9ea5fe9c04313fec84541b33271aecc3e299487737199af598c4d4558a18f",
+      "0853d7d07ebc8d88bef83db2256e6aef325df246549b119d2ddabbb4b8d1ad39"
+    ]
+  },
+  "final_evidence": {
+    "manifest_sha256": "f70f6fce753c820ecc2d7985db0b5100a8de292e423cab32c218cb650c6ec46b",
+    "receipt_count": 1
+  },
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "readiness_execution_identity_sha256": "114962285f9bb6889596a2d079ae348ab187c4f9cf09b95cf541d2a9313c0873",
+  "readiness_plan_digest_sha256": "4e3ded57442922da1d9858fd89cc10cccd1b716d19f36d00e18b9ddb38c7d7df",
+  "readiness_source_head": "6ae891bb51c0531cf5b573e1df395ab0a1917c84",
+  "safety": {
+    "live_domain_controls_executed": false,
+    "pase_workflow_activated": false,
+    "production_touched": false,
+    "runtime_or_deploy_touched": false,
+    "sandbox_only": true,
+    "zip_used_as_authority": false
+  },
+  "scenario": "DOCUMENTATION",
+  "scenario_exact_head": "e1aaae571340b44b334d56dd6295de314b66a3e8",
+  "scenario_fixture": {
+    "authority_scopes": [],
+    "declared_paths": [
+      {
+        "kind": "CHANGED",
+        "path": "docs/post-pase.md"
+      }
+    ],
+    "runtime_deploy_scope": null
+  },
+  "scenario_run_identity_sha256": "21eb4565a517d2c4f4b1cf6216a85e7c744abce0979be4c0acfb92f4d8662cc9",
+  "schema_version": "PASE_F09_S01_DOCUMENTATION_EXECUTION_PROOF_V1",
+  "source_blob_copy_match": true,
+  "source_blobs": {
+    "capability_execution_contract_v1.json": "2a1ca3affea5a4d04de6e2af9a910c2457c18a36",
+    "capability_execution_contract_v1.py": "8d769dc9827e86137a1a6b398635e3345661bf62",
+    "closure_gate_v1.py": "f91433006bddcc51de53fe8ad6a2da3c7b3fa1e0",
+    "final_evidence_v1.py": "a5873b919e5668977cbae7d20ffb1ca156f7d0ad",
+    "post_pase_orchestrator_contract_v1.json": "e560b785fef846948ba930fe9c9c43aab6f9a8f7",
+    "post_pase_orchestrator_v1.py": "5dca9b717803f78c5e2ef79747219919a74f12b3",
+    "post_pase_router_v1.py": "8054667e225247c1b1b213d8d2ac970c33871690",
+    "readiness_lineage_manifest": "e197f1b115652843c48d54fe1d01174b4335e06b"
+  },
+  "verification_method": "LOCAL_DETERMINISTIC_EXECUTION_FROM_EXACT_GITHUB_BLOBS",
+  "work_code": "PASE-ATOM-F09-S01"
+}
