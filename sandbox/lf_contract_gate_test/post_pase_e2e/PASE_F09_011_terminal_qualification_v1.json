@@ -1,0 +1,66 @@
+{
+  "schema_version": "PASE_F09_011_TERMINAL_QUALIFICATION_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F09-011",
+  "source_exact_main_sha": "5a410b5d99be331fae2eab5620a7a099a6367095",
+  "qualification_inputs": {
+    "readiness_event_id": 20319,
+    "scenario_event_ids": {
+      "DOCUMENTATION": 20354,
+      "DB": 20356,
+      "PROFILE_RUNTIME": 20357,
+      "VISUAL": 20358,
+      "MIXED": 20359,
+      "FAILURE_STALE_EVIDENCE": 20360,
+      "WAIVER": 20376
+    },
+    "lineage_event_id": 20378,
+    "r17_judge_event_id": 20379
+  },
+  "deterministic_terminal_judge": {
+    "result": "VERIFIED",
+    "scenario_count": 7,
+    "exact_candidate_head_count": 7,
+    "exact_terminal_head_count": 7,
+    "no_zip_count": 7,
+    "duplicate_execution_total": 0,
+    "unplanned_control_total": 0,
+    "positive_terminal_count": 5,
+    "negative_s06_count": 1,
+    "waiver_s07_count": 1,
+    "blocking_finding_count": 0,
+    "required_predecessor_units": 10,
+    "required_predecessor_units_done": 10
+  },
+  "exit_criteria": {
+    "seven_scenarios_present": true,
+    "all_scenario_candidate_heads_exact": true,
+    "all_scenario_terminal_heads_exact": true,
+    "zip_authority_absent_all_scenarios": true,
+    "lineage_proof_verified": true,
+    "dispatch_receipt_not_terminal_verdict": true,
+    "r17_parity_judge_verified": true,
+    "r17_behavioral_judge_verified": true,
+    "r17_semantic_judge_verified": true,
+    "r17_readback_judge_verified": true,
+    "blocking_judge_findings": 0,
+    "duplicate_execution_count": 0,
+    "unplanned_control_count": 0,
+    "failure_and_stale_paths_fail_closed": true,
+    "waiver_exact_one_use_and_blocked_nonwaivable": true
+  },
+  "terminal": {
+    "e2e_qualification_verdict": "PASS",
+    "qualification_state": "QUALIFIED",
+    "activation_authorized": false,
+    "production_authorized": false
+  },
+  "safety": {
+    "qualification_only": true,
+    "live_domain_controls_executed": false,
+    "runtime_or_deploy_touched": false,
+    "production_touched": false,
+    "pase_workflow_activated": false,
+    "zip_used_as_authority": false
+  }
+}
