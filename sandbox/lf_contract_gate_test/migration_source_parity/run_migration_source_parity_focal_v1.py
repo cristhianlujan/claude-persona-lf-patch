@@ -77,7 +77,7 @@ def _parse_name_status(text: str) -> list[str]:
         match = re.fullmatch(r"(\d{14})_(.+)\.sql", filename)
         if match is None:
             raise RuntimeError(f"FAIL_MIGRATION_PARITY_FOCAL_FILENAME:{path}")
-        if match.group(1) <= FULL.CUTOVER:
+        if match.group(1) <= FULL.CLASSIFICATION_BASELINE_END:
             raise RuntimeError(
                 "FAIL_MIGRATION_PARITY_FOCAL_HISTORICAL_MUTATION:"
                 f"{path}"
@@ -138,7 +138,7 @@ def _build_scoped_snapshot(
     shutil.copy2(checkpoint, scoped / checkpoint.name)
 
     focal_versions: list[str] = []
-    managed_versions: list[str] = [checkpoint_version]
+    managed_versions: list[str] = []
     for repo_path in changed_paths:
         source = ROOT / repo_path
         if not source.is_file():
@@ -171,7 +171,7 @@ def _prepare_focal_inputs(
     output_dir.mkdir(parents=True, exist_ok=True)
     env = FULL._pg_env()
     checkpoint, checkpoint_version, _checkpoint_name, _marker = _checkpoint_identity()
-    context_versions = sorted(set(focal_versions) | {checkpoint_version})
+    context_versions = sorted(set(focal_versions))
     context_literal = _pg_array(context_versions)
     managed_literal = _pg_array(managed_versions)
 
@@ -188,9 +188,8 @@ def _prepare_focal_inputs(
     statement_sql = f"""select version,coalesce(cardinality(statements),0)::text from supabase_migrations.schema_migrations where version=any('{managed_literal}'::text[]) order by version"""
     FULL._write_text(statement_counts, FULL._psql(statement_sql, env=env), max_bytes=65536)
 
-    # These are aggregate live readbacks of the already-declared checkpoint,
-    # not a taxonomy scan of every post-cutover migration.
-    grandfather_sql = f"""with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\\n') as sql_text from supabase_migrations.schema_migrations where version > '{FULL.CUTOVER}' and version <= '{FULL.CLASSIFICATION_BASELINE_END}' and not {FULL.GRANDFATHERED_EXCLUSIONS_SQL}) select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\\n'||name||E'\\n'||sql_text,E'\\n--MIGRATION--\\n' order by version),''),'UTF8'),'sha256'),'hex') from x"""
+    # Aggregate attestation for the immutable historical ledger segment.
+    grandfather_sql = f"""with x as (select version,coalesce(name,'') as name,array_to_string(statements,E'\\n') as sql_text from supabase_migrations.schema_migrations where version > '{FULL.CUTOVER}' and version <= '{FULL.CLASSIFICATION_BASELINE_END}') select count(*)::text,encode(extensions.digest(convert_to(coalesce(string_agg(version||E'\\n'||name||E'\\n'||sql_text,E'\\n--MIGRATION--\\n' order by version),''),'UTF8'),'sha256'),'hex') from x"""
     FULL._write_text(grandfathered, FULL._psql(grandfather_sql, env=env))
 
     legacy_sql = f"""select count(*)::text,encode(extensions.digest(convert_to(string_agg(version||E'\\n'||coalesce(name,'')||E'\\n'||array_to_string(statements,E'\\n--STATEMENT--\\n'),E'\\n--MIGRATION--\\n' order by version),'UTF8'),'sha256'),'hex') from supabase_migrations.schema_migrations where version between '{FULL.LEGACY_START}' and '{FULL.LEGACY_END}'"""

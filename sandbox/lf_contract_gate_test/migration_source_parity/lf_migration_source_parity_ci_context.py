@@ -162,6 +162,88 @@ def fail(code: str, detail: str = "") -> None:
     raise SystemExit(f"{code}{suffix}")
 
 
+def validate_grandfather_attestation(
+    observed_count: str,
+    observed_sha: str,
+    expected_count: str,
+    expected_sha: str,
+) -> None:
+    if observed_count != expected_count or observed_sha != expected_sha:
+        fail(
+            "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE",
+            f"expected={expected_count}/{expected_sha} observed={observed_count}/{observed_sha}",
+        )
+
+
+def validate_historical_source_identity(
+    *,
+    version: str,
+    classification_baseline_end: str,
+    baseline_blob: str | None,
+    current_blob: str | None,
+    repo_path: str,
+) -> None:
+    if version > classification_baseline_end:
+        return
+    if baseline_blob is None:
+        fail("FAIL_LF_MIGRATION_BACKDATED_SOURCE", repo_path)
+    if current_blob is None or current_blob != baseline_blob:
+        fail(
+            "FAIL_LF_MIGRATION_HISTORICAL_SOURCE_DRIFT",
+            f"path={repo_path} baseline={baseline_blob} current={current_blob}",
+        )
+
+
+_MIGRATION_TREE_CACHE: dict[str, dict[str, str]] = {}
+
+
+def _migration_tree(ref: str) -> dict[str, str]:
+    cached = _MIGRATION_TREE_CACHE.get(ref)
+    if cached is not None:
+        return cached
+    root = _MODULE_DIR.parents[2]
+    proc = subprocess.run(
+        ["git", "ls-tree", "-r", ref, "--", "supabase/migrations"],
+        cwd=root,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        timeout=30,
+    )
+    if proc.returncode != 0:
+        fail("FAIL_LF_MIGRATION_HISTORICAL_TREE", f"ref={ref} rc={proc.returncode}")
+    rows: dict[str, str] = {}
+    for raw in proc.stdout.splitlines():
+        meta, sep, repo_path = raw.partition("\t")
+        fields = meta.split()
+        if not sep or len(fields) != 3:
+            fail("FAIL_LF_MIGRATION_HISTORICAL_TREE_ROW", raw)
+        _mode, object_type, blob = fields
+        if object_type != "blob" or SHA40_RE.fullmatch(blob) is None:
+            fail("FAIL_LF_MIGRATION_HISTORICAL_TREE_ROW", raw)
+        rows[repo_path] = blob
+    _MIGRATION_TREE_CACHE[ref] = rows
+    return rows
+
+
+def assert_historical_source_frozen(
+    path: pathlib.Path,
+    *,
+    version: str,
+    classification_baseline_end: str,
+    classification_baseline_git_sha: str,
+) -> None:
+    repo_path = f"supabase/migrations/{path.name}"
+    validate_historical_source_identity(
+        version=version,
+        classification_baseline_end=classification_baseline_end,
+        baseline_blob=_migration_tree(classification_baseline_git_sha).get(repo_path),
+        current_blob=_migration_tree("HEAD").get(repo_path),
+        repo_path=repo_path,
+    )
+
+
 def _classify_source_first_pending(
     *,
     local_versions: set[str],
@@ -850,6 +932,9 @@ def main() -> int:
     legacy_file = pathlib.Path(sys.argv[4])
     cutover = os.environ["LF_MIGRATION_CUTOVER"]
     classification_baseline_end = os.environ["LF_MIGRATION_CLASSIFICATION_BASELINE_END"]
+    classification_baseline_git_sha = os.environ["LF_MIGRATION_CLASSIFICATION_BASELINE_GIT_SHA"].strip().lower()
+    if SHA40_RE.fullmatch(classification_baseline_git_sha) is None:
+        fail("FAIL_LF_MIGRATION_CLASSIFICATION_BASELINE_GIT_SHA")
     grandfathered_count = os.environ["LF_MIGRATION_GRANDFATHERED_COUNT"]
     grandfathered_sha = os.environ["LF_MIGRATION_GRANDFATHERED_SHA256"]
 
@@ -989,11 +1074,12 @@ def main() -> int:
     observed_grandfathered_count, observed_grandfathered_sha = read_single_row(
         grandfather_file, 2, "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE_ROW"
     )
-    if observed_grandfathered_count != grandfathered_count or observed_grandfathered_sha != grandfathered_sha:
-        fail(
-            "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE",
-            f"expected={grandfathered_count}/{grandfathered_sha} observed={observed_grandfathered_count}/{observed_grandfathered_sha}",
-        )
+    validate_grandfather_attestation(
+        observed_grandfathered_count,
+        observed_grandfathered_sha,
+        grandfathered_count,
+        grandfathered_sha,
+    )
 
     remote_all: dict[str, tuple[str, str]] = {}
     inline_counts: dict[str, int] = {}
@@ -1002,6 +1088,11 @@ def main() -> int:
             if len(row) not in (3, 4):
                 fail("FAIL_LF_MIGRATION_LEDGER_ROW", repr(row))
             version, name, content_proof = row[:3]
+            if version <= classification_baseline_end:
+                fail(
+                    "FAIL_LF_MIGRATION_POST_BASELINE_SNAPSHOT_RANGE",
+                    f"version={version} baseline_end={classification_baseline_end}",
+                )
             remote_all[version] = (name, content_proof)
             if len(row) == 4 and managed(name):
                 try:
@@ -1021,6 +1112,14 @@ def main() -> int:
             continue
         version, name = match.groups()
         if version <= cutover:
+            continue
+        if version <= classification_baseline_end:
+            assert_historical_source_frozen(
+                path,
+                version=version,
+                classification_baseline_end=classification_baseline_end,
+                classification_baseline_git_sha=classification_baseline_git_sha,
+            )
             continue
         local_versions_all.add(version)
         source_sql = path.read_text(encoding="utf-8")
@@ -1146,7 +1245,7 @@ def main() -> int:
         )
     else:
         print(
-            f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_cutover={len(local)} "
+            f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_baseline={len(local)} "
             f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
             f"classification_baseline_end={classification_baseline_end} direct={direct_count} "
             f"cli_statement_storage={cli_count}"
