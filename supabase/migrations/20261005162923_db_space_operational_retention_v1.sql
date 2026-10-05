@@ -102,7 +102,7 @@ begin
   with latest as (
     select id
     from private.lf_architecture_monitor_runs_v4
-    order by completed_at desc nulls last, id desc
+    order by completed_at desc, id desc
     limit 1
   ), rows_with_policy as (
     select r.*,
@@ -281,7 +281,7 @@ begin
   with latest as (
     select id
     from private.lf_architecture_monitor_runs_v4
-    order by completed_at desc nulls last, id desc
+    order by completed_at desc, id desc
     limit 1
   ), candidates as (
     select r.id
@@ -339,74 +339,6 @@ grant execute on function private.fn_operational_retention_v1(boolean,timestampt
 comment on function private.fn_operational_retention_v1(boolean,timestamptz) is
 'DB-SPACE operational retention v1. Deletes only bounded operational history; fails closed if PG_NOTIFY outbox rows are referenced by attempts or receipts.';
 
-do $job$
-declare
-  v_jobid bigint;
-  v_jobs_before jsonb;
-  v_jobs_after jsonb;
-begin
-  select coalesce(
-    jsonb_agg(
-      jsonb_build_object(
-        'jobid',jobid,
-        'jobname',jobname,
-        'schedule',schedule,
-        'active',active,
-        'command',command
-      )
-      order by jobid
-    ),
-    '[]'::jsonb
-  )
-  into v_jobs_before
-  from cron.job
-  where jobname <> 'lf-operational-retention-v1';
-
-  for v_jobid in
-    select jobid
-    from cron.job
-    where jobname = 'lf-operational-retention-v1'
-    order by jobid
-  loop
-    perform cron.unschedule(v_jobid);
-  end loop;
-
-  perform cron.schedule(
-    'lf-operational-retention-v1',
-    '43 8 * * *',
-    $cron$select private.fn_operational_retention_v1(true);$cron$
-  );
-
-  select coalesce(
-    jsonb_agg(
-      jsonb_build_object(
-        'jobid',jobid,
-        'jobname',jobname,
-        'schedule',schedule,
-        'active',active,
-        'command',command
-      )
-      order by jobid
-    ),
-    '[]'::jsonb
-  )
-  into v_jobs_after
-  from cron.job
-  where jobname <> 'lf-operational-retention-v1';
-
-  if v_jobs_before is distinct from v_jobs_after then
-    raise exception 'OPERATIONAL_RETENTION_EXISTING_CRON_DRIFT';
-  end if;
-
-  if not exists (
-    select 1
-    from cron.job
-    where jobname = 'lf-operational-retention-v1'
-      and schedule = '43 8 * * *'
-      and active is true
-      and command like '%fn_operational_retention_v1(true)%'
-  ) then
-    raise exception 'OPERATIONAL_RETENTION_CRON_POSTFLIGHT_FAILED';
-  end if;
-end;
-$job$;
+-- Scheduling is intentionally deferred to PR-B1b after the first supervised
+-- dry-run/apply/readback/VACUUM FULL sequence described in
+-- docs/db-space/operational_retention_v1_runbook.md.
