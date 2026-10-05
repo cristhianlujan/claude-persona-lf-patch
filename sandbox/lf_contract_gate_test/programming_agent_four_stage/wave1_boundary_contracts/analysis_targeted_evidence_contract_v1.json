@@ -1,0 +1,49 @@
+{
+  "schema_version": "ANALYSIS_TARGETED_EVIDENCE_CONTRACT_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "unit": "A3",
+  "input_contracts": [
+    "REQUEST_CONTEXT_V1",
+    "ANALYSIS_CHANGE_CLASSIFICATION_V1"
+  ],
+  "output_contract": "TARGETED_EVIDENCE_SET_V1",
+  "acquisition": {
+    "capability": "TARGETED_EVIDENCE_ACQUISITION",
+    "source_resolution": "SOURCE_RESOLUTION_POLICY",
+    "data_access": "TYPED_DATA_ACCESS",
+    "query_only_missing_or_material_evidence": true,
+    "reuse_current_evidence_before_fetch": true,
+    "duplicate_read_forbidden": true,
+    "full_repository_search_without_trigger_forbidden": true,
+    "stop_when": "MINIMUM_SUFFICIENT_CONTEXT_REACHED",
+    "continue_only_if": [
+      "REQUIRED_EVIDENCE_MISSING",
+      "MATERIAL_CONTRADICTION",
+      "CURRENTNESS_UNPROVEN",
+      "SOURCE_DRIFT"
+    ],
+    "blocked_if": [
+      "REQUIRED_SOURCE_UNAVAILABLE",
+      "MATERIAL_AMBIGUITY_REQUIRES_DECISION"
+    ]
+  },
+  "output_requirements": [
+    "evidence_items[]",
+    "source_refs[]",
+    "currentness_refs[]",
+    "unresolved_material_gaps[]",
+    "sufficiency_verdict"
+  ],
+  "sufficiency_verdicts": [
+    "SUFFICIENT",
+    "NEED_MORE_EVIDENCE",
+    "REQUIRES_DECISION",
+    "BLOCKED"
+  ],
+  "no_over_search": true,
+  "no_parallel_engine": true,
+  "source_refs": [
+    "lf_eventos://20333",
+    "lf_eventos://20334"
+  ]
+}
