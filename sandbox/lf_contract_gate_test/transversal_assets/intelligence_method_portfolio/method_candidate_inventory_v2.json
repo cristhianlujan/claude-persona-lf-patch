@@ -1,0 +1,169 @@
+{
+  "schema_version": "INTELLIGENCE_METHOD_CANDIDATE_INVENTORY_V2",
+  "supersedes": "INTELLIGENCE_METHOD_CANDIDATE_INVENTORY_V1",
+  "authority_ref": "lf_eventos://20346",
+  "affected_unit_count": 19,
+  "selector_infrastructure": {
+    "capability": "CAPABILITY_SELECTOR",
+    "version": "1.0.0",
+    "state": "CURRENT_RELEASED",
+    "role": "SELECTOR_INFRASTRUCTURE_NOT_A_DECISION_METHOD"
+  },
+  "decision_families": [
+    {
+      "decision_family": "ANALYSIS_CHANGE_CLASSIFICATION",
+      "plan_units": ["A2"],
+      "candidate_methods": ["SIGNAL_BASED_MULTI_LABEL_CLASSIFICATION", "DETERMINISTIC_HARD_INVARIANT_VETO"],
+      "providers": [{"provider": "SAFE_CHANGE_ADMISSION@1.0.0", "assessment": "RELATED_NOT_EQUIVALENT"}],
+      "champion_state": "UNASSIGNED_PENDING_QUALIFICATION"
+    },
+    {
+      "decision_family": "ANALYSIS_TARGETED_RESEARCH",
+      "plan_units": ["A3"],
+      "candidate_methods": ["CANONICAL_INTERNAL_FIRST", "EXACT_SOURCE_TARGETED_LOOKUP", "EXTERNAL_PRIMARY_SOURCE_ESCALATION", "BROAD_WEB_LAST_RESORT"],
+      "providers": [{"provider": "TARGETED_EVIDENCE_ACQUISITION@1.0.0", "assessment": "STRONG_PROVIDER_CANDIDATE_NEEDS_FAMILY_BENCHMARK_HOLDOUT"}],
+      "champion_state": "UNASSIGNED_PENDING_QUALIFICATION"
+    },
+    {
+      "decision_family": "ANALYSIS_REQUIREMENT_SYNTHESIS",
+      "plan_units": ["A6"],
+      "candidate_methods": ["OUTCOME_FIRST_REQUIREMENT_SYNTHESIS", "CONTRACT_FIRST_REQUIREMENT_SYNTHESIS", "SPECIALIST_SECTION_COMPOSITION"],
+      "providers": [],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "ANALYSIS_RISK_QUALITY_SIGNAL_DERIVATION",
+      "plan_units": ["A7"],
+      "candidate_methods": ["INVARIANT_FIRST_RISK_DERIVATION", "IMPACT_PROBABILITY_REVERSIBILITY", "MULTI_SIGNAL_RISK_SYNTHESIS"],
+      "providers": [],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "ANALYSIS_PACKAGE_QUALIFICATION",
+      "plan_units": ["A9"],
+      "candidate_methods": ["STRUCTURAL_AUTHORITY_CHECK_PLUS_SEPARATE_SEMANTIC_JUDGE", "INDEPENDENT_ASSURANCE_SUPPORTED_JUDGMENT"],
+      "providers": [
+        {"provider": "ASSURANCE_EVALUATOR@1.0.0", "assessment": "SUPPORTING_CANDIDATE_NEEDS_FAMILY_BENCHMARK_HOLDOUT"},
+        {"provider": "INDEPENDENT_ASSURANCE@1.0.0", "assessment": "SUPPORTING_ORACLE_NOT_FAMILY_CHAMPION"}
+      ],
+      "champion_state": "UNASSIGNED_PENDING_QUALIFICATION"
+    },
+    {
+      "decision_family": "PROGRAMMING_CHANGE_CLASSIFICATION",
+      "plan_units": ["PG-02"],
+      "candidate_methods": ["DETERMINISTIC_SIGNAL_RULE_CLASSIFIER", "SEMANTIC_MULTI_LABEL_IMPLEMENTATION_CLASSIFIER", "HYBRID_RULE_FIRST_SEMANTIC_FALLBACK"],
+      "providers": [{"provider": "SAFE_CHANGE_ADMISSION@1.0.0", "assessment": "RELATED_NOT_EQUIVALENT"}],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "PROGRAMMING_IMPLEMENTATION_STRATEGY",
+      "plan_units": ["PG-03"],
+      "candidate_methods": ["REPRODUCE_FIRST_TDD", "CONTRACT_FIRST", "MIGRATION_COMPATIBILITY_FIRST", "REFACTOR_PRESERVING", "BOUNDED_TRANSFORMATION", "STAGED_IMPLEMENTATION"],
+      "providers": [],
+      "champion_state": "PLAN_METHODS_ONLY_NO_VERSIONED_PROVIDER"
+    },
+    {
+      "decision_family": "PROGRAMMING_PARTITION_STRATEGY",
+      "plan_units": ["PG-04"],
+      "candidate_methods": ["VERTICAL_SOLUTION", "DOMAIN_CAPABILITY", "TECHNICAL_LAYER", "CONTRACT_API", "RISK_ISOLATION", "DEPENDENCY_DAG", "TRANSVERSAL_BULK"],
+      "providers": [{"provider": "STORY_CREATOR_J02_DECOMPOSITION_PRIOR_ART", "assessment": "HISTORICAL_ONLY_EXTRACT_GENERIC_CORE_THEN_REQUALIFY", "evidence_ref": "lf_eventos://20327"}],
+      "champion_state": "NO_CURRENT_GENERIC_CHAMPION"
+    },
+    {
+      "decision_family": "TEST_CHANGE_CLASSIFICATION",
+      "plan_units": ["TST-02"],
+      "candidate_methods": ["DETERMINISTIC_CHANGE_SIGNAL_EXTRACTION", "SEMANTIC_CHANGE_SURFACE_CLASSIFICATION", "HYBRID_CHANGE_SIGNAL_FUSION"],
+      "providers": [],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "TEST_QUALITY_OBJECTIVE_SELECTION",
+      "plan_units": ["TST-04"],
+      "candidate_methods": ["OBLIGATION_TRACEBACK_OBJECTIVE_SELECTION", "RISK_IMPACT_OBJECTIVE_SELECTION", "HYBRID_OBJECTIVE_SELECTION"],
+      "providers": [],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "TEST_FAMILY_SELECTION",
+      "plan_units": ["TST-07"],
+      "candidate_methods": ["SIGNAL_RISK_IMPACT_HISTORY_SELECTION", "REQUIRED_OPTIONAL_NOT_REQUIRED_CLASSIFICATION"],
+      "providers": [],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "TEST_METHOD_SELECTION",
+      "plan_units": ["TST-08"],
+      "candidate_methods": ["PROPERTY_BASED", "STATE_MACHINE", "BENCHMARK", "LOAD", "STRESS", "SOAK", "MODEL_BASED"],
+      "providers": [{"provider": "PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0", "assessment": "BENCHMARK_SUPPORT_ONLY_NOT_GENERAL_METHOD_CHAMPION"}],
+      "champion_state": "NO_GENERAL_CHAMPION"
+    },
+    {
+      "decision_family": "TEST_DEPTH_BUDGET_ESCALATION",
+      "plan_units": ["TST-09"],
+      "candidate_methods": ["CRITICALITY_TIERED_DEPTH", "OBLIGATION_PRESERVING_BUDGET", "ADAPTIVE_EVIDENCE_ESCALATION"],
+      "providers": [
+        {"provider": "TIMEOUT_PHASE_BUDGET_POLICY@1.0.0", "assessment": "SUPPORTING_TIMEOUT_POLICY_NOT_TEST_DEPTH_CHAMPION"},
+        {"provider": "PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0", "assessment": "SUPPORTING_MEASUREMENT_ONLY"}
+      ],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "TEST_SAFE_FALLBACK",
+      "plan_units": ["TST-10"],
+      "candidate_methods": ["QUALIFIED_ROBUST_DEFAULT", "FULL_SAFE_MIX"],
+      "providers": [{"provider": "FULL_SAFE_MIX_V1_CANDIDATE", "assessment": "CONSUMER_FIXTURE_ONLY_NOT_CURRENT_QUALIFIED_METHOD"}],
+      "champion_state": "NO_QUALIFIED_ROBUST_DEFAULT_YET"
+    },
+    {
+      "decision_family": "TEST_RESULT_JUDGE_SELECTION",
+      "plan_units": ["TST-20"],
+      "candidate_methods": ["DETERMINISTIC", "BASELINE", "EQUIVALENCE", "SEMANTIC", "VISUAL", "INDEPENDENT"],
+      "providers": [
+        {"provider": "CONTROL_EQUIVALENCE_JUDGE@1.0.0", "assessment": "EQUIVALENCE_CANDIDATE_NEEDS_FAMILY_BENCHMARK_HOLDOUT"},
+        {"provider": "ASSURANCE_EVALUATOR@1.0.0", "assessment": "SEMANTIC_ASSURANCE_CANDIDATE_NEEDS_FAMILY_BENCHMARK_HOLDOUT"},
+        {"provider": "VISUAL_EVIDENCE_GATE@1.0.0", "assessment": "VISUAL_CANDIDATE_NEEDS_FAMILY_BENCHMARK_HOLDOUT"},
+        {"provider": "INDEPENDENT_ASSURANCE@1.0.0", "assessment": "INDEPENDENCE_MEASUREMENT_ORACLE"},
+        {"provider": "REVERSIBLE_CANDIDATE_VERIFICATION@1.0.1", "assessment": "ROLLBACK_VERIFICATION_SUBFAMILY_CANDIDATE"}
+      ],
+      "champion_state": "UNASSIGNED_PER_JUDGE_SUBFAMILY_PENDING_QUALIFICATION"
+    },
+    {
+      "decision_family": "DEPLOYMENT_SURFACE_CLASSIFICATION",
+      "plan_units": ["DEP-02"],
+      "candidate_methods": ["CHANGESET_SURFACE_RULE_CLASSIFICATION", "SEMANTIC_SURFACE_CLASSIFICATION", "HYBRID_SURFACE_CLASSIFICATION"],
+      "providers": [{"provider": "DB_WRITE_TRANSPORT@1.0.0", "assessment": "DB_TRANSPORT_SELECTOR_ONLY_NOT_GENERAL_SURFACE_CLASSIFIER"}],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "DEPLOYMENT_RISK_BLAST_RADIUS",
+      "plan_units": ["DEP-03"],
+      "candidate_methods": ["DEPENDENCY_GRAPH_BLAST_RADIUS", "STATE_SHAREDNESS_RISK", "IMPACT_PROBABILITY_REVERSIBILITY", "HYBRID_BLAST_RISK_SYNTHESIS"],
+      "providers": [{"provider": "CAUSAL_EFFECT_LINEAGE@1.0.0", "assessment": "SUPPORTING_CAUSAL_PROOF_NOT_GENERAL_RISK_CHAMPION"}],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "DEPLOYMENT_STRATEGY_SELECTION",
+      "plan_units": ["DEP-04"],
+      "candidate_methods": ["DIRECT", "ROLLING", "CANARY", "BLUE_GREEN", "SHADOW", "STAGED"],
+      "providers": [],
+      "champion_state": "PLAN_METHODS_ONLY_NO_VERSIONED_PROVIDER"
+    },
+    {
+      "decision_family": "DEPLOYMENT_PROGRESSIVE_ANALYSIS",
+      "plan_units": ["DEP-18"],
+      "candidate_methods": ["BASELINE_COMPARISON", "CANARY_METRIC_COMPARISON", "SHADOW_COMPARISON", "CAUSAL_EFFECT_LINEAGE"],
+      "providers": [
+        {"provider": "CAUSAL_EFFECT_LINEAGE@1.0.0", "assessment": "SUPPORTING_CAUSAL_PROOF_NEEDS_DEPLOYMENT_FAMILY_BENCHMARK_HOLDOUT"},
+        {"provider": "PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0", "assessment": "PERFORMANCE_MEASUREMENT_SUPPORT_ONLY"}
+      ],
+      "champion_state": "UNASSIGNED_PENDING_QUALIFICATION"
+    }
+  ],
+  "global_result": {
+    "decision_families": 19,
+    "affected_units_covered": 19,
+    "champions_promoted": 0,
+    "historical_or_unverified_runtime_selection_forbidden": true,
+    "next_action": "Qualify Wave 2 families first with exact candidate versions, adversarial cases, family benchmark and independent holdout before any Champion/Challenger binding."
+  }
+}
