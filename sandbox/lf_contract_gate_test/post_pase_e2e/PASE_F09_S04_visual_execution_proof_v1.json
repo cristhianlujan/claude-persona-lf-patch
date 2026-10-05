@@ -1,0 +1,84 @@
+{
+  "applicability": {
+    "combined_required": [
+      "VISUAL_EVIDENCE_GATE",
+      "GITHUB_RECONCILIATION",
+      "FINAL_EVIDENCE",
+      "CLOSURE_GATE"
+    ],
+    "duplicate_execution_count": 0,
+    "not_applicable": [
+      "AUTHORITY_READBACK",
+      "RUNTIME_DEPLOY_VERIFICATION"
+    ],
+    "post_pase_required": [
+      "GITHUB_RECONCILIATION",
+      "FINAL_EVIDENCE",
+      "CLOSURE_GATE"
+    ],
+    "unplanned_control_count": 0
+  },
+  "closure": {
+    "terminal_status": "CLOSED",
+    "verdict": "PASS",
+    "verdict_sha256": "7845d3633ad385d7b3226545a16db3c80139d50064c63a3d64988f55e21191e9"
+  },
+  "dispatch": {
+    "execution_order": [
+      "GITHUB_RECONCILIATION",
+      "FINAL_EVIDENCE",
+      "CLOSURE_GATE"
+    ],
+    "persisted_receipt_count": 3,
+    "plan_digest": "70191430b2e0bff87366998e58890d6c61b4cb4602d56a8d19b2498c401042fd",
+    "receipt_digests": [
+      "7d8581f013fe287718ba365b6c2cdae177b279835c7cee879e40ab4e668ceaef",
+      "51be66515decf8b42e24b4db96e4648518141cf6a56d4426f112d6c457a1c2d5",
+      "1b43800ee311dbc93a585e6813a9b2df7573e43eeb10555b6bd8b655633cacc2"
+    ]
+  },
+  "final_evidence": {
+    "manifest_sha256": "3261bf125418069b29fa3ba0ceed41d95b565f60522e00b944ce4594032a6824",
+    "receipt_count": 1
+  },
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "readiness_execution_identity_sha256": "15bb7b5a4701147072b9a35989a4f9a90aa573a8afaa544d78bc71628aab003d",
+  "readiness_plan_digest_sha256": "4e3ded57442922da1d9858fd89cc10cccd1b716d19f36d00e18b9ddb38c7d7df",
+  "readiness_source_head": "6ae891bb51c0531cf5b573e1df395ab0a1917c84",
+  "safety": {
+    "deep_visual_helpers_executed": false,
+    "live_domain_controls_executed": false,
+    "pase_workflow_activated": false,
+    "production_touched": false,
+    "runtime_or_deploy_touched": false,
+    "sandbox_only": true,
+    "zip_used_as_authority": false
+  },
+  "scenario": "VISUAL",
+  "scenario_exact_head": "197fb32bf25164d5c8d85ae9895c57c0dce0d242",
+  "scenario_run_identity_sha256": "0057b1c4ca7041f41eadc3f6899827fde4ca46082b6003375e62cd923df854f4",
+  "schema_version": "PASE_F09_S04_VISUAL_EXECUTION_PROOF_V1",
+  "verification_method": "DETERMINISTIC_CONTRACT_EXECUTION_FROM_EXACT_VISUAL_GATE_SOURCE_DECLARATIONS",
+  "visual_gate": {
+    "alias_resolution_count": 1,
+    "canonical_execution_count": 1,
+    "canonical_gate": "VISUAL_EVIDENCE_GATE",
+    "canonical_gate_blob_sha1": "367e96368ea5aa3b07feff6fc0830139ac21bffc",
+    "canonical_test_blob_sha1": "601c0ccc3eb3003d29c1645c64a0de29ece45895",
+    "helper_count": 5,
+    "helper_order": [
+      "HUMAN_REVIEW_CONVERGENCE_CONTRACT",
+      "DUAL_OCR_RECONCILIATION_CONTRACT",
+      "ICON_STRUCTURAL_ROLE_REGRESSION",
+      "MULTISCREEN_STRUCTURAL_GENERALIZATION_REGRESSION",
+      "LEGACY_P0_VISUAL_QUALITY_REGRESSION_BUNDLE"
+    ],
+    "legacy_alias": "P0_VISUAL_RUNTIME",
+    "negative_failed_helper_code": "FAIL_VISUAL_EVIDENCE_GATE_CHECK",
+    "negative_missing_helper_code": "FAIL_VISUAL_EVIDENCE_GATE_HELPER_MISSING",
+    "owner_scope": "LF_GOVERNANCE",
+    "registry_manifest_sha256": "7b0ddb708c6cca3c413dd87bfcdcee85136e241e7f7a97c279c91d3f936e2307",
+    "version": "1.0.0"
+  },
+  "work_code": "PASE-ATOM-F09-S04"
+}
