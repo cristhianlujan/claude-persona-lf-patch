@@ -1,0 +1,85 @@
+{
+  "schema_version": "TESTING_WAVE1_DESIGN_PIPELINE_CONTRACT_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "units": [
+    "TST-02",
+    "TST-03",
+    "TST-04"
+  ],
+  "stage": "TESTING",
+  "story_required": false,
+  "agent_task_required": false,
+  "steps": {
+    "TST-02": {
+      "name": "CHANGE_UNDER_TEST_CLASSIFICATION",
+      "mapped_assets": [
+        "CAPABILITY_SELECTOR",
+        "public.lf_strategy_test_characteristic_catalog"
+      ],
+      "input_contracts": [
+        "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+        "TESTING_ADMISSION_CONTRACT_V1"
+      ],
+      "output_contract": "TEST_CHANGE_SIGNALS_V1",
+      "required_output": [
+        "material_change_signals[]",
+        "signal_evidence_refs[]",
+        "uncertainties[]"
+      ],
+      "acceptance": "MATERIAL_CHANGE_SIGNALS_EXPLICIT_AND_TRACEABLE"
+    },
+    "TST-03": {
+      "name": "RISK_AND_CRITICALITY_ASSESSMENT",
+      "mapped_assets": [
+        "SAFE_CHANGE_ADMISSION",
+        "public.lf_strategy_test_characteristic_catalog"
+      ],
+      "input_contracts": [
+        "TEST_CHANGE_SIGNALS_V1"
+      ],
+      "output_contract": "TEST_RISK_ASSESSMENT_V1",
+      "required_output": [
+        "risks[]",
+        "criticality",
+        "evidence_refs[]",
+        "uncertainties[]"
+      ],
+      "risk_item_requires": [
+        "risk_code",
+        "reason",
+        "evidence_refs"
+      ],
+      "acceptance": "EVERY_MATERIAL_RISK_HAS_REASON_AND_EVIDENCE_UNCERTAINTY_EXPLICIT"
+    },
+    "TST-04": {
+      "name": "QUALITY_OBJECTIVE_SELECTION",
+      "mapped_assets": [
+        "public.lf_strategy_test_characteristic_catalog",
+        "CAPABILITY_SELECTOR"
+      ],
+      "input_contracts": [
+        "TEST_RISK_ASSESSMENT_V1"
+      ],
+      "output_contract": "TEST_QUALITY_OBJECTIVES_V1",
+      "required_output": [
+        "quality_objectives[]",
+        "evidence_refs[]"
+      ],
+      "objective_item_requires": [
+        "objective_code",
+        "reason",
+        "evidence_refs"
+      ],
+      "acceptance": "EVERY_REQUIRED_OBJECTIVE_HAS_TRACEABLE_JUSTIFICATION"
+    }
+  },
+  "sequence": [
+    "TST-02",
+    "TST-03",
+    "TST-04"
+  ],
+  "no_parallel_engine": true,
+  "source_refs": [
+    "lf_eventos://20334"
+  ]
+}
