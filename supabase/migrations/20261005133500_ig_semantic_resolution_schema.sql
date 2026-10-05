@@ -1,5 +1,14 @@
 begin;
 
+-- Temporary governed owner context. The stable supabase_admin membership remains
+-- SET=false; this migration creates a secondary postgres-granted SET capability
+-- and removes it before commit.
+grant lf_governance_owner_v3 to postgres
+  with admin false, inherit false, set true
+  granted by postgres;
+grant create on schema private to lf_governance_owner_v3;
+set local role lf_governance_owner_v3;
+
 do $registry$
 declare
   v_required text[] := array['evidence_schema_version','final_normalized','trace'];
@@ -61,5 +70,34 @@ begin
   if private.fn_lf_typed_evidence_payload_valid_v3('semantic-resolution/v1',v_ok||'{"readiness":true}'::jsonb) is true then raise exception 'BLOCK_M3_7_READINESS_ACCEPTED'; end if;
 end
 $verify$;
+
+reset role;
+revoke create on schema private from lf_governance_owner_v3;
+revoke lf_governance_owner_v3 from postgres granted by postgres;
+
+do $security_restore$
+declare
+  v_membership_restored boolean;
+begin
+  select count(*)=1
+         and bool_and(pg_get_userbyid(am.grantor)='supabase_admin'
+                      and am.admin_option
+                      and not am.inherit_option
+                      and not am.set_option)
+    into v_membership_restored
+  from pg_auth_members am
+  join pg_roles granted on granted.oid=am.roleid
+  join pg_roles member on member.oid=am.member
+  where granted.rolname='lf_governance_owner_v3'
+    and member.rolname='postgres';
+
+  if not coalesce(v_membership_restored,false) then
+    raise exception 'BLOCK_M3_7_GOVERNANCE_MEMBERSHIP_NOT_RESTORED';
+  end if;
+  if has_schema_privilege('lf_governance_owner_v3','private','CREATE') then
+    raise exception 'BLOCK_M3_7_GOVERNANCE_CREATE_NOT_RESTORED';
+  end if;
+end
+$security_restore$;
 
 commit;
