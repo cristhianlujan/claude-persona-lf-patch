@@ -1,5 +1,12 @@
 begin;
 
+-- One-time bootstrap through the legacy role switch. The temporary postgres-granted
+-- SET capability is removed before commit; future governed writes no longer need it.
+grant lf_governance_owner_v3 to postgres
+  with admin false, inherit false, set true
+  granted by postgres;
+set local role lf_governance_owner_v3;
+
 create or replace function private.fn_guard_governed_relation_v3()
 returns trigger
 language plpgsql
@@ -26,8 +33,29 @@ $$;
 comment on function private.fn_guard_governed_relation_v3() is
 'Governed relation guard v3. Authorized writer is any role that is a member of lf_governance_owner_v3. This preserves relation guards while avoiding temporary GRANT/SET ROLE/REVOKE choreography for the engineering executor.';
 
+reset role;
+revoke lf_governance_owner_v3 from postgres granted by postgres;
+
 do $verify$
+declare
+  v_membership_restored boolean;
 begin
+  select count(*)=1
+         and bool_and(pg_get_userbyid(am.grantor)='supabase_admin'
+                      and am.admin_option
+                      and not am.inherit_option
+                      and not am.set_option)
+    into v_membership_restored
+  from pg_auth_members am
+  join pg_roles granted on granted.oid=am.roleid
+  join pg_roles member on member.oid=am.member
+  where granted.rolname='lf_governance_owner_v3'
+    and member.rolname='postgres';
+
+  if not coalesce(v_membership_restored,false) then
+    raise exception 'BLOCK_GOVERNED_WRITER_MEMBERSHIP_NOT_RESTORED';
+  end if;
+
   if not pg_has_role('postgres','lf_governance_owner_v3','MEMBER') then
     raise exception 'BLOCK_GOVERNED_WRITER_POSTGRES_NOT_MEMBER';
   end if;
