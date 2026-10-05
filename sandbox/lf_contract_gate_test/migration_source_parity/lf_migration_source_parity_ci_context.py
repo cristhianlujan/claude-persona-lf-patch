@@ -162,6 +162,107 @@ def fail(code: str, detail: str = "") -> None:
     raise SystemExit(f"{code}{suffix}")
 
 
+def exact_parity_applies(version: str, classification_baseline_end: str) -> bool:
+    """Exact Git↔ledger parity is enforced only after the frozen baseline."""
+    return version > classification_baseline_end
+
+
+def verify_grandfather_baseline(
+    *,
+    observed_count: str,
+    observed_sha: str,
+    expected_count: str,
+    expected_sha: str,
+) -> None:
+    if observed_count != expected_count or observed_sha != expected_sha:
+        fail(
+            "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE",
+            f"expected={expected_count}/{expected_sha} observed={observed_count}/{observed_sha}",
+        )
+
+
+def enforce_no_backdated_changed_migrations(
+    name_status_text: str,
+    classification_baseline_end: str,
+    *,
+    migrations: pathlib.Path | None = None,
+) -> None:
+    """Reject pre-baseline mutation except governed source-only reconciliation."""
+    for raw in name_status_text.splitlines():
+        if not raw.strip():
+            continue
+        fields = raw.split("\t")
+        status = fields[0]
+        paths = [
+            item.replace("\\", "/")
+            for item in fields[1:]
+            if item.replace("\\", "/").startswith("supabase/migrations/")
+        ]
+        if not paths:
+            continue
+        if status not in {"A", "M"} or len(paths) != 1:
+            fail("FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE", raw)
+        repo_path = paths[0]
+        filename = repo_path.rsplit("/", 1)[-1]
+        match = FILENAME_RE.fullmatch(filename)
+        if match is None:
+            fail("FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE", repo_path)
+        version, name = match.groups()
+        if exact_parity_applies(version, classification_baseline_end):
+            continue
+        if migrations is not None:
+            source = migrations / filename
+            if source.is_file():
+                try:
+                    source_sql = source.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError):
+                    source_sql = ""
+                if reconciliation_source_metadata(source_sql, version=version, name=name):
+                    continue
+        fail(
+            "FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE",
+            f"path={repo_path} baseline_end={classification_baseline_end}",
+        )
+
+
+def enforce_pr_baseline_boundary(
+    classification_baseline_end: str,
+    migrations: pathlib.Path,
+) -> None:
+    if os.environ.get("GITHUB_EVENT_NAME", "").strip() != "pull_request":
+        return
+    base_ref = os.environ.get("GITHUB_BASE_REF", "").strip()
+    if not base_ref:
+        fail("FAIL_LF_MIGRATION_SOURCE_FIRST_BASE_REF", "<empty>")
+    if not re.fullmatch(r"[A-Za-z0-9._/-]+", base_ref) or ".." in base_ref.split("/"):
+        fail("FAIL_LF_MIGRATION_SOURCE_FIRST_BASE_REF", base_ref)
+    base = f"origin/{base_ref}"
+    try:
+        subprocess.run(
+            ["git", "fetch", "--no-tags", "origin", f"+refs/heads/{base_ref}:refs/remotes/origin/{base_ref}"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+            timeout=60,
+        )
+        proc = subprocess.run(
+            ["git", "diff", "--name-status", f"{base}...HEAD", "--", "supabase/migrations"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        fail("FAIL_LF_MIGRATION_BASELINE_GIT_CONTEXT", type(exc).__name__)
+    enforce_no_backdated_changed_migrations(
+        proc.stdout,
+        classification_baseline_end,
+        migrations=migrations,
+    )
+
+
 def _classify_source_first_pending(
     *,
     local_versions: set[str],
@@ -989,11 +1090,13 @@ def main() -> int:
     observed_grandfathered_count, observed_grandfathered_sha = read_single_row(
         grandfather_file, 2, "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE_ROW"
     )
-    if observed_grandfathered_count != grandfathered_count or observed_grandfathered_sha != grandfathered_sha:
-        fail(
-            "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE",
-            f"expected={grandfathered_count}/{grandfathered_sha} observed={observed_grandfathered_count}/{observed_grandfathered_sha}",
-        )
+    verify_grandfather_baseline(
+        observed_count=observed_grandfathered_count,
+        observed_sha=observed_grandfathered_sha,
+        expected_count=grandfathered_count,
+        expected_sha=grandfathered_sha,
+    )
+    enforce_pr_baseline_boundary(classification_baseline_end, migrations)
 
     remote_all: dict[str, tuple[str, str]] = {}
     inline_counts: dict[str, int] = {}
@@ -1021,6 +1124,8 @@ def main() -> int:
             continue
         version, name = match.groups()
         if version <= cutover:
+            continue
+        if not exact_parity_applies(version, classification_baseline_end):
             continue
         local_versions_all.add(version)
         source_sql = path.read_text(encoding="utf-8")
@@ -1076,6 +1181,8 @@ def main() -> int:
 
     remote: dict[str, tuple[str, str]] = {}
     for version, (name, content_proof) in remote_all.items():
+        if not exact_parity_applies(version, classification_baseline_end):
+            continue
         if not managed(name) and version not in reconciliation_versions:
             continue
         remote[version] = (name, remote_content_sha256(content_proof, version))
@@ -1146,7 +1253,7 @@ def main() -> int:
         )
     else:
         print(
-            f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_cutover={len(local)} "
+            f"PASS_LF_MIGRATION_SOURCE_PARITY: checkpoint={checkpoint_path.name} post_baseline={len(local)} "
             f"legacy={legacy_count} sha256={legacy_sha} grandfathered={grandfathered_count}/{grandfathered_sha} "
             f"classification_baseline_end={classification_baseline_end} direct={direct_count} "
             f"cli_statement_storage={cli_count}"
