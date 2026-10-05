@@ -1,10 +1,11 @@
 begin;
 
--- One-time bootstrap through the legacy role switch. The temporary postgres-granted
--- SET capability is removed before commit; future governed writes no longer need it.
+-- One-time bootstrap through the legacy role switch. Temporary privileges are
+-- removed before commit; future governed relation writes no longer need them.
 grant lf_governance_owner_v3 to postgres
   with admin false, inherit false, set true
   granted by postgres;
+grant create on schema private to lf_governance_owner_v3;
 set local role lf_governance_owner_v3;
 
 create or replace function private.fn_guard_governed_relation_v3()
@@ -34,6 +35,7 @@ comment on function private.fn_guard_governed_relation_v3() is
 'Governed relation guard v3. Authorized writer is any role that is a member of lf_governance_owner_v3. This preserves relation guards while avoiding temporary GRANT/SET ROLE/REVOKE choreography for the engineering executor.';
 
 reset role;
+revoke create on schema private from lf_governance_owner_v3;
 revoke lf_governance_owner_v3 from postgres granted by postgres;
 
 do $verify$
@@ -54,6 +56,10 @@ begin
 
   if not coalesce(v_membership_restored,false) then
     raise exception 'BLOCK_GOVERNED_WRITER_MEMBERSHIP_NOT_RESTORED';
+  end if;
+
+  if has_schema_privilege('lf_governance_owner_v3','private','CREATE') then
+    raise exception 'BLOCK_GOVERNED_WRITER_SCHEMA_CREATE_NOT_RESTORED';
   end if;
 
   if not pg_has_role('postgres','lf_governance_owner_v3','MEMBER') then
