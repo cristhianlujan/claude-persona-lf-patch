@@ -1,0 +1,11 @@
+update programacion.engineering_plan_units
+set unit_metadata = jsonb_set(
+  coalesce(unit_metadata,'{}'::jsonb),
+  '{action_specs_v1}',
+  coalesce(unit_metadata->'action_specs_v1','{}'::jsonb) || jsonb_build_object(
+    'REPRODUCIBILITY_NEGATIVE',
+    $spec${"status":"READY","precision":"EXPLICIT","action_kind":"DETERMINISTIC_REPRODUCIBILITY_AND_SEMANTIC_NEGATIVE","target":{"function":"programacion.fn_input_deterministic_assess(jsonb,text,jsonb,jsonb)","fresh_screen_sample_size":3,"families_per_screen":47,"fresh_executions_per_input":2,"historical_baseline":"13x47_REUSE_ONLY"},"sample_selection":{"mode":"FRESHEST_ELIGIBLE_COMPLETED_SCREEN_SAMPLE","size":3,"tie_break":"pantalla_id ASC","selector_query":"select pantalla_id from (select pantalla_id,max(created_at) last_at from programacion.input_readiness_runs where status='COMPLETED' group by pantalla_id) s order by last_at desc nulls last,pantalla_id asc limit 3"},"action_steps":["RUN_SAMPLE_SELECTOR_ONCE_AND_FREEZE_3_SCREEN_IDS","REUSE_CURRENT_SUBJECT_GRAPH_CONTRACT_INPUTS_FOR_47_FAMILIES_PER_SELECTED_SCREEN","CALL_FN_INPUT_DETERMINISTIC_ASSESS_TWICE_PER_IDENTICAL_INPUT","CAPTURE_CANONICAL_JSON_BYTES_AND_SHA256_FOR_RUN1_AND_RUN2","ASSERT_BYTE_IDENTICAL_AND_SHA_EQUAL_FOR_ALL_3x47","RUN_ONE_DECLARED_SEMANTIC_SOURCE_INPUT_NEGATIVE","ASSERT_DETERMINISTIC_FACADE_REJECTS_OR_REFUSES_SEMANTIC_SOURCE","USE_13x47_HISTORY_ONLY_FOR_PARITY_READBACK_NOT_FRESH_EXECUTION","PERSIST_DONE_ON_PASS","USE_RETURNED_BOOTSTRAP"],"expected":{"fresh_scope":"3x47","reproducibility":"BYTE_IDENTICAL_AND_SAME_SHA","semantic_source_negative":"REJECTED","fresh_13x47":"FORBIDDEN_UNLESS_FALLBACK_TRIGGER"},"execution_input_override":{"inputs":{"queries":["select pantalla_id from (select pantalla_id,max(created_at) last_at from programacion.input_readiness_runs where status='COMPLETED' group by pantalla_id) s order by last_at desc nulls last,pantalla_id asc limit 3"],"db_objects":["programacion.fn_input_deterministic_assess(jsonb,text,jsonb,jsonb)","programacion.input_readiness_runs","programacion.input_family_assessments"],"assets":[],"events":[],"artifacts":[]},"missing":[],"missing_typed":[],"action_handler":"DETERMINISTIC_REPRODUCIBILITY_AND_SEMANTIC_NEGATIVE"}}$spec$::jsonb
+  ),
+  true
+)
+where plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' and unit_code='M2.8';
