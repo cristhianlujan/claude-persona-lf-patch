@@ -16,6 +16,14 @@ Allowed mix modes are `SINGLE`, `UNION_COMPLEMENTARY`, `CONSENSUS_REQUIRED`, `AU
 
 Methods should consume the same targeted evidence base where possible. The portfolio returns exact method/version, evidence refs, output contract, qualification/benchmark digests and mix metadata so downstream normalized results can preserve per-method provenance and contradictions.
 
+## Qualification protocol
+
+`method_qualification_protocol_v1.json` defines the mandatory path from exact identity/currentness through contract validation, adversarial validation, family benchmark, holdout and promotion. A current/released capability is not automatically a method Champion: family-specific qualification still applies.
+
+## Candidate inventory
+
+`method_candidate_inventory_v1.json` records the methods named by the Programming Agent plans and existing live providers that may be reusable. It deliberately promotes zero Champions until exact family qualification exists. Historical Story Creator prior art and plan-only method names remain candidates, not active authority.
+
 ## Fallback
 
 Preferred policy: `SPECIALIST_IF_CLEAR -> JUSTIFIED_MIX -> TARGETED_EVIDENCE -> QUALIFIED_ROBUST_DEFAULT -> BLOCK`. No-signal or contradictory cases must not silently admit an unqualified or stale method.
