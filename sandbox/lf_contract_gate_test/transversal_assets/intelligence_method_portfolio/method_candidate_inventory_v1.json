@@ -1,0 +1,266 @@
+{
+  "schema_version": "INTELLIGENCE_METHOD_CANDIDATE_INVENTORY_V1",
+  "observed_at": "2026-10-05",
+  "purpose": "Inventory candidate methods and existing providers without promoting any Champion before family-specific qualification.",
+  "selector_infrastructure": {
+    "capability": "CAPABILITY_SELECTOR",
+    "version": "1.0.0",
+    "state": "CURRENT_RELEASED",
+    "role": "SELECTOR_INFRASTRUCTURE_NOT_A_DECISION_METHOD",
+    "source_ref": "github://cristhianlujan/claude-persona-lf-patch@3d2e347b6309f55654e9d34ded18dc99d00d262c/sandbox/lf_contract_gate_test/transversal_assets/capability_selector/capability_selector_v1.py"
+  },
+  "decision_families": [
+    {
+      "decision_family": "ANALYSIS_CHANGE_CLASSIFICATION",
+      "plan_units": ["A2"],
+      "candidate_methods": [
+        "SIGNAL_BASED_MULTI_LABEL_CLASSIFICATION",
+        "DETERMINISTIC_HARD_INVARIANT_VETO"
+      ],
+      "existing_provider_assessment": [
+        {
+          "provider": "SAFE_CHANGE_ADMISSION@1.0.0",
+          "state": "CURRENT_RELEASED",
+          "assessment": "RELATED_BUT_NOT_SEMANTICALLY_EQUIVALENT",
+          "reason": "Safe Change Admission classifies change admission and execution permission, not Analysis L1/L2/L3 depth. Reuse requires an explicit compatible contract rather than accidental coupling."
+        }
+      ],
+      "champion_state": "UNASSIGNED_PENDING_QUALIFICATION"
+    },
+    {
+      "decision_family": "ANALYSIS_TARGETED_RESEARCH",
+      "plan_units": ["A3"],
+      "candidate_methods": [
+        "CANONICAL_INTERNAL_FIRST",
+        "EXACT_SOURCE_TARGETED_LOOKUP",
+        "EXTERNAL_PRIMARY_SOURCE_ESCALATION",
+        "BROAD_WEB_LAST_RESORT"
+      ],
+      "existing_provider_assessment": [
+        {
+          "provider": "TARGETED_EVIDENCE_ACQUISITION@1.0.0",
+          "state": "CURRENT_RELEASED",
+          "assessment": "STRONG_PROVIDER_CANDIDATE_NEEDS_FAMILY_BENCHMARK_HOLDOUT",
+          "role": "DETERMINISTIC_EVIDENCE_ACQUISITION_PLANNER"
+        },
+        {
+          "provider": "EKB:PASE-FAST-LOOKUP-MAP-001",
+          "state": "ACTIVE_RULE",
+          "assessment": "REFERENCE_PROTOCOL_NOT_VERSIONED_METHOD_PROVIDER"
+        }
+      ],
+      "champion_state": "UNASSIGNED_PENDING_QUALIFICATION"
+    },
+    {
+      "decision_family": "ANALYSIS_REQUIREMENT_SYNTHESIS",
+      "plan_units": ["A6"],
+      "candidate_methods": [
+        "OUTCOME_FIRST_REQUIREMENT_SYNTHESIS",
+        "CONTRACT_FIRST_REQUIREMENT_SYNTHESIS",
+        "SPECIALIST_SECTION_COMPOSITION"
+      ],
+      "existing_provider_assessment": [],
+      "note": "CAPABILITY_SELECTOR may select late-bound specialists but is not itself the requirement-synthesis method.",
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "ANALYSIS_RISK_QUALITY_SIGNAL_DERIVATION",
+      "plan_units": ["A7"],
+      "candidate_methods": [
+        "INVARIANT_FIRST_RISK_DERIVATION",
+        "IMPACT_PROBABILITY_REVERSIBILITY",
+        "MULTI_SIGNAL_RISK_SYNTHESIS"
+      ],
+      "existing_provider_assessment": [],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "ANALYSIS_PACKAGE_QUALIFICATION",
+      "plan_units": ["A9"],
+      "candidate_methods": [
+        "STRUCTURAL_AUTHORITY_CHECK_PLUS_SEPARATE_SEMANTIC_JUDGE",
+        "INDEPENDENT_ASSURANCE_SUPPORTED_JUDGMENT"
+      ],
+      "existing_provider_assessment": [
+        {
+          "provider": "ASSURANCE_EVALUATOR@1.0.0",
+          "state": "CURRENT_RELEASED_WITH_CORE_QUALIFICATION",
+          "assessment": "SUPPORTING_CANDIDATE_NEEDS_ANALYSIS_PACKAGE_FAMILY_BENCHMARK_HOLDOUT"
+        },
+        {
+          "provider": "INDEPENDENT_ASSURANCE@1.0.0",
+          "state": "CURRENT_RELEASED",
+          "assessment": "SUPPORTING_ORACLE_CAPABILITY_NOT_YET_A_FAMILY_CHAMPION"
+        }
+      ],
+      "champion_state": "UNASSIGNED_PENDING_QUALIFICATION"
+    },
+    {
+      "decision_family": "PROGRAMMING_IMPLEMENTATION_STRATEGY",
+      "plan_units": ["PG-03"],
+      "candidate_methods": [
+        "REPRODUCE_FIRST_TDD",
+        "CONTRACT_FIRST",
+        "MIGRATION_COMPATIBILITY_FIRST",
+        "REFACTOR_PRESERVING",
+        "BOUNDED_TRANSFORMATION",
+        "STAGED_IMPLEMENTATION"
+      ],
+      "existing_provider_assessment": [],
+      "champion_state": "PLAN_METHODS_ONLY_NO_VERSIONED_PROVIDER"
+    },
+    {
+      "decision_family": "PROGRAMMING_PARTITION_STRATEGY",
+      "plan_units": ["PG-04"],
+      "candidate_methods": [
+        "VERTICAL_SOLUTION",
+        "DOMAIN_CAPABILITY",
+        "TECHNICAL_LAYER",
+        "CONTRACT_API",
+        "RISK_ISOLATION",
+        "DEPENDENCY_DAG",
+        "TRANSVERSAL_BULK"
+      ],
+      "existing_provider_assessment": [
+        {
+          "provider": "STORY_CREATOR_J02_DECOMPOSITION_PRIOR_ART",
+          "state": "HISTORICAL_PRIOR_ART",
+          "assessment": "EXTRACT_GENERIC_CORE_THEN_REQUALIFY",
+          "evidence_ref": "lf_eventos://20327"
+        }
+      ],
+      "champion_state": "NO_CURRENT_GENERIC_CHAMPION"
+    },
+    {
+      "decision_family": "TEST_FAMILY_SELECTION",
+      "plan_units": ["TST-07"],
+      "candidate_methods": [
+        "SIGNAL_RISK_IMPACT_HISTORY_SELECTION",
+        "REQUIRED_OPTIONAL_NOT_REQUIRED_CLASSIFICATION"
+      ],
+      "existing_provider_assessment": [],
+      "champion_state": "NO_VERSIONED_METHOD_PROVIDER_YET"
+    },
+    {
+      "decision_family": "TEST_METHOD_SELECTION",
+      "plan_units": ["TST-08"],
+      "candidate_methods": [
+        "PROPERTY_BASED",
+        "STATE_MACHINE",
+        "BENCHMARK",
+        "LOAD",
+        "STRESS",
+        "SOAK",
+        "MODEL_BASED"
+      ],
+      "existing_provider_assessment": [
+        {
+          "provider": "PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0",
+          "state": "CURRENT_RELEASED_WITH_QUALIFICATION",
+          "assessment": "BENCHMARK_SUPPORT_CANDIDATE_ONLY_NOT_GENERAL_TEST_METHOD_CHAMPION",
+          "qualification_scope": "GENERIC_HARNESS_SYNTHETIC_QUALIFICATION_NOT_IG_PRODUCTION_LATENCY"
+        }
+      ],
+      "champion_state": "NO_GENERAL_CHAMPION"
+    },
+    {
+      "decision_family": "TEST_SAFE_FALLBACK",
+      "plan_units": ["TST-10"],
+      "candidate_methods": [
+        "QUALIFIED_ROBUST_DEFAULT",
+        "FULL_SAFE_MIX"
+      ],
+      "existing_provider_assessment": [
+        {
+          "provider": "FULL_SAFE_MIX_V1_CANDIDATE",
+          "state": "CONSUMER_FIXTURE_REFERENCE_ONLY",
+          "assessment": "NOT_REGISTERED_CURRENT_QUALIFIED_METHOD",
+          "evidence_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/ig_consumer_binding_v1.json"
+        }
+      ],
+      "champion_state": "NO_QUALIFIED_ROBUST_DEFAULT_YET"
+    },
+    {
+      "decision_family": "TEST_RESULT_JUDGE_SELECTION",
+      "plan_units": ["TST-20"],
+      "candidate_methods": [
+        "DETERMINISTIC",
+        "BASELINE",
+        "EQUIVALENCE",
+        "SEMANTIC",
+        "VISUAL",
+        "INDEPENDENT"
+      ],
+      "existing_provider_assessment": [
+        {
+          "provider": "CONTROL_EQUIVALENCE_JUDGE@1.0.0",
+          "state": "CURRENT_RELEASED",
+          "assessment": "EQUIVALENCE_CANDIDATE_NEEDS_PORTFOLIO_QUALIFICATION_BENCHMARK_HOLDOUT"
+        },
+        {
+          "provider": "ASSURANCE_EVALUATOR@1.0.0",
+          "state": "CURRENT_RELEASED_WITH_CORE_QUALIFICATION",
+          "assessment": "SEMANTIC_ASSURANCE_CANDIDATE_NEEDS_FAMILY_BENCHMARK_HOLDOUT"
+        },
+        {
+          "provider": "VISUAL_EVIDENCE_GATE@1.0.0",
+          "state": "CURRENT_RELEASED",
+          "assessment": "VISUAL_CANDIDATE_NEEDS_PORTFOLIO_QUALIFICATION_BENCHMARK_HOLDOUT"
+        },
+        {
+          "provider": "INDEPENDENT_ASSURANCE@1.0.0",
+          "state": "CURRENT_RELEASED",
+          "assessment": "INDEPENDENCE_MEASUREMENT_ORACLE_NOT_AUTOMATIC_RESULT_JUDGE"
+        },
+        {
+          "provider": "REVERSIBLE_CANDIDATE_VERIFICATION@1.0.1",
+          "state": "CURRENT_RELEASED_WITH_STRONG_QUALIFICATION",
+          "assessment": "ROLLBACK_VERIFICATION_METHOD_CANDIDATE_NOT_GENERAL_JUDGE"
+        }
+      ],
+      "champion_state": "UNASSIGNED_PER_JUDGE_SUBFAMILY_PENDING_QUALIFICATION"
+    },
+    {
+      "decision_family": "DEPLOYMENT_STRATEGY_SELECTION",
+      "plan_units": ["DEP-04"],
+      "candidate_methods": [
+        "DIRECT",
+        "ROLLING",
+        "CANARY",
+        "BLUE_GREEN",
+        "SHADOW",
+        "STAGED"
+      ],
+      "existing_provider_assessment": [],
+      "champion_state": "PLAN_METHODS_ONLY_NO_VERSIONED_PROVIDER"
+    },
+    {
+      "decision_family": "DEPLOYMENT_PROGRESSIVE_ANALYSIS",
+      "plan_units": ["DEP-18"],
+      "candidate_methods": [
+        "BASELINE_COMPARISON",
+        "CANARY_METRIC_COMPARISON",
+        "SHADOW_COMPARISON",
+        "CAUSAL_EFFECT_LINEAGE"
+      ],
+      "existing_provider_assessment": [
+        {
+          "provider": "CAUSAL_EFFECT_LINEAGE@1.0.0",
+          "state": "CURRENT_RELEASED_WITH_QUALIFICATION",
+          "assessment": "SUPPORTING_CAUSAL_PROOF_CANDIDATE_NEEDS_DEPLOYMENT_FAMILY_BENCHMARK_HOLDOUT"
+        },
+        {
+          "provider": "PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0",
+          "state": "CURRENT_RELEASED_WITH_QUALIFICATION",
+          "assessment": "PERFORMANCE_MEASUREMENT_SUPPORT_ONLY_NOT_PROMOTION_JUDGE"
+        }
+      ],
+      "champion_state": "UNASSIGNED_PENDING_QUALIFICATION"
+    }
+  ],
+  "global_result": {
+    "champions_promoted": 0,
+    "reason": "Inventory intentionally refuses to promote concepts, historical prior art, or current capabilities lacking family-specific qualification/benchmark/holdout evidence.",
+    "next_action": "Build family benchmark/holdout packs starting with Wave 2 decision families, then qualify Champion/Challenger/mix bindings without altering CAPABILITY_SELECTOR."
+  }
+}
