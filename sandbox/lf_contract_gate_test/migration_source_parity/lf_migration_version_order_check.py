@@ -14,9 +14,9 @@ PASS = "PASS"
 FAIL_NOT_MONOTONIC = "FAIL_MIGRATION_VERSION_NOT_MONOTONIC"
 FAIL_MULTIPLE = "FAIL_MIGRATION_MULTIPLE_PER_PR"
 
-VERSION_RE = re.compile(r"^\\d{14}$")
+VERSION_RE = re.compile(r"^\d{14}$")
 MIGRATION_PATH_RE = re.compile(
-    r"^supabase/migrations/(?P<version>\\d{14})_[A-Za-z0-9][A-Za-z0-9_]*\\.sql$"
+    r"^supabase/migrations/(?P<version>\d{14})_[A-Za-z0-9][A-Za-z0-9_]*\.sql$"
 )
 
 
@@ -42,7 +42,7 @@ def evaluate(
     main_max = _require_version(main_max_version, "MAIN_MAX_VERSION")
     ledger_max = _require_version(ledger_max_version, "LEDGER_MAX_VERSION")
 
-    normalized = [path.replace("\\\\", "/").strip() for path in new_migration_paths if path.strip()]
+    normalized = [path.replace("\\", "/").strip() for path in new_migration_paths if path.strip()]
     if not normalized:
         return Verdict(PASS, 0)
     if len(normalized) > 1:
