@@ -1,0 +1,20 @@
+{
+  "schema_version": "PROGRAMMING_AGENT_WAVE1_BOUNDARY_MANIFEST_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "owner_scope": "SUPER_ADMIN",
+  "base_main_sha": "d721f633a7af9c1f694538bd31a5233f4f226611",
+  "scope": ["A1", "PG-01", "TST-01"],
+  "contracts": {
+    "A1": "analysis_request_context_v1.schema.json",
+    "PG-01": "programming_entry_contract_v1.json",
+    "TST-01": "testing_admission_contract_v1.json"
+  },
+  "principles": [
+    "NO_PARALLEL_ENGINE",
+    "NO_STORY_OR_AGENT_TASK_REQUIREMENT_FOR_ANALYSIS_INTAKE",
+    "CAPABILITY_SELECTOR_SELECTION_IS_NOT_EXECUTION_PERMISSION",
+    "LOSSLESS_STAGE_BOUNDARY_PROJECTION",
+    "NO_RUNTIME_OR_PRODUCTION_ACTIVATION"
+  ],
+  "evidence_refs": ["lf_eventos://20333", "lf_eventos://20334", "lf_eventos://20335"]
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": "PROGRAMMING_ENTRY_CONTRACT_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "owner_scope": "SUPER_ADMIN",
+  "canonical_upstream": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+  "legacy_story_contract_role": "PRIOR_ART_ONLY",
+  "admission": {
+    "required_analysis_verdict": "READY",
+    "analysis_package_digest_required": true,
+    "source_currentness_required": true,
+    "exact_target_identity_required": true,
+    "lossless_projection_required": true,
+    "story_identity_required": false,
+    "functional_version_required": false,
+    "agent_task_required_at_upstream_admission": false
+  },
+  "target_binding": {
+    "required_fields": ["repo_full_name", "base_head_sha", "source_snapshot_sha256"],
+    "write_scope_owned_by": "PG-05",
+    "repo_or_head_inference_forbidden": true
+  },
+  "compatibility": {
+    "existing_execution_bundle": "programacion.fn_agent_task_execution_bundle",
+    "existing_runtime_context": "programacion.fn_agent_task_runtime_context",
+    "action": "EXTEND_ENTRY_BOUNDARY_DO_NOT_DUPLICATE_RUNTIME",
+    "new_runtime_created": false,
+    "story_direct_consumption_after_cutover": false
+  },
+  "source_refs": ["lf_eventos://20333", "lf_eventos://20335"]
+}
