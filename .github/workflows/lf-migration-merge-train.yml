@@ -146,10 +146,11 @@ jobs:
           mkdir -p .lf_train/source
           if [ "$LF_MIGRATION_TRAIN_MODE" = "REAL" ]; then head_sha="$SYNC_HEAD"; else head_sha="$EVENT_HEAD"; fi
 
-          gh api --paginate "repos/$REPO/pulls/$PR/files?per_page=100" > .lf_train/pr-files.json
+          gh api --paginate --slurp "repos/$REPO/pulls/$PR/files?per_page=100" > .lf_train/pr-files-pages.json
           python3 - <<'PY'
           import json,re
-          rows=json.load(open(".lf_train/pr-files.json",encoding="utf-8"))
+          pages=json.load(open(".lf_train/pr-files-pages.json",encoding="utf-8"))
+          rows=[row for page in pages for row in page]
           mig=[]
           for row in rows:
               p=str(row.get("filename") or "")
