@@ -29,6 +29,7 @@
       ".github/workflows/lf-input-governance-recurate-dispatch.yml",
       ".github/workflows/lf-input-governance-recurate.yml",
       ".github/workflows/lf-material-currentness.yml",
+      ".github/workflows/lf-migration-merge-train.yml",
       ".github/workflows/lf-migration-source-parity-core.yml",
       ".github/workflows/lf-pack-validation-core.yml",
       ".github/workflows/pase-merge-gate.yml",
