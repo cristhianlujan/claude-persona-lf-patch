@@ -2,7 +2,7 @@
   "schema_version": "PROGRAMMING_AGENT_WAVE1_BOUNDARY_MANIFEST_V1",
   "state": "SOURCE_ONLY_CANDIDATE",
   "owner_scope": "SUPER_ADMIN",
-  "base_main_sha": "d721f633a7af9c1f694538bd31a5233f4f226611",
+  "base_main_sha": "1f467cbb771372b645378960485ab0931f53eb46",
   "scope": ["A1", "PG-01", "TST-01"],
   "contracts": {
     "A1": "analysis_request_context_v1.schema.json",
