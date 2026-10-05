@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 SQL = ROOT / "supabase/migrations/20261005212619_activate_migration_write_ahead_and_saga_v1.sql"
 text = SQL.read_text(encoding="utf-8")
 
