@@ -8,7 +8,7 @@ import sys
 import tempfile
 
 HERE = Path(__file__).resolve().parent
-BASELINE = "20261005203419"
+BASELINE = "20261005203801"
 
 
 def load(name: str, path: Path):
@@ -90,10 +90,10 @@ def main() -> int:
     # 3. Altering grandfather count/hash remains fail-closed.
     expect_system_exit(
         lambda: ctx.verify_grandfather_baseline(
-            observed_count="794",
+            observed_count="795",
             observed_sha="0" * 64,
-            expected_count="795",
-            expected_sha="2832bc9159a42a30d4d6322c3d95ee331b9a22adc67c51892bd9988ec6ec6b20",
+            expected_count="796",
+            expected_sha="94b5e2bb0b33e6e08b1b72b9af48423c2f3e8333945797313f8816a7ee18de38",
         ),
         "FAIL_LF_MIGRATION_GRANDFATHER_BASELINE",
     )
@@ -154,14 +154,14 @@ def main() -> int:
     # 8. Ordinary backdating fails; governed source-only historical recovery is allowed.
     expect_system_exit(
         lambda: ctx.enforce_no_backdated_changed_migrations(
-            "A\tsupabase/migrations/20261005203000_backdated.sql\n",
+            "A\tsupabase/migrations/20261005203730_backdated.sql\n",
             BASELINE,
         ),
         "FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE",
     )
     with tempfile.TemporaryDirectory() as raw:
         migrations = Path(raw)
-        filename = "20261005203000_historical_recovery.sql"
+        filename = "20261005203730_historical_recovery.sql"
         (migrations / filename).write_text(
             "-- LF_MIGRATION_RECONCILIATION_SOURCE_V1\n"
             "-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY\n"
@@ -170,7 +170,7 @@ def main() -> int:
             "-- reconciliation_owner_execution_id=EXEC-BASELINE-RECOVERY-001\n"
             "-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER\n"
             "-- source_authority=supabase_migrations.schema_migrations\n"
-            "-- source_version=20261005203000\n"
+            "-- source_version=20261005203730\n"
             "-- source_name=historical_recovery\n"
             "\nselect 1;\n",
             encoding="utf-8",
