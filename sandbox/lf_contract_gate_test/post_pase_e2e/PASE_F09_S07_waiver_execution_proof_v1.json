@@ -1,0 +1,84 @@
+{
+  "schema_version": "PASE_F09_S07_WAIVER_EXECUTION_PROOF_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F09-S07",
+  "scenario": "WAIVER",
+  "scenario_exact_head": "02cd74ecdfe85f9b27bc6ba156d718fe61b63227",
+  "scenario_run_identity_sha256": "2b69c445665688192a9c9194e70139291f9ea3f843e7e61d509720f5b572a464",
+  "readiness_source_head": "6ae891bb51c0531cf5b573e1df395ab0a1917c84",
+  "readiness_plan_digest_sha256": "4e3ded57442922da1d9858fd89cc10cccd1b716d19f36d00e18b9ddb38c7d7df",
+  "readiness_execution_identity_sha256": "46926bdff0540d2a6134f36e20837476a2100c83c308ed2232096c116f339850",
+  "verification_method": "REUSE_EXECUTED_IMMUTABLE_BLOBS_PLUS_CURRENT_EXACT_HEAD_SOURCE_READBACK",
+  "current_source_readback": {
+    "waiver_authority_core_blob_sha1": "839792277cf71f2a3f3585e2e1f0b21351da533c",
+    "waiver_authority_test_blob_sha1": "397a612f044332b359f251f8d8101948be73a376",
+    "closure_gate_core_blob_sha1": "f91433006bddcc51de53fe8ad6a2da3c7b3fa1e0",
+    "closure_gate_test_blob_sha1": "fc401aa4deb046f071e9356561ffa74722791d15",
+    "multi_scenario_harness_blob_sha1": "a9e3ada643dd8e1c640e64f8ff30ca470f5d4981"
+  },
+  "executed_immutable_evidence": [
+    {
+      "event_id": 19624,
+      "solution": "WAIVER_AUTHORITY_V1",
+      "core_blob_sha1": "839792277cf71f2a3f3585e2e1f0b21351da533c",
+      "test_blob_sha1": "397a612f044332b359f251f8d8101948be73a376",
+      "result": "PASS_WAIVER_AUTHORITY_V1 checks=12",
+      "current_blob_identity_match": true
+    },
+    {
+      "event_id": 19652,
+      "solution": "POST_PASE_CLOSURE_GATE_V1",
+      "core_blob_sha1": "f91433006bddcc51de53fe8ad6a2da3c7b3fa1e0",
+      "test_blob_sha1": "fc401aa4deb046f071e9356561ffa74722791d15",
+      "result": "PASS_POST_PASE_CLOSURE_GATE_V1 checks=26",
+      "current_blob_identity_match": true
+    },
+    {
+      "event_id": 19766,
+      "solution": "POST_PASE_MULTI_SCENARIO_E2E_V1",
+      "harness_blob_sha1": "a9e3ada643dd8e1c640e64f8ff30ca470f5d4981",
+      "scenario_count": 7,
+      "check_count": 144,
+      "duplicate_execution_count": 0,
+      "waiver_bound_to_exact_control": true,
+      "current_blob_identity_match": true
+    }
+  ],
+  "waiver_contract": {
+    "eligible_terminal_outcome": "FAIL",
+    "exact_control_binding": true,
+    "post_pase_execution_binding": true,
+    "plan_digest_binding": true,
+    "merge_sha_binding": true,
+    "consumer_request_digest_binding": true,
+    "grant_max_uses": 1,
+    "grant_initial_uses_count": 0,
+    "consumption_final_uses_count": 1,
+    "consumption_final_active": false,
+    "replay_or_second_use": "WAIVER_BLOCKED",
+    "blocked_control_waiver": "FORBIDDEN",
+    "blocked_control_error": "WAIVER_FOR_BLOCKED_CONTROL_FORBIDDEN"
+  },
+  "scenario_assertions": {
+    "waived_control": "AUTHORITY_READBACK",
+    "waived_control_input_outcome": "FAIL",
+    "terminal_verdict": "WAIVED",
+    "terminal_status": "CLOSED",
+    "waived_controls": ["AUTHORITY_READBACK"],
+    "blocked_outcome_remains_non_closable": true,
+    "cross_bound": true,
+    "one_use": true,
+    "anti_replay": true,
+    "duplicate_execution_count": 0,
+    "unplanned_control_count": 0
+  },
+  "safety": {
+    "live_domain_controls_executed": false,
+    "runtime_or_deploy_touched": false,
+    "production_touched": false,
+    "pase_workflow_activated": false,
+    "zip_used_as_authority": false,
+    "new_waiver_grant_created": false,
+    "live_waiver_consumed": false
+  }
+}
