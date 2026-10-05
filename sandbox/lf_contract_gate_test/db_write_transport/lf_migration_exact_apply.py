@@ -86,10 +86,11 @@ def _psql(db_url: str, sql: str, *, cwd: Path) -> str:
 
 def read_ledger(db_url: str, version: str, *, cwd: Path) -> tuple[str | None, str | None, str | None]:
     sql = (
-        "select coalesce(version,''),coalesce(name,''),"
+        "select coalesce(to_jsonb(sm)->>'version',''),"
+        "coalesce(to_jsonb(sm)->>'name',''),"
         "coalesce(to_jsonb(sm)->>'created_by','') "
         "from supabase_migrations.schema_migrations sm "
-        f"where version='{version}' limit 1;"
+        f"where to_jsonb(sm)->>'version'='{version}' limit 1;"
     )
     raw = _psql(db_url, sql, cwd=cwd)
     if not raw:
@@ -103,7 +104,7 @@ def read_ledger(db_url: str, version: str, *, cwd: Path) -> tuple[str | None, st
 def read_ledger_max(db_url: str, *, cwd: Path) -> str:
     raw = _psql(
         db_url,
-        "select coalesce(max(version),'00000000000000') from supabase_migrations.schema_migrations;",
+        "select coalesce(max(to_jsonb(sm)->>'version'),'00000000000000') from supabase_migrations.schema_migrations sm;",
         cwd=cwd,
     )
     if re.fullmatch(r"\d{14}", raw) is None:
