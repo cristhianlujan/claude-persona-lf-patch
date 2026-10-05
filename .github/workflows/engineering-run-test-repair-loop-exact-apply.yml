@@ -23,17 +23,17 @@ jobs:
       PGDATABASE: postgres
       PGUSER: postgres.mhwmirqcgxxukpctffuv
       MIGRATION_PATH: supabase/migrations/20261005171000_engineering_run_test_repair_loop_v1.sql
-      EXPECTED_SOURCE_COMMIT: d48b8cc312608cea49e49ee448af14e90f3570d6
-      EXPECTED_BLOB: 3c454441331adab64824364df353084db3d28468
+      EXPECTED_SOURCE_COMMIT: e1aaae571340b44b334d56dd6295de314b66a3e8
+      EXPECTED_BLOB: 39620788ac4038878c71bc62348bff261aef5618
       MIGRATION_VERSION: "20261005171000"
       MIGRATION_NAME: engineering_run_test_repair_loop_v1
-      EXECUTION_ID: EXEC-DB-ENGINEERING-RUN-TEST-REPAIR-20261005-001
+      EXECUTION_ID: EXEC-DB-ENGINEERING-RUN-TEST-REPAIR-20261005-002
 
     steps:
       - name: Checkout exact merged source
         uses: actions/checkout@v4
         with:
-          ref: d48b8cc312608cea49e49ee448af14e90f3570d6
+          ref: e1aaae571340b44b334d56dd6295de314b66a3e8
           fetch-depth: 1
 
       - name: Verify exact source and baseline
@@ -52,7 +52,6 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, os
-
           path = Path(os.environ['MIGRATION_PATH'])
           source = path.read_text(encoding='utf-8')
           marker = '\ncommit;'
@@ -66,7 +65,6 @@ jobs:
           delimiter = '$lf_run_test_repair_source$'
           if delimiter in source:
               raise SystemExit('BLOCK_LEDGER_DELIMITER_COLLISION')
-
           tail = f'''
           insert into supabase_migrations.schema_migrations(
             version,statements,name,created_by,idempotency_key,rollback
@@ -78,7 +76,6 @@ jobs:
             'gitblob:{blob}',
             array[]::text[]
           );
-
           do $post$
           declare
             v_boot jsonb;
@@ -92,7 +89,7 @@ jobs:
             if (v_boot#>>'{{state,progress_pct}}')::numeric <> 65 then raise exception 'POST_M37_PROGRESS:%',v_boot#>>'{{state,progress_pct}}'; end if;
             v_spec:=programacion.fn_engineering_checkpoint_action_spec_v3('IG_CURATOR_VALIDATOR_REFACTOR_V2','M3.7','NEGATIVE_READINESS_FIELD');
             if v_spec#>>'{{repair_policy,mode}}' is distinct from 'REPAIR_DECLARED_TARGET_THEN_RETEST' then raise exception 'POST_REPAIR_POLICY'; end if;
-            v_packet:=programacion.fn_engineering_execution_packet_from_spec_v1('IG_CURATOR_VALIDATOR_REFACTOR_V2','M3.7','NEGATIVE_READINESS_FIELD',v_spec,v_boot->'execution_input');
+            v_packet:=v_boot->'execution_packet';
             if v_packet#>>'{{connector_plan,0,executor_contract,executor}}' is distinct from 'ENGINEERING_AGENT_RUN_TEST_V1' then raise exception 'POST_EXECUTOR'; end if;
             if v_packet#>>'{{connector_plan,0,executor_contract,repair_loop,enabled}}' is distinct from 'true' then raise exception 'POST_REPAIR_LOOP'; end if;
             select count(*) into v_count from public.lf_test_suite_cases where metadata->>'unit_code'='M3.7' and metadata->>'checkpoint_code'='NEGATIVE_READINESS_FIELD';
@@ -101,7 +98,6 @@ jobs:
             if v_md5 is distinct from '{source_md5}' then raise exception 'POST_LEDGER_MD5:%',v_md5; end if;
           end
           $post$;
-
           commit;
           '''
           Path('/tmp/exact_apply.sql').write_text('\\set ON_ERROR_STOP on\n' + source.replace(marker,'\n'+tail,1),encoding='utf-8')
