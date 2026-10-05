@@ -25,9 +25,9 @@ ROOT = Path(__file__).resolve().parents[3]
 PARITY_ADAPTER = ROOT / "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 POSTGRES_IMAGE = "postgres:17.6"
 CUTOVER = "20260808031006"
-CLASSIFICATION_BASELINE_END = "20261005203419"
-GRANDFATHERED_COUNT = "795"
-GRANDFATHERED_SHA256 = "2832bc9159a42a30d4d6322c3d95ee331b9a22adc67c51892bd9988ec6ec6b20"
+CLASSIFICATION_BASELINE_END = "20261005203801"
+GRANDFATHERED_COUNT = "796"
+GRANDFATHERED_SHA256 = "94b5e2bb0b33e6e08b1b72b9af48423c2f3e8333945797313f8816a7ee18de38"
 LEGACY_START = "20260801063708"
 LEGACY_END = "20260801170332"
 SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -429,7 +429,7 @@ def self_test() -> int:
     if _canonical_remote_sql_sha(probe.encode().hex()) != expected:
         raise RuntimeError("SELFTEST_CANONICAL_SHA")
     checks += 1
-    if POSTGRES_IMAGE != "postgres:17.6" or GRANDFATHERED_COUNT != "795":
+    if POSTGRES_IMAGE != "postgres:17.6" or GRANDFATHERED_COUNT != "796":
         raise RuntimeError("SELFTEST_BASELINE_CONSTANTS")
     checks += 1
     print(f"PASS_MIGRATION_SOURCE_PARITY_CLEAN_CARRIER_SELFTEST checks={checks}")
