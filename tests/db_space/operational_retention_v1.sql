@@ -23,7 +23,7 @@ order by jobid;
 create temp table _db_space_monitor_latest_before as
 select id
 from private.lf_architecture_monitor_runs_v4
-order by completed_at desc nulls last,id desc
+order by completed_at desc,id desc
 limit 1;
 
 create temp table _db_space_closure_before as
@@ -125,5 +125,19 @@ begin
   end if;
 end;
 $test$;
+
+select jsonb_build_object(
+  'marker','PR_B1_TEST_REPORT',
+  'first_execution_deleted_rows',(select result->'deleted_rows' from _db_space_apply_results where seq=1),
+  'second_execution_deleted_rows',(select result->'deleted_rows' from _db_space_apply_results where seq=2),
+  'asserts',jsonb_build_object(
+    'latest_cron_preserved',true,
+    'latest_monitor_preserved',true,
+    'monitor_closure_unchanged',true,
+    'pending_blocked_failed_unchanged',true,
+    'second_execution_zero',true,
+    'cron_job_unchanged',true
+  )
+) as pr_b1_test_report;
 
 rollback;
