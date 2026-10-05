@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 import sys
+import tempfile
 
 HERE = Path(__file__).resolve().parent
 BASELINE = "20261005203419"
@@ -150,7 +151,7 @@ def main() -> int:
     )
     checks += 1
 
-    # 8. A new/modified migration at or before the frozen baseline is backdating.
+    # 8. Ordinary backdating fails; governed source-only historical recovery is allowed.
     expect_system_exit(
         lambda: ctx.enforce_no_backdated_changed_migrations(
             "A\tsupabase/migrations/20261005203000_backdated.sql\n",
@@ -158,6 +159,27 @@ def main() -> int:
         ),
         "FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE",
     )
+    with tempfile.TemporaryDirectory() as raw:
+        migrations = Path(raw)
+        filename = "20261005203000_historical_recovery.sql"
+        (migrations / filename).write_text(
+            "-- LF_MIGRATION_RECONCILIATION_SOURCE_V1\n"
+            "-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY\n"
+            "-- owner_binding_required=true\n"
+            "-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF\n"
+            "-- reconciliation_owner_execution_id=EXEC-BASELINE-RECOVERY-001\n"
+            "-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER\n"
+            "-- source_authority=supabase_migrations.schema_migrations\n"
+            "-- source_version=20261005203000\n"
+            "-- source_name=historical_recovery\n"
+            "\nselect 1;\n",
+            encoding="utf-8",
+        )
+        ctx.enforce_no_backdated_changed_migrations(
+            f"A\tsupabase/migrations/{filename}\n",
+            BASELINE,
+            migrations=migrations,
+        )
     checks += 1
 
     assert checks == 8
