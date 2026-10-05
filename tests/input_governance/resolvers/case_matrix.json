@@ -1,5 +1,5 @@
 {
-  "schema_version": "IG_RESOLVER_CASE_MATRIX_V1",
+  "schema_version": "IG_RESOLVER_CASE_MATRIX_V2",
   "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
   "unit_code": "M3.8",
   "checkpoint_code": "CASE_MATRIX",
@@ -7,24 +7,40 @@
     "resolver_selection": {
       "namespace": "programacion",
       "name_regex": "^fn_input_(resolve_|security_|subject_depth|api_contract|design_system_resolution|source_authority|governance_semantic_probe_v3$|governance_field_reference)",
-      "expansion": "ALL_MATCHING_RESOLVERS_X_ALL_CASES"
+      "expansion": "APPLICABLE_BY_RESOLVER_NOT_CARTESIAN"
     },
-    "cases": [
-      {"case_id":"positive","expected":"ACCEPT"},
-      {"case_id":"partial","expected":"PARTIAL_OR_EXPLICITLY_INCOMPLETE"},
-      {"case_id":"missing","expected":"REJECT_OR_UNRESOLVED"},
-      {"case_id":"broken_ref","expected":"REJECT_OR_UNRESOLVED"},
-      {"case_id":"candidate","expected":"CANDIDATE"},
-      {"case_id":"contradiction","expected":"CONTRADICTION"}
+    "base_cases": [
+      {"case_id":"valid_context","applies_to":"CANONICAL_PRIMITIVE_RESOLVERS","expected":"GOVERNED_RESULT_OR_EXPLICIT_STATE"},
+      {"case_id":"missing","applies_to":"CANONICAL_PRIMITIVE_RESOLVERS","expected":"FAIL_CLOSED_OR_EXPLICIT_MISSING"}
+    ],
+    "specialized_cases": [
+      {"case_id":"broken_ref","applies_when":"RESOLVER_CONSUMES_REFERENCE","expected":"REJECT_OR_UNRESOLVED"},
+      {"case_id":"candidate","applies_when":"RESOLVER_EXPOSES_LIFECYCLE_STATE","expected":"CANDIDATE_PRESERVED_NO_AUTO_PROMOTION"},
+      {"case_id":"partial","applies_when":"RESOLVER_EXPOSES_COMPLETENESS_STATE","expected":"PARTIAL_PRESERVED"},
+      {"case_id":"contradiction","applies_when":"SEMANTIC_LAYER","expected":"SEMANTIC_LAYER_OWNED_NO_SYNTHETIC_PRIMITIVE_CONTRADICTION"}
     ]
   },
   "fixture_boundary": "OUTSIDE_MIGRATIONS",
   "delegations": {
-    "cached_vs_non_cached": "M7.8"
+    "cached_vs_non_cached": "M7.8",
+    "legacy_variants": "PARITY_ONLY",
+    "contradiction_semantics": "SEMANTIC_LAYER"
+  },
+  "run_test_contract": {
+    "owns": [
+      "public.lf_test_suite_cases",
+      "public.lf_test_suite_runs",
+      "public.lf_test_runs",
+      "public.lf_test_assertion_results"
+    ],
+    "synthetic_pass": "FORBIDDEN",
+    "forced_non_applicable_scenario": "FORBIDDEN"
   },
   "invariants": [
-    "Every resolver selected by resolver_selection receives all six cases.",
-    "Fixtures remain outside supabase/migrations.",
-    "Cached-vs-non-cached coverage is delegated to M7.8."
+    "Every canonical resolver receives the base valid-context and missing/fail-closed checks when its signature supports those inputs.",
+    "Specialized cases are executed only when the resolver contract expresses the corresponding semantics.",
+    "Legacy variants are parity checks, not duplicate scenario matrices.",
+    "Cached-vs-non-cached coverage remains delegated to M7.8.",
+    "Semantic contradiction is not fabricated inside primitive resolvers."
   ]
 }
