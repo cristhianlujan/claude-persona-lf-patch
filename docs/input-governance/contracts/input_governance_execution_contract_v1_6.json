@@ -1,0 +1,163 @@
+{
+  "allowed_consumers": [
+    "STORY_CREATOR",
+    "CONTEXT_PACK",
+    "MANUAL"
+  ],
+  "analysis_revision": "INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX",
+  "auto_canonicalization": "DENY_BY_DEFAULT_EXPLICIT_SAFE_ALLOWLIST",
+  "automatic_successor_policy": "ASSERTION_REBIND_OR_GOVERNED_CANONICAL_BOOTSTRAP",
+  "bootstrap_decision": "DEC-INPUT-GOV-BOOTSTRAP-001",
+  "contract_revision": "1.6",
+  "curator_runtime": "SUPABASE_EDGE_FUNCTION:input-governance-curator-v1",
+  "current_reuse_requires": [
+    "COMPLETED",
+    "RUN_CURRENT",
+    "FRESHNESS_DELTA_CURRENT",
+    "ZERO_CHANGED_SOURCES",
+    "VALIDATOR_FULL_PASS",
+    "STORY_GATE"
+  ],
+  "current_run_freshness_gate": "programacion.fn_input_freshness_delta(bigint)",
+  "current_run_policy": "REUSE_COMPLETED_CURRENT_ONLY",
+  "decision_authority": "DEC-INPUT-GOV-EXEC-EKB-001",
+  "ekb_checkpoints": [
+    "PRE_EXECUTION",
+    "PRE_CURATOR",
+    "PRE_VALIDATOR",
+    "PRE_STORY_GATE",
+    "PRE_CONTEXT_MANIFEST",
+    "CLOSE_EKB"
+  ],
+  "ekb_occurrence_policy": {
+    "high_critical_without_control": "BLOCK_PHASE",
+    "new_verified_error": "GOVERNED_EKB_INSERT",
+    "no_error": "NO_WRITE",
+    "unverified_suspicion": "PROPOSAL_OR_BLOCKER",
+    "verified_recurrence": "UPDATE_EXISTING"
+  },
+  "ekb_occurrence_writer": "programacion.fn_input_governance_record_ekb_occurrence(text,text,text,integer,bigint,text,jsonb)",
+  "ekb_write_policy": {
+    "NEW_ERROR": "INSERT_ONLY_WITH_COMPLETE_VERIFIED_METADATA",
+    "NO_ERROR": "NO_WRITE",
+    "RECURRENCE": "UPDATE_EXISTING_FREQUENCY_LAST_SEEN_EVIDENCE",
+    "SUSPICION": "NO_WRITE_PROPOSAL_OR_BLOCKER"
+  },
+  "entrypoint": "programacion.fn_input_governance_execute(integer,text)",
+  "execution_contract": "INPUT_GOVERNANCE_EXECUTION_V1",
+  "fresh_check_sample_policy": "RUN_HISTORY_EFFECTIVENESS_SAMPLE_V1",
+  "full_autonomous_new_screen": false,
+  "historical_evidence_policy": "NEW_RUN_DOES_NOT_INVALIDATE_VALID_PRIOR_EVIDENCE",
+  "human_owner": "SUPER_ADMIN",
+  "new_run_materialization": "CURATOR_THEN_SEPARATE_VALIDATOR_RUNTIME_REQUIRED",
+  "new_screen_policy": "GOVERNED_CANONICAL_BOOTSTRAP_FAIL_CLOSED",
+  "operator_orchestrated_internal_remediation": true,
+  "owner_interruption_policy": "HUMAN_DECISION_REQUIRED_ONLY",
+  "production_authorized": false,
+  "promotion_authorized": false,
+  "proposal_is_canonical_source": false,
+  "remediation_loop": {
+    "automatic_canonicalization": "DENY_BY_DEFAULT_EXPLICIT_SAFE_ALLOWLIST",
+    "decision": "DEC-INPUT-GOV-SELF-REMEDIATE-001",
+    "gap_proposals": "CURATOR_PROPOSE_VALIDATOR_VERIFY",
+    "internal_remediation_queue": "programacion.fn_input_internal_remediation_summary(bigint)",
+    "internal_remediation_state": "INTERNAL_REMEDIATION_REQUIRED",
+    "internal_remediation_transport": "CALLER_ORCHESTRATOR",
+    "owner_escalation": "POSITIVE_OWNER_AUTHORITY_ONLY",
+    "owner_interruption_only_when": "POSITIVE_OWNER_AUTHORITY_AND_VALIDATOR_PASS",
+    "policy_revision": "POSITIVE_OWNER_AUTHORITY_V1",
+    "proposal_is_canonical_source": false,
+    "self_analysis_correction": "AUTO"
+  },
+  "runtime_binding_status": "BOUND_ROLE_RUNTIMES_POLICY_DRIVEN_SEMANTIC_CAPABILITY",
+  "runtime_decision": "DEC-INPUT-GOV-RUNTIME-001",
+  "runtime_orchestrator": "SUPABASE_EDGE_FUNCTION:input-governance-agent-v1",
+  "safe_autofix_contract": {
+    "decision": "DEC-INPUT-GOV-SAFE-AUTOFIX-001",
+    "forbidden_write_classes": [
+      "NEW_RULE",
+      "OBJECTIVE",
+      "STATE",
+      "TRANSITION",
+      "TIMING",
+      "PERMISSION",
+      "PROFILE",
+      "COPY",
+      "LEGAL_CLAIM",
+      "API_CONTRACT",
+      "NEW_COMPONENT_TOKEN"
+    ],
+    "must_run_inside_agent": true,
+    "proposal_is_canonical_source": false,
+    "requires_exact_unique_target": true,
+    "requires_positive_source_authority": true,
+    "requires_readback": true,
+    "requires_successor_recuration_and_independent_validator": true,
+    "requires_validated_proposal": true,
+    "semantic_similarity_is_authority": false
+  },
+  "safe_canonical_write_allowlist": [
+    "BIND_EXISTING_COMPONENT_EXPLICIT_TOKEN"
+  ],
+  "schema_version": 1,
+  "semantic_curator_runtime": "POLICY_SELECTED_CAPABILITY_ONLY_FOR_NON_DERIVABLE_GAPS",
+  "semantic_provider": "POLICY_SELECTED_NO_HARDCODED_PROVIDER",
+  "semantic_resolution_contract": {
+    "authority_boundary": "IG_CONSUMER_ORCHESTRATOR_NOT_OWNER_OF_TRANSVERSAL_AUTHORITIES",
+    "deterministic_priority": true,
+    "fallback_order": [
+      "DETERMINISTIC_GOVERNED_RESOLUTION",
+      "POLICY_SELECTED_SEMANTIC_CAPABILITY",
+      "CONSUMER_CONFIGURED_GOVERNED_FALLBACK",
+      "FAIL_CLOSED"
+    ],
+    "input_required": [
+      "subject_version_identity",
+      "requested_obligations",
+      "authority_refs_digests",
+      "typed_evidence",
+      "deterministic_results",
+      "unresolved_semantic_gaps",
+      "consumer_policy_ref_version",
+      "currentness_compatibility_state",
+      "execution_id_trace_id"
+    ],
+    "mode": "DETERMINISTIC_FIRST",
+    "model_allowed_only_for": "NON_DERIVABLE_SEMANTIC_GAP",
+    "model_output_authority": false,
+    "output_required": [
+      "gap_results",
+      "evidence_refs",
+      "uncertainty_state",
+      "contradictions",
+      "selection_attestation",
+      "execution_receipt_digests",
+      "fallback_or_block_reason"
+    ],
+    "reproducibility": {
+      "bind_contract_authority_policy_capability_runtime_and_raw_output_digests": true,
+      "deterministic_portion_exact_replay": true,
+      "non_determinism_isolated_to_declared_gaps": true
+    },
+    "selection": {
+      "capability_selector": "CAPABILITY_SELECTOR",
+      "currentness": "CURRENTNESS_AUTHORITY",
+      "decision_context": "DECISION_CONTEXT_ASOF",
+      "execution_profile_model_provider": "POLICY_DRIVEN",
+      "hardcoded_provider_model": false,
+      "independent_assurance": "INDEPENDENT_ASSURANCE",
+      "selection_does_not_grant_authority": true,
+      "typed_evidence": "TYPED_EVIDENCE_REGISTRY",
+      "version_resolver": "CAPABILITY_VERSION_COMPATIBILITY"
+    },
+    "states": {
+      "contradictory": "FAIL_CLOSED",
+      "insufficient_evidence": "BOUNDED_MATERIAL_REFRESH_ONLY",
+      "uncertain": "NO_CANONICAL_ADMISSION"
+    }
+  },
+  "semantic_technology_decision": "DEC-INPUT-GOV-SEMANTIC-TECH-001",
+  "stale_or_absent_policy": "ROLE_SPECIFIC_RUNTIME_REQUIRED_FAIL_CLOSED",
+  "validator_runtime": "SUPABASE_EDGE_FUNCTION:input-governance-validator-v1",
+  "worker_spec": "programacion.fn_input_governance_worker_spec(integer,text)"
+}
