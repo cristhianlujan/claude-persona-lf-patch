@@ -1,0 +1,76 @@
+{
+  "schema_version": "PASE_F08_P04_LF_DB_REGRESSION_REHOME_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F08-P04",
+  "target": "LF_DB_REGRESSION_LEGACY_CARRIER_REFERENCES",
+  "base_main_sha": "d0ba8d8e67b0b1ecb2cac5ea5cbee10157649313",
+  "legacy_carrier": {
+    "carrier_id": "LF_DB_REGRESSION",
+    "workflow_path": ".github/workflows/lf-db-regression.yml",
+    "workflow_present_at_base_main": false,
+    "live_capability_registry_count": 0,
+    "live_capability_current_count": 0,
+    "live_capability_binding_count": 0,
+    "live_asset_count": 0,
+    "live_relation_count": 0,
+    "live_active_source_count": 0,
+    "active_operational_caller_dependency": false
+  },
+  "legacy_control_references": [
+    "DB_CANDIDATE_APPLY_ROLLBACK",
+    "POLICY_RESOLVER_REGRESSION",
+    "V7_RUNTIME_REGRESSION"
+  ],
+  "replacement_map": {
+    "DB_CANDIDATE_APPLY_ROLLBACK": {
+      "parent_capability": "REVERSIBLE_CANDIDATE_VERIFICATION",
+      "parent_version": "1.0.1",
+      "flow_runner": "sandbox/lf_contract_gate_test/s28_ci_lane_router/run_changed_migrations_rollback_v1.py",
+      "material_transport": "DB_WRITE_TRANSPORT@1.0.0",
+      "source_parity": "MIGRATION_SOURCE_PARITY@1.0.0",
+      "independent_assurance": "INDEPENDENT_ASSURANCE@1.0.0",
+      "semantics": "exact changed migration candidate, rollback-only, exact source digest, zero material residue"
+    },
+    "POLICY_RESOLVER_REGRESSION": {
+      "parent_capability": "REVERSIBLE_CANDIDATE_VERIFICATION",
+      "parent_version": "1.0.1",
+      "flow_runner": "sandbox/lf_contract_gate_test/s28_ci_lane_router/run_changed_migrations_rollback_v1.py",
+      "probe": "sandbox/lf_contract_gate_test/s28_ci_lane_router/policy_resolver_post_apply_probe_v1.sql",
+      "policy_authority": "SOURCE_RESOLUTION_POLICY@1.4.0",
+      "dependency": "DB_CANDIDATE_APPLY_ROLLBACK",
+      "semantics": "post-apply observation inside the same rollback-only candidate transaction"
+    },
+    "V7_RUNTIME_REGRESSION": {
+      "parent_capability": "REVERSIBLE_CANDIDATE_VERIFICATION",
+      "parent_version": "1.0.1",
+      "baseline": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_BASE.sql",
+      "apply_readback": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_APPLY_READBACK.sql",
+      "rollback_readback": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_ROLLBACK_READBACK.sql",
+      "migration_set": "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_MIGRATIONS.txt",
+      "independent_assurance": "INDEPENDENT_ASSURANCE@1.0.0",
+      "semantics": "bounded PostgreSQL regression harness under rollback-only verification; no runtime activation"
+    }
+  },
+  "qualified_live_capability_readback": {
+    "REVERSIBLE_CANDIDATE_VERIFICATION": "ACTIVE_CURRENT_1.0.1",
+    "DB_WRITE_TRANSPORT": "ACTIVE_CURRENT_1.0.0",
+    "MIGRATION_SOURCE_PARITY": "ACTIVE_CURRENT_1.0.0",
+    "SOURCE_RESOLUTION_POLICY": "ACTIVE_CURRENT_1.4.0",
+    "INDEPENDENT_ASSURANCE": "ACTIVE_CURRENT_1.0.0"
+  },
+  "source_cleanup_boundary": {
+    "current_router_carrier_references_remain_until": "PASE-ATOM-F08-R04",
+    "reason": "P04 proves complete replacement coverage before R04 removes only proven legacy references",
+    "destructive_retirement_allowed_now": false,
+    "anti_reintroduction_guard_required_in_r04": true
+  },
+  "safety": {
+    "pase_activated": false,
+    "new_binding_created": false,
+    "new_runtime_or_deploy_created": false,
+    "production_touched": false,
+    "destructive_retirement_executed": false,
+    "no_cascade": true,
+    "no_zip_authority": true
+  }
+}
