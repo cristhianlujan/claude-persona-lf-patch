@@ -1,0 +1,185 @@
+name: M3.7 Governance Rollback Probe
+
+on:
+  push:
+    branches:
+      - probe/m3-7-governance-rollback-20261005
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m3-7-governance-rollback-probe-20261005
+  cancel-in-progress: false
+
+jobs:
+  rollback-probe:
+    name: Exact-head rollback probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+      PGHOST: aws-1-us-east-1.pooler.supabase.com
+      PGPORT: "5432"
+      PGDATABASE: postgres
+      PGUSER: postgres.mhwmirqcgxxukpctffuv
+      PGSSLMODE: require
+      SOURCE_COMMIT: 873d350749e1581fe8715adfa0cdcea3e0e5872b
+      SOURCE_BLOB: 744d864882eec0ac4e9aef4375e3b9a332c693cc
+      MIGRATION_PATH: supabase/migrations/20261005133500_ig_semantic_resolution_schema.sql
+
+    steps:
+      - name: Checkout exact M3.7 candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SOURCE_COMMIT }}
+          fetch-depth: 1
+
+      - name: Verify exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${PGPASSWORD:-}" || { echo "BLOCK_M3_7_DB_PASSWORD_MISSING"; exit 1; }
+          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+          test "$(git hash-object "$MIGRATION_PATH")" = "$SOURCE_BLOB"
+          echo "PASS_M3_7_EXACT_SOURCE commit=$SOURCE_COMMIT blob=$SOURCE_BLOB"
+
+      - name: Assert clean live baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          do $pre$
+          declare
+            v_memberships integer;
+            v_stable integer;
+          begin
+            if exists (
+              select 1 from private.lf_typed_evidence_schema_registry_v3
+              where schema_version='semantic-resolution/v1'
+            ) then
+              raise exception 'BLOCK_M3_7_BASELINE_SCHEMA_ALREADY_PRESENT';
+            end if;
+
+            if position(
+              'semantic-resolution/v1' in
+              pg_get_functiondef('private.fn_lf_typed_evidence_payload_valid_v3(text,jsonb)'::regprocedure)
+            ) > 0 then
+              raise exception 'BLOCK_M3_7_BASELINE_VALIDATOR_ALREADY_PATCHED';
+            end if;
+
+            select count(*) into v_memberships
+            from pg_auth_members am
+            join pg_roles granted on granted.oid=am.roleid
+            join pg_roles member on member.oid=am.member
+            where granted.rolname='lf_governance_owner_v3'
+              and member.rolname='postgres';
+
+            select count(*) into v_stable
+            from pg_auth_members am
+            join pg_roles granted on granted.oid=am.roleid
+            join pg_roles member on member.oid=am.member
+            join pg_roles grantor on grantor.oid=am.grantor
+            where granted.rolname='lf_governance_owner_v3'
+              and member.rolname='postgres'
+              and grantor.rolname='supabase_admin'
+              and am.admin_option
+              and not am.inherit_option
+              and not am.set_option;
+
+            if v_memberships<>1 or v_stable<>1 then
+              raise exception 'BLOCK_M3_7_BASELINE_MEMBERSHIP memberships=% stable=%',v_memberships,v_stable;
+            end if;
+
+            if has_schema_privilege('lf_governance_owner_v3','private','CREATE') then
+              raise exception 'BLOCK_M3_7_BASELINE_CREATE_ALREADY_GRANTED';
+            end if;
+          end
+          $pre$;
+          SQL
+          echo "PASS_M3_7_CLEAN_BASELINE"
+
+      - name: Build rollback-only exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          path = Path(os.environ['MIGRATION_PATH'])
+          source = path.read_text(encoding='utf-8')
+          matches = list(re.finditer(r'(?im)^\s*commit;\s*$', source))
+          if len(matches) != 1:
+              raise SystemExit(f'BLOCK_M3_7_COMMIT_COUNT count={len(matches)}')
+          m = matches[0]
+          if source[m.end():].strip():
+              raise SystemExit('BLOCK_M3_7_COMMIT_NOT_TERMINAL')
+          probe = source[:m.start()] + 'rollback;' + source[m.end():]
+          if re.search(r'(?im)^\s*commit;\s*$', probe):
+              raise SystemExit('BLOCK_M3_7_COMMIT_REMAINS')
+          Path('/tmp/m3_7_rollback_probe.sql').write_text(probe, encoding='utf-8')
+          print('PASS_M3_7_ROLLBACK_WRAPPER')
+          PY
+
+      - name: Execute exact candidate with rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f /tmp/m3_7_rollback_probe.sql
+          echo "PASS_M3_7_CANDIDATE_EXECUTED_AND_ROLLED_BACK"
+
+      - name: Assert zero persistent drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          do $post$
+          declare
+            v_memberships integer;
+            v_stable integer;
+          begin
+            if exists (
+              select 1 from private.lf_typed_evidence_schema_registry_v3
+              where schema_version='semantic-resolution/v1'
+            ) then
+              raise exception 'BLOCK_M3_7_POST_SCHEMA_PERSISTED';
+            end if;
+
+            if position(
+              'semantic-resolution/v1' in
+              pg_get_functiondef('private.fn_lf_typed_evidence_payload_valid_v3(text,jsonb)'::regprocedure)
+            ) > 0 then
+              raise exception 'BLOCK_M3_7_POST_VALIDATOR_PERSISTED';
+            end if;
+
+            select count(*) into v_memberships
+            from pg_auth_members am
+            join pg_roles granted on granted.oid=am.roleid
+            join pg_roles member on member.oid=am.member
+            where granted.rolname='lf_governance_owner_v3'
+              and member.rolname='postgres';
+
+            select count(*) into v_stable
+            from pg_auth_members am
+            join pg_roles granted on granted.oid=am.roleid
+            join pg_roles member on member.oid=am.member
+            join pg_roles grantor on grantor.oid=am.grantor
+            where granted.rolname='lf_governance_owner_v3'
+              and member.rolname='postgres'
+              and grantor.rolname='supabase_admin'
+              and am.admin_option
+              and not am.inherit_option
+              and not am.set_option;
+
+            if v_memberships<>1 or v_stable<>1 then
+              raise exception 'BLOCK_M3_7_POST_MEMBERSHIP_DRIFT memberships=% stable=%',v_memberships,v_stable;
+            end if;
+
+            if has_schema_privilege('lf_governance_owner_v3','private','CREATE') then
+              raise exception 'BLOCK_M3_7_POST_CREATE_PERSISTED';
+            end if;
+          end
+          $post$;
+          SQL
+          echo "PASS_M3_7_ZERO_PERSISTENT_DRIFT"
