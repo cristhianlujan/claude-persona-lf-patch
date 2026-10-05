@@ -184,8 +184,10 @@ def verify_grandfather_baseline(
 def enforce_no_backdated_changed_migrations(
     name_status_text: str,
     classification_baseline_end: str,
+    *,
+    migrations: pathlib.Path | None = None,
 ) -> None:
-    """Reject any PR mutation that introduces/changes a pre-baseline migration path."""
+    """Reject pre-baseline mutation except governed source-only reconciliation."""
     for raw in name_status_text.splitlines():
         if not raw.strip():
             continue
@@ -200,19 +202,33 @@ def enforce_no_backdated_changed_migrations(
             continue
         if status not in {"A", "M"} or len(paths) != 1:
             fail("FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE", raw)
-        filename = paths[0].rsplit("/", 1)[-1]
+        repo_path = paths[0]
+        filename = repo_path.rsplit("/", 1)[-1]
         match = FILENAME_RE.fullmatch(filename)
         if match is None:
-            fail("FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE", paths[0])
-        version, _name = match.groups()
-        if not exact_parity_applies(version, classification_baseline_end):
-            fail(
-                "FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE",
-                f"path={paths[0]} baseline_end={classification_baseline_end}",
-            )
+            fail("FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE", repo_path)
+        version, name = match.groups()
+        if exact_parity_applies(version, classification_baseline_end):
+            continue
+        if migrations is not None:
+            source = migrations / filename
+            if source.is_file():
+                try:
+                    source_sql = source.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError):
+                    source_sql = ""
+                if reconciliation_source_metadata(source_sql, version=version, name=name):
+                    continue
+        fail(
+            "FAIL_LF_MIGRATION_BACKDATED_AFTER_BASELINE",
+            f"path={repo_path} baseline_end={classification_baseline_end}",
+        )
 
 
-def enforce_pr_baseline_boundary(classification_baseline_end: str) -> None:
+def enforce_pr_baseline_boundary(
+    classification_baseline_end: str,
+    migrations: pathlib.Path,
+) -> None:
     if os.environ.get("GITHUB_EVENT_NAME", "").strip() != "pull_request":
         return
     base_ref = os.environ.get("GITHUB_BASE_REF", "").strip()
@@ -240,7 +256,11 @@ def enforce_pr_baseline_boundary(classification_baseline_end: str) -> None:
         )
     except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
         fail("FAIL_LF_MIGRATION_BASELINE_GIT_CONTEXT", type(exc).__name__)
-    enforce_no_backdated_changed_migrations(proc.stdout, classification_baseline_end)
+    enforce_no_backdated_changed_migrations(
+        proc.stdout,
+        classification_baseline_end,
+        migrations=migrations,
+    )
 
 
 def _classify_source_first_pending(
@@ -1076,7 +1096,7 @@ def main() -> int:
         expected_count=grandfathered_count,
         expected_sha=grandfathered_sha,
     )
-    enforce_pr_baseline_boundary(classification_baseline_end)
+    enforce_pr_baseline_boundary(classification_baseline_end, migrations)
 
     remote_all: dict[str, tuple[str, str]] = {}
     inline_counts: dict[str, int] = {}
