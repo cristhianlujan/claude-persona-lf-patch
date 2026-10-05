@@ -1,0 +1,102 @@
+{
+  "schema_version": "PASE_F08_099_LEGACY_RETIREMENT_TERMINAL_READINESS_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F08-099",
+  "mode": "RETIREMENT_READINESS_TERMINAL_VERIFICATION",
+  "authority": {
+    "exact_main_sha": "aca7f7a59ae0f01bbc9ea87ed5f8bd625595df3e",
+    "required_predecessors": [
+      "PASE-ATOM-F08-R01",
+      "PASE-ATOM-F08-R02",
+      "PASE-ATOM-F08-R03",
+      "PASE-ATOM-F08-R04"
+    ]
+  },
+  "families": [
+    {
+      "family": "PASE_CONTROL_REPAIR_QUARANTINE_V1",
+      "terminal_event_id": 20292,
+      "readiness_manifest": "sandbox/lf_contract_gate_test/post_pase_f08/PASE_CONTROL_REPAIR_QUARANTINE_V1_retirement_readiness_v1.json",
+      "readiness_blob_sha1": "4f41adf811970110be9818129917637e3ca60b4b",
+      "current_disposition": "FAIL_CLOSED_PREACTIVATION_AND_RETIREMENT_READY",
+      "destructive_retirement_executed": false,
+      "keep_authority_removed": false
+    },
+    {
+      "family": "LF_CONTRACT_CHECK_WORKFLOW",
+      "terminal_event_id": 20295,
+      "readiness_manifest": "sandbox/lf_contract_gate_test/post_pase_f08/LF_CONTRACT_CHECK_WORKFLOW_retirement_readiness_v1.json",
+      "readiness_blob_sha1": "b5d32399b32f1074c89ab50d51d4fa348d2a1060",
+      "current_disposition": "MANUAL_COMPATIBILITY_CALLER_FAIL_CLOSED_THROUGH_DISABLED_PASE",
+      "canonical_keep_authority": "LF_CONTRACT_CHECK@1.4.1",
+      "destructive_retirement_executed": false,
+      "keep_authority_removed": false
+    },
+    {
+      "family": "VALIDATE_LF_PACKS_LEGACY_CARRIER_REFERENCES",
+      "terminal_event_id": 20298,
+      "readiness_manifest": "sandbox/lf_contract_gate_test/post_pase_f08/VALIDATE_LF_PACKS_retirement_readiness_v1.json",
+      "readiness_blob_sha1": "267b9353cdcd0e7fadcb5a9b35c83d63074e6401",
+      "current_disposition": "LEGACY_WORKFLOW_ABSENT_ZERO_LIVE_AUTHORITY_RETIREMENT_READY",
+      "valid_responsibility_preserved": "PACK_VALIDATION_CLEAN_FLOW",
+      "destructive_retirement_executed": false,
+      "keep_authority_removed": false
+    },
+    {
+      "family": "LF_DB_REGRESSION_LEGACY_CARRIER_REFERENCES",
+      "terminal_event_id": 20317,
+      "readiness_manifest": "sandbox/lf_contract_gate_test/post_pase_f08/LF_DB_REGRESSION_retirement_readiness_v1.json",
+      "readiness_blob_sha1": "02d32832a9cd4283924d992eefb159eabfc2eaeb",
+      "current_disposition": "LEGACY_WORKFLOW_ABSENT_ZERO_LIVE_AUTHORITY_THREE_RESPONSIBILITIES_REHOMED",
+      "replacement_parent": "REVERSIBLE_CANDIDATE_VERIFICATION@1.0.1",
+      "future_mandatory_consumption_requires_entry_guard_resolution": true,
+      "destructive_retirement_executed": false,
+      "keep_authority_removed": false
+    }
+  ],
+  "exact_current_readback": {
+    "pase_workflow_enabled": false,
+    "legacy_contract_check_workflow_mode": "WORKFLOW_DISPATCH_ONLY_TO_DISABLED_PASE",
+    "validate_lf_packs_workflow_present": false,
+    "lf_db_regression_workflow_present": false,
+    "quarantine_live_registry_count": 0,
+    "validate_lf_packs_live_registry_count": 0,
+    "validate_lf_packs_live_binding_count": 0,
+    "lf_db_regression_live_registry_count": 0,
+    "lf_db_regression_live_binding_count": 0
+  },
+  "keep_authority_readback": {
+    "ASSET_RETIREMENT_GOVERNANCE": "ACTIVE_CURRENT_1.0.0",
+    "LF_CONTRACT_CHECK": "ACTIVE_CURRENT_1.4.1",
+    "REVERSIBLE_CANDIDATE_VERIFICATION": "ACTIVE_CURRENT_1.0.1",
+    "DB_WRITE_TRANSPORT": "ACTIVE_CURRENT_1.0.0",
+    "MIGRATION_SOURCE_PARITY": "ACTIVE_CURRENT_1.0.0",
+    "INDEPENDENT_ASSURANCE": "ACTIVE_CURRENT_1.0.0"
+  },
+  "terminal_verdict": {
+    "retirement_candidate_families": 4,
+    "families_with_replacement_or_fail_closed_proof": 4,
+    "families_with_rollback_contract": 4,
+    "families_with_exact_current_manifest_readback": 4,
+    "blocking_readiness_findings": 0,
+    "ready_for_future_post_activation_retirement": true,
+    "actual_retirement_executed": false,
+    "final_activation_required_before_retirement": true
+  },
+  "global_guards": [
+    "NO_CASCADE",
+    "NO_BULK_ACTIVATION",
+    "NO_KEEP_AUTHORITY_REMOVAL",
+    "CAPTURE_EXECUTION_TIME_PREIMAGES_BEFORE_FUTURE_RETIREMENT",
+    "REFRESH_EXACT_MAIN_BEFORE_FUTURE_RETIREMENT",
+    "PRESERVE_HISTORICAL_EVIDENCE_WITHOUT_OPERATIONAL_POWER",
+    "NO_ZIP_AS_TERMINAL_AUTHORITY"
+  ],
+  "restrictions": {
+    "no_runtime_activation_now": true,
+    "no_production_activation_now": true,
+    "no_destructive_retirement_now": true,
+    "no_cascade": true,
+    "no_zip_authority": true
+  }
+}
