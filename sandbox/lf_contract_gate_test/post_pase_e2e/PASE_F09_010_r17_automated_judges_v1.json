@@ -1,0 +1,95 @@
+{
+  "schema_version": "PASE_F09_010_R17_AUTOMATED_JUDGES_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F09-010",
+  "source_exact_main_sha": "5797db6a79d2ec44e6c1d9c902ad6eda97b9cb8d",
+  "r17_authority": {
+    "event_id": 19786,
+    "rule_code": "R17",
+    "rule_version": 3,
+    "automated_judges_not_persons": true,
+    "production_authorized": false
+  },
+  "predecessor": {
+    "work_code": "PASE-ATOM-F09-009",
+    "event_id": 20378,
+    "proof_blob_sha1": "bc6ef54587df5105b5602bb0d355ffaeaacc1b4b",
+    "terminal_exact_main_sha": "5797db6a79d2ec44e6c1d9c902ad6eda97b9cb8d"
+  },
+  "judge_chain": [
+    {
+      "judge_code": "F09_R17_PARITY_JUDGE",
+      "result": "VERIFIED",
+      "evidence": {
+        "scenario_event_count": 7,
+        "readiness_plan_digest_count": 1,
+        "migration_source_parity_core_same_in_db_and_mixed": true,
+        "db_negative_mismatch_code": "FAIL_LF_MIGRATION_CONTENT_PARITY",
+        "mixed_negative_mismatch_code": "FAIL_LF_MIGRATION_CONTENT_PARITY",
+        "ddl_executed": false
+      },
+      "blocking_finding_count": 0
+    },
+    {
+      "judge_code": "F09_R17_BEHAVIORAL_JUDGE",
+      "result": "VERIFIED",
+      "evidence": {
+        "positive_terminal_chain_count": 5,
+        "failure_terminal_control_count": 0,
+        "stale_terminal_control_count": 0,
+        "stale_dispatch_count": 0,
+        "waiver_one_use_antireplay": true,
+        "blocked_waiver_forbidden": true
+      },
+      "blocking_finding_count": 0
+    },
+    {
+      "judge_code": "F09_R17_SEMANTIC_JUDGE",
+      "result": "VERIFIED",
+      "evidence": {
+        "duplicate_execution_total": 0,
+        "unplanned_control_total": 0,
+        "visual_alias_resolution_count": 1,
+        "visual_canonical_execution_count": 1,
+        "dispatch_receipt_substitutes_terminal_verdict": false,
+        "binding_validated_before_executor": true,
+        "executor_receipt_validated": true,
+        "typed_terminal_receipt_required": true
+      },
+      "blocking_finding_count": 0
+    },
+    {
+      "judge_code": "F09_R17_READBACK_JUDGE",
+      "result": "VERIFIED",
+      "evidence": {
+        "required_predecessor_units": 9,
+        "required_predecessor_units_done": 9,
+        "predecessor_automated_judge_verified": true,
+        "predecessor_terminal_exact_main_sha": "5797db6a79d2ec44e6c1d9c902ad6eda97b9cb8d"
+      },
+      "blocking_finding_count": 0
+    }
+  ],
+  "r17_applicability": {
+    "new_runtime_candidate_changed_by_this_unit": false,
+    "new_migration_candidate_applied_by_this_unit": false,
+    "new_rollback_execution_required": false,
+    "reason": "F09-010 judges already-produced sandbox scenario evidence; it does not mutate or apply a runtime or migration candidate.",
+    "migration_parity_evidence_consumed_from": ["PASE-ATOM-F09-S02", "PASE-ATOM-F09-S05"],
+    "runtime_readback_evidence_consumed_from": ["PASE-ATOM-F09-S03", "PASE-ATOM-F09-S05"]
+  },
+  "terminal": {
+    "verdict": "PASS",
+    "blocking_finding_count": 0,
+    "remediation_units_created": 0,
+    "human_judge_used": false
+  },
+  "safety": {
+    "qualification_only": true,
+    "live_domain_controls_executed": false,
+    "runtime_or_deploy_touched": false,
+    "production_touched": false,
+    "pase_workflow_activated": false,
+    "zip_used_as_authority": false
+  }
+}
