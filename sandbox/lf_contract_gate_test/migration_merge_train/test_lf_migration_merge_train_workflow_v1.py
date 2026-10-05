@@ -58,4 +58,11 @@ checks += 1
 assert "Final CONSISTENT is not fabricated" in wf
 checks += 1
 
-print(f"PASS_MIGRATION_MERGE_TRAIN_WORKFLOW_CONTRACT={checks}/32")
+assert "WARN_TRAIN_COMMENT_UNAVAILABLE" in wf
+checks += 1
+assert 'migration objetivo=$TARGET_PATH' in wf
+checks += 1
+assert 'migration objetivo `$TARGET_PATH`' not in wf
+checks += 1
+
+print(f"PASS_MIGRATION_MERGE_TRAIN_WORKFLOW_CONTRACT={checks}/35")
