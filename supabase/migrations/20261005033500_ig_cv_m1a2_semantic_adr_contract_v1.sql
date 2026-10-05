@@ -101,8 +101,7 @@ begin
           'authority_boundary','IG_CONSUMER_ORCHESTRATOR_NOT_OWNER_OF_TRANSVERSAL_AUTHORITIES'
         )
       ),
-      descripcion = 'Fail-closed Input Governance execution contract. Deterministic-first; governed semantic capability only for non-derivable gaps; model output is non-authoritative. Existing Agent/Curator/Validator role runtimes remain bound.',
-      updated_at = now()
+      descripcion = 'Fail-closed Input Governance execution contract. Deterministic-first; governed semantic capability only for non-derivable gaps; model output is non-authoritative. Existing Agent/Curator/Validator role runtimes remain bound.'
   where id=42 and version_id=19
     and contrato_codigo='INPUT_GOVERNANCE_EXECUTION_CONTRACT'
     and estado='defined'
