@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 POLICY = ROOT / "docs/migrations/POLICY_MIGRATION_APPLY_V1.md"
 
 text = POLICY.read_text(encoding="utf-8")
