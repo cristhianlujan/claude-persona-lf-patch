@@ -292,7 +292,6 @@ begin
 end;
 $function$;
 
--- Evolve the plan-wide canonical entrypoint without deleting V1 history.
 update programacion.engineering_plan_units
 set unit_metadata = jsonb_set(
   jsonb_set(
@@ -316,7 +315,6 @@ set unit_metadata = jsonb_set(
 )
 where plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2';
 
--- Keep preferred-input contracts pointed at the current canonical bootstrap.
 update programacion.engineering_plan_units
 set unit_metadata = jsonb_set(
   unit_metadata,
@@ -347,7 +345,6 @@ set unit_metadata = jsonb_set(
 where plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
   and unit_metadata ? 'source_pack_v2';
 
--- Prevent the old rule from remaining the visible authority.
 update public.lf_error_knowledge
 set estado='SUPERSEDED',
     prevencion='SUPERSEDED by ENGINEERING-CHECKPOINT-EXECUTION-CONTRACT-001. Use fn_engineering_unit_bootstrap_v2 + checkpoint recipe + atomic transition.',
@@ -357,8 +354,7 @@ where codigo='ENGINEERING-CHECKPOINT-MICROLOOP-001';
 
 insert into public.lf_error_knowledge(
   codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,severidad,frecuencia,
-  primera_vez,ultima_vez,lote_origen,estado,evidencia,created_at,updated_at,lifecycle_phase,consumer_role,
-  root_cause_family,detectability,source_context,source_ref
+  primera_vez,ultima_vez,lote_origen,estado,evidencia,created_at,updated_at,source_context,source_ref
 )
 select
   'ENGINEERING-CHECKPOINT-EXECUTION-CONTRACT-001',
@@ -371,6 +367,5 @@ select
   'PASS when every IG unit points to bootstrap V2; current pending checkpoints receive a non-null decision_recipe; transition updates ledger and returns the next state; narrative progress is not an authority.',
   'HIGH',1,now(),now(),'IG_CURATOR_VALIDATOR_REFACTOR_V2','ACTIVO',
   'supabase://programacion.fn_engineering_unit_bootstrap_v2|programacion.fn_engineering_checkpoint_recipe_v1|programacion.fn_engineering_checkpoint_transition_v1',
-  now(),now(),'EXECUTION','{IG,ENGINEERING_AGENT}'::text[],
-  'CONTRACT_DRIFT','HIGH','IG checkpoint execution latency','supabase://programacion.fn_engineering_unit_bootstrap_v2'
+  now(),now(),'IG checkpoint execution latency','supabase://programacion.fn_engineering_unit_bootstrap_v2'
 where not exists (select 1 from public.lf_error_knowledge where codigo='ENGINEERING-CHECKPOINT-EXECUTION-CONTRACT-001');
