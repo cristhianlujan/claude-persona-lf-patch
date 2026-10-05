@@ -1,0 +1,38 @@
+{
+  "applicability": {
+    "duplicate_execution_count": 0,
+    "not_applicable": ["AUTHORITY_READBACK"],
+    "required": ["GITHUB_RECONCILIATION","RUNTIME_DEPLOY_VERIFICATION","FINAL_EVIDENCE","CLOSURE_GATE"],
+    "unplanned_control_count": 0
+  },
+  "closure": {
+    "terminal_status": "CLOSED",
+    "verdict": "PASS",
+    "verdict_sha256": "8b97324d3ad7a73a7d187401389335b14d16e4711913df5e0eececc4134ede63"
+  },
+  "dispatch": {
+    "execution_order": ["GITHUB_RECONCILIATION","RUNTIME_DEPLOY_VERIFICATION","FINAL_EVIDENCE","CLOSURE_GATE"],
+    "persisted_receipt_count": 4,
+    "plan_digest": "bcc2e62216ce16e0ddef1ed7afb7aa84107be09e7d7d684d04c2e83704d29f69",
+    "receipt_digests": ["2b1fc4291c7e392e8ba06d9ee6b38e8b67483bfb3e6225fc092dcff6baa1ef0d","c5a98a381c6252ad60f31a4b4b1336ff445aabb7b31076add7a4730f06cc8a8a","7bbd27625e86ea042401da20f72c4752af69cbae9f25a0fd15fb8a3deb284868","169d26666623b2884c7c33a579a51590f86ae00d9fa19c4a1650cc6726ad352c"]
+  },
+  "final_evidence": {"manifest_sha256":"4142484e072e0c38dd480dcf2aa715f506086bc1b2634ab1f6815d9a9e76def2","receipt_count":2},
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "readiness_execution_identity_sha256": "a236de13aca976a9536faf4954c8b74064bc9f1ea07d1bc673c4b6b0d3cc9484",
+  "readiness_plan_digest_sha256": "4e3ded57442922da1d9858fd89cc10cccd1b716d19f36d00e18b9ddb38c7d7df",
+  "readiness_source_head": "6ae891bb51c0531cf5b573e1df395ab0a1917c84",
+  "runtime_scope": {
+    "deployment_execution_id":"DEPLOY-F09-S03-68debf6a041e2148",
+    "effect_operation_code":"REFRESCO_RUNTIME_PERFIL_LF",
+    "release_ref":"release://profile-runtime/f09-s03",
+    "required_files":[{"path":"runtime/app.py","sha256":"4c509218349cd436d05a9a46bf74f09c548257af447aa25f22e74a443187d842"},{"path":"runtime/config.json","sha256":"599586cf157a82869da9367c474ba6ac247ac5555b69302ae06b129b4a461c0a"}],
+    "source_sha":"0daa21699065c99d4d07b0eb07050a2f33e0fa9d",
+    "target_code":"PROFILE_RUNTIME"
+  },
+  "safety": {"deploy_executed":false,"live_runtime_execution":false,"pase_workflow_activated":false,"production_touched":false,"restart_executed":false,"runtime_scope_declared":true,"sandbox_only":true,"undeclared_deploy_or_restart_count":0,"zip_used_as_authority":false},
+  "scenario":"PROFILE_RUNTIME",
+  "scenario_exact_head":"0daa21699065c99d4d07b0eb07050a2f33e0fa9d",
+  "scenario_run_identity_sha256":"68debf6a041e2148dbabaa299301c96211112d7eb55e86086098f8e45521826e",
+  "schema_version":"PASE_F09_S03_PROFILE_RUNTIME_EXECUTION_PROOF_V1",
+  "work_code":"PASE-ATOM-F09-S03"
+}
