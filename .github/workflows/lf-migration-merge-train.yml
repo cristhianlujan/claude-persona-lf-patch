@@ -1,0 +1,539 @@
+name: LF Migration Merge Train
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+  actions: read
+  checks: read
+
+concurrency:
+  group: lf-migrations
+  queue: max
+  cancel-in-progress: false
+
+env:
+  LF_MIGRATION_TRAIN_MODE: DRY_RUN
+  SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+  SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+
+jobs:
+  lf-migration-merge-train:
+    if: github.event.label.name == 'ready-to-merge'
+    name: lf-migration-merge-train
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    outputs:
+      pr_number: ${{ steps.plan.outputs.pr_number }}
+      final_head_sha: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
+      migration_count: ${{ steps.plan.outputs.migration_count }}
+      migration_path: ${{ steps.plan.outputs.migration_path }}
+      migration_version: ${{ steps.plan.outputs.migration_version }}
+      migration_name: ${{ steps.plan.outputs.migration_name }}
+      mode: ${{ steps.plan.outputs.mode }}
+      applied: ${{ steps.real_apply.outputs.applied || 'false' }}
+
+    steps:
+      - name: Checkout trusted current main only
+        uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Supabase CLI for REAL mode
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install PostgreSQL client for REAL mode
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          supabase db push --help >/dev/null
+          psql --version
+
+      - name: Acquire GitHub App token for REAL mode
+        id: app_token
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Admission and current-main readback
+        id: admission
+        env:
+          EVENT_PATH: ${{ github.event_path }}
+          ACTOR: ${{ github.actor }}
+          EXTRA_ALLOWED_ACTORS: ${{ vars.LF_MIGRATION_TRAIN_ALLOWED_ACTORS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$(jq -r '.repository.full_name' "$EVENT_PATH")"
+          head_repo="$(jq -r '.pull_request.head.repo.full_name' "$EVENT_PATH")"
+          base_ref="$(jq -r '.pull_request.base.ref' "$EVENT_PATH")"
+          draft="$(jq -r '.pull_request.draft' "$EVENT_PATH")"
+          pr="$(jq -r '.pull_request.number' "$EVENT_PATH")"
+          head_sha="$(jq -r '.pull_request.head.sha' "$EVENT_PATH")"
+          head_ref="$(jq -r '.pull_request.head.ref' "$EVENT_PATH")"
+
+          [ "$head_repo" = "$repo" ] || { echo "FAIL_TRAIN_FOREIGN_HEAD"; exit 2; }
+          [ "$base_ref" = "main" ] || { echo "FAIL_TRAIN_BASE_NOT_MAIN"; exit 2; }
+          [ "$draft" = "false" ] || { echo "FAIL_TRAIN_DRAFT_PR"; exit 2; }
+
+          allowed=",paulozterra,cristhianlujan,"
+          if [ -n "${EXTRA_ALLOWED_ACTORS:-}" ]; then
+            normalized="$(printf '%s' "$EXTRA_ALLOWED_ACTORS" | tr ' ' ',' | tr -d '\n\r')"
+            allowed="${allowed}${normalized},"
+          fi
+          case "$allowed" in
+            *,"$ACTOR",*) ;;
+            *) echo "FAIL_TRAIN_ACTOR_NOT_AUTHORIZED actor=$ACTOR"; exit 2 ;;
+          esac
+
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          current_main="$(git rev-parse refs/remotes/origin/main)"
+          git checkout --detach "$current_main"
+
+          {
+            echo "repository=$repo"
+            echo "pr_number=$pr"
+            echo "head_sha=$head_sha"
+            echo "head_ref=$head_ref"
+            echo "current_main=$current_main"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Sync PR branch with current main in REAL mode
+        id: sync
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          EXPECTED_HEAD: ${{ steps.admission.outputs.head_sha }}
+          CURRENT_MAIN: ${{ steps.admission.outputs.current_main }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_sha="$(gh api "repos/$REPO/pulls/$PR" --jq '.base.sha')"
+          if [ "$base_sha" != "$CURRENT_MAIN" ]; then
+            gh api --method PUT "repos/$REPO/pulls/$PR/update-branch" -f expected_head_sha="$EXPECTED_HEAD" >/dev/null
+            for _ in $(seq 1 60); do
+              sleep 2
+              base_sha="$(gh api "repos/$REPO/pulls/$PR" --jq '.base.sha')"
+              head_sha="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')"
+              if [ "$base_sha" = "$CURRENT_MAIN" ]; then
+                echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            done
+            echo "FAIL_TRAIN_SYNC_TIMEOUT"
+            exit 2
+          fi
+          echo "head_sha=$EXPECTED_HEAD" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve exact PR files and migration blob
+        id: source
+        env:
+          GH_TOKEN: ${{ env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.app_token.outputs.token || github.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          EVENT_HEAD: ${{ steps.admission.outputs.head_sha }}
+          SYNC_HEAD: ${{ steps.sync.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .lf_train/source
+          if [ "$LF_MIGRATION_TRAIN_MODE" = "REAL" ]; then head_sha="$SYNC_HEAD"; else head_sha="$EVENT_HEAD"; fi
+
+          gh api --paginate --slurp "repos/$REPO/pulls/$PR/files?per_page=100" > .lf_train/pr-files-pages.json
+          python3 - <<'PY'
+          import json,re
+          pages=json.load(open(".lf_train/pr-files-pages.json",encoding="utf-8"))
+          rows=[row for page in pages for row in page]
+          mig=[]
+          for row in rows:
+              p=str(row.get("filename") or "")
+              if p.startswith("supabase/migrations/") and p.endswith(".sql"):
+                  mig.append((str(row.get("status") or ""),p))
+          if not mig:
+              open(".lf_train/migration-meta","w").write("0\n")
+              raise SystemExit(0)
+          if len(mig) != 1:
+              raise SystemExit("FAIL_MIGRATION_MULTIPLE_PER_PR")
+          status,path=mig[0]
+          if status != "added":
+              raise SystemExit(f"FAIL_TRAIN_MIGRATION_CHANGE_NOT_NEW:{status}:{path}")
+          if re.fullmatch(r"supabase/migrations/\d{14}_[A-Za-z0-9][A-Za-z0-9_]*\.sql",path) is None:
+              raise SystemExit("FAIL_TRAIN_MIGRATION_FILENAME")
+          open(".lf_train/migration-meta","w").write("1\n"+path+"\n")
+          PY
+
+          count="$(sed -n '1p' .lf_train/migration-meta)"
+          echo "migration_count=$count" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+          if [ "$count" = "0" ]; then exit 0; fi
+
+          path="$(sed -n '2p' .lf_train/migration-meta)"
+          filename="${path##*/}"
+          gh api "repos/$REPO/contents/$path?ref=$head_sha" > .lf_train/content.json
+          blob="$(jq -r '.sha' .lf_train/content.json)"
+          jq -r '.content' .lf_train/content.json | tr -d '\n' | base64 -d > ".lf_train/source/$filename"
+          sha256="$(sha256sum ".lf_train/source/$filename" | awk '{print $1}')"
+          {
+            echo "migration_path=$path"
+            echo "source_file=.lf_train/source/$filename"
+            echo "source_blob=$blob"
+            echo "source_sha256=$sha256"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Read floors, assign version, and run M2 check
+        id: plan
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.source.outputs.head_sha }}
+          MIGRATION_COUNT: ${{ steps.source.outputs.migration_count }}
+          MIGRATION_PATH: ${{ steps.source.outputs.migration_path }}
+          SOURCE_FILE: ${{ steps.source.outputs.source_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "pr_number=$PR"
+            echo "migration_count=${MIGRATION_COUNT:-0}"
+            echo "mode=$LF_MIGRATION_TRAIN_MODE"
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "${MIGRATION_COUNT:-0}" = "0" ]; then
+            echo "PASS_TRAIN_NO_MIGRATION same_queue=true"
+            exit 0
+          fi
+          [ -n "${LF_SUPABASE_DB_PASSWORD:-}" ] || { echo "FAIL_TRAIN_DB_PASSWORD_MISSING"; exit 2; }
+
+          main_max="$(find supabase/migrations -maxdepth 1 -type f -printf '%f\n' | sed -nE 's/^([0-9]{14})_.+\.sql$/\1/p' | sort | tail -1)"
+          [ -n "$main_max" ] || { echo "FAIL_TRAIN_MAIN_MAX_MISSING"; exit 2; }
+          ledger_max="$(docker run --rm \
+            -e PGHOST="$SUPABASE_POOLER_HOST" -e PGPORT=5432 \
+            -e PGUSER="postgres.$SUPABASE_PROJECT_ID" -e PGPASSWORD="$LF_SUPABASE_DB_PASSWORD" \
+            -e PGDATABASE=postgres -e PGSSLMODE=require postgres:17.6 \
+            psql -X -At -v ON_ERROR_STOP=1 -c "select coalesce(max(version),'00000000000000') from supabase_migrations.schema_migrations;")"
+          ledger_max="$(printf '%s' "$ledger_max" | tr -d '\r\n')"
+
+          assign_out="$(python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py \
+            "$SOURCE_FILE" --main-max "$main_max" --ledger-max "$ledger_max" --dry-run)"
+          echo "$assign_out"
+          version="$(printf '%s' "$assign_out" | sed -nE 's/.* version=([0-9]{14}) .*/\1/p')"
+          [ -n "$version" ] || { echo "FAIL_TRAIN_ASSIGN_VERSION_PARSE"; exit 2; }
+
+          old_name="${MIGRATION_PATH##*/}"
+          suffix="${old_name#???????????????}"
+          target_path="supabase/migrations/${version}_${suffix}"
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_version_order_check.py \
+            --new-migration "$target_path" --main-max "$main_max" --ledger-max "$ledger_max"
+
+          name="${target_path##*/}"
+          name="${name#???????????????}"
+          name="${name%.sql}"
+          {
+            echo "migration_path=$target_path"
+            echo "migration_version=$version"
+            echo "migration_name=$name"
+            echo "main_max=$main_max"
+            echo "ledger_max=$ledger_max"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Report DRY-RUN plan
+        if: env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          MIGRATION_COUNT: ${{ steps.plan.outputs.migration_count }}
+          TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
+          MAIN_MAX: ${{ steps.plan.outputs.main_max }}
+          LEDGER_MAX: ${{ steps.plan.outputs.ledger_max }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # FASE 4 only: keep dry runs long enough to make queue serialization observable.
+          sleep 10
+          if [ "${MIGRATION_COUNT:-0}" = "0" ]; then
+            body="DRY-RUN lf-migrations: PR sin migration; misma fila; no apply, no merge."
+          else
+            body="DRY-RUN lf-migrations: migration objetivo `$TARGET_PATH`; floor main=`$MAIN_MAX`, ledger=`$LEDGER_MAX`; version check PASS. No persist/apply/merge ejecutado."
+          fi
+          gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null
+          echo "$body"
+
+      - name: Retimestamp migration atomically on PR head in REAL mode
+        id: retimestamp
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          HEAD_REF: ${{ steps.admission.outputs.head_ref }}
+          HEAD_SHA: ${{ steps.source.outputs.head_sha }}
+          OLD_PATH: ${{ steps.source.outputs.migration_path }}
+          NEW_PATH: ${{ steps.plan.outputs.migration_path }}
+          SOURCE_FILE: ${{ steps.source.outputs.source_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$OLD_PATH" = "$NEW_PATH" ]; then echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"; exit 0; fi
+          python3 - <<'PY'
+          import base64,json,os,urllib.request
+          token=os.environ["GH_TOKEN"]; repo=os.environ["REPO"]; head=os.environ["HEAD_SHA"]
+          old=os.environ["OLD_PATH"]; new=os.environ["NEW_PATH"]; ref=os.environ["HEAD_REF"]
+          raw=open(os.environ["SOURCE_FILE"],"rb").read()
+          def req(method,path,payload=None):
+              data=None if payload is None else json.dumps(payload).encode()
+              r=urllib.request.Request("https://api.github.com/"+path,data=data,method=method,headers={
+                  "Accept":"application/vnd.github+json","Authorization":"Bearer "+token,
+                  "X-GitHub-Api-Version":"2022-11-28","User-Agent":"lf-migration-merge-train"})
+              with urllib.request.urlopen(r,timeout=60) as resp: return json.loads(resp.read())
+          commit=req("GET",f"repos/{repo}/git/commits/{head}")
+          blob=req("POST",f"repos/{repo}/git/blobs",{"content":base64.b64encode(raw).decode(),"encoding":"base64"})["sha"]
+          tree=req("POST",f"repos/{repo}/git/trees",{"base_tree":commit["tree"]["sha"],"tree":[
+              {"path":old,"mode":"100644","type":"blob","sha":None},
+              {"path":new,"mode":"100644","type":"blob","sha":blob}]})["sha"]
+          new_commit=req("POST",f"repos/{repo}/git/commits",{"message":"chore(migrations): assign merge-train version","tree":tree,"parents":[head]})["sha"]
+          req("PATCH",f"repos/{repo}/git/refs/heads/{ref}",{"sha":new_commit,"force":False})
+          open(os.environ["GITHUB_OUTPUT"],"a").write("head_sha="+new_commit+"\n")
+          PY
+
+      - name: Verify exact-head PASE checks before apply in REAL mode
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          EXPECTED_HEAD: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 90); do
+            pr_head="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')"
+            [ "$pr_head" = "$EXPECTED_HEAD" ] || { echo "FAIL_TRAIN_HEAD_MOVED expected=$EXPECTED_HEAD observed=$pr_head"; exit 2; }
+            checks="$(gh api --paginate "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"
+            bad="$(printf '%s' "$checks" | jq '[.check_runs[]? | select(.name=="lf-independent-change-admission" or .name=="ig-runtime-candidate-judge") | select(.conclusion!=null and (.conclusion!="success" and .conclusion!="skipped" and .conclusion!="neutral"))] | length')"
+            [ "$bad" = "0" ] || { echo "FAIL_TRAIN_PASE_CHECK"; exit 2; }
+            pending="$(printf '%s' "$checks" | jq '[.check_runs[]? | select(.name=="lf-independent-change-admission" or .name=="ig-runtime-candidate-judge") | select(.status!="completed")] | length')"
+            present="$(printf '%s' "$checks" | jq '[.check_runs[]? | select(.name=="lf-independent-change-admission" or .name=="ig-runtime-candidate-judge")] | length')"
+            if [ "$present" -ge 2 ] && [ "$pending" = "0" ]; then exit 0; fi
+            sleep 5
+          done
+          echo "FAIL_TRAIN_PASE_CHECK_TIMEOUT"
+          exit 2
+
+      - name: Persist exact source and require Saga READY_TO_APPLY
+        id: write_ahead
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          BASE_SHA: ${{ steps.admission.outputs.current_main }}
+          SOURCE_HEAD: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
+          TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
+          VERSION: ${{ steps.plan.outputs.migration_version }}
+          NAME: ${{ steps.plan.outputs.migration_name }}
+          SOURCE_SHA256: ${{ steps.source.outputs.source_sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "lf-migration-merge-train[bot]"
+          git config user.email "lf-migration-merge-train[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:$GH_TOKEN@github.com/$REPO.git"
+          git fetch --no-tags origin "$SOURCE_HEAD"
+          source_blob="$(git rev-parse "$SOURCE_HEAD:$TARGET_PATH")"
+          target_branch="lf/migration-source-persist/pr-$PR-$VERSION-$GITHUB_RUN_ID"
+          export SOURCE_BLOB="$source_blob" TARGET_BRANCH="$target_branch"
+          python3 - <<'PY'
+          import json,os
+          p={
+            "repository":os.environ["REPO"],"base_sha":os.environ["BASE_SHA"],
+            "source_sha":os.environ["SOURCE_HEAD"],"source_blob":os.environ["SOURCE_BLOB"],
+            "source_sha256":os.environ["SOURCE_SHA256"],"target_path":os.environ["TARGET_PATH"],
+            "target_branch":os.environ["TARGET_BRANCH"],
+            "execution_id":f"EXEC-MIGRATION-TRAIN-PR{os.environ['PR']}-{os.environ['GITHUB_RUN_ID']}"
+          }
+          open(".lf_train/write-ahead-request.json","w").write(json.dumps(p,sort_keys=True))
+          PY
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py \
+            --request .lf_train/write-ahead-request.json | tee .lf_train/write-ahead-receipt.json
+          persisted_head="$(jq -r '.persisted_head_sha' .lf_train/write-ahead-receipt.json)"
+          [ -n "$persisted_head" ] && [ "$persisted_head" != "null" ] || { echo "FAIL_TRAIN_WRITE_AHEAD_HEAD"; exit 2; }
+
+          python3 - <<'PY'
+          import json,os
+          receipt=json.load(open(".lf_train/write-ahead-receipt.json"))
+          payload={
+            "schema_version":"lf-migration-orchestrated-saga/v1",
+            "operation_code":"ACTUALIZACION_DB_LF",
+            "execution_id":f"EXEC-MIGRATION-TRAIN-PR{os.environ['PR']}-{os.environ['GITHUB_RUN_ID']}",
+            "effect_scope":"MIGRATION:"+os.environ["VERSION"],
+            "target_path":os.environ["TARGET_PATH"],
+            "migration_version":os.environ["VERSION"],
+            "migration_name":os.environ["NAME"],
+            "source_sha256":os.environ["SOURCE_SHA256"],
+            "git":{"persisted":True,"readback":True,"path":os.environ["TARGET_PATH"],
+                   "head_sha":receipt["persisted_head_sha"],"blob_sha1":receipt["source_blob"],
+                   "source_sha256":os.environ["SOURCE_SHA256"]},
+            "supabase":{"applied":False},
+            "parity":{}
+          }
+          open(".lf_train/saga-ready.json","w").write(json.dumps(payload,sort_keys=True))
+          PY
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_orchestrated_saga.py \
+            --file .lf_train/saga-ready.json | tee .lf_train/saga-ready-receipt.json
+          jq -e '.status=="READY_TO_APPLY" and .code=="WRITE_AHEAD_READY_FOR_EXACT_APPLY"' .lf_train/saga-ready-receipt.json >/dev/null
+          echo "persisted_head_sha=$persisted_head" >> "$GITHUB_OUTPUT"
+          echo "source_blob=$source_blob" >> "$GITHUB_OUTPUT"
+
+      - name: Apply exact version and ledger readback
+        id: real_apply
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
+          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_exact_apply.py \
+            --project-root "$GITHUB_WORKSPACE" \
+            --migration-path "$GITHUB_WORKSPACE/$TARGET_PATH" \
+            --source-blob "$SOURCE_BLOB" \
+            --allow-fallback | tee .lf_train/exact-apply-receipt.json
+          jq -e '.status=="PASS" and .ledger_version==.migration_version and .ledger_name==.migration_name' .lf_train/exact-apply-receipt.json >/dev/null
+          echo "applied=true" >> "$GITHUB_OUTPUT"
+
+      - name: Run changeset-scoped parity from trusted persisted source
+        id: parity
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          BASE_SHA: ${{ steps.admission.outputs.current_main }}
+          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          observed="$(git rev-parse HEAD)"
+          [ "$observed" = "$PERSISTED_HEAD" ] || { echo "FAIL_TRAIN_PERSISTED_HEAD_WORKTREE"; exit 2; }
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_focal_v1.py \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$PERSISTED_HEAD" \
+            --base-ref main \
+            --event-name pull_request \
+            --control-maturity CUTOVER \
+            --evaluation-scope CHANGESET_SCOPED \
+            --historical-debt-disposition RECONCILIATION_WORK_ITEM \
+            --output-dir .lf_train/parity
+          jq -e '.status=="PASS"' .lf_train/parity/run-summary.json >/dev/null
+
+      - name: Verify main has not moved after apply
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          EXPECTED_MAIN: ${{ steps.admission.outputs.current_main }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          live="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha')"
+          [ "$live" = "$EXPECTED_MAIN" ] || { echo "FAIL_TRAIN_MAIN_MOVED_POST_APPLY expected=$EXPECTED_MAIN live=$live"; exit 2; }
+
+      - name: Saga final-evidence hook
+        if: always()
+        run: |
+          echo "Saga pre-apply state gate is enforced directly."
+          echo "Final CONSISTENT is not fabricated: it requires canonical LF_GATE_ERROR_V1 / LF_GATE_CHECK_OBSERVABILITY_V1 evidence."
+          echo "Workflow ordering enforces write-ahead -> exact apply/readback -> parity -> merge."
+          echo "PASE-GLOBAL-04 hook remains contract-compatible for later governed bind/current activation."
+
+      - name: Failure handling
+        if: failure()
+        env:
+          GH_TOKEN: ${{ env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.app_token.outputs.token || github.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          APPLIED: ${{ steps.real_apply.outputs.applied || 'false' }}
+        shell: bash
+        run: |
+          set +e
+          gh api --method DELETE "repos/$REPO/issues/$PR/labels/ready-to-merge" >/dev/null 2>&1
+          if [ "$APPLIED" = "true" ]; then
+            body="LF migration merge train POST-APPLY STOP. No second apply or retimestamp is allowed. Fail-forward only; inspect run $GITHUB_RUN_ID."
+          else
+            body="LF migration merge train PRE-APPLY STOP. No DB apply or merge executed; inspect run $GITHUB_RUN_ID before re-labeling."
+          fi
+          gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1
+
+  lf-migration-merge:
+    name: lf-migration-merge
+    needs: lf-migration-merge-train
+    if: needs.lf-migration-merge-train.result == 'success' && needs.lf-migration-merge-train.outputs.mode == 'REAL'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Acquire GitHub App token
+        id: app_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Merge exact head only
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ needs.lf-migration-merge-train.outputs.pr_number }}
+          HEAD_SHA: ${{ needs.lf-migration-merge-train.outputs.final_head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          observed="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')"
+          [ "$observed" = "$HEAD_SHA" ] || { echo "FAIL_TRAIN_PREMERGE_HEAD_MOVED"; exit 2; }
+          gh api --method PUT "repos/$REPO/pulls/$PR/merge" \
+            -f sha="$HEAD_SHA" -f merge_method=merge \
+            -f commit_title="merge(train): PR #$PR" >/dev/null
+
+      - name: Post-merge readback
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ needs.lf-migration-merge-train.outputs.pr_number }}
+          MIGRATION_COUNT: ${{ needs.lf-migration-merge-train.outputs.migration_count }}
+          TARGET_PATH: ${{ needs.lf-migration-merge-train.outputs.migration_path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          merged="$(gh api "repos/$REPO/pulls/$PR" --jq '.merged')"
+          [ "$merged" = "true" ] || { echo "FAIL_TRAIN_POSTMERGE_PR_NOT_MERGED"; exit 2; }
+          main_sha="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha')"
+          if [ "$MIGRATION_COUNT" = "1" ]; then
+            gh api "repos/$REPO/contents/$TARGET_PATH?ref=$main_sha" >/dev/null
+          fi
+          echo "PASS_TRAIN_POSTMERGE main=$main_sha"
