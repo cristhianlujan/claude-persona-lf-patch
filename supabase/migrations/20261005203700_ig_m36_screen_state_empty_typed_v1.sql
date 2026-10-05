@@ -3,8 +3,10 @@ begin;
 do $m36_patch$
 declare
   v_def text;
-  v_old constant text := 'when upper(coalesce(b.value->>''code'','''')) ~ ''(MISSING|NOT_LINKED|SOURCE.*INCOMPLETE|SOURCE_IDENTIFICATION|CANONICAL.*MISSING|REQUIREMENT.*MISSING|REFERENCE_UNRESOLVED)''\n          then ''MISSING_SOURCE''';
-  v_new constant text := 'when upper(coalesce(b.value->>''code'',''''))=''SCREEN_STATE_SET_EMPTY''\n          then ''MISSING_SOURCE''\n        when upper(coalesce(b.value->>''code'','''')) ~ ''(MISSING|NOT_LINKED|SOURCE.*INCOMPLETE|SOURCE_IDENTIFICATION|CANONICAL.*MISSING|REQUIREMENT.*MISSING|REFERENCE_UNRESOLVED)''\n          then ''MISSING_SOURCE''';
+  v_old constant text := $old$when upper(coalesce(b.value->>'code','')) ~ '(MISSING|NOT_LINKED|SOURCE.*INCOMPLETE|SOURCE_IDENTIFICATION|CANONICAL.*MISSING|REQUIREMENT.*MISSING|REFERENCE_UNRESOLVED)'$old$;
+  v_new constant text := $new$when upper(coalesce(b.value->>'code',''))='SCREEN_STATE_SET_EMPTY'
+          then 'MISSING_SOURCE'
+        when upper(coalesce(b.value->>'code','')) ~ '(MISSING|NOT_LINKED|SOURCE.*INCOMPLETE|SOURCE_IDENTIFICATION|CANONICAL.*MISSING|REQUIREMENT.*MISSING|REFERENCE_UNRESOLVED)'$new$;
   v_hits integer;
 begin
   select pg_get_functiondef(
