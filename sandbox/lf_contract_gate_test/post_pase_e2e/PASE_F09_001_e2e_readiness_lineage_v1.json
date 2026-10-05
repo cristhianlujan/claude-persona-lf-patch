@@ -1,0 +1,126 @@
+{
+  "schema_version": "PASE_F09_001_E2E_READINESS_LINEAGE_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F09-001",
+  "mode": "READINESS_FREEZE_ONLY",
+  "authority": {
+    "exact_main_sha": "6ae891bb51c0531cf5b573e1df395ab0a1917c84",
+    "exact_head_sha": "6ae891bb51c0531cf5b573e1df395ab0a1917c84",
+    "source_event_id": 19766,
+    "source_pack_event_id": 19827,
+    "pattern_event_id": 19806,
+    "r17_event_id": 19786,
+    "f08_terminal_event_id": 20318,
+    "f08_terminal_manifest_blob_sha1": "d4dba10d8b072fcc809857f89c83618e5a16beda"
+  },
+  "prior_art_reuse": {
+    "path": "sandbox/lf_contract_gate_test/post_pase_e2e/test_post_pase_multi_scenario_e2e_v1.py",
+    "blob_sha1": "a9e3ada643dd8e1c640e64f8ff30ca470f5d4981",
+    "historical_source_event_scenarios": [
+      "DOCS_ONLY",
+      "DB",
+      "PROFILE_RUNTIME",
+      "MIXED",
+      "FAILURE",
+      "STALE_EVIDENCE",
+      "WAIVER"
+    ],
+    "reuse_rule": "REUSE_EXISTING_CONTRACT_HARNESS_AND_ADAPT_ONLY_PHASE09_SCENARIO_DELTA",
+    "delta": [
+      "DOCUMENTATION_RENAMES_DOCS_ONLY_WITHOUT_SEMANTIC_EXPANSION",
+      "ADD_VISUAL_SCENARIO",
+      "COMBINE_FAILURE_AND_STALE_EVIDENCE_AS_ONE_ATOMIC_NEGATIVE_SCENARIO"
+    ]
+  },
+  "scenario_lineage": [
+    {
+      "work_code": "PASE-ATOM-F09-S01",
+      "scenario": "DOCUMENTATION",
+      "target_component": "SCENARIO_DOCUMENTATION",
+      "execution_identity_sha256": "114962285f9bb6889596a2d079ae348ab187c4f9cf09b95cf541d2a9313c0873"
+    },
+    {
+      "work_code": "PASE-ATOM-F09-S02",
+      "scenario": "DB",
+      "target_component": "SCENARIO_DB",
+      "execution_identity_sha256": "671b3a5eb3d9eb75de263bceefad36d5adbca3ca4f50024443955dee852a4956"
+    },
+    {
+      "work_code": "PASE-ATOM-F09-S03",
+      "scenario": "PROFILE_RUNTIME",
+      "target_component": "SCENARIO_PROFILE_RUNTIME",
+      "execution_identity_sha256": "a236de13aca976a9536faf4954c8b74064bc9f1ea07d1bc673c4b6b0d3cc9484"
+    },
+    {
+      "work_code": "PASE-ATOM-F09-S04",
+      "scenario": "VISUAL",
+      "target_component": "SCENARIO_VISUAL",
+      "execution_identity_sha256": "15bb7b5a4701147072b9a35989a4f9a90aa573a8afaa544d78bc71628aab003d"
+    },
+    {
+      "work_code": "PASE-ATOM-F09-S05",
+      "scenario": "MIXED",
+      "target_component": "SCENARIO_MIXED",
+      "execution_identity_sha256": "f1f6cec44b6bd6b9c00dfdb44e65ed56922aebbdf5c3504785842edc61180148"
+    },
+    {
+      "work_code": "PASE-ATOM-F09-S06",
+      "scenario": "FAILURE_STALE_EVIDENCE",
+      "target_component": "SCENARIO_FAILURE_STALE_EVIDENCE",
+      "execution_identity_sha256": "3916fa742de613bc0366254e129d30179ca82f67fa35e791738efb70ace4242e"
+    },
+    {
+      "work_code": "PASE-ATOM-F09-S07",
+      "scenario": "WAIVER",
+      "target_component": "SCENARIO_WAIVER",
+      "execution_identity_sha256": "46926bdff0540d2a6134f36e20837476a2100c83c308ed2232096c116f339850"
+    }
+  ],
+  "identity_formula": "sha256('PASE_F09_E2E_V1|'+exact_head_sha+'|'+work_code+'|'+scenario)",
+  "e2e_readiness_plan_digest_sha256": "4e3ded57442922da1d9858fd89cc10cccd1b716d19f36d00e18b9ddb38c7d7df",
+  "plan_digest_scope": "READINESS_LINEAGE_AND_SCENARIO_FIXTURES_ONLY_NOT_A_RUNTIME_EXECUTION_PLAN",
+  "execution_contract": {
+    "scenario_count": 7,
+    "live_domain_control_execution_allowed": false,
+    "pase_workflow_must_remain_disabled_during_readiness": true,
+    "production_authorized": false,
+    "runtime_activation_authorized": false,
+    "deploy_authorized": false,
+    "zip_authority_allowed": false,
+    "each_scenario_must_bind": [
+      "exact_head_sha",
+      "e2e_readiness_plan_digest_sha256",
+      "execution_identity_sha256",
+      "scenario_fixture",
+      "applicability_identity",
+      "dispatch_identity",
+      "post_pase_receipts",
+      "final_evidence_identity",
+      "closure_identity"
+    ]
+  },
+  "scenario_rules": {
+    "DOCUMENTATION": "ONLY_PLANNED_DOCUMENTATION_CONTROLS",
+    "DB": "MIGRATION_PARITY_AND_DB_ROLLBACK_ONLY_WHERE_APPLICABLE",
+    "PROFILE_RUNTIME": "DECLARED_RUNTIME_APPLICABILITY_WITHOUT_UNDECLARED_DEPLOY_OR_RESTART",
+    "VISUAL": "ALIAS_TO_CANONICAL_VISUAL_AUTHORITY_ONCE_ZERO_DUPLICATE_EXECUTION",
+    "MIXED": "DETERMINISTIC_DAG_ORDER_ZERO_INCIDENTAL_FULL_REGRESSION_CONTROLS",
+    "FAILURE_STALE_EVIDENCE": "FAIL_CLOSED_BEFORE_FINAL_EVIDENCE_OR_CLOSURE_PASS",
+    "WAIVER": "EXACT_CONTROL_PLAN_MERGE_BOUND_ONE_USE_AND_NEVER_COVERS_BLOCKED"
+  },
+  "r17_sequence": [
+    "MIGRATION_SOURCE_PARITY_WHEN_APPLICABLE",
+    "REPRESENTATIVE_BEFORE_AFTER_WHEN_APPLICABLE",
+    "AUTOMATED_SPECIALIZED_JUDGE",
+    "RUNTIME_DEPLOY_VERIFICATION_OR_DOMAIN_READBACK"
+  ],
+  "readiness_readback": {
+    "all_seven_scenarios_declared": true,
+    "all_execution_identities_unique": true,
+    "shared_exact_head": true,
+    "shared_readiness_plan_digest": true,
+    "live_domain_controls_executed": false,
+    "runtime_or_deploy_touched": false,
+    "production_touched": false
+  }
+}
