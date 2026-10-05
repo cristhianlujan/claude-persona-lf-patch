@@ -1,0 +1,125 @@
+{
+  "schema_version": "PASE_F08_R04_LF_DB_REGRESSION_RETIREMENT_READINESS_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F08-R04",
+  "target": "LF_DB_REGRESSION_LEGACY_CARRIER_REFERENCES",
+  "mode": "RETIREMENT_READINESS_ONLY",
+  "destructive_retirement_executed": false,
+  "actual_retirement_deferred_until_final_activation": true,
+  "authority": {
+    "exact_main_sha": "22905708c100a1c23462871353b3026d654289c8",
+    "predecessor_terminal_work_code": "PASE-ATOM-F08-P04",
+    "predecessor_terminal_event_id": 20316,
+    "replacement_map_path": "sandbox/lf_contract_gate_test/post_pase_f08/LF_DB_REGRESSION_legacy_carrier_rehome_v1.json"
+  },
+  "current_state": {
+    "legacy_workflow_path": ".github/workflows/lf-db-regression.yml",
+    "legacy_workflow_present": false,
+    "live_capability_registry_count": 0,
+    "live_capability_current_count": 0,
+    "live_capability_binding_count": 0,
+    "live_asset_count": 0,
+    "live_relation_count": 0,
+    "live_active_source_count": 0,
+    "operational_legacy_dependency_count": 0,
+    "router_legacy_control_reference_count": 3,
+    "replacement_coverage_count": 3
+  },
+  "keep_authority": {
+    "replacement_parent": "REVERSIBLE_CANDIDATE_VERIFICATION@1.0.1",
+    "db_write_transport": "DB_WRITE_TRANSPORT@1.0.0",
+    "migration_source_parity": "MIGRATION_SOURCE_PARITY@1.0.0",
+    "source_resolution_policy": "SOURCE_RESOLUTION_POLICY@1.4.0",
+    "independent_assurance": "INDEPENDENT_ASSURANCE@1.0.0",
+    "db_candidate_runner": "sandbox/lf_contract_gate_test/s28_ci_lane_router/run_changed_migrations_rollback_v1.py",
+    "policy_probe": "sandbox/lf_contract_gate_test/s28_ci_lane_router/policy_resolver_post_apply_probe_v1.sql",
+    "v7_harness": [
+      "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_MIGRATIONS.txt",
+      "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_BASE.sql",
+      "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_APPLY_READBACK.sql",
+      "sandbox/lf_contract_gate_test/PR93_V7_RUNTIME_ROLLBACK_READBACK.sql"
+    ],
+    "valid_db_regression_responsibilities_must_be_preserved": true
+  },
+  "reference_classification": {
+    "future_current_routing_cleanup": [
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_execution_plan_v2.py",
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json",
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_currentness_bridge_v1.py",
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_shared_ci_control_ownership_registry_v1.json",
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_change_family_registry_v1.json",
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py"
+    ],
+    "future_tests_and_docs_alignment": [
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_lane_router.py",
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_lf_ci_currentness_bridge_v1.py",
+      "sandbox/lf_contract_gate_test/s28_ci_lane_router/test_ci_control_carrier_wiring_v2.py",
+      "sandbox/lf_contract_gate_test/transversal_assets/ci_fast_deep_lane_router/README.md"
+    ],
+    "preserve_anti_reintroduction_assertion": [
+      "sandbox/lf_contract_gate_test/pase_github_entrypoint/test_single_pr_entrypoint_v1.py"
+    ],
+    "preserve_history": [
+      "sandbox/lf_contract_gate_test/transversal_assets/global_technical_inventory/inv_5_1/apply_file_history_v1.sql"
+    ],
+    "name_match_alone_is_not_retirement_authority": true
+  },
+  "future_retirement_preconditions": [
+    "FINAL_ACTIVATION_AUTHORITY_SATISFIED",
+    "REFRESH_EXACT_MAIN_AND_REFERENCE_SEARCH",
+    "REPLACEMENT_PARENT_OWNER_RUNNER_QUALIFIED_FOR_ANY_ACTIVATED_PATH",
+    "ENTRY_GUARD_REQUIREMENT_RESOLVED_FOR_ANY_NEW_MANDATORY_CONSUMPTION",
+    "ZERO_LEGACY_OPERATIONAL_CALLERS",
+    "ZERO_LEGACY_BINDINGS_AND_RECEIPTS",
+    "NO_CASCADE",
+    "PRESERVE_DB_REGRESSION_RESPONSIBILITIES"
+  ],
+  "future_apply_contract": {
+    "source_actions": [
+      "REHOME_THREE_LF_DB_REGRESSION_CONTROL_PROJECTIONS_TO_THE_PROVEN_REPLACEMENT_PARENT",
+      "REMOVE_LF_DB_REGRESSION_FROM_CURRENT_CARRIER_SELF_PATHS_AND_CURRENTNESS_SELECTORS",
+      "REMOVE_STALE_SHARED_OWNERSHIP_AND_CHANGE_FAMILY_WORKFLOW_REFERENCES",
+      "REMOVE_STALE_DB_REGRESSION_OUTPUT_SURFACE_WITH_ZERO_CALLERS",
+      "ALIGN_CURRENT_TESTS_AND_README_WITH_REHOMED_EXECUTION",
+      "ADD_LF_DB_REGRESSION_TO_RETIRED_CARRIER_AND_RETIRED_WORKFLOW_ANTI_REINTRODUCTION_GUARDS",
+      "PRESERVE_NEGATIVE_ABSENCE_ASSERTIONS_AND_HISTORICAL_INVENTORY"
+    ],
+    "db_actions": [
+      "REMOVE_ONLY_STALE_ACTIVE_PROJECTIONS_IF_ANY_APPEAR_AT_EXECUTION_TIME",
+      "PRESERVE_ALL_REPLACEMENT_CAPABILITY_AUTHORITIES"
+    ],
+    "forbidden": [
+      "DELETE_REVERSIBLE_CANDIDATE_VERIFICATION",
+      "DELETE_DB_WRITE_TRANSPORT",
+      "DELETE_MIGRATION_SOURCE_PARITY",
+      "DELETE_SOURCE_RESOLUTION_POLICY",
+      "DELETE_INDEPENDENT_ASSURANCE",
+      "CASCADE_RETIREMENT",
+      "REACTIVATE_LEGACY_LF_DB_REGRESSION_WORKFLOW",
+      "BULK_CONTROL_STATE_CHANGE"
+    ]
+  },
+  "rollback_contract": {
+    "strategy": "CAPTURE_EXECUTION_TIME_EXACT_GIT_AND_DB_PREIMAGES_BEFORE_WRITE",
+    "restore_only_execution_time_preimages": true,
+    "historical_baselines_are_rollback_authority": false,
+    "fail_closed_if_head_or_authority_moves": true,
+    "persist_preimage_manifest_and_digest": true
+  },
+  "post_apply_readback": [
+    "ZERO_LF_DB_REGRESSION_CURRENT_ROUTING_REFERENCES",
+    "ZERO_LEGACY_BINDINGS_AND_RECEIPTS",
+    "THREE_DB_REGRESSION_RESPONSIBILITIES_PRESERVED_UNDER_PROVEN_PARENT",
+    "ANTI_REINTRODUCTION_GUARD_PRESENT",
+    "HISTORICAL_AND_NEGATIVE_EVIDENCE_PRESERVED",
+    "NO_CASCADE_CONFIRMED",
+    "ROLLBACK_PREIMAGE_MANIFEST_DIGEST_PERSISTED"
+  ],
+  "restrictions": {
+    "no_runtime_activation_now": true,
+    "no_production_activation_now": true,
+    "no_destructive_retirement_now": true,
+    "no_cascade": true,
+    "no_zip_authority": true
+  }
+}
