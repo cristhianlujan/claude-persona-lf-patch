@@ -22,7 +22,7 @@ Methods should consume the same targeted evidence base where possible. The portf
 
 ## Candidate inventory
 
-`method_candidate_inventory_v1.json` records the methods named by the Programming Agent plans and existing live providers that may be reusable. It deliberately promotes zero Champions until exact family qualification exists. Historical Story Creator prior art and plan-only method names remain candidates, not active authority.
+`method_candidate_inventory_v2.json` is the complete inventory for the 19 intelligence-selection units declared by `lf_eventos://20346`. It supersedes the incomplete 13-family draft. It records plan methods plus existing live providers without promoting concepts, historical prior art or current capabilities that lack family-specific qualification.
 
 ## Fallback
 
