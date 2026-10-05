@@ -194,10 +194,16 @@ def validate_historical_source_identity(
         )
 
 
-def _git_blob(ref: str, repo_path: str) -> str | None:
+_MIGRATION_TREE_CACHE: dict[str, dict[str, str]] = {}
+
+
+def _migration_tree(ref: str) -> dict[str, str]:
+    cached = _MIGRATION_TREE_CACHE.get(ref)
+    if cached is not None:
+        return cached
     root = _MODULE_DIR.parents[2]
     proc = subprocess.run(
-        ["git", "rev-parse", f"{ref}:{repo_path}"],
+        ["git", "ls-tree", "-r", ref, "--", "supabase/migrations"],
         cwd=root,
         text=True,
         stdout=subprocess.PIPE,
@@ -206,11 +212,19 @@ def _git_blob(ref: str, repo_path: str) -> str | None:
         timeout=30,
     )
     if proc.returncode != 0:
-        return None
-    blob = proc.stdout.strip().lower()
-    if SHA40_RE.fullmatch(blob) is None:
-        fail("FAIL_LF_MIGRATION_HISTORICAL_BLOB", f"ref={ref} path={repo_path}")
-    return blob
+        fail("FAIL_LF_MIGRATION_HISTORICAL_TREE", f"ref={ref} rc={proc.returncode}")
+    rows: dict[str, str] = {}
+    for raw in proc.stdout.splitlines():
+        meta, sep, repo_path = raw.partition("\t")
+        fields = meta.split()
+        if not sep or len(fields) != 3:
+            fail("FAIL_LF_MIGRATION_HISTORICAL_TREE_ROW", raw)
+        _mode, object_type, blob = fields
+        if object_type != "blob" or SHA40_RE.fullmatch(blob) is None:
+            fail("FAIL_LF_MIGRATION_HISTORICAL_TREE_ROW", raw)
+        rows[repo_path] = blob
+    _MIGRATION_TREE_CACHE[ref] = rows
+    return rows
 
 
 def assert_historical_source_frozen(
@@ -224,8 +238,8 @@ def assert_historical_source_frozen(
     validate_historical_source_identity(
         version=version,
         classification_baseline_end=classification_baseline_end,
-        baseline_blob=_git_blob(classification_baseline_git_sha, repo_path),
-        current_blob=_git_blob("HEAD", repo_path),
+        baseline_blob=_migration_tree(classification_baseline_git_sha).get(repo_path),
+        current_blob=_migration_tree("HEAD").get(repo_path),
         repo_path=repo_path,
     )
 
