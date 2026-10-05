@@ -1,0 +1,25 @@
+{
+  "falsification": {"duplicate_execution_count":0,"failure_stops_before_terminal":true,"negative_paths_fail_closed":true,"stale_blocks_at_router_currentness":true,"unplanned_control_count":0},
+  "failure_path": {
+    "block_code":"BLOCK_E2E_INJECTED_FAILURE:AUTHORITY_READBACK",
+    "closure_reached":false,
+    "downstream_terminal_pass_count":0,
+    "execution_order":["GITHUB_RECONCILIATION","AUTHORITY_READBACK"],
+    "final_evidence_reached":false,
+    "injected_failure_control":"AUTHORITY_READBACK",
+    "persisted_receipt_count":1,
+    "planned_required":["GITHUB_RECONCILIATION","AUTHORITY_READBACK","RUNTIME_DEPLOY_VERIFICATION","FINAL_EVIDENCE","CLOSURE_GATE"]
+  },
+  "plan_code":"LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "readiness_execution_identity_sha256":"3916fa742de613bc0366254e129d30179ca82f67fa35e791738efb70ace4242e",
+  "readiness_plan_digest_sha256":"4e3ded57442922da1d9858fd89cc10cccd1b716d19f36d00e18b9ddb38c7d7df",
+  "readiness_source_head":"6ae891bb51c0531cf5b573e1df395ab0a1917c84",
+  "safety":{"live_domain_controls_executed":false,"pase_workflow_activated":false,"production_touched":false,"runtime_or_deploy_touched":false,"sandbox_only":true,"zip_used_as_authority":false},
+  "scenario":"FAILURE_STALE_EVIDENCE",
+  "scenario_exact_head":"3a416356c88f450655c1b54cbf0c4b279f613389",
+  "scenario_run_identity_sha256":"aef2da2a38261ef4848705fc680b562fc821ee4d3ef8191d0d08bd28f9a75896",
+  "schema_version":"PASE_F09_S06_FAILURE_STALE_EXECUTION_PROOF_V1",
+  "source_harness":{"blob_sha1":"a9e3ada643dd8e1c640e64f8ff30ca470f5d4981","failure_expected_order":["GITHUB_RECONCILIATION","AUTHORITY_READBACK"],"stale_expected_code":"CURRENTNESS_NOT_READY"},
+  "stale_path":{"block_code":"CURRENTNESS_NOT_READY","closure_reached":false,"dispatch_count":0,"final_evidence_reached":false,"router_plan_created":false},
+  "work_code":"PASE-ATOM-F09-S06"
+}
