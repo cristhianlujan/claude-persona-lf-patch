@@ -1,0 +1,48 @@
+{
+  "schema_version": "ANALYSIS_CHANGE_CLASSIFICATION_CONTRACT_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "unit": "A2",
+  "input_contract": "REQUEST_CONTEXT_V1",
+  "output_contract": "ANALYSIS_CHANGE_CLASSIFICATION_V1",
+  "classification": {
+    "change_type_required": true,
+    "change_type_policy": "EVIDENCE_DERIVED_OPEN_CATALOG",
+    "depth_levels": [
+      "L1",
+      "L2",
+      "L3"
+    ],
+    "depth_reason_required": true,
+    "evidence_refs_required": true
+  },
+  "specialist_resolution": {
+    "output_requirements": "specialist_requirements[]",
+    "output_refs": "specialist_refs[]",
+    "cardinality": "0..N",
+    "selection_modes": [
+      "EXACT_ONE",
+      "ALL_MATCHED"
+    ],
+    "selector_capability": "CAPABILITY_SELECTOR",
+    "selector_version_policy": "CURRENT",
+    "currentness_required": true,
+    "release_state_required": "RELEASED",
+    "catalog_source": "CURRENT_RELEASED_CAPABILITY_MANIFESTS_WITH_SPECIALIST_DECLARATION",
+    "hardcoded_specialist_identity_forbidden": true,
+    "hardcoded_story_creator_forbidden": true,
+    "selection_is_execution_permission": false,
+    "required_no_match": "BLOCK_AFFECTED_SCOPE_SPECIALIST_UNRESOLVED",
+    "optional_no_match": "NOT_REQUIRED",
+    "contradictory_or_failure": "BLOCK_AFFECTED_SCOPE"
+  },
+  "mapped_assets": [
+    "CAPABILITY_SELECTOR",
+    "SAFE_CHANGE_ADMISSION",
+    "SOURCE_RESOLUTION_POLICY"
+  ],
+  "no_parallel_engine": true,
+  "source_refs": [
+    "lf_eventos://20333",
+    "lf_eventos://20334"
+  ]
+}
