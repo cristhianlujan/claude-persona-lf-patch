@@ -1,0 +1,69 @@
+{
+  "schema_version": "WAVE2_FAMILY_BENCHMARK_PROTOCOL_V1",
+  "purpose": "Execute comparable per-family selection-method qualification without leaking holdout cases or selecting a global winner.",
+  "candidate_freeze": {
+    "required_before_holdout": true,
+    "freeze_identity": ["exact_git_head", "candidate_contract_blob_sha", "source_version", "decision_family", "model_profile_if_model_based"],
+    "candidate_change_after_freeze": "INVALIDATES_HOLDOUT_REQUIRES_NEW_REVISION"
+  },
+  "execution_layers": [
+    {
+      "layer": "REPRESENTATIVE",
+      "visibility": "OPEN_BEFORE_FREEZE",
+      "purpose": "Exercise normal family decisions and traceability."
+    },
+    {
+      "layer": "BOUNDARY",
+      "visibility": "OPEN_BEFORE_FREEZE",
+      "purpose": "Exercise near-boundary cases where multiple options remain plausible."
+    },
+    {
+      "layer": "ADVERSARIAL",
+      "visibility": "OPEN_BEFORE_FREEZE",
+      "purpose": "Exercise stale, contradictory, misleading, sparse and false-green-prone inputs."
+    },
+    {
+      "layer": "SEALED_HOLDOUT",
+      "visibility": "MATERIALIZE_ONLY_AFTER_EXACT_CANDIDATE_FREEZE",
+      "purpose": "Test generalization without tuning leakage."
+    }
+  ],
+  "sealed_holdout": {
+    "source_storage": "SUPABASE_APPEND_ONLY_EVENT_OR_BENCHMARK_AUTHORITY",
+    "source_repo_must_not_contain_prompt_before_execution": true,
+    "minimum_structural_coverage_per_family": ["CLEAR_OR_STANDARD", "AMBIGUOUS_OR_CONTRADICTORY", "NO_SIGNAL_OR_ADVERSARIAL"],
+    "prompt_digest_required": true,
+    "exact_candidate_binding_required": true,
+    "oracle_open_after_raw_freeze": true,
+    "no_training_or_tuning_after_open": true
+  },
+  "measurement": {
+    "quality": ["ground_truth_match_when_defined", "false_pass", "false_block", "material_omission", "contradiction_detection", "traceability_completeness", "unknown_preservation"],
+    "robustness": ["stale_input_rejection", "wrong_version_rejection", "no_signal_behavior", "forced_misclassification_recovery", "repeatability_or_stability"],
+    "efficiency": ["input_tokens", "output_tokens", "latency_ms", "tool_calls_or_queries", "duplicate_reads", "retries"],
+    "model_telemetry_rule": "IF_MODEL_BASED_AND_INPUT_OUTPUT_TOKEN_TELEMETRY_IS_NOT_OBSERVABLE_THEN_PROMOTION_REMAINS_BLOCKED; DO_NOT_ESTIMATE_OR_INVENT TOKENS"
+  },
+  "acceptance_floor": {
+    "hard_invariants": "ALL_APPLICABLE_HARD_INVARIANTS_PASS",
+    "material_false_pass": "ZERO_ON_QUALIFICATION_AND_HOLDOUT_CASES",
+    "material_omission": "ZERO_KNOWN_MATERIAL_OMISSIONS",
+    "contradiction_behavior": "PRESERVE_AND_ESCALATE_OR_BLOCK; NEVER_FORCE_PASS",
+    "unknown_behavior": "EXPLICIT_UNKNOWN_OR_TARGETED_EVIDENCE; NEVER_SILENT_DEFAULT_PASS",
+    "traceability": "EVERY_MATERIAL_SELECTION_HAS_REASON_AND_EVIDENCE_REF",
+    "efficiency": "MEASURED_AND_REPORTED; QUALITY_OR_HARD_INVARIANTS_MAY_NOT_BE_TRADED_AWAY FOR COST",
+    "first_champion_rule": "A candidate satisfying every hard floor may become first Champion only after exact identity/currentness, adversarial and sealed-holdout evidence are complete."
+  },
+  "families": [
+    {"unit":"A6","family":"ANALYSIS_REQUIREMENT_SYNTHESIS","candidates":["RIG_LF_SELECTION@2.0.0-candidate","MAAD_LF_SELECTION@2.0.0-candidate","RIG_THEN_MAAD_LF@2.0.0-candidate"],"adversarial_focus":["unsupported requirement inference","specialist provenance loss","analysis choosing test method"]},
+    {"unit":"A7","family":"ANALYSIS_RISK_QUALITY_SIGNAL_DERIVATION","candidates":["SRCR_CONTROL@0.2-candidate+f9087d98235947a9","TRACEDEV_LF_SELECTION@2.0.0-candidate","TRACEDEV_THEN_MNEMOSYNE_LF@2.0.0-candidate","DETERMINISTIC_INVARIANT_VETO@0.1.0-candidate"],"adversarial_focus":["low aggregate score hiding hard invariant","unknown material risk","conflicting evidence"]},
+    {"unit":"A9","family":"ANALYSIS_PACKAGE_QUALIFICATION","candidates":["MNEMOSYNE_LF_SELECTION@2.0.0-candidate","TRACEDEV_THEN_MNEMOSYNE_LF@2.0.0-candidate","ASSURANCE_EVALUATOR@1.0.0","INDEPENDENT_ASSURANCE@1.0.0"],"adversarial_focus":["builder self-approval","missing material precondition","open decision silently closed"]},
+    {"unit":"PG-02","family":"PROGRAMMING_CHANGE_CLASSIFICATION","candidates":["SRCR_CONTROL@0.2-candidate+f9087d98235947a9","RIG_LF_SELECTION@2.0.0-candidate","DETERMINISTIC_SIGNAL_RULE_CLASSIFIER@0.1.0-candidate","HYBRID_RULE_FIRST_SEMANTIC_CLASSIFIER@0.1.0-candidate"],"adversarial_focus":["mixed DB and runtime change","keyword bait","mechanical-looking material migration"]},
+    {"unit":"PG-03","family":"PROGRAMMING_IMPLEMENTATION_STRATEGY","candidates":["MAAD_LF_SELECTION@2.0.0-candidate","MNEMOSYNE_LF_SELECTION@2.0.0-candidate","RIG_THEN_MAAD_LF@2.0.0-candidate","TRACEDEV_THEN_MNEMOSYNE_LF@2.0.0-candidate","CONSTRAINT_ELIMINATION@0.1.0-candidate"],"adversarial_focus":["TDD forced where compatibility-first required","multiple non-dominated strategies","irreversible option with weak evidence"]},
+    {"unit":"PG-04","family":"PROGRAMMING_PARTITION_STRATEGY","candidates":["MAAD_LF_SELECTION@2.0.0-candidate","TRACEDEV_LF_SELECTION@2.0.0-candidate","RIG_THEN_MAAD_LF@2.0.0-candidate","TRACEDEV_THEN_MNEMOSYNE_LF@2.0.0-candidate","DEPENDENCY_CONSTRAINT_PARTITION_SELECTOR@0.1.0-candidate"],"adversarial_focus":["frontend-backend split breaks atomic outcome","write conflict hidden across partitions","context budget overflow"]},
+    {"unit":"TST-07","family":"TEST_FAMILY_SELECTION","candidates":["SRCR_CONTROL@0.2-candidate+f9087d98235947a9","TRACEDEV_LF_SELECTION@2.0.0-candidate","MNEMOSYNE_LF_SELECTION@2.0.0-candidate","TRACEDEV_THEN_MNEMOSYNE_LF@2.0.0-candidate"],"adversarial_focus":["material obligation labeled optional","uncertainty reducing coverage","test family selected from existence only"]},
+    {"unit":"TST-08","family":"TEST_METHOD_SELECTION","candidates":["MAAD_LF_SELECTION@2.0.0-candidate","MNEMOSYNE_LF_SELECTION@2.0.0-candidate","RIG_THEN_MAAD_LF@2.0.0-candidate","TRACEDEV_THEN_MNEMOSYNE_LF@2.0.0-candidate","CLAIM_METHOD_CONSTRAINT_SELECTOR@0.1.0-candidate"],"adversarial_focus":["load test chosen for state invariant","property test chosen for latency claim","method family conflation"]},
+    {"unit":"TST-09","family":"TEST_DEPTH_BUDGET_ESCALATION","candidates":["MNEMOSYNE_LF_SELECTION@2.0.0-candidate","TRACEDEV_THEN_MNEMOSYNE_LF@2.0.0-candidate","OBLIGATION_PRESERVING_BUDGET@0.1.0-candidate","ADAPTIVE_EVIDENCE_ESCALATION@0.1.0-candidate"],"adversarial_focus":["budget pressure removes material obligation","missing evidence causes de-escalation","duplicate evidence reads consume budget"]},
+    {"unit":"TST-10","family":"TEST_SAFE_FALLBACK","candidates":["RIG_THEN_MAAD_LF@2.0.0-candidate","TRACEDEV_THEN_MNEMOSYNE_LF@2.0.0-candidate","FULL_SAFE_MIX_V1_CANDIDATE"],"adversarial_focus":["no-signal silent pass","contradictory evidence forced to one route","mix uses unqualified component"]}
+  ],
+  "result_state": "BENCHMARK_SPEC_READY_CANDIDATE_FREEZE_REQUIRED_BEFORE_HOLDOUT"
+}

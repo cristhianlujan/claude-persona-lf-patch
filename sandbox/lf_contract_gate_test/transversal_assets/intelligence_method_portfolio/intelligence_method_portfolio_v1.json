@@ -1,0 +1,70 @@
+{
+  "schema_version": "INTELLIGENCE_METHOD_PORTFOLIO_V1",
+  "owner_scope": "SUPER_ADMIN",
+  "purpose": "Govern the exact methods and method mixes eligible for dynamic intelligence selection without creating a parallel selector engine.",
+  "selector": {
+    "capability": "CAPABILITY_SELECTOR@CURRENT",
+    "parallel_selector_forbidden": true,
+    "selection_is_execution_permission": false
+  },
+  "eligibility": {
+    "exact_version_required": true,
+    "current_required": true,
+    "release_state_required": "RELEASED",
+    "qualification_state_required": "QUALIFIED",
+    "qualification_ref_required": true,
+    "benchmark_ref_required": true,
+    "holdout_ref_or_na_reason_required": true,
+    "source_ref_required": true,
+    "validator_ref_required": true,
+    "historical_superseded_unverified_role": "BENCHMARK_ONLY"
+  },
+  "champion_policy": {
+    "scope": "PER_DECISION_FAMILY",
+    "winner_take_all_forbidden": true,
+    "champion_may_be_single_or_mix": true,
+    "challenger_must_shadow_or_holdout_before_promotion": true,
+    "requalification_triggers": [
+      "METHOD_VERSION_CHANGE",
+      "MODEL_PROFILE_CHANGE",
+      "INPUT_FINGERPRINT_CHANGE",
+      "OUTPUT_CONTRACT_CHANGE",
+      "BENCHMARK_CHANGE",
+      "POLICY_CHANGE",
+      "CURRENTNESS_DRIFT",
+      "QUALITY_DEGRADATION"
+    ]
+  },
+  "mix_protocol": {
+    "allowed_modes": [
+      "SINGLE",
+      "UNION_COMPLEMENTARY",
+      "CONSENSUS_REQUIRED",
+      "AUTHORITY_PRIORITY",
+      "HARD_INVARIANT_VETO",
+      "BOUNDED_ALTERNATIVES"
+    ],
+    "arbitrary_numeric_weights_forbidden": true,
+    "calibrated_weights_require_empirical_calibration_ref": true,
+    "shared_evidence_base_required": true,
+    "per_method_provenance_required": true,
+    "contradictions_preserved": true,
+    "final_judge_separate": true
+  },
+  "fallback_policy": {
+    "order": [
+      "SPECIALIST_IF_CLEAR",
+      "JUSTIFIED_MIX",
+      "TARGETED_EVIDENCE",
+      "QUALIFIED_ROBUST_DEFAULT",
+      "BLOCK"
+    ],
+    "no_signal_never_silently_selects_unqualified_method": true,
+    "contradiction_never_reduces_coverage": true
+  },
+  "transport": {
+    "zip_forbidden": true,
+    "full_repo_payload_forbidden": true,
+    "catalog_delivery": "REFERENCE_PLUS_TYPED_ROWS"
+  }
+}
