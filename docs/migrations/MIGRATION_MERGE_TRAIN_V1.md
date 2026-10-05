@@ -64,3 +64,25 @@ No habilitar `allow-unsafe-pr-checkout`. Este workflow no hace checkout ni ejecu
 4. Actions event policy que permita `pull_request_target`.
 5. Label `ready-to-merge`.
 6. Opcional: variable `LF_MIGRATION_TRAIN_ALLOWED_ACTORS` para identidades de agentes adicionales; Paulo y Cristhian están admitidos explícitamente.
+
+
+## Seguridad de shell y DRY_RUN
+
+`pull_request_target` es privilegiado. Ningún valor `github.event.*` se interpola dentro de un bloque `run:`; los datos del PR entran por `env:` y el shell consume únicamente variables citadas. El test del workflow inspecciona todos los bloques `run:` y falla si encuentra `${{ github.event`.
+
+DRY_RUN no muta GitHub ni Supabase:
+- GitHub: solo GET/readback; no comments, labels, branch updates ni merge.
+- Supabase: solo SELECT/readback del ledger.
+- Salida: logs y `$GITHUB_STEP_SUMMARY`.
+
+## Workflows activos después de un merge a main
+
+Inventario revisado el 2026-10-05:
+
+- `lf-external-currentness-detector.yml`: **activo**, dispara en todo `push` a `main`, sin filtro de paths.
+- `pase.yml`: escucha `push main`, pero PASE y POST-PASE siguen temporalmente en `if:false`.
+- `lf-input-governance-recurate-dispatch.yml`: limitado a cambios de sus propios workflows y condición adicional.
+- `story-agent-evidence-verifier.yml`: limitado a su workflow, función y migration específica.
+- `asset-smoke-test.yml`: limitado a assets/docs/tests concretos.
+
+REAL mantiene GitHub App porque el merge debe producir un `push main` normal que active `LF External Currentness Detector`. GitHub suprime normalmente nuevos workflow runs para eventos generados con el `GITHUB_TOKEN`. El job REAL declara además `contents:write`, `pull-requests:write`, `issues:write`, `actions:read` y `checks:read`.
