@@ -1,0 +1,94 @@
+{
+  "applicability": {
+    "combined_required": [
+      "MIGRATION_SOURCE_PARITY",
+      "GITHUB_RECONCILIATION",
+      "AUTHORITY_READBACK",
+      "FINAL_EVIDENCE",
+      "CLOSURE_GATE"
+    ],
+    "duplicate_execution_count": 0,
+    "not_applicable": [
+      "RUNTIME_DEPLOY_VERIFICATION"
+    ],
+    "post_pase_required": [
+      "GITHUB_RECONCILIATION",
+      "AUTHORITY_READBACK",
+      "FINAL_EVIDENCE",
+      "CLOSURE_GATE"
+    ],
+    "unplanned_control_count": 0
+  },
+  "closure": {
+    "terminal_status": "CLOSED",
+    "verdict": "PASS",
+    "verdict_sha256": "22a0ddeff7d371badd7846c8efc74f666fa8777e24075e3a3c39bb56cf10f408"
+  },
+  "dispatch": {
+    "execution_order": [
+      "GITHUB_RECONCILIATION",
+      "AUTHORITY_READBACK",
+      "FINAL_EVIDENCE",
+      "CLOSURE_GATE"
+    ],
+    "persisted_receipt_count": 4,
+    "plan_digest": "ec060351db8c61c78f21f6029ef90818683a4f6a8598201a3da837472dd561e2",
+    "receipt_digests": [
+      "f9ab3156ea4d6cdfe0eaac5cc1e398a1f1be447589722284ce1212a103a86f50",
+      "a5606d1b2504c94a777340fa14f1dad24be3e94be3a26beadadf9b17ff13d9ee",
+      "63d38fd985ba19487ae99fb988527eb307b4d979b19f23bc333b22363c84000e",
+      "c931c55efe51335cfedcc8c2d20cb7fdff770e98763c04a630be64a40852c916"
+    ]
+  },
+  "final_evidence": {
+    "manifest_sha256": "0c5c0cc8fbae4f3ec8316f28b9707b17186703ab249c807aae88b069f626a9db",
+    "receipt_count": 2
+  },
+  "pase_db": {
+    "candidate_apply_rollback": "NOT_APPLICABLE_NO_DDL_EXECUTION",
+    "db_write_transport": "NOT_APPLICABLE_SANDBOX_NO_APPLY",
+    "migration_source_parity": {
+      "core_blob_sha1": "3cd169b21a36add58f526424add48103142b9b54",
+      "core_result": {
+        "cli_statement_storage_count": 0,
+        "code": "PASS_LF_MIGRATION_SOURCE_PARITY",
+        "comparisons": {
+          "20261005180000": {
+            "cli_storage_sha256": "6a26c296ab425467b1ac97fc6701a898f9852ab2da55726b59b629bd6330a5a2",
+            "direct_sha256": "93b2bcc2d26864706f04bbad1a7762fc4cdae54c6ec8f149394c733be4db0e09",
+            "name": "f09_s02_db_fixture",
+            "remote_sha256": "93b2bcc2d26864706f04bbad1a7762fc4cdae54c6ec8f149394c733be4db0e09",
+            "remote_statement_count": 1,
+            "representation": "DIRECT_SOURCE",
+            "source_statement_count": 2,
+            "version": "20261005180000"
+          }
+        },
+        "direct_count": 1,
+        "schema_version": "lf-migration-source-parity-result/v1",
+        "status": "PASS",
+        "version_count": 1
+      },
+      "negative_mismatch_code": "FAIL_LF_MIGRATION_CONTENT_PARITY",
+      "transport_blob_sha1": "1ccb13299c12acf666a2c8a28b1cf21cb373b83c"
+    }
+  },
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "readiness_execution_identity_sha256": "671b3a5eb3d9eb75de263bceefad36d5adbca3ca4f50024443955dee852a4956",
+  "readiness_plan_digest_sha256": "4e3ded57442922da1d9858fd89cc10cccd1b716d19f36d00e18b9ddb38c7d7df",
+  "readiness_source_head": "6ae891bb51c0531cf5b573e1df395ab0a1917c84",
+  "safety": {
+    "ddl_executed": false,
+    "live_domain_controls_executed": false,
+    "pase_workflow_activated": false,
+    "production_touched": false,
+    "runtime_or_deploy_touched": false,
+    "sandbox_only": true,
+    "zip_used_as_authority": false
+  },
+  "scenario": "DB",
+  "scenario_exact_head": "89aea82be441b12cc80947341f749ea94997184e",
+  "scenario_run_identity_sha256": "a23b1adf5a27b3fe5771b8367fc56b13252e78a0f75df6ac5fb6c94fae13c28b",
+  "schema_version": "PASE_F09_S02_DB_EXECUTION_PROOF_V1",
+  "work_code": "PASE-ATOM-F09-S02"
+}
