@@ -1,0 +1,202 @@
+name: M3.7 SemanticResolution Exact Apply
+
+on:
+  push:
+    branches:
+      - apply/m3-7-semantic-resolution-20261005
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m3-7-semantic-resolution-20261005133500
+  cancel-in-progress: false
+
+jobs:
+  exact-apply:
+    name: Apply exact M3.7 migration
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+      PGHOST: aws-1-us-east-1.pooler.supabase.com
+      PGPORT: "5432"
+      PGDATABASE: postgres
+      PGUSER: postgres.mhwmirqcgxxukpctffuv
+      MIGRATION_PATH: supabase/migrations/20261005133500_ig_semantic_resolution_schema.sql
+      EXPECTED_SOURCE_COMMIT: dc4560b0b0f509b2a6b93946e7b03f878ee24604
+      EXPECTED_BLOB: 744d864882eec0ac4e9aef4375e3b9a332c693cc
+      MIGRATION_VERSION: "20261005133500"
+      MIGRATION_NAME: ig_semantic_resolution_schema
+      EXECUTION_ID: EXEC-DB-M3.7-APPLY-20261005133500-20261005-001
+
+    steps:
+      - name: Checkout exact merged source
+        uses: actions/checkout@v4
+        with:
+          ref: dc4560b0b0f509b2a6b93946e7b03f878ee24604
+          fetch-depth: 1
+
+      - name: Verify source identity and DB secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${PGPASSWORD:-}" || { echo "BLOCK_M37_DB_PASSWORD_MISSING"; exit 1; }
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_COMMIT"
+          test "$(git hash-object "$MIGRATION_PATH")" = "$EXPECTED_BLOB"
+          echo "PASS_M37_EXACT_SOURCE commit=$EXPECTED_SOURCE_COMMIT blob=$EXPECTED_BLOB"
+
+      - name: Assert clean live baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -Atc "
+            do \$pre\$
+            begin
+              if exists (select 1 from supabase_migrations.schema_migrations where version='20261005133500') then
+                raise exception 'BLOCK_M37_VERSION_ALREADY_PRESENT';
+              end if;
+              if exists (select 1 from private.lf_typed_evidence_schema_registry_v3 where schema_version='semantic-resolution/v1') then
+                raise exception 'BLOCK_M37_SCHEMA_ALREADY_PRESENT';
+              end if;
+              if position('semantic-resolution/v1' in pg_get_functiondef('private.fn_lf_typed_evidence_payload_valid_v3(text,jsonb)'::regprocedure))>0 then
+                raise exception 'BLOCK_M37_VALIDATOR_ALREADY_PATCHED';
+              end if;
+            end
+            \$pre\$;
+          "
+          echo PASS_M37_CLEAN_BASELINE
+
+      - name: Build atomic exact-source apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, os
+
+          path = Path(os.environ['MIGRATION_PATH'])
+          source = path.read_text(encoding='utf-8')
+          delimiter = '$lf_m37_source$'
+          if delimiter in source:
+              raise SystemExit('BLOCK_M37_LEDGER_DELIMITER_COLLISION')
+          if not source.startswith('begin;\n') or not source.rstrip().endswith('commit;'):
+              raise SystemExit('BLOCK_M37_TRANSACTION_SHAPE')
+          marker = '\ncommit;'
+          if source.count(marker) != 1:
+              raise SystemExit(f'BLOCK_M37_COMMIT_COUNT:{source.count(marker)}')
+
+          source_md5 = hashlib.md5(source.encode('utf-8')).hexdigest()
+          version = os.environ['MIGRATION_VERSION']
+          name = os.environ['MIGRATION_NAME']
+          exec_id = os.environ['EXECUTION_ID']
+          blob = os.environ['EXPECTED_BLOB']
+
+          ledger_and_post = f'''
+          insert into supabase_migrations.schema_migrations(
+            version,statements,name,created_by,idempotency_key,rollback
+          ) values (
+            '{version}',
+            array[{delimiter}{source}{delimiter}]::text[],
+            '{name}',
+            '{exec_id}',
+            'gitblob:{blob}',
+            array[]::text[]
+          );
+
+          do $post$
+          declare
+            v_required text[] := array['evidence_schema_version','final_normalized','trace'];
+            v_desc text := 'SemanticResolution normalized final evidence; trace separated; readiness forbidden';
+            v_sha text;
+            v_ok jsonb := '{{"evidence_schema_version":"semantic-resolution/v1","final_normalized":{{"subject_ref":"lf://screen/52/field/status","property_path":"status","operation":"SET","final_value_or_ref":"ACTIVE","resolution_type":"AUTHORITY_RESOLUTION","authority_refs":["supabase://authority/ref"],"evidence_refs":["supabase://evidence/ref"],"verification_status":"VERIFIED","human_required":false,"canonical_effect":{{"state":"ACTIVE"}}}},"trace":{{"research":[],"alternatives":[],"contradictions":[]}}}}'::jsonb;
+            v_membership_ok boolean;
+            v_owner text;
+            v_ledger_md5 text;
+            v_ledger_name text;
+            v_idempotency text;
+          begin
+            v_sha := encode(extensions.digest(convert_to(jsonb_build_object('schema_version','semantic-resolution/v1','validator_version','v3.2','required_keys',to_jsonb(v_required),'description',v_desc,'active',true)::text,'UTF8'),'sha256'),'hex');
+
+            if not exists (
+              select 1 from private.lf_typed_evidence_schema_registry_v3
+              where schema_version='semantic-resolution/v1'
+                and validator_version='v3.2'
+                and required_keys=v_required
+                and description=v_desc
+                and active
+                and registry_sha256=v_sha
+                and registered_by_execution_id='IG_CURATOR_VALIDATOR_REFACTOR_V2:M3.7:SCHEMA_DEFINE_REGISTER'
+            ) then raise exception 'BLOCK_M37_POST_REGISTRY_READBACK'; end if;
+
+            if private.fn_lf_typed_evidence_payload_valid_v3('semantic-resolution/v1',v_ok) is not true then
+              raise exception 'BLOCK_M37_POST_POSITIVE_REJECTED';
+            end if;
+            if private.fn_lf_typed_evidence_payload_valid_v3('semantic-resolution/v1',v_ok||'{{"readiness":true}}'::jsonb) is true then
+              raise exception 'BLOCK_M37_POST_READINESS_ACCEPTED';
+            end if;
+
+            select pg_get_userbyid(p.proowner) into v_owner
+            from pg_proc p
+            where p.oid='private.fn_lf_typed_evidence_payload_valid_v3(text,jsonb)'::regprocedure;
+            if v_owner<>'lf_governance_owner_v3' then
+              raise exception 'BLOCK_M37_VALIDATOR_OWNER_DRIFT owner=%',v_owner;
+            end if;
+
+            select count(*)=1
+                   and bool_and(pg_get_userbyid(am.grantor)='supabase_admin'
+                                and am.admin_option
+                                and not am.inherit_option
+                                and not am.set_option)
+              into v_membership_ok
+            from pg_auth_members am
+            join pg_roles granted on granted.oid=am.roleid
+            join pg_roles member on member.oid=am.member
+            where granted.rolname='lf_governance_owner_v3'
+              and member.rolname='postgres';
+            if not coalesce(v_membership_ok,false) then
+              raise exception 'BLOCK_M37_POST_MEMBERSHIP_DRIFT';
+            end if;
+            if has_schema_privilege('lf_governance_owner_v3','private','CREATE') then
+              raise exception 'BLOCK_M37_POST_CREATE_DRIFT';
+            end if;
+
+            select md5(statements[1]),name,idempotency_key
+              into v_ledger_md5,v_ledger_name,v_idempotency
+            from supabase_migrations.schema_migrations where version='{version}';
+            if v_ledger_md5 is distinct from '{source_md5}'
+               or v_ledger_name is distinct from '{name}'
+               or v_idempotency is distinct from 'gitblob:{blob}' then
+              raise exception 'BLOCK_M37_LEDGER_IDENTITY md5=% name=% idempotency=%',v_ledger_md5,v_ledger_name,v_idempotency;
+            end if;
+          end
+          $post$;
+
+          commit;
+          '''
+
+          atomic = source.replace(marker, '\n' + ledger_and_post, 1)
+          Path('/tmp/m37_exact_apply.sql').write_text('\\set ON_ERROR_STOP on\n' + atomic, encoding='utf-8')
+          print(f'PASS_M37_ATOMIC_WRAPPER source_md5={source_md5}')
+          PY
+
+      - name: Apply exact source and ledger atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -f /tmp/m37_exact_apply.sql
+
+      - name: Terminal readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -Atc "
+            select 'LEDGER|'||version||'|'||coalesce(name,'')||'|'||md5(statements[1])||'|'||coalesce(created_by,'')||'|'||coalesce(idempotency_key,'')
+            from supabase_migrations.schema_migrations where version='20261005133500';
+            select 'REGISTRY|'||schema_version||'|'||validator_version||'|'||registry_sha256||'|'||registered_by_execution_id
+            from private.lf_typed_evidence_schema_registry_v3 where schema_version='semantic-resolution/v1';
+            select 'SECURITY|'||pg_get_userbyid(am.grantor)||'|admin='||am.admin_option||'|inherit='||am.inherit_option||'|set='||am.set_option
+            from pg_auth_members am join pg_roles granted on granted.oid=am.roleid join pg_roles member on member.oid=am.member
+            where granted.rolname='lf_governance_owner_v3' and member.rolname='postgres';
+            select 'CREATE|'||has_schema_privilege('lf_governance_owner_v3','private','CREATE');
+          "
