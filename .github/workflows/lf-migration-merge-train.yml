@@ -198,6 +198,7 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
           HEAD_REF: ${{ steps.admission.outputs.head_ref }}
           EXPECTED_HEAD: ${{ steps.admission.outputs.head_sha }}
           CURRENT_MAIN: ${{ steps.admission.outputs.current_main }}
@@ -237,6 +238,32 @@ jobs:
             git commit-tree "$tree_sha" -p "$EXPECTED_HEAD" -p "$CURRENT_MAIN")"
           git push --force-with-lease="refs/heads/$HEAD_REF:$EXPECTED_HEAD" \
             origin "$new_head:refs/heads/$HEAD_REF"
+
+          branch_head="$(git ls-remote origin "refs/heads/$HEAD_REF" | awk '{print $1}')"
+          [ "$branch_head" = "$new_head" ] || {
+            echo "FAIL_TRAIN_SYNC_BRANCH_READBACK expected=$new_head observed=$branch_head"
+            exit 2
+          }
+          echo "PASS_TRAIN_SYNC_BRANCH_READBACK head=$new_head"
+
+          pr_head=""
+          for attempt in $(seq 1 10); do
+            pr_head="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha' 2>/dev/null || true)"
+            if [ "$pr_head" = "$new_head" ]; then
+              echo "PASS_TRAIN_SYNC_PR_HEAD_READBACK attempt=$attempt head=$new_head"
+              break
+            fi
+            if [ -n "$pr_head" ] && [ "$pr_head" != "$EXPECTED_HEAD" ]; then
+              echo "FAIL_TRAIN_SYNC_PR_HEAD_UNEXPECTED expected_old=$EXPECTED_HEAD expected_new=$new_head observed=$pr_head"
+              exit 2
+            fi
+            sleep 2
+          done
+          [ "$pr_head" = "$new_head" ] || {
+            echo "FAIL_TRAIN_SYNC_PR_HEAD_READBACK_TIMEOUT expected=$new_head observed=${pr_head:-<empty>}"
+            exit 2
+          }
+
           echo "head_sha=$new_head" >> "$GITHUB_OUTPUT"
 
       - name: Resolve exact PR files and migration blob
