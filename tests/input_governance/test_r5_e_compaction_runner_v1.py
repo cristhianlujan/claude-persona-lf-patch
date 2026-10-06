@@ -1,7 +1,7 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MIG = ROOT / "supabase/migrations/20261006223000_input_governance_r5_e_compaction_runner_v1.sql"
+MIG = ROOT / "supabase/migrations/20261006224000_input_governance_r5_e_compaction_runner_v1.sql"
 
 
 def sql() -> str:
