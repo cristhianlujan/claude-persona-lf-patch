@@ -2,10 +2,48 @@
 -- Prerequisite for R5-D/R5-E. R5-C remains valid under 5.13.
 begin;
 
+do $orphan_rule_selftest$
+declare
+  v_orphan_ids bigint[];
+  v_live_ids bigint[];
+begin
+  with runs(id,pantalla_id,status,invalidated_at,created_at) as (
+    values
+      (1::bigint,100::integer,'CURATING'::text,null::timestamptz,'2026-01-01 00:00:00+00'::timestamptz),
+      (2::bigint,200::integer,'VALIDATING'::text,null::timestamptz,'2026-01-01 00:00:00+00'::timestamptz),
+      (3::bigint,200::integer,'COMPLETED'::text,null::timestamptz,'2026-01-02 00:00:00+00'::timestamptz)
+  ), classified as (
+    select rr.id,
+           exists(
+             select 1
+             from runs cc
+             where cc.pantalla_id=rr.pantalla_id
+               and cc.status='COMPLETED'
+               and cc.invalidated_at is null
+               and cc.created_at>rr.created_at
+           ) as orphan
+    from runs rr
+    where rr.invalidated_at is null
+      and rr.status in ('CURATING','VALIDATING')
+  )
+  select
+    coalesce(array_agg(id order by id) filter(where orphan),'{}'::bigint[]),
+    coalesce(array_agg(id order by id) filter(where not orphan),'{}'::bigint[])
+    into v_orphan_ids,v_live_ids
+  from classified;
+
+  if v_orphan_ids is distinct from array[2]::bigint[]
+     or v_live_ids is distinct from array[1]::bigint[] then
+    raise exception 'CONTRACT_5131_ORPHAN_RULE_SELFTEST_FAILED orphan=% live=%',
+      v_orphan_ids,v_live_ids;
+  end if;
+end;
+$orphan_rule_selftest$;
+
 do $preflight$
 declare
-  v_active bigint;
-  v_active_ids text;
+  v_orphan_ids bigint[];
+  v_live_ids bigint[];
   v_revision text;
   v_contract_sha text;
   r record;
@@ -46,15 +84,36 @@ begin
     end if;
   end loop;
 
-  select count(*),string_agg(id::text,',' order by id)
-    into v_active,v_active_ids
-  from programacion.input_readiness_runs
-  where invalidated_at is null
-    and status in ('CURATING','VALIDATING');
+  with classified as (
+    select rr.id,
+           exists(
+             select 1
+             from programacion.input_readiness_runs cc
+             where cc.pantalla_id=rr.pantalla_id
+               and cc.status='COMPLETED'
+               and cc.invalidated_at is null
+               and cc.created_at>rr.created_at
+           ) as orphan
+    from programacion.input_readiness_runs rr
+    where rr.invalidated_at is null
+      and rr.status in ('CURATING','VALIDATING')
+  )
+  select
+    coalesce(array_agg(id order by id) filter(where orphan),'{}'::bigint[]),
+    coalesce(array_agg(id order by id) filter(where not orphan),'{}'::bigint[])
+    into v_orphan_ids,v_live_ids
+  from classified;
 
-  if v_active<>0 then
-    raise exception 'CONTRACT_5131_NONTERMINAL_RUNS_PRESENT count=% ids=%',
-      v_active,coalesce(v_active_ids,'');
+  raise notice 'CONTRACT_5131_ORPHANS_DETECTED ids=%',v_orphan_ids;
+
+  if v_orphan_ids is distinct from array[22,309]::bigint[] then
+    raise exception 'CONTRACT_5131_ORPHAN_SET_REVIEW_REQUIRED expected={22,309} observed=%',
+      v_orphan_ids;
+  end if;
+
+  if cardinality(v_live_ids)<>0 then
+    raise exception 'CONTRACT_5131_LIVE_NONTERMINAL_RUNS_PRESENT ids=%',
+      v_live_ids;
   end if;
 end;
 $preflight$;
@@ -69,10 +128,11 @@ set especificacion =
           '{contract_revision}','"5.13.1"'::jsonb,true
         ),
         '{revision_lineage}',
-        coalesce(c.especificacion->'revision_lineage','{}'::jsonb)
-        || jsonb_build_object(
+        jsonb_build_object(
           'previous_revision','5.13',
           'previous_contract_sha256','e2db44d0bc4aeb6f5205d95f84c3366d37cf1644b5ec69dfd3240c4c82bbf25b',
+          'previous_especificacion',c.especificacion,
+          'previous_lineage',c.especificacion->'revision_lineage',
           'revision_reason','R5_LOGICAL_VALIDATOR_EVIDENCE_STORAGE_REPRESENTATION',
           'migration_mode','GOVERNED_CONTRACT_REVISION',
           'production_authorized',false
@@ -380,13 +440,22 @@ end;$function$;
 do $postcheck$
 declare
   v_spec jsonb;
+  v_prev_spec jsonb;
+  v_prev_contract_sha text;
+  v_final_contract_sha text;
+  v_actual text;
 begin
-  select especificacion into v_spec
-  from programacion.contratos
-  where version_id=19
-    and contrato_codigo='INPUT_READINESS_CONTRACT'
-    and estado='defined'
-    and fail_closed;
+  select c.especificacion,
+         programacion.fn_v09_sha256_jsonb(jsonb_build_object(
+           'id',c.id,'version_id',c.version_id,'contrato_codigo',c.contrato_codigo,
+           'fail_closed',c.fail_closed,'estado',c.estado,'especificacion',c.especificacion
+         ))
+    into v_spec,v_final_contract_sha
+  from programacion.contratos c
+  where c.version_id=19
+    and c.contrato_codigo='INPUT_READINESS_CONTRACT'
+    and c.estado='defined'
+    and c.fail_closed;
 
   if v_spec->>'contract_revision'<>'5.13.1' then
     raise exception 'CONTRACT_5131_REVISION_POSTCHECK';
@@ -401,14 +470,58 @@ begin
        <> 'SEMANTICALLY_NEUTRAL_REPRESENTATION_TRANSFORM' then
     raise exception 'CONTRACT_5131_STORAGE_COMPACTION_POSTCHECK';
   end if;
-  if position('5.13.1' in pg_get_functiondef('programacion.fn_guard_input_family_semantic_depth_v510()'::regprocedure))=0
-     or position('5.13.1' in pg_get_functiondef('programacion.fn_guard_input_na_positive_authority_v512()'::regprocedure))=0
-     or position('5.13.1' in pg_get_functiondef('programacion.fn_guard_input_stage_earliest_boundary()'::regprocedure))=0
-     or position('5.13.1' in pg_get_functiondef('programacion.fn_guard_input_validator_semantic_coherence_v512()'::regprocedure))=0
-     or position('5.13.1' in pg_get_functiondef('programacion.fn_input_deterministic_assess(jsonb,text,jsonb,jsonb)'::regprocedure))=0 then
-    raise exception 'CONTRACT_5131_FUNCTION_POSTCHECK';
+
+  v_prev_spec:=v_spec#>'{revision_lineage,previous_especificacion}';
+  if v_prev_spec is null
+     or v_prev_spec->>'contract_revision'<>'5.13'
+     or v_prev_spec#>>'{revision_lineage,previous_revision}'<>'5.12'
+     or v_prev_spec#>>'{revision_lineage,previous_contract_sha256}'
+          <>'55e67871bd13b203927ed0b5978128d6462807481c1a062e2a6ac1a3092bddca' then
+    raise exception 'CONTRACT_5131_LINEAGE_CHAIN_POSTCHECK';
+  end if;
+
+  select programacion.fn_v09_sha256_jsonb(jsonb_build_object(
+           'id',ct.id,'version_id',ct.version_id,'contrato_codigo',ct.contrato_codigo,
+           'fail_closed',ct.fail_closed,'estado',ct.estado,'especificacion',v_prev_spec
+         ))
+    into v_prev_contract_sha
+  from programacion.contratos ct
+  where ct.version_id=19 and ct.contrato_codigo='INPUT_READINESS_CONTRACT';
+
+  if v_prev_contract_sha<>'e2db44d0bc4aeb6f5205d95f84c3366d37cf1644b5ec69dfd3240c4c82bbf25b' then
+    raise exception 'CONTRACT_5131_PREVIOUS_SNAPSHOT_SHA_MISMATCH expected=% actual=%',
+      'e2db44d0bc4aeb6f5205d95f84c3366d37cf1644b5ec69dfd3240c4c82bbf25b',
+      v_prev_contract_sha;
+  end if;
+
+  if v_final_contract_sha<>'dc78d22793bfbb78a3d678b91ffdff39a3499a36d3824c65c181734e80c57516' then
+    raise exception 'CONTRACT_5131_FINAL_SHA_MISMATCH expected=% actual=%',
+      'dc78d22793bfbb78a3d678b91ffdff39a3499a36d3824c65c181734e80c57516',v_final_contract_sha;
+  end if;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_guard_input_family_semantic_depth_v510()'::regprocedure));
+  if v_actual is distinct from '9c605193666ec694e0ca6a550fe7e48e' then
+    raise exception 'CONTRACT_5131_FINAL_FUNCTION_MD5_MISMATCH function=programacion.fn_guard_input_family_semantic_depth_v510() expected=9c605193666ec694e0ca6a550fe7e48e actual=%',v_actual;
+  end if;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_guard_input_na_positive_authority_v512()'::regprocedure));
+  if v_actual is distinct from '916176f62880f6987fb99d4703b32a2a' then
+    raise exception 'CONTRACT_5131_FINAL_FUNCTION_MD5_MISMATCH function=programacion.fn_guard_input_na_positive_authority_v512() expected=916176f62880f6987fb99d4703b32a2a actual=%',v_actual;
+  end if;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_guard_input_stage_earliest_boundary()'::regprocedure));
+  if v_actual is distinct from 'ce4ac1c826648c4a981a1dc65da216cb' then
+    raise exception 'CONTRACT_5131_FINAL_FUNCTION_MD5_MISMATCH function=programacion.fn_guard_input_stage_earliest_boundary() expected=ce4ac1c826648c4a981a1dc65da216cb actual=%',v_actual;
+  end if;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_guard_input_validator_semantic_coherence_v512()'::regprocedure));
+  if v_actual is distinct from '81d56655cdd96927b62aa3aef7359e35' then
+    raise exception 'CONTRACT_5131_FINAL_FUNCTION_MD5_MISMATCH function=programacion.fn_guard_input_validator_semantic_coherence_v512() expected=81d56655cdd96927b62aa3aef7359e35 actual=%',v_actual;
+  end if;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_input_deterministic_assess(jsonb,text,jsonb,jsonb)'::regprocedure));
+  if v_actual is distinct from '9ffa930caf6c197993bd2c3f36c9f8d9' then
+    raise exception 'CONTRACT_5131_FINAL_FUNCTION_MD5_MISMATCH function=programacion.fn_input_deterministic_assess(jsonb,text,jsonb,jsonb) expected=9ffa930caf6c197993bd2c3f36c9f8d9 actual=%',v_actual;
   end if;
 end;
 $postcheck$;
-
-commit;
