@@ -50,7 +50,7 @@ SET validator_outcome=p.validator_outcome,
     validator_assessed_at=p.validator_assessed_at
 FROM _r5c_d_payload p
 WHERE a.id=p.assessment_id
-RETURNING a.validator_sha256""",,
+RETURNING a.validator_sha256""",
     "GAP_PROPOSAL_UPDATE_SHARED_TRIGGER": """UPDATE programacion.input_gap_proposals
 SET validator_evidence = validator_evidence || jsonb_build_object('r5c_probe',true)
 WHERE id=6672""",
