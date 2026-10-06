@@ -312,3 +312,159 @@ Expected healthy first result:
 - run not BLOCKED and no new blocked_reason.
 
 At this Draft's creation, this query returns no row: first real R5-D validation is still pending.
+
+
+## Versioned execution mechanism — implementation Draft
+
+The Draft now includes exactly one migration:
+
+`supabase/migrations/20261006223000_input_governance_r5_e_compaction_runner_v1.sql`
+
+This is intentional: the LF migration train admits one new migration per PR. The migration installs the mechanism but does **not** start compaction.
+
+It creates:
+
+- `programacion.input_validator_compaction_checkpoint_v1`;
+- `programacion.fn_input_validator_compaction_batch_v1(p_limit integer default 100)`;
+- pg_cron job `lf-r5e-validator-compaction-v1`.
+
+The job is installed with `active=false`. The checkpoint is installed as:
+
+- `enabled=false`;
+- `status='DISABLED'`;
+- no execution id;
+- zero progress.
+
+There is no `active=>true` in this PR.
+
+### Activation is also versioned
+
+After Claude + Cristhian approve the actual execution window, activation must be a **separate migration PR through the train**, not an `execute_sql` call.
+
+That small activation migration will:
+
+1. verify the installed runner/checkpoint/function identities;
+2. verify contract 5.13.1 and the R5-C guards again;
+3. reset the singleton checkpoint to `READY`, `enabled=true`;
+4. recreate the job if it was previously unscheduled, or alter the existing job;
+5. set `active=true`.
+
+The first cron invocation captures the baseline eligible count/max id and changes `READY -> RUNNING`.
+
+### Transaction boundary and batches
+
+Each pg_cron invocation is a separate database session/transaction and calls exactly one batch:
+
+`select programacion.fn_input_validator_compaction_batch_v1(100);`
+
+Therefore the 10,131-row historical compaction is not one migration transaction.
+
+The current estimate is still 102 calls at the default 100-row batch size.
+
+### Fail-closed behavior
+
+The runner takes a transaction-scoped advisory lock:
+
+`R5E_INPUT_VALIDATOR_COMPACTION_V1`.
+
+For each row it:
+
+- locks the eligible assessment row;
+- verifies the referenced assertion set exists, equals the old inline assertions and remains content-addressed;
+- changes only `validator_evidence`;
+- passes through the live R5-C STORAGE_COMPACTION trigger path;
+- requires the returned `validator_sha256` to equal the original;
+- rehydrates the new physical evidence and requires exact JSONB equality with the old inline evidence;
+- adds a per-row receipt into a batch digest.
+
+The checkpoint advances only after the whole batch succeeds.
+
+An exception inside a batch rolls back that batch. The exception handler then records:
+
+- `status='FAILED'`;
+- SQLSTATE;
+- error text;
+- `enabled=false`;
+
+and self-unschedules `lf-r5e-validator-compaction-v1`. If self-unschedule itself fails, the fail-safe is to force the job `active=false` and persist that scheduler-cleanup condition in the checkpoint.
+
+### Completion receipt
+
+When no eligible inline row remains, the runner requires:
+
+- `compacted_count = baseline_eligible_count`;
+- global remaining inline eligible count = 0.
+
+It then randomly samples up to 50 compacted historical receipts and requires for every sample:
+
+- rehydrated evidence contains a non-empty assertions array;
+- the fully recomputed historical Validator receipt SHA equals stored `validator_sha256`.
+
+The checkpoint records the sampled assessment ids and verified sample count, changes to `VERIFIED`, disables itself, and self-unschedules the cron job.
+
+## pg_cron facts verified on this project
+
+Live read-only inspection:
+
+- PostgreSQL: 17.6;
+- pg_cron: 1.6.4;
+- `cron.use_background_workers=off`;
+- current operational cron jobs run as `postgres`;
+- available scheduler signatures are recurring-text schedules only:
+  - `cron.schedule(text,text)`;
+  - `cron.schedule(text,text,text)`;
+- this installation does **not** expose a timestamp/one-shot overload.
+
+Supabase's current Cron documentation explicitly shows that a cron job may execute a plain `VACUUM` command. Thus pg_cron is a valid transport for the later R5-E physical rewrite, but one-shot semantics have to be built around the recurring scheduler.
+
+## VACUUM FULL — separate future migration/PR
+
+VACUUM FULL must not be part of the R5-E runner migration:
+
+- the train wraps migration source in a transaction;
+- `VACUUM FULL` cannot execute in a transaction block;
+- the train only supports one migration per PR.
+
+The later VACUUM unit therefore gets its own PR/migration after the compaction checkpoint reaches VERIFIED.
+
+### One-shot pattern for this pg_cron version
+
+Because pg_cron 1.6.4 in this project lacks a one-time timestamp overload, the safe pattern is:
+
+1. a versioned migration installs a disabled VACUUM job whose command is exactly:
+   `VACUUM (FULL, ANALYZE) programacion.input_family_assessments`;
+2. it also installs a finalizer/control job, initially disabled;
+3. once Cristhian sets the window, a separate activation migration binds the exact cron minute/day/month and activates both;
+4. the finalizer observes `cron.job_run_details`;
+5. once the VACUUM run becomes terminal, it records post-size readback and unschedules both jobs;
+6. a failed or missed VACUUM is also terminal and the jobs are removed rather than silently retried.
+
+The schedule can be made unique for the agreed day/month/hour/minute; because pg_cron syntax has no year field, the finalizer's unschedule is what makes it operationally one-shot.
+
+### lock_timeout
+
+A cron command containing only `VACUUM (FULL, ANALYZE) ...` works. Prepending a SQL `SET lock_timeout ...;` to the same cron command is not safe: a multi-statement simple-query batch is transaction-scoped, which would make VACUUM reject the transaction block.
+
+In this project `cron.use_background_workers=off`, so the VACUUM job opens a new connection as its configured username (`postgres`). If a lock timeout is required, the practical versioned mechanism is:
+
+- immediately before the maintenance window, the activation migration temporarily sets
+  `ALTER ROLE postgres SET lock_timeout='5s'`;
+- the VACUUM cron connection inherits that role setting;
+- the finalizer resets it with
+  `ALTER ROLE postgres RESET lock_timeout` after the VACUUM run reaches success/failure/missed terminal state.
+
+This has an important blast radius: **other new postgres sessions during that short maintenance window also inherit the 5-second lock timeout**. Therefore this method is acceptable only inside a coordinated quiet window. It must not be enabled hours in advance.
+
+If Cristhian does not accept that temporary role-level scope, the safer alternative is no automatic lock timeout: verify blockers immediately before the window and schedule the VACUUM only when the exclusive lock is expected to be immediately available.
+
+### VACUUM readback
+
+The VACUUM control unit will record immediately before activation and after terminal completion:
+
+- `pg_total_relation_size('programacion.input_family_assessments')`;
+- its heap, indexes and TOAST sizes;
+- `pg_database_size(current_database())`;
+- compact row count;
+- inline eligible row count.
+
+The current pre-VACUUM reference remains about 156 MiB for the assessment relation and 572 MiB for the database.
