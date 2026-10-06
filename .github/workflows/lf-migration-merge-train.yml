@@ -471,11 +471,18 @@ jobs:
           PY
           persist_request="$(mktemp)"
           persist_receipt="$(mktemp)"
+          persist_worktree="$(mktemp -d)"
           cp .lf_train/write-ahead-request.json "$persist_request"
-          rm -rf .lf_train
-          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py \
-            --request "$persist_request" | tee "$persist_receipt"
-          mkdir -p .lf_train
+          git worktree add --detach "$persist_worktree" "$BASE_SHA" >/dev/null
+          (
+            cd "$persist_worktree"
+            git config user.name "lf-migration-merge-train[bot]"
+            git config user.email "lf-migration-merge-train[bot]@users.noreply.github.com"
+            git remote set-url origin "https://x-access-token:$GH_TOKEN@github.com/$REPO.git"
+            python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py \
+              --request "$persist_request"
+          ) | tee "$persist_receipt"
+          git worktree remove --force "$persist_worktree"
           cp "$persist_receipt" .lf_train/write-ahead-receipt.json
           rm -f "$persist_request" "$persist_receipt"
           persisted_head="$(jq -r '.persisted_head_sha' .lf_train/write-ahead-receipt.json)"
