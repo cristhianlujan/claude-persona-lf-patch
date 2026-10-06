@@ -1,8 +1,8 @@
 # R5-D — compact new Validator writes (design only)
 
-Status: **DRAFT / DESIGN ONLY / DO NOT APPLY**
+Status: **DRAFT / IMPLEMENTATION CANDIDATE / DO NOT APPLY**
 
-Dependency: CONTRACT-5.13.1 Draft PR #1818 must be reviewed, approved by Cristhian, applied, and read back before R5-D can become an implementation candidate.
+Dependency: CONTRACT-5.13.1 Draft PR #1818 must be reviewed, approved by Cristhian, applied, and read back before R5-D may leave Draft or receive `ready-to-merge`.
 
 ## Scope
 
@@ -126,3 +126,69 @@ Historical migrations are immutable evidence and must not be rewritten. Historic
 ## Rollback model
 
 If R5-D later needs fail-forward repair, do not rewrite compact rows back inline. R5-C + CONTRACT-5.13.1 make compact rows readable. A follow-up can restore the three writers to inline output while preserving already-created compact receipts.
+
+
+## Implemented Draft candidate
+
+The Draft now includes:
+
+- `supabase/migrations/20261006211500_input_governance_r5_d_compact_new_validator_writes_v1.sql`;
+- static complete definitions for the three writer functions;
+- runtime-candidate-judge logical assertion digest;
+- semantic L3B logical assertion validation;
+- static regression tests.
+
+No live apply has occurred.
+
+### Dependency preflight
+
+R5-D requires exactly:
+
+- contract revision `5.13.1`;
+- contract SHA `dc78d22793bfbb78a3d678b91ffdff39a3499a36d3824c65c181734e80c57516`;
+- R5-C assessment guard MD5 `3992ea214300ed7a4c444667d9927f1e`;
+- post-5.13.1 semantic-coherence MD5 `81d56655cdd96927b62aa3aef7359e35`;
+- rehydrator MD5 `1fcbd090ac0d38945d61bc385870ab64`;
+- the three writer base MD5s already listed above;
+- zero pre-existing compact assessment rows.
+
+Therefore this candidate deliberately fails closed against the current live 5.13 contract until #1818 is applied.
+
+### Exact final writer MD5s
+
+A dependency-chain probe was executed as:
+
+`BEGIN -> #1818 candidate -> R5-D candidate -> postchecks -> ROLLBACK`.
+
+Expected final writer MD5s:
+
+| Writer | final MD5 |
+|---|---|
+| `fn_input_governance_bootstrap_validate_v1(bigint,text)` | `b9da62afa568dc8551536d6b0713764d` |
+| `fn_input_governance_validate_v2(bigint,text)` | `e02287a6273b59191b1386801e58c9f3` |
+| `fn_input_governance_validator_rebind_v1(bigint,text)` | `1881979fffff8dd1f954c3d982592b41` |
+
+The migration postcheck requires these exact values.
+
+### Write path implemented in each writer
+
+For each family:
+
+1. build the same full logical evidence as before;
+2. calculate `assertion_set_sha256=fn_v09_sha256_jsonb(assertions)`;
+3. `INSERT ... ON CONFLICT (assertion_set_sha256) DO NOTHING`;
+4. read the catalog row back and require exact assertions equality plus content-address equality;
+5. create physical evidence by removing inline `assertions` and adding `assertion_set_sha256`;
+6. require `rehydrate(physical)=logical`;
+7. execute the normal terminal assessment UPDATE.
+
+The writers still do **not** assign `validator_sha256`; the post-R5-C assessment guard calculates it from rehydrated logical evidence.
+
+### Reader fixes included
+
+The implementation updates only the two active non-migration inline consumers identified during design:
+
+- `ig_runtime_candidate_judge_v1.py` hashes rehydrated assertions;
+- `semantic_l3b_50_cases.sql` validates the logical rehydrated assertions array.
+
+Applied historical migrations are not edited.
