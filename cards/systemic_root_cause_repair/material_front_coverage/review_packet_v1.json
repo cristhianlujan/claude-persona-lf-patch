@@ -1,0 +1,50 @@
+{
+  "schema_version": "CARD_INDEPENDENT_REVIEW_PACKET_V1",
+  "subject_type": "CARD_CANDIDATE",
+  "card_code": "MATERIAL_FRONT_COVERAGE",
+  "subject_sha256": "5c793ee45ae766e798979c72a375127dc6671e32c063904d15ec896848fc2cd5",
+  "subject_bytes": 26746,
+  "producer_execution_id": "EXEC-CARD-MATERIAL-FRONT-COVERAGE-20261006-003",
+  "benchmark_version": "CARD_EXPERTISE_TOP_TIER_V1",
+  "capability_code": "INDEPENDENT_ASSURANCE",
+  "baseline": {
+    "benchmark_id": "LF_REPAIR_DYNAMIC_V3_2026",
+    "case_id": "RC-001",
+    "method_id": "V3-C",
+    "input_sha256": "e013f9c080f3c7e6172a6d4152cd4614d28ef1c4efcffcf8ca5aa8e12e3d928d",
+    "raw_output_sha256": "9e0b57736071d0912461581b1ba4060bdf51f9b48ed1837ac8f903cbf7dbc304",
+    "result_ref": "supabase://srcr_benchmark.results/LF_REPAIR_DYNAMIC_V3_2026/RC-001/V3-C",
+    "case_ref": "supabase://srcr_benchmark.cases/LF_REPAIR_DYNAMIC_V3_2026/RC-001"
+  },
+  "frozen_git": {
+    "head": "9959f5f82491488892f93f39c963e424037a88d2",
+    "agent_path": "supabase/functions/input-governance-agent-v1/index.ts",
+    "contract_path": "docs/input-governance/contracts/input_governance_execution_contract_v1_6.json",
+    "safe_autofix_migration": "supabase/migrations/20260824233943_lf_input_governance_safe_autofix_v1.sql"
+  },
+  "dynamic_gap_test": {
+    "trace_rows": 247,
+    "historical_failed_rows": 95,
+    "v2_agentic_failed_rows_covered": 93,
+    "v3_gap_refiner_failed_rows_covered": 95,
+    "combined_dynamic_activations": 502,
+    "combined_static_activations": 3458,
+    "reduction_pct": 85.5
+  },
+  "ab_claims_to_falsify": [
+    {
+      "id": "WOW-1",
+      "claim": "MAX_REMEDIATION_CYCLES=3 is local runtime authority not represented in INPUT_GOVERNANCE_EXECUTION_CONTRACT 1.6"
+    },
+    {
+      "id": "WOW-2",
+      "claim": "separate safe_autofix RPC commits can survive terminal INPUT_GOVERNANCE_REMEDIATION_CYCLE_LIMIT, creating partial durable remediation"
+    },
+    {
+      "id": "WOW-3",
+      "claim": "safe_autofix exact actions before/after receipt is reduced in Agent trace to counts/successor_required, breaking exact mutation-receipt continuity"
+    }
+  ],
+  "material_ambiguity": "autofix eligibility for READY/HUMAN_DECISION_REQUIRED/BLOCKED must be made explicit; do not score as WOW unless authority proves it",
+  "expected_review": "independently re-derive/falsify all claims from canonical refs; do not trust this packet as oracle"
+}
