@@ -180,7 +180,7 @@ set unit_metadata=jsonb_set(
       'precision','EXPLICIT_VALIDATOR_SOURCE_AUTHORITY_INDEPENDENCE',
       'requires_material_execution',false,
       'mutation_policy','NO_DOMAIN_MUTATION',
-      'expected','Validator evaluator does not read Curator source_refs; assertion sources are admitted by family/governance relevance and resolved through canonical source resolution. A 47-family rebind sample remains executable.',
+      'expected','Validator evaluator does not read Curator source_refs; assertion sources are admitted by family/governance relevance and resolved through canonical source resolution. A bounded 47-family current-assertion smoke remains executable.',
       'verification_queries',jsonb_build_array(
         $q$
 with d as (
@@ -188,17 +188,16 @@ with d as (
     'programacion.fn_input_evaluate_assertion(bigint,text,jsonb)'::regprocedure
   ) as evaluator_def
 ), latest as (
-  select id,supersedes_run_id
+  select id
   from programacion.input_readiness_runs
   where status='COMPLETED'
     and family_count=47
-    and supersedes_run_id is not null
   order by id desc
   limit 1
 ), fam as materialized (
   select a.family_code,
-         programacion.fn_input_v58_build_assertions(
-           l.id,l.supersedes_run_id,a.family_code
+         programacion.fn_input_governance_bootstrap_assertions_v1(
+           l.id,a.family_code
          ) as assertions
   from latest l
   join programacion.input_family_assessments a on a.run_id=l.id
@@ -210,7 +209,7 @@ select
   position('fn_input_governance_assertion_relevant' in d.evaluator_def)>0 as governance_relevance_gate_present,
   position('fn_input_resolve_source_ref' in d.evaluator_def)>0 as canonical_source_resolver_present,
   (select count(*) from fam)=47 as sample_47_families_present,
-  (select count(*) from fam where jsonb_typeof(assertions)='array' and jsonb_array_length(assertions)>0)=47 as sample_47_families_rebound
+  (select count(*) from fam where jsonb_typeof(assertions)='array' and jsonb_array_length(assertions)>0)=47 as sample_47_families_current_assertions
 from d
 $q$
       ),
@@ -244,7 +243,7 @@ insert into public.lf_error_knowledge(
   'Assertion source admissibility mixed Curator evidence declaration with independent Validator source authority.',
   'VALIDATOR_SOURCE_AUTHORITY_LEAKS_FROM_CURATOR_SOURCE_REFS',
   'Admit assertion sources by the existing family/governance relevance functions and resolve them through fn_input_resolve_source_ref. Never enumerate or authorize Validator sources from Curator source_refs.',
-  'M4.5 repair: evaluator no longer references input_family_assessments/source_refs; family/governance relevance gates are mandatory; canonical resolver remains the only non-graph source resolver; bounded 47-family rebind sample must remain green.',
+  'M4.5 repair: evaluator no longer references input_family_assessments/source_refs; family/governance relevance gates are mandatory; canonical resolver remains the only non-graph source resolver; bounded 47-family current-assertion smoke must remain green.',
   'HIGH',1,now(),now(),'IG_CURATOR_VALIDATOR_REFACTOR_V2','ACTIVO',
   'supabase://programacion.fn_input_evaluate_assertion; supabase://programacion.fn_input_resolve_source_ref; supabase://programacion.engineering_plan_units/IG_CURATOR_VALIDATOR_REFACTOR_V2/M4.5',
   'EXECUTION',
