@@ -1,8 +1,8 @@
-version: v0.7
+version: v0.8
 operation: CREACION_CARD_LF
 status: CANDIDATO_READ_ONLY
 source_model: GIT_FIRST_YAML
-regularization: REGULARIZACION_STEP_GATE_L2L3_001
+regularization: CARD_CREATE_TOP_TIER_GATE_V1
 steps:
   - order: 15
     id: canonical_design
@@ -33,7 +33,7 @@ steps:
     evidence: complete_operation_scope_confirmed_or_blocked
   - order: 24
     id: pre_write_execution_binding_gate
-    evidence: execution_bound_to_target_before_change
+    evidence: execution_bound_to_target_before_change_and_card_expertise_top_tier_v1_pass
   - order: 25
     id: github_write
     evidence: file_commit_sha
