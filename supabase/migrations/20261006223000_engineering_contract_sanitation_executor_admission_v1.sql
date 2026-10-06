@@ -27,6 +27,7 @@ declare
   v_verification_count int := coalesce(jsonb_array_length(coalesce(p_spec->'verification_queries','[]'::jsonb)),0);
   v_structural_transversal boolean := false;
   v_safe_generic boolean := false;
+  v_complex_semantics boolean := false;
   v_seed text;
   v_digest text;
   v_prefix text;
@@ -141,10 +142,20 @@ from x$q$;
     return v_out;
   end if;
 
-  -- Generic compilation is allowed only for bounded read-only evidence.
-  -- Any material/complex semantic action must be explicit.
+  -- Heuristics may make admission stricter, never looser. Any checkpoint that
+  -- signals negative/parity/repro/concurrency/test semantics must have an
+  -- explicit or structural-transversal contract even when the legacy compiler
+  -- reduced it to a read-only query.
+  v_complex_semantics :=
+    coalesce(p_checkpoint_code,'') ~* '(^NEG_|NEGATIVE|FALSE_PASS|MUTATION|PARITY|REPRO|DRILL|CONCURRENCY|EQUIVALENCE|TEST)'
+    or lower(coalesce(p_spec->>'checkpoint_title','')) ~
+      '(negativ|false pass|mutaci|paridad|reproduc|drill|concurren|equivalen|inyect)';
+
+  -- Generic compilation is allowed only for bounded read-only evidence that
+  -- does not carry complex semantic obligations.
   v_safe_generic :=
     not v_material
+    and not v_complex_semantics
     and (
       v_kind in ('READBACK_ONCE','OBSERVE_ONCE')
       or (
@@ -466,6 +477,156 @@ begin
   );
 end;
 $function$;
+
+create or replace function programacion.fn_engineering_unit_bootstrap_v3(
+  p_plan_code text,
+  p_unit_code text
+)
+returns jsonb
+language plpgsql
+stable
+set search_path to 'programacion','public','pg_catalog'
+as $function$
+declare
+  v_fast jsonb;
+  v_payload jsonb;
+  v_cp text;
+  v_readiness jsonb;
+  v_terminal text;
+  v_continuation jsonb;
+  v_execution_contract jsonb;
+  v_packet jsonb;
+  v_action_spec jsonb;
+  v_execution_input jsonb;
+begin
+  v_fast:=programacion.fn_engineering_unit_bootstrap_snapshot_v2(
+    p_plan_code,p_unit_code
+  );
+
+  if coalesce((v_fast->>'snapshot_fast_path_supported')::boolean,false) then
+    v_payload:=v_fast;
+  else
+    v_payload:=programacion.fn_engineering_unit_bootstrap_v3_legacy(
+      p_plan_code,p_unit_code
+    ) || jsonb_build_object(
+      'engine_variant','LEGACY_FALLBACK_V3',
+      'snapshot_fast_path_supported',false
+    );
+  end if;
+
+  v_cp:=v_payload#>>'{current_checkpoint,checkpoint_code}';
+
+  -- Snapshot context may be reused, but execution authority is always freshly
+  -- compiled for the current checkpoint. This prevents stale READY packets from
+  -- bypassing newly tightened contract sanitation.
+  if v_cp is not null then
+    v_action_spec:=programacion.fn_engineering_checkpoint_action_spec_v3(
+      p_plan_code,p_unit_code,v_cp
+    );
+
+    v_execution_input:=coalesce(
+      v_payload#>'{execution_packet,execution_input}',
+      v_payload->'execution_input',
+      '{}'::jsonb
+    );
+
+    v_packet:=programacion.fn_engineering_execution_packet_from_spec_v1(
+      p_plan_code,
+      p_unit_code,
+      v_cp,
+      coalesce(v_action_spec,'{}'::jsonb),
+      v_execution_input
+    );
+
+    v_payload:=jsonb_set(
+      v_payload,
+      '{action_spec}',
+      coalesce(v_action_spec,'null'::jsonb),
+      true
+    );
+
+    v_payload:=jsonb_set(
+      v_payload,
+      '{execution_packet}',
+      v_packet,
+      true
+    );
+
+    if v_payload#>'{context_snapshot,unit_metadata}' is not null then
+      v_readiness:=programacion.fn_engineering_checkpoint_execution_readiness_from_context_v1(
+        v_cp,
+        coalesce(v_action_spec,'{}'::jsonb),
+        coalesce(v_packet,'{}'::jsonb),
+        v_payload#>'{context_snapshot,unit_metadata}'
+      );
+    else
+      v_readiness:=programacion.fn_engineering_checkpoint_execution_readiness_from_payload_v1(
+        p_plan_code,
+        p_unit_code,
+        v_cp,
+        coalesce(v_action_spec,'{}'::jsonb),
+        coalesce(v_packet,'{}'::jsonb)
+      );
+    end if;
+
+    v_payload:=v_payload||jsonb_build_object(
+      'execution_readiness',v_readiness
+    );
+
+    if coalesce(v_payload->>'terminal_action','')='CONTINUE_CURRENT_CHECKPOINT'
+       and coalesce((v_readiness->>'execution_ready')::boolean,false)=false then
+      v_payload:=v_payload
+        || jsonb_build_object(
+          'terminal_action','STOP_EXECUTION_PREFLIGHT',
+          'execution_allowed',false,
+          'preflight_block',jsonb_build_object(
+            'status','NOT_READY',
+            'checkpoint_code',v_cp,
+            'reasons',v_readiness->'reasons',
+            'gates',v_readiness->'gates',
+            'next_action','FIX_PREFLIGHT_CONTRACT_BEFORE_CONNECTOR_EXECUTION'
+          )
+        );
+    elsif coalesce((v_readiness->>'execution_ready')::boolean,false)=true then
+      v_payload:=v_payload || jsonb_build_object(
+        'execution_allowed',true
+      );
+    end if;
+  end if;
+
+  v_terminal:=coalesce(v_payload->>'terminal_action','');
+  v_continuation:=jsonb_build_object(
+    'terminal_scope',case
+      when v_terminal='CONTINUE_CURRENT_CHECKPOINT' then 'CURRENT_UNIT'
+      else 'CURRENT_UNIT_ONLY'
+    end,
+    'global_stop',false,
+    'orchestrator_action',case
+      when v_terminal='CONTINUE_CURRENT_CHECKPOINT' then 'EXECUTE_CURRENT_UNIT'
+      else 'YIELD_CURRENT_UNIT_CONTINUE_AVAILABLE_WORK'
+    end,
+    'selection_owner','ENGINEERING_SCHEDULER',
+    'rule','NON_CONTINUE_TERMINAL_ACTION_STOPS_ONLY_CURRENT_UNIT; SCHEDULER MAY CONTINUE OTHER ELIGIBLE WORK'
+  );
+
+  v_execution_contract:=coalesce(v_payload->'execution_contract','{}'::jsonb)
+    || jsonb_build_object(
+      'terminal_action_scope','CURRENT_UNIT_ONLY_UNLESS_EXPLICIT_GLOBAL_STOP',
+      'non_continue_terminal_behavior','YIELD_CURRENT_UNIT_CONTINUE_AVAILABLE_WORK',
+      'scheduler_continuation_owner','ENGINEERING_SCHEDULER',
+      'global_stop_requires_explicit_flag',true,
+      'current_checkpoint_compilation','ALWAYS_FRESH'
+    );
+
+  return v_payload || jsonb_build_object(
+    'continuation_contract',v_continuation,
+    'execution_contract',v_execution_contract
+  );
+end;
+$function$;
+
+comment on function programacion.fn_engineering_unit_bootstrap_v3(text,text)
+is 'Canonical bootstrap v3: reuses snapshot context but always recompiles current Action Spec, execution packet and readiness so stale READY state cannot bypass contract sanitation.';
 
 create or replace function programacion.fn_engineering_unit_execution_admission_v1(
   p_plan_code text,
