@@ -39,6 +39,10 @@ for marker in (
     "git merge-tree --write-tree",
     "git commit-tree",
     "--force-with-lease",
+    "PASS_TRAIN_SYNC_BRANCH_READBACK",
+    "PASS_TRAIN_SYNC_PR_HEAD_READBACK",
+    "FAIL_TRAIN_SYNC_PR_HEAD_UNEXPECTED",
+    "FAIL_TRAIN_SYNC_PR_HEAD_READBACK_TIMEOUT",
 ):
     assert marker in wf, marker
     checks += 1
@@ -113,6 +117,20 @@ assert "--method DELETE" not in dry
 assert "GITHUB_STEP_SUMMARY" in dry
 assert "No GitHub write, no DB write" in dry
 assert "`$TARGET_PATH`" not in dry
+checks += 1
+
+# Sync push readback tolerates only the known stale PR head, never an unexpected third SHA.
+sync = wf.split("- name: Sync PR branch with current main in REAL mode", 1)[1].split(
+    "- name: Resolve exact PR files and migration blob", 1
+)[0]
+assert "PR: ${{ steps.admission.outputs.pr_number }}" in sync
+assert 'git ls-remote origin "refs/heads/$HEAD_REF"' in sync
+assert "for attempt in $(seq 1 10)" in sync
+assert "sleep 2" in sync
+assert "FAIL_TRAIN_SYNC_PR_HEAD_UNEXPECTED" in sync
+assert "FAIL_TRAIN_SYNC_PR_HEAD_READBACK_TIMEOUT" in sync
+assert sync.index("git push --force-with-lease") < sync.index("PASS_TRAIN_SYNC_BRANCH_READBACK")
+assert sync.index("PASS_TRAIN_SYNC_BRANCH_READBACK") < sync.index("PASS_TRAIN_SYNC_PR_HEAD_READBACK")
 checks += 1
 
 # DRY_RUN failure path is read-only; GitHub mutation exists only under REAL.
