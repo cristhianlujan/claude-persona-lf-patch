@@ -318,7 +318,7 @@ At this Draft's creation, this query returns no row: first real R5-D validation 
 
 The Draft now includes exactly one migration:
 
-`supabase/migrations/20261006223000_input_governance_r5_e_compaction_runner_v1.sql`
+`supabase/migrations/20261006224000_input_governance_r5_e_compaction_runner_v1.sql`
 
 This is intentional: the LF migration train admits one new migration per PR. The migration installs the mechanism but does **not** start compaction.
 
