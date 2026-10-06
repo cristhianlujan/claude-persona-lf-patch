@@ -8,41 +8,63 @@ def sql() -> str:
     return MIG.read_text(encoding="utf-8")
 
 
-def test_jobs_install_inactive():
-    text = sql()
-    assert "lf-r5e-vacuum-full-once-v1" in text
-    assert "lf-r5e-vacuum-finalizer-v1" in text
-    assert text.count("active=>false") >= 2
-    assert "active=>true" not in text
-
-
-def test_vacuum_command_is_single_top_level_statement():
+def test_three_vacuums_are_separate_top_level_commands():
     text = sql()
     assert "'VACUUM (FULL, ANALYZE) programacion.input_family_assessments'" in text
+    assert "'VACUUM (FULL, ANALYZE) inventory.objects'" in text
+    assert "'VACUUM (FULL, ANALYZE) inventory.search_index'" in text
     assert "SET lock_timeout='5s'; VACUUM" not in text
 
 
-def test_no_window_is_armed_in_installation_migration():
+def test_all_jobs_install_inactive():
+    text = sql()
+    for name in (
+        "lf-r5e-vacuum-assessments-v1",
+        "lf-r5e-vacuum-inventory-objects-v1",
+        "lf-r5e-vacuum-inventory-search-index-v1",
+        "lf-r5e-vacuum-finalizer-v1",
+        "lf-r5e-vacuum-safety-reset-v1",
+    ):
+        assert name in text
+    assert "active=>true" not in text
+
+
+def test_installation_does_not_set_role_timeout():
     text = sql().lower()
     assert "alter role postgres set lock_timeout" not in text
-    assert "status='armed'" not in text
-
-
-def test_finalizer_resets_role_and_self_unschedules():
-    text = sql().lower()
     assert "alter role postgres reset lock_timeout" in text
-    assert "cron.unschedule('lf-r5e-vacuum-full-once-v1')" in text
-    assert "cron.unschedule('lf-r5e-vacuum-finalizer-v1')" in text
 
 
-def test_finalizer_records_pre_post_size_contract():
+def test_independent_safety_reset_exists():
+    text = sql()
+    assert "fn_r5e_vacuum_safety_reset_v1" in text
+    assert "safety_deadline" in text
+    assert "R5E_SAFETY_RESET_AT_30_MINUTES" in text
+    assert "fn_r5e_postgres_lock_timeout_clean_v1" in text
+
+
+def test_finalizer_sequences_targets():
+    text = sql()
+    assert "target_order=v_target.target_order+1" in text
+    assert "'NEXT_ARMED'" in text
+    assert "perform cron.alter_job(v_next.job_id,schedule=>v_schedule,active=>true)" in text
+
+
+def test_per_table_pre_post_size_receipts():
     text = sql()
     for token in (
-        "pre_relation_bytes","pre_heap_bytes","pre_index_bytes","pre_toast_bytes",
-        "pre_database_bytes","post_relation_bytes","post_heap_bytes",
-        "post_index_bytes","post_toast_bytes","post_database_bytes",
+        "pre_total_bytes","pre_heap_bytes","pre_index_bytes","pre_toast_aux_bytes",
+        "pre_database_bytes","post_total_bytes","post_heap_bytes",
+        "post_index_bytes","post_toast_aux_bytes","post_database_bytes",
     ):
         assert token in text
+
+
+def test_clean_role_setting_is_terminal_invariant():
+    text = sql()
+    assert "pg_db_role_setting" in text
+    assert "R5E_LOCK_TIMEOUT_RESET_READBACK_FAILED" in text
+    assert "R5E_VACUUM_INSTALL_REQUIRES_CLEAN_POSTGRES_LOCK_TIMEOUT" in text
 
 
 def test_no_destructive_evidence_operations():
