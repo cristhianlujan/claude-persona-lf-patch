@@ -247,7 +247,7 @@ exception
 end;
 $function$
 
-       or (v_assessor.manifest->>'subject_revision_sha256') is distinct from (p_evidence_payload->>'subject_revision_sha256') then
+       or coalesce(v_assessor.manifest->>'subject_revision_sha256','') <> coalesce(p_evidence_payload->>'subject_revision_sha256','') then
       return jsonb_build_object(
         'valid',false,'code','EXPERTISE_CREATE_ASSURANCE_RECEIPT_INVALID',
         'server_assertions','[]'::jsonb,
