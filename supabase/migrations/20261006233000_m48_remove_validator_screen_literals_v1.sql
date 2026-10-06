@@ -119,6 +119,46 @@ begin
     raise exception 'M48_PATCH_NOT_APPLIED:v58_builder';
   end if;
   execute v_new;
+
+  -- owner-decision assertion builder
+  v_actual:=md5(pg_get_functiondef(
+    'programacion.fn_input_owner_decision_assertions(bigint,bigint,text)'::regprocedure
+  ));
+  if v_actual is distinct from 'faaf7a7e0b6da0ac40eb740ecfda064a' then
+    raise exception 'M48_BASE_DRIFT:owner_decision:%',v_actual;
+  end if;
+
+  v_def:=pg_get_functiondef(
+    'programacion.fn_input_owner_decision_assertions(bigint,bigint,text)'::regprocedure
+  );
+  v_new:=v_def;
+
+  v_new:=replace(
+    v_new,
+    'v_screen integer;'||chr(10),
+    'v_screen integer;'||chr(10)||'  v_screen_code text;'||chr(10)
+  );
+  v_new:=replace(
+    v_new,
+    'select pantalla_id into v_screen from programacion.input_readiness_runs where id=p_new_run_id;',
+    'select pantalla_id into v_screen from programacion.input_readiness_runs where id=p_new_run_id;'||chr(10)||
+    '  select p.codigo into v_screen_code from lf_ops.pantallas p where p.id=v_screen;'||chr(10)||
+    '  if v_screen_code is null then raise exception ''OWNER_DECISION_SCREEN_NOT_FOUND:%'',v_screen; end if;'
+  );
+
+  v_new:=replace(v_new,'v_screen=51','v_screen_code=''B2B-AUTH-001''');
+  v_new:=replace(v_new,'v_screen=52','v_screen_code=''B2B-AUTH-002''');
+  v_new:=replace(v_new,'v_screen=54','v_screen_code=''B2B-AUTH-004''');
+  v_new:=replace(v_new,'v_screen=56','v_screen_code=''B2B-AUTH-006''');
+  v_new:=replace(v_new,'''pantalla_id'',51','''pantalla_id'',v_screen');
+  v_new:=replace(v_new,'''pantalla_id'',52','''pantalla_id'',v_screen');
+  v_new:=replace(v_new,'''pantalla_id'',56','''pantalla_id'',v_screen');
+
+  if v_new=v_def then
+    raise exception 'M48_PATCH_NOT_APPLIED:owner_decision';
+  end if;
+  execute v_new;
+
 end;
 $m48$;
 
@@ -130,6 +170,9 @@ is 'M4.8: screen-specific v5.12 branches use canonical screen_code resolved from
 
 comment on function programacion.fn_input_v58_build_assertions(bigint,bigint,text)
 is 'M4.8: successor screen identity is derived from run pantalla_id and canonical screen code; B2B-AUTH-001 visual rebinding no longer hardcodes numeric screen identity.';
+
+comment on function programacion.fn_input_owner_decision_assertions(bigint,bigint,text)
+is 'M4.8: owner-decision assertion branching uses canonical screen_code resolved from the run instead of numeric screen identity.';
 
 update programacion.engineering_plan_units
 set unit_metadata=jsonb_set(
@@ -162,15 +205,17 @@ with f as (
       'fn_input_governance_bootstrap_validate_v1',
       'fn_input_v58_assertion_template',
       'fn_input_v512_assertion_template',
-      'fn_input_v58_build_assertions'
+      'fn_input_v58_build_assertions',
+      'fn_input_owner_decision_assertions'
     )
 )
 select
   count(*) filter(where prosrc ~* 'component_id\s*=\s*[0-9]+')=0 as zero_component_assignment_literals,
   count(*) filter(where prosrc ~* '(p_|v_)?pantalla_id\s*=\s*[0-9]+')=0 as zero_screen_equality_literals,
   count(*) filter(where prosrc ~* '(p_|v_)?pantalla_id\s+in\s*\([^)]*[0-9]')=0 as zero_screen_in_literals,
-  count(*) filter(where proname in ('fn_input_v58_assertion_template','fn_input_v512_assertion_template','fn_input_v58_build_assertions')
-                   and prosrc ilike '%lf_ops.pantallas%')=3 as canonical_screen_registry_bound
+  count(*) filter(where proname in ('fn_input_v58_assertion_template','fn_input_v512_assertion_template','fn_input_v58_build_assertions','fn_input_owner_decision_assertions')
+                   and prosrc ilike '%lf_ops.pantallas%')=4 as canonical_screen_registry_bound,
+  count(*) filter(where proname='fn_input_owner_decision_assertions' and prosrc ~* 'v_screen\\s*=\\s*[0-9]+')=0 as zero_owner_screen_equality_literals
 from f
 $q$
       ),
