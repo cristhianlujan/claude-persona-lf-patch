@@ -722,17 +722,51 @@ begin
 end;
 $function$;
 
--- Postconditions: all seven governed functions still exist.
+-- Postconditions: exact final definitions are part of the governed artifact.
 DO $r5c_postcheck$
+DECLARE
+  v_actual text;
 BEGIN
-  IF to_regprocedure('programacion.fn_guard_input_family_assessment_update()') IS NULL
-     OR to_regprocedure('programacion.fn_guard_input_family_execution_update()') IS NULL
-     OR to_regprocedure('programacion.fn_guard_input_validator_semantic_coherence_v512()') IS NULL
-     OR to_regprocedure('programacion.fn_input_auth006_build_assertions(bigint,bigint,text)') IS NULL
-     OR to_regprocedure('programacion.fn_input_owner_decision_assertions(bigint,bigint,text)') IS NULL
-     OR to_regprocedure('programacion.fn_input_v58_build_assertions(bigint,bigint,text)') IS NULL
-     OR to_regprocedure('programacion.fn_guard_input_governance_continuation_currentness_v1()') IS NULL THEN
-    RAISE EXCEPTION 'R5C_POSTCHECK_FUNCTION_MISSING';
+  v_actual:=md5(pg_get_functiondef('programacion.fn_guard_input_family_assessment_update()'::regprocedure));
+  IF v_actual IS DISTINCT FROM '3992ea214300ed7a4c444667d9927f1e' THEN
+    RAISE EXCEPTION 'R5C_FINAL_MD5_MISMATCH function=family_assessment_update expected=% actual=%',
+      '3992ea214300ed7a4c444667d9927f1e',coalesce(v_actual,'<NULL>');
+  END IF;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_guard_input_family_execution_update()'::regprocedure));
+  IF v_actual IS DISTINCT FROM '19760955ab8271b6edbfb4c8a3b2380d' THEN
+    RAISE EXCEPTION 'R5C_FINAL_MD5_MISMATCH function=family_execution_update expected=% actual=%',
+      '19760955ab8271b6edbfb4c8a3b2380d',coalesce(v_actual,'<NULL>');
+  END IF;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_guard_input_governance_continuation_currentness_v1()'::regprocedure));
+  IF v_actual IS DISTINCT FROM '7f1172972e08b70df9328799c4118955' THEN
+    RAISE EXCEPTION 'R5C_FINAL_MD5_MISMATCH function=continuation_currentness expected=% actual=%',
+      '7f1172972e08b70df9328799c4118955',coalesce(v_actual,'<NULL>');
+  END IF;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_guard_input_validator_semantic_coherence_v512()'::regprocedure));
+  IF v_actual IS DISTINCT FROM '5f47ef6f1e0a8d5ee8ccd830ef9ba297' THEN
+    RAISE EXCEPTION 'R5C_FINAL_MD5_MISMATCH function=semantic_coherence_v512 expected=% actual=%',
+      '5f47ef6f1e0a8d5ee8ccd830ef9ba297',coalesce(v_actual,'<NULL>');
+  END IF;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_input_auth006_build_assertions(bigint,bigint,text)'::regprocedure));
+  IF v_actual IS DISTINCT FROM 'fcbe577977533315efa654e37f6fedaf' THEN
+    RAISE EXCEPTION 'R5C_FINAL_MD5_MISMATCH function=auth006_build_assertions expected=% actual=%',
+      'fcbe577977533315efa654e37f6fedaf',coalesce(v_actual,'<NULL>');
+  END IF;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_input_owner_decision_assertions(bigint,bigint,text)'::regprocedure));
+  IF v_actual IS DISTINCT FROM 'faaf7a7e0b6da0ac40eb740ecfda064a' THEN
+    RAISE EXCEPTION 'R5C_FINAL_MD5_MISMATCH function=owner_decision_assertions expected=% actual=%',
+      'faaf7a7e0b6da0ac40eb740ecfda064a',coalesce(v_actual,'<NULL>');
+  END IF;
+
+  v_actual:=md5(pg_get_functiondef('programacion.fn_input_v58_build_assertions(bigint,bigint,text)'::regprocedure));
+  IF v_actual IS DISTINCT FROM 'af95bfa42f649250c3585db9a6cb35fb' THEN
+    RAISE EXCEPTION 'R5C_FINAL_MD5_MISMATCH function=v58_build_assertions expected=% actual=%',
+      'af95bfa42f649250c3585db9a6cb35fb',coalesce(v_actual,'<NULL>');
   END IF;
 END
 $r5c_postcheck$;
