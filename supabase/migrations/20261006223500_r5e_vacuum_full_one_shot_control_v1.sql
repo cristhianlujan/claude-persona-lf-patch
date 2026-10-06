@@ -147,6 +147,7 @@ begin
     )
   loop
     perform cron.alter_job(v.jobid,active=>false);
+    perform cron.unschedule(v.jobid);
   end loop;
 end;
 $function$;
