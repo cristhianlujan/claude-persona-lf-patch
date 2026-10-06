@@ -60,7 +60,7 @@ jobs:
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.48.3
 
       - name: Install PostgreSQL client for REAL mode
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
@@ -469,8 +469,15 @@ jobs:
           }
           open(".lf_train/write-ahead-request.json","w").write(json.dumps(p,sort_keys=True))
           PY
+          persist_request="$(mktemp)"
+          persist_receipt="$(mktemp)"
+          cp .lf_train/write-ahead-request.json "$persist_request"
+          rm -rf .lf_train
           python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py \
-            --request .lf_train/write-ahead-request.json | tee .lf_train/write-ahead-receipt.json
+            --request "$persist_request" | tee "$persist_receipt"
+          mkdir -p .lf_train
+          cp "$persist_receipt" .lf_train/write-ahead-receipt.json
+          rm -f "$persist_request" "$persist_receipt"
           persisted_head="$(jq -r '.persisted_head_sha' .lf_train/write-ahead-receipt.json)"
           [ -n "$persisted_head" ] && [ "$persisted_head" != "null" ] || { echo "FAIL_TRAIN_WRITE_AHEAD_HEAD"; exit 2; }
 
