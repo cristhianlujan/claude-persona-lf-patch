@@ -50,7 +50,24 @@ SET validator_outcome=p.validator_outcome,
     validator_assessed_at=p.validator_assessed_at
 FROM _r5c_d_payload p
 WHERE a.id=p.assessment_id
-RETURNING a.validator_sha256""",
+RETURNING a.validator_sha256""",,
+    "GAP_PROPOSAL_UPDATE_SHARED_TRIGGER": """UPDATE programacion.input_gap_proposals
+SET validator_evidence = validator_evidence || jsonb_build_object('r5c_probe',true)
+WHERE id=6672""",
+    "CHUNK_TIMING_INSERT_SHARED_TRIGGER": """INSERT INTO programacion.input_validator_chunk_timings(
+  id,run_id,validator_identity,chunk_no,route,started_at,completed_at,duration_ms,
+  result_status,validator_pass_count,family_count,pending_count,created_at,
+  classification_ms,assertions_ms,ekb_ms,gap_proposals_ms,db_write_ms,wait_resume_ms,
+  families_processed
+) OVERRIDING SYSTEM VALUE
+SELECT
+  9001025,run_id,validator_identity,9006,route,started_at,completed_at,duration_ms,
+  result_status,validator_pass_count,family_count,pending_count,created_at,
+  classification_ms,assertions_ms,ekb_ms,gap_proposals_ms,db_write_ms,wait_resume_ms,
+  families_processed
+FROM programacion.input_validator_chunk_timings
+WHERE id=1025
+RETURNING id"""
 }
 
 EXPECTED = {
@@ -59,6 +76,8 @@ EXPECTED = {
     "C1_NEGATIVE_OTHER_ASSERTIONS": "c84f1b24ca71205912d4e3d4a690c4fc6cfa81a3755c103a90cfa010846bf0dc",
     "C2_NEGATIVE_VALIDATOR_SHA": "fc521184a590e0c7f4829fae09bf73e4bc1474e301ed4999b23a24f525bc3720",
     "D_PENDING_TO_TERMINAL_COMPACT": "13a2ac2a5975ce535e36406593a135063c9e6e8df0494ab092da7dad9ea211e4",
+    "GAP_PROPOSAL_UPDATE_SHARED_TRIGGER": "f2eafc9fd7dc3057e089e12ebd4b3e6408dc49615f376c06aa99e1ebfcfbdf99",
+    "CHUNK_TIMING_INSERT_SHARED_TRIGGER": "a02db066f759910d2d06f9dcc4e97c2a8c5f1b28440ce4a55086c28ab4be65f9",
 }
 
 
