@@ -1,6 +1,6 @@
 # R7 — inventory refresh no-op UPDATE suppression
 
-Status: **DRAFT / ANALYSIS + CHANGE DESIGN ONLY / NO APPLY**
+Status: **DRAFT / IMPLEMENTATION CANDIDATE / NO APPLY**
 
 ## Ownership
 
@@ -180,3 +180,25 @@ Once no-op suppression is qualified, review whether the job-20 call to `fn_refre
 That is a separate scheduling/latency decision and is **not** bundled into this proposal.
 
 No live function is modified by this Draft.
+
+
+## Implementación Draft
+
+Se agregó `supabase/migrations/20261006232000_inventory_distinct_refresh_v1.sql`
+como candidato **no aplicado**.
+
+- Los tres writers quedan fijados por MD5 antes de reemplazarse.
+- Los upserts de `inventory.objects` actualizan `last_seen_at/updated_at`
+  solo cuando cambia la proyección material.
+- El upsert de `inventory.search_index` actualiza `refreshed_at` solo cuando
+  cambia una columna material; `refreshed_at` no participa en la comparación.
+- La frescura del polling se conserva en la tabla pequeña
+  `inventory.refresh_heartbeats_v1`, con una fila por ruta de refresh.
+- Se elimina la llamada temprana a `fn_refresh_search_index_v1()` de
+  `fn_refresh_catalog_v2()`; permanece la llamada canónica del finalizer
+  (job 24), posterior a catálogo, detalles, dependencias, estático, registros y tags.
+- No se modifica ningún schedule de cron en este Draft.
+
+Owner observable del código: **Paulo / paulozterra**. No hay CODEOWNERS para
+estas rutas. Cristhian mantiene el boundary de governance/revisión para cualquier
+cambio visible de semántica temporal.
