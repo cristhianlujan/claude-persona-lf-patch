@@ -111,7 +111,9 @@ begin
   end if;
 
   if v_execution.operation_code='CREACION_CARD_LF' then
-    if v_assessor.operation_code=v_execution.operation_code
+    if v_assessor.operation_code<>'ORQUESTACION_PIPELINE_LF'
+       or v_assessor.target_type<>'CAPABILITY'
+       or v_assessor.target_code<>'INDEPENDENT_ASSURANCE'
        or coalesce(v_assessor.manifest->>'capability_code','')<>'INDEPENDENT_ASSURANCE'
        or v_assessor.status not in ('COMPLETED','CONTROLLED_READ_ONLY_PASS','CLOSED_WITH_VERIFIED_EVIDENCE')
        or coalesce(v_assessor.manifest->>'subject_revision_sha256','') !~ '^[0-9a-f]{64}
