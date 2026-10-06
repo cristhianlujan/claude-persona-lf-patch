@@ -218,7 +218,7 @@ def capture_flow(cur: Any, screen_id: int, consumer: str, phase: str) -> FlowCap
               md5(string_agg(
                 family_code||'|'||validator_outcome||'|'||coalesce(validator_findings::text,'')||'|'||
                 coalesce(validator_evidence->>'bootstrap_classifier_sha256','')||'|'||
-                md5(coalesce((validator_evidence->'assertions')::text,'')),
+                md5(coalesce((programacion.fn_input_validator_evidence_rehydrate_v1(validator_evidence)->'assertions')::text,'')),
                 ',' order by family_code
               )) as digest,
               count(*)::int as family_count,
