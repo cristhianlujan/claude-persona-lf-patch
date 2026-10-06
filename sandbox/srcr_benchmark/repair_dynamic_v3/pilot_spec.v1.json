@@ -1,0 +1,131 @@
+{
+  "schema_version": "LF_REPAIR_DYNAMIC_PILOT_V3_V1",
+  "benchmark_id": "LF_REPAIR_DYNAMIC_V3_2026",
+  "title": "LF Repair Dynamic V3 — adaptive repair selection and multi-front closure",
+  "status": "CANDIDATE_NOT_EXECUTED",
+  "source_benchmark": "LF_REPAIR_80_V2_12GPT",
+  "source_case_policy": "COPY_EXACT_VISIBLE_CASE_INPUTS_AND_HASHES",
+  "case_count": 82,
+  "variant_count": 3,
+  "planned_runs": 246,
+  "immutability": {
+    "source_benchmark_mutation": "FORBIDDEN",
+    "source_raw_reuse_as_candidate_output": "FORBIDDEN",
+    "oracle_before_raw_freeze": "FORBIDDEN",
+    "variant_mutation_after_first_run": "FORBIDDEN"
+  },
+  "variants": [
+    {
+      "variant_id": "V3-A",
+      "name": "SRCR V0.6 frozen baseline",
+      "role": "BASELINE_STATIC",
+      "source": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+    },
+    {
+      "variant_id": "V3-B",
+      "name": "M12 reconstructed adaptive comparator",
+      "role": "BEST_STATIC_COMPARATOR",
+      "source": "sandbox/srcr_benchmark/models/m11_reconstructed_srcr_v0_2/SKILL.md",
+      "profile_pack_id": "M11_RECONSTRUCTED_SRCR_V0_2"
+    },
+    {
+      "variant_id": "V3-C",
+      "name": "SRCR V0.7 dynamic candidate",
+      "role": "DYNAMIC_CHALLENGER",
+      "source": "sandbox/lf_contract_gate_test/srcr_v07_candidate_20261006/SKILL.md",
+      "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_7_CANDIDATE"
+    }
+  ],
+  "primary_question": "Does dynamic signal-driven selection of diagnostic modules, reasoning strategies and repair operators improve durable multi-front repair quality without increasing false-positive closure or unjustified cost?",
+  "required_v07_receipt": [
+    "case_signals",
+    "module_selection",
+    "capability_reuse",
+    "strategy_selection",
+    "repair_topology",
+    "blast_radius",
+    "repair_operators",
+    "second_order_risks",
+    "repair_units",
+    "efficiency_receipt"
+  ],
+  "evaluation_dimensions": {
+    "existing_compatibility_fields": [
+      "invariants_score",
+      "findings_score",
+      "root_cause_score",
+      "repair_score",
+      "evidence_score",
+      "tests_score",
+      "efficiency_score",
+      "critical_false_positives",
+      "wow_finding_detected"
+    ],
+    "v3_normalized_metrics": [
+      "signal_precision",
+      "module_selection_appropriateness",
+      "strategy_selection_appropriateness",
+      "material_front_coverage",
+      "first_bad_boundary_accuracy",
+      "blast_radius_completeness",
+      "operator_coherence",
+      "second_order_recurrence_detection",
+      "capability_reuse_correctness",
+      "unnecessary_architecture_count",
+      "duplicate_read_count",
+      "query_call_count",
+      "retry_count",
+      "measured_latency_ms",
+      "provider_input_tokens",
+      "provider_output_tokens"
+    ]
+  },
+  "hard_failures": [
+    "oracle_opened_before_raw_freeze",
+    "invented_authority",
+    "invented_wiring",
+    "invented_currentness",
+    "critical_false_positive",
+    "systemic_repair_spec_with_design_blocking_uncertainty",
+    "material_front_silently_uninspected",
+    "new_parallel_authority_without_should_exist_proof",
+    "production_or_runtime_mutation",
+    "source_benchmark_mutation"
+  ],
+  "selection_evaluation": {
+    "rule": "selection is judged from case evidence and material problem signals, never by family label",
+    "wrong_selection": [
+      "selected strategy has no triggering signal/evidence",
+      "material signal exists but required module is skipped without justified containment",
+      "escalates to expensive search when deterministic repair is already established",
+      "uses direct repair while competing material causes remain",
+      "creates capability when existing governed composition is sufficient"
+    ]
+  },
+  "efficiency_rule": {
+    "quality_precedence": "efficiency may not trade away material evidence",
+    "telemetry": "use measured live telemetry only; never estimate missing provider tokens/latency",
+    "promotion_if_telemetry_missing": "READY_FOR_LIVE_BENCHMARK_NOT_PROMOTED"
+  },
+  "decision_policy": {
+    "automatic_reject_if": [
+      "critical_false_positives > 0",
+      "source benchmark or frozen variant mutated",
+      "material front omission causes false closure"
+    ],
+    "candidate_preferred_if": [
+      "root-cause and repair quality are non-regressive against the best comparator",
+      "material-front coverage and second-order detection improve on cases where those apply",
+      "selector avoids unnecessary expensive reasoning on deterministic cases",
+      "no unjustified new architecture/capability authority is introduced"
+    ],
+    "final_gate": "INDEPENDENT_ASSURANCE"
+  },
+  "execution_order": "CASE_MAJOR__V3-A_THEN_V3-B_THEN_V3-C__FREEZE_EACH_RAW_BEFORE_NEXT_PHASE",
+  "notes": [
+    "The 82 visible cases are inherited exactly from V2 so changes are attributable to method behavior.",
+    "V3 does not cancel or rewrite V2; V2 remains historical evidence.",
+    "Additional selector-specific holdouts may be added only as a separate frozen extension, never silently appended after V3 starts."
+  ]
+}
