@@ -1,0 +1,112 @@
+{
+  "schema_version": "PASE_F09_012_ROBUST_INVARIANTS_QUALIFICATION_V1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F09-012",
+  "source_exact_main_sha": "e37cd0b90f6b4a8618e17d41e842cda124d09a64",
+  "source_authority": {
+    "source_pack_event_id": 19827,
+    "pattern_event_id": 19806,
+    "r17_event_id": 19786,
+    "predecessor_terminal_event_id": 20380
+  },
+  "current_source_blobs": {
+    "multi_scenario_harness": "a9e3ada643dd8e1c640e64f8ff30ca470f5d4981",
+    "post_pase_orchestrator": "5dca9b717803f78c5e2ef79747219919a74f12b3",
+    "post_pase_orchestrator_test": "bc831e852540f8c26f71beb83e38a56ce7030657",
+    "owner_runner_carrier_test": "e5382a2821114af9578c5b2c0781a4db18ca8406",
+    "pase_merge_gate_test": "fccdd2153109a7e23831c8054a2299a2789acb14",
+    "capability_execution_contract_test": "f2cc793f8b2e0c81d3c081ae3558b65b730c7688",
+    "evidence_antireplay_migration": "d0759ff47386a1e040eef4e107fc5d5961a37eed",
+    "control_equivalence_test": "4871e397d346d07e8cb27724e47bc3a40e536ed3"
+  },
+  "representative_coverage": {
+    "nominal": {"verdict": "PASS", "evidence_event_id": 20380, "positive_terminal_scenarios": 5},
+    "negative": {"verdict": "PASS", "evidence_event_id": 20360, "failure_block_code": "BLOCK_E2E_INJECTED_FAILURE:AUTHORITY_READBACK"},
+    "boundary": {
+      "verdict": "PASS",
+      "proof": "OWNER_RUNNER_CARRIER_EXACT_CURRENT_SOURCE",
+      "zero_binding": "BLOCK_LIVE_BINDING_CARDINALITY",
+      "multiple_binding": "BLOCK_LIVE_BINDING_CARDINALITY",
+      "stale_binding": "BLOCK_LIVE_BINDING_CURRENTNESS"
+    },
+    "partial_failure": {
+      "verdict": "PASS",
+      "proof": "POST_PASE_ORCHESTRATOR_EXACT_CURRENT_SOURCE",
+      "failed_receipt_persisted": false,
+      "downstream_closure_executed": false
+    },
+    "retry_idempotency": {
+      "verdict": "PASS",
+      "mode": "TRANSACTION_ROLLBACK",
+      "first_decision": "ANCHORED",
+      "retry_decision": "IDEMPOTENT_REPLAY",
+      "same_receipt_id": true,
+      "same_receipt_sha256": true,
+      "first_receipt_id": "bdc9333e-3396-494b-8a06-9ded3a10f8ca",
+      "receipt_sha256": "2b004c5a6a9154ed8322916149bc707116b94594b1817ea04e3d97f9f3ee73cd",
+      "composition_sha256": "d7c462464ef8b7d3a8737863d8d38357902cd59ed9256dc2886ab65c9f3b52d3",
+      "post_rollback_residue_count": 0
+    },
+    "stale_evidence": {
+      "verdict": "PASS",
+      "evidence_event_id": 20360,
+      "block_code": "CURRENTNESS_NOT_READY",
+      "dispatch_count_after_stale": 0,
+      "terminal_control_count_after_stale": 0
+    },
+    "concurrency": {
+      "verdict": "PASS",
+      "proof_mode": "DATABASE_ATOMIC_UNIQUE_GUARD_PLUS_IDEMPOTENT_ANCHOR",
+      "physical_parallel_sessions_executed": false,
+      "global_subject_unique_constraint": "lf_evidence_ledger_v1_global_subject_key",
+      "subject_binding_unique_constraint": "lf_evidence_ledger_v1_subject_binding_key",
+      "receipt_sha_unique_constraint": "lf_evidence_ledger_v1_receipt_sha256_key",
+      "anchor_duplicate_semantics": "IDEMPOTENT_REPLAY",
+      "rationale": "PostgreSQL UNIQUE constraints are the concurrent serialization authority; identical retry additionally returns the already-anchored receipt identity."
+    },
+    "equivalent_replay": {
+      "verdict": "PASS",
+      "retry_same_receipt_identity": true,
+      "control_equivalence_capability": "CONTROL_EQUIVALENCE_JUDGE@1.0.0",
+      "control_equivalence_state": "ACTIVE_RELEASED",
+      "completed_no_effect_proofs": 12
+    }
+  },
+  "invariants": {
+    "no_bypass": true,
+    "no_stale_pass": true,
+    "duplicate_execution_count": 0,
+    "unplanned_control_count": 0,
+    "blocking_failure_cannot_close_pass": true,
+    "semantic_to_transport_parity_at_receiver": true,
+    "exactly_one_current_authorized_runner_per_applicable_control": true,
+    "zero_multiple_stale_binding_fails_closed": true,
+    "observe_only_cannot_block_merge": true,
+    "dispatch_success_alone_cannot_close_control_pass": true,
+    "retry_replay_one_material_effect": true,
+    "retry_replay_one_terminal_lineage": true
+  },
+  "evidence_refs": {
+    "f09_009_lineage_event_id": 20378,
+    "f09_010_r17_event_id": 20379,
+    "f09_011_terminal_event_id": 20380,
+    "waiver_exact_test_event_id": 19624,
+    "post_pase_orchestrator_build_event_id": 19662,
+    "post_pase_orchestrator_cutover_event_id": 19730
+  },
+  "safety": {
+    "qualification_only": true,
+    "live_domain_controls_executed": false,
+    "runtime_or_deploy_touched": false,
+    "production_touched": false,
+    "pase_workflow_activated": false,
+    "zip_used_as_authority": false,
+    "rollback_residue_count": 0
+  },
+  "terminal": {
+    "verdict": "PASS",
+    "blocking_finding_count": 0,
+    "activation_authorized": false,
+    "production_authorized": false
+  }
+}
