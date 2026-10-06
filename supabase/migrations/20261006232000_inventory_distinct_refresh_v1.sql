@@ -15,6 +15,10 @@ begin
        is distinct from '1d9c68c09412d99f0e8080cacbc314b2' then
     raise exception 'INVENTORY_REFRESH_SEARCH_INDEX_V1_DRIFT';
   end if;
+  if md5(pg_get_functiondef('inventory.fn_refresh_registries_v1()'::regprocedure))
+       is distinct from 'ce7265e91b12eebb4499cdaada9eb9f9' then
+    raise exception 'INVENTORY_REFRESH_REGISTRIES_V1_DRIFT';
+  end if;
   if to_regclass('inventory.refresh_heartbeats_v1') is not null then
     raise exception 'INVENTORY_REFRESH_HEARTBEAT_ALREADY_EXISTS';
   end if;
@@ -318,6 +322,117 @@ begin
 end;
 $$;
 
+create or replace function inventory.fn_refresh_registries_v1()
+returns jsonb
+language plpgsql
+security invoker
+set search_path=inventory,public,programacion,pg_catalog
+as $$
+declare v_start timestamptz:=clock_timestamp();
+begin
+  insert into inventory.objects(object_ref,object_type,object_name,domain,source_system,source_of_truth,status,source_version,metadata,last_seen_at,updated_at,active)
+  select 'asset://'||a.codigo_activo,
+    case when a.subtipo_activo='EDGE_FUNCTION' then 'EDGE_FUNCTION'
+         when a.tipo_activo='CAPABILITY' then 'CAPABILITY' else 'LF_ASSET' end,
+    a.codigo_activo,coalesce(a.metadata->>'dominio',a.metadata->>'domain',a.tipo_activo),
+    'LF_ACTIVOS',true,coalesce(a.estado_operativo,a.estado_documental,'ACTIVE'),a.version,
+    jsonb_build_object('lf_activo_id',a.id,'nombre_canonico',a.nombre_canonico,'tipo_activo',a.tipo_activo,
+      'subtipo_activo',a.subtipo_activo,'ruta_esperada',a.ruta_esperada,'url',a.url,
+      'rol_arquitectura',a.rol_arquitectura,'owner',a.owner_name,'metadata',a.metadata),
+    now(),now(),true
+  from public.lf_activos a where a.archived_at is null
+  on conflict(object_ref) do update set object_type=excluded.object_type,object_name=excluded.object_name,
+    domain=excluded.domain,status=excluded.status,source_version=excluded.source_version,
+    metadata=excluded.metadata,last_seen_at=now(),active=true,updated_at=now()
+  where (
+    inventory.objects.object_type,
+    inventory.objects.object_name,
+    inventory.objects.domain,
+    inventory.objects.status,
+    inventory.objects.source_version,
+    inventory.objects.metadata,
+    inventory.objects.active
+  ) is distinct from (
+    excluded.object_type,
+    excluded.object_name,
+    excluded.domain,
+    excluded.status,
+    excluded.source_version,
+    excluded.metadata,
+    excluded.active
+  );
+
+  insert into inventory.objects(object_ref,object_type,schema_name,object_name,domain,source_system,source_of_truth,status,source_version,metadata,last_seen_at,updated_at,active)
+  select 'contract://programacion.contratos/'||c.contrato_codigo||'#'||c.id,'CONTRACT','programacion',
+    c.contrato_codigo,case when c.contrato_codigo ilike 'INPUT_%' then 'INPUT_GOVERNANCE' else 'PROGRAMACION' end,
+    'PROGRAMACION_CONTRATOS',true,c.estado,
+    coalesce(c.especificacion->>'contract_revision',c.especificacion->>'schema_version'),
+    jsonb_build_object('id',c.id,'version_id',c.version_id,'fail_closed',c.fail_closed,'especificacion',c.especificacion),
+    now(),now(),true
+  from programacion.contratos c
+  on conflict(object_ref) do update set status=excluded.status,source_version=excluded.source_version,
+    metadata=excluded.metadata,last_seen_at=now(),active=true,updated_at=now()
+  where (
+    inventory.objects.status,
+    inventory.objects.source_version,
+    inventory.objects.metadata,
+    inventory.objects.active
+  ) is distinct from (
+    excluded.status,
+    excluded.source_version,
+    excluded.metadata,
+    excluded.active
+  );
+
+  insert into inventory.objects(object_ref,object_type,object_name,domain,source_system,source_of_truth,status,source_version,metadata,last_seen_at,updated_at,active)
+  select 'operation://'||r.operation_code,'OPERATION',r.operation_code,
+    coalesce(r.operation_domain,r.operation_family,'OPERATIONS'),'LF_OPERATION_REGISTRY',true,r.status,r.version,
+    jsonb_build_object('operation_family',r.operation_family,'operation_domain',r.operation_domain,
+      'operation_type',r.operation_type,'applies_to_asset_type',r.applies_to_asset_type,
+      'source_repo',r.source_repo,'source_paths',r.source_paths,'notes',r.notes),
+    now(),now(),true
+  from public.lf_operation_registry r
+  on conflict(object_ref) do update set domain=excluded.domain,status=excluded.status,source_version=excluded.source_version,
+    metadata=excluded.metadata,last_seen_at=now(),active=true,updated_at=now()
+  where (
+    inventory.objects.domain,
+    inventory.objects.status,
+    inventory.objects.source_version,
+    inventory.objects.metadata,
+    inventory.objects.active
+  ) is distinct from (
+    excluded.domain,
+    excluded.status,
+    excluded.source_version,
+    excluded.metadata,
+    excluded.active
+  );
+
+  delete from inventory.dependencies where source_system='LF_ACTIVO_RELACIONES';
+
+  insert into inventory.dependencies(dependency_key,source_object_id,target_object_id,target_ref,relation_type,evidence_type,
+    evidence,confidence,source_system,metadata,last_verified_at,active)
+  select 'LF_ASSET_REL|'||r.id,src.object_id,tgt.object_id,'asset://'||r.relacionado_codigo,
+    r.relacion_tipo,'LF_ACTIVO_RELACION',r.valor_original,1.0,'LF_ACTIVO_RELACIONES',
+    jsonb_build_object('relation_id',r.id,'fuente',r.fuente,'migration_batch_id',r.migration_batch_id),now(),true
+  from public.lf_activo_relaciones r
+  join inventory.objects src on src.object_ref='asset://'||r.codigo_activo and src.active
+  left join inventory.objects tgt on tgt.object_ref='asset://'||r.relacionado_codigo and tgt.active;
+
+  insert into inventory.refresh_heartbeats_v1(refresh_key,source_system,last_success_at,metadata,updated_at)
+  values('REGISTRIES_V1','LF_REGISTRIES',clock_timestamp(),
+         jsonb_build_object('function','inventory.fn_refresh_registries_v1'),clock_timestamp())
+  on conflict(refresh_key) do update
+  set source_system=excluded.source_system,
+      last_success_at=excluded.last_success_at,
+      metadata=excluded.metadata,
+      updated_at=excluded.updated_at;
+
+  return jsonb_build_object('status','COMPLETED',
+    'duration_ms',round(extract(epoch from clock_timestamp()-v_start)*1000));
+end;
+$$;
+
 create or replace function inventory.fn_refresh_search_index_v1()
 returns bigint
 language plpgsql
@@ -403,47 +518,29 @@ begin
     currentness_source=excluded.currentness_source,observed_at=excluded.observed_at,
     observed_main_sha=excluded.observed_main_sha,
     source_traceability_state=excluded.source_traceability_state
-  where (
-    inventory.search_index.object_ref,
-    inventory.search_index.object_ref_lc,
-    inventory.search_index.object_type,
-    inventory.search_index.schema_name,
-    inventory.search_index.object_name,
-    inventory.search_index.object_name_lc,
-    inventory.search_index.tags,
-    inventory.search_index.tags_lc,
-    inventory.search_index.column_names,
-    inventory.search_index.column_names_lc,
-    inventory.search_index.source_system,
-    inventory.search_index.source_of_truth,
-    inventory.search_index.status,
-    inventory.search_index.search_document,
-    inventory.search_index.currentness,
-    inventory.search_index.currentness_source,
-    inventory.search_index.observed_at,
-    inventory.search_index.observed_main_sha,
-    inventory.search_index.source_traceability_state
-  ) is distinct from (
-    excluded.object_ref,
-    excluded.object_ref_lc,
-    excluded.object_type,
-    excluded.schema_name,
-    excluded.object_name,
-    excluded.object_name_lc,
-    excluded.tags,
-    excluded.tags_lc,
-    excluded.column_names,
-    excluded.column_names_lc,
-    excluded.source_system,
-    excluded.source_of_truth,
-    excluded.status,
-    excluded.search_document,
-    excluded.currentness,
-    excluded.currentness_source,
-    excluded.observed_at,
-    excluded.observed_main_sha,
-    excluded.source_traceability_state
-  );
+  where inventory.search_index.object_ref is distinct from excluded.object_ref
+     or inventory.search_index.object_ref_lc is distinct from excluded.object_ref_lc
+     or inventory.search_index.object_type is distinct from excluded.object_type
+     or inventory.search_index.schema_name is distinct from excluded.schema_name
+     or inventory.search_index.object_name is distinct from excluded.object_name
+     or inventory.search_index.object_name_lc is distinct from excluded.object_name_lc
+     or inventory.search_index.tags is distinct from excluded.tags
+     or inventory.search_index.tags_lc is distinct from excluded.tags_lc
+     or inventory.search_index.column_names is distinct from excluded.column_names
+     or inventory.search_index.column_names_lc is distinct from excluded.column_names_lc
+     or inventory.search_index.source_system is distinct from excluded.source_system
+     or inventory.search_index.source_of_truth is distinct from excluded.source_of_truth
+     or inventory.search_index.status is distinct from excluded.status
+     or inventory.search_index.search_document is distinct from excluded.search_document
+     or inventory.search_index.currentness is distinct from excluded.currentness
+     or inventory.search_index.currentness_source is distinct from excluded.currentness_source
+     or (
+       (inventory.search_index.object_ref like 'repo://%'
+        or inventory.search_index.object_ref like 'edge://%')
+       and inventory.search_index.observed_at is distinct from excluded.observed_at
+     )
+     or inventory.search_index.observed_main_sha is distinct from excluded.observed_main_sha
+     or inventory.search_index.source_traceability_state is distinct from excluded.source_traceability_state
 
   delete from inventory.search_index s
   where not exists (
@@ -471,13 +568,15 @@ declare
   v_catalog text:=pg_get_functiondef('inventory.fn_refresh_catalog_v2()'::regprocedure);
   v_details text:=pg_get_functiondef('inventory.fn_refresh_db_details_v2()'::regprocedure);
   v_search text:=pg_get_functiondef('inventory.fn_refresh_search_index_v1()'::regprocedure);
+  v_reg text:=pg_get_functiondef('inventory.fn_refresh_registries_v1()'::regprocedure);
 begin
   if position('fn_refresh_search_index_v1' in v_catalog)>0 then
     raise exception 'INVENTORY_REFRESH_EARLY_SEARCH_CALL_REMAINS';
   end if;
   if position('IS DISTINCT FROM' in upper(v_catalog))=0
      or position('IS DISTINCT FROM' in upper(v_details))=0
-     or position('IS DISTINCT FROM' in upper(v_search))=0 then
+     or position('IS DISTINCT FROM' in upper(v_search))=0
+     or position('IS DISTINCT FROM' in upper(v_reg))=0 then
     raise exception 'INVENTORY_REFRESH_DISTINCT_GUARD_MISSING';
   end if;
   if to_regclass('inventory.refresh_heartbeats_v1') is null then
