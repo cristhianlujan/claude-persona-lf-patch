@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  LF_MIGRATION_TRAIN_MODE: DRY_RUN
+  LF_MIGRATION_TRAIN_MODE: REAL
   SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
   SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
 
