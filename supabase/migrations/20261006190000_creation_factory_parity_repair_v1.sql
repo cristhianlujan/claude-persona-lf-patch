@@ -1,191 +1,8 @@
 -- CREATION_FACTORY_PARITY_REPAIR_V1
--- Scope: CREACION_CARD_LF + CREACION_SKILL_LF only.
--- No runtime/production activation. Reuses lf_record_operation_step_core_v1.
+-- Scope: CREACION_CARD_LF + CREACION_SKILL_LF.
+-- Installs reusable guards/wrappers only. Governance rows are reconciled by a real
+-- in-progress execution of the same operation_code, so provenance is never fabricated.
 
--- 1) Restore Skill factory runtime order without rewriting stable step identities.
-update public.lf_operation_steps
-set execution_order = case step_id
-  when 'init_execution' then 0
-  when 'router' then 10
-  when 'operational_source' then 20
-  when 'creator_asset' then 30
-  when 'repo_matrix_read' then 40
-  when 'contract_read' then 50
-  when 'repo_inventory_full' then 60
-  when 'destination_validate' then 70
-  when 'intake' then 80
-  when 'duplicate_check' then 90
-  when 'classification' then 100
-  when 'generic_vs_specific' then 110
-  when 'research_pack' then 120
-  when 'research_to_rules_matrix' then 130
-  when 'decision_matrix' then 140
-  when 'canonical_design' then 150
-  when 'operational_evidence_pack_check' then 160
-  when 'completeness' then 250
-  when 'compatibility' then 260
-  when 'rubric' then 270
-  when 'sandbox' then 280
-  when 'manifest' then 290
-  when 'rule_trace' then 300
-  when 'pre_write_execution_binding_gate' then 320
-  when 'github_write' then 330
-  when 'github_readback' then 340
-  when 'evidence_log' then 350
-  when 'step_depth_validation' then 170
-  when 'pack_internal_depth_validation' then 180
-  when 'examples_depth_validation' then 190
-  when 'evals_depth_validation' then 200
-  when 'judge_depth_validation' then 210
-  when 'schema_depth_validation' then 220
-  when 'output_modes_validation' then 230
-  when 'blocking_overrides_validation' then 240
-  when 'contract_judge' then 360
-  when 'close' then 370
-  when 'report_output' then 380
-  else execution_order
-end,
-updated_at = now()
-where operation_code='CREACION_SKILL_LF' and active is true;
-
--- The source-authoritative Skill v0.7 file includes partial_scope_guard between rule_trace and pre-write.
-insert into public.lf_operation_steps(
-  operation_code,step_order,step_id,required,evidence_required,source_path,source_sha,active,
-  execution_order
-)
-select
-  'CREACION_SKILL_LF',38,'partial_scope_guard',true,
-  'complete_operation_scope_confirmed_or_blocked',
-  'gobernanza/procedimientos/creacion_skill_lf_steps_validation.yaml',
-  '1012a6ce037bfb5540a87c5706960e6465244df2',
-  true,310
-where not exists (
-  select 1 from public.lf_operation_steps
-  where operation_code='CREACION_SKILL_LF' and step_id='partial_scope_guard'
-);
-
-update public.lf_operation_steps
-set source_path='gobernanza/procedimientos/creacion_skill_lf_steps_validation.yaml',
-    source_sha='1012a6ce037bfb5540a87c5706960e6465244df2',
-    updated_at=now()
-where operation_code='CREACION_SKILL_LF'
-  and step_id in (
-    'canonical_design','operational_evidence_pack_check','completeness','compatibility','rubric','sandbox',
-    'manifest','rule_trace','partial_scope_guard','pre_write_execution_binding_gate','github_write',
-    'github_readback','evidence_log','step_depth_validation','pack_internal_depth_validation',
-    'examples_depth_validation','evals_depth_validation','judge_depth_validation','schema_depth_validation',
-    'output_modes_validation','blocking_overrides_validation','contract_judge','close','report_output'
-  );
-
-insert into public.lf_operation_step_contracts(
-  operation_code,step_id,step_order,execution_order,contract_code,purpose,input_required,resolver_ref,
-  output_payload,pass_condition,block_condition,blocking_code,mini_judge_code,required_evidence_keys,
-  next_if_pass,next_if_blocked,status,notes
-)
-select
-  'CREACION_SKILL_LF','partial_scope_guard',38,310,
-  'CONTRACT_CREACION_SKILL_LF_PARTIAL_SCOPE_GUARD_V1',
-  'Bloquear cualquier intento de ejecutar o cerrar sólo una fracción del protocolo obligatorio de creación de Skill.',
-  '["skill_request_packet","operation_steps","complete_operation_scope_confirmed_or_blocked"]'::jsonb,
-  'public.lf_operation_step_judge_bindings + public.lf_operation_judges',
-  '{"step_result":"PASS|BLOCKED","blocking_codes":[],"complete_operation_scope_confirmed_or_blocked":true}'::jsonb,
-  '{"must_have_evidence":"complete_operation_scope_confirmed_or_blocked","must_not_be_generic":true,"must_match_step_purpose":true,"required_if_step_required":true}'::jsonb,
-  '{"scope_bypass":true,"generic_payload":true,"missing_evidence":"complete_operation_scope_confirmed_or_blocked","invented_source_or_destination":true}'::jsonb,
-  'BLOCKED_PARTIAL_SCOPE_GUARD_NOT_CLEAN',
-  'MINI_JUDGE_CREACION_SKILL_LF_PARTIAL_SCOPE_GUARD_V1',
-  '["complete_operation_scope_confirmed_or_blocked","step_result","blocking_codes"]'::jsonb,
-  'NEXT_BY_EXECUTION_ORDER','RETURN_TO_WORKER_FOR_SELF_REPAIR_OR_BACKEND_CONFIG','ACTIVE',
-  'Materialized from governed Skill v0.7 source; no parallel runtime.'
-where not exists (
-  select 1 from public.lf_operation_step_contracts
-  where operation_code='CREACION_SKILL_LF' and step_id='partial_scope_guard'
-);
-
-update public.lf_operation_step_contracts c
-set execution_order=s.execution_order,
-    step_order=s.step_order,
-    updated_at=now()
-from public.lf_operation_steps s
-where c.operation_code='CREACION_SKILL_LF'
-  and s.operation_code=c.operation_code
-  and s.step_id=c.step_id
-  and c.status='ACTIVE';
-
-update public.lf_operation_registry
-set version='v0.7',
-    notes=coalesce(notes,'')||' | CREATION_FACTORY_PARITY_REPAIR_V1: source-authoritative execution order restored; partial-scope guard restored; judge/binding parity enforced by common guard.',
-    updated_at=now()
-where operation_code='CREACION_SKILL_LF';
-
--- 2) Materialize only missing judges from the active step contracts.
--- Existing judges are never overwritten.
-insert into public.lf_operation_judges(
-  operation_code,judge_code,judge_path,judge_sha,pass_if,fail_if,result_values,status
-)
-select
-  c.operation_code,
-  c.mini_judge_code,
-  'supabase://public/lf_operation_step_contracts/'||c.operation_code||'/'||c.step_id,
-  c.contract_code,
-  case
-    when jsonb_typeof(c.pass_condition)='object'
-      and jsonb_typeof(c.pass_condition->'pass_minimum')='array'
-      then c.pass_condition->'pass_minimum'
-    else '{"pass_condition_met":true,"step_contract_present":true,"generic_payload_rejected":true,"required_evidence_keys_present":true}'::jsonb
-  end,
-  case
-    when jsonb_typeof(c.block_condition)='object'
-      and not exists (
-        select 1 from jsonb_each(c.block_condition) x where jsonb_typeof(x.value)<>'boolean'
-      )
-      then c.block_condition || '{"step_contract_missing":true,"required_evidence_missing":true}'::jsonb
-    else c.block_condition
-  end,
-  jsonb_build_object(
-    'pass','STEP_CLEAN_PASS',
-    'return','RETURN_TO_WORKER_FOR_SELF_REPAIR',
-    'blocked',coalesce(nullif(c.blocking_code,''),'BLOCKED_STEP_NOT_CLEAN')
-  ),
-  'ACTIVE_ENFORCEMENT'
-from public.lf_operation_step_contracts c
-join public.lf_operation_steps s
-  on s.operation_code=c.operation_code and s.step_id=c.step_id and s.step_order=c.step_order
-where c.operation_code in ('CREACION_CARD_LF','CREACION_SKILL_LF')
-  and c.status='ACTIVE'
-  and s.active is true
-  and c.mini_judge_code is not null
-  and not exists (
-    select 1 from public.lf_operation_judges j
-    where j.operation_code=c.operation_code and j.judge_code=c.mini_judge_code
-  );
-
-insert into public.lf_operation_step_judge_bindings(
-  operation_code,step_order,step_id,judge_code,clean_result_value,blocked_result_value,
-  return_result_value,required_evidence_keys,status
-)
-select
-  c.operation_code,c.step_order,c.step_id,c.mini_judge_code,
-  'STEP_CLEAN_PASS',
-  coalesce(nullif(c.blocking_code,''),'BLOCKED_STEP_NOT_CLEAN'),
-  'RETURN_TO_WORKER_FOR_SELF_REPAIR',
-  c.required_evidence_keys,
-  'ACTIVE_ENFORCEMENT'
-from public.lf_operation_step_contracts c
-join public.lf_operation_steps s
-  on s.operation_code=c.operation_code and s.step_id=c.step_id and s.step_order=c.step_order
-join public.lf_operation_judges j
-  on j.operation_code=c.operation_code and j.judge_code=c.mini_judge_code
-where c.operation_code in ('CREACION_CARD_LF','CREACION_SKILL_LF')
-  and c.status='ACTIVE'
-  and s.active is true
-  and j.status='ACTIVE_ENFORCEMENT'
-  and not exists (
-    select 1 from public.lf_operation_step_judge_bindings b
-    where b.operation_code=c.operation_code and b.step_order=c.step_order and b.step_id=c.step_id
-  );
-
--- 3) Parity guard: every active factory step must have exactly one ACTIVE contract,
--- one ACTIVE_ENFORCEMENT binding and one ACTIVE_ENFORCEMENT judge.
 create or replace function public.lf_creation_factory_parity_guard_v1(p_operation_code text)
 returns jsonb
 language plpgsql
@@ -271,7 +88,221 @@ begin
 end
 $$;
 
--- 4) Server-derived trust for creation factories.
+create or replace function public.lf_creation_factory_reconcile_v1(p_execution_id text)
+returns jsonb
+language plpgsql
+set search_path to 'pg_catalog','public'
+as $$
+declare
+  e public.lf_operation_execution%rowtype;
+  v_parity jsonb;
+begin
+  select * into e
+  from public.lf_operation_execution
+  where execution_id=p_execution_id
+  for update;
+
+  if not found
+     or e.operation_code not in ('CREACION_CARD_LF','CREACION_SKILL_LF')
+     or e.status<>'IN_PROGRESS' then
+    return jsonb_build_object('valid',false,'code','CREATION_FACTORY_RECONCILE_EXECUTION_INVALID');
+  end if;
+
+  if e.operation_code='CREACION_SKILL_LF' then
+    update public.lf_operation_steps
+    set execution_order = case step_id
+      when 'init_execution' then 0
+      when 'router' then 10
+      when 'operational_source' then 20
+      when 'creator_asset' then 30
+      when 'repo_matrix_read' then 40
+      when 'contract_read' then 50
+      when 'repo_inventory_full' then 60
+      when 'destination_validate' then 70
+      when 'intake' then 80
+      when 'duplicate_check' then 90
+      when 'classification' then 100
+      when 'generic_vs_specific' then 110
+      when 'research_pack' then 120
+      when 'research_to_rules_matrix' then 130
+      when 'decision_matrix' then 140
+      when 'canonical_design' then 150
+      when 'operational_evidence_pack_check' then 160
+      when 'step_depth_validation' then 170
+      when 'pack_internal_depth_validation' then 180
+      when 'examples_depth_validation' then 190
+      when 'evals_depth_validation' then 200
+      when 'judge_depth_validation' then 210
+      when 'schema_depth_validation' then 220
+      when 'output_modes_validation' then 230
+      when 'blocking_overrides_validation' then 240
+      when 'completeness' then 250
+      when 'compatibility' then 260
+      when 'rubric' then 270
+      when 'sandbox' then 280
+      when 'manifest' then 290
+      when 'rule_trace' then 300
+      when 'partial_scope_guard' then 310
+      when 'pre_write_execution_binding_gate' then 320
+      when 'github_write' then 330
+      when 'github_readback' then 340
+      when 'evidence_log' then 350
+      when 'contract_judge' then 360
+      when 'close' then 370
+      when 'report_output' then 380
+      else execution_order
+    end,
+    updated_at=now(),
+    updated_by_execution_id=p_execution_id
+    where operation_code='CREACION_SKILL_LF' and active is true;
+
+    insert into public.lf_operation_steps(
+      operation_code,step_order,step_id,required,evidence_required,source_path,source_sha,active,
+      execution_order,created_by_execution_id,updated_by_execution_id
+    )
+    select
+      'CREACION_SKILL_LF',38,'partial_scope_guard',true,
+      'complete_operation_scope_confirmed_or_blocked',
+      'gobernanza/procedimientos/creacion_skill_lf_steps_validation.yaml',
+      '1012a6ce037bfb5540a87c5706960e6465244df2',
+      true,310,p_execution_id,p_execution_id
+    where not exists (
+      select 1 from public.lf_operation_steps
+      where operation_code='CREACION_SKILL_LF' and step_id='partial_scope_guard'
+    );
+
+    update public.lf_operation_steps
+    set source_path='gobernanza/procedimientos/creacion_skill_lf_steps_validation.yaml',
+        source_sha='1012a6ce037bfb5540a87c5706960e6465244df2',
+        updated_at=now(),
+        updated_by_execution_id=p_execution_id
+    where operation_code='CREACION_SKILL_LF'
+      and step_id in (
+        'canonical_design','operational_evidence_pack_check','completeness','compatibility','rubric','sandbox',
+        'manifest','rule_trace','partial_scope_guard','pre_write_execution_binding_gate','github_write',
+        'github_readback','evidence_log','step_depth_validation','pack_internal_depth_validation',
+        'examples_depth_validation','evals_depth_validation','judge_depth_validation','schema_depth_validation',
+        'output_modes_validation','blocking_overrides_validation','contract_judge','close','report_output'
+      );
+
+    insert into public.lf_operation_step_contracts(
+      operation_code,step_id,step_order,execution_order,contract_code,purpose,input_required,resolver_ref,
+      output_payload,pass_condition,block_condition,blocking_code,mini_judge_code,required_evidence_keys,
+      next_if_pass,next_if_blocked,status,notes,created_by_execution_id,updated_by_execution_id
+    )
+    select
+      'CREACION_SKILL_LF','partial_scope_guard',38,310,
+      'CONTRACT_CREACION_SKILL_LF_PARTIAL_SCOPE_GUARD_V1',
+      'Bloquear cualquier intento de ejecutar o cerrar sólo una fracción del protocolo obligatorio de creación de Skill.',
+      '["skill_request_packet","operation_steps","complete_operation_scope_confirmed_or_blocked"]'::jsonb,
+      'public.lf_operation_step_judge_bindings + public.lf_operation_judges',
+      '{"step_result":"PASS|BLOCKED","blocking_codes":[],"complete_operation_scope_confirmed_or_blocked":true}'::jsonb,
+      '{"must_have_evidence":"complete_operation_scope_confirmed_or_blocked","must_not_be_generic":true,"must_match_step_purpose":true,"required_if_step_required":true}'::jsonb,
+      '{"scope_bypass":true,"generic_payload":true,"missing_evidence":"complete_operation_scope_confirmed_or_blocked","invented_source_or_destination":true}'::jsonb,
+      'BLOCKED_PARTIAL_SCOPE_GUARD_NOT_CLEAN',
+      'MINI_JUDGE_CREACION_SKILL_LF_PARTIAL_SCOPE_GUARD_V1',
+      '["complete_operation_scope_confirmed_or_blocked","step_result","blocking_codes"]'::jsonb,
+      'NEXT_BY_EXECUTION_ORDER','RETURN_TO_WORKER_FOR_SELF_REPAIR_OR_BACKEND_CONFIG','ACTIVE',
+      'Materialized from governed Skill v0.7 source; no parallel runtime.',
+      p_execution_id,p_execution_id
+    where not exists (
+      select 1 from public.lf_operation_step_contracts
+      where operation_code='CREACION_SKILL_LF' and step_id='partial_scope_guard'
+    );
+
+    update public.lf_operation_step_contracts c
+    set execution_order=s.execution_order,
+        step_order=s.step_order,
+        updated_at=now(),
+        updated_by_execution_id=p_execution_id
+    from public.lf_operation_steps s
+    where c.operation_code='CREACION_SKILL_LF'
+      and s.operation_code=c.operation_code
+      and s.step_id=c.step_id
+      and c.status='ACTIVE';
+
+    update public.lf_operation_registry
+    set version='v0.7',
+        notes=case
+          when coalesce(notes,'') like '%CREATION_FACTORY_PARITY_REPAIR_V1%' then notes
+          else coalesce(notes,'')||' | CREATION_FACTORY_PARITY_REPAIR_V1: source-authoritative execution order restored; partial-scope guard restored; judge/binding parity enforced by common guard.'
+        end,
+        updated_at=now(),
+        updated_by_execution_id=p_execution_id
+    where operation_code='CREACION_SKILL_LF';
+  end if;
+
+  insert into public.lf_operation_judges(
+    operation_code,judge_code,judge_path,judge_sha,pass_if,fail_if,result_values,status,
+    created_by_execution_id,updated_by_execution_id
+  )
+  select
+    c.operation_code,
+    c.mini_judge_code,
+    'supabase://public/lf_operation_step_contracts/'||c.operation_code||'/'||c.step_id,
+    c.contract_code,
+    case
+      when jsonb_typeof(c.pass_condition)='object'
+        and jsonb_typeof(c.pass_condition->'pass_minimum')='array'
+        then c.pass_condition->'pass_minimum'
+      else '{"pass_condition_met":true,"step_contract_present":true,"generic_payload_rejected":true,"required_evidence_keys_present":true}'::jsonb
+    end,
+    case
+      when jsonb_typeof(c.block_condition)='object'
+        and not exists (
+          select 1 from jsonb_each(c.block_condition) x where jsonb_typeof(x.value)<>'boolean'
+        )
+        then c.block_condition || '{"step_contract_missing":true,"required_evidence_missing":true}'::jsonb
+      else c.block_condition
+    end,
+    jsonb_build_object(
+      'pass','STEP_CLEAN_PASS',
+      'return','RETURN_TO_WORKER_FOR_SELF_REPAIR',
+      'blocked',coalesce(nullif(c.blocking_code,''),'BLOCKED_STEP_NOT_CLEAN')
+    ),
+    'ACTIVE_ENFORCEMENT',p_execution_id,p_execution_id
+  from public.lf_operation_step_contracts c
+  join public.lf_operation_steps s
+    on s.operation_code=c.operation_code and s.step_id=c.step_id and s.step_order=c.step_order
+  where c.operation_code=e.operation_code
+    and c.status='ACTIVE'
+    and s.active is true
+    and c.mini_judge_code is not null
+    and not exists (
+      select 1 from public.lf_operation_judges j
+      where j.operation_code=c.operation_code and j.judge_code=c.mini_judge_code
+    );
+
+  insert into public.lf_operation_step_judge_bindings(
+    operation_code,step_order,step_id,judge_code,clean_result_value,blocked_result_value,
+    return_result_value,required_evidence_keys,status,created_by_execution_id,updated_by_execution_id
+  )
+  select
+    c.operation_code,c.step_order,c.step_id,c.mini_judge_code,
+    'STEP_CLEAN_PASS',
+    coalesce(nullif(c.blocking_code,''),'BLOCKED_STEP_NOT_CLEAN'),
+    'RETURN_TO_WORKER_FOR_SELF_REPAIR',
+    c.required_evidence_keys,
+    'ACTIVE_ENFORCEMENT',p_execution_id,p_execution_id
+  from public.lf_operation_step_contracts c
+  join public.lf_operation_steps s
+    on s.operation_code=c.operation_code and s.step_id=c.step_id and s.step_order=c.step_order
+  join public.lf_operation_judges j
+    on j.operation_code=c.operation_code and j.judge_code=c.mini_judge_code
+  where c.operation_code=e.operation_code
+    and c.status='ACTIVE'
+    and s.active is true
+    and j.status='ACTIVE_ENFORCEMENT'
+    and not exists (
+      select 1 from public.lf_operation_step_judge_bindings b
+      where b.operation_code=c.operation_code and b.step_order=c.step_order and b.step_id=c.step_id
+    );
+
+  v_parity:=public.lf_creation_factory_parity_guard_v1(e.operation_code);
+  return v_parity||jsonb_build_object('reconciled_by_execution_id',p_execution_id);
+end
+$$;
+
 create or replace function public.lf_creation_factory_trust_validation_v1(
   p_execution_id text,
   p_step_id text,
@@ -501,8 +532,6 @@ begin
 end
 $$;
 
--- 5) Governed reservation wrapper. Adds only creation-factory safety metadata and
--- creates init_execution when that step exists (Skill); it does not create a parallel engine.
 create or replace function public.lf_reserve_creation_factory_execution_v1(
   p_execution_id text,
   p_operation_code text,
@@ -520,8 +549,8 @@ set search_path to 'pg_catalog','public'
 as $$
 declare
   v_target_type text;
-  v_parity jsonb;
   v_result jsonb;
+  v_reconcile jsonb;
   v_init public.lf_operation_steps%rowtype;
   v_binding public.lf_operation_step_judge_bindings%rowtype;
 begin
@@ -535,11 +564,6 @@ begin
     return jsonb_build_object('result','BLOCKED','code','CREATION_FACTORY_OPERATION_NOT_ADMITTED');
   end if;
 
-  v_parity:=public.lf_creation_factory_parity_guard_v1(p_operation_code);
-  if coalesce((v_parity->>'valid')::boolean,false) is not true then
-    return jsonb_build_object('result','BLOCKED','code','CREATION_FACTORY_PARITY_NOT_CLEAN','parity',v_parity);
-  end if;
-
   v_result:=public.fn_lf_operation_reserve_execution_v1(
     p_execution_id,p_operation_code,v_target_type,p_target_code,p_idempotency_key,p_request_sha256,
     p_actor_execution_id,p_target_repo,p_target_path,
@@ -550,6 +574,19 @@ begin
       'automatic_impact','BLOQUEADO'
     )
   );
+
+  if v_result->>'status'<>'IN_PROGRESS' then
+    return v_result;
+  end if;
+
+  v_reconcile:=public.lf_creation_factory_reconcile_v1(p_execution_id);
+  if coalesce((v_reconcile->>'valid')::boolean,false) is not true then
+    return v_result||jsonb_build_object(
+      'dispatch_permitted',false,
+      'code','CREATION_FACTORY_RECONCILIATION_FAILED',
+      'factory_parity',v_reconcile
+    );
+  end if;
 
   select * into v_init from public.lf_operation_steps
   where operation_code=p_operation_code and step_id='init_execution' and active is true;
@@ -576,23 +613,17 @@ begin
         'recorded_by_rpc','lf_reserve_creation_factory_execution_v1'
       ),
       'Server-derived init_execution for governed creation factory.',
-      p_actor_execution_id
-    where exists (
-      select 1 from public.lf_operation_execution
-      where execution_id=p_execution_id and operation_code=p_operation_code
-        and target_type=v_target_type and status='IN_PROGRESS'
-    )
-    and not exists (
+      p_execution_id
+    where not exists (
       select 1 from public.lf_operation_execution_steps
       where execution_id=p_execution_id and step_id='init_execution'
     );
   end if;
 
-  return v_result||jsonb_build_object('factory_parity',v_parity,'target_type',v_target_type);
+  return v_result||jsonb_build_object('factory_parity',v_reconcile,'target_type',v_target_type);
 end
 $$;
 
--- 6) Common recorder + thin operation-specific wrappers.
 create or replace function public.lf_record_creation_factory_step_v1(
   p_execution_id text,
   p_step_id text,
@@ -697,22 +728,5 @@ begin
   return public.lf_record_creation_factory_step_v1(
     p_execution_id,p_step_id,p_evidence_ref,p_evidence_payload,p_actor_execution_id
   );
-end
-$$;
-
--- Fail migration if the two repaired factories are still structurally incomplete.
-do $$
-declare
-  v_card jsonb;
-  v_skill jsonb;
-begin
-  v_card:=public.lf_creation_factory_parity_guard_v1('CREACION_CARD_LF');
-  v_skill:=public.lf_creation_factory_parity_guard_v1('CREACION_SKILL_LF');
-  if coalesce((v_card->>'valid')::boolean,false) is not true then
-    raise exception 'CARD_FACTORY_PARITY_REPAIR_FAILED:%',v_card::text;
-  end if;
-  if coalesce((v_skill->>'valid')::boolean,false) is not true then
-    raise exception 'SKILL_FACTORY_PARITY_REPAIR_FAILED:%',v_skill::text;
-  end if;
 end
 $$;
