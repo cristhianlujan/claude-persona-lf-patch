@@ -11,6 +11,7 @@ Read-only verification established:
 - PostgreSQL 17.6;
 - pg_cron 1.6.4;
 - `cron.use_background_workers=off`;
+- `cron.timezone=GMT` and the database session timezone is UTC;
 - the project `postgres` role has `rolsuper=false`;
 - `cron.schedule_in_database(..., username ...)` is installed, but pg_cron's implementation requires the caller to be a **superuser** to schedule a job for another role;
 - with `cron.use_background_workers=off`, cron opens a libpq connection as the job username, so a `NOLOGIN` role could not be that connection identity anyway.
@@ -115,7 +116,7 @@ After the third success, the next finalizer tick:
 - runs `ALTER ROLE postgres RESET lock_timeout`;
 - verifies through `pg_db_role_setting` that no persisted `lock_timeout=` remains for postgres;
 - sets global control VERIFIED;
-- disables every maintenance job.
+- disables and unschedules every maintenance job.
 
 A failed clean-setting readback converts the maintenance control to FAILED.
 
