@@ -19,6 +19,16 @@ set unit_metadata=jsonb_set(
       'precision','EXPLICIT_SAME_RUN_CONCURRENCY_NEGATIVE',
       'requires_material_execution',true,
       'mutation_policy','NO_DOMAIN_MUTATION',
+      'target',jsonb_build_object(
+        'checkpoint','NEG_CONCURRENT_VALIDATION',
+        'declared_objects',jsonb_build_array(
+          'programacion.fn_input_governance_validator_validate_v1',
+          'public.fn_input_governance_validator_validate_v1'
+        ),
+        'declared_artifacts','[]'::jsonb,
+        'declared_assets','[]'::jsonb,
+        'declared_events','[]'::jsonb
+      ),
       'expected','Two independent DB sessions targeting the same IG_VALIDATOR_RUN advisory key must not both acquire it concurrently. One session holds the run lock while the second pg_try_advisory_xact_lock returns false; no domain mutation is performed.',
       'action_steps',jsonb_build_array(
         'OPEN_TWO_INDEPENDENT_DB_SESSIONS',
