@@ -26,9 +26,13 @@ def validate_request_context(o):
 def validate_programming_entry(o):
     if o.get("schema_version")!="PROGRAMMING_ENTRY_CONTRACT_V1": raise ContractError("PROGRAMMING_ENTRY_VERSION")
     if o.get("canonical_upstream")!="ANALYSIS_IMPLEMENTATION_PACKAGE_V1": raise ContractError("PROGRAMMING_UPSTREAM")
-    expected={"required_analysis_verdict":"READY","analysis_package_digest_required":True,"source_currentness_required":True,"exact_target_identity_required":True,"lossless_projection_required":True,"story_identity_required":False,"functional_version_required":False,"agent_task_required_at_upstream_admission":False}
+    expected={"required_analysis_verdict":"READY","analysis_package_digest_required":True,"source_currentness_required":True,"exact_target_identity_required":True,"target_resolution_required":True,"existing_target_delta_required":True,"existing_target_greenfield_redefinition_forbidden":True,"lossless_projection_required":True,"story_identity_required":False,"functional_version_required":False,"agent_task_required_at_upstream_admission":False}
     for k,v in expected.items():
         if o.get("admission",{}).get(k)!=v: raise ContractError("PROGRAMMING_ADMISSION_"+k)
+    tb=o.get("target_binding",{})
+    if tb.get("existing_target_requires_exact_revision_binding") is not True: raise ContractError("PROGRAMMING_EXISTING_TARGET_REVISION")
+    if tb.get("greenfield_build_requires_new_target_evidence") is not True: raise ContractError("PROGRAMMING_GREENFIELD_PROOF")
+    if tb.get("implementation_strategy_owned_by")!="PG-03": raise ContractError("PROGRAMMING_STRATEGY_OWNER")
     c=o.get("compatibility",{})
     if c.get("action")!="EXTEND_ENTRY_BOUNDARY_DO_NOT_DUPLICATE_RUNTIME" or c.get("new_runtime_created") is not False: raise ContractError("PROGRAMMING_PARALLEL_RUNTIME")
     if c.get("story_direct_consumption_after_cutover") is not False: raise ContractError("PROGRAMMING_STORY_CUTOVER")
@@ -66,6 +70,20 @@ def validate_analysis_targeted_evidence(o):
         if a.get(k)!=v: raise ContractError("A3_ACQUISITION_"+k)
     allowed={"REQUIRED_EVIDENCE_MISSING","MATERIAL_CONTRADICTION","CURRENTNESS_UNPROVEN","SOURCE_DRIFT"}
     if set(a.get("continue_only_if",[]))!=allowed: raise ContractError("A3_CONTINUE_GATES")
+    tr=o.get("target_resolution",{})
+    if tr.get("required_when_target_hints_present") is not True: raise ContractError("A3_TARGET_RESOLUTION_REQUIRED")
+    if set(tr.get("states",[]))!={"EXISTING","NEW","UNKNOWN"}: raise ContractError("A3_TARGET_RESOLUTION_STATES")
+    existing_required={"exact_target_ref","target_revision_or_currentness_ref","as_is_authorities[]","as_is_implementation_refs[]","as_is_consumers[]","as_is_dependencies[]"}
+    if set(tr.get("existing_requires",[]))!=existing_required: raise ContractError("A3_EXISTING_BASELINE")
+    new_required={"negative_existing_asset_evidence[]","canonical_search_scope[]","new_target_reason"}
+    if set(tr.get("new_requires",[]))!=new_required: raise ContractError("A3_NEW_TARGET_PROOF")
+    if tr.get("unknown_behavior")!="NEED_MORE_EVIDENCE_OR_REQUIRES_DECISION": raise ContractError("A3_UNKNOWN_TARGET")
+    if tr.get("existing_greenfield_redefinition_forbidden") is not True: raise ContractError("A3_EXISTING_GREENFIELD")
+    if tr.get("existing_delta_required_downstream") is not True: raise ContractError("A3_EXISTING_DELTA")
+    if tr.get("technical_solution_selection_deferred_to_programming") is not True: raise ContractError("A3_STRATEGY_BOUNDARY")
+    if tr.get("no_parallel_asset_resolver") is not True: raise ContractError("A3_PARALLEL_TARGET_RESOLVER")
+    required_outputs={"evidence_items[]","source_refs[]","currentness_refs[]","target_resolution","as_is_baseline_or_new_target_evidence","unresolved_material_gaps[]","sufficiency_verdict"}
+    if set(o.get("output_requirements",[]))!=required_outputs: raise ContractError("A3_OUTPUTS")
     if o.get("no_over_search") is not True or o.get("no_parallel_engine") is not True: raise ContractError("A3_SEARCH_GOVERNANCE")
     if set(o.get("sufficiency_verdicts",[]))!={"SUFFICIENT","NEED_MORE_EVIDENCE","REQUIRES_DECISION","BLOCKED"}: raise ContractError("A3_VERDICTS")
 
@@ -138,10 +156,15 @@ def self_test():
     x=json.loads(json.dumps(a2)); x["specialist_resolution"]["hardcoded_specialist_identity_forbidden"]=False; expect_error(validate_analysis_change_classification,x,"A2_SPECIALIST_hardcoded_specialist_identity_forbidden")
     x=json.loads(json.dumps(a2)); x["specialist_resolution"]["selection_is_execution_permission"]=True; expect_error(validate_analysis_change_classification,x,"A2_SPECIALIST_selection_is_execution_permission")
     x=json.loads(json.dumps(a3)); x["acquisition"]["full_repository_search_without_trigger_forbidden"]=False; expect_error(validate_analysis_targeted_evidence,x,"A3_ACQUISITION_full_repository_search_without_trigger_forbidden")
+    x=json.loads(json.dumps(a3)); x["target_resolution"]["existing_greenfield_redefinition_forbidden"]=False; expect_error(validate_analysis_targeted_evidence,x,"A3_EXISTING_GREENFIELD")
+    x=json.loads(json.dumps(a3)); x["target_resolution"]["unknown_behavior"]="SUFFICIENT"; expect_error(validate_analysis_targeted_evidence,x,"A3_UNKNOWN_TARGET")
+    x=json.loads(json.dumps(a3)); x["target_resolution"]["new_requires"].remove("negative_existing_asset_evidence[]"); expect_error(validate_analysis_targeted_evidence,x,"A3_NEW_TARGET_PROOF")
+    x=json.loads(json.dumps(p)); x["admission"]["existing_target_delta_required"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_ADMISSION_existing_target_delta_required")
+    x=json.loads(json.dumps(p)); x["target_binding"]["implementation_strategy_owned_by"]="ANALYSIS"; expect_error(validate_programming_entry,x,"PROGRAMMING_STRATEGY_OWNER")
     x=json.loads(json.dumps(impact)); x["testing_projection"]["consumes_same_core"]=False; expect_error(validate_shared_impact,x,"IMPACT_TESTING_REUSE")
     x=json.loads(json.dumps(tp)); x["story_required"]=True; expect_error(validate_testing_pipeline,x,"TEST_PIPELINE_STAGE_COUPLING")
     x=json.loads(json.dumps(m)); x["contracts"]["TST-05"]="testing_private_impact_engine.json"; expect_error(validate_manifest,x,"MANIFEST_SHARED_IMPACT_SPLIT")
-    print("PASS_WAVE1_BOUNDARY_CONTRACTS checks=28 negatives=11")
+    print("PASS_WAVE1_BOUNDARY_CONTRACTS brownfield_target_invariant=PASS negatives=16")
 
 if __name__=="__main__":
     if "--self-test" not in sys.argv: raise SystemExit("usage: validate_wave1_boundary_contracts_v1.py --self-test")
