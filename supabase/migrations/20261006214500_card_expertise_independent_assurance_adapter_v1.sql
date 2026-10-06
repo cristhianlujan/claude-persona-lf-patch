@@ -85,7 +85,8 @@ $function$;
 create or replace function public.lf_card_expertise_consume_independent_review_v1(
   p_execution_id text,
   p_subject_sha256 text,
-  p_receipt_id uuid
+  p_receipt_id uuid,
+  p_expertise_payload jsonb
 ) returns jsonb
 language plpgsql
 security definer
@@ -98,6 +99,7 @@ declare
   v_measure jsonb;
   v_reviewer_execution_id text;
   v_reviewer public.lf_operation_execution%rowtype;
+  v_expected_expertise jsonb;
 begin
   v_prepare:=public.lf_card_expertise_prepare_independent_review_v1(p_execution_id,p_subject_sha256);
   if v_prepare->>'result'<>'REVIEW_REQUIRED' then
@@ -129,6 +131,31 @@ begin
   v_payload:=v_receipt.receipt_payload;
   if jsonb_typeof(v_payload)<>'object' then
     return jsonb_build_object('result','BLOCKED','code','INDEPENDENT_REVIEW_RECEIPT_PAYLOAD_INVALID');
+  end if;
+
+  if p_expertise_payload is null or jsonb_typeof(p_expertise_payload)<>'object' then
+    return jsonb_build_object('result','BLOCKED','code','CARD_EXPERTISE_PAYLOAD_INVALID');
+  end if;
+
+  v_expected_expertise:=jsonb_build_object(
+    'benchmark_version',p_expertise_payload->'benchmark_version',
+    'assessor_mode',p_expertise_payload->'assessor_mode',
+    'assessor_execution_id',p_expertise_payload->'assessor_execution_id',
+    'subject_revision_sha256',p_expertise_payload->'subject_revision_sha256',
+    'dimension_scores',p_expertise_payload->'dimension_scores',
+    'weighted_overall_score',p_expertise_payload->'weighted_overall_score',
+    'minimum_dimension_score',p_expertise_payload->'minimum_dimension_score',
+    'commodity_baseline_comparison',p_expertise_payload->'commodity_baseline_comparison',
+    'falsification_cases',p_expertise_payload->'falsification_cases',
+    'top_tier_verdict',p_expertise_payload->'top_tier_verdict',
+    'certification_level',p_expertise_payload->'certification_level',
+    'max_level_suite',p_expertise_payload->'max_level_suite',
+    'max_level_suite_result',p_expertise_payload->'max_level_suite_result',
+    'adaptive_runtime_policy_verified',p_expertise_payload->'adaptive_runtime_policy_verified'
+  );
+
+  if v_payload->'expertise_evidence' is distinct from v_expected_expertise then
+    return jsonb_build_object('result','BLOCKED','code','INDEPENDENT_REVIEW_EXPERTISE_PAYLOAD_MISMATCH');
   end if;
 
   if v_payload->>'capability_version' is distinct from v_prepare->>'capability_version'
@@ -182,8 +209,8 @@ begin
 end
 $function$;
 
-revoke all on function public.lf_card_expertise_consume_independent_review_v1(text,text,uuid) from public,anon,authenticated;
-grant execute on function public.lf_card_expertise_consume_independent_review_v1(text,text,uuid) to service_role;
+revoke all on function public.lf_card_expertise_consume_independent_review_v1(text,text,uuid,jsonb) from public,anon,authenticated;
+grant execute on function public.lf_card_expertise_consume_independent_review_v1(text,text,uuid,jsonb) to service_role;
 
 
 CREATE OR REPLACE FUNCTION public.lf_validate_card_expertise_gate_v1(p_execution_id text, p_step_id text, p_evidence_payload jsonb)
@@ -297,7 +324,8 @@ begin
     v_receipt_check:=public.lf_card_expertise_consume_independent_review_v1(
       p_execution_id,
       p_evidence_payload->>'subject_revision_sha256',
-      v_receipt_id
+      v_receipt_id,
+      p_evidence_payload
     );
 
     if v_receipt_check->>'result'<>'PASS' then
