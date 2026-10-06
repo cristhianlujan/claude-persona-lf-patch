@@ -54,3 +54,38 @@ Recommended disposition: a **5.13.x patch revision** (not a new semantic family)
 Before R5-D/E, rollback is straightforward: restore the seven exact pre-R5-C function definitions (the MD5-pinned bases) and drop `fn_input_validator_storage_compaction_check_v1`. No row conversion is needed because A/B leave all assessments inline.
 
 After any compact receipts exist, rollback of C alone is forbidden; compact rows must first be re-expanded to inline evidence and verified.
+
+
+## Claude review follow-up — static definitions
+
+The original Draft used a guarded runtime transformation pattern
+(`pg_get_functiondef + replace + EXECUTE`) for six readers. That pattern has been removed.
+
+The migration now contains complete, static `CREATE OR REPLACE FUNCTION` definitions for all six assertion-complete readers. The continuation-currentness guard was already static and remains static. `pg_get_functiondef` is used only for fail-closed preflight/postcheck identity verification, never to synthesize executable function bodies.
+
+Expected final MD5 values after the candidate:
+
+| Function | final MD5 |
+|---|---|
+| `fn_guard_input_family_assessment_update()` | `3992ea214300ed7a4c444667d9927f1e` |
+| `fn_guard_input_family_execution_update()` | `19760955ab8271b6edbfb4c8a3b2380d` |
+| `fn_guard_input_governance_continuation_currentness_v1()` | `7f1172972e08b70df9328799c4118955` |
+| `fn_guard_input_validator_semantic_coherence_v512()` | `5f47ef6f1e0a8d5ee8ccd830ef9ba297` |
+| `fn_input_auth006_build_assertions(bigint,bigint,text)` | `fcbe577977533315efa654e37f6fedaf` |
+| `fn_input_owner_decision_assertions(bigint,bigint,text)` | `faaf7a7e0b6da0ac40eb740ecfda064a` |
+| `fn_input_v58_build_assertions(bigint,bigint,text)` | `af95bfa42f649250c3585db9a6cb35fb` |
+
+The migration fails closed if any post-apply function definition differs from these values.
+
+## Live UPDATE rollback probes
+
+See `docs/input-governance/r5_c_live_rollback_probe_2026-10-06.md`.
+
+All requested paths passed inside `BEGIN/ROLLBACK`, including:
+- terminal invalidated compaction;
+- terminal current compaction;
+- wrong assertion set rejection;
+- validator hash mutation rejection;
+- synthetic R5-D PENDING→terminal compact transition with exact inline-equivalent validator hash.
+
+The live table has six physical BEFORE UPDATE triggers, not seven. Every probe traversed all six. Seven functions are MD5-governed by R5-C; that count is distinct from the physical trigger count.
