@@ -1,26 +1,53 @@
-# R5-E VACUUM FULL — versioned one-shot transport
+# R5-E VACUUM FULL — versioned one-shot transport v2
 
 Status: **DRAFT / INSTALLATION MECHANISM ONLY / DO NOT APPLY**
 
-This unit is separate from R5-E compaction because the migration train accepts one migration per PR and VACUUM FULL cannot execute inside the train transaction.
+## Decision on the maintenance-role proposal
 
-## Verified project capability
+The preferred `lf_maintenance_v1 NOLOGIN` design is **not viable in this Supabase project**.
 
-Read-only live verification:
+Read-only verification established:
 
-- PostgreSQL 17.6.
-- pg_cron 1.6.4.
-- `cron.use_background_workers=off`.
-- operational cron jobs execute as `postgres`.
-- Supabase Cron documentation supports a cron job whose command is plain `VACUUM`.
-- this project's pg_cron exposes only:
-  - `cron.schedule(text,text)`;
-  - `cron.schedule(text,text,text)`.
-- there is no native timestamp/one-shot schedule overload.
+- PostgreSQL 17.6;
+- pg_cron 1.6.4;
+- `cron.use_background_workers=off`;
+- the project `postgres` role has `rolsuper=false`;
+- `cron.schedule_in_database(..., username ...)` is installed, but pg_cron's implementation requires the caller to be a **superuser** to schedule a job for another role;
+- with `cron.use_background_workers=off`, cron opens a libpq connection as the job username, so a `NOLOGIN` role could not be that connection identity anyway.
 
-Therefore the one-shot guarantee is implemented as a recurring-syntax job plus a finalizer that unschedules it after its first terminal run.
+Therefore this Draft uses the explicitly accepted fallback: short-lived role-level `postgres.lock_timeout`, plus an independent safety reset and an explicit clean-setting readback.
 
-## What the Draft migration installs
+No role setting is changed by this Draft. The setting is only part of the later activation migration.
+
+## Scope
+
+Three physical rewrites, each as its own top-level SQL statement:
+
+1. `VACUUM (FULL, ANALYZE) programacion.input_family_assessments`
+2. `VACUUM (FULL, ANALYZE) inventory.objects`
+3. `VACUUM (FULL, ANALYZE) inventory.search_index`
+
+They are deliberately separate cron jobs because VACUUM cannot be wrapped in a database function or a transaction block.
+
+## Current physical baselines
+
+Read-only snapshot at design time:
+
+| Relation | Heap | Indexes | TOAST/aux | Total |
+|---|---:|---:|---:|---:|
+| input_family_assessments | 20.08 MiB | 1.85 MiB | 134.07 MiB | **156.00 MiB** |
+| inventory.objects | 23.15 MiB | 13.75 MiB | 0.40 MiB | **37.30 MiB** |
+| inventory.search_index | 14.85 MiB | 12.16 MiB | 0.22 MiB | **27.23 MiB** |
+
+Expected post-rewrite sizing is an estimate, not an acceptance threshold:
+
+- `input_family_assessments`: accepted simulation **~59.61 MiB** after R5-E compaction;
+- `inventory.objects`: approximately **18–23 MiB** with current indexes, or roughly **10–16 MiB** if the separately reviewed metadata GIN drop lands first;
+- `inventory.search_index`: approximately **18–21 MiB** with current indexes, or roughly **14–18 MiB** if the separately reviewed tags/columns GIN drops land first.
+
+The checkpoint records actual pre/post values per table; these estimates are never used to decide success.
+
+## Objects installed by the Draft migration
 
 Migration:
 
@@ -28,113 +55,116 @@ Migration:
 
 It creates:
 
-- `private.lf_r5e_vacuum_checkpoint_v1`;
+- `private.lf_r5e_vacuum_control_v1`;
+- `private.lf_r5e_vacuum_table_receipts_v1`;
+- `private.fn_r5e_postgres_lock_timeout_clean_v1()`;
+- `private.fn_r5e_vacuum_capture_size_v1(regclass)`;
+- `private.fn_r5e_vacuum_disable_jobs_v1()`;
 - `private.fn_r5e_vacuum_finalize_v1()`;
-- cron job `lf-r5e-vacuum-full-once-v1`;
-- cron job `lf-r5e-vacuum-finalizer-v1`.
+- `private.fn_r5e_vacuum_safety_reset_v1()`.
 
-Both jobs are installed with `active=false`.
+Five jobs are installed **inactive**:
 
-The VACUUM command is exactly:
+- `lf-r5e-vacuum-assessments-v1`;
+- `lf-r5e-vacuum-inventory-objects-v1`;
+- `lf-r5e-vacuum-inventory-search-index-v1`;
+- `lf-r5e-vacuum-finalizer-v1`;
+- `lf-r5e-vacuum-safety-reset-v1`.
 
-`VACUUM (FULL, ANALYZE) programacion.input_family_assessments`
+The installation postcheck requires all five jobs to be inactive and requires no persisted `postgres.lock_timeout` role setting.
 
-The placeholder schedule is irrelevant while inactive and is replaced by the later window-activation migration.
+## Future activation migration
 
-## Why SET lock_timeout cannot be prepended to the VACUUM command
+Only after R5-E checkpoint is VERIFIED and Cristhian approves the maintenance window, a separate train migration will:
 
-The cron VACUUM job must be one top-level VACUUM statement.
+1. verify R5-E VERIFIED;
+2. verify no Curator/Validator activity that would touch the target relation;
+3. snapshot pre-size metrics for all three target tables and current DB size into `lf_r5e_vacuum_table_receipts_v1`;
+4. set the control to ARMED;
+5. set:
+   `ALTER ROLE postgres SET lock_timeout='5s'`;
+6. set `safety_deadline = clock_timestamp() + interval '30 minutes'`;
+7. arm only the assessments VACUUM job for the next exact cron minute;
+8. activate the finalizer and safety-reset jobs.
 
-A command shaped as:
+The other two VACUUM jobs remain inactive until the previous target succeeds.
 
-`SET lock_timeout='5s'; VACUUM ...`
+This limits the role-level setting to the coordinated maintenance window instead of applying it ahead of time.
 
-would submit multiple statements as one simple-query unit and places VACUUM in a transaction context, which PostgreSQL rejects.
+## Sequential execution
 
-The project also has `cron.use_background_workers=off`, so the job opens a fresh DB connection under its configured username.
+The finalizer observes `cron.job_run_details`.
 
-## Versioned lock-timeout strategy
+For the current target:
 
-When Cristhian chooses the window, a **later activation migration through the train** will execute immediately before that window:
+- no run yet -> wait;
+- running -> receipt RUNNING;
+- failed -> record failure, reset lock timeout, disable all jobs, STOP;
+- succeeded -> capture actual post table/heap/index/TOAST/DB sizes, mark target VERIFIED.
 
-1. read and persist pre-size metrics in the checkpoint:
-   - assessment total;
-   - heap;
-   - indexes;
-   - TOAST;
-   - full DB bytes;
-2. persist exact `scheduled_for`;
-3. set checkpoint `status='ARMED'`;
-4. `ALTER ROLE postgres SET lock_timeout='5s'`;
-5. replace the inactive VACUUM job schedule with the exact minute/day/month and set `active=true`;
-6. set the finalizer job to `* * * * *` and `active=true`.
+Only after a target is VERIFIED does the finalizer arm the next target for the next exact cron minute.
 
-Because pg_cron lacks a year field, the schedule itself is technically recurrent. The finalizer removes both job rows after the first terminal execution, making it operationally one-shot.
+Thus the jobs are serial:
 
-The activation migration must be applied only shortly before the maintenance window. The temporary role setting affects **all new postgres sessions** during that short period, so it must not be armed hours in advance.
+`input_family_assessments -> inventory.objects -> inventory.search_index`
 
-If that blast radius is not accepted, do not use an automatic lock timeout. Instead perform blocker readback immediately before arming and let VACUUM use the normal session setting.
+and cannot intentionally overlap.
 
-## Finalizer
-
-The finalizer runs once per minute only while armed.
-
-Before the scheduled time it returns WAITING.
-
-After the scheduled time it reads `cron.job_run_details` for the VACUUM job:
-
-- running/no end time -> checkpoint RUNNING, keep waiting;
-- succeeded -> record all post-size metrics, checkpoint VERIFIED;
-- failed -> record return message, checkpoint FAILED;
-- no run observed within 10 minutes -> checkpoint MISSED.
-
-On VERIFIED / FAILED / MISSED it:
+After the third success, the next finalizer tick:
 
 - runs `ALTER ROLE postgres RESET lock_timeout`;
-- unschedules the VACUUM job;
-- unschedules itself;
-- falls back to `active=false` if an unschedule operation errors.
+- verifies through `pg_db_role_setting` that no persisted `lock_timeout=` remains for postgres;
+- sets global control VERIFIED;
+- disables every maintenance job.
 
-## Readback
+A failed clean-setting readback converts the maintenance control to FAILED.
 
-Pre and post fields are retained in the checkpoint:
+## Independent 30-minute safety reset
 
-- relation bytes;
-- heap bytes;
-- index bytes;
-- TOAST bytes;
-- DB bytes;
-- pg_cron run id/status;
-- error text if any.
+The separate job `lf-r5e-vacuum-safety-reset-v1` runs once per minute only while the window is armed.
 
-After a successful VACUUM the operator also verifies:
+At `safety_deadline`, regardless of which VACUUM/finalizer state is current, it:
 
-- R5-E checkpoint remains VERIFIED;
-- historical inline eligible count remains zero;
-- compact receipt count unchanged;
-- rehydration/hash sample still passes;
-- crons 28 and 29 remain active.
+1. executes `ALTER ROLE postgres RESET lock_timeout`;
+2. reads `pg_db_role_setting`;
+3. stores `lock_timeout_clean=true/false`;
+4. disables every R5-E maintenance job;
+5. marks the maintenance FAILED so human review is mandatory.
 
-## Expected maintenance shape
+This is intentionally independent from the normal finalizer path.
 
-Current assessment relation reference before R5-E physical rewrite:
+## Per-table receipt
 
-- around 156 MiB total;
-- around 134 MiB TOAST;
-- accepted simulated post-rewrite target: about 59.61 MiB;
-- estimated reclaim: about 95 MiB.
+For each of the three targets the checkpoint retains:
 
-Allocate a 15-minute exclusive maintenance window. Expected rewrite remains roughly 2–8 minutes, but this is an estimate, not a benchmark.
+- relation and job identity;
+- cron run id/status/message/start/end;
+- pre total/heap/index/TOAST bytes;
+- pre DB bytes;
+- post total/heap/index/TOAST bytes;
+- post DB bytes.
 
-VACUUM FULL takes ACCESS EXCLUSIVE on `programacion.input_family_assessments` for the rewrite. Curator/Validator activity should be quiescent.
+The physical size estimate is informational only. Success is based on successful VACUUM execution plus readback, not on reaching an exact byte target.
 
-## Not in this Draft
+## Lock behavior
 
-- no exact maintenance timestamp;
-- no `ALTER ROLE ... SET lock_timeout` executed;
-- no active cron job;
-- no VACUUM execution;
-- no REINDEX;
-- no DELETE.
+Each `VACUUM FULL` takes ACCESS EXCLUSIVE on its target relation.
 
-The exact window activation is intentionally a later owner-approved migration.
+The 5-second lock timeout is meant to fail the job rather than wait behind unexpected activity.
+
+Because the fallback uses `postgres`, other **new postgres sessions** during the window inherit that 5-second role setting. That is why:
+
+- the activation migration must be executed only at the agreed window;
+- the safety deadline is 30 minutes;
+- both terminal paths RESET it;
+- persisted role-setting readback is mandatory.
+
+## Not performed by this Draft
+
+- no role creation;
+- no `ALTER ROLE ... SET`;
+- no active job;
+- no VACUUM;
+- no DELETE;
+- no DISABLE TRIGGER;
+- no REINDEX.
