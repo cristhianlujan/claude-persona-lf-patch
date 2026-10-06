@@ -18,18 +18,22 @@ def test_md5_preflight_pins_live_functions():
 
 def test_object_upserts_are_noop_aware():
     text = sql().upper()
-    assert text.count("IS DISTINCT FROM") >= 6
+    assert text.count("IS DISTINCT FROM") >= 9
+    assert "ce7265e91b12eebb4499cdaada9eb9f9" in sql()
 
 def test_search_index_guard_excludes_refreshed_at():
     s = section(
         "create or replace function inventory.fn_refresh_search_index_v1()",
         "do $post$",
     )
-    guard = s.lower().split("where (", 1)[1]
+    guard = s.lower().split("on conflict(object_id) do update set", 1)[1]
+    guard = guard.split("delete from inventory.search_index", 1)[0]
     assert "inventory.search_index.refreshed_at" not in guard
     assert "inventory.search_index.search_document" in guard
     assert "inventory.search_index.currentness" in guard
     assert "inventory.search_index.source_traceability_state" in guard
+    assert "inventory.search_index.object_ref like 'repo://%'" in guard
+    assert "inventory.search_index.object_ref like 'edge://%'" in guard
 
 def test_catalog_no_longer_refreshes_search_index():
     s = section(
