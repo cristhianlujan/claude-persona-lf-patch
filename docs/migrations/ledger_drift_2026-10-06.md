@@ -38,6 +38,14 @@ Read-only snapshot for reconciliation. These ledger versions were present in san
 | 20261006131353 | independent_assurance_callers_candidate_versions_v1 | xcrisrhian191080@gmail.com |
 | 20261006131756 | independent_assurance_qualified_cross_schema_v1_canonical | xcrisrhian191080@gmail.com |
 | 20261006135957 | engineering_parallel_pilot_checkpoint_accounting_v1 | xcrisrhian191080@gmail.com |
-| 20261006142429 | engineering_parallel_executor_v1 | xcrisrhian191080@gmail.com |
 
-Count: **35 remote_only**.
+| 20261006150831 | enable_rls_input_governance_tables | xcrisrhian191080@gmail.com |
+| 20261006154819 | engineering_parallel_executor_governance_report_cleanup | xcrisrhian191080@gmail.com |
+
+Count: **36 remote_only**.
+
+## Changes since the first snapshot
+
+- `20261006142429 engineering_parallel_executor_v1` is no longer remote_only: the exact file is now present on `main`.
+- `20261006150831 enable_rls_input_governance_tables` is new remote_only drift and is flagged as a **security change** because it enables RLS on Input Governance tables. It requires reconciliation/provenance review before being treated as source-parity-clean.
+- `20261006154819 engineering_parallel_executor_governance_report_cleanup` is remote_only because `main` currently carries `20261006154800_engineering_parallel_executor_governance_report_cleanup.sql`, not the ledger's exact version.
