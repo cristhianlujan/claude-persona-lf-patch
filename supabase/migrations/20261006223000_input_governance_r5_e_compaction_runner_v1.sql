@@ -466,7 +466,9 @@ begin
     where control_id=1;
 
     begin
-      perform cron.unschedule('lf-r5e-validator-compaction-v1');
+      if not cron.unschedule('lf-r5e-validator-compaction-v1') then
+        raise exception 'R5E_CRON_UNSCHEDULE_RETURNED_FALSE';
+      end if;
     exception when others then
       get stacked diagnostics v_unschedule_error=message_text;
       if exists(select 1 from cron.job where jobname='lf-r5e-validator-compaction-v1') then
