@@ -99,3 +99,8 @@ def test_ig1_candidate_has_authorized_base_md5_guard_and_isolation_assumption():
     assert "READ COMMITTED" in sql
     for value in EXPECTED_BASE_MD5.values():
         assert value in sql
+
+
+def test_ig1_candidate_terminates_all_function_definitions():
+    sql = MIGRATION.read_text(encoding="utf-8")
+    assert sql.count("$function$;") == 5
