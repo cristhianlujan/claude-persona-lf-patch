@@ -347,7 +347,7 @@ jobs:
               return "\n".join(line for line in sql.split("\n") if not line.lstrip().startswith("--")).rstrip("\n").encode()
           print(hashlib.sha256(canonical(open(sys.argv[1],encoding="utf-8").read())).hexdigest())
           PY
-)"
+          )"
             ledger_sha="$(python3 - "$ledger_hex" <<'PY'
           import hashlib,sys
           def canonical(sql):
@@ -355,7 +355,7 @@ jobs:
               return "\n".join(line for line in sql.split("\n") if not line.lstrip().startswith("--")).rstrip("\n").encode()
           print(hashlib.sha256(canonical(bytes.fromhex(sys.argv[1]).decode("utf-8"))).hexdigest())
           PY
-)"
+          )"
             [ "$ledger_sha" = "$file_sha" ] || { echo "FAIL_TRAIN_EXISTING_LEDGER_CONTENT_MISMATCH version=$current_version"; exit 2; }
             version="$current_version"
             target_path="$MIGRATION_PATH"
