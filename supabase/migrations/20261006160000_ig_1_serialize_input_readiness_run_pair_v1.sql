@@ -84,7 +84,7 @@ begin
   v_payload:=jsonb_build_object('status','VALIDATOR_RUNTIME_REQUIRED','run_id',v_run,'pantalla_id',p_pantalla_id,'screen_code',v_code,'family_count',47,'required_role','INPUT_VALIDATOR','write_performed',true,'bootstrap_mode','GOVERNED_CANONICAL_BOOTSTRAP_V1','promotion_authorized',false,'production_authorized',false);
   return v_payload||jsonb_build_object('output_sha256',programacion.fn_v09_sha256_jsonb(v_payload));
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION programacion.fn_input_governance_bootstrap_materialize_v2(p_pantalla_id integer, p_consumer text, p_curator_identity text)
  RETURNS jsonb
@@ -124,7 +124,7 @@ begin
   v_payload:=jsonb_build_object('status','VALIDATOR_RUNTIME_REQUIRED','run_id',v_run,'pantalla_id',p_pantalla_id,'screen_code',v_code,'family_count',47,'required_role','INPUT_VALIDATOR','write_performed',true,'bootstrap_mode','GOVERNED_CANONICAL_BOOTSTRAP_V1','analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','remediation_policy_revision','POSITIVE_OWNER_AUTHORITY_V1','proposal_materialization',v_prop,'promotion_authorized',false,'production_authorized',false);
   return v_payload||jsonb_build_object('output_sha256',programacion.fn_v09_sha256_jsonb(v_payload));
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION programacion.fn_input_governance_recurate_source_stale_v1(p_pantalla_id integer, p_consumer text, p_curator_identity text, p_parent_run_id bigint)
  RETURNS jsonb
@@ -265,7 +265,7 @@ begin
   );
   return v_payload||jsonb_build_object('output_sha256',programacion.fn_v09_sha256_jsonb(v_payload));
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION programacion.fn_input_governance_recurate_v2(p_pantalla_id integer, p_consumer text, p_curator_identity text)
  RETURNS jsonb
@@ -303,7 +303,7 @@ begin
   v_payload:=jsonb_build_object('status','VALIDATOR_RUNTIME_REQUIRED','run_id',v_new,'parent_run_id',v_parent.id,'pantalla_id',p_pantalla_id,'family_count',47,'required_role','INPUT_VALIDATOR','analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','remediation_policy_revision','POSITIVE_OWNER_AUTHORITY_V1','proposal_materialization',v_prop,'promotion_authorized',false,'production_authorized',false);
   return v_payload||jsonb_build_object('output_sha256',programacion.fn_v09_sha256_jsonb(v_payload));
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION programacion.fn_input_governance_curator_rebind_v1(p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean DEFAULT false)
  RETURNS jsonb
@@ -462,7 +462,7 @@ begin
   );
   return v_payload||jsonb_build_object('output_sha256',programacion.fn_v09_sha256_jsonb(v_payload));
 end;
-$function$
+$function$;
 
 -- Fail closed if the five protected entrypoints do not retain the lock primitive.
 do $ig1_verify$
