@@ -72,3 +72,8 @@ def test_no_destructive_evidence_operations():
     assert "delete from programacion.input_family_assessments" not in text
     assert "disable trigger" not in text
     assert "reindex" not in text
+
+
+def test_terminal_cleanup_unschedules_jobs():
+    text=sql()
+    assert "cron.unschedule(v.jobid)" in text
