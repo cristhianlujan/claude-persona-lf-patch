@@ -524,6 +524,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git fetch --no-tags origin "${{ steps.write_ahead.outputs.persisted_head_sha }}"
+          git checkout --detach "${{ steps.write_ahead.outputs.persisted_head_sha }}"
           python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_exact_apply.py \
             --project-root "$GITHUB_WORKSPACE" \
             --migration-path "$GITHUB_WORKSPACE/$TARGET_PATH" \
