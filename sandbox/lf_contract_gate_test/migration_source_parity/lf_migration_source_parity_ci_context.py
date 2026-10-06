@@ -67,6 +67,8 @@ MANAGED_EXACT_NAMES = {
     "fix_profile_update_begin_target_path_v1",
     "fix_profile_update_begin_no_unbound_qualification_v1",
     "engineering_read_budget_context_reuse_v1",
+    "db_space_operational_retention_schedule_v1",
+    "db_space_db_size_observability_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
