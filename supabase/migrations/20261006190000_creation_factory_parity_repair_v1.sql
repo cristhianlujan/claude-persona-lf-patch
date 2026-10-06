@@ -610,6 +610,12 @@ begin
         'status','IN_PROGRESS',
         'step_result',v_binding.clean_result_value,
         'blocking_codes','[]'::jsonb,
+        'blocking_findings','[]'::jsonb,
+        'return_to_worker_reasons','[]'::jsonb,
+        'assertions_checked',jsonb_build_array(
+          'execution_row_created','operation_code_exact','target_type_skill','status_in_progress'
+        ),
+        'hard_fails_checked','[]'::jsonb,
         'recorded_by_rpc','lf_reserve_creation_factory_execution_v1'
       ),
       'Server-derived init_execution for governed creation factory.',
