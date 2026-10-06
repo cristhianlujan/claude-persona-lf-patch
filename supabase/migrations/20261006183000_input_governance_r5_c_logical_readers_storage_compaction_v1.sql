@@ -263,27 +263,28 @@ DECLARE
 BEGIN
   IF tg_op='UPDATE'
      AND tg_table_schema='programacion'
-     AND tg_table_name='input_family_assessments'
-     AND old.validator_outcome<>'PENDING'
-     AND (
-       old.validator_outcome IS DISTINCT FROM new.validator_outcome
-       OR old.validator_findings IS DISTINCT FROM new.validator_findings
-       OR old.validator_evidence IS DISTINCT FROM new.validator_evidence
-       OR old.validator_identity IS DISTINCT FROM new.validator_identity
-       OR old.validator_sha256 IS DISTINCT FROM new.validator_sha256
-       OR old.validator_assessed_at IS DISTINCT FROM new.validator_assessed_at
-     ) THEN
-    IF old.validator_evidence IS DISTINCT FROM new.validator_evidence THEN
-      v_compaction:=programacion.fn_input_validator_storage_compaction_check_v1(
-        to_jsonb(old),to_jsonb(new)
-      );
-      IF coalesce((v_compaction->>'allowed')::boolean,false) IS TRUE THEN
-        RETURN new;
+     AND tg_table_name='input_family_assessments' THEN
+    IF old.validator_outcome<>'PENDING'
+       AND (
+         old.validator_outcome IS DISTINCT FROM new.validator_outcome
+         OR old.validator_findings IS DISTINCT FROM new.validator_findings
+         OR old.validator_evidence IS DISTINCT FROM new.validator_evidence
+         OR old.validator_identity IS DISTINCT FROM new.validator_identity
+         OR old.validator_sha256 IS DISTINCT FROM new.validator_sha256
+         OR old.validator_assessed_at IS DISTINCT FROM new.validator_assessed_at
+       ) THEN
+      IF old.validator_evidence IS DISTINCT FROM new.validator_evidence THEN
+        v_compaction:=programacion.fn_input_validator_storage_compaction_check_v1(
+          to_jsonb(old),to_jsonb(new)
+        );
+        IF coalesce((v_compaction->>'allowed')::boolean,false) IS TRUE THEN
+          RETURN new;
+        END IF;
+        RAISE EXCEPTION 'VALIDATOR_RECEIPT_IMMUTABLE:%:%',
+          old.family_code,coalesce(v_compaction->>'code','STORAGE_COMPACTION_REJECTED');
       END IF;
-      RAISE EXCEPTION 'VALIDATOR_RECEIPT_IMMUTABLE:%:%',
-        old.family_code,coalesce(v_compaction->>'code','STORAGE_COMPACTION_REJECTED');
+      RAISE EXCEPTION 'VALIDATOR_RECEIPT_IMMUTABLE:%',old.family_code;
     END IF;
-    RAISE EXCEPTION 'VALIDATOR_RECEIPT_IMMUTABLE:%',old.family_code;
   END IF;
 
   v_admission:=programacion.fn_input_governance_continuation_currentness_v1(new.run_id);
