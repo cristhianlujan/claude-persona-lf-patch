@@ -916,3 +916,94 @@ begin
     );
 end;
 $function$;
+
+
+-- Reconcile merge authorization with the canonical PASE repair-window policy.
+-- REPAIR_OBSERVE_ONLY controls remain applicable/diagnostic but cannot block an
+-- ordinary merge. ACTIVE_BLOCKING controls, if any, still require exact terminal
+-- PASS evidence. F09/F10 are pre-activation qualification of the control system,
+-- not a prerequisite for every ordinary engineering merge during quarantine.
+create or replace function programacion.fn_engineering_merge_authorization_contract_v1()
+returns jsonb
+language sql
+immutable
+set search_path to 'pg_catalog'
+as $function$
+select jsonb_build_object(
+  'schema_version','ENGINEERING_PROCESS_MERGE_AUTHORIZATION_V1_1',
+  'authorization_owner','PROCESS',
+  'human_approval_required',false,
+  'auto_merge_when_authorized',true,
+  'authorization_capability','SAFE_CHANGE_ADMISSION',
+  'required_execution_permission','DOWNSTREAM_EXECUTION_ELIGIBLE',
+  'required_preconditions',jsonb_build_array(
+    'EKB_PREFLIGHT_CLEAR',
+    'PASE_MERGE_POLICY_EFFECTIVE_ALLOW',
+    'EXACT_HEAD_MATCH',
+    'PR_MERGEABLE_TRUE'
+  ),
+  'pase_policy',jsonb_build_object(
+    'repair_policy_id','PASE_CONTROL_REPAIR_QUARANTINE_V1',
+    'repair_window_state','SUPPORTED',
+    'observe_only_results_cannot_block_merge',true,
+    'active_blocking_controls_require_exact_terminal_pass',true,
+    'structural_governance_remains_fail_closed',true,
+    'global_f09_f10_completion_required_for_ordinary_merge',false,
+    'control_system_activation_requires_separate_terminal_qualification',true
+  ),
+  'forbidden',jsonb_build_array(
+    'MERGE_WITHOUT_PROCESS_AUTHORIZATION',
+    'TREAT_RECOMMENDATION_AS_PERMISSION',
+    'SKIP_EKB_PREFLIGHT',
+    'SKIP_ACTIVE_BLOCKING_CONTROL_WHEN_APPLICABLE',
+    'TREAT_REPAIR_OBSERVE_ONLY_AS_MERGE_BLOCKER',
+    'REQUIRE_GLOBAL_PASE_F09_F10_FOR_ORDINARY_MERGE',
+    'MERGE_DIFFERENT_HEAD'
+  ),
+  'on_authorized','MERGE_AND_CONTINUE_CURRENT_UNIT',
+  'on_not_authorized','YIELD_CURRENT_UNIT_CONTINUE_SCHEDULER',
+  'global_scheduler_stop',false,
+  'fail_closed',true
+);
+$function$;
+
+comment on function programacion.fn_engineering_merge_authorization_contract_v1()
+is 'Governed merge authorization aligned with PASE_CONTROL_REPAIR_QUARANTINE_V1: observe-only results cannot block ordinary merge; active blocking controls and structural governance remain fail-closed.';
+
+insert into public.lf_error_knowledge(
+  codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,severidad,
+  frecuencia,primera_vez,ultima_vez,lote_origen,estado,evidencia,lifecycle_phase,
+  consumer_role,root_cause_family,detectability,source_context,source_ref
+) values (
+  'ENGINEERING-MERGE-AUTH-PASE-REPAIR-WINDOW-001',
+  'ENGINEERING_ORCHESTRATION',
+  'Merge authorization must honor PASE repair-window enforcement semantics',
+  'ENGINEERING_PROCESS_MERGE_AUTHORIZATION_V1 required a synthetic PASE_ROUTER_TERMINAL_ALLOW even while the canonical PASE repair policy declares all REPAIR_OBSERVE_ONLY controls non-blocking for ordinary merges.',
+  'The executor merge contract projected PASE as a single terminal prerequisite instead of consuming the effective merge policy produced by Changeset Governance plus PASE_CONTROL_REPAIR_QUARANTINE_V1.',
+  'OBSERVE_ONLY_CONTROL_INCORRECTLY_PROMOTED_TO_GLOBAL_MERGE_BLOCKER',
+  'Require PASE_MERGE_POLICY_EFFECTIVE_ALLOW. During the repair window, preserve applicability and diagnostics, require PASS only from ACTIVE_BLOCKING controls, and keep structural governance fail-closed. Do not require F09/F10 global pre-activation closure for each ordinary merge.',
+  'Source authority: README_PASE_CONTROL_REPAIR_QUARANTINE_V1 states REPAIR_OBSERVE_ONLY results cannot block merge; PASE_MERGE_GATE_V1 requires PASS only from ACTIVE_BLOCKING controls. ENGINEERING_PROCESS_MERGE_AUTHORIZATION_V1_1 now projects that rule.',
+  'HIGH',1,now(),now(),'IG_CURATOR_VALIDATOR_REFACTOR_V2','ACTIVO',
+  'github://cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/s28_ci_lane_router/README_PASE_CONTROL_REPAIR_QUARANTINE_V1.md; github://cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/pase_merge_gate/README.md',
+  'EXECUTION',
+  array['ENGINEERING_SCHEDULER','PROGRAMMING_AGENT']::text[],
+  'R2_NO_VE','LOUD_EARLY',
+  'Parallel executor governed merge during PASE repair window',
+  'supabase://programacion.fn_engineering_merge_authorization_contract_v1'
+)
+on conflict (codigo) do update set
+  descripcion=excluded.descripcion,
+  causa_raiz=excluded.causa_raiz,
+  patron=excluded.patron,
+  prevencion=excluded.prevencion,
+  validacion=excluded.validacion,
+  evidencia=excluded.evidencia,
+  ultima_vez=now(),
+  updated_at=now();
+
+update public.lf_error_knowledge
+set prevencion='WRITE_GIT packets must carry ENGINEERING_PROCESS_MERGE_AUTHORIZATION_V1_1. Merge automatically only when SAFE_CHANGE_ADMISSION returns DOWNSTREAM_EXECUTION_ELIGIBLE, EKB is clear, effective PASE merge policy allows the exact change, exact-head matches and PR is mergeable. During PASE repair quarantine, REPAIR_OBSERVE_ONLY results cannot block merge; ACTIVE_BLOCKING controls remain fail-closed.',
+    validacion='Reconciled 2026-10-06 with canonical PASE_CONTROL_REPAIR_QUARANTINE_V1 and PASE_MERGE_GATE_V1. The executor no longer requires global PASE F09/F10 closure for ordinary merges while controls are REPAIR_OBSERVE_ONLY.',
+    ultima_vez=now(),
+    updated_at=now()
+where codigo='ENGINEERING-PROCESS-AUTO-MERGE-AUTHORITY-001';
