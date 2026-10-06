@@ -741,9 +741,9 @@ BEGIN
   END IF;
 
   v_actual:=md5(pg_get_functiondef('programacion.fn_guard_input_governance_continuation_currentness_v1()'::regprocedure));
-  IF v_actual IS DISTINCT FROM '7f1172972e08b70df9328799c4118955' THEN
+  IF v_actual IS DISTINCT FROM '4f2352389ca15561c6693f1e9a82867b' THEN
     RAISE EXCEPTION 'R5C_FINAL_MD5_MISMATCH function=continuation_currentness expected=% actual=%',
-      '7f1172972e08b70df9328799c4118955',coalesce(v_actual,'<NULL>');
+      '4f2352389ca15561c6693f1e9a82867b',coalesce(v_actual,'<NULL>');
   END IF;
 
   v_actual:=md5(pg_get_functiondef('programacion.fn_guard_input_validator_semantic_coherence_v512()'::regprocedure));
