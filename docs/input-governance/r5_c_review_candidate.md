@@ -69,7 +69,7 @@ Expected final MD5 values after the candidate:
 |---|---|
 | `fn_guard_input_family_assessment_update()` | `3992ea214300ed7a4c444667d9927f1e` |
 | `fn_guard_input_family_execution_update()` | `19760955ab8271b6edbfb4c8a3b2380d` |
-| `fn_guard_input_governance_continuation_currentness_v1()` | `7f1172972e08b70df9328799c4118955` |
+| `fn_guard_input_governance_continuation_currentness_v1()` | `4f2352389ca15561c6693f1e9a82867b` |
 | `fn_guard_input_validator_semantic_coherence_v512()` | `5f47ef6f1e0a8d5ee8ccd830ef9ba297` |
 | `fn_input_auth006_build_assertions(bigint,bigint,text)` | `fcbe577977533315efa654e37f6fedaf` |
 | `fn_input_owner_decision_assertions(bigint,bigint,text)` | `faaf7a7e0b6da0ac40eb740ecfda064a` |
@@ -89,3 +89,17 @@ All requested paths passed inside `BEGIN/ROLLBACK`, including:
 - synthetic R5-D PENDING→terminal compact transition with exact inline-equivalent validator hash.
 
 The live table has six physical BEFORE UPDATE triggers, not seven. Every probe traversed all six. Seven functions are MD5-governed by R5-C; that count is distinct from the physical trigger count.
+
+
+## Claude blocker resolution — currentness shared trigger
+
+The shared currentness trigger function is attached to three tables. The STORAGE_COMPACTION exception is now table-gated with nested IFs so assessment-only fields are never referenced until `TG_TABLE_NAME='input_family_assessments'` is already established.
+
+Live pg_trigger inventory is documented in the rollback-probe evidence file. The two additional non-assessment tables were explicitly tested against the live baseline and corrected candidate:
+
+- `input_gap_proposals`: same terminal-update rejection as today;
+- `input_validator_chunk_timings`: same insert acceptance as today.
+
+The corrected final MD5 for
+`fn_guard_input_governance_continuation_currentness_v1()` is
+`4f2352389ca15561c6693f1e9a82867b`.
