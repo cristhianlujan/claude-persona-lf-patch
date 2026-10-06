@@ -15,7 +15,7 @@ begin
   where id=37
     and contrato_codigo='INPUT_READINESS_CONTRACT';
 
-  if v_revision is distinct from '5.13'
+  if v_revision is distinct from '5.13.1'
      or v_md5 is distinct from '229eb569cf7e988ec1b222df91b70876' then
     raise exception 'M18_CONTRACT_BASE_DRIFT revision=% md5=%',v_revision,v_md5;
   end if;
@@ -222,7 +222,7 @@ begin
     'INPUT_READINESS_CONTRACT_5_13_TRACEABILITY',
     2,
     37,
-    '5.13',
+    '5.13.1',
     '229eb569cf7e988ec1b222df91b70876',
     'IG_CURATOR_VALIDATOR_REFACTOR_V2',
     'M1.8',
@@ -235,7 +235,7 @@ begin
     0,
     62,
     'DEFINED',
-    'supabase://programacion.contratos/37#5.13',
+    'supabase://programacion.contratos/37#5.13.1',
     'ENGINEERING_PARALLEL_EXECUTOR_V1:M1.8:TRACEABILITY_REV2'
   )
   returning id into v_new_matrix_id;
@@ -284,7 +284,7 @@ set unit_metadata=jsonb_set(
         'evidence_artifacts','[]'::jsonb,
         'mutation_artifacts','[]'::jsonb
       ),
-      'expected','Current 5.13 contract keys and traceability revision 2 are exact set-equals: 62/62, missing=0, extra=0, unmapped=0. legacy_contract_v1_authoritative and legacy_contract_v2_authoritative are explicit false values and both are mapped to fail-closed READINESS_POLICY rows.',
+      'expected','Current 5.13.1 storage-neutral representation keys and traceability revision 2 are exact set-equals: 62/62, missing=0, extra=0, unmapped=0. legacy_contract_v1_authoritative and legacy_contract_v2_authoritative are explicit false values and both are mapped to fail-closed READINESS_POLICY rows.',
       'verification_queries',jsonb_build_array(
         $q$
 with m as (
@@ -354,7 +354,7 @@ insert into public.lf_error_knowledge(
   'INPUT-GOV-CONTRACT-TRACEABILITY-CURRENT-CLAUSE-DRIFT-001',
   'INPUT_GOVERNANCE',
   'Traceability negative must compare the current contract key set, not trust historical clause_count',
-  'M1.8 inherited a 60-row traceability matrix while R5-C added validator_evidence_required_fields_scope and validator_evidence_storage_contract to the same 5.13 contract representation. The old negative only listed contract keys and could not detect the two unmapped clauses.',
+  'M1.8 inherited a 60-row 5.13 traceability matrix while R5-C introduced storage-neutral revision 5.13.1 with validator_evidence_required_fields_scope and validator_evidence_storage_contract. The old negative only listed contract keys and could not detect the two unmapped clauses.',
   'Traceability completeness was treated as a historical matrix property instead of exact set equality against the current contract representation.',
   'HISTORICAL_TRACEABILITY_COUNT_MASKS_NEW_CURRENT_CLAUSES',
   'For compatibility negatives, compare current contract keys against the current traceability revision using bidirectional EXCEPT. Preserve historical matrices append-only and create a new revision whenever the current contract representation adds/removes clauses.',
