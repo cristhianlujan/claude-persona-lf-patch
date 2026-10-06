@@ -61,7 +61,7 @@ An exception is valid only when it is explicitly adjudicated and is actually pre
 
 ### Measurement limits
 
-`PG_PROC_STATIC_CLOSURE_V1` is reproducible and deterministic for direct function-name references inside the declared PostgreSQL schema. It does **not** claim to discover dynamic SQL or Edge/runtime call graphs. Those require provider-bound evidence from the consumer and otherwise remain `UNPROVEN`.
+`PG_PROC_STATIC_CLOSURE_V1` remains the backward-compatible same-schema mode. When producer and reviewer live in different schemas, both roots must be supplied explicitly as `schema.function`; the same capability then uses `PG_PROC_STATIC_CLOSURE_QUALIFIED_V1` to traverse local calls plus explicitly schema-qualified cross-schema calls. It does **not** claim to resolve dynamic SQL, Edge/runtime call graphs, or unqualified cross-schema calls resolved only through `search_path`; those remain provider-bound evidence and otherwise `UNPROVEN`.
 
 ## Cuándo consumirlo
 
@@ -75,7 +75,7 @@ Before material consumption:
 
 1. Resolve `INDEPENDENT_ASSURANCE` in `public.lf_activos`; require non-archived, `ACTIVO`, `VIGENTE`, `ACTIVE_SHARED_ENFORCEMENT`.
 2. Resolve `INDEPENDENT_ASSURANCE` in `public.lf_capability_current` and bind the exact manifest through `public.fn_lf_capability_bind_from_orchestrator_v1` when the governed consumer executes it.
-3. Run `public.lf_independent_assurance_measure_v1` with exact roots and provider-bound data/author context when available.
+3. Run `public.lf_independent_assurance_measure_v1` with exact roots and provider-bound data/author context when available. Use unqualified roots only for the legacy same-schema mode; for cross-schema producer/reviewer pairs, pass both roots as `schema.function`.
 4. Fail closed on `UNPROVEN` whenever the governing contract requires positive independence.
 
 ## Cómo consumir el review existente
