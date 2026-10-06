@@ -327,6 +327,27 @@ jobs:
             psql -X -At -v ON_ERROR_STOP=1 -c "select coalesce(max(version),'00000000000000') from supabase_migrations.schema_migrations;")"
           ledger_max="$(printf '%s' "$ledger_max" | tr -d '\r\n')"
 
+          current_version="${MIGRATION_PATH##*/}"; current_version="${current_version%%_*}"
+          current_name="${MIGRATION_PATH##*/}"; current_name="${current_name#*_}"; current_name="${current_name%.sql}"
+          existing_name="$(docker run --rm \
+            -e PGPASSWORD="$LF_SUPABASE_DB_PASSWORD" \
+            postgres:17.6 \
+            psql "host=aws-1-us-east-1.pooler.supabase.com port=5432 user=postgres.mhwmirqcgxxukpctffuv dbname=postgres sslmode=require" \
+            -X -At -v ON_ERROR_STOP=1 -c "select name from supabase_migrations.schema_migrations where version='$current_version';")"
+          existing_name="$(printf '%s' "$existing_name" | tr -d '\r\n')"
+          if [ -n "$existing_name" ]; then
+            [ "$existing_name" = "$current_name" ] || { echo "FAIL_TRAIN_EXISTING_LEDGER_IDENTITY_MISMATCH version=$current_version ledger=$existing_name pr=$current_name"; exit 2; }
+            version="$current_version"
+            target_path="$MIGRATION_PATH"
+            echo "PASS_TRAIN_ALREADY_APPLIED_EXACT_READBACK version=$version name=$current_name"
+            echo "migration_path=$target_path" >> "$GITHUB_OUTPUT"
+            echo "migration_version=$version" >> "$GITHUB_OUTPUT"
+            echo "migration_name=${target_path##*/}" >> "$GITHUB_OUTPUT"
+            echo "already_applied_exact=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "already_applied_exact=false" >> "$GITHUB_OUTPUT"
+
           assign_out="$(python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py \
             "$SOURCE_FILE" --main-max "$main_max" --ledger-max "$ledger_max" --dry-run)"
           echo "$assign_out"
