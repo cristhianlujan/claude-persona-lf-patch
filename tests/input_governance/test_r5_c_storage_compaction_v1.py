@@ -85,7 +85,7 @@ def test_r5c_pins_exact_final_md5s():
     for md5 in (
         "3992ea214300ed7a4c444667d9927f1e",
         "19760955ab8271b6edbfb4c8a3b2380d",
-        "7f1172972e08b70df9328799c4118955",
+        "4f2352389ca15561c6693f1e9a82867b",
         "5f47ef6f1e0a8d5ee8ccd830ef9ba297",
         "fcbe577977533315efa654e37f6fedaf",
         "faaf7a7e0b6da0ac40eb740ecfda064a",
@@ -93,3 +93,15 @@ def test_r5c_pins_exact_final_md5s():
     ):
         assert md5 in text
     assert text.count("R5C_FINAL_MD5_MISMATCH") == 7
+
+
+def test_r5c_currentness_guard_is_table_gated_before_record_field_access():
+    text = sql()
+    start = text.index("CREATE OR REPLACE FUNCTION programacion.fn_guard_input_governance_continuation_currentness_v1()")
+    end = text.index("-- Static final R5-C definitions.", start)
+    fn = text[start:end]
+    outer = """IF tg_op='UPDATE'
+     AND tg_table_schema='programacion'
+     AND tg_table_name='input_family_assessments' THEN"""
+    assert outer in fn
+    assert fn.index(outer) < fn.index("old.validator_outcome<>'PENDING'")
