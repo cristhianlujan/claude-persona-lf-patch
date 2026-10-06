@@ -60,7 +60,7 @@ jobs:
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.48.3
 
       - name: Install PostgreSQL client for REAL mode
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
