@@ -3,6 +3,49 @@
 -- Serialize (version_id,pantalla_id) before any bootstrap/recurate/rebind decision or run creation.
 -- pg_advisory_xact_lock is transaction-scoped and therefore releases on commit/rollback.
 
+-- Concurrency qualification assumption: PostgreSQL READ COMMITTED.
+-- Verified in LF_SUPABASE_SANDBOX before apply: both default_transaction_isolation and
+-- transaction_isolation are 'read committed'. IG-1 relies on the pair advisory xact lock
+-- to serialize decision/create under that isolation level; other isolation levels are not
+-- qualified by this migration.
+
+-- Fail closed if any protected base definition moved since owner authorization.
+DO $ig1_base_md5$
+DECLARE
+  v_actual text;
+BEGIN
+  v_actual := md5(pg_get_functiondef('programacion.fn_input_governance_bootstrap_materialize_v1(integer,text,text)'::regprocedure));
+  IF v_actual IS DISTINCT FROM 'fcf1afe1fd1abf3b241c7aa8b54a5fd0' THEN
+    RAISE EXCEPTION 'IG1_BASE_MD5_MISMATCH function=bootstrap_materialize_v1 expected=% actual=%',
+      'fcf1afe1fd1abf3b241c7aa8b54a5fd0', coalesce(v_actual,'<NULL>');
+  END IF;
+
+  v_actual := md5(pg_get_functiondef('programacion.fn_input_governance_bootstrap_materialize_v2(integer,text,text)'::regprocedure));
+  IF v_actual IS DISTINCT FROM 'cef03aa0d7595345e2f048e9dad4be69' THEN
+    RAISE EXCEPTION 'IG1_BASE_MD5_MISMATCH function=bootstrap_materialize_v2 expected=% actual=%',
+      'cef03aa0d7595345e2f048e9dad4be69', coalesce(v_actual,'<NULL>');
+  END IF;
+
+  v_actual := md5(pg_get_functiondef('programacion.fn_input_governance_recurate_source_stale_v1(integer,text,text,bigint)'::regprocedure));
+  IF v_actual IS DISTINCT FROM '996a6b3c0fc095ec714a70251adc14ef' THEN
+    RAISE EXCEPTION 'IG1_BASE_MD5_MISMATCH function=recurate_source_stale_v1 expected=% actual=%',
+      '996a6b3c0fc095ec714a70251adc14ef', coalesce(v_actual,'<NULL>');
+  END IF;
+
+  v_actual := md5(pg_get_functiondef('programacion.fn_input_governance_recurate_v2(integer,text,text)'::regprocedure));
+  IF v_actual IS DISTINCT FROM '0d389a7c037b1498d2641da14df0437a' THEN
+    RAISE EXCEPTION 'IG1_BASE_MD5_MISMATCH function=recurate_v2 expected=% actual=%',
+      '0d389a7c037b1498d2641da14df0437a', coalesce(v_actual,'<NULL>');
+  END IF;
+
+  v_actual := md5(pg_get_functiondef('programacion.fn_input_governance_curator_rebind_v1(integer,text,text,boolean)'::regprocedure));
+  IF v_actual IS DISTINCT FROM '382c9cac4f0a47598a3116c48eee4d92' THEN
+    RAISE EXCEPTION 'IG1_BASE_MD5_MISMATCH function=curator_rebind_v1 expected=% actual=%',
+      '382c9cac4f0a47598a3116c48eee4d92', coalesce(v_actual,'<NULL>');
+  END IF;
+END
+$ig1_base_md5$;
+
 CREATE OR REPLACE FUNCTION programacion.fn_input_governance_bootstrap_materialize_v1(p_pantalla_id integer, p_consumer text, p_curator_identity text)
  RETURNS jsonb
  LANGUAGE plpgsql
