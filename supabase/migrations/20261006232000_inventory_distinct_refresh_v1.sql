@@ -540,7 +540,7 @@ begin
        and inventory.search_index.observed_at is distinct from excluded.observed_at
      )
      or inventory.search_index.observed_main_sha is distinct from excluded.observed_main_sha
-     or inventory.search_index.source_traceability_state is distinct from excluded.source_traceability_state
+     or inventory.search_index.source_traceability_state is distinct from excluded.source_traceability_state;
 
   delete from inventory.search_index s
   where not exists (
