@@ -97,6 +97,7 @@ declare
   v_payload jsonb;
   v_measure jsonb;
   v_reviewer_execution_id text;
+  v_reviewer public.lf_operation_execution%rowtype;
 begin
   v_prepare:=public.lf_card_expertise_prepare_independent_review_v1(p_execution_id,p_subject_sha256);
   if v_prepare->>'result'<>'REVIEW_REQUIRED' then
@@ -141,10 +142,18 @@ begin
   end if;
 
   v_reviewer_execution_id:=nullif(btrim(coalesce(v_payload->>'reviewer_execution_id','')),'');
-  if v_reviewer_execution_id is null
-     or v_reviewer_execution_id=p_execution_id
-     or v_receipt.created_by_execution_id is distinct from v_reviewer_execution_id then
+  if v_reviewer_execution_id is null or v_reviewer_execution_id=p_execution_id then
     return jsonb_build_object('result','BLOCKED','code','SELF_REVIEW_REJECTED');
+  end if;
+
+  select * into v_reviewer
+  from public.lf_operation_execution
+  where execution_id=v_reviewer_execution_id;
+
+  if not found
+     or v_reviewer.operation_code='CREACION_CARD_LF'
+     or v_reviewer.status not in ('COMPLETED','CONTROLLED_READ_ONLY_PASS','CLOSED_WITH_VERIFIED_EVIDENCE') then
+    return jsonb_build_object('result','BLOCKED','code','INDEPENDENT_REVIEWER_EXECUTION_INVALID');
   end if;
 
   v_measure:=v_payload->'independence_measure';
