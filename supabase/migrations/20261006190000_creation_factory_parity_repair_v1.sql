@@ -230,6 +230,48 @@ begin
         updated_at=now(),
         updated_by_execution_id=p_execution_id
     where operation_code='CREACION_SKILL_LF';
+
+    update public.lf_operation_contracts
+    set contract_sha='22d856068c9a35435c06cb5f6e238790d343462e',
+        updated_at=now(),
+        updated_by_execution_id=p_execution_id
+    where operation_code='CREACION_SKILL_LF'
+      and contract_code='CONTRATO_SKILL_LF';
+
+    update public.lf_operation_step_contracts
+    set required_evidence_keys='["execution_binding_verified","write_plan","write_plan_hash","step_result","blocking_codes"]'::jsonb,
+        notes=coalesce(notes,'')||' | CREATION_FACTORY_PARITY_REPAIR_V1: pre-write now binds exact write_plan + hash.',
+        updated_at=now(),
+        updated_by_execution_id=p_execution_id
+    where operation_code='CREACION_SKILL_LF'
+      and step_id='pre_write_execution_binding_gate'
+      and status='ACTIVE';
+
+    update public.lf_operation_step_judge_bindings
+    set required_evidence_keys='["execution_binding_verified","write_plan","write_plan_hash","step_result","blocking_codes"]'::jsonb,
+        updated_at=now(),
+        updated_by_execution_id=p_execution_id
+    where operation_code='CREACION_SKILL_LF'
+      and step_id='pre_write_execution_binding_gate'
+      and status='ACTIVE_ENFORCEMENT';
+
+    update public.lf_operation_step_contracts
+    set required_evidence_keys='["repo","branch","written_files","commit_sha","partial_write_detected","write_plan_hash","blocking_codes"]'::jsonb,
+        notes=coalesce(notes,'')||' | CREATION_FACTORY_PARITY_REPAIR_V1: write must match bound write_plan.',
+        updated_at=now(),
+        updated_by_execution_id=p_execution_id
+    where operation_code='CREACION_SKILL_LF'
+      and step_id='github_write'
+      and status='ACTIVE';
+
+    update public.lf_operation_step_contracts
+    set required_evidence_keys='["repo","branch","readback_files","sha_match_status","files_count","commit_sha","write_plan_hash","blocking_codes"]'::jsonb,
+        notes=coalesce(notes,'')||' | CREATION_FACTORY_PARITY_REPAIR_V1: readback must match exact write receipt.',
+        updated_at=now(),
+        updated_by_execution_id=p_execution_id
+    where operation_code='CREACION_SKILL_LF'
+      and step_id='github_readback'
+      and status='ACTIVE';
   end if;
 
   insert into public.lf_operation_judges(
@@ -328,6 +370,15 @@ declare
   v_prior_bad integer := 0;
   v_pred_bad integer := 0;
   v_contract_sha text;
+  v_prewrite public.lf_operation_execution_steps%rowtype;
+  v_prewrite_binding public.lf_operation_step_judge_bindings%rowtype;
+  v_write public.lf_operation_execution_steps%rowtype;
+  v_write_binding public.lf_operation_step_judge_bindings%rowtype;
+  v_write_plan jsonb;
+  v_written jsonb;
+  v_readback jsonb;
+  v_expected_plan_hash text;
+  v_bad_count integer := 0;
 begin
   if nullif(btrim(coalesce(p_execution_id,'')),'') is null
      or nullif(btrim(coalesce(p_step_id,'')),'') is null
@@ -393,18 +444,57 @@ begin
     v_hard:=v_hard||jsonb_build_array('blocking_codes_not_clean');
   end if;
 
+  if e.operation_code='CREACION_SKILL_LF' and p_step_id='pre_write_execution_binding_gate' then
+    if coalesce((p_evidence_payload->>'execution_binding_verified')::boolean,false) is not true
+       or jsonb_typeof(p_evidence_payload->'write_plan')<>'array'
+       or jsonb_array_length(p_evidence_payload->'write_plan')=0
+       or coalesce(p_evidence_payload->>'write_plan_hash','') !~ '^[0-9a-f]{64}$' then
+      v_hard:=v_hard||jsonb_build_array('skill_prewrite_plan_invalid');
+    else
+      v_write_plan:=p_evidence_payload->'write_plan';
+      v_expected_plan_hash:=encode(
+        extensions.digest(convert_to(v_write_plan::text,'UTF8'),'sha256'),'hex'
+      );
+      if p_evidence_payload->>'write_plan_hash' is distinct from v_expected_plan_hash then
+        v_hard:=v_hard||jsonb_build_array('skill_prewrite_plan_hash_mismatch');
+      end if;
+
+      select count(*) into v_bad_count
+      from jsonb_array_elements(v_write_plan) x
+      where jsonb_typeof(x)<>'object'
+         or nullif(btrim(coalesce(x->>'path','')),'') is null
+         or coalesce(x->>'sha256','') !~ '^[0-9a-f]{64}$';
+      if v_bad_count<>0 then
+        v_hard:=v_hard||jsonb_build_array('skill_prewrite_plan_item_invalid');
+      end if;
+
+      select count(*) into v_bad_count
+      from (
+        select x->>'path' as path,count(*) n
+        from jsonb_array_elements(v_write_plan) x
+        group by x->>'path'
+        having count(*)<>1
+      ) d;
+      if v_bad_count<>0 then
+        v_hard:=v_hard||jsonb_build_array('skill_prewrite_plan_duplicate_path');
+      end if;
+    end if;
+  end if;
+
   if p_step_id in ('github_write','github_readback') then
-    select count(*) into v_pred_bad
-    from public.lf_operation_steps ps
-    left join public.lf_operation_step_judge_bindings pb
-      on pb.operation_code=ps.operation_code and pb.step_id=ps.step_id and pb.step_order=ps.step_order
-      and pb.status='ACTIVE_ENFORCEMENT'
-    left join public.lf_operation_execution_steps pe
-      on pe.execution_id=p_execution_id and pe.step_id=ps.step_id and pe.step_order=ps.step_order
-    where ps.operation_code=e.operation_code
-      and ps.step_id=case when p_step_id='github_write' then 'pre_write_execution_binding_gate' else 'github_write' end
-      and (pe.step_id is null or pb.clean_result_value is null or pe.status<>pb.clean_result_value);
-    if v_pred_bad<>0 then v_hard:=v_hard||jsonb_build_array('write_chain_predecessor_not_clean'); end if;
+    select * into v_prewrite_binding
+    from public.lf_operation_step_judge_bindings
+    where operation_code=e.operation_code and step_id='pre_write_execution_binding_gate'
+      and status='ACTIVE_ENFORCEMENT';
+    select * into v_prewrite
+    from public.lf_operation_execution_steps
+    where execution_id=p_execution_id and step_id='pre_write_execution_binding_gate';
+
+    if v_prewrite.step_id is null
+       or v_prewrite_binding.clean_result_value is null
+       or v_prewrite.status<>v_prewrite_binding.clean_result_value then
+      v_hard:=v_hard||jsonb_build_array('write_chain_predecessor_not_clean');
+    end if;
 
     if e.operation_code='CREACION_CARD_LF' and p_step_id='github_write'
        and coalesce(p_evidence_payload->>'file_commit_sha','') !~ '^[0-9a-f]{40}$' then
@@ -413,22 +503,94 @@ begin
        and coalesce(p_evidence_payload->>'file_readback_sha','') !~ '^[0-9a-f]{40}$' then
       v_hard:=v_hard||jsonb_build_array('card_file_readback_sha_invalid');
     elsif e.operation_code='CREACION_SKILL_LF' and p_step_id='github_write' then
-      if coalesce(p_evidence_payload->>'repo','')=''
-         or coalesce(p_evidence_payload->>'branch','')=''
+      v_write_plan:=v_prewrite.evidence_payload->'write_plan';
+      v_expected_plan_hash:=v_prewrite.evidence_payload->>'write_plan_hash';
+      v_written:=p_evidence_payload->'written_files';
+
+      if jsonb_typeof(v_write_plan)<>'array'
+         or jsonb_array_length(v_write_plan)=0
+         or coalesce(v_expected_plan_hash,'') !~ '^[0-9a-f]{64}$'
+         or p_evidence_payload->>'write_plan_hash' is distinct from v_expected_plan_hash
+         or p_evidence_payload->>'repo' is distinct from e.target_repo
+         or nullif(btrim(coalesce(p_evidence_payload->>'branch','')),'') is null
          or coalesce(p_evidence_payload->>'commit_sha','') !~ '^[0-9a-f]{40}$'
-         or jsonb_typeof(p_evidence_payload->'written_files')<>'array'
-         or jsonb_array_length(p_evidence_payload->'written_files')=0
+         or jsonb_typeof(v_written)<>'array'
+         or jsonb_array_length(v_written)<>jsonb_array_length(v_write_plan)
          or coalesce((p_evidence_payload->>'partial_write_detected')::boolean,true) is not false then
         v_hard:=v_hard||jsonb_build_array('skill_github_write_evidence_invalid');
+      else
+        select count(*) into v_bad_count
+        from jsonb_array_elements(v_written) wf
+        where jsonb_typeof(wf)<>'object'
+           or nullif(btrim(coalesce(wf->>'path','')),'') is null
+           or coalesce(wf->>'file_sha','') !~ '^[0-9a-f]{40}$'
+           or not exists (
+             select 1 from jsonb_array_elements(v_write_plan) wp
+             where wp->>'path'=wf->>'path'
+               and (
+                 not (wf ? 'content_sha256')
+                 or wf->>'content_sha256'=wp->>'sha256'
+               )
+           );
+        if v_bad_count<>0 then
+          v_hard:=v_hard||jsonb_build_array('skill_written_file_not_bound_to_plan');
+        end if;
+
+        select count(*) into v_bad_count
+        from jsonb_array_elements(v_write_plan) wp
+        where not exists (
+          select 1 from jsonb_array_elements(v_written) wf
+          where wf->>'path'=wp->>'path'
+        );
+        if v_bad_count<>0 then
+          v_hard:=v_hard||jsonb_build_array('skill_write_plan_not_fully_materialized');
+        end if;
       end if;
+
     elsif e.operation_code='CREACION_SKILL_LF' and p_step_id='github_readback' then
-      if coalesce(p_evidence_payload->>'repo','')=''
-         or coalesce(p_evidence_payload->>'branch','')=''
+      select * into v_write_binding
+      from public.lf_operation_step_judge_bindings
+      where operation_code=e.operation_code and step_id='github_write'
+        and status='ACTIVE_ENFORCEMENT';
+      select * into v_write
+      from public.lf_operation_execution_steps
+      where execution_id=p_execution_id and step_id='github_write';
+
+      v_written:=v_write.evidence_payload->'written_files';
+      v_readback:=p_evidence_payload->'readback_files';
+
+      if v_write.step_id is null
+         or v_write_binding.clean_result_value is null
+         or v_write.status<>v_write_binding.clean_result_value
+         or p_evidence_payload->>'repo' is distinct from v_write.evidence_payload->>'repo'
+         or p_evidence_payload->>'branch' is distinct from v_write.evidence_payload->>'branch'
+         or p_evidence_payload->>'commit_sha' is distinct from v_write.evidence_payload->>'commit_sha'
+         or p_evidence_payload->>'write_plan_hash' is distinct from v_write.evidence_payload->>'write_plan_hash'
          or p_evidence_payload->>'sha_match_status'<>'PASS'
-         or jsonb_typeof(p_evidence_payload->'readback_files')<>'array'
-         or jsonb_array_length(p_evidence_payload->'readback_files')=0
-         or coalesce((p_evidence_payload->>'files_count')::integer,-1)<>jsonb_array_length(p_evidence_payload->'readback_files') then
+         or jsonb_typeof(v_readback)<>'array'
+         or jsonb_typeof(v_written)<>'array'
+         or jsonb_array_length(v_readback)<>jsonb_array_length(v_written)
+         or coalesce((p_evidence_payload->>'files_count')::integer,-1)<>jsonb_array_length(v_written) then
         v_hard:=v_hard||jsonb_build_array('skill_github_readback_evidence_invalid');
+      else
+        select count(*) into v_bad_count
+        from jsonb_array_elements(v_readback) rb
+        where jsonb_typeof(rb)<>'object'
+           or nullif(btrim(coalesce(rb->>'path','')),'') is null
+           or coalesce(rb->>'file_sha','') !~ '^[0-9a-f]{40}$'
+           or not exists (
+             select 1 from jsonb_array_elements(v_written) wf
+             where wf->>'path'=rb->>'path'
+               and wf->>'file_sha'=rb->>'file_sha'
+               and (
+                 not (wf ? 'content_sha256')
+                 or not (rb ? 'content_sha256')
+                 or wf->>'content_sha256'=rb->>'content_sha256'
+               )
+           );
+        if v_bad_count<>0 then
+          v_hard:=v_hard||jsonb_build_array('skill_readback_not_exact_write');
+        end if;
       end if;
     end if;
   end if;
