@@ -69,6 +69,7 @@ MANAGED_EXACT_NAMES = {
     "engineering_read_budget_context_reuse_v1",
     "db_space_operational_retention_schedule_v1",
     "db_space_db_size_observability_v1",
+    "r5e_vacuum_full_one_shot_control_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
