@@ -45,23 +45,20 @@ set execution_order = case step_id
   when 'report_output' then 380
   else execution_order
 end,
-updated_at = now(),
-updated_by_execution_id = 'CHATGPT-CREATION-FACTORY-PARITY-20261006'
+updated_at = now()
 where operation_code='CREACION_SKILL_LF' and active is true;
 
 -- The source-authoritative Skill v0.7 file includes partial_scope_guard between rule_trace and pre-write.
 insert into public.lf_operation_steps(
   operation_code,step_order,step_id,required,evidence_required,source_path,source_sha,active,
-  execution_order,created_by_execution_id,updated_by_execution_id
+  execution_order
 )
 select
   'CREACION_SKILL_LF',38,'partial_scope_guard',true,
   'complete_operation_scope_confirmed_or_blocked',
   'gobernanza/procedimientos/creacion_skill_lf_steps_validation.yaml',
   '1012a6ce037bfb5540a87c5706960e6465244df2',
-  true,310,
-  'CHATGPT-CREATION-FACTORY-PARITY-20261006',
-  'CHATGPT-CREATION-FACTORY-PARITY-20261006'
+  true,310
 where not exists (
   select 1 from public.lf_operation_steps
   where operation_code='CREACION_SKILL_LF' and step_id='partial_scope_guard'
@@ -70,8 +67,7 @@ where not exists (
 update public.lf_operation_steps
 set source_path='gobernanza/procedimientos/creacion_skill_lf_steps_validation.yaml',
     source_sha='1012a6ce037bfb5540a87c5706960e6465244df2',
-    updated_at=now(),
-    updated_by_execution_id='CHATGPT-CREATION-FACTORY-PARITY-20261006'
+    updated_at=now()
 where operation_code='CREACION_SKILL_LF'
   and step_id in (
     'canonical_design','operational_evidence_pack_check','completeness','compatibility','rubric','sandbox',
@@ -84,7 +80,7 @@ where operation_code='CREACION_SKILL_LF'
 insert into public.lf_operation_step_contracts(
   operation_code,step_id,step_order,execution_order,contract_code,purpose,input_required,resolver_ref,
   output_payload,pass_condition,block_condition,blocking_code,mini_judge_code,required_evidence_keys,
-  next_if_pass,next_if_blocked,status,notes,created_by_execution_id,updated_by_execution_id
+  next_if_pass,next_if_blocked,status,notes
 )
 select
   'CREACION_SKILL_LF','partial_scope_guard',38,310,
@@ -99,9 +95,7 @@ select
   'MINI_JUDGE_CREACION_SKILL_LF_PARTIAL_SCOPE_GUARD_V1',
   '["complete_operation_scope_confirmed_or_blocked","step_result","blocking_codes"]'::jsonb,
   'NEXT_BY_EXECUTION_ORDER','RETURN_TO_WORKER_FOR_SELF_REPAIR_OR_BACKEND_CONFIG','ACTIVE',
-  'Materialized from governed Skill v0.7 source; no parallel runtime.',
-  'CHATGPT-CREATION-FACTORY-PARITY-20261006',
-  'CHATGPT-CREATION-FACTORY-PARITY-20261006'
+  'Materialized from governed Skill v0.7 source; no parallel runtime.'
 where not exists (
   select 1 from public.lf_operation_step_contracts
   where operation_code='CREACION_SKILL_LF' and step_id='partial_scope_guard'
@@ -110,8 +104,7 @@ where not exists (
 update public.lf_operation_step_contracts c
 set execution_order=s.execution_order,
     step_order=s.step_order,
-    updated_at=now(),
-    updated_by_execution_id='CHATGPT-CREATION-FACTORY-PARITY-20261006'
+    updated_at=now()
 from public.lf_operation_steps s
 where c.operation_code='CREACION_SKILL_LF'
   and s.operation_code=c.operation_code
@@ -121,15 +114,13 @@ where c.operation_code='CREACION_SKILL_LF'
 update public.lf_operation_registry
 set version='v0.7',
     notes=coalesce(notes,'')||' | CREATION_FACTORY_PARITY_REPAIR_V1: source-authoritative execution order restored; partial-scope guard restored; judge/binding parity enforced by common guard.',
-    updated_at=now(),
-    updated_by_execution_id='CHATGPT-CREATION-FACTORY-PARITY-20261006'
+    updated_at=now()
 where operation_code='CREACION_SKILL_LF';
 
 -- 2) Materialize only missing judges from the active step contracts.
 -- Existing judges are never overwritten.
 insert into public.lf_operation_judges(
-  operation_code,judge_code,judge_path,judge_sha,pass_if,fail_if,result_values,status,
-  created_by_execution_id,updated_by_execution_id
+  operation_code,judge_code,judge_path,judge_sha,pass_if,fail_if,result_values,status
 )
 select
   c.operation_code,
@@ -155,9 +146,7 @@ select
     'return','RETURN_TO_WORKER_FOR_SELF_REPAIR',
     'blocked',coalesce(nullif(c.blocking_code,''),'BLOCKED_STEP_NOT_CLEAN')
   ),
-  'ACTIVE_ENFORCEMENT',
-  'CHATGPT-CREATION-FACTORY-PARITY-20261006',
-  'CHATGPT-CREATION-FACTORY-PARITY-20261006'
+  'ACTIVE_ENFORCEMENT'
 from public.lf_operation_step_contracts c
 join public.lf_operation_steps s
   on s.operation_code=c.operation_code and s.step_id=c.step_id and s.step_order=c.step_order
@@ -172,7 +161,7 @@ where c.operation_code in ('CREACION_CARD_LF','CREACION_SKILL_LF')
 
 insert into public.lf_operation_step_judge_bindings(
   operation_code,step_order,step_id,judge_code,clean_result_value,blocked_result_value,
-  return_result_value,required_evidence_keys,status,created_by_execution_id,updated_by_execution_id
+  return_result_value,required_evidence_keys,status
 )
 select
   c.operation_code,c.step_order,c.step_id,c.mini_judge_code,
@@ -180,9 +169,7 @@ select
   coalesce(nullif(c.blocking_code,''),'BLOCKED_STEP_NOT_CLEAN'),
   'RETURN_TO_WORKER_FOR_SELF_REPAIR',
   c.required_evidence_keys,
-  'ACTIVE_ENFORCEMENT',
-  'CHATGPT-CREATION-FACTORY-PARITY-20261006',
-  'CHATGPT-CREATION-FACTORY-PARITY-20261006'
+  'ACTIVE_ENFORCEMENT'
 from public.lf_operation_step_contracts c
 join public.lf_operation_steps s
   on s.operation_code=c.operation_code and s.step_id=c.step_id and s.step_order=c.step_order
