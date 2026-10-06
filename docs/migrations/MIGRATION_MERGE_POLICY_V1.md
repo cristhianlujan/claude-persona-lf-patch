@@ -21,7 +21,8 @@ Ruleset existente: `protect-main`, id `20571741`.
 Cambio propuesto:
 - conservar deletion/non-fast-forward/pull-request actuales;
 - `strict_required_status_checks_policy=true`;
-- required check: commit status `lf-merge-train/verified`, publicado por `lf-migration-train`;\n- `integration_id` se resuelve desde `LF_MIGRATION_TRAIN_APP_ID` al aplicar el JSON; ningún otro actor puede satisfacer el contexto;
+- required check: commit status `lf-merge-train/verified`, publicado por `lf-migration-train`;
+- `integration_id` se resuelve desde `LF_MIGRATION_TRAIN_APP_ID` al aplicar el JSON; ningún otro actor puede satisfacer el contexto;
 - bypass de emergencia, limitado a PR:
   - Paulo / user id `66433825`;
   - Cristhian / user id `259964988`.
