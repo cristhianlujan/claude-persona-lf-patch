@@ -341,20 +341,20 @@ jobs:
             [ "$existing_name" = "$current_name" ] || { echo "FAIL_TRAIN_EXISTING_LEDGER_IDENTITY_MISMATCH version=$current_version ledger=$existing_name pr=$current_name"; exit 2; }
             ledger_hex="${existing_row#*|}"
             file_sha="$(python3 - "$SOURCE_FILE" <<'PY'
-import hashlib,sys
-def canonical(sql):
-    sql=sql.replace("\r\n","\n").replace("\r","\n")
-    return "\n".join(line for line in sql.split("\n") if not line.lstrip().startswith("--")).rstrip("\n").encode()
-print(hashlib.sha256(canonical(open(sys.argv[1],encoding="utf-8").read())).hexdigest())
-PY
+          import hashlib,sys
+          def canonical(sql):
+              sql=sql.replace("\r\n","\n").replace("\r","\n")
+              return "\n".join(line for line in sql.split("\n") if not line.lstrip().startswith("--")).rstrip("\n").encode()
+          print(hashlib.sha256(canonical(open(sys.argv[1],encoding="utf-8").read())).hexdigest())
+          PY
 )"
             ledger_sha="$(python3 - "$ledger_hex" <<'PY'
-import hashlib,sys
-def canonical(sql):
-    sql=sql.replace("\r\n","\n").replace("\r","\n")
-    return "\n".join(line for line in sql.split("\n") if not line.lstrip().startswith("--")).rstrip("\n").encode()
-print(hashlib.sha256(canonical(bytes.fromhex(sys.argv[1]).decode("utf-8"))).hexdigest())
-PY
+          import hashlib,sys
+          def canonical(sql):
+              sql=sql.replace("\r\n","\n").replace("\r","\n")
+              return "\n".join(line for line in sql.split("\n") if not line.lstrip().startswith("--")).rstrip("\n").encode()
+          print(hashlib.sha256(canonical(bytes.fromhex(sys.argv[1]).decode("utf-8"))).hexdigest())
+          PY
 )"
             [ "$ledger_sha" = "$file_sha" ] || { echo "FAIL_TRAIN_EXISTING_LEDGER_CONTENT_MISMATCH version=$current_version"; exit 2; }
             version="$current_version"
