@@ -204,8 +204,8 @@ with d as (
   join programacion.input_family_assessments a on a.run_id=l.id
 )
 select
-  position('input_family_assessments' in d.evaluator_def)=0 as no_curator_assessment_read,
-  position('source_refs' in d.evaluator_def)=0 as no_curator_source_ref_allowlist,
+  position('from programacion.input_family_assessments' in lower(d.evaluator_def))=0 as no_curator_assessment_read,
+  position('jsonb_array_elements(a.source_refs)' in lower(d.evaluator_def))=0 as no_curator_source_ref_allowlist,
   position('fn_input_assertion_is_relevant' in d.evaluator_def)>0 as family_relevance_gate_present,
   position('fn_input_governance_assertion_relevant' in d.evaluator_def)>0 as governance_relevance_gate_present,
   position('fn_input_resolve_source_ref' in d.evaluator_def)>0 as canonical_source_resolver_present,
