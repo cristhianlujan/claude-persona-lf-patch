@@ -53,13 +53,26 @@ begin
     raise exception 'R5E_CRON_JOB_ALREADY_EXISTS';
   end if;
 
+  -- Historical pre-v0.2 block 96..142 is the only PASS+sha population
+  -- without assertions. Pin that scalar-only exception so the installation
+  -- preflight does not de-TOAST every historical validator_evidence row.
+  if (
+    select jsonb_build_array(count(*),min(id),max(id))
+    from programacion.input_family_assessments
+    where validator_identity='INPUT_VALIDATOR:v0.1;logical-separation;connector-owner-channel'
+      and validator_outcome<>'PENDING'
+      and validator_sha256 is not null
+  ) is distinct from jsonb_build_array(47,96,142) then
+    raise exception 'R5E_LEGACY_NONASSERTION_BASELINE_DRIFT';
+  end if;
+
   select count(*)
     into v_eligible_count
   from programacion.input_family_assessments a
   where a.validator_outcome<>'PENDING'
-    and a.validator_evidence ? 'assertions'
-    and not (a.validator_evidence ? 'assertion_set_sha256')
-    and a.validator_sha256 is not null;
+    and a.validator_sha256 is not null
+    and a.validator_identity is distinct from
+      'INPUT_VALIDATOR:v0.1;logical-separation;connector-owner-channel';
 
   select count(*)
     into v_catalog_count
