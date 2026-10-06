@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  LF_MIGRATION_TRAIN_MODE: DRY_RUN
+  LF_MIGRATION_TRAIN_MODE: REAL
   SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
   SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
 
@@ -82,6 +82,75 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
 
+      - name: Preflight GitHub App token in DRY_RUN
+        id: app_preflight
+        if: env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
+        shell: bash
+        env:
+          APP_ID: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ -z "${APP_ID:-}" ] || [ -z "${APP_PRIVATE_KEY:-}" ]; then
+            echo "APP_SECRETS_MISSING" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import base64,json,os,time,urllib.request,urllib.error
+          def b64url(b): return base64.urlsafe_b64encode(b).rstrip(b"=").decode()
+          header=b64url(json.dumps({"alg":"RS256","typ":"JWT"},separators=(",",":")).encode())
+          now=int(time.time())
+          payload=b64url(json.dumps({"iat":now-60,"exp":now+540,"iss":os.environ["APP_ID"]},separators=(",",":")).encode())
+          open("/tmp/lf_app_signing_input","w").write(header+"."+payload)
+          open("/tmp/lf_app_key","w").write(os.environ["APP_PRIVATE_KEY"])
+          PY
+          chmod 600 /tmp/lf_app_key
+          signature="$(printf '%s' "$(cat /tmp/lf_app_signing_input)" | openssl dgst -sha256 -sign /tmp/lf_app_key | base64 -w0 | tr '+/' '-_' | tr -d '=')"
+          jwt="$(cat /tmp/lf_app_signing_input).$signature"
+          rm -f /tmp/lf_app_key /tmp/lf_app_signing_input
+          repo_id="$(curl -fsSL -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPO" | jq -r .id)"
+          set +e
+          installation_json="$(curl -sS -w '\n%{http_code}' -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $jwt" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repositories/$repo_id/installation")"
+          set -e
+          http="$(printf '%s\n' "$installation_json" | tail -1)"
+          body="$(printf '%s\n' "$installation_json" | sed '$d')"
+          if [ "$http" != "200" ]; then
+            slug="$(curl -fsSL -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $jwt" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/app" | jq -r '.slug // "unknown"')"
+            echo "APP_NOT_INSTALLED app_slug=$slug" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          installation_id="$(printf '%s' "$body" | jq -r .id)"
+          slug="$(printf '%s' "$body" | jq -r '.app_slug // "unknown"')"
+          token_body="$(curl -fsSL -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $jwt" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/app/installations/$installation_id/access_tokens" --data-binary "$(jq -nc --argjson id "$repo_id" '{repository_ids:[$id]}')")"
+          token="$(printf '%s' "$token_body" | jq -r .token)"
+          perms="$(printf '%s' "$token_body" | jq -c '.permissions // {}')"
+          [ -n "$token" ] && [ "$token" != "null" ] || { echo "APP_NOT_INSTALLED app_slug=$slug" | tee -a "$GITHUB_STEP_SUMMARY"; exit 0; }
+          echo "APP_TOKEN_OK app_slug=$slug permissions=$perms" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Acquire GitHub App token for DRY_RUN verified status
+        id: app_token_dry
+        if: env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Publish lf-merge-train/verified in DRY_RUN
+        if: env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
+        env:
+          GH_TOKEN: ${{ steps.app_token_dry.outputs.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state=success -f context='lf-merge-train/verified' \
+            -f description='LF migration train App identity verified' >/dev/null
+
       - name: Admission and current-main readback
         id: admission
         env:
@@ -135,6 +204,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git config user.name "lf-migration-merge-train[bot]"
+          git config user.email "lf-migration-merge-train[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:$GH_TOKEN@github.com/$REPO.git"
           git fetch --no-tags origin "$EXPECTED_HEAD" "$CURRENT_MAIN"
 
@@ -484,6 +555,19 @@ jobs:
           set -euo pipefail
           live="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha')"
           [ "$live" = "$EXPECTED_MAIN" ] || { echo "FAIL_TRAIN_MAIN_MOVED_POST_APPLY expected=$EXPECTED_MAIN live=$live"; exit 2; }
+
+      - name: Publish lf-merge-train/verified before REAL merge
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && success()
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          HEAD_SHA: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state=success -f context='lf-merge-train/verified' \
+            -f description='LF migration train verified exact head' >/dev/null
 
       - name: Saga final-evidence hook
         if: always()

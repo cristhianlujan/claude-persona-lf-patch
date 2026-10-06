@@ -66,6 +66,7 @@ MANAGED_EXACT_NAMES = {
     "prepare_assurance_method_and_profile_top_tier_v1",
     "fix_profile_update_begin_target_path_v1",
     "fix_profile_update_begin_no_unbound_qualification_v1",
+    "engineering_read_budget_context_reuse_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
