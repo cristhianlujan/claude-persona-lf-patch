@@ -255,8 +255,7 @@ exception
   when invalid_text_representation or numeric_value_out_of_range or invalid_parameter_value then
     return jsonb_build_object('valid',false,'code','EXPERTISE_EVIDENCE_TYPE_INVALID','server_assertions','[]'::jsonb,'server_hard_fails',jsonb_build_array('benchmark evidence missing or non-reconstructible'));
 end;
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.lf_creation_factory_trust_validation_v1(p_execution_id text, p_step_id text, p_evidence_payload jsonb)
  RETURNS jsonb
@@ -631,8 +630,7 @@ begin
     'server_hard_fails','[]'::jsonb
   );
 end
-$function$
-
+$function$;
 
 create or replace function public.lf_card_create_top_tier_reconcile_v1(p_execution_id text)
 returns jsonb
