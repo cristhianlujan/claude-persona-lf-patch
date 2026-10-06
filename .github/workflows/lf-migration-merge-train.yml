@@ -478,7 +478,7 @@ jobs:
 
       - name: Persist exact source and require Saga READY_TO_APPLY
         id: write_ahead
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
@@ -557,7 +557,7 @@ jobs:
 
       - name: Apply exact version and ledger readback
         id: real_apply
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
@@ -583,16 +583,19 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           BASE_SHA: ${{ steps.admission.outputs.current_main }}
-          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha }}
+          PARITY_HEAD: ${{ steps.plan.outputs.already_applied_exact == 'true' && (steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha) || steps.write_ahead.outputs.persisted_head_sha }}
         shell: bash
         run: |
           set -euo pipefail
+          [ -n "$PARITY_HEAD" ] || { echo "FAIL_TRAIN_PARITY_HEAD_MISSING"; exit 2; }
+          git fetch --no-tags origin "$PARITY_HEAD"
+          git checkout --detach "$PARITY_HEAD"
           observed="$(git rev-parse HEAD)"
-          [ "$observed" = "$PERSISTED_HEAD" ] || { echo "FAIL_TRAIN_PERSISTED_HEAD_WORKTREE"; exit 2; }
+          [ "$observed" = "$PARITY_HEAD" ] || { echo "FAIL_TRAIN_PARITY_HEAD_WORKTREE"; exit 2; }
           python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_focal_v1.py \
             --repo-root "$GITHUB_WORKSPACE" \
             --base-sha "$BASE_SHA" \
-            --head-sha "$PERSISTED_HEAD" \
+            --head-sha "$PARITY_HEAD" \
             --base-ref main \
             --event-name pull_request \
             --control-maturity CUTOVER \
