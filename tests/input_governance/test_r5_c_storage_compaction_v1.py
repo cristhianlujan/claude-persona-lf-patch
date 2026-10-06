@@ -60,3 +60,36 @@ def test_r5c_terminal_invalid_updates_remain_immutable():
     text = sql()
     assert "VALIDATOR_RECEIPT_IMMUTABLE" in text
     assert "fn_guard_input_governance_continuation_currentness_v1" in text
+
+
+def test_r5c_function_definitions_are_static_and_reviewable():
+    text = sql()
+    assert "DO $r5c_patch_readers$" not in text
+    assert "EXECUTE v_def" not in text
+    assert "replace(v_def" not in text
+    assert "regexp_replace(\n      v_def" not in text
+    for signature in (
+        "CREATE OR REPLACE FUNCTION programacion.fn_guard_input_family_assessment_update()",
+        "CREATE OR REPLACE FUNCTION programacion.fn_guard_input_family_execution_update()",
+        "CREATE OR REPLACE FUNCTION programacion.fn_guard_input_validator_semantic_coherence_v512()",
+        "CREATE OR REPLACE FUNCTION programacion.fn_input_auth006_build_assertions",
+        "CREATE OR REPLACE FUNCTION programacion.fn_input_owner_decision_assertions",
+        "CREATE OR REPLACE FUNCTION programacion.fn_input_v58_build_assertions",
+        "CREATE OR REPLACE FUNCTION programacion.fn_guard_input_governance_continuation_currentness_v1()",
+    ):
+        assert signature in text
+
+
+def test_r5c_pins_exact_final_md5s():
+    text = sql()
+    for md5 in (
+        "3992ea214300ed7a4c444667d9927f1e",
+        "19760955ab8271b6edbfb4c8a3b2380d",
+        "7f1172972e08b70df9328799c4118955",
+        "5f47ef6f1e0a8d5ee8ccd830ef9ba297",
+        "fcbe577977533315efa654e37f6fedaf",
+        "faaf7a7e0b6da0ac40eb740ecfda064a",
+        "af95bfa42f649250c3585db9a6cb35fb",
+    ):
+        assert md5 in text
+    assert text.count("R5C_FINAL_MD5_MISMATCH") == 7
