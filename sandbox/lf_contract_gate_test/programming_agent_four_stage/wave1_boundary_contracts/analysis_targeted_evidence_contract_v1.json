@@ -27,10 +27,45 @@
       "MATERIAL_AMBIGUITY_REQUIRES_DECISION"
     ]
   },
+  "target_resolution": {
+    "required_when_target_hints_present": true,
+    "states": [
+      "EXISTING",
+      "NEW",
+      "UNKNOWN"
+    ],
+    "resolver_order": [
+      "EXACT_TARGET_IDENTITY",
+      "CURRENT_CANONICAL_ASSET",
+      "CURRENT_IMPLEMENTATION",
+      "RELATED_AUTHORITIES",
+      "CONSUMERS_AND_DEPENDENCIES"
+    ],
+    "existing_requires": [
+      "exact_target_ref",
+      "target_revision_or_currentness_ref",
+      "as_is_authorities[]",
+      "as_is_implementation_refs[]",
+      "as_is_consumers[]",
+      "as_is_dependencies[]"
+    ],
+    "new_requires": [
+      "negative_existing_asset_evidence[]",
+      "canonical_search_scope[]",
+      "new_target_reason"
+    ],
+    "unknown_behavior": "NEED_MORE_EVIDENCE_OR_REQUIRES_DECISION",
+    "existing_greenfield_redefinition_forbidden": true,
+    "existing_delta_required_downstream": true,
+    "technical_solution_selection_deferred_to_programming": true,
+    "no_parallel_asset_resolver": true
+  },
   "output_requirements": [
     "evidence_items[]",
     "source_refs[]",
     "currentness_refs[]",
+    "target_resolution",
+    "as_is_baseline_or_new_target_evidence",
     "unresolved_material_gaps[]",
     "sufficiency_verdict"
   ],

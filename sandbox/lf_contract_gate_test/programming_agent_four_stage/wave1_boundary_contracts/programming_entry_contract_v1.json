@@ -9,6 +9,9 @@
     "analysis_package_digest_required": true,
     "source_currentness_required": true,
     "exact_target_identity_required": true,
+    "target_resolution_required": true,
+    "existing_target_delta_required": true,
+    "existing_target_greenfield_redefinition_forbidden": true,
     "lossless_projection_required": true,
     "story_identity_required": false,
     "functional_version_required": false,
@@ -16,6 +19,9 @@
   },
   "target_binding": {
     "required_fields": ["repo_full_name", "base_head_sha", "source_snapshot_sha256"],
+    "existing_target_requires_exact_revision_binding": true,
+    "greenfield_build_requires_new_target_evidence": true,
+    "implementation_strategy_owned_by": "PG-03",
     "write_scope_owned_by": "PG-05",
     "repo_or_head_inference_forbidden": true
   },
