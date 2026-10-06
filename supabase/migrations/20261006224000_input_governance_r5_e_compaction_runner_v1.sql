@@ -6,6 +6,9 @@ declare
   v_revision text;
   v_contract_sha text;
   v_actual text;
+  v_eligible_count bigint;
+  v_catalog_count bigint;
+  v_sample_count bigint;
   v_bad bigint;
 begin
   select c.especificacion->>'contract_revision',
@@ -51,21 +54,67 @@ begin
   end if;
 
   select count(*)
-    into v_bad
+    into v_eligible_count
   from programacion.input_family_assessments a
-  left join programacion.input_validator_assertion_sets_v1 s
-    on s.assertion_set_sha256=programacion.fn_v09_sha256_jsonb(a.validator_evidence->'assertions')
   where a.validator_outcome<>'PENDING'
     and a.validator_evidence ? 'assertions'
     and not (a.validator_evidence ? 'assertion_set_sha256')
-    and (
-      s.assertion_set_sha256 is null
-      or s.assertions is distinct from a.validator_evidence->'assertions'
-      or programacion.fn_v09_sha256_jsonb(s.assertions) is distinct from s.assertion_set_sha256
-    );
+    and a.validator_sha256 is not null;
+
+  select count(*)
+    into v_catalog_count
+  from programacion.input_validator_assertion_sets_v1;
+
+  if v_catalog_count<>3379 then
+    raise exception 'R5E_ASSERTION_SET_CATALOG_COUNT_DRIFT expected=3379 actual=%',v_catalog_count;
+  end if;
+
+  with sample as (
+    select a.id,a.validator_evidence
+    from programacion.input_family_assessments a
+    where a.validator_outcome<>'PENDING'
+      and a.validator_evidence ? 'assertions'
+      and not (a.validator_evidence ? 'assertion_set_sha256')
+      and a.validator_sha256 is not null
+    order by a.id
+    limit 50
+  ),
+  checked as (
+    select x.id,
+           x.validator_evidence,
+           programacion.fn_v09_sha256_jsonb(x.validator_evidence->'assertions') as computed_sha,
+           s.assertion_set_sha256 as catalog_sha,
+           s.assertions as catalog_assertions,
+           case
+             when s.assertion_set_sha256 is null then null
+             else programacion.fn_input_validator_evidence_rehydrate_v1(
+               (x.validator_evidence-'assertions')
+               || jsonb_build_object('assertion_set_sha256',s.assertion_set_sha256)
+             )
+           end as rehydrated
+    from sample x
+    left join programacion.input_validator_assertion_sets_v1 s
+      on s.assertion_set_sha256=
+         programacion.fn_v09_sha256_jsonb(x.validator_evidence->'assertions')
+  )
+  select count(*),
+         count(*) filter(
+           where catalog_sha is null
+              or catalog_assertions is distinct from validator_evidence->'assertions'
+              or programacion.fn_v09_sha256_jsonb(catalog_assertions) is distinct from catalog_sha
+              or rehydrated is distinct from validator_evidence
+         )
+    into v_sample_count,v_bad
+  from checked;
+
+  if v_sample_count<>least(v_eligible_count,50) then
+    raise exception 'R5E_PREFLIGHT_SAMPLE_COUNT_MISMATCH expected=% actual=%',
+      least(v_eligible_count,50),v_sample_count;
+  end if;
 
   if v_bad<>0 then
-    raise exception 'R5E_BASELINE_ASSERTION_SET_MISMATCH rows=%',v_bad;
+    raise exception 'R5E_PREFLIGHT_SAMPLE_MISMATCH rows=% sample=% eligible=%',
+      v_bad,v_sample_count,v_eligible_count;
   end if;
 end;
 $r5e_preflight$;
