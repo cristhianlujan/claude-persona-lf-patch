@@ -202,3 +202,21 @@ como candidato **no aplicado**.
 Owner observable del código: **Paulo / paulozterra**. No hay CODEOWNERS para
 estas rutas. Cristhian mantiene el boundary de governance/revisión para cualquier
 cambio visible de semántica temporal.
+
+
+### Semántica de currentness verificada en DB
+
+`inventory.v_managed_currentness_v1` **no usa `objects.last_seen_at`**.
+La frescura de `SUPABASE_PG_CATALOG`, `LF_ACTIVOS`,
+`PROGRAMACION_CONTRATOS` y `LF_OPERATION_REGISTRY` se deriva del último
+snapshot `INVENTORY_STAGED_REFRESH_V1 / DATABASE_AND_REGISTRIES`.
+
+Por eso detener los UPDATEs de `last_seen_at` en filas sin cambio no degrada
+`currentness`. El snapshot del finalizer conserva la semántica canónica;
+`refresh_heartbeats_v1` queda como señal operacional pequeña de ejecución.
+
+También se cubrió `fn_refresh_registries_v1()`: sus tres upserts sobre
+`inventory.objects` ahora tienen guardas semánticas. En `search_index`,
+`observed_at` solo fuerza UPDATE para `repo://` y `edge://`; para fuentes
+gestionadas el `observed_at` efectivo se obtiene en lectura desde
+`v_managed_currentness_v1`, evitando churn por el timestamp de cada snapshot.
