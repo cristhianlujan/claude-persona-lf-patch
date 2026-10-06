@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  LF_MIGRATION_TRAIN_MODE: DRY_RUN
+  LF_MIGRATION_TRAIN_MODE: REAL
   SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
   SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
 
@@ -60,7 +60,7 @@ jobs:
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.48.3
 
       - name: Install PostgreSQL client for REAL mode
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
@@ -81,6 +81,75 @@ jobs:
           private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
+
+      - name: Preflight GitHub App token in DRY_RUN
+        id: app_preflight
+        if: env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
+        shell: bash
+        env:
+          APP_ID: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ -z "${APP_ID:-}" ] || [ -z "${APP_PRIVATE_KEY:-}" ]; then
+            echo "APP_SECRETS_MISSING" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import base64,json,os,time,urllib.request,urllib.error
+          def b64url(b): return base64.urlsafe_b64encode(b).rstrip(b"=").decode()
+          header=b64url(json.dumps({"alg":"RS256","typ":"JWT"},separators=(",",":")).encode())
+          now=int(time.time())
+          payload=b64url(json.dumps({"iat":now-60,"exp":now+540,"iss":os.environ["APP_ID"]},separators=(",",":")).encode())
+          open("/tmp/lf_app_signing_input","w").write(header+"."+payload)
+          open("/tmp/lf_app_key","w").write(os.environ["APP_PRIVATE_KEY"])
+          PY
+          chmod 600 /tmp/lf_app_key
+          signature="$(printf '%s' "$(cat /tmp/lf_app_signing_input)" | openssl dgst -sha256 -sign /tmp/lf_app_key | base64 -w0 | tr '+/' '-_' | tr -d '=')"
+          jwt="$(cat /tmp/lf_app_signing_input).$signature"
+          rm -f /tmp/lf_app_key /tmp/lf_app_signing_input
+          repo_id="$(curl -fsSL -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPO" | jq -r .id)"
+          set +e
+          installation_json="$(curl -sS -w '\n%{http_code}' -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $jwt" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repositories/$repo_id/installation")"
+          set -e
+          http="$(printf '%s\n' "$installation_json" | tail -1)"
+          body="$(printf '%s\n' "$installation_json" | sed '$d')"
+          if [ "$http" != "200" ]; then
+            slug="$(curl -fsSL -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $jwt" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/app" | jq -r '.slug // "unknown"')"
+            echo "APP_NOT_INSTALLED app_slug=$slug" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          installation_id="$(printf '%s' "$body" | jq -r .id)"
+          slug="$(printf '%s' "$body" | jq -r '.app_slug // "unknown"')"
+          token_body="$(curl -fsSL -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $jwt" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/app/installations/$installation_id/access_tokens" --data-binary "$(jq -nc --argjson id "$repo_id" '{repository_ids:[$id]}')")"
+          token="$(printf '%s' "$token_body" | jq -r .token)"
+          perms="$(printf '%s' "$token_body" | jq -c '.permissions // {}')"
+          [ -n "$token" ] && [ "$token" != "null" ] || { echo "APP_NOT_INSTALLED app_slug=$slug" | tee -a "$GITHUB_STEP_SUMMARY"; exit 0; }
+          echo "APP_TOKEN_OK app_slug=$slug permissions=$perms" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Acquire GitHub App token for DRY_RUN verified status
+        id: app_token_dry
+        if: env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Publish lf-merge-train/verified in DRY_RUN
+        if: env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
+        env:
+          GH_TOKEN: ${{ steps.app_token_dry.outputs.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state=success -f context='lf-merge-train/verified' \
+            -f description='LF migration train App identity verified' >/dev/null
 
       - name: Admission and current-main readback
         id: admission
@@ -135,6 +204,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git config user.name "lf-migration-merge-train[bot]"
+          git config user.email "lf-migration-merge-train[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:$GH_TOKEN@github.com/$REPO.git"
           git fetch --no-tags origin "$EXPECTED_HEAD" "$CURRENT_MAIN"
 
@@ -256,6 +327,47 @@ jobs:
             psql -X -At -v ON_ERROR_STOP=1 -c "select coalesce(max(version),'00000000000000') from supabase_migrations.schema_migrations;")"
           ledger_max="$(printf '%s' "$ledger_max" | tr -d '\r\n')"
 
+          current_version="${MIGRATION_PATH##*/}"; current_version="${current_version%%_*}"
+          current_name="${MIGRATION_PATH##*/}"; current_name="${current_name#*_}"; current_name="${current_name%.sql}"
+          [[ "$current_version" =~ ^[0-9]{14}$ ]] || { echo "FAIL_TRAIN_CURRENT_VERSION_INVALID value=$current_version"; exit 2; }
+          existing_row="$(docker run --rm \
+            -e PGPASSWORD="$LF_SUPABASE_DB_PASSWORD" \
+            postgres:17.6 \
+            psql "host=aws-1-us-east-1.pooler.supabase.com port=5432 user=postgres.mhwmirqcgxxukpctffuv dbname=postgres sslmode=require" \
+            -X -At -F '|' -v ON_ERROR_STOP=1 -c "select name,encode(convert_to(statements[1],'UTF8'),'hex') from supabase_migrations.schema_migrations where version='$current_version';")"
+          existing_row="$(printf '%s' "$existing_row" | tr -d '\r\n')"
+          existing_name="${existing_row%%|*}"
+          if [ -n "$existing_row" ]; then
+            [ "$existing_name" = "$current_name" ] || { echo "FAIL_TRAIN_EXISTING_LEDGER_IDENTITY_MISMATCH version=$current_version ledger=$existing_name pr=$current_name"; exit 2; }
+            ledger_hex="${existing_row#*|}"
+            file_sha="$(python3 - "$SOURCE_FILE" <<'PY'
+          import hashlib,sys
+          def canonical(sql):
+              sql=sql.replace("\r\n","\n").replace("\r","\n")
+              return "\n".join(line for line in sql.split("\n") if not line.lstrip().startswith("--")).rstrip("\n").encode()
+          print(hashlib.sha256(canonical(open(sys.argv[1],encoding="utf-8").read())).hexdigest())
+          PY
+          )"
+            ledger_sha="$(python3 - "$ledger_hex" <<'PY'
+          import hashlib,sys
+          def canonical(sql):
+              sql=sql.replace("\r\n","\n").replace("\r","\n")
+              return "\n".join(line for line in sql.split("\n") if not line.lstrip().startswith("--")).rstrip("\n").encode()
+          print(hashlib.sha256(canonical(bytes.fromhex(sys.argv[1]).decode("utf-8"))).hexdigest())
+          PY
+          )"
+            [ "$ledger_sha" = "$file_sha" ] || { echo "FAIL_TRAIN_EXISTING_LEDGER_CONTENT_MISMATCH version=$current_version"; exit 2; }
+            version="$current_version"
+            target_path="$MIGRATION_PATH"
+            echo "PASS_TRAIN_ALREADY_APPLIED_EXACT_READBACK version=$version name=$current_name"
+            echo "migration_path=$target_path" >> "$GITHUB_OUTPUT"
+            echo "migration_version=$version" >> "$GITHUB_OUTPUT"
+            echo "migration_name=${target_path##*/}" >> "$GITHUB_OUTPUT"
+            echo "already_applied_exact=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "already_applied_exact=false" >> "$GITHUB_OUTPUT"
+
           assign_out="$(python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py \
             "$SOURCE_FILE" --main-max "$main_max" --ledger-max "$ledger_max" --dry-run)"
           echo "$assign_out"
@@ -366,7 +478,7 @@ jobs:
 
       - name: Persist exact source and require Saga READY_TO_APPLY
         id: write_ahead
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
@@ -398,8 +510,22 @@ jobs:
           }
           open(".lf_train/write-ahead-request.json","w").write(json.dumps(p,sort_keys=True))
           PY
-          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py \
-            --request .lf_train/write-ahead-request.json | tee .lf_train/write-ahead-receipt.json
+          persist_request="$(mktemp)"
+          persist_receipt="$(mktemp)"
+          persist_worktree="$(mktemp -d)"
+          cp .lf_train/write-ahead-request.json "$persist_request"
+          git worktree add --detach "$persist_worktree" "$BASE_SHA" >/dev/null
+          (
+            cd "$persist_worktree"
+            git config user.name "lf-migration-merge-train[bot]"
+            git config user.email "lf-migration-merge-train[bot]@users.noreply.github.com"
+            git remote set-url origin "https://x-access-token:$GH_TOKEN@github.com/$REPO.git"
+            python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_git_persist.py \
+              --request "$persist_request"
+          ) | tee "$persist_receipt"
+          git worktree remove --force "$persist_worktree"
+          cp "$persist_receipt" .lf_train/write-ahead-receipt.json
+          rm -f "$persist_request" "$persist_receipt"
           persisted_head="$(jq -r '.persisted_head_sha' .lf_train/write-ahead-receipt.json)"
           [ -n "$persisted_head" ] && [ "$persisted_head" != "null" ] || { echo "FAIL_TRAIN_WRITE_AHEAD_HEAD"; exit 2; }
 
@@ -431,7 +557,7 @@ jobs:
 
       - name: Apply exact version and ledger readback
         id: real_apply
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
@@ -439,6 +565,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git fetch --no-tags origin "${{ steps.write_ahead.outputs.persisted_head_sha }}"
+          git checkout --detach "${{ steps.write_ahead.outputs.persisted_head_sha }}"
           python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_exact_apply.py \
             --project-root "$GITHUB_WORKSPACE" \
             --migration-path "$GITHUB_WORKSPACE/$TARGET_PATH" \
@@ -455,16 +583,19 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           BASE_SHA: ${{ steps.admission.outputs.current_main }}
-          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha }}
+          PARITY_HEAD: ${{ steps.plan.outputs.already_applied_exact == 'true' && (steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha) || steps.write_ahead.outputs.persisted_head_sha }}
         shell: bash
         run: |
           set -euo pipefail
+          [ -n "$PARITY_HEAD" ] || { echo "FAIL_TRAIN_PARITY_HEAD_MISSING"; exit 2; }
+          git fetch --no-tags origin "$PARITY_HEAD"
+          git checkout --detach "$PARITY_HEAD"
           observed="$(git rev-parse HEAD)"
-          [ "$observed" = "$PERSISTED_HEAD" ] || { echo "FAIL_TRAIN_PERSISTED_HEAD_WORKTREE"; exit 2; }
+          [ "$observed" = "$PARITY_HEAD" ] || { echo "FAIL_TRAIN_PARITY_HEAD_WORKTREE"; exit 2; }
           python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_focal_v1.py \
             --repo-root "$GITHUB_WORKSPACE" \
             --base-sha "$BASE_SHA" \
-            --head-sha "$PERSISTED_HEAD" \
+            --head-sha "$PARITY_HEAD" \
             --base-ref main \
             --event-name pull_request \
             --control-maturity CUTOVER \
@@ -484,6 +615,19 @@ jobs:
           set -euo pipefail
           live="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha')"
           [ "$live" = "$EXPECTED_MAIN" ] || { echo "FAIL_TRAIN_MAIN_MOVED_POST_APPLY expected=$EXPECTED_MAIN live=$live"; exit 2; }
+
+      - name: Publish lf-merge-train/verified before REAL merge
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && success()
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          HEAD_SHA: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state=success -f context='lf-merge-train/verified' \
+            -f description='LF migration train verified exact head' >/dev/null
 
       - name: Saga final-evidence hook
         if: always()

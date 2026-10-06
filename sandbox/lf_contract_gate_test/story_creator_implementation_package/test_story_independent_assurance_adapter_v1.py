@@ -16,8 +16,8 @@ SOURCE_HEAD = "85bb733e73b9d21222f4e86b618ef1a099208051"
 CAPABILITY = {
     "capability_code": "INDEPENDENT_ASSURANCE",
     "status": "ACTIVE",
-    "version": "1.0.0",
-    "manifest_sha256": "a6f5e2fe21ed305b6d47e8722035685b243cfc4e697ff397d1724e5d34f6c6e8",
+    "version": "1.0.1",
+    "manifest_sha256": "b12c44ca0e07d2da4fdcb27f7e8e8da311dfcdaf390e645d45a3cf407a31e6c1",
 }
 
 
@@ -66,7 +66,7 @@ def _receipt():
 
 def test_prepare_uses_current_capability_without_hardcoded_v2():
     prepared = _prepared()
-    assert prepared["capability_version"] == "1.0.0"
+    assert prepared["capability_version"] == "1.0.1"
     assert prepared["subject_type"] == "STORY_IMPLEMENTATION_PACKAGE"
     assert prepared["subject_sha256"] == canonical_package_sha256(PACKAGE)
 
