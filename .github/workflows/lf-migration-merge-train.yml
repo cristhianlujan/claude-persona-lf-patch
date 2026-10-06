@@ -128,6 +128,29 @@ jobs:
           [ -n "$token" ] && [ "$token" != "null" ] || { echo "APP_NOT_INSTALLED app_slug=$slug" | tee -a "$GITHUB_STEP_SUMMARY"; exit 0; }
           echo "APP_TOKEN_OK app_slug=$slug permissions=$perms" | tee -a "$GITHUB_STEP_SUMMARY"
 
+      - name: Acquire GitHub App token for DRY_RUN verified status
+        id: app_token_dry
+        if: env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Publish lf-merge-train/verified in DRY_RUN
+        if: env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'
+        env:
+          GH_TOKEN: ${{ steps.app_token_dry.outputs.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state=success -f context='lf-merge-train/verified' \
+            -f description='LF migration train App identity verified' >/dev/null
+
       - name: Admission and current-main readback
         id: admission
         env:
@@ -530,6 +553,19 @@ jobs:
           set -euo pipefail
           live="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha')"
           [ "$live" = "$EXPECTED_MAIN" ] || { echo "FAIL_TRAIN_MAIN_MOVED_POST_APPLY expected=$EXPECTED_MAIN live=$live"; exit 2; }
+
+      - name: Publish lf-merge-train/verified before REAL merge
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && success()
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          HEAD_SHA: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state=success -f context='lf-merge-train/verified' \
+            -f description='LF migration train verified exact head' >/dev/null
 
       - name: Saga final-evidence hook
         if: always()

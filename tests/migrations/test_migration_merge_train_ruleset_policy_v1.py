@@ -12,7 +12,7 @@ rollback=cfg["rollback"]
 checks=[r for r in update["rules"] if r["type"]=="required_status_checks"]
 assert len(checks)==1
 assert checks[0]["parameters"]["strict_required_status_checks_policy"] is True
-assert checks[0]["parameters"]["required_status_checks"]==[{"context":"lf-migration-merge-train"}]
+assert checks[0]["parameters"]["required_status_checks"]==[{"context":"lf-merge-train/verified","integration_id":"${LF_MIGRATION_TRAIN_APP_ID}"}]
 
 assert update["bypass_actors"]==[
     {"actor_id":66433825,"actor_type":"User","bypass_mode":"pull_request"},
