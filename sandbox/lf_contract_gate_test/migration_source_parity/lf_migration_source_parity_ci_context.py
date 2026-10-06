@@ -81,7 +81,10 @@ CLASSIFIED_EXTERNAL_PREFIXES = (
     "router_generic_keyword_dispatch_",
     "router_generic_tie_break_",
 )
-CLASSIFIED_EXTERNAL_NAMES = {"retire_b2b_auth005_legacy_totp_screen"}
+CLASSIFIED_EXTERNAL_NAMES = {
+    "retire_b2b_auth005_legacy_totp_screen",
+    "ig_1_serialize_input_readiness_run_pair_v1",
+}
 STRATEGY_MIGRATION_RE = re.compile(r"^s[1-9][0-9]*_[a-z0-9][a-z0-9_]*$")
 FILENAME_RE = re.compile(r"^(\d{14})_(.+)\.sql$")
 MARKER_RE = re.compile(
@@ -1016,6 +1019,8 @@ def main() -> int:
         fail("FAIL_CI009_SELFTEST_EXTERNAL_OWNER")
     if not classified("ig_cv_r16_git_first_database_governance_v1"):
         fail("FAIL_CI009_SELFTEST_IG_CV_EXTERNAL_OWNER_FAMILY")
+    if not classified("ig_1_serialize_input_readiness_run_pair_v1"):
+        fail("FAIL_CI009_SELFTEST_IG1_EXTERNAL_OWNER")
     if classified("totally_unknown_future_migration"):
         fail("FAIL_CI009_SELFTEST_UNKNOWN_ACCEPTED")
 
