@@ -40,12 +40,12 @@ with runset(run_id, expected_current) as (
        not (a.validator_evidence ? 'curator_sha256') or
        not (a.validator_evidence ? 'direct_source_readback') or
        not (a.validator_evidence ? 'execution_mode') or
-       not (a.validator_evidence ? 'assertions') or
+       not (programacion.fn_input_validator_evidence_rehydrate_v1(a.validator_evidence) ? 'assertions') or
        a.validator_evidence->>'source_snapshot_sha256' is distinct from b.source_snapshot_sha256 or
        coalesce((a.validator_evidence->>'direct_source_readback')::boolean,false) is not true or
        a.validator_evidence->>'execution_mode' is distinct from 'INDEPENDENT_VALIDATOR' or
-       jsonb_typeof(a.validator_evidence->'assertions') is distinct from 'array' or
-       jsonb_array_length(coalesce(a.validator_evidence->'assertions','[]'::jsonb))=0
+       jsonb_typeof(programacion.fn_input_validator_evidence_rehydrate_v1(a.validator_evidence)->'assertions') is distinct from 'array' or
+       jsonb_array_length(coalesce(programacion.fn_input_validator_evidence_rehydrate_v1(a.validator_evidence)->'assertions','[]'::jsonb))=0
     )) as bad_validator_evidence,
     (select count(*) from programacion.input_family_assessments a where a.run_id=b.run_id and (
        (a.applicability='APPLICABLE' and (a.coverage_status='NOT_APPLICABLE' or a.well_defined_status='NOT_APPLICABLE' or a.story_ready_status='NOT_APPLICABLE' or a.implementation_ready_status='NOT_APPLICABLE' or a.qa_ready_status='NOT_APPLICABLE' or a.production_ready_status='NOT_APPLICABLE')) or
