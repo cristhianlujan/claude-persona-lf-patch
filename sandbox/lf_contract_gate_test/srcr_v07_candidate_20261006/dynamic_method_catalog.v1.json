@@ -1,0 +1,122 @@
+{
+  "schema_version": "SRCR_V07_DYNAMIC_METHOD_CATALOG_V1",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_7_CANDIDATE",
+  "selection_principle": "typed_signals_not_domain_names",
+  "mandatory_core": [
+    "AUTHORITY_CURRENTNESS",
+    "PHYSICAL_REACHABILITY_WIRING",
+    "CAUSAL_BOUNDARY",
+    "REPAIR_REUSE_ELIMINATION",
+    "FALSIFICATION",
+    "ROLLBACK_RECOVERY_APPLICABILITY",
+    "ACCEPTANCE_READBACK"
+  ],
+  "diagnostic_modules": {
+    "CONTRACT_TRANSPORT": ["CONTRACT_MISMATCH", "TRANSPORT_CONTINUITY_RISK", "RECEIVER_ENFORCEMENT_RISK"],
+    "STATE_LIFECYCLE": ["STATE_LIFECYCLE_DEFECT", "TERMINALITY_DEFECT"],
+    "AUTHORITY_BINDING": ["AUTHORITY_CONTRADICTION", "CURRENTNESS_DRIFT", "IDENTITY_VERSION_DRIFT"],
+    "CONSUMER_COMPATIBILITY": ["CONSUMER_DIVERGENCE", "MULTI_CONSUMER_IMPACT"],
+    "DEPENDENCY_PROPAGATION": ["DEPENDENCY_CYCLE", "DEPENDENCY_PROPAGATION"],
+    "CONCURRENCY_REPLAY": ["CONCURRENCY_RACE", "RETRY_REPLAY_RESUME"],
+    "RECOVERY_ROLLBACK": ["PARTIAL_FAILURE_RECOVERY", "ROLLBACK_RESIDUE"],
+    "SECURITY_PRIVACY": ["SECURITY_PERMISSION_BOUNDARY", "PRIVACY_MINIMALITY"],
+    "UI_VISUAL": ["UI_VISUAL"],
+    "PERFORMANCE_CONTEXT": ["PERFORMANCE_CONTEXT_COST"],
+    "MIGRATION_CUTOVER": ["CONTRACT_MISMATCH", "IDENTITY_VERSION_DRIFT", "MULTI_CONSUMER_IMPACT"],
+    "DATA_SHAPE_CARDINALITY": ["DATA_CARDINALITY", "MISSING_VS_EMPTY"],
+    "PROVENANCE_LINEAGE": ["EVIDENCE_CONTRADICTION", "CURRENTNESS_DRIFT"],
+    "OBSERVABILITY_READBACK": ["UNKNOWN_MATERIAL_PATH", "RECEIVER_ENFORCEMENT_RISK"]
+  },
+  "strategy_rules": [
+    {
+      "strategy": "DIRECT_CAUSAL_REPAIR",
+      "when": "single established failure boundary; no material competing cause; blast radius bounded"
+    },
+    {
+      "strategy": "GRAPH_HYPOTHESIS_SEARCH",
+      "when": "two or more materially plausible causal chains or cross-surface discontinuities"
+    },
+    {
+      "strategy": "TREE_SEARCH",
+      "when": "multiple repair alternatives remain materially viable after localization"
+    },
+    {
+      "strategy": "VERIFIER_GUIDED_SEARCH",
+      "when": "material hypotheses have safe deterministic/read-only falsifiers"
+    },
+    {
+      "strategy": "MULTI_FIX_COORDINATION",
+      "when": "repair requires coherent deltas across multiple affected fronts"
+    },
+    {
+      "strategy": "PARALLEL_SEARCH",
+      "when": "independent evidence paths can be searched without shared mutable state"
+    },
+    {
+      "strategy": "MULTI_LOCATION_SEARCH",
+      "when": "same failure class is reachable through multiple physical locations/paths"
+    },
+    {
+      "strategy": "HOSTILE_CHALLENGER",
+      "when": "high materiality, competing hypotheses, wide blast radius, or closure-sensitive ambiguity"
+    },
+    {
+      "strategy": "EXTERNAL_CURRENT_PRACTICE_RESEARCH",
+      "when": "technique/architecture choice can materially improve beyond LF internal authority; pre-research baseline required"
+    }
+  ],
+  "repair_operators": [
+    "KEEP_AS_IS",
+    "LOCAL_PATCH",
+    "MOVE_CONTROL_UPSTREAM",
+    "REWIRE",
+    "CHANGE_CONTRACT",
+    "CHANGE_TRANSPORT",
+    "CHANGE_STATE_TRANSITION",
+    "REBIND_AUTHORITY",
+    "REBIND_VERSION",
+    "INVALIDATE_STALE_DERIVED_STATE",
+    "MIGRATE_COMPATIBILITY",
+    "DRAIN_CONSUMERS",
+    "ADD_FAIL_CLOSED_GUARD",
+    "ADD_RECEIVER_VERIFICATION",
+    "ADD_IDEMPOTENCY",
+    "ADD_DEDUPE",
+    "ADD_RECOVERY",
+    "REUSE_EXISTING",
+    "MERGE_WITH_EXISTING",
+    "ELIMINATE",
+    "CONTAIN",
+    "ROLLBACK",
+    "NO_CHANGE"
+  ],
+  "transversal_capability_reuse": [
+    "CAPABILITY_SELECTOR",
+    "TARGETED_EVIDENCE_ACQUISITION",
+    "CURRENTNESS_AUTHORITY",
+    "DECISION_CONTEXT_ASOF",
+    "CAUSAL_EFFECT_LINEAGE",
+    "CAPABILITY_VERSION_COMPATIBILITY",
+    "CONSUMER_ADMISSION",
+    "CONTROL_EQUIVALENCE_JUDGE",
+    "EXECUTION_INVALIDATION_PROPAGATION",
+    "REVERSIBLE_CANDIDATE_VERIFICATION",
+    "INDEPENDENT_ASSURANCE",
+    "LF_CONTRACT_CHECK",
+    "PRIVACY_MINIMALITY_GUARD",
+    "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+    "VISUAL_EVIDENCE_GATE",
+    "TYPED_EVIDENCE_REGISTRY",
+    "EVIDENCE_LEDGER",
+    "FINAL_EVIDENCE"
+  ],
+  "new_capability_policy": {
+    "default": "DO_NOT_CREATE",
+    "promotion_requirements": [
+      "demonstrated_transversal_consumers",
+      "existing_capability_composition_insufficient",
+      "duplication_risk_or_existing_duplicates",
+      "clear_owner_contract_and_validation_boundary"
+    ]
+  }
+}
