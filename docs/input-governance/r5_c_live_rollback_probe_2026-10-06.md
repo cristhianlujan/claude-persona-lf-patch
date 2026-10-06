@@ -27,7 +27,7 @@ The seven MD5-governed R5-C functions are not seven table triggers; the seventh 
 |---|---|
 | `fn_guard_input_family_assessment_update()` | `3992ea214300ed7a4c444667d9927f1e` |
 | `fn_guard_input_family_execution_update()` | `19760955ab8271b6edbfb4c8a3b2380d` |
-| `fn_guard_input_governance_continuation_currentness_v1()` | `7f1172972e08b70df9328799c4118955` |
+| `fn_guard_input_governance_continuation_currentness_v1()` | `4f2352389ca15561c6693f1e9a82867b` |
 | `fn_guard_input_validator_semantic_coherence_v512()` | `5f47ef6f1e0a8d5ee8ccd830ef9ba297` |
 | `fn_input_auth006_build_assertions(bigint,bigint,text)` | `fcbe577977533315efa654e37f6fedaf` |
 | `fn_input_owner_decision_assertions(bigint,bigint,text)` | `faaf7a7e0b6da0ac40eb740ecfda064a` |
@@ -83,3 +83,44 @@ After all rollback probes:
   `e40f0054b42f644d168835063a16a4c0a26b2e22d7d9050c4a8e7b9b5e77d61d`
 
 R5-C remains Draft and was not applied.
+
+
+## Claude blocker follow-up — shared trigger safety
+
+`fn_guard_input_governance_continuation_currentness_v1()` is shared across three tables.
+The R5-C assessment-only STORAGE_COMPACTION branch now uses nested IFs:
+
+1. outer IF: only `TG_OP/TG_TABLE_SCHEMA/TG_TABLE_NAME`;
+2. inner IF: only after the table is proven to be `input_family_assessments`, access assessment-specific OLD/NEW fields.
+
+This prevents PL/pgSQL record-field resolution failures on the other trigger tables.
+
+### Complete pg_trigger inventory for the seven modified functions
+
+| Function | Trigger table(s) |
+|---|---|
+| `fn_guard_input_family_assessment_update()` | `programacion.input_family_assessments` |
+| `fn_guard_input_family_execution_update()` | `programacion.input_family_assessments` |
+| `fn_guard_input_validator_semantic_coherence_v512()` | `programacion.input_family_assessments` |
+| `fn_guard_input_governance_continuation_currentness_v1()` | `programacion.input_family_assessments`; `programacion.input_gap_proposals`; `programacion.input_validator_chunk_timings` |
+| `fn_input_auth006_build_assertions(bigint,bigint,text)` | none |
+| `fn_input_owner_decision_assertions(bigint,bigint,text)` | none |
+| `fn_input_v58_build_assertions(bigint,bigint,text)` | none |
+
+### Shared-trigger table probe
+
+Baseline behavior was captured first against the live pre-R5-C definition, then the same SQL was executed after installing the corrected candidate inside `BEGIN/ROLLBACK`.
+
+| Table | Operation | Baseline | Corrected candidate | statement_sha256 |
+|---|---|---|---|---|
+| `input_family_assessments` | terminal invalidated STORAGE_COMPACTION UPDATE | accepted | **accepted**, validator SHA unchanged | `2fa1492dee91273fdd34b040dcda7bdacf78c071787987426b99efbcb24d9ec4` |
+| `input_gap_proposals` | UPDATE terminal proposal 6672 | `P0001 V512_PROPOSAL_VALIDATOR_RECEIPT_IMMUTABLE:6672` | **same SQLSTATE + same error** | `f2eafc9fd7dc3057e089e12ebd4b3e6408dc49615f376c06aa99e1ebfcfbdf99` |
+| `input_validator_chunk_timings` | INSERT cloned timing for current run 525 using `OVERRIDING SYSTEM VALUE` | accepted | **accepted** | `a02db066f759910d2d06f9dcc4e97c2a8c5f1b28440ce4a55086c28ab4be65f9` |
+
+The chunk probe uses `OVERRIDING SYSTEM VALUE` so the identity sequence is not consumed.
+
+Post-rollback readback:
+- synthetic chunk id 9001025 persisted: **false**;
+- proposal 6672 has no `r5c_probe` marker: **true**;
+- assessment 21079 still has inline assertions: **true**;
+- live currentness function MD5 restored to base `69cf918a8510c6ba40302cbba56e5c99`.
