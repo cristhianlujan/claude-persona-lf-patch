@@ -88,6 +88,7 @@ La migración prueba fail-fast:
 
 ## Fuentes
 
-- `supabase/migrations/20261006132500_t_privacy_minimality_guard_v1.sql`
+- `supabase/migrations/20261006133051_t_privacy_minimality_guard_v1.sql`
 - `public.lf_privacy_minimality_guard_evaluate_v1(jsonb)`
 - `public.lf_privacy_minimality_guard_result_valid_v1(jsonb)`
+- `supabase/migrations/20261006134500_t_privacy_action_spec_current_reconcile_v1.sql` — reconcilia el checkpoint `GENERIC_CONTRACT` contra la capability CURRENT; no recrea ni promueve la capability.
