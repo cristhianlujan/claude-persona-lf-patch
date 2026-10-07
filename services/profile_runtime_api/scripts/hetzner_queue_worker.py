@@ -305,7 +305,8 @@ def _sha256_text(value: str) -> str:
 
 
 def _canonical_json_sha256(value: Any) -> str:
-    raw = json.dumps(        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    raw = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     ).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
 
@@ -604,7 +605,8 @@ def _begin_governed_pre_model(
         "input_digest": input_digest,
         "context": context,
         "baseline_first": baseline_first,
-        "research_baseline_mode": execution_manifest.get("research_baseline_mode"),        "research_baseline_contract": execution_manifest.get("research_baseline_contract"),
+        "research_baseline_mode": execution_manifest.get("research_baseline_mode"),
+        "research_baseline_contract": execution_manifest.get("research_baseline_contract"),
     }
 
 
@@ -903,7 +905,8 @@ def _validate_envelope(request_id: str, envelope: Any) -> dict[str, Any]:
                 raise RuntimeError(f"HETZNER_NONCANONICAL_ARTIFACT_REF_DUPLICATE:{ref}")
             if sha in shas:
                 raise RuntimeError(f"HETZNER_NONCANONICAL_ARTIFACT_SHA256_DUPLICATE:{sha}")
-            refs.add(ref)            shas.add(sha)
+            refs.add(ref)
+            shas.add(sha)
         if profile.get("send_image_to_model") is True:
             raise RuntimeError("HETZNER_NONCANONICAL_ARTIFACT_SET_FULL_IMAGE_MODEL_UNSUPPORTED")
     else:
@@ -1202,7 +1205,8 @@ def _persist_success(
 
 
 def _persist_failure(conn: psycopg.Connection, request_id: str, exc: BaseException) -> None:
-    raw = str(exc)    candidate = raw.split(":", 1)[0]
+    raw = str(exc)
+    candidate = raw.split(":", 1)[0]
     error_code = (
         candidate
         if re.fullmatch(r"[A-Z0-9][A-Z0-9_-]{2,119}", candidate or "")
