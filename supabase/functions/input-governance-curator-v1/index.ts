@@ -57,8 +57,24 @@ Deno.serve(async (req: Request) => {
       p_pantalla_id: pantallaId,
       p_consumer: consumer,
       p_curator_identity: identity,
+    }) as Record<string, unknown>;
+
+    let handoffReceipt: unknown = null;
+    if (result?.status === "VALIDATOR_RUNTIME_REQUIRED") {
+      const runId = Number(result?.run_id);
+      if (!Number.isInteger(runId) || runId < 1) throw new Error("CURATOR_HANDOFF_RUN_ID_INVALID");
+      handoffReceipt = await rpc("fn_input_governance_curator_handoff_receipt_v1", {
+        p_run_id: runId,
+        p_expected_curator_identity: identity,
+      });
+    }
+
+    return Response.json({
+      runtime: "input-governance-curator-v1",
+      identity,
+      result,
+      handoff_receipt: handoffReceipt,
     });
-    return Response.json({ runtime: "input-governance-curator-v1", identity, result });
   } catch (e) {
     return Response.json({ error: "CURATOR_EXECUTION_FAILED", detail: e instanceof Error ? e.message : String(e) }, { status: 409 });
   }
