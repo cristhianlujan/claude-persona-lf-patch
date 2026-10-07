@@ -1,0 +1,46 @@
+{
+  "schema": "PROFILE_EVOLUTION_SHADOW_TARGETS_V1",
+  "mode": "READ_ONLY_NO_PROFILE_WRITE",
+  "targets": [
+    {
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf"
+    },
+    {
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack"
+    },
+    {
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf"
+    },
+    {
+      "profile_code": "ACT-0051",
+      "profile_slug": "frontend_prototype_architect_lf"
+    },
+    {
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf"
+    },
+    {
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning"
+    },
+    {
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect"
+    },
+    {
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect"
+    },
+    {
+      "profile_code": "PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531",
+      "profile_slug": "cx_trust_experience_architect_lf"
+    },
+    {
+      "profile_code": "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
+      "profile_slug": "ux_product_experience_architect_lf"
+    }
+  ]
+}
