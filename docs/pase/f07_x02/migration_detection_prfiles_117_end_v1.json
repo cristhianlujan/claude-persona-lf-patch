@@ -1,0 +1,79 @@
+{
+  "schema_version": "pase-disabled-window-migration-prfiles-shard/v1",
+  "offset": [
+    117,
+    123
+  ],
+  "rows": [
+    {
+      "seq": 394,
+      "merge_sha": "fe7e91ef2553b2604349a16010d49eed759dbf20",
+      "pr": 1502,
+      "head_sha_original": "3f2e48cbd2e591aba1c6dd7e66d6ed0d6e503fad",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 404,
+      "merge_sha": "01d0c904885d4346d8467e86f2e3f64f4f926f8e",
+      "pr": 1451,
+      "head_sha_original": "e076c970e5612d07a741cd255eba3e95d5b0d4f4",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 405,
+      "merge_sha": "cdb81068aac97811bbd4ea192c6479ebc73431c7",
+      "pr": 1453,
+      "head_sha_original": "608d9c04c30f56671dabc533bbd4e329be1677b8",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 408,
+      "merge_sha": "281c4ec0168207c621baad7408503d293c174144",
+      "pr": 1497,
+      "head_sha_original": "17ad988ade3dc13bed5dc05b129aa14eba63c6a4",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 4
+    },
+    {
+      "seq": 409,
+      "merge_sha": "0bcad85a00bd823445d546af5b4c32b5cd03365f",
+      "pr": 1467,
+      "head_sha_original": "35fc02fd8fcc7140391a6bd3701488243f9cb294",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 8
+    },
+    {
+      "seq": 410,
+      "merge_sha": "b9837c246d89837245cf63b28f12a85acbf41488",
+      "pr": 1489,
+      "head_sha_original": "7132ec86c8613dc209634c45d57ae7514ce1c7dd",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 4
+    },
+    {
+      "seq": 414,
+      "merge_sha": "26bca206eb4b6c6980b0933b1e1ce4e6b53cb4c4",
+      "pr": 1483,
+      "head_sha_original": "ec4cfaa8b6b070e978d1fd5a40ff1a7e37f4ebaf",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 2
+    }
+  ]
+}
