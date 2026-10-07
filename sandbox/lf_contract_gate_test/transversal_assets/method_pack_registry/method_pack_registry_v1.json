@@ -1,0 +1,309 @@
+{
+  "schema_version": "METHOD_PACK_REGISTRY_V1",
+  "owner": "SUPER_ADMIN",
+  "authority": "SUPABASE_REGISTRY_WITH_REPOSITORY_SOURCE",
+  "selection_principle": "TYPED_SIGNALS_AND_PRECONDITIONS",
+  "execution_permission": false,
+  "methods": [
+    {
+      "method_id": "CAUSAL_ANALYSIS",
+      "signals": [
+        {
+          "type": "causal_requirement",
+          "accepted_values": [
+            "HIGH",
+            "REQUIRED"
+          ]
+        }
+      ],
+      "preconditions": [
+        "evidence_sufficiency!=NONE"
+      ],
+      "problem_classes": [
+        "CAUSAL",
+        "ROOT_CAUSE"
+      ],
+      "cost_points": 2,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "causal_claim_refs"
+      ],
+      "compatible_capabilities": [
+        "CAUSAL_EFFECT_LINEAGE",
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "stop_conditions": [
+        "causal_boundary_falsified",
+        "decision_stable"
+      ],
+      "escalation": [
+        "HOSTILE_CHALLENGE"
+      ],
+      "validation_method": "FALSIFICATION_PLUS_LINEAGE"
+    },
+    {
+      "method_id": "HOSTILE_CHALLENGE",
+      "signals": [
+        {
+          "type": "risk",
+          "accepted_values": [
+            "HIGH",
+            "CRITICAL"
+          ]
+        },
+        {
+          "type": "uncertainty",
+          "accepted_values": [
+            "HIGH"
+          ]
+        }
+      ],
+      "preconditions": [
+        "candidate_exists"
+      ],
+      "problem_classes": [
+        "HIGH_RISK",
+        "AMBIGUOUS"
+      ],
+      "cost_points": 3,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "candidate_ref",
+        "challenge_criteria"
+      ],
+      "compatible_capabilities": [
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "stop_conditions": [
+        "material_challenges_resolved"
+      ],
+      "escalation": [],
+      "validation_method": "INDEPENDENT_ASSURANCE"
+    },
+    {
+      "method_id": "DEEP_RESEARCH",
+      "signals": [
+        {
+          "type": "novelty",
+          "accepted_values": [
+            "HIGH"
+          ]
+        },
+        {
+          "type": "evidence_sufficiency",
+          "accepted_values": [
+            "INSUFFICIENT"
+          ]
+        }
+      ],
+      "preconditions": [
+        "decision_can_change_with_external_evidence"
+      ],
+      "problem_classes": [
+        "NOVEL",
+        "CURRENT_PRACTICE"
+      ],
+      "cost_points": 4,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "pre_research_baseline"
+      ],
+      "compatible_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION",
+        "CURRENTNESS_AUTHORITY"
+      ],
+      "stop_conditions": [
+        "material_uplift_measured",
+        "no_material_uplift"
+      ],
+      "escalation": [],
+      "validation_method": "PRE_POST_EVIDENCE_COMPARISON"
+    },
+    {
+      "method_id": "SELF_REFINE",
+      "signals": [
+        {
+          "type": "complexity",
+          "accepted_values": [
+            "MEDIUM",
+            "HIGH"
+          ]
+        }
+      ],
+      "preconditions": [
+        "candidate_exists",
+        "grader_available"
+      ],
+      "problem_classes": [
+        "QUALITY_REFINEMENT"
+      ],
+      "cost_points": 2,
+      "risk": "LOW",
+      "evidence_required": [
+        "candidate_ref",
+        "grader_contract"
+      ],
+      "compatible_capabilities": [
+        "PACK_VALIDATION_HARNESS"
+      ],
+      "stop_conditions": [
+        "grader_plateau",
+        "iteration_budget_exhausted"
+      ],
+      "escalation": [
+        "EVALUATOR_OPTIMIZER"
+      ],
+      "validation_method": "BLIND_GRADER"
+    },
+    {
+      "method_id": "EVALUATOR_OPTIMIZER",
+      "signals": [
+        {
+          "type": "optimization_need",
+          "accepted_values": [
+            "REQUIRED"
+          ]
+        }
+      ],
+      "preconditions": [
+        "benchmark_exists",
+        "uplift_target_defined"
+      ],
+      "problem_classes": [
+        "OPTIMIZATION"
+      ],
+      "cost_points": 5,
+      "risk": "HIGH",
+      "evidence_required": [
+        "baseline_benchmark",
+        "holdout"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "REVERSIBLE_CANDIDATE_VERIFICATION"
+      ],
+      "stop_conditions": [
+        "uplift_not_cost_effective",
+        "budget_exhausted",
+        "admission_threshold_met"
+      ],
+      "escalation": [
+        "PROMPT_OPTIMIZATION"
+      ],
+      "validation_method": "PAIRED_HOLDOUT"
+    },
+    {
+      "method_id": "VERIFIER_GUIDED_SEARCH",
+      "signals": [
+        {
+          "type": "complexity",
+          "accepted_values": [
+            "HIGH"
+          ]
+        }
+      ],
+      "preconditions": [
+        "deterministic_verifier_exists"
+      ],
+      "problem_classes": [
+        "SEARCH_WITH_VERIFIER"
+      ],
+      "cost_points": 3,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "verifier_ref"
+      ],
+      "compatible_capabilities": [
+        "PACK_VALIDATION_HARNESS"
+      ],
+      "stop_conditions": [
+        "verified_candidate_found",
+        "search_budget_exhausted"
+      ],
+      "escalation": [],
+      "validation_method": "DETERMINISTIC_VERIFIER"
+    },
+    {
+      "method_id": "PARALLEL_EVIDENCE_SEARCH",
+      "signals": [
+        {
+          "type": "evidence_paths",
+          "accepted_values": [
+            "MULTIPLE_INDEPENDENT"
+          ]
+        }
+      ],
+      "preconditions": [
+        "no_shared_mutable_state"
+      ],
+      "problem_classes": [
+        "EVIDENCE_ACQUISITION"
+      ],
+      "cost_points": 3,
+      "risk": "LOW",
+      "evidence_required": [
+        "search_plan"
+      ],
+      "compatible_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "stop_conditions": [
+        "decision_sufficient_evidence"
+      ],
+      "escalation": [],
+      "validation_method": "EVIDENCE_COVERAGE"
+    },
+    {
+      "method_id": "PROMPT_OPTIMIZATION",
+      "signals": [
+        {
+          "type": "optimization_need",
+          "accepted_values": [
+            "ADVANCED"
+          ]
+        }
+      ],
+      "preconditions": [
+        "benchmark_exists",
+        "holdout_exists",
+        "search_budget_approved"
+      ],
+      "problem_classes": [
+        "ADVANCED_OPTIMIZATION"
+      ],
+      "cost_points": 8,
+      "risk": "HIGH",
+      "evidence_required": [
+        "baseline_benchmark",
+        "holdout",
+        "budget"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "REVERSIBLE_CANDIDATE_VERIFICATION",
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "stop_conditions": [
+        "holdout_regression",
+        "no_material_uplift",
+        "budget_exhausted"
+      ],
+      "escalation": [],
+      "validation_method": "BLIND_PAIRED_HOLDOUT"
+    }
+  ],
+  "learning_policy": {
+    "auto_promote": false,
+    "required": [
+      "repeated_evidence",
+      "cross_case_validation",
+      "holdout",
+      "admission"
+    ]
+  },
+  "srcr_relationship": {
+    "role": "CONSUMER_PATTERN_SOURCE_NOT_AUTHORITY",
+    "source": "profiles/systemic_root_cause_repair_lf/contracts/dynamic_method_catalog.v1.json",
+    "copy_srcr_methods": false
+  }
+}
