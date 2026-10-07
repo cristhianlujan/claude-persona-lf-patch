@@ -1,0 +1,228 @@
+{
+  "schema_version": "ANALYSIS_A14_FRESH_ORACLE_V1",
+  "state": "FROZEN_AFTER_CANDIDATE_EXECUTION_WITHOUT_READING_RESULT",
+  "case_set_id": "A14-FRESH-20261007-V1",
+  "case_set_commit": "a77a7b21f390538a64b096a2deaef9d8915095e7",
+  "candidate_result_sha256_committed_before_oracle": "888817096732324fd546ac3f1d80be1c9056a8d647479288866c89ce209cefe7",
+  "oracle_basis": "FROZEN_ANALYSIS_CONTRACTS_PLUS_CASE_EVIDENCE",
+  "candidate_result_not_consulted_for_labeling": true,
+  "oracle": [
+    {
+      "case_id": "A14-FRESH-001",
+      "critical_impacts_expected": [
+        "OFFER_PERCENT_RULE"
+      ],
+      "material_fronts_expected": [
+        "UI_RULE"
+      ],
+      "blocked_scope_ids_expected": [],
+      "handoff_parity_expected": "PASS",
+      "depth_expected": "L1",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": true
+    },
+    {
+      "case_id": "A14-FRESH-002",
+      "critical_impacts_expected": [
+        "SCHEDULE_INTERACTION"
+      ],
+      "material_fronts_expected": [
+        "UX_BEHAVIOR"
+      ],
+      "blocked_scope_ids_expected": [],
+      "handoff_parity_expected": "PASS",
+      "depth_expected": "L2",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [
+        "capability://PRODUCT_SCREEN_SPECIALIST@current"
+      ],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": false
+    },
+    {
+      "case_id": "A14-FRESH-003",
+      "critical_impacts_expected": [
+        "UPLOAD_TABLE_SEMANTICS",
+        "ERROR_DOWNLOAD_FLOW"
+      ],
+      "material_fronts_expected": [
+        "TABLE",
+        "ERROR_FLOW"
+      ],
+      "blocked_scope_ids_expected": [],
+      "handoff_parity_expected": "PASS",
+      "depth_expected": "L2",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [
+        "capability://PRODUCT_SCREEN_SPECIALIST@current",
+        "capability://DATA_CONTRACT_SPECIALIST@current"
+      ],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": false
+    },
+    {
+      "case_id": "A14-FRESH-004",
+      "critical_impacts_expected": [
+        "APPROVAL_ACTIONS"
+      ],
+      "material_fronts_expected": [
+        "SPECIALIST_GAP"
+      ],
+      "blocked_scope_ids_expected": [
+        "S2"
+      ],
+      "handoff_parity_expected": "PASS",
+      "depth_expected": "L2",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [],
+      "required_specialist_missing_expected": true,
+      "no_specialist_expected": false
+    },
+    {
+      "case_id": "A14-FRESH-005",
+      "critical_impacts_expected": [
+        "API_HEADER_CONTRACT"
+      ],
+      "material_fronts_expected": [
+        "API_CONTRACT"
+      ],
+      "blocked_scope_ids_expected": [],
+      "handoff_parity_expected": "PASS",
+      "depth_expected": "L2",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": true
+    },
+    {
+      "case_id": "A14-FRESH-006",
+      "critical_impacts_expected": [
+        "SCHEMA_COMPATIBILITY",
+        "MIGRATION_PARITY"
+      ],
+      "material_fronts_expected": [
+        "SCHEMA"
+      ],
+      "blocked_scope_ids_expected": [],
+      "handoff_parity_expected": "PASS",
+      "depth_expected": "L3",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": true
+    },
+    {
+      "case_id": "A14-FRESH-007",
+      "critical_impacts_expected": [
+        "RULE_READ"
+      ],
+      "material_fronts_expected": [
+        "CURRENTNESS"
+      ],
+      "blocked_scope_ids_expected": [
+        "S1"
+      ],
+      "handoff_parity_expected": "PASS",
+      "depth_expected": "L3",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": true
+    },
+    {
+      "case_id": "A14-FRESH-008",
+      "critical_impacts_expected": [
+        "STATE_CONTRADICTION"
+      ],
+      "material_fronts_expected": [
+        "SEMANTIC_CONTRADICTION"
+      ],
+      "blocked_scope_ids_expected": [
+        "S1"
+      ],
+      "handoff_parity_expected": "PASS",
+      "depth_expected": "L3",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": true
+    },
+    {
+      "case_id": "A14-FRESH-009",
+      "critical_impacts_expected": [
+        "CAPABILITY_CHANGE",
+        "DOWNSTREAM_CONSUMER_BREAK"
+      ],
+      "material_fronts_expected": [
+        "SECOND_ORDER"
+      ],
+      "blocked_scope_ids_expected": [],
+      "handoff_parity_expected": "PASS",
+      "depth_expected": "L3",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": true
+    },
+    {
+      "case_id": "A14-FRESH-010",
+      "critical_impacts_expected": [
+        "HANDOFF_SCHEMA"
+      ],
+      "material_fronts_expected": [
+        "HANDOFF"
+      ],
+      "blocked_scope_ids_expected": [
+        "S1"
+      ],
+      "handoff_parity_expected": "BLOCK",
+      "depth_expected": "L2",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": true
+    },
+    {
+      "case_id": "A14-FRESH-011",
+      "critical_impacts_expected": [
+        "SUMMARY_PROJECTION"
+      ],
+      "material_fronts_expected": [
+        "PROJECTION"
+      ],
+      "blocked_scope_ids_expected": [
+        "S1"
+      ],
+      "handoff_parity_expected": "BLOCK",
+      "depth_expected": "L2",
+      "lossy_projection_expected_block": true,
+      "specialist_refs_expected": [],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": true
+    },
+    {
+      "case_id": "A14-FRESH-012",
+      "critical_impacts_expected": [
+        "METADATA_TRACE"
+      ],
+      "material_fronts_expected": [
+        "TRACEABILITY"
+      ],
+      "blocked_scope_ids_expected": [],
+      "handoff_parity_expected": "PASS",
+      "depth_expected": "L1",
+      "lossy_projection_expected_block": false,
+      "specialist_refs_expected": [],
+      "required_specialist_missing_expected": false,
+      "no_specialist_expected": true
+    }
+  ],
+  "guards": {
+    "A13_tuning_forbidden": true,
+    "oracle_labels_frozen": true,
+    "runtime_activation": false,
+    "production_activation": false
+  }
+}
