@@ -4705,12 +4705,22 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "docs/db-space/r7_next_lever_analysis_v1.md",
+        "docs/input-governance/r5_e_historical_validator_evidence_compaction_design.md",
+        "supabase/migrations/20261006234501_input_governance_r5_e_compaction_runner_v1.sql",
+        "tests/input_governance/test_r5_e_compaction_runner_v1.py"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 109,
@@ -4741,12 +4751,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006234500_m48_validator_per_run_lock_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 110,
@@ -4777,12 +4794,22 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "docs/db-space/r5e_vacuum_full_one_shot_control_v1.md",
+        "sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py",
+        "supabase/migrations/20261006232501_r5e_vacuum_full_one_shot_control_v1.sql",
+        "tests/db_space/test_r5e_vacuum_full_one_shot_control_v1.py"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 111,
@@ -4813,12 +4840,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006233000_m48_remove_validator_screen_literals_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 112,
@@ -4849,12 +4883,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006234000_m18_contract_traceability_rev2_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 113,
@@ -4885,12 +4926,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006232500_engineering_artifact_role_separation_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 114,
@@ -4921,12 +4969,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006231500_m45_validator_source_independence_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 115,
@@ -4957,12 +5012,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006230500_m42_oracle_transitive_gate_contract_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 116,
@@ -4993,12 +5055,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006223000_engineering_contract_sanitation_executor_admission_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 117,
@@ -5029,12 +5098,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006214500_card_expertise_independent_assurance_adapter_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 118,
@@ -5065,12 +5141,23 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "docs/input-governance/r5_d_compact_new_validator_writes_design.md",
+        "sandbox/lf_contract_gate_test/input_governance_incremental/semantic_l3b_50_cases.sql",
+        "sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_v1.py",
+        "supabase/migrations/20261006215527_input_governance_r5_d_compact_new_validator_writes_v1.sql",
+        "tests/input_governance/test_r5_d_compact_new_validator_writes_v1.py"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 119,
@@ -5101,12 +5188,22 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "docs/input-governance/contract_5_13_1_literal_513_audit.md",
+        "docs/input-governance/contract_5_13_1_r5_prerequisite_design.md",
+        "supabase/migrations/20261006215037_input_governance_contract_5_13_1_validator_evidence_storage_v1.sql",
+        "tests/input_governance/test_contract_5_13_1_r5_prerequisite_v1.py"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 120,
@@ -5137,12 +5234,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006210634_engineering_parallel_executor_resume_in_progress_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 121,
@@ -5173,12 +5277,24 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "docs/input-governance/r5_c_live_rollback_probe_2026-10-06.md",
+        "docs/input-governance/r5_c_review_candidate.md",
+        "docs/input-governance/r5_vacuum_full_runbook.md",
+        "supabase/migrations/20261006204044_input_governance_r5_c_logical_readers_storage_compaction_v1.sql",
+        "tests/input_governance/test_r5_c_live_probe_statement_sha_v1.py",
+        "tests/input_governance/test_r5_c_storage_compaction_v1.py"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 122,
@@ -5209,12 +5325,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006202500_lf_card_creation_default_destination_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 123,
@@ -5245,12 +5368,21 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "gobernanza/contratos/contrato_card_lf.yaml",
+        "gobernanza/procedimientos/creacion_card_lf_steps_validation.yaml",
+        "supabase/migrations/20261006201200_card_create_top_tier_gate_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 124,
@@ -5281,12 +5413,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006201607_engineering_parallel_legacy_alias_ekb_read_fix.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 125,
@@ -5317,12 +5456,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261006201320_engineering_parallel_legacy_alias_ekb_read_fix.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 126,
@@ -15803,7 +15949,7 @@
   ],
   "enrichment": {
     "changed_paths": {
-      "completed_through_index": 107,
+      "completed_through_index": 125,
       "source": "GitHub commit files API",
       "registry_ref": "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_change_family_registry_v1.json"
     }
