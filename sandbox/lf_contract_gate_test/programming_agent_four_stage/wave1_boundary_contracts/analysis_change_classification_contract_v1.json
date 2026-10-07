@@ -30,7 +30,94 @@
     ],
     "depth_reason_required": true,
     "evidence_refs_required": true,
-    "implementation_state_inference_forbidden": true
+    "implementation_state_inference_forbidden": true,
+    "depth_policy": {
+      "schema_version": "ANALYSIS_DEPTH_POLICY_V1",
+      "policy_kind": "MONOTONIC_PRECEDENCE_NO_WEIGHTS",
+      "purpose": "Choose analysis depth from typed risk/materiality evidence without treating depth as execution permission.",
+      "signal_sources": {
+        "materiality_vocabulary": "SAFE_CHANGE_ADMISSION.materiality.level",
+        "authority_vocabulary": "SAFE_CHANGE_ADMISSION.authority.state",
+        "reversibility_vocabulary": "SAFE_CHANGE_ADMISSION.reversibility.state",
+        "currentness_vocabulary": "CURRENTNESS_AUTHORITY.currentness.decision_vocabulary",
+        "specialist_requiredness": "ANALYSIS_SPECIALIST_REF_V1",
+        "unknown_wrapper": "ANALYSIS_LOCAL_UNPROVEN_SIGNAL"
+      },
+      "signals": {
+        "materiality_level": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "UNKNOWN"
+        ],
+        "scope_bounded": [
+          "TRUE",
+          "FALSE",
+          "UNKNOWN"
+        ],
+        "authority_state": [
+          "SUFFICIENT",
+          "INSUFFICIENT",
+          "UNKNOWN"
+        ],
+        "reversibility_state": [
+          "DEMONSTRATED",
+          "NOT_DEMONSTRATED",
+          "UNKNOWN"
+        ],
+        "currentness_decision": [
+          "CURRENT",
+          "CURRENT_REBOUND",
+          "STALE_AFFECTED",
+          "UNKNOWN_FAIL_CLOSED",
+          "UNRESOLVED"
+        ],
+        "material_contradiction": "BOOLEAN",
+        "known_cross_scope_impact": "BOOLEAN_OR_UNKNOWN",
+        "unresolved_material_signal_count": "NON_NEGATIVE_INTEGER",
+        "required_specialist_count": "NON_NEGATIVE_INTEGER"
+      },
+      "precedence": [
+        "L3_EXPLICIT_HIGH_RISK",
+        "L2_MEDIUM_OR_UNPROVEN",
+        "L1_FULLY_BOUNDED_LOW_RISK"
+      ],
+      "L3_if_any": [
+        "materiality_level=HIGH",
+        "scope_bounded=FALSE",
+        "authority_state=INSUFFICIENT",
+        "currentness_decision=STALE_AFFECTED",
+        "material_contradiction=true",
+        "known_cross_scope_impact=true"
+      ],
+      "L2_if_no_L3_and_any": [
+        "materiality_level in [MEDIUM,UNKNOWN]",
+        "scope_bounded=UNKNOWN",
+        "authority_state=UNKNOWN",
+        "reversibility_state in [NOT_DEMONSTRATED,UNKNOWN]",
+        "currentness_decision in [CURRENT_REBOUND,UNKNOWN_FAIL_CLOSED,UNRESOLVED]",
+        "known_cross_scope_impact=UNKNOWN",
+        "unresolved_material_signal_count>0",
+        "required_specialist_count>0"
+      ],
+      "L1_requires_all": [
+        "materiality_level=LOW",
+        "scope_bounded=TRUE",
+        "authority_state=SUFFICIENT",
+        "reversibility_state=DEMONSTRATED",
+        "currentness_decision=CURRENT",
+        "material_contradiction=false",
+        "known_cross_scope_impact=false",
+        "unresolved_material_signal_count=0",
+        "required_specialist_count=0"
+      ],
+      "unknown_material_never_L1": true,
+      "worsening_signal_cannot_reduce_depth": true,
+      "depth_is_execution_permission": false,
+      "readiness_and_admission_remain_separate": true,
+      "case_family_hardcoding_forbidden": true,
+      "arbitrary_weights_forbidden": true
+    }
   },
   "specialist_resolution": {
     "output_requirements": "specialist_requirements[]",
@@ -55,11 +142,15 @@
   "mapped_assets": [
     "CAPABILITY_SELECTOR",
     "SAFE_CHANGE_ADMISSION",
-    "SOURCE_RESOLUTION_POLICY"
+    "SOURCE_RESOLUTION_POLICY",
+    "CURRENTNESS_AUTHORITY"
   ],
   "no_parallel_engine": true,
   "source_refs": [
     "lf_eventos://20333",
-    "lf_eventos://20334"
+    "lf_eventos://20334",
+    "ekb://PROGRAMMING-ANALYSIS-DEPTH-POLICY-UNDEFINED-001",
+    "capability://SAFE_CHANGE_ADMISSION@1.0.1",
+    "capability://CURRENTNESS_AUTHORITY@1.0.0"
   ]
 }
