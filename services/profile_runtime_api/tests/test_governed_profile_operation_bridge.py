@@ -318,6 +318,14 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
             any("HETZNER_GOVERNED_TERMINAL_JUDGE_FAILED" in query for query, _params in conn.cursor_obj.calls)
         )
 
+
+    def test_pre_model_materializes_server_owned_scope_packet(self) -> None:
+        source = Path(worker.__file__).read_text()
+        self.assertIn("lf_profile_execution_scope_authority_packet_v1", source)
+        self.assertIn('"scope_authority_packet": scope_packet["scope_authority_packet"]', source)
+        self.assertIn('"scope_authority_packet_sha256": scope_packet["scope_packet_sha256"]', source)
+        self.assertIn("HETZNER_SCOPE_AUTHORITY_PACKET_NOT_READY", source)
+
     def test_execution_identity_is_stable(self) -> None:
         request_id = claimed()["request_id"]
         self.assertEqual(

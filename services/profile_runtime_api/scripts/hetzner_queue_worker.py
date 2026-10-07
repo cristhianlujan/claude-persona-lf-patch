@@ -523,16 +523,35 @@ def _begin_governed_pre_model(
                 "runtime_source_mode": "EXACT_DEPLOYED_GIT_REVISION",
             },
         )
+        input_evidence_ref = (
+            f"queue://private.lf_profile_runtime_queue_v1/{request_id}@{input_digest}"
+        )
+        scope_packet = _fetch_json_scalar(
+            cur,
+            "select public.lf_profile_execution_scope_authority_packet_v1(%s,%s,%s)",
+            (execution_id, claimed["input_literal"], input_evidence_ref),
+        )
+        if (
+            scope_packet.get("status") != "READY"
+            or not isinstance(scope_packet.get("scope_authority_packet"), dict)
+            or not isinstance(scope_packet.get("scope_packet_sha256"), str)
+        ):
+            raise RuntimeError(
+                "HETZNER_SCOPE_AUTHORITY_PACKET_NOT_READY:"
+                + str(scope_packet.get("code") or scope_packet.get("status") or "UNKNOWN")
+            )
         _record_governed_step(
             cur,
             execution_id=execution_id,
             step_id="input_validate",
-            evidence_ref=f"queue://private.lf_profile_runtime_queue_v1/{request_id}@{input_digest}",
+            evidence_ref=input_evidence_ref,
             payload={
                 "input_scope": f"QUEUE_REQUEST:{request_id}",
                 "activation_trigger_match": True,
                 "input_digest": input_digest,
                 "read_only": True,
+                "scope_authority_packet": scope_packet["scope_authority_packet"],
+                "scope_authority_packet_sha256": scope_packet["scope_packet_sha256"],
             },
         )
 
