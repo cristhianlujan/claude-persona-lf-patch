@@ -1,0 +1,111 @@
+{
+  "schema_version": "pase-disabled-window-migration-nopr-shard/v1",
+  "offset": [
+    17,
+    26
+  ],
+  "rows": [
+    {
+      "seq": 335,
+      "merge_sha": "543ac369c12ded896132c5c435b9d29536c38d08",
+      "pr": null,
+      "head_sha_original": "0d9924c0bbae99ad6a2e6654b2c6cd48cc7139c1",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261004054753_ig_cv_m7_0_q_taxonomy_metadata_v1.sql"
+      ],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 390,
+      "merge_sha": "e69926c64e41976b0edad383dc6135e47c2b6f85",
+      "pr": null,
+      "head_sha_original": "a28a08327b81018ee51cadd438dede1ab5bf1f96",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 5
+    },
+    {
+      "seq": 395,
+      "merge_sha": "cea60f925c5033ef324a7f6ca72ced804576b2db",
+      "pr": null,
+      "head_sha_original": null,
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 396,
+      "merge_sha": "77daa4f1aa441ee45921ca486286cdf4f2262ad6",
+      "pr": null,
+      "head_sha_original": null,
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 397,
+      "merge_sha": "d242c6036785cb03019c1de5d352ca1d2fd5eceb",
+      "pr": null,
+      "head_sha_original": null,
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 398,
+      "merge_sha": "71afa430c655cd647b0053b308e232bdd5a5bf50",
+      "pr": null,
+      "head_sha_original": null,
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 399,
+      "merge_sha": "e46e6436c7b672f8fe10f175104c12af8d969464",
+      "pr": null,
+      "head_sha_original": null,
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 400,
+      "merge_sha": "da73ad146812a0385b71adeca9f10cbe8970dbc9",
+      "pr": null,
+      "head_sha_original": null,
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 401,
+      "merge_sha": "45d70313571523af3757f86547f7c86d222fec99",
+      "pr": null,
+      "head_sha_original": null,
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 4
+    },
+    {
+      "seq": 407,
+      "merge_sha": "352eded9c2381dc59b3cbbb7197c653a533ce98b",
+      "pr": null,
+      "head_sha_original": null,
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 5
+    }
+  ]
+}
