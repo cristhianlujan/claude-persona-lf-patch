@@ -70,6 +70,7 @@ MANAGED_EXACT_NAMES = {
     "db_space_operational_retention_schedule_v1",
     "db_space_db_size_observability_v1",
     "r5e_vacuum_full_one_shot_control_v1",
+    "r5e_vacuum_assessments_activation_v1",
     "input_governance_r5_e_dual_hash_full_verify_resume_v1",
     "input_governance_r5_e_activation_v1",
     "r5e_vacuum_inventory_activation_v1",
