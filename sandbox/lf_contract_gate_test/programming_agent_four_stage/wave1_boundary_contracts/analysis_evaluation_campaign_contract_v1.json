@@ -1,0 +1,124 @@
+{
+  "schema_version": "ANALYSIS_EVALUATION_CAMPAIGN_CONTRACT_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "units": ["A10","A11","A12","A13","A14"],
+  "sequence": ["A10","A11","A12","A13","A14"],
+  "purpose": "Empirically qualify the Analysis model after boundary repairs without promoting from synthetic confidence.",
+  "case_policy": {
+    "historical_case_target": "APPROX_30_HETEROGENEOUS",
+    "required_change_families": [
+      "BUG",
+      "FEATURE",
+      "MIGRATION",
+      "RUNTIME",
+      "CONCURRENCY_IDEMPOTENCY",
+      "GOVERNANCE",
+      "MODEL_OR_INTELLIGENCE"
+    ],
+    "same_case_set_for_baseline_and_candidate_in_A12": true,
+    "fresh_holdout_for_A14": true,
+    "A14_cases_or_variants_must_not_be_used_for_A13_tuning": true,
+    "case_specific_hardcoding_forbidden": true
+  },
+  "evaluation_dimensions": [
+    "CRITICAL_IMPACT_RECALL",
+    "MATERIAL_FRONT_COVERAGE",
+    "MISSING_FRONT_FALSE_READY",
+    "TARGET_AND_DEPTH_CLASSIFICATION",
+    "IMPLEMENTABILITY_WITHOUT_REINTERPRETATION",
+    "A9_PG01_HANDOFF_PARITY",
+    "SCOPE_FRONT_CONSISTENCY",
+    "CURRENTNESS_BEHAVIOR",
+    "DEPENDENCY_AND_BLAST_RADIUS",
+    "FALSE_READY_FALSE_PASS",
+    "SECOND_ORDER_HIDDEN_FAILURE",
+    "SELECTOR_OR_MODULE_APPROPRIATENESS",
+    "OVERANALYSIS",
+    "SOURCE_READ_EFFICIENCY",
+    "LATENCY",
+    "TOKEN_USAGE_WHEN_LIVE_MEASURED"
+  ],
+  "telemetry": {
+    "required_per_case": [
+      "case_id",
+      "candidate_ref",
+      "source_snapshot_ref",
+      "verdict",
+      "critical_impacts_expected[]",
+      "critical_impacts_observed[]",
+      "material_fronts_expected[]",
+      "material_fronts_observed[]",
+      "false_ready_count",
+      "reinterpretation_required",
+      "handoff_parity_verdict",
+      "scope_front_consistency_verdict",
+      "currentness_verdict",
+      "source_read_count",
+      "duplicate_read_count",
+      "retry_count",
+      "elapsed_ms"
+    ],
+    "live_provider_fields_when_model_executed": [
+      "provider_response_id",
+      "exact_model_or_profile",
+      "input_tokens",
+      "output_tokens"
+    ],
+    "token_estimation_forbidden": true,
+    "missing_live_usage_must_remain_null": true
+  },
+  "A11_adversarial": {
+    "must_include": [
+      "STALE_AUTHORITY",
+      "HIDDEN_INDIRECT_IMPACT",
+      "INCOMPLETE_CONTEXT",
+      "CONTRADICTORY_CONTEXT",
+      "OMITTED_MATERIAL_FRONT",
+      "READY_SCOPE_WITH_BLOCKING_FRONT",
+      "HANDOFF_SCHEMA_DRIFT",
+      "LOSSY_WORKER_PROJECTION",
+      "CURRENTNESS_FALSE_INVALIDATION",
+      "CURRENTNESS_FALSE_REUSE",
+      "SECOND_ORDER_CONSUMER_FAILURE"
+    ],
+    "critical_false_ready_tolerance": 0
+  },
+  "A12_benchmark": {
+    "baseline_and_candidate_same_cases": true,
+    "compare_dimensions": [
+      "false_negatives",
+      "false_ready",
+      "material_front_coverage",
+      "reinterpretation_rate",
+      "source_reads",
+      "duplicate_reads",
+      "retries",
+      "elapsed_ms",
+      "live_tokens_when_available"
+    ],
+    "no_quality_promotion_from_missing_live_telemetry": true
+  },
+  "A13_remediation": {
+    "finding_must_be_reproducible": true,
+    "generalizable_rule_required": true,
+    "case_specific_patch_forbidden": true,
+    "must_rerun_affected_regression_set": true
+  },
+  "A14_fresh_validation_gates": {
+    "critical_impacts_omitted": 0,
+    "critical_false_ready": 0,
+    "material_front_accounting_rate": 1.0,
+    "handoff_material_parity_rate": 1.0,
+    "lossy_material_projection_count": 0,
+    "classification_accuracy_min": 0.95,
+    "usable_without_material_reinterpretation_min": 0.95,
+    "fresh_or_unseen_variants_required": true
+  },
+  "freeze_boundary": {
+    "A15_owns_freeze": true,
+    "this_contract_does_not_freeze": true,
+    "runtime_activation": false,
+    "production_activation": false
+  },
+  "no_parallel_evaluation_engine": true
+}
