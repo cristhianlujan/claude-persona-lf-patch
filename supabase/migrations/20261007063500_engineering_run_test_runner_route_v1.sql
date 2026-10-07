@@ -176,7 +176,7 @@ insert into public.lf_error_knowledge(
   'github://cristhianlujan/claude-persona-lf-patch/17b6a48a7017b1e02c77a98a1f0d58f057f3b676/sandbox/lf_contract_gate_test/engineering_checkpoints/n_18/neg_overtracking.py#sentinelx:scalora-vps:exit0',
   'EXECUTION',
   array['ENGINEERING_EXECUTOR','ENGINEERING_SCHEDULER']::text[],
-  'EXECUTION_TRANSPORT_MISMATCH','LOUD_EARLY',
+  'R5_EROSION_PROCESO','LOUD_EARLY',
   'Bounded checkpoint RUN_TEST routing',
   'supabase://programacion.fn_engineering_execution_packet_apply_bounded_checkpoint_test_v1'
 )
