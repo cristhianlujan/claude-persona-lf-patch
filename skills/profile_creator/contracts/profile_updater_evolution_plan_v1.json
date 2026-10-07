@@ -1,0 +1,182 @@
+{
+  "schema": "PROFILE_UPDATER_EVOLUTION_PLAN_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "target_responsibility": "PROFILE_EVOLUTION_ORCHESTRATOR",
+  "plan_status": "IN_EXECUTION",
+  "completion_rule": "PLAN_DONE_ONLY_AFTER_E10_ADMIT_CUTOVER_AND_GOVERNED_V02_AUTHORITY_READBACK",
+  "lots": [
+    {
+      "id": "E0",
+      "work": "Reconcile currentness and S26 10/10 -> 13/13",
+      "depends_on": [],
+      "status": "DONE_CANDIDATE",
+      "closure_evidence": [
+        "authority/currentness readback",
+        "13/13 references clean"
+      ]
+    },
+    {
+      "id": "E1",
+      "work": "Define PROFILE_ASSESSMENT_V1, maturity model and EVOLUTION_MODE",
+      "depends_on": [
+        "E0"
+      ],
+      "status": "DONE_CANDIDATE_TESTED",
+      "closure_evidence": [
+        "schema",
+        "fixtures",
+        "assessment evals"
+      ]
+    },
+    {
+      "id": "E2",
+      "work": "Create METHOD_PACK_REGISTRY and transversalize SRCR pattern without copying repair-specific methods",
+      "depends_on": [
+        "E1"
+      ],
+      "status": "DONE_CANDIDATE_TESTED",
+      "closure_evidence": [
+        "typed selectable methods",
+        "preconditions",
+        "cost/risk",
+        "stop/escalation",
+        "registry tests"
+      ]
+    },
+    {
+      "id": "E3",
+      "work": "Evolve CAPABILITY_SELECTOR for capability+method composition",
+      "depends_on": [
+        "E2"
+      ],
+      "status": "DONE_CANDIDATE_TESTED",
+      "closure_evidence": [
+        "v1 compatibility",
+        "composition tests",
+        "negative/budget behavior"
+      ]
+    },
+    {
+      "id": "E4",
+      "work": "Run read-only shadow assessment over frozen real-profile corpus",
+      "depends_on": [
+        "E3"
+      ],
+      "status": "PENDING_EXECUTION",
+      "closure_evidence": [
+        "shadow results per target",
+        "gap/maturity corpus",
+        "zero profile writes"
+      ],
+      "blockers": [
+        "exact repository snapshot execution not completed"
+      ]
+    },
+    {
+      "id": "E5",
+      "work": "Convert pre-write updater intelligence into Profile Evolution Orchestrator",
+      "depends_on": [
+        "E4"
+      ],
+      "status": "IMPLEMENTED_CANDIDATE_PENDING_E4_EVIDENCE",
+      "closure_evidence": [
+        "current-vs-new shadow comparison",
+        "admission-before-write verified"
+      ]
+    },
+    {
+      "id": "E6",
+      "work": "Add modular bindings and PROFILE_EVOLUTION_STATE",
+      "depends_on": [
+        "E5"
+      ],
+      "status": "IMPLEMENTED_CANDIDATE_PENDING_E5_ADMISSION",
+      "closure_evidence": [
+        "evolution state contract",
+        "backward-compatible profile behavior",
+        "runtime unchanged"
+      ]
+    },
+    {
+      "id": "E7",
+      "work": "Govern learning from admitted results",
+      "depends_on": [
+        "E6"
+      ],
+      "status": "IMPLEMENTED_CANDIDATE_PENDING_REPLAY",
+      "closure_evidence": [
+        "replay",
+        "repeated evidence",
+        "cross-profile validation",
+        "holdout",
+        "no auto-promotion"
+      ]
+    },
+    {
+      "id": "E8",
+      "work": "Enable evaluator-optimizer only if measured uplift justifies cost",
+      "depends_on": [
+        "E7"
+      ],
+      "status": "GATED_NOT_ENABLED",
+      "closure_evidence": [
+        "frozen baseline",
+        "grader contract",
+        "holdout",
+        "uplift vs cost"
+      ],
+      "gate": "Do not enable for simple PATCH or without measurable uplift"
+    },
+    {
+      "id": "E9",
+      "work": "Evaluate optional GEPA/MIPRO/AFlow-like advanced optimization",
+      "depends_on": [
+        "E8"
+      ],
+      "status": "GATED_NOT_ENABLED",
+      "closure_evidence": [
+        "E8 admitted",
+        "remaining material gap",
+        "search budget",
+        "protected holdout",
+        "measured incremental uplift"
+      ],
+      "gate": "Optional; may be skipped if E8 is sufficient"
+    },
+    {
+      "id": "E10",
+      "work": "Execute paired blind benchmark, assurance, admission and governed cutover",
+      "depends_on": [
+        "E8_OR_E9"
+      ],
+      "status": "BLOCKED_PENDING_EVIDENCE",
+      "closure_evidence": [
+        "24+ executed/scored cases across 8 strata",
+        "primary capability score UP",
+        "holdout UP",
+        "critical regressions=0",
+        "false-PASS not worse",
+        "valid behavior preserved",
+        "cost/latency within budget",
+        "independent assurance PASS",
+        "ADMIT_CUTOVER event",
+        "v0.1 executions drained",
+        "v0.2 authority readback"
+      ],
+      "blockers": [
+        "24-case corpus frozen but not executed/scored",
+        "0 ADMIT_CUTOVER events",
+        "25 v0.1 executions IN_PROGRESS",
+        "PASE skipped is not PASS"
+      ]
+    }
+  ],
+  "invariants": [
+    "NO_RUNTIME_AUTO_ACTIVATION",
+    "NO_PRODUCTION_AUTO_PROMOTION",
+    "NO_CUTOVER_BEFORE_E10_ADMISSION",
+    "NO_PLAN_DONE_WITH_UNVERIFIED_LOTS",
+    "PATCH_MINIMALITY_ONLY_FOR_PATCH_MODE",
+    "STRUCTURAL_COMPATIBILITY_IS_NOT_CAPABILITY_EXCELLENCE"
+  ]
+}
