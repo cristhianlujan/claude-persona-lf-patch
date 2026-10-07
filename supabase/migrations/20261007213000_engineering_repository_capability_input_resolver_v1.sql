@@ -354,13 +354,14 @@ declare
   v_packet jsonb;
 begin
   with refs as (
-    select distinct x as ref
+    select distinct on (x->>'resolution') x as ref
     from programacion.engineering_plan_units pu
     cross join lateral jsonb_path_query(
       pu.unit_metadata,
       '$.** ? (@.schema_version == "ENGINEERING_REPOSITORY_CAPABILITY_INPUT_REF_V1")'
     ) x
     where pu.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
+    order by x->>'resolution'
   )
   select count(*),
          count(*) filter(where coalesce((
@@ -372,7 +373,7 @@ begin
   from refs;
 
   if v_refs<>4 or v_supported<>4 then
-    raise exception 'ENGINEERING_REPOSITORY_INPUT_RESOLUTION_COVERAGE refs=% supported=%',v_refs,v_supported;
+    raise exception 'ENGINEERING_REPOSITORY_INPUT_RESOLUTION_COVERAGE resolution_codes=% supported=%',v_refs,v_supported;
   end if;
 
   select count(*) into v_bad_order
