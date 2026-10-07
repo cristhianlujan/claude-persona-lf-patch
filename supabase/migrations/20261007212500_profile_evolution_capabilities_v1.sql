@@ -141,7 +141,7 @@ begin
     'github://cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/transversal_assets/capability_selector/README.md',
     v_manifest#>>'{currentness,validator_ref}',v_exec
   ) on conflict (capability_code,version) do nothing;
-  v_promote:=public.fn_lf_capability_promote_v1('CAPABILITY_SELECTOR','1.1.0','1.0.0',v_exec,'Profile Evolution E3 composition extension; v1 API preserved.');
+  v_promote:=public.fn_lf_capability_promote_v1('CAPABILITY_SELECTOR','1.1.0','fd4d6b41303dad446873c9d9d9ad1e3a87461f880f458b68debfcacacb4c1ff3',v_exec,'Profile Evolution E3 composition extension; v1 API preserved.');
   if coalesce((v_promote->>'ready')::boolean,false) is not true then
     raise exception 'BLOCK_CAPABILITY_SELECTOR_1_1_PROMOTION:%',v_promote::text;
   end if;
