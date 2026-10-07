@@ -402,6 +402,12 @@ $function$;
 comment on function programacion.fn_engineering_checkpoint_assertion_record_v1(text,text,text,jsonb,text)
 is 'Records a PASS assertion receipt for the current material checkpoint only after exact machine-verifiable result binding succeeds.';
 
+revoke all on function programacion.fn_engineering_checkpoint_assertion_record_v1(text,text,text,jsonb,text) from public;
+revoke execute on function programacion.fn_engineering_checkpoint_assertion_record_v1(text,text,text,jsonb,text) from anon;
+revoke execute on function programacion.fn_engineering_checkpoint_assertion_record_v1(text,text,text,jsonb,text) from authenticated;
+grant execute on function programacion.fn_engineering_checkpoint_assertion_record_v1(text,text,text,jsonb,text) to service_role;
+grant execute on function programacion.fn_engineering_checkpoint_assertion_record_v1(text,text,text,jsonb,text) to postgres;
+
 create or replace function programacion.fn_guard_engineering_material_checkpoint_done_v1()
 returns trigger
 language plpgsql
