@@ -1,0 +1,37 @@
+{
+  "completed_before_pause": [
+    "window_first_parent_fixed_to_417",
+    "reconciliation_rules_frozen_in_git",
+    "migration_path_history_probe_started_but_not_used_as_final_classification"
+  ],
+  "notes": [
+    "No commit disposition had been emitted before this checkpoint.",
+    "Preliminary commits?path=supabase/migrations intersection was intentionally not accepted as final migration count because merge commits can hide migration changes from that endpoint."
+  ],
+  "resume_policy": {
+    "continue_from_pending_only": true,
+    "do_not_restart": true,
+    "github_api_limit_strategy": "avoid Actions for commits provably outside controlled paths",
+    "priority": [
+      "migration_commits_first",
+      "non_controlled_paths_by_git_diff_without_actions",
+      "controlled_nonmigration_commits"
+    ],
+    "supabase_storage_policy": "summary_and_artifact_sha256_only"
+  },
+  "rules_artifact": "docs/pase/f07_x02/window_reconciliation_rules_v1.json",
+  "schema_version": "pase-f07-x02-checkpoint/v1",
+  "status": "PAUSED_CHECKPOINT",
+  "window": {
+    "classified_commits": 0,
+    "current_head_observed": "1d020d83c7e6c62fd2c178e6309ffafb5918bf8a",
+    "disable_commit": "01796b4dc0e8a28b179ec81503e93afe15408e49",
+    "first_parent_cut_ancestor_exclusive": "0805a35600029c067a7f2597c181baa5658a07c4",
+    "not_applicable": 0,
+    "pending_commits": 417,
+    "revalidation_required": 0,
+    "total_commits": 417,
+    "validated_equivalent": 0
+  },
+  "work_code": "PASE-ATOM-F07-X02"
+}
