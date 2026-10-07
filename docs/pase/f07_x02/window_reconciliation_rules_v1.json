@@ -1,0 +1,48 @@
+{
+  "schema_version": "pase-disabled-window-reconciliation-rules/v1",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F07-X02",
+  "authority_events": [
+    20569,
+    20571
+  ],
+  "window": {
+    "disable_commit": "01796b4dc0e8a28b179ec81503e93afe15408e49",
+    "disable_commit_first_parent_ancestor": "0805a35600029c067a7f2597c181baa5658a07c4",
+    "semantics": "FIRST_PARENT_EXCLUSIVE_ANCESTOR_TO_CURRENT_HEAD",
+    "expected_count_at_authority_head": 417
+  },
+  "disposition_enum": [
+    "VALIDATED_EQUIVALENT",
+    "REVALIDATION_REQUIRED",
+    "NOT_APPLICABLE"
+  ],
+  "rules": [
+    {
+      "id": "R1_NOT_APPLICABLE",
+      "disposition": "NOT_APPLICABLE",
+      "when": "No changed path or migration material triggers any control in lf_ci_control_impact_registry_v2 and no lane-required control can be established from durable evidence."
+    },
+    {
+      "id": "R2_VALIDATED_EQUIVALENT",
+      "disposition": "VALIDATED_EQUIVALENT",
+      "when": "The commit/PR changed PASE-controlled material and has independently verifiable current evidence equivalent to the skipped controls, bound to exact source/head. For migration changes, Train execution plus exact apply/readback/parity or equivalent durable ledger/source evidence is required. Workflow logs alone are insufficient."
+    },
+    {
+      "id": "R3_REVALIDATION_REQUIRED",
+      "disposition": "REVALIDATION_REQUIRED",
+      "when": "Any PASE-controlled material lacks exact durable equivalent evidence, has ambiguous original head, or depends only on skipped workflow/log evidence."
+    }
+  ],
+  "skipped_controls_constant": [
+    "PASE",
+    "PASE / MIGRATION_SOURCE_PARITY",
+    "pase-merge-gate"
+  ],
+  "never_claim_pase_ran": true,
+  "source_registry": {
+    "path": "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_control_impact_registry_v2.json",
+    "sha": "dynamically_read_from_main_at_manifest_generation"
+  },
+  "revalidation_grouping": "BY_CAUSE_NOT_BY_COMMIT"
+}
