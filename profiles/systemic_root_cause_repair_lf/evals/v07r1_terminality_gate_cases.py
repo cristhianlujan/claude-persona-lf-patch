@@ -70,14 +70,32 @@ def test_no_repair_positive_evidence():
     assert decide_terminal(state)["status"] == "NO_REPAIR_REQUIRED"
 
 
-def test_blocking_precedence():
+def test_pipeline_blocking_precedence():
     state = closed_state()
-    state["blocking_codes"] = ["CURRENTNESS_CONTRADICTION"]
+    state["pipeline_blocking_codes"] = ["CURRENTNESS_CONTRADICTION"]
     assert decide_terminal(state)["status"] == "BLOCK_PIPELINE"
 
 
+def test_ordinary_blocking_code_is_nonready_not_pipeline_block():
+    state = closed_state()
+    state["blocking_codes"] = ["MATERIAL_EVIDENCE_MISSING"]
+    result = decide_terminal(state)
+    assert result["status"] == "NEEDS_MORE_EVIDENCE"
+    assert "MATERIAL_BLOCKING_CODE:MATERIAL_EVIDENCE_MISSING" in result["reasons"]
+
+
+def test_runtime_projection_contains_method_revision():
+    skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+    binding = (ROOT / "contracts" / "runtime_binding.json").read_text(encoding="utf-8")
+    working = skill.index("## Working method (do this first; the rules below are how the result is checked)")
+    revision = skill.index("### V0.7R1 dynamic repair method revision")
+    output = skill.index("## Output trajectory (field order for the typed output)")
+    assert working < revision < output
+    assert '"Working method (do this first; the rules below are how the result is checked)"' in binding
+
+
 if __name__ == "__main__":
-    tests = [test_rc078, test_rc030, test_rc008, test_rc053, test_rc012, test_fully_closed, test_no_repair_positive_evidence, test_blocking_precedence]
+    tests = [test_rc078, test_rc030, test_rc008, test_rc053, test_rc012, test_fully_closed, test_no_repair_positive_evidence, test_pipeline_blocking_precedence, test_ordinary_blocking_code_is_nonready_not_pipeline_block, test_runtime_projection_contains_method_revision]
     for fn in tests:
         fn()
     print(f"PASS_SRCR_V07R1_TERMINALITY_GATE={len(tests)}/{len(tests)}")
