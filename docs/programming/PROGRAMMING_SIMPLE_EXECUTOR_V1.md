@@ -32,8 +32,11 @@ Required for ACTIVE:
 - input contract;
 - explicit PASS condition;
 - explicit FAIL condition;
-- positive test reference;
-- negative test reference.
+- fresh qualification proof for positive and negative behavior;
+- exact `lf_test_runs.test_run_id` values for those qualification tests;
+- each qualification test must identify the exact validation subject and test role in metadata.
+
+Admission never searches prior plan/unit runtime history.
 
 Modes:
 - `BLOCKING_AUTOMATIC`: requires an ACTIVE deterministic resolver.
@@ -98,7 +101,7 @@ current PASS/FAIL
 
 Qualification evidence may justify that a procedure is PROVEN/ACTIVE. This is not history-of-use for the target unit: it is the validator/resolver's own positive/negative/repair test proof.
 
-A new rule with no prior runtime history is valid: before ACTIVE it runs its qualification tests once and stores their exact `lf_test_runs.test_run_id` values. Runtime admission resolves those exact IDs by primary key; it does not scan prior plan/unit history.
+A new rule with no prior runtime history is valid: before ACTIVE it runs its qualification tests once and stores their exact `lf_test_runs.test_run_id` values. Runtime admission resolves those exact IDs by primary key; it does not scan prior plan/unit history. The test row must also carry `programming_subject_type`, `programming_subject_code`, and `programming_test_role` matching the validator/resolver being admitted.
 
 Prior runtime PASS from any other unit/run can never satisfy the current checkpoint.
 
