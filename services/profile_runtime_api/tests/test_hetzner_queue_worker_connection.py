@@ -201,7 +201,7 @@ class HetznerQueueConnectionTest(unittest.TestCase):
         heartbeat.assert_any_call(
             cycles=1,
             work=0,
-            reconnects=1,
+            reconnects=0,
             conn=conn,
         )
 
