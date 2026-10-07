@@ -1,0 +1,110 @@
+{
+  "schema_version": "PROGRAMMING_AGENT_CONTROL_COMPLETENESS_MANIFEST_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "base_main_sha": "faf71e4c700af201c74537e392dfdca0394d19b7",
+  "coverage_units": [
+    {
+      "unit": "A1",
+      "contract_ref": "analysis_request_context_v1.schema.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "A2",
+      "contract_ref": "analysis_change_classification_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "A3",
+      "contract_ref": "analysis_targeted_evidence_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "A4",
+      "contract_ref": "shared_change_impact_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "A5",
+      "contract_ref": "analysis_decision_context_adr_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "A6",
+      "contract_ref": "analysis_implementability_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "A7",
+      "contract_ref": "analysis_material_front_coverage_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "A8",
+      "contract_ref": "analysis_stop_rule_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "A9",
+      "contract_ref": "analysis_implementation_package_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "A9_PG01",
+      "contract_ref": "analysis_programming_handoff_parity_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "PG-01",
+      "contract_ref": "programming_entry_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "PG-04",
+      "contract_ref": "programming_solution_partition_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true
+    },
+    {
+      "unit": "PG-07",
+      "contract_ref": "programming_context_budget_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "receipt_contract_required": true
+    },
+    {
+      "unit": "PG-10",
+      "contract_ref": "programming_human_decision_routing_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "receipt_contract_required": true
+    }
+  ],
+  "critical_families": {
+    "AUTHORITY_VS_IMPLEMENTATION": "analysis_material_front_coverage_contract_v1.json#blocker_semantics",
+    "EXISTING_DECISION_REUSE": "analysis_decision_context_adr_contract_v1.json#existing_decision_resolution",
+    "HUMAN_DECISION_ROUTING": "analysis_decision_context_adr_contract_v1.json#human_decision_routing",
+    "A9_PACKAGE_MATERIALIZATION": "analysis_implementation_package_contract_v1.json",
+    "SOLUTION_PARTITION": "programming_solution_partition_contract_v1.json",
+    "CONTEXT_BUDGET": "programming_context_budget_contract_v1.json",
+    "PROGRAMMING_CONFLICT_ROUTING": "programming_human_decision_routing_contract_v1.json"
+  },
+  "completeness_gate": {
+    "plan_only_control_is_not_implemented": true,
+    "every_covered_unit_must_have_source_contract": true,
+    "every_covered_unit_must_have_validator": true,
+    "runtime_or_human_action_control_requires_receipt_contract": true,
+    "missing_contract_or_validator_fails_closed": true
+  }
+}

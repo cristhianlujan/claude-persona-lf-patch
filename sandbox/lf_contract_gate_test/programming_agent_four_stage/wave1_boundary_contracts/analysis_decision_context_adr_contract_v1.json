@@ -112,5 +112,48 @@
   },
   "no_parallel_engine": true,
   "runtime_activation": false,
-  "production_activation": false
+  "production_activation": false,
+  "existing_decision_resolution": {
+    "lookup_order": [
+      "DECISION_CONTEXT_ASOF@CURRENT",
+      "public.lf_decision_log",
+      "transversal.decision_log"
+    ],
+    "exact_subject_and_scope_match_required": true,
+    "currentness_required": true,
+    "current_existing_decision_must_be_reused": true,
+    "duplicate_human_decision_request_forbidden": true,
+    "historical_or_superseded_decision_does_not_satisfy_currentness": true,
+    "no_matching_current_decision_allows_new_question_only_after_evidence_sufficiency_check": true
+  },
+  "human_decision_routing": {
+    "route_only_when": "TRUE_OWNER_DECISION_AFTER_RESOLVABLE_EVIDENCE_PATHS_EXHAUSTED",
+    "owner_scope": "SUPER_ADMIN",
+    "packet_schema_version": "ANALYSIS_HUMAN_DECISION_PACKET_V1",
+    "required_packet_fields": [
+      "decision_code",
+      "scope_refs[]",
+      "material_question",
+      "options[]",
+      "recommendation",
+      "risk_if_deferred",
+      "authority_refs[]",
+      "evidence_refs[]",
+      "currentness_refs[]",
+      "owner_scope",
+      "resume_condition",
+      "status"
+    ],
+    "status_values": [
+      "PENDING_OWNER_DECISION",
+      "RESOLVED"
+    ],
+    "recommendation_required": true,
+    "options_required": true,
+    "pending_packet_must_be_exposed_in_a9_output": true,
+    "pending_packet_must_not_be_hidden_inside_generic_blockers": true,
+    "resolvable_evidence_gap_must_not_be_routed_to_human": true,
+    "missing_implementation_alone_must_not_be_routed_to_human": true,
+    "programming_strategy_choice_must_not_be_routed_to_human": true
+  }
 }

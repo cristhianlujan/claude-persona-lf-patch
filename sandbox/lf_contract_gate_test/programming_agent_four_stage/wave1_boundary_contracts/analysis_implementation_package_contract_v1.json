@@ -1,0 +1,68 @@
+{
+  "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_CONTRACT_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "unit": "A9",
+  "output_contract": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+  "required_sections": [
+    "request_identity",
+    "change_classification",
+    "research_context",
+    "impact_map",
+    "decision_context",
+    "requirements",
+    "specialist_results",
+    "invariants_risk_quality",
+    "hard_boundaries",
+    "implementation_preconditions",
+    "interfaces_payloads_states_errors",
+    "acceptance_obligations",
+    "reversibility",
+    "source_currentness",
+    "evidence_refs",
+    "typed_blockers",
+    "analysis_verdict"
+  ],
+  "assembly_policy": {
+    "single_canonical_spec": true,
+    "section_index_required": true,
+    "stable_item_ids_required": true,
+    "dependency_graph_required": true,
+    "full_repo_payload_forbidden": true,
+    "mega_unindexed_payload_forbidden": true,
+    "lossless_provenance_required": true,
+    "programming_task_partition_forbidden_in_analysis": true,
+    "test_case_construction_forbidden": true
+  },
+  "decision_visibility": {
+    "human_decision_packets_source": "decision_context.human_decision_routing",
+    "pending_owner_decisions_must_be_rendered_as_dedicated_section": true,
+    "pending_owner_decisions_must_include_question_options_recommendation_owner_and_risk": true,
+    "generic_blocker_only_representation_forbidden": true,
+    "zero_pending_decisions_must_be_explicit": true
+  },
+  "qualification": {
+    "verdict_values": [
+      "READY",
+      "PARTIAL_READY",
+      "NEED_MORE_EVIDENCE",
+      "REQUIRES_DECISION",
+      "BLOCKED"
+    ],
+    "ready_forbids_pending_material_owner_decision": true,
+    "partial_ready_may_preserve_pending_decisions_only_outside_admitted_ready_scopes": true,
+    "missing_implementation_alone_must_not_force_blocked": true,
+    "all_material_fronts_accounted_required": true,
+    "scope_front_consistency_required": true
+  },
+  "snapshot_boundary": {
+    "snapshot_contract": "PROGRAMMING_CONTEXT_SNAPSHOT_V1",
+    "persist_append_only": true,
+    "preserve_decision_context_losslessly": true,
+    "preserve_human_decision_packets_losslessly": true,
+    "preserve_material_front_coverage_losslessly": true,
+    "preserve_implementability_losslessly": true,
+    "preserve_scope_readiness_losslessly": true
+  },
+  "runtime_activation": false,
+  "production_activation": false
+}

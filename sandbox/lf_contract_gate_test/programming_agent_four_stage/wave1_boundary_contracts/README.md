@@ -296,6 +296,37 @@ A9 PROGRAMMING_CONTEXT_SNAPSHOT_V1
 
 The persisted payload lives under `extensions.programming_context_snapshot`. It includes the complete `scope_readiness[]`, so a scope such as `S01_SHELL_CHROME` is auditable after the Analysis turn ends. No new snapshot table/store is introduced.
 
+
+## Systemic control sweep — 2026-10-07
+
+The real B2B shell run exposed control families that were declared in plan metadata but were not all materialized as executable source contracts. The current candidate adds one completeness gate so these gaps cannot be accepted one-by-one.
+
+### Human decisions
+
+A5 must resolve current decisions before creating a new owner question. A true owner decision is emitted as an explicit human-decision packet with question, options, recommendation, risk, owner and resume condition. A9 must expose pending packets as a dedicated section; hiding them inside generic blockers is forbidden. Missing implementation and programming strategy are not human decisions.
+
+### Authority versus implementation
+
+A7 must not turn absence of code, table, adapter or binding into an Analysis blocker when authority, requirements and acceptance obligations are already resolved and Programming can build the missing artifact. Such a front is a downstream BUILD obligation. BLOCKED is reserved for unresolved material authority/owner/contract/currentness/contradiction or an unavailable external dependency.
+
+### One canonical spec; N programming partitions
+
+A9 owns one canonical ANALYSIS_IMPLEMENTATION_PACKAGE_V1. Analysis may not pre-partition Programming tasks.
+
+PG-04 creates PROGRAMMING_SOLUTION_PARTITION_SET_V1 from semantic solution boundaries, dependencies, risk and write scope. Token or file count alone cannot define a partition. Every material requirement and acceptance obligation must be covered exactly once, with cross-partition dependencies explicit.
+
+### Context budget and anti-hang boundary
+
+PG-07 consumes the existing transversal CONTEXT_BUDGET_GOVERNANCE; no second token counter or budget engine is allowed.
+
+The worker receives a task-scoped, lossless projection. The effective limit is the stricter of the current transversal hard limit and the model-safe usable input budget after governance/tool/output/recovery reserves. Model context limits and reserves come from current runtime model profiles and benchmark evidence, never a hardcoded model constant.
+
+GREEN continues. YELLOW forbids additional prefetch and prefers exact-ref JIT. RED blocks before model execution and returns to PG-04 for semantic repartition or JIT. Material context may never be silently truncated.
+
+### Completeness gate
+
+programming_agent_control_completeness_manifest_v1.json requires source contract + validator for A1–A9, PG-01, PG-04, PG-07 and PG-10, plus receipt contracts for controls that perform runtime/human actions. A plan-only declaration is not treated as implemented.
+
 Governance:
 - `REUSE_OR_TRANSVERSALIZE_BEFORE_BUILD`.
 - Existing consumers stay as adapters until qualified cutover.

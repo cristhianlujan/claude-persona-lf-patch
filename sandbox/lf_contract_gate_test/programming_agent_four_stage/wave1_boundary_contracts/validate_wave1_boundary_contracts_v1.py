@@ -46,6 +46,7 @@ def validate_programming_entry(o):
     if mfc.get("schema_version")!="MATERIAL_FRONT_COVERAGE_V1" or mfc.get("producer_unit")!="A7": raise ContractError("PROGRAMMING_MATERIAL_FRONT_COVERAGE_IDENTITY")
     if mfc.get("contract_ref")!="analysis_material_front_coverage_contract_v1.json" or mfc.get("must_preserve_full_artifact") is not True: raise ContractError("PROGRAMMING_MATERIAL_FRONT_COVERAGE_PRESERVATION")
     if mfc.get("scope_readiness_is_separate_dimension") is not True or mfc.get("absence_never_means_not_applicable") is not True: raise ContractError("PROGRAMMING_MATERIAL_FRONT_COVERAGE_BOUNDARY")
+    if mfc.get("implementation_absence_alone_must_not_block") is not True: raise ContractError("PROGRAMMING_IMPLEMENTATION_ABSENCE_FALSE_BLOCKER")
     impl=s.get("implementability_schema",{})
     if impl.get("schema_version")!="IMPLEMENTABILITY_SCHEMA_V1" or impl.get("producer_unit")!="A6": raise ContractError("PROGRAMMING_IMPLEMENTABILITY_IDENTITY")
     if impl.get("contract_ref")!="analysis_implementability_contract_v1.json" or impl.get("must_preserve_full_artifact") is not True: raise ContractError("PROGRAMMING_IMPLEMENTABILITY_PRESERVATION")
@@ -55,6 +56,7 @@ def validate_programming_entry(o):
     if dc.get("contract_ref")!="analysis_decision_context_adr_contract_v1.json" or dc.get("must_preserve_full_artifact") is not True: raise ContractError("PROGRAMMING_DECISION_CONTEXT_PRESERVATION")
     if dc.get("ready_scope_requires_no_unresolved_material_decision") is not True or dc.get("requires_owner_decision_propagates_to_scope_readiness") is not True or dc.get("blocked_adr_propagates_to_scope_readiness") is not True: raise ContractError("PROGRAMMING_DECISION_CONTEXT_READINESS")
     if dc.get("technical_strategy_owned_by")!="PG-03": raise ContractError("PROGRAMMING_DECISION_CONTEXT_STRATEGY_BOUNDARY")
+    if dc.get("current_existing_decision_resolution_required") is not True or dc.get("pending_human_decision_packets_must_be_preserved") is not True: raise ContractError("PROGRAMMING_DECISION_CONTEXT_HUMAN_ROUTING")
     asr=s.get("analysis_stop_rule",{})
     if asr.get("schema_version")!="ANALYSIS_STOP_RULE_V1" or asr.get("producer_unit")!="A8": raise ContractError("PROGRAMMING_STOP_RULE_IDENTITY")
     if asr.get("contract_ref")!="analysis_stop_rule_contract_v1.json": raise ContractError("PROGRAMMING_STOP_RULE_CONTRACT")
@@ -122,6 +124,20 @@ def validate_programming_entry(o):
     c=o.get("compatibility",{})
     if c.get("action")!="EXTEND_ENTRY_BOUNDARY_DO_NOT_DUPLICATE_RUNTIME" or c.get("new_runtime_created") is not False: raise ContractError("PROGRAMMING_PARALLEL_RUNTIME")
     if c.get("story_direct_consumption_after_cutover") is not False: raise ContractError("PROGRAMMING_STORY_CUTOVER")
+    db=o.get("downstream_control_bindings",{})
+    expected_db={
+        "canonical_analysis_package_contract":"analysis_implementation_package_contract_v1.json",
+        "solution_partition_owner":"PG-04",
+        "solution_partition_contract":"programming_solution_partition_contract_v1.json",
+        "context_budget_owner":"PG-07",
+        "context_budget_contract":"programming_context_budget_contract_v1.json",
+        "programming_conflict_human_decision_owner":"PG-10",
+        "programming_human_decision_contract":"programming_human_decision_routing_contract_v1.json",
+        "pg01_does_not_claim_partition_or_context_budget_enforcement":True,
+        "pg04_pg07_pg10_contracts_required_before_programming_v1_freeze":True,
+    }
+    for k,v in expected_db.items():
+        if db.get(k)!=v: raise ContractError("PROGRAMMING_DOWNSTREAM_CONTROL_"+k)
 
 def validate_analysis_decision_context(o):
     if o.get("schema_version")!="ANALYSIS_DECISION_CONTEXT_ADR_CONTRACT_V1" or o.get("unit")!="A5": raise ContractError("A5_IDENTITY")
@@ -153,6 +169,16 @@ def validate_analysis_decision_context(o):
     if ib.get("a8_consumes_output_contract")!="DECISION_CONTEXT" or ib.get("a9_must_preserve_full_artifact") is not True or ib.get("programming_context_snapshot_field")!="decision_context" or ib.get("pg01_must_consume_losslessly") is not True or ib.get("pg03_retains_implementation_strategy_ownership") is not True: raise ContractError("A5_INTEGRATION")
     reuse=o.get("reuse",{})
     if set(reuse.get("reused_capabilities",[]))!={"DECISION_CONTEXT_ASOF","CURRENTNESS_AUTHORITY"} or reuse.get("reused_existing_authority_assertion")!="programacion.fn_engineering_current_adr_assert_v1" or reuse.get("parallel_adr_engine_forbidden") is not True or reuse.get("parallel_decision_context_store_forbidden") is not True: raise ContractError("A5_REUSE")
+    ed=o.get("existing_decision_resolution",{})
+    if ed.get("lookup_order")!=["DECISION_CONTEXT_ASOF@CURRENT","public.lf_decision_log","transversal.decision_log"]: raise ContractError("A5_EXISTING_DECISION_LOOKUP")
+    for k in ("exact_subject_and_scope_match_required","currentness_required","current_existing_decision_must_be_reused","duplicate_human_decision_request_forbidden","historical_or_superseded_decision_does_not_satisfy_currentness","no_matching_current_decision_allows_new_question_only_after_evidence_sufficiency_check"):
+        if ed.get(k) is not True: raise ContractError("A5_EXISTING_DECISION_"+k)
+    hr=o.get("human_decision_routing",{})
+    if hr.get("route_only_when")!="TRUE_OWNER_DECISION_AFTER_RESOLVABLE_EVIDENCE_PATHS_EXHAUSTED" or hr.get("owner_scope")!="SUPER_ADMIN" or hr.get("packet_schema_version")!="ANALYSIS_HUMAN_DECISION_PACKET_V1": raise ContractError("A5_HUMAN_ROUTING_IDENTITY")
+    req_packet={"decision_code","scope_refs[]","material_question","options[]","recommendation","risk_if_deferred","authority_refs[]","evidence_refs[]","currentness_refs[]","owner_scope","resume_condition","status"}
+    if set(hr.get("required_packet_fields",[]))!=req_packet or set(hr.get("status_values",[]))!={"PENDING_OWNER_DECISION","RESOLVED"}: raise ContractError("A5_HUMAN_ROUTING_PACKET")
+    for k in ("recommendation_required","options_required","pending_packet_must_be_exposed_in_a9_output","pending_packet_must_not_be_hidden_inside_generic_blockers","resolvable_evidence_gap_must_not_be_routed_to_human","missing_implementation_alone_must_not_be_routed_to_human","programming_strategy_choice_must_not_be_routed_to_human"):
+        if hr.get(k) is not True: raise ContractError("A5_HUMAN_ROUTING_"+k)
     if o.get("no_parallel_engine") is not True or o.get("runtime_activation") is not False or o.get("production_activation") is not False: raise ContractError("A5_ACTIVATION")
 
 def validate_material_front_coverage(o):
@@ -179,6 +205,11 @@ def validate_material_front_coverage(o):
     ib=o.get("integration_boundary",{})
     if ib.get("a9_must_preserve_full_artifact") is not True or ib.get("programming_context_snapshot_field")!="material_front_coverage": raise ContractError("MFC_A9_INTEGRATION")
     if ib.get("scope_readiness_is_separate_dimension") is not True or ib.get("stop_rule_policy_change_owned_by")!="A8" or ib.get("no_stop_rule_change_in_this_contract") is not True: raise ContractError("MFC_MICROLOT_BOUNDARY")
+    bs=o.get("blocker_semantics",{})
+    for k in ("implementation_absence_alone_is_not_analysis_blocker","implementation_new_with_resolved_authority_requirements_and_acceptance_is_build_required","required_closed_front_may_represent_downstream_build_obligation","missing_code_table_binding_or_adapter_if_programmable_is_not_blocker","blocker_reason_must_identify_unresolved_material_authority_not_implementation_absence"):
+        if bs.get(k) is not True: raise ContractError("MFC_BLOCKER_SEMANTICS_"+k)
+    allowed_blockers={"AUTHORITY_UNRESOLVED","OWNER_DECISION_REQUIRED","CONTRACT_UNRESOLVED","CURRENTNESS_UNRESOLVED","MATERIAL_CONTRADICTION","EXTERNAL_DEPENDENCY_UNAVAILABLE"}
+    if set(bs.get("blocked_front_requires_one_of",[]))!=allowed_blockers: raise ContractError("MFC_BLOCKER_SEMANTICS_ALLOWED")
     if o.get("no_parallel_engine") is not True or o.get("runtime_activation") is not False or o.get("production_activation") is not False: raise ContractError("MFC_ACTIVATION")
 
 def validate_analysis_stop_rule(o):
@@ -198,6 +229,9 @@ def validate_analysis_stop_rule(o):
     ib=o.get("integration_boundary",{})
     if ib.get("consumer_unit")!="A9" or ib.get("programming_context_snapshot_field")!="analysis_stop_rule" or ib.get("material_front_coverage_contract")!="MATERIAL_FRONT_COVERAGE_V1": raise ContractError("STOP_RULE_A9_INTEGRATION")
     if ib.get("scope_readiness_policy_unchanged_in_this_microlot") is not True: raise ContractError("STOP_RULE_MICROLOT_BOUNDARY")
+    hr=o.get("human_decision_routing_guard",{})
+    for k in ("requires_decision_before_stop_must_have_human_packet","human_packet_owner_scope_required","duplicate_owner_decision_request_forbidden","resolvable_evidence_gap_must_not_route_human","missing_implementation_must_not_route_human","stop_may_preserve_pending_owner_decision_only_if_packet_is_exposed"):
+        if hr.get(k) is not True: raise ContractError("STOP_RULE_HUMAN_ROUTING_"+k)
     if o.get("no_parallel_engine") is not True or o.get("runtime_activation") is not False or o.get("production_activation") is not False: raise ContractError("STOP_RULE_ACTIVATION")
 
 def validate_analysis_implementability(o):
@@ -418,6 +452,96 @@ def validate_manifest(o):
     if contracts.get("A4")!=contracts.get("TST-05"): raise ContractError("MANIFEST_SHARED_IMPACT_SPLIT")
     if len({contracts.get("TST-02"),contracts.get("TST-03"),contracts.get("TST-04")})!=1: raise ContractError("MANIFEST_TEST_PIPELINE_SPLIT")
 
+def validate_analysis_package(o):
+    if o.get("schema_version")!="ANALYSIS_IMPLEMENTATION_PACKAGE_CONTRACT_V1" or o.get("unit")!="A9": raise ContractError("A9_PACKAGE_IDENTITY")
+    if o.get("output_contract")!="ANALYSIS_IMPLEMENTATION_PACKAGE_V1": raise ContractError("A9_PACKAGE_OUTPUT")
+    required={"request_identity","change_classification","research_context","impact_map","decision_context","requirements","specialist_results","invariants_risk_quality","hard_boundaries","implementation_preconditions","interfaces_payloads_states_errors","acceptance_obligations","reversibility","source_currentness","evidence_refs","typed_blockers","analysis_verdict"}
+    if set(o.get("required_sections",[]))!=required: raise ContractError("A9_PACKAGE_SECTIONS")
+    a=o.get("assembly_policy",{})
+    for k in ("single_canonical_spec","section_index_required","stable_item_ids_required","dependency_graph_required","full_repo_payload_forbidden","mega_unindexed_payload_forbidden","lossless_provenance_required","programming_task_partition_forbidden_in_analysis","test_case_construction_forbidden"):
+        if a.get(k) is not True: raise ContractError("A9_PACKAGE_ASSEMBLY_"+k)
+    d=o.get("decision_visibility",{})
+    if d.get("human_decision_packets_source")!="decision_context.human_decision_routing": raise ContractError("A9_HUMAN_DECISION_SOURCE")
+    for k in ("pending_owner_decisions_must_be_rendered_as_dedicated_section","pending_owner_decisions_must_include_question_options_recommendation_owner_and_risk","generic_blocker_only_representation_forbidden","zero_pending_decisions_must_be_explicit"):
+        if d.get(k) is not True: raise ContractError("A9_HUMAN_DECISION_"+k)
+    q=o.get("qualification",{})
+    if set(q.get("verdict_values",[]))!={"READY","PARTIAL_READY","NEED_MORE_EVIDENCE","REQUIRES_DECISION","BLOCKED"}: raise ContractError("A9_PACKAGE_VERDICTS")
+    for k in ("ready_forbids_pending_material_owner_decision","partial_ready_may_preserve_pending_decisions_only_outside_admitted_ready_scopes","missing_implementation_alone_must_not_force_blocked","all_material_fronts_accounted_required","scope_front_consistency_required"):
+        if q.get(k) is not True: raise ContractError("A9_PACKAGE_QUALIFICATION_"+k)
+    sb=o.get("snapshot_boundary",{})
+    if sb.get("snapshot_contract")!="PROGRAMMING_CONTEXT_SNAPSHOT_V1" or sb.get("persist_append_only") is not True: raise ContractError("A9_SNAPSHOT_BOUNDARY")
+    for k in ("preserve_decision_context_losslessly","preserve_human_decision_packets_losslessly","preserve_material_front_coverage_losslessly","preserve_implementability_losslessly","preserve_scope_readiness_losslessly"):
+        if sb.get(k) is not True: raise ContractError("A9_SNAPSHOT_"+k)
+    if o.get("runtime_activation") is not False or o.get("production_activation") is not False: raise ContractError("A9_ACTIVATION")
+
+def validate_pg04_partition(o):
+    if o.get("schema_version")!="PROGRAMMING_SOLUTION_PARTITION_CONTRACT_V1" or o.get("unit")!="PG-04": raise ContractError("PG04_IDENTITY")
+    if o.get("input_contract")!="ANALYSIS_IMPLEMENTATION_PACKAGE_V1" or o.get("output_contract")!="PROGRAMMING_SOLUTION_PARTITION_SET_V1": raise ContractError("PG04_BOUNDARY")
+    p=o.get("partition_policy",{})
+    if p.get("canonical_spec_count")!=1 or p.get("partition_unit")!="SOLUTION" or p.get("minimum_rule")!="SMALLEST_COHERENT_VALID_CHANGE": raise ContractError("PG04_PARTITION_IDENTITY")
+    for k in ("semantic_boundary_first","dependency_closure_required","risk_boundary_considered","write_scope_boundary_considered","token_count_alone_must_not_define_partition","file_count_alone_must_not_define_partition","multiple_independent_canonical_specs_forbidden","shared_contracts_referenced_not_copied"):
+        if p.get(k) is not True: raise ContractError("PG04_PARTITION_"+k)
+    c=o.get("coverage",{})
+    if c.get("material_requirement_coverage_required_percent")!=100 or c.get("acceptance_obligation_coverage_required_percent")!=100: raise ContractError("PG04_COVERAGE_PERCENT")
+    for k in ("orphan_requirement_forbidden","duplicate_ownership_forbidden","cross_partition_dependencies_explicit","partition_strategy_ref_required"):
+        if c.get(k) is not True: raise ContractError("PG04_COVERAGE_"+k)
+    b=o.get("budget_feedback",{})
+    if b.get("budget_capability")!="CONTEXT_BUDGET_GOVERNANCE" or b.get("pg07_is_runtime_enforcer") is not True or b.get("pg07_red_returns_to_pg04_for_repartition") is not True or b.get("overflow_repair_edge_is_not_a_plan_dependency_cycle") is not True or b.get("material_context_truncation_forbidden") is not True: raise ContractError("PG04_BUDGET_FEEDBACK")
+    if o.get("runtime_activation") is not False or o.get("production_activation") is not False: raise ContractError("PG04_ACTIVATION")
+
+def validate_pg07_context_budget(o):
+    if o.get("schema_version")!="PROGRAMMING_CONTEXT_BUDGET_CONTRACT_V1" or o.get("unit")!="PG-07": raise ContractError("PG07_IDENTITY")
+    c=o.get("capability",{})
+    if c.get("code")!="CONTEXT_BUDGET_GOVERNANCE" or c.get("version_policy")!="CURRENT" or c.get("compiler_enforcement")!="public.fn_lf_router_preflight_v1(text)" or c.get("ledger")!="private.lf_context_budget_events_v2" or c.get("readback")!="public.v_lf_context_budget_latest_v2" or c.get("parallel_budget_engine_forbidden") is not True: raise ContractError("PG07_CAPABILITY")
+    p=o.get("projection",{})
+    if p.get("source")!="ANALYSIS_IMPLEMENTATION_PACKAGE_V1" or p.get("partition_source")!="PROGRAMMING_SOLUTION_PARTITION_SET_V1": raise ContractError("PG07_PROJECTION_SOURCE")
+    for k in ("task_scoped_projection_required","lossy_summary_forbidden","full_spec_copy_to_every_worker_forbidden","full_repo_context_forbidden","material_context_truncation_forbidden","jit_exact_ref_fetch_allowed"):
+        if p.get(k) is not True: raise ContractError("PG07_PROJECTION_"+k)
+    required_refs={"solution_objective","applicable_requirement_refs","applicable_rule_refs","shared_contract_refs","dependency_refs","interface_refs","source_refs","acceptance_refs","write_scope","hard_boundaries"}
+    if set(p.get("required_material_refs",[]))!=required_refs: raise ContractError("PG07_PROJECTION_REFS")
+    b=o.get("budget_policy",{})
+    if b.get("model_context_limit_source")!="RUNTIME_MODEL_CONTEXT_PROFILE" or b.get("hardcoded_model_token_limit_forbidden") is not True or b.get("reserve_values_source")!="MODEL_PROFILE_AND_BENCHMARK_DERIVED": raise ContractError("PG07_MODEL_BUDGET_SOURCE")
+    if b.get("usable_input_budget_formula")!="MODEL_CONTEXT_LIMIT - GOVERNANCE_RESERVE - TOOL_READBACK_RESERVE - OUTPUT_RESERVE - RECOVERY_RESERVE": raise ContractError("PG07_BUDGET_FORMULA")
+    if b.get("effective_limit_rule")!="MIN(CURRENT_TRANSVERSAL_HARD_LIMIT, MODEL_SAFE_USABLE_INPUT_BUDGET)" or b.get("transversal_policy_limit_must_be_current") is not True or b.get("window_saturation_forbidden") is not True: raise ContractError("PG07_EFFECTIVE_LIMIT")
+    if b.get("soft_limit_status")!="YELLOW" or b.get("hard_limit_status")!="RED" or b.get("red_action")!="BLOCK_AND_RETURN_TO_PG04_REPARTITION_OR_JIT" or b.get("yellow_action")!="NO_ADDITIONAL_PREFETCH_PREFER_JIT" or b.get("green_action")!="CONTINUE": raise ContractError("PG07_BUDGET_ACTIONS")
+    rec=o.get("receipt",{})
+    if rec.get("schema_version")!="PROGRAMMING_CONTEXT_BUDGET_RECEIPT_V1": raise ContractError("PG07_RECEIPT_IDENTITY")
+    fields={"projection_id","solution_id","projection_sha256","model_profile_ref","budget_policy_ref","estimated_tokens","soft_limit_tokens","hard_limit_tokens","model_safe_usable_input_budget","effective_limit_tokens","context_status","source_refs[]","verdict","overflow_action"}
+    if set(rec.get("required_fields",[]))!=fields or set(rec.get("verdict_values",[]))!={"ACCEPT","BLOCK"}: raise ContractError("PG07_RECEIPT")
+    if o.get("runtime_activation") is not False or o.get("production_activation") is not False: raise ContractError("PG07_ACTIVATION")
+
+def validate_pg10_human(o):
+    if o.get("schema_version")!="PROGRAMMING_HUMAN_DECISION_ROUTING_CONTRACT_V1" or o.get("unit")!="PG-10": raise ContractError("PG10_IDENTITY")
+    required_inputs={"ANALYSIS_IMPLEMENTATION_PACKAGE_V1","DECISION_CONTEXT_ASOF@CURRENT","public.lf_decision_log","transversal.decision_log"}
+    if set(o.get("input_sources",[]))!=required_inputs: raise ContractError("PG10_INPUTS")
+    r=o.get("routing",{})
+    for k in ("route_only_true_owner_decision","resolvable_evidence_gap_routes_to_targeted_evidence_not_human","implementation_strategy_owned_by_pg03_not_human","missing_implementation_alone_not_human","current_existing_decision_reused_before_new_question","duplicate_question_forbidden"):
+        if r.get(k) is not True: raise ContractError("PG10_ROUTING_"+k)
+    if r.get("owner_scope")!="SUPER_ADMIN" or r.get("packet_schema_version")!="PROGRAMMING_HUMAN_DECISION_PACKET_V1": raise ContractError("PG10_PACKET_IDENTITY")
+    fields={"decision_code","scope_refs[]","question","options[]","recommendation","risk_if_deferred","authority_refs[]","evidence_refs[]","currentness_refs[]","owner_scope","resume_condition"}
+    if set(r.get("required_packet_fields",[]))!=fields: raise ContractError("PG10_PACKET_FIELDS")
+    res=o.get("resolution",{})
+    if res.get("decision_receipt_surface")!="programacion.human_decisions" or res.get("decision_context_persistence")!="DECISION_CONTEXT_ASOF@CURRENT": raise ContractError("PG10_RESOLUTION_SURFACE")
+    for k in ("resolved_decision_must_be_current_before_resume","resume_only_affected_scope","unrelated_ready_scope_may_continue"):
+        if res.get(k) is not True: raise ContractError("PG10_RESOLUTION_"+k)
+    if o.get("runtime_activation") is not False or o.get("production_activation") is not False: raise ContractError("PG10_ACTIVATION")
+
+def validate_control_completeness(o):
+    if o.get("schema_version")!="PROGRAMMING_AGENT_CONTROL_COMPLETENESS_MANIFEST_V1": raise ContractError("CONTROL_MANIFEST_IDENTITY")
+    units=o.get("coverage_units",[])
+    required_units={"A1","A2","A3","A4","A5","A6","A7","A8","A9","A9_PG01","PG-01","PG-04","PG-07","PG-10"}
+    if {x.get("unit") for x in units}!=required_units: raise ContractError("CONTROL_MANIFEST_UNITS")
+    for x in units:
+        ref=x.get("contract_ref")
+        if x.get("source_contract_required") is not True or x.get("validator_required") is not True or not isinstance(ref,str) or not (ROOT/ref).is_file(): raise ContractError("CONTROL_MANIFEST_MATERIALIZATION")
+        if x.get("unit") in {"PG-07","PG-10"} and x.get("receipt_contract_required") is not True: raise ContractError("CONTROL_MANIFEST_RECEIPT")
+    cf=o.get("critical_families",{})
+    required_families={"AUTHORITY_VS_IMPLEMENTATION","EXISTING_DECISION_REUSE","HUMAN_DECISION_ROUTING","A9_PACKAGE_MATERIALIZATION","SOLUTION_PARTITION","CONTEXT_BUDGET","PROGRAMMING_CONFLICT_ROUTING"}
+    if set(cf)!=required_families: raise ContractError("CONTROL_MANIFEST_FAMILIES")
+    g=o.get("completeness_gate",{})
+    for k in ("plan_only_control_is_not_implemented","every_covered_unit_must_have_source_contract","every_covered_unit_must_have_validator","runtime_or_human_action_control_requires_receipt_contract","missing_contract_or_validator_fails_closed"):
+        if g.get(k) is not True: raise ContractError("CONTROL_MANIFEST_GATE_"+k)
+
 def positive_request():
     return {"schema_version":"REQUEST_CONTEXT_V1","request_identity":{"request_ref":"chat://request/1","request_kind":"USER_REQUEST"},"objective":{"problem_statement":"The requested change needs analysis.","desired_outcome":"Produce a source-bound implementation analysis."},"target_hints":["repo://example"],"source_refs":["source://request/1"],"provided_facts":[{"fact_code":"F1","value":"known","source_ref":"source://request/1"}],"constraints":["NO_PRODUCTION_ACTIVATION"],"ambiguities":[{"code":"A1","statement":"Exact implementation target is not yet authoritative.","materiality":"UNKNOWN","resolution_state":"OPEN"}],"no_solution_inferred":True}
 
@@ -440,11 +564,17 @@ def self_test():
     impact=load("shared_change_impact_contract_v1.json")
     tp=load("testing_wave1_design_pipeline_contract_v1.json")
     m=load("manifest_v1.json")
+    a9pkg=load("analysis_implementation_package_contract_v1.json")
+    pg04=load("programming_solution_partition_contract_v1.json")
+    pg07=load("programming_context_budget_contract_v1.json")
+    pg10=load("programming_human_decision_routing_contract_v1.json")
+    cm=load("programming_agent_control_completeness_manifest_v1.json")
     assert schema["properties"]["no_solution_inferred"]["const"] is True
     assert {"story_code","agent_task_id","functional_version_id","proposed_solution"}.isdisjoint(schema["properties"])
     validate_programming_entry(p); validate_analysis_decision_context(a5); validate_material_front_coverage(mfc); validate_analysis_stop_rule(stop); validate_analysis_implementability(impl); validate_handoff_parity(parity); validate_testing_admission(ta)
     validate_analysis_change_classification(a2); validate_analysis_targeted_evidence(a3)
     validate_shared_impact(impact); validate_testing_pipeline(tp); validate_manifest(m)
+    validate_analysis_package(a9pkg); validate_pg04_partition(pg04); validate_pg07_context_budget(pg07); validate_pg10_human(pg10); validate_control_completeness(cm)
     validate_request_context(positive_request())
 
     x=positive_request(); x["story_code"]="LEGACY-STORY"; expect_error(validate_request_context,x,"REQUEST_CONTEXT_KEYS_MISMATCH")
@@ -556,7 +686,30 @@ def self_test():
     x=json.loads(json.dumps(impact)); x["testing_projection"]["consumes_same_core"]=False; expect_error(validate_shared_impact,x,"IMPACT_TESTING_REUSE")
     x=json.loads(json.dumps(tp)); x["story_required"]=True; expect_error(validate_testing_pipeline,x,"TEST_PIPELINE_STAGE_COUPLING")
     x=json.loads(json.dumps(m)); x["contracts"]["TST-05"]="testing_private_impact_engine.json"; expect_error(validate_manifest,x,"MANIFEST_SHARED_IMPACT_SPLIT")
-    print("PASS_WAVE1_BOUNDARY_CONTRACTS target_state_split=PASS design_binding=PASS context_snapshot=PASS material_front_coverage=PASS stop_rule=PASS implementability_schema=PASS handoff_parity=PASS scope_front_consistency=PASS snapshot_currentness=PASS scope_readiness=PASS snapshot_persistence=PASS negatives=99")
+    x=json.loads(json.dumps(a5)); x["existing_decision_resolution"]["current_existing_decision_must_be_reused"]=False; expect_error(validate_analysis_decision_context,x,"A5_EXISTING_DECISION_current_existing_decision_must_be_reused")
+    x=json.loads(json.dumps(a5)); x["human_decision_routing"]["missing_implementation_alone_must_not_be_routed_to_human"]=False; expect_error(validate_analysis_decision_context,x,"A5_HUMAN_ROUTING_missing_implementation_alone_must_not_be_routed_to_human")
+    x=json.loads(json.dumps(a5)); x["human_decision_routing"]["pending_packet_must_be_exposed_in_a9_output"]=False; expect_error(validate_analysis_decision_context,x,"A5_HUMAN_ROUTING_pending_packet_must_be_exposed_in_a9_output")
+    x=json.loads(json.dumps(mfc)); x["blocker_semantics"]["implementation_absence_alone_is_not_analysis_blocker"]=False; expect_error(validate_material_front_coverage,x,"MFC_BLOCKER_SEMANTICS_implementation_absence_alone_is_not_analysis_blocker")
+    x=json.loads(json.dumps(mfc)); x["blocker_semantics"]["blocked_front_requires_one_of"].append("IMPLEMENTATION_MISSING"); expect_error(validate_material_front_coverage,x,"MFC_BLOCKER_SEMANTICS_ALLOWED")
+    x=json.loads(json.dumps(stop)); x["human_decision_routing_guard"]["requires_decision_before_stop_must_have_human_packet"]=False; expect_error(validate_analysis_stop_rule,x,"STOP_RULE_HUMAN_ROUTING_requires_decision_before_stop_must_have_human_packet")
+    x=json.loads(json.dumps(a9pkg)); x["assembly_policy"]["single_canonical_spec"]=False; expect_error(validate_analysis_package,x,"A9_PACKAGE_ASSEMBLY_single_canonical_spec")
+    x=json.loads(json.dumps(a9pkg)); x["decision_visibility"]["generic_blocker_only_representation_forbidden"]=False; expect_error(validate_analysis_package,x,"A9_HUMAN_DECISION_generic_blocker_only_representation_forbidden")
+    x=json.loads(json.dumps(a9pkg)); x["qualification"]["missing_implementation_alone_must_not_force_blocked"]=False; expect_error(validate_analysis_package,x,"A9_PACKAGE_QUALIFICATION_missing_implementation_alone_must_not_force_blocked")
+    x=json.loads(json.dumps(pg04)); x["partition_policy"]["token_count_alone_must_not_define_partition"]=False; expect_error(validate_pg04_partition,x,"PG04_PARTITION_token_count_alone_must_not_define_partition")
+    x=json.loads(json.dumps(pg04)); x["partition_policy"]["canonical_spec_count"]=2; expect_error(validate_pg04_partition,x,"PG04_PARTITION_IDENTITY")
+    x=json.loads(json.dumps(pg04)); x["coverage"]["material_requirement_coverage_required_percent"]=99; expect_error(validate_pg04_partition,x,"PG04_COVERAGE_PERCENT")
+    x=json.loads(json.dumps(pg07)); x["capability"]["code"]="PARALLEL_CONTEXT_BUDGET"; expect_error(validate_pg07_context_budget,x,"PG07_CAPABILITY")
+    x=json.loads(json.dumps(pg07)); x["budget_policy"]["hardcoded_model_token_limit_forbidden"]=False; expect_error(validate_pg07_context_budget,x,"PG07_MODEL_BUDGET_SOURCE")
+    x=json.loads(json.dumps(pg07)); x["projection"]["material_context_truncation_forbidden"]=False; expect_error(validate_pg07_context_budget,x,"PG07_PROJECTION_material_context_truncation_forbidden")
+    x=json.loads(json.dumps(pg07)); x["receipt"]["required_fields"].remove("estimated_tokens"); expect_error(validate_pg07_context_budget,x,"PG07_RECEIPT")
+    x=json.loads(json.dumps(pg10)); x["routing"]["current_existing_decision_reused_before_new_question"]=False; expect_error(validate_pg10_human,x,"PG10_ROUTING_current_existing_decision_reused_before_new_question")
+    x=json.loads(json.dumps(pg10)); x["routing"]["missing_implementation_alone_not_human"]=False; expect_error(validate_pg10_human,x,"PG10_ROUTING_missing_implementation_alone_not_human")
+    x=json.loads(json.dumps(cm)); x["coverage_units"]=[u for u in x["coverage_units"] if u["unit"]!="PG-07"]; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_UNITS")
+    x=json.loads(json.dumps(cm)); [u for u in x["coverage_units"] if u["unit"]=="PG-10"][0]["receipt_contract_required"]=False; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_RECEIPT")
+    x=json.loads(json.dumps(p)); x["downstream_control_bindings"]["context_budget_owner"]="PG-01"; expect_error(validate_programming_entry,x,"PROGRAMMING_DOWNSTREAM_CONTROL_context_budget_owner")
+    x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["material_front_coverage"]["implementation_absence_alone_must_not_block"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_IMPLEMENTATION_ABSENCE_FALSE_BLOCKER")
+    x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["decision_context"]["pending_human_decision_packets_must_be_preserved"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_DECISION_CONTEXT_HUMAN_ROUTING")
+    print("PASS_WAVE1_BOUNDARY_CONTRACTS target_state_split=PASS design_binding=PASS context_snapshot=PASS material_front_coverage=PASS stop_rule=PASS implementability_schema=PASS handoff_parity=PASS scope_front_consistency=PASS snapshot_currentness=PASS scope_readiness=PASS snapshot_persistence=PASS human_decision_routing=PASS implementation_absence_semantics=PASS a9_package=PASS solution_partition=PASS context_budget=PASS control_completeness=PASS negatives=122")
 
 if __name__=="__main__":
     if "--self-test" not in sys.argv: raise SystemExit("usage: validate_wave1_boundary_contracts_v1.py --self-test")

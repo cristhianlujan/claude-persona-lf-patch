@@ -9,7 +9,12 @@
   ],
   "output_contract": "ANALYSIS_STOP_RULE_V1",
   "decision": {
-    "values": ["STOP","CONTINUE","REQUIRES_DECISION","BLOCKED"],
+    "values": [
+      "STOP",
+      "CONTINUE",
+      "REQUIRES_DECISION",
+      "BLOCKED"
+    ],
     "stop_requires": [
       "decision_stable=true",
       "all_material_fronts_accounted=true",
@@ -46,5 +51,13 @@
   },
   "no_parallel_engine": true,
   "runtime_activation": false,
-  "production_activation": false
+  "production_activation": false,
+  "human_decision_routing_guard": {
+    "requires_decision_before_stop_must_have_human_packet": true,
+    "human_packet_owner_scope_required": true,
+    "duplicate_owner_decision_request_forbidden": true,
+    "resolvable_evidence_gap_must_not_route_human": true,
+    "missing_implementation_must_not_route_human": true,
+    "stop_may_preserve_pending_owner_decision_only_if_packet_is_exposed": true
+  }
 }

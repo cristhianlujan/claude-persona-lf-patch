@@ -178,7 +178,8 @@
       "contract_ref": "analysis_material_front_coverage_contract_v1.json",
       "must_preserve_full_artifact": true,
       "scope_readiness_is_separate_dimension": true,
-      "absence_never_means_not_applicable": true
+      "absence_never_means_not_applicable": true,
+      "implementation_absence_alone_must_not_block": true
     },
     "analysis_stop_rule": {
       "schema_version": "ANALYSIS_STOP_RULE_V1",
@@ -255,7 +256,9 @@
       "ready_scope_requires_no_unresolved_material_decision": true,
       "requires_owner_decision_propagates_to_scope_readiness": true,
       "blocked_adr_propagates_to_scope_readiness": true,
-      "technical_strategy_owned_by": "PG-03"
+      "technical_strategy_owned_by": "PG-03",
+      "current_existing_decision_resolution_required": true,
+      "pending_human_decision_packets_must_be_preserved": true
     }
   },
   "compatibility": {
@@ -277,5 +280,16 @@
     "shared_snapshot_schema_required": true,
     "exact_context_receipt_required": true,
     "lossy_material_projection_forbidden": true
+  },
+  "downstream_control_bindings": {
+    "canonical_analysis_package_contract": "analysis_implementation_package_contract_v1.json",
+    "solution_partition_owner": "PG-04",
+    "solution_partition_contract": "programming_solution_partition_contract_v1.json",
+    "context_budget_owner": "PG-07",
+    "context_budget_contract": "programming_context_budget_contract_v1.json",
+    "programming_conflict_human_decision_owner": "PG-10",
+    "programming_human_decision_contract": "programming_human_decision_routing_contract_v1.json",
+    "pg01_does_not_claim_partition_or_context_budget_enforcement": true,
+    "pg04_pg07_pg10_contracts_required_before_programming_v1_freeze": true
   }
 }
