@@ -52,7 +52,7 @@ declare
   t1 jsonb;
   t10 jsonb;
 begin
-  t1:=programacion.fn_engineering_ig_validator_mutation_case_v2(1,54);
+  t1:=programacion.fn_engineering_ig_validator_mutation_case_v2(1,43);
   if t1->>'status'<>'PASS'
      or coalesce((t1->>'detected')::boolean,false) is not true
      or coalesce((t1->>'false_pass')::boolean,true) is not false
@@ -60,7 +60,7 @@ begin
     raise exception 'M49_T1_PROOF_FAILED:%',t1;
   end if;
 
-  t10:=programacion.fn_engineering_ig_validator_mutation_case_v2(10,54);
+  t10:=programacion.fn_engineering_ig_validator_mutation_case_v2(10,43);
   if t10->>'status'<>'PASS'
      or coalesce((t10->>'detected')::boolean,false) is not true
      or coalesce((t10->>'false_pass')::boolean,true) is not false
@@ -104,7 +104,7 @@ insert into public.lf_error_knowledge(
   'VALIDATION',
   array['INPUT_VALIDATOR','ENGINEERING_EXECUTOR']::text[],
   'R2_NO_VE','LOUD_EARLY',
-  'M4.9 T1/T10 authority-class oracle repair',
+  'M4.9 T1/T10 authority-class oracle repair on representative screen 43',
   'supabase://programacion.fn_input_governance_validate_v2'
 )
 on conflict (codigo) do update set
