@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import json,re,sys
+import json,re,sys,hashlib
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent
 SHA40=re.compile(r"^[0-9a-f]{40}$")
@@ -157,7 +157,7 @@ def validate_analysis_decision_context(o):
     d=o.get("decision_context",{})
     if d.get("schema_version")!="ANALYSIS_DECISION_CONTEXT_V1": raise ContractError("A5_DECISION_CONTEXT_VERSION")
     if set(d.get("status_values",[]))!={"STABLE","UNRESOLVED","REQUIRES_DECISION","BLOCKED"}: raise ContractError("A5_STATUS_VALUES")
-    required={"decision_id","subject_ref","scope_refs[]","material_question","status","options_considered[]","selected_option_ref","rationale","authority_refs[]","evidence_refs[]","currentness_refs[]","unresolved_questions[]","adr_disposition","adr_ref","persistence_ref","decision_fingerprint_sha256"}
+    required={"decision_id","subject_ref","scope_refs[]","material_question","status","options_considered[]","selected_option_ref","rationale","authority_refs[]","evidence_refs[]","currentness_refs[]","unresolved_questions[]","decision_resolution_receipt","adr_disposition","adr_ref","persistence_ref","decision_fingerprint_sha256"}
     if set(d.get("required_fields",[]))!=required: raise ContractError("A5_REQUIRED_FIELDS")
     for k in ("material_question_must_be_evidence_derived","selected_option_requires_stable_status","unresolved_material_question_forbids_stable","technical_implementation_strategy_forbidden"):
         if d.get(k) is not True: raise ContractError("A5_DECISION_GUARD_"+k)
@@ -181,9 +181,16 @@ def validate_analysis_decision_context(o):
     reuse=o.get("reuse",{})
     if set(reuse.get("reused_capabilities",[]))!={"DECISION_CONTEXT_ASOF","CURRENTNESS_AUTHORITY"} or reuse.get("reused_existing_authority_assertion")!="programacion.fn_engineering_current_adr_assert_v1" or reuse.get("parallel_adr_engine_forbidden") is not True or reuse.get("parallel_decision_context_store_forbidden") is not True: raise ContractError("A5_REUSE")
     ed=o.get("existing_decision_resolution",{})
-    if ed.get("lookup_order")!=["DECISION_CONTEXT_ASOF@CURRENT","public.lf_decision_log","transversal.decision_log"]: raise ContractError("A5_EXISTING_DECISION_LOOKUP")
+    if ed.get("lookup_order")!=["TARGET_AUTHORITY_REFS_FROM_A3_A6","DECISION_CONTEXT_ASOF@CURRENT","public.lf_decision_log","transversal.decision_log"]: raise ContractError("A5_EXISTING_DECISION_LOOKUP")
     for k in ("exact_subject_and_scope_match_required","currentness_required","current_existing_decision_must_be_reused","duplicate_human_decision_request_forbidden","historical_or_superseded_decision_does_not_satisfy_currentness","no_matching_current_decision_allows_new_question_only_after_evidence_sufficiency_check"):
         if ed.get(k) is not True: raise ContractError("A5_EXISTING_DECISION_"+k)
+    rc=ed.get("receipt_contract",{})
+    if rc.get("schema_version")!="ANALYSIS_DECISION_RESOLUTION_RECEIPT_V1": raise ContractError("A5_DECISION_RESOLUTION_RECEIPT_IDENTITY")
+    receipt_fields={"material_question_fingerprint_sha256","subject_ref","scope_refs[]","lookup_refs[]","resolution_state","reused_decision_ref","evidence_refs[]","currentness_refs[]"}
+    if set(rc.get("required_fields",[]))!=receipt_fields: raise ContractError("A5_DECISION_RESOLUTION_RECEIPT_FIELDS")
+    if set(rc.get("resolution_states",[]))!={"CURRENT_AUTHORITY_RESOLVED","NO_CURRENT_DECISION_FOUND","CONFLICTING_CURRENT_AUTHORITY","NOT_APPLICABLE"}: raise ContractError("A5_DECISION_RESOLUTION_STATES")
+    for k in ("requires_decision_requires_no_current_decision_found","conflicting_current_authority_forbids_stable","current_authority_resolved_forbids_duplicate_human_packet"):
+        if rc.get(k) is not True: raise ContractError("A5_DECISION_RESOLUTION_"+k)
     hr=o.get("human_decision_routing",{})
     if hr.get("route_only_when")!="TRUE_OWNER_DECISION_AFTER_RESOLVABLE_EVIDENCE_PATHS_EXHAUSTED" or hr.get("owner_scope")!="SUPER_ADMIN" or hr.get("packet_schema_version")!="ANALYSIS_HUMAN_DECISION_PACKET_V1": raise ContractError("A5_HUMAN_ROUTING_IDENTITY")
     req_packet={"decision_code","scope_refs[]","material_question","options[]","recommendation","risk_if_deferred","authority_refs[]","evidence_refs[]","currentness_refs[]","owner_scope","resume_condition","status"}
@@ -208,8 +215,14 @@ def validate_material_front_coverage(o):
     if set(fc.get("closure_values",[]))!={"CLOSED","BLOCKED"}: raise ContractError("MFC_CLOSURE_VALUES")
     required_fields={"front_id","front_kind","status","closure","source_signal_refs[]","scope_refs[]","authority_refs[]","evidence_refs[]","currentness_refs[]","blockers[]","reason"}
     if set(fc.get("required_fields",[]))!=required_fields: raise ContractError("MFC_FIELDS")
+    bc=fc.get("blocker_contract",{})
+    if bc.get("schema_version")!="ANALYSIS_MATERIAL_BLOCKER_V1" or bc.get("required_when_closure")!="BLOCKED": raise ContractError("MFC_BLOCKER_CONTRACT_IDENTITY")
+    blocker_fields={"blocker_code","blocker_class","reason","evidence_refs[]"}
+    if set(bc.get("required_fields",[]))!=blocker_fields: raise ContractError("MFC_BLOCKER_CONTRACT_FIELDS")
+    blocker_classes={"AUTHORITY_UNRESOLVED","OWNER_DECISION_REQUIRED","CONTRACT_UNRESOLVED","CURRENTNESS_UNRESOLVED","MATERIAL_CONTRADICTION","EXTERNAL_DEPENDENCY_UNAVAILABLE"}
+    if set(bc.get("class_values",[]))!=blocker_classes or bc.get("implementation_absence_class_forbidden") is not True or bc.get("implementation_absence_wording_without_material_class_forbidden") is not True: raise ContractError("MFC_BLOCKER_CONTRACT_CLASSES")
     g=o.get("coverage_guards",{})
-    required_true={"every_material_candidate_emitted_exactly_once","silent_omission_forbidden","unknown_material_signal_requires_blocked_front","required_front_requires_scope_binding","required_closed_front_requires_material_evidence","reuse_as_is_requires_currentness","not_applicable_requires_evidence_and_reason","unmapped_material_signals_must_be_explicit","absence_never_means_not_applicable"}
+    required_true={"every_material_candidate_emitted_exactly_once","silent_omission_forbidden","unknown_material_signal_requires_blocked_front","required_front_requires_scope_binding","required_closed_front_requires_material_evidence","reuse_as_is_requires_currentness","not_applicable_requires_evidence_and_reason","unmapped_material_signals_must_be_explicit","absence_never_means_not_applicable","blocked_front_requires_typed_blocker","closed_front_requires_empty_blockers"}
     for k in required_true:
         if g.get(k) is not True: raise ContractError("MFC_GUARD_"+k)
     outputs={"front_candidate_refs[]","material_fronts[]","unmapped_material_signals[]","all_material_fronts_accounted","coverage_fingerprint_sha256","source_refs[]","currentness_refs[]"}
@@ -457,10 +470,14 @@ def validate_manifest(o):
     if o.get("schema_version")!="PROGRAMMING_AGENT_WAVE1_BOUNDARY_MANIFEST_V1": raise ContractError("MANIFEST_VERSION")
     if o.get("state")!="SOURCE_ONLY_CANDIDATE": raise ContractError("MANIFEST_STATE")
     if not SHA40.fullmatch(o.get("base_main_sha","")): raise ContractError("MANIFEST_BASE_SHA")
-    scope={"A1","A2","A3","A4","A5","PG-01","TST-01","TST-02","TST-03","TST-04","TST-05"}
+    scope={"A1","A2","A3","A4","A5","A6","A7","A8","A9","PG-01","TST-01","TST-02","TST-03","TST-04","TST-05"}
     if set(o.get("scope",[]))!=scope: raise ContractError("MANIFEST_SCOPE")
     contracts=o.get("contracts",{})
     if set(contracts)!=scope: raise ContractError("MANIFEST_CONTRACT_MAP")
+    expected_analysis={"A6":"analysis_implementability_contract_v1.json","A7":"analysis_material_front_coverage_contract_v1.json","A8":"analysis_stop_rule_contract_v1.json","A9":"analysis_implementation_package_contract_v1.json"}
+    for k,v in expected_analysis.items():
+        if contracts.get(k)!=v: raise ContractError("MANIFEST_ANALYSIS_CONTRACT_"+k)
+    if o.get("cross_boundary_contracts",{}).get("A9_PG01")!="analysis_programming_handoff_parity_contract_v1.json": raise ContractError("MANIFEST_A9_PG01_PARITY")
     if contracts.get("A4")!=contracts.get("TST-05"): raise ContractError("MANIFEST_SHARED_IMPACT_SPLIT")
     if len({contracts.get("TST-02"),contracts.get("TST-03"),contracts.get("TST-04")})!=1: raise ContractError("MANIFEST_TEST_PIPELINE_SPLIT")
 
@@ -544,9 +561,13 @@ def validate_control_completeness(o):
     units=o.get("coverage_units",[])
     required_units={"A1","A2","A3","A4","A5","A6","A7","A8","A9","A9_PG01","PG-01","PG-04","PG-07","PG-10"}
     if {x.get("unit") for x in units}!=required_units: raise ContractError("CONTROL_MANIFEST_UNITS")
+    validator_text=(ROOT/"validate_wave1_boundary_contracts_v1.py").read_text(encoding="utf-8")
     for x in units:
         ref=x.get("contract_ref")
-        if x.get("source_contract_required") is not True or x.get("validator_required") is not True or not isinstance(ref,str) or not (ROOT/ref).is_file(): raise ContractError("CONTROL_MANIFEST_MATERIALIZATION")
+        source=ROOT/ref if isinstance(ref,str) else None
+        if x.get("source_contract_required") is not True or x.get("validator_required") is not True or source is None or not source.is_file(): raise ContractError("CONTROL_MANIFEST_MATERIALIZATION")
+        if hashlib.sha256(source.read_bytes()).hexdigest()!=x.get("source_sha256"): raise ContractError("CONTROL_MANIFEST_SOURCE_SHA")
+        if x.get("validator_ref")!="validate_wave1_boundary_contracts_v1.py" or not isinstance(x.get("validator_symbol"),str) or ("def "+x["validator_symbol"]+"(") not in validator_text: raise ContractError("CONTROL_MANIFEST_VALIDATOR_SYMBOL")
         if x.get("unit") in {"PG-07","PG-10"} and x.get("receipt_contract_required") is not True: raise ContractError("CONTROL_MANIFEST_RECEIPT")
     cf=o.get("critical_families",{})
     required_families={"AUTHORITY_VS_IMPLEMENTATION","EXISTING_DECISION_REUSE","HUMAN_DECISION_ROUTING","A9_PACKAGE_MATERIALIZATION","SOLUTION_PARTITION","CONTEXT_BUDGET","PROGRAMMING_CONFLICT_ROUTING","RUNTIME_PAYLOAD_CONFORMANCE"}
@@ -554,11 +575,36 @@ def validate_control_completeness(o):
     if cf.get("RUNTIME_PAYLOAD_CONFORMANCE")!="programacion.fn_programming_context_snapshot_validate_v1": raise ContractError("CONTROL_MANIFEST_RUNTIME_CONFORMANCE")
     runtime_ref=o.get("runtime_payload_conformance_source_ref")
     if runtime_ref!="supabase/migrations/20261007183500_programming_context_snapshot_runtime_guard_v1.sql" or not (ROOT.parents[3]/runtime_ref).is_file(): raise ContractError("CONTROL_MANIFEST_RUNTIME_SOURCE")
+    if hashlib.sha256((ROOT.parents[3]/runtime_ref).read_bytes()).hexdigest()!=o.get("runtime_payload_conformance_source_sha256"): raise ContractError("CONTROL_MANIFEST_RUNTIME_SOURCE_SHA")
     expected_runtime_functions={"programacion.fn_programming_context_snapshot_validate_v1","programacion.fn_programming_context_record_v1","programacion.fn_programming_context_resolve_v1"}
     if set(o.get("runtime_payload_conformance_functions",[]))!=expected_runtime_functions: raise ContractError("CONTROL_MANIFEST_RUNTIME_FUNCTIONS")
     g=o.get("completeness_gate",{})
-    for k in ("plan_only_control_is_not_implemented","every_covered_unit_must_have_source_contract","every_covered_unit_must_have_validator","runtime_or_human_action_control_requires_receipt_contract","missing_contract_or_validator_fails_closed","source_contract_without_runtime_payload_conformance_is_not_execution_proof","runtime_payload_conformance_source_must_exist"):
+    for k in ("plan_only_control_is_not_implemented","every_covered_unit_must_have_source_contract","every_covered_unit_must_have_validator","runtime_or_human_action_control_requires_receipt_contract","missing_contract_or_validator_fails_closed","source_contract_without_runtime_payload_conformance_is_not_execution_proof","runtime_payload_conformance_source_must_exist","source_sha256_must_match","validator_symbol_must_exist"):
         if g.get(k) is not True: raise ContractError("CONTROL_MANIFEST_GATE_"+k)
+
+def validate_runtime_payload_field_coverage():
+    migration=ROOT.parents[3]/"supabase/migrations/20261007183500_programming_context_snapshot_runtime_guard_v1.sql"
+    if not migration.is_file():
+        raise ContractError("RUNTIME_FIELD_COVERAGE_MIGRATION_MISSING")
+    sql=migration.read_text(encoding="utf-8")
+    contracts={
+        "A5": load("analysis_decision_context_adr_contract_v1.json")["decision_context"]["required_fields"],
+        "A5_DECISION_RECEIPT": load("analysis_decision_context_adr_contract_v1.json")["existing_decision_resolution"]["receipt_contract"]["required_fields"],
+        "A6_REQ": load("analysis_implementability_contract_v1.json")["requirement_contract"]["required_fields"],
+        "A6_BIND": load("analysis_implementability_contract_v1.json")["binding_contract"]["required_fields"],
+        "A7": load("analysis_material_front_coverage_contract_v1.json")["front_contract"]["required_fields"],
+        "A7_BLOCKER": load("analysis_material_front_coverage_contract_v1.json")["front_contract"]["blocker_contract"]["required_fields"],
+        "A8": load("analysis_stop_rule_contract_v1.json")["required_fields"],
+        "SCOPE": load("programming_entry_contract_v1.json")["programming_context_snapshot"]["scope_readiness_contract"]["required_fields"],
+        "HUMAN": load("programming_entry_contract_v1.json")["programming_context_snapshot"]["human_decision_queue_contract"]["required_fields"],
+    }
+    missing={}
+    for group,fields in contracts.items():
+        absent=[f for f in fields if f.replace("[]","") not in sql]
+        if absent:
+            missing[group]=absent
+    if missing:
+        raise ContractError("RUNTIME_FIELD_COVERAGE_MISSING:"+json.dumps(missing,sort_keys=True))
 
 def positive_request():
     return {"schema_version":"REQUEST_CONTEXT_V1","request_identity":{"request_ref":"chat://request/1","request_kind":"USER_REQUEST"},"objective":{"problem_statement":"The requested change needs analysis.","desired_outcome":"Produce a source-bound implementation analysis."},"target_hints":["repo://example"],"source_refs":["source://request/1"],"provided_facts":[{"fact_code":"F1","value":"known","source_ref":"source://request/1"}],"constraints":["NO_PRODUCTION_ACTIVATION"],"ambiguities":[{"code":"A1","statement":"Exact implementation target is not yet authoritative.","materiality":"UNKNOWN","resolution_state":"OPEN"}],"no_solution_inferred":True}
@@ -593,6 +639,7 @@ def self_test():
     validate_analysis_change_classification(a2); validate_analysis_targeted_evidence(a3)
     validate_shared_impact(impact); validate_testing_pipeline(tp); validate_manifest(m)
     validate_analysis_package(a9pkg); validate_pg04_partition(pg04); validate_pg07_context_budget(pg07); validate_pg10_human(pg10); validate_control_completeness(cm)
+    validate_runtime_payload_field_coverage()
     validate_request_context(positive_request())
 
     x=positive_request(); x["story_code"]="LEGACY-STORY"; expect_error(validate_request_context,x,"REQUEST_CONTEXT_KEYS_MISMATCH")
@@ -706,10 +753,13 @@ def self_test():
     x=json.loads(json.dumps(impact)); x["testing_projection"]["consumes_same_core"]=False; expect_error(validate_shared_impact,x,"IMPACT_TESTING_REUSE")
     x=json.loads(json.dumps(tp)); x["story_required"]=True; expect_error(validate_testing_pipeline,x,"TEST_PIPELINE_STAGE_COUPLING")
     x=json.loads(json.dumps(m)); x["contracts"]["TST-05"]="testing_private_impact_engine.json"; expect_error(validate_manifest,x,"MANIFEST_SHARED_IMPACT_SPLIT")
+    x=json.loads(json.dumps(m)); x["contracts"]["A9"]="analysis_summary_only.json"; expect_error(validate_manifest,x,"MANIFEST_ANALYSIS_CONTRACT_A9")
     x=json.loads(json.dumps(a5)); x["existing_decision_resolution"]["current_existing_decision_must_be_reused"]=False; expect_error(validate_analysis_decision_context,x,"A5_EXISTING_DECISION_current_existing_decision_must_be_reused")
+    x=json.loads(json.dumps(a5)); x["existing_decision_resolution"]["receipt_contract"]["requires_decision_requires_no_current_decision_found"]=False; expect_error(validate_analysis_decision_context,x,"A5_DECISION_RESOLUTION_requires_decision_requires_no_current_decision_found")
     x=json.loads(json.dumps(a5)); x["human_decision_routing"]["missing_implementation_alone_must_not_be_routed_to_human"]=False; expect_error(validate_analysis_decision_context,x,"A5_HUMAN_ROUTING_missing_implementation_alone_must_not_be_routed_to_human")
     x=json.loads(json.dumps(a5)); x["human_decision_routing"]["pending_packet_must_be_exposed_in_a9_output"]=False; expect_error(validate_analysis_decision_context,x,"A5_HUMAN_ROUTING_pending_packet_must_be_exposed_in_a9_output")
     x=json.loads(json.dumps(mfc)); x["blocker_semantics"]["implementation_absence_alone_is_not_analysis_blocker"]=False; expect_error(validate_material_front_coverage,x,"MFC_BLOCKER_SEMANTICS_implementation_absence_alone_is_not_analysis_blocker")
+    x=json.loads(json.dumps(mfc)); x["front_contract"]["blocker_contract"]["implementation_absence_class_forbidden"]=False; expect_error(validate_material_front_coverage,x,"MFC_BLOCKER_CONTRACT_CLASSES")
     x=json.loads(json.dumps(mfc)); x["blocker_semantics"]["blocked_front_requires_one_of"].append("IMPLEMENTATION_MISSING"); expect_error(validate_material_front_coverage,x,"MFC_BLOCKER_SEMANTICS_ALLOWED")
     x=json.loads(json.dumps(stop)); x["human_decision_routing_guard"]["requires_decision_before_stop_must_have_human_packet"]=False; expect_error(validate_analysis_stop_rule,x,"STOP_RULE_HUMAN_ROUTING_requires_decision_before_stop_must_have_human_packet")
     x=json.loads(json.dumps(a9pkg)); x["assembly_policy"]["single_canonical_spec"]=False; expect_error(validate_analysis_package,x,"A9_PACKAGE_ASSEMBLY_single_canonical_spec")
@@ -728,13 +778,15 @@ def self_test():
     x=json.loads(json.dumps(cm)); [u for u in x["coverage_units"] if u["unit"]=="PG-10"][0]["receipt_contract_required"]=False; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_RECEIPT")
     x=json.loads(json.dumps(cm)); x["critical_families"]["RUNTIME_PAYLOAD_CONFORMANCE"]="generic_outer_validator_only"; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_RUNTIME_CONFORMANCE")
     x=json.loads(json.dumps(cm)); x["runtime_payload_conformance_source_ref"]="supabase/migrations/missing.sql"; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_RUNTIME_SOURCE")
+    x=json.loads(json.dumps(cm)); x["coverage_units"][0]["source_sha256"]="0"*64; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_SOURCE_SHA")
+    x=json.loads(json.dumps(cm)); x["coverage_units"][0]["validator_symbol"]="missing_validator"; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_VALIDATOR_SYMBOL")
     x=json.loads(json.dumps(cm)); x["completeness_gate"]["source_contract_without_runtime_payload_conformance_is_not_execution_proof"]=False; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_GATE_source_contract_without_runtime_payload_conformance_is_not_execution_proof")
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["persistence"]["programming_payload_validator"]="private.fn_lf_decision_context_asof_payload_valid_v1"; expect_error(validate_programming_entry,x,"PROGRAMMING_CONTEXT_PERSISTENCE_programming_payload_validator")
     x=json.loads(json.dumps(a9pkg)); x["snapshot_boundary"]["direct_generic_record_for_programming_consumer_forbidden"]=False; expect_error(validate_analysis_package,x,"A9_RUNTIME_CONFORMANCE_BOUNDARY")
     x=json.loads(json.dumps(p)); x["downstream_control_bindings"]["context_budget_owner"]="PG-01"; expect_error(validate_programming_entry,x,"PROGRAMMING_DOWNSTREAM_CONTROL_context_budget_owner")
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["material_front_coverage"]["implementation_absence_alone_must_not_block"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_IMPLEMENTATION_ABSENCE_FALSE_BLOCKER")
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["decision_context"]["pending_human_decision_packets_must_be_preserved"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_DECISION_CONTEXT_HUMAN_ROUTING")
-    print("PASS_WAVE1_BOUNDARY_CONTRACTS target_state_split=PASS design_binding=PASS context_snapshot=PASS material_front_coverage=PASS stop_rule=PASS implementability_schema=PASS handoff_parity=PASS scope_front_consistency=PASS snapshot_currentness=PASS scope_readiness=PASS snapshot_persistence=PASS human_decision_routing=PASS implementation_absence_semantics=PASS a9_package=PASS solution_partition=PASS context_budget=PASS control_completeness=PASS runtime_payload_conformance=PASS negatives=129")
+    print("PASS_WAVE1_BOUNDARY_CONTRACTS target_state_split=PASS design_binding=PASS context_snapshot=PASS material_front_coverage=PASS stop_rule=PASS implementability_schema=PASS handoff_parity=PASS scope_front_consistency=PASS snapshot_currentness=PASS scope_readiness=PASS snapshot_persistence=PASS human_decision_routing=PASS implementation_absence_semantics=PASS a9_package=PASS solution_partition=PASS context_budget=PASS control_completeness=PASS runtime_payload_conformance=PASS runtime_field_coverage=PASS negatives=134")
 
 if __name__=="__main__":
     if "--self-test" not in sys.argv: raise SystemExit("usage: validate_wave1_boundary_contracts_v1.py --self-test")

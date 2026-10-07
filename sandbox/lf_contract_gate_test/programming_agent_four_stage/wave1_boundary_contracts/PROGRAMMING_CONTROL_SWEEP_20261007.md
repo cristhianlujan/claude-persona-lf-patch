@@ -50,7 +50,13 @@ Candidate repair:
 These wrappers reuse the existing DECISION_CONTEXT_ASOF store and block Programming admission when the typed snapshot is incomplete. No new store is introduced.
 
 Rollback-only Supabase probe:
+- 7/7 PASS: 1 valid positive + 6 negative/systemic cases;
 - historical B2B snapshot: BLOCKED as expected;
+- implementation-absence false blocker: rejected;
+- REQUIRES_DECISION without owner packet: rejected;
+- REQUIRES_DECISION despite current authority: rejected;
+- missing scope-front matrix: rejected;
+- incomplete A6 implementability requirement: rejected;
 - synthetic structurally complete snapshot: VALID as expected;
 - candidate functions after rollback: 0.
 
@@ -59,3 +65,8 @@ Evidence: programming_context_runtime_guard_probe_v1.json.
 ## Human decision queue
 
 PROGRAMMING_CONTEXT_SNAPSHOT_V1 now requires human_decision_queue[] even when empty. Every REQUIRES_DECISION scope must have a matching pending SUPER_ADMIN packet; a READY scope may not carry a pending owner decision. This prevents human decisions from disappearing inside generic blockers.
+
+
+### Exact source sealing
+
+The completeness manifest now binds each covered A1–A9 / PG contract to its exact SHA-256 and validator symbol. The runtime payload guard migration is also SHA-bound. A plan-only declaration, missing validator symbol, source drift, or migration-source drift fails the source self-test.

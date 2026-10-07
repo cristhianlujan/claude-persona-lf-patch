@@ -70,7 +70,27 @@
       "currentness_refs[]",
       "blockers[]",
       "reason"
-    ]
+    ],
+    "blocker_contract": {
+      "schema_version": "ANALYSIS_MATERIAL_BLOCKER_V1",
+      "required_when_closure": "BLOCKED",
+      "required_fields": [
+        "blocker_code",
+        "blocker_class",
+        "reason",
+        "evidence_refs[]"
+      ],
+      "class_values": [
+        "AUTHORITY_UNRESOLVED",
+        "OWNER_DECISION_REQUIRED",
+        "CONTRACT_UNRESOLVED",
+        "CURRENTNESS_UNRESOLVED",
+        "MATERIAL_CONTRADICTION",
+        "EXTERNAL_DEPENDENCY_UNAVAILABLE"
+      ],
+      "implementation_absence_class_forbidden": true,
+      "implementation_absence_wording_without_material_class_forbidden": true
+    }
   },
   "coverage_guards": {
     "every_material_candidate_emitted_exactly_once": true,
@@ -81,7 +101,9 @@
     "reuse_as_is_requires_currentness": true,
     "not_applicable_requires_evidence_and_reason": true,
     "unmapped_material_signals_must_be_explicit": true,
-    "absence_never_means_not_applicable": true
+    "absence_never_means_not_applicable": true,
+    "blocked_front_requires_typed_blocker": true,
+    "closed_front_requires_empty_blockers": true
   },
   "output_requirements": [
     "front_candidate_refs[]",

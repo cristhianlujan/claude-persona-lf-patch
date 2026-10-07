@@ -30,6 +30,7 @@
       "evidence_refs[]",
       "currentness_refs[]",
       "unresolved_questions[]",
+      "decision_resolution_receipt",
       "adr_disposition",
       "adr_ref",
       "persistence_ref",
@@ -115,6 +116,7 @@
   "production_activation": false,
   "existing_decision_resolution": {
     "lookup_order": [
+      "TARGET_AUTHORITY_REFS_FROM_A3_A6",
       "DECISION_CONTEXT_ASOF@CURRENT",
       "public.lf_decision_log",
       "transversal.decision_log"
@@ -124,7 +126,29 @@
     "current_existing_decision_must_be_reused": true,
     "duplicate_human_decision_request_forbidden": true,
     "historical_or_superseded_decision_does_not_satisfy_currentness": true,
-    "no_matching_current_decision_allows_new_question_only_after_evidence_sufficiency_check": true
+    "no_matching_current_decision_allows_new_question_only_after_evidence_sufficiency_check": true,
+    "receipt_contract": {
+      "schema_version": "ANALYSIS_DECISION_RESOLUTION_RECEIPT_V1",
+      "required_fields": [
+        "material_question_fingerprint_sha256",
+        "subject_ref",
+        "scope_refs[]",
+        "lookup_refs[]",
+        "resolution_state",
+        "reused_decision_ref",
+        "evidence_refs[]",
+        "currentness_refs[]"
+      ],
+      "resolution_states": [
+        "CURRENT_AUTHORITY_RESOLVED",
+        "NO_CURRENT_DECISION_FOUND",
+        "CONFLICTING_CURRENT_AUTHORITY",
+        "NOT_APPLICABLE"
+      ],
+      "requires_decision_requires_no_current_decision_found": true,
+      "conflicting_current_authority_forbids_stable": true,
+      "current_authority_resolved_forbids_duplicate_human_packet": true
+    }
   },
   "human_decision_routing": {
     "route_only_when": "TRUE_OWNER_DECISION_AFTER_RESOLVABLE_EVIDENCE_PATHS_EXHAUSTED",
