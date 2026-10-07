@@ -206,5 +206,167 @@ class HetznerQueueConnectionTest(unittest.TestCase):
         )
 
 
+    def test_run_once_reraises_generic_error_after_persisting_failure(self) -> None:
+        conn = FakeConnection()
+        claimed = {"request_id": "request-1"}
+        with (
+            patch.object(MODULE, "_reconcile_governed_pending", return_value=0),
+            patch.object(MODULE, "_claim", return_value=claimed),
+            patch.object(MODULE, "_begin_governed_pre_model", side_effect=RuntimeError("boom")),
+            patch.object(MODULE, "_persist_failure") as persist_failure,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "boom") as raised:
+                MODULE.run_once(conn)
+
+        persist_failure.assert_called_once_with(conn, "request-1", raised.exception)
+
+    def test_daemon_applies_exponential_backoff_to_consecutive_cycle_errors(self) -> None:
+        conn = FakeConnection()
+        sleeps: list[float] = []
+
+        def sleep(seconds: float) -> None:
+            sleeps.append(seconds)
+            if len(sleeps) == 6:
+                raise StopDaemon()
+
+        with (
+            patch.object(MODULE, "_connect", return_value=conn) as connect,
+            patch.object(MODULE, "run_once", side_effect=RuntimeError("db read-only")) as run_once,
+            patch.object(MODULE.time, "sleep", side_effect=sleep),
+            patch.object(MODULE, "_emit_heartbeat"),
+        ):
+            with self.assertRaises(StopDaemon):
+                MODULE._run_daemon(3.0)
+
+        self.assertEqual(run_once.call_count, 6)
+        self.assertEqual(connect.call_count, 1)
+        self.assertEqual(sleeps, [3.0, 6.0, 12.0, 24.0, 48.0, 60.0])
+
+    def test_daemon_resets_cycle_error_backoff_after_healthy_cycle(self) -> None:
+        conn = FakeConnection()
+        sleeps: list[float] = []
+
+        def sleep(seconds: float) -> None:
+            sleeps.append(seconds)
+            if len(sleeps) == 3:
+                raise StopDaemon()
+
+        with (
+            patch.object(MODULE, "_connect", return_value=conn),
+            patch.object(
+                MODULE,
+                "run_once",
+                side_effect=[
+                    RuntimeError("first"),
+                    RuntimeError("second"),
+                    True,
+                    RuntimeError("third"),
+                ],
+            ),
+            patch.object(MODULE.time, "sleep", side_effect=sleep),
+            patch.object(MODULE.time, "monotonic", return_value=0.0),
+            patch.object(MODULE, "_emit_heartbeat"),
+        ):
+            with self.assertRaises(StopDaemon):
+                MODULE._run_daemon(3.0)
+
+        self.assertEqual(sleeps, [3.0, 6.0, 3.0])
+
+    def test_daemon_cleans_transaction_before_cycle_error_sleep(self) -> None:
+        conn = FakeConnection(TransactionStatus.INERROR)
+        events: list[str] = []
+
+        def cleanup(value):
+            events.append("cleanup")
+            value.info.transaction_status = TransactionStatus.IDLE
+            return value
+
+        def sleep(seconds: float) -> None:
+            events.append(f"sleep:{seconds}")
+            raise StopDaemon()
+
+        with (
+            patch.object(MODULE, "_connect", return_value=conn),
+            patch.object(MODULE, "run_once", side_effect=RuntimeError("failed")),
+            patch.object(MODULE, "_cleanup_transaction", side_effect=cleanup),
+            patch.object(MODULE.time, "sleep", side_effect=sleep),
+            patch.object(MODULE, "_emit_heartbeat"),
+        ):
+            with self.assertRaises(StopDaemon):
+                MODULE._run_daemon(3.0)
+
+        self.assertEqual(events[:2], ["cleanup", "sleep:3.0"])
+
+    def test_generic_cycle_error_does_not_force_reconnect(self) -> None:
+        conn = FakeConnection()
+
+        with (
+            patch.object(MODULE, "_connect", return_value=conn) as connect,
+            patch.object(MODULE, "run_once", side_effect=RuntimeError("failed")),
+            patch.object(MODULE.time, "sleep", side_effect=StopDaemon()),
+            patch.object(MODULE, "_emit_heartbeat"),
+        ):
+            with self.assertRaises(StopDaemon):
+                MODULE._run_daemon(3.0)
+
+        connect.assert_called_once()
+
+    def test_idle_cycle_still_sleeps_configured_three_seconds(self) -> None:
+        conn = FakeConnection()
+
+        with (
+            patch.object(MODULE, "_connect", return_value=conn),
+            patch.object(MODULE, "run_once", return_value=False),
+            patch.object(MODULE.time, "monotonic", return_value=0.0),
+            patch.object(MODULE.time, "sleep", side_effect=StopDaemon()) as sleep_mock,
+            patch.object(MODULE, "_emit_heartbeat"),
+        ):
+            with self.assertRaises(StopDaemon):
+                MODULE._run_daemon(3.0)
+
+        sleep_mock.assert_called_once_with(3.0)
+
+    def test_non_daemon_generic_error_preserves_success_exit_code(self) -> None:
+        conn = FakeConnection()
+
+        with (
+            patch.object(MODULE, "_connect", return_value=conn),
+            patch.object(MODULE, "run_once", side_effect=RuntimeError("failed")),
+            patch.object(sys, "argv", ["hetzner_queue_worker.py"]),
+        ):
+            self.assertEqual(MODULE.main(), 0)
+
+        self.assertTrue(conn.closed)
+
+    def test_worker_version_precedence_includes_runtime_source_sha_fallback(self) -> None:
+        cases = [
+            (
+                {
+                    "LF_PROFILE_RUNTIME_GIT_SHA": "lf-sha",
+                    "GITHUB_SHA": "github-sha",
+                    "PROFILE_RUNTIME_SOURCE_SHA": "runtime-sha",
+                },
+                "lf-sha",
+            ),
+            (
+                {
+                    "GITHUB_SHA": "github-sha",
+                    "PROFILE_RUNTIME_SOURCE_SHA": "runtime-sha",
+                },
+                "github-sha",
+            ),
+            (
+                {"PROFILE_RUNTIME_SOURCE_SHA": "runtime-sha"},
+                "runtime-sha",
+            ),
+            ({}, "unknown"),
+        ]
+
+        for env, expected in cases:
+            with self.subTest(env=env):
+                with patch.dict(MODULE.os.environ, env, clear=True):
+                    self.assertEqual(MODULE._worker_version(), expected)
+
+
 if __name__ == "__main__":
     unittest.main()
