@@ -1415,6 +1415,8 @@ def _run_daemon(idle_seconds: float) -> None:
                 continue
 
             if cycle_error:
+                # A claimed job may already be persisted FAILED; still pause before
+                # the next cycle so a persistent DB/application error cannot hot-loop.
                 time.sleep(cycle_error_delay)
                 cycle_error_delay = min(cycle_error_delay * 2, 60.0)
                 continue
