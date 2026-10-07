@@ -1,0 +1,898 @@
+{
+  "schema_version": "ANALYSIS_A14_FRESH_CASE_SET_V1",
+  "state": "FROZEN_FRESH_HOLDOUT_CASES",
+  "case_set_id": "A14-FRESH-20261007-V1",
+  "generated_after_candidate_freeze": true,
+  "candidate_lock_ref": "github://cristhianlujan/claude-persona-lf-patch@19b1d3de48320635cabfc29555baf70ee69fb5ef/analysis_a14_validation_candidate_lock_v1.json",
+  "candidate_logic_head": "52eceeb44e785fae529deb1064c4e8720bbee28b",
+  "used_for_A13_tuning": false,
+  "derived_from_A10_or_A11_cases": false,
+  "cases": [
+    {
+      "case_id": "A14-FRESH-001",
+      "archetype": "B2B_OFFER_CONFIG",
+      "product_screen_archetype": true,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/001",
+      "source_refs": [
+        "fixture://a14/001/request"
+      ],
+      "signals": {
+        "materiality_level": "LOW",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": false,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 0,
+        "required_specialist_count": 0
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "PRODUCT_SURFACE",
+            "source_ref": "fixture://a14/001/s1"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "OFFER_PERCENT_RULE",
+            "critical": true,
+            "source_ref": "fixture://a14/001/i1"
+          }
+        ],
+        "indirect_impacts": [],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "UI_RULE",
+            "material": true,
+            "status": "ACCOUNTED",
+            "effect_on_scope": "PRESERVE",
+            "scope_ids": [
+              "S1"
+            ],
+            "source_refs": [
+              "fixture://a14/001/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/001/c"
+        }
+      },
+      "specialist_requirements": [],
+      "handoff": {
+        "producer_schema_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "receiver_schema_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "context_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "receipt_context_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "lossy_projection": false
+      }
+    },
+    {
+      "case_id": "A14-FRESH-002",
+      "archetype": "B2C_PAYMENT_SCHEDULE",
+      "product_screen_archetype": true,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/002",
+      "source_refs": [
+        "fixture://a14/002/request"
+      ],
+      "signals": {
+        "materiality_level": "LOW",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": false,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 0,
+        "required_specialist_count": 1
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "PRODUCT_SURFACE",
+            "source_ref": "fixture://a14/002/s1"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "SCHEDULE_INTERACTION",
+            "critical": true,
+            "source_ref": "fixture://a14/002/i1"
+          }
+        ],
+        "indirect_impacts": [],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "UX_BEHAVIOR",
+            "material": true,
+            "status": "ACCOUNTED",
+            "effect_on_scope": "PRESERVE",
+            "scope_ids": [
+              "S1"
+            ],
+            "source_refs": [
+              "fixture://a14/002/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/002/c"
+        }
+      },
+      "specialist_requirements": [
+        {
+          "specialist_type": "PRODUCT_SCREEN",
+          "required": true,
+          "matched_ref": "capability://PRODUCT_SCREEN_SPECIALIST@current",
+          "affected_scope_ids": [
+            "S1"
+          ]
+        }
+      ],
+      "handoff": {
+        "producer_schema_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "receiver_schema_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "context_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "receipt_context_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "lossy_projection": false
+      }
+    },
+    {
+      "case_id": "A14-FRESH-003",
+      "archetype": "B2B_UPLOAD_DETAIL",
+      "product_screen_archetype": true,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/003",
+      "source_refs": [
+        "fixture://a14/003/request"
+      ],
+      "signals": {
+        "materiality_level": "MEDIUM",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": false,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 0,
+        "required_specialist_count": 2
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "PRODUCT_SURFACE",
+            "source_ref": "fixture://a14/003/s1"
+          },
+          {
+            "scope_id": "S2",
+            "scope_kind": "DATA_SCOPE",
+            "source_ref": "fixture://a14/003/s2"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "UPLOAD_TABLE_SEMANTICS",
+            "critical": true,
+            "source_ref": "fixture://a14/003/i1"
+          }
+        ],
+        "indirect_impacts": [
+          {
+            "impact_id": "ERROR_DOWNLOAD_FLOW",
+            "critical": true,
+            "source_ref": "fixture://a14/003/i2"
+          }
+        ],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "TABLE",
+            "material": true,
+            "status": "ACCOUNTED",
+            "effect_on_scope": "PRESERVE",
+            "scope_ids": [
+              "S1"
+            ],
+            "source_refs": [
+              "fixture://a14/003/f1"
+            ]
+          },
+          {
+            "front_id": "ERROR_FLOW",
+            "material": true,
+            "status": "ACCOUNTED",
+            "effect_on_scope": "PRESERVE",
+            "scope_ids": [
+              "S2"
+            ],
+            "source_refs": [
+              "fixture://a14/003/f2"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/003/c"
+        }
+      },
+      "specialist_requirements": [
+        {
+          "specialist_type": "PRODUCT_SCREEN",
+          "required": true,
+          "matched_ref": "capability://PRODUCT_SCREEN_SPECIALIST@current",
+          "affected_scope_ids": [
+            "S1"
+          ]
+        },
+        {
+          "specialist_type": "DATA_CONTRACT",
+          "required": true,
+          "matched_ref": "capability://DATA_CONTRACT_SPECIALIST@current",
+          "affected_scope_ids": [
+            "S2"
+          ]
+        }
+      ],
+      "handoff": {
+        "producer_schema_digest_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "receiver_schema_digest_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "context_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "receipt_context_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "lossy_projection": false
+      }
+    },
+    {
+      "case_id": "A14-FRESH-004",
+      "archetype": "ADMIN_APPROVAL_MATRIX",
+      "product_screen_archetype": true,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/004",
+      "source_refs": [
+        "fixture://a14/004/request"
+      ],
+      "signals": {
+        "materiality_level": "UNKNOWN",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": false,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 1,
+        "required_specialist_count": 1
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "PRODUCT_SURFACE",
+            "source_ref": "fixture://a14/004/s1"
+          },
+          {
+            "scope_id": "S2",
+            "scope_kind": "POLICY_SCOPE",
+            "source_ref": "fixture://a14/004/s2"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "APPROVAL_ACTIONS",
+            "critical": true,
+            "source_ref": "fixture://a14/004/i1"
+          }
+        ],
+        "indirect_impacts": [],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "SPECIALIST_GAP",
+            "material": true,
+            "status": "ACCOUNTED",
+            "effect_on_scope": "PRESERVE",
+            "scope_ids": [
+              "S2"
+            ],
+            "source_refs": [
+              "fixture://a14/004/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/004/c"
+        }
+      },
+      "specialist_requirements": [
+        {
+          "specialist_type": "POLICY_SPECIALIST",
+          "required": true,
+          "matched_ref": null,
+          "affected_scope_ids": [
+            "S2"
+          ]
+        }
+      ],
+      "handoff": {
+        "producer_schema_digest_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "receiver_schema_digest_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "context_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "receipt_context_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "lossy_projection": false
+      }
+    },
+    {
+      "case_id": "A14-FRESH-005",
+      "archetype": "API_IDEMPOTENCY_HEADER",
+      "product_screen_archetype": false,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/005",
+      "source_refs": [
+        "fixture://a14/005/request"
+      ],
+      "signals": {
+        "materiality_level": "MEDIUM",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": false,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 0,
+        "required_specialist_count": 0
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "API_SCOPE",
+            "source_ref": "fixture://a14/005/s1"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "API_HEADER_CONTRACT",
+            "critical": true,
+            "source_ref": "fixture://a14/005/i1"
+          }
+        ],
+        "indirect_impacts": [],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "API_CONTRACT",
+            "material": true,
+            "status": "ACCOUNTED",
+            "effect_on_scope": "PRESERVE",
+            "scope_ids": [
+              "S1"
+            ],
+            "source_refs": [
+              "fixture://a14/005/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/005/c"
+        }
+      },
+      "specialist_requirements": [],
+      "handoff": {
+        "producer_schema_digest_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "receiver_schema_digest_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "context_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "receipt_context_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "lossy_projection": false
+      }
+    },
+    {
+      "case_id": "A14-FRESH-006",
+      "archetype": "DB_MIGRATION_ENUM_EXPANSION",
+      "product_screen_archetype": false,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/006",
+      "source_refs": [
+        "fixture://a14/006/request"
+      ],
+      "signals": {
+        "materiality_level": "HIGH",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": false,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 0,
+        "required_specialist_count": 0
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "DATA_SCOPE",
+            "source_ref": "fixture://a14/006/s1"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "SCHEMA_COMPATIBILITY",
+            "critical": true,
+            "source_ref": "fixture://a14/006/i1"
+          }
+        ],
+        "indirect_impacts": [
+          {
+            "impact_id": "MIGRATION_PARITY",
+            "critical": true,
+            "source_ref": "fixture://a14/006/i2"
+          }
+        ],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "SCHEMA",
+            "material": true,
+            "status": "ACCOUNTED",
+            "effect_on_scope": "PRESERVE",
+            "scope_ids": [
+              "S1"
+            ],
+            "source_refs": [
+              "fixture://a14/006/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/006/c"
+        }
+      },
+      "specialist_requirements": [],
+      "handoff": {
+        "producer_schema_digest_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "receiver_schema_digest_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "context_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "receipt_context_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "lossy_projection": false
+      }
+    },
+    {
+      "case_id": "A14-FRESH-007",
+      "archetype": "RULE_SOURCE_DRIFT",
+      "product_screen_archetype": false,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/007",
+      "source_refs": [
+        "fixture://a14/007/request"
+      ],
+      "signals": {
+        "materiality_level": "LOW",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "STALE_AFFECTED",
+        "material_contradiction": false,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 0,
+        "required_specialist_count": 0
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "RULE_SCOPE",
+            "source_ref": "fixture://a14/007/s1"
+          },
+          {
+            "scope_id": "S2",
+            "scope_kind": "RULE_SCOPE",
+            "source_ref": "fixture://a14/007/s2"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "RULE_READ",
+            "critical": true,
+            "source_ref": "fixture://a14/007/i1"
+          }
+        ],
+        "indirect_impacts": [],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "CURRENTNESS",
+            "material": true,
+            "status": "ACCOUNTED",
+            "effect_on_scope": "PRESERVE",
+            "scope_ids": [
+              "S1"
+            ],
+            "source_refs": [
+              "fixture://a14/007/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "STALE_AFFECTED",
+          "affected_scope_ids": [
+            "S1"
+          ],
+          "source_ref": "fixture://a14/007/c"
+        }
+      },
+      "specialist_requirements": [],
+      "handoff": {
+        "producer_schema_digest_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "receiver_schema_digest_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "context_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "receipt_context_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "lossy_projection": false
+      }
+    },
+    {
+      "case_id": "A14-FRESH-008",
+      "archetype": "CROSS_FAMILY_STATE_CONTRADICTION",
+      "product_screen_archetype": false,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/008",
+      "source_refs": [
+        "fixture://a14/008/request"
+      ],
+      "signals": {
+        "materiality_level": "LOW",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": true,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 0,
+        "required_specialist_count": 0
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "WORKFLOW_SCOPE",
+            "source_ref": "fixture://a14/008/s1"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "STATE_CONTRADICTION",
+            "critical": true,
+            "source_ref": "fixture://a14/008/i1"
+          }
+        ],
+        "indirect_impacts": [],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "SEMANTIC_CONTRADICTION",
+            "material": true,
+            "status": "BLOCKED",
+            "effect_on_scope": "BLOCKS",
+            "scope_ids": [
+              "S1"
+            ],
+            "source_refs": [
+              "fixture://a14/008/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/008/c"
+        }
+      },
+      "specialist_requirements": [],
+      "handoff": {
+        "producer_schema_digest_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "receiver_schema_digest_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+        "context_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "receipt_context_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "lossy_projection": false
+      }
+    },
+    {
+      "case_id": "A14-FRESH-009",
+      "archetype": "SHARED_CAPABILITY_SECOND_ORDER",
+      "product_screen_archetype": false,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/009",
+      "source_refs": [
+        "fixture://a14/009/request"
+      ],
+      "signals": {
+        "materiality_level": "LOW",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": false,
+        "known_cross_scope_impact": true,
+        "unresolved_material_signal_count": 0,
+        "required_specialist_count": 0
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "CAPABILITY_SCOPE",
+            "source_ref": "fixture://a14/009/s1"
+          },
+          {
+            "scope_id": "S2",
+            "scope_kind": "CONSUMER_SCOPE",
+            "source_ref": "fixture://a14/009/s2"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "CAPABILITY_CHANGE",
+            "critical": true,
+            "source_ref": "fixture://a14/009/i1"
+          }
+        ],
+        "indirect_impacts": [],
+        "second_order_impacts": [
+          {
+            "impact_id": "DOWNSTREAM_CONSUMER_BREAK",
+            "critical": true,
+            "source_ref": "fixture://a14/009/i2"
+          }
+        ],
+        "material_fronts": [
+          {
+            "front_id": "SECOND_ORDER",
+            "material": true,
+            "status": "ACCOUNTED",
+            "effect_on_scope": "PRESERVE",
+            "scope_ids": [
+              "S2"
+            ],
+            "source_refs": [
+              "fixture://a14/009/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/009/c"
+        }
+      },
+      "specialist_requirements": [],
+      "handoff": {
+        "producer_schema_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "receiver_schema_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "context_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "receipt_context_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "lossy_projection": false
+      }
+    },
+    {
+      "case_id": "A14-FRESH-010",
+      "archetype": "HANDOFF_SCHEMA_DRIFT_V2",
+      "product_screen_archetype": false,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/010",
+      "source_refs": [
+        "fixture://a14/010/request"
+      ],
+      "signals": {
+        "materiality_level": "MEDIUM",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": false,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 1,
+        "required_specialist_count": 0
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "HANDOFF_SCOPE",
+            "source_ref": "fixture://a14/010/s1"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "HANDOFF_SCHEMA",
+            "critical": true,
+            "source_ref": "fixture://a14/010/i1"
+          }
+        ],
+        "indirect_impacts": [],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "HANDOFF",
+            "material": true,
+            "status": "BLOCKED",
+            "effect_on_scope": "BLOCKS",
+            "scope_ids": [
+              "S1"
+            ],
+            "source_refs": [
+              "fixture://a14/010/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/010/c"
+        }
+      },
+      "specialist_requirements": [],
+      "handoff": {
+        "producer_schema_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "receiver_schema_digest_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "context_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "receipt_context_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "lossy_projection": false
+      }
+    },
+    {
+      "case_id": "A14-FRESH-011",
+      "archetype": "B2B_LIQUIDATION_SUMMARY",
+      "product_screen_archetype": true,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/011",
+      "source_refs": [
+        "fixture://a14/011/request"
+      ],
+      "signals": {
+        "materiality_level": "LOW",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "UNKNOWN",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": false,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 1,
+        "required_specialist_count": 0
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "PRODUCT_SURFACE",
+            "source_ref": "fixture://a14/011/s1"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "SUMMARY_PROJECTION",
+            "critical": true,
+            "source_ref": "fixture://a14/011/i1"
+          }
+        ],
+        "indirect_impacts": [],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "PROJECTION",
+            "material": true,
+            "status": "BLOCKED",
+            "effect_on_scope": "BLOCKS",
+            "scope_ids": [
+              "S1"
+            ],
+            "source_refs": [
+              "fixture://a14/011/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/011/c"
+        }
+      },
+      "specialist_requirements": [],
+      "handoff": {
+        "producer_schema_digest_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "receiver_schema_digest_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "context_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "receipt_context_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "lossy_projection": true
+      }
+    },
+    {
+      "case_id": "A14-FRESH-012",
+      "archetype": "GOVERNANCE_METADATA_NOTE",
+      "product_screen_archetype": false,
+      "candidate_ref": "analysis://locked",
+      "source_snapshot_ref": "fixture://a14/012",
+      "source_refs": [
+        "fixture://a14/012/request"
+      ],
+      "signals": {
+        "materiality_level": "LOW",
+        "scope_bounded": "TRUE",
+        "authority_state": "SUFFICIENT",
+        "reversibility_state": "DEMONSTRATED",
+        "currentness_decision": "CURRENT",
+        "material_contradiction": false,
+        "known_cross_scope_impact": false,
+        "unresolved_material_signal_count": 0,
+        "required_specialist_count": 0
+      },
+      "evidence": {
+        "scopes": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "GOVERNANCE_SCOPE",
+            "source_ref": "fixture://a14/012/s1"
+          }
+        ],
+        "direct_impacts": [
+          {
+            "impact_id": "METADATA_TRACE",
+            "critical": true,
+            "source_ref": "fixture://a14/012/i1"
+          }
+        ],
+        "indirect_impacts": [],
+        "second_order_impacts": [],
+        "material_fronts": [
+          {
+            "front_id": "TRACEABILITY",
+            "material": true,
+            "status": "ACCOUNTED",
+            "effect_on_scope": "PRESERVE",
+            "scope_ids": [
+              "S1"
+            ],
+            "source_refs": [
+              "fixture://a14/012/f1"
+            ]
+          }
+        ],
+        "currentness": {
+          "decision": "CURRENT",
+          "affected_scope_ids": [],
+          "source_ref": "fixture://a14/012/c"
+        }
+      },
+      "specialist_requirements": [],
+      "handoff": {
+        "producer_schema_digest_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "receiver_schema_digest_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+        "context_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "receipt_context_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "lossy_projection": false
+      }
+    }
+  ],
+  "guards": {
+    "A13_tuning_forbidden": true,
+    "candidate_logic_change_after_materialization_forbidden": true,
+    "runtime_activation": false,
+    "production_activation": false
+  },
+  "case_count": 12
+}
