@@ -1269,6 +1269,7 @@ def _emit_heartbeat(
     phase: str | None = None,
     cycles: int = 0,
     work: int = 0,
+    errors: int = 0,
     reconnects: int = 0,
     conn: psycopg.Connection | None = None,
 ) -> None:
@@ -1283,10 +1284,32 @@ def _emit_heartbeat(
     if conn is not None and not conn.closed:
         backend_pid = str(getattr(conn.info, "backend_pid", "unknown"))
     print(
-        f"HETZNER_QUEUE_HEARTBEAT cycles={cycles} work={work} "
+        f"HETZNER_QUEUE_HEARTBEAT cycles={cycles} work={work} errors={errors} "
         f"reconnects={reconnects} conn_backend_pid={backend_pid}",
         flush=True,
     )
+
+
+def _maybe_heartbeat(
+    *,
+    last_heartbeat: float,
+    cycles: int,
+    work: int,
+    errors: int,
+    reconnects: int,
+    conn: psycopg.Connection | None,
+) -> float:
+    now = time.monotonic()
+    if now - last_heartbeat >= 900.0:
+        _emit_heartbeat(
+            cycles=cycles,
+            work=work,
+            errors=errors,
+            reconnects=reconnects,
+            conn=conn,
+        )
+        return now
+    return last_heartbeat
 
 
 def run_once(conn: psycopg.Connection) -> bool:
@@ -1375,6 +1398,7 @@ def _run_daemon(idle_seconds: float) -> None:
     had_connection = False
     cycles = 0
     work = 0
+    errors = 0
     _emit_heartbeat(phase="startup")
     last_heartbeat = time.monotonic()
     try:
@@ -1410,11 +1434,29 @@ def _run_daemon(idle_seconds: float) -> None:
                     conn = _cleanup_transaction(conn)
 
             if connection_error:
+                errors += 1
+                last_heartbeat = _maybe_heartbeat(
+                    last_heartbeat=last_heartbeat,
+                    cycles=cycles,
+                    work=work,
+                    errors=errors,
+                    reconnects=reconnects,
+                    conn=conn,
+                )
                 time.sleep(reconnect_delay)
                 reconnect_delay = min(reconnect_delay * 2, 30.0)
                 continue
 
             if cycle_error:
+                errors += 1
+                last_heartbeat = _maybe_heartbeat(
+                    last_heartbeat=last_heartbeat,
+                    cycles=cycles,
+                    work=work,
+                    errors=errors,
+                    reconnects=reconnects,
+                    conn=conn,
+                )
                 # A claimed job may already be persisted FAILED; still pause before
                 # the next cycle so a persistent DB/application error cannot hot-loop.
                 time.sleep(cycle_error_delay)
@@ -1427,15 +1469,14 @@ def _run_daemon(idle_seconds: float) -> None:
             if did_work:
                 work += 1
 
-            now = time.monotonic()
-            if now - last_heartbeat >= 900.0:
-                _emit_heartbeat(
-                    cycles=cycles,
-                    work=work,
-                    reconnects=reconnects,
-                    conn=conn,
-                )
-                last_heartbeat = now
+            last_heartbeat = _maybe_heartbeat(
+                last_heartbeat=last_heartbeat,
+                cycles=cycles,
+                work=work,
+                errors=errors,
+                reconnects=reconnects,
+                conn=conn,
+            )
 
             if not did_work:
                 time.sleep(max(0.5, idle_seconds))
