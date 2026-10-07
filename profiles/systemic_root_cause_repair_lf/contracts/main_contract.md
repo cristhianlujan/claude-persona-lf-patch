@@ -113,3 +113,16 @@ Deterministic validation exclusively owns structural blocking codes. The pre-qua
 ## V0.6 pre-freeze schema discipline
 
 The producer must validate the complete candidate against the exact current `schemas/output.schema.json` before candidate freeze/digest. A schema-invalid draft is not a frozen candidate. Typed test protocols must preserve the declared collection types for setup, action and assertions. Downstream schema validation remains an independent fail-closed control; it is not the first place an avoidable producer shape error should be discovered.
+
+## V0.7R1 dynamic method and terminality revision
+
+V0.7R1 is an internal method revision of the canonical V0.6 pack; the public `profile_pack_id` remains V0.6 until validator allowlists are migrated under a separate governed change.
+
+- Diagnostic modules, search strategies and repair operators are selected from evidence-backed typed signals using `dynamic_method_catalog.v1.json`; product/module names are not selectors.
+- Mandatory core remains authority/currentness, physical wiring, causal boundary, repair/reuse/elimination, falsification, rollback/recovery, acceptance/readback, terminality completeness and conditional operability ownership.
+- A second-order recurrence search is mandatory before closure.
+- The mechanical terminality gate adds no diagnostics and performs no new evidence acquisition. It consumes only the evidence already assembled by the V0.6 investigation.
+- Internal open states `GAP`, `UNKNOWN`, `EVIDENCE_REQUIREMENT` and `DESIGN_BLOCKING` are not new public output enums. Any material non-DESIGN_BLOCKING internal state that survives the gate must be materialized as a canonical `DESIGN_BLOCKING` `current_uncertainties[]` item plus a blocking code before returning `NEEDS_MORE_EVIDENCE`.
+- `OPERABILITY_MAINTENANCE_OWNERSHIP` is a closure obligation only when persistent effects, background work, durable cleanup, trigger/event/lease/queue lifecycle, recurring reconciliation or ongoing maintenance are materially applicable.
+- R4's universal passive overlay is not part of the canonical method.
+- `SYSTEMIC_REPAIR_SPEC` is forbidden while a material open item, reachable uncontained second-order path, unresolved applicable operability ownership, or incomplete closure proof remains.
