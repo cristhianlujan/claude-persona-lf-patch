@@ -2362,12 +2362,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": false,
+      "changed_paths": [
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/README.md",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_decision_context_adr_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/manifest_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/programming_entry_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_wave1_boundary_contracts_v1.py"
+      ],
+      "applicable_controls": [],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": []
     },
     {
       "index": 55,
@@ -2398,12 +2405,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261007123000_ig_validator_strict_fail_probe_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 56,
@@ -2434,12 +2448,45 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": false,
+      "changed_paths": [
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/README.md",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a12_benchmark_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a12_contract_benchmark_result_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a13_remediation_changelog_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a14_candidate_result_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a14_fresh_cases_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a14_fresh_holdout_preflight_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a14_fresh_oracle_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a14_fresh_score_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a14_validation_candidate_lock_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_adversarial_cases_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_change_classification_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_campaign_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_cases_batch01_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_cases_batch02_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_cases_batch03_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_cases_batch04_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_historical_corpus_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_implementability_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_material_front_coverage_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_programming_handoff_parity_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_stop_rule_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_targeted_evidence_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_v1_freeze_manifest_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/programming_entry_contract_v1.json",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/run_analysis_a12_contract_benchmark_v1.py",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/run_analysis_a14_candidate_v1.py",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/score_analysis_a14_holdout_v1.py",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_analysis_evaluation_campaign_v1.py",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_analysis_evaluation_case_batch01_v1.py",
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_wave1_boundary_contracts_v1.py"
+      ],
+      "applicable_controls": [],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": []
     },
     {
       "index": 57,
@@ -2470,12 +2517,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261007114500_engineering_systemic_repair_handlers_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 58,
@@ -2506,12 +2560,20 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "sandbox/lf_contract_gate_test/profile_update_uppercase_target_path_test.py",
+        "supabase/migrations/20261007063435_fix_profile_update_begin_uppercase_path_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 59,
@@ -2542,12 +2604,20 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": false,
+      "changed_paths": [
+        ".github/workflows/pase-merge-gate.yml",
+        "sandbox/lf_contract_gate_test/ig_judge_applicability_before_stale_test.py"
+      ],
+      "applicable_controls": [
+        "CI_ROUTER_SELFTEST"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "WORKFLOW"
+      ]
     },
     {
       "index": 60,
@@ -2578,12 +2648,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261007102500_ig_contract_audit_10_units_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 61,
@@ -2614,12 +2691,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261007072000_ig_m4_7_fail_blocked_persisted.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 62,
@@ -2650,12 +2734,15 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": false,
+      "changed_paths": [
+        "sandbox/lf_contract_gate_test/engineering_checkpoints/m4_10/neg_unadjudicated.py"
+      ],
+      "applicable_controls": [],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": []
     },
     {
       "index": 63,
@@ -2686,12 +2773,15 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": false,
+      "changed_paths": [
+        "sandbox/lf_contract_gate_test/engineering_checkpoints/m4_9/mutation_catalog_t1_t10.py"
+      ],
+      "applicable_controls": [],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": []
     },
     {
       "index": 64,
@@ -2722,12 +2812,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261007065000_engineering_generic_checkpoint_repair_dispatch_v2.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 65,
@@ -2758,12 +2855,15 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": false,
+      "changed_paths": [
+        "sandbox/lf_contract_gate_test/engineering_checkpoints/m4_3/neg_structural.py"
+      ],
+      "applicable_controls": [],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": []
     },
     {
       "index": 66,
@@ -2794,12 +2894,15 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": false,
+      "changed_paths": [
+        "sandbox/lf_contract_gate_test/engineering_checkpoints/m4_3/structural_gate_controls.py"
+      ],
+      "applicable_controls": [],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": []
     },
     {
       "index": 67,
@@ -2830,12 +2933,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261007063500_engineering_run_test_runner_route_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 68,
@@ -2866,12 +2976,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261007063500_engineering_run_test_runner_route_v1.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 69,
@@ -2902,12 +3019,15 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": false,
+      "changed_paths": [
+        "sandbox/lf_contract_gate_test/engineering_checkpoints/n_18/neg_overtracking.py"
+      ],
+      "applicable_controls": [],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": []
     },
     {
       "index": 70,
@@ -2938,12 +3058,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261007012000_ig_m4_10_adjudicate_divergences.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 71,
@@ -2974,12 +3101,19 @@
         "run_id": null,
         "conclusion": null
       },
-      "has_migrations": null,
-      "changed_paths": null,
-      "applicable_controls": null,
+      "has_migrations": true,
+      "changed_paths": [
+        "supabase/migrations/20261007011200_ig_n_18_minimal_data_contract.sql"
+      ],
+      "applicable_controls": [
+        "MIGRATION_SOURCE_PARITY"
+      ],
       "equivalent_evidence": null,
       "disposition": null,
-      "disposition_reason": null
+      "disposition_reason": null,
+      "detected_families": [
+        "MIGRATION"
+      ]
     },
     {
       "index": 72,
@@ -15404,7 +15538,7 @@
   ],
   "enrichment": {
     "changed_paths": {
-      "completed_through_index": 53,
+      "completed_through_index": 71,
       "source": "GitHub commit files API",
       "registry_ref": "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_change_family_registry_v1.json"
     }
