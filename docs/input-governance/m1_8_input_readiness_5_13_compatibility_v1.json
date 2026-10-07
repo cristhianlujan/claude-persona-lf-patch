@@ -1,0 +1,116 @@
+{
+  "artifact_schema": "IG_M1_8_INPUT_READINESS_5_13_COMPATIBILITY_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M1.8",
+  "work_code": "PAULO-122",
+  "purpose": "Express INPUT_READINESS_CONTRACT 5.13 behavior through current contracts without behavior change and prove frozen Golden T0 reproducibility.",
+  "source_contract": {
+    "contract_code": "INPUT_READINESS_CONTRACT",
+    "compatibility_baseline_revision": "5.13",
+    "current_representation_revision": "5.13.1",
+    "contract_id": 37,
+    "version_id": 19,
+    "current_spec_md5": "229eb569cf7e988ec1b222df91b70876",
+    "current_spec_sha256": "8cadbcbd31bf80c2016ea73ab274b8d00f65a66088549c1b9f06cf59f8f7c8b1"
+  },
+  "traceability": {
+    "matrix_id": 3,
+    "matrix_code": "INPUT_READINESS_CONTRACT_5_13_TRACEABILITY",
+    "matrix_revision": 2,
+    "matrix_sha256": "2c1053d3e0ab451a26966ef9bddcfccf2292f6489e39edf8ec90543bd9fd062c",
+    "clause_count": 62,
+    "exact_set_equality": "62/62; missing=0; extra=0; unmapped=0",
+    "target_layers": [
+      {
+        "target_layer": "CORE",
+        "target_owner": "CANONICAL_CONTEXT",
+        "clause_count": 5
+      },
+      {
+        "target_layer": "EVIDENCE",
+        "target_owner": "EVIDENCE_AND_ASSURANCE",
+        "clause_count": 13
+      },
+      {
+        "target_layer": "ORCHESTRATION",
+        "target_owner": "AGENT_CURATOR_VALIDATOR_CONTRACT",
+        "clause_count": 11
+      },
+      {
+        "target_layer": "PERSISTENCE",
+        "target_owner": "PERSISTENCE_GUARD",
+        "clause_count": 3
+      },
+      {
+        "target_layer": "READINESS_POLICY",
+        "target_owner": "READINESS_POLICY",
+        "clause_count": 19
+      },
+      {
+        "target_layer": "SEMANTIC",
+        "target_owner": "SEMANTIC_RESOLVER",
+        "clause_count": 11
+      }
+    ]
+  },
+  "golden_t0": {
+    "source_unit": "M0.6",
+    "source_work_code": "PAULO-114",
+    "source_event": "event://20312",
+    "git_pr": 1660,
+    "exact_main_sha": "d0ba8d8e67b0b1ecb2cac5ea5cbee10157649313",
+    "manifest_path": "sandbox_runs/ig_golden_t0/m0_6_paulo_114_golden_baseline_t0_manifest_v1.json",
+    "frozen_run_ids": [
+      373,
+      374,
+      507,
+      508,
+      510,
+      511,
+      490,
+      491,
+      492,
+      493,
+      494,
+      512,
+      496
+    ],
+    "rows": 611,
+    "screens": 13,
+    "families_per_screen": 47,
+    "canonical_fields": [
+      "pantalla_id",
+      "run_id",
+      "family_code",
+      "coverage_status",
+      "story_ready_status",
+      "implementation_ready_status",
+      "qa_ready_status",
+      "production_ready_status",
+      "validator_outcome",
+      "contract_revision",
+      "curator_sha256",
+      "validator_sha256"
+    ],
+    "ordering": [
+      "pantalla_id",
+      "family_code"
+    ],
+    "canonical_bytes": 122290,
+    "md5": "92434c2a0837b4579aa720e3366ccc2b",
+    "sha256": "476710dd85f597e30e94995dea2f168112c1798f69aed73c7720dd7b6dc4d0e9"
+  },
+  "reproduction_readback": {
+    "rows": 611,
+    "screens": 13,
+    "families": 47,
+    "canonical_bytes": 122290,
+    "md5": "92434c2a0837b4579aa720e3366ccc2b",
+    "sha256": "476710dd85f597e30e94995dea2f168112c1798f69aed73c7720dd7b6dc4d0e9",
+    "matches_golden": true,
+    "domain_mutation": false
+  },
+  "compatibility_verdict": "PASS",
+  "behavior_change": false,
+  "production_activation": false
+}
