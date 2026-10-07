@@ -49,8 +49,7 @@
   "model_context": {
     "full_source_to_model": false,
     "required_source_refs": [
-      "profiles/systemic_root_cause_repair_lf/SKILL.md",
-      "profiles/systemic_root_cause_repair_lf/contracts/main_contract.md"
+      "profiles/systemic_root_cause_repair_lf/SKILL.md"
     ],
     "allow_additional_sources": true,
     "source_projection": {
@@ -58,16 +57,25 @@
       "include_sections": [
         "Purpose",
         "Working method (do this first; the rules below are how the result is checked)",
-        "Output trajectory (field order for the typed output)",
         "Claim semantics",
         "Status semantics",
         "Required inputs",
         "Non-negotiable rules",
-        "Typed output",
         "Claim ceiling",
         "Closure-proof contract"
       ],
-      "max_chars": 42000
+      "max_chars": 20000
+    },
+    "projection_rationale": {
+      "schema_owned_output_shape": true,
+      "deterministic_contract_validation": true,
+      "full_contract_retained_canonical": true,
+      "omitted_from_model_prompt": [
+        "contracts/main_contract.md",
+        "Output trajectory (field order for the typed output)",
+        "Typed output"
+      ],
+      "reason": "Avoid duplicating schema/contract-owned output structure in the 8K model prompt while preserving canonical validation and closure controls."
     }
   }
 }
