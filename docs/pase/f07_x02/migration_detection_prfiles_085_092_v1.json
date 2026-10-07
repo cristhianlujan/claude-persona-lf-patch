@@ -1,0 +1,91 @@
+{
+  "schema_version": "pase-disabled-window-migration-prfiles-shard/v1",
+  "offset": [
+    85,
+    92
+  ],
+  "rows": [
+    {
+      "seq": 287,
+      "merge_sha": "e5ab84ce2bb7d59c533cffdd368121f6bbe207af",
+      "pr": 1628,
+      "head_sha_original": "7e06b1560f98c72de0cac359bbb0af1f764c2ff9",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 288,
+      "merge_sha": "2a20865e9608a635fe92cf5d461e58a24160f1b6",
+      "pr": 1627,
+      "head_sha_original": "8ea06d8e4a664879f8aafc47de6382795017b4f7",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 4
+    },
+    {
+      "seq": 289,
+      "merge_sha": "4f103669a496e202b3ff1750c611fdbaa1d1d385",
+      "pr": 1626,
+      "head_sha_original": "8c6c4ae41b0ab17f9384c883bf17c1b11845fd47",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 5
+    },
+    {
+      "seq": 290,
+      "merge_sha": "7e5ccb7d09bc680254b9f15b99eef862a5547f1b",
+      "pr": 1625,
+      "head_sha_original": "51cf85f7016e4e2f4da26c735a0e8e82c2d43b69",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 303,
+      "merge_sha": "89b0dd4bb1042221b37257d51a4809354d71163f",
+      "pr": 1611,
+      "head_sha_original": "ea3152df080c350af199b5f2458d587264034859",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 313,
+      "merge_sha": "9b24daabd2ff10e132a55525e700888ced2b05c6",
+      "pr": 1599,
+      "head_sha_original": "bed4d9724c107cd5594380fc4bcfde14a7ca5df9",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 318,
+      "merge_sha": "6114f0e4de2358713c1daa17eb5b22ec38632a25",
+      "pr": 1595,
+      "head_sha_original": null,
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 338,
+      "merge_sha": "80ba5c8a6c97083903b80deefb471175135fb49c",
+      "pr": 1570,
+      "head_sha_original": "5de60c82d504dbd2d3d7670fb669b7f6c044ead3",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261004040500_ig_cv_n13_continuation_currentness_requiredness_v1.sql"
+      ],
+      "changed_file_count": 2
+    }
+  ]
+}
