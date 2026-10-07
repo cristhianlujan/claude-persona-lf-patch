@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 import psycopg
+from psycopg.pq import TransactionStatus
 from psycopg.types.json import Jsonb
 
 try:
@@ -54,6 +55,13 @@ def _connect() -> psycopg.Connection:
         dbname="postgres",
         sslmode="require",
         autocommit=False,
+        application_name="lf-hetzner-queue-worker",
+        connect_timeout=10,
+        keepalives=1,
+        keepalives_idle=30,
+        keepalives_interval=10,
+        keepalives_count=3,
+        options="-c idle_in_transaction_session_timeout=60000",
     )
 
 
@@ -1224,8 +1232,59 @@ def _persist_failure(conn: psycopg.Connection, request_id: str, exc: BaseExcepti
         conn.commit()
 
 
-def run_once() -> bool:
-    conn = _connect()
+def _close_silently(conn: psycopg.Connection | None) -> None:
+    if conn is None:
+        return
+    try:
+        conn.close()
+    except Exception:
+        pass
+
+
+def _cleanup_transaction(
+    conn: psycopg.Connection | None,
+) -> psycopg.Connection | None:
+    if conn is None or conn.closed:
+        return conn
+    try:
+        if conn.info.transaction_status != TransactionStatus.IDLE:
+            conn.rollback()
+    except Exception:
+        _close_silently(conn)
+        return None
+    return conn
+
+
+def _worker_version() -> str:
+    return _env("LF_PROFILE_RUNTIME_GIT_SHA") or _env("GITHUB_SHA") or "unknown"
+
+
+def _emit_heartbeat(
+    *,
+    phase: str | None = None,
+    cycles: int = 0,
+    work: int = 0,
+    reconnects: int = 0,
+    conn: psycopg.Connection | None = None,
+) -> None:
+    if phase == "startup":
+        print(
+            f"HETZNER_QUEUE_HEARTBEAT phase=startup pid={os.getpid()} "
+            f"version={_worker_version()}",
+            flush=True,
+        )
+        return
+    backend_pid = "unknown"
+    if conn is not None and not conn.closed:
+        backend_pid = str(getattr(conn.info, "backend_pid", "unknown"))
+    print(
+        f"HETZNER_QUEUE_HEARTBEAT cycles={cycles} work={work} "
+        f"reconnects={reconnects} conn_backend_pid={backend_pid}",
+        flush=True,
+    )
+
+
+def run_once(conn: psycopg.Connection) -> bool:
     request_id: str | None = None
     try:
         _reconcile_governed_pending(conn)
@@ -1282,6 +1341,17 @@ def run_once() -> bool:
         print(f"HETZNER_QUEUE_JOB_ID={job_id}")
         print(f"HETZNER_QUEUE_STATUS={job.get('status')}")
         return True
+    except (psycopg.OperationalError, psycopg.InterfaceError) as exc:
+        if request_id is not None:
+            try:
+                _persist_failure(conn, request_id, exc)
+            except Exception:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+        print(f"HETZNER_QUEUE_ERROR={type(exc).__name__}:{str(exc)[:500]}", flush=True)
+        raise
     except Exception as exc:
         if request_id is not None:
             try:
@@ -1290,8 +1360,64 @@ def run_once() -> bool:
                 conn.rollback()
         print(f"HETZNER_QUEUE_ERROR={type(exc).__name__}:{str(exc)[:500]}", flush=True)
         return True
+
+
+def _run_daemon(idle_seconds: float) -> None:
+    conn: psycopg.Connection | None = None
+    reconnect_delay = 1.0
+    reconnects = 0
+    had_connection = False
+    cycles = 0
+    work = 0
+    _emit_heartbeat(phase="startup")
+    last_heartbeat = time.monotonic()
+    try:
+        while True:
+            if conn is None or conn.closed:
+                try:
+                    conn = _connect()
+                    if had_connection:
+                        reconnects += 1
+                    had_connection = True
+                except (psycopg.OperationalError, psycopg.InterfaceError) as exc:
+                    print(
+                        f"HETZNER_QUEUE_CONNECTION_ERROR={type(exc).__name__}:"
+                        f"{str(exc)[:500]}",
+                        flush=True,
+                    )
+                    time.sleep(reconnect_delay)
+                    reconnect_delay = min(reconnect_delay * 2, 30.0)
+                    continue
+            try:
+                did_work = run_once(conn)
+            except (psycopg.OperationalError, psycopg.InterfaceError):
+                _close_silently(conn)
+                conn = None
+                time.sleep(reconnect_delay)
+                reconnect_delay = min(reconnect_delay * 2, 30.0)
+                continue
+            finally:
+                conn = _cleanup_transaction(conn)
+
+            reconnect_delay = 1.0
+            cycles += 1
+            if did_work:
+                work += 1
+
+            now = time.monotonic()
+            if now - last_heartbeat >= 900.0:
+                _emit_heartbeat(
+                    cycles=cycles,
+                    work=work,
+                    reconnects=reconnects,
+                    conn=conn,
+                )
+                last_heartbeat = now
+
+            if not did_work:
+                time.sleep(max(0.5, idle_seconds))
     finally:
-        conn.close()
+        _close_silently(conn)
 
 
 def main() -> int:
@@ -1299,12 +1425,20 @@ def main() -> int:
     parser.add_argument("--daemon", action="store_true")
     parser.add_argument("--idle-seconds", type=float, default=3.0)
     args = parser.parse_args()
-    if not args.daemon:
-        return 0 if run_once() else 4
-    while True:
-        did_work = run_once()
-        if not did_work:
-            time.sleep(max(0.5, args.idle_seconds))
+    if args.daemon:
+        _run_daemon(args.idle_seconds)
+        return 0
+
+    conn = _connect()
+    try:
+        try:
+            did_work = run_once(conn)
+        except (psycopg.OperationalError, psycopg.InterfaceError):
+            did_work = True
+        return 0 if did_work else 4
+    finally:
+        conn = _cleanup_transaction(conn)
+        _close_silently(conn)
 
 
 if __name__ == "__main__":
