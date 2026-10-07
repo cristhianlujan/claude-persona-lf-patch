@@ -1,0 +1,139 @@
+{
+  "schema_version": "pase-disabled-window-migration-prfiles-shard/v1",
+  "offset": [
+    25,
+    36
+  ],
+  "rows": [
+    {
+      "seq": 88,
+      "merge_sha": "201ca398fc4080be645300f1a3e1d18e8722e62d",
+      "pr": 1853,
+      "head_sha_original": "b9c38d7508a19f3165352a5222f716105be86a1b",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 92,
+      "merge_sha": "5fa5e98d0c8400d4d685c378043557d8f1f308a0",
+      "pr": 1848,
+      "head_sha_original": "dd947f8bb29a01e59139d3551b29bb079d3ddf32",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261007021000_input_governance_r5_e_dual_hash_full_verify_resume_v1.sql"
+      ],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 134,
+      "merge_sha": "0b6102eff7ba4cc53874a6754e8008e4d71b8250",
+      "pr": 1804,
+      "head_sha_original": "0bc9ed1a68ddc44a77fcf44a1df4d6733c1d4fac",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261006180500_input_governance_r5_b_assertion_set_backfill_v1.sql"
+      ],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 135,
+      "merge_sha": "21ca4aacb77fa4d8a707baf3e473f72a2b567549",
+      "pr": 1802,
+      "head_sha_original": "bc042f837ae3dabc9232cffddc4319fbe3d6de4f",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261006180000_input_governance_r5_a_assertion_sets_rehydrate_v1.sql"
+      ],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 136,
+      "merge_sha": "0cc59f0fff3a5ee21e2a23ab3dc705afae3c4cb3",
+      "pr": 1801,
+      "head_sha_original": "39c370f85f3ddd5002940dfcb6f2b42122da27ad",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 137,
+      "merge_sha": "9959f5f82491488892f93f39c963e424037a88d2",
+      "pr": 1784,
+      "head_sha_original": "5e55f2336746008dc21a79dec0e428973f0e4cb9",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 138,
+      "merge_sha": "a481dad2ce12ed7b9b83f419342afbbefbd8f0a7",
+      "pr": 1796,
+      "head_sha_original": "a4848f7062b16bd9e53c489c41ff0c56c410cc72",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 139,
+      "merge_sha": "138700a4d017f00806c8c14b8840f60a13f61921",
+      "pr": 1780,
+      "head_sha_original": "c80b9a5f9d55099e01cc4206deee57b2bfb6f390",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 140,
+      "merge_sha": "a969d6cc6f2b4876665ab1ff928b0e1adfa82fb7",
+      "pr": 1797,
+      "head_sha_original": "64bd4c4ee585b1b2a3d66fb0ee27b70c5809d60b",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261006160000_ig_1_serialize_input_readiness_run_pair_v1.sql"
+      ],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 144,
+      "merge_sha": "899add5a64eb6d8250b6d1a526ff20f2bde448de",
+      "pr": 1763,
+      "head_sha_original": "25b0e763d91159a98863da00f45b7e25806bd87a",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261006143610_db_space_operational_retention_schedule_v1.sql"
+      ],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 145,
+      "merge_sha": "7aabdf9c3c70c07f152fd29533bbeda528a22ebf",
+      "pr": 1793,
+      "head_sha_original": "7b7a071f517fe43a1528d661a75cf7161afa1351",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 146,
+      "merge_sha": "7bec96a1283af6c970f2f90516cbe4bb0948c01e",
+      "pr": 1792,
+      "head_sha_original": "e7bdc74b534adefaecc4e0ad36232c8004c6aa44",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    }
+  ]
+}
