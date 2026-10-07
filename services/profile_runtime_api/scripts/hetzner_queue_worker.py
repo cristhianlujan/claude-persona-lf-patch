@@ -1256,7 +1256,12 @@ def _cleanup_transaction(
 
 
 def _worker_version() -> str:
-    return _env("LF_PROFILE_RUNTIME_GIT_SHA") or _env("GITHUB_SHA") or "unknown"
+    return (
+        _env("LF_PROFILE_RUNTIME_GIT_SHA")
+        or _env("GITHUB_SHA")
+        or _env("PROFILE_RUNTIME_SOURCE_SHA")
+        or "unknown"
+    )
 
 
 def _emit_heartbeat(
@@ -1264,6 +1269,7 @@ def _emit_heartbeat(
     phase: str | None = None,
     cycles: int = 0,
     work: int = 0,
+    errors: int = 0,
     reconnects: int = 0,
     conn: psycopg.Connection | None = None,
 ) -> None:
@@ -1278,10 +1284,32 @@ def _emit_heartbeat(
     if conn is not None and not conn.closed:
         backend_pid = str(getattr(conn.info, "backend_pid", "unknown"))
     print(
-        f"HETZNER_QUEUE_HEARTBEAT cycles={cycles} work={work} "
+        f"HETZNER_QUEUE_HEARTBEAT cycles={cycles} work={work} errors={errors} "
         f"reconnects={reconnects} conn_backend_pid={backend_pid}",
         flush=True,
     )
+
+
+def _maybe_heartbeat(
+    *,
+    last_heartbeat: float,
+    cycles: int,
+    work: int,
+    errors: int,
+    reconnects: int,
+    conn: psycopg.Connection | None,
+) -> float:
+    now = time.monotonic()
+    if now - last_heartbeat >= 900.0:
+        _emit_heartbeat(
+            cycles=cycles,
+            work=work,
+            errors=errors,
+            reconnects=reconnects,
+            conn=conn,
+        )
+        return now
+    return last_heartbeat
 
 
 def run_once(conn: psycopg.Connection) -> bool:
@@ -1359,20 +1387,26 @@ def run_once(conn: psycopg.Connection) -> bool:
             except Exception:
                 conn.rollback()
         print(f"HETZNER_QUEUE_ERROR={type(exc).__name__}:{str(exc)[:500]}", flush=True)
-        return True
+        raise
 
 
 def _run_daemon(idle_seconds: float) -> None:
     conn: psycopg.Connection | None = None
     reconnect_delay = 1.0
+    cycle_error_delay = 3.0
     reconnects = 0
     had_connection = False
     cycles = 0
     work = 0
+    errors = 0
     _emit_heartbeat(phase="startup")
     last_heartbeat = time.monotonic()
     try:
         while True:
+            connection_error = False
+            cycle_error = False
+            did_work = False
+
             if conn is None or conn.closed:
                 try:
                     conn = _connect()
@@ -1385,34 +1419,64 @@ def _run_daemon(idle_seconds: float) -> None:
                         f"{str(exc)[:500]}",
                         flush=True,
                     )
-                    time.sleep(reconnect_delay)
-                    reconnect_delay = min(reconnect_delay * 2, 30.0)
-                    continue
-            try:
-                did_work = run_once(conn)
-            except (psycopg.OperationalError, psycopg.InterfaceError):
-                _close_silently(conn)
-                conn = None
+                    connection_error = True
+
+            if not connection_error:
+                try:
+                    did_work = run_once(conn)
+                except (psycopg.OperationalError, psycopg.InterfaceError):
+                    _close_silently(conn)
+                    conn = None
+                    connection_error = True
+                except Exception:
+                    cycle_error = True
+                finally:
+                    conn = _cleanup_transaction(conn)
+
+            if connection_error:
+                errors += 1
+                last_heartbeat = _maybe_heartbeat(
+                    last_heartbeat=last_heartbeat,
+                    cycles=cycles,
+                    work=work,
+                    errors=errors,
+                    reconnects=reconnects,
+                    conn=conn,
+                )
                 time.sleep(reconnect_delay)
                 reconnect_delay = min(reconnect_delay * 2, 30.0)
                 continue
-            finally:
-                conn = _cleanup_transaction(conn)
+
+            if cycle_error:
+                errors += 1
+                last_heartbeat = _maybe_heartbeat(
+                    last_heartbeat=last_heartbeat,
+                    cycles=cycles,
+                    work=work,
+                    errors=errors,
+                    reconnects=reconnects,
+                    conn=conn,
+                )
+                # A claimed job may already be persisted FAILED; still pause before
+                # the next cycle so a persistent DB/application error cannot hot-loop.
+                time.sleep(cycle_error_delay)
+                cycle_error_delay = min(cycle_error_delay * 2, 60.0)
+                continue
 
             reconnect_delay = 1.0
+            cycle_error_delay = 3.0
             cycles += 1
             if did_work:
                 work += 1
 
-            now = time.monotonic()
-            if now - last_heartbeat >= 900.0:
-                _emit_heartbeat(
-                    cycles=cycles,
-                    work=work,
-                    reconnects=reconnects,
-                    conn=conn,
-                )
-                last_heartbeat = now
+            last_heartbeat = _maybe_heartbeat(
+                last_heartbeat=last_heartbeat,
+                cycles=cycles,
+                work=work,
+                errors=errors,
+                reconnects=reconnects,
+                conn=conn,
+            )
 
             if not did_work:
                 time.sleep(max(0.5, idle_seconds))
@@ -1434,6 +1498,8 @@ def main() -> int:
         try:
             did_work = run_once(conn)
         except (psycopg.OperationalError, psycopg.InterfaceError):
+            did_work = True
+        except Exception:
             did_work = True
         return 0 if did_work else 4
     finally:
