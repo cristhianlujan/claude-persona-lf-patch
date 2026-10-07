@@ -97,7 +97,7 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
             patch.object(worker, "_wait_job", return_value=job),
             patch.object(worker, "_persist_success"),
         ):
-            self.assertTrue(worker.run_once())
+            self.assertTrue(worker.run_once(FakeConn()))
         self.assertEqual(calls, [("POST", "/v1/profile/queue-execute")])
 
     def test_required_baseline_is_persisted_before_main_dispatch(self) -> None:
@@ -137,7 +137,7 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
             patch.object(worker, "_attach_governed_operation", side_effect=lambda payload, _g: payload),
             patch.object(worker, "_persist_success", side_effect=lambda *_args, **_kwargs: events.append("main-persisted")),
         ):
-            self.assertTrue(worker.run_once())
+            self.assertTrue(worker.run_once(FakeConn()))
 
         self.assertLess(events.index("/v1/profile/research-baseline"), events.index("baseline-persisted"))
         self.assertLess(events.index("baseline-persisted"), events.index("/v1/profile/queue-execute"))
