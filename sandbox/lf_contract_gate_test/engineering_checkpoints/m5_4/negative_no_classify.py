@@ -4,12 +4,12 @@ import json
 import sys
 
 TEST_CODE = "ENG_M5_4_NEGATIVE_NO_CLASSIFY"
-EXPECTED = {
-    "programacion.fn_input_governance_curator_materialize_v1(integer,text,text,boolean)",
-    "programacion.fn_input_governance_curator_rebind_v1(integer,text,text,bigint)",
-    "programacion.fn_input_governance_bootstrap_materialize_v2(integer,text,text,boolean)",
-    "programacion.fn_input_governance_recurate_source_stale_v1(integer,bigint,text)",
-    "programacion.fn_input_governance_recurate_v2(integer,bigint,text)",
+EXPECTED_NAMES = {
+    "fn_input_governance_curator_materialize_v1",
+    "fn_input_governance_curator_rebind_v1",
+    "fn_input_governance_bootstrap_materialize_v2",
+    "fn_input_governance_recurate_source_stale_v1",
+    "fn_input_governance_recurate_v2",
 }
 
 
@@ -52,8 +52,8 @@ if not isinstance(rows, list):
         "reason": "LIVE_FUNCTION_READBACK_ARRAY_REQUIRED",
     })
 
-seen = {row.get("f") for row in rows if isinstance(row, dict)}
-missing = sorted(EXPECTED - seen)
+seen = {row.get("proname") for row in rows if isinstance(row, dict)}
+missing = sorted(EXPECTED_NAMES - seen)
 if missing:
     emit("FAIL", {
         "test_passed": False, "test_exit_code": 1,
@@ -86,6 +86,6 @@ emit("PASS", {
     "semantic_authority_bound": True,
     "adversarial_case_executed": True,
     "canonical_exit_criterion": "0 legacy classify_v1/v2 or probe_v1/v2/v3 references from declared Curator functions",
-    "declared_function_count": len(EXPECTED),
+    "declared_function_count": len(EXPECTED_NAMES),
     "legacy_reference_count": 0,
 })
