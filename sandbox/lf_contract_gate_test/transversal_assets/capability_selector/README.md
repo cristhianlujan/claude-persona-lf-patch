@@ -45,3 +45,12 @@ Expected terminal line:
 `PASS_CAPABILITY_SELECTOR_V1 checks=17 states=5 consumers=2 domain_branches=0`
 
 The capability is repository-bound and has no active IG runtime cutover in T-SELECT. Therefore R17 is not triggered by this unit; R16 Git-first applies to registration/current promotion.
+
+
+## v1.1 composition extension
+
+The v1 selector contract remains unchanged. `capability_selector_v2.py` adds `compose_capabilities(...)` for Profile Evolution and other consumers that need composition.
+
+The extension accepts evidence-derived context fields (`profile_gaps`, task family, complexity, novelty, uncertainty, causal requirement, risk, repeated pattern, evidence sufficiency, available budget) and returns capability selection plus method requirements, composition order, estimated method cost, and escalation conditions.
+
+It does not grant execution permission. `execution_authorized=false` and `admission_required=true` are invariant.
