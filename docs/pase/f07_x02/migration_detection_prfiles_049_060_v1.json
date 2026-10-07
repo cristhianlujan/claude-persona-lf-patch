@@ -1,0 +1,134 @@
+{
+  "schema_version": "pase-disabled-window-migration-prfiles-shard/v1",
+  "offset": [
+    49,
+    60
+  ],
+  "rows": [
+    {
+      "seq": 160,
+      "merge_sha": "4d9cc97bdab096b3e619f973631ffbc1be329c5f",
+      "pr": 1775,
+      "head_sha_original": "075900dc4adb9aabfc35048b431436f1e5855bd9",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 161,
+      "merge_sha": "140a697f7ed1a02dcefff96aa6921a3201da1f75",
+      "pr": 1774,
+      "head_sha_original": "5cfce23cee92ff5ca79eb93ad8dbfaabc993abba",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 162,
+      "merge_sha": "e37cd0b90f6b4a8618e17d41e842cda124d09a64",
+      "pr": 1769,
+      "head_sha_original": "a2de8ae31658c74132df286c227e7052cb4daf5f",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 4
+    },
+    {
+      "seq": 163,
+      "merge_sha": "afb7128b1c4a4b17965cbbc1d9bbdc1a4c56560f",
+      "pr": 1773,
+      "head_sha_original": "774551d0e8b0a42aa74515e226138fb3b3ba27d1",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261006133051_t_privacy_minimality_guard_v1.sql",
+        "supabase/migrations/20261006134500_t_privacy_action_spec_current_reconcile_v1.sql"
+      ],
+      "changed_file_count": 3
+    },
+    {
+      "seq": 164,
+      "merge_sha": "9de18834170747cd806156c050aed80fcd9a31cd",
+      "pr": 1772,
+      "head_sha_original": "53004df6f98e78746966739ada676abc372b13fd",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 166,
+      "merge_sha": "f293615a97fd164ec9ad5f4a36f7b08bf4b84f85",
+      "pr": 1770,
+      "head_sha_original": "283447d71ccce1bd81d38145b873c2ac51e0ba3b",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261006132500_t_privacy_minimality_guard_v1.sql"
+      ],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 176,
+      "merge_sha": "41a30e68efcfd9ad73b0b2a8e12609668eb4c87c",
+      "pr": 1746,
+      "head_sha_original": "c8c5073d42bb417e2919653e4529714408558e03",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 177,
+      "merge_sha": "5a410b5d99be331fae2eab5620a7a099a6367095",
+      "pr": 1745,
+      "head_sha_original": "8ee1d7676f813294d06183d98b2954aae05f7d11",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 178,
+      "merge_sha": "5797db6a79d2ec44e6c1d9c902ad6eda97b9cb8d",
+      "pr": 1743,
+      "head_sha_original": "d7b14a14e867b38657de6000060762f693e8f253",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 179,
+      "merge_sha": "624ff7a88060d4868f11e8d00d8ca96e941a97d3",
+      "pr": 1742,
+      "head_sha_original": "826ea76450b004c040fbc94263cc481ec3468567",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 193,
+      "merge_sha": "936550a4cbed438f52fe1b18f133fed6cca52def",
+      "pr": 1726,
+      "head_sha_original": "32878a24108b1d78013ce9687b24eeee96f7ba09",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 194,
+      "merge_sha": "3a416356c88f450655c1b54cbf0c4b279f613389",
+      "pr": 1725,
+      "head_sha_original": "761f98a8a7894b639b3d72e130b072f26d107eb9",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    }
+  ]
+}
