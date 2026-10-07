@@ -4,7 +4,8 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const enc = new TextEncoder();
 const MAX_VALIDATION_CHUNKS = 8;
-const VALIDATOR_ENTRYPOINT = "fn_input_governance_validator_validate_v1";
+const HANDOFF_ASSERT_ENTRYPOINT = "fn_input_governance_validator_handoff_assert_v1";
+const VALIDATOR_ENTRYPOINT = "fn_input_governance_validator_validate_handoff_v1";
 type ScopeStrategy = "RESUME_EXISTING_SCOPE" | "REBIND_WITHIN_ENTRYPOINT";
 
 async function sameSecret(a: string, b: string): Promise<boolean> {
@@ -54,6 +55,25 @@ Deno.serve(async (req: Request) => {
     const runId = Number(body?.run_id);
     if (!Number.isInteger(runId) || runId < 1) return Response.json({ error: "RUN_ID_INVALID" }, { status: 400 });
 
+    const rawHandoffReceiptId = body?.handoff_receipt_id;
+    let requestedHandoffReceiptId: number | null = null;
+    if (rawHandoffReceiptId !== undefined && rawHandoffReceiptId !== null) {
+      requestedHandoffReceiptId = Number(rawHandoffReceiptId);
+      if (!Number.isInteger(requestedHandoffReceiptId) || requestedHandoffReceiptId < 1) {
+        return Response.json({ error: "HANDOFF_RECEIPT_ID_INVALID" }, { status: 400 });
+      }
+    }
+
+    // Fail closed before any Validator execution. Null means resolve the latest exact persisted handoff for this run.
+    const handoffReceipt = await rpc(HANDOFF_ASSERT_ENTRYPOINT, {
+      p_run_id: runId,
+      p_receipt_id: requestedHandoffReceiptId,
+    });
+    const handoffReceiptId = Number(handoffReceipt?.receipt_id);
+    if (!Number.isInteger(handoffReceiptId) || handoffReceiptId < 1 || handoffReceipt?.status !== "VERIFIED") {
+      return Response.json({ error: "HANDOFF_RECEIPT_NOT_VERIFIED", run_id: runId }, { status: 409 });
+    }
+
     const resume = await rpc("fn_input_governance_validator_resume_context_v1", { p_run_id: runId });
     let identity: string;
     let resumed = false;
@@ -76,16 +96,17 @@ Deno.serve(async (req: Request) => {
       result = await rpc(VALIDATOR_ENTRYPOINT, {
         p_run_id: runId,
         p_validator_identity: identity,
+        p_receipt_id: handoffReceiptId,
       });
       trace.push({ chunk, status: result?.status ?? null, validator_pass_count: result?.validator_pass_count ?? null, family_count: result?.family_count ?? null });
       if (["COMPLETED", "NOOP_COMPLETED"].includes(result?.status)) {
-        return Response.json({ runtime: "input-governance-validator-v1", validator_entrypoint: VALIDATOR_ENTRYPOINT, scope_strategy: scopeStrategy, identity, resumed, chunked_validation: true, trace, result });
+        return Response.json({ runtime: "input-governance-validator-v1", validator_entrypoint: VALIDATOR_ENTRYPOINT, handoff_receipt: handoffReceipt, scope_strategy: scopeStrategy, identity, resumed, chunked_validation: true, trace, result });
       }
       if (result?.status !== "VALIDATOR_CONTINUE_REQUIRED") {
-        return Response.json({ error: "VALIDATOR_UNRESOLVED_STATUS", validator_entrypoint: VALIDATOR_ENTRYPOINT, scope_strategy: scopeStrategy, identity, resumed, trace, result }, { status: 409 });
+        return Response.json({ error: "VALIDATOR_UNRESOLVED_STATUS", validator_entrypoint: VALIDATOR_ENTRYPOINT, handoff_receipt: handoffReceipt, scope_strategy: scopeStrategy, identity, resumed, trace, result }, { status: 409 });
       }
     }
-    return Response.json({ error: "VALIDATOR_CHUNK_LIMIT", validator_entrypoint: VALIDATOR_ENTRYPOINT, scope_strategy: scopeStrategy, identity, resumed, max_chunks: MAX_VALIDATION_CHUNKS, trace, result }, { status: 409 });
+    return Response.json({ error: "VALIDATOR_CHUNK_LIMIT", validator_entrypoint: VALIDATOR_ENTRYPOINT, handoff_receipt: handoffReceipt, scope_strategy: scopeStrategy, identity, resumed, max_chunks: MAX_VALIDATION_CHUNKS, trace, result }, { status: 409 });
   } catch (e) {
     return Response.json({ error: "VALIDATOR_EXECUTION_FAILED", detail: e instanceof Error ? e.message : String(e) }, { status: 409 });
   }
