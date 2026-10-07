@@ -541,3 +541,35 @@ Relevant EKB:
 - `PROGRAMMING-SIMPLE-BINDING-INPUT-001`
 - `PROGRAMMING-SIMPLE-QUALIFICATION-PROOF-001`
 - `PROGRAMMING-SIMPLE-RESOLVER-NO-BYPASS-001`
+
+
+## 15. Discovery in Supabase
+
+For agents that start from Supabase instead of GitHub, this capability is registered in the canonical capability registry:
+
+`public.lf_capability_registry.capability_code = PROGRAMMING_VALIDATOR_RESOLVER_CATALOG`
+
+Version registry:
+
+`public.lf_capability_version_registry (PROGRAMMING_VALIDATOR_RESOLVER_CATALOG, 1.0.0)`
+
+The registry summary points back to the live Programming tables and this GitHub guide.
+
+Recommended discovery order:
+
+```text
+1. Search public.lf_capability_registry for PROGRAMMING_VALIDATOR_RESOLVER_CATALOG
+2. Read public.lf_capability_version_registry manifest.usage
+3. Query programacion.programming_validation_registry
+4. Query programacion.programming_resolver_registry
+5. Reuse an existing procedure when only validation_input changes
+6. Create a new validator/resolver only for a genuinely different deterministic procedure
+```
+
+Current live catalog at registration time:
+
+- ACTIVE validators: 1
+- ACTIVE resolvers: 0
+- current reusable validator: `PROGRAMMING_GITHUB_FILE_TEXT_ASSERT_V1`
+
+The counts in the capability manifest are a discovery snapshot. The live registries remain authoritative.
