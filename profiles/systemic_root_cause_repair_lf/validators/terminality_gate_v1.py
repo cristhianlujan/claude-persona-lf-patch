@@ -33,11 +33,14 @@ def decide_terminal(state: dict) -> dict:
     """Return a deterministic SRCR terminal verdict and blocking reasons."""
     reasons: list[str] = []
 
-    blocking_codes = list(state.get("blocking_codes") or [])
-    if blocking_codes:
+    pipeline_blocking_codes = list(state.get("pipeline_blocking_codes") or [])
+    if pipeline_blocking_codes:
         return {
             "status": "BLOCK_PIPELINE",
-            "reasons": [f"BLOCKING_CODE:{code}" for code in blocking_codes],
+            "reasons": [
+                f"PIPELINE_BLOCKING_CODE:{code}"
+                for code in pipeline_blocking_codes
+            ],
         }
 
     material_items = list(state.get("material_items") or [])
@@ -46,6 +49,9 @@ def decide_terminal(state: dict) -> dict:
         status = str(item.get("status") or "UNKNOWN")
         if status in OPEN_MATERIAL_STATES:
             reasons.append(f"MATERIAL_OPEN:{code}:{status}")
+
+    for code in list(state.get("blocking_codes") or []):
+        reasons.append(f"MATERIAL_BLOCKING_CODE:{code}")
 
     second_order = list(state.get("uncontained_second_order_paths") or [])
     for path in second_order:
