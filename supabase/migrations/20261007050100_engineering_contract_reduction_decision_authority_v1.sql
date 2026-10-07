@@ -291,6 +291,40 @@ begin
   )
   where plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' and unit_code='M10.0';
 
+  -- M10.8 is a true owner decision: expiry of hot rollback after soak.
+  select unit_metadata#>'{action_specs_v1,EXPIRY_DECISION}'
+    into v_spec
+  from programacion.engineering_plan_units
+  where plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' and unit_code='M10.8';
+
+  v_new:=(
+    v_spec||jsonb_build_object(
+      'status','BLOCK_OWNER_DECISION_REQUIRED',
+      'precision','EXPLICIT_OWNER_DECISION_CONTRACT_V1',
+      'action_kind','DECISION_GATE',
+      'recipe_mode','OWNER_DECISION_RECORD_V1',
+      'requires_material_execution',false,
+      'mutation_policy','NO_DOMAIN_MUTATION',
+      'contract_family','OWNER_DECISION_PENDING',
+      'decision_authority_contract',jsonb_build_object(
+        'owner','SUPER_ADMIN',
+        'record_table','programacion.human_decisions',
+        'decision_semantics','EXPIRE_HOT_ROLLBACK_AFTER_M10_7_SOAK',
+        'required_fields',jsonb_build_array('decision','actor_identity','approval_ref'),
+        'precondition_unit','M10.7',
+        'automatic_decision','FORBIDDEN'
+      ),
+      'expected','Owner decision to expire hot rollback is the remaining gate after M10.7 soak; technical contract is complete and no automatic expiry decision is permitted.'
+    )
+  )-'required_contract';
+
+  update programacion.engineering_plan_units
+  set unit_metadata=jsonb_set(
+    unit_metadata,'{action_specs_v1}',
+    coalesce(unit_metadata->'action_specs_v1','{}'::jsonb)||jsonb_build_object('EXPIRY_DECISION',v_new),true
+  )
+  where plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' and unit_code='M10.8';
+
   -- Owner decision N-6: exact ADR identity is known and currently absent.
   select unit_metadata#>'{action_specs_v1,ADR_APPROVED}'
     into v_spec
