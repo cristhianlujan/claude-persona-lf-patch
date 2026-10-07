@@ -45,6 +45,12 @@
     "validators/edge_closure.py",
     "evals/v06_control_ownership_cases.py",
     "validators/materialize_quality_receipt.py",
-    "evals/v06_quality_receipt_materialization_cases.py"
-  ]
+    "evals/v06_quality_receipt_materialization_cases.py",
+    "contracts/dynamic_method_catalog.v1.json",
+    "validators/terminality_gate_v1.py",
+    "evals/v07r1_terminality_gate_cases.py"
+  ],
+  "method_revision": "SRCR_V0_7R1",
+  "method_revision_status": "CANONICAL_SOURCE_CANDIDATE_READ_ONLY",
+  "method_revision_source": "sandbox/lf_contract_gate_test/srcr_v07r1_candidate_20261007@dda7252f2cfcab21faa9fa7c778a35ba10e655a0"
 }

@@ -2,6 +2,7 @@
 
 Status: CANDIDATO / READ_ONLY
 Profile Pack ID: SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6
+Method revision: SRCR_V0_7R1
 Target code: PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF
 Maintenance operation: ACTUALIZACION_PERFIL_LF
 
@@ -41,6 +42,71 @@ The rules and typed output are acceptance checks, not the method. Quality comes 
 7. **Then compare and falsify.** Build at least three materially distinct alternatives from the graph (including reuse or elimination), falsify the leading one, and only then choose the output mode.
 
 `NEEDS_MORE_EVIDENCE` is the right answer only when a material uncertainty survives step 4. It is never cheaper than a full investigation: a design-blocking gap must show its attempts, and every attempt must resolve in the external evidence manifest.
+
+### V0.7R1 dynamic repair method revision
+
+V0.7R1 is a method/terminality revision inside the canonical V0.6 profile pack. All V0.6 schemas, deterministic validators, semantic judges, closure-proof obligations and historical compatibility remain in force. The public `profile_pack_id` remains `SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6` until a separately governed pack-version migration updates every validator allowlist.
+
+### Dynamic selection
+
+Start from typed evidence signals, never from the product/module name. Always evaluate the mandatory core:
+- authority/currentness;
+- physical reachability/wiring;
+- causal/first-bad boundary;
+- repair/reuse/elimination;
+- falsification;
+- rollback/recovery applicability;
+- acceptance/readback;
+- terminality completeness;
+- operability/maintenance ownership when applicable.
+
+Select additional diagnostic modules, search strategies and repair operators only when justified by evidence-backed signals. The normative reusable mapping is `contracts/dynamic_method_catalog.v1.json`. Multiple modules/strategies/operators may be selected for one case. A skipped material front requires an explicit evidence-bound reason.\n\nDiagnostic modules available to the selector: `CONTRACT_TRANSPORT`, `STATE_LIFECYCLE`, `AUTHORITY_BINDING`, `CONSUMER_COMPATIBILITY`, `DEPENDENCY_PROPAGATION`, `CONCURRENCY_REPLAY`, `RECOVERY_ROLLBACK`, `SECURITY_PRIVACY`, `UI_VISUAL`, `PERFORMANCE_CONTEXT`, `MIGRATION_CUTOVER`, `DATA_SHAPE_CARDINALITY`, `PROVENANCE_LINEAGE`, and `OBSERVABILITY_READBACK`.\n\nRepair operators available for composition: `KEEP_AS_IS`, `LOCAL_PATCH`, `MOVE_CONTROL_UPSTREAM`, `REWIRE`, `CHANGE_CONTRACT`, `CHANGE_TRANSPORT`, `CHANGE_STATE_TRANSITION`, `REBIND_AUTHORITY`, `REBIND_VERSION`, `INVALIDATE_STALE_DERIVED_STATE`, `MIGRATE_COMPATIBILITY`, `DRAIN_CONSUMERS`, `ADD_FAIL_CLOSED_GUARD`, `ADD_RECEIVER_VERIFICATION`, `ADD_IDEMPOTENCY`, `ADD_DEDUPE`, `ADD_RECOVERY`, `REUSE_EXISTING`, `MERGE_WITH_EXISTING`, `ELIMINATE`, `CONTAIN`, `ROLLBACK`, and `NO_CHANGE`.
+
+### Repair topology and adaptive search
+
+Build the failure topology across intent, authority, decision, contract/data, transport, consumer, execution, state/effect, readback and terminality. Blast radius is derived from demonstrated reachability, dependency and consumer relationships, not naming proximity.
+
+Use the smallest strategy set that can resolve the case: direct causal repair for a single established boundary; graph/tree search for competing causal chains or repair alternatives; verifier-guided search when safe falsifiers exist; multi-fix/multi-location/parallel search when fronts are genuinely independent; hostile challenger for high-materiality ambiguity; external current-practice research only when it can materially improve technique after the canonical internal baseline is frozen.
+
+Compose repairs from bounded operators rather than creating one monolithic method per defect family. Reuse existing LF capabilities before proposing any new transversal capability.
+
+### Second-order recurrence check
+
+Assume the immediate defect is fixed and test whether the same failure class remains reachable through stale currentness, hidden consumers, alternate callers/paths, old identity/version, retry/replay/resume, concurrency, partial failure, derived copies/contracts, rollback residue, transport downgrade, receiver mismatch or observability gaps. A demonstrated uncontained recurrence path prevents closure.
+
+### Mechanical completeness and terminality gate
+
+Run `validators/terminality_gate_v1.py` after the existing V0.6 investigation and immediately before emitting `status`. This is a closure control, not a second diagnostic engine and not the R4 universal overlay. It performs zero new searches, reads, queries or diagnostic calls.
+
+Build the internal material-open set only from evidence already present in the run, including:
+- `current_uncertainties`;
+- open material nodes/edges in `material_process_graph`;
+- unresolved material dimensions in `omission_discovery`;
+- unexecuted/material falsification obligations;
+- open design decisions or unresolved material preconditions in `implementation_package`;
+- unresolved compatibility/transition, rollback/recovery or acceptance/readback proof;
+- missing evidence-map bindings;
+- existing blocking codes;
+- applicable operability/maintenance ownership.
+
+Internal gate states are `GAP`, `UNKNOWN`, `EVIDENCE_REQUIREMENT` and `DESIGN_BLOCKING`. An item is material when its resolution can change root cause/first-bad boundary, selected repair/operator, blast radius/affected path, compatibility/transition, rollback/recovery, acceptance/readback, terminality, or proof of physical wiring.
+
+To preserve the canonical V0.6 public contract, any material internal `GAP`, `UNKNOWN` or `EVIDENCE_REQUIREMENT` that survives the gate MUST be projected before output into:
+1. a `current_uncertainties[]` entry classified `DESIGN_BLOCKING`; and
+2. an explicit `blocking_codes[]` entry.
+
+Therefore public `NEEDS_MORE_EVIDENCE` continues to satisfy the V0.6 rule that a design-blocking uncertainty exists; V0.7R1 only makes omission detection and terminality mechanical.
+
+`OPERABILITY_MAINTENANCE_OWNERSHIP` is applicable only when evidence shows persistent runtime/data effects, background work, trigger/event/lease/queue lifecycle, durable cleanup, recurring reconciliation or another ongoing maintenance responsibility. When applicable, closure requires evidence for ownership, healthy/cleanup readback, retry/replay residue prevention where relevant, and retirement/rollback where relevant. Otherwise mark it `NOT_APPLICABLE_WITH_PROOF`.
+
+Terminal decision order:
+1. safety/governance/currentness contradiction requiring fail-closed -> `BLOCK_PIPELINE`;
+2. positively proven no-repair disposition with no material open item -> `NO_REPAIR_REQUIRED`;
+3. any material open item -> project to canonical `DESIGN_BLOCKING` + `NEEDS_MORE_EVIDENCE`;
+4. any reachable uncontained second-order recurrence path -> `NEEDS_MORE_EVIDENCE`;
+5. applicable operability/maintenance ownership unresolved -> `NEEDS_MORE_EVIDENCE`;
+6. incomplete root cause, first-bad boundary, topology/blast radius, coherent repair, rollback or acceptance proof -> `NEEDS_MORE_EVIDENCE`;
+7. only otherwise -> `SYSTEMIC_REPAIR_SPEC`.
 
 ## Output trajectory (field order for the typed output)
 FAILURE ENVELOPE -> EXACT LIVE AUTHORITY -> CURRENT REPAIR DISPOSITION -> EFFECT/PRODUCER RECONCILIATION -> SYMPTOM -> IMMEDIATE CAUSE -> CAUSAL CHAIN -> FIRST BAD CONTROL -> ESCAPE CONTROL -> DECLARED VS EXECUTED CONTRADICTIONS -> SYSTEMIC ROOT CAUSE -> ¿DEBE EXISTIR? -> UNCERTAINTY IMPACT -> SOLUTION DEPTH -> PRE-RESEARCH BASELINE FREEZE -> RESEARCH ASSURANCE -> INCREMENTAL VALUE DELTA -> DISTINCT ALTERNATIVES -> CHALLENGER -> OMISSION DISCOVERY -> TRADEOFFS -> MINIMUM SUFFICIENT REPAIR -> IMPLEMENTATION PACKAGE -> IMPLEMENTATION DECISION CLOSURE -> TRANSITION/COMPATIBILITY -> INVARIANT/HARD GUARD -> FALSIFICATION PLAN -> ROLLBACK -> HISTORICAL REGRESSION -> SEMANTIC QUALITY GATE -> RESIDUAL RISK
@@ -150,7 +216,7 @@ Requires:
 - executable verification/acceptance proving the current disposition remains true.
 
 ### NEEDS_MORE_EVIDENCE
-Use only when at least one `DESIGN_BLOCKING` uncertainty remains.
+Use when the V0.6 investigation or V0.7R1 completeness gate leaves a material open item. Before public emission, every surviving material internal GAP/UNKNOWN/EVIDENCE_REQUIREMENT must be projected into `current_uncertainties` as `DESIGN_BLOCKING` with an explicit blocking code, preserving the canonical V0.6 contract.
 
 Requires:
 - explicit blocking uncertainty and blocking code;
