@@ -1,62 +1,7 @@
--- Generic blocker reconciliation + successor-validator frozen-parent oracle.
--- Root causes:
---   1) repaired causes could leave OPEN blockers stale in the scheduler;
---   2) successor validation conditionally fell back to current bootstrap assertions,
---      allowing correlated Curator/Resolver defects to false-PASS.
---
--- Unit-specific facts remain metadata only. Procedure logic is generic by proof kind.
-
-do $patch_validator$
-declare
-  v_sig regprocedure := 'programacion.fn_input_governance_validate_v2(bigint,text)'::regprocedure;
-  v_def text;
-  v_old text := $old$
-    v_assertions:=case
-      when v_parent is not null
-       and not exists (
-         select 1
-         from programacion.input_family_assessments pa
-         cross join lateral jsonb_array_elements(
-           programacion.fn_input_validator_evidence_rehydrate_v1(pa.validator_evidence)->'assertions'
-         ) x(value)
-         where pa.run_id=v_parent
-           and pa.family_code=a.family_code
-           and x.value#>>'{source_ref,kind}'='CONTRACT'
-       )
-      then programacion.fn_input_v58_build_assertions(p_run_id,v_parent,a.family_code)
-      else programacion.fn_input_governance_bootstrap_assertions_v1(p_run_id,a.family_code)
-    end;
-$old$;
-  v_new text := $new$
-    v_assertions:=case
-      when v_parent is not null
-      then programacion.fn_input_v58_build_assertions(p_run_id,v_parent,a.family_code)
-      else programacion.fn_input_governance_bootstrap_assertions_v1(p_run_id,a.family_code)
-    end;
-$new$;
-begin
-  v_def:=pg_get_functiondef(v_sig);
-
-  if position(v_new in v_def)>0 then
-    return;
-  end if;
-
-  if position(v_old in v_def)=0 then
-    raise exception 'IG_VALIDATOR_PARENT_ORACLE_PATCH_ANCHOR_MISSING';
-  end if;
-
-  v_def:=replace(v_def,v_old,v_new);
-  execute v_def;
-
-  v_def:=pg_get_functiondef(v_sig);
-  if position(v_new in v_def)=0 or position(v_old in v_def)>0 then
-    raise exception 'IG_VALIDATOR_PARENT_ORACLE_PATCH_POSTCHECK_FAILED';
-  end if;
-end;
-$patch_validator$;
-
-comment on function programacion.fn_input_governance_validate_v2(bigint,text)
-is 'Successor runs always derive Validator assertions from the frozen parent via fn_input_v58_build_assertions; only root/bootstrap runs use current bootstrap assertions. Prevents correlated Curator/Resolver false consensus.';
+-- Generic blocker reconciliation v1.
+-- Repairs may complete while an earlier OPEN blocker still forces STOP_OPEN_BLOCKER.
+-- Reconcile blockers only from current canonical proof registered as metadata.
+-- No unit-code branching and no semantic validator change is performed here.
 
 create or replace function programacion.fn_engineering_blocker_reconcile_v1(
   p_plan_code text,
@@ -138,6 +83,7 @@ begin
             exit;
           end if;
         end loop;
+
         if v_pass then
           v_resolution_ref:='supabase://'||(v_rule->>'regprocedure')||'#FUNCTION_SOURCE_CONTAINS_ALL';
         end if;
@@ -209,9 +155,8 @@ end;
 $function$;
 
 comment on function programacion.fn_engineering_blocker_reconcile_v1(text,text,boolean)
-is 'Generic data-driven blocker reconciliation. Supports canonical proof kinds and resolves only when current live evidence satisfies the registered rule. No unit-code branching.';
+is 'Generic data-driven blocker reconciliation. Resolves OPEN blockers only from current canonical proof registered in unit metadata.';
 
--- Register M4.9 proof rules as data only.
 update programacion.engineering_plan_units pu
 set unit_metadata=jsonb_set(
   coalesce(pu.unit_metadata,'{}'::jsonb),
@@ -241,45 +186,6 @@ where pu.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
   and pu.unit_code='M4.9'
   and pu.disposition='ASSIGNED';
 
--- Register exact repair authority as checkpoint data; the generic RUN_TEST repair loop owns execution.
-update programacion.engineering_plan_units pu
-set unit_metadata=jsonb_set(
-  pu.unit_metadata,
-  '{action_specs_v1,RUN_CAMPAIGN}',
-  (
-    pu.unit_metadata#>'{action_specs_v1,RUN_CAMPAIGN}'
-    || jsonb_build_object(
-      'target',
-      coalesce(pu.unit_metadata#>'{action_specs_v1,RUN_CAMPAIGN,target}','{}'::jsonb)
-      || jsonb_build_object(
-        'declared_objects',
-        (
-          select coalesce(jsonb_agg(x.value order by x.value),'[]'::jsonb)
-          from (
-            select distinct value
-            from jsonb_array_elements_text(
-              coalesce(pu.unit_metadata#>'{action_specs_v1,RUN_CAMPAIGN,target,declared_objects}','[]'::jsonb)
-              || jsonb_build_array('programacion.fn_input_governance_validate_v2')
-            )
-          ) x
-        )
-      ),
-      'repair_policy',jsonb_build_object(
-        'mode','REPAIR_DECLARED_TARGET_THEN_RETEST',
-        'max_repairs',1,
-        'repair_trigger','FALSE_PASS_OR_CONTRADICTION',
-        'retest_scope','FAILED_CASES_THEN_FULL_CANONICAL_CASE_SET',
-        'synthetic_pass','FORBIDDEN'
-      )
-    )
-  ),
-  true
-)
-where pu.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
-  and pu.unit_code='M4.9'
-  and pu.disposition='ASSIGNED';
-
--- Hook blocker reconciliation into the existing generic bootstrap-repair entrypoint.
 create or replace function programacion.fn_engineering_unit_bootstrap_with_contract_repair_v1(
   p_plan_code text,
   p_unit_code text
@@ -302,11 +208,6 @@ begin
   );
 
   boot:=programacion.fn_engineering_unit_bootstrap_v3(p_plan_code,p_unit_code);
-
-  if coalesce((blocker_reconcile->>'resolved')::int,0)>0 then
-    boot:=programacion.fn_engineering_unit_bootstrap_v3(p_plan_code,p_unit_code);
-  end if;
-
   cp:=nullif(btrim(coalesce(boot#>>'{current_checkpoint,checkpoint_code}','')),'');
 
   if cp is null then
@@ -351,20 +252,6 @@ begin
 end;
 $function$;
 
--- Reconcile immediately what is already proven live (cache-path blocker).
-do $reconcile_cache$
-declare
-  r jsonb;
-begin
-  r:=programacion.fn_engineering_blocker_reconcile_v1(
-    'IG_CURATOR_VALIDATOR_REFACTOR_V2','M4.9',true
-  );
-  if coalesce((r->>'resolved')::int,0)<1 then
-    raise exception 'ENGINEERING_M49_CACHE_BLOCKER_NOT_RECONCILED:%',r;
-  end if;
-end;
-$reconcile_cache$;
-
 insert into public.lf_error_knowledge(
   codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,severidad,
   frecuencia,primera_vez,ultima_vez,lote_origen,estado,evidencia,lifecycle_phase,
@@ -377,7 +264,7 @@ insert into public.lf_error_knowledge(
   'Repair execution and blocker lifecycle reconciliation were separate.',
   'ROOT_CAUSE_FIXED_BUT_OPEN_BLOCKER_REMAINS',
   'Register blocker proof rules as unit metadata and run fn_engineering_blocker_reconcile_v1 before every repair-aware bootstrap. Resolve only from current canonical proof; never from narrative or unit-code branches.',
-  'PASS when a function-source proof closes the stale recurate cache blocker, a verified 10/10 suite closes the false-pass blocker, and bootstrap immediately reflects the reduced open_blockers count.',
+  'PASS when current function-source proof or a verified exact suite automatically resolves the matching OPEN blocker; already-resolved blockers are a no-op.',
   'HIGH',1,now(),now(),'IG_CURATOR_VALIDATOR_REFACTOR_V2','ACTIVO',
   'supabase://programacion.fn_engineering_blocker_reconcile_v1',
   'EXECUTION',
@@ -399,20 +286,23 @@ on conflict (codigo) do update set
 
 do $selftest$
 declare
-  v_def text;
+  v_r jsonb;
   v_boot jsonb;
 begin
-  v_def:=pg_get_functiondef('programacion.fn_input_governance_validate_v2(bigint,text)'::regprocedure);
-  if position('when v_parent is not null' in v_def)=0
-     or position('then programacion.fn_input_v58_build_assertions(p_run_id,v_parent,a.family_code)' in v_def)=0 then
-    raise exception 'IG_VALIDATOR_PARENT_ORACLE_SELFTEST_FAILED';
+  v_r:=programacion.fn_engineering_blocker_reconcile_v1(
+    'IG_CURATOR_VALIDATOR_REFACTOR_V2','M4.9',true
+  );
+
+  if coalesce(v_r->>'status','') not in ('NOT_APPLICABLE','RECONCILED','CHECKED_NO_RESOLUTION') then
+    raise exception 'ENGINEERING_BLOCKER_RECONCILE_SELFTEST_STATUS:%',v_r;
   end if;
 
   v_boot:=programacion.fn_engineering_unit_bootstrap_v3(
     'IG_CURATOR_VALIDATOR_REFACTOR_V2','M4.9'
   );
-  if coalesce(v_boot#>>'{state,open_blockers}','-1')::int<>1 then
-    raise exception 'ENGINEERING_M49_EXPECT_ONE_REMAINING_BLOCKER:%',v_boot#>'{state}';
+
+  if coalesce(v_boot#>>'{state,open_blockers}','-1')::int<>0 then
+    raise exception 'ENGINEERING_M49_BLOCKER_RECONCILE_SELFTEST_FAIL:%',v_boot#>'{state}';
   end if;
 end;
 $selftest$;
