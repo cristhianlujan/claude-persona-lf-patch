@@ -1,7 +1,7 @@
 # CARD — Material Front Coverage V5
 
 Status: CANDIDATO / READ_ONLY
-Card ID: CARD-LF-MATERIAL-FRONT-COVERAGE-V05-METHOD-ARCHITECTURE
+Card ID: CARD-LF-MATERIAL-FRONT-COVERAGE-V05-METHOD-ARCHITECTURE-R2
 Runtime: DISABLED
 Automatic impact: BLOCKED
 Control level: TRANSVERSAL_FAIL_CLOSED
@@ -33,6 +33,27 @@ V5 removes two redundant layers proven to have no independent responsibility:
 
 - `AGENT_STATE_CONTEXT` is merged into `IDENTITY_VERSION_CURRENTNESS` using `CURRENTNESS_AUTHORITY` and `DECISION_CONTEXT_ASOF`.
 - `GAP_INDEPENDENT_ASSURANCE_CHAIN` is merged into `AGENT_EVAL_INTEGRITY` using `INDEPENDENT_ASSURANCE`, `EVIDENCE_LEDGER`, and `EVIDENCE_ANTIREPLAY`.
+
+
+### Attribution boundary against SRCR V0.7
+
+The consuming SRCR V0.7 profile already contains dynamic diagnostic modules, first-bad-boundary localization, repair topology/blast radius, adaptive search, second-order search, rollback/recovery probes, falsification, and hostile challenge.
+
+Therefore this Card may **not** claim value merely because it contains similarly named dynamic modules or investigation topics.
+
+Its distinct value must be demonstrated through mechanisms not already guaranteed by the baseline profile, especially:
+
+- explicit mandatory classification ledger across all 15 universal front families;
+- positive-evidence N/A proof;
+- six-axis deterministic LOW_RISK closure;
+- derived evidence-group selector semantics instead of caller-declared independence;
+- exact provider receipt + provider limitation binding;
+- counted reselection/convergence semantics;
+- deterministic BLOCK/RETURN/PASS precedence;
+- provider-bound challenger independence;
+- gap-specific evidence resolution, receiver parity, executable-schema proof, or canonical-control dedup only where these add behavior beyond SRCR V0.7.
+
+Any TOP_TIER uplift experiment must use SRCR V0.7 AS-IS as arm 0 and may credit only behavior absent from that baseline.
 
 ## 3. Mandatory lightweight core
 
@@ -522,26 +543,23 @@ Current V5 bounded reuse decisions:
 
 ## 16. Development evidence and limits
 
-W6/W7 development experiments are mechanism evidence, not TOP_TIER certification.
+W6/W7 are **mechanism tests only**. They proved internal behavior of the V5 machinery, but they are invalid for estimating uplift over SRCR V0.7 because the synthetic arm 0 did not execute the full V0.7 baseline.
 
-Observed in frozen seeded mechanism fixtures:
+Mechanism evidence retained:
 
-- simulated early-stop arm 0: 3/12 seeded defects, 3/18 expected material fronts;
-- universal sweep A: 3/12 seeded defects, 18/18 expected material fronts;
-- dynamic B: 7/12 seeded defects;
-- full C: 12/12 seeded defects;
+- universal sweep exercised all expected material fronts in seeded fixtures;
+- dynamic probes/refiners can detect their seeded positive cases;
 - W7 targeted positives: 5/5 detected;
-- W7 near negatives: 5/5 without false positive.
+- W7 near negatives: 5/5 without observed false positive;
+- AGENT_STATE_CONTEXT was merged into universal currentness;
+- GAP_INDEPENDENT_ASSURANCE_CHAIN was merged into AGENT_EVAL_INTEGRITY.
 
-Interpretation ceiling:
+Attribution ceiling:
 
-- supports keeping the universal sweep;
-- supports keeping dynamic depth mechanisms that found distinct seeded defects;
-- supports merging AGENT_STATE_CONTEXT into universal currentness;
-- supports merging GAP_INDEPENDENT_ASSURANCE_CHAIN into AGENT_EVAL_INTEGRITY;
-- does not prove real-profile uplift;
-- does not prove TOP_TIER;
-- arm 0 was simulated policy, not a real SRCR execution.
+- no W6/W7 numeric difference between synthetic 0/A/B/C may be cited as Card uplift over SRCR V0.7;
+- the Card cannot claim that dynamic modules, blast-radius search, second-order search, rollback analysis, first-bad-boundary localization, or hostile challenge are novel when V0.7 already provides those behaviors;
+- W6/W7 support only mechanical coherence and targeted detector behavior;
+- they do not prove real-profile uplift or TOP_TIER.
 
 ## 17. Certification protocol
 
@@ -551,12 +569,18 @@ Before TOP_TIER certification:
 2. freeze exact harness/tests;
 3. run derivational Card/harness consistency checks;
 4. run mechanism/adversarial tests;
-5. run real or independent holdout executions where arm 0 is an actual repair execution without this Card, not a simulated stop policy;
-6. freeze oracle before opening arm results;
-7. measure true material defects, misses, critical false positives, correct repair/closure changes, marginal value, cost and non-convergence;
-8. independently review the exact V5 SHA under `CARD_EXPERTISE_TOP_TIER_V1`.
+5. freeze a real holdout by input only, before opening arm results;
+6. freeze the oracle before executing any arm;
+7. execute the **same frozen inputs** under these attribution-aware arms:
+   - `0 = SRCR_V0_7_AS_IS`: exact SRCR V0.7 baseline, including its existing dynamic modules, topology, second-order, falsification and hostile-challenge behavior;
+   - `A = 0 + MFC_UNIVERSAL_CLOSURE`: adds the 15-front ledger, N/A/LOW_RISK proof and deterministic closure semantics only;
+   - `B = A + MFC_PROVIDER_BOUND_METHODS`: adds V5 derived selector semantics plus exact typed probes/provider receipts/limitation binding. Existing V0.7 behavior is not credited again;
+   - `C = B + MFC_GAP_REFINERS`: adds only the four V5 gap refiners/canonicalization mechanisms not already proven equivalent to baseline behavior;
+8. measure true material defects, misses, critical false positives, correct closure/repair changes, unique marginal value, cost and non-convergence;
+9. credit a layer only for a verified finding or decision correction not already produced by the immediately preceding arm;
+10. independently review the exact V5 SHA, holdout oracle, raw arm outputs and attribution under `CARD_EXPERTISE_TOP_TIER_V1`.
 
-No TOP_TIER receipt may be emitted from synthetic mechanism tests alone.
+No TOP_TIER receipt may be emitted from synthetic mechanism tests, duplicated baseline behavior, or topic-level overlap alone.
 
 ## 18. Self-repair
 
