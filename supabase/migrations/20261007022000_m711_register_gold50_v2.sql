@@ -1003,13 +1003,17 @@ set unit_metadata=jsonb_set(
           jsonb_build_object(
             'path','cristhianlujan/claude-persona-lf-patch@5fa5e98d0c8400d4d685c378043557d8f1f308a0:sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_adjudicated_gold_v2.json',
             'role','ADJUDICATED_EXPECTED_AUTHORITY'
+          ),
+          jsonb_build_object(
+            'path','cristhianlujan/claude-persona-lf-patch@agent/m711-register-gold50-v2-20261007:supabase/migrations/20261007022000_m711_register_gold50_v2.sql',
+            'role','MUTATION_TARGET'
           )
         ),
         'declared_assets',jsonb_build_array('TEST_SUITE_INPUT_GOVERNANCE_REGRESSION_V1'),
         'declared_events','[]'::jsonb,
         'mutation_artifacts',jsonb_build_array(
           jsonb_build_object(
-            'path','github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261007022000_m711_register_gold50_v2.sql',
+            'path','cristhianlujan/claude-persona-lf-patch@agent/m711-register-gold50-v2-20261007:supabase/migrations/20261007022000_m711_register_gold50_v2.sql',
             'role','GIT_FIRST_MIGRATION'
           )
         )
