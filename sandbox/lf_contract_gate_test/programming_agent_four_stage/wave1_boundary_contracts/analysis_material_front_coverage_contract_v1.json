@@ -2,7 +2,9 @@
   "schema_version": "ANALYSIS_MATERIAL_FRONT_COVERAGE_CONTRACT_V1",
   "state": "SOURCE_ONLY_CANDIDATE",
   "producer_unit": "A7",
-  "consumer_units": ["A9"],
+  "consumer_units": [
+    "A9"
+  ],
   "input_contracts": [
     "SHARED_CHANGE_IMPACT_ANALYSIS",
     "ANALYSIS_IMPLEMENTATION_DRAFT",
@@ -47,8 +49,15 @@
     "closed_static_front_catalog_forbidden": true
   },
   "front_contract": {
-    "status_values": ["REQUIRED","REUSE_AS_IS","NOT_APPLICABLE"],
-    "closure_values": ["CLOSED","BLOCKED"],
+    "status_values": [
+      "REQUIRED",
+      "REUSE_AS_IS",
+      "NOT_APPLICABLE"
+    ],
+    "closure_values": [
+      "CLOSED",
+      "BLOCKED"
+    ],
     "required_fields": [
       "front_id",
       "front_kind",
@@ -61,7 +70,27 @@
       "currentness_refs[]",
       "blockers[]",
       "reason"
-    ]
+    ],
+    "blocker_contract": {
+      "schema_version": "ANALYSIS_MATERIAL_BLOCKER_V1",
+      "required_when_closure": "BLOCKED",
+      "required_fields": [
+        "blocker_code",
+        "blocker_class",
+        "reason",
+        "evidence_refs[]"
+      ],
+      "class_values": [
+        "AUTHORITY_UNRESOLVED",
+        "OWNER_DECISION_REQUIRED",
+        "CONTRACT_UNRESOLVED",
+        "CURRENTNESS_UNRESOLVED",
+        "MATERIAL_CONTRADICTION",
+        "EXTERNAL_DEPENDENCY_UNAVAILABLE"
+      ],
+      "implementation_absence_class_forbidden": true,
+      "implementation_absence_wording_without_material_class_forbidden": true
+    }
   },
   "coverage_guards": {
     "every_material_candidate_emitted_exactly_once": true,
@@ -72,7 +101,9 @@
     "reuse_as_is_requires_currentness": true,
     "not_applicable_requires_evidence_and_reason": true,
     "unmapped_material_signals_must_be_explicit": true,
-    "absence_never_means_not_applicable": true
+    "absence_never_means_not_applicable": true,
+    "blocked_front_requires_typed_blocker": true,
+    "closed_front_requires_empty_blockers": true
   },
   "output_requirements": [
     "front_candidate_refs[]",
@@ -92,5 +123,20 @@
   },
   "no_parallel_engine": true,
   "runtime_activation": false,
-  "production_activation": false
+  "production_activation": false,
+  "blocker_semantics": {
+    "implementation_absence_alone_is_not_analysis_blocker": true,
+    "implementation_new_with_resolved_authority_requirements_and_acceptance_is_build_required": true,
+    "required_closed_front_may_represent_downstream_build_obligation": true,
+    "missing_code_table_binding_or_adapter_if_programmable_is_not_blocker": true,
+    "blocked_front_requires_one_of": [
+      "AUTHORITY_UNRESOLVED",
+      "OWNER_DECISION_REQUIRED",
+      "CONTRACT_UNRESOLVED",
+      "CURRENTNESS_UNRESOLVED",
+      "MATERIAL_CONTRADICTION",
+      "EXTERNAL_DEPENDENCY_UNAVAILABLE"
+    ],
+    "blocker_reason_must_identify_unresolved_material_authority_not_implementation_absence": true
+  }
 }

@@ -9,6 +9,10 @@
     "A3",
     "A4",
     "A5",
+    "A6",
+    "A7",
+    "A8",
+    "A9",
     "PG-01",
     "TST-01",
     "TST-02",
@@ -27,7 +31,11 @@
     "TST-03": "testing_wave1_design_pipeline_contract_v1.json",
     "TST-04": "testing_wave1_design_pipeline_contract_v1.json",
     "TST-05": "shared_change_impact_contract_v1.json",
-    "A5": "analysis_decision_context_adr_contract_v1.json"
+    "A5": "analysis_decision_context_adr_contract_v1.json",
+    "A6": "analysis_implementability_contract_v1.json",
+    "A7": "analysis_material_front_coverage_contract_v1.json",
+    "A8": "analysis_stop_rule_contract_v1.json",
+    "A9": "analysis_implementation_package_contract_v1.json"
   },
   "principles": [
     "NO_PARALLEL_ENGINE",
@@ -46,5 +54,8 @@
     "lf_eventos://20334",
     "lf_eventos://20335",
     "lf_eventos://20315"
-  ]
+  ],
+  "cross_boundary_contracts": {
+    "A9_PG01": "analysis_programming_handoff_parity_contract_v1.json"
+  }
 }
