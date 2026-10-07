@@ -21,6 +21,14 @@ The executor works on the existing canonical plan/work/checkpoint ledger, but it
 11. A failure blocks only its owning unit. Other dependency-clear units continue.
 12. No title inference, inherited IG gates, prior runtime PASS reuse, or automatic production/runtime activation.
 
+## Operational validator/resolver guide
+
+For reusable validator/resolver behavior, current catalog, qualification rules, checkpoint binding examples, and plan-author usage, see:
+
+`docs/programming/PROGRAMMING_VALIDATORS_AND_RESOLVERS_GUIDE_V1.md`
+
+The registry remains the operational source of truth; the guide explains how to consume it without duplicating validators or reusing historical PASS.
+
 ## Registry
 
 ### `programacion.programming_validation_registry`
