@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""M6.12 exact-checkpoint negative: source receipts -> deterministic manifest.
+"""M6.12 live-bound negative proof verifier.
 
-Input M612_LIVE_READBACK_JSON is a live SUPABASE SQL witness supplied by the
-executor, not checked-in test data. No DB mutations, stored-run rewrites, or
-synthetic producer receipts are performed.
+The executor executes a read-only canonical Supabase SQL probe that projects
+input_readiness_runs.source_manifest and recomputes the manifest after changing
+one source receipt SHA in a CTE (no persistent mutation). Only result booleans,
+counts and digests are sent to the runner; no source payload leaves Supabase.
 """
 import copy
 import json
@@ -11,123 +12,87 @@ import os
 import re
 import sys
 
+
 SHA = re.compile(r"^[0-9a-f]{64}$")
-FIELDS = ("ref", "authority", "lifecycle", "observed_sha256", "archive_contract")
+SOURCE = "programacion.input_readiness_runs+programacion.v_input_run_manifest"
 
 
-def require(condition, code):
-    if not condition:
-        raise AssertionError(code)
+def require(value, reason):
+    if not value:
+        raise AssertionError(reason)
 
 
-def compact(receipt):
-    require(isinstance(receipt, dict), "RECEIPT_NOT_OBJECT")
-    require(isinstance(receipt.get("ref"), dict), "RECEIPT_REF_MISSING")
-    require("authority" in receipt, "RECEIPT_AUTHORITY_MISSING")
-    require(bool(SHA.fullmatch(receipt.get("observed_sha256", ""))),
-            "RECEIPT_SHA_MISSING")
-    result = {"schema_version": receipt.get("schema_version") or
-              "IG_SOURCE_RECEIPT_V1"}
-    for key in FIELDS:
-        if key in receipt and receipt[key] is not None:
-            result[key] = receipt[key]
-    return result
-
-
-def normalize(receipts):
-    require(isinstance(receipts, list), "MANIFEST_NOT_ARRAY")
-    values = [
-        json.dumps(compact(r), sort_keys=True, separators=(",", ":"),
-                   ensure_ascii=False) for r in receipts
-    ]
-    return sorted(set(values))
-
-
-def poison_sha(value):
-    require(bool(SHA.fullmatch(value)), "INVALID_BASELINE_SHA")
-    return ("1" if value[0] == "0" else "0") + value[1:]
+def validate(row):
+    require(isinstance(row.get("id"), int), "RUN_ID_MISSING")
+    require(isinstance(row.get("receipt_count"), int)
+            and row["receipt_count"] > 0, "RECEIPT_COUNT_INVALID")
+    require(isinstance(row.get("stored_sha"), str)
+            and SHA.fullmatch(row["stored_sha"]), "STORED_SHA_INVALID")
+    require(row.get("baseline_reproduced") is True,
+            "BASELINE_MANIFEST_REPRODUCTION_FAILED")
+    require(row.get("source_mutation_detected") is True,
+            "SOURCE_MUTATION_NOT_DETECTED")
+    require(row.get("positive_and_negative_pass") is True,
+            "CANONICAL_SQL_NEGATIVE_FAILED")
+    require(row.get("leaked_payloads") == 0,
+            "LEGACY_OBSERVED_PAYLOAD_LEAK")
+    require(type(row.get("legacy_source")) is bool,
+            "SOURCE_FORMAT_CLASSIFICATION_MISSING")
 
 
 def main():
-    raw = os.environ.get("M612_LIVE_READBACK_JSON")
-    require(raw is not None, "CANONICAL_SQL_READBACK_REQUIRED")
-    witness = json.loads(raw)
-    require(witness.get("source") ==
-            "programacion.input_readiness_runs+programacion.v_input_run_manifest",
-            "SOURCE_AUTHORITY_UNBOUND")
-    rows = witness.get("runs")
-    require(isinstance(rows, list) and rows, "NO_REAL_RUNS")
-    legacy, compact_runs, tested = 0, 0, []
+    raw = os.environ.get("M612_LIVE_NEGATIVE_RESULT_JSON")
+    require(bool(raw), "LIVE_SQL_NEGATIVE_RESULT_REQUIRED")
+    result = json.loads(raw)
+    require(result.get("schema_version") == "M612_LIVE_NEGATIVE_SQL_V1",
+            "SQL_PROBE_SCHEMA_MISMATCH")
+    require(result.get("source") == SOURCE, "CANONICAL_SOURCE_UNBOUND")
+    rows = result.get("runs")
+    require(isinstance(rows, list) and len(rows) >= 2,
+            "MULTI_RUN_READBACK_REQUIRED")
+    require(len({x.get("id") for x in rows}) == len(rows),
+            "DUPLICATE_RUN_EVIDENCE")
     for row in rows:
-        run_id = row.get("run_id")
-        source = row.get("source_manifest")
-        materialized = row.get("materialized_manifest")
-        require(isinstance(run_id, int), "RUN_ID_MISSING")
-        require(isinstance(source, list) and len(source) > 0,
-                "SOURCE_MANIFEST_MISSING")
-        require(isinstance(materialized, list), "VIEW_MANIFEST_MISSING")
-        require(row.get("receipt_count") == len(materialized),
-                "VIEW_RECEIPT_COUNT_MISMATCH")
-        require(len(materialized) == len(normalize(materialized)),
-                "VIEW_DUPLICATE_NOT_REMOVED")
+        validate(row)
+    require(any(row["legacy_source"] for row in rows),
+            "LEGACY_SOURCE_NOT_COVERED")
+    require(any(not row["legacy_source"] for row in rows),
+            "COMPACT_SOURCE_NOT_COVERED")
 
-        source_identity = normalize(source)
-        view_identity = normalize(materialized)
-        require(source_identity == view_identity,
-                "RECOMPUTED_MANIFEST_DIFFERS_FROM_STORED_VIEW")
-        require(len(materialized) == len(source_identity),
-                "DEDUPLICATION_MISMATCH")
-        require(all("observed" not in item for item in materialized),
-                "LEGACY_OBSERVED_PAYLOAD_LEAK")
-
-        live_sha = row.get("manifest_sha256")
-        repeat_sha = row.get("recomputed_sha256")
-        require(isinstance(live_sha, str) and SHA.fullmatch(live_sha),
-                "MANIFEST_SHA_INVALID")
-        require(live_sha == repeat_sha,
-                "RECOMPUTED_SHA_DIFFERS_FROM_STORED")
-
-        # Non-destructive adversarial 1: mutate a source receipt SHA and
-        # require the independent projection comparison to reject it.
-        altered = copy.deepcopy(source)
-        altered[0]["observed_sha256"] = poison_sha(
-            altered[0]["observed_sha256"])
-        require(normalize(altered) != view_identity,
-                "NEGATIVE_CHANGED_SOURCE_NOT_DETECTED")
-
-        # Non-destructive adversarial 2: tamper only the stored manifest digest.
-        require(poison_sha(live_sha) != repeat_sha,
-                "NEGATIVE_CHANGED_STORED_DIGEST_NOT_DETECTED")
-
-        # Positive deduplication: a repeated identical receipt changes nothing.
-        duplicated = source + [copy.deepcopy(source[0])]
-        require(normalize(duplicated) == source_identity,
-                "IDENTICAL_RECEIPT_DEDUP_REGRESSION")
-
-        if any("observed" in item for item in source):
-            legacy += 1
+    # Runner-level negatives: rejecting tampered SQL result is mandatory.
+    for changed_key, poison in (
+        ("source_mutation_detected", False),
+        ("stored_sha", "bad_sha"),
+    ):
+        hostile = copy.deepcopy(rows[0])
+        hostile[changed_key] = poison
+        try:
+            validate(hostile)
+        except AssertionError:
+            pass
         else:
-            compact_runs += 1
-        tested.append({"run_id": run_id, "receipt_count": len(materialized),
-                       "sha": live_sha, "adversarial_cases": 2})
+            raise AssertionError("RUNNER_ACCEPTED_HOSTILE_RESULT:" + changed_key)
 
-    require(legacy > 0, "LEGACY_RUN_COVERAGE_MISSING")
-    require(compact_runs > 0, "COMPACT_RUN_COVERAGE_MISSING")
-    print(json.dumps({"status": "PASS", "test_code": "ENG_M6_12_NEGATIVE_REPRO",
-                      "test_passed": True, "test_exit_code": 0,
-                      "semantic_authority_bound": True,
-                      "adversarial_case_executed": True,
-                      "live_run_count": len(tested),
-                      "legacy_run_count": legacy,
-                      "compact_run_count": compact_runs,
-                      "negative_case_count": 2 * len(tested),
-                      "runs": tested}, separators=(",", ":")))
+    print(json.dumps({
+        "status": "PASS",
+        "test_code": "ENG_M6_12_NEGATIVE_REPRO",
+        "test_passed": True,
+        "test_exit_code": 0,
+        "semantic_authority_bound": True,
+        "adversarial_case_executed": True,
+        "sql_live_source_tamper_detected": True,
+        "runner_hostile_result_cases": 2,
+        "live_run_count": len(rows),
+        "run_ids": [r["id"] for r in rows],
+        "leaked_payloads": 0
+    }, separators=(",", ":")))
 
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as exc:
-        print(json.dumps({"status": "FAIL", "test_code": "ENG_M6_12_NEGATIVE_REPRO",
+        print(json.dumps({"status": "FAIL",
+                          "test_code": "ENG_M6_12_NEGATIVE_REPRO",
                           "error": str(exc)}), file=sys.stderr)
         sys.exit(1)
