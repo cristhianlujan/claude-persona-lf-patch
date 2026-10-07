@@ -1,0 +1,219 @@
+{
+  "schema_version": "ANALYSIS_EVALUATION_CASE_BATCH_V1",
+  "batch_id": "A10-HIST-BATCH-02",
+  "state": "REGISTERED_SOURCE_BOUND_NOT_SCORED",
+  "campaign_contract": "ANALYSIS_EVALUATION_CAMPAIGN_CONTRACT_V1",
+  "holdout_role": "A10_HISTORICAL_ONLY",
+  "excluded_from_A14_fresh_holdout": true,
+  "cases": [
+    {
+      "case_id": "A10-HIST-006",
+      "change_family": "BUG",
+      "source_refs": [
+        "supabase://programacion.fn_input_v58_assertion_template",
+        "supabase://programacion.fn_input_v512_assertion_template",
+        "supabase://programacion.fn_input_v58_build_assertions"
+      ],
+      "historical_subject": "INPUT_GOVERNANCE_NUMERIC_SCREEN_IDENTITY",
+      "material_signals_expected": [
+        "NUMERIC_SCREEN_ID_CONTROL_FLOW_FORBIDDEN",
+        "RESOLVE_CANONICAL_SCREEN_CODE",
+        "TEMPLATE_AND_BUILDER_BINDING_REQUIRED",
+        "NO_HARDCODED_SCREEN_IDS"
+      ],
+      "critical_omission_if_missing": [
+        "NUMERIC_ID_CONTROL_FLOW",
+        "CANONICAL_SCREEN_IDENTITY"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-007",
+      "change_family": "CONCURRENCY_IDEMPOTENCY",
+      "source_refs": [
+        "supabase://programacion.fn_input_governance_validator_validate_v1",
+        "supabase://programacion.fn_input_governance_validate_v2"
+      ],
+      "historical_subject": "INPUT_GOVERNANCE_VALIDATOR_LOCK_SCOPE",
+      "material_signals_expected": [
+        "LOCK_KEYED_BY_GOVERNED_RUN",
+        "FACADE_TO_DISPATCHER_ROUTING",
+        "ZERO_DIRECT_EXECUTE_ON_INTERNAL_VALIDATOR",
+        "SERVICE_ROLE_USES_FACADE"
+      ],
+      "critical_omission_if_missing": [
+        "RUN_SCOPED_LOCK",
+        "DIRECT_EXECUTION_BOUNDARY"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-008",
+      "change_family": "GOVERNANCE",
+      "source_refs": [
+        "lf_eventos://20335",
+        "supabase://programacion.fn_agent_task_execution_bundle",
+        "supabase://programacion.fn_test_contract_generation_source"
+      ],
+      "historical_subject": "STAGE_BOUND_PRIOR_ART_NOT_UPSTREAM_AUTHORITY",
+      "material_signals_expected": [
+        "ANALYSIS_NO_STORY_OR_AGENT_TASK_PREREQUISITE",
+        "PG01_ANALYSIS_PACKAGE_DIRECT_ADMISSION",
+        "TESTING_DESIGN_ONLY_NO_AGENT_TASK",
+        "LEGACY_STAGE_BOUND_PROVIDER_NOT_GENERIC_AUTHORITY"
+      ],
+      "critical_omission_if_missing": [
+        "STORY_DECOUPLING",
+        "STAGE_BOUNDARY"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-009",
+      "change_family": "MODEL_OR_INTELLIGENCE",
+      "source_refs": [
+        "supabase://public.lf_capability_current/CAPABILITY_SELECTOR",
+        "lf_eventos://20163"
+      ],
+      "historical_subject": "PROGRAMMING_METHOD_CHAMPION_MIX_GOVERNANCE",
+      "material_signals_expected": [
+        "CURRENT_QUALIFIED_METHODS_ONLY",
+        "CHAMPION_CHALLENGER_PROMOTION_EVIDENCE_BASED",
+        "SAFE_MIX_FOR_ZERO_OR_CONTRADICTORY_SIGNAL",
+        "SELECTOR_RESULT_NOT_EXECUTION_PERMISSION"
+      ],
+      "critical_omission_if_missing": [
+        "STALE_METHOD_REJECTION",
+        "MIX_GOVERNANCE"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-010",
+      "change_family": "GOVERNANCE",
+      "source_refs": [
+        "supabase://programacion.fn_engineering_execution_packet_from_spec_v1"
+      ],
+      "historical_subject": "ENGINEERING_EXECUTION_PACKET_CONTRACT",
+      "material_signals_expected": [
+        "ACTION_SPEC_COMPILES_TO_EXACT_CONNECTOR_PACKET",
+        "REPAIR_DECLARED_TARGET_THEN_RETEST",
+        "RUN_TEST_RESOLVES_CANONICAL_CASES",
+        "HEARTBEAT_AND_ERROR_CONTRACT_EXPLICIT"
+      ],
+      "critical_omission_if_missing": [
+        "EXECUTION_PACKET_EXACTNESS",
+        "RETEST_BEFORE_PASS"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-011",
+      "change_family": "BUG",
+      "source_refs": [
+        "supabase://programacion.contract_traceability_matrices"
+      ],
+      "historical_subject": "INPUT_GOVERNANCE_TRACEABILITY_CURRENT_CLAUSE_DRIFT",
+      "material_signals_expected": [
+        "COMPARE_CURRENT_CONTRACT_KEY_SET",
+        "DO_NOT_TRUST_HISTORICAL_CLAUSE_COUNT",
+        "ZERO_MISSING_EXTRA_OR_UNMAPPED_ROWS",
+        "LEGACY_AUTHORITY_DECISIONS_EXPLICIT"
+      ],
+      "critical_omission_if_missing": [
+        "CURRENT_SET_EQUALITY",
+        "TRACEABILITY_DRIFT"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-012",
+      "change_family": "GOVERNANCE",
+      "source_refs": [
+        "supabase://programacion.engineering_plan_units/IG_CURATOR_VALIDATOR_REFACTOR_V2/M7.11",
+        "supabase://public.lf_test_suite_cases"
+      ],
+      "historical_subject": "IG_M711_REGISTER_CASES_SEPARATION",
+      "material_signals_expected": [
+        "REGISTER_SUITE_MATERIALIZES_GOLD50",
+        "CASES50_IS_READ_VERIFY_ONLY",
+        "NO_DUPLICATE_REINSERT",
+        "EXACT_READBACK_50_CASES"
+      ],
+      "critical_omission_if_missing": [
+        "MATERIALIZATION_VERIFICATION_SEPARATION",
+        "NO_DUPLICATE_MUTATION"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-013",
+      "change_family": "BUG",
+      "source_refs": [
+        "supabase://programacion.contratos/37",
+        "supabase://public.lf_test_suite_cases/M7_3_NEG_064_RECOVERY_OTP_CREATES_OPERATIONAL_SESSION"
+      ],
+      "historical_subject": "IG_M46_TRUE_CROSS_FAMILY_RECOVERY_SESSION",
+      "material_signals_expected": [
+        "TRUE_FAMILY_TO_FAMILY_CONTRADICTION",
+        "RECOVERY_OTP_SESSION_SEMANTIC_RULE",
+        "NEGATIVE_CASE_MUST_BE_REJECTED",
+        "ROLLBACK_LEAVES_NO_DOMAIN_FIXTURE"
+      ],
+      "critical_omission_if_missing": [
+        "CROSS_FAMILY_CONTRADICTION",
+        "NEGATIVE_DETECTION"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-014",
+      "change_family": "GOVERNANCE",
+      "source_refs": [
+        "supabase://programacion.engineering_plan_units",
+        "supabase://programacion.fn_engineering_checkpoint_action_spec_v3"
+      ],
+      "historical_subject": "ENGINEERING_TRANSVERSAL_EXPLICIT_ROUTING",
+      "material_signals_expected": [
+        "TRANSVERSAL_EXECUTION_DECLARED_STRUCTURALLY",
+        "NO_CHECKPOINT_TITLE_INFERENCE",
+        "DECLARED_ONLY_DOES_NOT_INTRODUCE_BLOCK",
+        "ACTIVE_CAPABILITY_ROUTES_FROM_UNIT_METADATA"
+      ],
+      "critical_omission_if_missing": [
+        "STRUCTURAL_CAPABILITY_DECLARATION",
+        "NO_TITLE_INFERENCE"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-015",
+      "change_family": "GOVERNANCE",
+      "source_refs": [
+        "supabase://programacion.fn_engineering_checkpoint_action_spec_v3",
+        "supabase://programacion.fn_engineering_capability_bind_receipt_core_v1",
+        "supabase://programacion.fn_engineering_execution_packet_from_spec_v1"
+      ],
+      "historical_subject": "ENGINEERING_TRANSVERSAL_MULTI_CAPABILITY_SEQUENCE",
+      "material_signals_expected": [
+        "MULTI_CAPABILITY_ARRAY_PRESERVED_END_TO_END",
+        "ONE_BY_ONE_SEQUENCE_EXECUTION",
+        "NO_TRUNCATION_TO_SINGLE_CAPABILITY",
+        "FINAL_TRANSITION_ONLY_AFTER_LAST_CAPABILITY"
+      ],
+      "critical_omission_if_missing": [
+        "MULTI_CAPABILITY_SEQUENCE",
+        "NO_HANDLER_FALSE_BLOCK"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    }
+  ],
+  "batch_guards": {
+    "every_case_has_canonical_source_ref": true,
+    "case_specific_solution_hardcoding_forbidden": true,
+    "depth_scoring_forbidden_until_independent_label": true,
+    "A14_holdout_contamination_forbidden": true,
+    "runtime_activation": false,
+    "production_activation": false
+  }
+}
