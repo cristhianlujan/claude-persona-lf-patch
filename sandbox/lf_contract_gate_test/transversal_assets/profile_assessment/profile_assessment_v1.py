@@ -58,10 +58,10 @@ def assess_profile(payload: dict[str, Any]) -> dict[str, Any]:
         if status != "PASS":
             gaps.append({"gap": key, "status": status, "refs": evidence.get(key, {}).get("refs", []) if isinstance(evidence.get(key), dict) else []})
 
-    if structural == "FAIL":
-        mode = "PATCH"
-    elif _proof(evidence, "architecture_fit") == "FAIL":
+    if _proof(evidence, "architecture_fit") == "FAIL":
         mode = "REARCHITECT"
+    elif structural == "FAIL":
+        mode = "PATCH"
     elif maturity == "GENERIC":
         mode = "SPECIALIZE"
     elif maturity == "SPECIALIZED" and _proof(evidence, "strategy_routing") != "PASS":
