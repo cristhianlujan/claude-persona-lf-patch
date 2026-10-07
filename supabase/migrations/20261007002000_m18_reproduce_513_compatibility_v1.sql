@@ -174,6 +174,12 @@ select
   'M1.8 compatibility contract: frozen 5.13 Golden T0 reproduces exact SHA and current 5.13.1 representation remains traceable 62/62.',
   'INFO',
   jsonb_build_object(
+    'evidence_schema_version','operational-event/v2',
+    'execution_id','CHATGPT-IG-M18-COMPAT-20261006',
+    'producer','CHATGPT:IG_M1_8_PAULO122',
+    'purpose','Record M1.8 compatibility readback linking Git artifact, traceability matrix and frozen Golden T0 SHA without declaring production acceptance.',
+    'acceptance_declared',false,
+    'occurred_at',clock_timestamp(),
     'artifact_schema','IG_M1_8_INPUT_READINESS_5_13_COMPATIBILITY_V1',
     'plan_code','IG_CURATOR_VALIDATOR_REFACTOR_V2',
     'unit_code','M1.8',
