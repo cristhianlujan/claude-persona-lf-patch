@@ -1600,7 +1600,7 @@ class LlamaHTTPClient:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content},
             ],
-            "stream": False,
+            "stream": True,
             "temperature": 0.0 if deterministic_semantic else 0.2,
             "top_p": 1.0 if deterministic_semantic else 0.9,
             "seed": 42,
@@ -1691,6 +1691,70 @@ class LlamaHTTPClient:
             "generation_schema_policy": generation_schema_policy,
         }
 
+    def _read_streaming_response(self, response: Any) -> dict[str, Any]:
+        max_bytes = 4 * 1024 * 1024
+        observed_bytes = 0
+        content_parts: list[str] = []
+        response_id = ""
+        model = ""
+        usage: dict[str, Any] = {}
+        timings: dict[str, Any] = {}
+        finish_reason = ""
+        done_seen = False
+
+        for raw_line in response:
+            observed_bytes += len(raw_line)
+            if observed_bytes > max_bytes:
+                raise LlamaTransportError("LLAMA_RESPONSE_TOO_LARGE")
+            line = raw_line.decode("utf-8").strip()
+            if not line or line.startswith(":"):
+                continue
+            if not line.startswith("data:"):
+                continue
+            data = line[5:].strip()
+            if data == "[DONE]":
+                done_seen = True
+                break
+            chunk = json.loads(data)
+            if not isinstance(chunk, dict):
+                raise LlamaTransportError("LLAMA_RESPONSE_NOT_OBJECT")
+            if chunk.get("id"):
+                response_id = str(chunk["id"])
+            if chunk.get("model"):
+                model = str(chunk["model"])
+            if isinstance(chunk.get("usage"), dict):
+                usage = dict(chunk["usage"])
+            if isinstance(chunk.get("timings"), dict):
+                timings = dict(chunk["timings"])
+            choices = chunk.get("choices")
+            if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+                continue
+            choice = choices[0]
+            delta = choice.get("delta")
+            if isinstance(delta, dict):
+                part = delta.get("content")
+                if isinstance(part, str):
+                    content_parts.append(part)
+                elif part is not None:
+                    raise LlamaTransportError("LLAMA_RESPONSE_CONTENT_INVALID")
+            if choice.get("finish_reason"):
+                finish_reason = str(choice["finish_reason"])
+
+        if not done_seen:
+            raise LlamaTransportError("LLAMA_STREAM_TERMINATION_MISSING")
+        return {
+            "id": response_id,
+            "model": model or self.settings.llama_model,
+            "choices": [
+                {
+                    "message": {"content": "".join(content_parts)},
+                    "finish_reason": finish_reason,
+                }
+            ],
+            "usage": usage,
+            "timings": timings,
+        }
+
     def _request(
         self, method: str, path: str, payload: dict[str, Any] | None, timeout: int
     ) -> Any:
@@ -1707,6 +1771,8 @@ class LlamaHTTPClient:
         )
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:
+                if isinstance(payload, dict) and payload.get("stream") is True:
+                    return self._read_streaming_response(response)
                 raw = response.read(4 * 1024 * 1024 + 1)
                 if len(raw) > 4 * 1024 * 1024:
                     raise LlamaTransportError("LLAMA_RESPONSE_TOO_LARGE")
@@ -1717,6 +1783,7 @@ class LlamaHTTPClient:
         except urllib.error.URLError as exc:
             raise LlamaTransportError("LLAMA_CONNECTION_ERROR", type(exc.reason).__name__) from exc
         except TimeoutError as exc:
+            # For streaming completions this is an inactivity timeout, not a total-generation timer.
             raise LlamaTransportError("LLAMA_TIMEOUT") from exc
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise LlamaTransportError("LLAMA_RESPONSE_JSON_INVALID") from exc
