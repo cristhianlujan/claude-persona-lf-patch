@@ -284,8 +284,7 @@ on conflict (defeater_code,version) do update set
   description=excluded.description,
   required_counterevidence=excluded.required_counterevidence,
   zero_effect_required=excluded.zero_effect_required,
-  source_ref=excluded.source_ref,
-  updated_at=now();
+  source_ref=excluded.source_ref;
 
 insert into public.lf_test_suite_cases(
   suite_code,test_code,test_order,rule_codes,title,test_type,execution_mode,severity,
