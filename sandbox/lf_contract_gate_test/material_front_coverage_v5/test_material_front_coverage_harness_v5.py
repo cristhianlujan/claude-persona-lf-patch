@@ -66,7 +66,7 @@ add("17_same_challenger_execution",lambda f:f["challenger"].update({"execution_i
 add("18_same_challenger_identity",lambda f:f["challenger"].update({"executor_identity":"producer"}),BLOCK,"NOT_INDEPENDENT")
 add("19_challenger_revision_mismatch",lambda f:f["challenger"].update({"subject_revision":"other"}),BLOCK,"REVISION_MISMATCH")
 add("20_challenger_unverified",lambda f:f["challenger"]["independence_receipt"].update({"verification_state":"UNVERIFIED"}),BLOCK,"ASSURANCE_CHAIN")
-add("21_challenger_tampered_digest",lambda f:f["challenger"]["independence_receipt"].update({"measurement_digest":"0"*64),BLOCK,"DIGEST_INVALID")
+add("21_challenger_tampered_digest",lambda f:f["challenger"]["independence_receipt"].update({"measurement_digest":"0"*64}),BLOCK,"DIGEST_INVALID")
 add("22_provider_scope_unproven",lambda f:(f.update({"required_flags":["write_capable"]}),f["module_receipts"].update({"AGENT_ACTION_SIDE_EFFECT":{**receipt(), "scope_supported":False}})),BLOCK,"PROVIDER_SCOPE_UNPROVEN")
 add("23_provider_subject_mismatch",lambda f:(f.update({"required_flags":["write_capable"]}),f["module_receipts"].update({"AGENT_ACTION_SIDE_EFFECT":{**receipt(), "subject_revision":"x"}})),BLOCK,"PROVIDER_SUBJECT_REVISION_MISMATCH")
 add("24_orphan_material",lambda f:f.update({"fronts":[front(orphan_required=True)]}),BLOCK,"ORPHAN_METHOD_UNPROVEN")
