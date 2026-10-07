@@ -1,0 +1,102 @@
+{
+  "schema_version": "LF_MFC_V5_HOLDOUT_ORACLE_V1",
+  "frozen_before_execution": true,
+  "cases": {
+    "MFCV5-H01": {
+      "expected_material_fronts": [
+        "POLICIES_CONTRACTS_AUTHORITY",
+        "CONTEXT_INPUT_TRANSPORT",
+        "CONSUMERS_DEPENDENCY_BLAST_RADIUS",
+        "OBSERVABILITY_EVIDENCE_READBACK"
+      ],
+      "defects": {
+        "H01-D1": {
+          "severity": "HIGH",
+          "description": "Runtime cycle limit diverges from contract authority."
+        },
+        "H01-D2": {
+          "severity": "HIGH",
+          "description": "Receiver effect is not observed despite producer handoff."
+        },
+        "H01-D3": {
+          "severity": "MEDIUM_HIGH",
+          "description": "Producer field 'before' reaches transport but is not enforced by receiver."
+        }
+      }
+    },
+    "MFCV5-H02": {
+      "expected_material_fronts": [
+        "STATE_LIFECYCLE_TERMINALITY",
+        "RECOVERY_ROLLBACK_IDEMPOTENCY_REPLAY",
+        "OBSERVABILITY_EVIDENCE_READBACK",
+        "OPERABILITY_MAINTENANCE_OWNERSHIP"
+      ],
+      "defects": {
+        "H02-D1": {
+          "severity": "HIGH",
+          "description": "Terminal error occurs after a committed write."
+        },
+        "H02-D2": {
+          "severity": "HIGH",
+          "description": "Trace omits actions/before-after after material write."
+        },
+        "H02-D3": {
+          "severity": "MEDIUM_HIGH",
+          "description": "Rollback package is not executable: setup/results arrays invalid and residue remains."
+        }
+      }
+    },
+    "MFCV5-H03": {
+      "expected_material_fronts": [
+        "CONTROLS_GUARDS_ENFORCEMENT",
+        "POLICIES_CONTRACTS_AUTHORITY",
+        "TESTING_ASSURANCE_FALSIFICATION"
+      ],
+      "defects": {
+        "H03-D1": {
+          "severity": "HIGH",
+          "description": "Duplicate controls with same responsibility disagree on D4 false-pass blocking."
+        }
+      }
+    },
+    "MFCV5-H04": {
+      "expected_material_fronts": [
+        "SECURITY_PRIVACY_PERMISSIONS",
+        "TESTING_ASSURANCE_FALSIFICATION",
+        "OBSERVABILITY_EVIDENCE_READBACK"
+      ],
+      "defects": {
+        "H04-D1": {
+          "severity": "HIGH",
+          "description": "Untrusted evidence contains executable-style instruction on a write-capable path."
+        },
+        "H04-D2": {
+          "severity": "HIGH",
+          "description": "Reviewer is not independent: shared dependency and shared data source."
+        }
+      }
+    },
+    "MFCV5-H05": {
+      "expected_material_fronts": [
+        "WIRING_REACHABILITY_ROUTING",
+        "IDENTITY_VERSION_CURRENTNESS",
+        "CONTEXT_INPUT_TRANSPORT",
+        "CONSUMERS_DEPENDENCY_BLAST_RADIUS"
+      ],
+      "defects": {
+        "H05-D1": {
+          "severity": "HIGH",
+          "description": "Receiver version is stale against canonical version."
+        },
+        "H05-D2": {
+          "severity": "HIGH",
+          "description": "Actual route includes a hidden bypass not in declared route."
+        },
+        "H05-D3": {
+          "severity": "MEDIUM_HIGH",
+          "description": "Producer version field is not enforced by receiver."
+        }
+      }
+    }
+  }
+}
