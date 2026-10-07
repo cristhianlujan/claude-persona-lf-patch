@@ -74,5 +74,7 @@
     "optimizer_is_authority": false
   },
   "runtime_activation": false,
-  "automatic_production_activation": false
+  "automatic_production_activation": false,
+  "implementation_plan_ref": "skills/profile_creator/contracts/profile_updater_evolution_plan_v1.json",
+  "plan_completion_rule": "E10_ADMIT_CUTOVER_PLUS_GOVERNED_V02_AUTHORITY_READBACK"
 }
