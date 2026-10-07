@@ -66,7 +66,7 @@ where control_id=1;
 
 select cron.alter_job(
   (select jobid from cron.job where jobname='lf-r5e-validator-compaction-v1'),
-  schedule=>' * * * * *',
+  schedule=>'* * * * *',
   command=>'select programacion.fn_input_validator_compaction_batch_v1(250);',
   active=>true
 );
