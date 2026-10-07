@@ -1,0 +1,435 @@
+{
+  "candidate_logic_head": "52eceeb44e785fae529deb1064c4e8720bbee28b",
+  "case_count": 12,
+  "case_set_id": "A14-FRESH-20261007-V1",
+  "production_activation": false,
+  "results": [
+    {
+      "blocked_scope_ids": [],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-001",
+      "critical_impacts_observed": [
+        "OFFER_PERCENT_RULE"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L1",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.037791,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "PASS",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "UI_RULE"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [
+        "S1"
+      ],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 5,
+      "source_snapshot_ref": "fixture://a14/001",
+      "specialist_refs": [],
+      "verdict": "READY"
+    },
+    {
+      "blocked_scope_ids": [],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-002",
+      "critical_impacts_observed": [
+        "SCHEDULE_INTERACTION"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L2",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.027241,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "PASS",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "UX_BEHAVIOR"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [
+        "S1"
+      ],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 5,
+      "source_snapshot_ref": "fixture://a14/002",
+      "specialist_refs": [
+        "capability://PRODUCT_SCREEN_SPECIALIST@current"
+      ],
+      "verdict": "READY"
+    },
+    {
+      "blocked_scope_ids": [],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-003",
+      "critical_impacts_observed": [
+        "UPLOAD_TABLE_SEMANTICS",
+        "ERROR_DOWNLOAD_FLOW"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L2",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.030096,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "PASS",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "TABLE",
+        "ERROR_FLOW"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [
+        "S1",
+        "S2"
+      ],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 8,
+      "source_snapshot_ref": "fixture://a14/003",
+      "specialist_refs": [
+        "capability://PRODUCT_SCREEN_SPECIALIST@current",
+        "capability://DATA_CONTRACT_SPECIALIST@current"
+      ],
+      "verdict": "READY"
+    },
+    {
+      "blocked_scope_ids": [
+        "S2"
+      ],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-004",
+      "critical_impacts_observed": [
+        "APPROVAL_ACTIONS"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L2",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.031218,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "PASS",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "SPECIALIST_GAP"
+      ],
+      "missing_required_specialists": [
+        "POLICY_SPECIALIST"
+      ],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [
+        "S1"
+      ],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 6,
+      "source_snapshot_ref": "fixture://a14/004",
+      "specialist_refs": [],
+      "verdict": "PARTIAL_READY"
+    },
+    {
+      "blocked_scope_ids": [],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-005",
+      "critical_impacts_observed": [
+        "API_HEADER_CONTRACT"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L2",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.021411,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "PASS",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "API_CONTRACT"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [
+        "S1"
+      ],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 5,
+      "source_snapshot_ref": "fixture://a14/005",
+      "specialist_refs": [],
+      "verdict": "READY"
+    },
+    {
+      "blocked_scope_ids": [],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-006",
+      "critical_impacts_observed": [
+        "SCHEMA_COMPATIBILITY",
+        "MIGRATION_PARITY"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L3",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.022672,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "PASS",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "SCHEMA"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [
+        "S1"
+      ],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 6,
+      "source_snapshot_ref": "fixture://a14/006",
+      "specialist_refs": [],
+      "verdict": "READY"
+    },
+    {
+      "blocked_scope_ids": [
+        "S1"
+      ],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-007",
+      "critical_impacts_observed": [
+        "RULE_READ"
+      ],
+      "currentness_verdict": "STALE_AFFECTED",
+      "depth_level": "L3",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.060554,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "PASS",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "CURRENTNESS"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [
+        "S2"
+      ],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 6,
+      "source_snapshot_ref": "fixture://a14/007",
+      "specialist_refs": [],
+      "verdict": "PARTIAL_READY"
+    },
+    {
+      "blocked_scope_ids": [
+        "S1"
+      ],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-008",
+      "critical_impacts_observed": [
+        "STATE_CONTRADICTION"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L3",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.022583,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "PASS",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "SEMANTIC_CONTRADICTION"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 5,
+      "source_snapshot_ref": "fixture://a14/008",
+      "specialist_refs": [],
+      "verdict": "BLOCKED"
+    },
+    {
+      "blocked_scope_ids": [],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-009",
+      "critical_impacts_observed": [
+        "CAPABILITY_CHANGE",
+        "DOWNSTREAM_CONSUMER_BREAK"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L3",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.024486,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "PASS",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "SECOND_ORDER"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [
+        "S1",
+        "S2"
+      ],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 7,
+      "source_snapshot_ref": "fixture://a14/009",
+      "specialist_refs": [],
+      "verdict": "READY"
+    },
+    {
+      "blocked_scope_ids": [
+        "S1"
+      ],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-010",
+      "critical_impacts_observed": [
+        "HANDOFF_SCHEMA"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L2",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.020829,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "BLOCK",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "HANDOFF"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 5,
+      "source_snapshot_ref": "fixture://a14/010",
+      "specialist_refs": [],
+      "verdict": "BLOCKED"
+    },
+    {
+      "blocked_scope_ids": [
+        "S1"
+      ],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-011",
+      "critical_impacts_observed": [
+        "SUMMARY_PROJECTION"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L2",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.021009,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "BLOCK",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "PROJECTION"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 5,
+      "source_snapshot_ref": "fixture://a14/011",
+      "specialist_refs": [],
+      "verdict": "BLOCKED"
+    },
+    {
+      "blocked_scope_ids": [],
+      "candidate_ref": "analysis://locked",
+      "case_id": "A14-FRESH-012",
+      "critical_impacts_observed": [
+        "METADATA_TRACE"
+      ],
+      "currentness_verdict": "CURRENT",
+      "depth_level": "L1",
+      "depth_reason": "ANALYSIS_DEPTH_POLICY_V1",
+      "duplicate_read_count": 0,
+      "elapsed_ms": 0.021611,
+      "exact_model_or_profile": null,
+      "false_ready_count": 0,
+      "handoff_parity_verdict": "PASS",
+      "input_tokens": null,
+      "material_fronts_observed": [
+        "TRACEABILITY"
+      ],
+      "missing_required_specialists": [],
+      "output_tokens": null,
+      "provider_response_id": null,
+      "ready_scope_ids": [
+        "S1"
+      ],
+      "reinterpretation_required": false,
+      "retry_count": 0,
+      "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "scope_front_consistency_verdict": "PASS",
+      "source_read_count": 5,
+      "source_snapshot_ref": "fixture://a14/012",
+      "specialist_refs": [],
+      "verdict": "READY"
+    }
+  ],
+  "runtime_activation": false,
+  "schema_version": "ANALYSIS_A14_CANDIDATE_RESULT_SET_V1"
+}

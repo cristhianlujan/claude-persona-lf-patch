@@ -1,0 +1,122 @@
+{
+  "schema_version": "ANALYSIS_EVALUATION_CASE_BATCH_V1",
+  "batch_id": "A10-HIST-BATCH-04",
+  "state": "REGISTERED_SOURCE_BOUND_NOT_SCORED",
+  "campaign_contract": "ANALYSIS_EVALUATION_CAMPAIGN_CONTRACT_V1",
+  "holdout_role": "A10_HISTORICAL_ONLY",
+  "excluded_from_A14_fresh_holdout": true,
+  "cases": [
+    {
+      "case_id": "A10-HIST-026",
+      "change_family": "RUNTIME",
+      "source_refs": [
+        "supabase://programacion.fn_engineering_checkpoint_heartbeat_v1"
+      ],
+      "historical_subject": "ENGINEERING_MATERIAL_HEARTBEAT",
+      "material_signals_expected": [
+        "HEALTHY_MATERIAL_EXECUTION_CAN_OUTLIVE_CHAT_UI",
+        "HEARTBEAT_RETURNS_COMPACT_RECEIPT",
+        "ACTION_SPEC_REVALIDATION_PRESERVED",
+        "NO_FULL_BOOTSTRAP_PER_HEARTBEAT"
+      ],
+      "critical_omission_if_missing": [
+        "MATERIAL_EXECUTION_LIVENESS",
+        "HEARTBEAT_COST_BOUNDARY"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-027",
+      "change_family": "GOVERNANCE",
+      "source_refs": [
+        "supabase://programacion.engineering_plan_units/IG_CURATOR_VALIDATOR_REFACTOR_V2",
+        "event://20312",
+        "event://20324"
+      ],
+      "historical_subject": "IG_RUN_HISTORY_REUSE_EFFECTIVENESS_SAMPLE",
+      "material_signals_expected": [
+        "VALID_HISTORY_REUSED_FIRST",
+        "FRESH_SAMPLE_SIZE_THREE",
+        "NO_FULL_RERUN_WITHOUT_TRIGGER",
+        "NEW_CHAT_DOES_NOT_INVALIDATE_HISTORY"
+      ],
+      "critical_omission_if_missing": [
+        "HISTORY_REUSE_POLICY",
+        "NO_UNNECESSARY_FULL_RERUN"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-028",
+      "change_family": "BUG",
+      "source_refs": [
+        "supabase://programacion.engineering_plan_units/M9.11",
+        "supabase://programacion.engineering_work_blockers/22"
+      ],
+      "historical_subject": "IG_SOAK_CURRENTNESS_HISTORY_CONFLATION",
+      "material_signals_expected": [
+        "HISTORICAL_ASOF_ELIGIBILITY_SEPARATE_FROM_LATEST_CURRENTNESS",
+        "VALID_HISTORICAL_OBSERVATION_REUSED",
+        "NO_MULTIPLE_SIMULTANEOUS_CURRENT_SUCCESSORS_REQUIRED",
+        "FRESH_RUNS_ONLY_FOR_REAL_GAPS"
+      ],
+      "critical_omission_if_missing": [
+        "ASOF_HISTORY_CURRENTNESS_SPLIT",
+        "SOAK_HISTORY_REUSE"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-029",
+      "change_family": "BUG",
+      "source_refs": [
+        "supabase://public.lf_eventos/20274",
+        "supabase://lf_ops.reglas_pantallas/9463",
+        "supabase://lf_ops.reglas_pantallas/9464",
+        "decision://DEC-CLIENT-ONB004-WEB-V04-001#114",
+        "github://cristhianlujan/claude-persona-lf-patch/pull/1642"
+      ],
+      "historical_subject": "STORY_ONB004_STALE_EMAIL_OPTIONAL_MAPPING",
+      "material_signals_expected": [
+        "SUPERSEDED_DECISION_RECONCILED",
+        "CURRENT_REQUIRED_EMAIL_AUTHORITY",
+        "DEPENDENT_MAPPING_NOTES_UPDATED",
+        "NO_STALE_OPTIONAL_EMAIL_REFERENCE"
+      ],
+      "critical_omission_if_missing": [
+        "CURRENT_DECISION_AUTHORITY",
+        "DEPENDENT_MAPPING_RECONCILIATION"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-030",
+      "change_family": "RUNTIME",
+      "source_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/main/services/profile_runtime_api/scripts/install.sh",
+        "github://cristhianlujan/claude-persona-lf-patch/main/services/profile_runtime_api/scripts/inspect_vps.sh",
+        "github://cristhianlujan/claude-persona-lf-patch@914f907da64e5f9316f436b9559c393c0444cd86/sandbox/lf_contract_gate_test/runtime_deploy_verification"
+      ],
+      "historical_subject": "POST_PASE_RUNTIME_HOST_DIAGNOSTIC_IN_DEPLOY",
+      "material_signals_expected": [
+        "DEPLOY_PATH_MUST_NOT_FORCE_BROAD_HOST_DIAGNOSTIC",
+        "RUNTIME_VERIFICATION_SEPARATE_FROM_HOST_INVENTORY",
+        "NO_UNRELATED_SERVICE_SCAN",
+        "DEPLOY_EFFECT_SCOPE_BOUNDED"
+      ],
+      "critical_omission_if_missing": [
+        "BROAD_HOST_DIAGNOSTIC_SIDE_EFFECT",
+        "DEPLOY_VERIFICATION_BOUNDARY"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    }
+  ],
+  "batch_guards": {
+    "every_case_has_canonical_source_ref": true,
+    "case_specific_solution_hardcoding_forbidden": true,
+    "depth_scoring_forbidden_until_independent_label": true,
+    "A14_holdout_contamination_forbidden": true,
+    "runtime_activation": false,
+    "production_activation": false
+  }
+}

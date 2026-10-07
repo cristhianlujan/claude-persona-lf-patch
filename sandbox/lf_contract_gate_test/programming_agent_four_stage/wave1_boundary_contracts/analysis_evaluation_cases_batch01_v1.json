@@ -1,0 +1,104 @@
+{
+  "schema_version": "ANALYSIS_EVALUATION_CASE_BATCH_V1",
+  "batch_id": "A10-HIST-BATCH-01",
+  "state": "REGISTERED_SOURCE_BOUND_NOT_SCORED",
+  "campaign_contract": "ANALYSIS_EVALUATION_CAMPAIGN_CONTRACT_V1",
+  "holdout_role": "A10_HISTORICAL_ONLY",
+  "excluded_from_A14_fresh_holdout": true,
+  "cases": [
+    {
+      "case_id": "A10-HIST-001",
+      "change_family": "FEATURE",
+      "source_refs": ["lf_eventos://20397","github://cristhianlujan/claude-persona-lf-patch/pull/1800"],
+      "historical_subject": "PROGRAMMING_AGENT_TARGET_STATE_DESIGN_BINDING_REFINEMENT_V1",
+      "material_signals_expected": [
+        "TARGET_GRANULARITY_REQUIRED",
+        "AUTHORITY_STATE_SEPARATE_FROM_IMPLEMENTATION_STATE",
+        "EXISTING_AUTHORITY_WITH_NEW_IMPLEMENTATION_VALID",
+        "CANONICAL_DESIGN_REF_IS_AUTHORITY",
+        "REUSE_BEFORE_BUILD"
+      ],
+      "critical_omission_if_missing": [
+        "AUTHORITY_IMPLEMENTATION_STATE_SPLIT",
+        "CANONICAL_DESIGN_BINDING"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-002",
+      "change_family": "MIGRATION",
+      "source_refs": ["lf_eventos://20356"],
+      "historical_subject": "PASE-ATOM-F09-S02",
+      "material_signals_expected": [
+        "MIGRATION_SOURCE_PARITY",
+        "POST_PASE_CHAIN",
+        "EXACT_HEAD_CURRENTNESS",
+        "MAIN_DRIFT_REQUIRES_REFRESH"
+      ],
+      "critical_omission_if_missing": [
+        "MIGRATION_SOURCE_PARITY",
+        "EXACT_HEAD_CURRENTNESS"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-003",
+      "change_family": "RUNTIME",
+      "source_refs": ["lf_eventos://20357"],
+      "historical_subject": "PASE-ATOM-F09-S03",
+      "material_signals_expected": [
+        "RUNTIME_APPLICABILITY",
+        "POST_PASE_CHAIN",
+        "EXACT_HEAD_EVIDENCE",
+        "NO_DEPLOY_RESTART_OR_LIVE_RUNTIME_WITHOUT_AUTHORITY"
+      ],
+      "critical_omission_if_missing": [
+        "RUNTIME_APPLICABILITY",
+        "DEPLOY_RESTART_BOUNDARY"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-004",
+      "change_family": "CONCURRENCY_IDEMPOTENCY",
+      "source_refs": ["lf_eventos://20268"],
+      "historical_subject": "PAULO-148",
+      "material_signals_expected": [
+        "CONCURRENT_MATERIAL_CHANGE",
+        "FREEZE_NOT_ALLOWED_WHILE_CONCURRENT_CHANGE_MATERIAL",
+        "CURRENT_PARITY_AND_DEPLOY_NOT_PROVEN",
+        "NO_PROVISIONAL_SHA_INFERENCE"
+      ],
+      "critical_omission_if_missing": [
+        "CONCURRENT_MATERIAL_CHANGE",
+        "FREEZE_BLOCKER"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-005",
+      "change_family": "MODEL_OR_INTELLIGENCE",
+      "source_refs": ["lf_eventos://20373"],
+      "historical_subject": "PROGRAMMING_AGENT_WAVE2_SELECTION_METHOD_CANDIDATE_FREEZE_R2",
+      "material_signals_expected": [
+        "EXACT_HEAD_CANDIDATE_FREEZE",
+        "DETERMINISTIC_VALIDATION",
+        "NO_CHAMPION_PROMOTION_FROM_FREEZE",
+        "NO_RUNTIME_ACTIVATION_FROM_FREEZE"
+      ],
+      "critical_omission_if_missing": [
+        "PROMOTION_BOUNDARY",
+        "RUNTIME_ACTIVATION_BOUNDARY"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    }
+  ],
+  "batch_guards": {
+    "every_case_has_canonical_source_ref": true,
+    "case_specific_solution_hardcoding_forbidden": true,
+    "depth_scoring_forbidden_until_independent_label": true,
+    "A14_holdout_contamination_forbidden": true,
+    "runtime_activation": false,
+    "production_activation": false
+  }
+}

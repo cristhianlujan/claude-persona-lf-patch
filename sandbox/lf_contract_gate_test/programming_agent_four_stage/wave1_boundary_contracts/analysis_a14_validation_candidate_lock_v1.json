@@ -1,0 +1,29 @@
+{
+  "schema_version": "ANALYSIS_A14_VALIDATION_CANDIDATE_LOCK_V1",
+  "state": "LOCKED_FOR_FRESH_VALIDATION",
+  "unit": "A14",
+  "candidate_logic_head": "52eceeb44e785fae529deb1064c4e8720bbee28b",
+  "not_A15_freeze": true,
+  "holdout_materialized_before_lock": false,
+  "holdout_cases_seen_before_lock": 0,
+  "source_bundle": [
+    {"path":"analysis_change_classification_contract_v1.json","blob":"0f07d3603c1bf3e4d2a4b9de5d6c3a3968bb4051"},
+    {"path":"validate_wave1_boundary_contracts_v1.py","blob":"80c3b2e9a2edfcfabe70de9f9d8672a7f95b503c"},
+    {"path":"run_analysis_a14_candidate_v1.py","blob":"175f74dfb39952b730919d1bba230c05775075df"},
+    {"path":"score_analysis_a14_holdout_v1.py","blob":"39f4fd41fe68fcc1ded8cb1936b91e6cddb123ef"}
+  ],
+  "prelock_validation": {
+    "executor": "SentinelX:scalora-vps",
+    "py_compile": "PASS",
+    "wave1_contract_regression": "PASS",
+    "negative_checks": 90,
+    "receipt": "PASS_A14_HARNESS_PREFLIGHT"
+  },
+  "guards": {
+    "candidate_logic_change_after_holdout_forbidden": true,
+    "holdout_used_for_tuning_forbidden": true,
+    "runtime_activation": false,
+    "production_activation": false,
+    "merge": false
+  }
+}

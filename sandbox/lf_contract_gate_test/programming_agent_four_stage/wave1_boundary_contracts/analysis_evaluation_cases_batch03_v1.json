@@ -1,0 +1,222 @@
+{
+  "schema_version": "ANALYSIS_EVALUATION_CASE_BATCH_V1",
+  "batch_id": "A10-HIST-BATCH-03",
+  "state": "REGISTERED_SOURCE_BOUND_NOT_SCORED",
+  "campaign_contract": "ANALYSIS_EVALUATION_CAMPAIGN_CONTRACT_V1",
+  "holdout_role": "A10_HISTORICAL_ONLY",
+  "excluded_from_A14_fresh_holdout": true,
+  "cases": [
+    {
+      "case_id": "A10-HIST-016",
+      "change_family": "BUG",
+      "source_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/input_governance_incremental/m711_neg_mutated_expected_v1.sql",
+        "supabase://public.lf_test_suite_cases/CI-API-04"
+      ],
+      "historical_subject": "IG_M711_EXPECTED_OUTPUT_DRIFT_NEGATIVE",
+      "material_signals_expected": [
+        "EXPECTED_OUTPUT_DRIFT_DETECTED",
+        "GOVERNED_CASE_NOT_MUTATED",
+        "ONE_CASE_SUITE_RECEIPT_VERIFIED",
+        "NEGATIVE_TEST_USES_TYPED_FINDING"
+      ],
+      "critical_omission_if_missing": [
+        "EXPECTED_DRIFT_DETECTION",
+        "CANONICAL_CASE_IMMUTABILITY"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-017",
+      "change_family": "FEATURE",
+      "source_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261007022000_m711_register_gold50_v2.sql",
+        "github://cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_adjudicated_gold_v2.json"
+      ],
+      "historical_subject": "IG_M711_GOLD50_GOVERNED_MATERIALIZATION",
+      "material_signals_expected": [
+        "FIFTY_UNIQUE_CASES_MATERIALIZED",
+        "TEN_FAMILIES_FIVE_CASES_EACH",
+        "SOURCE_BLOB_SHA_PARITY",
+        "AUTHORIZATION_FLAGS_REMAIN_FALSE"
+      ],
+      "critical_omission_if_missing": [
+        "GOVERNED_CORPUS_MATERIALIZATION",
+        "SOURCE_PARITY"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-018",
+      "change_family": "FEATURE",
+      "source_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/input_governance_cross_family/m46_cross_family_detector_cases_v1.sql",
+        "supabase://public.lf_test_suite_cases"
+      ],
+      "historical_subject": "IG_M46_CROSS_FAMILY_DETECTOR_TESTSET",
+      "material_signals_expected": [
+        "EXACT_OWNED_Q4_CASE_SET",
+        "POSITIVE_AND_NEGATIVE_CASE_BALANCE",
+        "ROLLBACK_FIXTURES",
+        "CANONICAL_RUN_TEST_RECEIPT_VERIFIED"
+      ],
+      "critical_omission_if_missing": [
+        "CROSS_FAMILY_CASE_OWNERSHIP",
+        "NEGATIVE_COVERAGE"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-019",
+      "change_family": "GOVERNANCE",
+      "source_refs": [
+        "supabase://public.lf_assurance_defeater_catalog",
+        "supabase://programacion.fn_guard_input_validator_semantic_coherence_v512"
+      ],
+      "historical_subject": "IG_M46_CROSS_FAMILY_DEFEATER_CATALOG",
+      "material_signals_expected": [
+        "REUSE_ASSURANCE_EVALUATOR_DEFEATER_SEMANTICS",
+        "EXACTLY_FIVE_DEFEATERS",
+        "CANDIDATE_NOT_ACTIVE",
+        "ZERO_EFFECT_REQUIRED"
+      ],
+      "critical_omission_if_missing": [
+        "DEFEATER_CATALOG_REUSE",
+        "NO_PREMATURE_ACTIVATION"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-020",
+      "change_family": "BUG",
+      "source_refs": [
+        "supabase://programacion.fn_input_evaluate_assertion",
+        "supabase://programacion.fn_input_resolve_source_ref",
+        "supabase://programacion.engineering_plan_units/IG_CURATOR_VALIDATOR_REFACTOR_V2/M4.5"
+      ],
+      "historical_subject": "INPUT_GOV_VALIDATOR_CURATOR_SOURCE_REF_AUTHORITY",
+      "material_signals_expected": [
+        "VALIDATOR_AUTHORITY_INDEPENDENT_FROM_CURATOR_SOURCE_REFS",
+        "CANONICAL_RESOLVER_ONLY_NON_GRAPH_SOURCE",
+        "FAMILY_AND_GOVERNANCE_RELEVANCE_GATES_REQUIRED",
+        "CURRENT_ASSERTION_SMOKE_REMAINS_GREEN"
+      ],
+      "critical_omission_if_missing": [
+        "VALIDATOR_SOURCE_AUTHORITY",
+        "CURATOR_VALIDATOR_INDEPENDENCE"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-021",
+      "change_family": "FEATURE",
+      "source_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/1800@1aa2ab0f8001c2a9259cc370664e3de08207de2d",
+        "supabase://programacion.fn_decision_context_asof"
+      ],
+      "historical_subject": "PROGRAMMING_ANALYSIS_CONTEXT_SNAPSHOT_HANDOFF",
+      "material_signals_expected": [
+        "COMPACT_RESOLVED_CONTEXT_SNAPSHOT",
+        "APPEND_ONLY_CONTEXT_PERSISTENCE",
+        "PROGRAMMING_REQUERY_ONLY_ON_TYPED_TRIGGER",
+        "NO_FREEFORM_REDISCOVERY"
+      ],
+      "critical_omission_if_missing": [
+        "CONTEXT_SNAPSHOT_HANDOFF",
+        "PERSISTED_ASOF_CONTEXT"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-022",
+      "change_family": "FEATURE",
+      "source_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/1800@06f2cb5c523e66e3ee6e495fc173e3b604cccbe4",
+        "supabase://programacion.engineering_plan_units/PROGRAMMING_AGENT_ANALYSIS_REMEDIATION_V1/A9"
+      ],
+      "historical_subject": "PROGRAMMING_ANALYSIS_SCOPE_READINESS",
+      "material_signals_expected": [
+        "READINESS_PER_INDEPENDENT_SCOPE",
+        "DEPENDENCY_CLOSURE_REQUIRED",
+        "CROSS_CUTTING_BLOCKER_CONTAMINATION_CHECK",
+        "PARTIAL_READY_ONLY_FOR_CLEAN_READY_SCOPES"
+      ],
+      "critical_omission_if_missing": [
+        "SCOPE_LEVEL_READINESS",
+        "PARTIAL_READY_SAFETY"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-023",
+      "change_family": "GOVERNANCE",
+      "source_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/1769@32b3e878caf13ac418091e6f0077764a56ef307f",
+        "lf_eventos://20389"
+      ],
+      "historical_subject": "PROGRAMMING_EXISTING_TARGET_BROWNFIELD_DELTA",
+      "material_signals_expected": [
+        "EXISTING_IMPLEMENTATION_REQUIRES_ASIS_PLUS_DELTA",
+        "AUTHORITY_EXISTENCE_NOT_IMPLEMENTATION_EXISTENCE",
+        "GREENFIELD_FOR_EXISTING_FORBIDDEN",
+        "PG03_STRATEGY_REMAINS_DEFERRED"
+      ],
+      "critical_omission_if_missing": [
+        "BROWNFIELD_DELTA",
+        "AUTHORITY_IMPLEMENTATION_DISTINCTION"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-024",
+      "change_family": "BUG",
+      "source_refs": [
+        "github://cristhianlujan/claude-persona-lf-patch/pull/1773",
+        "supabase://public.lf_capability_current/PRIVACY_MINIMALITY_GUARD",
+        "supabase://supabase_migrations.schema_migrations/20261006134500"
+      ],
+      "historical_subject": "ENGINEERING_ACTION_SPEC_STALE_DELIVERABLE_OVERRIDE",
+      "material_signals_expected": [
+        "STALE_FAIL_CLOSED_OVERRIDE_RECONCILED",
+        "CURRENT_DELIVERABLE_READBACK",
+        "ACTION_SPEC_RECOMPILES_READY",
+        "NO_SYNTHETIC_BLOCK_AFTER_CURRENTNESS"
+      ],
+      "critical_omission_if_missing": [
+        "STALE_OVERRIDE_RECONCILIATION",
+        "CURRENTNESS_READBACK"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    },
+    {
+      "case_id": "A10-HIST-025",
+      "change_family": "BUG",
+      "source_refs": [
+        "supabase://public.lf_independent_assurance_measure_v1",
+        "supabase://public.fn_input_governance_safe_autofix_v1",
+        "supabase://programacion.fn_input_governance_safe_autofix_v1",
+        "supabase://public.lf_independent_strategy_review_record_judge_v1"
+      ],
+      "historical_subject": "INDEPENDENCE_CROSS_SCHEMA_CLOSURE",
+      "material_signals_expected": [
+        "QUALIFIED_SCHEMA_FUNCTION_ROOTS_SUPPORTED",
+        "SAME_SCHEMA_CLOSURE_NOT_SUFFICIENT",
+        "SHARED_DEPENDENCIES_EXPLICIT",
+        "NOT_INDEPENDENT_FAIL_CLOSED"
+      ],
+      "critical_omission_if_missing": [
+        "CROSS_SCHEMA_INDEPENDENCE",
+        "SHARED_DEPENDENCY_CLOSURE"
+      ],
+      "depth_oracle": "PENDING_INDEPENDENT_LABEL"
+    }
+  ],
+  "batch_guards": {
+    "every_case_has_canonical_source_ref": true,
+    "case_specific_solution_hardcoding_forbidden": true,
+    "depth_scoring_forbidden_until_independent_label": true,
+    "A14_holdout_contamination_forbidden": true,
+    "runtime_activation": false,
+    "production_activation": false
+  }
+}
