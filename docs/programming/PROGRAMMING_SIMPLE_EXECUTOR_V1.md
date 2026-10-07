@@ -19,7 +19,7 @@ The executor works on the existing canonical plan/work/checkpoint ledger, but it
 9. A `BLOCKING_AUTOMATIC` validation is admitted only when both the validator and its active resolver have deterministic handlers and proven positive/negative/post-repair test references.
 10. A rule without a deterministic, proven validation is not admitted. It must be replaced with a measurable rule or explicitly modeled as a human decision.
 11. A failure blocks only its owning unit. Other dependency-clear units continue.
-12. No title inference, inherited IG gates, historical PASS reuse, or automatic production/runtime activation.
+12. No title inference, inherited IG gates, prior runtime PASS reuse, or automatic production/runtime activation.
 
 ## Registry
 
@@ -96,7 +96,11 @@ new receipt tied to run + unit + checkpoint
 current PASS/FAIL
 ```
 
-Historical evidence can justify that a procedure is PROVEN/ACTIVE. It cannot satisfy the current checkpoint.
+Qualification evidence may justify that a procedure is PROVEN/ACTIVE. This is not history-of-use for the target unit: it is the validator/resolver's own positive/negative/repair test proof.
+
+A new rule with no prior runtime history is valid: before ACTIVE it runs its qualification tests once and stores their exact `lf_test_runs.test_run_id` values. Runtime admission resolves those exact IDs by primary key; it does not scan prior plan/unit history.
+
+Prior runtime PASS from any other unit/run can never satisfy the current checkpoint.
 
 ## Dependency policy
 
