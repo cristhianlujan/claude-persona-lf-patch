@@ -56,7 +56,7 @@ Every resolver is tied to:
 - resolver test evidence;
 - post-repair validation test evidence.
 
-A resolver never grants PASS.
+A resolver never grants PASS. For `BLOCKING_AUTOMATIC`, execution of the resolver is itself recorded as a current-run resolution receipt bound to the exact FAIL receipt hash. A PASS after a FAIL is rejected unless that receipt exists.
 
 ## Checkpoint binding
 
@@ -77,6 +77,7 @@ READY UNIT
   -> execute validator
        PASS -> record receipt -> transition checkpoint DONE
        FAIL -> resolver (automatic) OR human decision
+                   -> record current resolution receipt
                    -> re-run validator
                    -> PASS -> transition checkpoint DONE
   -> next checkpoint
@@ -94,7 +95,7 @@ reuse validator/resolver implementation
         +
 execute against current state
         +
-new receipt tied to run + unit + checkpoint
+new validation/resolution receipts tied to run + unit + checkpoint
         =
 current PASS/FAIL
 ```
