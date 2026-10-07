@@ -1,0 +1,248 @@
+{
+  "schema": "PROFILE_EVOLUTION_BENCHMARK_CASES_V1",
+  "frozen_case_count": 24,
+  "blind": true,
+  "holdout_required": true,
+  "cases": [
+    {
+      "case_id": "PEB-001",
+      "stratum": "STRUCTURAL_SIMPLE",
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-002",
+      "stratum": "STRUCTURAL_SIMPLE",
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-003",
+      "stratum": "STRUCTURAL_SIMPLE",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-004",
+      "stratum": "STRUCTURALLY_COMPATIBLE_GENERIC",
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-005",
+      "stratum": "STRUCTURALLY_COMPATIBLE_GENERIC",
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-006",
+      "stratum": "STRUCTURALLY_COMPATIBLE_GENERIC",
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-007",
+      "stratum": "AMBIGUOUS",
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-008",
+      "stratum": "AMBIGUOUS",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-009",
+      "stratum": "AMBIGUOUS",
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-010",
+      "stratum": "CAUSAL",
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-011",
+      "stratum": "CAUSAL",
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-012",
+      "stratum": "CAUSAL",
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-013",
+      "stratum": "CRITICAL",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-014",
+      "stratum": "CRITICAL",
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-015",
+      "stratum": "CRITICAL",
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-016",
+      "stratum": "REPEATED_PATTERN",
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-017",
+      "stratum": "REPEATED_PATTERN",
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-018",
+      "stratum": "REPEATED_PATTERN",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-019",
+      "stratum": "NOVEL",
+      "profile_code": "PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531",
+      "profile_slug": "cx_trust_experience_architect_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-020",
+      "stratum": "NOVEL",
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-021",
+      "stratum": "NOVEL",
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-022",
+      "stratum": "EXCELLENT_NO_CHANGE",
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-023",
+      "stratum": "EXCELLENT_NO_CHANGE",
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    },
+    {
+      "case_id": "PEB-024",
+      "stratum": "EXCELLENT_NO_CHANGE",
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "baseline_arm": "UPDATER_V0_1",
+      "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "oracle_state": "SEALED",
+      "scores_materialized": false
+    }
+  ]
+}
