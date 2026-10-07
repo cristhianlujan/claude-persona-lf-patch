@@ -7,13 +7,30 @@
   "classification": {
     "change_type_required": true,
     "change_type_policy": "EVIDENCE_DERIVED_OPEN_CATALOG",
+    "target_granularity_required": true,
+    "target_granularity_policy": "EVIDENCE_DERIVED_OPEN_CATALOG",
+    "target_granularity_hints": [
+      "APP",
+      "SHELL",
+      "MODULE",
+      "SCREEN",
+      "SECTION",
+      "CONTROL",
+      "RULE",
+      "API",
+      "DATA",
+      "WORKFLOW",
+      "OTHER"
+    ],
+    "nested_target_parent_ref_required": true,
     "depth_levels": [
       "L1",
       "L2",
       "L3"
     ],
     "depth_reason_required": true,
-    "evidence_refs_required": true
+    "evidence_refs_required": true,
+    "implementation_state_inference_forbidden": true
   },
   "specialist_resolution": {
     "output_requirements": "specialist_requirements[]",
