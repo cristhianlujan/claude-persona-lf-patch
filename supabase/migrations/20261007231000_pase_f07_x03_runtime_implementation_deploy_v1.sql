@@ -135,7 +135,7 @@ values
 'RETURN_TO_ROUTER','CANDIDATO_READ_ONLY','No host commands from migration; worker-only restart and T3.2 mitigation controls enforced by receipt validator.',
 'EXEC-BOOTSTRAP-PASE-F07-X03-20261007-001','EXEC-BOOTSTRAP-PASE-F07-X03-20261007-001'),
 ('DEPLOY_RUNTIME_IMPLEMENTACION_PERFIL_LF','runtime_sha_readback',90,90,'CONTRACT-PASE-F07-X03-v1','Guarded X03 runtime_sha_readback','[]'::jsonb,
-'DETERMINISTIC_PROFILE_RUNTIME_REFRESH_V1','["runtime_sha","receipt_sha","source_revision","exact_runtime_match","attestation_ref","readback_observed_at"]'::jsonb,
+'public.lf_runtime_impl_deploy_verification_binding_v1','["runtime_sha","receipt_sha","source_revision","exact_runtime_match","attestation_ref","readback_observed_at"]'::jsonb,
 '{"all_required_keys_present":true,"governed_readback":true}'::jsonb,
 '{"missing_required_evidence":true,"governance_drift":true}'::jsonb,
 'BLOCKED_X03_RUNTIME_SHA_READBACK','MINI_JUDGE_X03_RUNTIME_SHA_READBACK_V1',
@@ -220,3 +220,35 @@ exception when others then
 end $fn$;
 comment on function public.lf_runtime_impl_deploy_receipt_check_v1(jsonb) is
  'RUNTIME_DEPLOY_VERIFICATION read-only adapter for LF_RUNTIME_IMPL_DEPLOY_RECEIPT_V1; independent runtime readback required; step90 attestation closes X02-R01; next gate real queue worker job canary bound to exact_head/runtime_sha. Does not execute deploy or canary.';
+
+-- Candidate-only verification entry for the X03 step-90 receipt; this is NOT a deploy.
+-- No attestation authority was found. Until one is governed and bound, status is blocked.
+create or replace function public.lf_runtime_impl_deploy_verification_binding_v1(p_receipt jsonb)
+returns jsonb language plpgsql stable security invoker
+set search_path to 'pg_catalog','public'
+as $binding$
+declare v_check text;
+begin
+ if not exists (
+   select 1 from public.lf_capability_current
+   where capability_code='RUNTIME_DEPLOY_VERIFICATION'
+ ) then
+   return jsonb_build_object('decision','VERIFICATION_FAILED','reason','RUNTIME_DEPLOY_VERIFICATION_NOT_CURRENT');
+ end if;
+ v_check := public.lf_runtime_impl_deploy_receipt_check_v1(p_receipt);
+ if v_check <> 'VERIFICATION_VERIFIED' then
+   return jsonb_build_object('decision','VERIFICATION_FAILED','reason',v_check);
+ end if;
+ -- A well-formed attestation_ref is not evidence of authenticity.
+ -- A governed attestation resolver must be installed before X03 can be activated.
+ return jsonb_build_object('decision','VERIFICATION_FAILED',
+   'reason','ATTESTATION_AUTHORITY_UNBOUND',
+   'step_id','runtime_sha_readback',
+   'work_item','PASE-ATOM-F07-X02-R01',
+   'next_gate','POST_DEPLOY_WORKER_QUEUE_REAL_JOB_CANARY',
+   'runtime_sha',p_receipt->>'runtime_sha');
+end $binding$;
+comment on function public.lf_runtime_impl_deploy_verification_binding_v1(jsonb) is
+ 'X03 read-only step90 binding to runtime verifier currentness and receipt check; fail closed until attestation source is authoritative.';
+
+-- DEBT: authoritative attestation registry/readback remains unresolved; no promotion from draft.
