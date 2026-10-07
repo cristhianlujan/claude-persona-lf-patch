@@ -1366,6 +1366,7 @@ def _run_daemon(idle_seconds: float) -> None:
     conn: psycopg.Connection | None = None
     reconnect_delay = 1.0
     reconnects = 0
+    had_connection = False
     cycles = 0
     work = 0
     _emit_heartbeat(phase="startup")
@@ -1375,7 +1376,9 @@ def _run_daemon(idle_seconds: float) -> None:
             if conn is None or conn.closed:
                 try:
                     conn = _connect()
-                    reconnects += 1
+                    if had_connection:
+                        reconnects += 1
+                    had_connection = True
                 except (psycopg.OperationalError, psycopg.InterfaceError) as exc:
                     print(
                         f"HETZNER_QUEUE_CONNECTION_ERROR={type(exc).__name__}:"
