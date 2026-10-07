@@ -628,7 +628,7 @@ begin
     'policy',jsonb_build_object(
       'dependency_relation','REQUIRES_ONLY',
       'cross_plan_dependencies','FORBIDDEN',
-      'historical_pass_reuse','FORBIDDEN',
+      'prior_runtime_pass_reuse','FORBIDDEN',
       'resolver_can_close_checkpoint',false
     )
   );
@@ -794,7 +794,8 @@ begin
      and r->>'checkpoint_code'=c.checkpoint_code
      and r->>'unit_code'=p_unit_code
      and r->>'plan_code'=p_plan_code
-     and (case when coalesce(r->>'run_id','') ~ '^[0-9]+
+     and jsonb_typeof(r->'run_id')='number'
+     and (r->>'run_id')::bigint=p_run_id then
 
     if r->>'result'='PASS' then
       return jsonb_build_object(
@@ -950,7 +951,7 @@ begin
     'detail',coalesce(p_detail,'{}'::jsonb),
     'observed_at',now(),
     'actor',coalesce(nullif(p_actor,''),'PROGRAMMING_SIMPLE_EXECUTOR_V1'),
-    'historical_pass_reused',false
+    'prior_runtime_pass_reused',false
   );
 
   v_sha:=encode(
@@ -1044,7 +1045,8 @@ begin
      or coalesce(r->>'checkpoint_code','')<>p_checkpoint_code
      or coalesce(r->>'unit_code','')<>p_unit_code
      or coalesce(r->>'plan_code','')<>p_plan_code
-     or (case when coalesce(r->>'run_id','') ~ '^[0-9]+
+     or coalesce(jsonb_typeof(r->'run_id'),'')<>'number'
+     or (r->>'run_id')::bigint is distinct from p_run_id then
     raise exception 'PROGRAMMING_TRANSITION_CURRENT_PASS_REQUIRED';
   end if;
 
@@ -1426,7 +1428,7 @@ where r.id=p_run_id;
 $function$;
 
 comment on table programacion.programming_validation_registry is
-'PROGRAMMING_SIMPLE_EXECUTOR_V1 validation registry. ACTIVE means deterministic and backed by positive+negative proof; historical PASS never satisfies a current checkpoint.';
+'PROGRAMMING_SIMPLE_EXECUTOR_V1 validation registry. ACTIVE means deterministic and backed by positive+negative proof; prior runtime PASS never satisfies a current checkpoint.';
 
 comment on table programacion.programming_resolver_registry is
 'PROGRAMMING_SIMPLE_EXECUTOR_V1 resolver registry. Resolver repairs a validation FAIL but never grants PASS; the validator/post-validator must execute again.';
