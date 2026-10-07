@@ -34,7 +34,8 @@
     "analysis_stop_rule_required": true,
     "implementability_schema_required": true,
     "handoff_parity_receipt_required": true,
-    "snapshot_currentness_decision_required": true
+    "snapshot_currentness_decision_required": true,
+    "decision_context_required": true
   },
   "target_binding": {
     "required_fields": [
@@ -71,6 +72,7 @@
       "preserve[]",
       "material_front_coverage",
       "implementability_schema",
+      "decision_context",
       "analysis_stop_rule",
       "scope_front_matrix[]",
       "scope_readiness[]",
@@ -244,6 +246,16 @@
       "stale_affected_scope_blocks_affected_scope": true,
       "unknown_state_fail_closed": true,
       "worker_projection_invalidated_with_snapshot": true
+    },
+    "decision_context": {
+      "schema_version": "ANALYSIS_DECISION_CONTEXT_V1",
+      "producer_unit": "A5",
+      "contract_ref": "analysis_decision_context_adr_contract_v1.json",
+      "must_preserve_full_artifact": true,
+      "ready_scope_requires_no_unresolved_material_decision": true,
+      "requires_owner_decision_propagates_to_scope_readiness": true,
+      "blocked_adr_propagates_to_scope_readiness": true,
+      "technical_strategy_owned_by": "PG-03"
     }
   },
   "compatibility": {

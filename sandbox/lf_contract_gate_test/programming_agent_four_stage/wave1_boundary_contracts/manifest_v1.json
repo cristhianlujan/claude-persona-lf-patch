@@ -8,6 +8,7 @@
     "A2",
     "A3",
     "A4",
+    "A5",
     "PG-01",
     "TST-01",
     "TST-02",
@@ -25,7 +26,8 @@
     "TST-02": "testing_wave1_design_pipeline_contract_v1.json",
     "TST-03": "testing_wave1_design_pipeline_contract_v1.json",
     "TST-04": "testing_wave1_design_pipeline_contract_v1.json",
-    "TST-05": "shared_change_impact_contract_v1.json"
+    "TST-05": "shared_change_impact_contract_v1.json",
+    "A5": "analysis_decision_context_adr_contract_v1.json"
   },
   "principles": [
     "NO_PARALLEL_ENGINE",
@@ -36,6 +38,7 @@
     "TARGETED_EVIDENCE_NO_OVER_SEARCH",
     "SHARED_CHANGE_IMPACT_CORE_FOR_ANALYSIS_AND_TESTING",
     "LOSSLESS_STAGE_BOUNDARY_PROJECTION",
+    "CONDITIONAL_ADR_WITH_EXISTING_DECISION_AUTHORITY",
     "NO_RUNTIME_OR_PRODUCTION_ACTIVATION"
   ],
   "evidence_refs": [
