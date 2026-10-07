@@ -201,10 +201,39 @@ class HetznerQueueConnectionTest(unittest.TestCase):
         heartbeat.assert_any_call(
             cycles=1,
             work=0,
+            errors=0,
             reconnects=0,
             conn=conn,
         )
 
+
+    def test_daemon_emits_periodic_heartbeat_during_continuous_cycle_errors(self) -> None:
+        conn = FakeConnection()
+        sleeps: list[float] = []
+
+        def sleep(seconds: float) -> None:
+            sleeps.append(seconds)
+            if len(sleeps) == 2:
+                raise StopDaemon()
+
+        with (
+            patch.object(MODULE, "_connect", return_value=conn),
+            patch.object(MODULE, "run_once", side_effect=RuntimeError("db read-only")),
+            patch.object(MODULE.time, "monotonic", side_effect=[0.0, 100.0, 901.0]),
+            patch.object(MODULE.time, "sleep", side_effect=sleep),
+            patch.object(MODULE, "_emit_heartbeat") as heartbeat,
+        ):
+            with self.assertRaises(StopDaemon):
+                MODULE._run_daemon(3.0)
+
+        self.assertEqual(sleeps, [3.0, 6.0])
+        heartbeat.assert_any_call(
+            cycles=0,
+            work=0,
+            errors=2,
+            reconnects=0,
+            conn=conn,
+        )
 
     def test_run_once_reraises_generic_error_after_persisting_failure(self) -> None:
         conn = FakeConnection()
