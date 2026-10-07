@@ -56,26 +56,17 @@
       "mode": "MARKDOWN_SECTIONS",
       "include_sections": [
         "Purpose",
-        "Working method (do this first; the rules below are how the result is checked)",
-        "Claim semantics",
-        "Status semantics",
-        "Required inputs",
-        "Non-negotiable rules",
-        "Claim ceiling",
-        "Closure-proof contract"
+        "Runtime method capsule"
       ],
-      "max_chars": 20000
+      "max_chars": 8000
     },
     "projection_rationale": {
-      "schema_owned_output_shape": true,
-      "deterministic_contract_validation": true,
-      "full_contract_retained_canonical": true,
-      "omitted_from_model_prompt": [
-        "contracts/main_contract.md",
-        "Output trajectory (field order for the typed output)",
-        "Typed output"
-      ],
-      "reason": "Avoid duplicating schema/contract-owned output structure in the 8K model prompt while preserving canonical validation and closure controls."
+      "policy": "PROFILE-RUNTIME-FULL-SOURCE-PROMPT-BLOAT-001",
+      "max_projected_chars": 8000,
+      "full_source_to_model": false,
+      "full_canonical_sources_retained": true,
+      "deterministic_output_contract_retained": true,
+      "note": "Model receives only the semantic execution capsule. Full SKILL/contracts/schemas/validators/judges remain canonical and are enforced outside the prompt."
     }
   }
 }
