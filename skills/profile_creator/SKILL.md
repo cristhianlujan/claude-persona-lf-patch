@@ -103,7 +103,7 @@ Learning Preflight rules:
 
 Structural baseline rules:
 
-- `NO_UPDATE_REQUIRED` means the profile already satisfies all 13 S26 architectural dimensions; do not rewrite it merely to create activity.
+- `NO_UPDATE_REQUIRED` is the legacy S26 evaluator label for a profile that satisfies all 13 architectural dimensions. Interpret it as `STRUCTURALLY_COMPATIBLE`; it does not prove specialization, adaptation, expertise, or evidence-optimized capability.
 - `UPDATE_REQUIRED` means apply only the reported `repair_actions`, preserving the profile's domain semantics and authority.
 - `BLOCKED_AUTHORITY_REQUIRED` means a canonical choice cannot be derived safely (for example, multiple schemas exist and no exact runtime schema is bound). Resolve authority before writing; filename similarity is not authority.
 - A profile update cannot close until the baseline is rerun on the post-write exact head and returns 13/13, in addition to the existing operation contract, validator, evidence, readback and semantic gates.
@@ -162,3 +162,25 @@ Block or return when:
 - RETURN_TO_ORCHESTRATOR
 - RETURN_TO_WORKER_FOR_SELF_REPAIR
 - BLOCK_PIPELINE
+
+
+## Profile Evolution Orchestrator candidate
+
+`ACTUALIZACION_PERFIL_LF` keeps its operational identity for compatibility while the candidate responsibility evolves to `PROFILE_EVOLUTION_ORCHESTRATOR`.
+
+The pre-admission sequence is:
+
+`profile_resolve -> S26 structural baseline -> PROFILE_ASSESSMENT -> evolution mode -> CAPABILITY_SELECTOR + METHOD_PACK_REGISTRY -> evolution plan -> reversible candidate -> benchmark -> challenge/assurance -> admission`.
+
+Only after admission may the existing governed update controls run: regression plan, exact execution binding, profile-source write, exact-head readback, deterministic validation, semantic judge, regression, post-merge reconciliation, evolution-state recording and closure.
+
+Evolution modes are `NO_CHANGE | PATCH | SPECIALIZE | ADAPT | REARCHITECT | OPTIMIZE`.
+`minimal_patch` is mandatory for `PATCH`, not a universal optimization objective. Every non-PATCH mode still requires a bounded evidence-justified delta and preservation constraints.
+
+`PROFILE_ASSESSMENT` and method/capability selection are read-only decision support. They never authorize writes. Research, hostile challenge, evaluator-optimizer and advanced search are conditional methods selected only when typed evidence and budget justify them.
+
+The canonical trajectory contract is `contracts/profile_evolution_state_v1.json`. Learning is governed by `contracts/profile_learning_admission_v1.json`: an execution observation may become a reusable pattern only after repeated evidence, cross-case validation, holdout and admission. Reflection never self-promotes.
+
+E8/E9 optimization is governed by `contracts/profile_evolution_optimization_policy_v1.json` and remains disabled by default. Optimizers propose; holdout measures; assurance challenges; admission decides.
+
+The candidate architecture must not cut over the live v0.1 operation while legacy `ACTUALIZACION_PERFIL_LF` executions are open, because the current common recorder resolves active steps globally. Cutover requires drained legacy executions, benchmark admission and an exact authority migration.
