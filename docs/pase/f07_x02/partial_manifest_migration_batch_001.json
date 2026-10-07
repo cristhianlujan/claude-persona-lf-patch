@@ -1,0 +1,777 @@
+{
+  "schema_version": "pase-f07-x02-partial-manifest/v1",
+  "work_code": "PASE-ATOM-F07-X02",
+  "batch": "MIGRATION_DIRECT_PATH_BATCH_001",
+  "window_total": 417,
+  "classified_before_batch": 0,
+  "classified_in_batch": 95,
+  "classified_total": 95,
+  "disposition_counts": {
+    "VALIDATED_EQUIVALENT": 0,
+    "REVALIDATION_REQUIRED": 95,
+    "NOT_APPLICABLE": 0
+  },
+  "pending": 322,
+  "rows": [
+    {
+      "sha": "1d020d83c7e6c62fd2c178e6309ffafb5918bf8a",
+      "committed_at": "2026-10-07T21:13:09Z",
+      "subject": "fix: reconcile authored-test revision-scope source parity (#1946)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "14698e75909211e5550c8fdaf47501a437a8ac0a",
+      "committed_at": "2026-10-07T21:12:17Z",
+      "subject": "fix: scope authored-test retries by criterion revision (#1945)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "c61bd657a0d0a1948361304322a28bf7b36fa195",
+      "committed_at": "2026-10-07T21:10:02Z",
+      "subject": "fix: reconcile M5.4 authority-negative V3 source parity (#1944)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "d58492f63dbe9afecf45253a375039d7a6b62d7a",
+      "committed_at": "2026-10-07T21:09:13Z",
+      "subject": "Merge pull request #1942 from cristhianlujan/agent/ig-m5-9-validator-receipt-boundary-20261007",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "79ae70dffc881dd78ebccca7976c3099a7704ee5",
+      "committed_at": "2026-10-07T21:09:12Z",
+      "subject": "fix: validate M5.4 authority escape boundary (#1943)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "7aafa8856dfa6ed08de8d2499962ce593ecace84",
+      "committed_at": "2026-10-07T21:03:08Z",
+      "subject": "fix: reconcile M5.4 architectural negative source parity (#1941)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "8b39368c05f508d03fdc28aaef3e5ad09b1f8c06",
+      "committed_at": "2026-10-07T21:02:10Z",
+      "subject": "fix: make M5.4 negative test architectural (#1940)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "eedb462451d603ed0c4d8ae8e4b06e464f2b0259",
+      "committed_at": "2026-10-07T20:07:13Z",
+      "subject": "Merge pull request #1934 from cristhianlujan/agent/ig-m5-6-single-pipeline-20261007",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "f3ef842ae6373811f26842aae8a7bda1e9e8cc91",
+      "committed_at": "2026-10-07T19:44:20Z",
+      "subject": "fix(ig): rebase M5.5 explicit fingerprint on current main (#1923)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "a404c2a6c8cb8f9597b1504d06fd658b137939d1",
+      "committed_at": "2026-10-07T19:35:38Z",
+      "subject": "fix: reconcile M5.4 legacy resolver removal source parity (#1932)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "edaccab3cd08bf75db2b9cbbb02a90f7e8ec2102",
+      "committed_at": "2026-10-07T19:34:33Z",
+      "subject": "fix: remove hardcoded legacy resolver calls from M5.4 curator paths (#1931)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "40d369884a63d7b6b70d01ecd16ff3e103d80f63",
+      "committed_at": "2026-10-07T19:30:46Z",
+      "subject": "Merge pull request #1928 from cristhianlujan/agent/assurance-activation-scope-reconcile-v2-20261007",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "5c2ed7c31b5b045df596acc8a834ab80ce6fc70e",
+      "committed_at": "2026-10-07T19:30:19Z",
+      "subject": "fix: reconcile authored test repair-retest source parity (#1927)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "e201f7dc4def6a0b5b26147a73ee50183517a970",
+      "committed_at": "2026-10-07T19:29:33Z",
+      "subject": "fix: add authored checkpoint test repair-retest loop (#1926)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "6671dd4067dd26e02fca6c1d4e96bb1a7d5fc857",
+      "committed_at": "2026-10-07T19:24:31Z",
+      "subject": "fix: reconcile checkpoint test registrar source parity (#1925)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "8d52f102329227755a8b10d0dd29e9fa768b50f0",
+      "committed_at": "2026-10-07T19:23:45Z",
+      "subject": "fix: add generic checkpoint test case registrar (#1924)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "b999635e2dc2d83974f0fecbf69d5a9f4d063dff",
+      "committed_at": "2026-10-07T19:16:58Z",
+      "subject": "fix: reconcile M5.4 semantic plan source parity (#1918)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "94b1685886a8793bd887c533f116e6e7c3764bb1",
+      "committed_at": "2026-10-07T19:16:10Z",
+      "subject": "feat: wire M5.4 semantic plan to current family registry (#1917)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "8ed1482e5016472b7e51ddc03709420319fcb8e3",
+      "committed_at": "2026-10-07T19:15:34Z",
+      "subject": "IG M5.8: apply gap policy in materializer (#1916)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "e3cd845b516216848e06f721198f1be8850a11d9",
+      "committed_at": "2026-10-07T19:11:55Z",
+      "subject": "IG M5.8: declare versioned gap policy (#1913)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "824fc7f7d0938b80436f1210b24fd2e85238ab0f",
+      "committed_at": "2026-10-07T19:10:35Z",
+      "subject": "fix: reconcile M5.4 migration source parity (#1915)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "b536abcb84bc677ef557ff0c72ae217dfcfec384",
+      "committed_at": "2026-10-07T19:09:05Z",
+      "subject": "feat: wire M5.4 curator to deterministic assess facade (#1914)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "fc5b07325635f2d017e2ff1782bb221ea5a553e7",
+      "committed_at": "2026-10-07T18:15:09Z",
+      "subject": "fix: prevent circular engineering dependencies (#1910)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "faf71e4c700af201c74537e392dfdca0394d19b7",
+      "committed_at": "2026-10-07T18:13:17Z",
+      "subject": "feat(ig): instrument M5.3 one-graph request counters (#1909)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "da9d2010c5c67da2cc8cc15e4b91d21564693cd4",
+      "committed_at": "2026-10-07T18:07:34Z",
+      "subject": "fix(ig): satisfy operational event envelope for M5.3 canary (#1908)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "fa74feafb52a6491c3a712691ac2ce25900892d2",
+      "committed_at": "2026-10-07T17:33:54Z",
+      "subject": "docs(ig): formalize M5.3 request-local canary evidence (#1907)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "0a14a71e7cd498cb07cf8b320af4a5f74350ab34",
+      "committed_at": "2026-10-07T17:25:49Z",
+      "subject": "feat(ig): add M5.3 request-local context (#1905)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "61acb296b1c5789954093d0b2823ebd36ad49cb4",
+      "committed_at": "2026-10-07T16:10:41Z",
+      "subject": "feat(ig): split M5.2 strategy plan from execution (#1903)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "275ce7439344653c0b67bbb5cdad5230f20543a4",
+      "committed_at": "2026-10-07T15:54:57Z",
+      "subject": "fix(ig): bind M6.2 graph receipts to governed producer (#1901)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "1a7bacc0c4f72db44fcc5da198d74dc32edf7a01",
+      "committed_at": "2026-10-07T15:46:07Z",
+      "subject": "feat(ig): emit stable graph receipts for M6.2 (#1900)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "e304141d3423f1a9b4a1c282e0e598f31e9b9cde",
+      "committed_at": "2026-10-07T14:15:51Z",
+      "subject": "fix(engineering): reconcile residual blockers on terminal DONE units (#1897)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "afebca35d57bffdb13be1842ba9a0ffb05d52649",
+      "committed_at": "2026-10-07T14:12:07Z",
+      "subject": "fix(engineering): make blocker reconciliation idempotent (#1896)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "f0745963bc95a068a1cde14384ff5d07759a34ca",
+      "committed_at": "2026-10-07T14:08:20Z",
+      "subject": "fix(engineering): reconcile repaired blockers and freeze successor oracle (#1895)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "3b34cd8aa146a5fd88105d3798c5c74da00d26cd",
+      "committed_at": "2026-10-07T13:29:59Z",
+      "subject": "ENGINEERING: persist failed tests and remove unit lease timebox (#1894)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "922cf405625bb8bb172a19b687c3d24e6ca9170a",
+      "committed_at": "2026-10-07T11:24:37Z",
+      "subject": "Merge PR #1875: allow canonical uppercase profile target paths",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "5dc4acfdc7f7a52731686fcd5d1a4ae8c3d11095",
+      "committed_at": "2026-10-07T06:51:42Z",
+      "subject": "feat(engineering): generic checkpoint repair dispatch v2 (#1879)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "26bd04f6e2829d22928618be014704ef815932bc",
+      "committed_at": "2026-10-07T06:34:58Z",
+      "subject": "fix(engineering): use canonical EKB root-cause family (#1874)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "0ed4e3693e2e1c1b41f05b66a1abea4f4ab8d05c",
+      "committed_at": "2026-10-07T06:34:09Z",
+      "subject": "fix(engineering): route RUN_TEST to executable runner (#1873)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "50d6c2c910620cb5a3ae0d12619b8bcc31f1dcea",
+      "committed_at": "2026-10-07T06:10:35Z",
+      "subject": "IG M4.10 adjudicate shadow divergences via M1.7 authority (#1871)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "b954bfb2ee291f4b99c2f9d3c6da4d8991f1c78b",
+      "committed_at": "2026-10-07T06:03:07Z",
+      "subject": "IG N-18 define fail-closed minimal data contract (#1870)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "144b108d88eeff7c84e3109facd61dda7f310287",
+      "committed_at": "2026-10-07T06:01:16Z",
+      "subject": "IG N-18 bind privacy minimality signal policy (#1869)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "b40d156ee6847e02ada5f37cbce0d7892056d764",
+      "committed_at": "2026-10-07T05:58:01Z",
+      "subject": "IG M4.3 classify validator assertions as SOURCE_INTEGRITY (#1868)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "8bad186bf0a3c0ad5225860e77e0f39c8e4b46b7",
+      "committed_at": "2026-10-07T05:20:13Z",
+      "subject": "ENGINEERING: simplify scheduler to unit-first execution (#1866)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "e5aac3eee1db017360a1c3a3eabbff34e9f39513",
+      "committed_at": "2026-10-07T04:55:55Z",
+      "subject": "ENGINEERING: deterministic contract repair auto hook (#1863)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "442faa4a2137527fc1550a879a20f40877812271",
+      "committed_at": "2026-10-07T04:50:23Z",
+      "subject": "ENGINEERING: compile verification debt to bounded checkpoint tests (#1862)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "baea8c1603bad45b34697b459adfef9f909b9f37",
+      "committed_at": "2026-10-07T04:46:24Z",
+      "subject": "ENGINEERING: make materialization work scheduler-executable (#1861)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "6743a41d284266e2562e5ca62bfdae9a6f254e6a",
+      "committed_at": "2026-10-07T04:35:07Z",
+      "subject": "ENGINEERING: mass-repair terminal and decision contract families (#1860)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "9d9d26e9dae08f721b2813a3cc1c80acb1fa98ac",
+      "committed_at": "2026-10-07T04:13:15Z",
+      "subject": "ENGINEERING: move contract repair to plan reduction prepass (#1859)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "c3bbac3df68615b42fcd5dab2555ed5d49c7cc38",
+      "committed_at": "2026-10-07T03:13:45Z",
+      "subject": "ENGINEERING_PARALLEL_EXECUTOR_V1: 4 carriles (#1854)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "e84ba1232f2c48b8524a9860a4fc4eb8a2b95c99",
+      "committed_at": "2026-10-07T00:08:17Z",
+      "subject": "Merge PR #1836: reproduce frozen 5.13 golden and publish compatibility contract",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "db450fbd802f2890a14de04444e0824601171ee6",
+      "committed_at": "2026-10-06T21:57:36Z",
+      "subject": "Merge pull request #1821 from cristhianlujan/agent/card-independent-assurance-adapter-20261006",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "a374032aef54b90cd7ed51bd29a073a0f13b4a14",
+      "committed_at": "2026-10-06T20:17:42Z",
+      "subject": "Merge pull request #1816 from cristhianlujan/agent/card-create-top-tier-gate-20261006",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "ae52b24bb0e8ad1f8999f0b7bb50d4468558769d",
+      "committed_at": "2026-10-06T19:54:22Z",
+      "subject": "Merge pull request #1810 from cristhianlujan/fix/engineering-contract-sanitation-followup-v1",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "83eaa64228efe743ae222f04f6c410ba1d8c5f38",
+      "committed_at": "2026-10-06T19:53:47Z",
+      "subject": "Merge pull request #1809 from cristhianlujan/reconcile-transversal-adapter-ledger-identity",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "8417a1a43764cb698305e20f9c4393a1498bbb51",
+      "committed_at": "2026-10-06T13:16:59Z",
+      "subject": "T-INDEP: qualified cross-schema closure + caller pin update",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "3ba694239af6feac9c20a7cb699af98bff550596",
+      "committed_at": "2026-10-05T15:20:35Z",
+      "subject": "Align governed relation ACL with engineering executor",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "6b517e9eb5ea4076125a59c85892e342a44022fe",
+      "committed_at": "2026-10-05T15:17:07Z",
+      "subject": "Complete one-time governed writer bootstrap",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "00458d6236ddeca006d0fc9d245bb135506faaa3",
+      "committed_at": "2026-10-05T15:15:53Z",
+      "subject": "Bootstrap governed writer guard through existing owner role",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "b4ba8f5f74c593b7e1192130f1ffbf61bd29a86e",
+      "committed_at": "2026-10-05T15:15:12Z",
+      "subject": "fix(engineering): route generic GitHub artifacts through PR",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "dc9a0ecba1972ddff07e44a8bc3a141c42c690a0",
+      "committed_at": "2026-10-05T15:14:26Z",
+      "subject": "Simplify governed writer authorization",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "dc4560b0b0f509b2a6b93946e7b03f878ee24604",
+      "committed_at": "2026-10-05T14:35:33Z",
+      "subject": "fix(M3.7): governed owner context for SemanticResolution registry",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "2934bff5f9609ca9003bd341a180047f59c3f657",
+      "committed_at": "2026-10-05T14:12:38Z",
+      "subject": "fix(engineering): expects_migration ignora menciones negadas (#1701)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "e2e7443af12c22f58aa164f467923f8c26a0e750",
+      "committed_at": "2026-10-05T13:49:57Z",
+      "subject": "feat(engineering): quitar comparacion numerica titulo vs live (#1700)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "bd02d2cf70f5b4805bafbee22a6c909141022004",
+      "committed_at": "2026-10-05T13:40:30Z",
+      "subject": "feat(engineering): connector_plan con funcion y argumentos de la transicion (#1699)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "4bdfed52e35d1a81a162d4f7000b1fceecdc4b0f",
+      "committed_at": "2026-10-05T13:37:18Z",
+      "subject": "feat(ig): register SemanticResolution typed evidence schema (#1698)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "c6447a1fde046ee46c84ae8ff9c02e9ab2398cae",
+      "committed_at": "2026-10-05T13:36:32Z",
+      "subject": "feat(engineering): contrato de autoria para entregables DB declarados (#1697)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "3d2ec94c3206e7cc2f4465951f5cafb926075b2d",
+      "committed_at": "2026-10-05T13:24:14Z",
+      "subject": "feat(engineering): plan automatico de negativos con control positivo (#1696)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "7c5ddfdea30519301c04e510e2723fd1969ede61",
+      "committed_at": "2026-10-05T13:17:22Z",
+      "subject": "feat(engineering): gate VERIFY_QUERY_ONCE sin consultas y AS-IS drift no bloqueante (#1695)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "edc98513ac0aa10657424c201137d9ef210b91ae",
+      "committed_at": "2026-10-05T12:56:55Z",
+      "subject": "Source parity: engineering_packet_one_statement_per_call_v1 (#1694)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "d88cc95231c75ec6658540c2c4024943823c0901",
+      "committed_at": "2026-10-05T12:31:05Z",
+      "subject": "Mirror migration engineering_recipe_authoring_and_packet_db_deliverable_v1 (#1693)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "0ecacbdab57bc76f2a5c5069d2134b42df4eebcc",
+      "committed_at": "2026-10-05T09:26:47Z",
+      "subject": "IG M3.6: typed uncertainty semantic output",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "eb5f6f775a56653b5069c9facbc12242fca45630",
+      "committed_at": "2026-10-05T09:23:32Z",
+      "subject": "IG M3.5: emit resolver receipt via evidence ledger",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "1f467cbb771372b645378960485ab0931f53eb46",
+      "committed_at": "2026-10-05T09:09:10Z",
+      "subject": "fix: align closure event migration with applied database change (#1687)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "d721f633a7af9c1f694538bd31a5233f4f226611",
+      "committed_at": "2026-10-05T09:05:43Z",
+      "subject": "fix: compile closure checkpoints to canonical event emission (#1686)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "20072247bb944d9b86eabb8529d81348e6cb5b61",
+      "committed_at": "2026-10-05T07:38:50Z",
+      "subject": "IG: compile action specs into execution packets (#1683)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "5857fe16f7570e5aa3416550c9b2cf04fd87cfaa",
+      "committed_at": "2026-10-05T05:30:45Z",
+      "subject": "IG M6.3: persist deterministic assessment digest",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "ec0fb383a208985036223d77d2b6c8aa375e9991",
+      "committed_at": "2026-10-05T04:10:36Z",
+      "subject": "IG M2.8: restore 5.13 parity in deterministic facade",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "7e08f6a00440d5c86ff1a44f15a806feccad5ed6",
+      "committed_at": "2026-10-05T04:05:52Z",
+      "subject": "Merge PR #1668: M2.6 login dependency registry",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "f859ff34dbedba40f81a40dd944779cd96a9fa13",
+      "committed_at": "2026-10-05T04:02:21Z",
+      "subject": "IG M2.8: deterministic assess facade",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "a38792422fcb5075e98986951b91268b51d75b6c",
+      "committed_at": "2026-10-04T21:31:38Z",
+      "subject": "T-DECCTX: canonicalize N-16 binding and terminal closeout",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "20ff6eebf06980e51aa0678bbcf064de797931ac",
+      "committed_at": "2026-10-04T21:11:20Z",
+      "subject": "M7.8: behavior-first fixture selection",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "d656d5ab01d2d8314790ac3e84db41b6e3613bcc",
+      "committed_at": "2026-10-04T17:03:31Z",
+      "subject": "Merge PR #1638: T-EQUIV CONTROL_EQUIVALENCE_JUDGE v1",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "6ba36621ad3e420f81e0fc5b71644267a8e005c3",
+      "committed_at": "2026-10-04T15:20:50Z",
+      "subject": "Merge PR #1622: T-REVJUDGE v1.0.1 currentness guard",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "297663c926de265e4f1c2e32c48c54b36caa936a",
+      "committed_at": "2026-10-04T15:15:38Z",
+      "subject": "Merge PR #1620: T-REVJUDGE independent oracle gate v1.0.1",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "bc3ce9744daeb8de5454db82c75748b7b0964115",
+      "committed_at": "2026-10-04T15:10:49Z",
+      "subject": "Merge PR #1617: T-CONS-ADM source parity",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "21823326d2500e598d292215c92f3bdd6a65a34a",
+      "committed_at": "2026-10-04T15:03:08Z",
+      "subject": "Merge PR #1616: T-CONS-ADM consumer admission",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "d13067fcf23af9729512e6af9d6d67e1232635cf",
+      "committed_at": "2026-10-04T13:49:21Z",
+      "subject": "Merge PR #1607: T-ADMIT manifest contract fix",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "cc88c0b09b47737c7e9e22d16e73b26e8b12e040",
+      "committed_at": "2026-10-04T13:45:57Z",
+      "subject": "Merge PR #1605: T-SELECT CAPABILITY_SELECTOR transversal",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "b4d15bccc39e0c8383bb87a84cce9ae13ba67d1e",
+      "committed_at": "2026-10-04T13:44:44Z",
+      "subject": "Merge PR #1604: T-ADMIT SAFE_CHANGE_ADMISSION transversal v1",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "85bb733e73b9d21222f4e86b618ef1a099208051",
+      "committed_at": "2026-10-04T12:42:32Z",
+      "subject": "M7.6: repair adapter migration Git-ledger version parity (#1598)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "99c6da81d3c2f4281fa73e9c2b5b9a4284661c11",
+      "committed_at": "2026-10-04T12:38:49Z",
+      "subject": "M7.6: thin Gold B adapter to Independent Assurance (#1597)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "6386f70fa975b381ce44993b4ba8f6ae555139e1",
+      "committed_at": "2026-10-04T12:10:14Z",
+      "subject": "M9.1: gobernar baseline 5.13 y autoridad de recuración (#1594)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "c07f6a16d7d270803540a13b9be95dd053f25c43",
+      "committed_at": "2026-10-04T11:36:10Z",
+      "subject": "fix(m7.6): consume external Gold B audit receipts fail-closed (#1590)",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "6dbbf64343df0b876f3b2599a1356f4c33785266",
+      "committed_at": "2026-10-04T07:36:48Z",
+      "subject": "Merge PR #1587: M7.6 Gold B adjudicado independientemente",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    },
+    {
+      "sha": "a2a488d90c6119269b99fdcd7edcc944a68e9d23",
+      "committed_at": "2026-10-04T06:43:00Z",
+      "subject": "M7.3: materializar 91 negative tests 5.13",
+      "disposition": "REVALIDATION_REQUIRED",
+      "cause": "MIGRATION_PATH_CHANGE_DURING_PASE_DISABLED_WINDOW",
+      "evidence_mode": "GIT_PATH_HISTORY_NO_ACTIONS"
+    }
+  ]
+}
