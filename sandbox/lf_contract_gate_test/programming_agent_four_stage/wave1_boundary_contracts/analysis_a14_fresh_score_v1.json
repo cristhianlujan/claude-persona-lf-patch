@@ -1,0 +1,136 @@
+{
+  "case_count": 12,
+  "case_set_id": "A14-FRESH-20261007-V1",
+  "gates": {
+    "classification_accuracy": 1.0,
+    "critical_false_ready": 0,
+    "critical_impacts_omitted": 0,
+    "fresh_or_unseen_variants": true,
+    "handoff_material_parity_rate": 1.0,
+    "lossy_material_projection_count": 0,
+    "material_front_accounting_rate": 1.0,
+    "minimum_product_screen_archetypes": 5,
+    "non_screen_holdout_count": 7,
+    "specialist_failure_count": 0,
+    "usable_without_material_reinterpretation": 1.0
+  },
+  "limits": {
+    "model_provider_not_used": true,
+    "token_usage": null
+  },
+  "per_case": [
+    {
+      "case_id": "A14-FRESH-001",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-002",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-003",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-004",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-005",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-006",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-007",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-008",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-009",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-010",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-011",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    },
+    {
+      "case_id": "A14-FRESH-012",
+      "critical_omitted": [],
+      "depth_match": true,
+      "false_ready_count": 0,
+      "handoff_match": true,
+      "material_fronts_missing": [],
+      "usable_without_reinterpretation": true
+    }
+  ],
+  "production_activation": false,
+  "runtime_activation": false,
+  "schema_version": "ANALYSIS_A14_FRESH_SCORE_V1",
+  "specialist_failures": [],
+  "verdict": "PASS"
+}
