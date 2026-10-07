@@ -1,0 +1,154 @@
+{
+  "schema_version": "ANALYSIS_V1_FREEZE_MANIFEST_V1",
+  "state": "ANALYSIS_V1_FROZEN_CANDIDATE",
+  "plan_code": "PROGRAMMING_AGENT_ANALYSIS_REMEDIATION_V1",
+  "unit": "A15",
+  "work_code": "PA-AN-015",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "pull_request": 1858,
+  "freeze_head": "cf0a935001d66644bbfdccbbaf5a54f0f4aaaa68",
+  "base_main_sha": "e5aac3eee1db017360a1c3a3eabbff34e9f39513",
+  "source_bundle": [
+    {
+      "unit": "A1",
+      "path": "analysis_request_context_v1.schema.json",
+      "blob": "cb6cf1c663da4dc12c1f1a6fabedb6e666836d85"
+    },
+    {
+      "unit": "A2",
+      "path": "analysis_change_classification_contract_v1.json",
+      "blob": "0f07d3603c1bf3e4d2a4b9de5d6c3a3968bb4051"
+    },
+    {
+      "unit": "A3",
+      "path": "analysis_targeted_evidence_contract_v1.json",
+      "blob": "97d06e88b963690202424a2936ae2b7bf597cea7"
+    },
+    {
+      "unit": "A4",
+      "path": "shared_change_impact_contract_v1.json",
+      "blob": "4d38665d7f6da4e556bc05e8ed10489b62ddcc0b"
+    },
+    {
+      "unit": "A6",
+      "path": "analysis_implementability_contract_v1.json",
+      "blob": "d000e6900300e12bcc1e1e56490ca3acf40713d1"
+    },
+    {
+      "unit": "A7",
+      "path": "analysis_material_front_coverage_contract_v1.json",
+      "blob": "a0ef134afc07ed6fcc2385b37212d01e678f0cc6"
+    },
+    {
+      "unit": "A8",
+      "path": "analysis_stop_rule_contract_v1.json",
+      "blob": "4bb7265c985b06e23cc2428c4332187a9330fdae"
+    },
+    {
+      "unit": "A9",
+      "path": "analysis_programming_handoff_parity_contract_v1.json",
+      "blob": "f74fc959975415f28a4ad4e02ad35671b7f4ad23"
+    },
+    {
+      "unit": "A9_PG01",
+      "path": "programming_entry_contract_v1.json",
+      "blob": "3d6ebb52bdd2d6ca3fffbc9ea6e3b9bc85ead026"
+    },
+    {
+      "unit": "VALIDATOR",
+      "path": "validate_wave1_boundary_contracts_v1.py",
+      "blob": "80c3b2e9a2edfcfabe70de9f9d8672a7f95b503c"
+    }
+  ],
+  "empirical_gates": {
+    "A10": {
+      "event_ref": "lf_eventos://20527",
+      "case_count": 30,
+      "critical_omissions": 0,
+      "verdict": "PASS"
+    },
+    "A11": {
+      "event_ref": "lf_eventos://20532",
+      "adversarial_types": 11,
+      "critical_false_ready": 0,
+      "verdict": "PASS"
+    },
+    "A12": {
+      "event_ref": "lf_eventos://20534",
+      "same_sample_cases": 30,
+      "candidate_false_negatives": 0,
+      "verdict": "PASS",
+      "scope": "CONTRACT_MODEL_REPLAY"
+    },
+    "A13": {
+      "event_ref": "lf_eventos://20549",
+      "general_findings_remediated": 1,
+      "case_specific_patch": false,
+      "holdout_contaminated": false,
+      "verdict": "PASS_REMEDIATED"
+    },
+    "A14": {
+      "event_ref": "lf_eventos://20550",
+      "fresh_cases": 12,
+      "classification_accuracy": 1,
+      "critical_impacts_omitted": 0,
+      "critical_false_ready": 0,
+      "material_front_accounting_rate": 1,
+      "handoff_material_parity_rate": 1,
+      "lossy_material_projection_count": 0,
+      "usable_without_material_reinterpretation": 1,
+      "verdict": "PASS"
+    }
+  },
+  "exact_head_validation": {
+    "sentinelx_executor": "scalora-vps",
+    "wave1_contract_regression": "PASS",
+    "negative_checks": 90,
+    "A14_score_replay": "PASS",
+    "github_checks": {
+      "lf-independent-change-admission": "SUCCESS",
+      "ig-runtime-candidate-judge": "SUCCESS",
+      "PASE": "SKIPPED_NOT_APPLICABLE",
+      "MIGRATION_SOURCE_PARITY": "SKIPPED_NOT_APPLICABLE"
+    },
+    "pr_mergeable": true
+  },
+  "capability_currentness": [
+    {
+      "capability_code": "CURRENTNESS_AUTHORITY",
+      "version": "1.0.0",
+      "manifest_sha256": "9f715dc226fd55a60c4002fa1960f848c4bf39e80b8863792eeef451073fce09",
+      "state": "ACTIVE_CURRENT_RELEASED"
+    },
+    {
+      "capability_code": "PLAN_AUTHORITY_DRIFT_GUARD",
+      "version": "1.0.0",
+      "manifest_sha256": "1cacbd3f235723406e1d85457c8474b540be703bf127a35ff0fc41223cf47272",
+      "state": "ACTIVE_CURRENT_RELEASED"
+    },
+    {
+      "capability_code": "FINAL_EVIDENCE",
+      "version": "1.0.0",
+      "manifest_sha256": "58db161eeec6361f1fcc59221a0c3c5079fe12bb8c6a08556646d5459a6f8e4e",
+      "state": "ACTIVE_CURRENT_RELEASED"
+    }
+  ],
+  "architecture_guards": {
+    "no_parallel_engine": true,
+    "capabilities_supply_governed_signals_and_controls_not_target_model_authority": true,
+    "specialist_selection_is_execution_permission": false,
+    "analysis_does_not_choose_programming_implementation_strategy": true,
+    "direct_story_consumption_after_cutover_forbidden": true,
+    "runtime_activation": false,
+    "production_activation": false
+  },
+  "story_retirement_boundary": {
+    "analysis_v1_frozen": true,
+    "story_retirement_authorized": false,
+    "reason": "Story retirement remains gated by Programming and Testing replacement freezes plus ASSET_RETIREMENT_GOVERNANCE readback.",
+    "programming_analysis_package_consumer_frozen_required": true,
+    "testing_story_test_deriver_rehome_frozen_required": true,
+    "all_applicable_specialist_responsibilities_rehomed_required": true
+  },
+  "merge_performed": false
+}
