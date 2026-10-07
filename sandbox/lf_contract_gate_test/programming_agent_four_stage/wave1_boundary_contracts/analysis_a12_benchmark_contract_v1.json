@@ -1,6 +1,6 @@
 {
   "schema_version": "ANALYSIS_CONTROLLED_BENCHMARK_V1",
-  "state": "REGISTERED_BASELINE_BOUND_NOT_EXECUTED",
+  "state": "REGISTERED_BASELINE_BOUND_READY_FOR_CONTRACT_REPLAY",
   "unit": "A12",
   "exit_criterion": "Comparación reproducible contra baseline",
   "work_code": "PA-AN-012",
@@ -8,7 +8,10 @@
     "same_sample_required": true,
     "sample_ref": "TS-PROGRAMMING-ANALYSIS-A10-HIST-V1",
     "case_count": 30,
-    "case_id_range": ["A10-HIST-001", "A10-HIST-030"],
+    "case_id_range": [
+      "A10-HIST-001",
+      "A10-HIST-030"
+    ],
     "oracle_basis": "A10_CRITICAL_OMISSION_EXPECTATIONS"
   },
   "baseline": {
@@ -19,11 +22,26 @@
     "source_contract": "skills/creating-integral-user-stories/SKILL.md",
     "source_contract_blob": "0c20dbc4d5d2504e92ce1236677f92bef59b681f",
     "worker_sources": [
-      {"path":"skills/creating-integral-user-stories/agents/screen-decomposer.md","blob":"9fef6fc4f4e7b712fa57cee316eeaed1933b3850"},
-      {"path":"skills/creating-integral-user-stories/agents/story-core-author.md","blob":"d18e5119552ba3a43e1d04b1bd336a8beeace55b"},
-      {"path":"skills/creating-integral-user-stories/agents/cross-cutting-enricher.md","blob":"ce6e942de41ca693b2680406018ba32124742e02"},
-      {"path":"skills/creating-integral-user-stories/agents/field-contract-author.md","blob":"f36075ef461b6af4a8a57e221e4247e191bf4b1a"},
-      {"path":"skills/creating-integral-user-stories/agents/test-deriver.md","blob":"4cc11ef2e5c5126b29bed366b0e98745f1c1e18f"}
+      {
+        "path": "skills/creating-integral-user-stories/agents/screen-decomposer.md",
+        "blob": "9fef6fc4f4e7b712fa57cee316eeaed1933b3850"
+      },
+      {
+        "path": "skills/creating-integral-user-stories/agents/story-core-author.md",
+        "blob": "d18e5119552ba3a43e1d04b1bd336a8beeace55b"
+      },
+      {
+        "path": "skills/creating-integral-user-stories/agents/cross-cutting-enricher.md",
+        "blob": "ce6e942de41ca693b2680406018ba32124742e02"
+      },
+      {
+        "path": "skills/creating-integral-user-stories/agents/field-contract-author.md",
+        "blob": "f36075ef461b6af4a8a57e221e4247e191bf4b1a"
+      },
+      {
+        "path": "skills/creating-integral-user-stories/agents/test-deriver.md",
+        "blob": "4cc11ef2e5c5126b29bed366b0e98745f1c1e18f"
+      }
     ],
     "known_output_boundary": "STORY_PACK_A_Q",
     "runtime_state": "DISABLED",
@@ -50,36 +68,42 @@
     },
     "overanalysis": {
       "required": true,
+      "metric_kind": "STRUCTURAL_PROXY",
       "fields": [
-        "material_fronts_evaluated",
-        "non_material_fronts_evaluated",
-        "overanalysis_count"
+        "fixed_domain_burden_per_applicable_case",
+        "evidence_triggered_front_policy",
+        "structural_overanalysis_proxy_count"
       ],
-      "score_rule": "Count only work performed on a front not supported by the case material signals; do not use fixed source-file count as a proxy."
+      "score_rule": "Measure fixed mandatory analysis domains imposed independently of case evidence versus evidence-triggered/open-catalog material fronts. This is a structural overanalysis proxy, not a claim about model token use."
     },
     "reads": {
       "required": true,
+      "metric_kind": "EXACT_SOURCE_REPLAY",
       "fields": [
         "source_access_count",
         "duplicate_source_access_count"
       ],
-      "score_rule": "Count actual material source resolutions from the execution trace; do not infer reads from declared references."
+      "score_rule": "Count actual exact-source reads performed by the replay harness with per-arm cache reset; do not infer reads from declared references."
     },
     "time": {
       "required": true,
+      "metric_kind": "EXACT_SOURCE_REPLAY",
       "fields": [
-        "elapsed_ms"
+        "p50_ms",
+        "p95_ms",
+        "p99_ms"
       ],
       "benchmark_capability": "PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0",
-      "score_rule": "Measure actual benchmark execution; do not synthesize model latency or token usage."
+      "score_rule": "Measure exact-source contract replay using time.perf_counter_ns. This does not claim model-inference latency."
     },
     "downstream_reinterpretation": {
       "required": true,
+      "metric_kind": "CONTRACT_ADMISSION",
       "fields": [
-        "reinterpretation_required",
-        "reinterpretation_reason"
+        "reinterpretation_required_cases",
+        "direct_admission_compatible_cases"
       ],
-      "score_rule": "Evaluate against PG-01 admission contract on the exact arm output, not by narrative equivalence."
+      "score_rule": "Evaluate exact arm output boundary against the current PG-01 admission contract. Legacy Story output cannot be treated as Analysis package by narrative equivalence."
     }
   },
   "execution": {
@@ -96,7 +120,11 @@
       "downstream_reinterpretation"
     ],
     "missing_metric_behavior": "A12_REMAINS_IN_PROGRESS",
-    "token_estimation_forbidden": true
+    "token_estimation_forbidden": true,
+    "benchmark_scope": "CONTRACT_MODEL_REPLAY",
+    "model_inference_latency_claimed": false,
+    "runtime_execution_required": false,
+    "legacy_runtime_reactivation_required": false
   },
   "guards": {
     "legacy_runtime_reactivation_forbidden": true,
