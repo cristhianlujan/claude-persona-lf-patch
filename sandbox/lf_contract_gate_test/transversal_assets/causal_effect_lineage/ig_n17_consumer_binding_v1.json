@@ -9,5 +9,16 @@
   "execution_authorized": false,
   "unit_executed_by_binding": false,
   "boundary_proof": "ASYNC_JOB",
-  "receiver_readback_required": true
+  "receiver_readback_required": true,
+  "assertion_contract": {
+    "mode": "REPOSITORY_CAPABILITY_VALIDATED_OUTPUT",
+    "pass_when": {
+      "state": "LINKED",
+      "business_authority": false,
+      "execution_permission": false
+    },
+    "required_nonempty_fields": [
+      "causal_edge_digest"
+    ]
+  }
 }
