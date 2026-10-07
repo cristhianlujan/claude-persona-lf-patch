@@ -30,7 +30,8 @@ assert "Status semantics" in include
 assert "Non-negotiable rules" in include
 assert "Closure-proof contract" in include
 assert len(projected) <= 18000, len(projected)
+assert projection["max_chars"] == 8000
 assert len(projected) <= projection["max_chars"]
 assert (ROOT/"contracts/main_contract.md").is_file()
 assert (ROOT/"schemas/output.schema.json").is_file()
-print(f"PASS_SRCR_RUNTIME_CONTEXT_BUDGET=10/10 projected_chars={len(projected)}")
+print(f"PASS_SRCR_RUNTIME_CONTEXT_BUDGET=19/19 projected_chars={len(projected)}")
