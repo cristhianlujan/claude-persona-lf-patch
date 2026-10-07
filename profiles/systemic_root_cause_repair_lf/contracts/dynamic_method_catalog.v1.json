@@ -222,9 +222,11 @@
       "OTHERWISE=>SYSTEMIC_REPAIR_SPEC"
     ],
     "canonical_projection": {
-      "rule": "MATERIAL_INTERNAL_OPEN_ITEM=>DESIGN_BLOCKING_CURRENT_UNCERTAINTY_PLUS_BLOCKING_CODE",
+      "rule": "ANY_NEEDS_MORE_EVIDENCE_REASON=>DESIGN_BLOCKING_CURRENT_UNCERTAINTY_PLUS_BLOCKING_CODE",
       "preserves_public_v06_contract": true
-    }
+    },
+    "pipeline_blocking_field": "pipeline_blocking_codes",
+    "ordinary_blocking_codes_action": "NEEDS_MORE_EVIDENCE_WITH_CANONICAL_DESIGN_BLOCKING_PROJECTION"
   },
   "method_revision": "SRCR_V0_7R1",
   "source_candidate": {
