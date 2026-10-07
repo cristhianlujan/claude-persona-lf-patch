@@ -606,7 +606,7 @@ begin
   )
   select
     count(*) filter(where s->>'status'='BLOCK_MATERIALIZATION_CONTRACT_REQUIRED'),
-    count(*) filter(where s->>'precision'='BOUNDED_IMPLEMENTATION_AUTHORING_V1' and s->>'status'='READY')
+    count(*) filter(where s->>'contract_family'='BOUNDED_IMPLEMENTATION_AUTHORING' and s->>'status'='READY')
   into v_generic,v_ready_authoring
   from x;
 
