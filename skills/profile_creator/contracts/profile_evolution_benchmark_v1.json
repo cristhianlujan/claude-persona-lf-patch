@@ -1,0 +1,48 @@
+{
+  "schema": "PROFILE_EVOLUTION_BENCHMARK_V1",
+  "design": "PAIRED_BLIND_CURRENT_VS_EVOLUTION",
+  "corpus": {
+    "minimum_cases": 20,
+    "target_cases": 50,
+    "strata": [
+      "STRUCTURAL_SIMPLE",
+      "STRUCTURALLY_COMPATIBLE_GENERIC",
+      "AMBIGUOUS",
+      "CAUSAL",
+      "CRITICAL",
+      "REPEATED_PATTERN",
+      "NOVEL",
+      "EXCELLENT_NO_CHANGE"
+    ]
+  },
+  "metrics": [
+    "primary_capability_score",
+    "defects_detected",
+    "false_findings",
+    "capability_selection_accuracy",
+    "unnecessary_capabilities",
+    "strategy_fit",
+    "task_capability_uplift",
+    "preservation",
+    "false_improvement_rate",
+    "critical_regressions",
+    "holdout_performance",
+    "human_interventions",
+    "tokens",
+    "tool_calls",
+    "latency",
+    "escalation_accuracy"
+  ],
+  "admission_rule": {
+    "primary_capability_score": "UP",
+    "holdout_performance": "UP",
+    "critical_regressions": 0,
+    "false_pass": "NOT_WORSE",
+    "valid_behavior": "PRESERVED",
+    "cost_latency": "WITHIN_FROZEN_BUDGET",
+    "independent_assurance": "PASS",
+    "paired_uncertainty": "PREDEFINED_INTERVAL_REQUIRED"
+  },
+  "no_fixed_uplift_threshold_until_baseline_frozen": true,
+  "optimizer_auto_admission": false
+}
