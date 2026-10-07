@@ -154,6 +154,7 @@
     "pending_packet_must_not_be_hidden_inside_generic_blockers": true,
     "resolvable_evidence_gap_must_not_be_routed_to_human": true,
     "missing_implementation_alone_must_not_be_routed_to_human": true,
-    "programming_strategy_choice_must_not_be_routed_to_human": true
+    "programming_strategy_choice_must_not_be_routed_to_human": true,
+    "a9_projection_target": "programming_context_snapshot.human_decision_queue[]"
   }
 }

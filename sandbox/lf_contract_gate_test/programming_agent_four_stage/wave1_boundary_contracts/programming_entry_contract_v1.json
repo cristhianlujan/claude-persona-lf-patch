@@ -76,6 +76,7 @@
       "analysis_stop_rule",
       "scope_front_matrix[]",
       "scope_readiness[]",
+      "human_decision_queue[]",
       "package_readiness",
       "unresolved_material_items[]",
       "source_refs[]",
@@ -144,7 +145,12 @@
       "latest_mutable_reinterpretation_forbidden": true,
       "authority_copy_forbidden": true,
       "canonical_refs_and_resolved_evidence_only": true,
-      "new_snapshot_store_forbidden": true
+      "new_snapshot_store_forbidden": true,
+      "programming_record_entrypoint": "programacion.fn_programming_context_record_v1",
+      "programming_resolve_entrypoint": "programacion.fn_programming_context_resolve_v1",
+      "programming_payload_validator": "programacion.fn_programming_context_snapshot_validate_v1",
+      "programming_consumer_must_use_guarded_wrapper": true,
+      "direct_generic_record_for_programming_consumer_forbidden": true
     },
     "transport_policy": {
       "small_material_stable": "INLINE_RESOLVED_VALUE_PLUS_CANONICAL_REF",
@@ -259,6 +265,34 @@
       "technical_strategy_owned_by": "PG-03",
       "current_existing_decision_resolution_required": true,
       "pending_human_decision_packets_must_be_preserved": true
+    },
+    "human_decision_queue_contract": {
+      "schema_version": "ANALYSIS_HUMAN_DECISION_QUEUE_V1",
+      "required_fields": [
+        "decision_code",
+        "scope_refs[]",
+        "material_question",
+        "options[]",
+        "recommendation",
+        "risk_if_deferred",
+        "authority_refs[]",
+        "evidence_refs[]",
+        "currentness_refs[]",
+        "owner_scope",
+        "resume_condition",
+        "status"
+      ],
+      "status_values": [
+        "PENDING_OWNER_DECISION",
+        "RESOLVED"
+      ],
+      "always_present_even_when_empty": true,
+      "pending_only_for_true_owner_decision": true,
+      "existing_current_decision_forbids_duplicate_pending_item": true,
+      "missing_implementation_alone_forbids_pending_item": true,
+      "pending_item_owner_scope_must_be_super_admin": true,
+      "requires_decision_scope_must_have_matching_pending_item": true,
+      "ready_scope_must_not_have_pending_item": true
     }
   },
   "compatibility": {

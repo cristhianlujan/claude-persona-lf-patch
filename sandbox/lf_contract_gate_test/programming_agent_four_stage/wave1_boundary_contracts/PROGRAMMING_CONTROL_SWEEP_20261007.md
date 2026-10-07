@@ -33,3 +33,29 @@ Current candidate self-test:
 PASS ... human_decision_routing=PASS implementation_absence_semantics=PASS a9_package=PASS solution_partition=PASS context_budget=PASS control_completeness=PASS negatives=122
 
 No runtime or production activation. No merge.
+
+
+## Runtime payload conformance finding
+
+The sweep found a deeper gap than the original B2B blocker classification: the generic DECISION_CONTEXT_ASOF payload validator validates the outer immutable context envelope, but it does not validate the semantic shape of extensions.programming_context_snapshot.
+
+The persisted B2B shell context therefore passed the generic store even though its snapshot is structurally incomplete against the current Analysis contracts: scope_front_matrix is empty, material fronts are skeletal, and implementability/decision artifacts are summaries rather than the full typed contracts.
+
+Candidate repair:
+
+- programacion.fn_programming_context_snapshot_validate_v1
+- programacion.fn_programming_context_record_v1
+- programacion.fn_programming_context_resolve_v1
+
+These wrappers reuse the existing DECISION_CONTEXT_ASOF store and block Programming admission when the typed snapshot is incomplete. No new store is introduced.
+
+Rollback-only Supabase probe:
+- historical B2B snapshot: BLOCKED as expected;
+- synthetic structurally complete snapshot: VALID as expected;
+- candidate functions after rollback: 0.
+
+Evidence: programming_context_runtime_guard_probe_v1.json.
+
+## Human decision queue
+
+PROGRAMMING_CONTEXT_SNAPSHOT_V1 now requires human_decision_queue[] even when empty. Every REQUIRES_DECISION scope must have a matching pending SUPER_ADMIN packet; a READY scope may not carry a pending owner decision. This prevents human decisions from disappearing inside generic blockers.

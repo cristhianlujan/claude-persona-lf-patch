@@ -1,0 +1,18 @@
+{
+  "schema_version": "PROGRAMMING_CONTEXT_RUNTIME_GUARD_PROBE_V1",
+  "mode": "TRANSACTIONAL_ROLLBACK_ONLY",
+  "subject": "B2B_APP_SHELL",
+  "historical_context_id": "38a8f5c8-a6f3-45d6-b1ee-823af130e647",
+  "historical_snapshot_result": "BLOCKED_AS_EXPECTED",
+  "historical_reason": "Persisted B2B snapshot predates runtime payload conformance and omits mandatory programming snapshot structure.",
+  "synthetic_complete_snapshot_result": "VALID_AS_EXPECTED",
+  "post_probe_live_candidate_function_count": 0,
+  "runtime_activation": false,
+  "production_activation": false,
+  "migration_ref": "supabase/migrations/20261007183500_programming_context_snapshot_runtime_guard_v1.sql",
+  "notes": [
+    "Generic DECISION_CONTEXT_ASOF outer validation is reused.",
+    "Programming-specific payload conformance is enforced by a guarded wrapper.",
+    "No new context store is created."
+  ]
+}

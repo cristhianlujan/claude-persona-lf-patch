@@ -98,13 +98,22 @@
     "A9_PACKAGE_MATERIALIZATION": "analysis_implementation_package_contract_v1.json",
     "SOLUTION_PARTITION": "programming_solution_partition_contract_v1.json",
     "CONTEXT_BUDGET": "programming_context_budget_contract_v1.json",
-    "PROGRAMMING_CONFLICT_ROUTING": "programming_human_decision_routing_contract_v1.json"
+    "PROGRAMMING_CONFLICT_ROUTING": "programming_human_decision_routing_contract_v1.json",
+    "RUNTIME_PAYLOAD_CONFORMANCE": "programacion.fn_programming_context_snapshot_validate_v1"
   },
   "completeness_gate": {
     "plan_only_control_is_not_implemented": true,
     "every_covered_unit_must_have_source_contract": true,
     "every_covered_unit_must_have_validator": true,
     "runtime_or_human_action_control_requires_receipt_contract": true,
-    "missing_contract_or_validator_fails_closed": true
-  }
+    "missing_contract_or_validator_fails_closed": true,
+    "source_contract_without_runtime_payload_conformance_is_not_execution_proof": true,
+    "runtime_payload_conformance_source_must_exist": true
+  },
+  "runtime_payload_conformance_source_ref": "supabase/migrations/20261007183500_programming_context_snapshot_runtime_guard_v1.sql",
+  "runtime_payload_conformance_functions": [
+    "programacion.fn_programming_context_snapshot_validate_v1",
+    "programacion.fn_programming_context_record_v1",
+    "programacion.fn_programming_context_resolve_v1"
+  ]
 }

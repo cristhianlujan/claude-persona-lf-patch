@@ -40,7 +40,7 @@ def validate_programming_entry(o):
     if tb.get("implementation_strategy_owned_by")!="PG-03": raise ContractError("PROGRAMMING_STRATEGY_OWNER")
     s=o.get("programming_context_snapshot",{})
     if s.get("schema_version")!="PROGRAMMING_CONTEXT_SNAPSHOT_V1" or s.get("assembled_by")!="A9" or s.get("material_bindings_prepared_by")!="A6": raise ContractError("PROGRAMMING_CONTEXT_SNAPSHOT_IDENTITY")
-    required_snapshot={"objective","target","target_granularity","authority_state","implementation_state","requirements[]","authority_bindings[]","applicable_rules[]","applicable_invariants[]","preserve[]","material_front_coverage","implementability_schema","decision_context","analysis_stop_rule","scope_front_matrix[]","scope_readiness[]","package_readiness","unresolved_material_items[]","source_refs[]","currentness_refs[]","snapshot_schema_digest_sha256","authority_fingerprint_sha256","source_snapshot_sha256"}
+    required_snapshot={"objective","target","target_granularity","authority_state","implementation_state","requirements[]","authority_bindings[]","applicable_rules[]","applicable_invariants[]","preserve[]","material_front_coverage","implementability_schema","decision_context","analysis_stop_rule","scope_front_matrix[]","scope_readiness[]","human_decision_queue[]","package_readiness","unresolved_material_items[]","source_refs[]","currentness_refs[]","snapshot_schema_digest_sha256","authority_fingerprint_sha256","source_snapshot_sha256"}
     if set(s.get("required_fields",[]))!=required_snapshot: raise ContractError("PROGRAMMING_CONTEXT_SNAPSHOT_FIELDS")
     mfc=s.get("material_front_coverage",{})
     if mfc.get("schema_version")!="MATERIAL_FRONT_COVERAGE_V1" or mfc.get("producer_unit")!="A7": raise ContractError("PROGRAMMING_MATERIAL_FRONT_COVERAGE_IDENTITY")
@@ -76,6 +76,12 @@ def validate_programming_entry(o):
     pr=s.get("package_readiness_contract",{})
     if set(pr.get("values",[]))!={"READY","PARTIAL_READY","NEED_MORE_EVIDENCE","REQUIRES_DECISION","BLOCKED"}: raise ContractError("PROGRAMMING_PACKAGE_READINESS_VALUES")
     if pr.get("partial_ready_requires_at_least_one_ready_scope") is not True or pr.get("partial_ready_requires_independent_execution_boundary") is not True or pr.get("partial_ready_forbidden_when_cross_cutting_material_blocker_affects_ready_scope") is not True: raise ContractError("PROGRAMMING_PARTIAL_READY_GUARDS")
+    hdq=s.get("human_decision_queue_contract",{})
+    if hdq.get("schema_version")!="ANALYSIS_HUMAN_DECISION_QUEUE_V1": raise ContractError("PROGRAMMING_HUMAN_QUEUE_IDENTITY")
+    hdq_fields={"decision_code","scope_refs[]","material_question","options[]","recommendation","risk_if_deferred","authority_refs[]","evidence_refs[]","currentness_refs[]","owner_scope","resume_condition","status"}
+    if set(hdq.get("required_fields",[]))!=hdq_fields or set(hdq.get("status_values",[]))!={"PENDING_OWNER_DECISION","RESOLVED"}: raise ContractError("PROGRAMMING_HUMAN_QUEUE_FIELDS")
+    for k in ("always_present_even_when_empty","pending_only_for_true_owner_decision","existing_current_decision_forbids_duplicate_pending_item","missing_implementation_alone_forbids_pending_item","pending_item_owner_scope_must_be_super_admin","requires_decision_scope_must_have_matching_pending_item","ready_scope_must_not_have_pending_item"):
+        if hdq.get(k) is not True: raise ContractError("PROGRAMMING_HUMAN_QUEUE_"+k)
     ps=s.get("persistence",{})
     expected_persistence={
         "required":True,
@@ -95,6 +101,11 @@ def validate_programming_entry(o):
         "authority_copy_forbidden":True,
         "canonical_refs_and_resolved_evidence_only":True,
         "new_snapshot_store_forbidden":True,
+        "programming_record_entrypoint":"programacion.fn_programming_context_record_v1",
+        "programming_resolve_entrypoint":"programacion.fn_programming_context_resolve_v1",
+        "programming_payload_validator":"programacion.fn_programming_context_snapshot_validate_v1",
+        "programming_consumer_must_use_guarded_wrapper":True,
+        "direct_generic_record_for_programming_consumer_forbidden":True,
     }
     for k,v in expected_persistence.items():
         if ps.get(k)!=v: raise ContractError("PROGRAMMING_CONTEXT_PERSISTENCE_"+k)
@@ -179,6 +190,7 @@ def validate_analysis_decision_context(o):
     if set(hr.get("required_packet_fields",[]))!=req_packet or set(hr.get("status_values",[]))!={"PENDING_OWNER_DECISION","RESOLVED"}: raise ContractError("A5_HUMAN_ROUTING_PACKET")
     for k in ("recommendation_required","options_required","pending_packet_must_be_exposed_in_a9_output","pending_packet_must_not_be_hidden_inside_generic_blockers","resolvable_evidence_gap_must_not_be_routed_to_human","missing_implementation_alone_must_not_be_routed_to_human","programming_strategy_choice_must_not_be_routed_to_human"):
         if hr.get(k) is not True: raise ContractError("A5_HUMAN_ROUTING_"+k)
+    if hr.get("a9_projection_target")!="programming_context_snapshot.human_decision_queue[]": raise ContractError("A5_HUMAN_ROUTING_PROJECTION")
     if o.get("no_parallel_engine") is not True or o.get("runtime_activation") is not False or o.get("production_activation") is not False: raise ContractError("A5_ACTIVATION")
 
 def validate_material_front_coverage(o):
@@ -455,14 +467,14 @@ def validate_manifest(o):
 def validate_analysis_package(o):
     if o.get("schema_version")!="ANALYSIS_IMPLEMENTATION_PACKAGE_CONTRACT_V1" or o.get("unit")!="A9": raise ContractError("A9_PACKAGE_IDENTITY")
     if o.get("output_contract")!="ANALYSIS_IMPLEMENTATION_PACKAGE_V1": raise ContractError("A9_PACKAGE_OUTPUT")
-    required={"request_identity","change_classification","research_context","impact_map","decision_context","requirements","specialist_results","invariants_risk_quality","hard_boundaries","implementation_preconditions","interfaces_payloads_states_errors","acceptance_obligations","reversibility","source_currentness","evidence_refs","typed_blockers","analysis_verdict"}
+    required={"request_identity","change_classification","research_context","impact_map","decision_context","requirements","specialist_results","invariants_risk_quality","hard_boundaries","implementation_preconditions","interfaces_payloads_states_errors","acceptance_obligations","reversibility","source_currentness","evidence_refs","typed_blockers","programming_context_snapshot","analysis_verdict"}
     if set(o.get("required_sections",[]))!=required: raise ContractError("A9_PACKAGE_SECTIONS")
     a=o.get("assembly_policy",{})
     for k in ("single_canonical_spec","section_index_required","stable_item_ids_required","dependency_graph_required","full_repo_payload_forbidden","mega_unindexed_payload_forbidden","lossless_provenance_required","programming_task_partition_forbidden_in_analysis","test_case_construction_forbidden"):
         if a.get(k) is not True: raise ContractError("A9_PACKAGE_ASSEMBLY_"+k)
     d=o.get("decision_visibility",{})
-    if d.get("human_decision_packets_source")!="decision_context.human_decision_routing": raise ContractError("A9_HUMAN_DECISION_SOURCE")
-    for k in ("pending_owner_decisions_must_be_rendered_as_dedicated_section","pending_owner_decisions_must_include_question_options_recommendation_owner_and_risk","generic_blocker_only_representation_forbidden","zero_pending_decisions_must_be_explicit"):
+    if d.get("human_decision_packets_source")!="programming_context_snapshot.human_decision_queue[]": raise ContractError("A9_HUMAN_DECISION_SOURCE")
+    for k in ("pending_owner_decisions_must_be_rendered_as_dedicated_section","pending_owner_decisions_must_include_question_options_recommendation_owner_and_risk","generic_blocker_only_representation_forbidden","zero_pending_decisions_must_be_explicit","human_decision_queue_always_present_even_when_empty"):
         if d.get(k) is not True: raise ContractError("A9_HUMAN_DECISION_"+k)
     q=o.get("qualification",{})
     if set(q.get("verdict_values",[]))!={"READY","PARTIAL_READY","NEED_MORE_EVIDENCE","REQUIRES_DECISION","BLOCKED"}: raise ContractError("A9_PACKAGE_VERDICTS")
@@ -470,6 +482,7 @@ def validate_analysis_package(o):
         if q.get(k) is not True: raise ContractError("A9_PACKAGE_QUALIFICATION_"+k)
     sb=o.get("snapshot_boundary",{})
     if sb.get("snapshot_contract")!="PROGRAMMING_CONTEXT_SNAPSHOT_V1" or sb.get("persist_append_only") is not True: raise ContractError("A9_SNAPSHOT_BOUNDARY")
+    if sb.get("runtime_payload_validator_ref")!="programacion.fn_programming_context_snapshot_validate_v1" or sb.get("guarded_record_entrypoint")!="programacion.fn_programming_context_record_v1" or sb.get("direct_generic_record_for_programming_consumer_forbidden") is not True: raise ContractError("A9_RUNTIME_CONFORMANCE_BOUNDARY")
     for k in ("preserve_decision_context_losslessly","preserve_human_decision_packets_losslessly","preserve_material_front_coverage_losslessly","preserve_implementability_losslessly","preserve_scope_readiness_losslessly"):
         if sb.get(k) is not True: raise ContractError("A9_SNAPSHOT_"+k)
     if o.get("runtime_activation") is not False or o.get("production_activation") is not False: raise ContractError("A9_ACTIVATION")
@@ -536,10 +549,15 @@ def validate_control_completeness(o):
         if x.get("source_contract_required") is not True or x.get("validator_required") is not True or not isinstance(ref,str) or not (ROOT/ref).is_file(): raise ContractError("CONTROL_MANIFEST_MATERIALIZATION")
         if x.get("unit") in {"PG-07","PG-10"} and x.get("receipt_contract_required") is not True: raise ContractError("CONTROL_MANIFEST_RECEIPT")
     cf=o.get("critical_families",{})
-    required_families={"AUTHORITY_VS_IMPLEMENTATION","EXISTING_DECISION_REUSE","HUMAN_DECISION_ROUTING","A9_PACKAGE_MATERIALIZATION","SOLUTION_PARTITION","CONTEXT_BUDGET","PROGRAMMING_CONFLICT_ROUTING"}
+    required_families={"AUTHORITY_VS_IMPLEMENTATION","EXISTING_DECISION_REUSE","HUMAN_DECISION_ROUTING","A9_PACKAGE_MATERIALIZATION","SOLUTION_PARTITION","CONTEXT_BUDGET","PROGRAMMING_CONFLICT_ROUTING","RUNTIME_PAYLOAD_CONFORMANCE"}
     if set(cf)!=required_families: raise ContractError("CONTROL_MANIFEST_FAMILIES")
+    if cf.get("RUNTIME_PAYLOAD_CONFORMANCE")!="programacion.fn_programming_context_snapshot_validate_v1": raise ContractError("CONTROL_MANIFEST_RUNTIME_CONFORMANCE")
+    runtime_ref=o.get("runtime_payload_conformance_source_ref")
+    if runtime_ref!="supabase/migrations/20261007183500_programming_context_snapshot_runtime_guard_v1.sql" or not (ROOT.parents[3]/runtime_ref).is_file(): raise ContractError("CONTROL_MANIFEST_RUNTIME_SOURCE")
+    expected_runtime_functions={"programacion.fn_programming_context_snapshot_validate_v1","programacion.fn_programming_context_record_v1","programacion.fn_programming_context_resolve_v1"}
+    if set(o.get("runtime_payload_conformance_functions",[]))!=expected_runtime_functions: raise ContractError("CONTROL_MANIFEST_RUNTIME_FUNCTIONS")
     g=o.get("completeness_gate",{})
-    for k in ("plan_only_control_is_not_implemented","every_covered_unit_must_have_source_contract","every_covered_unit_must_have_validator","runtime_or_human_action_control_requires_receipt_contract","missing_contract_or_validator_fails_closed"):
+    for k in ("plan_only_control_is_not_implemented","every_covered_unit_must_have_source_contract","every_covered_unit_must_have_validator","runtime_or_human_action_control_requires_receipt_contract","missing_contract_or_validator_fails_closed","source_contract_without_runtime_payload_conformance_is_not_execution_proof","runtime_payload_conformance_source_must_exist"):
         if g.get(k) is not True: raise ContractError("CONTROL_MANIFEST_GATE_"+k)
 
 def positive_request():
@@ -633,6 +651,8 @@ def self_test():
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["package_readiness_contract"]["partial_ready_requires_independent_execution_boundary"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_PARTIAL_READY_GUARDS")
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["required_fields"].remove("scope_readiness[]"); expect_error(validate_programming_entry,x,"PROGRAMMING_CONTEXT_SNAPSHOT_FIELDS")
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["required_fields"].remove("scope_front_matrix[]"); expect_error(validate_programming_entry,x,"PROGRAMMING_CONTEXT_SNAPSHOT_FIELDS")
+    x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["required_fields"].remove("human_decision_queue[]"); expect_error(validate_programming_entry,x,"PROGRAMMING_CONTEXT_SNAPSHOT_FIELDS")
+    x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["human_decision_queue_contract"]["always_present_even_when_empty"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_HUMAN_QUEUE_always_present_even_when_empty")
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["scope_readiness_contract"]["required_fields"].remove("material_front_refs[]"); expect_error(validate_programming_entry,x,"PROGRAMMING_SCOPE_READINESS_FIELDS")
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["scope_front_consistency_contract"]["bidirectional_scope_front_mapping_required"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_SCOPE_FRONT_GUARD_bidirectional_scope_front_mapping_required")
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["scope_front_consistency_contract"]["ready_scope_forbids_blocking_front"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_SCOPE_FRONT_GUARD_ready_scope_forbids_blocking_front")
@@ -706,10 +726,15 @@ def self_test():
     x=json.loads(json.dumps(pg10)); x["routing"]["missing_implementation_alone_not_human"]=False; expect_error(validate_pg10_human,x,"PG10_ROUTING_missing_implementation_alone_not_human")
     x=json.loads(json.dumps(cm)); x["coverage_units"]=[u for u in x["coverage_units"] if u["unit"]!="PG-07"]; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_UNITS")
     x=json.loads(json.dumps(cm)); [u for u in x["coverage_units"] if u["unit"]=="PG-10"][0]["receipt_contract_required"]=False; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_RECEIPT")
+    x=json.loads(json.dumps(cm)); x["critical_families"]["RUNTIME_PAYLOAD_CONFORMANCE"]="generic_outer_validator_only"; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_RUNTIME_CONFORMANCE")
+    x=json.loads(json.dumps(cm)); x["runtime_payload_conformance_source_ref"]="supabase/migrations/missing.sql"; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_RUNTIME_SOURCE")
+    x=json.loads(json.dumps(cm)); x["completeness_gate"]["source_contract_without_runtime_payload_conformance_is_not_execution_proof"]=False; expect_error(validate_control_completeness,x,"CONTROL_MANIFEST_GATE_source_contract_without_runtime_payload_conformance_is_not_execution_proof")
+    x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["persistence"]["programming_payload_validator"]="private.fn_lf_decision_context_asof_payload_valid_v1"; expect_error(validate_programming_entry,x,"PROGRAMMING_CONTEXT_PERSISTENCE_programming_payload_validator")
+    x=json.loads(json.dumps(a9pkg)); x["snapshot_boundary"]["direct_generic_record_for_programming_consumer_forbidden"]=False; expect_error(validate_analysis_package,x,"A9_RUNTIME_CONFORMANCE_BOUNDARY")
     x=json.loads(json.dumps(p)); x["downstream_control_bindings"]["context_budget_owner"]="PG-01"; expect_error(validate_programming_entry,x,"PROGRAMMING_DOWNSTREAM_CONTROL_context_budget_owner")
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["material_front_coverage"]["implementation_absence_alone_must_not_block"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_IMPLEMENTATION_ABSENCE_FALSE_BLOCKER")
     x=json.loads(json.dumps(p)); x["programming_context_snapshot"]["decision_context"]["pending_human_decision_packets_must_be_preserved"]=False; expect_error(validate_programming_entry,x,"PROGRAMMING_DECISION_CONTEXT_HUMAN_ROUTING")
-    print("PASS_WAVE1_BOUNDARY_CONTRACTS target_state_split=PASS design_binding=PASS context_snapshot=PASS material_front_coverage=PASS stop_rule=PASS implementability_schema=PASS handoff_parity=PASS scope_front_consistency=PASS snapshot_currentness=PASS scope_readiness=PASS snapshot_persistence=PASS human_decision_routing=PASS implementation_absence_semantics=PASS a9_package=PASS solution_partition=PASS context_budget=PASS control_completeness=PASS negatives=122")
+    print("PASS_WAVE1_BOUNDARY_CONTRACTS target_state_split=PASS design_binding=PASS context_snapshot=PASS material_front_coverage=PASS stop_rule=PASS implementability_schema=PASS handoff_parity=PASS scope_front_consistency=PASS snapshot_currentness=PASS scope_readiness=PASS snapshot_persistence=PASS human_decision_routing=PASS implementation_absence_semantics=PASS a9_package=PASS solution_partition=PASS context_budget=PASS control_completeness=PASS runtime_payload_conformance=PASS negatives=129")
 
 if __name__=="__main__":
     if "--self-test" not in sys.argv: raise SystemExit("usage: validate_wave1_boundary_contracts_v1.py --self-test")

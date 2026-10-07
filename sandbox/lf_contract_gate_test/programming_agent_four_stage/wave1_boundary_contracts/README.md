@@ -323,6 +323,10 @@ The worker receives a task-scoped, lossless projection. The effective limit is t
 
 GREEN continues. YELLOW forbids additional prefetch and prefers exact-ref JIT. RED blocks before model execution and returns to PG-04 for semantic repartition or JIT. Material context may never be silently truncated.
 
+### Runtime payload conformance
+
+The generic DECISION_CONTEXT_ASOF validator remains the outer immutable-envelope authority. Programming adds a guarded semantic wrapper rather than modifying the transversal capability: A9 records through programacion.fn_programming_context_record_v1, PG-01 resolves through programacion.fn_programming_context_resolve_v1, and both use programacion.fn_programming_context_snapshot_validate_v1. A historical or malformed snapshot is blocked before Programming admission.
+
 ### Completeness gate
 
 programming_agent_control_completeness_manifest_v1.json requires source contract + validator for A1–A9, PG-01, PG-04, PG-07 and PG-10, plus receipt contracts for controls that perform runtime/human actions. A plan-only declaration is not treated as implemented.

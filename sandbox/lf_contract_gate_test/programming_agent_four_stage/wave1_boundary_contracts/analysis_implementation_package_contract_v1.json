@@ -20,6 +20,7 @@
     "source_currentness",
     "evidence_refs",
     "typed_blockers",
+    "programming_context_snapshot",
     "analysis_verdict"
   ],
   "assembly_policy": {
@@ -34,11 +35,12 @@
     "test_case_construction_forbidden": true
   },
   "decision_visibility": {
-    "human_decision_packets_source": "decision_context.human_decision_routing",
+    "human_decision_packets_source": "programming_context_snapshot.human_decision_queue[]",
     "pending_owner_decisions_must_be_rendered_as_dedicated_section": true,
     "pending_owner_decisions_must_include_question_options_recommendation_owner_and_risk": true,
     "generic_blocker_only_representation_forbidden": true,
-    "zero_pending_decisions_must_be_explicit": true
+    "zero_pending_decisions_must_be_explicit": true,
+    "human_decision_queue_always_present_even_when_empty": true
   },
   "qualification": {
     "verdict_values": [
@@ -61,7 +63,10 @@
     "preserve_human_decision_packets_losslessly": true,
     "preserve_material_front_coverage_losslessly": true,
     "preserve_implementability_losslessly": true,
-    "preserve_scope_readiness_losslessly": true
+    "preserve_scope_readiness_losslessly": true,
+    "runtime_payload_validator_ref": "programacion.fn_programming_context_snapshot_validate_v1",
+    "guarded_record_entrypoint": "programacion.fn_programming_context_record_v1",
+    "direct_generic_record_for_programming_consumer_forbidden": true
   },
   "runtime_activation": false,
   "production_activation": false
