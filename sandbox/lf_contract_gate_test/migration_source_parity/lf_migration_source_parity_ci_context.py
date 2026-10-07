@@ -70,6 +70,10 @@ MANAGED_EXACT_NAMES = {
     "db_space_operational_retention_schedule_v1",
     "db_space_db_size_observability_v1",
     "r5e_vacuum_full_one_shot_control_v1",
+    "input_governance_r5_e_activation_v1",
+    "r5e_vacuum_inventory_activation_v1",
+    "inventory_distinct_refresh_v1",
+    "inventory_unused_gin_cleanup_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
