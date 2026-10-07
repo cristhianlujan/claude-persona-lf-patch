@@ -131,3 +131,13 @@ There is no checkpoint-count turn cap. A claimed unit runs through all of its ow
 ## Intended first consumer
 
 The atomized B2B Shell plan (S01-S09 and sub-units) is the first intended consumer. No B2B rule is activated merely by creating this executor; each rule must pass registry admission first.
+
+
+## Shared checkpoint storage guard
+
+The executor reuses `programacion.engineering_work_checkpoints`, but it does not inherit the IG material-assertion contract merely because storage is shared. The global DONE trigger selects the closure contract explicitly:
+
+- checkpoint with an enabled `programming_checkpoint_bindings` row -> current-run Programming Simple validation receipt contract;
+- every other checkpoint -> the pre-existing Engineering/IG material assertion contract unchanged.
+
+This is contract selection, not a bypass: the simple path still requires an admitted rule, exact current run/unit/checkpoint binding, PASS receipt hash integrity, and an active run/lane.
