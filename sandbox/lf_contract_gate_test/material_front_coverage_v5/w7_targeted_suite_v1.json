@@ -1,0 +1,310 @@
+{
+  "schema_version": "LF_MFC_V5_W7_TARGETED_SUITE_V1",
+  "cases": [
+    {
+      "case_id": "W7-ACTION-POS",
+      "expected": [
+        "UNSAFE_SIDE_EFFECT_ADMISSION_MISSING"
+      ],
+      "raw": {
+        "write_path": {
+          "write_capable": true,
+          "safe_change_admission_verified": false,
+          "rollback_receipt_verified": false,
+          "write_committed": true
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_ACTION_SIDE_EFFECT",
+          "directness": "DIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://action-pos",
+          "provider": "p",
+          "authority_ref": "a",
+          "source_subject_digest": "1"
+        }
+      ]
+    },
+    {
+      "case_id": "W7-ACTION-NEG",
+      "expected": [],
+      "raw": {
+        "write_path": {
+          "write_capable": true,
+          "safe_change_admission_verified": true,
+          "rollback_receipt_verified": true,
+          "write_committed": true
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_ACTION_SIDE_EFFECT",
+          "directness": "DIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://action-neg",
+          "provider": "p",
+          "authority_ref": "a",
+          "source_subject_digest": "2"
+        }
+      ]
+    },
+    {
+      "case_id": "W7-IDENTITY-POS",
+      "expected": [
+        "UNAUTHORIZED_PRIVILEGE_ESCALATION"
+      ],
+      "raw": {
+        "identity": {
+          "before_role": "READ_ONLY",
+          "after_role": "ADMIN",
+          "authority_receipt_verified": false
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_IDENTITY_PRIVILEGE",
+          "directness": "DIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://identity-pos",
+          "provider": "p",
+          "authority_ref": "i",
+          "source_subject_digest": "1"
+        }
+      ]
+    },
+    {
+      "case_id": "W7-IDENTITY-NEG",
+      "expected": [],
+      "raw": {
+        "identity": {
+          "before_role": "READ_ONLY",
+          "after_role": "ADMIN",
+          "authority_receipt_verified": true
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_IDENTITY_PRIVILEGE",
+          "directness": "DIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://identity-neg",
+          "provider": "p",
+          "authority_ref": "i",
+          "source_subject_digest": "2"
+        }
+      ]
+    },
+    {
+      "case_id": "W7-BLAST-POS",
+      "expected": [
+        "NEW_MATERIAL_CONSUMER_UNCLOSED"
+      ],
+      "raw": {
+        "dependency": {
+          "baseline_consumers": [
+            "A"
+          ],
+          "candidate_consumers": [
+            "A",
+            "B"
+          ],
+          "consumer_impacts": {
+            "B": "MATERIAL"
+          },
+          "closure_receipts": []
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_BLAST_RADIUS",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://blast-pos-1",
+          "provider": "p1",
+          "authority_ref": "d",
+          "source_subject_digest": "1"
+        },
+        {
+          "module": "AGENT_BLAST_RADIUS",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://blast-pos-2",
+          "provider": "p2",
+          "authority_ref": "d",
+          "source_subject_digest": "2"
+        }
+      ]
+    },
+    {
+      "case_id": "W7-BLAST-NEG",
+      "expected": [],
+      "raw": {
+        "dependency": {
+          "baseline_consumers": [
+            "A"
+          ],
+          "candidate_consumers": [
+            "A",
+            "B"
+          ],
+          "consumer_impacts": {
+            "B": "NON_MATERIAL"
+          },
+          "closure_receipts": [
+            "B:BOUNDED"
+          ]
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_BLAST_RADIUS",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://blast-neg-1",
+          "provider": "p1",
+          "authority_ref": "d",
+          "source_subject_digest": "3"
+        },
+        {
+          "module": "AGENT_BLAST_RADIUS",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://blast-neg-2",
+          "provider": "p2",
+          "authority_ref": "d",
+          "source_subject_digest": "4"
+        }
+      ]
+    },
+    {
+      "case_id": "W7-LONG-POS",
+      "expected": [
+        "RECOVERY_CHECKPOINT_GAP"
+      ],
+      "raw": {
+        "workflow": {
+          "steps_total": 8,
+          "checkpoints": [
+            1,
+            2,
+            3,
+            5,
+            6,
+            7,
+            8
+          ],
+          "retry_count": 2,
+          "retry_limit": 3,
+          "resume_receipt_verified": false
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_LONG_HORIZON_RECOVERY",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://long-pos-1",
+          "provider": "p1",
+          "authority_ref": "w",
+          "source_subject_digest": "1"
+        },
+        {
+          "module": "AGENT_LONG_HORIZON_RECOVERY",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://long-pos-2",
+          "provider": "p2",
+          "authority_ref": "w",
+          "source_subject_digest": "2"
+        }
+      ]
+    },
+    {
+      "case_id": "W7-LONG-NEG",
+      "expected": [],
+      "raw": {
+        "workflow": {
+          "steps_total": 8,
+          "checkpoints": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "retry_count": 2,
+          "retry_limit": 3,
+          "resume_receipt_verified": true
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_LONG_HORIZON_RECOVERY",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://long-neg-1",
+          "provider": "p1",
+          "authority_ref": "w",
+          "source_subject_digest": "3"
+        },
+        {
+          "module": "AGENT_LONG_HORIZON_RECOVERY",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://long-neg-2",
+          "provider": "p2",
+          "authority_ref": "w",
+          "source_subject_digest": "4"
+        }
+      ]
+    },
+    {
+      "case_id": "W7-EVIDENCE-POS",
+      "expected": [
+        "MATERIAL_EVIDENCE_REF_UNRESOLVED"
+      ],
+      "raw": {
+        "evidence_refs": [
+          {
+            "ref": "e1",
+            "resolved": false,
+            "current": true,
+            "decision_bearing": true
+          }
+        ]
+      },
+      "signals": []
+    },
+    {
+      "case_id": "W7-EVIDENCE-NEG",
+      "expected": [],
+      "raw": {
+        "evidence_refs": [
+          {
+            "ref": "e1",
+            "resolved": true,
+            "current": true,
+            "decision_bearing": true
+          }
+        ]
+      },
+      "signals": []
+    }
+  ]
+}
