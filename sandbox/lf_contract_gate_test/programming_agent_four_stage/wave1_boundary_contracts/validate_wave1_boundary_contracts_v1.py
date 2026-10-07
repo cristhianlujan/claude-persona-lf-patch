@@ -224,6 +224,61 @@ def validate_testing_admission(o):
         if k not in m["EXECUTION"].get("requires",[]): raise ContractError("EXECUTION_MODE_CANDIDATE_MISSING")
     if o.get("no_parallel_engine") is not True: raise ContractError("TESTING_PARALLEL_ENGINE")
 
+def classify_analysis_depth_v1(signals):
+    required={"materiality_level","scope_bounded","authority_state","reversibility_state","currentness_decision","material_contradiction","known_cross_scope_impact","unresolved_material_signal_count","required_specialist_count"}
+    if set(signals)!=required: raise ContractError("A2_DEPTH_SIGNAL_KEYS")
+    materiality=signals["materiality_level"]
+    scope=signals["scope_bounded"]
+    authority=signals["authority_state"]
+    reversibility=signals["reversibility_state"]
+    currentness=signals["currentness_decision"]
+    contradiction=signals["material_contradiction"]
+    cross_scope=signals["known_cross_scope_impact"]
+    unresolved=signals["unresolved_material_signal_count"]
+    specialists=signals["required_specialist_count"]
+    if materiality not in {"LOW","MEDIUM","HIGH","UNKNOWN"}: raise ContractError("A2_DEPTH_SIGNAL_MATERIALITY")
+    if scope not in {"TRUE","FALSE","UNKNOWN"}: raise ContractError("A2_DEPTH_SIGNAL_SCOPE")
+    if authority not in {"SUFFICIENT","INSUFFICIENT","UNKNOWN"}: raise ContractError("A2_DEPTH_SIGNAL_AUTHORITY")
+    if reversibility not in {"DEMONSTRATED","NOT_DEMONSTRATED","UNKNOWN"}: raise ContractError("A2_DEPTH_SIGNAL_REVERSIBILITY")
+    if currentness not in {"CURRENT","CURRENT_REBOUND","STALE_AFFECTED","UNKNOWN_FAIL_CLOSED","UNRESOLVED"}: raise ContractError("A2_DEPTH_SIGNAL_CURRENTNESS")
+    if not isinstance(contradiction,bool): raise ContractError("A2_DEPTH_SIGNAL_CONTRADICTION")
+    if cross_scope not in {True,False,"UNKNOWN"}: raise ContractError("A2_DEPTH_SIGNAL_CROSS_SCOPE")
+    if isinstance(unresolved,bool) or not isinstance(unresolved,int) or unresolved<0: raise ContractError("A2_DEPTH_SIGNAL_UNRESOLVED")
+    if isinstance(specialists,bool) or not isinstance(specialists,int) or specialists<0: raise ContractError("A2_DEPTH_SIGNAL_SPECIALISTS")
+    if (
+        materiality=="HIGH"
+        or scope=="FALSE"
+        or authority=="INSUFFICIENT"
+        or currentness=="STALE_AFFECTED"
+        or contradiction is True
+        or cross_scope is True
+    ):
+        return "L3"
+    if (
+        materiality in {"MEDIUM","UNKNOWN"}
+        or scope=="UNKNOWN"
+        or authority=="UNKNOWN"
+        or reversibility in {"NOT_DEMONSTRATED","UNKNOWN"}
+        or currentness in {"CURRENT_REBOUND","UNKNOWN_FAIL_CLOSED","UNRESOLVED"}
+        or cross_scope=="UNKNOWN"
+        or unresolved>0
+        or specialists>0
+    ):
+        return "L2"
+    if (
+        materiality=="LOW"
+        and scope=="TRUE"
+        and authority=="SUFFICIENT"
+        and reversibility=="DEMONSTRATED"
+        and currentness=="CURRENT"
+        and contradiction is False
+        and cross_scope is False
+        and unresolved==0
+        and specialists==0
+    ):
+        return "L1"
+    raise ContractError("A2_DEPTH_UNCOVERED_STATE")
+
 def validate_analysis_change_classification(o):
     if o.get("schema_version")!="ANALYSIS_CHANGE_CLASSIFICATION_CONTRACT_V1" or o.get("unit")!="A2": raise ContractError("A2_IDENTITY")
     c=o.get("classification",{})
@@ -235,6 +290,24 @@ def validate_analysis_change_classification(o):
     if c.get("nested_target_parent_ref_required") is not True: raise ContractError("A2_NESTED_PARENT")
     if c.get("implementation_state_inference_forbidden") is not True: raise ContractError("A2_IMPLEMENTATION_STATE_INFERENCE")
     if c.get("depth_reason_required") is not True or c.get("evidence_refs_required") is not True: raise ContractError("A2_REPRODUCIBILITY")
+    dp=c.get("depth_policy",{})
+    if dp.get("schema_version")!="ANALYSIS_DEPTH_POLICY_V1" or dp.get("policy_kind")!="MONOTONIC_PRECEDENCE_NO_WEIGHTS": raise ContractError("A2_DEPTH_POLICY_IDENTITY")
+    expected_signal_sets={
+        "materiality_level":{"LOW","MEDIUM","HIGH","UNKNOWN"},
+        "scope_bounded":{"TRUE","FALSE","UNKNOWN"},
+        "authority_state":{"SUFFICIENT","INSUFFICIENT","UNKNOWN"},
+        "reversibility_state":{"DEMONSTRATED","NOT_DEMONSTRATED","UNKNOWN"},
+        "currentness_decision":{"CURRENT","CURRENT_REBOUND","STALE_AFFECTED","UNKNOWN_FAIL_CLOSED","UNRESOLVED"},
+    }
+    for key,vals in expected_signal_sets.items():
+        if set(dp.get("signals",{}).get(key,[]))!=vals: raise ContractError("A2_DEPTH_POLICY_SIGNAL_"+key)
+    if dp.get("signals",{}).get("material_contradiction")!="BOOLEAN": raise ContractError("A2_DEPTH_POLICY_CONTRADICTION")
+    if dp.get("signals",{}).get("known_cross_scope_impact")!="BOOLEAN_OR_UNKNOWN": raise ContractError("A2_DEPTH_POLICY_CROSS_SCOPE")
+    if dp.get("signals",{}).get("unresolved_material_signal_count")!="NON_NEGATIVE_INTEGER" or dp.get("signals",{}).get("required_specialist_count")!="NON_NEGATIVE_INTEGER": raise ContractError("A2_DEPTH_POLICY_COUNTS")
+    if dp.get("precedence")!=["L3_EXPLICIT_HIGH_RISK","L2_MEDIUM_OR_UNPROVEN","L1_FULLY_BOUNDED_LOW_RISK"]: raise ContractError("A2_DEPTH_POLICY_PRECEDENCE")
+    if dp.get("unknown_material_never_L1") is not True or dp.get("worsening_signal_cannot_reduce_depth") is not True: raise ContractError("A2_DEPTH_POLICY_MONOTONIC")
+    if dp.get("depth_is_execution_permission") is not False or dp.get("readiness_and_admission_remain_separate") is not True: raise ContractError("A2_DEPTH_POLICY_AUTHORITY")
+    if dp.get("case_family_hardcoding_forbidden") is not True or dp.get("arbitrary_weights_forbidden") is not True: raise ContractError("A2_DEPTH_POLICY_NO_OVERFIT")
     s=o.get("specialist_resolution",{})
     expected={"cardinality":"0..N","selector_capability":"CAPABILITY_SELECTOR","selector_version_policy":"CURRENT","currentness_required":True,"release_state_required":"RELEASED","hardcoded_specialist_identity_forbidden":True,"hardcoded_story_creator_forbidden":True,"selection_is_execution_permission":False}
     for k,v in expected.items():
@@ -346,6 +419,35 @@ def self_test():
     x=json.loads(json.dumps(a2)); x["specialist_resolution"]["selection_is_execution_permission"]=True; expect_error(validate_analysis_change_classification,x,"A2_SPECIALIST_selection_is_execution_permission")
     x=json.loads(json.dumps(a2)); x["classification"]["target_granularity_required"]=False; expect_error(validate_analysis_change_classification,x,"A2_TARGET_GRANULARITY")
     x=json.loads(json.dumps(a2)); x["classification"]["implementation_state_inference_forbidden"]=False; expect_error(validate_analysis_change_classification,x,"A2_IMPLEMENTATION_STATE_INFERENCE")
+    x=json.loads(json.dumps(a2)); x["classification"]["depth_policy"]["arbitrary_weights_forbidden"]=False; expect_error(validate_analysis_change_classification,x,"A2_DEPTH_POLICY_NO_OVERFIT")
+    x=json.loads(json.dumps(a2)); x["classification"]["depth_policy"]["unknown_material_never_L1"]=False; expect_error(validate_analysis_change_classification,x,"A2_DEPTH_POLICY_MONOTONIC")
+    depth_base={"materiality_level":"LOW","scope_bounded":"TRUE","authority_state":"SUFFICIENT","reversibility_state":"DEMONSTRATED","currentness_decision":"CURRENT","material_contradiction":False,"known_cross_scope_impact":False,"unresolved_material_signal_count":0,"required_specialist_count":0}
+    assert classify_analysis_depth_v1(depth_base)=="L1"
+    for patch in (
+        {"materiality_level":"MEDIUM"},
+        {"materiality_level":"UNKNOWN"},
+        {"scope_bounded":"UNKNOWN"},
+        {"authority_state":"UNKNOWN"},
+        {"reversibility_state":"NOT_DEMONSTRATED"},
+        {"reversibility_state":"UNKNOWN"},
+        {"currentness_decision":"CURRENT_REBOUND"},
+        {"currentness_decision":"UNKNOWN_FAIL_CLOSED"},
+        {"currentness_decision":"UNRESOLVED"},
+        {"known_cross_scope_impact":"UNKNOWN"},
+        {"unresolved_material_signal_count":1},
+        {"required_specialist_count":1},
+    ):
+        q=dict(depth_base); q.update(patch); assert classify_analysis_depth_v1(q)=="L2",(patch,q)
+    for patch in (
+        {"materiality_level":"HIGH"},
+        {"scope_bounded":"FALSE"},
+        {"authority_state":"INSUFFICIENT"},
+        {"currentness_decision":"STALE_AFFECTED"},
+        {"material_contradiction":True},
+        {"known_cross_scope_impact":True},
+    ):
+        q=dict(depth_base); q.update(patch); assert classify_analysis_depth_v1(q)=="L3",(patch,q)
+    q=dict(depth_base); q.update({"materiality_level":"UNKNOWN","material_contradiction":True}); assert classify_analysis_depth_v1(q)=="L3"
     x=json.loads(json.dumps(a3)); x["acquisition"]["full_repository_search_without_trigger_forbidden"]=False; expect_error(validate_analysis_targeted_evidence,x,"A3_ACQUISITION_full_repository_search_without_trigger_forbidden")
     x=json.loads(json.dumps(a3)); x["target_resolution"]["authority_state_does_not_imply_implementation_state"]=False; expect_error(validate_analysis_targeted_evidence,x,"A3_STATE_INDEPENDENCE")
     x=json.loads(json.dumps(a3)); x["target_resolution"]["implementation_existing_delta_required_downstream"]=False; expect_error(validate_analysis_targeted_evidence,x,"A3_BROWNFIELD_IMPLEMENTATION")
@@ -407,7 +509,7 @@ def self_test():
     x=json.loads(json.dumps(impact)); x["testing_projection"]["consumes_same_core"]=False; expect_error(validate_shared_impact,x,"IMPACT_TESTING_REUSE")
     x=json.loads(json.dumps(tp)); x["story_required"]=True; expect_error(validate_testing_pipeline,x,"TEST_PIPELINE_STAGE_COUPLING")
     x=json.loads(json.dumps(m)); x["contracts"]["TST-05"]="testing_private_impact_engine.json"; expect_error(validate_manifest,x,"MANIFEST_SHARED_IMPACT_SPLIT")
-    print("PASS_WAVE1_BOUNDARY_CONTRACTS target_state_split=PASS design_binding=PASS context_snapshot=PASS material_front_coverage=PASS stop_rule=PASS implementability_schema=PASS handoff_parity=PASS scope_front_consistency=PASS snapshot_currentness=PASS scope_readiness=PASS snapshot_persistence=PASS negatives=70")
+    print("PASS_WAVE1_BOUNDARY_CONTRACTS target_state_split=PASS design_binding=PASS context_snapshot=PASS material_front_coverage=PASS stop_rule=PASS implementability_schema=PASS handoff_parity=PASS scope_front_consistency=PASS snapshot_currentness=PASS scope_readiness=PASS snapshot_persistence=PASS negatives=90")
 
 if __name__=="__main__":
     if "--self-test" not in sys.argv: raise SystemExit("usage: validate_wave1_boundary_contracts_v1.py --self-test")
