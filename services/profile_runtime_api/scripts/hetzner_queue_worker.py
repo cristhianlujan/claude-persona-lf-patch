@@ -1256,7 +1256,12 @@ def _cleanup_transaction(
 
 
 def _worker_version() -> str:
-    return _env("LF_PROFILE_RUNTIME_GIT_SHA") or _env("GITHUB_SHA") or "unknown"
+    return (
+        _env("LF_PROFILE_RUNTIME_GIT_SHA")
+        or _env("GITHUB_SHA")
+        or _env("PROFILE_RUNTIME_SOURCE_SHA")
+        or "unknown"
+    )
 
 
 def _emit_heartbeat(
@@ -1359,12 +1364,13 @@ def run_once(conn: psycopg.Connection) -> bool:
             except Exception:
                 conn.rollback()
         print(f"HETZNER_QUEUE_ERROR={type(exc).__name__}:{str(exc)[:500]}", flush=True)
-        return True
+        raise
 
 
 def _run_daemon(idle_seconds: float) -> None:
     conn: psycopg.Connection | None = None
     reconnect_delay = 1.0
+    cycle_error_delay = 3.0
     reconnects = 0
     had_connection = False
     cycles = 0
@@ -1373,6 +1379,10 @@ def _run_daemon(idle_seconds: float) -> None:
     last_heartbeat = time.monotonic()
     try:
         while True:
+            connection_error = False
+            cycle_error = False
+            did_work = False
+
             if conn is None or conn.closed:
                 try:
                     conn = _connect()
@@ -1385,21 +1395,32 @@ def _run_daemon(idle_seconds: float) -> None:
                         f"{str(exc)[:500]}",
                         flush=True,
                     )
-                    time.sleep(reconnect_delay)
-                    reconnect_delay = min(reconnect_delay * 2, 30.0)
-                    continue
-            try:
-                did_work = run_once(conn)
-            except (psycopg.OperationalError, psycopg.InterfaceError):
-                _close_silently(conn)
-                conn = None
+                    connection_error = True
+
+            if not connection_error:
+                try:
+                    did_work = run_once(conn)
+                except (psycopg.OperationalError, psycopg.InterfaceError):
+                    _close_silently(conn)
+                    conn = None
+                    connection_error = True
+                except Exception:
+                    cycle_error = True
+                finally:
+                    conn = _cleanup_transaction(conn)
+
+            if connection_error:
                 time.sleep(reconnect_delay)
                 reconnect_delay = min(reconnect_delay * 2, 30.0)
                 continue
-            finally:
-                conn = _cleanup_transaction(conn)
+
+            if cycle_error:
+                time.sleep(cycle_error_delay)
+                cycle_error_delay = min(cycle_error_delay * 2, 60.0)
+                continue
 
             reconnect_delay = 1.0
+            cycle_error_delay = 3.0
             cycles += 1
             if did_work:
                 work += 1
@@ -1434,6 +1455,8 @@ def main() -> int:
         try:
             did_work = run_once(conn)
         except (psycopg.OperationalError, psycopg.InterfaceError):
+            did_work = True
+        except Exception:
             did_work = True
         return 0 if did_work else 4
     finally:
