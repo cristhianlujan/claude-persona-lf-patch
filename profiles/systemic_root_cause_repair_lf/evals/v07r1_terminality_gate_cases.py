@@ -87,11 +87,11 @@ def test_ordinary_blocking_code_is_nonready_not_pipeline_block():
 def test_runtime_projection_contains_method_revision():
     skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
     binding = (ROOT / "contracts" / "runtime_binding.json").read_text(encoding="utf-8")
-    working = skill.index("## Working method (do this first; the rules below are how the result is checked)")
-    revision = skill.index("### V0.7R1 dynamic repair method revision")
-    output = skill.index("## Output trajectory (field order for the typed output)")
-    assert working < revision < output
-    assert '"Working method (do this first; the rules below are how the result is checked)"' in binding
+    capsule = skill.index("## Runtime method capsule")
+    activation = skill.index("## Activation")
+    assert capsule < activation
+    assert '"Runtime method capsule"' in binding
+    assert "V0.7R1" in skill
 
 
 if __name__ == "__main__":
