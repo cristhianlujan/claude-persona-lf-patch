@@ -1,0 +1,94 @@
+{
+  "schema_version": "LF_MATERIAL_FRONT_COVERAGE_METHOD_CONTRACT_V5",
+  "status": "CANDIDATE_READ_ONLY",
+  "runtime_authorized": false,
+  "production_authorized": false,
+  "purpose": "Derive material-front coverage decisions from raw facts and provider receipts. Never treat inspect/investigate prose as a method.",
+  "terminal_precedence": [
+    "STRUCTURAL_INTEGRITY",
+    "EVIDENCE_SUFFICIENCY",
+    "KNOWN_COVERAGE_VIOLATION",
+    "PASS"
+  ],
+  "terminal_states": [
+    "MATERIAL_FRONT_COVERAGE_PASS",
+    "MATERIAL_FRONT_COVERAGE_BLOCKED",
+    "RETURN_TO_EVIDENCE_ACQUISITION"
+  ],
+  "selector": {
+    "strong": "signal.current=true AND signal.subject_bound=true AND signal.directness=DIRECT AND evidence_ref resolves",
+    "weak": "signal.current=true AND signal.subject_bound=true AND signal.directness=INDIRECT AND evidence_ref resolves",
+    "unresolved": "current=false OR subject_bound=false OR unresolved evidence => RETURN_TO_EVIDENCE_ACQUISITION",
+    "activation_threshold": 2,
+    "weak_independence_rule": "Two WEAK signals count only when derived_evidence_group differs.",
+    "derived_evidence_group": "sha256(provider|authority_ref|source_subject_digest); caller-supplied independence_group is ignored."
+  },
+  "convergence": {
+    "count": "Every selector/reselector evaluation increments reselection_count.",
+    "pass_at_limit": "Allowed when converged=true on the final allowed evaluation.",
+    "block": "If another evaluation is required after max_reselection_rounds, block NON_CONVERGENT_COVERAGE_BUDGET_EXHAUSTED.",
+    "reopen_count": "Tracked separately for diagnostics; it is not the sole convergence counter."
+  },
+  "low_risk_six_axes": [
+    "root_cause",
+    "repair_topology",
+    "blast_radius",
+    "acceptance_criteria",
+    "rollback_recovery",
+    "terminality_lifecycle"
+  ],
+  "low_risk_precedence": "CAN_CHANGE dominates UNRESOLVED. Any CAN_CHANGE => MATERIAL. Otherwise any UNRESOLVED => RETURN_TO_EVIDENCE_ACQUISITION. All NO_CHANGE_PROVEN => LOW_RISK_CLOSED.",
+  "challenger": {
+    "required_for_closure": true,
+    "producer_execution_must_differ": true,
+    "executor_identity_must_differ": true,
+    "subject_revision_must_match": true,
+    "provider_bound_independence_receipt_required": true,
+    "self_attested_boolean_forbidden": true,
+    "unsupported_independence_scope": "BLOCK"
+  },
+  "fronts": [
+    {"code":"ARCHITECTURE_TOPOLOGY","method":"LOCAL_TYPED_PROBE","probe":"NODE_EDGE_TOPOLOGY_DIFF","required_evidence":["node_refs","edge_refs","topology_digest"],"uncovered_responsibility":"GENERIC_TOPOLOGY_REACHABILITY"},
+    {"code":"CONTROLS_GUARDS_ENFORCEMENT","method":"DELEGATE","providers":["CONTROL_EQUIVALENCE_JUDGE","LF_CONTRACT_CHECK"],"required_evidence":["provider_receipts","negative_test_refs"]},
+    {"code":"POLICIES_CONTRACTS_AUTHORITY","method":"DELEGATE","providers":["SOURCE_RESOLUTION_POLICY","CURRENTNESS_AUTHORITY","DECISION_CONTEXT_ASOF","LF_CONTRACT_CHECK"],"required_evidence":["authority_ref","currentness_receipt","contract_receipt"]},
+    {"code":"CONTEXT_INPUT_TRANSPORT","method":"COMPOSE","providers":["CAUSAL_EFFECT_LINEAGE","TYPED_DATA_ACCESS"],"probe":"PRODUCER_TRANSPORT_RECEIVER_PARITY","required_evidence":["producer_digest","transport_ref","receiver_digest","receiver_effect_readback"]},
+    {"code":"WIRING_REACHABILITY_ROUTING","method":"LOCAL_TYPED_PROBE","probe":"ENTRYPOINT_ROUTE_BINDING_REACHABILITY","required_evidence":["entrypoint_ref","resolved_path","alternate_paths","dead_or_bypass_paths"],"uncovered_responsibility":"GENERIC_TOPOLOGY_REACHABILITY"},
+    {"code":"IDENTITY_VERSION_CURRENTNESS","method":"DELEGATE","providers":["CURRENTNESS_AUTHORITY","CAPABILITY_VERSION_COMPATIBILITY","DECISION_CONTEXT_ASOF"],"required_evidence":["identity_ref","version_ref","currentness_receipt"]},
+    {"code":"COMPATIBILITY_TRANSITION_MIGRATION","method":"COMPOSE","providers":["CAPABILITY_VERSION_COMPATIBILITY","MIGRATION_SOURCE_PARITY","MIGRATION_ORCHESTRATED_SAGA_V1"],"required_evidence":["compatibility_receipt","transition_receipt"]},
+    {"code":"STATE_LIFECYCLE_TERMINALITY","method":"LOCAL_TYPED_PROBE","probe":"STATE_GRAPH_TERMINAL_EFFECT","required_evidence":["state_graph","transition_table","terminal_effect_readback"],"uncovered_responsibility":"GENERIC_STATE_MACHINE_TERMINALITY"},
+    {"code":"RECOVERY_ROLLBACK_IDEMPOTENCY_REPLAY","method":"COMPOSE","providers":["REVERSIBLE_CANDIDATE_VERIFICATION","EVIDENCE_ANTIREPLAY"],"required_evidence":["rollback_receipt","replay_receipt","residue_readback"]},
+    {"code":"CONSUMERS_DEPENDENCY_BLAST_RADIUS","method":"COMPOSE","providers":["CAUSAL_EFFECT_LINEAGE","CONSUMER_ADMISSION"],"probe":"REACHABLE_CONSUMER_EFFECT_PROPAGATION","required_evidence":["consumer_refs","dependency_edges","effect_receipts"],"uncovered_responsibility":"GENERIC_TOPOLOGY_REACHABILITY"},
+    {"code":"OBSERVABILITY_EVIDENCE_READBACK","method":"DELEGATE","providers":["EVIDENCE_RESOLVER_REGISTRY","TYPED_EVIDENCE_REGISTRY","EVIDENCE_LEDGER","FINAL_EVIDENCE","AUTHORITY_READBACK"],"required_evidence":["typed_evidence_refs","readback_receipts"]},
+    {"code":"SECURITY_PRIVACY_PERMISSIONS","method":"COMPOSE","providers":["PRIVACY_MINIMALITY_GUARD","SAFE_CHANGE_ADMISSION"],"probe":"ACTOR_ROLE_PERMISSION_NEGATIVE_PATHS","required_evidence":["actor_ref","role_ref","permission_evidence","negative_access_tests"],"uncovered_responsibility":"IDENTITY_PERMISSION_AUTHORITY"},
+    {"code":"PERFORMANCE_COST_CAPACITY","method":"DELEGATE","providers":["PERFORMANCE_EXACT_SOURCE_BENCHMARK","TIMEOUT_PHASE_BUDGET_POLICY"],"required_evidence":["benchmark_receipt","budget_receipt"]},
+    {"code":"TESTING_ASSURANCE_FALSIFICATION","method":"COMPOSE","providers":["REVERSIBLE_CANDIDATE_VERIFICATION","INDEPENDENT_ASSURANCE","CONTROL_EQUIVALENCE_JUDGE"],"required_evidence":["test_receipts","independence_receipt","falsification_refs"]},
+    {"code":"OPERABILITY_MAINTENANCE_OWNERSHIP","method":"LOCAL_TYPED_PROBE","probe":"OWNER_MAINTENANCE_LIFECYCLE_HEALTH","required_evidence":["owner_authority_ref","maintenance_path","replacement_or_retirement_path"],"uncovered_responsibility":"OPERABILITY_OWNERSHIP_HEALTH"}
+  ],
+  "dynamic_components": [
+    {"code":"AGENT_STATE_CONTEXT","decision":"DELEGATE","providers":["DECISION_CONTEXT_ASOF","CURRENTNESS_AUTHORITY"]},
+    {"code":"AGENT_ACTION_SIDE_EFFECT","decision":"DELEGATE","providers":["SAFE_CHANGE_ADMISSION","REVERSIBLE_CANDIDATE_VERIFICATION","DB_WRITE_TRANSPORT"]},
+    {"code":"AGENT_HANDOFF_COORDINATION","decision":"DELEGATE","providers":["CAUSAL_EFFECT_LINEAGE","CONSUMER_ADMISSION"]},
+    {"code":"AGENT_EVAL_INTEGRITY","decision":"CONDITIONAL_DELEGATE","providers":["INDEPENDENT_ASSURANCE","EVIDENCE_LEDGER","EVIDENCE_ANTIREPLAY"],"forbidden_provider":["ASSURANCE_EVALUATOR"]},
+    {"code":"AGENT_LONG_HORIZON_RECOVERY","decision":"COMPOSE_OR_UNPROVEN","providers":["MIGRATION_ORCHESTRATED_SAGA_V1","EXECUTION_INVALIDATION_PROPAGATION","TIMEOUT_PHASE_BUDGET_POLICY"],"uncovered_responsibility":"GENERIC_LONG_HORIZON_RECOVERY"},
+    {"code":"AGENT_IDENTITY_PRIVILEGE","decision":"COMPOSE_OR_UNPROVEN","providers":["SAFE_CHANGE_ADMISSION","PRIVACY_MINIMALITY_GUARD","CURRENTNESS_AUTHORITY"],"uncovered_responsibility":"IDENTITY_PERMISSION_AUTHORITY"},
+    {"code":"AGENT_HIDDEN_FAILURE","decision":"LOCAL_TYPED_PROBE","probe":"FIRST_BAD_BOUNDARY_LOCALIZATION","uncovered_responsibility":"FIRST_BAD_BOUNDARY_HIDDEN_FAILURE_LOCALIZATION"},
+    {"code":"AGENT_BLAST_RADIUS","decision":"COMPOSE_OR_UNPROVEN","providers":["CAUSAL_EFFECT_LINEAGE","CONSUMER_ADMISSION"],"uncovered_responsibility":"GENERIC_TOPOLOGY_REACHABILITY"},
+    {"code":"AGENT_ADVERSARIAL_INPUT","decision":"LOCAL_TYPED_PROBE","probe":"INSTRUCTION_DATA_BOUNDARY_AND_PRIVILEGE_ESCALATION","uncovered_responsibility":"GENERIC_ADVERSARIAL_INPUT_EXECUTION"}
+  ],
+  "gap_refiners": [
+    {"code":"GAP_EVIDENCE_RESOLUTION_INTEGRITY","decision":"ABLATE_FIRST","providers":["EVIDENCE_RESOLVER_REGISTRY","SOURCE_RESOLUTION_POLICY","TARGETED_EVIDENCE_ACQUISITION","TYPED_EVIDENCE_REGISTRY"]},
+    {"code":"GAP_TRANSPORT_RECEIVER_PARITY","decision":"ABLATE_FIRST","providers":["CAUSAL_EFFECT_LINEAGE","CONSUMER_ADMISSION"]},
+    {"code":"GAP_IMPLEMENTABILITY_SCHEMA","decision":"KEEP_LOCAL_UNTIL_GENERIC_PROVIDER_PROVEN","forbidden_provider":["PACK_VALIDATION_HARNESS"],"uncovered_responsibility":"GENERIC_EXECUTABLE_IMPLEMENTABILITY_SCHEMA"},
+    {"code":"GAP_INDEPENDENT_ASSURANCE_CHAIN","decision":"ABLATE_FIRST","providers":["INDEPENDENT_ASSURANCE","EVIDENCE_LEDGER","EVIDENCE_ANTIREPLAY"]},
+    {"code":"GAP_DUPLICATE_AUTHORITY_DEDUP","decision":"ABLATE_FIRST","providers":["CONTROL_EQUIVALENCE_JUDGE","CAPABILITY_VERSION_COMPATIBILITY","CURRENTNESS_AUTHORITY"]}
+  ],
+  "hard_fail_rules": [
+    "No final front classification without evidence_refs.",
+    "No delegated closure without exact provider receipt and scope-compatible provider limitations.",
+    "No PASS with an orphan responsibility marked material or required.",
+    "No injected expected reason/status field is consumed by the harness.",
+    "No caller-supplied independence_group is trusted.",
+    "No self-review or identity-only independence can satisfy challenger.",
+    "No historical calibration result may serve as holdout oracle."
+  ]
+}
