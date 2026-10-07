@@ -1,0 +1,29 @@
+{
+  "schema_version": "LF_MFC_V5_ORACLE_SEMANTIC_MAP_V2",
+  "source_oracle_blob": "e967dd0b9c1576321f118c83d7efe49f1a186a2a",
+  "rule": "Pure normalization of frozen oracle defect IDs into semantic defect codes; no fixture values changed.",
+  "cases": {
+    "MFCV5-H01": {
+      "H01-D1": "RUNTIME_AUTHORITY_DIVERGENCE",
+      "H01-D2": "RECEIVER_EFFECT_UNPROVEN",
+      "H01-D3": "RECEIVER_FIELD_LOSS"
+    },
+    "MFCV5-H02": {
+      "H02-D1": "POST_WRITE_TERMINAL_ERROR",
+      "H02-D2": "POST_WRITE_TRACE_LOSS",
+      "H02-D3": "REPAIR_PACKAGE_NOT_EXECUTABLE"
+    },
+    "MFCV5-H03": {
+      "H03-D1": "DUPLICATE_CONTROL_DIVERGENCE"
+    },
+    "MFCV5-H04": {
+      "H04-D1": "UNTRUSTED_INSTRUCTION_ON_WRITE_PATH",
+      "H04-D2": "REVIEWER_NOT_INDEPENDENT"
+    },
+    "MFCV5-H05": {
+      "H05-D1": "STALE_RECEIVER_VERSION",
+      "H05-D2": "HIDDEN_BYPASS_ROUTE",
+      "H05-D3": "RECEIVER_FIELD_LOSS"
+    }
+  }
+}
