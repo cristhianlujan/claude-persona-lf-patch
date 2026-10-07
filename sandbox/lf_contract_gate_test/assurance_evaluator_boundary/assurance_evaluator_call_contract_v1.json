@@ -32,7 +32,7 @@
   },
   "required_call_sequence": [
     "ROUTER_CHANGESET_GOVERNANCE determines applicability",
-    "PASE pre-activation/activation gates authorize entry-guard enforcement",
+    "Exact subject-scoped activation authority requires a valid orchestrator dispatch receipt plus explicit human GO; global F06/F09/F10 completion is not required",
     "public.fn_lf_orchestrator_dispatch_receipt_v1 issues exact dispatch receipt",
     "public.fn_lf_capability_bind_from_orchestrator_v1 validates ORCHESTRATOR_EXECUTION_GUARD_V1 and binds CURRENT",
     "ASSURANCE_ACTIVATION_GATE_V1 validates exactly one ACTIVE exact subject binding",
@@ -70,8 +70,8 @@
     "capability_current_present": true,
     "entry_guard_contract_declared": true,
     "entry_guard_enforcement_before_active_binding": "REQUIRED",
-    "entry_guard_enforcement_currently_deferred": true,
-    "entry_guard_activation_authority": "PASE_F06_F09_F10_PLUS_EXPLICIT_HUMAN_GO",
+    "entry_guard_enforcement_currently_deferred": false,
+    "entry_guard_activation_authority": "EXACT_ORCHESTRATOR_DISPATCH_RECEIPT_PLUS_EXPLICIT_HUMAN_GO",
     "active_subject_binding_count": 0,
     "subject_binding_policy": "EXACT_ACTIVE_BINDING_ONLY",
     "wildcard_active_binding_policy": "BLOCK",
@@ -92,7 +92,7 @@
   ],
   "explicit_non_activation": [
     "CURRENT_POINTER_DOES_NOT_AUTHORIZE_EXECUTION",
-    "NO_ACTIVE_SUBJECT_BINDING_BEFORE_PASE_ACTIVATION_AUTHORITY",
+    "NO_ACTIVE_SUBJECT_BINDING_BEFORE_EXACT_ORCHESTRATOR_RECEIPT_PLUS_HUMAN_GO",
     "NO_GLOBAL_PASE_CONTROL",
     "NO_WILDCARD_SUBJECT_BINDING",
     "NO_ASSURANCE_COMPLETENESS_REINTRODUCTION",
