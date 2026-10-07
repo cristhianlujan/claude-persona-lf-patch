@@ -1,0 +1,95 @@
+{
+  "schema_version": "pase-disabled-window-migration-prfiles-shard/v1",
+  "offset": [
+    101,
+    108
+  ],
+  "rows": [
+    {
+      "seq": 354,
+      "merge_sha": "2cb0265b78396110ed154850fd514c18e2ba03a4",
+      "pr": 1553,
+      "head_sha_original": "a27836e6c44977d12b45eec2baa677abd7cdf20f",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 4
+    },
+    {
+      "seq": 356,
+      "merge_sha": "3d3c0b73e8eb19ef3c57fedbdc8756b45011241d",
+      "pr": 1550,
+      "head_sha_original": "15095dabe353b113eae55f0657acbd867302ae56",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 357,
+      "merge_sha": "ef4ed8aaad9bcef85a14a09a23cd8d088ff2b1ea",
+      "pr": 1549,
+      "head_sha_original": "418f15e5193e0121a3d59c1dec7510fcc3d058ab",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 359,
+      "merge_sha": "7e1759441d651b6007f7fdae9026da5d3ee6e47e",
+      "pr": 1547,
+      "head_sha_original": "c22d54459f23607a58726ed6fb9419ab0de667cd",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261003182500_ig_rc001_n11_dynamic_component_binding_v1.sql"
+      ],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 360,
+      "merge_sha": "aaa8cc2dafa5720385680434b7c0da25b31fcfa9",
+      "pr": 1546,
+      "head_sha_original": "5499148c450c50961054c065099c9fb1ecba1968",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261003174500_ig_rc001_n10_curator_rebind_boundary_v1.sql"
+      ],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 361,
+      "merge_sha": "35a73519922713825f288afaebd82a7377435096",
+      "pr": 1545,
+      "head_sha_original": "306f05d1f1fd03f7d1eccd923bf47244a1bbcb95",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261003150000_ig_t_consumers_asset_retirement_promotion_v1.sql"
+      ],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 362,
+      "merge_sha": "94295571d09a6b517a25bc993adaaf7b855aea8b",
+      "pr": 1544,
+      "head_sha_original": "e560d619a9bc939e1eb65b4c5556346db350433a",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 11
+    },
+    {
+      "seq": 363,
+      "merge_sha": "43aa5b2797b309d75acf516340eb8297ad8df413",
+      "pr": 1043,
+      "head_sha_original": "ceb7bf5ed6025e8c5460718957c086e766883f70",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 3
+    }
+  ]
+}
