@@ -7,10 +7,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 ASSESS_DIR = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment"
+VALIDATORS_DIR = ROOT / "skills/profile_creator/validators"
 sys.path.insert(0, str(ASSESS_DIR))
+sys.path.insert(0, str(VALIDATORS_DIR))
 
 from profile_assessment_v1 import assess_profile
-from skills.profile_creator.validators.evaluate_s26_profile_baseline import evaluate as evaluate_s26
+from evaluate_s26_profile_baseline import evaluate as evaluate_s26
 
 TARGETS = Path(__file__).with_name("profile_evolution_shadow_targets_v1.json")
 
