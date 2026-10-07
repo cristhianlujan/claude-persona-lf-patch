@@ -472,6 +472,118 @@ begin
     where pu.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
       and pu.unit_code=r.unit_code;
   end loop;
+
+  -- Root-safe transversal merge. jsonb_set does not create absent intermediate
+  -- parents, so bind through the whole transversal_execution_v1 object.
+  update programacion.engineering_plan_units pu
+  set unit_metadata=jsonb_set(
+    pu.unit_metadata,
+    '{transversal_execution_v1}',
+    coalesce(pu.unit_metadata->'transversal_execution_v1','{}'::jsonb)
+      || jsonb_build_object(
+        'REUSE_LEGACY_RETIREMENT',
+        jsonb_build_object(
+          'mode','EXPLICIT',
+          'activation','ACTIVE',
+          'capabilities',jsonb_build_array(jsonb_build_object(
+            'handler','REPOSITORY_CAPABILITY_EXECUTOR',
+            'capability_code','ASSET_RETIREMENT_GOVERNANCE',
+            'execution_input',jsonb_build_object(
+              'capability_input',jsonb_build_object(
+                'schema_version','ENGINEERING_REPOSITORY_CAPABILITY_INPUT_REF_V1',
+                'resolution','CURRENT_M10_12_LEGACY_INVENTORY_AND_LIVE_DEPENDENCY_GRAPH',
+                'plan_code','IG_CURATOR_VALIDATOR_REFACTOR_V2',
+                'unit_code','M10.12',
+                'source_checkpoint','LEGACY_INVENTORY',
+                'literal_payload','FORBIDDEN'
+              )
+            )
+          )),
+          'execution_order','PLAN_ORDER_ONE_BY_ONE',
+          'admission_required',false,
+          'dependency_resolution','MANIFEST_GRAPH'
+        )
+      ),
+    true
+  )
+  where pu.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' and pu.unit_code='M10.12';
+
+  update programacion.engineering_plan_units pu
+  set unit_metadata=jsonb_set(
+    pu.unit_metadata,
+    '{transversal_execution_v1}',
+    coalesce(pu.unit_metadata->'transversal_execution_v1','{}'::jsonb)
+      || jsonb_build_object(
+        'RUNTIME_PREFLIGHT',
+        jsonb_build_object(
+          'mode','EXPLICIT',
+          'activation','ACTIVE',
+          'capabilities',jsonb_build_array(jsonb_build_object(
+            'handler','REPOSITORY_CAPABILITY_EXECUTOR',
+            'capability_code','RUNTIME_DEPLOY_VERIFICATION',
+            'execution_input',jsonb_build_object(
+              'capability_input',jsonb_build_object(
+                'schema_version','ENGINEERING_REPOSITORY_CAPABILITY_INPUT_REF_V1',
+                'resolution','CURRENT_MAIN_EDGE_CONTRACT_AND_RELEASE_BINDING',
+                'plan_code','IG_CURATOR_VALIDATOR_REFACTOR_V2',
+                'unit_code','M10.2',
+                'source_checkpoint','SWITCH_ONLY_MIGRATION',
+                'literal_payload','FORBIDDEN'
+              )
+            )
+          )),
+          'execution_order','PLAN_ORDER_ONE_BY_ONE',
+          'admission_required',false,
+          'dependency_resolution','MANIFEST_GRAPH'
+        )
+      ),
+    true
+  )
+  where pu.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' and pu.unit_code='M10.2';
+
+  for r in
+    select * from (values
+      ('M7.14','M7_EVIDENCE_BUNDLE'),
+      ('M8.12','M8_EVIDENCE_BUNDLE'),
+      ('M9.0','BUNDLE_MANIFEST_SHA'),
+      ('M9.13','M9_EVIDENCE_BUNDLE')
+    ) x(unit_code,checkpoint_code)
+  loop
+    update programacion.engineering_plan_units pu
+    set unit_metadata=jsonb_set(
+      pu.unit_metadata,
+      '{transversal_execution_v1}',
+      coalesce(pu.unit_metadata->'transversal_execution_v1','{}'::jsonb)
+        || jsonb_build_object(
+          r.checkpoint_code,
+          jsonb_build_object(
+            'mode','EXPLICIT',
+            'activation','ACTIVE',
+            'capabilities',jsonb_build_array(jsonb_build_object(
+              'handler','REPOSITORY_CAPABILITY_EXECUTOR',
+              'capability_code','FINAL_EVIDENCE',
+              'execution_input',jsonb_build_object(
+                'capability_input',jsonb_build_object(
+                  'schema_version','ENGINEERING_REPOSITORY_CAPABILITY_INPUT_REF_V1',
+                  'resolution','CURRENT_UNIT_DEPENDENCY_EVIDENCE_AND_CURRENTNESS',
+                  'plan_code','IG_CURATOR_VALIDATOR_REFACTOR_V2',
+                  'unit_code',r.unit_code,
+                  'source_checkpoint',r.checkpoint_code,
+                  'literal_payload','FORBIDDEN'
+                )
+              )
+            )),
+            'execution_order','PLAN_ORDER_ONE_BY_ONE',
+            'admission_required',false,
+            'dependency_resolution','MANIFEST_GRAPH'
+          )
+        ),
+      true
+    )
+    where pu.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
+      and pu.unit_code=r.unit_code;
+  end loop;
+
 end;
 $bind$;
 
