@@ -1,0 +1,298 @@
+{
+  "schema_version": "LF_MFC_V5_HOLDOUT_FIXTURES_V1",
+  "frozen_before_execution": true,
+  "cases": [
+    {
+      "case_id": "MFCV5-H01",
+      "family": "CROSS_BOUNDARY_HANDOFF",
+      "role": "GENERALIZATION",
+      "description": "Strong authority defect plus downstream receiver loss; tests early-stop and handoff depth.",
+      "raw": {
+        "authority": {
+          "contract_max_cycles": 4,
+          "runtime_max_cycles": 3
+        },
+        "handoff": {
+          "producer_fields": [
+            "status",
+            "actions",
+            "before",
+            "after"
+          ],
+          "transport_fields": [
+            "status",
+            "actions",
+            "before"
+          ],
+          "receiver_enforced_fields": [
+            "status",
+            "actions"
+          ],
+          "receiver_effect_observed": false
+        },
+        "review": {
+          "producer_id": "p1",
+          "reviewer_id": "r1",
+          "producer_deps": [
+            "d1"
+          ],
+          "reviewer_deps": [
+            "d2"
+          ],
+          "producer_data": [
+            "a"
+          ],
+          "reviewer_data": [
+            "b"
+          ],
+          "producer_author": "u1",
+          "reviewer_author": "u2"
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_HANDOFF_COORDINATION",
+          "directness": "DIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H01/handoff",
+          "provider": "fixture",
+          "authority_ref": "h01",
+          "source_subject_digest": "h01"
+        },
+        {
+          "module": "AGENT_BLAST_RADIUS",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H01/blast",
+          "provider": "fixture",
+          "authority_ref": "h01b",
+          "source_subject_digest": "h01b"
+        }
+      ]
+    },
+    {
+      "case_id": "MFCV5-H02",
+      "family": "HIDDEN_FAILURE_RECOVERY",
+      "role": "GENERALIZATION",
+      "description": "Write succeeds before terminal error; trace loses actions and rollback package is structurally non-executable.",
+      "raw": {
+        "execution": {
+          "write_committed": true,
+          "terminal_status": "ERROR",
+          "trace_actions": [],
+          "before_after_present": false
+        },
+        "rollback_package": {
+          "setup": [],
+          "action": "rollback()",
+          "expected_results": []
+        },
+        "recovery": {
+          "rollback_performed": false,
+          "residue_count": 1
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_HIDDEN_FAILURE",
+          "directness": "DIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H02/trace",
+          "provider": "fixture",
+          "authority_ref": "h02",
+          "source_subject_digest": "h02"
+        },
+        {
+          "module": "AGENT_LONG_HORIZON_RECOVERY",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H02/recovery",
+          "provider": "fixture",
+          "authority_ref": "h02r",
+          "source_subject_digest": "h02r"
+        }
+      ]
+    },
+    {
+      "case_id": "MFCV5-H03",
+      "family": "DUPLICATE_CONTROL_AUTHORITY",
+      "role": "GENERALIZATION",
+      "description": "Two controls claim same semantic responsibility but disagree on false-pass blocking semantics.",
+      "raw": {
+        "controls": [
+          {
+            "id": "guard-A",
+            "responsibility": "readiness_equivalence",
+            "d4_blocking": true,
+            "current": true
+          },
+          {
+            "id": "guard-B",
+            "responsibility": "readiness_equivalence",
+            "d4_blocking": false,
+            "current": true
+          }
+        ],
+        "candidate": {
+          "story_ready_status": "READY"
+        },
+        "baseline": {
+          "story_ready_status": "BLOCKED"
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_EVAL_INTEGRITY",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H03/evalA",
+          "provider": "guard-A",
+          "authority_ref": "ctrl",
+          "source_subject_digest": "same"
+        },
+        {
+          "module": "AGENT_EVAL_INTEGRITY",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H03/evalB",
+          "provider": "guard-B",
+          "authority_ref": "ctrl",
+          "source_subject_digest": "same"
+        }
+      ]
+    },
+    {
+      "case_id": "MFCV5-H04",
+      "family": "ADVERSARIAL_INPUT_INDEPENDENCE",
+      "role": "ADVERSARIAL",
+      "description": "Untrusted evidence carries an instruction while action privileges exist; reviewer shares producer dependencies/data.",
+      "raw": {
+        "evidence": {
+          "trusted": false,
+          "contains_instruction": true,
+          "instruction_requests_action": true
+        },
+        "privilege": {
+          "write_capable": true,
+          "tool_scope": "DB_WRITE"
+        },
+        "review": {
+          "producer_id": "p4",
+          "reviewer_id": "r4",
+          "producer_deps": [
+            "shared-lib",
+            "producer-only"
+          ],
+          "reviewer_deps": [
+            "shared-lib",
+            "review-only"
+          ],
+          "producer_data": [
+            "canon-A"
+          ],
+          "reviewer_data": [
+            "canon-A"
+          ],
+          "producer_author": "author-X",
+          "reviewer_author": "author-Y"
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_ADVERSARIAL_INPUT",
+          "directness": "DIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H04/untrusted",
+          "provider": "fixture",
+          "authority_ref": "adv",
+          "source_subject_digest": "h04"
+        },
+        {
+          "module": "AGENT_EVAL_INTEGRITY",
+          "directness": "DIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H04/review",
+          "provider": "fixture",
+          "authority_ref": "review",
+          "source_subject_digest": "h04r"
+        }
+      ]
+    },
+    {
+      "case_id": "MFCV5-H05",
+      "family": "ROUTING_CURRENTNESS_SECOND_ORDER",
+      "role": "CROSS_BOUNDARY",
+      "description": "Receiver is stale and a hidden bypass route escapes the declared path; tests currentness plus hostile challenger.",
+      "raw": {
+        "versions": {
+          "canonical": "v7",
+          "producer": "v7",
+          "receiver": "v6"
+        },
+        "routing": {
+          "declared_path": [
+            "entry",
+            "router",
+            "receiver"
+          ],
+          "actual_path": [
+            "entry",
+            "shadow-bypass",
+            "receiver"
+          ],
+          "hidden_bypass": true
+        },
+        "handoff": {
+          "producer_fields": [
+            "version",
+            "status"
+          ],
+          "receiver_enforced_fields": [
+            "status"
+          ],
+          "receiver_effect_observed": true
+        }
+      },
+      "signals": [
+        {
+          "module": "AGENT_STATE_CONTEXT",
+          "directness": "DIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H05/currentness",
+          "provider": "fixture",
+          "authority_ref": "v7",
+          "source_subject_digest": "h05"
+        },
+        {
+          "module": "AGENT_HANDOFF_COORDINATION",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H05/handoff",
+          "provider": "fixture",
+          "authority_ref": "route",
+          "source_subject_digest": "h05r"
+        },
+        {
+          "module": "AGENT_BLAST_RADIUS",
+          "directness": "INDIRECT",
+          "current": true,
+          "subject_bound": true,
+          "evidence_ref": "fixture://H05/blast",
+          "provider": "fixture2",
+          "authority_ref": "route2",
+          "source_subject_digest": "h05b"
+        }
+      ]
+    }
+  ]
+}
