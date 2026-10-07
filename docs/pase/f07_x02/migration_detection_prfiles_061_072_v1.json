@@ -1,0 +1,131 @@
+{
+  "schema_version": "pase-disabled-window-migration-prfiles-shard/v1",
+  "offset": [
+    61,
+    72
+  ],
+  "rows": [
+    {
+      "seq": 195,
+      "merge_sha": "9c9c0215dad03860ccdb249e3216b58ed3a9ca03",
+      "pr": 1724,
+      "head_sha_original": "2995e38584b8b67222f6ce1aad01d71a05c338a9",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 196,
+      "merge_sha": "197fb32bf25164d5c8d85ae9895c57c0dce0d242",
+      "pr": 1723,
+      "head_sha_original": "a00024e245dba5249436dc271465ba0a2901f1cc",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 197,
+      "merge_sha": "0daa21699065c99d4d07b0eb07050a2f33e0fa9d",
+      "pr": 1722,
+      "head_sha_original": "c08cb5d60f8214e36d956b389fae1e708643a640",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 199,
+      "merge_sha": "c009b2ed38009962ccc4409a806416c6da0b71a3",
+      "pr": 1719,
+      "head_sha_original": "7aea0cce827865e47c814255b907e462dd731b16",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 212,
+      "merge_sha": "94c09e4dbcf0ee971510c45bce3d02da85c570e2",
+      "pr": 1688,
+      "head_sha_original": "bd6740ce210921a02886eb7b1c46565599b87fc0",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 10
+    },
+    {
+      "seq": 250,
+      "merge_sha": "65becd464f66b88b826ac8cd3865722446cd2e9b",
+      "pr": 1664,
+      "head_sha_original": "e5f1bada3376bb5693d513ef0539da8f11eb3a96",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 251,
+      "merge_sha": "6ae891bb51c0531cf5b573e1df395ab0a1917c84",
+      "pr": 1663,
+      "head_sha_original": "c09ce94f3959091355f500194cb00705f213822a",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 252,
+      "merge_sha": "aca7f7a59ae0f01bbc9ea87ed5f8bd625595df3e",
+      "pr": 1662,
+      "head_sha_original": "852682a071c2cd12ddfc8907796289b0e3f7a117",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 253,
+      "merge_sha": "22905708c100a1c23462871353b3026d654289c8",
+      "pr": 1661,
+      "head_sha_original": "02087263505027466b6c0d5e4bc881a433601722",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 2
+    },
+    {
+      "seq": 254,
+      "merge_sha": "d0ba8d8e67b0b1ecb2cac5ea5cbee10157649313",
+      "pr": 1660,
+      "head_sha_original": "fe43662a6f773c94ed91f94e686ccbcc8e9099a5",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 255,
+      "merge_sha": "0e2dff74129c3a19597611b5fcf32e019eb0e056",
+      "pr": 1659,
+      "head_sha_original": "8e8d9b22a6ab334cecbfd8bee4191105c9ec4c58",
+      "direct_migration_history_match": false,
+      "has_migrations": false,
+      "migration_files": [],
+      "changed_file_count": 1
+    },
+    {
+      "seq": 256,
+      "merge_sha": "735ad31e0de27a254b5537c1d15f4e8ac85117e6",
+      "pr": 1658,
+      "head_sha_original": "c629e7ec750c4fa7829716ad62631e5ee693964c",
+      "direct_migration_history_match": false,
+      "has_migrations": true,
+      "migration_files": [
+        "supabase/migrations/20261004215500_ig_m7_8_cached_v1_compat_wrapper_v1.sql"
+      ],
+      "changed_file_count": 2
+    }
+  ]
+}
