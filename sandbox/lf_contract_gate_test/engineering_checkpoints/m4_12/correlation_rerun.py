@@ -141,8 +141,23 @@ def evaluate(data):
         raise ValueError("SELECTED_RUN_ORACLE_FAMILY_MISMATCH")
     if any(code not in families for code in requested):
         raise ValueError("SELECTED_RUN_FAMILY_NOT_IN_REGISTRY")
+    def oracle_has_bounded_evidence(row):
+        oracle = row.get("oracle") or {}
+        return (
+            oracle.get("implemented") is True
+            and oracle.get("pantalla_id") == screen_id
+            and oracle.get("version_id") == selected.get("version_id")
+            and oracle.get("family_code") == row.get("family_code")
+            and oracle.get("comparison_only") is True
+            and oracle.get("decisional") is False
+            and isinstance(oracle.get("classification"), str)
+            and not oracle["classification"].startswith("UNRESOLVED")
+            and oracle.get("shadow_sha256")
+            and isinstance(oracle.get("trace"), list)
+            and len(oracle["trace"]) > 0
+        )
     uncovered = sorted(r["family_code"] for r in oracle_rows
-                       if (r.get("oracle") or {}).get("implemented") is not True)
+                       if not oracle_has_bounded_evidence(r))
     if uncovered:
         failures.append({"path":"SELECTED_SCREEN_ORACLE_COVERAGE",
                          "run_id":run_id, "pantalla_id":screen_id,
