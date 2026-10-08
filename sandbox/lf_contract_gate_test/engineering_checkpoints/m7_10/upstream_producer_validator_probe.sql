@@ -17,6 +17,7 @@ declare
  v_val_pass integer;
  v_val_pending integer;
  v_new_status text;
+ v_guard_negative boolean:=false;
  v_new_run bigint;
  v_source_count integer:=0;
  v_manifest_count integer:=0;
@@ -82,6 +83,20 @@ begin
      raise exception 'M7_10_VALIDATOR_PENDING_AFTER_8:pass=% pending=% response=%',
        v_val_pass,v_val_pending,left(coalesce(v_validator::text,''),300);
    end if;
+   -- Negative: immutable Curator evidence cannot be changed by a Validator-stage UPDATE.
+   begin
+     update programacion.input_family_assessments
+       set curator_evidence=curator_evidence||jsonb_build_object('test_tamper',true)
+       where run_id=v_new_run and family_code='ACCESSIBILITY';
+     raise exception 'M7_10_NEGATIVE_CURATOR_IMMUTABILITY_BYPASSED';
+   exception when others then
+     if sqlerrm like 'CURATOR_FIELDS_IMMUTABLE:%' then
+       v_guard_negative:=true;
+     else
+       raise;
+     end if;
+   end;
+   if not v_guard_negative then raise exception 'M7_10_NEGATIVE_GUARD_NOT_VERIFIED'; end if;
    select coalesce(jsonb_array_length(r.source_manifest),0) into v_source_count
      from programacion.input_readiness_runs r where r.id=v_new_run;
    select m.receipt_count,m.manifest_sha256 into v_manifest_count,v_manifest_sha
@@ -102,7 +117,7 @@ begin
       'graph_receipt_count',v_graph_receipt_count,
       'handoff_receipt_count',v_handoff_receipt_count,
       'curator_status',v_curator->>'status',
-      'validator_status',v_new_status,'validator_pass',v_val_pass,'validator_pending',v_val_pending,
+      'validator_status',v_new_status,'negative_immutability_rejected',v_guard_negative,'validator_pass',v_val_pass,'validator_pending',v_val_pending,
       'curator_strategy',coalesce(v_curator->>'strategy',v_curator#>>'{persistence_pipeline_receipt,strategy}'),
       'is_new_ephemeral_run',true,'no_receipts_synthesized',true);
    raise exception 'M7_10_UPSTREAM_INTENTIONAL_ROLLBACK';
