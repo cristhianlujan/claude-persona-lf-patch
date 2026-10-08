@@ -30,6 +30,17 @@ VOLATILE_TERMINAL_KEYS = {
     "curator_identity",
     "output_sha256",
 }
+
+# Closed, path-scoped identities from one rollback-only graph-receipt issuance.
+# Never strip semantic graph hashes, receipt statuses, decisions or cardinality.
+VOLATILE_GRAPH_RECEIPT_KEYS_BY_PATH = {
+    ("graph_receipts",): frozenset(("ledger_execution_id", "orchestrator_execution_id")),
+    ("graph_receipts", "dispatch_receipt"): frozenset(("receipt_id", "receipt_sha256")),
+    ("graph_receipts", "graph_receipt"): frozenset((
+        "dispatch_receipt_sha256", "ledger_execution_id",
+        "producer_execution_id", "receipt_ids",
+    )),
+}
 FORBIDDEN_SQL = re.compile(
     r"(?is)(?:^|;)\s*(?:(?:--[^\r\n]*(?:\r?\n|$)|/\*.*?\*/)\s*)*"
     r"(?:commit\b|rollback\b|end\s+transaction\b|begin\s+transaction\b|start\s+transaction\b|"
@@ -100,24 +111,26 @@ def validate_transaction_bound_sql(sql: str) -> None:
         raise JudgeError("SERVER_IO_OR_EXTERNAL_EFFECT_FORBIDDEN")
 
 
-def _normalize_terminal_value(value: Any) -> Any:
-    """Remove execution-local identity fields at any nesting depth.
+def _normalize_terminal_value(value: Any, path: tuple[str, ...] = ()) -> Any:
+    """Compare semantics while omitting only proven transaction-local identities.
 
-    Terminal payloads may embed proposal_validation.run_id. Baseline and
-    candidate necessarily receive different transaction-local run IDs, so those
-    identities are not semantic drift and must not block an otherwise equal
-    flow. All non-volatile values and collection structure remain comparable.
+    Generic run-local identity keys retain their previous recursive behavior.
+    Graph receipt IDs and their digests are scoped to exact nested paths.
+    Semantic graph hashes, statuses, evidence and collection structure survive.
     """
     if isinstance(value, dict):
+        local_keys = VOLATILE_TERMINAL_KEYS | VOLATILE_GRAPH_RECEIPT_KEYS_BY_PATH.get(
+            path, frozenset()
+        )
         return {
-            key: _normalize_terminal_value(item)
+            key: _normalize_terminal_value(item, path + (key,))
             for key, item in value.items()
-            if key not in VOLATILE_TERMINAL_KEYS
+            if key not in local_keys
         }
     if isinstance(value, list):
-        return [_normalize_terminal_value(item) for item in value]
+        return [_normalize_terminal_value(item, path) for item in value]
     if isinstance(value, tuple):
-        return tuple(_normalize_terminal_value(item) for item in value)
+        return tuple(_normalize_terminal_value(item, path) for item in value)
     return value
 
 
