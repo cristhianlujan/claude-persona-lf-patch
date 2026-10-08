@@ -24,6 +24,7 @@ begin
       and entidad_codigo='ACTUALIZACION_PERFIL_LF'
       and payload->>'status'='ADMIT_CUTOVER'
       and coalesce((payload->>'case_count')::integer,0) >= 20
+      and payload->>'benchmark_scope'='FULL_PROFILE_EVOLUTION_BEHAVIOR'
       and payload->>'primary_capability_score_direction'='UP'
       and payload->>'holdout_direction'='UP'
       and coalesce((payload->>'critical_regressions')::integer,1)=0
