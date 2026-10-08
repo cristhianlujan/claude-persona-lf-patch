@@ -14,6 +14,8 @@ declare
   v_validator_component_id bigint;
   v_component_count integer;
   v_status text;
+  v_semantic_required_families text[];
+  v_comparison_requested boolean;
   v_pantalla_id integer;
   v_parent bigint;
   v_family_count integer;
@@ -72,8 +74,10 @@ begin
   select source_snapshot_sha256,contract_revision into v_source_sha,v_contract_revision
   from programacion.input_readiness_runs where id=p_run_id;
 
+  v_semantic_required_families:=programacion.fn_input_validator_semantic_scope_v1(p_run_id);
   for a in select * from programacion.input_family_assessments where run_id=p_run_id order by family_code
   loop
+    v_comparison_requested:=a.family_code=ANY(v_semantic_required_families);
     v_assertions:=programacion.fn_input_v58_build_assertions(p_run_id,v_parent,a.family_code);
     if jsonb_typeof(v_assertions) is distinct from 'array' or jsonb_array_length(v_assertions)=0 then
       raise exception 'REBOUND_VALIDATOR_ASSERTIONS_REQUIRED:%',a.family_code;
@@ -85,7 +89,7 @@ begin
           'runtime','SUPABASE_EDGE_FUNCTION:input-governance-validator-v1',
           'direct_source_readback',true,'contract_revision',v_contract_revision,
           'source_snapshot_sha256',v_source_sha,'curator_sha256',a.curator_sha256,
-          'semantic_depth_sha256',a.semantic_depth_sha256,'assertions',v_assertions
+          'semantic_depth_sha256',a.semantic_depth_sha256,'validation_phase','SOURCE_INTEGRITY','semantic_comparison_requested',v_comparison_requested,'semantic_independence_credited',false,'assertions',v_assertions
         );
     v_assertion_set_sha256:=programacion.fn_v09_sha256_jsonb(v_assertions);
     insert into programacion.input_validator_assertion_sets_v1(assertion_set_sha256,assertions)
@@ -125,15 +129,19 @@ begin
     if jsonb_array_length(v_findings)>0 then
       v_outcome:='FAIL';
     else
-      -- The source integrity phase succeeded. Do NOT call it semantic PASS
-      -- without a separately verified independent oracle/receipt.
-      v_outcome:='BLOCKED';
-      v_findings:=jsonb_build_array(jsonb_build_object(
-        'finding_type','INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN',
-        'phase','SEMANTIC',
-        'source_integrity_passed',true,
-        'scope','SELECTIVE_FAMILY_ORACLE_REQUIRED_WHEN_APPLICABLE'
-      ));
+      -- Unrequested families retain their existing source-integrity PASS.
+      -- A specifically requested semantic comparison cannot be certified here.
+      IF v_comparison_requested THEN
+        v_outcome:='BLOCKED';
+        v_findings:=jsonb_build_array(jsonb_build_object(
+          'finding_type','INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN',
+          'phase','SEMANTIC','source_integrity_passed',true,
+          'family_code',a.family_code
+        ));
+      ELSE
+        v_outcome:='PASS';
+        v_findings:='[]'::jsonb;
+      END IF;
     end if;
     update programacion.input_family_assessments
     set validator_outcome=v_outcome,validator_findings=v_findings,
@@ -155,15 +163,22 @@ begin
       v_family_count,v_pass+v_fail+v_blocked;
   end if;
 
-  -- In this candidate, semantic certification is not yet wired. Keep the run
-  -- in VALIDATING; never finalize based solely on source integrity.
+  -- Preserve ordinary source-integrity completion when no semantic
+  -- comparison was requested, without accrediting independent semantics.
+  IF v_fail=0 AND v_blocked=0 THEN
+    UPDATE programacion.input_readiness_runs SET status='COMPLETED' WHERE id=p_run_id;
+  END IF;
   v_payload:=jsonb_build_object(
-    'status',case when v_fail>0 then 'FAIL' else 'BLOCKED' end,
+    'status',case WHEN v_blocked>0 THEN 'VALIDATION_BLOCKED'
+                  WHEN v_fail>0 THEN 'VALIDATION_FAILED'
+                  ELSE 'COMPLETED' END,
     'run_id',p_run_id,'parent_run_id',v_parent,'pantalla_id',v_pantalla_id,
     'family_count',v_family_count,'validator_pass_count',v_pass,
     'validator_fail_count',v_fail,'validator_blocked_count',v_blocked,
     'validator_identity',p_validator_identity,
     'source_assertions_re_evaluated',true,
+    'semantic_comparison_count',cardinality(v_semantic_required_families),
+    'validator_pass_scope','SOURCE_INTEGRITY_ONLY',
     'independent_semantic_oracle_verified',false,
     'required_role','DISPATCHER_FINALIZE','promotion_authorized',false,'production_authorized',false
   );
