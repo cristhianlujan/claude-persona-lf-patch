@@ -8,6 +8,7 @@ AS $function$
 declare
   v_version bigint:=public.fn_lf_version_compatibility_current_version_id_v1('PROGRAMACION_CONTRACT','INPUT_READINESS_CONTRACT','INPUT_GOVERNANCE_AGENT');
   v_status text; v_pantalla_id integer; v_family_count integer; v_curator_identity text; v_existing_validator text; v_contract_revision text; v_validator_component bigint; v_source_sha text; v_pass integer; v_fail integer; v_blocked integer;
+  v_semantic_required_families text[]; v_comparison_requested boolean;
   v_pre jsonb; v_assertions jsonb; v_exec_id text:=gen_random_uuid()::text; v_payload jsonb; a record; v_assertion_set_sha256 text; v_assertion_set jsonb; v_logical_evidence jsonb; v_physical_evidence jsonb; v_outcome text; v_findings jsonb; v_assertion jsonb; v_eval jsonb;
 begin
   if p_validator_identity !~ '^INPUT_VALIDATOR:(EDGE:input-governance-validator-v1|SQL:ig-governed-dispatch-v1):[A-Za-z0-9_-]{6,128}$' then raise exception 'INPUT_GOVERNANCE_VALIDATOR_RUNTIME_IDENTITY_INVALID'; end if;
@@ -18,10 +19,12 @@ begin
   if v_status='CURATING' then if (select count(*) from programacion.input_family_assessments where run_id=p_run_id)<>v_family_count then raise exception 'CURATOR_UNIVERSE_INCOMPLETE'; end if; update programacion.input_readiness_runs set status='VALIDATING',validator_identity=p_validator_identity,validator_component_id=v_validator_component where id=p_run_id;
   elsif v_status='VALIDATING' then if v_existing_validator is distinct from p_validator_identity then raise exception 'VALIDATOR_IDENTITY_MISMATCH'; end if; else raise exception 'BOOTSTRAP_VALIDATOR_INVALID_RUN_STATUS:%',v_status; end if;
   select source_snapshot_sha256,contract_revision into v_source_sha,v_contract_revision from programacion.input_readiness_runs where id=p_run_id;
+  v_semantic_required_families:=programacion.fn_input_validator_semantic_scope_v1(p_run_id);
   for a in select * from programacion.input_family_assessments where run_id=p_run_id order by family_code loop
+    v_comparison_requested:=a.family_code=ANY(v_semantic_required_families);
     -- No shared Curator semantic classifier is allowed as Validator authority.
     v_assertions:=programacion.fn_input_governance_bootstrap_assertions_v1(p_run_id,a.family_code); if jsonb_array_length(v_assertions)=0 then raise exception 'BOOTSTRAP_VALIDATOR_ASSERTIONS_EMPTY:%',a.family_code; end if;
-    v_logical_evidence:=jsonb_build_object('component_id',v_validator_component,'execution_id',v_exec_id,'validated_curator_execution_id',a.curator_evidence->>'execution_id','execution_mode','INDEPENDENT_VALIDATOR','runtime','SUPABASE_EDGE_FUNCTION:input-governance-validator-v1','direct_source_readback',true,'contract_revision',v_contract_revision,'source_snapshot_sha256',v_source_sha,'curator_sha256',a.curator_sha256,'semantic_depth_sha256',a.semantic_depth_sha256,'bootstrap_classifier_sha256',null,'assertions',v_assertions);
+    v_logical_evidence:=jsonb_build_object('component_id',v_validator_component,'execution_id',v_exec_id,'validated_curator_execution_id',a.curator_evidence->>'execution_id','execution_mode','INDEPENDENT_VALIDATOR','runtime','SUPABASE_EDGE_FUNCTION:input-governance-validator-v1','direct_source_readback',true,'contract_revision',v_contract_revision,'source_snapshot_sha256',v_source_sha,'curator_sha256',a.curator_sha256,'semantic_depth_sha256',a.semantic_depth_sha256,'bootstrap_classifier_sha256',null,'validation_phase','SOURCE_INTEGRITY','semantic_comparison_requested',v_comparison_requested,'semantic_independence_credited',false,'assertions',v_assertions);
     v_assertion_set_sha256:=programacion.fn_v09_sha256_jsonb(v_assertions);
     insert into programacion.input_validator_assertion_sets_v1(assertion_set_sha256,assertions)
     values(v_assertion_set_sha256,v_assertions)
@@ -56,12 +59,18 @@ begin
     end loop;
     if jsonb_array_length(v_findings)>0 then
       v_outcome:='FAIL';
-    else
-      v_findings:=jsonb_build_array(jsonb_build_object(
-        'finding_type','INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN',
-        'family_code',a.family_code,'source_integrity_passed',true
-      ));
-    end if;
+    ELSE
+      IF v_comparison_requested THEN
+        v_outcome:='BLOCKED';
+        v_findings:=jsonb_build_array(jsonb_build_object(
+          'finding_type','INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN',
+          'family_code',a.family_code,'source_integrity_passed',true
+        ));
+      ELSE
+        v_outcome:='PASS';
+        v_findings:='[]'::jsonb;
+      END IF;
+    END IF;
     update programacion.input_family_assessments
        set validator_outcome=v_outcome,
            validator_findings=v_findings,
