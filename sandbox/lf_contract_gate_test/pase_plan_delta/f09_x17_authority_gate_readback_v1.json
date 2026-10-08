@@ -1,0 +1,60 @@
+{
+  "schema_version": "PASE_F09_X17_AUTHORITY_PREFLIGHT_V1",
+  "status": "BLOCKED_NOT_AUTHORIZED",
+  "mode": "READ_ONLY",
+  "plan_id": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work_code": "PASE-ATOM-F09-X17",
+  "authority_producer": "public.fn_lf_plan_delta_authority_readback_v1",
+  "reused_capability": "PLAN_AUTHORITY_DRIFT_GUARD",
+  "authority_source": "public.lf_eventos",
+  "authoritative_event_predicate": {
+    "evento_tipo": "DECISION_ESTRATEGICA",
+    "entidad_tipo": "PROGRAM_PLAN",
+    "entidad_codigo": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+    "payload": {
+      "authority": "LF_GOVERNANCE",
+      "authorizes": [
+        "PLAN_DELTA_AUTHORITY"
+      ],
+      "authorization_scope": "PLAN_DELTA_AUTHORITY",
+      "plan_id": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+      "self_authorization": false,
+      "previous_plan_digest": "RESOLVE_CANONICAL_PREIMAGE_NOT_LITERAL",
+      "next_plan_digest": "RESOLVE_CANONICAL_NEXT_NOT_LITERAL"
+    }
+  },
+  "readback_observations": {
+    "events_checked": [
+      20569,
+      20583
+    ],
+    "both_evento_tipo": "PLAN_SNAPSHOT_DETALLADO",
+    "function_actual": "PLAN_DELTA_NOT_AUTHORIZED",
+    "reason": "AUTHORIZATION_EVENT_TYPE_MISMATCH",
+    "plan_specific_direction_matching_predicate_count": 0,
+    "current_work_item_count": 0,
+    "current_plan_unit_count": 0,
+    "pase_simple_executor_current_admission": "CROSS_PLAN_OR_UNMAPPED_REQUIREMENT",
+    "note": "The legacy plan-anchor digest and next digest are NOT derived here. Authorization cannot be self-granted from a snapshot; source declarations cannot stand in for a typed receipt."
+  },
+  "next_safe_steps": [
+    "Identify the canonical PASE plan anchor/digest under PLAN_AUTHORITY_DRIFT_GUARD and derive prior and next digests with governed source, not guessed hashes.",
+    "Obtain a separate, explicit LF_GOVERNANCE DECISION_ESTRATEGICA plan-delta direction, referring to the reviewed proposed F09-X17 delta.",
+    "Call existing fn_lf_plan_delta_authority_readback_v1 with actual event and exact digests, require AUTHORIZED_PLAN_DELTA; preserve receipt digest and crossbind to request.",
+    "Only after gated authorization and source parity, materialize atomic work item/plan unit/REQUIRES edges via governed carrier with idempotent readback and rollback proof.",
+    "Re-run domain-independent entry/currentness/readback, verify new edge DAG, then qualify real producer/receiver receipts before DONE."
+  ],
+  "related_docs": [
+    "docs/pase/PASE_VALIDATION_SCOPE_REUSE_V1.md",
+    "sandbox/lf_contract_gate_test/plan_delta_authority/README.md",
+    "sandbox/lf_contract_gate_test/plan_authority/README.md"
+  ],
+  "prohibited": [
+    "AUTO_CREATE_APPROVAL_EVENT",
+    "DIRECT_UNGOVERNED_SUPABASE_INSERT",
+    "INHERIT_HISTORIC_PASS",
+    "PASE_ACTIVE_BLOCKING",
+    "RUNTIME_DEPLOY",
+    "PRODUCTION_DDL"
+  ]
+}
