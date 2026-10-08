@@ -51,8 +51,8 @@ begin
     limit 10
   loop
     v_phase_started:=clock_timestamp();
-    v_expected:='{}'::jsonb;
-    v_classifier_block:=false;
+    -- The Curator classifier is not an independent semantic source.
+    -- Only canonical source assertions are evaluated in this phase.
 
     v_phase_started:=clock_timestamp();
     v_assertions:=case
@@ -95,35 +95,26 @@ begin
     end if;
     v_outcome:='BLOCKED';
     v_findings:='[]'::jsonb;
-    if false then
-      v_outcome:='BLOCKED';
-      v_findings:=jsonb_build_array(jsonb_build_object(
-        'finding_type','CONTRACT_MISMATCH',
-        'finding_code','VALIDATOR_CLASSIFIER_MISMATCH',
-        'family_code',a.family_code
-      ));
-    else
-      for v_assertion in select value from jsonb_array_elements(v_assertions) loop
-        v_eval:=programacion.fn_input_evaluate_assertion(p_run_id,a.family_code,v_assertion);
-        if coalesce((v_eval->>'passed')::boolean,false) is not true then
-          v_findings:=v_findings||jsonb_build_array(jsonb_build_object(
-            'finding_type','ASSERTION_FAILURE',
-            'finding_code','VALIDATOR_ASSERTION_FAILED',
-            'family_code',a.family_code,
-            'assertion_class',v_eval->>'assertion_class',
-            'source_ref',v_eval->'source_ref',
-            'path',v_eval->'path',
-            'operator',v_eval->>'operator',
-            'expected',v_eval->'expected',
-            'actual',v_eval->'actual'
-          ));
-        end if;
-      end loop;
-      if jsonb_array_length(v_findings)>0 then
-        v_outcome:='FAIL';
-      else
-        v_findings:=jsonb_build_array(jsonb_build_object('finding_type','INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN','source_integrity_passed',true));
+    for v_assertion in select value from jsonb_array_elements(v_assertions) loop
+      v_eval:=programacion.fn_input_evaluate_assertion(p_run_id,a.family_code,v_assertion);
+      if coalesce((v_eval->>'passed')::boolean,false) is not true then
+        v_findings:=v_findings||jsonb_build_array(jsonb_build_object(
+          'finding_type','ASSERTION_FAILURE',
+          'finding_code','VALIDATOR_ASSERTION_FAILED',
+          'family_code',a.family_code,
+          'assertion_class',v_eval->>'assertion_class',
+          'source_ref',v_eval->'source_ref',
+          'path',v_eval->'path',
+          'operator',v_eval->>'operator',
+          'expected',v_eval->'expected',
+          'actual',v_eval->'actual'
+        ));
       end if;
+    end loop;
+    if jsonb_array_length(v_findings)>0 then
+      v_outcome:='FAIL';
+    else
+      v_findings:=jsonb_build_array(jsonb_build_object('finding_type','INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN','source_integrity_passed',true));
     end if;
     update programacion.input_family_assessments
        set validator_outcome=v_outcome,
