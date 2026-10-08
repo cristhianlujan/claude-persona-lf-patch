@@ -32,20 +32,21 @@ SELECT jsonb_build_object(
    'families',(SELECT coalesce(jsonb_agg(a.family_code ORDER BY a.family_code),'[]'::jsonb)
               FROM programacion.input_family_assessments a WHERE a.run_id=r.id))
    FROM programacion.input_readiness_runs r WHERE r.id=:selected_run_id),
+ 'comparison_families',coalesce(to_jsonb(string_to_array(nullif(:'comparison_families',''),',')),'[]'::jsonb),
  'selected_oracles',(SELECT coalesce(jsonb_agg(jsonb_build_object(
      'family_code',a.family_code,
      'oracle',programacion.fn_input_governance_shadow_priority_oracle_v2(
         r.pantalla_id,a.family_code,r.version_id)) ORDER BY a.family_code),'[]'::jsonb)
    FROM programacion.input_readiness_runs r
    JOIN programacion.input_family_assessments a ON a.run_id=r.id
-   WHERE r.id=:selected_run_id),
+   WHERE r.id=:selected_run_id AND a.family_code=any(string_to_array(nullif(:'comparison_families',''),','))),
  'selected_family_specs',(SELECT coalesce(jsonb_agg(jsonb_build_object(
       'family_code',a.family_code,
       'spec',programacion.fn_input_governance_shadow_family_spec_v2(
         a.family_code,r.version_id)) ORDER BY a.family_code),'[]'::jsonb)
    FROM programacion.input_readiness_runs r
    JOIN programacion.input_family_assessments a ON a.run_id=r.id
-   WHERE r.id=:selected_run_id),
+   WHERE r.id=:selected_run_id AND a.family_code=any(string_to_array(nullif(:'comparison_families',''),','))),
  'functions',(SELECT coalesce(jsonb_agg(jsonb_build_object(
    'name', p.proname, 'definition',p.prosrc,'md5',md5(p.prosrc))),
    '[]'::jsonb)
@@ -258,13 +259,19 @@ def main():
     parser = argparse.ArgumentParser(description="M4.12 correlation and selected-screen coverage readback")
     parser.add_argument("--run-id", type=int, required=True,
                         help="Actual readiness run chosen by upstream random screen selection")
+    parser.add_argument("--family-code",action="append",default=[])
     options = parser.parse_args()
     if options.run_id < 1:
         parser.error("run-id must be a positive integer")
+    if any(not re.fullmatch(r"[A-Z][A-Z0-9_]*", x) for x in options.family_code):
+        parser.error("invalid family code")
+    if len(set(options.family_code)) != len(options.family_code):
+        parser.error("duplicate family code")
     try:
         proc = subprocess.run(
             ["psql", "-X", "-A", "-t", "-v", "ON_ERROR_STOP=1",
-             "-v", f"selected_run_id={options.run_id}"],
+             "-v", f"selected_run_id={options.run_id}",
+             "-v", "comparison_families=" + ",".join(options.family_code)],
             input=SQL, capture_output=True, text=True, check=False)
     except OSError as exc:
         print(json.dumps({"test_code":"ENG_M4_12_CORRELATION_RERUN",
