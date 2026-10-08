@@ -68,15 +68,16 @@ BEGIN
       AND m.clause_count=60
   ) THEN RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_MATRIX_MISSING'; END IF;
 
-  SELECT count(*),count(DISTINCT o.obligation_code),
+  SELECT count(*),count(DISTINCT o.evidence_contract->>'clause_key'),
          count(*) FILTER (
-           WHERE o.claim_version<>2 OR o.status<>'CANDIDATO'
-             OR o.evidence_contract->>'contract_revision'<>'5.13'
+           WHERE o.claim_version IS DISTINCT FROM 2 OR o.status IS DISTINCT FROM 'CANDIDATO'
+             OR o.evidence_contract->>'contract_revision' IS DISTINCT FROM '5.13'
              OR nullif(o.evidence_contract->>'clause_key','') IS NULL
-             OR o.evidence_contract#>>'{spec_traversal,classification}'<>'BLOCKED'
+             OR o.evidence_contract#>>'{spec_traversal,classification}' IS DISTINCT FROM 'BLOCKED'
              OR coalesce(o.evidence_contract#>>'{spec_traversal,reason}','')=''
-             OR o.evidence_contract#>>'{spec_traversal,independent_semantic_receipt_verified}'<>'false'
-             OR o.evidence_contract#>>'{spec_traversal,not_applicable_positive_authority_verified}'<>'false'
+             OR o.evidence_contract#>>'{spec_traversal,independent_semantic_receipt_verified}' IS DISTINCT FROM 'false'
+             OR o.evidence_contract#>>'{spec_traversal,not_applicable_positive_authority_verified}' IS DISTINCT FROM 'false'
+             OR nullif(o.source_ref,'') IS NULL
              OR NOT EXISTS (
                 SELECT 1 FROM public.lf_assurance_obligation_catalog previous
                 WHERE previous.obligation_code=o.obligation_code
@@ -176,7 +177,7 @@ BEGIN
         IS DISTINCT FROM p_producer_execution_id
      OR v_actor.manifest->>'source_head_sha' IS DISTINCT FROM p_source_head_sha
      OR coalesce(v_actor.manifest->>'plan_digest','') !~ '^[0-9a-f]{64}$'
-     OR nullif(v_actor.manifest->>'orchestrator_execution_id','') IS NULL THEN
+     OR v_actor.manifest->>'orchestrator_execution_id' IS DISTINCT FROM p_producer_execution_id THEN
     RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_LEDGER_ACTOR_SCOPE_MISMATCH';
   END IF;
 
@@ -189,7 +190,8 @@ BEGIN
      OR v_producer.manifest->>'run_id' IS DISTINCT FROM p_run_id::text
      OR v_producer.manifest->>'source_head_sha' IS DISTINCT FROM p_source_head_sha
      OR v_producer.manifest->>'source_snapshot_sha256'
-        IS DISTINCT FROM v_preview_a->>'source_snapshot_sha256' THEN
+        IS DISTINCT FROM v_preview_a->>'source_snapshot_sha256'
+     OR v_producer.manifest->>'plan_digest' IS DISTINCT FROM v_actor.manifest->>'plan_digest' THEN
     RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_PRODUCER_RUN_BINDING_MISSING';
   END IF;
 
@@ -200,6 +202,7 @@ BEGIN
     WHERE b.execution_id=p_ledger_execution_id
       AND b.capability_code='EVIDENCE_LEDGER'
       AND b.binding_state='BOUND'
+      AND b.bound_by_execution_id=p_producer_execution_id
       AND b.bound_version=c.version
       AND b.bound_manifest_sha256=c.manifest_sha256
   ) THEN RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_LEDGER_NOT_GOVERNED_BOUND'; END IF;
