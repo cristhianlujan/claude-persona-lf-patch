@@ -31,16 +31,19 @@ VOLATILE_TERMINAL_KEYS = {
     "output_sha256",
 }
 
-# Closed, path-scoped identities from one rollback-only graph-receipt issuance.
-# Never strip semantic graph hashes, receipt statuses, decisions or cardinality.
-VOLATILE_GRAPH_RECEIPT_KEYS_BY_PATH = {
-    ("graph_receipts",): frozenset(("ledger_execution_id", "orchestrator_execution_id")),
-    ("graph_receipts", "dispatch_receipt"): frozenset(("receipt_id", "receipt_sha256")),
-    ("graph_receipts", "graph_receipt"): frozenset((
-        "dispatch_receipt_sha256", "ledger_execution_id",
-        "producer_execution_id", "receipt_ids",
-    )),
+# Closed, path-specific transient graph receipt identifiers; NOT semantic hashes.
+# Normalize values with validation, retain key presence, list cardinality/order
+# and all decision, evidence, graph SHA and status fields.
+RUN_LOCAL_GRAPH_SCALARS = {
+    ("graph_receipts", "dispatch_receipt", "receipt_id"): "UUID",
+    ("graph_receipts", "dispatch_receipt", "receipt_sha256"): "SHA256",
+    ("graph_receipts", "graph_receipt", "dispatch_receipt_sha256"): "SHA256",
+    ("graph_receipts", "graph_receipt", "ledger_execution_id"): "EXECUTION",
+    ("graph_receipts", "graph_receipt", "producer_execution_id"): "EXECUTION",
+    ("graph_receipts", "ledger_execution_id"): "EXECUTION",
+    ("graph_receipts", "orchestrator_execution_id"): "EXECUTION",
 }
+RUN_LOCAL_GRAPH_RECEIPT_IDS = ("graph_receipts", "graph_receipt", "receipt_ids")
 FORBIDDEN_SQL = re.compile(
     r"(?is)(?:^|;)\s*(?:(?:--[^\r\n]*(?:\r?\n|$)|/\*.*?\*/)\s*)*"
     r"(?:commit\b|rollback\b|end\s+transaction\b|begin\s+transaction\b|start\s+transaction\b|"
@@ -111,21 +114,49 @@ def validate_transaction_bound_sql(sql: str) -> None:
         raise JudgeError("SERVER_IO_OR_EXTERNAL_EFFECT_FORBIDDEN")
 
 
-def _normalize_terminal_value(value: Any, path: tuple[str, ...] = ()) -> Any:
-    """Compare semantics while omitting only proven transaction-local identities.
+def _valid_run_local_graph_identity(value: Any, kind: str) -> bool:
+    if not isinstance(value, str):
+        return False
+    if kind == "UUID":
+        try:
+            return str(uuid.UUID(value)) == value.lower()
+        except (ValueError, AttributeError):
+            return False
+    if kind == "SHA256":
+        return SHA64_RE.fullmatch(value) is not None
+    if kind == "EXECUTION":
+        return re.fullmatch(r"EXEC-IG-GRAPH-(?:LEDGER|ORCH)-RUN-[0-9]+-[0-9a-f]+", value) is not None
+    return False
 
-    Generic run-local identity keys retain their previous recursive behavior.
-    Graph receipt IDs and their digests are scoped to exact nested paths.
-    Semantic graph hashes, statuses, evidence and collection structure survive.
+
+def _normalize_terminal_value(value: Any, path: tuple[str, ...] = ()) -> Any:
+    """Normalize only proven transaction-local identities at exact graph paths.
+
+    Generic run-local keys retain their existing recursive exclusion.
+    Graph-receipt identity fields remain present with typed placeholders; an
+    unexpected type/shape/value fails to normalize and is compared verbatim.
+    Receipt ID lists retain cardinality, order-of-occurrence and duplicates.
+    All semantic graph hashes, states, decisions and evidence remain compared.
     """
+    kind = RUN_LOCAL_GRAPH_SCALARS.get(path)
+    if kind and _valid_run_local_graph_identity(value, kind):
+        return "RUN_LOCAL_" + kind
+    if path == RUN_LOCAL_GRAPH_RECEIPT_IDS and isinstance(value, list):
+        seen: dict[str, int] = {}
+        result: list[Any] = []
+        for entry in value:
+            if _valid_run_local_graph_identity(entry, "UUID"):
+                if entry not in seen:
+                    seen[entry] = len(seen)
+                result.append("RUN_LOCAL_RECEIPT_ORDINAL_" + str(seen[entry]))
+            else:
+                result.append(entry)
+        return result
     if isinstance(value, dict):
-        local_keys = VOLATILE_TERMINAL_KEYS | VOLATILE_GRAPH_RECEIPT_KEYS_BY_PATH.get(
-            path, frozenset()
-        )
         return {
             key: _normalize_terminal_value(item, path + (key,))
             for key, item in value.items()
-            if key not in local_keys
+            if key not in VOLATILE_TERMINAL_KEYS
         }
     if isinstance(value, list):
         return [_normalize_terminal_value(item, path) for item in value]
