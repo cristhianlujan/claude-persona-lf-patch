@@ -355,6 +355,34 @@ Known usage:
 
 B2B S07 live readback reused this validator to confirm the support-channel table, RLS, policy, runtime function and extensible catalog shape after migration application.
 
+#### `PROGRAMMING_GITHUB_FILE_SHA256_ASSERT_V1`
+
+**Status:** ACTIVE  
+**Mode:** HUMAN_DECISION  
+**Handler:** `GITHUB_FILE_SHA256_ASSERT_V1`
+
+Purpose:
+
+Validate binary repository assets byte-for-byte by fetching the exact GitHub file at a declared ref, decoding the bytes, computing SHA-256 and comparing the result with `expected_sha256`.
+
+Required input:
+
+- `repository`
+- `ref`
+- `path`
+- `expected_sha256`
+
+Do not substitute Git blob SHA for the declared SHA-256 contract.
+
+Qualification:
+
+- positive test: `lf_test_runs:ffc40106-8825-44e6-882f-e3fca7288e2b`
+- negative test: `lf_test_runs:8d773299-7c71-4a87-a2d9-e9ad72cd74b6`
+
+Known usage:
+
+B2B S03.4 reused this validator for the expanded LF logo and collapsed shield. Both current exact-ref byte hashes matched the governed SHA-256 values.
+
 ### Active resolvers
 
 None currently registered.
@@ -572,6 +600,7 @@ Relevant EKB:
 - `PROGRAMMING-SIMPLE-QUALIFICATION-PROOF-001`
 - `PROGRAMMING-SIMPLE-RESOLVER-NO-BYPASS-001`
 - `PROGRAMMING-SUPABASE-CATALOG-VALIDATOR-001`
+- `PROGRAMMING-GITHUB-BINARY-SHA256-VALIDATOR-001`
 
 
 ## 15. Discovery in Supabase
@@ -599,10 +628,11 @@ Recommended discovery order:
 
 Current live catalog at registration time:
 
-- ACTIVE validators: 2
+- ACTIVE validators: 3
 - ACTIVE resolvers: 0
 - reusable validators:
   - `PROGRAMMING_GITHUB_FILE_TEXT_ASSERT_V1`
   - `PROGRAMMING_SUPABASE_CATALOG_ASSERT_V1`
+  - `PROGRAMMING_GITHUB_FILE_SHA256_ASSERT_V1`
 
 The counts in the capability manifest are a discovery snapshot. The live registries remain authoritative.
