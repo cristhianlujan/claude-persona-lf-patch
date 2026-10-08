@@ -862,16 +862,112 @@
       ]
     },
     {
+      "unit_code": "PE10P",
+      "lot": "E10",
+      "title": "Governed Profile Creator semantic producer execution",
+      "depends_on": [
+        "PE5A",
+        "PE8"
+      ],
+      "status": "BLOCKED_CALLABLE_EXECUTION_SURFACE",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE10P_C1",
+          "title": "Semantic runner contract forbids producer bypasses",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_creator_governed_semantic_runner_v1.json",
+            "must_contain": [
+              "GOVERNED_PROFILE_CREATOR_WORKER",
+              "DIRECT_LLAMA_SERVER",
+              "fresh_run_per_case",
+              "no_cross_case_context_reuse"
+            ]
+          },
+          "pass_when": "runner contract requires fresh governed Profile Creator runs and forbids direct-model/synthetic/reused outputs",
+          "failure_code": "SEMANTIC_RUNNER_CONTRACT_BYPASS_GAP",
+          "resolver_policy": "FIX_CONTRACT_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10P_C2",
+          "title": "Semantic runner receipt validator qualifies positive and negative cases",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_CREATOR_SEMANTIC_RUNNER_V1",
+          "validation_input": {
+            "qualification_mode": "SELF_TEST"
+          },
+          "pass_when": "positive=1 negative=5 and direct model bypass is rejected",
+          "failure_code": "SEMANTIC_RUNNER_VALIDATOR_QUALIFICATION_FAIL",
+          "resolver_policy": "FIX_VALIDATOR_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10P_C3",
+          "title": "One governed callable Profile Creator execution surface is available",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_CREATOR_SEMANTIC_RUNNER_V1",
+          "validation_input": {
+            "availability_ref": "skills/profile_creator/contracts/profile_creator_semantic_runner_availability_20261008.json",
+            "required_status": "READY",
+            "required_surface": "GOVERNED_PROFILE_CREATOR_WORKER"
+          },
+          "pass_when": "availability is READY and the callable surface is the governed existing Profile Creator worker",
+          "failure_code": "GOVERNED_PROFILE_CREATOR_WORKER_CALLABLE_UNAVAILABLE",
+          "resolver_policy": "PROVIDE_OR_REUSE_GOVERNED_CALLABLE_WITHOUT_RUNTIME_BYPASS_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10P_C4",
+          "title": "Fresh producer receipt proves no write or activation",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_CREATOR_SEMANTIC_RUNNER_V1",
+          "validation_input": {
+            "required_receipt_assertions": [
+              "fresh_context=true",
+              "profile_source_write_executed=false",
+              "runtime_activation=false",
+              "production_activation=false",
+              "raw_output_sha256 valid"
+            ]
+          },
+          "pass_when": "fresh semantic producer receipt is hash-bound and has zero authority/runtime/production impact",
+          "failure_code": "SEMANTIC_PRODUCER_RECEIPT_NOT_SAFE",
+          "resolver_policy": "FIX_GOVERNED_RUNNER_OR_RECEIPT_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10P_C5",
+          "title": "Smoke semantic output materializes through reversible candidate bridge",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_CANDIDATE_MATERIALIZER_V1",
+          "validation_input": {
+            "producer_receipt_required": true,
+            "materializer_receipt_required": true,
+            "smoke_cases": 1
+          },
+          "pass_when": "one fresh Profile Creator RAW output becomes a reversible NON_AUTHORITY_CANDIDATE with source_unchanged=true",
+          "failure_code": "SEMANTIC_PRODUCER_TO_MATERIALIZER_SMOKE_FAIL",
+          "resolver_policy": "FIX_BINDING_THEN_RERUN_FRESH_SMOKE"
+        }
+      ]
+    },
+    {
       "unit_code": "PE10",
       "lot": "E10",
       "title": "Blind benchmark, assurance, admission and cutover",
       "depends_on": [
+        "PE10P",
         "PE5A",
         "PE8",
         "PE9"
       ],
       "conditional_dependency_policy": "PE9 may be NOT_APPLICABLE; it must never be silently skipped",
-      "status": "BLOCKED_PENDING_EVIDENCE",
+      "status": "BLOCKED_PENDING_FULL_BEHAVIOR",
       "checkpoints": [
         {
           "checkpoint_code": "PE10_C1",
@@ -985,6 +1081,7 @@
   "completion_rule": "ALL_REQUIRED_CHECKPOINTS_HAVE_FRESH_PASS_RECEIPTS_AND_PE10_CUTOVER_READBACK_PASS",
   "plan_status": "IN_EXECUTION_ATOMIC",
   "discovery_repairs": [
-    "PE5A_ADDED_AFTER_FULL_BEHAVIOR_REVEALED_MISSING_CANDIDATE_MATERIALIZATION_BRIDGE"
+    "PE5A_ADDED_AFTER_FULL_BEHAVIOR_REVEALED_MISSING_CANDIDATE_MATERIALIZATION_BRIDGE",
+    "PE10P_ADDED_TO_MATERIALIZE_GOVERNED_SEMANTIC_PRODUCER_EXECUTION_DEPENDENCY"
   ]
 }
