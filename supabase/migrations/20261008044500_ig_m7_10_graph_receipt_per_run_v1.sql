@@ -93,6 +93,10 @@ BEGIN
   END IF;
 
   -- Recompute from actual canonical authority, not caller-provided graph JSON.
+  -- A session-level cached request graph would make both calls replay the same input.
+  IF nullif(current_setting('lf.input_request_context_v1',true),'') IS NOT NULL THEN
+    RAISE EXCEPTION 'IG_GRAPH_RECEIPT_CACHED_REQUEST_CONTEXT_FORBIDDEN';
+  END IF;
   v_graph_a:=programacion.fn_input_screen_canonical_graph(v_run.pantalla_id,v_run.version_id);
   v_graph_b:=programacion.fn_input_screen_canonical_graph(v_run.pantalla_id,v_run.version_id);
   v_sha_a:=programacion.fn_v09_sha256_jsonb(v_graph_a);
