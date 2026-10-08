@@ -90,13 +90,20 @@ jobs:
               json.dump(request,fh,separators=(',',':'),sort_keys=True)
           PY
 
-          code=$(curl --silent --show-error \
-            --max-time 150 \
-            -o recuration-response.json -w '%{http_code}' \
-            -H "Authorization: Bearer ${OIDC_TOKEN}" \
-            -H 'Content-Type: application/json' \
-            --data-binary @recuration-request.json \
-            'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profiles-governance-caller-v1')
+          # The OIDC caller only queues/polls SQL; a 202 is durable continuation,
+          # never a terminal success. Exactly one bounded retry; no new run created.
+          code=202
+          for attempt in 1 2; do
+            code=$(curl --silent --show-error \
+              --max-time 145 \
+              -o recuration-response.json -w '%{http_code}' \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              --data-binary @recuration-request.json \
+              'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profiles-governance-caller-v1')
+            if [ "$code" != 202 ]; then break; fi
+            sleep 5
+          done
           cat recuration-response.json
 
           python3 - "$code" <<'PY'

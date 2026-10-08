@@ -364,6 +364,40 @@ async function callRuntime(
   return payload;
 }
 
+// IG executes via a durable database queue. OIDC stays the HTTP trust boundary.
+async function inputGovQueueRpc(
+  config: CallerConfig, deps: RuntimeDeps,
+  rpcName: "fn_input_governance_queue_submit_v1" | "fn_input_governance_queue_read_v1",
+  body: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const response = await deps.fetchFn(`${config.supabaseUrl}/rest/v1/rpc/${rpcName}`, {
+    method: "POST",
+    headers: {
+      apikey: config.serviceRoleKey,
+      authorization: `Bearer ${config.serviceRoleKey}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(15_000),
+  });
+  const raw = await response.text();
+  let payload: Record<string, unknown>;
+  try {
+    const parsed = raw ? JSON.parse(raw) : {};
+    payload = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown> : { error: "RPC_RESPONSE_INVALID" };
+  } catch {
+    throw new CallerFault("IG_DIRECT_QUEUE_RPC_INVALID_JSON", 502);
+  }
+  if (!response.ok) {
+    throw new CallerFault("IG_DIRECT_QUEUE_RPC_REJECTED", 502, {
+      rpc: rpcName, rpc_status: response.status,
+      error_code: typeof payload.code === "string" ? payload.code : "UNKNOWN",
+    });
+  }
+  return payload;
+}
+
 async function materializeScreen(
   config: CallerConfig,
   deps: RuntimeDeps,
@@ -371,17 +405,39 @@ async function materializeScreen(
   consumer = STORY_CREATOR_CONSUMER,
   timeoutMs = config.defaultTimeoutMs,
 ) {
-  const payload = await callRuntime(config, deps, config.inputGovernanceSlug, {
-    pantalla_id: screen.pantalla_id,
-    consumer,
-  }, timeoutMs);
-  const result = (payload.result ?? {}) as Record<string, unknown>;
+  const submitted = await inputGovQueueRpc(config, deps, "fn_input_governance_queue_submit_v1", {
+    p_pantalla_id: screen.pantalla_id, p_consumer: consumer,
+  });
+  const requestId = Number(submitted.request_id);
+  if (!Number.isSafeInteger(requestId) || requestId < 1) {
+    throw new CallerFault("IG_DIRECT_QUEUE_RECEIPT_INVALID", 502);
+  }
+  const deadline = Date.now() + Math.min(timeoutMs, 110_000);
+  let snapshot: Record<string, unknown> = submitted;
+  while (Date.now() < deadline) {
+    snapshot = await inputGovQueueRpc(config, deps, "fn_input_governance_queue_read_v1", {
+      p_request_id: requestId,
+    });
+    if (snapshot.queue_status === "DONE" || snapshot.queue_status === "ERROR") break;
+    await new Promise<void>((resolve) => setTimeout(resolve, 4_000));
+  }
+  const done = snapshot.queue_status === "DONE";
+  const failed = snapshot.queue_status === "ERROR";
+  const currentStatus = done
+    ? (typeof snapshot.status === "string" ? snapshot.status : "BLOCKED")
+    : failed ? "BLOCKED" : "CONTINUATION_REQUIRED";
   return {
-    ...screen,
-    consumer,
-    status: result.status ?? null,
-    run_id: result.run_id ?? result.latest_run_id ?? null,
-    payload,
+    ...screen, consumer, status: currentStatus,
+    run_id: snapshot.run_id ?? null,
+    payload: {
+      transport: "DIRECT_SQL_PERSISTED_QUEUE_V1",
+      request_id: requestId,
+      queue_status: snapshot.queue_status ?? "QUEUED",
+      next_action: done || failed ? "NONE" : "POLL_SAME_REQUEST",
+      result: snapshot.result ?? null,
+      step_count: snapshot.step_count ?? 0,
+      error_code: failed ? snapshot.error_code ?? "IG_QUEUE_FAILED" : null,
+    },
   };
 }
 
@@ -458,15 +514,28 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           STORY_CREATOR_CONSUMER,
           config.recurationTimeoutMs,
         );
-        const terminal = typeof result.status === "string" && result.status.length > 0;
+        const terminal = typeof result.status === "string" &&
+          result.status.length > 0 &&
+          !["CONTINUATION_REQUIRED", "VALIDATOR_CONTINUE_REQUIRED", "VALIDATOR_RUNTIME_REQUIRED"].includes(result.status);
         if (!terminal) {
           return json({
+            outcome: "CONTINUATION_REQUIRED",
+            code: "IG_DIRECT_QUEUE_STILL_PROCESSING",
+            scope: "IG_CURATOR_VALIDATOR_REFACTOR_V2_N2",
+            caller: auditedCaller, consumer: STORY_CREATOR_CONSUMER,
+            pantalla_id: pantallaId, result,
+          }, 202);
+        }
+        // Completion of a queue is not authorization: BLOCKED/HUMAN still fail closed.
+        if (result.status !== "READY") {
+          return json({
             outcome: "BLOCKED",
-            code: "INPUT_GOVERNANCE_AGENT_TERMINAL_STATUS_MISSING",
+            code: "IG_DIRECT_FINAL_NOT_READY",
             scope: "IG_CURATOR_VALIDATOR_REFACTOR_V2_N2",
             caller: auditedCaller,
-            consumer: STORY_CREATOR_CONSUMER,
             pantalla_id: pantallaId,
+            consumer: STORY_CREATOR_CONSUMER,
+            terminal_status: result.status,
             result,
           }, 409);
         }
