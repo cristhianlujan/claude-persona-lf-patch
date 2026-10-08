@@ -110,6 +110,24 @@ on private.lf_human_decision_authority_policies_v1
 for each row
 execute function private.fn_lf_human_decision_authority_policy_guard_v1();
 
+alter table programacion.provenance_receipts
+  drop constraint if exists provenance_receipts_receipt_kind_check;
+
+alter table programacion.provenance_receipts
+  add constraint provenance_receipts_receipt_kind_check
+  check (
+    receipt_kind = any(array[
+      'RETRIEVAL_PASS'::text,
+      'TRACEABILITY_GRAPH'::text,
+      'PLAYWRIGHT_RUN'::text,
+      'EVIDENCE_VERIFICATION'::text,
+      'AUDIT_VERDICT'::text,
+      'HUMAN_DECISION'::text,
+      'AUD24_F05_BASELINE_AUTHORIZATION'::text,
+      'HUMAN_ROUTING_DECISION'::text
+    ])
+  );
+
 -- Preserve all previous provenance validation and add one richer routing kind.
 create or replace function programacion.fn_guard_provenance_receipt_insert()
 returns trigger
