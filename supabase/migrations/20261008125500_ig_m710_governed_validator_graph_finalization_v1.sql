@@ -126,54 +126,10 @@ BEGIN
   IF NOT coalesce((v_dispatch->>'ready')::boolean,false) THEN
     RAISE EXCEPTION 'IG_GRAPH_FINISH_DISPATCH_DENIED:%',v_dispatch->>'decision';
   END IF;
-  -- The dispatch receipt authorizes a current, version-pinned binding.
-  -- The ledger trigger rejects unbound actors: do not bypass that guard.
   SELECT c.manifest_sha256 INTO v_current_manifest_sha
   FROM public.lf_capability_current c
   WHERE c.capability_code='EVIDENCE_LEDGER';
-  IF coalesce(v_current_manifest_sha,'') !~ '^[0-9a-f]{64}
-    p_run_id,v_orch,v_ledger,v_head,v_graph);
-  IF v_receipt->>'status'<>'PASS' OR
-     (v_receipt->>'consumer_readback_count')::int<>2 THEN
-    RAISE EXCEPTION 'IG_GRAPH_FINISH_EMISSION_FAILED';
-  END IF;
-  v_readback:=programacion.fn_ig_graph_receipt_consumer_readback_v1(
-    p_run_id,v_graph,v_head,v_orch,v_ledger,v_orch);
-  IF v_readback->>'status'<>'PASS' OR
-     (v_readback->>'matched_receipts')::int<>2 THEN
-    RAISE EXCEPTION 'IG_GRAPH_FINISH_INDEPENDENT_CONSUMER_FAILED:%',
-      v_readback->>'reason';
-  END IF;
-  RETURN jsonb_build_object('status','PASS','run_id',p_run_id,
-    'orchestrator_execution_id',v_orch,'ledger_execution_id',v_ledger,
-    'dispatch_receipt',v_dispatch,'graph_receipt',v_receipt,
-    'consumer_readback',v_readback);
-END $finish$;
-
-REVOKE ALL ON FUNCTION programacion.fn_ig_graph_receipt_on_validator_completed_v1(bigint,text,bigint)
-  FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_graph_receipt_on_validator_completed_v1(bigint,text,bigint)
-  TO service_role;
-
--- The existing real Validator handoff entrypoint is the only owner of finalization.
-CREATE OR REPLACE FUNCTION programacion.fn_input_governance_validator_validate_handoff_v1(
- p_run_id bigint,p_validator_identity text,p_receipt_id bigint DEFAULT NULL
-) RETURNS jsonb
-LANGUAGE plpgsql SECURITY DEFINER
-SET search_path TO pg_catalog,programacion,public
-AS $handoff$
-DECLARE v_handoff jsonb; v_result jsonb; v_graph_receipts jsonb;
-BEGIN
- v_handoff:=programacion.fn_input_governance_validator_handoff_assert_v1(p_run_id,p_receipt_id);
- v_result:=programacion.fn_input_governance_validator_validate_v1(p_run_id,p_validator_identity);
- IF v_result->>'status' IN ('COMPLETED','NOOP_COMPLETED') THEN
-   v_graph_receipts:=programacion.fn_ig_graph_receipt_on_validator_completed_v1(
-     p_run_id,p_validator_identity,(v_handoff->>'receipt_id')::bigint);
- END IF;
- RETURN coalesce(v_result,'{}'::jsonb)||jsonb_build_object(
-   'handoff_receipt',v_handoff,'graph_receipts',v_graph_receipts);
-END $handoff$;
- THEN
+  IF coalesce(v_current_manifest_sha,'') !~ '^[0-9a-f]{64}$' THEN
     RAISE EXCEPTION 'IG_GRAPH_FINISH_LEDGER_CURRENT_VERSION_MISSING';
   END IF;
   v_binding:=public.fn_lf_capability_bind_from_orchestrator_v1(
