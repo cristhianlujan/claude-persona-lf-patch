@@ -226,6 +226,22 @@
         "repo_root"
       ],
       "pass_contract": "acyclic atomic plan; every required checkpoint has explicit executable validator binding; no title inference"
+    },
+    {
+      "validator_code": "PROFILE_CANDIDATE_MATERIALIZER_V1",
+      "scope": "PROFILE_TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_candidate_materializer/profile_candidate_materializer_v1.py",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_candidate_materializer/test_profile_candidate_materializer_v1.py",
+      "execution_handler": "PYTHON_TEST_OR_FILE",
+      "input_contract": [
+        "candidate_overlay",
+        "repo_root",
+        "output_root",
+        "expected_baseline_revision"
+      ],
+      "pass_contract": "reversible non-authority overlay; exact before hashes; path confinement; source unchanged; no runtime/production activation"
     }
   ]
 }
