@@ -81,14 +81,15 @@
       "depends_on": [
         "E4"
       ],
-      "status": "IN_EXECUTION_MATERIALIZATION_BRIDGE_QUALIFYING",
+      "status": "DONE_CANDIDATE_WITH_REVERSIBLE_MATERIALIZATION_BRIDGE",
       "closure_evidence": [
         "current-vs-new shadow comparison",
         "admission-before-write verified",
         "Profile Creator semantic producer binding",
         "reversible candidate materializer qualification",
         "zero authority writes"
-      ]
+      ],
+      "blockers": []
     },
     {
       "id": "E6",
@@ -153,6 +154,7 @@
       "id": "E10",
       "work": "Execute paired blind benchmark, assurance, admission and governed cutover",
       "depends_on": [
+        "PE10P_GOVERNED_SEMANTIC_PRODUCER",
         "E5_MATERIALIZATION_BRIDGE",
         "E8_OR_E9"
       ],
@@ -171,6 +173,7 @@
         "v0.2 authority readback"
       ],
       "blockers": [
+        "PE10P: governed callable Profile Creator semantic execution surface unavailable",
         "FULL_PROFILE_EVOLUTION_BEHAVIOR benchmark not yet executed/admitted",
         "0 ADMIT_CUTOVER events",
         "25 v0.1 executions IN_PROGRESS",
@@ -192,9 +195,9 @@
   "atomic_execution_plan_ref": "skills/profile_creator/contracts/profile_evolution_engineering_plan_v1.json",
   "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
   "atomic_plan_summary": {
-    "units": 12,
-    "checkpoints": 51,
-    "required_checkpoints": 48,
+    "units": 13,
+    "checkpoints": 56,
+    "required_checkpoints": 53,
     "status": "IN_EXECUTION"
   },
   "validation_policy": {
