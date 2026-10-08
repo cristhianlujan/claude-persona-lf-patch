@@ -19,5 +19,6 @@
       "expected_verdict": "NO_BLOCKING_FINDINGS",
       "expected_finding_codes": []
     }
-  ]
+  ],
+  "qualification_only": "INDEPENDENT_WORKFLOW_CONFIGURATION_PROBE_20261008"
 }
