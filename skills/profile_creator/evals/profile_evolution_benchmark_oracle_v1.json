@@ -1,0 +1,200 @@
+{
+  "schema": "PROFILE_EVOLUTION_BENCHMARK_ORACLE_V1",
+  "benchmark_scope": "DECISION_POLICY_AND_COMPOSITION",
+  "state": "SEALED_BEFORE_RAW_FREEZE",
+  "authoring_rule": "SCORER_MAY_READ_ONLY_AFTER_BOTH_ARMS_RAW_OUTPUT_IS_FROZEN",
+  "cases": [
+    {
+      "case_id": "PEB-001",
+      "desired_action": "PATCH",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-002",
+      "desired_action": "PATCH",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-003",
+      "desired_action": "PATCH",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-004",
+      "desired_action": "SPECIALIZE",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-005",
+      "desired_action": "SPECIALIZE",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-006",
+      "desired_action": "SPECIALIZE",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-007",
+      "desired_action": "NEEDS_MORE_EVIDENCE",
+      "required_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-008",
+      "desired_action": "NEEDS_MORE_EVIDENCE",
+      "required_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-009",
+      "desired_action": "NEEDS_MORE_EVIDENCE",
+      "required_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-010",
+      "desired_action": "OPTIMIZE",
+      "required_capabilities": [
+        "CAUSAL_EFFECT_LINEAGE"
+      ],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-011",
+      "desired_action": "OPTIMIZE",
+      "required_capabilities": [
+        "CAUSAL_EFFECT_LINEAGE"
+      ],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-012",
+      "desired_action": "OPTIMIZE",
+      "required_capabilities": [
+        "CAUSAL_EFFECT_LINEAGE"
+      ],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-013",
+      "desired_action": "REARCHITECT",
+      "required_capabilities": [
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "critical": true,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-014",
+      "desired_action": "REARCHITECT",
+      "required_capabilities": [
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "critical": true,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-015",
+      "desired_action": "REARCHITECT",
+      "required_capabilities": [
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "critical": true,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-016",
+      "desired_action": "OPTIMIZE",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-017",
+      "desired_action": "OPTIMIZE",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-018",
+      "desired_action": "OPTIMIZE",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-019",
+      "desired_action": "NEEDS_MORE_EVIDENCE",
+      "required_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-020",
+      "desired_action": "NEEDS_MORE_EVIDENCE",
+      "required_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-021",
+      "desired_action": "NEEDS_MORE_EVIDENCE",
+      "required_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "critical": false,
+      "preserve_no_change": false
+    },
+    {
+      "case_id": "PEB-022",
+      "desired_action": "NO_CHANGE",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": true
+    },
+    {
+      "case_id": "PEB-023",
+      "desired_action": "NO_CHANGE",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": true
+    },
+    {
+      "case_id": "PEB-024",
+      "desired_action": "NO_CHANGE",
+      "required_capabilities": [],
+      "critical": false,
+      "preserve_no_change": true
+    }
+  ]
+}
