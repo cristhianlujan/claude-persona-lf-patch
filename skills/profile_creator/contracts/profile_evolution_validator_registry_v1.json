@@ -15,7 +15,7 @@
       "scope": "TRANSVERSAL",
       "deterministic": true,
       "state": "ACTIVE_PROVEN",
-      "source_ref": "docs/programming/PROGRAMMING_VALIDATORS_AND_RESOLVERS_GUIDE_V1.md",
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@b8adfa611d9af25d50497584ad002c49e0c82495/docs/programming/PROGRAMMING_VALIDATORS_AND_RESOLVERS_GUIDE_V1.md",
       "execution_handler": "GITHUB_FILE_TEXT_ASSERT_V1",
       "qualification_refs": [
         "lf_test_runs:2bd5b1c1-81f6-4e8d-a3a5-83bb97b329bc",
@@ -29,14 +29,15 @@
         "must_not_contain?",
         "ordered_contains?",
         "exact_count?"
-      ]
+      ],
+      "source_identity": "IMMUTABLE_GITHUB_COMMIT_REF"
     },
     {
       "validator_code": "GITHUB_FILE_SHA256_ASSERT_V1",
       "scope": "TRANSVERSAL",
       "deterministic": true,
       "state": "ACTIVE_PROVEN",
-      "source_ref": "docs/programming/PROGRAMMING_VALIDATORS_AND_RESOLVERS_GUIDE_V1.md",
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@b8adfa611d9af25d50497584ad002c49e0c82495/docs/programming/PROGRAMMING_VALIDATORS_AND_RESOLVERS_GUIDE_V1.md",
       "execution_handler": "GITHUB_FILE_SHA256_ASSERT_V1",
       "qualification_refs": [
         "lf_test_runs:ffc40106-8825-44e6-882f-e3fca7288e2b",
@@ -47,14 +48,15 @@
         "ref",
         "path",
         "expected_sha256"
-      ]
+      ],
+      "source_identity": "IMMUTABLE_GITHUB_COMMIT_REF"
     },
     {
       "validator_code": "SUPABASE_CATALOG_ASSERT_V1",
       "scope": "TRANSVERSAL",
       "deterministic": true,
       "state": "ACTIVE_PROVEN",
-      "source_ref": "docs/programming/PROGRAMMING_VALIDATORS_AND_RESOLVERS_GUIDE_V1.md",
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@b8adfa611d9af25d50497584ad002c49e0c82495/docs/programming/PROGRAMMING_VALIDATORS_AND_RESOLVERS_GUIDE_V1.md",
       "execution_handler": "SUPABASE_CATALOG_ASSERT_V1",
       "qualification_refs": [
         "lf_test_runs:fb6646bb-eef5-4e5f-8beb-5b5a580c7367",
@@ -62,7 +64,8 @@
       ],
       "input_contract": [
         "assertions"
-      ]
+      ],
+      "source_identity": "IMMUTABLE_GITHUB_COMMIT_REF"
     },
     {
       "validator_code": "S26_PROFILE_BASELINE_V1",
