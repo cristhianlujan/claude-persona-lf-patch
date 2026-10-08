@@ -263,7 +263,6 @@ BEGIN
 END;
 $issuer$;
 
-
 -- Governed invocation bridge. The dispatcher and ledger remain the existing LF
 -- capabilities. This routine is a run-scoped consumer, NOT a second engine.
 CREATE FUNCTION programacion.fn_ig_spec_traversal_orchestrate_per_run_v1(
@@ -308,31 +307,11 @@ BEGIN
    AND r.subject_ref='input-readiness-run:'||p_run_id::text
    AND r.verification_ref='supabase://programacion.input_readiness_runs/'||p_run_id::text||'#curator-handoff'
    AND r.payload->>'verification_status'='VERIFIED'
-   AND r.head_sha ~ '^[0-9a-f]{40}
-REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_orchestrate_per_run_v1(bigint) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) TO service_role;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) TO service_role;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_orchestrate_per_run_v1(bigint) TO service_role;
+   AND r.head_sha ~ '^[0-9a-f]{40}$'
 
-COMMENT ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text)
- IS 'M1.A8 dedicated run-bound receipt adapter. Reuses current EVIDENCE_LEDGER identity/dispatch binding, verifies 60 contract 5.13 clauses, never credits semantic APPLIED/N/A, requires externally governed run-scoped execution actors. No automatic production activation.';
+   AND r.subject_sha256 ~ '^[0-9a-f]{64}$'
 
-   AND r.subject_sha256 ~ '^[0-9a-f]{64}
-REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) TO service_role;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) TO service_role;
-
-COMMENT ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text)
- IS 'M1.A8 dedicated run-bound receipt adapter. Reuses current EVIDENCE_LEDGER identity/dispatch binding, verifies 60 contract 5.13 clauses, never credits semantic APPLIED/N/A, requires externally governed run-scoped execution actors. No automatic production activation.';
-
-   AND r.receipt_sha256 ~ '^[0-9a-f]{64}
-REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) TO service_role;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) TO service_role;
-
-COMMENT ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text)
- IS 'M1.A8 dedicated run-bound receipt adapter. Reuses current EVIDENCE_LEDGER identity/dispatch binding, verifies 60 contract 5.13 clauses, never credits semantic APPLIED/N/A, requires externally governed run-scoped execution actors. No automatic production activation.';
+   AND r.receipt_sha256 ~ '^[0-9a-f]{64}$'
 
  ORDER BY r.id DESC LIMIT 1;
  IF v_prov.id IS NULL THEN
@@ -414,13 +393,7 @@ COMMENT ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,tex
  END IF;
  SELECT c.manifest_sha256 INTO v_current_sha
  FROM public.lf_capability_current c WHERE c.capability_code='EVIDENCE_LEDGER';
- IF coalesce(v_current_sha,'') !~ '^[0-9a-f]{64}
-REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) TO service_role;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) TO service_role;
-
-COMMENT ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text)
- IS 'M1.A8 dedicated run-bound receipt adapter. Reuses current EVIDENCE_LEDGER identity/dispatch binding, verifies 60 contract 5.13 clauses, never credits semantic APPLIED/N/A, requires externally governed run-scoped execution actors. No automatic production activation.';
+ IF coalesce(v_current_sha,'') !~ '^[0-9a-f]{64}$'
  THEN
    RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_LEDGER_CURRENT_MISSING';
  END IF;
@@ -459,6 +432,9 @@ REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) FROM
 REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) TO service_role;
 GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) TO service_role;
+
+REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_orchestrate_per_run_v1(bigint) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_orchestrate_per_run_v1(bigint) TO service_role;
 
 COMMENT ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text)
  IS 'M1.A8 dedicated run-bound receipt adapter. Reuses current EVIDENCE_LEDGER identity/dispatch binding, verifies 60 contract 5.13 clauses, never credits semantic APPLIED/N/A, requires externally governed run-scoped execution actors. No automatic production activation.';
