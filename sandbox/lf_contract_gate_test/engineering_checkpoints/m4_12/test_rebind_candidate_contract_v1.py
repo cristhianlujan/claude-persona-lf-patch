@@ -15,6 +15,8 @@ class RebindCandidateContract(unittest.TestCase):
     def setUpClass(cls):
         cls.code = SOURCE.read_text(encoding="utf-8")
         cls.negative = NEGATIVE.read_text(encoding="utf-8")
+        cls.v2 = (HERE / "validator_validate_v2_fail_closed_candidate_v1.sql").read_text(encoding="utf-8")
+        cls.bootstrap = (HERE / "validator_bootstrap_fail_closed_candidate_v1.sql").read_text(encoding="utf-8")
 
     def test_canonical_existing_function_only(self):
         self.assertIn("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_validator_rebind_v1(",self.code)
@@ -57,6 +59,36 @@ class RebindCandidateContract(unittest.TestCase):
         body = re.sub(r"(?m)^\s*--[^\n]*$", "", self.negative)
         self.assertIsNone(re.search(r"\b(?:UPDATE|DELETE|INSERT|TRUNCATE|MERGE|CREATE|DROP|ALTER)\b",body,re.I))
 
+
+
+    def test_all_legacy_routes_no_auto_semantic_pass(self):
+        for name, code in (("rebind", self.code), ("validate_v2", self.v2), ("bootstrap", self.bootstrap)):
+            with self.subTest(path=name):
+                self.assertNotIn("v_outcome:='PASS'", code)
+                self.assertIn("v_outcome:='BLOCKED'", code)
+                self.assertIn("v_outcome:='FAIL'", code)
+                self.assertIn("INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN", code)
+
+    def test_no_curator_shared_classifier_in_v2_or_bootstrap(self):
+        self.assertNotIn("fn_input_governance_bootstrap_classify_v2", self.v2)
+        self.assertNotIn("fn_input_governance_bootstrap_classify_v1", self.bootstrap)
+        for code in (self.v2,self.bootstrap):
+            self.assertNotIn("v_classifier_block", code)
+            self.assertNotIn("v_expected",code)
+
+    def test_v2_retains_checkpoint_pagination_and_failclosed_exit(self):
+        for required in ("limit 10", "fn_input_evaluate_assertion",
+                         "if v_pass<v_family_count", "'VALIDATION_BLOCKED'",
+                         "fn_input_governance_ekb_checkpoint",
+                         "fn_input_validator_evidence_rehydrate_v1"):
+            self.assertIn(required, self.v2)
+        self.assertIn("'semantic_conclusion_independence','UNPROVEN'",self.v2)
+
+    def test_bootstrap_does_not_mark_completed_without_full_pass(self):
+        for required in ("fn_input_evaluate_assertion", "v_pass<>v_family_count",
+                         "fn_input_validator_evidence_rehydrate_v1",
+                         "BOOTSTRAP_VALIDATOR_CARDINALITY_MISMATCH"):
+            self.assertIn(required,self.bootstrap)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
