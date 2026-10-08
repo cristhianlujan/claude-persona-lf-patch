@@ -362,3 +362,32 @@ Canonical future adapters are:
 - `private.fn_lf_human_decision_open_programming_v3`
 
 V1/V2 remain compatibility layers only. Future cutover must use V3.
+
+
+## IG historical-source currentness
+
+Before an Input Governance proposal can enter `HUMAN_ESCALATION_ADMISSION`, its source run is reconciled against the latest non-invalidated COMPLETED run for the same screen.
+
+`private.fn_lf_ig_human_decision_source_currentness_v1` returns one of:
+
+- `CURRENT`: the proposal belongs to the latest validated run and may continue to the pre-human gate.
+- `RESOLVED_BY_NEWER_EVIDENCE`: the historical decision question disappeared in a newer validated family assessment. Human routing is forbidden.
+- `SUPERSEDED_BY_CURRENT_GAP`: the historical question was replaced by a different current gap. The old proposal is preserved as history, but the consumer must refresh to the latest run/current proposal before continuing.
+- `BLOCKED`: currentness cannot be established; human routing is forbidden.
+
+Historical proposal status is therefore never treated as current authority.
+
+Current live reconciliation of the legacy IG human-decision set is:
+
+```text
+22 historical HUMAN_DECISION_REQUIRED proposals
+        ↓ latest validated canonical run
+14 → RESOLVED_BY_NEWER_EVIDENCE
+ 8 → SUPERSEDED_BY_CURRENT_GAP
+ 0 → CURRENT
+ 0 → human queue
+```
+
+The eight superseded cases are no longer the original human applicability questions. Four old TRANSITIONS decisions became current implementation-readiness gaps, and four screen-2 items now point to current evidence/source gaps. Those current gaps remain in IG's internal remediation/evidence path.
+
+This currentness layer reuses the `CURRENTNESS_AUTHORITY` invariant: later validated source state supersedes stale historical assertions; stale history cannot authorize a material action.
