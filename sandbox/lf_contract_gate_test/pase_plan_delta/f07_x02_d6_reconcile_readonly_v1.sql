@@ -45,6 +45,21 @@ summary AS (
     (SELECT payload->>'migration_source_parity_pass_prerequisite' FROM d6) AS d6_parity_moved_to,
     (SELECT coalesce((payload->>'no_repairs_now')::boolean,false) FROM d6) AS d6_do_not_repair_debt
 ),
+negative_fixture AS (
+  SELECT array_append(
+    coalesce((SELECT array_agg(work_code ORDER BY work_code) FROM debt), '{}'::text[]),
+    'PASE-ATOM-F07-X02-R01'
+  ) AS requested_removals
+),
+negative_verdict AS (
+  SELECT CASE
+    WHEN (SELECT (payload->>'r01_required')::boolean FROM d6)
+      AND 'PASE-ATOM-F07-X02-R01' = ANY(requested_removals)
+      THEN 'REJECT_R01_REQUIRED_REMOVAL'
+    ELSE 'ALLOW'
+  END AS result
+  FROM negative_fixture
+),
 assertions AS (
   SELECT
     d6_exists = 1 AND debt_items = 4
@@ -60,7 +75,8 @@ assertions AS (
       AS exact_edge_projection_valid,
     required_r01_retained = 1 AS required_r01_preserved,
     -- Negative fixture: a candidate that also removed R01 MUST be rejected.
-    (required_r01_retained = 0) = false AS negative_r01_removal_rejected
+    (SELECT result FROM negative_verdict) = 'REJECT_R01_REQUIRED_REMOVAL'
+      AS negative_r01_removal_rejected
   FROM summary
 )
 SELECT 'F07_X02_D6_PLAN_PROJECTION_READ_ONLY_V1' AS test_suite,
