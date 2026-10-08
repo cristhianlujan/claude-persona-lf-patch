@@ -215,8 +215,8 @@ begin
 
   v_def:=replace(
     v_def,
-    '  v_candidate_authority_count integer:=0;',
-    E'  v_candidate_authority_count integer:=0;\n  v_candidate_disposition jsonb;'
+    'v_candidate_authority_count integer;',
+    E'v_candidate_authority_count integer;\n  v_candidate_disposition jsonb;'
   );
 
   v_def:=replace(v_def,v_old,v_new);
