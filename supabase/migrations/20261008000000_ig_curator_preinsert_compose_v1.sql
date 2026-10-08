@@ -52,6 +52,20 @@ begin
       and c.contrato_codigo='INPUT_READINESS_CONTRACT' and c.estado='defined' and c.fail_closed
     order by c.id desc limit 1;
   if v_core_contract is null then raise exception 'IG_PREINSERT_CORE_CONTRACT_MISSING'; end if;
+  -- Trust boundary: verify the writer's ORIGINAL evidence hash before enrichment.
+  if new.curator_sha256 is distinct from programacion.fn_v09_sha256_jsonb(jsonb_build_object(
+    'run_id',new.run_id,'family_code',new.family_code,
+    'severity',new.severity,'applicability',new.applicability,
+    'coverage_status',new.coverage_status,'well_defined_status',new.well_defined_status,
+    'story_ready_status',new.story_ready_status,'implementation_ready_status',new.implementation_ready_status,
+    'qa_ready_status',new.qa_ready_status,'production_ready_status',new.production_ready_status,
+    'source_refs',new.source_refs,'rationale',new.rationale,'blockers',new.blockers,
+    'negative_requirements',new.negative_requirements,'test_obligations',new.test_obligations,
+    'freshness',new.freshness,'curator_evidence',new.curator_evidence,
+    'subject_coverage',new.subject_coverage,'threat_coverage',new.threat_coverage,
+    'semantic_depth_sha256',new.semantic_depth_sha256)) then
+    raise exception 'IG_PREINSERT_ORIGINAL_CURATOR_SHA_MISMATCH:%',new.family_code;
+  end if;
   v_core_result:=programacion.fn_input_deterministic_assess(
     (to_jsonb(new)-'id'-'run_id'-'family_code') ||
       jsonb_build_object('pantalla_id',v_run.pantalla_id,'version_id',v_run.version_id,'source_class','DETERMINISTIC'),
