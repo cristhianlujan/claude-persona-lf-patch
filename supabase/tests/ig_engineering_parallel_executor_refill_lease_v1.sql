@@ -43,7 +43,7 @@ BEGIN
       false,'CURRENT_UNIT_YIELDED_NO_GLOBAL_STOP');
     IF v_finish->>'executor_outcome'<>'YIELDED'
       OR v_finish->>'scheduler_refill_admitted'<>'true'
-      OR v_finish->'next' IS NULL
+      OR jsonb_typeof(v_finish->'next') IS DISTINCT FROM 'object'
       OR v_finish#>>'{next,unit_code}'=v_unit THEN
       RAISE EXCEPTION 'FAIL_YIELD_DID_NOT_REFILL_DIFFERENT_UNIT';
     END IF;
@@ -56,7 +56,7 @@ BEGIN
         'continuation_contract',jsonb_build_object('global_stop',true)),
       false,'GLOBAL_STOP_EXPLICIT');
     IF v_finish->>'scheduler_refill_admitted'<>'false'
-      OR v_finish->'next' IS NOT NULL THEN
+      OR coalesce(jsonb_typeof(v_finish->'next'),'null') <> 'null' THEN
       RAISE EXCEPTION 'FAIL_GLOBAL_STOP_REFILLED';
     END IF;
 
