@@ -80,13 +80,20 @@ def run():
         bad = base_candidate(sha(original))
         expect_fail(bad, repo, root / "bad5", "CANDIDATE_BASELINE_REVISION_MISMATCH", rev="b" * 40)
 
+        outside = root / "outside.txt"
+        outside.write_text("outside", encoding="utf-8")
+        (profile / "linked.txt").symlink_to(outside)
+        bad = base_candidate(sha(original))
+        expect_fail(bad, repo, root / "bad6", "CANDIDATE_SOURCE_SYMLINK_FORBIDDEN")
+        (profile / "linked.txt").unlink()
+
         no_change = base_candidate(sha(original))
         no_change["evolution_mode"] = "NO_CHANGE"
         no_change["changes"] = []
         r = materialize(no_change, repo, root / "nochange", REV)
         assert r["changed_paths"] == [] and r["deleted_paths"] == []
 
-    print("PASS_PROFILE_CANDIDATE_MATERIALIZER_V1 positive=2 negative=5 authority_writes=0")
+    print("PASS_PROFILE_CANDIDATE_MATERIALIZER_V1 positive=2 negative=6 authority_writes=0")
 
 
 if __name__ == "__main__":
