@@ -8,7 +8,7 @@ AS $function$
 declare
   v_version bigint:=public.fn_lf_version_compatibility_current_version_id_v1('PROGRAMACION_CONTRACT','INPUT_READINESS_CONTRACT','INPUT_GOVERNANCE_AGENT');
   v_status text; v_pantalla_id integer; v_family_count integer; v_curator_identity text; v_existing_validator text; v_contract_revision text; v_validator_component bigint; v_source_sha text; v_pass integer; v_fail integer; v_blocked integer;
-  v_pre jsonb; v_assertions jsonb; v_expected jsonb; v_exec_id text:=gen_random_uuid()::text; v_payload jsonb; a record; v_assertion_set_sha256 text; v_assertion_set jsonb; v_logical_evidence jsonb; v_physical_evidence jsonb; v_classifier_block boolean; v_outcome text; v_findings jsonb; v_assertion jsonb; v_eval jsonb;
+  v_pre jsonb; v_assertions jsonb; v_exec_id text:=gen_random_uuid()::text; v_payload jsonb; a record; v_assertion_set_sha256 text; v_assertion_set jsonb; v_logical_evidence jsonb; v_physical_evidence jsonb; v_outcome text; v_findings jsonb; v_assertion jsonb; v_eval jsonb;
 begin
   if p_validator_identity !~ '^INPUT_VALIDATOR:(EDGE:input-governance-validator-v1|SQL:ig-governed-dispatch-v1):[A-Za-z0-9_-]{6,128}$' then raise exception 'INPUT_GOVERNANCE_VALIDATOR_RUNTIME_IDENTITY_INVALID'; end if;
   select status,pantalla_id,family_count,curator_identity,validator_identity,contract_revision into v_status,v_pantalla_id,v_family_count,v_curator_identity,v_existing_validator,v_contract_revision from programacion.input_readiness_runs where id=p_run_id and version_id=v_version and supersedes_run_id is null and scope->>'mode'='GOVERNED_CANONICAL_BOOTSTRAP_V1';
