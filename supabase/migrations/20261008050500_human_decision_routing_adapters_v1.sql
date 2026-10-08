@@ -192,7 +192,8 @@ begin
     raise exception 'STORY_HUMAN_REVIEW_ROLE_REQUIRED';
   end if;
 
-  if coalesce(array_length(v_c.reviewer_actions,1),0)=0 then
+  if jsonb_typeof(v_c.reviewer_actions) <> 'array'
+     or jsonb_array_length(v_c.reviewer_actions)=0 then
     raise exception 'STORY_HUMAN_REVIEW_ACTIONS_REQUIRED';
   end if;
 
@@ -273,7 +274,7 @@ begin
     ),
     p_required_authority_ref,
     v_c.required_reviewer_role,
-    to_jsonb(v_c.reviewer_actions),
+    v_c.reviewer_actions,
     v_evidence,
     v_currentness,
     jsonb_build_object(
