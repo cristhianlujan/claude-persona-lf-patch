@@ -134,5 +134,5 @@ BEGIN
      AND c.evidence_ref LIKE '%supabase://public.lf_eventos/'||v_handoff.id||'%'
      AND c.evidence_ref LIKE '%supabase://public.lf_eventos/'||v_independent.id||'%'
  ) THEN RAISE EXCEPTION 'M712_TERMINAL_EVIDENCE_READBACK_FAILED'; END IF;
-END
+END;
 $m712_evidence$;
