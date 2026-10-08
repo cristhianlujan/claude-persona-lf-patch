@@ -18,7 +18,6 @@ declare
   v_candidate_count integer:=0;
   v_missing_decision_count integer:=0;
   v_owner_approved_count integer:=0;
-  v_promotion_authorized_count integer:=0;
   v_details jsonb:='[]'::jsonb;
 begin
   if p_family_code<>'TRANSITIONS' then
@@ -53,13 +52,10 @@ begin
       c.*,
       d.estado_original,
       d.estado_normalizado,
-      d.raw_payload,
       (
         d.estado_original='APROBADO_POR_OWNER'
         or d.estado_normalizado='CANDIDATO_APROBADO_POR_OWNER'
       ) as owner_approved,
-      coalesce((d.raw_payload->>'promotion_authorized')::boolean,false)
-        as promotion_authorized,
       d.id_decision is null as decision_missing
     from candidates c
     left join public.lf_decisiones_gov d
@@ -77,7 +73,6 @@ begin
     count(*),
     count(*) filter(where decision_missing),
     count(*) filter(where owner_approved),
-    count(*) filter(where promotion_authorized),
     coalesce(
       jsonb_agg(
         jsonb_build_object(
@@ -89,7 +84,7 @@ begin
           'decision_state_original',estado_original,
           'decision_state_normalized',estado_normalizado,
           'owner_approved',owner_approved,
-          'promotion_authorized',promotion_authorized
+          'promotion_authority_verification','REQUIRES_GOVERNED_RECEIPT'
         )
         order by transition_id
       ),
@@ -99,7 +94,6 @@ begin
     v_candidate_count,
     v_missing_decision_count,
     v_owner_approved_count,
-    v_promotion_authorized_count,
     v_details
   from inspected;
 
@@ -122,8 +116,7 @@ begin
       'candidate_count',v_candidate_count,
       'missing_decision_count',v_missing_decision_count,
       'owner_approved_count',v_owner_approved_count,
-      'promotion_authorized_count',v_promotion_authorized_count,
-      'details',v_details
+        'details',v_details
     );
   end if;
 
@@ -138,25 +131,7 @@ begin
       'candidate_count',v_candidate_count,
       'missing_decision_count',v_missing_decision_count,
       'owner_approved_count',v_owner_approved_count,
-      'promotion_authorized_count',v_promotion_authorized_count,
-      'details',v_details
-    );
-  end if;
-
-  if v_promotion_authorized_count=v_candidate_count then
-    return jsonb_build_object(
-      'schema_version','lf-ig-candidate-promotion-authority/v1',
-      'handled',true,
-      'state','SAFE_CHANGE_ADMISSION_REQUIRED',
-      'code','CANDIDATE_PROMOTION_ALREADY_AUTHORIZED_REQUIRES_SAFE_CHANGE',
-      'action_code','PROMOTE_GOVERNED_CANDIDATE',
-      'action_authorized',true,
-      'semantic_decision_required',false,
-      'human_queue_allowed',false,
-      'candidate_count',v_candidate_count,
-      'owner_approved_count',v_owner_approved_count,
-      'promotion_authorized_count',v_promotion_authorized_count,
-      'details',v_details
+        'details',v_details
     );
   end if;
 
@@ -164,14 +139,14 @@ begin
     'schema_version','lf-ig-candidate-promotion-authority/v1',
     'handled',true,
     'state','ACTION_AUTHORIZATION_GATE',
-    'code','OWNER_APPROVED_SEMANTICS_PROMOTION_NOT_AUTHORIZED',
+    'code','OWNER_APPROVED_SEMANTICS_PROMOTION_REQUIRES_VERIFIED_AUTHORIZATION',
     'action_code','PROMOTE_GOVERNED_CANDIDATE',
     'action_authorized',false,
+    'authorization_evidence_state','REQUIRES_GOVERNED_RECEIPT',
     'semantic_decision_required',false,
     'human_queue_allowed',false,
     'candidate_count',v_candidate_count,
     'owner_approved_count',v_owner_approved_count,
-    'promotion_authorized_count',v_promotion_authorized_count,
     'details',v_details
   );
 end
@@ -180,50 +155,213 @@ $function$;
 revoke all on function private.fn_lf_ig_candidate_promotion_authority_v1(integer,text)
   from public,anon,authenticated;
 
-do $patch_live_disposition$
-declare
-  v_def text;
-  v_sha text;
-  v_old text:=E'  if v_candidate_authority_count=v_blocker_count then\n    return jsonb_build_object(\n      ''schema_version'',''lf-ig-human-live-disposition/v1'',\n      ''state'',''ACTION_AUTHORIZATION_GATE'',\n      ''code'',''GOVERNED_CANDIDATE_PROMOTION_REQUIRED'',\n      ''proposal_id'',v_p.id,\n      ''source_run_id'',v_p.run_id,\n      ''pantalla_id'',v_source_run.pantalla_id,\n      ''family_code'',v_p.family_code,\n      ''old_gap_code'',v_p.gap_code,\n      ''action_code'',''PROMOTE_GOVERNED_CANDIDATE'',\n      ''action_authorized'',false,\n      ''semantic_decision_required'',false,\n      ''live_applicability'',v_live->>''applicability'',\n      ''live_story_ready_status'',v_live->>''story_ready_status'',\n      ''live_implementation_ready_status'',v_live->>''implementation_ready_status'',\n      ''live_qa_ready_status'',v_live->>''qa_ready_status'',\n      ''classifier_sha256'',v_live->>''classifier_sha256'',\n      ''live_blockers'',v_blockers,\n      ''human_queue_allowed'',false\n    );\n  end if;';
-  v_new text:=E'  if v_candidate_authority_count=v_blocker_count then\n    v_candidate_disposition:=private.fn_lf_ig_candidate_promotion_authority_v1(\n      v_source_run.pantalla_id,v_p.family_code\n    );\n\n    if coalesce((v_candidate_disposition->>''handled'')::boolean,false) is not true then\n      return jsonb_build_object(\n        ''schema_version'',''lf-ig-human-live-disposition/v1'',\n        ''state'',''INTERNAL_REMEDIATION'',\n        ''code'',''CANDIDATE_AUTHORITY_NOT_PROVEN'',\n        ''proposal_id'',v_p.id,\n        ''source_run_id'',v_p.run_id,\n        ''pantalla_id'',v_source_run.pantalla_id,\n        ''family_code'',v_p.family_code,\n        ''old_gap_code'',v_p.gap_code,\n        ''semantic_decision_required'',false,\n        ''candidate_authority'',v_candidate_disposition,\n        ''classifier_sha256'',v_live->>''classifier_sha256'',\n        ''live_blockers'',v_blockers,\n        ''human_queue_allowed'',false\n      );\n    end if;\n\n    return jsonb_build_object(\n      ''schema_version'',''lf-ig-human-live-disposition/v1'',\n      ''state'',v_candidate_disposition->>''state'',\n      ''code'',v_candidate_disposition->>''code'',\n      ''proposal_id'',v_p.id,\n      ''source_run_id'',v_p.run_id,\n      ''pantalla_id'',v_source_run.pantalla_id,\n      ''family_code'',v_p.family_code,\n      ''old_gap_code'',v_p.gap_code,\n      ''action_code'',v_candidate_disposition->>''action_code'',\n      ''action_authorized'',coalesce((v_candidate_disposition->>''action_authorized'')::boolean,false),\n      ''semantic_decision_required'',false,\n      ''candidate_authority'',v_candidate_disposition,\n      ''live_applicability'',v_live->>''applicability'',\n      ''live_story_ready_status'',v_live->>''story_ready_status'',\n      ''live_implementation_ready_status'',v_live->>''implementation_ready_status'',\n      ''live_qa_ready_status'',v_live->>''qa_ready_status'',\n      ''classifier_sha256'',v_live->>''classifier_sha256'',\n      ''live_blockers'',v_blockers,\n      ''human_queue_allowed'',false\n    );\n  end if;';
+do $assert_source$
+declare v text;
 begin
-  select pg_get_functiondef(
-           'private.fn_lf_ig_human_decision_live_disposition_v1(bigint)'::regprocedure
-         ),
-         encode(
-           extensions.digest(
-             convert_to(
-               pg_get_functiondef(
-                 'private.fn_lf_ig_human_decision_live_disposition_v1(bigint)'::regprocedure
-               ),
-               'UTF8'
-             ),
-             'sha256'
-           ),
-           'hex'
-         )
-    into v_def,v_sha;
+select encode(extensions.digest(convert_to(pg_get_functiondef('private.fn_lf_ig_human_decision_live_disposition_v1(bigint)'::regprocedure),'UTF8'),'sha256'),'hex') into v;
+if v <> '63d8e397bd5c11cd67be1449586c946c5a1710ccee59e83734109b7386f27a05' then raise exception 'IG_CANDIDATE_DISPOSITION_SOURCE_DRIFT:%',v;end if;
+end $assert_source$;
+-- Canonical full function DDL, no SQL-body literal substitution.
+CREATE OR REPLACE FUNCTION private.fn_lf_ig_human_decision_live_disposition_v1(p_proposal_id bigint)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+declare
+  v_p programacion.input_gap_proposals%rowtype;
+  v_source_run programacion.input_readiness_runs%rowtype;
+  v_live jsonb;
+  v_blockers jsonb;
+  v_blocker_count integer;
+  v_candidate_authority_count integer;
+  v_candidate_disposition jsonb;
+  v_positive_owner_count integer;
+  v_uncertain_count integer;
+begin
+  select * into strict v_p
+  from programacion.input_gap_proposals
+  where id=p_proposal_id;
 
-  if v_sha<>'63d8e397bd5c11cd67be1449586c946c5a1710ccee59e83734109b7386f27a05' then
-    raise exception 'IG_CANDIDATE_AUTHORITY_LIVE_DISPOSITION_BASELINE_SHA_MISMATCH:%',v_sha;
+  select * into strict v_source_run
+  from programacion.input_readiness_runs
+  where id=v_p.run_id;
+
+  if v_p.validator_outcome is distinct from 'PASS' then
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state','BLOCKED',
+      'code','SOURCE_PROPOSAL_NOT_VALIDATED',
+      'proposal_id',v_p.id,
+      'human_queue_allowed',false
+    );
   end if;
 
-  if position('v_candidate_authority_count integer;' in v_def)=0
-     or position(v_old in v_def)=0 then
-    raise exception 'IG_CANDIDATE_AUTHORITY_LIVE_DISPOSITION_ANCHOR_DRIFT';
-  end if;
-
-  v_def:=replace(
-    v_def,
-    'v_candidate_authority_count integer;',
-    E'v_candidate_authority_count integer;\n  v_candidate_disposition jsonb;'
+  v_live:=programacion.fn_input_governance_bootstrap_classify_v2(
+    v_source_run.pantalla_id,
+    v_p.family_code,
+    v_source_run.version_id
   );
 
-  v_def:=replace(v_def,v_old,v_new);
+  if jsonb_typeof(v_live)<>'object'
+     or coalesce(v_live->>'classifier_sha256','') !~ '^[0-9a-f]{64}$' then
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state','BLOCKED',
+      'code','LIVE_CLASSIFIER_UNPROVEN',
+      'proposal_id',v_p.id,
+      'pantalla_id',v_source_run.pantalla_id,
+      'family_code',v_p.family_code,
+      'human_queue_allowed',false
+    );
+  end if;
 
-  execute v_def;
+  v_blockers:=coalesce(v_live->'blockers','[]'::jsonb);
+  if jsonb_typeof(v_blockers)<>'array' then
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state','BLOCKED',
+      'code','LIVE_CLASSIFIER_BLOCKERS_INVALID',
+      'proposal_id',v_p.id,
+      'classifier_sha256',v_live->>'classifier_sha256',
+      'human_queue_allowed',false
+    );
+  end if;
+
+  v_blocker_count:=jsonb_array_length(v_blockers);
+
+  if v_blocker_count=0 then
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state','NO_HUMAN_REQUIRED',
+      'code','LIVE_CANONICAL_CLASSIFIER_RESOLVED',
+      'proposal_id',v_p.id,
+      'source_run_id',v_p.run_id,
+      'pantalla_id',v_source_run.pantalla_id,
+      'family_code',v_p.family_code,
+      'old_gap_code',v_p.gap_code,
+      'live_applicability',v_live->>'applicability',
+      'live_story_ready_status',v_live->>'story_ready_status',
+      'live_implementation_ready_status',v_live->>'implementation_ready_status',
+      'live_qa_ready_status',v_live->>'qa_ready_status',
+      'classifier_sha256',v_live->>'classifier_sha256',
+      'live_blockers',v_blockers,
+      'human_queue_allowed',false
+    );
+  end if;
+
+  select
+    count(*) filter(
+      where b.value->>'uncertainty_type'='CANDIDATE_AUTHORITY'
+         or (
+           b.value->>'code' like '%_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY'
+           and b.value->>'earliest_blocking_stage'='IMPLEMENTATION'
+         )
+    ),
+    count(*) filter(
+      where coalesce((b.value->>'owner_decision_required')::boolean,false)
+        and nullif(btrim(coalesce(b.value->>'owner_decision_authority','')),'') is not null
+    ),
+    count(*) filter(
+      where coalesce(b.value->>'uncertainty_type','') not in (
+        'CANDIDATE_AUTHORITY','MISSING_SOURCE','INCOMPLETE_EVIDENCE'
+      )
+        and not (
+          b.value->>'code' like '%_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY'
+          and b.value->>'earliest_blocking_stage'='IMPLEMENTATION'
+        )
+        and not (
+          coalesce((b.value->>'owner_decision_required')::boolean,false)
+          and nullif(btrim(coalesce(b.value->>'owner_decision_authority','')),'') is not null
+        )
+    )
+  into v_candidate_authority_count,v_positive_owner_count,v_uncertain_count
+  from jsonb_array_elements(v_blockers) b(value);
+
+  if v_candidate_authority_count=v_blocker_count then
+    v_candidate_disposition:=private.fn_lf_ig_candidate_promotion_authority_v1(
+      v_source_run.pantalla_id,v_p.family_code
+    );
+
+    if coalesce((v_candidate_disposition->>'handled')::boolean,false) is not true then
+      return jsonb_build_object(
+        'schema_version','lf-ig-human-live-disposition/v1',
+        'state','INTERNAL_REMEDIATION',
+        'code','CANDIDATE_AUTHORITY_NOT_PROVEN',
+        'proposal_id',v_p.id,
+        'source_run_id',v_p.run_id,
+        'pantalla_id',v_source_run.pantalla_id,
+        'family_code',v_p.family_code,
+        'old_gap_code',v_p.gap_code,
+        'semantic_decision_required',false,
+        'candidate_authority',v_candidate_disposition,
+        'classifier_sha256',v_live->>'classifier_sha256',
+        'live_blockers',v_blockers,
+        'human_queue_allowed',false
+      );
+    end if;
+
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state',v_candidate_disposition->>'state',
+      'code',v_candidate_disposition->>'code',
+      'proposal_id',v_p.id,
+      'source_run_id',v_p.run_id,
+      'pantalla_id',v_source_run.pantalla_id,
+      'family_code',v_p.family_code,
+      'old_gap_code',v_p.gap_code,
+      'action_code',v_candidate_disposition->>'action_code',
+      'action_authorized',coalesce((v_candidate_disposition->>'action_authorized')::boolean,false),
+      'semantic_decision_required',false,
+      'candidate_authority',v_candidate_disposition,
+      'live_applicability',v_live->>'applicability',
+      'live_story_ready_status',v_live->>'story_ready_status',
+      'live_implementation_ready_status',v_live->>'implementation_ready_status',
+      'live_qa_ready_status',v_live->>'qa_ready_status',
+      'classifier_sha256',v_live->>'classifier_sha256',
+      'live_blockers',v_blockers,
+      'human_queue_allowed',false
+    );
+  end if;  if v_positive_owner_count>0 then
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state','PRE_HUMAN_ADMISSION',
+      'code','POSITIVE_OWNER_DECISION_AUTHORITY_PRESENT',
+      'proposal_id',v_p.id,
+      'source_run_id',v_p.run_id,
+      'pantalla_id',v_source_run.pantalla_id,
+      'family_code',v_p.family_code,
+      'old_gap_code',v_p.gap_code,
+      'classifier_sha256',v_live->>'classifier_sha256',
+      'live_blockers',v_blockers,
+      'human_queue_allowed',false
+    );
+  end if;
+
+  return jsonb_build_object(
+    'schema_version','lf-ig-human-live-disposition/v1',
+    'state','INTERNAL_REMEDIATION',
+    'code',case
+      when v_uncertain_count>0 then 'LIVE_GAP_UNKNOWN_FAIL_CLOSED'
+      else 'LIVE_GAP_EVIDENCE_OR_SOURCE_REMEDIATION'
+    end,
+    'proposal_id',v_p.id,
+    'source_run_id',v_p.run_id,
+    'pantalla_id',v_source_run.pantalla_id,
+    'family_code',v_p.family_code,
+    'old_gap_code',v_p.gap_code,
+    'semantic_decision_required',false,
+    'live_applicability',v_live->>'applicability',
+    'live_story_ready_status',v_live->>'story_ready_status',
+    'live_implementation_ready_status',v_live->>'implementation_ready_status',
+    'live_qa_ready_status',v_live->>'qa_ready_status',
+    'classifier_sha256',v_live->>'classifier_sha256',
+    'live_blockers',v_blockers,
+    'human_queue_allowed',false
+  );
 end
-$patch_live_disposition$;
+$function$;
+
 
 do $capability_version$
 declare
@@ -268,6 +406,8 @@ begin
     'true'::jsonb,
     true
   );
+
+  v_manifest:=jsonb_set(v_manifest,'{contract,unverified_flag_never_grants_promotion}','true'::jsonb,true);
 
   v_sha:=encode(
     extensions.digest(convert_to(v_manifest::text,'UTF8'),'sha256'),
