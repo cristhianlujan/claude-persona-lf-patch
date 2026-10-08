@@ -391,3 +391,46 @@ Current live reconciliation of the legacy IG human-decision set is:
 The eight superseded cases are no longer the original human applicability questions. Four old TRANSITIONS decisions became current implementation-readiness gaps, and four screen-2 items now point to current evidence/source gaps. Those current gaps remain in IG's internal remediation/evidence path.
 
 This currentness layer reuses the `CURRENTNESS_AUTHORITY` invariant: later validated source state supersedes stale historical assertions; stale history cannot authorize a material action.
+
+
+## IG live pre-human disposition
+
+Input Governance no longer treats the latest persisted COMPLETED run as sufficient currentness authority before human escalation.
+
+The canonical pre-human check is now the live classifier:
+
+```text
+historical HUMAN_DECISION_REQUIRED proposal
+        ↓
+current screen + family
+        ↓
+fn_input_governance_bootstrap_classify_v2
+        ↓
+live classifier SHA + current blockers
+        ↓
+disposition
+```
+
+Possible dispositions are:
+
+- `NO_HUMAN_REQUIRED`: current canonical evidence already resolves the old question.
+- `ACTION_AUTHORIZATION_GATE`: semantics are already complete, but governed candidate authority still needs a separate action authorization such as promotion. This is **not** a new semantic human decision.
+- `INTERNAL_REMEDIATION`: current evidence/source work remains. Keep it in automated/internal remediation.
+- `PRE_HUMAN_ADMISSION`: only when the live blocker carries explicit positive owner-decision authority does the case continue to the shared human-admission gate.
+- `BLOCKED`: current state cannot be proven; do not escalate.
+
+The live classifier is bound by `classifier_sha256`. Historical proposal status and persisted run ordering are evidence only, not current authority.
+
+The prior latest-run reconciliation was corrected because strict readback showed the six selected persisted runs were no longer current under `fn_input_readiness_run_is_current`. The numeric 14/8 split happened to match live canonical classification, but the method was insufficient and is superseded.
+
+Current live disposition for the 22 historical IG rows:
+
+```text
+14 → NO_HUMAN_REQUIRED
+ 4 → ACTION_AUTHORIZATION_GATE / PROMOTE_GOVERNED_CANDIDATE
+ 4 → INTERNAL_REMEDIATION
+ 0 → PRE_HUMAN_ADMISSION
+ 0 → human queue
+```
+
+The four action-gated cases are consolidated by `private.v_lf_ig_nonhuman_action_groups_v1` as one TRANSITIONS promotion group containing four exact subjects. Grouping reduces repeated authorization prompts but does not itself authorize promotion or mutate canonical product data.
