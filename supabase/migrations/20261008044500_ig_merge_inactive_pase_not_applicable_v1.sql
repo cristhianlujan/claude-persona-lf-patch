@@ -1,4 +1,5 @@
 -- IG generic repair: PASE is conditional, never a mandatory dependency when disabled.
+-- Do not invent prerequisite tokens unsupported by the currently installed executor.
 -- Requires exact trusted-base activation readback by the runner. Does not enable PASE.
 create or replace function programacion.fn_engineering_merge_authorization_contract_v1()
 returns jsonb
@@ -15,8 +16,6 @@ select jsonb_build_object(
   'required_execution_permission','DOWNSTREAM_EXECUTION_ELIGIBLE',
   'required_preconditions',jsonb_build_array(
     'EKB_PREFLIGHT_CLEAR',
-    'GOVERNED_MERGE_APPLICABILITY_RESOLVED',
-    'ACTIVE_BLOCKING_CONTROLS_PASS_WHEN_APPLICABLE',
     'EXACT_HEAD_MATCH',
     'PR_MERGEABLE_TRUE'
   ),
@@ -59,7 +58,9 @@ do $assert$
 declare
   v jsonb:=programacion.fn_engineering_merge_authorization_contract_v1();
 begin
-  if coalesce(v->'required_preconditions' ? 'PASE_MERGE_POLICY_EFFECTIVE_ALLOW',true) then
+  if coalesce(v->'required_preconditions' ? 'PASE_MERGE_POLICY_EFFECTIVE_ALLOW',true)
+     or coalesce(v->'required_preconditions' ? 'GOVERNED_MERGE_APPLICABILITY_RESOLVED',false)
+     or coalesce(v->'required_preconditions' ? 'ACTIVE_BLOCKING_CONTROLS_PASS_WHEN_APPLICABLE',false) then
     raise exception 'FAIL_MERGE_CONTRACT_UNCONDITIONAL_PASE';
   end if;
   if v#>>'{pase_policy,on_disabled}' <> 'NOT_APPLICABLE'
