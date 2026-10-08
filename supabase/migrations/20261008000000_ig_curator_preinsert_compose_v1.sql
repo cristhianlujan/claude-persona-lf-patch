@@ -406,7 +406,7 @@ exception when others then
   perform set_config('lf.input_request_freshness_count_v1','',true);
   raise;
 end;
-$function$
+$function$;
 
 comment on function programacion.fn_input_curator_compose_before_insert_v1() is
 'EKB IG-CURATOR-POSTINSERT-IMMUTABLE-COLLISION-001. BEFORE INSERT M5.4 composition, exact request context; retains 5.13 guard and immutable evidence SHA.';
