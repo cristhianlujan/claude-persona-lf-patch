@@ -277,6 +277,24 @@
           "pass_when": "execution_authorized=false and admission_required=true",
           "failure_code": "SELECTOR_AUTHORITY_LEAK",
           "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE3_C5",
+          "title": "Multiple profile gaps are composed as multi-label evidence, not contradiction",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "CAPABILITY_SELECTOR_V2",
+          "validation_input": {
+            "case_family": "MULTI_GAP_COMPOSITION",
+            "required_selected": [
+              "TARGETED_EVIDENCE_ACQUISITION",
+              "CAUSAL_EFFECT_LINEAGE",
+              "INDEPENDENT_ASSURANCE"
+            ]
+          },
+          "pass_when": "multiple profile_gap labels do not force fallback; scalar typed signals still select all matching capabilities",
+          "failure_code": "SELECTOR_MULTI_GAP_FALSE_CONTRADICTION",
+          "resolver_policy": "FIX_SELECTOR_V2_WITHOUT_CHANGING_V1_THEN_REVALIDATE"
         }
       ]
     },
