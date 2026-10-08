@@ -87,7 +87,7 @@ begin
  -- WRITE_GIT -> SentinelX RUN_TEST -> assertion -> transition.
  v_packet:=programacion.fn_engineering_execution_packet_from_spec_v1(
    p_plan_code,p_unit_code,p_checkpoint_code,
-   programacion.fn_engineering_checkpoint_action_spec_v3(p_plan_code,p_unit_code,p_checkpoint_code),
+   v_fixed,
    '{}'::jsonb
  );
  if v_packet->>'status' is distinct from 'READY'
