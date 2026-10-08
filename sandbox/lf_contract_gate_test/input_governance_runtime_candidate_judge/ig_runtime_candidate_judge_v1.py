@@ -409,9 +409,13 @@ def _connect() -> Any:
         from psycopg.rows import dict_row
     except ImportError as exc:
         raise JudgeError("PSYCOPG_REQUIRED") from exc
-    project = os.environ.get("SUPABASE_PROJECT_ID", "mhwmirqcgxxukpctffuv").strip()
+    project = os.environ.get("SUPABASE_PROJECT_ID", "").strip()
     password = os.environ.get("LF_SUPABASE_DB_PASSWORD", "").strip()
-    host = os.environ.get("SUPABASE_POOLER_HOST", "aws-1-us-east-1.pooler.supabase.com").strip()
+    host = os.environ.get("SUPABASE_POOLER_HOST", "").strip()
+    if not re.fullmatch(r"[a-z0-9]{20}", project):
+        raise JudgeError("SUPABASE_PROJECT_CONFIG_MISSING_OR_INVALID")
+    if not re.fullmatch(r"[A-Za-z0-9.-]+", host):
+        raise JudgeError("SUPABASE_POOLER_HOST_MISSING_OR_INVALID")
     if not password:
         raise JudgeError("LF_SUPABASE_DB_PASSWORD_REQUIRED")
     return psycopg.connect(

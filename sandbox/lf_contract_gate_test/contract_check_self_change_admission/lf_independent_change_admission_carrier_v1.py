@@ -20,8 +20,6 @@ sys.path.insert(0, str(HERE))
 import lf_contract_check_self_change_admission_v1 as guard  # noqa: E402
 
 API_URL = os.environ.get("GITHUB_API_URL", "https://api.github.com").rstrip("/")
-PROJECT_ID = "mhwmirqcgxxukpctffuv"
-POOLER_HOST = "aws-1-us-east-1.pooler.supabase.com"
 EXECUTION_ID_RE = re.compile(r"^[A-Za-z0-9._:/-]{1,200}$")
 
 
@@ -251,15 +249,21 @@ def _base_observed_anchors(base_sha: str) -> dict[str, dict[str, str]]:
 
 
 def _pg_env() -> dict[str, str]:
+    project = os.environ.get("SUPABASE_PROJECT_ID", "").strip()
+    host = os.environ.get("SUPABASE_POOLER_HOST", "").strip()
     password = os.environ.get("LF_SUPABASE_DB_PASSWORD", "").strip()
+    if not project or not re.fullmatch(r"[a-z0-9]{20}", project):
+        _fail("BLOCK_SELF_CHANGE_PROJECT_CONFIG_MISSING_OR_INVALID")
+    if not host or not re.fullmatch(r"[A-Za-z0-9.-]+", host):
+        _fail("BLOCK_SELF_CHANGE_POOLER_HOST_MISSING_OR_INVALID")
     if not password:
         _fail("BLOCK_SELF_CHANGE_DB_PASSWORD_MISSING")
     env = os.environ.copy()
     env.update(
         {
-            "PGHOST": os.environ.get("SUPABASE_POOLER_HOST", POOLER_HOST),
+            "PGHOST": host,
             "PGPORT": "5432",
-            "PGUSER": f"postgres.{os.environ.get('SUPABASE_PROJECT_ID', PROJECT_ID)}",
+            "PGUSER": f"postgres.{project}",
             "PGPASSWORD": password,
             "PGDATABASE": "postgres",
             "PGSSLMODE": "require",

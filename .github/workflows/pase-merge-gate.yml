@@ -1,7 +1,7 @@
 name: PASE Merge Gate
 
 # TEMPORARILY DISABLED 2026-10-02 for the PASE merge-gate job only.
-# Independent change-admission and IG runtime-candidate judge remain active.
+# Independent change-admission and IG runtime judge now run from their own workflows.
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -67,8 +67,8 @@ jobs:
         env:
           PASE_REPOSITORY: ${{ github.repository }}
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
-          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
-          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          SUPABASE_PROJECT_ID: ${{ vars.LF_SUPABASE_PROJECT_ID }}
+          SUPABASE_POOLER_HOST: ${{ vars.LF_SUPABASE_POOLER_HOST }}
         run: |
           set -euo pipefail
           mkdir -p .lf_ci
@@ -82,120 +82,3 @@ jobs:
             --output-json .lf_ci/lf_pase_merge_gate_carrier_result_v1.json
           cat .lf_ci/lf_pase_merge_gate_carrier_result_v1.json
 
-  independent-change-admission:
-    name: lf-independent-change-admission
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      pull-requests: read
-    steps:
-      - name: Checkout trusted base admission source
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Self-test independent admission source
-        run: |
-          set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py self-test
-
-      - name: Classify independent admission applicability
-        id: admission_scope
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py classify
-
-      - name: Record independent admission not applicable
-        if: steps.admission_scope.outputs.applicable == 'false'
-        run: |
-          set -euo pipefail
-          echo "PASS_INDEPENDENT_CHANGE_ADMISSION_NOT_APPLICABLE status=${{ steps.admission_scope.outputs.status }}"
-
-      - name: Validate Contract Check self-change admission
-        if: steps.admission_scope.outputs.applicable == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
-          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
-          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
-        run: |
-          set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py validate
-
-  ig-runtime-candidate-judge:
-    name: ig-runtime-candidate-judge
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      pull-requests: read
-    steps:
-      - name: Checkout trusted base judge source
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Set up Python for IG judge
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install DB client only for IG judge
-        run: python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.10'
-
-      - name: Self-test trusted IG request carrier
-        run: |
-          set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_request_v1.py self-test
-
-      - name: Classify exact IG judge request without executing PR code
-        env:
-          REPOSITORY: ${{ github.repository }}
-          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          set -euo pipefail
-          if [ "$HEAD_REPOSITORY" != "$REPOSITORY" ]; then
-            echo "BLOCK_IG_N9_HEAD_REPOSITORY repository=$REPOSITORY head_repository=$HEAD_REPOSITORY"
-            exit 2
-          fi
-          git fetch --no-tags --depth=200 origin "$HEAD_SHA"
-          REQUEST_PATH='sandbox/ig_cv/n9_requests/request.json'
-          if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- "$REQUEST_PATH"; then
-            echo "IG_N9_APPLICABLE=false" >> "$GITHUB_ENV"
-            echo "PASS_IG_N9_NOT_APPLICABLE request_path=$REQUEST_PATH"
-            exit 0
-          fi
-          CURRENT_MAIN_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
-          if [ -z "$CURRENT_MAIN_SHA" ]; then
-            echo "BLOCK_IG_N9_CURRENT_MAIN_SHA"
-            exit 2
-          fi
-          if [ "$BASE_SHA" != "$CURRENT_MAIN_SHA" ]; then
-            echo "BLOCK_IG_N9_STALE_BASE base=$BASE_SHA current_main=$CURRENT_MAIN_SHA"
-            exit 2
-          fi
-          git show "$HEAD_SHA:$REQUEST_PATH" > /tmp/ig-n9-request.json
-          python3 -m json.tool /tmp/ig-n9-request.json >/dev/null
-          echo "IG_N9_APPLICABLE=true" >> "$GITHUB_ENV"
-          echo "IG_N9_HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
-
-      - name: Execute rollback-only independent IG flow judge
-        if: env.IG_N9_APPLICABLE == 'true'
-        env:
-          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
-          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
-          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
-        run: |
-          set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_request_v1.py run \
-            --request /tmp/ig-n9-request.json \
-            --head-sha "$IG_N9_HEAD_SHA"
