@@ -7,6 +7,8 @@ CREATE OR REPLACE FUNCTION programacion.fn_input_governance_validate_v2(p_run_id
 AS $function$
 declare
   v_version bigint:=public.fn_lf_version_compatibility_current_version_id_v1('PROGRAMACION_CONTRACT','INPUT_READINESS_CONTRACT','INPUT_GOVERNANCE_AGENT');
+  v_semantic_required_families text[];
+  v_comparison_requested boolean;
   v_status text; v_pantalla_id integer; v_family_count integer; v_curator_identity text; v_parent bigint;
   v_existing_validator text; v_contract_revision text; v_validator_component bigint; v_source_sha text; v_pass integer; v_fail integer; v_blocked integer; v_pending integer;
   v_pre jsonb; v_assertions jsonb; v_exec_id text:=gen_random_uuid()::text; v_assertion_set_sha256 text; v_assertion_set jsonb; v_logical_evidence jsonb; v_physical_evidence jsonb;
@@ -44,12 +46,14 @@ begin
   select source_snapshot_sha256,contract_revision into v_source_sha,v_contract_revision from programacion.input_readiness_runs where id=p_run_id;
   select count(*) into v_pending_before from programacion.input_family_assessments where run_id=p_run_id and validator_outcome='PENDING';
 
+  v_semantic_required_families:=programacion.fn_input_validator_semantic_scope_v1(p_run_id);
   for a in
     select * from programacion.input_family_assessments
     where run_id=p_run_id and validator_outcome='PENDING'
     order by family_code
     limit 10
   loop
+    v_comparison_requested:=a.family_code=ANY(v_semantic_required_families);
     v_phase_started:=clock_timestamp();
     -- The Curator classifier is not an independent semantic source.
     -- Only canonical source assertions are evaluated in this phase.
@@ -74,7 +78,7 @@ begin
     if jsonb_array_length(v_assertions)=0 then raise exception 'INPUT_REMEDIATION_VALIDATOR_ASSERTIONS_EMPTY:%',a.family_code; end if;
 
     v_phase_started:=clock_timestamp();
-    v_logical_evidence:=jsonb_build_object('component_id',v_validator_component,'execution_id',v_exec_id,'validated_curator_execution_id',a.curator_evidence->>'execution_id','execution_mode','INDEPENDENT_VALIDATOR','runtime','SUPABASE_EDGE_FUNCTION:input-governance-validator-v1','direct_source_readback',true,'contract_revision',v_contract_revision,'source_snapshot_sha256',v_source_sha,'curator_sha256',a.curator_sha256,'semantic_depth_sha256',a.semantic_depth_sha256,'bootstrap_classifier_sha256',null,'semantic_conclusion_independence','UNPROVEN','analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','assertions',v_assertions);
+    v_logical_evidence:=jsonb_build_object('component_id',v_validator_component,'execution_id',v_exec_id,'validated_curator_execution_id',a.curator_evidence->>'execution_id','execution_mode','INDEPENDENT_VALIDATOR','runtime','SUPABASE_EDGE_FUNCTION:input-governance-validator-v1','direct_source_readback',true,'contract_revision',v_contract_revision,'source_snapshot_sha256',v_source_sha,'curator_sha256',a.curator_sha256,'semantic_depth_sha256',a.semantic_depth_sha256,'bootstrap_classifier_sha256',null,'semantic_conclusion_independence','UNPROVEN','validation_phase','SOURCE_INTEGRITY','semantic_comparison_requested',v_comparison_requested,'semantic_independence_credited',false,'analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','assertions',v_assertions);
     v_assertion_set_sha256:=programacion.fn_v09_sha256_jsonb(v_assertions);
     insert into programacion.input_validator_assertion_sets_v1(assertion_set_sha256,assertions)
     values(v_assertion_set_sha256,v_assertions)
@@ -113,9 +117,18 @@ begin
     end loop;
     if jsonb_array_length(v_findings)>0 then
       v_outcome:='FAIL';
-    else
-      v_findings:=jsonb_build_array(jsonb_build_object('finding_type','INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN','source_integrity_passed',true));
-    end if;
+    ELSE
+      IF v_comparison_requested THEN
+        v_outcome:='BLOCKED';
+        v_findings:=jsonb_build_array(jsonb_build_object(
+          'finding_type','INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN',
+          'family_code',a.family_code,'source_integrity_passed',true
+        ));
+      ELSE
+        v_outcome:='PASS';
+        v_findings:='[]'::jsonb;
+      END IF;
+    END IF;
     update programacion.input_family_assessments
        set validator_outcome=v_outcome,
            validator_findings=v_findings,
@@ -127,6 +140,7 @@ begin
     v_families_processed:=v_families_processed+1;
   end loop;
 
+  -- PASS here is SOURCE_INTEGRITY only; it never accredits semantics.
   select count(*) filter (where validator_outcome='PASS'),
          count(*) filter (where validator_outcome='FAIL'),
          count(*) filter (where validator_outcome='BLOCKED'),
