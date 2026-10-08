@@ -74,8 +74,7 @@ BEGIN
   );
   RETURN NEW;
 END;
-$function$
-
+$function$;
 
 DO $m67_check$
 BEGIN
