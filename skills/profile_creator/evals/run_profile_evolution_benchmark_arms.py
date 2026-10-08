@@ -96,6 +96,8 @@ def main():
       baseline_contract_dst.parent.mkdir(parents=True,exist_ok=True)
       baseline_contract_dst.write_text(baseline_contract_src.read_text(encoding="utf-8"),encoding="utf-8")
       for case in cases["cases"]:
+        if not isinstance(case.get("case_input",{}).get("budget"),dict) or "budget" in case.get("case_input",{}).get("signals",{}):
+            raise RuntimeError(f"CASE_BUDGET_CONTRACT_INVALID:{case.get('case_id')}")
         slug=case["fixture_profile_slug"]; make_fixture(repo,slug,case["structural_fixture"])
         pf=preflight(slug,revision)
         t=time.perf_counter_ns()
