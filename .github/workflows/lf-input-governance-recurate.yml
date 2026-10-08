@@ -52,7 +52,7 @@ jobs:
   recurate-input-readiness:
     needs: validate-screens
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
     strategy:
       # R17 / event #19650: one screen timing out must not cancel the rest.
       # Retry policy is currentness-driven: after readback with
@@ -91,9 +91,9 @@ jobs:
           PY
 
           # The OIDC caller only queues/polls SQL; a 202 is durable continuation,
-          # never a terminal success. Exactly one bounded retry; no new run created.
+          # never a terminal success. Poll same OIDC-owned request; NEVER resubmit.
           code=202
-          for attempt in 1 2; do
+          for attempt in 1 2 3; do
             code=$(curl --silent --show-error \
               --max-time 145 \
               -o recuration-response.json -w '%{http_code}' \
@@ -102,6 +102,22 @@ jobs:
               --data-binary @recuration-request.json \
               'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profiles-governance-caller-v1')
             if [ "$code" != 202 ]; then break; fi
+            # Preserve exact request_id to resume; never send another submit.
+            python3 - <<'PY'
+          import json,os
+          response=json.load(open('recuration-response.json',encoding='utf-8'))
+          result=response.get('result') or {}
+          payload=result.get('payload') or {}
+          request_id=payload.get('request_id')
+          screen=int(os.environ['PANTALLA_ID'])
+          if response.get('outcome')!='CONTINUATION_REQUIRED' or not isinstance(request_id,int) or request_id<=0:
+              raise SystemExit('FAIL_IG_CONTINUATION_RECEIPT_INVALID')
+          if response.get('pantalla_id')!=screen:
+              raise SystemExit('FAIL_IG_CONTINUATION_SCREEN_MISMATCH')
+          with open('recuration-request.json','w',encoding='utf-8') as fp:
+              json.dump({'action':'input_readiness_poll_v1','pantalla_id':screen,'request_id':request_id},fp,separators=(',',':'),sort_keys=True)
+          print('CONTINUE_EXISTING_IG_REQUEST:'+str(request_id))
+          PY
             sleep 5
           done
           cat recuration-response.json
