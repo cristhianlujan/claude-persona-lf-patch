@@ -1,0 +1,861 @@
+{
+  "schema": "PROFILE_EVOLUTION_ENGINEERING_PLAN_V1",
+  "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "authority_model": "PROGRAMMER_STYLE_ATOMIC_PLAN_WITH_FRESH_DETERMINISTIC_VALIDATION",
+  "storage_model": {
+    "plan_authority_target": "programacion.engineering_plan_units + programacion.engineering_work_checkpoints",
+    "validator_authority": "GITHUB_VERSIONED_FILES",
+    "binding_rule": "checkpoint -> validator_code -> explicit validation_input -> fresh receipt",
+    "programming_specific_tables_reused": false,
+    "reason": "reuse the pattern, not invade Programming-specific runtime tables"
+  },
+  "execution_policy": {
+    "previous_pass_reuse_forbidden": true,
+    "title_inference_forbidden": true,
+    "validator_missing": "BLOCK_AND_CREATE_QUALIFY_VALIDATOR",
+    "generic_or_transversal_first": true,
+    "new_validator_only_when_no_reusable_procedure": true,
+    "resolver_never_grants_pass": true,
+    "revalidate_after_repair": true,
+    "no_runtime_or_production_activation_by_plan_creation": true
+  },
+  "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
+  "units": [
+    {
+      "unit_code": "PE0",
+      "lot": "E0",
+      "title": "Currentness and structural baseline",
+      "depends_on": [],
+      "status": "READY_FOR_VALIDATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE0_C1",
+          "title": "S26 baseline has 13 deterministic dimensions",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "S26_PROFILE_BASELINE_V1",
+          "validation_input": {
+            "profile_scope": "sample_or_target",
+            "required_dimensions": 13
+          },
+          "pass_when": "required=13 and target code not executed",
+          "failure_code": "S26_BASELINE_INVALID",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE0_C2",
+          "title": "Current updater remains v0.1 until cutover",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_orchestrator_v1.json",
+            "must_contain": [
+              "PROFILE_EVOLUTION_ORCHESTRATOR",
+              "automatic_runtime_activation"
+            ]
+          },
+          "pass_when": "candidate contract is present and non-activating",
+          "failure_code": "CURRENTNESS_CONTRACT_MISSING",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE0_C3",
+          "title": "Structural compatibility is not capability maturity",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/SKILL.md",
+            "must_contain": [
+              "STRUCTURALLY_COMPATIBLE"
+            ]
+          },
+          "pass_when": "source explicitly separates structure from evolution capability",
+          "failure_code": "STRUCTURE_CAPABILITY_CONFLATION",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE1",
+      "lot": "E1",
+      "title": "Evidence-bound profile assessment",
+      "depends_on": [
+        "PE0"
+      ],
+      "status": "READY_FOR_REQUALIFICATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE1_C1",
+          "title": "Assessment validator requalified after unknown-evidence repair",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_ASSESSMENT_V1",
+          "validation_input": {
+            "qualification_mode": "FULL_SELF_TEST"
+          },
+          "pass_when": "qualification test exits 0 including unknown evidence cases",
+          "failure_code": "PROFILE_ASSESSMENT_QUALIFICATION_FAIL",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE1_C2",
+          "title": "UNKNOWN evidence cannot become GENERIC/SPECIALIZE",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_ASSESSMENT_V1",
+          "validation_input": {
+            "case_family": "UNKNOWN_DOMAIN_TASK_EVIDENCE"
+          },
+          "pass_when": "assessment_status=NEEDS_MORE_EVIDENCE, maturity=UNDETERMINED, evolution_mode=null",
+          "failure_code": "UNPROVEN_MATURITY_INFERENCE",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE1_C3",
+          "title": "PASS and FAIL claims require evidence refs",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_ASSESSMENT_V1",
+          "validation_input": {
+            "case_family": "MISSING_EVIDENCE_REFS"
+          },
+          "pass_when": "unreferenced PASS/FAIL normalized to UNKNOWN",
+          "failure_code": "UNREFERENCED_ASSESSMENT_CLAIM",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE1_C4",
+          "title": "Assessment never grants write authority",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_ASSESSMENT_V1",
+          "validation_input": {
+            "case_family": "AUTHORITY_BOUNDARY"
+          },
+          "pass_when": "write_authorized=false and admission_required=true",
+          "failure_code": "ASSESSMENT_AUTHORITY_LEAK",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE2",
+      "lot": "E2",
+      "title": "Method pack registry",
+      "depends_on": [
+        "PE1"
+      ],
+      "status": "READY_FOR_VALIDATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE2_C1",
+          "title": "Method registry structure and unique identities",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "METHOD_PACK_REGISTRY_V1",
+          "validation_input": {
+            "qualification_mode": "FULL_TEST"
+          },
+          "pass_when": "8+ unique methods with required typed fields",
+          "failure_code": "METHOD_REGISTRY_SCHEMA_FAIL",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE2_C2",
+          "title": "Cost risk stop and escalation are explicit",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "METHOD_PACK_REGISTRY_V1",
+          "validation_input": {
+            "assert_fields": [
+              "cost_points",
+              "risk",
+              "stop_conditions",
+              "escalation"
+            ]
+          },
+          "pass_when": "all methods satisfy bounded execution contract",
+          "failure_code": "METHOD_BOUNDARY_MISSING",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE2_C3",
+          "title": "Optimizer methods require benchmark precondition",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "METHOD_PACK_REGISTRY_V1",
+          "validation_input": {
+            "methods": [
+              "EVALUATOR_OPTIMIZER",
+              "PROMPT_OPTIMIZATION"
+            ]
+          },
+          "pass_when": "benchmark_exists is a precondition",
+          "failure_code": "EXPENSIVE_METHOD_UNGATED",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE2_C4",
+          "title": "No method registry auto-promotion",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "METHOD_PACK_REGISTRY_V1",
+          "validation_input": {
+            "assertion": "learning_policy.auto_promote=false"
+          },
+          "pass_when": "auto_promote=false",
+          "failure_code": "METHOD_AUTO_PROMOTION_FORBIDDEN",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE3",
+      "lot": "E3",
+      "title": "Capability and method composition",
+      "depends_on": [
+        "PE2"
+      ],
+      "status": "READY_FOR_VALIDATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE3_C1",
+          "title": "Selector v1 remains backward compatible",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "CAPABILITY_SELECTOR_V2",
+          "validation_input": {
+            "case_family": "V1_COMPATIBILITY"
+          },
+          "pass_when": "legacy output contract unchanged",
+          "failure_code": "SELECTOR_V1_REGRESSION",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE3_C2",
+          "title": "Composition uses typed context and method registry",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "CAPABILITY_SELECTOR_V2",
+          "validation_input": {
+            "case_family": "COMPOSITION"
+          },
+          "pass_when": "composition order and method requirements are explicit",
+          "failure_code": "SELECTOR_COMPOSITION_FAIL",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE3_C3",
+          "title": "Budget prevents unbounded method selection",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "CAPABILITY_SELECTOR_V2",
+          "validation_input": {
+            "case_family": "BUDGET"
+          },
+          "pass_when": "estimated method cost stays within declared budget",
+          "failure_code": "SELECTOR_BUDGET_FAIL",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE3_C4",
+          "title": "Selection never equals execution permission",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "CAPABILITY_SELECTOR_V2",
+          "validation_input": {
+            "case_family": "AUTHORITY"
+          },
+          "pass_when": "execution_authorized=false and admission_required=true",
+          "failure_code": "SELECTOR_AUTHORITY_LEAK",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE4",
+      "lot": "E4",
+      "title": "Read-only shadow on frozen real profiles",
+      "depends_on": [
+        "PE3"
+      ],
+      "status": "PENDING_EXECUTION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE4_C1",
+          "title": "Frozen target manifest is exact and non-empty",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/evals/profile_evolution_shadow_targets_v1.json",
+            "must_contain": [
+              "PROFILE_EVOLUTION_SHADOW",
+              "targets"
+            ]
+          },
+          "pass_when": "target manifest exists at exact ref",
+          "failure_code": "SHADOW_TARGET_MANIFEST_MISSING",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE4_C2",
+          "title": "Shadow validator qualifies positive and negative cases",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_SHADOW_RESULT_V1",
+          "validation_input": {
+            "qualification_mode": "SELF_TEST"
+          },
+          "pass_when": "positive passes; unsupported maturity and writes fail",
+          "failure_code": "SHADOW_VALIDATOR_QUALIFICATION_FAIL",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE4_C3",
+          "title": "Execute shadow against exact repository snapshot",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_SHADOW_RESULT_V1",
+          "validation_input": {
+            "runner_ref": "skills/profile_creator/evals/shadow_profile_assessment.py",
+            "target_manifest_ref": "skills/profile_creator/evals/profile_evolution_shadow_targets_v1.json"
+          },
+          "pass_when": "fresh result covers exact target set",
+          "failure_code": "SHADOW_EXECUTION_INCOMPLETE",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE4_C4",
+          "title": "Shadow is strictly read-only",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_SHADOW_RESULT_V1",
+          "validation_input": {
+            "assertion": "writes=0"
+          },
+          "pass_when": "writes=0",
+          "failure_code": "SHADOW_WRITE_DETECTED",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE4_C5",
+          "title": "Unknown capability evidence remains unclassified",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_SHADOW_RESULT_V1",
+          "validation_input": {
+            "assertion": "no generic/specialize from unknown"
+          },
+          "pass_when": "unproven compatible profiles are UNDETERMINED and request evidence",
+          "failure_code": "SHADOW_FALSE_SPECIALIZATION",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE5",
+      "lot": "E5",
+      "title": "Profile Evolution Orchestrator contract",
+      "depends_on": [
+        "PE4"
+      ],
+      "status": "IMPLEMENTED_PENDING_E4",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE5_C1",
+          "title": "Orchestrator required flow is materialized",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_orchestrator_v1.json",
+            "ordered_contains": [
+              "profile_assessment",
+              "evolution_mode_selection",
+              "method_capability_composition",
+              "candidate_materialization",
+              "benchmark_eval",
+              "challenge_assurance",
+              "admission",
+              "github_write",
+              "evolution_state_record"
+            ]
+          },
+          "pass_when": "required flow appears in governed order",
+          "failure_code": "ORCHESTRATOR_FLOW_INVALID",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE5_C2",
+          "title": "Candidate is reversible and non-authority before admission",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_orchestrator_v1.json",
+            "must_contain": [
+              "REVERSIBLE_NON_AUTHORITY",
+              "admission"
+            ]
+          },
+          "pass_when": "pre-admission candidate cannot mutate profile authority",
+          "failure_code": "PRE_ADMISSION_AUTHORITY_LEAK",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE5_C3",
+          "title": "PATCH minimality is mode-specific",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/SKILL.md",
+            "must_contain": [
+              "PATCH",
+              "minimal"
+            ]
+          },
+          "pass_when": "minimal patch is not universal evolution policy",
+          "failure_code": "PATCH_POLICY_OVERREACH",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE5_C4",
+          "title": "No runtime or production auto activation",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_orchestrator_v1.json",
+            "must_contain": [
+              "automatic_runtime_activation",
+              "automatic_production_activation"
+            ]
+          },
+          "pass_when": "both automatic activation flags remain false",
+          "failure_code": "AUTO_ACTIVATION_FORBIDDEN",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE6",
+      "lot": "E6",
+      "title": "Evolution state and modular bindings",
+      "depends_on": [
+        "PE5"
+      ],
+      "status": "IMPLEMENTED_PENDING_VALIDATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE6_C1",
+          "title": "Evolution state contract is versioned",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_state_v1.json",
+            "must_contain": [
+              "PROFILE_EVOLUTION_STATE",
+              "evolution_mode",
+              "maturity"
+            ]
+          },
+          "pass_when": "state contract is present and typed",
+          "failure_code": "EVOLUTION_STATE_CONTRACT_INVALID",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE6_C2",
+          "title": "v0.2 step gate is isolated from v0.1",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_step_gate_v1.sql",
+            "must_contain": [
+              "v0.2"
+            ],
+            "must_not_contain": [
+              "update lf_operation_execution_steps set status='DONE'"
+            ]
+          },
+          "pass_when": "new semantic gate does not rewrite legacy execution state",
+          "failure_code": "LEGACY_EXECUTION_INVASION",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE6_C3",
+          "title": "SQL gate compiles transactionally",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_STEP_GATE_V1",
+          "validation_input": {
+            "mode": "BEGIN_DRY_RUN_ROLLBACK"
+          },
+          "pass_when": "SQL compiles and rolls back without authority mutation",
+          "failure_code": "STEP_GATE_COMPILE_FAIL",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE6_C4",
+          "title": "Existing v0.1 executions remain compatible until drained",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "sandbox/lf_contract_gate_test/profile_evolution/candidate_migrations/profile_evolution_orchestrator_cutover_v1.sql",
+            "must_contain": [
+              "BLOCK_PROFILE_EVOLUTION_CUTOVER_OPEN_V01_EXECUTIONS"
+            ]
+          },
+          "pass_when": "cutover fails closed while legacy executions are open",
+          "failure_code": "LEGACY_DRAIN_GATE_MISSING",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE7",
+      "lot": "E7",
+      "title": "Learning from admitted outcomes only",
+      "depends_on": [
+        "PE6"
+      ],
+      "status": "IMPLEMENTED_PENDING_REPLAY",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE7_C1",
+          "title": "Learning requires repeated evidence",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_LEARNING_ADMISSION_V1",
+          "validation_input": {
+            "repeat_count": 1
+          },
+          "pass_when": "returns NEEDS_MORE_EVIDENCE",
+          "failure_code": "LEARNING_SINGLE_OBSERVATION_ACCEPTED",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE7_C2",
+          "title": "Cross-case and holdout evidence are mandatory",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_LEARNING_ADMISSION_V1",
+          "validation_input": {
+            "omit": [
+              "cross_case_refs",
+              "holdout_ref"
+            ]
+          },
+          "pass_when": "returns NEEDS_MORE_EVIDENCE",
+          "failure_code": "LEARNING_EVIDENCE_INCOMPLETE",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE7_C3",
+          "title": "Admission PASS is mandatory",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_LEARNING_ADMISSION_V1",
+          "validation_input": {
+            "admission_verdict": "FAIL"
+          },
+          "pass_when": "returns REJECT",
+          "failure_code": "LEARNING_WITHOUT_ADMISSION",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE7_C4",
+          "title": "Reusable lesson never auto-promotes",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_LEARNING_ADMISSION_V1",
+          "validation_input": {
+            "valid_payload": true
+          },
+          "pass_when": "ADMIT_REUSABLE_PATTERN with auto_promoted=false",
+          "failure_code": "LEARNING_AUTO_PROMOTION_FORBIDDEN",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE8",
+      "lot": "E8",
+      "title": "Conditional evaluator-optimizer",
+      "depends_on": [
+        "PE7"
+      ],
+      "status": "GATED_NOT_ENABLED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE8_C1",
+          "title": "Optimizer policy exists and is disabled by default",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_optimization_policy_v1.json",
+            "must_contain": [
+              "EVALUATOR_OPTIMIZER",
+              "enabled"
+            ]
+          },
+          "pass_when": "policy explicitly gates optimizer",
+          "failure_code": "OPTIMIZER_POLICY_MISSING",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE8_C2",
+          "title": "Optimizer requires frozen benchmark and measurable uplift",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_optimization_policy_v1.json",
+            "must_contain": [
+              "benchmark",
+              "uplift"
+            ]
+          },
+          "pass_when": "activation prerequisites are explicit",
+          "failure_code": "OPTIMIZER_UNGATED",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE8_C3",
+          "title": "Simple PATCH does not activate optimizer",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_optimization_policy_v1.json",
+            "must_contain": [
+              "PATCH"
+            ]
+          },
+          "pass_when": "PATCH exclusion is explicit",
+          "failure_code": "PATCH_OPTIMIZER_OVERUSE",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE9",
+      "lot": "E9",
+      "title": "Optional advanced optimization",
+      "depends_on": [
+        "PE8"
+      ],
+      "status": "CONDITIONAL_NOT_SELECTED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE9_C1",
+          "title": "Advanced optimization is optional not mandatory",
+          "required": false,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_optimization_policy_v1.json",
+            "must_contain": [
+              "optional"
+            ]
+          },
+          "pass_when": "advanced optimization may be NOT_APPLICABLE",
+          "failure_code": "ADVANCED_OPTIMIZATION_FORCED",
+          "resolver_policy": "MARK_NOT_APPLICABLE_OR_FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE9_C2",
+          "title": "Advanced search requires remaining material gap and protected holdout",
+          "required": false,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_optimization_policy_v1.json",
+            "must_contain": [
+              "holdout",
+              "gap"
+            ]
+          },
+          "pass_when": "advanced search is evidence-gated",
+          "failure_code": "ADVANCED_SEARCH_UNGATED",
+          "resolver_policy": "MARK_NOT_APPLICABLE_OR_FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE9_C3",
+          "title": "Advanced search has explicit budget",
+          "required": false,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_optimization_policy_v1.json",
+            "must_contain": [
+              "budget"
+            ]
+          },
+          "pass_when": "search cannot be unbounded",
+          "failure_code": "ADVANCED_SEARCH_BUDGET_MISSING",
+          "resolver_policy": "MARK_NOT_APPLICABLE_OR_FIX_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE10",
+      "lot": "E10",
+      "title": "Blind benchmark, assurance, admission and cutover",
+      "depends_on": [
+        "PE8",
+        "PE9"
+      ],
+      "conditional_dependency_policy": "PE9 may be NOT_APPLICABLE; it must never be silently skipped",
+      "status": "BLOCKED_PENDING_EVIDENCE",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE10_C1",
+          "title": "Benchmark corpus is frozen before execution",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/evals/profile_evolution_benchmark_cases_v1.json",
+            "must_contain": [
+              "SEALED",
+              "strata"
+            ]
+          },
+          "pass_when": "20+ frozen cases and sealed oracle contract are present",
+          "failure_code": "BENCHMARK_CORPUS_NOT_FROZEN",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10_C2",
+          "title": "Paired benchmark admission passes",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_BENCHMARK_ADMISSION_V1",
+          "validation_input": {
+            "summary_ref": "fresh benchmark summary"
+          },
+          "pass_when": "status=ADMIT_CUTOVER",
+          "failure_code": "BENCHMARK_ADMISSION_FAIL",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10_C3",
+          "title": "Independent assurance passes on frozen evidence",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_BENCHMARK_ADMISSION_V1",
+          "validation_input": {
+            "assertion": "independent_assurance=PASS"
+          },
+          "pass_when": "assurance is PASS and independent",
+          "failure_code": "ASSURANCE_NOT_PASS",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10_C4",
+          "title": "No legacy v0.1 updater execution remains open",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_CUTOVER_GATE_V1",
+          "validation_input": {
+            "assertion": "open_v01_execution_count=0"
+          },
+          "pass_when": "cutover gate accepts only zero open v0.1 executions",
+          "failure_code": "OPEN_V01_EXECUTIONS",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10_C5",
+          "title": "ADMIT_CUTOVER evidence is exact and complete",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_CUTOVER_GATE_V1",
+          "validation_input": {
+            "assertion": "admission_event complete"
+          },
+          "pass_when": "cutover event carries benchmark, safe-change and assurance evidence",
+          "failure_code": "CUTOVER_ADMISSION_MISSING",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10_C6",
+          "title": "Cutover SQL passes transactionally before application",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_CUTOVER_GATE_V1",
+          "validation_input": {
+            "mode": "BEGIN_DRY_RUN_ROLLBACK"
+          },
+          "pass_when": "transactional dry-run succeeds only after all gates",
+          "failure_code": "CUTOVER_GATE_FAIL",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10_C7",
+          "title": "Post-cutover authority readback is v0.2",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "SUPABASE_CATALOG_ASSERT_V1",
+          "validation_input": {
+            "assertions": [
+              {
+                "type": "ROW_COUNT_EQUALS",
+                "table": "lf_operation_registry",
+                "where": "operation_code=ACTUALIZACION_PERFIL_LF and version=v0.2",
+                "expected": 1
+              }
+            ]
+          },
+          "pass_when": "exact v0.2 registry/contract/policy authority is present",
+          "failure_code": "V02_AUTHORITY_READBACK_FAIL",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
+        }
+      ]
+    }
+  ],
+  "completion_rule": "ALL_REQUIRED_CHECKPOINTS_HAVE_FRESH_PASS_RECEIPTS_AND_PE10_CUTOVER_READBACK_PASS",
+  "plan_status": "PLANNED_ATOMIC_NOT_EXECUTED"
+}
