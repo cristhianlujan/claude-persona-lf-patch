@@ -7,7 +7,9 @@ Usage: python correlation_rerun.py
 Requires: psql and standard libpq connection env (PGHOST/PGUSER/PGDATABASE...).
 """
 import argparse
+import importlib.util
 import json
+from pathlib import Path
 import re
 import subprocess
 import sys
@@ -238,6 +240,56 @@ def evaluate(data):
             "test_passed":not failures}
 
 
+
+def evaluate_scoped_otp_shadow(data, source_snapshot, oracle_evaluator):
+    """Add one dedicated source oracle only when RATE_LIMIT was requested.
+
+    This is a comparison observation, not an independent review receipt, an
+    assertion of runtime enforcement, or a substitute for normal Validator tests.
+    """
+    scope = data.get("comparison_families") or []
+    if "RATE_LIMIT" not in scope:
+        return {"status":"NOT_REQUESTED", "compared":False,
+                "semantic_pass_authorized":False}
+    selected = data.get("selected_run") or {}
+    if (not isinstance(source_snapshot, dict)
+        or source_snapshot.get("run_id") != selected.get("run_id")
+        or source_snapshot.get("pantalla_id") != selected.get("pantalla_id")
+        or source_snapshot.get("version_id") != selected.get("version_id")):
+        return {"status":"BLOCKED", "code":"SCOPED_READBACK_IDENTITY_MISMATCH",
+                "compared":True, "semantic_pass_authorized":False}
+    outcome = oracle_evaluator(source_snapshot,
+        expected_run_id=selected["run_id"],
+        expected_screen_id=selected["pantalla_id"])
+    if (not isinstance(outcome, dict)
+        or outcome.get("semantic_pass_authorized") is not False
+        or outcome.get("validator_pass_authorized") is not False
+        or outcome.get("status") not in ("SOURCE_CONSISTENT","UNRESOLVED",
+                                        "BLOCKED","CONTRADICTION")):
+        return {"status":"BLOCKED", "code":"SCOPED_ORACLE_CONTRACT_INVALID",
+                "compared":True, "semantic_pass_authorized":False}
+    return {"status":outcome["status"], "code":outcome.get("code"),
+            "compared":True, "family_code":"RATE_LIMIT",
+            "source_refs":outcome.get("source_refs") or [],
+            "findings":outcome.get("findings") or [],
+            "semantic_pass_authorized":False,
+            "source_readback_provider_receipt_verified":False}
+
+
+def load_dedicated_otp_evaluator():
+    # Published file in the same repo; never add a second shared judge stack.
+    path = (Path(__file__).resolve().parent.parent / "m4_4" /
+            "otp_rate_policy_source_oracle_v1.py")
+    if not path.is_file():
+        raise ValueError("DEDICATED_OTP_ORACLE_SOURCE_UNAVAILABLE")
+    spec = importlib.util.spec_from_file_location("ig_otp_oracle",path)
+    if spec is None or spec.loader is None:
+        raise ValueError("DEDICATED_OTP_ORACLE_MODULE_UNLOADABLE")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.evaluate
+
+
 def adversarial_case(data):
     """Injected shared conclusion must fail when an otherwise clean path does not."""
     victim = "fn_input_governance_validate_v2"
@@ -272,6 +324,8 @@ def main():
     parser.add_argument("--run-id", type=int, required=True,
                         help="Actual readiness run chosen by upstream random screen selection")
     parser.add_argument("--family-code",action="append",default=[])
+    parser.add_argument("--otp-source-json",type=Path,default=None,
+                        help="Provider-resolved source JSON for optional, scoped RATE_LIMIT shadow")
     options = parser.parse_args()
     if options.run_id < 1:
         parser.error("run-id must be a positive integer")
@@ -300,6 +354,17 @@ def main():
         report = evaluate(data)
         report["adversarial_case_executed"] = adversarial_case(data)
         report["observed_at"] = data.get("observed_at")
+        if options.otp_source_json is not None:
+            if "RATE_LIMIT" not in options.family_code:
+                raise ValueError("OTP_READBACK_NOT_IN_REQUESTED_COMPARISON_SCOPE")
+            source_snapshot = json.loads(options.otp_source_json.read_text(encoding="utf-8"))
+            shadow = evaluate_scoped_otp_shadow(data,source_snapshot,
+                                               load_dedicated_otp_evaluator())
+            report["dedicated_otp_shadow"] = shadow
+            if shadow["status"] != "SOURCE_CONSISTENT":
+                report["violations"].append({"path":"DEDICATED_OTP_SHADOW",
+                                             "code":shadow.get("code",shadow["status"])})
+                report["test_passed"] = False
         report["test_exit_code"] = 0 if report["test_passed"] else 1
     except (ValueError, KeyError, AssertionError) as exc:
         report = {"test_code":"ENG_M4_12_CORRELATION_RERUN",
