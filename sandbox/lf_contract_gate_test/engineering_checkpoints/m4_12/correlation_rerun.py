@@ -77,7 +77,7 @@ def evaluate(data):
             known_conclusions.add(ASSERTION_BUILDER)
         # Semantic authority must be anchored to actual executable code,
         # not to overlap percentages or Curator-generated pass claims.
-        violations = sorted(validator & known_conclusions)
+        violations = sorted(shared & known_conclusions)
         if violations:
             failures.append({"path":name, "shared_conclusion_dependencies":violations})
         coverage.append({"path":name, "reachable_functions":len(validator),
@@ -91,18 +91,30 @@ def evaluate(data):
 
 
 def adversarial_case(data):
-    """Known correlated classifier must be detected after injecting its call."""
+    """Injected shared conclusion must fail when an otherwise clean path does not."""
     victim = "fn_input_governance_validate_v2"
     paths = {p.get("path"): p for p in data["m4_1_event"]["paths"]}
     classifier = paths[victim]["shared_classifier"]
-    trial = json.loads(json.dumps(data))
-    for fn in trial["functions"]:
+    clean = json.loads(json.dumps(data))
+    for fn in clean["functions"]:
+        if fn["name"] == victim:
+            fn["definition"] = "BEGIN PERFORM 1; END;"
+            break
+    sources = {f["name"]: f["definition"] for f in clean["functions"]}
+    if classifier in graph_closure(victim, sources):
+        raise AssertionError("NEGATIVE_CONTROL_NOT_CLEAN")
+    dirty = json.loads(json.dumps(clean))
+    for fn in dirty["functions"]:
         if fn["name"] == victim:
             fn["definition"] += "\nPERFORM " + classifier + "(1);"
             break
-    # Preserve baseline graph and ensure injection reaches the graph.
-    sources = {f["name"]: f["definition"] for f in trial["functions"]}
-    if classifier not in graph_closure(victim, sources):
+    result = evaluate(dirty)
+    detected = any(
+        failure["path"] == victim
+        and classifier in failure["shared_conclusion_dependencies"]
+        for failure in result["violations"]
+    )
+    if not detected:
         raise AssertionError("ADVERSARIAL_INJECTION_NOT_DETECTED")
     return True
 
