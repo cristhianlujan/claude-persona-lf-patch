@@ -17,7 +17,7 @@ TEST_CODE = "ENG_M7_12_HARD_GUARD_NEGATIVE"
 
 def git_blob_sha1(content):
     raw = content.encode("utf-8")
-    return hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\\0" + raw).hexdigest()
+    return hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
 
 
 def main():
@@ -72,7 +72,7 @@ def main():
     observed = []
     for case_id, needle, fixture, guard in cases:
         section = args.antipatterns_source.split("## " + case_id + " — ", 1)
-        if len(section) != 2 or needle not in section[1].split("\\n## ", 1)[0]:
+        if len(section) != 2 or needle not in section[1].split("\n## ", 1)[0]:
             raise AssertionError("Antipattern canonical content absent: " + case_id)
         actual = subprocess.run([sys.executable, "-c", args.grader_source, "-"],
                                 input=json.dumps(fixture), capture_output=True,
