@@ -291,7 +291,7 @@ begin
   values(
     'HUMAN_ESCALATION_ADMISSION','1.0.3',1,0,3,
     'RELEASED','1.0.2',v_manifest,v_sha,
-    'github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261008103000_ig_candidate_promotion_authority_v1.sql',
+    'github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261008135500_ig_candidate_promotion_authority_v1.sql',
     'github://cristhianlujan/claude-persona-lf-patch/docs/operations/HUMAN_DECISION_ROUTING_V1.md',
     'supabase://private/fn_lf_ig_candidate_promotion_authority_v1',
     'IG_CANDIDATE_PROMOTION_AUTHORITY_V1'
@@ -381,7 +381,7 @@ begin
   values(
     'HUMAN_DECISION_ROUTING','1.0.6',1,0,6,
     'RELEASED','1.0.5',v_manifest,v_sha,
-    'github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261008103000_ig_candidate_promotion_authority_v1.sql',
+    'github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261008135500_ig_candidate_promotion_authority_v1.sql',
     'github://cristhianlujan/claude-persona-lf-patch/docs/operations/HUMAN_DECISION_ROUTING_V1.md',
     'supabase://private/fn_lf_ig_candidate_promotion_authority_v1',
     'IG_CANDIDATE_PROMOTION_AUTHORITY_V1'
