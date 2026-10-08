@@ -171,3 +171,56 @@ The first migration creates the generic durable contract and queue only.
 It deliberately does not cut over IG, Story Creator or Programming and does not expose a general unauthenticated decision-write API.
 
 Consumer adapters are the next controlled batch.
+
+
+## Producer adapters V1
+
+The first producer adapters project source-owned state into the transversal ledger without changing producer authority.
+
+### Input Governance
+
+`fn_lf_human_decision_open_ig_v1` accepts only a proposal whose native source state is:
+
+- `proposal_kind=HUMAN_DECISION_REQUIRED`
+- `status=HUMAN_DECISION_REQUIRED`
+- `validator_outcome=PASS`
+
+The adapter computes currentness from the validated proposal payload, source/evidence references and curator/validator digests. It does not update `programacion.input_gap_proposals`.
+
+### Story Creator P0
+
+`fn_lf_human_decision_open_story_p0_v1` accepts only an ACTIVE, unexpired challenge from the existing P0 queue. It reuses the challenge's `required_reviewer_role` and `reviewer_actions`, preserving P0 evidence and convergence metadata.
+
+It does not replace or mutate the P0 challenge/decision stores.
+
+### Programming
+
+`fn_lf_human_decision_open_programming_v1` accepts only an active RUNNING unit whose current required checkpoint has an exact current FAIL receipt and an admitted validation rule in `HUMAN_DECISION` mode.
+
+The generic currentness binding is the exact Programming failure receipt SHA-256.
+
+### Consumption
+
+Read-only consumer adapters expose the current generic routing record back to IG, Story P0 and Programming. They do not mutate producer state.
+
+## Current cutover blocker
+
+Producer cutover remains disabled because a generic receipt's `authority_receipt_ref` and `authority_receipt_sha256` must be verified by an authority-specific ingress.
+
+A service-role insert or syntactically valid receipt reference is not human authorization.
+
+The next architecture layer is therefore:
+
+```text
+human identity
+      ↓
+authority-specific authentication
+      ↓
+verified authority receipt
+      ↓
+generic HUMAN_DECISION_ROUTING receipt
+      ↓
+producer-specific consume adapter
+```
+
+Until that verifier/ingress is materialized and proven for a given authority, adapters may open and inspect routing requests but producers must not automatically advance from a human decision.
