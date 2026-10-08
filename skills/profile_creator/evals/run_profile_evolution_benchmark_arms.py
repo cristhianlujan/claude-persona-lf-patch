@@ -91,6 +91,10 @@ def main():
     rows=[]
     with tempfile.TemporaryDirectory(prefix="peb-") as td:
       repo=Path(td)
+      baseline_contract_src=ROOT/"skills/profile_creator/contracts/s26_profile_baseline_v1.json"
+      baseline_contract_dst=repo/"skills/profile_creator/contracts/s26_profile_baseline_v1.json"
+      baseline_contract_dst.parent.mkdir(parents=True,exist_ok=True)
+      baseline_contract_dst.write_text(baseline_contract_src.read_text(encoding="utf-8"),encoding="utf-8")
       for case in cases["cases"]:
         slug=case["fixture_profile_slug"]; make_fixture(repo,slug,case["structural_fixture"])
         pf=preflight(slug,revision)
