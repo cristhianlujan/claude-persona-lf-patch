@@ -34,6 +34,56 @@ def build_selection_signals(context: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+def _select_capabilities_multilabel(
+    signals: list[dict[str, Any]],
+    catalog: list[dict[str, Any]],
+    policy: dict[str, Any],
+) -> dict[str, Any]:
+    """Preserve v1 contradiction semantics while treating profile_gap as multi-label in v2."""
+    non_gap = [s for s in signals if s.get("type") != "profile_gap"]
+    gaps = [s for s in signals if s.get("type") == "profile_gap"]
+    empty_policy = dict(policy)
+    empty_policy["fallback_capabilities"] = []
+
+    base = select_capabilities(non_gap, catalog, empty_policy)
+    if base["fallback_state"] in {"CONTRADICTORY", "CAPABILITY_FAILURE"}:
+        return select_capabilities(non_gap, catalog, policy)
+
+    selected = list(base["selected_capabilities"])
+    reasons = list(base["reasons"])
+    for gap in gaps:
+        part = select_capabilities([gap], catalog, empty_policy)
+        if part["fallback_state"] == "CAPABILITY_FAILURE":
+            return select_capabilities([gap], catalog, policy)
+        for code in part["selected_capabilities"]:
+            if code not in selected:
+                selected.append(code)
+        reasons.extend(part["reasons"])
+
+    if not selected:
+        return select_capabilities([], catalog, policy)
+
+    rank_by_code: dict[str, float] = {}
+    for entry in catalog:
+        if isinstance(entry, dict) and isinstance(entry.get("capability_code"), str):
+            rank = entry.get("rank", 0)
+            if isinstance(rank, (int, float)) and not isinstance(rank, bool):
+                rank_by_code[entry["capability_code"]] = max(rank_by_code.get(entry["capability_code"], float("-inf")), float(rank))
+    selected.sort(key=lambda code: (-rank_by_code.get(code, 0), code))
+    seen: set[tuple[Any, ...]] = set()
+    deduped_reasons = []
+    for reason in reasons:
+        key = (reason.get("code"), reason.get("signal_type"), reason.get("capability_code"), reason.get("rank"))
+        if key not in seen:
+            seen.add(key)
+            deduped_reasons.append(reason)
+    return {
+        "selected_capabilities": selected,
+        "reasons": deduped_reasons,
+        "fallback_state": "CLEAR" if len(selected) == 1 else "MULTI",
+    }
+
+
 def _method_matches(method: dict[str, Any], signals: list[dict[str, Any]]) -> bool:
     rules = method.get("signals", [])
     if not isinstance(rules, list):
@@ -56,7 +106,7 @@ def compose_capabilities(
 ) -> dict[str, Any]:
     """Compose capabilities + method requirements. Selection is not admission."""
     signals = build_selection_signals(context)
-    base = select_capabilities(signals, catalog, policy)
+    base = _select_capabilities_multilabel(signals, catalog, policy)
     methods = method_registry.get("methods", []) if isinstance(method_registry, dict) else []
     budget = context.get("budget", {}) if isinstance(context.get("budget", {}), dict) else {}
     max_cost = budget.get("max_method_cost_points")
