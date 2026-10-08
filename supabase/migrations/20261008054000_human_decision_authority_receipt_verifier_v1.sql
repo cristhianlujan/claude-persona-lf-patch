@@ -279,7 +279,85 @@ begin
   from private.lf_human_decision_requests_v1
   where request_id=p_request_id;
 
-  if coalesce(p_authority_receipt_ref,'') !~ '^supabase://programacion/provenance_receipts/[0-9]+
+  if coalesce(p_authority_receipt_ref,'') !~ '^supabase://programacion/provenance_receipts/[0-9]+$' then
+    raise exception 'HUMAN_DECISION_AUTHORITY_RECEIPT_REF_INVALID';
+  end if;
+
+  v_provenance_id:=split_part(p_authority_receipt_ref,'/',5)::bigint;
+
+  select * into strict v_prov
+  from programacion.provenance_receipts
+  where id=v_provenance_id;
+
+  if v_prov.receipt_kind is distinct from 'HUMAN_ROUTING_DECISION'
+     or v_prov.subject_type is distinct from 'HUMAN_DECISION_ROUTING_REQUEST'
+     or v_prov.subject_ref is distinct from v_request.request_id::text
+     or v_prov.subject_sha256 is distinct from v_request.request_sha256 then
+    raise exception 'HUMAN_DECISION_AUTHORITY_RECEIPT_SUBJECT_MISMATCH';
+  end if;
+
+  v_digest:=programacion.fn_v09_sha256_jsonb(
+    jsonb_build_object(
+      'schema_version',1,
+      'receipt_kind',v_prov.receipt_kind,
+      'execution_id',v_prov.execution_id,
+      'head_sha',v_prov.head_sha,
+      'subject_type',v_prov.subject_type,
+      'subject_ref',v_prov.subject_ref,
+      'subject_sha256',v_prov.subject_sha256,
+      'issuer_channel',v_prov.issuer_channel,
+      'issuer_identity',v_prov.issuer_identity,
+      'verification_ref',v_prov.verification_ref,
+      'payload',v_prov.payload
+    )
+  );
+
+  if v_prov.receipt_sha256 is distinct from v_digest
+     or p_authority_receipt_sha256 is distinct from v_prov.receipt_sha256 then
+    raise exception 'HUMAN_DECISION_AUTHORITY_RECEIPT_DIGEST_MISMATCH';
+  end if;
+
+  if v_prov.payload->>'request_id' is distinct from v_request.request_id::text
+     or v_prov.payload->>'request_sha256' is distinct from v_request.request_sha256
+     or v_prov.payload->>'currentness_sha256' is distinct from p_observed_currentness_sha256
+     or p_observed_currentness_sha256 is distinct from v_request.currentness_sha256
+     or v_prov.payload->>'reviewer_role' is distinct from p_reviewer_role
+     or p_reviewer_role is distinct from v_request.required_reviewer_role
+     or v_prov.payload->>'authority_ref' is distinct from p_authority_ref
+     or p_authority_ref is distinct from v_request.required_authority_ref
+     or v_prov.payload->>'action_code' is distinct from p_decision_code then
+    raise exception 'HUMAN_DECISION_AUTHORITY_RECEIPT_BINDING_MISMATCH';
+  end if;
+
+  select * into v_policy
+  from private.lf_human_decision_authority_policies_v1
+  where authority_ref=p_authority_ref
+    and reviewer_role=p_reviewer_role
+    and status='ACTIVE';
+
+  if not found then
+    raise exception 'HUMAN_DECISION_AUTHORITY_POLICY_NOT_ACTIVE:%:%',
+      p_authority_ref,p_reviewer_role;
+  end if;
+
+  if v_policy.issuer_channel is distinct from v_prov.issuer_channel
+     or v_policy.receipt_kind is distinct from v_prov.receipt_kind then
+    raise exception 'HUMAN_DECISION_AUTHORITY_POLICY_RECEIPT_MISMATCH';
+  end if;
+
+  if v_policy.policy_sha256 is distinct from
+     private.fn_lf_human_decision_authority_policy_sha_v1(
+       v_policy.authority_ref,v_policy.reviewer_role,v_policy.issuer_channel,
+       v_policy.receipt_kind,v_policy.status,v_policy.metadata
+     ) then
+    raise exception 'HUMAN_DECISION_AUTHORITY_POLICY_INTEGRITY_MISMATCH';
+  end if;
+
+  return true;
+end
+$function$;
+
+create or replace function private.fn_lf_human_decision_receipt_sha_v1(
   p_request_id uuid,
   p_request_sha256 text,
   p_decision_code text,
