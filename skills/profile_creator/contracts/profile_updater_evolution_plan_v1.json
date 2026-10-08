@@ -77,14 +77,17 @@
     },
     {
       "id": "E5",
-      "work": "Convert pre-write updater intelligence into Profile Evolution Orchestrator",
+      "work": "Convert pre-write updater intelligence into Profile Evolution Orchestrator and bind Profile Creator to reversible candidate materialization",
       "depends_on": [
         "E4"
       ],
-      "status": "IMPLEMENTED_CANDIDATE_PENDING_E4_EVIDENCE",
+      "status": "IN_EXECUTION_MATERIALIZATION_BRIDGE_QUALIFYING",
       "closure_evidence": [
         "current-vs-new shadow comparison",
-        "admission-before-write verified"
+        "admission-before-write verified",
+        "Profile Creator semantic producer binding",
+        "reversible candidate materializer qualification",
+        "zero authority writes"
       ]
     },
     {
@@ -150,6 +153,7 @@
       "id": "E10",
       "work": "Execute paired blind benchmark, assurance, admission and governed cutover",
       "depends_on": [
+        "E5_MATERIALIZATION_BRIDGE",
         "E8_OR_E9"
       ],
       "status": "BLOCKED_PENDING_EVIDENCE",
@@ -167,9 +171,10 @@
         "v0.2 authority readback"
       ],
       "blockers": [
-        "24-case corpus frozen but not executed/scored",
+        "FULL_PROFILE_EVOLUTION_BEHAVIOR benchmark not yet executed/admitted",
         "0 ADMIT_CUTOVER events",
-        "25 v0.1 executions IN_PROGRESS"
+        "25 v0.1 executions IN_PROGRESS",
+        "required candidate capabilities not yet promoted to live authority"
       ],
       "external_controls": {
         "PASE": "NOT_AN_ACTIVE_EXIT_GATE_WHILE_DISABLED; SKIPPED_MUST_NOT_BE_RELABELED_PASS"
@@ -187,10 +192,10 @@
   "atomic_execution_plan_ref": "skills/profile_creator/contracts/profile_evolution_engineering_plan_v1.json",
   "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
   "atomic_plan_summary": {
-    "units": 11,
-    "checkpoints": 45,
-    "required_checkpoints": 42,
-    "status": "PLANNED_ATOMIC_NOT_EXECUTED"
+    "units": 12,
+    "checkpoints": 51,
+    "required_checkpoints": 48,
+    "status": "IN_EXECUTION"
   },
   "validation_policy": {
     "model": "FRESH_DETERMINISTIC_CHECKPOINT_VALIDATION",
