@@ -133,37 +133,9 @@ begin
 end;
 $direct$;
 
--- The API surface is INVOKER, public callers are forbidden.
+-- Only the cron worker (postgres) may execute the heavy direct step.
 revoke all on function programacion.fn_input_governance_direct_step_v1(integer,text)
-  from public,anon,authenticated;
-grant usage on schema programacion to service_role;
-grant execute on function programacion.fn_input_governance_direct_step_v1(integer,text)
-  to service_role;
-create or replace function public.fn_input_governance_direct_step_v1(
-  p_pantalla_id integer,p_consumer text default 'STORY_CREATOR')
-returns jsonb
-language sql security invoker
-set search_path to 'pg_catalog'
-as $api$
- select programacion.fn_input_governance_direct_step_v1(p_pantalla_id,p_consumer);
-$api$;
-revoke all on function public.fn_input_governance_direct_step_v1(integer,text)
-  from public,anon,authenticated;
-grant execute on function public.fn_input_governance_direct_step_v1(integer,text)
-  to service_role;
-
-do $guard$
-begin
- if not has_function_privilege('service_role',
-     'public.fn_input_governance_direct_step_v1(integer,text)','execute')
-    or has_function_privilege('anon',
-     'public.fn_input_governance_direct_step_v1(integer,text)','execute')
-    or has_function_privilege('authenticated',
-     'public.fn_input_governance_direct_step_v1(integer,text)','execute')
-    or not has_schema_privilege('service_role','programacion','usage')
- then raise exception 'IG_DIRECT_STEP_AUTHORIZATION_FAILED'; end if;
-end;
-$guard$;
+  from public,anon,authenticated,service_role;
 
 -- Durable transport for decoupled HTTP caller and direct Postgres worker.
 -- Private schema, RLS defense-in-depth, no free-form SQL or external credentials.
@@ -291,20 +263,16 @@ revoke all on function programacion.fn_input_governance_queue_worker_v1()
 
 create or replace function public.fn_input_governance_queue_submit_v1(
  p_pantalla_id integer,p_consumer text default 'STORY_CREATOR')
-returns jsonb language sql security invoker set search_path to 'pg_catalog'
+returns jsonb language sql security definer set search_path to 'pg_catalog'
 as $api$ select programacion.fn_input_governance_queue_submit_v1(p_pantalla_id,p_consumer); $api$;
 create or replace function public.fn_input_governance_queue_read_v1(p_request_id bigint)
-returns jsonb language sql stable security invoker set search_path to 'pg_catalog'
+returns jsonb language sql stable security definer set search_path to 'pg_catalog'
 as $api$ select programacion.fn_input_governance_queue_read_v1(p_request_id); $api$;
 
 revoke all on function public.fn_input_governance_queue_submit_v1(integer,text)
   from public,anon,authenticated;
 revoke all on function public.fn_input_governance_queue_read_v1(bigint)
   from public,anon,authenticated;
-grant execute on function programacion.fn_input_governance_queue_submit_v1(integer,text)
- to service_role;
-grant execute on function programacion.fn_input_governance_queue_read_v1(bigint)
- to service_role;
 grant execute on function public.fn_input_governance_queue_submit_v1(integer,text)
  to service_role;
 grant execute on function public.fn_input_governance_queue_read_v1(bigint)
