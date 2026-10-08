@@ -87,7 +87,7 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.lf_operation_execution e
     JOIN public.lf_operation_registry op ON op.operation_code=e.operation_code
-    WHERE e.execution_id=v_orch AND e.manifest=v_orch_manifest
+    WHERE e.execution_id=v_orch AND e.manifest @> v_orch_manifest
       AND e.status='IN_PROGRESS' AND op.operation_family='ORCHESTRATION'
       AND op.lifecycle_state_code='OP_OPERATIONAL') THEN
     RAISE EXCEPTION 'IG_GRAPH_FINISH_ORCHESTRATOR_NOT_GOVERNED';
@@ -108,7 +108,7 @@ BEGIN
     null,null,v_ledger_manifest);
   IF v_operation->>'execution_id' IS DISTINCT FROM v_ledger OR
      NOT EXISTS (SELECT 1 FROM public.lf_operation_execution e
-       WHERE e.execution_id=v_ledger AND e.manifest=v_ledger_manifest
+       WHERE e.execution_id=v_ledger AND e.manifest @> v_ledger_manifest
          AND e.status='IN_PROGRESS') THEN
     RAISE EXCEPTION 'IG_GRAPH_FINISH_LEDGER_ACTOR_REPLAY_MISMATCH';
   END IF;
