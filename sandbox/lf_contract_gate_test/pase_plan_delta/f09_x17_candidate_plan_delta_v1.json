@@ -37,7 +37,7 @@
     "lot_to": 9,
     "unit_class": "ATOMIC_WORK",
     "title": "Late transversal producer/receiver integration qualification",
-    "capability_ref": "CONSUMER_ADMISSION",
+    "capability_ref": "PASE_POST_PASE_E2E",
     "exit_criterion": "Coherent exact-current producer/receiver handoff, as-of version, transport, coordination, causal lineage and receipts; no required BLOCK/HOLD/UNKNOWN; one typed terminal receipt consumed by F09-016; no duplicate local checks.",
     "unit_metadata": {
       "rules": [
@@ -64,7 +64,8 @@
         "CURRENTNESS_AUTHORITY",
         "EVIDENCE_LEDGER",
         "FINAL_EVIDENCE"
-      ]
+      ],
+      "reuse_contract": "F09-X17 owns only late integration evaluation within PASE_POST_PASE_E2E; CONSUMER_ADMISSION and other transversal capabilities remain separate invoked authorities, not assigned implementation ownership."
     }
   },
   "dependency_edges": [
