@@ -47,26 +47,32 @@ Deno.serve(async (req: Request) => {
   if (!(await requireServiceRole(req))) return Response.json({ error: "SERVICE_ROLE_REQUIRED" }, { status: 403 });
 
   try {
+    const edgeStarted = performance.now();
     const body = await req.json();
     const pantallaId = Number(body?.pantalla_id);
     const consumer = typeof body?.consumer === "string" ? body.consumer : "STORY_CREATOR";
     if (!Number.isInteger(pantallaId) || pantallaId < 1) return Response.json({ error: "PANTALLA_ID_INVALID" }, { status: 400 });
 
     const identity = `INPUT_CURATOR:EDGE:input-governance-curator-v1:${crypto.randomUUID()}`;
+    const curatorRpcStarted = performance.now();
     const result = await rpc("fn_input_governance_curator_materialize_v1", {
       p_pantalla_id: pantallaId,
       p_consumer: consumer,
       p_curator_identity: identity,
     }) as Record<string, unknown>;
 
+    const curatorRpcElapsedMs = Math.max(0, Math.round(performance.now()-curatorRpcStarted));
     let handoffReceipt: unknown = null;
+    let handoffRpcElapsedMs: number | null = null;
     if (result?.status === "VALIDATOR_RUNTIME_REQUIRED") {
       const runId = Number(result?.run_id);
       if (!Number.isInteger(runId) || runId < 1) throw new Error("CURATOR_HANDOFF_RUN_ID_INVALID");
+      const handoffStarted = performance.now();
       handoffReceipt = await rpc("fn_input_governance_curator_handoff_receipt_v1", {
         p_run_id: runId,
         p_expected_curator_identity: identity,
       });
+      handoffRpcElapsedMs = Math.max(0, Math.round(performance.now()-handoffStarted));
     }
 
     return Response.json({
@@ -74,6 +80,15 @@ Deno.serve(async (req: Request) => {
       identity,
       result,
       handoff_receipt: handoffReceipt,
+      performance_observation: {
+        schema_version: "IG_CURATOR_EDGE_TIMING_V1",
+        edge_rpc_elapsed_ms: curatorRpcElapsedMs,
+        edge_handoff_rpc_elapsed_ms: handoffRpcElapsedMs,
+        edge_total_elapsed_ms: Math.max(0, Math.round(performance.now()-edgeStarted)),
+        sql_reported: result?.performance_observation ?? null,
+        timing_sink_emitted: false,
+        semantic_sha_excluded: true,
+      },
     });
   } catch (e) {
     return Response.json({ error: "CURATOR_EXECUTION_FAILED", detail: e instanceof Error ? e.message : String(e) }, { status: 409 });
