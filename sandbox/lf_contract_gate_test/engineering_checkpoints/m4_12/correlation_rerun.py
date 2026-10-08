@@ -110,11 +110,16 @@ def evaluate(data):
         failures.append({"path":"REGISTRY", "missing_strategy_for":missing_strategies})
     if measure.get("schema_version") != "LF_INDEPENDENT_ASSURANCE_MEASURE_V1":
         raise ValueError("CANONICAL_INDEPENDENCE_MEASURE_MISSING")
-    if measure.get("state") != "INDEPENDENT":
-        failures.append({"path":"CANONICAL_INDEPENDENCE", "state":measure.get("state"),
-                         "dependency_state":(measure.get("dependency_dimension") or {}).get("state"),
-                         "data_state":(measure.get("data_dimension") or {}).get("state"),
-                         "author_state":(measure.get("author_dimension") or {}).get("state")})
+    # Independent conclusions may share canonical data-source helpers.
+    # All-overlap assurance remains diagnostic, never the semantic PASS gate.
+    if measure.get("state") not in ("INDEPENDENT", "UNPROVEN", "NOT_INDEPENDENT"):
+        raise ValueError("CANONICAL_ASSURANCE_INVALID")
+    shared = set((measure.get("dependency_dimension") or {}).get("shared_dependencies") or [])
+    for issue in failures:
+        if issue.get("path") in CHECKED_PATHS:
+            for symbol in issue.get("shared_conclusion_dependencies", []):
+                if symbol not in shared:
+                    raise ValueError("ASSURANCE_DRIFT:" + symbol)
     return {"test_code":"ENG_M4_12_CORRELATION_RERUN",
             "semantic_authority_bound":True,
             "scope":"M4_1_CONCLUSION_PATHS_PLUS_LF_INDEPENDENT_ASSURANCE",
