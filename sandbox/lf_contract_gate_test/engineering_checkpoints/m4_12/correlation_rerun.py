@@ -120,9 +120,15 @@ def adversarial_case(data):
 
 
 def main():
-    proc = subprocess.run(
-        ["psql", "-X", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c", SQL],
-        capture_output=True, text=True, check=False)
+    try:
+        proc = subprocess.run(
+            ["psql", "-X", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c", SQL],
+            capture_output=True, text=True, check=False)
+    except OSError as exc:
+        print(json.dumps({"test_code":"ENG_M4_12_CORRELATION_RERUN",
+                          "test_passed":False, "test_exit_code":2,
+                          "reason":"PSQL_EXECUTOR_UNAVAILABLE", "error":str(exc)}))
+        return 2
     if proc.returncode:
         print(json.dumps({"test_code":"ENG_M4_12_CORRELATION_RERUN",
                           "test_passed":False, "test_exit_code":2,
