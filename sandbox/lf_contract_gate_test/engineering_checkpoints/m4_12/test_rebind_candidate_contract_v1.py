@@ -15,6 +15,7 @@ class RebindCandidateContract(unittest.TestCase):
     def setUpClass(cls):
         cls.code = SOURCE.read_text(encoding="utf-8")
         cls.negative = NEGATIVE.read_text(encoding="utf-8")
+        cls.selector = (HERE / "validator_semantic_scope_v1.sql").read_text(encoding="utf-8")
         cls.v2 = (HERE / "validator_validate_v2_fail_closed_candidate_v1.sql").read_text(encoding="utf-8")
         cls.bootstrap = (HERE / "validator_bootstrap_fail_closed_candidate_v1.sql").read_text(encoding="utf-8")
 
@@ -31,12 +32,35 @@ class RebindCandidateContract(unittest.TestCase):
         self.assertIn("REBOUND_VALIDATOR_ASSERTIONS_REQUIRED",self.code)
         self.assertIn("jsonb_array_length(v_assertions)=0",self.code)
 
-    def test_no_auto_pass_or_auto_complete(self):
-        self.assertNotIn("set validator_outcome='PASS'",self.code)
-        self.assertNotIn("set status='COMPLETED'",self.code)
-        self.assertIn("v_outcome:='BLOCKED'",self.code)
-        self.assertIn("v_outcome:='FAIL'",self.code)
+    def test_unscoped_structural_pass_is_preserved(self):
+        self.assertIn("v_outcome:='PASS'",self.code)
+        self.assertIn("IF v_fail=0 AND v_blocked=0 THEN",self.code)
+        self.assertIn("UPDATE programacion.input_readiness_runs SET status='COMPLETED'",self.code)
+        self.assertIn("'validator_pass_scope','SOURCE_INTEGRITY_ONLY'",self.code)
         self.assertIn("'independent_semantic_oracle_verified',false",self.code)
+
+    def test_explicit_comparison_is_blocked_without_oracle_receipt(self):
+        for script in (self.code,self.v2,self.bootstrap):
+            self.assertIn("IF v_comparison_requested THEN",script)
+            self.assertIn("v_outcome:='BLOCKED'",script)
+            self.assertIn("INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN",script)
+            self.assertIn("v_outcome:='PASS'",script)
+            self.assertIn("semantic_comparison_requested",script)
+            self.assertIn("semantic_independence_credited",script)
+            self.assertIn("fn_input_validator_semantic_scope_v1(p_run_id)",script)
+
+    def test_selector_is_dynamic_exact_and_fail_closed(self):
+        for marker in ("validator_semantic_comparison_families",
+                       "VALIDATOR_SCOPE_RUN_NOT_FOUND",
+                       "VALIDATOR_SEMANTIC_COMPARISON_SCOPE_INVALID",
+                       "VALIDATOR_SEMANTIC_COMPARISON_DUPLICATE",
+                       "VALIDATOR_SEMANTIC_COMPARISON_FAMILY_UNREGISTERED",
+                       "INPUT_FAMILY_POLICY_REGISTRY", "jsonb_array_elements_text",
+                       "RETURNS text[]", "SECURITY INVOKER"):
+            self.assertIn(marker,self.selector)
+        self.assertIn("IF NOT v_scope ? 'validator_semantic_comparison_families' THEN",self.selector)
+        self.assertNotIn("REC_001",self.selector)
+        self.assertNotIn("SELECT DISTINCT family_code FROM programacion.input_family_assessments",self.selector)
 
     def test_identity_and_source_controls_preserved(self):
         for invariant in ("VALIDATOR_IDENTITY_NOT_INDEPENDENT",
@@ -61,13 +85,15 @@ class RebindCandidateContract(unittest.TestCase):
 
 
 
-    def test_all_legacy_routes_no_auto_semantic_pass(self):
+    def test_all_legacy_routes_preserve_source_checks_not_semantic_pass(self):
         for name, code in (("rebind", self.code), ("validate_v2", self.v2), ("bootstrap", self.bootstrap)):
             with self.subTest(path=name):
-                self.assertNotIn("v_outcome:='PASS'", code)
-                self.assertIn("v_outcome:='BLOCKED'", code)
-                self.assertIn("v_outcome:='FAIL'", code)
-                self.assertIn("INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN", code)
+                self.assertIn("fn_input_evaluate_assertion",code)
+                self.assertIn("IF v_comparison_requested THEN",code)
+                self.assertIn("v_outcome:='BLOCKED'",code)
+                self.assertIn("v_outcome:='FAIL'",code)
+                self.assertIn("v_outcome:='PASS'",code)
+                self.assertIn("'validation_phase','SOURCE_INTEGRITY'",code)
 
     def test_no_curator_shared_classifier_in_v2_or_bootstrap(self):
         self.assertNotIn("fn_input_governance_bootstrap_classify_v2", self.v2)
