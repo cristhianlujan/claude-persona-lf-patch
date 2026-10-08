@@ -305,3 +305,60 @@ Before `HUMAN_DECISION_ROUTING` can become current:
 5. only then promote the capability current pointer and enable producer consumption.
 
 Until then, V2 resolution is live and fail-closed, while consumer cutover remains disabled.
+
+
+## Pre-human escalation admission
+
+Human routing is not the first destination for a gap, recommendation or validator failure.
+
+`HUMAN_ESCALATION_ADMISSION` is the transversal gate immediately before `HUMAN_DECISION_ROUTING`.
+
+The canonical sequence is:
+
+```text
+source uncertainty / FAIL
+        ↓
+deterministic validation
+        ↓
+proven resolver, when one exists
+        ↓
+SAFE_CHANGE_ADMISSION, when applicable
+        ↓
+TARGETED_EVIDENCE_ACQUISITION
+        ↓
+recompute
+        ↓
+HUMAN_ELIGIBLE only when automation is exhausted
+or the specialized producer already proved an intrinsically human review is required
+        ↓
+HUMAN_DECISION_ROUTING
+```
+
+The gate emits one of:
+
+- `NO_HUMAN_REQUIRED`
+- `AUTO_RESOLVE_FIRST`
+- `AUTO_EXECUTION_ELIGIBLE`
+- `ACQUIRE_EVIDENCE`
+- `EVIDENCE_REQUIRED`
+- `HUMAN_ELIGIBLE`
+- `BLOCKED_NO_HUMAN`
+- `BLOCKED`
+
+Only `HUMAN_ELIGIBLE` sets `human_queue_allowed=true`.
+
+An empty evidence-candidate list is **not** proof that automation was exhausted. It returns `EVIDENCE_INVENTORY_NOT_PROVEN`.
+
+Programming deterministic failures are not routed to humans by default. An exact future failure type must receive an explicit escalation policy before it can become human-eligible.
+
+Input Governance gaps that currently say `HUMAN_DECISION_REQUIRED` must first prove that no decision-changing evidence remains. The existing `TARGETED_EVIDENCE_ACQUISITION` capability is reused; no parallel evidence search engine is introduced.
+
+Story Creator P0 may enter through specialized prequalification because its active P0 challenge is already downstream of machine visual analysis, convergence controls and a governed reviewer role. A challenge with no pending human work does not enter the human queue.
+
+Canonical future adapters are:
+
+- `private.fn_lf_human_decision_open_ig_v3`
+- `private.fn_lf_human_decision_open_story_p0_v3`
+- `private.fn_lf_human_decision_open_programming_v3`
+
+V1/V2 remain compatibility layers only. Future cutover must use V3.
