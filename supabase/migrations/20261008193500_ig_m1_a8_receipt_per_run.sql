@@ -263,6 +263,198 @@ BEGIN
 END;
 $issuer$;
 
+
+-- Governed invocation bridge. The dispatcher and ledger remain the existing LF
+-- capabilities. This routine is a run-scoped consumer, NOT a second engine.
+CREATE FUNCTION programacion.fn_ig_spec_traversal_orchestrate_per_run_v1(
+ p_run_id bigint
+) RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog'
+AS $orchestrator$
+DECLARE
+ v_preview jsonb;
+ v_subject_sha text;
+ v_prov record;
+ v_context jsonb;
+ v_digest text;
+ v_orch text;
+ v_ledger text;
+ v_orch_manifest jsonb;
+ v_ledger_manifest jsonb;
+ v_scope jsonb;
+ v_op jsonb;
+ v_dispatch jsonb;
+ v_bind jsonb;
+ v_current_sha text;
+ v_emit jsonb;
+BEGIN
+ IF p_run_id IS NULL OR p_run_id<=0 THEN
+   RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_ORCHESTRATOR_RUN_INVALID';
+ END IF;
+ PERFORM pg_advisory_xact_lock(hashtextextended('IG_SPEC_TRAVERSAL_RUN:'||p_run_id::text,0));
+
+ v_preview:=programacion.fn_ig_spec_traversal_preview_v1(p_run_id);
+ v_subject_sha:=programacion.fn_v09_sha256_jsonb(v_preview);
+
+ -- Exact trusted source-head provenance is read directly, not taken from
+ -- caller or reconstructed by the Curator classifier.
+ SELECT id,head_sha,subject_sha256,receipt_sha256
+   INTO v_prov
+ FROM programacion.provenance_receipts r
+ WHERE r.receipt_kind='EVIDENCE_VERIFICATION'
+   AND r.issuer_channel='EVIDENCE_VERIFIER_V1'
+   AND r.subject_type='input_governance_curator_handoff'
+   AND r.subject_ref='input-readiness-run:'||p_run_id::text
+   AND r.verification_ref='supabase://programacion.input_readiness_runs/'||p_run_id::text||'#curator-handoff'
+   AND r.payload->>'verification_status'='VERIFIED'
+   AND r.head_sha ~ '^[0-9a-f]{40}
+REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_orchestrate_per_run_v1(bigint) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) TO service_role;
+GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) TO service_role;
+GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_orchestrate_per_run_v1(bigint) TO service_role;
+
+COMMENT ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text)
+ IS 'M1.A8 dedicated run-bound receipt adapter. Reuses current EVIDENCE_LEDGER identity/dispatch binding, verifies 60 contract 5.13 clauses, never credits semantic APPLIED/N/A, requires externally governed run-scoped execution actors. No automatic production activation.';
+
+   AND r.subject_sha256 ~ '^[0-9a-f]{64}
+REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) TO service_role;
+GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) TO service_role;
+
+COMMENT ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text)
+ IS 'M1.A8 dedicated run-bound receipt adapter. Reuses current EVIDENCE_LEDGER identity/dispatch binding, verifies 60 contract 5.13 clauses, never credits semantic APPLIED/N/A, requires externally governed run-scoped execution actors. No automatic production activation.';
+
+   AND r.receipt_sha256 ~ '^[0-9a-f]{64}
+REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) TO service_role;
+GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) TO service_role;
+
+COMMENT ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text)
+ IS 'M1.A8 dedicated run-bound receipt adapter. Reuses current EVIDENCE_LEDGER identity/dispatch binding, verifies 60 contract 5.13 clauses, never credits semantic APPLIED/N/A, requires externally governed run-scoped execution actors. No automatic production activation.';
+
+ ORDER BY r.id DESC LIMIT 1;
+ IF v_prov.id IS NULL THEN
+   RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_VERIFIED_PROVENANCE_NOT_FOUND:%',p_run_id;
+ END IF;
+
+ v_context:=jsonb_build_object(
+   'schema_version','IG_SPEC_TRAVERSAL_PER_RUN_ORCHESTRATION_V1',
+   'run_id',p_run_id,'pantalla_id',v_preview->>'pantalla_id',
+   'version_id',v_preview->>'version_id',
+   'source_snapshot_sha256',v_preview->>'source_snapshot_sha256',
+   'contract_snapshot_sha256',v_preview->>'contract_snapshot_sha256',
+   'subject_sha256',v_subject_sha,
+   'provenance_receipt_id',v_prov.id,
+   'provenance_receipt_sha256',v_prov.receipt_sha256,
+   'source_head_sha',v_prov.head_sha);
+ v_digest:=programacion.fn_v09_sha256_jsonb(v_context);
+ v_orch:='EXEC-IG-SPEC-ORCH-RUN-'||p_run_id::text||'-'||substr(v_digest,1,12);
+ v_ledger:='EXEC-IG-SPEC-LEDGER-RUN-'||p_run_id::text||'-'||substr(v_digest,1,12);
+ v_orch_manifest:=v_context||jsonb_build_object(
+   'capability_code','EVIDENCE_LEDGER',
+   'plan_digest',v_digest,
+   'producer_execution_id',v_orch,
+   'orchestrator_execution_id',v_orch);
+
+ v_op:=public.fn_lf_operation_reserve_execution_v1(
+   v_orch,'ORQUESTACION_PIPELINE_LF','IG_RUN',p_run_id::text,
+   'ig:spec:orch:'||p_run_id::text,v_digest,v_orch,
+   NULL,NULL,v_orch_manifest);
+ IF v_op->>'execution_id' IS DISTINCT FROM v_orch
+    OR NOT EXISTS (
+      SELECT 1 FROM public.lf_operation_execution e
+      JOIN public.lf_operation_registry op ON op.operation_code=e.operation_code
+      WHERE e.execution_id=v_orch AND e.status='IN_PROGRESS'
+        AND e.manifest @> v_orch_manifest
+        AND op.operation_family='ORCHESTRATION'
+        AND op.lifecycle_state_code='OP_OPERATIONAL'
+    ) THEN
+   RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_ORCHESTRATOR_RESERVATION_REJECTED';
+ END IF;
+
+ v_ledger_manifest:=jsonb_build_object(
+   'schema_version','IG_SPEC_TRAVERSAL_PER_RUN_ISSUER_V1',
+   'capability_code','EVIDENCE_LEDGER','run_id',p_run_id,
+   'pantalla_id',v_preview->>'pantalla_id','version_id',v_preview->>'version_id',
+   'source_snapshot_sha256',v_preview->>'source_snapshot_sha256',
+   'contract_snapshot_sha256',v_preview->>'contract_snapshot_sha256',
+   'subject_sha256',v_subject_sha,
+   'source_head_sha',v_prov.head_sha,
+   'producer_execution_id',v_orch,
+   'orchestrator_execution_id',v_orch,
+   'plan_digest',v_digest);
+ v_op:=public.fn_lf_operation_reserve_execution_v1(
+   v_ledger,'ORQUESTACION_PIPELINE_LF','IG_RUN',p_run_id::text,
+   'ig:spec:ledger:'||p_run_id::text,
+   programacion.fn_v09_sha256_jsonb(v_ledger_manifest),v_ledger,
+   NULL,NULL,v_ledger_manifest);
+ IF v_op->>'execution_id' IS DISTINCT FROM v_ledger
+    OR NOT EXISTS(SELECT 1 FROM public.lf_operation_execution e
+      WHERE e.execution_id=v_ledger AND e.status='IN_PROGRESS'
+        AND e.manifest @> v_ledger_manifest) THEN
+   RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_LEDGER_RESERVATION_REJECTED';
+ END IF;
+
+ v_scope:=jsonb_build_object(
+   'schema_version','IG_SPEC_TRAVERSAL_PER_RUN_DISPATCH_V1',
+   'run_id',p_run_id,'pantalla_id',v_preview->>'pantalla_id',
+   'version_id',v_preview->>'version_id',
+   'source_snapshot_sha256',v_preview->>'source_snapshot_sha256',
+   'contract_snapshot_sha256',v_preview->>'contract_snapshot_sha256',
+   'subject_sha256',v_subject_sha,
+   'producer_execution_id',v_orch,
+   'source_head_sha',v_prov.head_sha);
+ v_dispatch:=public.fn_lf_orchestrator_dispatch_receipt_v1(
+   v_orch,v_ledger,'EVIDENCE_LEDGER',v_digest,v_scope,v_orch);
+ IF NOT coalesce((v_dispatch->>'ready')::boolean,false) THEN
+   RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_DISPATCH_REJECTED:%',
+     coalesce(v_dispatch->>'decision','UNKNOWN');
+ END IF;
+ SELECT c.manifest_sha256 INTO v_current_sha
+ FROM public.lf_capability_current c WHERE c.capability_code='EVIDENCE_LEDGER';
+ IF coalesce(v_current_sha,'') !~ '^[0-9a-f]{64}
+REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) TO service_role;
+GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) TO service_role;
+
+COMMENT ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text)
+ IS 'M1.A8 dedicated run-bound receipt adapter. Reuses current EVIDENCE_LEDGER identity/dispatch binding, verifies 60 contract 5.13 clauses, never credits semantic APPLIED/N/A, requires externally governed run-scoped execution actors. No automatic production activation.';
+ THEN
+   RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_LEDGER_CURRENT_MISSING';
+ END IF;
+ v_bind:=public.fn_lf_capability_bind_from_orchestrator_v1(
+   v_ledger,'EVIDENCE_LEDGER',v_current_sha,v_digest,
+   (v_dispatch->>'receipt_id')::uuid,v_orch);
+ IF NOT coalesce((v_bind->>'ready')::boolean,false) THEN
+   RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_BIND_REJECTED:%',
+     coalesce(v_bind#>>'{binding,decision}',
+              v_bind#>>'{entry_guard,decision}','UNKNOWN');
+ END IF;
+
+ v_emit:=programacion.fn_ig_spec_traversal_emit_per_run_v1(
+    p_run_id,v_orch,v_ledger,v_prov.head_sha);
+ IF v_emit->>'status'<>'RECORDED_BLOCKED_NOT_SEMANTIC_PASS'
+    OR (v_emit->>'ledger_readback_count')::int<>1 THEN
+   RAISE EXCEPTION 'IG_SPEC_TRAVERSAL_LEDGER_RECEIPT_NOT_VERIFIED';
+ END IF;
+
+ RETURN jsonb_build_object(
+   'schema_version','IG_SPEC_TRAVERSAL_ORCHESTRATION_RESULT_V1',
+   'status','RECORDED_BLOCKED_NOT_SEMANTIC_PASS',
+   'run_id',p_run_id,'clause_count',60,
+   'semantic_pass_authorized',false,
+   'orchestrator_execution_id',v_orch,
+   'ledger_execution_id',v_ledger,
+   'dispatch_receipt_id',v_dispatch->>'receipt_id',
+   'receipt_id',v_emit->>'receipt_id',
+   'receipt_sha256',v_emit->>'receipt_sha256',
+   'ledger_readback_count',v_emit->>'ledger_readback_count'
+ );
+END
+$orchestrator$;
+
 REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) FROM PUBLIC;
 REVOKE ALL ON FUNCTION programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION programacion.fn_ig_spec_traversal_preview_v1(bigint) TO service_role;
