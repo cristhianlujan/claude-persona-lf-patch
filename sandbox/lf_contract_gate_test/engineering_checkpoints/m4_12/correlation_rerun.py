@@ -31,7 +31,7 @@ CHECKED_PATHS = (
 )
 # Explicit M1.3 contract debt: reused assertion builder is not an independent oracle.
 ASSERTION_BUILDER = "fn_input_v58_build_assertions"
-CALL = re.compile(r"\\b(fn_[a-z0-9_]+)\\s*\\(", re.I)
+CALL = re.compile(r"\b(fn_[a-z0-9_]+)\s*\(", re.I)
 
 
 def graph_closure(root, source_by_name, depth=8):
@@ -98,7 +98,7 @@ def adversarial_case(data):
     trial = json.loads(json.dumps(data))
     for fn in trial["functions"]:
         if fn["name"] == victim:
-            fn["definition"] += "\\nPERFORM " + classifier + "(1);"
+            fn["definition"] += "\nPERFORM " + classifier + "(1);"
             break
     # Preserve baseline graph and ensure injection reaches the graph.
     sources = {f["name"]: f["definition"] for f in trial["functions"]}
