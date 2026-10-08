@@ -67,8 +67,8 @@ jobs:
         env:
           PASE_REPOSITORY: ${{ github.repository }}
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
-          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
-          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          SUPABASE_PROJECT_ID: ${{ vars.LF_SUPABASE_PROJECT_ID }}
+          SUPABASE_POOLER_HOST: ${{ vars.LF_SUPABASE_POOLER_HOST }}
         run: |
           set -euo pipefail
           mkdir -p .lf_ci
