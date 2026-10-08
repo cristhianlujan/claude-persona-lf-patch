@@ -242,6 +242,19 @@
         "expected_baseline_revision"
       ],
       "pass_contract": "reversible non-authority overlay; exact before hashes; path confinement; source unchanged; no runtime/production activation"
+    },
+    {
+      "validator_code": "PROFILE_CREATOR_SEMANTIC_RUNNER_V1",
+      "scope": "PROFILE_TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CONTRACT_VALIDATOR",
+      "source_ref": "skills/profile_creator/validators/validate_profile_creator_semantic_runner_v1.py",
+      "qualification_ref": "skills/profile_creator/validators/validate_profile_creator_semantic_runner_v1.py --self-test",
+      "execution_handler": "PYTHON_FILE",
+      "input_contract": [
+        "PROFILE_CREATOR_SEMANTIC_RUNNER_RECEIPT_V1"
+      ],
+      "pass_contract": "exact governed Profile Creator surface; fresh context; hash-bound raw; no source write/runtime/prod activation; direct model bypass forbidden"
     }
   ]
 }
