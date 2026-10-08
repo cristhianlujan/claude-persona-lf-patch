@@ -6,6 +6,7 @@ snapshot and the recorded M4.1 inventory, never a fabricated PASS fixture.
 Usage: python correlation_rerun.py
 Requires: psql and standard libpq connection env (PGHOST/PGUSER/PGDATABASE...).
 """
+import argparse
 import json
 import re
 import subprocess
@@ -25,6 +26,19 @@ SELECT jsonb_build_object(
    WHERE contrato_codigo='INPUT_FAMILY_POLICY_REGISTRY'
      AND estado='defined'
    ORDER BY version_id DESC,id DESC LIMIT 1),
+ 'selected_run',(SELECT jsonb_build_object(
+   'run_id',r.id,'pantalla_id',r.pantalla_id,'version_id',r.version_id,
+   'screen_code',(SELECT p.codigo FROM lf_ops.pantallas p WHERE p.id=r.pantalla_id),
+   'families',(SELECT coalesce(jsonb_agg(a.family_code ORDER BY a.family_code),'[]'::jsonb)
+              FROM programacion.input_family_assessments a WHERE a.run_id=r.id))
+   FROM programacion.input_readiness_runs r WHERE r.id=:selected_run_id),
+ 'selected_oracles',(SELECT coalesce(jsonb_agg(jsonb_build_object(
+     'family_code',a.family_code,
+     'oracle',programacion.fn_input_governance_shadow_priority_oracle_v2(
+        r.pantalla_id,a.family_code,r.version_id)) ORDER BY a.family_code),'[]'::jsonb)
+   FROM programacion.input_readiness_runs r
+   JOIN programacion.input_family_assessments a ON a.run_id=r.id
+   WHERE r.id=:selected_run_id),
  'functions',(SELECT coalesce(jsonb_agg(jsonb_build_object(
    'name', p.proname, 'definition',p.prosrc,'md5',md5(p.prosrc))),
    '[]'::jsonb)
@@ -110,6 +124,29 @@ def evaluate(data):
         failures.append({"path":"REGISTRY", "missing_strategy_for":missing_strategies})
     if measure.get("schema_version") != "LF_INDEPENDENT_ASSURANCE_MEASURE_V1":
         raise ValueError("CANONICAL_INDEPENDENCE_MEASURE_MISSING")
+    # The selected screen is supplied by the random-selection upstream run.
+    # Never replace it with REC_001 or choose a convenient fixture silently.
+    selected = data.get("selected_run") or {}
+    run_id = selected.get("run_id")
+    screen_id = selected.get("pantalla_id")
+    requested = selected.get("families") or []
+    if not run_id or not screen_id or not requested:
+        raise ValueError("SELECTED_RUN_OR_SCREEN_UNRESOLVED")
+    if len(set(requested)) != len(requested):
+        raise ValueError("SELECTED_RUN_DUPLICATE_FAMILY")
+    oracle_rows = data.get("selected_oracles") or []
+    if len(oracle_rows) != len(requested):
+        raise ValueError("SELECTED_RUN_ORACLE_CARDINALITY_DRIFT")
+    if {r.get("family_code") for r in oracle_rows} != set(requested):
+        raise ValueError("SELECTED_RUN_ORACLE_FAMILY_MISMATCH")
+    if any(code not in families for code in requested):
+        raise ValueError("SELECTED_RUN_FAMILY_NOT_IN_REGISTRY")
+    uncovered = sorted(r["family_code"] for r in oracle_rows
+                       if (r.get("oracle") or {}).get("implemented") is not True)
+    if uncovered:
+        failures.append({"path":"SELECTED_SCREEN_ORACLE_COVERAGE",
+                         "run_id":run_id, "pantalla_id":screen_id,
+                         "code":"NOT_COVERED", "families":uncovered})
     # Independent conclusions may share canonical data-source helpers.
     # All-overlap assurance remains diagnostic, never the semantic PASS gate.
     if measure.get("state") not in ("INDEPENDENT", "UNPROVEN", "NOT_INDEPENDENT"):
@@ -125,6 +162,11 @@ def evaluate(data):
             "scope":"M4_1_CONCLUSION_PATHS_PLUS_LF_INDEPENDENT_ASSURANCE",
             "path_count":len(coverage), "paths":coverage, "violations":failures,
             "family_registry_count":len(families),
+            "selected_run_id":run_id, "selected_pantalla_id":screen_id,
+            "selected_screen_code":selected.get("screen_code"),
+            "selected_family_count":len(requested),
+            "selected_oracle_covered_count":len(requested)-len(uncovered),
+            "selected_oracle_status":"NOT_COVERED" if uncovered else "COVERED",
             "canonical_independence_state":measure.get("state"),
             "independence_shared_dependency_count":
                 (measure.get("dependency_dimension") or {}).get("shared_dependency_count"),
@@ -161,9 +203,16 @@ def adversarial_case(data):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="M4.12 correlation and selected-screen coverage readback")
+    parser.add_argument("--run-id", type=int, required=True,
+                        help="Actual readiness run chosen by upstream random screen selection")
+    options = parser.parse_args()
+    if options.run_id < 1:
+        parser.error("run-id must be a positive integer")
     try:
         proc = subprocess.run(
-            ["psql", "-X", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c", SQL],
+            ["psql", "-X", "-A", "-t", "-v", "ON_ERROR_STOP=1",
+             "-v", f"selected_run_id={options.run_id}", "-c", SQL],
             capture_output=True, text=True, check=False)
     except OSError as exc:
         print(json.dumps({"test_code":"ENG_M4_12_CORRELATION_RERUN",
