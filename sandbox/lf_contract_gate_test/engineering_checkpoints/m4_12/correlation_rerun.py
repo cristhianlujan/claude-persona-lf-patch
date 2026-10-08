@@ -19,6 +19,22 @@ SELECT jsonb_build_object(
  'source','SUPABASE_LIVE_PG_PROC',
  'observed_at',clock_timestamp(),
  'm4_1_event',(SELECT payload FROM public.lf_eventos WHERE id=19381),
+ 'transitive_pass_gate',(WITH d AS (
+ SELECT pg_get_functiondef('programacion.fn_guard_input_family_assessment_update()'::regprocedure) guard_def,
+        pg_get_functiondef('programacion.fn_input_v58_build_assertions(bigint,bigint,text)'::regprocedure) builder_def
+ ), t AS (
+ SELECT count(*) FILTER(WHERE p.proname='fn_guard_input_family_assessment_update' AND tg.tgenabled='O') enabled_guard_count
+ FROM pg_trigger tg JOIN pg_proc p ON p.oid=tg.tgfoid
+ WHERE tg.tgrelid='programacion.input_family_assessments'::regclass AND NOT tg.tgisinternal
+ ) SELECT jsonb_build_object(
+  'schema_version','IG_TRANSITIVE_SOURCE_GATE_READBACK_V1',
+  'persistence_guard_enabled',t.enabled_guard_count=1,
+  'persistence_evaluates_assertions',position('fn_input_evaluate_assertion' in d.guard_def)>0,
+  'failed_assertion_blocks_pass',position('VALIDATOR_ASSERTION_FAILED' in d.guard_def)>0,
+  'builder_executes_rebind',position('fn_input_rebind_assertion' in d.builder_def)>0,
+  'builder_blocks_failed_assertion',position('V58_REBOUND_ASSERTION_FAILED' in d.builder_def)>0,
+  'semantic_independence_proven',false
+ ) FROM d CROSS JOIN t),
  'independence_measure',public.lf_independent_assurance_measure_v1(
    'programacion',
    'fn_input_governance_curator_materialize_v1',
@@ -98,6 +114,19 @@ def evaluate(data):
     curator = graph_closure(ROOT_CURATOR, source_by_name)
     failures = []
     coverage = []
+    # EKB: source-integrity PASS is transitive over builder and persistence guard.
+    # Even five successful guard checks do not prove independent SEMANTIC truth.
+    gate = data.get("transitive_pass_gate") or {}
+    fields = ("persistence_guard_enabled", "persistence_evaluates_assertions",
+              "failed_assertion_blocks_pass", "builder_executes_rebind",
+              "builder_blocks_failed_assertion")
+    if gate.get("schema_version") != "IG_TRANSITIVE_SOURCE_GATE_READBACK_V1":
+        raise ValueError("TRANSITIVE_SOURCE_GATE_READBACK_MISSING")
+    verified_gate = all(gate.get(key) is True for key in fields)
+    if not verified_gate or gate.get("semantic_independence_proven") is not False:
+        failures.append({"path":"TRANSITIVE_PERSISTENCE_SOURCE_GATE",
+                         "code":"SOURCE_ASSERTION_PASS_GUARD_UNVERIFIED",
+                         "unverified_controls":[key for key in fields if gate.get(key) is not True]})
     for name in CHECKED_PATHS:
         if name not in paths:
             raise ValueError("M4_1_PATH_MISSING:" + name)
@@ -217,6 +246,8 @@ def evaluate(data):
     # verdict. Its use of transversal T-INDEP is diagnostic until an actual
     # provider-bound review receipt is verified in its own governed workflow.
     return {"test_code":"ENG_M4_12_CORRELATION_RERUN",
+            "transitive_source_integrity_gate_verified":verified_gate,
+            "transitive_gate_scope":"SOURCE_ASSERTIONS_ONLY_NOT_SEMANTIC_ORACLE",
             "semantic_authority_bound":False,
             "independent_review_receipt_verified":False,
             "independence_provider":"INDEPENDENT_ASSURANCE",
