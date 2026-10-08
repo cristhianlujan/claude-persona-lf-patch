@@ -111,10 +111,14 @@ BEGIN
    VALUES
      ('READBACK_VERIFICADO','ENGINEERING_PLAN_UNIT',
       v_plan||'.'||v_unit||'.CLOSE.EVIDENCE_RECONCILIATION',
-      'Verified replacement of historical planning-event pointer in M7.12 terminal evidence',
+      'Audit trail for corrected M7.12 terminal event references without authority grant',
       'INFO',
       jsonb_build_object(
        'evidence_schema_version','operational-event/v2',
+       'execution_id',v_actor,
+       'producer','ENGINEERING_EVIDENCE_RECONCILIATION_V1',
+       'purpose','Preserve bounded traceability of terminal checkpoint evidence pointers after a governed readback.',
+       'acceptance_declared',false,
        'plan_code',v_plan,'unit_code',v_unit,'checkpoint_code',v_checkpoint,
        'root_cause_code','IG-M712-V1-PLANNED-EVENT-INCORRECT-CLOSURE-REF-001',
        'old_evidence_ref',v_old,'new_evidence_ref',v_new,
