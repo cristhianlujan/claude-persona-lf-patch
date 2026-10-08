@@ -21,11 +21,14 @@
       "depends_on": [
         "E0"
       ],
-      "status": "DONE_CANDIDATE_TESTED",
+      "status": "IMPLEMENTED_REQUIRES_FRESH_REQUALIFICATION",
       "closure_evidence": [
         "schema",
         "fixtures",
         "assessment evals"
+      ],
+      "blockers": [
+        "PROFILE_ASSESSMENT semantic repair must receive a fresh deterministic qualification receipt"
       ]
     },
     {
@@ -166,9 +169,11 @@
       "blockers": [
         "24-case corpus frozen but not executed/scored",
         "0 ADMIT_CUTOVER events",
-        "25 v0.1 executions IN_PROGRESS",
-        "PASE skipped is not PASS"
-      ]
+        "25 v0.1 executions IN_PROGRESS"
+      ],
+      "external_controls": {
+        "PASE": "NOT_AN_ACTIVE_EXIT_GATE_WHILE_DISABLED; SKIPPED_MUST_NOT_BE_RELABELED_PASS"
+      }
     }
   ],
   "invariants": [
@@ -178,5 +183,23 @@
     "NO_PLAN_DONE_WITH_UNVERIFIED_LOTS",
     "PATCH_MINIMALITY_ONLY_FOR_PATCH_MODE",
     "STRUCTURAL_COMPATIBILITY_IS_NOT_CAPABILITY_EXCELLENCE"
-  ]
+  ],
+  "atomic_execution_plan_ref": "skills/profile_creator/contracts/profile_evolution_engineering_plan_v1.json",
+  "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
+  "atomic_plan_summary": {
+    "units": 11,
+    "checkpoints": 45,
+    "required_checkpoints": 42,
+    "status": "PLANNED_ATOMIC_NOT_EXECUTED"
+  },
+  "validation_policy": {
+    "model": "FRESH_DETERMINISTIC_CHECKPOINT_VALIDATION",
+    "previous_pass_reuse": false,
+    "title_inference": false,
+    "generic_or_transversal_validator_first": true,
+    "missing_validator": "CREATE_AND_QUALIFY_BEFORE_EXECUTION",
+    "validator_authority": "GITHUB_VERSIONED_FILES",
+    "repair_flow": "FAIL -> RESOLVE -> FRESH_REVALIDATE -> PASS",
+    "programming_specific_runtime_tables_reused": false
+  }
 }
