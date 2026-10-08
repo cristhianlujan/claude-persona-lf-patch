@@ -119,7 +119,47 @@
         "PASE-ATOM-F07-X02-R04"
       ]
     },
-    "interpretation": "DAG_VALID is proved for mapped same-plan edges only, not blanket SIMPLE_EXECUTOR admission or full contractual readiness."
+    "interpretation": "DAG_VALID is proved for mapped same-plan edges only, not blanket SIMPLE_EXECUTOR admission or full contractual readiness.",
+    "consumer_admission_unit_probes": {
+      "function": "public.lf_consumer_admission_aggregate_v1",
+      "mode": "READ_ONLY_IMMUTABLE",
+      "positive": [
+        {
+          "name": "REQUIRED_PASS_OPTIONAL_HOLD",
+          "expected": "PASS",
+          "observed": "PASS"
+        }
+      ],
+      "negative": [
+        {
+          "name": "REQUIRED_UNKNOWN",
+          "expected": "BLOCK",
+          "observed": "BLOCK",
+          "code": "REQUIRED_UNKNOWN_FAIL_CLOSED"
+        },
+        {
+          "name": "REQUIRED_HOLD",
+          "expected": "HOLD",
+          "observed": "HOLD",
+          "code": "REQUIRED_CONSUMER_HOLD"
+        },
+        {
+          "name": "OPTIONAL_POLICY_VETO_WITHOUT_PROOF",
+          "expected": "BLOCK",
+          "observed": "BLOCK",
+          "code": "OPTIONAL_VETO_POLICY_PROOF_REQUIRED"
+        }
+      ],
+      "eval_negative": {
+        "function": "public.lf_consumer_admission_evaluate_v1",
+        "input": "NOT_APPLICABLE + REQUIRED",
+        "expected": "UNKNOWN",
+        "observed": "UNKNOWN",
+        "code": "APPLICABILITY_REQUIREDNESS_CONTRADICTION"
+      },
+      "summary": "5/5 PASS; these qualify reuse of existing procedures with synthetic input, not F09-X17 real E2E terminal verdict"
+    },
+    "test_disposition": "PROCEDURE_TESTS_PASSED_IN_READ_ONLY; PLAN_UNIT_NOT_MATERIALIZED; CROSS_LAYER_REAL_RECEIPTS_NOT_TESTED"
   },
   "apply_preconditions": [
     "Governed Programación plan-delta owner operation/approval identified and bound.",
@@ -139,5 +179,6 @@
     "https://github.com/cristhianlujan/claude-persona-lf-patch/issues/2049",
     "https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2050",
     "lf_eventos://20583"
-  ]
+  ],
+  "additional_remediation_ticket": "https://github.com/cristhianlujan/claude-persona-lf-patch/issues/2056"
 }
