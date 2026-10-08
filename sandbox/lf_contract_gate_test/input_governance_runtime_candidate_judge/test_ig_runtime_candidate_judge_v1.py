@@ -1,4 +1,5 @@
 import pathlib
+from copy import deepcopy
 import tempfile
 import unittest
 
@@ -23,6 +24,41 @@ def cap(**kw):
     )
     base.update(kw)
     return judge.FlowCapture(**base)
+
+
+def graph_terminal(nonce: int) -> dict:
+    def rid(n: int) -> str:
+        return f"00000000-0000-4000-8000-{n:012x}"
+
+    def sha(n: int) -> str:
+        return f"{n:064x}"
+
+    return {
+        "status": "COMPLETED",
+        "graph_receipts": {
+            "status": "PASS",
+            "ledger_execution_id": f"EXEC-IG-GRAPH-LEDGER-RUN-{nonce}-{nonce:x}",
+            "orchestrator_execution_id": f"EXEC-IG-GRAPH-ORCH-RUN-{nonce}-{nonce:x}",
+            "dispatch_receipt": {
+                "decision": "DISPATCH_RECEIPT_ISSUED",
+                "ready": True,
+                "receipt_id": rid(nonce * 10 + 1),
+                "receipt_sha256": sha(nonce),
+            },
+            "graph_receipt": {
+                "status": "PASS",
+                "graph_sha256": "a" * 64,
+                "source_head_sha": "b" * 40,
+                "consumer_readback_count": 2,
+                "ledger_execution_id": f"EXEC-IG-GRAPH-LEDGER-RUN-{nonce}-{nonce:x}",
+                "producer_execution_id": f"EXEC-IG-GRAPH-ORCH-RUN-{nonce}-{nonce:x}",
+                "dispatch_receipt_sha256": sha(nonce),
+                "receipt_ids": [rid(nonce * 10 + 2), rid(nonce * 10 + 3)],
+            },
+            "consumer_readback": {"status": "PASS", "matched_receipts": 2, "consumer_graph_sha256": "c" * 64},
+        },
+        "non_graph_evidence": {"receipt_sha256": "d" * 64},
+    }
 
 
 class FakeCursor:
@@ -111,6 +147,59 @@ class JudgeUnitTests(unittest.TestCase):
                 },
             },
         )
+
+    def test_graph_receipt_run_local_identities_do_not_create_false_drift(self):
+        baseline = judge.normalize_terminal(graph_terminal(1))
+        candidate = judge.normalize_terminal(graph_terminal(2))
+        self.assertEqual(baseline, candidate)
+        self.assertEqual(
+            judge.compare_captures(
+                cap(terminal_payload=baseline),
+                cap(phase="CANDIDATE", terminal_payload=candidate),
+            ),
+            [],
+        )
+        self.assertEqual(
+            baseline["graph_receipts"]["graph_receipt"]["receipt_ids"],
+            ["RUN_LOCAL_RECEIPT_ORDINAL_0", "RUN_LOCAL_RECEIPT_ORDINAL_1"],
+        )
+        self.assertEqual(baseline["graph_receipts"]["graph_receipt"]["graph_sha256"], "a" * 64)
+
+    def test_graph_receipt_semantic_drift_remains_blocking(self):
+        baseline = judge.normalize_terminal(graph_terminal(1))
+        for mutate in (
+            lambda p: p["graph_receipts"]["graph_receipt"].update(graph_sha256="e" * 64),
+            lambda p: p["graph_receipts"]["consumer_readback"].update(matched_receipts=1),
+            lambda p: p["graph_receipts"]["dispatch_receipt"].update(ready=False),
+            lambda p: p["non_graph_evidence"].update(receipt_sha256="e" * 64),
+        ):
+            changed = graph_terminal(2)
+            mutate(changed)
+            candidate = judge.normalize_terminal(changed)
+            findings = judge.compare_captures(
+                cap(terminal_payload=baseline),
+                cap(phase="CANDIDATE", terminal_payload=candidate),
+            )
+            self.assertIn("TERMINAL_PAYLOAD_DRIFT", {f["code"] for f in findings})
+
+    def test_graph_receipt_identity_list_shape_and_invalid_values_remain_blocking(self):
+        baseline = judge.normalize_terminal(graph_terminal(1))
+        for mutate in (
+            lambda p: p["graph_receipts"]["graph_receipt"]["receipt_ids"].pop(),
+            lambda p: p["graph_receipts"]["graph_receipt"]["receipt_ids"].__setitem__(
+                1, p["graph_receipts"]["graph_receipt"]["receipt_ids"][0]
+            ),
+            lambda p: p["graph_receipts"]["dispatch_receipt"].update(receipt_id="MALFORMED"),
+            lambda p: p["graph_receipts"]["graph_receipt"].update(dispatch_receipt_sha256="BAD_HASH"),
+        ):
+            changed = graph_terminal(2)
+            mutate(changed)
+            candidate = judge.normalize_terminal(changed)
+            findings = judge.compare_captures(
+                cap(terminal_payload=baseline),
+                cap(phase="CANDIDATE", terminal_payload=candidate),
+            )
+            self.assertIn("TERMINAL_PAYLOAD_DRIFT", {f["code"] for f in findings})
 
     def test_real_flow_entrypoint_is_dispatcher_then_curator(self):
         cur = FakeCursor([

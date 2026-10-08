@@ -1,0 +1,35 @@
+name: IG N9 Judge Unit Tests
+
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_v1.py'
+      - 'sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/test_ig_runtime_candidate_judge_v1.py'
+      - '.github/workflows/ig-n9-judge-unit-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_v1.py'
+      - 'sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/test_ig_runtime_candidate_judge_v1.py'
+      - '.github/workflows/ig-n9-judge-unit-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  ig-n9-judge-unit-tests:
+    name: ig-n9-judge-unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate test source without credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Execute deterministic N9 regression suite
+        working-directory: sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge
+        run: python3 -m unittest -v test_ig_runtime_candidate_judge_v1
