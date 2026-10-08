@@ -47,7 +47,6 @@ export type CallerConfig = {
   recurationWorkflowRef: string;
   recurationDispatchWorkflowRef: string;
   recurationWorkflowName: string;
-  inputGovernanceSlug: string;
   profileCreatorSlug: string;
   recurationTimeoutMs: number;
   defaultTimeoutMs: number;
@@ -139,7 +138,6 @@ export function loadConfig(getEnv: EnvGetter): CallerConfig {
   const recurationWorkflowRef = requiredEnv(getEnv, "LF_CALLER_RECURATION_WORKFLOW_REF");
   const recurationDispatchWorkflowRef = requiredEnv(getEnv, "LF_CALLER_RECURATION_DISPATCH_WORKFLOW_REF");
   const recurationWorkflowName = requiredEnv(getEnv, "LF_CALLER_RECURATION_WORKFLOW_NAME");
-  const inputGovernanceSlug = requiredEnv(getEnv, "LF_CALLER_INPUT_GOVERNANCE_SLUG");
   const profileCreatorSlug = requiredEnv(getEnv, "LF_CALLER_PROFILE_CREATOR_SLUG");
   const recurationTimeoutRaw = requiredEnv(getEnv, "LF_CALLER_RECURATION_TIMEOUT_MS");
   const defaultTimeoutRaw = requiredEnv(getEnv, "LF_CALLER_DEFAULT_TIMEOUT_MS");
@@ -163,7 +161,6 @@ export function loadConfig(getEnv: EnvGetter): CallerConfig {
   if (recurationWorkflowName.length > 200 || /[\r\n]/.test(recurationWorkflowName)) {
     throw new CallerFault("CONFIG_LF_CALLER_RECURATION_WORKFLOW_NAME_INVALID", 500);
   }
-  if (!validSlug(inputGovernanceSlug)) throw new CallerFault("CONFIG_LF_CALLER_INPUT_GOVERNANCE_SLUG_INVALID", 500);
   if (!validSlug(profileCreatorSlug)) throw new CallerFault("CONFIG_LF_CALLER_PROFILE_CREATOR_SLUG_INVALID", 500);
 
   return {
@@ -175,7 +172,6 @@ export function loadConfig(getEnv: EnvGetter): CallerConfig {
     recurationWorkflowRef,
     recurationDispatchWorkflowRef,
     recurationWorkflowName,
-    inputGovernanceSlug,
     profileCreatorSlug,
     recurationTimeoutMs: parseTimeout(recurationTimeoutRaw, "LF_CALLER_RECURATION_TIMEOUT_MS", 149000),
     defaultTimeoutMs: parseTimeout(defaultTimeoutRaw, "LF_CALLER_DEFAULT_TIMEOUT_MS", 149000),
