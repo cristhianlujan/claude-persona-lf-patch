@@ -5,49 +5,49 @@
   "authoring_rule": "SCORER_MAY_READ_ONLY_AFTER_BOTH_ARMS_RAW_OUTPUT_IS_FROZEN",
   "cases": [
     {
-      "case_id": "PEB-001",
+      "case_id": "PEB2-001",
       "desired_action": "PATCH",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-002",
+      "case_id": "PEB2-002",
       "desired_action": "PATCH",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-003",
+      "case_id": "PEB2-003",
       "desired_action": "PATCH",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-004",
+      "case_id": "PEB2-004",
       "desired_action": "SPECIALIZE",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-005",
+      "case_id": "PEB2-005",
       "desired_action": "SPECIALIZE",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-006",
+      "case_id": "PEB2-006",
       "desired_action": "SPECIALIZE",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-007",
+      "case_id": "PEB2-007",
       "desired_action": "NEEDS_MORE_EVIDENCE",
       "required_capabilities": [
         "TARGETED_EVIDENCE_ACQUISITION"
@@ -56,7 +56,7 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-008",
+      "case_id": "PEB2-008",
       "desired_action": "NEEDS_MORE_EVIDENCE",
       "required_capabilities": [
         "TARGETED_EVIDENCE_ACQUISITION"
@@ -65,7 +65,7 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-009",
+      "case_id": "PEB2-009",
       "desired_action": "NEEDS_MORE_EVIDENCE",
       "required_capabilities": [
         "TARGETED_EVIDENCE_ACQUISITION"
@@ -74,7 +74,7 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-010",
+      "case_id": "PEB2-010",
       "desired_action": "OPTIMIZE",
       "required_capabilities": [
         "CAUSAL_EFFECT_LINEAGE"
@@ -83,7 +83,7 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-011",
+      "case_id": "PEB2-011",
       "desired_action": "OPTIMIZE",
       "required_capabilities": [
         "CAUSAL_EFFECT_LINEAGE"
@@ -92,7 +92,7 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-012",
+      "case_id": "PEB2-012",
       "desired_action": "OPTIMIZE",
       "required_capabilities": [
         "CAUSAL_EFFECT_LINEAGE"
@@ -101,7 +101,7 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-013",
+      "case_id": "PEB2-013",
       "desired_action": "REARCHITECT",
       "required_capabilities": [
         "INDEPENDENT_ASSURANCE"
@@ -110,7 +110,7 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-014",
+      "case_id": "PEB2-014",
       "desired_action": "REARCHITECT",
       "required_capabilities": [
         "INDEPENDENT_ASSURANCE"
@@ -119,7 +119,7 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-015",
+      "case_id": "PEB2-015",
       "desired_action": "REARCHITECT",
       "required_capabilities": [
         "INDEPENDENT_ASSURANCE"
@@ -128,28 +128,28 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-016",
+      "case_id": "PEB2-016",
       "desired_action": "OPTIMIZE",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-017",
+      "case_id": "PEB2-017",
       "desired_action": "OPTIMIZE",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-018",
+      "case_id": "PEB2-018",
       "desired_action": "OPTIMIZE",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-019",
+      "case_id": "PEB2-019",
       "desired_action": "NEEDS_MORE_EVIDENCE",
       "required_capabilities": [
         "TARGETED_EVIDENCE_ACQUISITION"
@@ -158,7 +158,7 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-020",
+      "case_id": "PEB2-020",
       "desired_action": "NEEDS_MORE_EVIDENCE",
       "required_capabilities": [
         "TARGETED_EVIDENCE_ACQUISITION"
@@ -167,7 +167,7 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-021",
+      "case_id": "PEB2-021",
       "desired_action": "NEEDS_MORE_EVIDENCE",
       "required_capabilities": [
         "TARGETED_EVIDENCE_ACQUISITION"
@@ -176,25 +176,28 @@
       "preserve_no_change": false
     },
     {
-      "case_id": "PEB-022",
+      "case_id": "PEB2-022",
       "desired_action": "NO_CHANGE",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": true
     },
     {
-      "case_id": "PEB-023",
+      "case_id": "PEB2-023",
       "desired_action": "NO_CHANGE",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": true
     },
     {
-      "case_id": "PEB-024",
+      "case_id": "PEB2-024",
       "desired_action": "NO_CHANGE",
       "required_capabilities": [],
       "critical": false,
       "preserve_no_change": true
     }
-  ]
+  ],
+  "generation": 2,
+  "generation_id": "PEB-R2-20261008",
+  "supersedes_oracle_blob": "2638d4996de23e5d99937133b75a32dfd819d3d0"
 }
