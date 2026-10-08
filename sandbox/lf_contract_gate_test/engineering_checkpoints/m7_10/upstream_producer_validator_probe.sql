@@ -106,10 +106,15 @@ begin
      where e.receipt_kind='GRAPH_RECEIPT'
        and e.subject_type='IG_SCREEN_GRAPH'
        and e.subject_ref like 'supabase://programacion.input_readiness_runs/'||v_new_run::text||'#%';
-   select count(*) into v_handoff_receipt_count
-     from programacion.provenance_receipts p
-     where p.subject_type='input_governance_curator_handoff_contract'
-       and p.subject_ref like '%'||v_new_run::text||'%';
+   -- M5.9 provenance row is contract-level, never pretend it is per-run.
+   -- The live run handoff receipt belongs to the canonical Curator return envelope.
+   select case
+     when v_curator->>'status'='VALIDATOR_RUNTIME_REQUIRED'
+      and v_curator->>'required_role'='INPUT_VALIDATOR'
+      and coalesce(nullif(v_curator#>>'{persistence_pipeline_receipt,run_id}','')::bigint,-1)=v_new_run
+      and v_curator#>>'{persistence_pipeline_receipt,receipt_mode}'='RETURN_ENVELOPE_READBACK'
+      and v_curator#>>'{persistence_pipeline_receipt,schema_version}'='INPUT_GOVERNANCE_PERSISTENCE_PIPELINE_RECEIPT_V1'
+       then 1 else 0 end into v_handoff_receipt_count;
    v_observed:=jsonb_build_object(
       'status','PRODUCER_READBACK_CAPTURED','source_run_id',v_new_run,
       'source_count',v_source_count,'manifest_receipt_count',v_manifest_count,
