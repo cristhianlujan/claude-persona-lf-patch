@@ -858,11 +858,32 @@ begin
       'recommendation_is_human_escalation',false,
       'empty_candidate_inventory_proves_exhaustion',false
     ),
+    'installation',jsonb_build_object(
+      'required',false,
+      'reinstall_required',false,
+      'package_update_mode','DATABASE_NATIVE_CUTOVER'
+    ),
+    'migration',jsonb_build_object(
+      'mode','TRANSVERSAL_READ_ONLY_ADMISSION_PLUS_CANONICAL_V3_ADAPTERS',
+      'consumer_cutover',false,
+      'human_router_current_pointer',false
+    ),
+    'rollback',jsonb_build_object(
+      'supported',true,
+      'mode','REGISTRY_POINTER_AND_SOURCE_ROLLBACK',
+      'rule','remove HUMAN_ESCALATION_ADMISSION current pointer/version/policies/functions and revert HUMAN_DECISION_ROUTING usage to v1.0.2; never mutate human-decision history'
+    ),
     'usage',jsonb_build_object(
       'classify','public.lf_human_escalation_admission_v1',
       'ig_canonical_adapter','private.fn_lf_human_decision_open_ig_v3',
       'story_canonical_adapter','private.fn_lf_human_decision_open_story_p0_v3',
       'programming_canonical_adapter','private.fn_lf_human_decision_open_programming_v3'
+    ),
+    'currentness',jsonb_build_object(
+      'dependency_binding','EXACT_VERSION_AND_MANIFEST_SHA256',
+      'source_revision_immutable',false,
+      'human_queue_default','DENY',
+      'current_pointer_expected',true
     ),
     'stop_rule',jsonb_build_object(
       'pass_or_not_applicable','NO_HUMAN_REQUIRED',
