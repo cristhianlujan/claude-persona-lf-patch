@@ -106,7 +106,7 @@ begin
 
   return programacion.fn_ig_graph_finalize_validator_result_v1(p_run_id,p_validator_identity,v_result);
 end;
-$function$
+$function$;
 
 
 -- The newer handoff entrypoint delegates to the same underlying validator
@@ -125,7 +125,7 @@ begin
   v_result:=programacion.fn_input_governance_validator_validate_v1(p_run_id,p_validator_identity);
   return coalesce(v_result,'{}'::jsonb) || jsonb_build_object('handoff_receipt',v_handoff);
 end;
-$function$
+$function$;
 
 
 DO $assert$
