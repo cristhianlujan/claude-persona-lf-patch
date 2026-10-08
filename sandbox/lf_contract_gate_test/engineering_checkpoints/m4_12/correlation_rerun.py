@@ -211,8 +211,14 @@ def evaluate(data):
             for symbol in issue.get("shared_conclusion_dependencies", []):
                 if symbol not in shared:
                     raise ValueError("ASSURANCE_DRIFT:" + symbol)
+    # This checkpoint tests correlation, not an independently issued semantic
+    # verdict. Its use of transversal T-INDEP is diagnostic until an actual
+    # provider-bound review receipt is verified in its own governed workflow.
     return {"test_code":"ENG_M4_12_CORRELATION_RERUN",
-            "semantic_authority_bound":True,
+            "semantic_authority_bound":False,
+            "independent_review_receipt_verified":False,
+            "independence_provider":"INDEPENDENT_ASSURANCE",
+            "independence_measure_role":"DIAGNOSTIC_ONLY",
             "scope":"M4_1_CONCLUSION_PATHS_PLUS_LF_INDEPENDENT_ASSURANCE",
             "path_count":len(coverage), "paths":coverage, "violations":failures,
             "family_registry_count":len(families),
