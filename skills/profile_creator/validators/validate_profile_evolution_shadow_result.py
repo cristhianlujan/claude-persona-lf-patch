@@ -14,6 +14,8 @@ def evaluate(result: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any]:
 
     if result.get("schema") != "PROFILE_EVOLUTION_SHADOW_RESULT_V1":
         blockers.append("SHADOW_SCHEMA_INVALID")
+    if not targets.get("repository_snapshot_sha") or result.get("repository_snapshot_sha") != targets.get("repository_snapshot_sha"):
+        blockers.append("SHADOW_SNAPSHOT_IDENTITY_MISMATCH")
     if not isinstance(rows, list):
         blockers.append("SHADOW_ROWS_INVALID")
         rows = []
@@ -32,6 +34,9 @@ def evaluate(result: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any]:
             continue
         if row.get("capability_evidence_state") != "UNPROVEN_UNTIL_DOMAIN_TASK_BENCHMARK":
             blockers.append("SHADOW_CAPABILITY_EVIDENCE_STATE_INVALID")
+            continue
+        if "PROFILE_TARGET_INVALID" in (row.get("s26_blocking_codes") or []):
+            blockers.append("SHADOW_TARGET_NOT_REAL_PROFILE")
             continue
         if row.get("s26_decision") == "NO_UPDATE_REQUIRED":
             if row.get("assessment_status") != "NEEDS_MORE_EVIDENCE":
@@ -53,15 +58,17 @@ def evaluate(result: dict[str, Any], targets: dict[str, Any]) -> dict[str, Any]:
 
 
 def self_test() -> None:
-    targets = {"targets": [{"profile_slug": "a"}, {"profile_slug": "b"}]}
+    targets = {"repository_snapshot_sha": "a" * 40, "targets": [{"profile_slug": "a"}, {"profile_slug": "b"}]}
     good = {
         "schema": "PROFILE_EVOLUTION_SHADOW_RESULT_V1",
+        "repository_snapshot_sha": "a" * 40,
         "target_count": 2,
         "writes": 0,
         "rows": [
             {
                 "profile_slug": "a",
                 "s26_decision": "NO_UPDATE_REQUIRED",
+                "s26_blocking_codes": [],
                 "assessment_status": "NEEDS_MORE_EVIDENCE",
                 "maturity": "UNDETERMINED",
                 "evolution_mode": None,
@@ -70,6 +77,7 @@ def self_test() -> None:
             {
                 "profile_slug": "b",
                 "s26_decision": "UPDATE_REQUIRED",
+                "s26_blocking_codes": [],
                 "assessment_status": "EVIDENCE_SUFFICIENT",
                 "maturity": "UNDETERMINED",
                 "evolution_mode": "PATCH",
@@ -85,7 +93,10 @@ def self_test() -> None:
     bad = json.loads(json.dumps(good))
     bad["writes"] = 1
     assert evaluate(bad, targets)["status"] == "FAIL"
-    print("PASS_PROFILE_EVOLUTION_SHADOW_VALIDATOR positive=1 negative=2")
+    bad = json.loads(json.dumps(good))
+    bad["rows"][0]["s26_blocking_codes"] = ["PROFILE_TARGET_INVALID"]
+    assert evaluate(bad, targets)["status"] == "FAIL"
+    print("PASS_PROFILE_EVOLUTION_SHADOW_VALIDATOR positive=1 negative=3 snapshot_bound=1")
 
 
 def main() -> int:
