@@ -55,7 +55,12 @@ def _validate_top(candidate: dict[str, Any], expected_revision: str) -> tuple[st
     if not isinstance(code, str) or not code:
         raise ValueError("CANDIDATE_PROFILE_CODE_INVALID")
     revision = candidate.get("baseline_revision")
-    if revision != expected_revision or not isinstance(revision, str) or len(revision) != 40:
+    if (
+        revision != expected_revision
+        or not isinstance(revision, str)
+        or len(revision) != 40
+        or any(ch not in "0123456789abcdef" for ch in revision)
+    ):
         raise ValueError("CANDIDATE_BASELINE_REVISION_MISMATCH")
     if candidate.get("evolution_mode") not in MODES:
         raise ValueError("CANDIDATE_EVOLUTION_MODE_INVALID")
@@ -90,6 +95,8 @@ def materialize(candidate: dict[str, Any], repo_root: Path, output_root: Path, e
         raise ValueError("CANDIDATE_PROFILE_SOURCE_ESCAPE") from exc
     if not source.is_dir():
         raise ValueError("CANDIDATE_PROFILE_SOURCE_MISSING")
+    if source.is_symlink() or any(p.is_symlink() for p in source.rglob("*")):
+        raise ValueError("CANDIDATE_SOURCE_SYMLINK_FORBIDDEN")
 
     destination = output_root / slug
     if destination.exists():
