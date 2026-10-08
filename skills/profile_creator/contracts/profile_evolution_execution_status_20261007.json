@@ -1,6 +1,6 @@
 {
   "schema": "PROFILE_EVOLUTION_EXECUTION_STATUS_V1",
-  "as_of": "2026-10-07",
+  "as_of": "2026-10-08",
   "operation_code": "ACTUALIZACION_PERFIL_LF",
   "candidate_responsibility": "PROFILE_EVOLUTION_ORCHESTRATOR",
   "pr": 1947,
@@ -17,7 +17,7 @@
   "lots": [
     {
       "id": "E0",
-      "status": "DONE_CANDIDATE",
+      "status": "DONE_VALIDATED",
       "evidence": [
         "S26 10/10 references reconciled to 13/13",
         "SRCR operational v0.2 vs repository V0.6/SRCR_V0_7R1 explicitly reconciled without promotion"
@@ -25,15 +25,17 @@
     },
     {
       "id": "E1",
-      "status": "DONE_CANDIDATE_TESTED",
+      "status": "DONE_VALIDATED",
       "evidence": [
         "PROFILE_ASSESSMENT_V1",
-        "7 assessment behavior cases exit 0"
+        "9 assessment behavior cases",
+        "UNKNOWN -> UNDETERMINED / NEEDS_MORE_EVIDENCE",
+        "unreferenced PASS/FAIL fail closed"
       ]
     },
     {
       "id": "E2",
-      "status": "DONE_CANDIDATE_TESTED",
+      "status": "DONE_VALIDATED",
       "evidence": [
         "METHOD_PACK_REGISTRY_V1",
         "8 governed methods",
@@ -42,41 +44,46 @@
     },
     {
       "id": "E3",
-      "status": "DONE_CANDIDATE_TESTED",
+      "status": "DONE_VALIDATED",
       "evidence": [
         "CAPABILITY_SELECTOR composition v2",
         "v1 selector contract preserved",
-        "capability migration dry-run ROLLBACK_OK"
+        "multi-gap composition fresh PASS",
+        "budget/admission separation fresh PASS"
       ]
     },
     {
       "id": "E4",
-      "status": "IMPLEMENTED_NOT_EXECUTED",
+      "status": "DONE_SHADOW_VALIDATED",
       "evidence": [
-        "10 real-profile shadow targets frozen",
-        "read-only shadow runner present"
-      ],
-      "blocker": "Repository-wide exact snapshot execution unavailable in current runner; do not invent shadow results."
+        "8 current real-profile targets frozen at main@fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+        "shadow PASS target_count=8 writes=0",
+        "no UNKNOWN -> GENERIC/SPECIALIZE",
+        "2 stale targets removed because they are adapter-only, not current profiles"
+      ]
     },
     {
       "id": "E5",
-      "status": "DONE_CANDIDATE",
+      "status": "DONE_WITH_REVERSIBLE_MATERIALIZATION_BRIDGE",
       "evidence": [
         "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
-        "admission before profile-source write"
+        "admission before profile-source write",
+        "PROFILE_CREATOR remains sole semantic producer",
+        "PROFILE_CANDIDATE_MATERIALIZER_V1 positive=2 negative=6 authority_writes=0"
       ]
     },
     {
       "id": "E6",
-      "status": "DONE_CANDIDATE",
+      "status": "DONE_VALIDATED",
       "evidence": [
-        "PROFILE_EVOLUTION_STATE_V1",
-        "modular/evolution contracts"
+        "PROFILE_EVOLUTION_STATE_V1 includes UNDETERMINED",
+        "UNDETERMINED means evidence insufficiency, not low maturity",
+        "v0.2 step gate remains isolated from v0.1"
       ]
     },
     {
       "id": "E7",
-      "status": "DONE_CANDIDATE",
+      "status": "DONE_VALIDATED",
       "evidence": [
         "PROFILE_LEARNING_ADMISSION_V1",
         "no auto-promote from reflection"
@@ -84,7 +91,7 @@
     },
     {
       "id": "E8",
-      "status": "GATED_NOT_ENABLED",
+      "status": "DONE_POLICY_GATED_NOT_ENABLED",
       "evidence": [
         "EVALUATOR_OPTIMIZER policy exists"
       ],
@@ -92,7 +99,7 @@
     },
     {
       "id": "E9",
-      "status": "GATED_NOT_ENABLED",
+      "status": "DONE_NOT_APPLICABLE",
       "evidence": [
         "Advanced optimization policy exists"
       ],
@@ -100,17 +107,21 @@
     },
     {
       "id": "E10",
-      "status": "BLOCKED_PENDING_EVIDENCE",
+      "status": "BLOCKED_ON_PE10P_FULL_BEHAVIOR",
       "evidence": [
-        "24-case blind benchmark shell frozen across 8 strata",
-        "benchmark admission evaluator exists",
-        "cutover migration staged outside deployable migrations"
+        "PEB-R2 decision/composition RAW frozen before oracle open; 24 cases / 8 strata / 8 holdout",
+        "decision benchmark score baseline=0.25 candidate=1.00",
+        "primary direction UP; holdout UP; paired CI95 [0.583333,0.916667]",
+        "critical regressions=0; false PASS 6 -> 0; preservation=true; cost/latency within budget",
+        "decision benchmark cutover_eligible=false; FULL_PROFILE_EVOLUTION_BEHAVIOR still required",
+        "PE10_C1 DONE; PE10_C2-C7 pending"
       ],
       "blockers": [
-        "24 cases not executed/scored",
-        "no E10 ADMIT_CUTOVER event",
+        "PE10P_C3: GOVENED_PROFILE_CREATOR_WORKER callable unavailable",
+        "FULL_PROFILE_EVOLUTION_BEHAVIOR not executed/admitted",
+        "0 PROFILE_EVOLUTION_CUTOVER_ADMITTED events",
         "25 v0.1 updater executions remain IN_PROGRESS",
-        "PASE workflow on PR is configured/skipped, not PASS"
+        "PROFILE_ASSESSMENT and METHOD_PACK_REGISTRY are not live-current; CAPABILITY_SELECTOR live-current remains 1.0.0"
       ]
     }
   ],
@@ -122,7 +133,38 @@
     "cutover_negative_test": "BLOCK_PROFILE_EVOLUTION_CUTOVER_OPEN_V01_EXECUTIONS",
     "runtime_changed": false,
     "production_changed": false,
-    "updater_authority_changed": false
+    "updater_authority_changed": false,
+    "decision_benchmark_scope": "DECISION_POLICY_AND_COMPOSITION_ONLY_NOT_CUTOVER_ELIGIBLE",
+    "semantic_runner_contract": "PASS_SELF_TEST_POSITIVE_1_NEGATIVE_5_DIRECT_MODEL_BYPASS_BLOCKED"
   },
-  "closure": "CANDIDATE_IMPLEMENTATION_COMPLETE; OPERATIONAL_CUTOVER_NOT_ADMITTED"
+  "closure": "IMPLEMENTATION_IN_EXECUTION; FULL_BEHAVIOR_BLOCKED_ON_GOVERNED_PROFILE_CREATOR_WORKER; OPERATIONAL_CUTOVER_NOT_ADMITTED",
+  "atomic_plan": {
+    "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
+    "unit_count": 13,
+    "checkpoint_count": 56,
+    "required_checkpoint_count": 53,
+    "required_terminal_count": 44,
+    "required_progress_pct": 83,
+    "done_checkpoint_count": 44,
+    "not_applicable_checkpoint_count": 3,
+    "open_blocker_count": 1
+  },
+  "atomic_units": {
+    "PE5A": {
+      "status": "DONE",
+      "checkpoints": "5/5",
+      "purpose": "reversible candidate materialization bridge"
+    },
+    "PE10P": {
+      "status": "IN_PROGRESS_BLOCKED",
+      "checkpoints": "2/5",
+      "current_checkpoint": "PE10P_C3",
+      "blocker_code": "GOVERNED_PROFILE_CREATOR_WORKER_CALLABLE_UNAVAILABLE"
+    },
+    "PE10": {
+      "status": "BACKLOG_WAITING_PE10P",
+      "checkpoints": "1/7",
+      "completed_checkpoint": "PE10_C1"
+    }
+  }
 }
