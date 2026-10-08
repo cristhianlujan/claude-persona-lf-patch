@@ -208,7 +208,7 @@ begin
     raise exception 'IG_CANDIDATE_AUTHORITY_LIVE_DISPOSITION_BASELINE_SHA_MISMATCH:%',v_sha;
   end if;
 
-  if position('v_candidate_authority_count integer:=0;' in v_def)=0
+  if position('v_candidate_authority_count integer;' in v_def)=0
      or position(v_old in v_def)=0 then
     raise exception 'IG_CANDIDATE_AUTHORITY_LIVE_DISPOSITION_ANCHOR_DRIFT';
   end if;
