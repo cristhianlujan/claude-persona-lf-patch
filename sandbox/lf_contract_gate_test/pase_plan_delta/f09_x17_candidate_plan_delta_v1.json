@@ -160,7 +160,23 @@
       },
       "summary": "5/5 PASS; these qualify reuse of existing procedures with synthetic input, not F09-X17 real E2E terminal verdict"
     },
-    "test_disposition": "PROCEDURE_TESTS_PASSED_IN_READ_ONLY; PLAN_UNIT_NOT_MATERIALIZED; CROSS_LAYER_REAL_RECEIPTS_NOT_TESTED"
+    "test_disposition": "PROCEDURE_TESTS_PASSED_IN_READ_ONLY; PLAN_UNIT_NOT_MATERIALIZED; CROSS_LAYER_REAL_RECEIPTS_NOT_TESTED",
+    "structural_projection": {
+      "source_path": "sandbox/lf_contract_gate_test/pase_plan_delta/f09_x17_d6_structural_projection_readonly_v1.sql",
+      "schema_version": "PASE_STRUCTURAL_PROJECTION_ONLY_V1",
+      "current_plan_units": 145,
+      "candidate_plan_units": 146,
+      "current_requires": 198,
+      "candidate_requires": 200,
+      "current_structural_projection_sha256": "c16fa42bf86c019a769852d773c30bcf650bb62d660d6dcd2137b6675a7c4064",
+      "candidate_structural_projection_sha256": "07d87bc0344644da863a8d4526d41ad4c5e27b061823c3a63372ba2a74b9dea0",
+      "decision_bound": true,
+      "debt_edges_scoped": true,
+      "late_gate_fanin_scoped": true,
+      "projection_consistent": true,
+      "plan_delta_authorized": false,
+      "warning": "COMPARISON_HASHES_ONLY; NOT canonical plan_digest, NOT event authorization, NOT an authorization receipt. Recompute on live current state before any governed materialization."
+    }
   },
   "apply_preconditions": [
     "Governed Programación plan-delta owner operation/approval identified and bound.",
