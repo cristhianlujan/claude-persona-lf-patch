@@ -56,8 +56,10 @@ def run() -> dict:
             "profile_code": target["profile_code"],
             "profile_slug": slug,
             "s26_decision": baseline["decision"],
+            "assessment_status": assessment["assessment_status"],
             "maturity": assessment["maturity"],
             "evolution_mode": assessment["evolution_mode"],
+            "evidence_needed": assessment["evidence_needed"],
             "gap_count": len(assessment["profile_gaps"]),
             "capability_evidence_state": "UNPROVEN_UNTIL_DOMAIN_TASK_BENCHMARK",
         })
