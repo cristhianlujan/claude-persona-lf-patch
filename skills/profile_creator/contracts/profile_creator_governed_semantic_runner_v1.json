@@ -1,0 +1,54 @@
+{
+  "schema": "PROFILE_CREATOR_GOVERNED_SEMANTIC_RUNNER_CONTRACT_V1",
+  "purpose": "Provide fresh, auditable Profile Creator semantic producer executions for Profile Evolution full-behavior benchmarking without creating a parallel creator or bypassing governance.",
+  "producer": "PROFILE_CREATOR",
+  "execution_requirements": {
+    "fresh_run_per_case": true,
+    "exact_profile_snapshot_required": true,
+    "exact_input_sha_required": true,
+    "exact_producer_source_ref_required": true,
+    "raw_output_freeze_required": true,
+    "runtime_model_stamp_required": true,
+    "no_cross_case_context_reuse": true,
+    "no_profile_authority_write": true,
+    "no_runtime_activation": true,
+    "no_production_activation": true
+  },
+  "allowed_execution_surfaces": [
+    "GOVERNED_PROFILE_CREATOR_WORKER"
+  ],
+  "forbidden_execution_surfaces": [
+    "DIRECT_LLAMA_SERVER",
+    "SYNTHETIC_OUTPUT_GENERATOR",
+    "REUSED_PRIOR_RAW",
+    "UNBOUND_GENERIC_MODEL_CALL",
+    "PROFILE_RUNTIME_AS_IMPLICIT_PROFILE_CREATOR"
+  ],
+  "required_receipt_fields": [
+    "schema",
+    "status",
+    "execution_surface",
+    "producer",
+    "case_id",
+    "run_id",
+    "producer_source_ref",
+    "producer_source_sha",
+    "profile_snapshot_sha",
+    "input_sha256",
+    "raw_output_ref",
+    "raw_output_sha256",
+    "runtime_model_stamp",
+    "fresh_context",
+    "profile_source_write_executed",
+    "runtime_activation",
+    "production_activation"
+  ],
+  "ready_status": "READY",
+  "fail_closed_status": "BLOCKED",
+  "handoff": "RAW_OUTPUT -> PROFILE_CANDIDATE_MATERIALIZER -> FULL_BEHAVIOR_VALIDATION",
+  "notes": [
+    "This contract does not choose a model vendor.",
+    "A local llama-server may only be used if the governed Profile Creator worker itself resolves to that runtime; direct calls are forbidden.",
+    "The runner does not authorize profile source writes, runtime activation, production promotion, benchmark admission or cutover."
+  ]
+}
