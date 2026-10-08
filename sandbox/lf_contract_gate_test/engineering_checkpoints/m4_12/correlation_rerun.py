@@ -16,6 +16,15 @@ SELECT jsonb_build_object(
  'source','SUPABASE_LIVE_PG_PROC',
  'observed_at',clock_timestamp(),
  'm4_1_event',(SELECT payload FROM public.lf_eventos WHERE id=19381),
+ 'independence_measure',public.lf_independent_assurance_measure_v1(
+   'programacion',
+   'fn_input_governance_curator_materialize_v1',
+   'fn_input_governance_validator_validate_v1',
+   8,'{}'::jsonb),
+ 'family_registry',(SELECT especificacion FROM programacion.contratos
+   WHERE contrato_codigo='INPUT_FAMILY_POLICY_REGISTRY'
+     AND estado='defined'
+   ORDER BY version_id DESC,id DESC LIMIT 1),
  'functions',(SELECT coalesce(jsonb_agg(jsonb_build_object(
    'name', p.proname, 'definition',p.prosrc,'md5',md5(p.prosrc))),
    '[]'::jsonb)
@@ -83,10 +92,37 @@ def evaluate(data):
         coverage.append({"path":name, "reachable_functions":len(validator),
                          "shared_functions":len(shared),
                          "checked_conclusion_symbols":sorted(known_conclusions)})
-    # A historic inventory alone cannot prove completeness; report scope.
+    # Use existing transversal independence authority, not an invented
+    # second evaluator. Shared canonical source helpers are reported, not
+    # silently treated as semantic conclusions.
+    measure = data.get("independence_measure") or {}
+    registry = data.get("family_registry") or {}
+    families = registry.get("families") or {}
+    if not isinstance(families, dict) or not families:
+        raise ValueError("LIVE_FAMILY_REGISTRY_MISSING")
+    if int(registry.get("family_count", -1)) != len(families):
+        raise ValueError("LIVE_FAMILY_REGISTRY_COUNT_DRIFT")
+    missing_strategies = sorted(
+        code for code, spec in families.items()
+        if not (spec.get("validator_oracle_strategy") or {}).get("strategy")
+    )
+    if missing_strategies:
+        failures.append({"path":"REGISTRY", "missing_strategy_for":missing_strategies})
+    if measure.get("schema_version") != "LF_INDEPENDENT_ASSURANCE_MEASURE_V1":
+        raise ValueError("CANONICAL_INDEPENDENCE_MEASURE_MISSING")
+    if measure.get("state") != "INDEPENDENT":
+        failures.append({"path":"CANONICAL_INDEPENDENCE", "state":measure.get("state"),
+                         "dependency_state":(measure.get("dependency_dimension") or {}).get("state"),
+                         "data_state":(measure.get("data_dimension") or {}).get("state"),
+                         "author_state":(measure.get("author_dimension") or {}).get("state")})
     return {"test_code":"ENG_M4_12_CORRELATION_RERUN",
-            "semantic_authority_bound":True, "scope":"M4_1_NAMED_CONCLUSION_DEPENDENCIES",
+            "semantic_authority_bound":True,
+            "scope":"M4_1_CONCLUSION_PATHS_PLUS_LF_INDEPENDENT_ASSURANCE",
             "path_count":len(coverage), "paths":coverage, "violations":failures,
+            "family_registry_count":len(families),
+            "canonical_independence_state":measure.get("state"),
+            "independence_shared_dependency_count":
+                (measure.get("dependency_dimension") or {}).get("shared_dependency_count"),
             "test_passed":not failures}
 
 
