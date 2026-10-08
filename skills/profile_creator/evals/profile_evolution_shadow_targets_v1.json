@@ -33,14 +33,23 @@
     {
       "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
       "profile_slug": "gamification_system_architect"
-    },
+    }
+  ],
+  "repository_snapshot_sha": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+  "snapshot_policy": "TARGET_PROFILE_BYTES_FROM_FROZEN_MAIN_SHA; CANDIDATE_EVALUATOR_BYTES_FROM_PROFILE_EVOLUTION_BRANCH",
+  "retired_non_profile_targets": [
     {
       "profile_code": "PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531",
-      "profile_slug": "cx_trust_experience_architect_lf"
+      "prior_profile_slug": "cx_trust_experience_architect_lf",
+      "current_disposition": "ADAPTER_ONLY_NOT_PROFILE",
+      "current_ref": "adapters/marketplace_lf_cx_trust/ADAPTER.md"
     },
     {
       "profile_code": "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
-      "profile_slug": "ux_product_experience_architect_lf"
+      "prior_profile_slug": "ux_product_experience_architect_lf",
+      "current_disposition": "ADAPTER_ONLY_NOT_PROFILE",
+      "current_ref": "adapters/marketplace_lf_ux/ADAPTER.md"
     }
-  ]
+  ],
+  "target_count": 8
 }
