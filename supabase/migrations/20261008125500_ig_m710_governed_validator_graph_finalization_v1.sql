@@ -79,7 +79,7 @@ BEGIN
   v_ledger:='EXEC-IG-GRAPH-LEDGER-RUN-'||p_run_id::text||'-'||substr(v_digest,1,12);
   v_orch_manifest:=v_context||jsonb_build_object(
     'capability_code','EVIDENCE_LEDGER','plan_digest',v_digest,
-    'producer_execution_id',v_orch);
+    'producer_execution_id',v_orch,'orchestrator_execution_id',v_orch);
   v_operation:=public.fn_lf_operation_reserve_execution_v1(
     v_orch,'ORQUESTACION_PIPELINE_LF','IG_RUN',p_run_id::text,
     'ig:graph:orch:'||p_run_id::text,v_digest,v_orch,
