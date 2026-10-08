@@ -61,6 +61,12 @@
   "blind_protocol": {
     "arms_raw_frozen_before_oracle_open": true,
     "oracle_file": "skills/profile_creator/evals/profile_evolution_benchmark_oracle_v1.json",
-    "paired_interval_policy": "FIXED_SEED_PAIRED_BOOTSTRAP_95_V1"
+    "paired_interval_policy": "FIXED_SEED_PAIRED_BOOTSTRAP_95_V1",
+    "benchmark_generation": 2,
+    "invalidated_generation_1": {
+      "raw_sha256": "adcf9445ee14e1fe89d47c179cff70e43618e6de282f62f672cd819f73b987ac",
+      "reason": "SCORER_CONTRACT_BUDGET_PATH_MISMATCH_BEFORE_SCORE",
+      "score_materialized": false
+    }
   }
 }
