@@ -54,7 +54,12 @@ def evaluate(snapshot: Mapping[str, Any], *, expected_run_id: int,
     bindings = snapshot.get("rule_bindings")
     if not isinstance(bindings, list):
         return _out("BLOCKED", "SOURCE_BINDINGS_UNREADABLE", run_id, screen_id)
-    ignored = sum(1 for b in bindings if isinstance(b, Mapping) and b.get("status") != "VIGENTE")
+    if any(not isinstance(b, Mapping) or not isinstance(b.get("rule_code"), str)
+           or not b.get("rule_code") or b.get("status") not in ("VIGENTE", "CANDIDATO")
+           or not isinstance(b.get("category"), str)
+           for b in bindings):
+        return _out("BLOCKED", "RULE_BINDING_MALFORMED", run_id, screen_id)
+    ignored = sum(1 for b in bindings if b.get("status") != "VIGENTE")
     active = [b for b in bindings if isinstance(b, Mapping)
               and b.get("status") == "VIGENTE"
               and b.get("category") == "rate_limiting"
