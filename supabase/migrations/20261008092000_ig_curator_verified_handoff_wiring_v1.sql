@@ -273,8 +273,7 @@ exception when others then
   perform set_config('lf.input_request_freshness_count_v1','',true);
   raise;
 end;
-$function$
-
+$function$;
 
 do $guard$
 declare
