@@ -76,5 +76,10 @@
   "runtime_activation": false,
   "automatic_production_activation": false,
   "implementation_plan_ref": "skills/profile_creator/contracts/profile_updater_evolution_plan_v1.json",
-  "plan_completion_rule": "E10_ADMIT_CUTOVER_PLUS_GOVERNED_V02_AUTHORITY_READBACK"
+  "plan_completion_rule": "E10_ADMIT_CUTOVER_PLUS_GOVERNED_V02_AUTHORITY_READBACK",
+  "atomic_execution_plan_ref": "skills/profile_creator/contracts/profile_evolution_engineering_plan_v1.json",
+  "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
+  "checkpoint_validation_model": "FRESH_DETERMINISTIC_VALIDATOR_WITH_EXPLICIT_INPUT",
+  "validator_missing_behavior": "BLOCK_CREATE_QUALIFY_THEN_RETRY",
+  "programming_specific_runtime_tables_reused": false
 }
