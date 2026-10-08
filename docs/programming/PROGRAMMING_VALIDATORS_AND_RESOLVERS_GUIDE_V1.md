@@ -325,6 +325,36 @@ Known usage:
 
 `B2B_SHELL_ATOMIC_PILOT_V1` reused this validator across 16 checkpoints by changing only `validation_input`.
 
+#### `PROGRAMMING_SUPABASE_CATALOG_ASSERT_V1`
+
+**Status:** ACTIVE  
+**Mode:** HUMAN_DECISION  
+**Handler:** `SUPABASE_CATALOG_ASSERT_V1`
+
+Purpose:
+
+Deterministically validate current Supabase catalog/readback conditions with explicit assertions.
+
+Supported assertion families:
+
+- `TABLE_EXISTS`
+- `RLS_ENABLED`
+- `POLICY_EXISTS`
+- `FUNCTION_EXISTS`
+- `ROW_COUNT_EQUALS`
+- `COLUMN_EXISTS`
+
+The schema/object names and expected values belong in `validation_input`. Do not create one validator per table, function, policy, or migration.
+
+Qualification:
+
+- positive test: `lf_test_runs:fb6646bb-eef5-4e5f-8beb-5b5a580c7367`
+- negative test: `lf_test_runs:0a6699b3-7d12-4524-8e84-b9d62426f105`
+
+Known usage:
+
+B2B S07 live readback reused this validator to confirm the support-channel table, RLS, policy, runtime function and extensible catalog shape after migration application.
+
 ### Active resolvers
 
 None currently registered.
@@ -541,6 +571,7 @@ Relevant EKB:
 - `PROGRAMMING-SIMPLE-BINDING-INPUT-001`
 - `PROGRAMMING-SIMPLE-QUALIFICATION-PROOF-001`
 - `PROGRAMMING-SIMPLE-RESOLVER-NO-BYPASS-001`
+- `PROGRAMMING-SUPABASE-CATALOG-VALIDATOR-001`
 
 
 ## 15. Discovery in Supabase
@@ -568,8 +599,10 @@ Recommended discovery order:
 
 Current live catalog at registration time:
 
-- ACTIVE validators: 1
+- ACTIVE validators: 2
 - ACTIVE resolvers: 0
-- current reusable validator: `PROGRAMMING_GITHUB_FILE_TEXT_ASSERT_V1`
+- reusable validators:
+  - `PROGRAMMING_GITHUB_FILE_TEXT_ASSERT_V1`
+  - `PROGRAMMING_SUPABASE_CATALOG_ASSERT_V1`
 
 The counts in the capability manifest are a discovery snapshot. The live registries remain authoritative.
