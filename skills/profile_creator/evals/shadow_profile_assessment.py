@@ -56,6 +56,7 @@ def run() -> dict:
             "profile_code": target["profile_code"],
             "profile_slug": slug,
             "s26_decision": baseline["decision"],
+            "s26_blocking_codes": baseline.get("blocking_codes", []),
             "assessment_status": assessment["assessment_status"],
             "maturity": assessment["maturity"],
             "evolution_mode": assessment["evolution_mode"],
@@ -66,6 +67,7 @@ def run() -> dict:
     return {
         "schema": "PROFILE_EVOLUTION_SHADOW_RESULT_V1",
         "mode": cfg["mode"],
+        "repository_snapshot_sha": cfg.get("repository_snapshot_sha"),
         "target_count": len(rows),
         "rows": rows,
         "writes": 0,
