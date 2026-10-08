@@ -163,8 +163,8 @@ BEGIN
   FROM public.lf_operation_execution
   WHERE execution_id=p_ledger_execution_id;
   IF v_actor.execution_id IS NULL OR v_actor.status<>'IN_PROGRESS'
-     OR v_actor.manifest->>'capability_code'<>'EVIDENCE_LEDGER'
-     OR v_actor.manifest->>'schema_version'<>'IG_SPEC_TRAVERSAL_PER_RUN_ISSUER_V1'
+     OR v_actor.manifest->>'capability_code' IS DISTINCT FROM 'EVIDENCE_LEDGER'
+     OR v_actor.manifest->>'schema_version' IS DISTINCT FROM 'IG_SPEC_TRAVERSAL_PER_RUN_ISSUER_V1'
      OR v_actor.manifest->>'run_id' IS DISTINCT FROM p_run_id::text
      OR v_actor.manifest->>'pantalla_id' IS DISTINCT FROM v_preview_a->>'pantalla_id'
      OR v_actor.manifest->>'version_id' IS DISTINCT FROM v_preview_a->>'version_id'
@@ -186,7 +186,7 @@ BEGIN
   WHERE execution_id=p_producer_execution_id;
   IF v_producer.execution_id IS NULL
      OR v_producer.status NOT IN ('IN_PROGRESS','COMPLETED')
-     OR v_producer.manifest->>'capability_code'<>'EVIDENCE_LEDGER'
+     OR v_producer.manifest->>'capability_code' IS DISTINCT FROM 'EVIDENCE_LEDGER'
      OR v_producer.manifest->>'run_id' IS DISTINCT FROM p_run_id::text
      OR v_producer.manifest->>'source_head_sha' IS DISTINCT FROM p_source_head_sha
      OR v_producer.manifest->>'source_snapshot_sha256'
