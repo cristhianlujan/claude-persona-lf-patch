@@ -21,6 +21,10 @@ begin
     or nullif(p_suite_code,'') is null then
    raise exception 'ENGINEERING_TEST_REPAIR_TYPED_CASES_REQUIRED';
  end if;
+ if (select count(distinct x.v->>'test_code') from jsonb_array_elements(p_cases) x(v))
+       <> jsonb_array_length(p_cases) then
+   raise exception 'ENGINEERING_TEST_REPAIR_DUPLICATE_CASE_CODES';
+ end if;
  if exists (
    select 1 from jsonb_array_elements(p_cases) c(v)
    where nullif(c.v->>'test_code','') is null
@@ -106,6 +110,9 @@ end;
 $fn$;
 comment on function programacion.fn_engineering_test_deliverable_contract_repair_v1(text,text,text,text,jsonb)
 is 'Generic explicit test-case checkpoint repair: reuse bounded test compiler, route test artifacts only and retain real-run evidence/merge guards.';
+
+revoke execute on function programacion.fn_engineering_test_deliverable_contract_repair_v1(text,text,text,text,jsonb)
+ from public,anon,authenticated,service_role;
 
 do $m79$
 declare
