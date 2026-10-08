@@ -31,7 +31,7 @@ def check(proof):
             return mode + "_INVALIDATION_LINEAGE_MISMATCH"
         for key, expected in (("successor_status", "COMPLETED"),
                               ("recuration_mode", mode), ("validator_pass_count", 47),
-                              ("graph_receipt_count", 2), ("manifest_source_changed", True),
+                              ("graph_receipt_count", 2), ("manifest_reflected_source_change", True),
                               ("invalidation_after_completion", True),
                               ("producer_readback", "PASS"), ("rollback_verified", True)):
             if item.get(key) != expected:
