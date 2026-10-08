@@ -1,0 +1,19 @@
+{
+  "schema": "PROFILE_CREATOR_SEMANTIC_RUNNER_AVAILABILITY_V1",
+  "status": "BLOCKED",
+  "producer": "PROFILE_CREATOR",
+  "required_execution_surface": "GOVERNED_PROFILE_CREATOR_WORKER",
+  "observed_surfaces": {
+    "profile_creator_governance_edge": "INITIALIZE_AND_RECORD_ONLY_NO_SEMANTIC_GENERATION",
+    "profile_runtime_api": "EXECUTES_REGISTERED_PROFILES_NOT_PROFILE_CREATOR",
+    "local_llama_server": "AVAILABLE_BUT_DIRECT_USE_FORBIDDEN_BY_CONTRACT"
+  },
+  "blocking_code": "GOVERNED_PROFILE_CREATOR_WORKER_CALLABLE_UNAVAILABLE",
+  "required_action": "Expose or reuse one governed callable execution surface for the existing Profile Creator worker that emits fresh hash-bound raw output receipts without profile-source writes or activation.",
+  "bypasses_rejected": [
+    "DIRECT_LLAMA_SERVER",
+    "SYNTHETIC_OUTPUT_GENERATOR",
+    "PROFILE_RUNTIME_AS_IMPLICIT_PROFILE_CREATOR"
+  ],
+  "runtime_mutation_performed": false
+}
