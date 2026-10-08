@@ -9,8 +9,8 @@ declare
   v_version bigint:=public.fn_lf_version_compatibility_current_version_id_v1('PROGRAMACION_CONTRACT','INPUT_READINESS_CONTRACT','INPUT_GOVERNANCE_AGENT');
   v_status text; v_pantalla_id integer; v_family_count integer; v_curator_identity text; v_parent bigint;
   v_existing_validator text; v_contract_revision text; v_validator_component bigint; v_source_sha text; v_pass integer; v_fail integer; v_blocked integer; v_pending integer;
-  v_pre jsonb; v_assertions jsonb; v_expected jsonb; v_exec_id text:=gen_random_uuid()::text; v_assertion_set_sha256 text; v_assertion_set jsonb; v_logical_evidence jsonb; v_physical_evidence jsonb;
-  v_payload jsonb; v_result jsonb; v_prop jsonb; a record; v_pending_before integer; v_classifier_block boolean; v_outcome text; v_findings jsonb; v_assertion jsonb; v_eval jsonb;
+  v_pre jsonb; v_assertions jsonb; v_exec_id text:=gen_random_uuid()::text; v_assertion_set_sha256 text; v_assertion_set jsonb; v_logical_evidence jsonb; v_physical_evidence jsonb;
+  v_payload jsonb; v_result jsonb; v_prop jsonb; a record; v_pending_before integer; v_outcome text; v_findings jsonb; v_assertion jsonb; v_eval jsonb;
   v_started timestamptz:=clock_timestamp(); v_completed timestamptz; v_phase_started timestamptz; v_prev_completed timestamptz;
   v_classification_ms bigint:=0; v_assertions_ms bigint:=0; v_ekb_ms bigint:=0; v_gap_ms bigint:=0; v_db_write_ms bigint:=0;
   v_wait_ms bigint:=0; v_chunk_no integer; v_families_processed integer:=0;
