@@ -81,5 +81,15 @@
   "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
   "checkpoint_validation_model": "FRESH_DETERMINISTIC_VALIDATOR_WITH_EXPLICIT_INPUT",
   "validator_missing_behavior": "BLOCK_CREATE_QUALIFY_THEN_RETRY",
-  "programming_specific_runtime_tables_reused": false
+  "programming_specific_runtime_tables_reused": false,
+  "candidate_materialization": {
+    "contract_ref": "skills/profile_creator/contracts/profile_evolution_candidate_materialization_v1.json",
+    "semantic_producer": "PROFILE_CREATOR",
+    "semantic_producer_parallel_engine": false,
+    "deterministic_materializer": "PROFILE_CANDIDATE_MATERIALIZER",
+    "materializer_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_candidate_materializer/profile_candidate_materializer_v1.py",
+    "output_authority_state": "NON_AUTHORITY_CANDIDATE",
+    "source_write_authorized": false,
+    "admission_required_before_profile_source_write": true
+  }
 }
