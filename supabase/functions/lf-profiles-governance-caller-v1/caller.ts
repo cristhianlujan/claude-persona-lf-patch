@@ -512,7 +512,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         }
 
         const requestId = action === RECURATION_POLL_ACTION ? Number(body.request_id) : undefined;
-        if (action === RECURATION_POLL_ACTION && (!Number.isSafeInteger(requestId) || requestId! < 1)) {
+        if (action === RECURATION_POLL_ACTION && (requestId === undefined || !Number.isSafeInteger(requestId) || requestId < 1)) {
           return json({ outcome: "BLOCKED", code: "IG_QUEUE_POLL_REQUEST_ID_INVALID" }, 400);
         }
         if (action === RECURATION_ACTION && Object.prototype.hasOwnProperty.call(body, "request_id")) {
