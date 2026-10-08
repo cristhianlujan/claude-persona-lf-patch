@@ -224,3 +224,84 @@ producer-specific consume adapter
 ```
 
 Until that verifier/ingress is materialized and proven for a given authority, adapters may open and inspect routing requests but producers must not automatically advance from a human decision.
+
+
+## Policy resolution V1.0.2
+
+Authority-receipt verification is now implemented and live. The remaining cutover concern is not receipt authenticity; it is **who is allowed to decide each class of decision**.
+
+Canonical routing now follows:
+
+```text
+producer source state
+      ↓
+decision-class classification
+      ↓
+route policy registry
+      ↓
+authority domain + authority ref + reviewer role + allowed actions
+      ↓
+verified HUMAN_DECISION_ROUTING request/receipt
+```
+
+The canonical V2 producer adapters do not accept caller-supplied `authority_ref`, `reviewer_role` or `allowed_actions`:
+
+- `private.fn_lf_human_decision_open_ig_v2`
+- `private.fn_lf_human_decision_open_story_p0_v2`
+- `private.fn_lf_human_decision_open_programming_v2`
+
+V1 adapters remain an internal compatibility layer and are called only after V2 policy resolution.
+
+### Decision classes
+
+The initial taxonomy is:
+
+- `SOFTWARE_GOVERNANCE`
+- `PRODUCT_LF`
+- `UX_UI`
+- `PRIVACY`
+- `SOFTWARE_SECURITY`
+- `LEGAL`
+- `DATA_OPERATIONS`
+
+Unknown producer/source combinations fail closed as `DECISION_CLASS_UNRESOLVED`; the router never guesses an authority.
+
+### Current deterministic classifications
+
+Programming checkpoint human decisions resolve to `SOFTWARE_GOVERNANCE`.
+
+Story P0 resolves from its already-governed reviewer role:
+
+- `P0_VISUAL_ADJUDICATOR` → `UX_UI`
+- `P0_PRIVACY_REVIEWER` → `PRIVACY`
+- `P0_SECURITY_REVIEWER` → `SOFTWARE_SECURITY`
+
+Current Input Governance human-decision families resolve as:
+
+- `FEATURE_FLAGS`, `I18N_FORMATS`, `STATES`, `TRANSITIONS` → `PRODUCT_LF`
+- `PRIVACY_PII` → `PRIVACY`
+- `RUNTIME_CONFIG`, `TESTING_OBLIGATIONS` → `SOFTWARE_GOVERNANCE`
+
+New IG families must receive an explicit classification rule before routing.
+
+### Authority activation state
+
+All seeded route policies remain `PENDING_AUTHORITY`.
+
+For software governance the known contract is `LF_GOVERNANCE_SUPER_ADMIN_V1` with reviewer role `SUPER_ADMIN_GOVERNANCE`, but that contract remains `CANDIDATE_READ_ONLY`; it is therefore recorded as a target authority, not activated as decision-write authority.
+
+Product, UX, privacy and software-security routes deliberately have no invented authority reference. Their governed authority contracts must be materialized before their route policy can become `ACTIVE`.
+
+`B2B_ADMIN_LF` remains strictly a product-access profile and is never eligible as software-governance authority.
+
+### Remaining cutover gate
+
+Before `HUMAN_DECISION_ROUTING` can become current:
+
+1. materialize the real authority contract for every decision class being cut over;
+2. activate its lower-level authority/provenance policy;
+3. activate the corresponding route policy;
+4. prove one positive and the required negative routing/receipt cases;
+5. only then promote the capability current pointer and enable producer consumption.
+
+Until then, V2 resolution is live and fail-closed, while consumer cutover remains disabled.
