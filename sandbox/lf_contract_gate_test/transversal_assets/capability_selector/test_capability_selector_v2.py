@@ -43,7 +43,18 @@ def run():
     assert any(m["method_id"] == "HOSTILE_CHALLENGE" for m in r["method_requirements"])
     assert any(not m["within_budget"] for m in r["method_requirements"])
     assert r["estimated_cost"]["method_cost_points"] <= 8
-    print("PASS_CAPABILITY_SELECTOR_V2 backward_compatible=1 admission_separated=1")
+
+    # Multiple profile gaps are labels, not contradictory values of one scalar signal.
+    context["profile_gaps"] = [
+        {"gap": "strategy_routing", "status": "FAIL"},
+        {"gap": "expert_holdout", "status": "UNKNOWN"},
+        {"gap": "architecture_fit", "status": "UNKNOWN"},
+    ]
+    r2 = compose_capabilities(context, catalog, {"fallback_capabilities": ["PACK_VALIDATION_HARNESS"]}, registry)
+    assert r2["fallback_state"] == "MULTI"
+    assert {"TARGETED_EVIDENCE_ACQUISITION", "CAUSAL_EFFECT_LINEAGE", "INDEPENDENT_ASSURANCE"} <= set(r2["selected_capabilities"])
+    assert r2["selected_capabilities"] != ["PACK_VALIDATION_HARNESS"]
+    print("PASS_CAPABILITY_SELECTOR_V2 backward_compatible=1 admission_separated=1 multi_gap=1")
 
 
 if __name__ == "__main__":
