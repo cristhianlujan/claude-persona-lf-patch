@@ -41,7 +41,7 @@ def main():
         sections = args.suite_source.split("\n  - id: ")
         selected = None
         for fragment in sections[1:]:
-            if re.search(r"(?m)^    expected_outcome: POSITIVE\\s*$", fragment):
+            if re.search(r"(?m)^    expected_outcome: POSITIVE\s*$", fragment):
                 selected = fragment.split("\n", 1)[0].strip()
                 break
         if not selected:
