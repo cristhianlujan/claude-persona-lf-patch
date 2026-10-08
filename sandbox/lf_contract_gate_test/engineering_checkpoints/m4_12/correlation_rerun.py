@@ -188,6 +188,14 @@ def evaluate(data):
         failures.append({"path":"SELECTED_SCREEN_ORACLE_COVERAGE",
                          "run_id":run_id, "pantalla_id":screen_id,
                          "code":"NOT_COVERED", "families":uncovered})
+    # A valid shadow candidate is not yet a certified independent oracle.
+    # The existing family registry explicitly declares independence_claim=false
+    # for current Validator. Until a verified per-family receipt is added to
+    # the contract, no candidate-only path may satisfy checkpoint acceptance.
+    if not uncovered:
+        failures.append({"path":"SEMANTIC_ORACLE_CERTIFICATION",
+                         "code":"INDEPENDENCE_UNPROVEN",
+                         "reason":"SHADOW_CANDIDATES_NOT_A_CERTIFIED_INDEPENDENT_ORACLE"})
     # Independent conclusions may share canonical data-source helpers.
     # All-overlap assurance remains diagnostic, never the semantic PASS gate.
     if measure.get("state") not in ("INDEPENDENT", "UNPROVEN", "NOT_INDEPENDENT"):
