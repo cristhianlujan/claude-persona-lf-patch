@@ -124,9 +124,12 @@ def evaluate(data):
         raise ValueError("LIVE_FAMILY_REGISTRY_MISSING")
     if int(registry.get("family_count", -1)) != len(families):
         raise ValueError("LIVE_FAMILY_REGISTRY_COUNT_DRIFT")
+    comparisons = data.get("comparison_families") or []
+    if not isinstance(comparisons,list) or len(set(comparisons)) != len(comparisons):
+        raise ValueError("COMPARISON_SCOPE_INVALID")
     missing_strategies = sorted(
-        code for code, spec in families.items()
-        if not (spec.get("validator_oracle_strategy") or {}).get("strategy")
+        code for code in comparisons
+        if not (families.get(code,{}).get("validator_oracle_strategy") or {}).get("strategy")
     )
     if missing_strategies:
         failures.append({"path":"REGISTRY", "missing_strategy_for":missing_strategies})
@@ -137,17 +140,18 @@ def evaluate(data):
     selected = data.get("selected_run") or {}
     run_id = selected.get("run_id")
     screen_id = selected.get("pantalla_id")
-    requested = selected.get("families") or []
-    if not run_id or not screen_id or not requested:
+    available = selected.get("families") or []
+    requested = comparisons
+    if not run_id or not screen_id or not available:
         raise ValueError("SELECTED_RUN_OR_SCREEN_UNRESOLVED")
-    if len(set(requested)) != len(requested):
+    if len(set(available)) != len(available):
         raise ValueError("SELECTED_RUN_DUPLICATE_FAMILY")
     oracle_rows = data.get("selected_oracles") or []
     if len(oracle_rows) != len(requested):
         raise ValueError("SELECTED_RUN_ORACLE_CARDINALITY_DRIFT")
     if {r.get("family_code") for r in oracle_rows} != set(requested):
         raise ValueError("SELECTED_RUN_ORACLE_FAMILY_MISMATCH")
-    if any(code not in families for code in requested):
+    if any(code not in available or code not in families for code in requested):
         raise ValueError("SELECTED_RUN_FAMILY_NOT_IN_REGISTRY")
     specs = data.get("selected_family_specs") or []
     if len(specs) != len(requested):
@@ -193,7 +197,7 @@ def evaluate(data):
     # The existing family registry explicitly declares independence_claim=false
     # for current Validator. Until a verified per-family receipt is added to
     # the contract, no candidate-only path may satisfy checkpoint acceptance.
-    if not uncovered:
+    if requested and not uncovered:
         failures.append({"path":"SEMANTIC_ORACLE_CERTIFICATION",
                          "code":"INDEPENDENCE_UNPROVEN",
                          "reason":"SHADOW_CANDIDATES_NOT_A_CERTIFIED_INDEPENDENT_ORACLE"})
@@ -214,11 +218,13 @@ def evaluate(data):
             "family_registry_count":len(families),
             "selected_run_id":run_id, "selected_pantalla_id":screen_id,
             "selected_screen_code":selected.get("screen_code"),
-            "selected_family_count":len(requested),
+            "selected_family_count":len(available),
+            "comparison_families":requested,
+            "comparison_count":len(requested),
             "selected_structural_observed_count":len(requested),
             "selected_structural_pass_count":len(requested)-len(structural_failed),
             "selected_oracle_candidate_covered_count":len(requested)-len(uncovered),
-            "selected_oracle_status":"NOT_COVERED" if uncovered else "CANDIDATE_ONLY",
+            "selected_oracle_status":"NOT_REQUESTED" if not requested else "NOT_COVERED" if uncovered else "CANDIDATE_ONLY",
             "semantic_independence_credited":False,
             "canonical_independence_state":measure.get("state"),
             "independence_shared_dependency_count":
