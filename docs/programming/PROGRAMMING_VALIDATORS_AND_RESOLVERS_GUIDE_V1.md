@@ -636,3 +636,22 @@ Current live catalog at registration time:
   - `PROGRAMMING_GITHUB_FILE_SHA256_ASSERT_V1`
 
 The counts in the capability manifest are a discovery snapshot. The live registries remain authoritative.
+
+
+## Failure route separation
+
+Validation nature and post-FAIL handling are separate concerns.
+
+The registry now uses:
+
+- `rule_mode=DETERMINISTIC` for validators whose PASS/FAIL is mechanically decidable.
+- `failure_route=BLOCK` when a deterministic failure has no proven automatic repair and must stop without creating a human decision.
+- `failure_route=AUTO_RESOLVE` only when an exact proven resolver exists; repair must be followed by the canonical validator.
+- `failure_route=HUMAN_DECISION` only for an explicitly admitted human judgment.
+- `failure_route=CHECK_ONLY` for informational controls; these cannot back a required checkpoint.
+
+A missing resolver never converts a deterministic FAIL into `HUMAN_DECISION`.
+
+Current deterministic validators `PROGRAMMING_GITHUB_FILE_TEXT_ASSERT_V1`, `PROGRAMMING_GITHUB_FILE_SHA256_ASSERT_V1` and `PROGRAMMING_SUPABASE_CATALOG_ASSERT_V1` use `DETERMINISTIC + BLOCK`.
+
+For `BLOCK`, the unit bootstrap returns `VALIDATION_FAILED_BLOCKED` with `human_decision_required=false`. The human-decision adapter independently verifies `failure_route=HUMAN_DECISION`, so a caller cannot bypass the failure-route policy.
