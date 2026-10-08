@@ -48,18 +48,19 @@
           "title": "Current updater remains v0.1 until cutover",
           "required": true,
           "status": "PENDING_FRESH_VALIDATION",
-          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validator_code": "SUPABASE_CATALOG_ASSERT_V1",
           "validation_input": {
-            "repository": "cristhianlujan/claude-persona-lf-patch",
-            "ref": "agent/profile-evolution-orchestrator-20261007",
-            "path": "skills/profile_creator/contracts/profile_evolution_orchestrator_v1.json",
-            "must_contain": [
-              "PROFILE_EVOLUTION_ORCHESTRATOR",
-              "automatic_runtime_activation"
+            "assertions": [
+              {
+                "type": "ROW_COUNT_EQUALS",
+                "table": "public.lf_operation_registry",
+                "where": "operation_code='ACTUALIZACION_PERFIL_LF' AND version='v0.1' AND status='PRODUCCION_CONTROLADA' AND operation_domain='PROFILE_MAINTENANCE' AND operation_type='UPDATE_PROTOCOL' AND lifecycle_state_code='OP_OPERATIONAL'",
+                "expected": 1
+              }
             ]
           },
-          "pass_when": "candidate contract is present and non-activating",
-          "failure_code": "CURRENTNESS_CONTRACT_MISSING",
+          "pass_when": "exactly one live ACTUALIZACION_PERFIL_LF v0.1 operational authority row exists; no v0.2 cutover implied",
+          "failure_code": "LIVE_UPDATER_AUTHORITY_NOT_V01",
           "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
         },
         {
