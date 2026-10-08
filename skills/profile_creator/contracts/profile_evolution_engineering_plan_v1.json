@@ -497,11 +497,13 @@
             "must_contain": [
               "PROFILE_EVOLUTION_STATE",
               "evolution_mode",
-              "maturity"
+              "maturity",
+              "UNDETERMINED",
+              "UNDETERMINED_IS_EVIDENCE_INSUFFICIENCY_NOT_LOW_MATURITY"
             ]
           },
-          "pass_when": "state contract is present and typed",
-          "failure_code": "EVOLUTION_STATE_CONTRACT_INVALID",
+          "pass_when": "state contract is present, typed, includes UNDETERMINED, and forbids treating evidence insufficiency as low maturity",
+          "failure_code": "EVOLUTION_STATE_MATURITY_VOCABULARY_DRIFT",
           "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
         },
         {
