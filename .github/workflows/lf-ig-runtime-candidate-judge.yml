@@ -74,12 +74,17 @@ jobs:
           echo "IG_N9_APPLICABLE=true" >> "$GITHUB_ENV"
           echo "IG_N9_HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
 
+      - name: Resolve governed independent IG database target
+        if: env.IG_N9_APPLICABLE == 'true'
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py self-test
+          python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py emit-env --consumer ig-runtime-candidate-judge
+
       - name: Execute rollback-only independent IG flow judge
         if: env.IG_N9_APPLICABLE == 'true'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
-          SUPABASE_PROJECT_ID: ${{ vars.LF_SUPABASE_PROJECT_ID }}
-          SUPABASE_POOLER_HOST: ${{ vars.LF_SUPABASE_POOLER_HOST }}
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_request_v1.py run \

@@ -1,0 +1,15 @@
+{
+  "schema_version": "LF_CI_DB_TARGET_V1",
+  "scope": "TRUSTED_GITHUB_BASE_CI_ONLY",
+  "purpose": "INDEPENDENT_ADMISSION_AND_ROLLBACK_ONLY_IG_JUDGE",
+  "target": {
+    "project_id": "mhwmirqcgxxukpctffuv",
+    "pooler_host": "aws-1-us-east-1.pooler.supabase.com"
+  },
+  "allowed_consumers": [
+    "lf-independent-change-admission",
+    "ig-runtime-candidate-judge"
+  ],
+  "credential_source": "GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_PASSWORD",
+  "pase_applicability": "NOT_APPLICABLE"
+}
