@@ -526,6 +526,19 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             pantalla_id: pantallaId, result,
           }, 202);
         }
+        // Completion of a queue is not authorization: BLOCKED/HUMAN still fail closed.
+        if (result.status !== "READY") {
+          return json({
+            outcome: "BLOCKED",
+            code: "IG_DIRECT_FINAL_NOT_READY",
+            scope: "IG_CURATOR_VALIDATOR_REFACTOR_V2_N2",
+            caller: auditedCaller,
+            pantalla_id: pantallaId,
+            consumer: STORY_CREATOR_CONSUMER,
+            terminal_status: result.status,
+            result,
+          }, 409);
+        }
         return json({
           outcome: "TERMINAL",
           scope: "IG_CURATOR_VALIDATOR_REFACTOR_V2_N2",
