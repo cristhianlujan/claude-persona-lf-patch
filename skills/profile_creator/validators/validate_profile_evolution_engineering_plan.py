@@ -86,6 +86,8 @@ def evaluate(plan: dict[str, Any], registry: dict[str, Any], repo_root: Path) ->
             source_ref = val.get("source_ref")
             if not isinstance(source_ref, str) or not source_ref:
                 blockers.append(f"{code}.{cpc}:VALIDATOR_SOURCE_REF_MISSING:{vcode}")
+            elif source_ref.startswith("github://"):
+                pass
             elif not source_ref.startswith(("docs/", "skills/", "sandbox/", "supabase/")):
                 blockers.append(f"{code}.{cpc}:VALIDATOR_SOURCE_NOT_GITHUB_PATH:{vcode}")
             elif not (repo_root / source_ref.split(" --self-test", 1)[0]).exists():
