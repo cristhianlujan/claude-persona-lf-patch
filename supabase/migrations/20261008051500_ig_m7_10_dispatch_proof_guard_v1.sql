@@ -85,10 +85,8 @@ BEGIN
     RAISE EXCEPTION 'IG_GRAPH_RECEIPT_PRODUCER_RUN_BINDING_MISSING';
   END IF;
 
-  -- Require the actual canonical orchestrator dispatch receipt for this exact run.
-  -- A ledger operation row alone is not proof that the orchestrator dispatched it.
-  SELECT count(*),min(d.receipt_sha256)
-    INTO v_dispatch_count,v_dispatch_sha256
+  -- Require a current governed dispatch, not just an actor operation row.
+  SELECT count(*),min(d.receipt_sha256) INTO v_dispatch_count,v_dispatch_sha256
   FROM private.lf_orchestrator_dispatch_receipts_v1 d
   JOIN public.lf_operation_execution orch
     ON orch.execution_id=d.orchestrator_execution_id AND orch.status='IN_PROGRESS'
@@ -109,104 +107,7 @@ BEGIN
     AND d.dispatch_scope->>'producer_execution_id'=p_producer_execution_id
     AND d.dispatch_scope->>'source_head_sha'=p_source_head_sha
     AND d.dispatch_scope->>'consumed_graph_sha256'=p_consumed_graph_sha256;
-  IF v_dispatch_count<>1 OR coalesce(v_dispatch_sha256,'') !~ '^[0-9a-f]{64}
-  FROM private.lf_evidence_resolver_registry_v1 rr
-  WHERE rr.provider='SUPABASE'
-    AND rr.verification_method='SUPABASE_SQL_READBACK_PLUS_DB_DIGEST'
-    AND rr.trust_level='TRUSTED_PROVIDER_BOUND' AND rr.active;
-  IF v_count<>1 OR v_resolver_id IS NULL THEN
-    RAISE EXCEPTION 'IG_GRAPH_RECEIPT_TRUSTED_RESOLVER_INVALID';
-  END IF;
-
-  -- Recompute from actual canonical authority, not caller-provided graph JSON.
-  -- A session-level cached request graph would make both calls replay the same input.
-  IF nullif(current_setting('lf.input_request_context_v1',true),'') IS NOT NULL THEN
-    RAISE EXCEPTION 'IG_GRAPH_RECEIPT_CACHED_REQUEST_CONTEXT_FORBIDDEN';
-  END IF;
-  v_graph_a:=programacion.fn_input_screen_canonical_graph(v_run.pantalla_id,v_run.version_id);
-  v_graph_b:=programacion.fn_input_screen_canonical_graph(v_run.pantalla_id,v_run.version_id);
-  v_sha_a:=programacion.fn_v09_sha256_jsonb(v_graph_a);
-  v_sha_b:=programacion.fn_v09_sha256_jsonb(v_graph_b);
-  IF v_graph_a IS NULL OR v_graph_b IS NULL
-     OR v_graph_a IS DISTINCT FROM v_graph_b
-     OR v_sha_a IS DISTINCT FROM v_sha_b
-     OR v_sha_a IS DISTINCT FROM p_consumed_graph_sha256 THEN
-    RAISE EXCEPTION 'IG_GRAPH_RECEIPT_CANONICAL_CONSUMER_SHA_MISMATCH';
-  END IF;
-
-  v_verification:=jsonb_build_object(
-    'provider_readback_verified',true,'digest_recomputed',true,
-    'stable_pair',true,'run_id',v_run.id,'pantalla_id',v_run.pantalla_id,
-    'version_id',v_run.version_id,
-    'source_snapshot_sha256',v_run.source_snapshot_sha256,
-    'graph_sha256',v_sha_a,
-    'producer_execution_id',p_producer_execution_id,
-    'ledger_execution_id',p_ledger_execution_id,
-    'dispatch_receipt_sha256',v_dispatch_sha256,
-    'orchestrator_execution_id',v_actor.manifest->>'orchestrator_execution_id');
-  v_payload:=jsonb_build_object(
-    'schema_version','IG_SCREEN_GRAPH_RECEIPT_PER_RUN_V1',
-    'run_id',v_run.id,'pantalla_id',v_run.pantalla_id,
-    'version_id',v_run.version_id,'graph_sha256',v_sha_a,
-    'source_snapshot_sha256',v_run.source_snapshot_sha256,
-    'producer_execution_id',p_producer_execution_id,
-    'dispatch_receipt_sha256',v_dispatch_sha256,
-    'stable_pair',true);
-  FOR v_ord IN 1..2 LOOP
-    v_source_ref:='supabase://programacion.input_readiness_runs/'
-                  ||p_run_id::text||'#canonical_graph/recalc-'||v_ord::text;
-    v_result:=public.fn_lf_evidence_ledger_anchor_v1(
-      p_producer_execution_id,'EVIDENCE_LEDGER','IG_GRAPH_SHA_RECEIPT',
-      'GRAPH_RECEIPT','IG_SCREEN_GRAPH',v_source_ref,v_sha_a,
-      p_source_head_sha,
-      'supabase://programacion.fn_input_screen_canonical_graph(integer,bigint)',
-      v_resolver_id,'SUPABASE',
-      'supabase://programacion.fn_input_screen_canonical_graph(integer,bigint)',
-      'SUPABASE_SQL_READBACK_PLUS_DB_DIGEST','VERIFIED',
-      v_verification||jsonb_build_object('recalculation_ordinal',v_ord),
-      v_payload||jsonb_build_object('recalculation_ordinal',v_ord),
-      p_ledger_execution_id);
-    IF coalesce(v_result->>'receipt_id','')='' THEN
-      RAISE EXCEPTION 'IG_GRAPH_RECEIPT_ANCHOR_MISSING:%',v_ord;
-    END IF;
-    IF v_ord=1 THEN v_a:=v_result; ELSE v_b:=v_result; END IF;
-  END LOOP;
-
-  SELECT count(*) INTO v_count
-  FROM private.lf_evidence_ledger_v1 l
-  WHERE l.receipt_id IN ((v_a->>'receipt_id')::uuid,(v_b->>'receipt_id')::uuid)
-    AND l.receipt_kind='GRAPH_RECEIPT'
-    AND l.subject_type='IG_SCREEN_GRAPH'
-    AND l.subject_sha256=v_sha_a
-    AND l.source_head_sha=p_source_head_sha
-    AND l.created_by_execution_id=p_ledger_execution_id
-    AND l.verification_state='VERIFIED'
-    AND l.receipt_payload->>'run_id'=p_run_id::text
-    AND l.receipt_payload->>'producer_execution_id'=p_producer_execution_id
-    AND l.receipt_payload->>'orchestrator_execution_id'
-        =v_actor.manifest->>'orchestrator_execution_id';
-  IF v_count<>2 OR (v_a->>'receipt_id')=(v_b->>'receipt_id') THEN
-    RAISE EXCEPTION 'IG_GRAPH_RECEIPT_CONSUMER_READBACK_MISMATCH';
-  END IF;
-
-  RETURN jsonb_build_object(
-    'status','PASS','schema_version','IG_GRAPH_RECEIPT_PER_RUN_V1',
-    'run_id',p_run_id,'graph_sha256',v_sha_a,
-    'source_head_sha',p_source_head_sha,
-    'producer_execution_id',p_producer_execution_id,
-    'ledger_execution_id',p_ledger_execution_id,
-    'dispatch_receipt_sha256',v_dispatch_sha256,
-    'receipt_ids',jsonb_build_array(v_a->>'receipt_id',v_b->>'receipt_id'),
-    'consumer_readback_count',v_count);
-END;
-$issuer$;
-
-REVOKE ALL ON FUNCTION programacion.fn_ig_graph_receipt_emit_per_run_v1(bigint,text,text,text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION programacion.fn_ig_graph_receipt_emit_per_run_v1(bigint,text,text,text,text) TO service_role;
-
-COMMENT ON FUNCTION programacion.fn_ig_graph_receipt_emit_per_run_v1(bigint,text,text,text,text)
-IS 'Generic per-new-COMPLETED-run GRAPH_RECEIPT issuer for IG M7.10; reuse governed EVIDENCE_LEDGER actor scoped to exact run, producer, head, source snapshot, and consumed graph SHA; two independently recomputed canonical digests and ledger readback. Called by the existing run orchestrator, never by old one-off M6.2 actor. No runtime activation implied.';
- THEN
+  IF v_dispatch_count<>1 OR coalesce(v_dispatch_sha256,'') !~ '^[0-9a-f]{64}$' THEN
     RAISE EXCEPTION 'IG_GRAPH_RECEIPT_GOVERNED_DISPATCH_MISSING';
   END IF;
 
@@ -243,6 +144,7 @@ IS 'Generic per-new-COMPLETED-run GRAPH_RECEIPT issuer for IG M7.10; reuse gover
     'graph_sha256',v_sha_a,
     'producer_execution_id',p_producer_execution_id,
     'ledger_execution_id',p_ledger_execution_id,
+    'dispatch_receipt_sha256',v_dispatch_sha256,
     'orchestrator_execution_id',v_actor.manifest->>'orchestrator_execution_id');
   v_payload:=jsonb_build_object(
     'schema_version','IG_SCREEN_GRAPH_RECEIPT_PER_RUN_V1',
@@ -250,6 +152,7 @@ IS 'Generic per-new-COMPLETED-run GRAPH_RECEIPT issuer for IG M7.10; reuse gover
     'version_id',v_run.version_id,'graph_sha256',v_sha_a,
     'source_snapshot_sha256',v_run.source_snapshot_sha256,
     'producer_execution_id',p_producer_execution_id,
+    'dispatch_receipt_sha256',v_dispatch_sha256,
     'stable_pair',true);
   FOR v_ord IN 1..2 LOOP
     v_source_ref:='supabase://programacion.input_readiness_runs/'
@@ -294,6 +197,7 @@ IS 'Generic per-new-COMPLETED-run GRAPH_RECEIPT issuer for IG M7.10; reuse gover
     'source_head_sha',p_source_head_sha,
     'producer_execution_id',p_producer_execution_id,
     'ledger_execution_id',p_ledger_execution_id,
+    'dispatch_receipt_sha256',v_dispatch_sha256,
     'receipt_ids',jsonb_build_array(v_a->>'receipt_id',v_b->>'receipt_id'),
     'consumer_readback_count',v_count);
 END;
