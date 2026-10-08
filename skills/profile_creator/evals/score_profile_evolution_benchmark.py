@@ -44,7 +44,8 @@ def main():
     bavg=sum(x["baseline_score"] for x in rows)/len(rows); cavg=sum(x["candidate_score"] for x in rows)/len(rows)
     ci=bootstrap_ci(diffs); hci=bootstrap_ci(hd,seed=20261009)
     p95=sorted(r["candidate"]["elapsed_ms"] for r in raw["rows"])[max(0,int(0.95*len(raw["rows"]))-1)]
-    budget_ok=p95<=250 and all(r["candidate"]["method_cost_points"]<=r["candidate"]["method_budget"] for r in raw["rows"])
+    budgets=[r["candidate"].get("method_budget") for r in raw["rows"]]
+    budget_ok=p95<=250 and all(isinstance(v,(int,float)) for v in budgets) and all(r["candidate"]["method_cost_points"]<=r["candidate"]["method_budget"] for r in raw["rows"])
     out={"schema":"PROFILE_EVOLUTION_DECISION_BENCHMARK_SCORE_V1","benchmark_scope":raw["benchmark_scope"],"case_count":len(rows),
       "holdout_case_count":len(hd),"baseline_primary_capability_score":round(bavg,6),"candidate_primary_capability_score":round(cavg,6),
       "primary_capability_score_direction":"UP" if cavg>bavg and ci[0]>0 else "NOT_UP",
