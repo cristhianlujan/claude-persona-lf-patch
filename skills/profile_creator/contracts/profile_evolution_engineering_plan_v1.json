@@ -752,7 +752,7 @@
       "checkpoints": [
         {
           "checkpoint_code": "PE10_C1",
-          "title": "Benchmark corpus is frozen before execution",
+          "title": "Executable decision benchmark corpus is frozen before execution",
           "required": true,
           "status": "PENDING_FRESH_VALIDATION",
           "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
@@ -761,25 +761,27 @@
             "ref": "agent/profile-evolution-orchestrator-20261007",
             "path": "skills/profile_creator/evals/profile_evolution_benchmark_cases_v1.json",
             "must_contain": [
-              "SEALED",
-              "strata"
+              "DECISION_POLICY_AND_COMPOSITION",
+              "raw_freeze_required_before_oracle_open",
+              "holdout_case_count"
             ]
           },
-          "pass_when": "20+ frozen cases and sealed oracle contract are present",
+          "pass_when": "24 executable cases across 8 strata, 8 holdouts, no retired profile target, oracle separated and raw-freeze required",
           "failure_code": "BENCHMARK_CORPUS_NOT_FROZEN",
           "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
         },
         {
           "checkpoint_code": "PE10_C2",
-          "title": "Paired benchmark admission passes",
+          "title": "Paired exact-source decision benchmark passes",
           "required": true,
           "status": "PENDING_FRESH_VALIDATION",
           "validator_code": "PROFILE_EVOLUTION_BENCHMARK_ADMISSION_V1",
           "validation_input": {
-            "summary_ref": "fresh benchmark summary"
+            "summary_ref": "fresh decision benchmark score",
+            "evaluation_mode": "BENCHMARK_ONLY"
           },
-          "pass_when": "status=ADMIT_CUTOVER",
-          "failure_code": "BENCHMARK_ADMISSION_FAIL",
+          "pass_when": "benchmark_status=BENCHMARK_PASS and cutover_eligible=false; full behavior benchmark remains required",
+          "failure_code": "DECISION_BENCHMARK_FAIL",
           "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
         },
         {
