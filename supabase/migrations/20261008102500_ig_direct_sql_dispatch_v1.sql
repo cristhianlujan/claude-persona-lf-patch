@@ -164,3 +164,159 @@ begin
  then raise exception 'IG_DIRECT_STEP_AUTHORIZATION_FAILED'; end if;
 end;
 $guard$;
+
+-- Durable transport for decoupled HTTP caller and direct Postgres worker.
+-- Private schema, RLS defense-in-depth, no free-form SQL or external credentials.
+create table if not exists programacion.ig_direct_requests_v1 (
+  id bigint generated always as identity primary key,
+  pantalla_id integer not null,
+  consumer text not null,
+  status text not null default 'QUEUED'
+    check (status in ('QUEUED','DONE','ERROR')),
+  step_count integer not null default 0,
+  last_status text,
+  last_step text,
+  last_run_id bigint,
+  result jsonb,
+  error_code text,
+  requested_at timestamptz not null default clock_timestamp(),
+  updated_at timestamptz not null default clock_timestamp(),
+  finished_at timestamptz,
+  check (step_count between 0 and 20)
+);
+alter table programacion.ig_direct_requests_v1 enable row level security;
+create unique index if not exists ig_direct_requests_active_v1_uidx
+ on programacion.ig_direct_requests_v1(pantalla_id,consumer)
+ where status='QUEUED';
+
+-- Endpoint enqueues only. Validation of governing contracts remains in worker.
+create or replace function programacion.fn_input_governance_queue_submit_v1(
+ p_pantalla_id integer,p_consumer text default 'STORY_CREATOR')
+returns jsonb
+language plpgsql security definer
+set search_path to 'pg_catalog','programacion','public','lf_ops'
+as $submit$
+declare v_id bigint;
+begin
+ if p_pantalla_id is null or p_pantalla_id<1
+    or p_consumer not in ('STORY_CREATOR','MANUAL') then
+   raise exception 'IG_DIRECT_QUEUE_INPUT_INVALID';
+ end if;
+ if not exists(select 1 from lf_ops.pantallas
+               where id=p_pantalla_id and activa) then
+   raise exception 'IG_DIRECT_QUEUE_SCREEN_NOT_ACTIVE:%',p_pantalla_id;
+ end if;
+ insert into programacion.ig_direct_requests_v1(pantalla_id,consumer)
+ values(p_pantalla_id,p_consumer)
+ on conflict (pantalla_id,consumer) where status='QUEUED'
+ do update set requested_at=clock_timestamp()
+ returning id into v_id;
+ return jsonb_build_object('status','QUEUED','request_id',v_id,'pantalla_id',p_pantalla_id,'consumer',p_consumer);
+end;
+$submit$;
+
+create or replace function programacion.fn_input_governance_queue_read_v1(p_request_id bigint)
+returns jsonb
+language sql stable security definer
+set search_path to 'pg_catalog','programacion'
+as $read$
+ select jsonb_build_object(
+  'request_id',q.id,'pantalla_id',q.pantalla_id,'consumer',q.consumer,
+  'queue_status',q.status,'status',case when q.status='QUEUED' then 'CONTINUATION_REQUIRED'
+   when q.status='ERROR' then 'BLOCKED'
+   else coalesce(q.last_status,'BLOCKED') end,
+  'step_count',q.step_count,'last_status',q.last_status,'last_step',q.last_step,
+  'run_id',q.last_run_id,'result',q.result,'error_code',q.error_code,
+  'next_action',case when q.status='QUEUED' then 'POLL_SAME_REQUEST' else 'NONE' end,
+  'finished_at',q.finished_at
+ ) from programacion.ig_direct_requests_v1 q where q.id=p_request_id;
+$read$;
+
+-- One cron invocation = one queued screen execution, repeated within bounded time.
+-- No parallel claims and no SQL statement timeout inherited from the REST caller.
+create or replace function programacion.fn_input_governance_queue_worker_v1()
+returns jsonb
+language plpgsql security definer
+set search_path to 'pg_catalog','programacion','public'
+as $worker$
+declare v_job record; v_output jsonb; v_status text; v_t0 timestamptz:=clock_timestamp();
+ v_n integer:=0; v_code text;
+begin
+ perform pg_advisory_xact_lock(hashtextextended('IG_DIRECT_SQL_WORKER_V1',0));
+ select q.id,q.pantalla_id,q.consumer,q.step_count into v_job
+ from programacion.ig_direct_requests_v1 q where q.status='QUEUED'
+ order by q.requested_at,q.id for update skip locked limit 1;
+ if not found then return jsonb_build_object('status','IDLE','processed',0); end if;
+ for i in 1..10 loop
+  if v_job.step_count+v_n>=20 then
+   update programacion.ig_direct_requests_v1
+   set status='ERROR',error_code='IG_DIRECT_STEP_LIMIT',updated_at=clock_timestamp(),
+       finished_at=clock_timestamp() where id=v_job.id;
+   return jsonb_build_object('status','ERROR','request_id',v_job.id,'error','STEP_LIMIT');
+  end if;
+  begin
+    v_output:=programacion.fn_input_governance_direct_step_v1(v_job.pantalla_id,v_job.consumer);
+  exception when others then
+    v_code:=SQLSTATE||':'||left(SQLERRM,180);
+    update programacion.ig_direct_requests_v1
+    set status='ERROR',error_code=v_code,updated_at=clock_timestamp(),
+        finished_at=clock_timestamp() where id=v_job.id;
+    return jsonb_build_object('status','ERROR','request_id',v_job.id,'error_code',v_code);
+  end;
+  v_n:=v_n+1;
+  v_status:=v_output->>'status';
+  update programacion.ig_direct_requests_v1
+  set step_count=v_job.step_count+v_n,last_status=v_status,
+      last_step=v_output->>'step',last_run_id=nullif(v_output->>'run_id','')::bigint,
+      result=v_output,updated_at=clock_timestamp()
+  where id=v_job.id;
+  if v_status not in ('VALIDATOR_RUNTIME_REQUIRED','VALIDATOR_CONTINUE_REQUIRED','COMPLETED','NOOP_COMPLETED') then
+    update programacion.ig_direct_requests_v1
+    set status='DONE',finished_at=clock_timestamp() where id=v_job.id;
+    return jsonb_build_object('status','DONE','request_id',v_job.id,'steps',v_n,'last_status',v_status);
+  end if;
+  exit when clock_timestamp()-v_t0 > interval '95 seconds';
+ end loop;
+ return jsonb_build_object('status','QUEUED','request_id',v_job.id,
+   'steps',v_n,'last_status',v_status,'next_action','NEXT_CRON_TICK');
+end;
+$worker$;
+
+revoke all on function programacion.fn_input_governance_queue_submit_v1(integer,text)
+  from public,anon,authenticated;
+revoke all on function programacion.fn_input_governance_queue_read_v1(bigint)
+  from public,anon,authenticated;
+revoke all on function programacion.fn_input_governance_queue_worker_v1()
+  from public,anon,authenticated,service_role;
+
+create or replace function public.fn_input_governance_queue_submit_v1(
+ p_pantalla_id integer,p_consumer text default 'STORY_CREATOR')
+returns jsonb language sql security invoker set search_path to 'pg_catalog'
+as $api$ select programacion.fn_input_governance_queue_submit_v1(p_pantalla_id,p_consumer); $api$;
+create or replace function public.fn_input_governance_queue_read_v1(p_request_id bigint)
+returns jsonb language sql stable security invoker set search_path to 'pg_catalog'
+as $api$ select programacion.fn_input_governance_queue_read_v1(p_request_id); $api$;
+
+revoke all on function public.fn_input_governance_queue_submit_v1(integer,text)
+  from public,anon,authenticated;
+revoke all on function public.fn_input_governance_queue_read_v1(bigint)
+  from public,anon,authenticated;
+grant execute on function programacion.fn_input_governance_queue_submit_v1(integer,text)
+ to service_role;
+grant execute on function programacion.fn_input_governance_queue_read_v1(bigint)
+ to service_role;
+grant execute on function public.fn_input_governance_queue_submit_v1(integer,text)
+ to service_role;
+grant execute on function public.fn_input_governance_queue_read_v1(bigint)
+ to service_role;
+
+do $auth$
+begin
+ if has_function_privilege('anon','public.fn_input_governance_queue_submit_v1(integer,text)','execute')
+   or has_function_privilege('authenticated','public.fn_input_governance_queue_read_v1(bigint)','execute')
+   or has_function_privilege('service_role','programacion.fn_input_governance_queue_worker_v1()','execute')
+ then raise exception 'IG_QUEUE_PERMISSION_GUARD_FAILED'; end if;
+end;
+$auth$;
+
+-- Scheduler is activated in a separate migration only after rollback E2E.
