@@ -90,6 +90,33 @@ def main():
             probe(cur, "wrong_parent", params, "IG_SUCCESSOR_PARENT_BINDING_REQUIRED")
             observed["wrong_parent_rejected"] = True
 
+            # A CURATING parent without source SHA cannot be used as
+            # the source of verified successor lineage.
+            cur.execute("SAVEPOINT m67_missing_source")
+            try:
+                cur.execute("""
+                    INSERT INTO programacion.input_readiness_runs
+                    (version_id,pantalla_id,universe_rule_id,status,scope,
+                     universe_snapshot_sha256,family_count,contract_version,
+                     curator_identity,curator_component_id)
+                    VALUES (%s,%s,%s,'CURATING',%s::jsonb,%s,%s,%s,%s,%s)
+                    RETURNING id
+                """, [version, screen, rule, json.dumps(scope), universe_sha,
+                      family_count, contract, curator, component])
+                empty_parent = cur.fetchone()[0]
+                try:
+                    cur.execute(BASE, [version, screen, rule, empty_parent,
+                         json.dumps({**base_scope, "parent_run_id": empty_parent}),
+                         universe_sha, family_count, contract, curator, component])
+                    raise AssertionError("missing parent SHA was accepted")
+                except psycopg.Error as exc:
+                    if "IG_SUCCESSOR_PARENT_SOURCE_SHA_REQUIRED" not in str(exc):
+                        raise AssertionError(f"unexpected source-SHA error: {exc}") from exc
+                    observed["missing_parent_sha_rejected"] = True
+            finally:
+                cur.execute("ROLLBACK TO SAVEPOINT m67_missing_source")
+                cur.execute("RELEASE SAVEPOINT m67_missing_source")
+
             base_scope["parent_run_id"] = run_id
             params[4] = json.dumps(base_scope)
             inserted = probe(cur, "valid_successor", params)
