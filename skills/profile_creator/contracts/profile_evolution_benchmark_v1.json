@@ -41,8 +41,26 @@
     "valid_behavior": "PRESERVED",
     "cost_latency": "WITHIN_FROZEN_BUDGET",
     "independent_assurance": "PASS",
-    "paired_uncertainty": "PREDEFINED_INTERVAL_REQUIRED"
+    "paired_uncertainty": "PREDEFINED_INTERVAL_REQUIRED",
+    "benchmark_scope": "FULL_PROFILE_EVOLUTION_BEHAVIOR"
   },
   "no_fixed_uplift_threshold_until_baseline_frozen": true,
-  "optimizer_auto_admission": false
+  "optimizer_auto_admission": false,
+  "execution_scopes": {
+    "decision_policy_and_composition": {
+      "purpose": "Paired exact-source deterministic benchmark of update decision, evidence handling and capability composition.",
+      "cutover_eligible": false,
+      "required_before_full_behavior": true
+    },
+    "full_profile_evolution_behavior": {
+      "purpose": "Paired behavior benchmark of actual profile transformation outputs under governed runtime.",
+      "cutover_eligible": true,
+      "required_for_cutover": true
+    }
+  },
+  "blind_protocol": {
+    "arms_raw_frozen_before_oracle_open": true,
+    "oracle_file": "skills/profile_creator/evals/profile_evolution_benchmark_oracle_v1.json",
+    "paired_interval_policy": "FIXED_SEED_PAIRED_BOOTSTRAP_95_V1"
+  }
 }
