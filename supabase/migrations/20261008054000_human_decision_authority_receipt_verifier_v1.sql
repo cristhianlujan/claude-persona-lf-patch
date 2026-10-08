@@ -1,0 +1,2 @@
+-- Superseded before merge by 20261008054500_human_decision_authority_receipt_verifier_v1.sql.
+-- No schema changes in this placeholder.
