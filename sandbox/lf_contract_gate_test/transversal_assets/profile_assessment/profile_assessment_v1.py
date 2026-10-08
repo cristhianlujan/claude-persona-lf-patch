@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-MATURITY_ORDER = ["GENERIC", "SPECIALIZED", "ADAPTIVE", "EXPERT", "EVIDENCE_OPTIMIZED"]
+MATURITY_STATES = ["UNDETERMINED", "GENERIC", "SPECIALIZED", "ADAPTIVE", "EXPERT", "EVIDENCE_OPTIMIZED"]
 EVOLUTION_MODES = {"NO_CHANGE", "PATCH", "SPECIALIZE", "ADAPT", "REARCHITECT", "OPTIMIZE"}
 _ALLOWED_STATUS = {"PASS", "FAIL", "UNKNOWN"}
 
@@ -15,22 +15,31 @@ def _proof(evidence: dict[str, Any], key: str) -> str:
     refs = item.get("refs", [])
     if status not in _ALLOWED_STATUS or not isinstance(refs, list):
         return "UNKNOWN"
-    if status == "PASS" and not refs:
+    # PASS and FAIL are both substantive claims and therefore require evidence.
+    if status in {"PASS", "FAIL"} and not refs:
         return "UNKNOWN"
     return status
 
 
 def _maturity(evidence: dict[str, Any]) -> str:
-    maturity = "GENERIC"
-    if _proof(evidence, "domain_task_uplift") == "PASS":
-        maturity = "SPECIALIZED"
-    if maturity == "SPECIALIZED" and _proof(evidence, "strategy_routing") == "PASS":
-        maturity = "ADAPTIVE"
-    if maturity == "ADAPTIVE" and _proof(evidence, "expert_holdout") == "PASS":
-        maturity = "EXPERT"
-    if maturity == "EXPERT" and _proof(evidence, "repeated_optimization") == "PASS":
-        maturity = "EVIDENCE_OPTIMIZED"
-    return maturity
+    domain = _proof(evidence, "domain_task_uplift")
+    if domain == "UNKNOWN":
+        return "UNDETERMINED"
+    if domain == "FAIL":
+        return "GENERIC"
+
+    strategy = _proof(evidence, "strategy_routing")
+    if strategy in {"FAIL", "UNKNOWN"}:
+        return "SPECIALIZED"
+
+    expert = _proof(evidence, "expert_holdout")
+    if expert in {"FAIL", "UNKNOWN"}:
+        return "ADAPTIVE"
+
+    repeated = _proof(evidence, "repeated_optimization")
+    if repeated in {"FAIL", "UNKNOWN"}:
+        return "EXPERT"
+    return "EVIDENCE_OPTIMIZED"
 
 
 def assess_profile(payload: dict[str, Any]) -> dict[str, Any]:
@@ -43,6 +52,7 @@ def assess_profile(payload: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("PROFILE_ASSESSMENT_INPUT_INVALID")
 
     structural = _proof(evidence, "structural_compatibility")
+    architecture = _proof(evidence, "architecture_fit")
     maturity = _maturity(evidence)
 
     gaps: list[dict[str, Any]] = []
@@ -56,22 +66,51 @@ def assess_profile(payload: dict[str, Any]) -> dict[str, Any]:
     ):
         status = _proof(evidence, key)
         if status != "PASS":
-            gaps.append({"gap": key, "status": status, "refs": evidence.get(key, {}).get("refs", []) if isinstance(evidence.get(key), dict) else []})
+            gaps.append({
+                "gap": key,
+                "status": status,
+                "refs": evidence.get(key, {}).get("refs", []) if isinstance(evidence.get(key), dict) else [],
+            })
 
-    if _proof(evidence, "architecture_fit") == "FAIL":
+    evidence_needed: list[str] = []
+    mode: str | None = None
+
+    if architecture == "FAIL":
         mode = "REARCHITECT"
     elif structural == "FAIL":
         mode = "PATCH"
-    elif maturity == "GENERIC":
-        mode = "SPECIALIZE"
-    elif maturity == "SPECIALIZED" and _proof(evidence, "strategy_routing") != "PASS":
-        mode = "ADAPT"
-    elif maturity in {"ADAPTIVE", "EXPERT", "EVIDENCE_OPTIMIZED"} and _proof(evidence, "optimization_opportunity") == "PASS":
-        mode = "OPTIMIZE"
+    elif structural == "UNKNOWN":
+        evidence_needed.append("structural_compatibility")
+    elif architecture == "UNKNOWN":
+        evidence_needed.append("architecture_fit")
     else:
-        mode = "NO_CHANGE"
+        domain = _proof(evidence, "domain_task_uplift")
+        strategy = _proof(evidence, "strategy_routing")
+        expert = _proof(evidence, "expert_holdout")
+        repeated = _proof(evidence, "repeated_optimization")
+        optimize = _proof(evidence, "optimization_opportunity")
 
-    if mode not in EVOLUTION_MODES:
+        if domain == "UNKNOWN":
+            evidence_needed.append("domain_task_uplift")
+        elif domain == "FAIL":
+            mode = "SPECIALIZE"
+        elif strategy == "UNKNOWN":
+            evidence_needed.append("strategy_routing")
+        elif strategy == "FAIL":
+            mode = "ADAPT"
+        elif expert == "UNKNOWN":
+            evidence_needed.append("expert_holdout")
+        elif expert == "PASS" and repeated == "UNKNOWN":
+            evidence_needed.append("repeated_optimization")
+        elif optimize == "UNKNOWN":
+            evidence_needed.append("optimization_opportunity")
+        elif optimize == "PASS":
+            mode = "OPTIMIZE"
+        else:
+            mode = "NO_CHANGE"
+
+    assessment_status = "EVIDENCE_SUFFICIENT" if mode is not None else "NEEDS_MORE_EVIDENCE"
+    if mode is not None and mode not in EVOLUTION_MODES:
         raise AssertionError("EVOLUTION_MODE_INVALID")
 
     typed_signals = []
@@ -91,13 +130,16 @@ def assess_profile(payload: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "schema": "PROFILE_ASSESSMENT_V1",
+        "assessment_status": assessment_status,
         "maturity": maturity,
         "structural_compatibility": structural,
         "profile_gaps": gaps,
         "evolution_mode": mode,
+        "evidence_needed": sorted(set(evidence_needed)),
         "typed_signals": typed_signals,
         "uncertainty": signals.get("uncertainty", "UNKNOWN"),
         "risk": signals.get("risk", "UNKNOWN"),
+        "next_action": "TARGETED_EVIDENCE_ACQUISITION" if evidence_needed else "CONTINUE_EVOLUTION_FLOW",
         "write_authorized": False,
         "admission_required": True,
     }
