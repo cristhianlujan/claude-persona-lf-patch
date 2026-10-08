@@ -39,6 +39,13 @@ SELECT jsonb_build_object(
    FROM programacion.input_readiness_runs r
    JOIN programacion.input_family_assessments a ON a.run_id=r.id
    WHERE r.id=:selected_run_id),
+ 'selected_family_specs',(SELECT coalesce(jsonb_agg(jsonb_build_object(
+      'family_code',a.family_code,
+      'spec',programacion.fn_input_governance_shadow_family_spec_v2(
+        a.family_code,r.version_id)) ORDER BY a.family_code),'[]'::jsonb)
+   FROM programacion.input_readiness_runs r
+   JOIN programacion.input_family_assessments a ON a.run_id=r.id
+   WHERE r.id=:selected_run_id),
  'functions',(SELECT coalesce(jsonb_agg(jsonb_build_object(
    'name', p.proname, 'definition',p.prosrc,'md5',md5(p.prosrc))),
    '[]'::jsonb)
@@ -141,13 +148,32 @@ def evaluate(data):
         raise ValueError("SELECTED_RUN_ORACLE_FAMILY_MISMATCH")
     if any(code not in families for code in requested):
         raise ValueError("SELECTED_RUN_FAMILY_NOT_IN_REGISTRY")
+    specs = data.get("selected_family_specs") or []
+    if len(specs) != len(requested):
+        raise ValueError("SELECTED_SCREEN_POLICY_CARDINALITY_DRIFT")
+    if {row.get("family_code") for row in specs} != set(requested):
+        raise ValueError("SELECTED_SCREEN_POLICY_FAMILY_MISMATCH")
+    structural_failed = []
+    for row in specs:
+        spec = row.get("spec") or {}
+        checks = spec.get("test_obligations")
+        if (spec.get("family_code") != row["family_code"]
+                or spec.get("version_id") != selected.get("version_id")
+                or (spec.get("stage_authority") or {}).get("status") != "EXPLICIT"
+                or not isinstance(checks, list)
+                or len(checks) < 1
+                or any(c.get("status") != "PASS" for c in checks)):
+            structural_failed.append(row["family_code"])
+    if structural_failed:
+        failures.append({"path":"STRUCTURAL_POLICY_ORACLE",
+                         "code":"STRUCTURAL_EVIDENCE_FAILED",
+                         "families":sorted(structural_failed)})
     def oracle_has_bounded_evidence(row):
         oracle = row.get("oracle") or {}
         return (
             oracle.get("implemented") is True
             and oracle.get("pantalla_id") == screen_id
             and oracle.get("version_id") == selected.get("version_id")
-            and oracle.get("family_code") == row.get("family_code")
             and oracle.get("comparison_only") is True
             and oracle.get("decisional") is False
             and isinstance(oracle.get("classification"), str)
@@ -180,8 +206,11 @@ def evaluate(data):
             "selected_run_id":run_id, "selected_pantalla_id":screen_id,
             "selected_screen_code":selected.get("screen_code"),
             "selected_family_count":len(requested),
-            "selected_oracle_covered_count":len(requested)-len(uncovered),
-            "selected_oracle_status":"NOT_COVERED" if uncovered else "COVERED",
+            "selected_structural_observed_count":len(requested),
+            "selected_structural_pass_count":len(requested)-len(structural_failed),
+            "selected_oracle_candidate_covered_count":len(requested)-len(uncovered),
+            "selected_oracle_status":"NOT_COVERED" if uncovered else "CANDIDATE_ONLY",
+            "semantic_independence_credited":False,
             "canonical_independence_state":measure.get("state"),
             "independence_shared_dependency_count":
                 (measure.get("dependency_dimension") or {}).get("shared_dependency_count"),
