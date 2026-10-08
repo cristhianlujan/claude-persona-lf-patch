@@ -476,6 +476,108 @@
       ]
     },
     {
+      "unit_code": "PE5A",
+      "lot": "E5",
+      "title": "Reversible candidate materialization bridge",
+      "depends_on": [
+        "PE5"
+      ],
+      "status": "READY_FOR_VALIDATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE5A_C1",
+          "title": "Existing Profile Creator is the sole semantic producer",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_candidate_materialization_v1.json",
+            "must_contain": [
+              "PROFILE_CREATOR",
+              "creates_parallel_creator",
+              "false",
+              "AUTHOR_EVIDENCE_BOUND_CHANGED_FILE_CONTENT_ONLY"
+            ]
+          },
+          "pass_when": "materialization contract delegates semantic delta authoring to existing Profile Creator and creates no parallel creator",
+          "failure_code": "PARALLEL_PROFILE_CREATOR_FORBIDDEN",
+          "resolver_policy": "FIX_BINDING_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE5A_C2",
+          "title": "Candidate materializer qualifies positive and negative boundaries",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_CANDIDATE_MATERIALIZER_V1",
+          "validation_input": {
+            "qualification_mode": "FULL_SELF_TEST"
+          },
+          "pass_when": "positive=2 negative=6 and exit=0",
+          "failure_code": "CANDIDATE_MATERIALIZER_QUALIFICATION_FAIL",
+          "resolver_policy": "FIX_MATERIALIZER_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE5A_C3",
+          "title": "Materialization never writes profile authority or activates runtime",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_CANDIDATE_MATERIALIZER_V1",
+          "validation_input": {
+            "assertions": [
+              "source_unchanged=true",
+              "authority_state=NON_AUTHORITY_CANDIDATE",
+              "profile_source_write_authorized=false",
+              "runtime_activation=false",
+              "production_activation=false"
+            ]
+          },
+          "pass_when": "source profile stays byte-identical and all authority/activation flags remain false",
+          "failure_code": "CANDIDATE_MATERIALIZER_AUTHORITY_LEAK",
+          "resolver_policy": "FAIL_CLOSED_FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE5A_C4",
+          "title": "Every existing-file delta is before-hash bound and path confined",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_CANDIDATE_MATERIALIZER_V1",
+          "validation_input": {
+            "negative_cases": [
+              "BEFORE_SHA256_MISMATCH",
+              "PATH_ESCAPE",
+              "SOURCE_SYMLINK",
+              "OUTPUT_INSIDE_REPOSITORY"
+            ]
+          },
+          "pass_when": "all declared scope/hash escape cases fail closed",
+          "failure_code": "CANDIDATE_MATERIALIZER_SCOPE_OR_HASH_GAP",
+          "resolver_policy": "FAIL_CLOSED_FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE5A_C5",
+          "title": "Orchestrator binds candidate_materialization to the reusable bridge",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_orchestrator_v1.json",
+            "must_contain": [
+              "profile_evolution_candidate_materialization_v1.json",
+              "PROFILE_CREATOR",
+              "PROFILE_CANDIDATE_MATERIALIZER"
+            ]
+          },
+          "pass_when": "orchestrator explicitly binds semantic producer plus deterministic materializer without granting write authority",
+          "failure_code": "ORCHESTRATOR_CANDIDATE_MATERIALIZATION_BINDING_MISSING",
+          "resolver_policy": "FIX_BINDING_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
       "unit_code": "PE6",
       "lot": "E6",
       "title": "Evolution state and modular bindings",
@@ -764,6 +866,7 @@
       "lot": "E10",
       "title": "Blind benchmark, assurance, admission and cutover",
       "depends_on": [
+        "PE5A",
         "PE8",
         "PE9"
       ],
@@ -880,5 +983,8 @@
     }
   ],
   "completion_rule": "ALL_REQUIRED_CHECKPOINTS_HAVE_FRESH_PASS_RECEIPTS_AND_PE10_CUTOVER_READBACK_PASS",
-  "plan_status": "PLANNED_ATOMIC_NOT_EXECUTED"
+  "plan_status": "IN_EXECUTION_ATOMIC",
+  "discovery_repairs": [
+    "PE5A_ADDED_AFTER_FULL_BEHAVIOR_REVEALED_MISSING_CANDIDATE_MATERIALIZATION_BRIDGE"
+  ]
 }
