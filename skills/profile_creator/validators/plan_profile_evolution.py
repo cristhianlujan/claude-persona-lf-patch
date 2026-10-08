@@ -75,9 +75,16 @@ def build_evolution_plan(
     if composition["fallback_state"] in {"CONTRADICTORY", "CAPABILITY_FAILURE"}:
         blockers.append("BLOCKED_SELECTOR_UNRESOLVED")
 
+    if assessment.get("assessment_status") != "EVIDENCE_SUFFICIENT":
+        blockers.append("PROFILE_ASSESSMENT_NEEDS_MORE_EVIDENCE")
+
     mode = assessment["evolution_mode"]
-    change_needed = mode != "NO_CHANGE"
-    candidate_allowed = change_needed and not blockers
+    change_needed = mode is not None and mode != "NO_CHANGE"
+    candidate_allowed = (
+        assessment.get("assessment_status") == "EVIDENCE_SUFFICIENT"
+        and change_needed
+        and not blockers
+    )
     patch_minimality_required = mode == "PATCH"
 
     return {
@@ -107,6 +114,8 @@ def build_evolution_plan(
             if candidate_allowed
             else "NO_CHANGE"
             if mode == "NO_CHANGE" and not blockers
+            else "TARGETED_EVIDENCE_ACQUISITION"
+            if "PROFILE_ASSESSMENT_NEEDS_MORE_EVIDENCE" in blockers
             else "RETURN_TO_EVIDENCE_OR_AUTHORITY"
         ),
         "automatic_runtime_activation": False,
