@@ -212,8 +212,8 @@ def main():
     try:
         proc = subprocess.run(
             ["psql", "-X", "-A", "-t", "-v", "ON_ERROR_STOP=1",
-             "-v", f"selected_run_id={options.run_id}", "-c", SQL],
-            capture_output=True, text=True, check=False)
+             "-v", f"selected_run_id={options.run_id}"],
+            input=SQL, capture_output=True, text=True, check=False)
     except OSError as exc:
         print(json.dumps({"test_code":"ENG_M4_12_CORRELATION_RERUN",
                           "test_passed":False, "test_exit_code":2,
