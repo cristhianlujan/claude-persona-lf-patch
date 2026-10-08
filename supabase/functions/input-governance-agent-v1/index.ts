@@ -117,6 +117,22 @@ Deno.serve(async (req: Request) => {
         if (!runId) throw new Error("VALIDATOR_RUN_ID_UNRESOLVED");
         const validator = await callRuntime("input-governance-validator-v1", { run_id: runId });
         trace.push({ step: "VALIDATOR", cycle, status: validator?.result?.status, run_id: runId, identity: validator?.identity ?? null });
+        if (validator?.result?.status === "VALIDATOR_RESUME_REQUIRED") {
+          // 202 is an explicit incomplete outcome, never READY or validated.
+          // A fresh request to the same agent re-enters dispatch and Validator resume_context.
+          return Response.json({
+            runtime: "input-governance-agent-v1",
+            status: "VALIDATOR_RESUME_REQUIRED",
+            trace,
+            continuation: {
+              ...(validator?.continuation ?? {}),
+              pantalla_id: pantallaId,
+              consumer,
+              next_action: "REINVOKE_AGENT_SAME_PANTALLA_AND_CONSUMER",
+            },
+            result: validator.result,
+          }, { status: 202 });
+        }
         if (!["COMPLETED", "NOOP_COMPLETED"].includes(validator?.result?.status)) {
           return Response.json({ runtime: "input-governance-agent-v1", remediation_contract: "INPUT_GOV_SAFE_AUTOFIX_V1", trace, result: validator?.result ?? { status: "VALIDATOR_UNRESOLVED" } }, { status: 409 });
         }
