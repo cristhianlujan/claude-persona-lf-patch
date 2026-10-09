@@ -35,12 +35,11 @@ def main():
          "matches":v==actual[k]["verdict"]} for k,v in EXPECTED.items()],
       "error_class":"SEMANTIC_VERDICT_DISCRIMINATION_FAILURE" if matched!=len(EXPECTED) else None,
       "cutover_eligible":False}
-    encoded=json.dumps(data,sort_keys=True,indent=2)+"
-"
-if OUT.exists():
-    assert OUT.read_text()==encoded, 'FROZEN_ARTIFACT_DRIFT'
-else:
-    OUT.write_text(encoded)
+    encoded=json.dumps(data,sort_keys=True,indent=2)+"\n"
+    if OUT.exists():
+        assert OUT.read_text()==encoded, 'FROZEN_ARTIFACT_DRIFT'
+    else:
+        OUT.write_text(encoded)
     print(json.dumps({"status":data["status"],"passed":matched,"total":len(EXPECTED),
        "sha256":hashlib.sha256(OUT.read_bytes()).hexdigest()},sort_keys=True))
 
