@@ -38,3 +38,6 @@ The Edge Function validates RS256 via GitHub OIDC JWKS, issuer, audience `lf-run
 
 ## Unresolved operational qualification
 The VPS forced-command observer implementation and its secrets are not present in this repository and cannot be independently tested here. Deno/OIDC end-to-end and real GitHub JWKS token tests require a runtime or post-merge GitHub job; the SQL rollback proves table/role constraints but cannot substitute for live JWT signature validation.
+
+## B2 gateway and OIDC trust boundary
+`supabase/config.toml` sets `[functions.lf-runtime-independent-readback-v1] verify_jwt = false` because GitHub Actions OIDC JWTs are not Supabase access JWTs. Thus the Supabase gateway does NOT authenticate these requests; the Edge Function `auth.ts` signature verification, issuer/audience/expiration and exact OIDC claims are the sole identity barrier. Never remove that verifier or expose a second accepting path. The dedicated database role additionally restricts receipt insertion. A 503 means the receipt could not be registered, **not** that runtime verification failed.
