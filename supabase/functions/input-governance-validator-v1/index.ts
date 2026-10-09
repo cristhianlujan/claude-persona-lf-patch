@@ -149,7 +149,20 @@ Deno.serve(async (req: Request) => {
         pending_count: result?.pending_count ?? null,
       });
       if (["COMPLETED", "NOOP_COMPLETED"].includes(result?.status)) {
-        return Response.json({ runtime: "input-governance-validator-v1", validator_entrypoint: VALIDATOR_ENTRYPOINT, handoff_receipt: handoffReceipt, scope_strategy: scopeStrategy, identity, resumed, chunked_validation: true, trace, result });
+        // M8.11: the release commit is deployment-owned, not inferred from semantic evidence.
+        // A missing binding is observable failure, never an implicit timing PASS.
+        const releaseSha = (Deno.env.get("LF_IG_RELEASE_SHA") ?? "").trim().toLowerCase();
+        if (!/^[0-9a-f]{40}$/.test(releaseSha)) {
+          return Response.json({ error: "IG_PERFORMANCE_RELEASE_SHA_NOT_CONFIGURED", run_id: runId, result, trace }, { status: 409 });
+        }
+        const phaseReceipt = await rpc("fn_ig_run_phase_receipts_emit_v1", {
+          p_run_id: runId,
+          p_release_sha: releaseSha,
+        });
+        if (phaseReceipt?.status !== "PERSISTED") {
+          return Response.json({ error: "IG_PERFORMANCE_PHASE_RECEIPT_NOT_PERSISTED", run_id: runId, phase_receipt: phaseReceipt }, { status: 409 });
+        }
+        return Response.json({ runtime: "input-governance-validator-v1", validator_entrypoint: VALIDATOR_ENTRYPOINT, handoff_receipt: handoffReceipt, scope_strategy: scopeStrategy, identity, resumed, chunked_validation: true, trace, result, performance_phase_receipt: phaseReceipt });
       }
       if (result?.status !== "VALIDATOR_CONTINUE_REQUIRED") {
         return Response.json({ error: "VALIDATOR_UNRESOLVED_STATUS", validator_entrypoint: VALIDATOR_ENTRYPOINT, handoff_receipt: handoffReceipt, scope_strategy: scopeStrategy, identity, resumed, trace, result }, { status: 409 });
