@@ -1,0 +1,303 @@
+{
+  "schema": "PROFILE_METHOD_BINDING_CANDIDATE_INVENTORY_V1",
+  "status": "CAPABILITY_EXISTS_METHOD_EQUIVALENCE_UNVERIFIED",
+  "scope": "READ_ONLY_AUTHORITY_INSPECTION",
+  "sandbox_project_id": "mhwmirqcgxxukpctffuv",
+  "registered_methods": 12,
+  "verified_compatible_capability_sources": 8,
+  "production_capability_selector_current": "1.0.0",
+  "development_capability_selector": "V3_NOT_PROMOTED",
+  "registry_execution_permission": false,
+  "method_execution_binding_admitted": 0,
+  "notes": [
+    "A compatible capability is not a verified full implementation of the method.",
+    "Do not bind by name only; verify typed input, output, behavior, currentness, execution permissions, and no-regression.",
+    "No runtime/authority activation is performed."
+  ],
+  "methods": [
+    {
+      "method_id": "CAUSAL_ANALYSIS",
+      "selectable": true,
+      "availability": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "components": [
+        {
+          "capability_code": "CAUSAL_EFFECT_LINEAGE",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.1",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@d0b5a37221f2a389c4593e02f8c2e9dc30cf8a06/sandbox/lf_contract_gate_test/transversal_assets/causal_effect_lineage/causal_effect_lineage_v1.py",
+          "equivalence_to_method": "NOT_PROVEN"
+        },
+        {
+          "capability_code": "TARGETED_EVIDENCE_ACQUISITION",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "supabase://public/lf_targeted_evidence_acquisition_plan_v1",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "SEMANTIC_EQUIVALENCE_AND_TEST_EXECUTION"
+    },
+    {
+      "method_id": "HOSTILE_CHALLENGE",
+      "selectable": true,
+      "availability": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "components": [
+        {
+          "capability_code": "INDEPENDENT_ASSURANCE",
+          "registry_status": "ACTIVE",
+          "current_version": "2.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "supabase/migrations/20261009034500_independent_assurance_generic_subject_v3.sql",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "SEMANTIC_EQUIVALENCE_AND_TEST_EXECUTION"
+    },
+    {
+      "method_id": "DEEP_RESEARCH",
+      "selectable": true,
+      "availability": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "components": [
+        {
+          "capability_code": "TARGETED_EVIDENCE_ACQUISITION",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "supabase://public/lf_targeted_evidence_acquisition_plan_v1",
+          "equivalence_to_method": "NOT_PROVEN"
+        },
+        {
+          "capability_code": "CURRENTNESS_AUTHORITY",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@b533f7f4e721d04822359a75f19a82949e799faf/sandbox/lf_contract_gate_test/material_currentness/CURRENTNESS_AUTHORITY_v1.manifest.json",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "SEMANTIC_EQUIVALENCE_AND_TEST_EXECUTION"
+    },
+    {
+      "method_id": "SELF_REFINE",
+      "selectable": true,
+      "availability": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "components": [
+        {
+          "capability_code": "PACK_VALIDATION_HARNESS",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@718dad1e30c12f6f39745fcf71d72dbd4f6e6880/sandbox/lf_contract_gate_test/pack_validation_harness/pack_validation_harness_v1.py",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "SEMANTIC_EQUIVALENCE_AND_TEST_EXECUTION"
+    },
+    {
+      "method_id": "EVALUATOR_OPTIMIZER",
+      "selectable": true,
+      "availability": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "components": [
+        {
+          "capability_code": "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@7317ee15d631462d22292d0342566269d499dec7/sandbox/lf_contract_gate_test/transversal_assets/performance/performance_exact_source_benchmark_v1.py",
+          "equivalence_to_method": "NOT_PROVEN"
+        },
+        {
+          "capability_code": "REVERSIBLE_CANDIDATE_VERIFICATION",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.2",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261006123000_independent_assurance_qualified_cross_schema_v1.sql",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "SEMANTIC_EQUIVALENCE_AND_TEST_EXECUTION"
+    },
+    {
+      "method_id": "VERIFIER_GUIDED_SEARCH",
+      "selectable": true,
+      "availability": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "components": [
+        {
+          "capability_code": "PACK_VALIDATION_HARNESS",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@718dad1e30c12f6f39745fcf71d72dbd4f6e6880/sandbox/lf_contract_gate_test/pack_validation_harness/pack_validation_harness_v1.py",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "SEMANTIC_EQUIVALENCE_AND_TEST_EXECUTION"
+    },
+    {
+      "method_id": "PARALLEL_EVIDENCE_SEARCH",
+      "selectable": true,
+      "availability": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "components": [
+        {
+          "capability_code": "TARGETED_EVIDENCE_ACQUISITION",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "supabase://public/lf_targeted_evidence_acquisition_plan_v1",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "SEMANTIC_EQUIVALENCE_AND_TEST_EXECUTION"
+    },
+    {
+      "method_id": "PROMPT_OPTIMIZATION",
+      "selectable": true,
+      "availability": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "components": [
+        {
+          "capability_code": "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@7317ee15d631462d22292d0342566269d499dec7/sandbox/lf_contract_gate_test/transversal_assets/performance/performance_exact_source_benchmark_v1.py",
+          "equivalence_to_method": "NOT_PROVEN"
+        },
+        {
+          "capability_code": "REVERSIBLE_CANDIDATE_VERIFICATION",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.2",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261006123000_independent_assurance_qualified_cross_schema_v1.sql",
+          "equivalence_to_method": "NOT_PROVEN"
+        },
+        {
+          "capability_code": "INDEPENDENT_ASSURANCE",
+          "registry_status": "ACTIVE",
+          "current_version": "2.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "supabase/migrations/20261009034500_independent_assurance_generic_subject_v3.sql",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "SEMANTIC_EQUIVALENCE_AND_TEST_EXECUTION"
+    },
+    {
+      "method_id": "REASONING_COMPOSITION_SEARCH",
+      "selectable": false,
+      "availability": "EXPERIMENTAL_NOT_ADMITTED",
+      "components": [
+        {
+          "capability_code": "PACK_VALIDATION_HARNESS",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@718dad1e30c12f6f39745fcf71d72dbd4f6e6880/sandbox/lf_contract_gate_test/pack_validation_harness/pack_validation_harness_v1.py",
+          "equivalence_to_method": "NOT_PROVEN"
+        },
+        {
+          "capability_code": "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@7317ee15d631462d22292d0342566269d499dec7/sandbox/lf_contract_gate_test/transversal_assets/performance/performance_exact_source_benchmark_v1.py",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "EXPERIMENTAL_ADMISSION_AND_SEMANTIC_EQUIVALENCE"
+    },
+    {
+      "method_id": "TEXTUAL_FEEDBACK_OPTIMIZATION",
+      "selectable": false,
+      "availability": "EXPERIMENTAL_NOT_ADMITTED",
+      "components": [
+        {
+          "capability_code": "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@7317ee15d631462d22292d0342566269d499dec7/sandbox/lf_contract_gate_test/transversal_assets/performance/performance_exact_source_benchmark_v1.py",
+          "equivalence_to_method": "NOT_PROVEN"
+        },
+        {
+          "capability_code": "REVERSIBLE_CANDIDATE_VERIFICATION",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.2",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261006123000_independent_assurance_qualified_cross_schema_v1.sql",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "EXPERIMENTAL_ADMISSION_AND_SEMANTIC_EQUIVALENCE"
+    },
+    {
+      "method_id": "WORKFLOW_SEARCH",
+      "selectable": false,
+      "availability": "EXPERIMENTAL_NOT_ADMITTED",
+      "components": [
+        {
+          "capability_code": "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@7317ee15d631462d22292d0342566269d499dec7/sandbox/lf_contract_gate_test/transversal_assets/performance/performance_exact_source_benchmark_v1.py",
+          "equivalence_to_method": "NOT_PROVEN"
+        },
+        {
+          "capability_code": "REVERSIBLE_CANDIDATE_VERIFICATION",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.2",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261006123000_independent_assurance_qualified_cross_schema_v1.sql",
+          "equivalence_to_method": "NOT_PROVEN"
+        },
+        {
+          "capability_code": "INDEPENDENT_ASSURANCE",
+          "registry_status": "ACTIVE",
+          "current_version": "2.0.0",
+          "release_state": "RELEASED",
+          "source_ref": "supabase/migrations/20261009034500_independent_assurance_generic_subject_v3.sql",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "EXPERIMENTAL_ADMISSION_AND_SEMANTIC_EQUIVALENCE"
+    },
+    {
+      "method_id": "EXPERIENCE_REUSE",
+      "selectable": false,
+      "availability": "EXPERIMENTAL_NOT_ADMITTED",
+      "components": [
+        {
+          "capability_code": "CAUSAL_EFFECT_LINEAGE",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.1",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch@d0b5a37221f2a389c4593e02f8c2e9dc30cf8a06/sandbox/lf_contract_gate_test/transversal_assets/causal_effect_lineage/causal_effect_lineage_v1.py",
+          "equivalence_to_method": "NOT_PROVEN"
+        },
+        {
+          "capability_code": "SAFE_CHANGE_ADMISSION",
+          "registry_status": "ACTIVE",
+          "current_version": "1.0.1",
+          "release_state": "RELEASED",
+          "source_ref": "github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261006123000_independent_assurance_qualified_cross_schema_v1.sql",
+          "equivalence_to_method": "NOT_PROVEN"
+        }
+      ],
+      "handler_contract_state": "NOT_BOUND",
+      "next_gate": "EXPERIMENTAL_ADMISSION_AND_SEMANTIC_EQUIVALENCE"
+    }
+  ]
+}
