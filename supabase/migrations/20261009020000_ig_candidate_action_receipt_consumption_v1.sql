@@ -12,7 +12,7 @@
 -- Only a channel permitted for HUMAN_DECISION and an independent ACTIVE
 -- authority policy with exact action/subject/domain may authorize consumption.
 
-create table if not exists private.lf_ig_candidate_action_consumptions_v1 (
+create table private.lf_ig_candidate_action_consumptions_v1 (
   transition_id bigint primary key references lf_ops.estados_transiciones(transition_id),
   screen_id integer not null,
   receipt_id bigint not null unique references programacion.provenance_receipts(id),
