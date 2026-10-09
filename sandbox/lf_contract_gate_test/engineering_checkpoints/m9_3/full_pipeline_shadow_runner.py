@@ -166,6 +166,30 @@ def capture_rollback_one(row: dict) -> dict:
           (c.j->'curator_handoff_receipt'->>'receipt_id')::bigint)
         ELSE jsonb_build_object('status','M93_REAL_VALIDATOR_HANDOFF_UNAVAILABLE')
         END AS j FROM m93_curator c;
+      DO $m93_validator_loop$
+      DECLARE v_run_id bigint;
+              v_status text;
+              v_chunk integer:=0;
+              v_payload jsonb;
+      BEGIN
+        SELECT (j->>'run_id')::bigint INTO v_run_id FROM m93_curator
+          WHERE jsonb_typeof(j->'run_id')='number';
+        IF v_run_id IS NOT NULL THEN
+          LOOP
+            SELECT j->>'status' INTO v_status FROM m93_validator;
+            EXIT WHEN v_status NOT IN
+              ('VALIDATOR_CONTINUE_REQUIRED','VALIDATOR_RESUME_REQUIRED');
+            IF v_chunk>=8 THEN
+              RAISE EXCEPTION 'M93_VALIDATOR_CONTINUATION_BUDGET_EXCEEDED';
+            END IF;
+            v_payload:=programacion.fn_input_governance_validator_validate_v1(
+              v_run_id,
+              'INPUT_VALIDATOR:SQL:ig-governed-dispatch-v1:M93ShadowRollback001');
+            UPDATE m93_validator SET j=v_payload;
+            v_chunk:=v_chunk+1;
+          END LOOP;
+        END IF;
+      END $m93_validator_loop$;
       SELECT jsonb_build_object(
         'baseline_run_id',(SELECT id FROM m93_baseline),
         'baseline_revision','5.13',
@@ -178,6 +202,15 @@ def capture_rollback_one(row: dict) -> dict:
         'semantics',(SELECT j FROM m93_semantics),
         'curator',(SELECT j FROM m93_curator),
         'validator',(SELECT j FROM m93_validator),
+        'validator_chunk_count',(
+           SELECT count(*) FROM programacion.input_validator_chunk_timings
+           WHERE run_id=(SELECT (j->>'run_id')::bigint FROM m93_curator
+               WHERE jsonb_typeof(j->'run_id')='number')),
+        'validator_blocked_family_count',(
+           SELECT count(*) FROM programacion.input_family_assessments
+           WHERE run_id=(SELECT (j->>'run_id')::bigint FROM m93_curator
+               WHERE jsonb_typeof(j->'run_id')='number')
+             AND validator_outcome='BLOCKED'),
         'baseline',(SELECT coalesce(jsonb_agg(
           jsonb_build_object('family_code',a.family_code,
             'coverage_status',a.coverage_status,
@@ -251,6 +284,8 @@ def capture_rollback_one(row: dict) -> dict:
            "difference_count":eq.get("divergence_count"),
            "result":eq.get("result"),
            "evidence_sha256":digest(eq)}
+        out["validator_chunk_count"]=result.get("validator_chunk_count")
+        out["validator_blocked_family_count"]=result.get("validator_blocked_family_count")
         out["baseline_run_id"]=result.get("baseline_run_id")
         out["baseline_revision"]=result.get("baseline_revision")
         out["source_snapshot_match"]=result.get("source_snapshot_match")
