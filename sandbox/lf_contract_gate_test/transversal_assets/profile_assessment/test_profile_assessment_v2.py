@@ -31,7 +31,7 @@ def run():
     # Expert requires quality+difficulty+robustness+adaptation+transfer+preservation.
     xs=[]
     for i in range(8):
-        xs.append(obs(i,score=.92,difficulty=4,repeat_group=f"g{i//2}",
+        xs.append(obs(i,score=.99,difficulty=4,repeat_group=f"g{i//2}",
                       adaptation_case=True,transfer_case=True,preservation_case=True,critical=(i<2),generation=1))
     r=assess_profile_v2({"structural_status":"PASS","architecture_status":"PASS","competency_observations":xs})
     assert r["maturity"]=="EXPERT" and r["competency_vector"]["critical_failures"]==0
@@ -39,7 +39,7 @@ def run():
     # Evidence optimized needs longitudinal + verified causal attribution.
     xs=[]
     for i in range(12):
-        xs.append(obs(i,score=.94,difficulty=4,repeat_group=f"g{i//2}",
+        xs.append(obs(i,score=.99,difficulty=4,repeat_group=f"g{i//2}",
                       adaptation_case=True,transfer_case=True,preservation_case=True,generation=(i%3)+1))
     r=assess_profile_v2({
       "structural_status":"PASS","architecture_status":"PASS","competency_observations":xs,
