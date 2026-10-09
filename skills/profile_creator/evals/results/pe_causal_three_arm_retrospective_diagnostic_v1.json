@@ -1,0 +1,155 @@
+{
+  "arms": {
+    "D1_STATIC": {
+      "batch_count": 2,
+      "cases": 4,
+      "completion_tokens": 480,
+      "correct": 0,
+      "prompt_tokens": 7541,
+      "total_tokens": 8021,
+      "wall_ms": 95656.87
+    },
+    "D2_SELECTOR_ONLY": {
+      "batch_count": 2,
+      "cases": 4,
+      "completion_tokens": 469,
+      "correct": 0,
+      "prompt_tokens": 7797,
+      "total_tokens": 8266,
+      "wall_ms": 101572.4
+    },
+    "D3_TYPED_METHOD": {
+      "batch_count": 2,
+      "cases": 4,
+      "completion_tokens": 493,
+      "correct": 4,
+      "prompt_tokens": 9109,
+      "total_tokens": 9602,
+      "wall_ms": 140841.7
+    }
+  },
+  "baseline_raw_sha256": "d64b625fe5f6534c052644ecbf144f01f225d9c04a7456e4ceaeece849d7fecd",
+  "case_source_sha256": "4f3009b78989ee43e44c895f78d747df50f20daf4a31a604193f742bfe66cd8b",
+  "context_token_budget_matched": false,
+  "cutover_eligible": false,
+  "d2_raw_sha256": "ce43a4c11b2818eae14427ffb670b6d7f2634fa64a96c62cbee9a7e88fd81364",
+  "independent_semantic_assurance": "NOT_EXECUTED",
+  "method_execution_d2": false,
+  "method_selection_d2": "SIMULATED_ADVISORY_LABEL_NO_REAL_SELECTOR_INVOCATION",
+  "records": [
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-105",
+      "correct": false,
+      "expected_decision": "COLLECT_MORE_EVIDENCE",
+      "expected_falsified": [
+        "H1"
+      ]
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-106",
+      "correct": false,
+      "expected_decision": "INVESTIGATE_H3",
+      "expected_falsified": [
+        "H1",
+        "H2"
+      ]
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-105",
+      "correct": true,
+      "expected_decision": "COLLECT_MORE_EVIDENCE",
+      "expected_falsified": [
+        "H1"
+      ]
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-106",
+      "correct": true,
+      "expected_decision": "INVESTIGATE_H3",
+      "expected_falsified": [
+        "H1",
+        "H2"
+      ]
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-107",
+      "correct": false,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ]
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-108",
+      "correct": false,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ]
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-107",
+      "correct": true,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ]
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-108",
+      "correct": true,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ]
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-105",
+      "correct": false,
+      "expected_decision": "COLLECT_MORE_EVIDENCE",
+      "expected_falsified": [
+        "H1"
+      ]
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-106",
+      "correct": false,
+      "expected_decision": "INVESTIGATE_H3",
+      "expected_falsified": [
+        "H1",
+        "H2"
+      ]
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-107",
+      "correct": false,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ]
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-108",
+      "correct": false,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ]
+    }
+  ],
+  "schema": "PE_CAUSAL_RETROSPECTIVE_TRIARM_DIAGNOSTIC_V1",
+  "statistical_or_causal_uplift": "NOT_ESTABLISHED",
+  "status": "RETROSPECTIVE_NOT_BLIND_N4"
+}
