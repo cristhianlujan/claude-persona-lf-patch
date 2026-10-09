@@ -1,0 +1,15 @@
+{
+  "schema": "PROFILE_EXPERT_BEHAVIOR_CAMPAIGN_ABORT_V1",
+  "campaign_id": "PEXP-R2-20261008",
+  "status": "ABORTED_TECHNICAL_NOT_ADMITTED",
+  "failure_code": "EXECUTOR_MODE_ATTESTATION_MISSING",
+  "producer_raw_frozen": false,
+  "oracle_opened": false,
+  "holdout_opened": false,
+  "scoring_opened": false,
+  "failed_after_model_call_before_governed_receipt": true,
+  "repair_pr": 2077,
+  "repair_merge_sha": "1c718b20c5246e078229ba3ed1ab6c0ed57838af",
+  "next_campaign_id": "PEXP-R3-20261008",
+  "retry_same_campaign_forbidden": true
+}
