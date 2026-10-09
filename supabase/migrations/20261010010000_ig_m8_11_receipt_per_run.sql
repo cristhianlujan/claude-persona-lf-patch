@@ -20,7 +20,7 @@ BEGIN
   IF coalesce(p_release_sha,'') !~ '^[0-9a-f]{40}$' THEN
     RAISE EXCEPTION 'IG_RUN_TIMING_RELEASE_SHA_REQUIRED';
   END IF;
-  SELECT * INTO v_run FROM programacion.input_readiness_runs WHERE id=p_run_id FOR SHARE;
+  SELECT * INTO v_run FROM programacion.input_readiness_runs WHERE id=p_run_id FOR UPDATE;
   IF NOT FOUND OR v_run.status <> 'COMPLETED' OR v_run.validator_completed_at IS NULL
      OR v_run.curator_completed_at IS NULL
      OR coalesce(v_run.source_snapshot_sha256,'') !~ '^[0-9a-f]{64}$'
