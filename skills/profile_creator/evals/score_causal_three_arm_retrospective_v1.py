@@ -40,7 +40,7 @@ def check(case):
     return action,sorted(falsified)
 
 def main():
-    assert not OUTPUT.exists()
+
     cases=json.loads(CASES.read_text())["cases"]
     old=json.loads(BASELINE.read_text());d2=json.loads(D2.read_text())
     assert old["raw_frozen"] and d2["raw_frozen"]
@@ -83,7 +83,12 @@ def main():
       "context_token_budget_matched":False,
       "independent_semantic_assurance":"NOT_EXECUTED",
       "cutover_eligible":False}
-    OUTPUT.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
+    encoded=json.dumps(result,sort_keys=True,indent=2)+"
+"
+if OUTPUT.exists():
+    assert OUTPUT.read_text()==encoded, 'FROZEN_ARTIFACT_DRIFT'
+else:
+    OUTPUT.write_text(encoded)
     print(json.dumps({"arms":arms,
      "raw_sha256":hashlib.sha256(OUTPUT.read_bytes()).hexdigest(),
      "status":result["status"]},sort_keys=True))
