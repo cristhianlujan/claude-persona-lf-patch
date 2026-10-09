@@ -1,0 +1,69 @@
+{
+  "campaign": "PE-CAUSAL-PILOT-20261009-001",
+  "candidate_arms": [
+    {
+      "answer": {
+        "causal_state": "UNLINKED",
+        "decision": "REJECT_AND_RECONCILE",
+        "reason": "The causal edge between the parent and child runs is unlinked. The parent run's case identifier does not match the child run's case identifier, indicating that the edge is not a 'O"
+      },
+      "arm": "D1_STATIC",
+      "attestation": {
+        "evidence_sha256": "a1236ac6641bd22e9a1aa5fe326e5ae1c510795d9829aacff80c62eb02ab05d1",
+        "request_sha256": "0fa6ac4e8d2bbcb7cb5cddc3bba306c717a694cf00984d6667887f7e714fc7bc",
+        "response_sha256": "19485d85b8338f51dd30a5db032d81eba1f0f86872cf8030d1df03af1b5c0e08",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "contract_sha256": "ca328da9215afd31f3680752ed01b849444c4826d27adfb727e4f90752b0f85e",
+      "execution_receipt_sha256": "a434ab32729021dd16b41cba9f3b47160a2d6b65de57f485dd32d6d32426d092",
+      "profile_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "prompt_sha256": "19ca9b568dcc5870ecd4b5a728b3ad8ab1822520b0ee57f7cd0daa2abeb16322",
+      "run_id": "PE-CAUSAL-PILOT-20261009-001:D1_STATIC",
+      "usage": {
+        "completion_tokens": 76,
+        "prompt_tokens": 3288,
+        "prompt_tokens_details": {
+          "cached_tokens": 3015
+        },
+        "total_tokens": 3364
+      },
+      "wall_ms": 17180.6
+    },
+    {
+      "answer": {
+        "causal_state": "UNLINKED",
+        "decision": "REJECT_AND_RECONCILE",
+        "reason": "RECEIVER_DOES_NOT_CROSSLINK_PRODUCER"
+      },
+      "arm": "D3_WITH_VERIFIED_LINEAGE",
+      "attestation": {
+        "evidence_sha256": "644a16b920bf49cf77d5796944acb319c159c4ca6e7467f7fef0ae675bf8a612",
+        "request_sha256": "9b9c795623dd60118b81e46e5e44383005a2bb73e102d25343773642f6eaad6c",
+        "response_sha256": "0b533eb66565860fccf0c2ed9484d6a72349aa6c63b1fae3b2e169b4fa5171ca",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "contract_sha256": "a22f7fa56379bd9982f80720806c071d645ec46d6a1ecb99074764973715c73d",
+      "execution_receipt_sha256": "dee2a9525ab3b3b993c384979ac46a690af53f1ad416cc42c34e8881fe879083",
+      "profile_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "prompt_sha256": "f95a3c9654d465d9826329b2c103e93720ac1360bd1cba4068d442580a8ecb2c",
+      "run_id": "PE-CAUSAL-PILOT-20261009-001:D3_WITH_VERIFIED_LINEAGE",
+      "usage": {
+        "completion_tokens": 51,
+        "prompt_tokens": 3408,
+        "prompt_tokens_details": {
+          "cached_tokens": 3274
+        },
+        "total_tokens": 3459
+      },
+      "wall_ms": 10105.35
+    }
+  ],
+  "cutover_eligible": false,
+  "evaluator_opened": false,
+  "method_liveness_ref": "pe_causal_provider_liveness_raw_v1.json",
+  "raw_frozen": true,
+  "schema": "PE_CAUSAL_PILOT_PRODUCER_RAW_V1",
+  "single_case": true
+}
