@@ -169,17 +169,38 @@
       "qualification_gate_observed": true,
       "rollback_restored_1_0_1": true,
       "persistent_change": false
+    },
+    "independent_assurance_v3_formal_migration": {
+      "path": "supabase/migrations/20261009034500_independent_assurance_generic_subject_v3.sql",
+      "commit": "881cde39bcb0c5c381a36c8eb622d9d34013280d",
+      "blob": "549a67c1f25640d4eed00443aebda346258bb99e",
+      "exact_migration_rollback": "PASS",
+      "post_rollback_current_version": "1.0.1",
+      "post_rollback_operation_count": 1,
+      "post_rollback_judge_count": 6,
+      "post_rollback_qualification_current": true,
+      "residue": false,
+      "merged": false,
+      "applied": false
+    },
+    "expert_behavior_campaign": {
+      "campaign_ref": "skills/profile_creator/evals/profile_expert_behavior_campaign_v1.json",
+      "power_ref": "skills/profile_creator/evals/profile_expert_behavior_power_analysis_v1.json",
+      "holdout_ref": "skills/profile_creator/evals/profile_expert_behavior_holdout_v1.json",
+      "planned_cases": 120,
+      "holdout_cases": 60,
+      "raw_generation_started": false
     }
   },
-  "closure": "REARCHITECTURE_IN_EXECUTION; V2 CORE COMPONENTS IMPLEMENTED/UNIT_TESTED; CUTOVER BLOCKED UNTIL REAL EXPERT-TASK A/B/C/D BENCHMARK + INDEPENDENT ASSURANCE + ADMISSION",
+  "closure": "REARCHITECTURE_IN_EXECUTION; 70/76 REQUIRED TERMINAL. CORE V2 IMPROVEMENTS DONE; PE10E_C4 REAL A/B/C/D EXPERT TASK CAMPAIGN PENDING; INDEPENDENT_ASSURANCE V3 FORMAL MIGRATION ROLLBACK-PASS BUT MERGE/APPLY/REQUALIFY/PROMOTE PENDING; CUTOVER NOT ADMITTED",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
     "unit_count": 18,
     "checkpoint_count": 79,
     "required_checkpoint_count": 76,
-    "required_terminal_count": 49,
-    "required_progress_pct": 64.5,
-    "done_checkpoint_count": 49,
+    "required_terminal_count": 70,
+    "required_progress_pct": 92.1,
+    "done_checkpoint_count": 70,
     "not_applicable_checkpoint_count": 3,
     "open_blocker_count": 1
   },
@@ -229,6 +250,41 @@
         "cost_latency_within_budget": true
       },
       "blocker_detail": "Generic any-subject contract and full runtime candidate passed live transactional rollback. Remaining work is governed publication: formal Git migration -> merge -> exact apply -> operation requalification -> capability current promotion -> independent review."
+    },
+    "PE1B": {
+      "status": "DONE",
+      "checkpoints": "5/5",
+      "evidence": "Fresh PROFILE_ASSESSMENT_V2 + PROFILE_EVOLUTION_STATE_V2 validation"
+    },
+    "PE2B": {
+      "status": "DONE",
+      "checkpoints": "4/4",
+      "evidence": "Fresh METHOD_PACK_REGISTRY_V2 validation; 12 methods, 4 experiments non-auto-select"
+    },
+    "PE3B": {
+      "status": "DONE",
+      "checkpoints": "5/5",
+      "evidence": "Fresh CAPABILITY_SELECTOR_V3 + planner V2; verified preconditions and same-run replanning"
+    },
+    "PE7B": {
+      "status": "DONE",
+      "checkpoints": "4/4",
+      "evidence": "Fresh PROFILE_LEARNING_ADMISSION_V2; causal/transfer/lifecycle gates"
+    },
+    "PE10E": {
+      "status": "IN_PROGRESS",
+      "checkpoints": "3/4",
+      "current_checkpoint": "PE10E_C4",
+      "campaign_id": "PEXP-V1-20261008",
+      "campaign_design": {
+        "planned_cases": 120,
+        "domain_families": 8,
+        "holdout_cases": 60,
+        "holdout_labels_visible_to_producer": false,
+        "thresholds_frozen_before_raw": true,
+        "raw_started": false
+      },
+      "remaining": "Execute actual A/B/C/D profile-task campaign with blind independent evaluator receipts"
     }
   },
   "repair_audit_rearchitecture": {
