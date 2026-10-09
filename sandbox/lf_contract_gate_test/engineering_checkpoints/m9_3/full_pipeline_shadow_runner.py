@@ -145,9 +145,10 @@ def capture_rollback_one(row: dict) -> dict:
     sid = row["screen_id"]
     sql = f"""
       SET LOCAL lock_timeout = '2000ms';
-      CREATE TEMP TABLE m93_baseline AS SELECT max(id) AS id
+      CREATE TEMP TABLE m93_baseline AS SELECT id,source_snapshot_sha256
         FROM programacion.input_readiness_runs
-        WHERE pantalla_id={sid} AND version_id=19 AND status='COMPLETED';
+        WHERE pantalla_id={sid} AND version_id=19 AND status='COMPLETED'
+          AND contract_revision='5.13' ORDER BY id DESC LIMIT 1;
       CREATE TEMP TABLE m93_core AS SELECT
         programacion.fn_input_screen_canonical_graph({sid},19) AS j;
       CREATE TEMP TABLE m93_semantics AS SELECT
@@ -165,12 +166,51 @@ def capture_rollback_one(row: dict) -> dict:
           (c.j->'curator_handoff_receipt'->>'receipt_id')::bigint)
         ELSE jsonb_build_object('status','M93_REAL_VALIDATOR_HANDOFF_UNAVAILABLE')
         END AS j FROM m93_curator c;
+      DO $m93_validator_loop$
+      DECLARE v_run_id bigint;
+              v_status text;
+              v_chunk integer:=0;
+              v_payload jsonb;
+      BEGIN
+        SELECT (j->>'run_id')::bigint INTO v_run_id FROM m93_curator
+          WHERE jsonb_typeof(j->'run_id')='number';
+        IF v_run_id IS NOT NULL THEN
+          LOOP
+            SELECT j->>'status' INTO v_status FROM m93_validator;
+            EXIT WHEN v_status NOT IN
+              ('VALIDATOR_CONTINUE_REQUIRED','VALIDATOR_RESUME_REQUIRED');
+            IF v_chunk>=8 THEN
+              RAISE EXCEPTION 'M93_VALIDATOR_CONTINUATION_BUDGET_EXCEEDED';
+            END IF;
+            v_payload:=programacion.fn_input_governance_validator_validate_v1(
+              v_run_id,
+              'INPUT_VALIDATOR:SQL:ig-governed-dispatch-v1:M93ShadowRollback001');
+            UPDATE m93_validator SET j=v_payload;
+            v_chunk:=v_chunk+1;
+          END LOOP;
+        END IF;
+      END $m93_validator_loop$;
       SELECT jsonb_build_object(
         'baseline_run_id',(SELECT id FROM m93_baseline),
+        'baseline_revision','5.13',
+        'source_snapshot_match',((SELECT source_snapshot_sha256 FROM m93_baseline) IS NOT NULL AND
+          (SELECT source_snapshot_sha256 FROM m93_baseline) =
+          (SELECT r.source_snapshot_sha256 FROM programacion.input_readiness_runs r
+           WHERE r.id=(SELECT (j->>'run_id')::bigint FROM m93_curator
+             WHERE jsonb_typeof(j->'run_id')='number'))),
         'core',(SELECT j FROM m93_core),
         'semantics',(SELECT j FROM m93_semantics),
         'curator',(SELECT j FROM m93_curator),
         'validator',(SELECT j FROM m93_validator),
+        'validator_chunk_count',(
+           SELECT count(*) FROM programacion.input_validator_chunk_timings
+           WHERE run_id=(SELECT (j->>'run_id')::bigint FROM m93_curator
+               WHERE jsonb_typeof(j->'run_id')='number')),
+        'validator_blocked_family_count',(
+           SELECT count(*) FROM programacion.input_family_assessments
+           WHERE run_id=(SELECT (j->>'run_id')::bigint FROM m93_curator
+               WHERE jsonb_typeof(j->'run_id')='number')
+             AND validator_outcome='BLOCKED'),
         'baseline',(SELECT coalesce(jsonb_agg(
           jsonb_build_object('family_code',a.family_code,
             'coverage_status',a.coverage_status,
@@ -239,11 +279,16 @@ def capture_rollback_one(row: dict) -> dict:
         out["t_equiv"]={
            "capability_code":"CONTROL_EQUIVALENCE_JUDGE",
            "baseline":"5.13","candidate":"VNEXT",
-           "status":"PASS" if eq.get("result")=="PASS_EQUIVALENT" else "BLOCKED",
+           "status":"PASS" if eq.get("result")=="PASS_EQUIVALENT" and
+             result.get("source_snapshot_match") is True else "BLOCKED",
            "difference_count":eq.get("divergence_count"),
            "result":eq.get("result"),
            "evidence_sha256":digest(eq)}
+        out["validator_chunk_count"]=result.get("validator_chunk_count")
+        out["validator_blocked_family_count"]=result.get("validator_blocked_family_count")
         out["baseline_run_id"]=result.get("baseline_run_id")
+        out["baseline_revision"]=result.get("baseline_revision")
+        out["source_snapshot_match"]=result.get("source_snapshot_match")
         out["comparison_sha256"]=digest({"baseline":baseline,"candidate":candidate})
     except (RuntimeError,ValueError,subprocess.TimeoutExpired) as exc:
         out["vnext_pipeline"]=[{"stage":s,"status":"BLOCKED",
