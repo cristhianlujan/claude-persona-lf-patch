@@ -58,7 +58,7 @@ def db_query(sql: str, *, readonly: bool = True) -> object:
             env=env, capture_output=True, timeout=110, check=False)
     if proc.returncode != 0:
         # Never echo connection details or arbitrary database exception payloads.
-        raise RuntimeError("SQL_TRANSACTION_FAILED code=" + str(proc.returncode))
+        raise RuntimeError("SQL_TRANSACTION_FAILED_EXIT_" + str(proc.returncode))
     lines = [x for x in proc.stdout.splitlines() if x.strip()]
     require(len(lines) == 1, "SQL_OUTPUT_NOT_SINGLE_JSON")
     return json.loads(lines[0])
@@ -139,10 +139,19 @@ def capture_one(row: dict) -> dict:
 
 def run_live(path: Path) -> int:
     captured = dt.datetime.now(dt.timezone.utc).isoformat()
-    cohort_rows = read_cohorts()
-    before = fingerprint()
+    try:
+        cohort_rows = read_cohorts()
+    except (RuntimeError, ValueError) as exc:
+        raise RuntimeError('COHORT_AUTHORITY_CAPTURE:' + str(exc)) from exc
+    try:
+        before = fingerprint()
+    except (RuntimeError, ValueError) as exc:
+        raise RuntimeError('PRE_AUTHORITATIVE_SNAPSHOT:' + str(exc)) from exc
     records = [capture_one(x) for x in cohort_rows]
-    after = fingerprint()
+    try:
+        after = fingerprint()
+    except (RuntimeError, ValueError) as exc:
+        raise RuntimeError('POST_AUTHORITATIVE_SNAPSHOT:' + str(exc)) from exc
     unchanged = before == after
     complete = unchanged and all(
       [s["stage"] for s in x["vnext_pipeline"]] == list(STAGES)
@@ -206,5 +215,6 @@ if __name__ == "__main__":
         sys.exit(main())
     except (RuntimeError, ValueError, OSError) as exc:
         print(json.dumps({"test_code": CODE, "status": "BLOCKED",
-            "error_type": type(exc).__name__, "test_exit_code": 1}))
+            "error_type": type(exc).__name__, "error_code": str(exc),
+            "test_exit_code": 1}))
         sys.exit(1)
