@@ -32,7 +32,7 @@ class ReconcileTests(unittest.TestCase):
             lambda version: self.ledger.get(version))
 
     def test_69_renames_fixture_matching_pr_2154_count(self):
-        rows = [{"filename": item(v), "status": "renamed", "previous_filename": item(v)} for v in self.versions]
+        rows = [{"filename": item(v), "status": "renamed", "previous_filename": item(v.replace("20261009","20261008",1))} for v in self.versions]
         self.assertEqual(len(self.run_rows(rows)["migrations"]), 69)
 
     def test_69_added_from_ledger(self):
