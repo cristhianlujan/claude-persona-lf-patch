@@ -51,11 +51,11 @@ def db_query(sql: str, *, readonly: bool = True) -> object:
     env["PGDATABASE"] = "postgres"
     transaction = "READ ONLY" if readonly else "READ WRITE"
     script = ("BEGIN TRANSACTION " + transaction +
-              "; SET LOCAL statement_timeout = '90000ms';\n" + sql.strip() +
+              "; SET LOCAL statement_timeout = '180000ms';\n" + sql.strip() +
               "\nROLLBACK;\n")
     proc = subprocess.run(["psql", "-X", "--no-psqlrc", "-q", "-A", "-t",
             "--set=ON_ERROR_STOP=1"], input=script, text=True,
-            env=env, capture_output=True, timeout=110, check=False)
+            env=env, capture_output=True, timeout=210, check=False)
     if proc.returncode != 0:
         # Never echo connection details or arbitrary database exception payloads.
         raise RuntimeError("SQL_TRANSACTION_FAILED_EXIT_" + str(proc.returncode))
@@ -154,14 +154,14 @@ def capture_rollback_one(row: dict) -> dict:
         programacion.fn_input_governance_shadow_evaluate_v2({sid},19) AS j;
       CREATE TEMP TABLE m93_curator AS SELECT
         programacion.fn_input_governance_curator_materialize_v1(
-          {sid},'STORY_CREATOR','IG_M93_SANDBOX_ROLLBACK_ONLY',true) AS j;
+          {sid},'STORY_CREATOR','INPUT_CURATOR:SQL:ig-governed-dispatch-v1:M93ShadowRollback001',true) AS j;
       CREATE TEMP TABLE m93_validator AS SELECT
         CASE WHEN c.j->>'status'='VALIDATOR_RUNTIME_REQUIRED'
           AND jsonb_typeof(c.j->'run_id')='number'
           AND jsonb_typeof(c.j->'curator_handoff_receipt'->'receipt_id')='number'
         THEN programacion.fn_input_governance_validator_validate_handoff_v1(
           (c.j->>'run_id')::bigint,
-          'IG_M93_SANDBOX_ROLLBACK_VALIDATOR',
+          'INPUT_VALIDATOR:SQL:ig-governed-dispatch-v1:M93ShadowRollback001',
           (c.j->'curator_handoff_receipt'->>'receipt_id')::bigint)
         ELSE jsonb_build_object('status','M93_REAL_VALIDATOR_HANDOFF_UNAVAILABLE')
         END AS j FROM m93_curator c;
