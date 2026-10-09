@@ -137,7 +137,124 @@ def capture_one(row: dict) -> dict:
     return out
 
 
-def run_live(path: Path) -> int:
+
+def capture_rollback_one(row: dict) -> dict:
+    """Actual curator/validator candidate execution inside one ROLLBACK-only
+    sandbox transaction. Independent completed-run baseline is read before
+    materialization and may not be fabricated if unavailable."""
+    sid = row["screen_id"]
+    sql = f"""
+      SET LOCAL lock_timeout = '2000ms';
+      CREATE TEMP TABLE m93_baseline AS SELECT max(id) AS id
+        FROM programacion.input_readiness_runs
+        WHERE pantalla_id={sid} AND version_id=19 AND status='COMPLETED';
+      CREATE TEMP TABLE m93_core AS SELECT
+        programacion.fn_input_screen_canonical_graph({sid},19) AS j;
+      CREATE TEMP TABLE m93_semantics AS SELECT
+        programacion.fn_input_governance_shadow_evaluate_v2({sid},19) AS j;
+      CREATE TEMP TABLE m93_curator AS SELECT
+        programacion.fn_input_governance_curator_materialize_v1(
+          {sid},'STORY_CREATOR','IG_M93_SANDBOX_ROLLBACK_ONLY',true) AS j;
+      CREATE TEMP TABLE m93_validator AS SELECT
+        CASE WHEN c.j->>'status'='VALIDATOR_RUNTIME_REQUIRED'
+          AND jsonb_typeof(c.j->'run_id')='number'
+          AND jsonb_typeof(c.j->'curator_handoff_receipt'->'receipt_id')='number'
+        THEN programacion.fn_input_governance_validator_validate_handoff_v1(
+          (c.j->>'run_id')::bigint,
+          'IG_M93_SANDBOX_ROLLBACK_VALIDATOR',
+          (c.j->'curator_handoff_receipt'->>'receipt_id')::bigint)
+        ELSE jsonb_build_object('status','M93_REAL_VALIDATOR_HANDOFF_UNAVAILABLE')
+        END AS j FROM m93_curator c;
+      SELECT jsonb_build_object(
+        'baseline_run_id',(SELECT id FROM m93_baseline),
+        'core',(SELECT j FROM m93_core),
+        'semantics',(SELECT j FROM m93_semantics),
+        'curator',(SELECT j FROM m93_curator),
+        'validator',(SELECT j FROM m93_validator),
+        'baseline',(SELECT coalesce(jsonb_agg(
+          jsonb_build_object('family_code',a.family_code,
+            'coverage_status',a.coverage_status,
+            'well_defined_status',a.well_defined_status,
+            'story_ready_status',a.story_ready_status,
+            'implementation_ready_status',a.implementation_ready_status,
+            'qa_ready_status',a.qa_ready_status,
+            'production_ready_status',a.production_ready_status,
+            'validator_outcome',a.validator_outcome)
+          ORDER BY a.family_code),'[]'::jsonb)
+          FROM programacion.input_family_assessments a
+          WHERE a.run_id=(SELECT id FROM m93_baseline)),
+        'candidate',(SELECT coalesce(jsonb_agg(
+          jsonb_build_object('family_code',a.family_code,
+            'coverage_status',a.coverage_status,
+            'well_defined_status',a.well_defined_status,
+            'story_ready_status',a.story_ready_status,
+            'implementation_ready_status',a.implementation_ready_status,
+            'qa_ready_status',a.qa_ready_status,
+            'production_ready_status',a.production_ready_status,
+            'validator_outcome',a.validator_outcome)
+          ORDER BY a.family_code),'[]'::jsonb)
+          FROM programacion.input_family_assessments a
+          WHERE a.run_id=(SELECT (j->>'run_id')::bigint
+              FROM m93_curator WHERE jsonb_typeof(j->'run_id')='number'))
+      );"""
+    out = dict(row)
+    out["vnext_pipeline"] = []
+    out["t_equiv"] = {"capability_code":"CONTROL_EQUIVALENCE_JUDGE",
+                      "status":"BLOCKED", "reason":"EXECUTION_NOT_VALIDATED"}
+    try:
+        result = db_query(sql, readonly=False)
+        core, sem = result.get("core"), result.get("semantics")
+        curator, validator = result.get("curator"), result.get("validator")
+        out["vnext_pipeline"] = [
+          {"stage":"CORE","status":"PASS" if isinstance(core,dict) and
+            core.get("graph_contract") else "BLOCKED","projection_sha256":digest(core)},
+          {"stage":"SEMANTICS","status":"PASS" if isinstance(sem,dict) and
+            sem.get("summary",{}).get("family_count")==47 else "BLOCKED",
+            "projection_sha256":digest(sem)},
+          {"stage":"CURATOR","status":"PASS" if isinstance(curator,dict) and
+            curator.get("status")=="VALIDATOR_RUNTIME_REQUIRED" and
+            isinstance(curator.get("curator_handoff_receipt"),dict) else "BLOCKED",
+            "result_status":curator.get("status") if isinstance(curator,dict) else None,
+            "projection_sha256":digest(curator)},
+          {"stage":"VALIDATOR","status":"PASS" if isinstance(validator,dict) and
+            validator.get("status") in ("COMPLETED","NOOP_COMPLETED") else "BLOCKED",
+            "result_status":validator.get("status") if isinstance(validator,dict) else None,
+            "projection_sha256":digest(validator)}]
+        from importlib.util import spec_from_file_location, module_from_spec
+        module_path = (Path(__file__).resolve().parents[2] /
+            "transversal_assets/control_equivalence/control_equivalence_judge_v1.py")
+        require(module_path.is_file(), "TEQUIV_CANONICAL_PROVIDER_MISSING")
+        spec = spec_from_file_location("m93_tequiv",module_path)
+        require(spec is not None and spec.loader is not None, "TEQUIV_IMPORT_UNAVAILABLE")
+        module=module_from_spec(spec)
+        spec.loader.exec_module(module)
+        baseline,candidate=result.get("baseline"),result.get("candidate")
+        require(isinstance(baseline,list) and isinstance(candidate,list) and
+                len(baseline)==47 and len(candidate)==47,
+                "TEQUIV_BASELINE_OR_CANDIDATE_NOT_47")
+        eq=module.evaluate({"families":baseline},{"families":candidate},
+             {"schema_version":"lf-control-equivalence-policy/v1",
+              "consumer_ref":"IG_CURATOR_VALIDATOR_REFACTOR_V2:M9.3",
+              "field_levels":{}})
+        out["t_equiv"]={
+           "capability_code":"CONTROL_EQUIVALENCE_JUDGE",
+           "baseline":"5.13","candidate":"VNEXT",
+           "status":"PASS" if eq.get("result")=="PASS_EQUIVALENT" else "BLOCKED",
+           "difference_count":eq.get("divergence_count"),
+           "result":eq.get("result"),
+           "evidence_sha256":digest(eq)}
+        out["baseline_run_id"]=result.get("baseline_run_id")
+        out["comparison_sha256"]=digest({"baseline":baseline,"candidate":candidate})
+    except (RuntimeError,ValueError,subprocess.TimeoutExpired) as exc:
+        out["vnext_pipeline"]=[{"stage":s,"status":"BLOCKED",
+            "reason":"ROLLBACK_EXECUTION_FAILED",
+            "error_code":str(exc) if isinstance(exc,(RuntimeError,ValueError))
+                else "SQL_TIMEOUT"} for s in STAGES]
+        out["t_equiv"]["reason"]="ROLLBACK_EXECUTION_FAILED"
+    return out
+
+
+def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = None) -> int:
     captured = dt.datetime.now(dt.timezone.utc).isoformat()
     try:
         cohort_rows = read_cohorts()
@@ -147,7 +264,11 @@ def run_live(path: Path) -> int:
         before = fingerprint()
     except (RuntimeError, ValueError) as exc:
         raise RuntimeError('PRE_AUTHORITATIVE_SNAPSHOT:' + str(exc)) from exc
-    records = [capture_one(x) for x in cohort_rows]
+    if cohort is not None:
+        require(cohort in COHORTS, 'UNKNOWN_GOVERNED_COHORT')
+        cohort_rows = [x for x in cohort_rows if x['cohort_code']==cohort]
+    records = [capture_rollback_one(x) if rollback_e2e else capture_one(x)
+               for x in cohort_rows]
     try:
         after = fingerprint()
     except (RuntimeError, ValueError) as exc:
@@ -160,27 +281,30 @@ def run_live(path: Path) -> int:
     # This runner does not and cannot prove actual curator/validator pipeline
     # materialization. It fails closed until a separately qualified, rollback-
     # bounded actual executor produces those receipts.
-    require(not complete, "IMPOSSIBLE_FULL_PASS_WITH_DIAGNOSTIC_ONLY_RUNNER")
-    payload = {"schema_version": "IG_M9_3_DIAGNOSTIC_CAPTURE_V1",
-      "test_code": CODE, "status": "BLOCKED",
+    if not rollback_e2e:
+        require(not complete, 'READ_ONLY_DIAGNOSTIC_CANNOT_PASS')
+    if cohort is not None:
+        complete = False
+    payload = {"schema_version": "IG_M9_3_ROLLBACK_CAPTURE_V1" if rollback_e2e else "IG_M9_3_DIAGNOSTIC_CAPTURE_V1",
+      "test_code": CODE, "status": "PASS" if complete else "BLOCKED",
       "project_id": PROJECT, "captured_at": captured,
-      "runtime_mode": "READ_ONLY_TRANSACTIONS",
+      "runtime_mode": "ROLLBACK_ONLY_SANDBOX" if rollback_e2e else "READ_ONLY_TRANSACTIONS",
       "screen_count": len(records), "cohorts": records,
       "authoritative_readback": {"before": before, "after": after,
                                   "unchanged": unchanged},
       "unmet": ["REAL_CURATOR_CANDIDATE_RECEIPT",
                 "REAL_VALIDATOR_CANDIDATE_RECEIPT",
                 "5_13_VS_VNEXT_T_EQUIV_PER_COHORT"],
-      "test_passed": False, "test_exit_code": 1,
-      "semantic_authority_bound": False}
+      "test_passed": complete, "test_exit_code": 0 if complete else 1,
+      "semantic_authority_bound": complete}
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2,
                                  sort_keys=True), encoding="utf-8")
-    print(json.dumps({"test_code": CODE, "status": "BLOCKED",
+    print(json.dumps({"test_code": CODE, "status": "PASS" if complete else "BLOCKED",
         "screen_count": len(records), "authoritative_readback_unchanged": unchanged,
         "capture_sha256": digest(payload), "evidence_file": str(path),
         "unmet": payload["unmet"]}, sort_keys=True))
-    return 1
+    return 0 if complete else 1
 
 
 def self_test() -> int:
@@ -202,12 +326,14 @@ def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--self-test", action="store_true")
     p.add_argument("--live", action="store_true")
+    p.add_argument("--rollback-e2e", action="store_true")
+    p.add_argument("--cohort", choices=sorted(COHORTS))
     p.add_argument("--output", default=".lf_ci/m9_3_live_diagnostic.json")
     args = p.parse_args()
     if args.self_test:
         return self_test()
     require(args.live, "EXPLICIT_LIVE_FLAG_REQUIRED")
-    return run_live(Path(args.output))
+    return run_live(Path(args.output), rollback_e2e=args.rollback_e2e, cohort=args.cohort)
 
 
 if __name__ == "__main__":
