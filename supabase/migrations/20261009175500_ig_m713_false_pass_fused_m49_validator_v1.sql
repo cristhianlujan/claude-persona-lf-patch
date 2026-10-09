@@ -97,7 +97,7 @@ BEGIN
     'divergence',coalesce(v_div_bundle,'{}'::jsonb))
  );
 END
-$function$
+$function$;
 
 
 UPDATE programacion.engineering_plan_units
