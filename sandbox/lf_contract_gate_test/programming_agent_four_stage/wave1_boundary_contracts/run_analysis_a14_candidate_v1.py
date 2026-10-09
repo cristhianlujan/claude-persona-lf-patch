@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, importlib.util, json, time
+import argparse, importlib.util, json, re, time
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parent
@@ -87,7 +87,8 @@ def execute_case(case,classify_depth):
     else: verdict="BLOCKED"
     handoff=case["handoff"]
     handoff_ok=(
-        handoff.get("producer_schema_digest_sha256")==handoff.get("receiver_schema_digest_sha256")
+        all(isinstance(handoff.get(k),str) and re.fullmatch("[0-9a-f]{64}",handoff[k]) for k in ("producer_schema_digest_sha256","receiver_schema_digest_sha256","context_sha256","receipt_context_sha256"))
+        and handoff.get("producer_schema_digest_sha256")==handoff.get("receiver_schema_digest_sha256")
         and handoff.get("context_sha256")==handoff.get("receipt_context_sha256")
         and handoff.get("lossy_projection") is False
     )
