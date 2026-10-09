@@ -1,0 +1,138 @@
+{
+  "arms": [
+    "D2_SELECTOR_ONLY"
+  ],
+  "batches": [
+    {
+      "answers": [
+        {
+          "case_id": "HCA-105",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The owner record itself is absent hypothesis is not verified, and the owner exists but the authorization token is invalid hypothesis is contradicted by the current typed evidence."
+        },
+        {
+          "case_id": "HCA-106",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2",
+            "H3"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2",
+            "H2"
+          ],
+          "reason": "The hypotheses compete and two are contradicted by the current typed evidence."
+        }
+      ],
+      "arm": "D2_SELECTOR_ONLY",
+      "batch_index": 1,
+      "case_ids": [
+        "HCA-105",
+        "HCA-106"
+      ],
+      "contract_sha256": "df8d691859b5b3e8757017de91e73aceb2d7e3ec90c2854c08762f7b21aa8589",
+      "prompt_sha256": "35a123739eb43e5c24d1c97b7dcda33535867790034ff2bb23a3950e10ddd837",
+      "receipt_sha256": "835cc27e5d3d0a731b7c8d8519ba1e0eaee72b031e7cc89e1ee8dcb00d05755a",
+      "run_id": "PE-CAUSAL-D2-SELECTOR-DIAGNOSTIC-20261009:B1:D2_SELECTOR_ONLY",
+      "runtime_attestation": {
+        "evidence_sha256": "d063332e1164db581441f6565ab2df31b729350c5f7f22f2254a14352fdb4330",
+        "request_sha256": "a26dded6f2bd6096d26be092a44803da52dc7b8f344d52b20ffe84c3a3aafd90",
+        "response_sha256": "02ee9b67d4cfef671638918cabb4fdcd508729b9caacac925f2b6e18ebf9334c",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 238,
+        "prompt_tokens": 3905,
+        "prompt_tokens_details": {
+          "cached_tokens": 3019
+        },
+        "total_tokens": 4143
+      },
+      "wall_ms": 55680.05
+    },
+    {
+      "answers": [
+        {
+          "case_id": "HCA-107",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The observations do not provide sufficient evidence to determine the ultimate causality. The hypotheses remain consistent without claiming proof of ultimate causality."
+        },
+        {
+          "case_id": "HCA-108",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The observations do not provide sufficient evidence to determine the ultimate causality. The hypotheses remain consistent without claiming proof of ultimate causality."
+        }
+      ],
+      "arm": "D2_SELECTOR_ONLY",
+      "batch_index": 2,
+      "case_ids": [
+        "HCA-107",
+        "HCA-108"
+      ],
+      "contract_sha256": "93afc9d6d9d936de7d94de509c032d45c28a5aa98d87d089da492ae1b84eb9ab",
+      "prompt_sha256": "b794dc177335f0445159e9b21981c37b903ba05dbf45dd6a4385f2feb4d39df5",
+      "receipt_sha256": "94fbcead44ec07129825696cfc03604fc25aefb906177c7c195d775786d87fd7",
+      "run_id": "PE-CAUSAL-D2-SELECTOR-DIAGNOSTIC-20261009:B2:D2_SELECTOR_ONLY",
+      "runtime_attestation": {
+        "evidence_sha256": "960c6647b2a823fda6deedb4d02b78624232b78a38f1499c2d4b3cf36ca6127e",
+        "request_sha256": "fd1ae8b8d18c978e4a0c0ec05e5432dca70c7a3a6d604e46acce147a4f932bf6",
+        "response_sha256": "da9c550023789615ffb419ba2c95f42cad1fefe9fefe633fd8723c2fc7556a32",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 231,
+        "prompt_tokens": 3892,
+        "prompt_tokens_details": {
+          "cached_tokens": 3220
+        },
+        "total_tokens": 4123
+      },
+      "wall_ms": 45892.35
+    }
+  ],
+  "campaign": "PE-CAUSAL-D2-SELECTOR-DIAGNOSTIC-20261009",
+  "corpus_sha256": "4f3009b78989ee43e44c895f78d747df50f20daf4a31a604193f742bfe66cd8b",
+  "cutover_eligible": false,
+  "method_sha256": "883119d7c7caaa7f94523032f32a43acdca664c0f44696a44a53607466adcde8",
+  "oracle_opened": false,
+  "raw_frozen": true,
+  "retrospective_diagnostic_not_blind_holdout": true,
+  "schema": "PE_CAUSAL_UNSEEN_TYPED_PRODUCER_RAW_V1",
+  "score_opened": false
+}
