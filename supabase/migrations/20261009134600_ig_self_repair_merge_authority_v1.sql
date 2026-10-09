@@ -76,6 +76,69 @@ select jsonb_build_object(
 );
 $function$;
 
+
+-- Read-only independent *eligibility* evaluator, not an autonomous merger.
+-- Does not call the broken SAFE_CHANGE_ADMISSION or accept caller-provided version claims.
+create or replace function programacion.fn_engineering_authority_self_repair_eligibility_v1(
+ p_plan_code text,p_unit_code text)
+returns jsonb language plpgsql stable
+set search_path to 'pg_catalog','public','programacion'
+as $function$
+declare v_expected text;v_expected_sha text;v_current text;v_current_sha text;v_unit_exists boolean;v_safe_sha text;v_check jsonb;
+begin
+ select exists(select 1 from programacion.engineering_plan_units pu
+ where pu.plan_code=p_plan_code and pu.unit_code=p_unit_code and pu.disposition='ASSIGNED')
+ into v_unit_exists;
+ if not v_unit_exists then
+   return jsonb_build_object('status','BLOCK','code','UNIT_NOT_ASSIGNED',
+     'execution_permission','NO_EXECUTION_PERMISSION');
+ end if;
+ select c.version,c.manifest_sha256,v.manifest#>>'{dependencies,INDEPENDENT_ASSURANCE,version}',
+        v.manifest#>>'{dependencies,INDEPENDENT_ASSURANCE,manifest_sha256}'
+   into v_current,v_safe_sha,v_expected,v_expected_sha
+ from public.lf_capability_current c
+ join public.lf_capability_version_registry v
+ on v.capability_code=c.capability_code and v.version=c.version and v.manifest_sha256=c.manifest_sha256
+ where c.capability_code='SAFE_CHANGE_ADMISSION';
+ if not found or v_expected is null or v_expected_sha is null then
+   return jsonb_build_object('status','BLOCK','code','AUTHORITY_MANIFEST_UNRESOLVED',
+     'execution_permission','NO_EXECUTION_PERMISSION');
+ end if;
+ select version,manifest_sha256 into v_current,v_current_sha
+ from public.lf_capability_current where capability_code='INDEPENDENT_ASSURANCE';
+ if v_current is null or v_current_sha is null then
+   return jsonb_build_object('status','BLOCK','code','ASSURANCE_PROVIDER_MISSING',
+      'execution_permission','NO_EXECUTION_PERMISSION');
+ end if;
+ if v_expected=v_current and v_expected_sha=v_current_sha then
+   return jsonb_build_object('status','NOT_APPLICABLE','code','NORMAL_ADMISSION_AVAILABLE',
+     'execution_permission','NO_EXECUTION_PERMISSION','recovery_allowed',false);
+ end if;
+ if not exists(
+  select 1 from programacion.engineering_work_blockers b
+  join programacion.engineering_plan_units u on u.work_item_id=b.work_item_id
+  where u.plan_code=p_plan_code and u.unit_code=p_unit_code and b.status='OPEN'
+ ) then
+   return jsonb_build_object('status','BLOCK','code','NO_OPEN_REPAIR_SCOPE',
+      'execution_permission','NO_EXECUTION_PERMISSION');
+ end if;
+ return jsonb_build_object(
+   'schema_version','ENGINEERING_AUTHORITY_SELF_REPAIR_ELIGIBILITY_V1',
+   'status','REQUIRES_OWNER_AND_INDEPENDENT_PROOF',
+   'code','PROVEN_AUTHORIZATION_SELF_DEPENDENCY_DRIFT',
+   'unit',p_unit_code,'plan',p_plan_code,
+   'broken_authorizer','SAFE_CHANGE_ADMISSION',
+   'provider','INDEPENDENT_ASSURANCE',
+   'expected_version',v_expected,'live_version',v_current,
+   'expected_sha',v_expected_sha,'live_sha',v_current_sha,
+   'recovery_allowed',false,
+   'execution_permission','NO_EXECUTION_PERMISSION',
+   'next_action','OWNER_APPROVAL_PLUS_EXACT_HEAD_GIT_PASE_PYTHON_ROLLBACK_PROOF',
+   'normal_admission_bypassed',false
+ );
+end;
+$function$;
+
 insert into public.lf_error_knowledge(
  id,codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
  severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,evidencia,created_at,updated_at,source_ref)
