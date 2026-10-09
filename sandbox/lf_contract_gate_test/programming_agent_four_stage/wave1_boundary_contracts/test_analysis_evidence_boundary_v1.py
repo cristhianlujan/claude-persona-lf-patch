@@ -34,6 +34,19 @@ def main():
     assert result["reinterpretation_required"] is True
 
     corrupt=copy.deepcopy(seed)
+    corrupt["handoff"]["context_sha256"]=None
+    corrupt["handoff"]["receipt_context_sha256"]=None
+    result=run.execute_case(corrupt,classifier)
+    assert result["verdict"]=="BLOCKED"
+    assert result["handoff_parity_verdict"]=="BLOCK"
+
+    corrupt=copy.deepcopy(seed)
+    corrupt["handoff"]["context_sha256"]="same-but-not-sha256"
+    corrupt["handoff"]["receipt_context_sha256"]="same-but-not-sha256"
+    result=run.execute_case(corrupt,classifier)
+    assert result["verdict"]=="BLOCKED"
+
+    corrupt=copy.deepcopy(seed)
     corrupt["evidence"]["material_fronts"][0].update(
         status="BLOCKED",effect_on_scope="PRESERVE")
     result=run.execute_case(corrupt,classifier)
@@ -102,7 +115,7 @@ def main():
         assert wrong_report["gates"]["critical_false_ready"]>0
 
     print("PASS_ANALYSIS_EVIDENCE_BOUNDARY replay_positive=1 malformed_handoff=1 "
-          "front_contradiction=1 duplicate_front=1 wrong_scope=1 "
+          "missing_digest=1 malformed_digest=1 front_contradiction=1 duplicate_front=1 wrong_scope=1 "
           "fabricated_runtime_claim=1 provider_claim=1 false_ready=1")
 
 if __name__=="__main__":
