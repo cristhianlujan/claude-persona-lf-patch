@@ -19,6 +19,25 @@ For every artifact operation:
 Preserve this sequence for delegated agents and subagents.
 
 
+## Mandatory database migration route — HARD BLOCK
+
+**Scope:** LF_SUPABASE_SANDBOX (`mhwmirqcgxxukpctffuv`) and all agents, subagents, automation, or delegated execution.
+
+All database migration writes MUST go exclusively through the authorized LF Migration Merge Train.
+
+Agents MUST NOT:
+- Invoke Supabase MCP `apply_migration`, or execute migration-related DDL/DML through `execute_sql`.
+- Apply migrations through SQL Editor, direct PostgreSQL/`psql`, `supabase db push`, or an alternative API/CLI/connector.
+- Directly modify `supabase_migrations.schema_migrations`.
+- Create or modify workflows that read `LF_SUPABASE_DB_PASSWORD` or any DB credential.
+- Use an alternative token or credential to bypass the Merge Train.
+
+Every migration MUST be proposed by PR and admitted through `ready-to-merge` into the canonical Train. Source-only reconciliation requires its separately approved Train lane; do not apply it manually.
+
+Allowed with separate authorization: read-only SQL and inspection; local development and SQL tests; isolated Supabase development branches; draft PRs; non-migration operational DML via its own approved runtime. Local/branch tests never constitute application to LF_SUPABASE_SANDBOX.
+
+On attempted unauthorized database write: `BLOCK_DB_WRITE_OUTSIDE_MERGE_TRAIN`. Stop before execution and report the attempted operation, target, and canonical route. A soft route guard, exploratory mode, prior success, or agent judgment NEVER overrides this hard block. Any exception requires explicit owner approval with bounded scope, recorded evidence, and an approved controlled execution path.
+
 ## Soft canonical-route guard
 
 Before any repository, database, API, or external-system write, resolve the
