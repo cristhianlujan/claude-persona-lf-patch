@@ -172,10 +172,14 @@
         "v0.1 executions drained",
         "v0.2 authority readback",
         "existing OpenAI Responses GPT runtime 10/10 provider tests",
-        "no Llama dependency"
+        "no Llama dependency",
+        "canonical LF_PROFILE_EXECUTION_CONTRACT_V1 reused",
+        "GPT_NATIVE / CLAUDE_NATIVE / REMOTE_API route architecture reused",
+        "Llama remains REMOTE_API option, not GPT dependency"
       ],
       "blockers": [
-        "PE10P_C4: live GPT runtime receipt blocked because OPENAI_API_KEY / verify credential are absent in lf-profile-runtime-api service",
+        "PE10P_C4: fresh GPT_NATIVE RAW + PROFILE_EXECUTION_RECEIPT_V1 not yet materialized for Profile Evolution smoke",
+        "PE10P_C5: reversible candidate materialization smoke pending after C4",
         "FULL_PROFILE_EVOLUTION_BEHAVIOR benchmark not yet executed/admitted",
         "0 ADMIT_CUTOVER events",
         "25 v0.1 executions IN_PROGRESS",
