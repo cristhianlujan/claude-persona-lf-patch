@@ -57,7 +57,7 @@ jobs:
           test "$(jq -r '.base.ref' <<< "$info")" = main
           test "$(jq -r '.head.repo.full_name' <<< "$info")" = "$REPO"
           test "$(jq -r '.draft' <<< "$info")" = false
-          echo "BASE_SHA=$(jq -r '.base.sha' <<< "$info")" >> "$GITHUB_ENV"
+          export BASE_SHA="$(jq -r '.base.sha' <<< "$info")"
           gh api --paginate --slurp "repos/$REPO/pulls/$PR/files?per_page=100" \
             | jq '[.[][]]' > /tmp/reconcile-files.json
           python sandbox/lf_contract_gate_test/migration_source_parity/reconcile_source_only.py \
