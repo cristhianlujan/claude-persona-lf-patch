@@ -24,7 +24,7 @@ Deno.test("OIDC D7 independent observer negative JWT matrix", async () => {
    const signed=await token(c,expired,aud);
    let observed="";
    try { await verifyObserverToken(signed,r,keys); }
-   catch(e) { observed=String((e as Error).message); }
+   catch(e) { observed=String((e as Error).name)+": "+String((e as Error).message); }
    if (!observed.includes(expected)) throw Error(description+": expected "+expected+", got "+observed);
  }
  const valid=await token(claims);
@@ -46,7 +46,9 @@ Deno.test("OIDC D7 independent observer negative JWT matrix", async () => {
  const foreign=await generateKeyPair("RS256");
  const forged=await new SignJWT(claims).setProtectedHeader({alg:"RS256",kid:"d7-local-test"})
    .setIssuer(ISSUER).setAudience(AUDIENCE).setExpirationTime("5m").sign(foreign.privateKey);
- try {await verifyObserverToken(forged,receipt,keys); throw Error("forged signature admitted")}
- catch(e) {if ((e as Error).message==="forged signature admitted") throw e}
- console.log("D7_JWT_TESTS_COMPLETED cases=9 (baseline + 8 negative)");
+ let signatureError = "";
+ try {await verifyObserverToken(forged,receipt,keys);}
+ catch(e) {signatureError=(e as Error).name + ": " + (e as Error).message;}
+ if (!signatureError.includes("JWSSignatureVerificationFailed")) throw Error("unexpected signature result: " + signatureError);
+ console.log("D7_JWT_TESTS_COMPLETED cases=17 (baseline + 16 negative)");
 });
