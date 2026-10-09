@@ -26,7 +26,7 @@ def check_report(case,stage,report):
    return False
  return len(report["hypotheses"])==len(case["hypotheses"])
 def main():
- assert not OUT.exists()
+ frozen_preexisting = OUT.exists()
  tasks={c["case_id"]:c for c in json.loads(CORPUS.read_text())["cases"]}
  raw=json.loads(MRAW.read_text())
  summaries=[];num=0
@@ -72,7 +72,10 @@ def main():
    "cases":summaries,"stage_count":num,
    "causal_proof":False,"production_activation":False,
    "model_reasoning_uplift_claimed":False,"cutover_eligible":False}
- OUT.write_text(json.dumps(content,ensure_ascii=False,sort_keys=True,indent=2)+"\n")
+ if frozen_preexisting:
+  assert json.loads(OUT.read_text())==content, 'FROZEN_ARTIFACT_DRIFT'
+ else:
+  OUT.write_text(json.dumps(content,ensure_ascii=False,sort_keys=True,indent=2)+"\n")
  print(json.dumps({"status":"PASS","cases":len(summaries),
    "verified_stages":num,"decisions":{s["case_id"]:s["final_action"] for s in summaries},
    "frozen_sha256":hashlib.sha256(OUT.read_bytes()).hexdigest()},sort_keys=True))
