@@ -1,0 +1,37 @@
+{
+  "cutover_eligible": false,
+  "external_independent_assurance": "NOT_EXECUTED",
+  "matches": 0,
+  "producer_judge_separate_execution": true,
+  "raw_sha256": "397b2877d5eff23f8cae2de14dc6bce2fa1020bbb37477acd89e4cce48b4c2d3",
+  "results": [
+    {
+      "calibration_match": false,
+      "expected": "CONTRADICTED",
+      "judge_verdict": "MIXED",
+      "review_id": "S01"
+    },
+    {
+      "calibration_match": false,
+      "expected": "SUPPORTED",
+      "judge_verdict": "MIXED",
+      "review_id": "S02"
+    },
+    {
+      "calibration_match": false,
+      "expected": "CONTRADICTED",
+      "judge_verdict": "MIXED",
+      "review_id": "S03"
+    },
+    {
+      "calibration_match": false,
+      "expected": "SUPPORTED",
+      "judge_verdict": "MIXED",
+      "review_id": "S04"
+    }
+  ],
+  "review_count": 4,
+  "same_underlying_model": true,
+  "schema": "PE_BLIND_SEPARATE_QUALITY_REVIEW_SCORE_V1",
+  "status": "KNOWN_CASE_MODEL_JUDGE_CALIBRATED_NOT_EXTERNAL_ASSURANCE"
+}
