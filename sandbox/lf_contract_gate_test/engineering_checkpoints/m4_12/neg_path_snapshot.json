@@ -1,0 +1,9 @@
+{"schema_version":"IG_M4_12_PATH_EVIDENCE_SNAPSHOT_V1","observed_at":"2026-10-09","source":"programacion.input_readiness_runs + programacion.engineering_work_items",
+"paths":[
+ {"path":"INPUT_VALIDATOR:EDGE","active":true,"runs_completed":112,"runs_blocked":3,"last_at":"2026-10-05"},
+ {"path":"INPUT_VALIDATOR:SQL","active":true,"runs_completed":4,"runs_blocked":0,"last_at":"2026-10-08"},
+ {"path":"NULL_IDENTITY","active":false,"runs_completed":0,"runs_blocked":5,"last_at":"2026-10-04","note":"BLOCKED/CURATING runs without validator identity; never validated"},
+ {"path":"INPUT_VALIDATOR:v0.*_HISTORICAL","active":false,"last_at":"2026-08-23","note":"pre-M4 named validator versions, historical only"}],
+"evidence_units":{"MUTATION":{"unit":"M4.9","work":"PAULO-063","done":"5/5"},"SHADOW":{"unit":"M4.10","work":"PAULO-137","done":"6/6"},"RECEIPT_FAIL":{"unit":"M4.7","work":"PAULO-061","done":"5/5"},"ENTRYPOINT":{"unit":"M4.2","work":"PAULO-056","done":"6/6"}},
+"path_evidence":{"INPUT_VALIDATOR:EDGE":["MUTATION","SHADOW","RECEIPT_FAIL","ENTRYPOINT"],"INPUT_VALIDATOR:SQL":["MUTATION","SHADOW","RECEIPT_FAIL","ENTRYPOINT"]},
+"novation_event_id":20635}
