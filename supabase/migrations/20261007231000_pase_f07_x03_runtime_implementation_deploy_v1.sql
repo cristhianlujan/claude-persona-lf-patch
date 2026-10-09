@@ -221,69 +221,35 @@ end $fn$;
 comment on function public.lf_runtime_impl_deploy_receipt_check_v1(jsonb) is
  'RUNTIME_DEPLOY_VERIFICATION read-only adapter for LF_RUNTIME_IMPL_DEPLOY_RECEIPT_V1; independent runtime readback required; step90 attestation closes X02-R01; next gate real queue worker job canary bound to exact_head/runtime_sha. Does not execute deploy or canary.';
 
--- Candidate-only verification entry for the X03 step-90 receipt; this is NOT a deploy.
--- D7 GitHub read-only observer is selected; until workflow receipt authenticity is checked independently, status remains blocked.
+-- D7 independent readback: trusted GitHub Actions observation is required.
 create or replace function public.lf_runtime_impl_deploy_verification_binding_v1(p_receipt jsonb)
 returns jsonb language plpgsql stable security invoker
 set search_path to 'pg_catalog','public'
 as $binding$
 declare v_check text;
 begin
- if not exists (
-   select 1 from public.lf_capability_current
-   where capability_code='RUNTIME_DEPLOY_VERIFICATION'
- ) then
-   return jsonb_build_object('decision','VERIFICATION_FAILED','reason','RUNTIME_DEPLOY_VERIFICATION_NOT_CURRENT');
- end if;
+ if not exists (select 1 from public.lf_capability_current where capability_code='RUNTIME_DEPLOY_VERIFICATION')
+ then return jsonb_build_object('decision','VERIFICATION_FAILED','reason','RUNTIME_DEPLOY_VERIFICATION_NOT_CURRENT'); end if;
  v_check := public.lf_runtime_impl_deploy_receipt_check_v1(p_receipt);
  if v_check <> 'VERIFICATION_VERIFIED' then
    return jsonb_build_object('decision','VERIFICATION_FAILED','reason',v_check);
  end if;
- -- D7: only GitHub Actions read-only VPS observer receipts are eligible.
- -- The deploy actor can forge payload fields, so self-asserted provenance is rejected.
- if coalesce(p_receipt->'attestation'->>'schema_version','') <> 'LF_RUNTIME_INDEPENDENT_READBACK_V1'
-    or coalesce(p_receipt->'attestation'->>'producer','') <> 'GITHUB_ACTIONS_VPS_READ_ONLY'
-    or coalesce(p_receipt->'attestation'->>'credential_role','') <> 'VPS_READ_ONLY'
-    or coalesce(p_receipt->'attestation'->>'origin_role','') <> 'INDEPENDENT_OBSERVER'
-    or coalesce(p_receipt->'attestation'->>'observer_execution_id','') = ''
-    or coalesce(p_receipt->'attestation'->>'workflow_run_id','') !~ '^[0-9]+
-   'step_id','runtime_sha_readback',
-   'work_item','PASE-ATOM-F07-X02-R01',
-   'next_gate','POST_DEPLOY_WORKER_QUEUE_REAL_JOB_CANARY',
-   'runtime_sha',p_receipt->>'runtime_sha');
-end $binding$;
-comment on function public.lf_runtime_impl_deploy_verification_binding_v1(jsonb) is
- 'X03 read-only step90 binding to runtime verifier currentness and receipt check; fail closed until attestation source is authoritative.';
-
--- D7: authenticated GitHub Actions run/artifact verifier and restricted read-only VPS credential must exist before candidate promotion; no deploy.
-
-    or p_receipt->'attestation'->>'exact_head' is distinct from p_receipt->>'exact_head'
-    or p_receipt->'attestation'->>'runtime_sha' is distinct from p_receipt->>'runtime_sha'
-    or p_receipt->'attestation'->>'release_path' is distinct from p_receipt->>'release_path'
-    or coalesce(p_receipt->'attestation'->>'manifest_digest','') !~ '^[0-9a-f]{64}
-   'step_id','runtime_sha_readback',
-   'work_item','PASE-ATOM-F07-X02-R01',
-   'next_gate','POST_DEPLOY_WORKER_QUEUE_REAL_JOB_CANARY',
-   'runtime_sha',p_receipt->>'runtime_sha');
-end $binding$;
-comment on function public.lf_runtime_impl_deploy_verification_binding_v1(jsonb) is
- 'X03 read-only step90 binding to runtime verifier currentness and receipt check; fail closed until attestation source is authoritative.';
-
--- DEBT: authoritative attestation registry/readback remains unresolved; no promotion from draft.
-
- then
-   return jsonb_build_object('decision','VERIFICATION_FAILED','reason','INDEPENDENT_READBACK_RECEIPT_INVALID');
- end if;
- -- Fail closed until trusted GitHub run identity and artifact digest are independently verified
- -- by an authorized consumer; DB cannot authenticate untrusted JSON claims alone.
+ if p_receipt->'attestation'->>'schema_version' is distinct from 'LF_RUNTIME_INDEPENDENT_READBACK_V1'
+   or p_receipt->'attestation'->>'producer' is distinct from 'GITHUB_ACTIONS_VPS_READ_ONLY'
+   or p_receipt->'attestation'->>'credential_role' is distinct from 'VPS_READ_ONLY'
+   or p_receipt->'attestation'->>'origin_role' is distinct from 'INDEPENDENT_OBSERVER'
+   or coalesce(p_receipt->'attestation'->>'workflow_run_id','') = ''
+   or p_receipt->'attestation'->>'exact_head' is distinct from p_receipt->>'exact_head'
+   or p_receipt->'attestation'->>'runtime_sha' is distinct from p_receipt->>'runtime_sha'
+   or p_receipt->'attestation'->>'release_path' is distinct from p_receipt->>'release_path'
+   or coalesce(p_receipt->'attestation'->>'manifest_digest','') = ''
+ then return jsonb_build_object('decision','VERIFICATION_FAILED','reason','INDEPENDENT_READBACK_RECEIPT_INVALID'); end if;
+ -- A self-declared GitHub Actions role is NOT an authenticated GitHub Actions receipt.
+ -- No authoritative run/artifact verifier is yet bound; therefore deny even plausible claims.
  return jsonb_build_object('decision','VERIFICATION_FAILED',
    'reason','INDEPENDENT_READBACK_RECEIPT_NOT_AUTHENTICATED',
    'step_id','runtime_sha_readback',
    'work_item','PASE-ATOM-F07-X02-R01',
-   'next_gate','POST_DEPLOY_WORKER_QUEUE_REAL_JOB_CANARY',
-   'runtime_sha',p_receipt->>'runtime_sha');
+   'next_gate','POST_DEPLOY_WORKER_QUEUE_REAL_JOB_CANARY');
 end $binding$;
-comment on function public.lf_runtime_impl_deploy_verification_binding_v1(jsonb) is
- 'X03 read-only step90 binding to runtime verifier currentness and receipt check; fail closed until attestation source is authoritative.';
-
--- DEBT: authoritative attestation registry/readback remains unresolved; no promotion from draft.
+-- Pending: verify GitHub run and artifact identity via independently trusted credentials.
