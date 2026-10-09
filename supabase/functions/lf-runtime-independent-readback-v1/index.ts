@@ -6,6 +6,7 @@ const reply = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), { status, headers: {"content-type":"application/json","cache-control":"no-store"} });
 
 Deno.serve(async req => {
+ let identityVerified = false;
  if (req.method !== "POST") return reply(405,{decision:"VERIFICATION_FAILED",reason:"METHOD_NOT_ALLOWED"});
  try {
   const auth = req.headers.get("authorization") ?? "";
@@ -15,6 +16,7 @@ Deno.serve(async req => {
   const receipt = await req.json();
   if (!receipt || typeof receipt !== "object" || Array.isArray(receipt)) throw Error("RECEIPT_INVALID");
   const payload = await verifyObserverToken(token,receipt);
+  identityVerified = true;
   const db = Deno.env.get("LF_RUNTIME_READBACK_WRITER_DATABASE_URL");
   if (!db) throw Error("WRITER_DATABASE_URL_MISSING");
   const sql = postgres(db,{max:1,prepare:false,connect_timeout:8});
@@ -37,7 +39,8 @@ Deno.serve(async req => {
   const code = (e as {code?:string}).code;
   if (code === "23505") return reply(409,{decision:"VERIFICATION_FAILED",reason:"RECEIPT_DUPLICATE"});
   if (code === "25006" || reason === "WRITER_DATABASE_URL_MISSING" || /connect|timeout|connection|ECONN/i.test(reason)) return reply(503,{decision:"VERIFICATION_FAILED",reason:"RECEIPT_REGISTRATION_UNAVAILABLE"});
-  if (/^(RECEIPT_|RELEASE_PATH_|READBACK_NOT_VERIFIED|MANIFEST_)/.test(reason)) return reply(422,{decision:"VERIFICATION_FAILED",reason});
+  if (e instanceof SyntaxError || /^(RECEIPT_|RELEASE_PATH_|READBACK_NOT_VERIFIED|MANIFEST_)/.test(reason)) return reply(422,{decision:"VERIFICATION_FAILED",reason});
+  if (identityVerified) return reply(503,{decision:"VERIFICATION_FAILED",reason:"RECEIPT_REGISTRATION_UNAVAILABLE"});
   return reply(401,{decision:"VERIFICATION_FAILED",reason:"OIDC_IDENTITY_REJECTED"});
  }
 });
