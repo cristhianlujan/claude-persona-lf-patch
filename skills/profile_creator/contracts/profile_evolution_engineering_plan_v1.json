@@ -1023,6 +1023,23 @@
           "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
         },
         {
+          "checkpoint_code": "PE10_C2B",
+          "title": "Paired FULL_PROFILE_EVOLUTION_BEHAVIOR benchmark passes",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_BENCHMARK_ADMISSION_V1",
+          "validation_input": {
+            "summary_ref": "fresh full behavior benchmark score",
+            "evaluation_mode": "BENCHMARK_ONLY",
+            "benchmark_scope": "FULL_PROFILE_EVOLUTION_BEHAVIOR",
+            "primary_executor_mode": "GPT_NATIVE",
+            "paired_route_policy": "SAME_EXECUTOR_MODE_FOR_BASELINE_AND_CANDIDATE"
+          },
+          "pass_when": "benchmark_status=BENCHMARK_PASS and benchmark_scope=FULL_PROFILE_EVOLUTION_BEHAVIOR; independent assurance remains a separate next gate",
+          "failure_code": "FULL_BEHAVIOR_BENCHMARK_FAIL",
+          "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_RERUN_FRESH_FULL_BEHAVIOR"
+        },
+        {
           "checkpoint_code": "PE10_C3",
           "title": "Independent assurance passes on frozen evidence",
           "required": true,
@@ -1104,6 +1121,7 @@
     "PE10P_ADDED_TO_MATERIALIZE_GOVERNED_SEMANTIC_PRODUCER_EXECUTION_DEPENDENCY",
     "PE10P_REBOUND_TO_EXISTING_OPENAI_RESPONSES_GPT_RUNTIME_NO_LLAMA_DEPENDENCY",
     "PE10P_REUSED_CANONICAL_LF_PROFILE_EXECUTION_CONTRACT_THREE_ROUTE_ARCHITECTURE",
-    "PE10P_REMOVED_FALSE_OPENAI_API_CREDENTIAL_DEPENDENCY"
+    "PE10P_REMOVED_FALSE_OPENAI_API_CREDENTIAL_DEPENDENCY",
+    "PE10_FULL_PROFILE_EVOLUTION_BEHAVIOR_MADE_EXPLICIT_ATOMIC_CHECKPOINT"
   ]
 }
