@@ -156,7 +156,7 @@
       "depends_on": [
         "E1"
       ],
-      "status": "IMPLEMENTED_TESTED_CANDIDATE",
+      "status": "DONE",
       "closure_evidence": [
         "PROFILE_ASSESSMENT_V2",
         "verified task execution receipts",
@@ -171,7 +171,7 @@
         "E2",
         "E1B"
       ],
-      "status": "IMPLEMENTED_TESTED_CANDIDATE",
+      "status": "DONE",
       "closure_evidence": [
         "METHOD_PACK_REGISTRY_V2",
         "12 methods",
@@ -186,7 +186,7 @@
         "E3",
         "E2B"
       ],
-      "status": "IMPLEMENTED_TESTED_CANDIDATE",
+      "status": "DONE",
       "closure_evidence": [
         "CAPABILITY_SELECTOR_V3",
         "verified preconditions",
@@ -201,7 +201,7 @@
         "E7",
         "E3B"
       ],
-      "status": "IMPLEMENTED_TESTED_CANDIDATE",
+      "status": "DONE",
       "closure_evidence": [
         "PROFILE_LEARNING_ADMISSION_V2",
         "ablation/paired/counterfactual contract",
@@ -217,18 +217,21 @@
         "E7B",
         "PE10P_GPT_NATIVE"
       ],
-      "status": "PROTOCOL_IMPLEMENTED_EXECUTION_PENDING",
+      "status": "IN_PROGRESS_3_OF_4",
       "closure_evidence": [
         "actual profile execution receipts",
         "blind independent evaluator",
         "four arms A/B/C/D",
         "difficulty-weighted task quality",
         "transfer/adaptation/preservation",
-        "relative uplift >=15% with predefined uncertainty"
+        "relative uplift >=15% with predefined uncertainty",
+        "benchmark contract/scorer hostile self-test PASS",
+        "120-case / 8-family / 5-difficulty campaign design frozen",
+        "60-case holdout sealed without labels exposed to producer",
+        "power analysis and thresholds frozen before RAW"
       ],
       "blockers": [
-        "blind campaign corpus/power plan not yet frozen",
-        "four-arm semantic RAW not yet executed"
+        "PE10E_C4 actual four-arm task execution and blind independent scoring not yet performed"
       ]
     },
     {
@@ -240,7 +243,7 @@
         "E8_OR_E9",
         "E10E_EXPERT_TASK_BENCHMARK"
       ],
-      "status": "BLOCKED_PENDING_EVIDENCE",
+      "status": "BLOCKED_BY_E10E_AND_ASSURANCE_PUBLICATION",
       "closure_evidence": [
         "24+ executed/scored cases across 8 strata",
         "primary capability score UP",
@@ -262,10 +265,10 @@
         "expert task benchmark A/B/C/D PASS"
       ],
       "blockers": [
-        "E10E: EXPERT_TASK_PERFORMANCE_E2E campaign not yet executed/passed",
-        "PE10_C3: Independent Assurance V3 publication/requalification pending",
-        "0 ADMIT_CUTOVER events",
+        "PE10E_C4: actual expert-task A/B/C/D benchmark pending",
+        "INDEPENDENT_ASSURANCE V3: formal migration rollback-PASS; merge/apply/requalification/promotion pending",
         "25 v0.1 executions IN_PROGRESS",
+        "0 cutover admission events",
         "required candidate capabilities not yet promoted to live authority"
       ],
       "external_controls": {
@@ -291,6 +294,8 @@
     "units": 18,
     "checkpoints": 79,
     "required_checkpoints": 76,
+    "required_terminal": 70,
+    "required_progress_pct": 92.1,
     "status": "REARCHITECTURE_IN_EXECUTION"
   },
   "validation_policy": {
