@@ -1,0 +1,3 @@
+{"schema":"IG_M8_10_SLO_SNAPSHOT_V1","limit_source":"M8.0/INPUT_GOVERNANCE_PERFORMANCE_ASSURANCE_V1","edge_limit_ms":150000,"min_samples":3,
+"compute_per_invocation":{"source":"programacion.input_validator_chunk_timings.duration_ms","sample_count":475,"p50_ms":12763,"p95_ms":26010,"p99_ms":36912,"corpus_sha256":"96fcf8209c7b833ab413059ffcd5e9f0111c945cd041b42bba0b67428b876ede"},
+"wall_clock_total":{"source":"programacion.input_readiness_runs (validator_completed_at - created_at)","sample_count":230,"p50_ms":52088,"p95_ms":736254,"p99_ms":4610206,"corpus_sha256":"96fcf8209c7b833ab413059ffcd5e9f0111c945cd041b42bba0b67428b876ede"}}
