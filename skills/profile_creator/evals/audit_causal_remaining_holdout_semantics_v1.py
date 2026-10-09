@@ -16,7 +16,7 @@ OUT=ROOT/"pe_causal_remaining_holdout_semantic_audit_v1.json"
 
 def main():
  assert not OUT.exists()
- tasks={x["case_id"]:x for x in json.loads(CASE.read_text())["cases"]}
+ tasks={x["case_id"]:x for x in json.loads(CASES.read_text())["cases"]}
  methods={x["case_id"]:x["stages"][-1] for x in json.loads(METHOD.read_text())["cases"]}
  cards={x["case_id"]:x for x in json.loads(CARDS.read_text())["cards"]}
  raw=json.loads(MODEL.read_text())
