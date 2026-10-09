@@ -44,8 +44,8 @@ def evaluate(receipt: dict[str, Any]) -> dict[str, Any]:
     surface = receipt.get("execution_surface")
     if surface in FORBIDDEN:
         blockers.append(f"RUNNER_EXECUTION_SURFACE_FORBIDDEN:{surface}")
-    if surface != "GOVERNED_PROFILE_CREATOR_WORKER":
-        blockers.append("RUNNER_EXECUTION_SURFACE_NOT_GOVERNED_PROFILE_CREATOR")
+    if surface not in {"GOVERNED_GPT_EXECUTION", "GOVERNED_PROFILE_CREATOR_WORKER"}:
+        blockers.append("RUNNER_EXECUTION_SURFACE_NOT_GOVERNED")
     if receipt.get("fresh_context") is not True:
         blockers.append("RUNNER_FRESH_CONTEXT_REQUIRED")
     if receipt.get("profile_source_write_executed") is not False:
@@ -85,8 +85,10 @@ def self_test() -> None:
     good = {
         "schema":"PROFILE_CREATOR_SEMANTIC_RUNNER_RECEIPT_V1",
         "status":"READY",
-        "execution_surface":"GOVERNED_PROFILE_CREATOR_WORKER",
+        "execution_surface":"GOVERNED_GPT_EXECUTION",
         "producer":"PROFILE_CREATOR",
+        "executor_class":"GPT",
+        "governance_contract_ref":"skills/profile_creator/contracts/profile_creator_governed_semantic_runner_v1.json",
         "case_id":"FB-001",
         "run_id":"run-001",
         "producer_source_ref":"github://repo/skills/profile_creator/SKILL.md",
@@ -123,7 +125,7 @@ def self_test() -> None:
     bad["runtime_model_stamp"] = {}
     assert evaluate(bad)["status"] == "FAIL"
 
-    print("PASS_PROFILE_CREATOR_SEMANTIC_RUNNER_V1 positive=1 negative=5 direct_model_bypass=blocked")
+    print("PASS_PROFILE_CREATOR_SEMANTIC_RUNNER_V1 positive=1 negative=5 governed_gpt=accepted direct_model_bypass=blocked")
 
 
 def main() -> int:
