@@ -140,19 +140,19 @@
     "decision_benchmark_scope": "DECISION_POLICY_AND_COMPOSITION_ONLY_NOT_CUTOVER_ELIGIBLE",
     "semantic_runner_contract": "PASS_SELF_TEST_POSITIVE_1_NEGATIVE_5_DIRECT_MODEL_BYPASS_BLOCKED",
     "llama_required": false,
-    "execution_architecture": "CANONICAL_GPT_NATIVE_CLAUDE_NATIVE_REMOTE_API",
+    "execution_architecture": "LF_PROFILE_EXECUTION_CONTRACT_V1: GPT_NATIVE | CLAUDE_NATIVE | REMOTE_API",
     "current_execution_mode": "GPT_NATIVE",
     "openai_api_key_required": false
   },
-  "closure": "IMPLEMENTATION_IN_EXECUTION; PE10P DONE ON CANONICAL GPT_NATIVE; PE10 FULL_BEHAVIOR BENCHMARK EXPLICITLY REQUIRED BEFORE ASSURANCE/CUTOVER",
+  "closure": "IMPLEMENTATION_IN_EXECUTION; PE10P DONE 5/5; PE10_C2B FULL_PROFILE_EVOLUTION_BEHAVIOR IS CURRENT REQUIRED GATE; CUTOVER NOT ADMITTED",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
     "unit_count": 13,
     "checkpoint_count": 57,
     "required_checkpoint_count": 54,
-    "required_terminal_count": 47,
-    "required_progress_pct": 87,
-    "done_checkpoint_count": 47,
+    "required_terminal_count": 48,
+    "required_progress_pct": 88.9,
+    "done_checkpoint_count": 48,
     "not_applicable_checkpoint_count": 3,
     "open_blocker_count": 0
   },
@@ -167,15 +167,21 @@
       "checkpoints": "5/5",
       "executor_mode": "GPT_NATIVE",
       "adapter_id": "chatgpt-native-current-context-v1",
+      "provider": "OPENAI_CHATGPT_NATIVE",
       "api_key_required": false,
-      "llama_required": false
+      "llama_required": false,
+      "smoke_receipt_sha256": "9b54a21e64d4673699a832eb3776fce226de99c8af3ca003a96fef80518acb3b",
+      "materializer_receipt_sha256": "a2c53910ac76bbb9ab23b7b787949940b9500e145f772356a33d1c8075f669ef"
     },
     "PE10": {
-      "status": "READY_AFTER_PE10P",
-      "checkpoints": "1/8",
-      "completed_checkpoint": "PE10_C1",
-      "next_checkpoint": "PE10_C2",
-      "full_behavior_checkpoint": "PE10_C2B"
+      "status": "IN_PROGRESS",
+      "checkpoints": "2/8",
+      "completed": [
+        "PE10_C1",
+        "PE10_C2"
+      ],
+      "current_checkpoint": "PE10_C2B",
+      "current_gate": "FULL_PROFILE_EVOLUTION_BEHAVIOR"
     }
   }
 }
