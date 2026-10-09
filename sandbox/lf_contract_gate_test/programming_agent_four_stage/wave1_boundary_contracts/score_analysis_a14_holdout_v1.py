@@ -23,6 +23,11 @@ def main():
         raise SystemExit("A14_EVIDENCE_TIER_MISMATCH")
     if cand.get("model_inference_executed",False) is not False or cand.get("real_programming_consumer_verified",False) is not False:
         raise SystemExit("A14_UNSUPPORTED_RUNTIME_CLAIM")
+    for replay_result in cand.get("results",[]):
+        if (replay_result.get("provider_response_id") is not None or
+            replay_result.get("exact_model_or_profile") is not None or
+            replay_result.get("model_inference_executed",False) is not False):
+            raise SystemExit("A14_REPLAY_MAY_NOT_CLAIM_PROVIDER_EVIDENCE")
     if not (cases["case_set_id"]==oracle["case_set_id"]==cand["case_set_id"]): raise SystemExit("CASE_SET_ID_MISMATCH")
     if cases.get("generated_after_candidate_freeze") is not True or cases.get("used_for_A13_tuning") is not False: raise SystemExit("HOLDOUT_VIRGINITY_INVALID")
     o={x["case_id"]:x for x in oracle["oracle"]}
