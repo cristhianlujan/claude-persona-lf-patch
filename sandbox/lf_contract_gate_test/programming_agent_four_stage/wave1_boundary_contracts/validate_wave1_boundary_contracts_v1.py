@@ -135,15 +135,30 @@ def validate_programming_snapshot_payload_v1(snapshot):
     matrix=snapshot.get("scope_front_matrix")
     if not isinstance(scopes,list) or not scopes or not isinstance(coverage,dict):
         raise ContractError("SNAPSHOT_PAYLOAD_SCOPES")
-    fronts=coverage.get("fronts")
-    if not isinstance(fronts,list) or not fronts or coverage.get("all_material_fronts_accounted") is not True:
-        raise ContractError("SNAPSHOT_PAYLOAD_FRONTS")
     if not isinstance(matrix,list) or not matrix:
         raise ContractError("SNAPSHOT_PAYLOAD_MATRIX_REQUIRED")
+    fronts=coverage.get("material_fronts")
+    if not isinstance(fronts,list) or not fronts or coverage.get("all_material_fronts_accounted") is not True:
+        raise ContractError("SNAPSHOT_PAYLOAD_FRONTS")
+    canonical_fields=("front_candidate_refs","unmapped_material_signals",
+                      "source_refs","currentness_refs")
+    if any(not isinstance(coverage.get(k),list) for k in canonical_fields) or not isinstance(
+        coverage.get("coverage_fingerprint_sha256"),str) or not re.fullmatch(
+        "[0-9a-f]{64}",coverage["coverage_fingerprint_sha256"]):
+        raise ContractError("SNAPSHOT_COVERAGE_PROVENANCE")
     front_map={}
     for front in fronts:
-        if not isinstance(front,dict) or not isinstance(front.get("id"),str) or not front["id"] or front["id"] in front_map:
+        fid=front.get("front_id") if isinstance(front,dict) else None
+        if not isinstance(fid,str) or not fid or fid in front_map:
             raise ContractError("SNAPSHOT_FRONT_ID")
+        if not isinstance(front.get("front_kind"),str) or not front["front_kind"]:
+            raise ContractError("SNAPSHOT_FRONT_KIND")
+        for key in ("source_signal_refs","scope_refs","authority_refs","evidence_refs",
+                    "currentness_refs","blockers"):
+            if not isinstance(front.get(key),list):
+                raise ContractError("SNAPSHOT_FRONT_REQUIRED_REFS")
+        if not isinstance(front.get("reason"),str) or not front["reason"].strip():
+            raise ContractError("SNAPSHOT_FRONT_REASON")
         if front.get("status") not in {"REQUIRED","REUSE_AS_IS","NOT_APPLICABLE"}:
             raise ContractError("SNAPSHOT_FRONT_STATUS")
         if front.get("closure") not in {"CLOSED","BLOCKED"}:
@@ -153,7 +168,13 @@ def validate_programming_snapshot_payload_v1(snapshot):
         if front["status"]=="NOT_APPLICABLE" and (
             not front.get("evidence_refs") or not front.get("reason")):
             raise ContractError("SNAPSHOT_FRONT_NOT_APPLICABLE_PROOF")
-        front_map[front["id"]]=front
+        if front["status"]=="REQUIRED" and not front["scope_refs"]:
+            raise ContractError("SNAPSHOT_FRONT_REQUIRED_SCOPE")
+        if front["status"]=="REQUIRED" and front["closure"]=="CLOSED" and not front["evidence_refs"]:
+            raise ContractError("SNAPSHOT_FRONT_CLOSED_EVIDENCE")
+        if front["closure"]=="BLOCKED" and not front["blockers"]:
+            raise ContractError("SNAPSHOT_FRONT_BLOCKER_PROOF")
+        front_map[fid]=front
     scope_map={}
     expected_pairs=set()
     for scope in scopes:
@@ -173,6 +194,13 @@ def validate_programming_snapshot_payload_v1(snapshot):
             if front_id not in front_map: raise ContractError("SNAPSHOT_SCOPE_UNKNOWN_FRONT")
             expected_pairs.add((sid,front_id))
         scope_map[sid]=scope
+    for fid,front in front_map.items():
+        declared=front["scope_refs"]
+        if len(declared)!=len(set(declared)):
+            raise ContractError("SNAPSHOT_FRONT_DUPLICATE_SCOPE")
+        paired={sid for sid,related_fid in expected_pairs if related_fid==fid}
+        if set(declared)!=paired:
+            raise ContractError("SNAPSHOT_FRONT_SCOPE_PARITY")
     for sid,scope in scope_map.items():
         for dep in scope["depends_on_scope_ids"]:
             if dep not in scope_map or dep==sid:
