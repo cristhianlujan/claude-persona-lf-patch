@@ -1,0 +1,70 @@
+{
+  "schema": "PROFILE_LEARNING_ADMISSION_V2",
+  "purpose": "Admit reusable evolution patterns only when utility is causally attributable, transferable, bounded, current and independently admitted.",
+  "flow": [
+    "EXECUTION_OBSERVATION",
+    "HYPOTHESIS",
+    "PAIRED_OR_COUNTERFACTUAL_EVALUATION",
+    "CAUSAL_ATTRIBUTION",
+    "REPLICATION",
+    "TRANSFER_VALIDATION",
+    "HOLDOUT",
+    "COST_RISK_EVALUATION",
+    "INDEPENDENT_ADMISSION",
+    "SCOPED_REUSABLE_PATTERN",
+    "MONITOR",
+    "RETIRE_OR_REVALIDATE"
+  ],
+  "auto_promote": false,
+  "required_evidence": [
+    "observations",
+    "hypothesis",
+    "method_ids",
+    "causal_attribution",
+    "replication",
+    "transfer_validation",
+    "holdout",
+    "cost_effectiveness",
+    "negative_outcomes",
+    "admission",
+    "lifecycle"
+  ],
+  "causal_attribution": {
+    "allowed_designs": [
+      "ABLATION",
+      "PAIRED_CONTROL",
+      "COUNTERFACTUAL",
+      "FACTORIAL"
+    ],
+    "minimum_confidence_default": 0.7,
+    "positive_effect_required": true,
+    "evidence_refs_required": true,
+    "same_task_or_matched_task_control_required": true
+  },
+  "transfer": {
+    "minimum_successful_target_classes_default": 2,
+    "failed_transfers_must_be_retained": true,
+    "scope_expansion_requires_new_admission": true
+  },
+  "lifecycle": {
+    "review_after_required": true,
+    "retirement_conditions_required": true,
+    "automatic_retirement_on_critical_regression": true,
+    "expiry_does_not_auto_delete_evidence": true
+  },
+  "output_states": [
+    "ADMIT_SCOPED_REUSABLE_PATTERN",
+    "REJECT",
+    "NEEDS_MORE_EVIDENCE"
+  ],
+  "forbidden": [
+    "SINGLE_EXECUTION_TO_RULE",
+    "CORRELATION_AS_CAUSATION",
+    "SELF_REFLECTION_AS_AUTHORITY",
+    "CANDIDATE_LESSON_MUTATES_POLICY",
+    "HOLDOUT_CONTAMINATION",
+    "IGNORE_FAILED_TRANSFERS",
+    "UNBOUNDED_SCOPE_PROMOTION",
+    "AUTO_PROMOTION"
+  ]
+}
