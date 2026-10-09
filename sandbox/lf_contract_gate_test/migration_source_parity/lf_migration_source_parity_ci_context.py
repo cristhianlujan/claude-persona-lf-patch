@@ -36,6 +36,7 @@ MANAGED_PREFIXES = (
 )
 
 MANAGED_EXACT_NAMES = {
+    "pase_f07_x03_runtime_implementation_deploy_v1",
     "promote_router_compact_jit_v1",
     "promote_card_deterministic_resolvers_safe_subset",
     "promote_card_github_read_resolvers",
