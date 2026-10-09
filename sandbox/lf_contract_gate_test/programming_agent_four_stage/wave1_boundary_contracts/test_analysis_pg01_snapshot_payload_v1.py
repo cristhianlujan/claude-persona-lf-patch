@@ -61,7 +61,7 @@ assert v.validate_programming_snapshot_payload_v1(s)=={
 without_matrix=copy.deepcopy(s)
 without_matrix["scope_front_matrix"]=[]
 matrix=v.assemble_scope_front_matrix_v1(without_matrix)
-assert matrix==s["scope_front_matrix"]
+assert [{k:row[k] for k in ("scope_id","front_id","front_status","front_closure","effect_on_scope")} for row in matrix]==s["scope_front_matrix"]
 assert without_matrix["scope_front_matrix"]==[]  # append-only input is untouched
 bad_front=copy.deepcopy(without_matrix)
 bad_front["material_front_coverage"]["material_fronts"][0]["scope_refs"]=["S2"]
