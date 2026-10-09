@@ -1872,6 +1872,11 @@ class PersistentLlamaServerAdapter:
         self.last_completion: dict[str, Any] = {}
 
     def execute(self, request: dict[str, Any]) -> dict[str, Any]:
+        if request.get("executor_mode") != "REMOTE_API":
+            raise LlamaTransportError(
+                "LLAMA_EXECUTOR_MODE_INVALID",
+                f"expected=REMOTE_API;observed={request.get('executor_mode')}",
+            )
         resource_code = resource_budget_block_code(
             self.execution_budget, _linux_memory_snapshot()
         )
@@ -1972,6 +1977,7 @@ class PersistentLlamaServerAdapter:
         ]
         attestation = {
             "provider": "local_llama_cpp_hetzner_persistent",
+            "executor_mode": request["executor_mode"],
             "model_id": self.last_completion.get("model") or self.settings.llama_model,
             "run_id": f"hetzner-api:{secrets.token_hex(16)}",
             "attested_at": utc_now(),
