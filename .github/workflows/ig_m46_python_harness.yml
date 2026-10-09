@@ -1,0 +1,38 @@
+name: IG M46 Python Harness Integrity
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ig_m46_python_harness.yml"
+      - "sandbox/lf_contract_gate_test/input_governance_cross_family/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify_source:
+    name: M4.6 source-only selftest; never semantic PASS
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check Python and canonical SQL source
+        run: |
+          python3 -m py_compile sandbox/lf_contract_gate_test/input_governance_cross_family/run_m46_cross_family_v1.py
+          python3 sandbox/lf_contract_gate_test/input_governance_cross_family/run_m46_cross_family_v1.py --inspect-only --output m46_source_inspection.json
+          python3 - <<'PY'
+          import json
+          r=json.load(open('m46_source_inspection.json'))
+          assert r['status']=='SOURCE_VALIDATED_NOT_EXECUTED'
+          assert r['actual_execution'] is False
+          assert r['activation_authorized'] is False
+          PY
+      - name: Archive source integrity only
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig-m46-source-inspection
+          path: m46_source_inspection.json
+          retention-days: 14
