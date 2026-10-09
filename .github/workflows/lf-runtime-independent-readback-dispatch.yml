@@ -1,0 +1,24 @@
+name: LF Runtime Independent Readback Dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      execution_id:
+        required: true
+        type: string
+      exact_head:
+        required: true
+        type: string
+      release_path:
+        required: true
+        type: string
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  observe:
+    uses: cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-runtime-independent-readback.yml@main
+    with:
+      execution_id: ${{ inputs.execution_id }}
+      exact_head: ${{ inputs.exact_head }}
+      release_path: ${{ inputs.release_path }}
+    secrets: inherit
