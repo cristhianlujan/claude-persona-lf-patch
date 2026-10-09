@@ -139,11 +139,12 @@
     "updater_authority_changed": false,
     "decision_benchmark_scope": "DECISION_POLICY_AND_COMPOSITION_ONLY_NOT_CUTOVER_ELIGIBLE",
     "semantic_runner_contract": "PASS_SELF_TEST_POSITIVE_1_NEGATIVE_5_DIRECT_MODEL_BYPASS_BLOCKED",
-    "gpt_runtime": "DEPLOYED_EXACT_SOURCE_AND_PROVIDER_TESTS_10_OF_10",
     "llama_required": false,
-    "gpt_live_execution": "BLOCKED_CREDENTIAL_MISSING"
+    "execution_architecture": "CANONICAL_GPT_NATIVE_CLAUDE_NATIVE_REMOTE_API",
+    "current_execution_mode": "GPT_NATIVE",
+    "openai_api_key_required": false
   },
-  "closure": "IMPLEMENTATION_IN_EXECUTION; PE10P_C4 BLOCKED_ONLY_ON_GOVERNED_GPT_RUNTIME_CREDENTIAL; OPERATIONAL_CUTOVER_NOT_ADMITTED",
+  "closure": "IMPLEMENTATION_IN_EXECUTION; PE10P_C4 REQUIRES FRESH GPT_NATIVE CHAT RAW/RECEIPT; OPERATIONAL_CUTOVER NOT ADMITTED",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
     "unit_count": 13,
@@ -162,18 +163,15 @@
       "purpose": "reversible candidate materialization bridge"
     },
     "PE10P": {
-      "status": "IN_PROGRESS_BLOCKED",
-      "checkpoints": "3/5",
+      "status": "IN_PROGRESS",
+      "checkpoints": "3/5 expected after canonical route revalidation",
       "current_checkpoint": "PE10P_C4",
-      "blocker_code": "OPENAI_PROFILE_RUNTIME_CREDENTIAL_MISSING",
-      "executor": "GPT via existing openai-responses-v1 runtime",
-      "llama_required": false,
-      "evidence": [
-        "openai-responses-v1 deployed exact-source blob 5defade484090b3942496f6a87fd10b7fb706029",
-        "OPENAI_PROFILE_RUNTIME_TESTS_PASS 10/10",
-        "service environment OPENAI_API_KEY absent",
-        "service environment OPENAI_PROFILE_RUNTIME_VERIFY_API_KEY absent"
-      ]
+      "executor_mode": "GPT_NATIVE",
+      "adapter_id": "chatgpt-native-current-context-v1",
+      "provider": "OPENAI_CHATGPT_NATIVE",
+      "api_key_required": false,
+      "architecture_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/contract_bound_profile_runtime.py",
+      "note": "Reuse canonical three-route execution architecture; no parallel runner."
     },
     "PE10": {
       "status": "BACKLOG_WAITING_PE10P",
