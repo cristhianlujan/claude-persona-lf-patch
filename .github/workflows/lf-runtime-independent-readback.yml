@@ -14,7 +14,7 @@ on:
         description: Canonical absolute release path
         required: true
         type: string
-secrets:
+    secrets:
       LF_RUNTIME_READBACK_SSH_PRIVATE_KEY:
         required: true
       LF_RUNTIME_READBACK_KNOWN_HOSTS:
