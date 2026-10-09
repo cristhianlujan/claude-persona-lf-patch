@@ -55,6 +55,7 @@ BEGIN
        INTO v_family_count,v_assessment_count
      FROM programacion.input_family_assessments WHERE run_id=p_family_run_id;
      v_coverage_ok:=v_run.status='COMPLETED' AND v_run.invalidated_at IS NULL
+       AND programacion.fn_input_readiness_run_is_current(p_family_run_id) IS TRUE
        AND v_run.family_count=47 AND v_family_count=47 AND v_assessment_count=47;
    END IF;
  END IF;
