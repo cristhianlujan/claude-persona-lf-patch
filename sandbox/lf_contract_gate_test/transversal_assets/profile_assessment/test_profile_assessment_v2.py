@@ -5,7 +5,7 @@ def obs(i, score=.9, difficulty=4, **kw):
       "task_ref":f"task://{i}","task_family":"DOMAIN","difficulty":difficulty,"score":score,
       "verification_state":"VERIFIED","output_receipt_ref":f"output://{i}",
       "evaluator_receipt_ref":f"judge://{i}","evidence_refs":[f"evidence://{i}"],
-      "preservation_case":True,"cost_budget_ratio":.25
+      "preservation_case":False,"cost_budget_ratio":.25
     }
     x.update(kw); return x
 
@@ -23,7 +23,8 @@ def run():
     assert r["competency_vector"]["verified_observation_count"]==0
 
     # Specialized: effective domain work but no adaptation/transfer evidence.
-    xs=[obs(i,score=.82,difficulty=2) for i in range(6)]
+    xs=[obs(i,score=.82,difficulty=2) for i in range(4)]
+    xs += [obs(100+i,score=.99,difficulty=2,preservation_case=True) for i in range(2)]
     r=assess_profile_v2({"structural_status":"PASS","architecture_status":"PASS","competency_observations":xs})
     assert r["maturity"]=="SPECIALIZED" and r["evolution_mode"]=="ADAPT"
 
