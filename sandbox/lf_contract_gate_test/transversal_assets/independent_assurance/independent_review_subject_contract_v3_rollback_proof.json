@@ -1,0 +1,41 @@
+{
+  "schema": "INDEPENDENT_ASSURANCE_GENERIC_SUBJECT_ROLLBACK_PROOF_V1",
+  "tested_at": "2026-10-09T02:00:00Z",
+  "database_project": "mhwmirqcgxxukpctffuv",
+  "transaction_mode": "BEGIN ... ROLLBACK",
+  "persistent_changes": false,
+  "design_under_test": "CONTRACT_DRIVEN_ANY_SUBJECT",
+  "positive_live_receipts": [
+    {
+      "subject_type": "IG_SCREEN_GRAPH",
+      "receipt_id": "20f510b2-c875-4859-97e6-b5a979b03468",
+      "result": "PASS"
+    },
+    {
+      "subject_type": "IG_SPEC_TRAVERSAL_PER_RUN",
+      "receipt_id": "2e4e4628-c971-4335-aa42-1e1b5483ed86",
+      "result": "PASS"
+    }
+  ],
+  "negative_cases": [
+    {
+      "case": "receipt_subject_mismatch",
+      "expected": "SUBJECT_PROVIDER_BOUND_RECEIPT_INVALID",
+      "result": "PASS"
+    },
+    {
+      "case": "producer_equals_reviewer",
+      "expected": "BUILDER_REVIEWER_NOT_INDEPENDENT",
+      "result": "PASS"
+    },
+    {
+      "case": "empty_required_dimensions",
+      "expected": "REQUIRED_DIMENSIONS_MISSING",
+      "result": "PASS"
+    }
+  ],
+  "rollback_readback": {
+    "probe_function_absent_after_rollback": true
+  },
+  "conclusion": "Subject names do not need a whitelist. Eligibility is determined by exact contract/evidence/independence invariants."
+}
