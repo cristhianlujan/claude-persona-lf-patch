@@ -1,0 +1,1014 @@
+{
+  "schema_version": "METHOD_PACK_REGISTRY_V2",
+  "owner": "SUPER_ADMIN",
+  "authority": "SUPABASE_REGISTRY_WITH_REPOSITORY_SOURCE",
+  "selection_principle": "TYPED_SIGNALS_PLUS_VERIFIED_PRECONDITIONS_PLUS_OBSERVED_OUTCOMES",
+  "execution_permission": false,
+  "subject_type_policy": "METHODS_ARE_DOMAIN_AGNOSTIC_CONTRACTS",
+  "methods": [
+    {
+      "method_id": "CAUSAL_ANALYSIS",
+      "signals": [
+        {
+          "type": "causal_requirement",
+          "accepted_values": [
+            "HIGH",
+            "REQUIRED"
+          ]
+        }
+      ],
+      "preconditions": [
+        "evidence_sufficiency!=NONE"
+      ],
+      "problem_classes": [
+        "CAUSAL",
+        "ROOT_CAUSE"
+      ],
+      "cost_points": 2,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "causal_claim_refs"
+      ],
+      "compatible_capabilities": [
+        "CAUSAL_EFFECT_LINEAGE",
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "stop_conditions": [
+        "causal_boundary_falsified",
+        "decision_stable"
+      ],
+      "escalation": [
+        "HOSTILE_CHALLENGE"
+      ],
+      "validation_method": "FALSIFICATION_PLUS_LINEAGE",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "auto_select": true,
+      "precondition_contract": [
+        {
+          "key": "evidence_sufficiency",
+          "operator": "NE",
+          "expected": "NONE",
+          "verification_required": true
+        }
+      ],
+      "cost_model": {
+        "estimate_points": 2,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "HOSTILE_CHALLENGE",
+      "signals": [
+        {
+          "type": "risk",
+          "accepted_values": [
+            "HIGH",
+            "CRITICAL"
+          ]
+        },
+        {
+          "type": "uncertainty",
+          "accepted_values": [
+            "HIGH"
+          ]
+        }
+      ],
+      "preconditions": [
+        "candidate_exists"
+      ],
+      "problem_classes": [
+        "HIGH_RISK",
+        "AMBIGUOUS"
+      ],
+      "cost_points": 3,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "candidate_ref",
+        "challenge_criteria"
+      ],
+      "compatible_capabilities": [
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "stop_conditions": [
+        "material_challenges_resolved"
+      ],
+      "escalation": [],
+      "validation_method": "INDEPENDENT_ASSURANCE",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "auto_select": true,
+      "precondition_contract": [
+        {
+          "key": "candidate_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "cost_model": {
+        "estimate_points": 3,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "DEEP_RESEARCH",
+      "signals": [
+        {
+          "type": "novelty",
+          "accepted_values": [
+            "HIGH"
+          ]
+        },
+        {
+          "type": "evidence_sufficiency",
+          "accepted_values": [
+            "INSUFFICIENT"
+          ]
+        }
+      ],
+      "preconditions": [
+        "decision_can_change_with_external_evidence"
+      ],
+      "problem_classes": [
+        "NOVEL",
+        "CURRENT_PRACTICE"
+      ],
+      "cost_points": 4,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "pre_research_baseline"
+      ],
+      "compatible_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION",
+        "CURRENTNESS_AUTHORITY"
+      ],
+      "stop_conditions": [
+        "material_uplift_measured",
+        "no_material_uplift"
+      ],
+      "escalation": [],
+      "validation_method": "PRE_POST_EVIDENCE_COMPARISON",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "auto_select": true,
+      "precondition_contract": [
+        {
+          "key": "decision_can_change_with_external_evidence",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "cost_model": {
+        "estimate_points": 4,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "SELF_REFINE",
+      "signals": [
+        {
+          "type": "complexity",
+          "accepted_values": [
+            "MEDIUM",
+            "HIGH"
+          ]
+        }
+      ],
+      "preconditions": [
+        "candidate_exists",
+        "grader_available"
+      ],
+      "problem_classes": [
+        "QUALITY_REFINEMENT"
+      ],
+      "cost_points": 2,
+      "risk": "LOW",
+      "evidence_required": [
+        "candidate_ref",
+        "grader_contract"
+      ],
+      "compatible_capabilities": [
+        "PACK_VALIDATION_HARNESS"
+      ],
+      "stop_conditions": [
+        "grader_plateau",
+        "iteration_budget_exhausted"
+      ],
+      "escalation": [
+        "EVALUATOR_OPTIMIZER"
+      ],
+      "validation_method": "BLIND_GRADER",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "auto_select": true,
+      "precondition_contract": [
+        {
+          "key": "candidate_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "grader_available",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "cost_model": {
+        "estimate_points": 2,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "EVALUATOR_OPTIMIZER",
+      "signals": [
+        {
+          "type": "optimization_need",
+          "accepted_values": [
+            "REQUIRED"
+          ]
+        }
+      ],
+      "preconditions": [
+        "benchmark_exists",
+        "uplift_target_defined"
+      ],
+      "problem_classes": [
+        "OPTIMIZATION"
+      ],
+      "cost_points": 5,
+      "risk": "HIGH",
+      "evidence_required": [
+        "baseline_benchmark",
+        "holdout"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "REVERSIBLE_CANDIDATE_VERIFICATION"
+      ],
+      "stop_conditions": [
+        "uplift_not_cost_effective",
+        "budget_exhausted",
+        "admission_threshold_met"
+      ],
+      "escalation": [
+        "PROMPT_OPTIMIZATION"
+      ],
+      "validation_method": "PAIRED_HOLDOUT",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "auto_select": true,
+      "precondition_contract": [
+        {
+          "key": "benchmark_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "uplift_target_defined",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "cost_model": {
+        "estimate_points": 5,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "VERIFIER_GUIDED_SEARCH",
+      "signals": [
+        {
+          "type": "complexity",
+          "accepted_values": [
+            "HIGH"
+          ]
+        }
+      ],
+      "preconditions": [
+        "deterministic_verifier_exists"
+      ],
+      "problem_classes": [
+        "SEARCH_WITH_VERIFIER"
+      ],
+      "cost_points": 3,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "verifier_ref"
+      ],
+      "compatible_capabilities": [
+        "PACK_VALIDATION_HARNESS"
+      ],
+      "stop_conditions": [
+        "verified_candidate_found",
+        "search_budget_exhausted"
+      ],
+      "escalation": [],
+      "validation_method": "DETERMINISTIC_VERIFIER",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "auto_select": true,
+      "precondition_contract": [
+        {
+          "key": "deterministic_verifier_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "cost_model": {
+        "estimate_points": 3,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "PARALLEL_EVIDENCE_SEARCH",
+      "signals": [
+        {
+          "type": "evidence_paths",
+          "accepted_values": [
+            "MULTIPLE_INDEPENDENT"
+          ]
+        }
+      ],
+      "preconditions": [
+        "no_shared_mutable_state"
+      ],
+      "problem_classes": [
+        "EVIDENCE_ACQUISITION"
+      ],
+      "cost_points": 3,
+      "risk": "LOW",
+      "evidence_required": [
+        "search_plan"
+      ],
+      "compatible_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "stop_conditions": [
+        "decision_sufficient_evidence"
+      ],
+      "escalation": [],
+      "validation_method": "EVIDENCE_COVERAGE",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "auto_select": true,
+      "precondition_contract": [
+        {
+          "key": "no_shared_mutable_state",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "cost_model": {
+        "estimate_points": 3,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "PROMPT_OPTIMIZATION",
+      "signals": [
+        {
+          "type": "optimization_need",
+          "accepted_values": [
+            "ADVANCED"
+          ]
+        }
+      ],
+      "preconditions": [
+        "benchmark_exists",
+        "holdout_exists",
+        "search_budget_approved"
+      ],
+      "problem_classes": [
+        "ADVANCED_OPTIMIZATION"
+      ],
+      "cost_points": 8,
+      "risk": "HIGH",
+      "evidence_required": [
+        "baseline_benchmark",
+        "holdout",
+        "budget"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "REVERSIBLE_CANDIDATE_VERIFICATION",
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "stop_conditions": [
+        "holdout_regression",
+        "no_material_uplift",
+        "budget_exhausted"
+      ],
+      "escalation": [],
+      "validation_method": "BLIND_PAIRED_HOLDOUT",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "auto_select": true,
+      "precondition_contract": [
+        {
+          "key": "benchmark_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "holdout_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "search_budget_approved",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "cost_model": {
+        "estimate_points": 8,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "REASONING_COMPOSITION_SEARCH",
+      "inspiration": [
+        "SELF_DISCOVER"
+      ],
+      "signals": [
+        {
+          "type": "complexity",
+          "accepted_values": [
+            "HIGH"
+          ]
+        },
+        {
+          "type": "novelty",
+          "accepted_values": [
+            "HIGH"
+          ]
+        }
+      ],
+      "preconditions": [
+        "benchmark_exists",
+        "task_metric_exists"
+      ],
+      "precondition_contract": [
+        {
+          "key": "benchmark_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "task_metric_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "problem_classes": [
+        "COMPLEX_REASONING",
+        "NOVEL_COMPOSITION"
+      ],
+      "cost_points": 5,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "baseline_benchmark",
+        "task_metric"
+      ],
+      "compatible_capabilities": [
+        "PACK_VALIDATION_HARNESS",
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+      ],
+      "stop_conditions": [
+        "no_material_uplift",
+        "budget_exhausted"
+      ],
+      "escalation": [],
+      "validation_method": "PAIRED_TASK_PERFORMANCE",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "auto_select": false,
+      "cost_model": {
+        "estimate_points": 5,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "TEXTUAL_FEEDBACK_OPTIMIZATION",
+      "inspiration": [
+        "TEXTGRAD",
+        "SELF_REFINE"
+      ],
+      "signals": [
+        {
+          "type": "optimization_need",
+          "accepted_values": [
+            "REQUIRED",
+            "ADVANCED"
+          ]
+        }
+      ],
+      "preconditions": [
+        "benchmark_exists",
+        "evaluator_feedback_available",
+        "holdout_exists"
+      ],
+      "precondition_contract": [
+        {
+          "key": "benchmark_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "evaluator_feedback_available",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "holdout_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "problem_classes": [
+        "COMPONENT_FEEDBACK_OPTIMIZATION"
+      ],
+      "cost_points": 6,
+      "risk": "HIGH",
+      "evidence_required": [
+        "baseline_benchmark",
+        "evaluator_feedback",
+        "holdout"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "REVERSIBLE_CANDIDATE_VERIFICATION"
+      ],
+      "stop_conditions": [
+        "holdout_regression",
+        "no_material_uplift",
+        "budget_exhausted"
+      ],
+      "escalation": [],
+      "validation_method": "BLIND_PAIRED_HOLDOUT",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "auto_select": false,
+      "cost_model": {
+        "estimate_points": 6,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "WORKFLOW_SEARCH",
+      "inspiration": [
+        "AFLOW"
+      ],
+      "signals": [
+        {
+          "type": "complexity",
+          "accepted_values": [
+            "HIGH"
+          ]
+        }
+      ],
+      "preconditions": [
+        "benchmark_exists",
+        "workflow_search_budget_approved",
+        "holdout_exists"
+      ],
+      "precondition_contract": [
+        {
+          "key": "benchmark_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "workflow_search_budget_approved",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "holdout_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "problem_classes": [
+        "WORKFLOW_OPTIMIZATION"
+      ],
+      "cost_points": 7,
+      "risk": "HIGH",
+      "evidence_required": [
+        "baseline_benchmark",
+        "search_budget",
+        "holdout"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "REVERSIBLE_CANDIDATE_VERIFICATION",
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "stop_conditions": [
+        "holdout_regression",
+        "budget_exhausted",
+        "workflow_plateau"
+      ],
+      "escalation": [],
+      "validation_method": "PAIRED_WORKFLOW_HOLDOUT",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "auto_select": false,
+      "cost_model": {
+        "estimate_points": 7,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    },
+    {
+      "method_id": "EXPERIENCE_REUSE",
+      "inspiration": [
+        "REFLEXION",
+        "VOYAGER_SKILL_LIBRARY"
+      ],
+      "signals": [
+        {
+          "type": "repeated_pattern",
+          "accepted_values": [
+            true
+          ]
+        }
+      ],
+      "preconditions": [
+        "admitted_pattern_exists",
+        "applicability_match_verified"
+      ],
+      "precondition_contract": [
+        {
+          "key": "admitted_pattern_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "applicability_match_verified",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "problem_classes": [
+        "REPEATED_PATTERN",
+        "TRANSFER"
+      ],
+      "cost_points": 2,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "admitted_pattern_ref",
+        "applicability_evidence"
+      ],
+      "compatible_capabilities": [
+        "CAUSAL_EFFECT_LINEAGE",
+        "SAFE_CHANGE_ADMISSION"
+      ],
+      "stop_conditions": [
+        "transfer_failure",
+        "pattern_expired",
+        "critical_regression"
+      ],
+      "escalation": [
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "validation_method": "TRANSFER_HOLDOUT",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "auto_select": false,
+      "cost_model": {
+        "estimate_points": 2,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ]
+    }
+  ],
+  "dynamic_policy": {
+    "replan_allowed": true,
+    "replan_triggers": [
+      "NEW_EVIDENCE",
+      "METHOD_FAILED",
+      "QUALITY_PLATEAU",
+      "VERIFIER_REJECTED",
+      "RISK_CHANGED",
+      "BUDGET_CHANGED",
+      "STOP_CONDITION_MET"
+    ],
+    "failed_method_is_not_permanently_retired_without_learning_admission": true,
+    "experimental_methods_require_explicit_experiment_permission": true
+  },
+  "learning_policy": {
+    "auto_promote": false,
+    "causal_attribution_required": true,
+    "negative_results_retained": true,
+    "transfer_validation_required": true,
+    "expiry_and_retirement_required": true,
+    "required": [
+      "repeated_evidence",
+      "cross_case_validation",
+      "holdout",
+      "causal_attribution",
+      "transfer_validation",
+      "admission"
+    ]
+  },
+  "research_relationship": {
+    "external_method_names_are_inspiration_not_engines": true,
+    "create_parallel_engine": false
+  }
+}
