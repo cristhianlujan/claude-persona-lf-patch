@@ -12,6 +12,12 @@ on:
         default: ALL
         options: [ALL, AUTH, FORMS, NAVIGATION, DESIGN, ONBOARDING, RECOVERY, API]
 
+# One current sandbox replay at a time; prevents pooler exhaustion and
+# preserves per-cohort independently downloadable machine evidence.
+concurrency:
+  group: ig-m93-live-sandbox-readback
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
