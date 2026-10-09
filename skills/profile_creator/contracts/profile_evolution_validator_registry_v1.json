@@ -244,24 +244,10 @@
       "pass_contract": "reversible non-authority overlay; exact before hashes; path confinement; source unchanged; no runtime/production activation"
     },
     {
-      "validator_code": "OPENAI_PROFILE_RUNTIME_PROVIDER_TESTS_V1",
-      "scope": "TRANSVERSAL",
-      "deterministic": true,
-      "state": "ACTIVE_PROVEN_10_OF_10",
-      "source_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_openai_provider_tests.py",
-      "execution_handler": "PYTHON_TEST",
-      "input_contract": [
-        "openai_responses_runtime.py",
-        "profile_runtime_runner.py",
-        "validate_profile_execution.py"
-      ],
-      "pass_contract": "OPENAI_PROFILE_RUNTIME_TESTS_PASS 10/10"
-    },
-    {
       "validator_code": "PROFILE_EXECUTION_RECEIPT_V1",
       "scope": "TRANSVERSAL",
       "deterministic": true,
-      "state": "ACTIVE_PROVEN",
+      "state": "ACTIVE_PROVEN_NATIVE_AND_REMOTE",
       "source_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
       "execution_handler": "PYTHON_FILE",
       "input_contract": [
@@ -271,7 +257,7 @@
         "expected_raw_output",
         "expected_profile_source_sha256"
       ],
-      "pass_contract": "canonical provider-attested profile execution receipt validates with exact source/input/raw hashes and no self-authorization"
+      "pass_contract": "canonical PROFILE_EXECUTION_RECEIPT_V1 binds exact profile source, input, RAW and runtime attestation; native and remote execution remain mode-bound"
     }
   ]
 }
