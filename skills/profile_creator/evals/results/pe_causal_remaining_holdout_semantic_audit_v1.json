@@ -1,0 +1,43 @@
+{
+  "case_count": 4,
+  "cutover_eligible": false,
+  "production_activation": false,
+  "results": [
+    {
+      "case_id": "HCA-105",
+      "compiled_status": "TEST_ONLY_EVIDENCE_COMPILED",
+      "independent_restricted_semantic_status": "TEST_ONLY_CONSTRAINED_SEMANTIC_PASS",
+      "model_decision_matches_method": true,
+      "model_free_text_admitted": false,
+      "reason": "ALL_RESTRICTED_CLAIMS_ENTAILED_BY_SEPARATELY_READ_EVIDENCE"
+    },
+    {
+      "case_id": "HCA-106",
+      "compiled_status": "TEST_ONLY_EVIDENCE_COMPILED",
+      "independent_restricted_semantic_status": "TEST_ONLY_CONSTRAINED_SEMANTIC_PASS",
+      "model_decision_matches_method": true,
+      "model_free_text_admitted": false,
+      "reason": "ALL_RESTRICTED_CLAIMS_ENTAILED_BY_SEPARATELY_READ_EVIDENCE"
+    },
+    {
+      "case_id": "HCA-107",
+      "compiled_status": "TEST_ONLY_EVIDENCE_COMPILED",
+      "independent_restricted_semantic_status": "TEST_ONLY_CONSTRAINED_SEMANTIC_PASS",
+      "model_decision_matches_method": true,
+      "model_free_text_admitted": false,
+      "reason": "ALL_RESTRICTED_CLAIMS_ENTAILED_BY_SEPARATELY_READ_EVIDENCE"
+    },
+    {
+      "case_id": "HCA-108",
+      "compiled_status": "TEST_ONLY_EVIDENCE_COMPILED",
+      "independent_restricted_semantic_status": "TEST_ONLY_CONSTRAINED_SEMANTIC_PASS",
+      "model_decision_matches_method": true,
+      "model_free_text_admitted": false,
+      "reason": "ALL_RESTRICTED_CLAIMS_ENTAILED_BY_SEPARATELY_READ_EVIDENCE"
+    }
+  ],
+  "schema": "PE_CAUSAL_REMAINING_HOLDOUT_INDEPENDENT_SEMANTIC_AUDIT_V1",
+  "source_raw_sha256": "d64b625fe5f6534c052644ecbf144f01f225d9c04a7456e4ceaeece849d7fecd",
+  "unrestricted_semantic_assurance": "NOT_EXECUTED",
+  "verified_and_consistent": 4
+}
