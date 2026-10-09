@@ -1,5 +1,25 @@
 -- Transversal consumer reconciliation at current INDEPENDENT_ASSURANCE 2.0.1.
 -- Preserve historical manifests. Do not alter assurance provider or create a new gate.
+-- Fail closed until the updated Python provider has an executed, exact-source regression receipt.
+-- The fixture/test source alone never qualifies a new current pointer.
+DO $test_receipt_guard$
+BEGIN
+ IF NOT EXISTS (
+  SELECT 1 FROM public.lf_test_suite_runs r
+  WHERE r.suite_code='IG_REVERSIBLE_CANDIDATE_ASSURANCE_2_0_1'
+    AND r.status='PASSED'
+    AND r.tests_total>=12
+    AND r.tests_passed=r.tests_total
+    AND r.tests_failed=0 AND r.tests_blocked=0
+    AND r.commit_sha='b23416192a2a87e8407c8d758af424611f9fd80a'
+    AND r.metadata->>'source_blob_sha1'='b619ea4238e4a97867b29447f9f80e5ac8079151'
+    AND r.metadata->>'test_blob_sha1'='6647b86a71c9489f276e53e013e839310e486163'
+    AND r.metadata->>'provider_version'='2.0.1'
+ )
+ THEN RAISE EXCEPTION 'IG_REVERSIBLE_CANDIDATE_2_0_1_TEST_RECEIPT_REQUIRED';
+ END IF;
+END $test_receipt_guard$;
+
 DO $change$
 DECLARE v_safe jsonb; v_rev jsonb; v_human jsonb; v_safe_sha text; v_rev_sha text; v_human_sha text;
 DECLARE v_result jsonb;
