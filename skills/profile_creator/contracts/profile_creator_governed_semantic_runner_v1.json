@@ -1,6 +1,6 @@
 {
   "schema": "PROFILE_CREATOR_GOVERNED_SEMANTIC_RUNNER_CONTRACT_V1",
-  "purpose": "Provide fresh, auditable Profile Creator semantic producer executions for Profile Evolution full-behavior benchmarking using any governed GPT/model execution surface; governance is evidence-bound and model/vendor agnostic.",
+  "purpose": "Provide auditable Profile Creator semantic executions for Profile Evolution using a governed model execution surface; governance is evidence-bound and model/vendor agnostic.",
   "producer": "PROFILE_CREATOR",
   "execution_requirements": {
     "fresh_run_per_case": true,
@@ -15,7 +15,7 @@
     "no_production_activation": true
   },
   "allowed_execution_surfaces": [
-    "CHATGPT_GPT_GOVERNED_EXECUTION",
+    "GOVERNED_GPT_EXECUTION",
     "GOVERNED_PROFILE_CREATOR_WORKER"
   ],
   "forbidden_execution_surfaces": [
@@ -50,16 +50,17 @@
   "fail_closed_status": "BLOCKED",
   "handoff": "RAW_OUTPUT -> PROFILE_CANDIDATE_MATERIALIZER -> FULL_BEHAVIOR_VALIDATION",
   "notes": [
-    "Governed means bound to this contract, exact input/snapshot/source identity, frozen RAW, and explicit no-write/no-activation boundaries; it does not require a dedicated worker process.",
-    "GPT is the current semantic executor. Other models may be used later if they satisfy the same contract.",
-    "Direct llama-server invocation remains forbidden unless it is itself exposed through a governed execution surface satisfying this contract.",
-    "The runner does not authorize profile source writes, runtime activation, production promotion, benchmark admission or cutover."
+    "Governed means bound to exact input, profile snapshot, producer source, runtime/model stamp and frozen raw output.",
+    "A dedicated worker process is not required.",
+    "The semantic executor may be GPT when the execution receipt satisfies this contract.",
+    "Direct model-server invocation outside this contract remains forbidden.",
+    "No profile source write, runtime activation, production promotion, admission or cutover is granted."
   ],
   "execution_model": {
     "semantic_executor_role": "PROFILE_CREATOR",
     "executor_implementation": "MODEL_AGNOSTIC",
-    "current_supported_executor": "GPT",
-    "worker_process_required": false,
+    "current_supported_executor_class": "GPT",
+    "dedicated_worker_process_required": false,
     "vendor_binding_required": false
   }
 }
