@@ -4,6 +4,7 @@ export const AUDIENCE = "lf-runtime-readback";
 export const REPO = "cristhianlujan/claude-persona-lf-patch";
 export const REF = "refs/heads/main";
 export const WORKFLOW = REPO + "/.github/workflows/lf-runtime-independent-readback.yml@" + REF;
+export const CALLER_WORKFLOW = REPO + "/.github/workflows/lf-runtime-independent-readback-dispatch.yml@" + REF;
 export const JWKS = createRemoteJWKSet(new URL(ISSUER + "/.well-known/jwks"));
 const HEX40 = /^[0-9a-f]{40}$/;
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -12,7 +13,7 @@ const val = (x: unknown) => String(x ?? "");
 export function requireObserverClaims(c: JWTPayload, receipt: Record<string, unknown>): void {
   if (c.repository !== REPO || val(c.repository_id) !== "1244397752") throw Error("OIDC_REPOSITORY_MISMATCH");
   if (c.ref !== REF) throw Error("OIDC_REF_MISMATCH");
-  if (c.workflow_ref !== WORKFLOW || c.job_workflow_ref !== WORKFLOW) throw Error("OIDC_WORKFLOW_REF_MISMATCH");
+  if (c.workflow_ref !== CALLER_WORKFLOW || c.job_workflow_ref !== WORKFLOW) throw Error("OIDC_WORKFLOW_REF_MISMATCH");
   if (c.event_name !== "workflow_dispatch") throw Error("OIDC_EVENT_MISMATCH");
   if (!/^[0-9]+$/.test(val(c.run_id)) || !/^[0-9]+$/.test(val(c.run_attempt))) throw Error("OIDC_RUN_INVALID");
   if (val(c.run_id) !== val(receipt.workflow_run_id) || val(c.run_attempt) !== val(receipt.workflow_run_attempt))
