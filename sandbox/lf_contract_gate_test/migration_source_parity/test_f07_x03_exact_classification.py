@@ -13,6 +13,18 @@ class F07X03ExactClassificationTests(unittest.TestCase):
         self.assertTrue(classified(name))
         self.assertTrue(managed(name))
 
+    def test_b2b_s06_exact_source_managed_without_family_widening(self):
+        self.assertTrue(managed("b2b_corporate_scope_model_v1"))
+        self.assertTrue(classified("b2b_corporate_scope_model_v1"))
+        for name in (
+            "b2b_corporate_scope_model_v2",
+            "b2b_other_group_model_v1",
+            "b2b_unreviewed_future_migration",
+        ):
+            with self.subTest(name=name):
+                self.assertFalse(managed(name))
+                self.assertFalse(classified(name))
+
     def test_arbitrary_pase_remains_fail_closed(self):
         name = "pase_cualquier_otra_cosa_v1"
         filename = "20261009230102_" + name + ".sql"
