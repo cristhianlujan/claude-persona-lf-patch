@@ -1,0 +1,222 @@
+{
+  "schema": "PROFILE_EVOLUTION_METHOD_LIVENESS_BASELINE_V1",
+  "scope": "DEVELOPMENT_BRANCH_CODE_AUDIT_ONLY",
+  "benchmark": "PEXP-R3-20261008",
+  "benchmark_scope": "STATIC_DOMAIN_DECISION_INSTRUCTION_BENCHMARK",
+  "status": "RUNTIME_BINDING_NOT_DEMONSTRATED",
+  "source_refs": {
+    "registry": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v2.json",
+    "registry_blob_sha": "49e050016cb6ffdd47c5450a3f249423b4725114",
+    "selector": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/capability_selector_v3.py",
+    "selector_blob_sha": "fc6758c7f8a6651ea5e42f05144aa661ef8991df",
+    "plan": "skills/profile_creator/validators/plan_profile_evolution_v2.py",
+    "static_benchmark": "skills/profile_creator/evals/run_profile_expert_behavior_remote_v3.py"
+  },
+  "observed": {
+    "registered_methods": 12,
+    "selectable_methods": 8,
+    "experimental_methods": 4,
+    "methods_with_declared_per_method_executable_handler": 0,
+    "selector_unit_cases_passed": 12,
+    "selector_unit_cases_total": 12,
+    "liveness_negative_gate": "BLOCKED_METHOD_EXECUTION_NOT_WIRED",
+    "method_real_invocations_verified_in_suite": 0,
+    "profile_evolution_cutover_eligible": false
+  },
+  "notes": [
+    "Selector chooses methods under typed verified signals but does not execute them.",
+    "Planner invokes selector and returns a declared adaptive loop, not dispatch receipts.",
+    "Runtime liveness, semantic router input mapping, integration gates and outcome uplift remain separate hypotheses to test.",
+    "Do not treat missing registry handler fields as proof no capability implementation exists elsewhere."
+  ],
+  "methods": [
+    {
+      "method_id": "CAUSAL_ANALYSIS",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "selectable_under_preconditions": true,
+      "preconditions_declared": [
+        "evidence_sufficiency"
+      ],
+      "compatible_capabilities": [
+        "CAUSAL_EFFECT_LINEAGE",
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "GOVERNED_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "HOSTILE_CHALLENGE",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "selectable_under_preconditions": true,
+      "preconditions_declared": [
+        "candidate_exists"
+      ],
+      "compatible_capabilities": [
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "GOVERNED_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "DEEP_RESEARCH",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "selectable_under_preconditions": true,
+      "preconditions_declared": [
+        "decision_can_change_with_external_evidence"
+      ],
+      "compatible_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION",
+        "CURRENTNESS_AUTHORITY"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "GOVERNED_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "SELF_REFINE",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "selectable_under_preconditions": true,
+      "preconditions_declared": [
+        "candidate_exists",
+        "grader_available"
+      ],
+      "compatible_capabilities": [
+        "PACK_VALIDATION_HARNESS"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "GOVERNED_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "EVALUATOR_OPTIMIZER",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "selectable_under_preconditions": true,
+      "preconditions_declared": [
+        "benchmark_exists",
+        "uplift_target_defined"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "REVERSIBLE_CANDIDATE_VERIFICATION"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "GOVERNED_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "VERIFIER_GUIDED_SEARCH",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "selectable_under_preconditions": true,
+      "preconditions_declared": [
+        "deterministic_verifier_exists"
+      ],
+      "compatible_capabilities": [
+        "PACK_VALIDATION_HARNESS"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "GOVERNED_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "PARALLEL_EVIDENCE_SEARCH",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "selectable_under_preconditions": true,
+      "preconditions_declared": [
+        "no_shared_mutable_state"
+      ],
+      "compatible_capabilities": [
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "GOVERNED_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "PROMPT_OPTIMIZATION",
+      "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+      "selectable_under_preconditions": true,
+      "preconditions_declared": [
+        "benchmark_exists",
+        "holdout_exists",
+        "search_budget_approved"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "REVERSIBLE_CANDIDATE_VERIFICATION",
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "GOVERNED_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "REASONING_COMPOSITION_SEARCH",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "selectable_under_preconditions": false,
+      "preconditions_declared": [
+        "benchmark_exists",
+        "task_metric_exists"
+      ],
+      "compatible_capabilities": [
+        "PACK_VALIDATION_HARNESS",
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "EXPERIMENT_PERMISSION_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "TEXTUAL_FEEDBACK_OPTIMIZATION",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "selectable_under_preconditions": false,
+      "preconditions_declared": [
+        "benchmark_exists",
+        "evaluator_feedback_available",
+        "holdout_exists"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "REVERSIBLE_CANDIDATE_VERIFICATION"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "EXPERIMENT_PERMISSION_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "WORKFLOW_SEARCH",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "selectable_under_preconditions": false,
+      "preconditions_declared": [
+        "benchmark_exists",
+        "workflow_search_budget_approved",
+        "holdout_exists"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "REVERSIBLE_CANDIDATE_VERIFICATION",
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "EXPERIMENT_PERMISSION_HANDLER_BINDING_AND_E2E_RECEIPT"
+    },
+    {
+      "method_id": "EXPERIENCE_REUSE",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "selectable_under_preconditions": false,
+      "preconditions_declared": [
+        "admitted_pattern_exists",
+        "applicability_match_verified"
+      ],
+      "compatible_capabilities": [
+        "CAUSAL_EFFECT_LINEAGE",
+        "SAFE_CHANGE_ADMISSION"
+      ],
+      "executable_entrypoint_bound": false,
+      "invocation_receipt_verified": false,
+      "required_next_proof": "EXPERIMENT_PERMISSION_HANDLER_BINDING_AND_E2E_RECEIPT"
+    }
+  ]
+}
