@@ -14,7 +14,21 @@ if public.lf_runtime_impl_deploy_receipt_check_v1(jsonb_set(r,'{restart_unit}','
 if public.lf_runtime_impl_deploy_receipt_check_v1(jsonb_set(r,'{mitigation_action}','"REMOVE"'))<>'BLOCKED_MITIGATION_HUMAN_GATE' then raise exception 'T3.2 gate'; end if;
 
 -- D7: neither deploy-actor receipt nor unauthenticated forged read-only observer can certify runtime.
-if public.lf_runtime_impl_deploy_verification_binding_v1(jsonb_set(r,'{attestation}',jsonb_build_object('schema_version','LF_RUNTIME_INDEPENDENT_READBACK_V1','producer','DEPLOY_EXECUTOR','origin_role','DEPLOY_EXECUTOR','credential_role','DEPLOY_WRITE'))) ->> 'reason' <> 'INDEPENDENT_READBACK_RECEIPT_INVALID' then raise exception 'D7 deploy actor receipt must be rejected'; end if;
+if public.lf_runtime_impl_deploy_verification_binding_v1(jsonb_set(r,'{attestation}',jsonb_build_object('schema_version','LF_RUNTIME_INDEPENDENT_READBACK_V1','producer','DEPLOY_EXECUTOR','origin_role','DEPLOY_EXECUTOR','credential_role','DEPLOY_WRITE'))) ->> 'reason' <> 'INDEPENDENT_READBACK_RECEIPT_NOT_AUTHENTICATED' then raise exception 'D7 deploy actor receipt must be rejected'; end if;
 if public.lf_runtime_impl_deploy_verification_binding_v1(jsonb_set(r,'{attestation}',jsonb_build_object('schema_version','LF_RUNTIME_INDEPENDENT_READBACK_V1','producer','GITHUB_ACTIONS_VPS_READ_ONLY','origin_role','INDEPENDENT_OBSERVER','credential_role','VPS_READ_ONLY','observer_execution_id','claimed-run','workflow_run_id','1','exact_head',h,'runtime_sha','abc','release_path','/release/new','manifest_digest',repeat('f',64)))) ->> 'reason' <> 'INDEPENDENT_READBACK_RECEIPT_NOT_AUTHENTICATED' then raise exception 'D7 unauthenticated observer claim must be rejected'; end if;
-end $$;
+end $;
+-- Verify that privileged SQL context cannot insert an authenticated receipt.
+do $unauthorized$
+begin
+ begin
+  insert into private.lf_runtime_readback_oidc_receipts
+   (execution_id,exact_head,release_path,runtime_sha,manifest_digest,receipt,claims,
+    workflow_run_id,workflow_run_attempt,token_sha256)
+  values ('EXEC-test',repeat('a',40),'/opt/lf-profile-runtime-api/releases/'||repeat('a',40),
+    repeat('a',40),repeat('b',64),'{}'::jsonb,'{}'::jsonb,'1','1',repeat('c',64));
+  raise exception 'UNAUTHORIZED_INSERT_WAS_ACCEPTED';
+ exception when insufficient_privilege or check_violation then
+  null;
+ end;
+end $unauthorized$;
 rollback;
