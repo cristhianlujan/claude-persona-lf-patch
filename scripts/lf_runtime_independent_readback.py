@@ -22,11 +22,10 @@ def main():
     execution=os.environ["EXECUTION_ID"]
     require(re.fullmatch(r"[0-9a-f]{40}",head),"invalid SHA")
     require(release==f"/opt/lf-profile-runtime-api/releases/{head}","invalid release path")
-    require(subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()==head,"checkout mismatch")
-    paths=subprocess.check_output(["git","ls-files","services/profile_runtime_api"],text=True).splitlines()
-    paths=[p for p in paths if pathlib.Path(p).is_file()]
+    subprocess.check_call(["git","cat-file","-e",head+"^{commit}"])
+    paths=subprocess.check_output(["git","ls-tree","-r","--name-only",head,"services/profile_runtime_api"],text=True).splitlines()
     require(bool(paths),"missing source manifest")
-    manifest={p:sha256(pathlib.Path(p).read_bytes()) for p in sorted(paths)}
+    manifest={p:sha256(subprocess.check_output(["git","show",head+":"+p])) for p in sorted(paths)}
     # A restricted VPS account with a forced command handles /health, /runtime,
     # /proc and file hashing read-only, using only the expected SHA parameter.
     # The remote command itself is provisioned by the VPS owner, not this PR.
