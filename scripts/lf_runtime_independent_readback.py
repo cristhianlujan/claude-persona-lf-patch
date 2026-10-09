@@ -8,6 +8,7 @@ import re
 import subprocess
 import tempfile
 import urllib.request
+import urllib.error
 
 def require(ok, message):
     if not ok:
@@ -82,8 +83,13 @@ def main():
     req=urllib.request.Request(edge,method="POST",
        headers={"Authorization":"Bearer "+oidc,"Content-Type":"application/json"},
        data=json.dumps(receipt,separators=(",",":")).encode())
-    with urllib.request.urlopen(req,timeout=20) as response:
-        result=json.load(response)
+    try:
+        with urllib.request.urlopen(req,timeout=20) as response:
+            result=json.load(response)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 503:
+            raise RuntimeError('RECEIPT_REGISTRATION_UNAVAILABLE: no se pudo registrar; no es un fallo de verificación') from None
+        raise RuntimeError('RECEIPT_REGISTRATION_FAILED_HTTP_'+str(exc.code)) from None
     require(result.get("authenticated_by")=="GITHUB_OIDC","OIDC receipt not stored")
     print(json.dumps({"receipt_id":result["receipt_id"],
         "decision":result.get("decision"),"execution_id":execution,"exact_head":head}))
