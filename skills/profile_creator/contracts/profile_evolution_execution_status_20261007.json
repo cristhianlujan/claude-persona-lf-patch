@@ -157,9 +157,21 @@
         "empty_required_dimensions"
       ],
       "persistent_db_change": false
+    },
+    "independent_assurance_v3_runtime_candidate": {
+      "status": "ROLLBACK_QUALIFIED",
+      "candidate_ref": "sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/independent_assurance_generic_subject_runtime_v3_candidate.sql",
+      "candidate_commit": "a4088481aa69b0b95bc9f50cf276a011f7674334",
+      "operation_count": 1,
+      "judge_count": 6,
+      "generic_core_named_subject_branches": false,
+      "strategy_wrapper_preserved": true,
+      "qualification_gate_observed": true,
+      "rollback_restored_1_0_1": true,
+      "persistent_change": false
     }
   },
-  "closure": "IMPLEMENTATION_IN_EXECUTION; FULL_BEHAVIOR BENCHMARK PASS; GENERIC INDEPENDENT_ASSURANCE SUBJECT CONTRACT V3 PROVEN IN ROLLBACK; PE10_C3 WAITS FOR GOVERNED MATERIALIZATION/QUALIFICATION OF THE EXISTING REVIEW STACK; CUTOVER NOT ADMITTED",
+  "closure": "IMPLEMENTATION_IN_EXECUTION; FULL_BEHAVIOR BENCHMARK PASS; INDEPENDENT_ASSURANCE V3 GENERIC RUNTIME CANDIDATE ROLLBACK-QUALIFIED; PE10_C3 WAITS ONLY FOR GOVERNED PUBLICATION/REQUALIFICATION; CUTOVER NOT ADMITTED",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
     "unit_count": 13,
@@ -197,7 +209,7 @@
         "PE10_C2B"
       ],
       "current_checkpoint": "PE10_C3",
-      "blocker_code": "INDEPENDENT_ASSURANCE_GENERIC_SUBJECT_RUNTIME_NOT_MATERIALIZED",
+      "blocker_code": "INDEPENDENT_ASSURANCE_V3_PUBLICATION_PENDING",
       "full_behavior_summary": {
         "benchmark_status": "BENCHMARK_PASS",
         "case_count": 21,
@@ -216,7 +228,7 @@
         "false_pass": "6 -> 0",
         "cost_latency_within_budget": true
       },
-      "blocker_detail": "Name whitelist design repaired at contract level. V3 generic subject envelope passed rollback live probe and local self-test; live canonical review operation/RPC generalization still requires governed materialization and qualification before C3 can execute."
+      "blocker_detail": "Generic any-subject contract and full runtime candidate passed live transactional rollback. Remaining work is governed publication: formal Git migration -> merge -> exact apply -> operation requalification -> capability current promotion -> independent review."
     }
   }
 }
