@@ -1,5 +1,13 @@
 # Programming Agent Wave 1 boundary contracts
 
+## Procedimiento canónico de Análisis (A1–A9) — fuente preparada
+
+- [ANALYSIS_PROCEDURE_V1.md](ANALYSIS_PROCEDURE_V1.md): secuencia operativa, responsables, salidas, transiciones, bloqueos y límites de fase.
+- [analysis_procedure_v1.json](analysis_procedure_v1.json): contrato estructurado con las nueve etapas, referencias a fuentes existentes y estados permitidos.
+- **Estado:** `PROCEDURE_SOURCE_COMPLETE / VALIDATION_DEFERRED`; no ejecutar caso, prueba, benchmark ni PG-01 en el lote de construcción del procedimiento. `DONE` del ledger no acredita ejecución integral del agente.
+- **Separación:** el procedimiento puede construirse sin implementar ningún producto; desarrollo y testing tienen sus propios carriles.
+
+
 Source-only contract bundle for the Programming Agent Analysis boundary plus Wave 1 consumers: `A1–A9`, `PG-01`, and `TST-01–TST-05`.
 
 - **A1 / Analysis intake** produces `REQUEST_CONTEXT_V1` without Story, Functional Version, Agent Task, or solution inference.
