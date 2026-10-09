@@ -1,0 +1,77 @@
+{
+  "schema": "PROFILE_EXPERT_BEHAVIOR_CAMPAIGN_REMOTE_V3",
+  "campaign_id": "PEXP-R3-20261008",
+  "benchmark_scope": "EXPERT_TASK_PERFORMANCE_E2E",
+  "status": "FROZEN_BEFORE_RAW",
+  "supersedes_failed_campaign": "PEXP-R2-20261008",
+  "supersession_reason": "TECHNICAL_PROVENANCE_FAILURE_EXECUTOR_MODE_ATTESTATION_MISSING_BEFORE_RAW_FREEZE",
+  "prior_campaign_admitted": false,
+  "prior_campaign_producer_raw_frozen": false,
+  "fresh_context_required": true,
+  "fresh_context_reset": "RESTART_IDLE_LLAMA_SERVER_BEFORE_FIRST_MODEL_CALL",
+  "technical_retry_policy": "ZERO_RETRY_ABORT_CAMPAIGN",
+  "route": {
+    "executor_mode": "REMOTE_API",
+    "adapter_id": "hetzner-local-llamacpp-http-v1",
+    "provider": "local_llama_cpp_hetzner_persistent",
+    "verifier_id": "hetzner-local-llamacpp-http-readback-v1",
+    "zero_cost_only": true,
+    "loopback_only": true,
+    "runtime_adapter_source_commit": "1c718b20c5246e078229ba3ed1ab6c0ed57838af",
+    "runtime_adapter_source_blob": "9a8a30f3977aec49cf7aeecb12e2e602a8505b32",
+    "required_attested_executor_mode": "REMOTE_API"
+  },
+  "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+  "planned_case_count": 120,
+  "profile_count": 8,
+  "cases_per_profile": 15,
+  "batching": {
+    "enabled": true,
+    "max_cases_per_model_call": 8,
+    "batches_per_profile": [
+      8,
+      7
+    ],
+    "case_bound_child_receipts_required": true,
+    "cross_case_reference_forbidden": true,
+    "same_batch_partition_all_arms": true
+  },
+  "arms": {
+    "A_ORIGINAL": "baseline source at frozen revision",
+    "B_UPDATER_V01": "v0.1 actual no-change behavior for structurally-valid profiles; separate execution required",
+    "C_EVOLUTION_CURRENT": "current Evolution executable profile source; sidecars do not count as executable change",
+    "D_EVOLUTION_TARGET": "baseline full source plus frozen V2 addendum; reversible non-authority candidate"
+  },
+  "source_projection_ref": "skills/profile_creator/evals/profile_expert_benchmark_source_projection_v1.json",
+  "task_corpus_ref": "skills/profile_creator/evals/profile_expert_behavior_tasks_remote_v1.json",
+  "hidden_oracle_ref": "skills/profile_creator/evals/profile_expert_behavior_oracle_remote_v1.json",
+  "hidden_oracle_visible_to_producer": false,
+  "holdout_manifest_ref": "skills/profile_creator/evals/profile_expert_behavior_holdout_remote_v2.json",
+  "holdout_manifest_blob": "b6f6a48e2e2073f9f1f7b6dfe972900d6e454255",
+  "holdout_content_sha256": "504bd3544c219ed8449b8ebe85619bfdeb8f6f4bca88672233a1ad9927bd5672",
+  "holdout_case_count": 60,
+  "holdout_labels_visible_to_producer": false,
+  "power_analysis_ref": "skills/profile_creator/evals/profile_expert_behavior_power_analysis_remote_v3.json",
+  "thresholds_frozen_before_raw": true,
+  "raw_generation_started": false,
+  "producer_contract": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+  "producer_receipt": "PROFILE_EXECUTION_RECEIPT_V1 + PROFILE_EXPERT_CASE_EXECUTION_RECEIPT_V1",
+  "raw_capture_required": true,
+  "evaluator": {
+    "type": "DETERMINISTIC_HIDDEN_ORACLE",
+    "blind_to_arm_identity": true,
+    "evaluator_execution_id_must_differ": true,
+    "verification_state": "VERIFIED"
+  },
+  "admission_thresholds": {
+    "relative_uplift_D_vs_A_min": 0.15,
+    "paired_ci_lower_D_vs_A_gt": 0,
+    "paired_ci_lower_D_vs_C_gt": 0,
+    "holdout_ci_lower_D_vs_A_gt": 0,
+    "holdout_ci_lower_D_vs_C_gt": 0,
+    "critical_regressions_max": 0,
+    "preservation_ratio_min": 0.98
+  },
+  "scorer_ref": "skills/profile_creator/evals/score_profile_expert_behavior_v1.py",
+  "no_silent_route_substitution": true
+}
