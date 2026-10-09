@@ -170,10 +170,12 @@
         "independent assurance PASS",
         "ADMIT_CUTOVER event",
         "v0.1 executions drained",
-        "v0.2 authority readback"
+        "v0.2 authority readback",
+        "existing OpenAI Responses GPT runtime 10/10 provider tests",
+        "no Llama dependency"
       ],
       "blockers": [
-        "PE10P: governed callable Profile Creator semantic execution surface unavailable",
+        "PE10P_C4: live GPT runtime receipt blocked because OPENAI_API_KEY / verify credential are absent in lf-profile-runtime-api service",
         "FULL_PROFILE_EVOLUTION_BEHAVIOR benchmark not yet executed/admitted",
         "0 ADMIT_CUTOVER events",
         "25 v0.1 executions IN_PROGRESS",
