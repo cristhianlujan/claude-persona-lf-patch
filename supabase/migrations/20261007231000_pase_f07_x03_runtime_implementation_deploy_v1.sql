@@ -258,6 +258,10 @@ create policy lf_runtime_readback_oidc_insert on private.lf_runtime_readback_oid
  for insert to lf_runtime_readback_oidc_writer with check (
  authenticated_by='GITHUB_OIDC'
  and claims->>'repository'='cristhianlujan/claude-persona-lf-patch'
+ and claims->>'repository_id'='1244397752'
+ and claims->>'event_name'='workflow_dispatch'
+ and claims->>'workflow_ref'='cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-runtime-independent-readback-dispatch.yml@refs/heads/main'
+ and claims->>'job_workflow_ref'='cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-runtime-independent-readback.yml@refs/heads/main'
  and claims->>'ref'='refs/heads/main'
  and claims->>'run_id'=workflow_run_id
  and claims->>'run_attempt'=workflow_run_attempt
