@@ -19,6 +19,8 @@ def check():
     b=package()
     assert b["runtime_mode"]=="GPT_NATIVE"
     assert b["semantic_review_mode"]=="INDEPENDENT_CHAT_CONTEXT"
+    assert b["quality_pack_visual_rubric_not_causal_oracle"] is True
+    assert "profile_evolution_causal_semantic_review_v1.md" in b["causal_semantic_rubric_ref"]
     assert b["resolver"]=="GPT_RUNTIME_WITH_SUPABASE_CONTEXT"
     assert b["profile_execution_operation"]=="EJECUCION_PERFIL_LF"
     assert b["profile_execution_step"]=="execute_profile"
