@@ -17,7 +17,8 @@ if public.lf_runtime_impl_deploy_receipt_check_v1(jsonb_set(r,'{mitigation_actio
 if public.lf_runtime_impl_deploy_verification_binding_v1(jsonb_set(r,'{attestation}',jsonb_build_object('schema_version','LF_RUNTIME_INDEPENDENT_READBACK_V1','producer','DEPLOY_EXECUTOR','origin_role','DEPLOY_EXECUTOR','credential_role','DEPLOY_WRITE'))) ->> 'reason' <> 'INDEPENDENT_READBACK_RECEIPT_NOT_AUTHENTICATED' then raise exception 'D7 deploy actor receipt must be rejected'; end if;
 if public.lf_runtime_impl_deploy_verification_binding_v1(jsonb_set(r,'{attestation}',jsonb_build_object('schema_version','LF_RUNTIME_INDEPENDENT_READBACK_V1','producer','GITHUB_ACTIONS_VPS_READ_ONLY','origin_role','INDEPENDENT_OBSERVER','credential_role','VPS_READ_ONLY','observer_execution_id','claimed-run','workflow_run_id','1','exact_head',h,'runtime_sha','abc','release_path','/release/new','manifest_digest',repeat('f',64)))) ->> 'reason' <> 'INDEPENDENT_READBACK_RECEIPT_NOT_AUTHENTICATED' then raise exception 'D7 unauthenticated observer claim must be rejected'; end if;
 end $$;
--- Verify that privileged SQL context cannot insert an authenticated receipt.
+-- Verify the unauthenticated role cannot insert an authenticated receipt.
+set local role authenticated;
 do $unauthorized$
 begin
  begin
@@ -31,4 +32,5 @@ begin
   null;
  end;
 end $unauthorized$;
+reset role;
 rollback;
