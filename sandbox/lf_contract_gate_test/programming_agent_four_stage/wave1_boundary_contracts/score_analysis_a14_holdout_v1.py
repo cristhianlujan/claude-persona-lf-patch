@@ -63,9 +63,9 @@ def main():
         class_ok+=int(class_match)
         # Expected refusal is a successful safe contract outcome. It is not
         # evidence that a real Programming worker consumed the package.
-        is_usable=(got["reinterpretation_required"] is False
-            and got["schema_version"]=="ANALYSIS_IMPLEMENTATION_PACKAGE_V1"
-            and (got["handoff_parity_verdict"]=="PASS" or not actual_ready))
+        is_usable=(got["schema_version"]=="ANALYSIS_IMPLEMENTATION_PACKAGE_V1"
+            and ((got["handoff_parity_verdict"]=="PASS" and got["reinterpretation_required"] is False)
+                 or (exp["handoff_parity_expected"]=="BLOCK" and not actual_ready)))
         usable+=int(is_usable)
         expected_refs=set(exp.get("specialist_refs_expected",[]))
         got_refs=set(got.get("specialist_refs",[]))
