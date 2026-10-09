@@ -13,9 +13,9 @@ PROOF_SQL = "DO $t$\nDECLARE m jsonb; old_sha text; new_sha text; a jsonb; b jso
 def guarded(test_sql):
     required = ("public.fn_lf_capability_promote_v1", "public.lf_capability_current",
                 "ROLLBACK_AFTER_SWITCH_AND_REVERT", "CANARY_RESIDUE")
-    denied = (r"\\bCREATE\\s+(?:OR\\s+REPLACE\\s+)?FUNCTION\\b",
-              r"\\bDROP\\s+FUNCTION\\b",
-              r"\\bUPDATE\\s+(?:public\\.)?lf_capability_current\\b")
+    denied = (r"\bCREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\b",
+              r"\bDROP\s+FUNCTION\b",
+              r"\bUPDATE\s+(?:public\.)?lf_capability_current\b")
     return (all(v in test_sql for v in required)
             and test_sql.count("public.fn_lf_capability_promote_v1(") == 2
             and not any(re.search(p, test_sql, re.IGNORECASE) for p in denied))
