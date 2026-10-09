@@ -1,6 +1,6 @@
 name: LF Runtime Independent Readback
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       execution_id:
         description: Exact governed deploy execution
