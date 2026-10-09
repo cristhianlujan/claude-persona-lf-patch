@@ -97,8 +97,8 @@ def main():
                                                    "Accept": "application/vnd.github.raw+json"})
         with urllib.request.urlopen(req, timeout=20) as response:
             return response.read().decode("utf-8")
-    dsn = os.environ["LF_READONLY_DSN"]
-    with psycopg.connect(dsn, autocommit=True, options="-c default_transaction_read_only=on") as conn:
+    db_kwargs = dict(host=os.environ["PGHOST"], port=os.environ.get("PGPORT", "5432"),\n                     user=os.environ["PGUSER"], password=os.environ["PGPASSWORD"],\n                     dbname=os.environ.get("PGDATABASE", "postgres"), sslmode="require")
+    with psycopg.connect(**db_kwargs, autocommit=True, options="-c default_transaction_read_only=on") as conn:
         def read_ledger(version):
             with conn.cursor() as cur:
                 cur.execute("SELECT name, statements FROM supabase_migrations.schema_migrations WHERE version=%s", (version,))
