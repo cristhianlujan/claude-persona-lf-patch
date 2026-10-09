@@ -83,12 +83,11 @@ def main():
       "context_token_budget_matched":False,
       "independent_semantic_assurance":"NOT_EXECUTED",
       "cutover_eligible":False}
-    encoded=json.dumps(result,sort_keys=True,indent=2)+"
-"
-if OUTPUT.exists():
-    assert OUTPUT.read_text()==encoded, 'FROZEN_ARTIFACT_DRIFT'
-else:
-    OUTPUT.write_text(encoded)
+    encoded=json.dumps(result,sort_keys=True,indent=2)+"\n"
+    if OUTPUT.exists():
+        assert OUTPUT.read_text()==encoded, 'FROZEN_ARTIFACT_DRIFT'
+    else:
+        OUTPUT.write_text(encoded)
     print(json.dumps({"arms":arms,
      "raw_sha256":hashlib.sha256(OUTPUT.read_bytes()).hexdigest(),
      "status":result["status"]},sort_keys=True))
