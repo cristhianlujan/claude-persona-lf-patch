@@ -41,6 +41,41 @@ def valid_ref(s: object) -> bool:
     return isinstance(s, str) and bool(re.match(r"^(supabase|github|sentinelx)://[^ ]{12,}$", s))
 
 
+def admissible_t_equiv(eq: dict) -> bool:
+    """A D4 hold proves observation, never semantic equivalence or promotion."""
+    diff = eq.get("difference_count")
+    d0 = (eq.get("status") == "PASS" and eq.get("result") == "PASS_EQUIVALENT"
+          and diff == 0 and eq.get("semantic_hold") is not True)
+    d4 = (eq.get("status") == "CLASSIFIED_HOLD"
+          and eq.get("result") == "BLOCKED_DIVERGENCE"
+          and eq.get("comparison_level") == "D4"
+          and type(diff) is int and diff > 0
+          and eq.get("semantic_hold") is True
+          and eq.get("promotion_authorized") is False)
+    return d0 or d4
+
+
+def self_test() -> int:
+    positive = {"status":"PASS","result":"PASS_EQUIVALENT","difference_count":0}
+    hold = {"status":"CLASSIFIED_HOLD","result":"BLOCKED_DIVERGENCE",
+            "comparison_level":"D4","difference_count":3,
+            "semantic_hold":True,"promotion_authorized":False}
+    assert admissible_t_equiv(positive)
+    assert admissible_t_equiv(hold)
+    for x in ({**hold,"promotion_authorized":True},
+              {**hold,"comparison_level":"D2"},
+              {**hold,"semantic_hold":False},
+              {**hold,"result":"BLOCKED_UNCLASSIFIED_DIVERGENCE"},
+              {**hold,"difference_count":0},
+              {**positive,"difference_count":1},
+              {**positive,"status":"CLASSIFIED_HOLD"}):
+        assert not admissible_t_equiv(x), "FALSE_POSITIVE_SEMANTIC_ADMISSION"
+    print(json.dumps({"test_code":TEST_CODE,"self_test":"PASS",
+                      "negative_case_count":7,
+                      "live_pipeline_executed":False}))
+    return 0
+
+
 def validate(e: dict) -> list[str]:
     issues: list[str] = []
 
@@ -91,19 +126,9 @@ def validate(e: dict) -> list[str]:
             need(stage.get("status") == "PASS" and valid_ref(stage.get("execution_ref")),
                  "STAGE_NO_LIVE_PROOF:" + c + "/" + str(stage.get("stage")))
         eq = item.get("t_equiv") or {}
-        result = eq.get("result")
-        diff = eq.get("difference_count")
-        d0 = (eq.get("status") == "PASS" and result == "PASS_EQUIVALENT"
-              and diff == 0 and eq.get("semantic_hold") is not True)
-        d4 = (eq.get("status") == "CLASSIFIED_HOLD"
-              and result == "BLOCKED_DIVERGENCE"
-              and eq.get("comparison_level") == "D4"
-              and type(diff) is int and diff > 0
-              and eq.get("semantic_hold") is True
-              and eq.get("promotion_authorized") is False)
         need(eq.get("capability_code") == "CONTROL_EQUIVALENCE_JUDGE"
              and eq.get("baseline") == "5.13" and eq.get("candidate") == "VNEXT"
-             and (d0 or d4)
+             and admissible_t_equiv(eq)
              and valid_ref(eq.get("execution_ref")), "EQUIVALENCE_UNPROVEN:" + c)
 
     writes = e.get("authoritative_readback") or {}
@@ -125,8 +150,13 @@ def validate(e: dict) -> list[str]:
 
 def main() -> int:
     p = argparse.ArgumentParser()
-    p.add_argument("--evidence-json", required=True, help="Actual live runtime and DB readback JSON")
+    p.add_argument("--evidence-json", help="Actual live runtime and DB readback JSON")
+    p.add_argument("--self-test", action="store_true")
     a = p.parse_args()
+    if a.self_test:
+        return self_test()
+    if not a.evidence_json:
+        p.error('--evidence-json is required outside self-test')
     try:
         evidence = json.loads(Path(a.evidence_json).read_text(encoding="utf-8"))
         if not isinstance(evidence, dict):
