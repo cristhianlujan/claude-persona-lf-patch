@@ -57,6 +57,7 @@ def main():
         assert OUT.read_text()==encoded, 'FROZEN_ARTIFACT_DRIFT'
     else:
         OUT.write_text(encoded)
+    a=accum["D1_STATIC"];b=accum["D3_TYPED_METHOD"]
     print(json.dumps({"D1":a,"D3":b,
        "completion_and_prompt_token_ratio_D3_to_D1":round(b["model_total_tokens"]/a["model_total_tokens"],4),
        "walltime_ratio_D3_to_D1":round(b["model_wall_ms"]/a["model_wall_ms"],4),
