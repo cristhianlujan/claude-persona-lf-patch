@@ -69,8 +69,8 @@ tests=[
   ("SNAPSHOT_FRONT_SCOPE_PARITY",lambda x:x["material_front_coverage"]["material_fronts"][0].update(scope_refs=["S2"])),
   ("SNAPSHOT_FRONT_REQUIRED_REFS",lambda x:x["material_front_coverage"]["material_fronts"][0].pop("authority_refs")),
   ("SNAPSHOT_COVERAGE_PROVENANCE",lambda x:x["material_front_coverage"].update(coverage_fingerprint_sha256=None)),
-  ("SNAPSHOT_FRONT_REUSE_CURRENTNESS",lambda x:x["material_front_coverage"]["material_fronts"][0].update(status="REUSE_AS_IS")),
-  ("SNAPSHOT_FRONT_NOT_APPLICABLE_PROOF",lambda x:x["material_front_coverage"]["material_fronts"][0].update(status="NOT_APPLICABLE")),
+  ("SNAPSHOT_FRONT_REUSE_CURRENTNESS",lambda x:x["material_front_coverage"]["material_fronts"][0].update(status="REUSE_AS_IS",currentness_refs=[])),
+  ("SNAPSHOT_FRONT_NOT_APPLICABLE_PROOF",lambda x:x["material_front_coverage"]["material_fronts"][0].update(status="NOT_APPLICABLE",evidence_refs=[])),
 ]
 for code,mutate in tests:
     variant=copy.deepcopy(s)
