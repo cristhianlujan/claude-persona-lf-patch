@@ -43,7 +43,7 @@ BEGIN
       'IG_REVERSIBLE_CANDIDATE_ASSURANCE_2_0_1',v_actor,'SCALORA_TEMP_EPHEMERAL',
       '1170883a9ff524c0176a78151778ff0fe695d647',
       'SENTINELX','SentinelX python3 isolated temporary workdir',
-      'PASSED',now(),now(),80,1,1,0,0,0,
+      'PASSED','2026-10-09T15:54:22.777843+00:00'::timestamptz,'2026-10-09T15:54:22.851429+00:00'::timestamptz,74,1,1,0,0,0,
       jsonb_build_object(
         'plan_code','IG_CURATOR_VALIDATOR_REFACTOR_V2',
         'unit_code','M7.13','checkpoint_code','CRITERIA_AS_CONTROLS',
@@ -52,7 +52,7 @@ BEGIN
         'test_blob_sha1','6647b86a71c9489f276e53e013e839310e486163',
         'provider_version','2.0.1',
         'host_id','host_3d5ff6fb467d4e9e',
-        'observed_source','sentinelx://scalora-vps/script_job_e685b727ae754722a355ca4c9e39faa6',
+        'observed_source','sentinelx://scalora-vps/script_job_61555d4492f3496984a6416dcbf6acb0',
         'observation','ACTUAL_PYTHON_EXIT_0_GIT_BLOBS_VERIFIED'
       ),
       jsonb_build_object(
@@ -84,8 +84,8 @@ BEGIN
     '{"require_exact_git_blobs":true,"script":"test_reversible_candidate_verification_v1.py"}'::jsonb,
     '{"exit_code":0,"scenario_count":12}'::jsonb,
     '{"exit_code":0,"scenario_count":12,"test_passed":true,"stderr":"","stdout":"PASS_REVERSIBLE_CANDIDATE_VERIFICATION_V1 cases=12 non_ig=3 ig=2 independence_gate=7 rollback_exact=4 negative_detected=9 domain_branches_in_core=0"}'::jsonb,
-    now(),now(),
-    '{"provider":"SENTINELX","audit_ref":"sentinelx://scalora-vps/script_job_e685b727ae754722a355ca4c9e39faa6","temporary_directory_cleaned":true}'::jsonb,
+    '2026-10-09T15:54:22.777843+00:00'::timestamptz,'2026-10-09T15:54:22.851429+00:00'::timestamptz,
+    '{"provider":"SENTINELX","audit_ref":"sentinelx://scalora-vps/script_job_61555d4492f3496984a6416dcbf6acb0","temporary_directory_cleaned":true}'::jsonb,
     v_actor
   WHERE NOT EXISTS(
     SELECT 1 FROM public.lf_test_runs WHERE suite_run_id=v_suite_id
