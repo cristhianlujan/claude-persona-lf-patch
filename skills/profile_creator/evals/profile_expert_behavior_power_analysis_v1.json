@@ -1,0 +1,41 @@
+{
+  "schema": "PROFILE_EXPERT_BEHAVIOR_POWER_ANALYSIS_V1",
+  "campaign_id": "PEXP-V1-20261008",
+  "frozen_before_raw": true,
+  "design": "PAIRED_FOUR_ARM_TASK_EXECUTION",
+  "primary_pairwise_tests": [
+    "D_EVOLUTION_TARGET_MINUS_A_ORIGINAL",
+    "D_EVOLUTION_TARGET_MINUS_C_EVOLUTION_CURRENT"
+  ],
+  "alpha_two_sided": 0.05,
+  "target_power": 0.8,
+  "planning_method": "PAIRED_T_A_PRIORI_STANDARDIZED_EFFECT",
+  "assumptions": {
+    "full_campaign_min_standardized_paired_effect": 0.26,
+    "holdout_is_confirmatory_subset": true,
+    "scores_bounded": [
+      0,
+      1
+    ],
+    "correlations_not_assumed_for_scoring": true,
+    "thresholds_not_tuned_after_raw": true
+  },
+  "calculations": {
+    "full_campaign": {
+      "required_n_approx": 119,
+      "planned_n": 120,
+      "standardized_effect_detectable_at_n120_approx": 0.257835
+    },
+    "sealed_holdout": {
+      "planned_n": 60,
+      "standardized_effect_detectable_at_n60_approx": 0.367704,
+      "note": "Holdout has lower power by design; it is a confirmation gate and its CI must still exclude zero."
+    }
+  },
+  "distinction_from_business_threshold": {
+    "relative_uplift_D_vs_A_min": 0.15,
+    "note": "The >=15% relative uplift admission threshold is a practical-effect gate; standardized-effect power planning is separate."
+  },
+  "recomputation_rule": "Do not change N, alpha, power target or admission thresholds after semantic RAW begins. Any redesign requires a new campaign_id.",
+  "status": "FROZEN"
+}
