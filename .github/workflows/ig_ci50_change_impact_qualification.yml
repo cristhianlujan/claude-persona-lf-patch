@@ -1,0 +1,32 @@
+name: IG CI50 Change Impact Qualification
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ig_ci50_change_impact_qualification.yml"
+      - "sandbox/lf_contract_gate_test/input_governance_incremental/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify_ci50:
+    name: CI50 Git-anchored read-only qualification
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Execute exact-source CI50 candidate evaluation
+        run: |
+          python3 sandbox/lf_contract_gate_test/input_governance_incremental/qualify_ci50_git_v1.py --output ig_ci50_qualification_report.json
+      - name: Retain exact-case qualification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig-ci50-qualification
+          path: ig_ci50_qualification_report.json
+          if-no-files-found: ignore
+          retention-days: 14
