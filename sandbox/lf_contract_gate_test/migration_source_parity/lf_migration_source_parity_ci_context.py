@@ -36,6 +36,7 @@ MANAGED_PREFIXES = (
 )
 
 MANAGED_EXACT_NAMES = {
+    "b2b_corporate_scope_model_v1",
     "pase_f07_x03_runtime_implementation_deploy_v1",
     "promote_router_compact_jit_v1",
     "promote_card_deterministic_resolvers_safe_subset",
