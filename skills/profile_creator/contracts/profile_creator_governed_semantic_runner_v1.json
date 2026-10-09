@@ -1,6 +1,6 @@
 {
   "schema": "PROFILE_CREATOR_GOVERNED_SEMANTIC_RUNNER_CONTRACT_V1",
-  "purpose": "Provide fresh, auditable Profile Creator semantic producer executions for Profile Evolution full-behavior benchmarking without creating a parallel creator or bypassing governance.",
+  "purpose": "Provide fresh, auditable Profile Creator semantic producer executions for Profile Evolution full-behavior benchmarking using any governed GPT/model execution surface; governance is evidence-bound and model/vendor agnostic.",
   "producer": "PROFILE_CREATOR",
   "execution_requirements": {
     "fresh_run_per_case": true,
@@ -15,6 +15,7 @@
     "no_production_activation": true
   },
   "allowed_execution_surfaces": [
+    "CHATGPT_GPT_GOVERNED_EXECUTION",
     "GOVERNED_PROFILE_CREATOR_WORKER"
   ],
   "forbidden_execution_surfaces": [
@@ -41,14 +42,24 @@
     "fresh_context",
     "profile_source_write_executed",
     "runtime_activation",
-    "production_activation"
+    "production_activation",
+    "executor_class",
+    "governance_contract_ref"
   ],
   "ready_status": "READY",
   "fail_closed_status": "BLOCKED",
   "handoff": "RAW_OUTPUT -> PROFILE_CANDIDATE_MATERIALIZER -> FULL_BEHAVIOR_VALIDATION",
   "notes": [
-    "This contract does not choose a model vendor.",
-    "A local llama-server may only be used if the governed Profile Creator worker itself resolves to that runtime; direct calls are forbidden.",
+    "Governed means bound to this contract, exact input/snapshot/source identity, frozen RAW, and explicit no-write/no-activation boundaries; it does not require a dedicated worker process.",
+    "GPT is the current semantic executor. Other models may be used later if they satisfy the same contract.",
+    "Direct llama-server invocation remains forbidden unless it is itself exposed through a governed execution surface satisfying this contract.",
     "The runner does not authorize profile source writes, runtime activation, production promotion, benchmark admission or cutover."
-  ]
+  ],
+  "execution_model": {
+    "semantic_executor_role": "PROFILE_CREATOR",
+    "executor_implementation": "MODEL_AGNOSTIC",
+    "current_supported_executor": "GPT",
+    "worker_process_required": false,
+    "vendor_binding_required": false
+  }
 }
