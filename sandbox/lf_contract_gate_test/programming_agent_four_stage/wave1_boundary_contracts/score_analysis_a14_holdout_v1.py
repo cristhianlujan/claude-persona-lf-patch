@@ -18,6 +18,11 @@ def main():
     if cases.get("schema_version")!="ANALYSIS_A14_FRESH_CASE_SET_V1": raise SystemExit("CASE_SCHEMA_INVALID")
     if oracle.get("schema_version")!="ANALYSIS_A14_FRESH_ORACLE_V1": raise SystemExit("ORACLE_SCHEMA_INVALID")
     if cand.get("schema_version")!="ANALYSIS_A14_CANDIDATE_RESULT_SET_V1": raise SystemExit("CANDIDATE_SCHEMA_INVALID")
+    # A14 scores deterministic contract replay, not LLM reasoning or a live PG-01 readback.
+    if cand.get("evidence_tier","DETERMINISTIC_CONTRACT_REPLAY")!="DETERMINISTIC_CONTRACT_REPLAY":
+        raise SystemExit("A14_EVIDENCE_TIER_MISMATCH")
+    if cand.get("model_inference_executed",False) is not False or cand.get("real_programming_consumer_verified",False) is not False:
+        raise SystemExit("A14_UNSUPPORTED_RUNTIME_CLAIM")
     if not (cases["case_set_id"]==oracle["case_set_id"]==cand["case_set_id"]): raise SystemExit("CASE_SET_ID_MISMATCH")
     if cases.get("generated_after_candidate_freeze") is not True or cases.get("used_for_A13_tuning") is not False: raise SystemExit("HOLDOUT_VIRGINITY_INVALID")
     o={x["case_id"]:x for x in oracle["oracle"]}
@@ -45,13 +50,22 @@ def main():
         expected_blocked=set(exp["blocked_scope_ids_expected"])
         actual_ready=set(got["ready_scope_ids"])
         fr=len(expected_blocked & actual_ready)
+        # A handoff mismatch or front-consistency failure blocks ALL downstream
+        # admission. Do not allow an oracle to hide a READY scope behind a
+        # separately reported negative parity result.
+        if got["handoff_parity_verdict"]!="PASS" or got.get("scope_front_consistency_verdict")!="PASS":
+            fr+=len(actual_ready - expected_blocked)
         false_ready+=fr
         hp=got["handoff_parity_verdict"]==exp["handoff_parity_expected"]
         handoff_ok+=int(hp)
         if exp.get("lossy_projection_expected_block") and got["handoff_parity_verdict"]!="BLOCK": lossy_count+=1
         class_match=got["depth_level"]==exp["depth_expected"]
         class_ok+=int(class_match)
-        is_usable=(got["reinterpretation_required"] is False and got["schema_version"]=="ANALYSIS_IMPLEMENTATION_PACKAGE_V1")
+        # Expected refusal is a successful safe contract outcome. It is not
+        # evidence that a real Programming worker consumed the package.
+        is_usable=(got["reinterpretation_required"] is False
+            and got["schema_version"]=="ANALYSIS_IMPLEMENTATION_PACKAGE_V1"
+            and (got["handoff_parity_verdict"]=="PASS" or not actual_ready))
         usable+=int(is_usable)
         expected_refs=set(exp.get("specialist_refs_expected",[]))
         got_refs=set(got.get("specialist_refs",[]))
@@ -96,7 +110,17 @@ def main():
         "gates":gates,
         "specialist_failures":specialist_failures,
         "per_case":per_case,
-        "limits":{"model_provider_not_used":True,"token_usage":None},
+        "evidence_tier":"DETERMINISTIC_CONTRACT_REPLAY",
+        "model_inference_verified":False,
+        "real_programming_consumer_verified":False,
+        "operational_integration_admissible":False,
+        "limits":{
+            "model_provider_not_used":True,
+            "token_usage":None,
+            "elapsed_ms_is_python_replay_not_inference":True,
+            "verdict_scope":"CONTRACT_REPLAY_ONLY",
+            "model_e2e_and_receiver_readback_required_separately":True
+        },
         "runtime_activation":False,"production_activation":False
     }
     Path(args.output).write_text(json.dumps(out,indent=2,sort_keys=True)+"\n",encoding="utf-8")
