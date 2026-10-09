@@ -190,9 +190,36 @@
       "planned_cases": 120,
       "holdout_cases": 60,
       "raw_generation_started": false
+    },
+    "independent_assurance_v3_publication": {
+      "status": "PUBLISHED_QUALIFIED_CURRENT",
+      "publication_pr": 2070,
+      "publication_merge_sha": "32d9b71e33c005e60f4e0a8999def219e6f9dbd4",
+      "publication_migration": "supabase/migrations/20261009034500_independent_assurance_generic_subject_v3.sql",
+      "publication_blob": "549a67c1f25640d4eed00443aebda346258bb99e",
+      "publication_db_migration_version": "20261009034828",
+      "compatibility_repair_pr": 2073,
+      "compatibility_repair_merge_sha": "16b9746476eb908c26486d7aa6a093008c854f6a",
+      "compatibility_repair_migration": "supabase/migrations/20261009050000_operation_requalification_nullable_scope_route_resolution_v1.sql",
+      "compatibility_repair_blob": "20563aaf29851ee37e9973d2aa71f55fd0a70412",
+      "compatibility_repair_db_migration_version": "20261009035548",
+      "exact_requalification_execution_id": "EXEC-INDEP-V3-REQUAL-20261008-001",
+      "operation_revision_sha256": "0b6a945a2c1aae8c8ad66b3ca9da40e6112ddc3b99371fcc230b4953d81ccfd6",
+      "operation_qualification_current": true,
+      "capability_current_version": "2.0.0",
+      "capability_current_manifest_sha256": "bfdd4ca3190c3d3e2529f2bfc48db67d898a772aa0d8a9958a911647b3057843",
+      "previous_version": "1.0.1",
+      "operation_count": 1,
+      "judge_count": 6,
+      "parallel_operation_count": 0,
+      "parallel_route_count": 0,
+      "security_advisor_new_v3_rpc_findings": 0,
+      "runtime_activation": false,
+      "production_activation": false,
+      "profile_evolution_cutover": false
     }
   },
-  "closure": "REARCHITECTURE_IN_EXECUTION; 70/76 REQUIRED TERMINAL. PE10E_C4 REAL A/B/C/D EXPERT TASK CAMPAIGN PENDING; INDEPENDENT_ASSURANCE V3 FORMAL MIGRATION ROLLBACK-PASS AND WAITS FOR EXPLICIT MERGE/APPLY/REQUALIFY/PROMOTE; CUTOVER NOT ADMITTED",
+  "closure": "REARCHITECTURE_IN_EXECUTION; 70/76 REQUIRED TERMINAL. INDEPENDENT_ASSURANCE V3 IS PUBLISHED, EXACT-REVISION QUALIFIED AND CURRENT 2.0.0. PE10 HAS 0 OPEN BLOCKERS AND WAITS ON PE10E. PE10E_C4 REAL A/B/C/D EXPERT TASK CAMPAIGN REMAINS PENDING. CUTOVER NOT ADMITTED.",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
     "unit_count": 18,
@@ -202,7 +229,7 @@
     "required_progress_pct": 92.1,
     "done_checkpoint_count": 70,
     "not_applicable_checkpoint_count": 3,
-    "open_blocker_count": 1
+    "open_blocker_count": 0
   },
   "atomic_units": {
     "PE5A": {
@@ -222,7 +249,7 @@
       "materializer_receipt_sha256": "a2c53910ac76bbb9ab23b7b787949940b9500e145f772356a33d1c8075f669ef"
     },
     "PE10": {
-      "status": "IN_PROGRESS_BLOCKED_AT_C3",
+      "status": "WAIT_DEPENDENCY_PE10E",
       "checkpoints": "3/8",
       "completed": [
         "PE10_C1",
@@ -249,7 +276,11 @@
         "false_pass": "6 -> 0",
         "cost_latency_within_budget": true
       },
-      "blocker_detail": "Formal V3 migration is Git-first and exact rollback PASS. Remaining governed publication requires explicit merge authorization, exact apply, operation requalification, capability 2.0.0 current promotion and Git=ledger=DB readback."
+      "blocker_detail": "Formal V3 migration is Git-first and exact rollback PASS. Remaining governed publication requires explicit merge authorization, exact apply, operation requalification, capability 2.0.0 current promotion and Git=ledger=DB readback.",
+      "open_blocker_count": 0,
+      "unmet_dependency": "PE10E",
+      "independent_assurance_v3": "PUBLISHED_QUALIFIED_CURRENT",
+      "note": "PE10_C3 is not closed: independent assurance must evaluate frozen PE10E expert-benchmark evidence after PE10E_C4."
     },
     "PE1B": {
       "status": "DONE",
@@ -284,7 +315,7 @@
         "thresholds_frozen_before_raw": true,
         "raw_started": false
       },
-      "remaining": "Execute actual A/B/C/D profile-task campaign with blind independent evaluator receipts"
+      "remaining": "Execute actual A/B/C/D expert-task campaign; no synthetic/document-only score accepted."
     }
   },
   "repair_audit_rearchitecture": {
