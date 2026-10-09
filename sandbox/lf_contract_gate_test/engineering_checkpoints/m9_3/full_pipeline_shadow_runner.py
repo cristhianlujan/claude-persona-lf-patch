@@ -406,6 +406,16 @@ def self_test() -> int:
         require(False, "NEGATIVE_SHOULD_BLOCK")
     except ValueError as exc:
         require(str(exc) == "NEGATIVE_SHOULD_BLOCK", "NEGATIVE_NOT_TYPED")
+    classified=classify_source_delta(
+        [{"ref":{"kind":"CONTRACT"},"observed_sha256":"old"}],
+        [{"ref":{"kind":"CONTRACT"},"observed_sha256":"new"}])
+    require(classified["status"]=="CLASSIFIED_VERSION_SOURCE_DELTA"
+            and classified["change_count"]==1, "KNOWN_SOURCE_DELTA_NOT_CLASSIFIED")
+    blocked=classify_source_delta(
+        [{"ref":{"kind":"UNKNOWN_SEMANTIC_SOURCE"},"observed_sha256":"old"}],
+        [{"ref":{"kind":"UNKNOWN_SEMANTIC_SOURCE"},"observed_sha256":"new"}])
+    require(blocked["status"]=="BLOCKED_UNCLASSIFIED_SOURCE_DELTA",
+            "UNKNOWN_SOURCE_DELTA_NOT_BLOCKED")
     print(json.dumps({"test_code": CODE, "self_test": "PASS",
        "negative": "PASS", "live_pipeline_pass": False}))
     return 0
