@@ -243,13 +243,16 @@ create table if not exists private.lf_runtime_readback_oidc_receipts (
  workflow_run_attempt text not null,
  token_sha256 text not null check(token_sha256 ~ '^[0-9a-f]{64}$'),
  observed_at timestamptz not null default now(),
- unique(workflow_run_id,workflow_run_attempt,execution_id,exact_head,manifest_digest)
+ unique(workflow_run_id,workflow_run_attempt),
+ unique(token_sha256)
 );
 alter table private.lf_runtime_readback_oidc_receipts enable row level security;
 revoke all on private.lf_runtime_readback_oidc_receipts from public, anon, authenticated, service_role;
 revoke all on sequence private.lf_runtime_readback_oidc_receipts_receipt_id_seq from public, anon, authenticated, service_role;
 grant usage on schema private to lf_runtime_readback_oidc_writer;
 grant insert on private.lf_runtime_readback_oidc_receipts to lf_runtime_readback_oidc_writer;
+grant select (receipt_id) on private.lf_runtime_readback_oidc_receipts to lf_runtime_readback_oidc_writer;
+create policy lf_runtime_readback_oidc_select_own on private.lf_runtime_readback_oidc_receipts for select to lf_runtime_readback_oidc_writer using (true);
 grant usage on sequence private.lf_runtime_readback_oidc_receipts_receipt_id_seq to lf_runtime_readback_oidc_writer;
 create policy lf_runtime_readback_oidc_insert on private.lf_runtime_readback_oidc_receipts
  for insert to lf_runtime_readback_oidc_writer with check (
