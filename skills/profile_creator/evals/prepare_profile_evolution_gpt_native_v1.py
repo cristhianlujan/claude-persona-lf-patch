@@ -27,6 +27,7 @@ SELECTOR="skills/profile_creator/evals/results/pe_causal_v3_selector_real_receip
 CARDS="skills/profile_creator/evals/results/pe_causal_unseen_remaining_cards_v1.json"
 ADAPTER="skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py"
 REVIEW_CONTRACT="profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md"
+CAUSAL_RUBRIC="skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md"
 QUALITY_GATE="sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py"
 ARMS=("D1_STATIC","D2_SELECTOR_ONLY","D3_TYPED_METHOD")
 RUN_PREFIX="PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1"
@@ -63,7 +64,7 @@ def package()->dict[str,Any]:
     if len(set(ids))!=4 or set(ids)!=set(bysel) or set(ids)!=set(bycard):
         raise HandoffError("CASE_SET_MISMATCH")
     sources={name:ref(name) for name in
-             (PROFILE,CORPUS,SELECTOR,CARDS,ADAPTER,REVIEW_CONTRACT,QUALITY_GATE)}
+             (PROFILE,CORPUS,SELECTOR,CARDS,ADAPTER,REVIEW_CONTRACT,CAUSAL_RUBRIC,QUALITY_GATE)}
     source_manifest=[{"ref":PROFILE,"content_sha256":sources[PROFILE]["sha256"]}]
     profile_source_sha256=canonical_json_sha256(source_manifest)
     outputs=[]
@@ -176,8 +177,8 @@ def package()->dict[str,Any]:
                 executor_mode="GPT_NATIVE",
                 card_resolution={"mode":"GENERIC_SAFE","critical_authority_missing":False,
                   "unresolved_capabilities":[],
-                  "core_policy_ref":REVIEW_CONTRACT,
-                  "core_policy_sha256":sources[REVIEW_CONTRACT]["sha256"],
+                  "core_policy_ref":CAUSAL_RUBRIC,
+                  "core_policy_sha256":sources[CAUSAL_RUBRIC]["sha256"],
                   "fallback_reason":"No profile-specific card; existing LF native contract and review boundary."})
             assert validate_execution_contract(contract,expected_executor_mode="GPT_NATIVE")==[]
             outputs.append({"run_id":runid,"case_id":cid,"arm":arm,
@@ -202,6 +203,8 @@ def package()->dict[str,Any]:
        "semantic_review_mode":"INDEPENDENT_CHAT_CONTEXT",
        "semantic_gate_ref":QUALITY_GATE,
        "semantic_review_contract_ref":REVIEW_CONTRACT,
+       "causal_semantic_rubric_ref":CAUSAL_RUBRIC,
+       "quality_pack_visual_rubric_not_causal_oracle":True,
        "sources":sources,
        "runs":outputs,
        "run_count":len(outputs),"case_count":len(cases),
