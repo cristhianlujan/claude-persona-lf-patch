@@ -15,24 +15,22 @@ GOOD_SHA = "a"*64
 
 def assurance(producer_ref, reviewer_ref, producer_data_refs, reviewer_data_refs, producer_author_ref, reviewer_author_ref, state="INDEPENDENT"):
     measurement = {
-        "schema_version":"LF_INDEPENDENT_ASSURANCE_PROVIDER_BOUND_V1",
+        "schema_version":"LF_INDEPENDENT_ASSURANCE_MEASURE_V1",
         "state":state,
-        "method":"PROVIDER_BOUND_NON_PG_V1",
-        "producer_ref":producer_ref,
-        "reviewer_ref":reviewer_ref,
-        "dimensions":{
-            "dependency":{"state":state,"method":"PROVIDER_BOUND_SOURCE_GRAPH_V1"},
-            "data":{"state":state,"producer_data_refs":producer_data_refs,"reviewer_data_refs":reviewer_data_refs},
-            "author":{"state":state,"producer_author_ref":producer_author_ref,"reviewer_author_ref":reviewer_author_ref},
-        },
-        "evidence_refs":["capability://INDEPENDENT_ASSURANCE@1.0.0","lf_eventos#20017:T-INDEP"],
+        "method":"PG_PROC_STATIC_CLOSURE_V1",
+        "producer_root":producer_ref,
+        "reviewer_root":reviewer_ref,
+        "dependency_dimension":{"state":state,"unresolved_shared_dependency_count":0},
+        "data_dimension":{"state":state,"unresolved_shared_data_refs":[]},
+        "author_dimension":{"state":state,"producer_author_ref":producer_author_ref,"reviewer_author_ref":reviewer_author_ref},
     }
     return {
         "capability_code":"INDEPENDENT_ASSURANCE",
-        "capability_version":"1.0.0",
+        "capability_version":"2.0.1",
         "capability_manifest_sha256":INDEPENDENT_ASSURANCE_MANIFEST_SHA256,
         "measurement":measurement,
         "measurement_sha256":canonical_digest(measurement),
+        "evidence_refs":["capability://INDEPENDENT_ASSURANCE@2.0.1","lf_eventos#20017:T-INDEP"],
     }
 
 class LimitOracle:
@@ -93,7 +91,7 @@ def run():
     def n9_positive(_): return {"verdict":"NO_BLOCKING_FINDINGS","baseline":baseline,"candidate":dict(baseline),"findings":[],"candidate_state_digest":"transient"}
     positive_ref="n9://PR1460/job110660596974"
     igp=verify_candidate(CandidateIdentity(positive_ref,GOOD_SHA),IgN9FlowAdapter(n9_positive,probe,residues),IgN9IndependentOracle(ig_receipt(positive_ref)),RollbackContract())
-    assert igp["verdict"]=="PASS" and igp["rollback_exact"] is True and igp["independent_assurance"]["version"]=="1.0.0"
+    assert igp["verdict"]=="PASS" and igp["rollback_exact"] is True and igp["independent_assurance"]["version"]=="2.0.1"
 
     negative=dict(baseline); negative["error"]="JudgeError:TERMINAL_INPUT_READINESS_RUN_IMMUTABLE"
     def n9_negative(_): return {"verdict":"BLOCKING_FINDINGS","baseline":baseline,"candidate":negative,"findings":[{"code":"CANDIDATE_FLOW_ERROR","blocking":True}],"candidate_state_digest":"transient"}
@@ -111,7 +109,25 @@ def run():
     blocked_tamper = verify_candidate(CandidateIdentity("fixture://tamper",GOOD_SHA),adapter,LimitOracle(tampered),RollbackContract())
     assert blocked_tamper["verdict"]=="BLOCK" and blocked_tamper["findings"][0]["code"]=="INDEPENDENT_ASSURANCE_RECEIPT_DIGEST_INVALID"
 
+    stale = non_ig_receipt(); stale["capability_version"]="1.0.1"
+    blocked_stale = verify_candidate(CandidateIdentity("fixture://old-pin",GOOD_SHA),adapter,LimitOracle(stale),RollbackContract())
+    assert blocked_stale["verdict"]=="BLOCK" and blocked_stale["findings"][0]["code"]=="INDEPENDENT_ASSURANCE_BINDING_INVALID"
+
+    spoofed = non_ig_receipt(); spoofed["measurement"]["schema_version"]="LF_INDEPENDENT_ASSURANCE_PROVIDER_BOUND_V1"
+    spoofed["measurement_sha256"]=canonical_digest(spoofed["measurement"])
+    blocked_spoof = verify_candidate(CandidateIdentity("fixture://old-schema",GOOD_SHA),adapter,LimitOracle(spoofed),RollbackContract())
+    assert blocked_spoof["verdict"]=="BLOCK" and blocked_spoof["findings"][0]["code"]=="INDEPENDENT_ASSURANCE_MEASUREMENT_SCHEMA_INVALID"
+
+    missing_ref=non_ig_receipt(); missing_ref["evidence_refs"]=[]
+    blocked_ref=verify_candidate(CandidateIdentity("fixture://missing-ref",GOOD_SHA),adapter,LimitOracle(missing_ref),RollbackContract())
+    assert blocked_ref["verdict"]=="BLOCK" and blocked_ref["findings"][0]["code"]=="INDEPENDENT_ASSURANCE_EVIDENCE_MISSING"
+
+    missing_dimension=non_ig_receipt(); del missing_dimension["measurement"]["author_dimension"]
+    missing_dimension["measurement_sha256"]=canonical_digest(missing_dimension["measurement"])
+    blocked_dimension=verify_candidate(CandidateIdentity("fixture://missing-dimension",GOOD_SHA),adapter,LimitOracle(missing_dimension),RollbackContract())
+    assert blocked_dimension["verdict"]=="BLOCK" and blocked_dimension["findings"][0]["code"]=="ORACLE_INDEPENDENCE_DIMENSION_FAILED"
+
     assert pos["activation_authorized"] is False and ign["promotion_authorized"] is False
-    print("PASS_REVERSIBLE_CANDIDATE_VERIFICATION_V1 cases=8 non_ig=3 ig=2 independence_gate=3 rollback_exact=4 negative_detected=5 domain_branches_in_core=0")
+    print("PASS_REVERSIBLE_CANDIDATE_VERIFICATION_V1 cases=12 non_ig=3 ig=2 independence_gate=7 rollback_exact=4 negative_detected=9 domain_branches_in_core=0")
 
 if __name__ == "__main__": run()

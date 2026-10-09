@@ -1,0 +1,223 @@
+{
+ "schema_version": "IG_M4_12_BEHAVIOR_SNAPSHOT_V1",
+ "observed_at": "2026-10-09T13:17:40.387583+00:00",
+ "screens": 42,
+ "rows": 1974,
+ "facts": {
+  "complete_rows": 708,
+  "complete_without_evidence": 0,
+  "rows_without_sha": 0
+ },
+ "logic": [
+  {
+   "severity": "P0",
+   "missing_applicable": 217,
+   "missing_downstream_ready": 0
+  },
+  {
+   "severity": "P1",
+   "missing_applicable": 406,
+   "missing_downstream_ready": 0
+  },
+  {
+   "severity": "P2",
+   "missing_applicable": 47,
+   "missing_downstream_ready": 47
+  },
+  {
+   "severity": "P3",
+   "missing_applicable": 0,
+   "missing_downstream_ready": 0
+  },
+  {
+   "severity": "P4",
+   "missing_applicable": 0,
+   "missing_downstream_ready": 0
+  }
+ ],
+ "validator_non_pass": 0,
+ "novation_event": {
+  "id": 20635,
+  "type": "HANDOFF_DEEP_CONTEXT",
+  "entity": "IG_CV_REFACTOR_V2.L0.M4.12.R11_NOVATION",
+  "schema_novation": "IG_R11_NOVATION_V1",
+  "original_criterion_met": false,
+  "validator_independent_of_curator": false,
+  "authorized_by": "owner",
+  "open_findings": [
+   "ASSETS_ICONS_VACUOUS_COMPLETE",
+   "INSENSITIVE_FAMILIES",
+   "LOGIC_CONTROL_READ_ONLY"
+  ]
+ },
+ "sample": [
+  {
+   "p": 1,
+   "f": "ACTIONS",
+   "s": "P1",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": false,
+   "nrefs": 1,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "ACTIONS",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 1,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "APPLICABILITY_READINESS",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 2,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "ASSETS_ICONS",
+   "s": "P1",
+   "ap": "APPLICABLE",
+   "c": "PARTIAL",
+   "w": "PARTIAL",
+   "downstream_ready": false,
+   "nrefs": 1,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "CONFLICT_PRECEDENCE",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 2,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "CONTEXT_BUDGET_RETRIEVAL_POLICY",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 1,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "DEPENDENCIES",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 1,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "EKB",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 1,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "ERRORS",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 1,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "FIELDS",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 1,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "FRESHNESS_INVALIDATION",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 2,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "NEGATIVE_REQUIREMENTS",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 2,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "PERMISSIONS",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 1,
+   "has_ev": true,
+   "has_sha": true
+  },
+  {
+   "p": 2,
+   "f": "PROFILES",
+   "s": "P4",
+   "ap": "APPLICABLE",
+   "c": "COMPLETE",
+   "w": "COMPLETE",
+   "downstream_ready": true,
+   "nrefs": 1,
+   "has_ev": true,
+   "has_sha": true
+  }
+ ]
+}

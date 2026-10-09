@@ -1,0 +1,92 @@
+name: LF IG Runtime Candidate Judge
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: lf-ig-runtime-judge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  ig-runtime-candidate-judge:
+    name: ig-runtime-candidate-judge
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout trusted base judge source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python for IG judge
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install DB client only for IG judge
+        run: python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.10'
+
+      - name: Self-test trusted IG request carrier
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_request_v1.py self-test
+
+      - name: Classify exact IG judge request without executing PR code
+        env:
+          REPOSITORY: ${{ github.repository }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$HEAD_REPOSITORY" != "$REPOSITORY" ]; then
+            echo "BLOCK_IG_N9_HEAD_REPOSITORY repository=$REPOSITORY head_repository=$HEAD_REPOSITORY"
+            exit 2
+          fi
+          git fetch --no-tags --depth=200 origin "$HEAD_SHA"
+          REQUEST_PATH='sandbox/ig_cv/n9_requests/request.json'
+          if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- "$REQUEST_PATH"; then
+            echo "IG_N9_APPLICABLE=false" >> "$GITHUB_ENV"
+            echo "PASS_IG_N9_NOT_APPLICABLE request_path=$REQUEST_PATH"
+            exit 0
+          fi
+          CURRENT_MAIN_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          if [ -z "$CURRENT_MAIN_SHA" ]; then
+            echo "BLOCK_IG_N9_CURRENT_MAIN_SHA"
+            exit 2
+          fi
+          if [ "$BASE_SHA" != "$CURRENT_MAIN_SHA" ]; then
+            echo "BLOCK_IG_N9_STALE_BASE base=$BASE_SHA current_main=$CURRENT_MAIN_SHA"
+            exit 2
+          fi
+          git show "$HEAD_SHA:$REQUEST_PATH" > /tmp/ig-n9-request.json
+          python3 -m json.tool /tmp/ig-n9-request.json >/dev/null
+          echo "IG_N9_APPLICABLE=true" >> "$GITHUB_ENV"
+          echo "IG_N9_HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
+
+      - name: Resolve governed independent IG database target
+        if: env.IG_N9_APPLICABLE == 'true'
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py self-test
+          python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py emit-env --consumer ig-runtime-candidate-judge
+
+      - name: Execute rollback-only independent IG flow judge
+        if: env.IG_N9_APPLICABLE == 'true'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_request_v1.py run \
+            --request /tmp/ig-n9-request.json \
+            --head-sha "$IG_N9_HEAD_SHA"

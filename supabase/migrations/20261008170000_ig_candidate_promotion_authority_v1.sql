@@ -1,0 +1,566 @@
+-- IG CANDIDATE AUTHORITY REFINEMENT V1
+-- A candidate object is not automatically "promotion only".
+-- Before grouping a candidate as an action authorization gate, verify that the
+-- semantic source decision is already owner-approved. Otherwise keep it in
+-- internal evidence/authority remediation and do not ask a human prematurely.
+
+create or replace function private.fn_lf_ig_candidate_promotion_authority_v1(
+  p_pantalla_id integer,
+  p_family_code text
+)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path=''
+as $function$
+declare
+  v_candidate_count integer:=0;
+  v_missing_decision_count integer:=0;
+  v_owner_approved_count integer:=0;
+  v_details jsonb:='[]'::jsonb;
+begin
+  if p_family_code<>'TRANSITIONS' then
+    return jsonb_build_object(
+      'schema_version','lf-ig-candidate-promotion-authority/v1',
+      'handled',false,
+      'reason','FAMILY_NOT_SUPPORTED'
+    );
+  end if;
+
+  with screen_states as (
+    select distinct pe.state_id
+    from lf_ops.pantallas_estados pe
+    where pe.pantalla_id=p_pantalla_id
+  ),
+  candidates as (
+    select distinct
+      et.transition_id,
+      et.transition_code,
+      et.status,
+      et.source_decision_id,
+      et.source_decision_number
+    from lf_ops.estados_transiciones et
+    where et.status='CANDIDATO'
+      and (
+        et.from_state_id in (select state_id from screen_states)
+        or et.to_state_id in (select state_id from screen_states)
+      )
+  ),
+  inspected as (
+    select
+      c.*,
+      d.estado_original,
+      d.estado_normalizado,
+      (
+        d.estado_original='APROBADO_POR_OWNER'
+        or d.estado_normalizado='CANDIDATO_APROBADO_POR_OWNER'
+      ) as owner_approved,
+      d.id_decision is null as decision_missing
+    from candidates c
+    left join public.lf_decisiones_gov d
+      on (
+        c.source_decision_id is not null
+        and d.id_decision=c.source_decision_id
+      )
+      or (
+        c.source_decision_id is null
+        and c.source_decision_number is not null
+        and d.decision_number=c.source_decision_number
+      )
+  )
+  select
+    count(*),
+    count(*) filter(where decision_missing),
+    count(*) filter(where owner_approved),
+    coalesce(
+      jsonb_agg(
+        jsonb_build_object(
+          'transition_id',transition_id,
+          'transition_code',transition_code,
+          'status',status,
+          'source_decision_id',source_decision_id,
+          'source_decision_number',source_decision_number,
+          'decision_state_original',estado_original,
+          'decision_state_normalized',estado_normalizado,
+          'owner_approved',owner_approved,
+          'promotion_authority_verification','REQUIRES_GOVERNED_RECEIPT'
+        )
+        order by transition_id
+      ),
+      '[]'::jsonb
+    )
+  into
+    v_candidate_count,
+    v_missing_decision_count,
+    v_owner_approved_count,
+    v_details
+  from inspected;
+
+  if v_candidate_count=0 then
+    return jsonb_build_object(
+      'schema_version','lf-ig-candidate-promotion-authority/v1',
+      'handled',false,
+      'reason','NO_CANDIDATE_TRANSITIONS'
+    );
+  end if;
+
+  if v_missing_decision_count>0 then
+    return jsonb_build_object(
+      'schema_version','lf-ig-candidate-promotion-authority/v1',
+      'handled',true,
+      'state','INTERNAL_REMEDIATION',
+      'code','CANDIDATE_SOURCE_DECISION_MISSING',
+      'semantic_decision_required',false,
+      'human_queue_allowed',false,
+      'candidate_count',v_candidate_count,
+      'missing_decision_count',v_missing_decision_count,
+      'owner_approved_count',v_owner_approved_count,
+        'details',v_details
+    );
+  end if;
+
+  if v_owner_approved_count<>v_candidate_count then
+    return jsonb_build_object(
+      'schema_version','lf-ig-candidate-promotion-authority/v1',
+      'handled',true,
+      'state','INTERNAL_REMEDIATION',
+      'code','CANDIDATE_SEMANTIC_AUTHORITY_UNPROVEN',
+      'semantic_decision_required',false,
+      'human_queue_allowed',false,
+      'candidate_count',v_candidate_count,
+      'missing_decision_count',v_missing_decision_count,
+      'owner_approved_count',v_owner_approved_count,
+        'details',v_details
+    );
+  end if;
+
+  return jsonb_build_object(
+    'schema_version','lf-ig-candidate-promotion-authority/v1',
+    'handled',true,
+    'state','ACTION_AUTHORIZATION_GATE',
+    'code','OWNER_APPROVED_SEMANTICS_PROMOTION_REQUIRES_VERIFIED_AUTHORIZATION',
+    'action_code','PROMOTE_GOVERNED_CANDIDATE',
+    'action_authorized',false,
+    'authorization_evidence_state','REQUIRES_GOVERNED_RECEIPT',
+    'semantic_decision_required',false,
+    'human_queue_allowed',false,
+    'candidate_count',v_candidate_count,
+    'owner_approved_count',v_owner_approved_count,
+    'details',v_details
+  );
+end
+$function$;
+
+revoke all on function private.fn_lf_ig_candidate_promotion_authority_v1(integer,text)
+  from public,anon,authenticated;
+
+do $assert_source$
+declare v text;
+begin
+select encode(extensions.digest(convert_to(pg_get_functiondef('private.fn_lf_ig_human_decision_live_disposition_v1(bigint)'::regprocedure),'UTF8'),'sha256'),'hex') into v;
+if v <> '63d8e397bd5c11cd67be1449586c946c5a1710ccee59e83734109b7386f27a05' then raise exception 'IG_CANDIDATE_DISPOSITION_SOURCE_DRIFT:%',v;end if;
+end $assert_source$;
+-- Canonical full function DDL, no SQL-body literal substitution.
+CREATE OR REPLACE FUNCTION private.fn_lf_ig_human_decision_live_disposition_v1(p_proposal_id bigint)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+declare
+  v_p programacion.input_gap_proposals%rowtype;
+  v_source_run programacion.input_readiness_runs%rowtype;
+  v_live jsonb;
+  v_blockers jsonb;
+  v_blocker_count integer;
+  v_candidate_authority_count integer;
+  v_candidate_disposition jsonb;
+  v_positive_owner_count integer;
+  v_uncertain_count integer;
+begin
+  select * into strict v_p
+  from programacion.input_gap_proposals
+  where id=p_proposal_id;
+
+  select * into strict v_source_run
+  from programacion.input_readiness_runs
+  where id=v_p.run_id;
+
+  if v_p.validator_outcome is distinct from 'PASS' then
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state','BLOCKED',
+      'code','SOURCE_PROPOSAL_NOT_VALIDATED',
+      'proposal_id',v_p.id,
+      'human_queue_allowed',false
+    );
+  end if;
+
+  v_live:=programacion.fn_input_governance_bootstrap_classify_v2(
+    v_source_run.pantalla_id,
+    v_p.family_code,
+    v_source_run.version_id
+  );
+
+  if jsonb_typeof(v_live)<>'object'
+     or coalesce(v_live->>'classifier_sha256','') !~ '^[0-9a-f]{64}$' then
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state','BLOCKED',
+      'code','LIVE_CLASSIFIER_UNPROVEN',
+      'proposal_id',v_p.id,
+      'pantalla_id',v_source_run.pantalla_id,
+      'family_code',v_p.family_code,
+      'human_queue_allowed',false
+    );
+  end if;
+
+  v_blockers:=coalesce(v_live->'blockers','[]'::jsonb);
+  if jsonb_typeof(v_blockers)<>'array' then
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state','BLOCKED',
+      'code','LIVE_CLASSIFIER_BLOCKERS_INVALID',
+      'proposal_id',v_p.id,
+      'classifier_sha256',v_live->>'classifier_sha256',
+      'human_queue_allowed',false
+    );
+  end if;
+
+  v_blocker_count:=jsonb_array_length(v_blockers);
+
+  if v_blocker_count=0 then
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state','NO_HUMAN_REQUIRED',
+      'code','LIVE_CANONICAL_CLASSIFIER_RESOLVED',
+      'proposal_id',v_p.id,
+      'source_run_id',v_p.run_id,
+      'pantalla_id',v_source_run.pantalla_id,
+      'family_code',v_p.family_code,
+      'old_gap_code',v_p.gap_code,
+      'live_applicability',v_live->>'applicability',
+      'live_story_ready_status',v_live->>'story_ready_status',
+      'live_implementation_ready_status',v_live->>'implementation_ready_status',
+      'live_qa_ready_status',v_live->>'qa_ready_status',
+      'classifier_sha256',v_live->>'classifier_sha256',
+      'live_blockers',v_blockers,
+      'human_queue_allowed',false
+    );
+  end if;
+
+  select
+    count(*) filter(
+      where b.value->>'uncertainty_type'='CANDIDATE_AUTHORITY'
+         or (
+           b.value->>'code' like '%_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY'
+           and b.value->>'earliest_blocking_stage'='IMPLEMENTATION'
+         )
+    ),
+    count(*) filter(
+      where coalesce((b.value->>'owner_decision_required')::boolean,false)
+        and nullif(btrim(coalesce(b.value->>'owner_decision_authority','')),'') is not null
+    ),
+    count(*) filter(
+      where coalesce(b.value->>'uncertainty_type','') not in (
+        'CANDIDATE_AUTHORITY','MISSING_SOURCE','INCOMPLETE_EVIDENCE'
+      )
+        and not (
+          b.value->>'code' like '%_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY'
+          and b.value->>'earliest_blocking_stage'='IMPLEMENTATION'
+        )
+        and not (
+          coalesce((b.value->>'owner_decision_required')::boolean,false)
+          and nullif(btrim(coalesce(b.value->>'owner_decision_authority','')),'') is not null
+        )
+    )
+  into v_candidate_authority_count,v_positive_owner_count,v_uncertain_count
+  from jsonb_array_elements(v_blockers) b(value);
+
+  if v_candidate_authority_count=v_blocker_count then
+    v_candidate_disposition:=private.fn_lf_ig_candidate_promotion_authority_v1(
+      v_source_run.pantalla_id,v_p.family_code
+    );
+
+    if coalesce((v_candidate_disposition->>'handled')::boolean,false) is not true then
+      return jsonb_build_object(
+        'schema_version','lf-ig-human-live-disposition/v1',
+        'state','INTERNAL_REMEDIATION',
+        'code','CANDIDATE_AUTHORITY_NOT_PROVEN',
+        'proposal_id',v_p.id,
+        'source_run_id',v_p.run_id,
+        'pantalla_id',v_source_run.pantalla_id,
+        'family_code',v_p.family_code,
+        'old_gap_code',v_p.gap_code,
+        'semantic_decision_required',false,
+        'candidate_authority',v_candidate_disposition,
+        'classifier_sha256',v_live->>'classifier_sha256',
+        'live_blockers',v_blockers,
+        'human_queue_allowed',false
+      );
+    end if;
+
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state',v_candidate_disposition->>'state',
+      'code',v_candidate_disposition->>'code',
+      'proposal_id',v_p.id,
+      'source_run_id',v_p.run_id,
+      'pantalla_id',v_source_run.pantalla_id,
+      'family_code',v_p.family_code,
+      'old_gap_code',v_p.gap_code,
+      'action_code',v_candidate_disposition->>'action_code',
+      'action_authorized',coalesce((v_candidate_disposition->>'action_authorized')::boolean,false),
+      'semantic_decision_required',false,
+      'candidate_authority',v_candidate_disposition,
+      'live_applicability',v_live->>'applicability',
+      'live_story_ready_status',v_live->>'story_ready_status',
+      'live_implementation_ready_status',v_live->>'implementation_ready_status',
+      'live_qa_ready_status',v_live->>'qa_ready_status',
+      'classifier_sha256',v_live->>'classifier_sha256',
+      'live_blockers',v_blockers,
+      'human_queue_allowed',false
+    );
+  end if;  if v_positive_owner_count>0 then
+    return jsonb_build_object(
+      'schema_version','lf-ig-human-live-disposition/v1',
+      'state','PRE_HUMAN_ADMISSION',
+      'code','POSITIVE_OWNER_DECISION_AUTHORITY_PRESENT',
+      'proposal_id',v_p.id,
+      'source_run_id',v_p.run_id,
+      'pantalla_id',v_source_run.pantalla_id,
+      'family_code',v_p.family_code,
+      'old_gap_code',v_p.gap_code,
+      'classifier_sha256',v_live->>'classifier_sha256',
+      'live_blockers',v_blockers,
+      'human_queue_allowed',false
+    );
+  end if;
+
+  return jsonb_build_object(
+    'schema_version','lf-ig-human-live-disposition/v1',
+    'state','INTERNAL_REMEDIATION',
+    'code',case
+      when v_uncertain_count>0 then 'LIVE_GAP_UNKNOWN_FAIL_CLOSED'
+      else 'LIVE_GAP_EVIDENCE_OR_SOURCE_REMEDIATION'
+    end,
+    'proposal_id',v_p.id,
+    'source_run_id',v_p.run_id,
+    'pantalla_id',v_source_run.pantalla_id,
+    'family_code',v_p.family_code,
+    'old_gap_code',v_p.gap_code,
+    'semantic_decision_required',false,
+    'live_applicability',v_live->>'applicability',
+    'live_story_ready_status',v_live->>'story_ready_status',
+    'live_implementation_ready_status',v_live->>'implementation_ready_status',
+    'live_qa_ready_status',v_live->>'qa_ready_status',
+    'classifier_sha256',v_live->>'classifier_sha256',
+    'live_blockers',v_blockers,
+    'human_queue_allowed',false
+  );
+end
+$function$;
+
+
+do $capability_version$
+declare
+  v_manifest jsonb;
+  v_sha text;
+  v_existing text;
+  v_promote jsonb;
+begin
+  select manifest
+    into v_manifest
+  from public.lf_capability_version_registry
+  where capability_code='HUMAN_ESCALATION_ADMISSION'
+    and version='1.0.2'
+    and release_state='RELEASED';
+
+  if v_manifest is null then
+    raise exception 'HUMAN_ESCALATION_ADMISSION_1_0_2_REQUIRED';
+  end if;
+
+  v_manifest:=jsonb_set(v_manifest,'{version}','"1.0.3"'::jsonb,true);
+  v_manifest:=jsonb_set(
+    v_manifest,
+    '{usage,ig_candidate_promotion_authority}',
+    '"private.fn_lf_ig_candidate_promotion_authority_v1"'::jsonb,
+    true
+  );
+  v_manifest:=jsonb_set(
+    v_manifest,
+    '{contract,candidate_promotion_requires_semantic_authority_proof}',
+    'true'::jsonb,
+    true
+  );
+  v_manifest:=jsonb_set(
+    v_manifest,
+    '{compatibility,candidate_status_alone_is_promotion_authority}',
+    'false'::jsonb,
+    true
+  );
+  v_manifest:=jsonb_set(
+    v_manifest,
+    '{currentness,candidate_source_decision_authority_check}',
+    'true'::jsonb,
+    true
+  );
+
+  v_manifest:=jsonb_set(v_manifest,'{contract,unverified_flag_never_grants_promotion}','true'::jsonb,true);
+
+  v_sha:=encode(
+    extensions.digest(convert_to(v_manifest::text,'UTF8'),'sha256'),
+    'hex'
+  );
+
+  select manifest_sha256 into v_existing
+  from public.lf_capability_version_registry
+  where capability_code='HUMAN_ESCALATION_ADMISSION'
+    and version='1.0.3';
+
+  if v_existing is not null and v_existing<>v_sha then
+    raise exception 'HUMAN_ESCALATION_ADMISSION_1_0_3_MANIFEST_CONFLICT';
+  end if;
+
+  insert into public.lf_capability_version_registry(
+    capability_code,version,version_major,version_minor,version_patch,
+    release_state,supersedes_version,manifest,manifest_sha256,
+    source_ref,docs_ref,validator_ref,created_by_execution_id
+  )
+  values(
+    'HUMAN_ESCALATION_ADMISSION','1.0.3',1,0,3,
+    'RELEASED','1.0.2',v_manifest,v_sha,
+    'github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261008170000_ig_candidate_promotion_authority_v1.sql',
+    'github://cristhianlujan/claude-persona-lf-patch/docs/operations/HUMAN_DECISION_ROUTING_V1.md',
+    'supabase://private/fn_lf_ig_candidate_promotion_authority_v1',
+    'IG_CANDIDATE_PROMOTION_AUTHORITY_V1'
+  )
+  on conflict(capability_code,version) do nothing;
+
+  v_promote:=public.fn_lf_capability_promote_v1(
+    'HUMAN_ESCALATION_ADMISSION','1.0.3',null,
+    'IG_CANDIDATE_PROMOTION_AUTHORITY_V1',
+    'Refines candidate promotion gates by proving owner-approved semantic authority before action-only classification.'
+  );
+
+  if coalesce((v_promote->>'ready')::boolean,false) is not true then
+    raise exception 'HUMAN_ESCALATION_ADMISSION_1_0_3_PROMOTION_FAILED:%',v_promote::text;
+  end if;
+end
+$capability_version$;
+
+do $routing_version$
+declare
+  v_manifest jsonb;
+  v_sha text;
+  v_existing text;
+  v_hea_version text;
+  v_hea_sha text;
+begin
+  select manifest into v_manifest
+  from public.lf_capability_version_registry
+  where capability_code='HUMAN_DECISION_ROUTING'
+    and version='1.0.5'
+    and release_state='RELEASED';
+
+  if v_manifest is null then
+    raise exception 'HUMAN_DECISION_ROUTING_1_0_5_REQUIRED';
+  end if;
+
+  select version,manifest_sha256
+    into v_hea_version,v_hea_sha
+  from public.lf_capability_current
+  where capability_code='HUMAN_ESCALATION_ADMISSION';
+
+  v_manifest:=jsonb_set(v_manifest,'{version}','"1.0.6"'::jsonb,true);
+  v_manifest:=jsonb_set(
+    v_manifest,
+    '{dependencies,HUMAN_ESCALATION_ADMISSION}',
+    jsonb_build_object('version',v_hea_version,'manifest_sha256',v_hea_sha),
+    true
+  );
+  v_manifest:=jsonb_set(
+    v_manifest,
+    '{currentness,ig_candidate_semantic_authority_refinement}',
+    'true'::jsonb,
+    true
+  );
+  v_manifest:=jsonb_set(
+    v_manifest,
+    '{currentness,consumer_cutover}',
+    'false'::jsonb,
+    true
+  );
+  v_manifest:=jsonb_set(
+    v_manifest,
+    '{currentness,current_pointer}',
+    'false'::jsonb,
+    true
+  );
+
+  v_sha:=encode(
+    extensions.digest(convert_to(v_manifest::text,'UTF8'),'sha256'),
+    'hex'
+  );
+
+  select manifest_sha256 into v_existing
+  from public.lf_capability_version_registry
+  where capability_code='HUMAN_DECISION_ROUTING'
+    and version='1.0.6';
+
+  if v_existing is not null and v_existing<>v_sha then
+    raise exception 'HUMAN_DECISION_ROUTING_1_0_6_MANIFEST_CONFLICT';
+  end if;
+
+  insert into public.lf_capability_version_registry(
+    capability_code,version,version_major,version_minor,version_patch,
+    release_state,supersedes_version,manifest,manifest_sha256,
+    source_ref,docs_ref,validator_ref,created_by_execution_id
+  )
+  values(
+    'HUMAN_DECISION_ROUTING','1.0.6',1,0,6,
+    'RELEASED','1.0.5',v_manifest,v_sha,
+    'github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261008170000_ig_candidate_promotion_authority_v1.sql',
+    'github://cristhianlujan/claude-persona-lf-patch/docs/operations/HUMAN_DECISION_ROUTING_V1.md',
+    'supabase://private/fn_lf_ig_candidate_promotion_authority_v1',
+    'IG_CANDIDATE_PROMOTION_AUTHORITY_V1'
+  )
+  on conflict(capability_code,version) do nothing;
+
+  if exists(
+    select 1 from public.lf_capability_current
+    where capability_code='HUMAN_DECISION_ROUTING'
+  ) then
+    raise exception 'HUMAN_DECISION_ROUTING_CURRENT_POINTER_PREMATURE';
+  end if;
+end
+$routing_version$;
+
+insert into public.lf_error_knowledge(
+  codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
+  severidad,estado,source_ref,updated_at
+)
+values(
+  'HUMAN-ESCALATION-CANDIDATE-PROMOTION-AUTHORITY-001',
+  'PROGRAMMING_GOVERNANCE',
+  'Candidate state alone does not prove that only promotion authorization remains',
+  'A candidate transition can be implementation-ready in shape while its semantic source is still only candidate-controlled. Treating every CANDIDATE_AUTHORITY blocker as promotion-only can hide a missing semantic authority decision.',
+  'The first candidate gate looked only at candidate object status and blocking stage, not the authority state of the source decision that created the candidate.',
+  'CANDIDATE OBJECT -> SOURCE DECISION READBACK -> OWNER-APPROVED SEMANTICS? -> if yes and promotion not authorized: ACTION_AUTHORIZATION_GATE; if no: INTERNAL_REMEDIATION; if promotion already authorized: SAFE_CHANGE_ADMISSION_REQUIRED.',
+  'Before asking for candidate promotion, prove every exact candidate object has a governed source decision and that its semantics are already owner-approved. Candidate-controlled or missing source decisions remain nonhuman internal remediation until evidence is exhausted. Never infer semantic approval from CANDIDATO status.',
+  'Migration adds generic transition candidate source-authority readback and refines live IG disposition without promoting any candidate or activating production.',
+  'HIGH','ACTIVO',
+  'capability://HUMAN_ESCALATION_ADMISSION@1.0.3',
+  now()
+)
+on conflict(codigo) do update
+set descripcion=excluded.descripcion,
+    causa_raiz=excluded.causa_raiz,
+    patron=excluded.patron,
+    prevencion=excluded.prevencion,
+    validacion=excluded.validacion,
+    severidad=excluded.severidad,
+    estado=excluded.estado,
+    source_ref=excluded.source_ref,
+    updated_at=excluded.updated_at;

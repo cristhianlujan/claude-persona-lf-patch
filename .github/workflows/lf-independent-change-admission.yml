@@ -1,0 +1,64 @@
+name: LF Independent Change Admission
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: lf-independent-admission-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  independent-change-admission:
+    name: lf-independent-change-admission
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout trusted base admission source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Self-test independent admission source
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py self-test
+
+      - name: Classify independent admission applicability
+        id: admission_scope
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py classify
+
+      - name: Record independent admission not applicable
+        if: steps.admission_scope.outputs.applicable == 'false'
+        run: |
+          set -euo pipefail
+          echo "PASS_INDEPENDENT_CHANGE_ADMISSION_NOT_APPLICABLE status=${{ steps.admission_scope.outputs.status }}"
+
+      - name: Resolve governed independent admission database target
+        if: steps.admission_scope.outputs.applicable == 'true'
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py self-test
+          python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py emit-env --consumer lf-independent-change-admission
+
+      - name: Validate Contract Check self-change admission
+        if: steps.admission_scope.outputs.applicable == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py validate

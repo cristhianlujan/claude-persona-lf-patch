@@ -30,6 +30,20 @@ VOLATILE_TERMINAL_KEYS = {
     "curator_identity",
     "output_sha256",
 }
+
+# Closed, path-specific transient graph receipt identifiers; NOT semantic hashes.
+# Normalize values with validation, retain key presence, list cardinality/order
+# and all decision, evidence, graph SHA and status fields.
+RUN_LOCAL_GRAPH_SCALARS = {
+    ("graph_receipts", "dispatch_receipt", "receipt_id"): "UUID",
+    ("graph_receipts", "dispatch_receipt", "receipt_sha256"): "SHA256",
+    ("graph_receipts", "graph_receipt", "dispatch_receipt_sha256"): "SHA256",
+    ("graph_receipts", "graph_receipt", "ledger_execution_id"): "EXECUTION",
+    ("graph_receipts", "graph_receipt", "producer_execution_id"): "EXECUTION",
+    ("graph_receipts", "ledger_execution_id"): "EXECUTION",
+    ("graph_receipts", "orchestrator_execution_id"): "EXECUTION",
+}
+RUN_LOCAL_GRAPH_RECEIPT_IDS = ("graph_receipts", "graph_receipt", "receipt_ids")
 FORBIDDEN_SQL = re.compile(
     r"(?is)(?:^|;)\s*(?:(?:--[^\r\n]*(?:\r?\n|$)|/\*.*?\*/)\s*)*"
     r"(?:commit\b|rollback\b|end\s+transaction\b|begin\s+transaction\b|start\s+transaction\b|"
@@ -100,24 +114,54 @@ def validate_transaction_bound_sql(sql: str) -> None:
         raise JudgeError("SERVER_IO_OR_EXTERNAL_EFFECT_FORBIDDEN")
 
 
-def _normalize_terminal_value(value: Any) -> Any:
-    """Remove execution-local identity fields at any nesting depth.
+def _valid_run_local_graph_identity(value: Any, kind: str) -> bool:
+    if not isinstance(value, str):
+        return False
+    if kind == "UUID":
+        try:
+            return str(uuid.UUID(value)) == value.lower()
+        except (ValueError, AttributeError):
+            return False
+    if kind == "SHA256":
+        return SHA64_RE.fullmatch(value) is not None
+    if kind == "EXECUTION":
+        return re.fullmatch(r"EXEC-IG-GRAPH-(?:LEDGER|ORCH)-RUN-[0-9]+-[0-9a-f]+", value) is not None
+    return False
 
-    Terminal payloads may embed proposal_validation.run_id. Baseline and
-    candidate necessarily receive different transaction-local run IDs, so those
-    identities are not semantic drift and must not block an otherwise equal
-    flow. All non-volatile values and collection structure remain comparable.
+
+def _normalize_terminal_value(value: Any, path: tuple[str, ...] = ()) -> Any:
+    """Normalize only proven transaction-local identities at exact graph paths.
+
+    Generic run-local keys retain their existing recursive exclusion.
+    Graph-receipt identity fields remain present with typed placeholders; an
+    unexpected type/shape/value fails to normalize and is compared verbatim.
+    Receipt ID lists retain cardinality, order-of-occurrence and duplicates.
+    All semantic graph hashes, states, decisions and evidence remain compared.
     """
+    kind = RUN_LOCAL_GRAPH_SCALARS.get(path)
+    if kind and _valid_run_local_graph_identity(value, kind):
+        return "RUN_LOCAL_" + kind
+    if path == RUN_LOCAL_GRAPH_RECEIPT_IDS and isinstance(value, list):
+        seen: dict[str, int] = {}
+        result: list[Any] = []
+        for entry in value:
+            if _valid_run_local_graph_identity(entry, "UUID"):
+                if entry not in seen:
+                    seen[entry] = len(seen)
+                result.append("RUN_LOCAL_RECEIPT_ORDINAL_" + str(seen[entry]))
+            else:
+                result.append(entry)
+        return result
     if isinstance(value, dict):
         return {
-            key: _normalize_terminal_value(item)
+            key: _normalize_terminal_value(item, path + (key,))
             for key, item in value.items()
             if key not in VOLATILE_TERMINAL_KEYS
         }
     if isinstance(value, list):
-        return [_normalize_terminal_value(item) for item in value]
+        return [_normalize_terminal_value(item, path) for item in value]
     if isinstance(value, tuple):
-        return tuple(_normalize_terminal_value(item) for item in value)
+        return tuple(_normalize_terminal_value(item, path) for item in value)
     return value
 
 
@@ -409,9 +453,13 @@ def _connect() -> Any:
         from psycopg.rows import dict_row
     except ImportError as exc:
         raise JudgeError("PSYCOPG_REQUIRED") from exc
-    project = os.environ.get("SUPABASE_PROJECT_ID", "mhwmirqcgxxukpctffuv").strip()
+    project = os.environ.get("SUPABASE_PROJECT_ID", "").strip()
     password = os.environ.get("LF_SUPABASE_DB_PASSWORD", "").strip()
-    host = os.environ.get("SUPABASE_POOLER_HOST", "aws-1-us-east-1.pooler.supabase.com").strip()
+    host = os.environ.get("SUPABASE_POOLER_HOST", "").strip()
+    if not re.fullmatch(r"[a-z0-9]{20}", project):
+        raise JudgeError("SUPABASE_PROJECT_CONFIG_MISSING_OR_INVALID")
+    if not re.fullmatch(r"[A-Za-z0-9.-]+", host):
+        raise JudgeError("SUPABASE_POOLER_HOST_MISSING_OR_INVALID")
     if not password:
         raise JudgeError("LF_SUPABASE_DB_PASSWORD_REQUIRED")
     return psycopg.connect(

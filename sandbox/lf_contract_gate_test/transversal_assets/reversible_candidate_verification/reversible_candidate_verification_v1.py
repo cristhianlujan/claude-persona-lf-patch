@@ -8,8 +8,8 @@ CAPABILITY_CODE = "REVERSIBLE_CANDIDATE_VERIFICATION"
 SCHEMA_VERSION = "LF_REVERSIBLE_CANDIDATE_VERIFICATION_RECEIPT_V1"
 MUTATION_POLICY = "ROLLBACK_ONLY"
 INDEPENDENT_ASSURANCE_CODE = "INDEPENDENT_ASSURANCE"
-INDEPENDENT_ASSURANCE_VERSION = "1.0.1"
-INDEPENDENT_ASSURANCE_MANIFEST_SHA256 = "b12c44ca0e07d2da4fdcb27f7e8e8da311dfcdaf390e645d45a3cf407a31e6c1"
+INDEPENDENT_ASSURANCE_VERSION = "2.0.1"
+INDEPENDENT_ASSURANCE_MANIFEST_SHA256 = "f87727d3c81f3cda4c4ea8f5c23d7715bcda9e0f08bd1b2eae1188117b946d35"
 
 @dataclass(frozen=True)
 class CandidateIdentity:
@@ -81,25 +81,27 @@ def _independence_findings(oracle: IndependentOracle) -> list[dict[str, Any]]:
         return [{"code":"INDEPENDENT_ASSURANCE_RECEIPT_DIGEST_INVALID","blocking":True}]
     if measurement.get("state") != "INDEPENDENT":
         return [{"code":"ORACLE_NOT_INDEPENDENT","blocking":True,"state":measurement.get("state")}]
-    dimensions = measurement.get("dimensions")
-    if not isinstance(dimensions, dict):
-        return [{"code":"ORACLE_INDEPENDENCE_DIMENSIONS_MISSING","blocking":True}]
-    for dimension in ("dependency", "data", "author"):
-        value = dimensions.get(dimension)
+    # INDEPENDENT_ASSURANCE@2.0.1 uses the canonical read-only measure.
+    # The former provider-bound "dimensions" envelope is NOT a version-compatible receipt.
+    if measurement.get("schema_version") != "LF_INDEPENDENT_ASSURANCE_MEASURE_V1":
+        return [{"code":"INDEPENDENT_ASSURANCE_MEASUREMENT_SCHEMA_INVALID","blocking":True}]
+    for dimension in ("dependency_dimension", "data_dimension", "author_dimension"):
+        value = measurement.get(dimension)
         if not isinstance(value, dict) or value.get("state") != "INDEPENDENT":
             return [{"code":"ORACLE_INDEPENDENCE_DIMENSION_FAILED","blocking":True,"dimension":dimension}]
-    data = dimensions["data"]
-    producer_data = set(data.get("producer_data_refs") or [])
-    reviewer_data = set(data.get("reviewer_data_refs") or [])
-    if not producer_data or not reviewer_data or producer_data.intersection(reviewer_data):
+    dependency = measurement["dependency_dimension"]
+    if dependency.get("unresolved_shared_dependency_count") != 0:
+        return [{"code":"ORACLE_SHARED_DEPENDENCY_UNRESOLVED","blocking":True}]
+    data = measurement["data_dimension"]
+    if data.get("unresolved_shared_data_refs") != []:
         return [{"code":"ORACLE_DATA_INDEPENDENCE_INVALID","blocking":True}]
-    author = dimensions["author"]
+    author = measurement["author_dimension"]
     producer_author = str(author.get("producer_author_ref") or "")
     reviewer_author = str(author.get("reviewer_author_ref") or "")
     if not producer_author or not reviewer_author or producer_author == reviewer_author:
         return [{"code":"ORACLE_AUTHOR_INDEPENDENCE_INVALID","blocking":True}]
-    evidence_refs = measurement.get("evidence_refs")
-    if not isinstance(evidence_refs, list) or not evidence_refs:
+    evidence_refs = receipt.get("evidence_refs")
+    if not isinstance(evidence_refs, list) or not evidence_refs or any(not isinstance(ref, str) or not ref.strip() for ref in evidence_refs):
         return [{"code":"INDEPENDENT_ASSURANCE_EVIDENCE_MISSING","blocking":True}]
     return []
 

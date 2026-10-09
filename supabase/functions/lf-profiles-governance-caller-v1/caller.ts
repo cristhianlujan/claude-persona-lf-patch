@@ -6,6 +6,7 @@ const LEGACY_REF = `refs/heads/${LEGACY_BRANCH}`;
 const LEGACY_WORKFLOW_NAME = "LF Profiles Governance Caller";
 const LEGACY_WORKFLOW_FILE = "lf-profiles-governance-caller.yml";
 const RECURATION_ACTION = "input_readiness_recurate_v1";
+const RECURATION_POLL_ACTION = "input_readiness_poll_v1";
 const PILOT_ACTION = "input_readiness_pilot_v1";
 const SCREEN_ACTION = "input_readiness_screen_v1";
 const B2B_ACTION = "input_readiness_b2b_402_v1";
@@ -47,7 +48,6 @@ export type CallerConfig = {
   recurationWorkflowRef: string;
   recurationDispatchWorkflowRef: string;
   recurationWorkflowName: string;
-  inputGovernanceSlug: string;
   profileCreatorSlug: string;
   recurationTimeoutMs: number;
   defaultTimeoutMs: number;
@@ -139,7 +139,6 @@ export function loadConfig(getEnv: EnvGetter): CallerConfig {
   const recurationWorkflowRef = requiredEnv(getEnv, "LF_CALLER_RECURATION_WORKFLOW_REF");
   const recurationDispatchWorkflowRef = requiredEnv(getEnv, "LF_CALLER_RECURATION_DISPATCH_WORKFLOW_REF");
   const recurationWorkflowName = requiredEnv(getEnv, "LF_CALLER_RECURATION_WORKFLOW_NAME");
-  const inputGovernanceSlug = requiredEnv(getEnv, "LF_CALLER_INPUT_GOVERNANCE_SLUG");
   const profileCreatorSlug = requiredEnv(getEnv, "LF_CALLER_PROFILE_CREATOR_SLUG");
   const recurationTimeoutRaw = requiredEnv(getEnv, "LF_CALLER_RECURATION_TIMEOUT_MS");
   const defaultTimeoutRaw = requiredEnv(getEnv, "LF_CALLER_DEFAULT_TIMEOUT_MS");
@@ -163,7 +162,6 @@ export function loadConfig(getEnv: EnvGetter): CallerConfig {
   if (recurationWorkflowName.length > 200 || /[\r\n]/.test(recurationWorkflowName)) {
     throw new CallerFault("CONFIG_LF_CALLER_RECURATION_WORKFLOW_NAME_INVALID", 500);
   }
-  if (!validSlug(inputGovernanceSlug)) throw new CallerFault("CONFIG_LF_CALLER_INPUT_GOVERNANCE_SLUG_INVALID", 500);
   if (!validSlug(profileCreatorSlug)) throw new CallerFault("CONFIG_LF_CALLER_PROFILE_CREATOR_SLUG_INVALID", 500);
 
   return {
@@ -175,7 +173,6 @@ export function loadConfig(getEnv: EnvGetter): CallerConfig {
     recurationWorkflowRef,
     recurationDispatchWorkflowRef,
     recurationWorkflowName,
-    inputGovernanceSlug,
     profileCreatorSlug,
     recurationTimeoutMs: parseTimeout(recurationTimeoutRaw, "LF_CALLER_RECURATION_TIMEOUT_MS", 149000),
     defaultTimeoutMs: parseTimeout(defaultTimeoutRaw, "LF_CALLER_DEFAULT_TIMEOUT_MS", 149000),
@@ -364,24 +361,87 @@ async function callRuntime(
   return payload;
 }
 
+// IG executes via a durable database queue. OIDC stays the HTTP trust boundary.
+async function inputGovQueueRpc(
+  config: CallerConfig, deps: RuntimeDeps,
+  rpcName: "fn_input_governance_queue_submit_oidc_v1" | "fn_input_governance_queue_poll_oidc_v1",
+  body: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const response = await deps.fetchFn(`${config.supabaseUrl}/rest/v1/rpc/${rpcName}`, {
+    method: "POST",
+    headers: {
+      apikey: config.serviceRoleKey,
+      authorization: `Bearer ${config.serviceRoleKey}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(15_000),
+  });
+  const raw = await response.text();
+  let payload: Record<string, unknown>;
+  try {
+    const parsed = raw ? JSON.parse(raw) : {};
+    payload = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown> : { error: "RPC_RESPONSE_INVALID" };
+  } catch {
+    throw new CallerFault("IG_DIRECT_QUEUE_RPC_INVALID_JSON", 502);
+  }
+  if (!response.ok) {
+    throw new CallerFault("IG_DIRECT_QUEUE_RPC_REJECTED", 502, {
+      rpc: rpcName, rpc_status: response.status,
+      error_code: typeof payload.code === "string" ? payload.code : "UNKNOWN",
+    });
+  }
+  return payload;
+}
+
 async function materializeScreen(
   config: CallerConfig,
   deps: RuntimeDeps,
   screen: { pantalla_id: number; codigo?: string },
-  consumer = STORY_CREATOR_CONSUMER,
-  timeoutMs = config.defaultTimeoutMs,
+  consumer: string,
+  timeoutMs: number,
+  oidcRunId: string,
+  resumeRequestId?: number,
 ) {
-  const payload = await callRuntime(config, deps, config.inputGovernanceSlug, {
-    pantalla_id: screen.pantalla_id,
-    consumer,
-  }, timeoutMs);
-  const result = (payload.result ?? {}) as Record<string, unknown>;
+  if (!/^[1-9][0-9]{4,19}$/.test(oidcRunId)) {
+    throw new CallerFault("IG_QUEUE_OIDC_RUN_ID_INVALID", 401);
+  }
+  const submitted = resumeRequestId === undefined
+    ? await inputGovQueueRpc(config, deps, "fn_input_governance_queue_submit_oidc_v1", {
+      p_pantalla_id: screen.pantalla_id, p_consumer: consumer, p_oidc_run_id: oidcRunId,
+    })
+    : { request_id: resumeRequestId };
+  const requestId = Number(submitted.request_id);
+  if (!Number.isSafeInteger(requestId) || requestId < 1) {
+    throw new CallerFault("IG_DIRECT_QUEUE_RECEIPT_INVALID", 502);
+  }
+  const deadline = Date.now() + Math.min(timeoutMs, 110_000);
+  let snapshot: Record<string, unknown> = {};
+  while (Date.now() < deadline) {
+    snapshot = await inputGovQueueRpc(config, deps, "fn_input_governance_queue_poll_oidc_v1", {
+      p_request_id: requestId, p_oidc_run_id: oidcRunId,
+    });
+    if (snapshot.queue_status === "DONE" || snapshot.queue_status === "ERROR") break;
+    await new Promise<void>((resolve) => setTimeout(resolve, 4_000));
+  }
+  const done = snapshot.queue_status === "DONE";
+  const failed = snapshot.queue_status === "ERROR";
+  const currentStatus = done
+    ? (typeof snapshot.status === "string" ? snapshot.status : "BLOCKED")
+    : failed ? "BLOCKED" : "CONTINUATION_REQUIRED";
   return {
-    ...screen,
-    consumer,
-    status: result.status ?? null,
-    run_id: result.run_id ?? result.latest_run_id ?? null,
-    payload,
+    ...screen, consumer, status: currentStatus,
+    run_id: snapshot.run_id ?? null,
+    payload: {
+      transport: "DIRECT_SQL_PERSISTED_QUEUE_V1",
+      request_id: requestId,
+      queue_status: snapshot.queue_status ?? "QUEUED",
+      next_action: done || failed ? "NONE" : "POLL_SAME_REQUEST",
+      result: snapshot.result ?? null,
+      step_count: snapshot.step_count ?? 0,
+      error_code: failed ? snapshot.error_code ?? "IG_QUEUE_FAILED" : null,
+    },
   };
 }
 
@@ -411,10 +471,10 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
 
       const action = typeof body.action === "string" ? body.action : "";
       const isRecurationIdentity = identity.scope === "INPUT_GOVERNANCE_RECURATION_ONLY";
-      if (isRecurationIdentity && action !== RECURATION_ACTION) {
+      if (isRecurationIdentity && action !== RECURATION_ACTION && action !== RECURATION_POLL_ACTION) {
         return json({ outcome: "BLOCKED", code: "OIDC_ACTION_SCOPE_MISMATCH", allowed_action: RECURATION_ACTION }, 403);
       }
-      if (!isRecurationIdentity && action === RECURATION_ACTION) {
+      if (!isRecurationIdentity && (action === RECURATION_ACTION || action === RECURATION_POLL_ACTION)) {
         return json({ outcome: "BLOCKED", code: "RECURATION_CALLER_IDENTITY_REQUIRED" }, 403);
       }
 
@@ -430,7 +490,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       };
       if (isRecurationIdentity) caller.workflow_name = config.recurationWorkflowName;
 
-      if (action === RECURATION_ACTION) {
+      if (action === RECURATION_ACTION || action === RECURATION_POLL_ACTION) {
         if (Object.prototype.hasOwnProperty.call(body, "pantalla_ids")) {
           return json({ outcome: "BLOCKED", code: "RECURATION_SINGLE_SCREEN_REQUIRED", caller }, 400);
         }
@@ -451,22 +511,44 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           }, 400);
         }
 
+        const requestId = action === RECURATION_POLL_ACTION ? Number(body.request_id) : undefined;
+        if (action === RECURATION_POLL_ACTION && (requestId === undefined || !Number.isSafeInteger(requestId) || requestId < 1)) {
+          return json({ outcome: "BLOCKED", code: "IG_QUEUE_POLL_REQUEST_ID_INVALID" }, 400);
+        }
+        if (action === RECURATION_ACTION && Object.prototype.hasOwnProperty.call(body, "request_id")) {
+          return json({ outcome: "BLOCKED", code: "IG_QUEUE_POLL_ACTION_REQUIRED" }, 400);
+        }
         const result = await materializeScreen(
           config,
           deps,
           { pantalla_id: pantallaId },
           STORY_CREATOR_CONSUMER,
           config.recurationTimeoutMs,
+          runId,
+          requestId,
         );
-        const terminal = typeof result.status === "string" && result.status.length > 0;
+        const terminal = typeof result.status === "string" &&
+          result.status.length > 0 &&
+          !["CONTINUATION_REQUIRED", "VALIDATOR_CONTINUE_REQUIRED", "VALIDATOR_RUNTIME_REQUIRED"].includes(result.status);
         if (!terminal) {
           return json({
+            outcome: "CONTINUATION_REQUIRED",
+            code: "IG_DIRECT_QUEUE_STILL_PROCESSING",
+            scope: "IG_CURATOR_VALIDATOR_REFACTOR_V2_N2",
+            caller: auditedCaller, consumer: STORY_CREATOR_CONSUMER,
+            pantalla_id: pantallaId, result,
+          }, 202);
+        }
+        // Completion of a queue is not authorization: BLOCKED/HUMAN still fail closed.
+        if (result.status !== "READY") {
+          return json({
             outcome: "BLOCKED",
-            code: "INPUT_GOVERNANCE_AGENT_TERMINAL_STATUS_MISSING",
+            code: "IG_DIRECT_FINAL_NOT_READY",
             scope: "IG_CURATOR_VALIDATOR_REFACTOR_V2_N2",
             caller: auditedCaller,
-            consumer: STORY_CREATOR_CONSUMER,
             pantalla_id: pantallaId,
+            consumer: STORY_CREATOR_CONSUMER,
+            terminal_status: result.status,
             result,
           }, 409);
         }
@@ -486,7 +568,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         const codigo = typeof body.codigo === "string" ? body.codigo : "";
         const screen = PILOT_SCREENS.find((item) => item.codigo === codigo);
         if (!screen) return json({ outcome: "BLOCKED", code: "PILOT_SCREEN_NOT_ALLOWED", caller, codigo }, 400);
-        const result = await materializeScreen(config, deps, screen);
+        const result = await materializeScreen(config, deps, screen, STORY_CREATOR_CONSUMER, config.defaultTimeoutMs, runId);
         const ready = result.status === "READY";
         return json({
           outcome: ready ? "READY" : "BLOCKED",
@@ -501,7 +583,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         const codigo = typeof body.codigo === "string" ? body.codigo : "";
         const screen = B2B_402_SCREENS.find((item) => item.codigo === codigo);
         if (!screen) return json({ outcome: "BLOCKED", code: "B2B_402_SCREEN_NOT_ALLOWED", caller, codigo }, 400);
-        const result = await materializeScreen(config, deps, screen, MANUAL_CONSUMER);
+        const result = await materializeScreen(config, deps, screen, MANUAL_CONSUMER, config.defaultTimeoutMs, runId);
         const ready = result.status === "READY";
         return json({
           outcome: ready ? "READY" : "BLOCKED",
@@ -515,7 +597,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
 
       if (action === PILOT_ACTION) {
         const results: Record<string, unknown>[] = [];
-        for (const screen of PILOT_SCREENS) results.push(await materializeScreen(config, deps, screen));
+        for (const screen of PILOT_SCREENS) results.push(await materializeScreen(config, deps, screen, STORY_CREATOR_CONSUMER, config.defaultTimeoutMs, runId));
         const readyCount = results.filter((item) => item.status === "READY").length;
         return json({
           outcome: readyCount === PILOT_SCREENS.length ? "READY" : "BLOCKED",
