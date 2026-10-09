@@ -123,6 +123,72 @@ def validate_programming_entry(o):
     if c.get("action")!="EXTEND_ENTRY_BOUNDARY_DO_NOT_DUPLICATE_RUNTIME" or c.get("new_runtime_created") is not False: raise ContractError("PROGRAMMING_PARALLEL_RUNTIME")
     if c.get("story_direct_consumption_after_cutover") is not False: raise ContractError("PROGRAMMING_STORY_CUTOVER")
 
+def assemble_scope_front_matrix_v1(snapshot):
+    """A9 projection of A7 canonical front->scope bindings, source only.
+
+    This function NEVER decides whether authority or the source is current.
+    It refuses abbreviated/front-incomplete inputs; the caller must refresh
+    A4/A6/A7 and currentness first, then persist an independently validated
+    context through the canonical append-only recorder.
+    """
+    if not isinstance(snapshot,dict):
+        raise ContractError("SNAPSHOT_PAYLOAD_SCHEMA")
+    coverage=snapshot.get("material_front_coverage",{})
+    fronts=coverage.get("material_fronts") if isinstance(coverage,dict) else None
+    scopes=snapshot.get("scope_readiness")
+    if not isinstance(fronts,list) or not fronts or not isinstance(scopes,list) or not scopes:
+        raise ContractError("SNAPSHOT_CANONICAL_A7_REQUIRED")
+    linked_scopes={}
+    for scope in scopes:
+        if not isinstance(scope,dict) or not isinstance(scope.get("scope_id"),str):
+            raise ContractError("SNAPSHOT_SCOPE_ID")
+        sid=scope["scope_id"]
+        if sid in linked_scopes:
+            raise ContractError("SNAPSHOT_DUPLICATE_SCOPE")
+        refs=scope.get("material_front_refs")
+        if not isinstance(refs,list) or not refs or len(refs)!=len(set(refs)):
+            raise ContractError("SNAPSHOT_SCOPE_FRONT_REFS")
+        linked_scopes[sid]=set(refs)
+    front_map={}
+    for front in fronts:
+        if not isinstance(front,dict) or not isinstance(front.get("front_id"),str):
+            raise ContractError("SNAPSHOT_FRONT_ID")
+        fid=front["front_id"]
+        if fid in front_map:
+            raise ContractError("SNAPSHOT_FRONT_ID")
+        refs=front.get("scope_refs")
+        if not isinstance(refs,list) or not refs or len(refs)!=len(set(refs)):
+            raise ContractError("SNAPSHOT_FRONT_SCOPE_REFS")
+        if any(sid not in linked_scopes or fid not in linked_scopes[sid] for sid in refs):
+            raise ContractError("SNAPSHOT_FRONT_SCOPE_PARITY")
+        if front.get("closure") not in {"CLOSED","BLOCKED"} or front.get("status") not in {
+            "REQUIRED","REUSE_AS_IS","NOT_APPLICABLE"}:
+            raise ContractError("SNAPSHOT_FRONT_STATUS")
+        front_map[fid]=front
+    for sid,refs in linked_scopes.items():
+        if not refs.issubset(front_map):
+            raise ContractError("SNAPSHOT_SCOPE_UNKNOWN_FRONT")
+        if any(sid not in front_map[fid]["scope_refs"] for fid in refs):
+            raise ContractError("SNAPSHOT_FRONT_SCOPE_PARITY")
+    matrix=[]
+    for sid,refs in linked_scopes.items():
+        for fid in sorted(refs):
+            front=front_map[fid]
+            effect=("NOT_APPLICABLE" if front["status"]=="NOT_APPLICABLE" else
+                    "BLOCKS" if front["closure"]=="BLOCKED" else "PRESERVE")
+            matrix.append({
+                "scope_id":sid,"front_id":fid,
+                "front_status":front["status"],"front_closure":front["closure"],
+                "effect_on_scope":effect,
+                "evidence_refs":list(front.get("evidence_refs",[])),
+                "reason":front.get("reason","")
+            })
+    candidate=dict(snapshot)
+    candidate["scope_front_matrix"]=matrix
+    validate_programming_snapshot_payload_v1(candidate)
+    return matrix
+
+
 def validate_programming_snapshot_payload_v1(snapshot):
     """Validate a concrete A9 -> PG-01 scope/front handoff, not only the contract declaration.
 
