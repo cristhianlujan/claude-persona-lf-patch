@@ -66,5 +66,19 @@
     "initial_failure": "LF_OPERATION_PROVENANCE_UPDATED_EXECUTION_MISSING",
     "repair": "Use existing execution scoped to REVISION_INDEPENDIENTE_ESTRATEGIA_LF; do not bypass provenance guard.",
     "actor_execution_id": "EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001"
+  },
+  "formal_migration": {
+    "path": "supabase/migrations/20261009034500_independent_assurance_generic_subject_v3.sql",
+    "commit": "881cde39bcb0c5c381a36c8eb622d9d34013280d",
+    "blob": "549a67c1f25640d4eed00443aebda346258bb99e",
+    "exact_rollback_result": "PASS",
+    "after_rollback": {
+      "current_version": "1.0.1",
+      "operation_count": 1,
+      "judge_count": 6,
+      "qualification_current": true,
+      "candidate_version_residue": false,
+      "generic_rpc_residue": false
+    }
   }
 }
