@@ -1,6 +1,6 @@
 {
   "schema": "PROFILE_CREATOR_GOVERNED_SEMANTIC_RUNNER_CONTRACT_V1",
-  "purpose": "Provide auditable Profile Creator semantic executions for Profile Evolution using a governed model execution surface; governance is evidence-bound and model/vendor agnostic.",
+  "purpose": "Bind the existing Profile Creator semantic role to the existing governed OpenAI Responses GPT runtime for fresh, auditable Profile Evolution executions. No Llama dependency.",
   "producer": "PROFILE_CREATOR",
   "execution_requirements": {
     "fresh_run_per_case": true,
@@ -15,8 +15,7 @@
     "no_production_activation": true
   },
   "allowed_execution_surfaces": [
-    "GOVERNED_GPT_EXECUTION",
-    "GOVERNED_PROFILE_CREATOR_WORKER"
+    "OPENAI_RESPONSES_GPT_RUNTIME"
   ],
   "forbidden_execution_surfaces": [
     "DIRECT_LLAMA_SERVER",
@@ -50,17 +49,22 @@
   "fail_closed_status": "BLOCKED",
   "handoff": "RAW_OUTPUT -> PROFILE_CANDIDATE_MATERIALIZER -> FULL_BEHAVIOR_VALIDATION",
   "notes": [
-    "Governed means bound to exact input, profile snapshot, producer source, runtime/model stamp and frozen raw output.",
-    "A dedicated worker process is not required.",
-    "The semantic executor may be GPT when the execution receipt satisfies this contract.",
-    "Direct model-server invocation outside this contract remains forbidden.",
-    "No profile source write, runtime activation, production promotion, admission or cutover is granted."
+    "GPT is the current semantic executor through the existing openai-responses-v1 adapter.",
+    "The existing profile runtime runner provides exact input/profile-source hashes and provider readback evidence.",
+    "No separate Profile Creator worker process is required.",
+    "Llama is not required for Profile Evolution and direct llama-server invocation remains forbidden.",
+    "Live GPT execution requires runtime credentials/configuration but no authority write or production activation."
   ],
   "execution_model": {
     "semantic_executor_role": "PROFILE_CREATOR",
-    "executor_implementation": "MODEL_AGNOSTIC",
-    "current_supported_executor_class": "GPT",
-    "dedicated_worker_process_required": false,
-    "vendor_binding_required": false
-  }
+    "current_executor_class": "GPT",
+    "runtime_adapter": "openai-responses-v1",
+    "runtime_source_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/openai_responses_runtime.py",
+    "provider_agnostic_runner_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_runtime_runner.py",
+    "canonical_receipt_validator_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
+    "canonical_receipt_type": "PROFILE_EXECUTION_RECEIPT_V1",
+    "dedicated_profile_creator_worker_required": false,
+    "llama_required": false
+  },
+  "required_receipt_type": "PROFILE_EXECUTION_RECEIPT_V1"
 }
