@@ -222,34 +222,87 @@ comment on function public.lf_runtime_impl_deploy_receipt_check_v1(jsonb) is
  'RUNTIME_DEPLOY_VERIFICATION read-only adapter for LF_RUNTIME_IMPL_DEPLOY_RECEIPT_V1; independent runtime readback required; step90 attestation closes X02-R01; next gate real queue worker job canary bound to exact_head/runtime_sha. Does not execute deploy or canary.';
 
 -- D7 independent readback: trusted GitHub Actions observation is required.
-create or replace function public.lf_runtime_impl_deploy_verification_binding_v1(p_receipt jsonb)
-returns jsonb language plpgsql stable security invoker
-set search_path to 'pg_catalog','public'
-as $binding$
-declare v_check text;
-begin
- if not exists (select 1 from public.lf_capability_current where capability_code='RUNTIME_DEPLOY_VERIFICATION')
- then return jsonb_build_object('decision','VERIFICATION_FAILED','reason','RUNTIME_DEPLOY_VERIFICATION_NOT_CURRENT'); end if;
- v_check := public.lf_runtime_impl_deploy_receipt_check_v1(p_receipt);
- if v_check <> 'VERIFICATION_VERIFIED' then
-   return jsonb_build_object('decision','VERIFICATION_FAILED','reason',v_check);
+-- Only a dedicated LOGIN role using an independently managed password can insert.
+-- The role has NO PASSWORD in the migration; a human must provision and rotate it.
+do $role$ begin
+ if not exists(select 1 from pg_roles where rolname='lf_runtime_readback_oidc_writer') then
+  create role lf_runtime_readback_oidc_writer LOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
  end if;
- if p_receipt->'attestation'->>'schema_version' is distinct from 'LF_RUNTIME_INDEPENDENT_READBACK_V1'
-   or p_receipt->'attestation'->>'producer' is distinct from 'GITHUB_ACTIONS_VPS_READ_ONLY'
-   or p_receipt->'attestation'->>'credential_role' is distinct from 'VPS_READ_ONLY'
-   or p_receipt->'attestation'->>'origin_role' is distinct from 'INDEPENDENT_OBSERVER'
-   or coalesce(p_receipt->'attestation'->>'workflow_run_id','') = ''
-   or p_receipt->'attestation'->>'exact_head' is distinct from p_receipt->>'exact_head'
-   or p_receipt->'attestation'->>'runtime_sha' is distinct from p_receipt->>'runtime_sha'
-   or p_receipt->'attestation'->>'release_path' is distinct from p_receipt->>'release_path'
-   or coalesce(p_receipt->'attestation'->>'manifest_digest','') = ''
- then return jsonb_build_object('decision','VERIFICATION_FAILED','reason','INDEPENDENT_READBACK_RECEIPT_INVALID'); end if;
- -- A self-declared GitHub Actions role is NOT an authenticated GitHub Actions receipt.
- -- No authoritative run/artifact verifier is yet bound; therefore deny even plausible claims.
- return jsonb_build_object('decision','VERIFICATION_FAILED',
-   'reason','INDEPENDENT_READBACK_RECEIPT_NOT_AUTHENTICATED',
-   'step_id','runtime_sha_readback',
-   'work_item','PASE-ATOM-F07-X02-R01',
-   'next_gate','POST_DEPLOY_WORKER_QUEUE_REAL_JOB_CANARY');
+end $role$;
+create table if not exists private.lf_runtime_readback_oidc_receipts (
+ receipt_id bigint generated always as identity primary key,
+ execution_id text not null,
+ exact_head text not null check(exact_head ~ '^[0-9a-f]{40}$'),
+ release_path text not null,
+ runtime_sha text not null,
+ manifest_digest text not null check(manifest_digest ~ '^[0-9a-f]{64}$'),
+ receipt jsonb not null,
+ claims jsonb not null,
+ authenticated_by text not null default 'GITHUB_OIDC' check(authenticated_by='GITHUB_OIDC'),
+ workflow_run_id text not null,
+ workflow_run_attempt text not null,
+ token_sha256 text not null check(token_sha256 ~ '^[0-9a-f]{64}$'),
+ observed_at timestamptz not null default now(),
+ unique(workflow_run_id,workflow_run_attempt,execution_id,exact_head,manifest_digest)
+);
+alter table private.lf_runtime_readback_oidc_receipts enable row level security;
+revoke all on private.lf_runtime_readback_oidc_receipts from public, anon, authenticated, service_role;
+revoke all on sequence private.lf_runtime_readback_oidc_receipts_receipt_id_seq from public, anon, authenticated, service_role;
+grant usage on schema private to lf_runtime_readback_oidc_writer;
+grant insert on private.lf_runtime_readback_oidc_receipts to lf_runtime_readback_oidc_writer;
+grant usage on sequence private.lf_runtime_readback_oidc_receipts_receipt_id_seq to lf_runtime_readback_oidc_writer;
+create policy lf_runtime_readback_oidc_insert on private.lf_runtime_readback_oidc_receipts
+ for insert to lf_runtime_readback_oidc_writer with check (
+ authenticated_by='GITHUB_OIDC'
+ and claims->>'repository'='cristhianlujan/claude-persona-lf-patch'
+ and claims->>'ref'='refs/heads/main'
+ and claims->>'run_id'=workflow_run_id
+ and claims->>'run_attempt'=workflow_run_attempt
+ and receipt->>'exact_head'=exact_head
+ and receipt->>'runtime_sha'=runtime_sha
+ and receipt->>'release_path'=release_path
+);
+-- The function is a read-only consumer of authenticated receipts.
+create or replace function public.lf_runtime_impl_deploy_verification_binding_v1(p_receipt jsonb)
+returns jsonb language plpgsql stable security definer
+set search_path to 'pg_catalog','public','private'
+as $binding$
+declare v_check text; v_auth record; v_att jsonb;
+begin
+ if not exists (select 1 from public.lf_capability_current
+   where capability_code='RUNTIME_DEPLOY_VERIFICATION') then
+  return jsonb_build_object('decision','VERIFICATION_FAILED','reason','RUNTIME_DEPLOY_VERIFICATION_NOT_CURRENT');
+ end if;
+ v_check:=public.lf_runtime_impl_deploy_receipt_check_v1(p_receipt);
+ if v_check <> 'VERIFICATION_VERIFIED' then
+  return jsonb_build_object('decision','VERIFICATION_FAILED','reason',v_check);
+ end if;
+ v_att:=p_receipt->'attestation';
+ if coalesce(v_att->>'receipt_id','') !~ '^[0-9]+$' then
+  return jsonb_build_object('decision','VERIFICATION_FAILED','reason','INDEPENDENT_READBACK_RECEIPT_NOT_AUTHENTICATED');
+ end if;
+ select * into v_auth from private.lf_runtime_readback_oidc_receipts
+ where receipt_id=(v_att->>'receipt_id')::bigint
+   and authenticated_by='GITHUB_OIDC'
+   and execution_id=p_receipt->>'execution_id'
+   and exact_head=p_receipt->>'exact_head'
+   and release_path=p_receipt->>'release_path'
+   and runtime_sha=p_receipt->>'runtime_sha'
+   and receipt->>'source_sha'=p_receipt->>'runtime_sha'
+   and receipt->>'manifest_matches'='true'
+   and receipt->>'process_release_matches'='true'
+   and receipt->>'health_ok'='true'
+   and receipt->>'files_verified'='true';
+ if not found then
+  return jsonb_build_object('decision','VERIFICATION_FAILED','reason','INDEPENDENT_READBACK_RECEIPT_NOT_AUTHENTICATED');
+ end if;
+ return jsonb_build_object('decision','VERIFICATION_VERIFIED',
+  'authenticated_by','GITHUB_OIDC','receipt_id',v_auth.receipt_id,
+  'exact_head',v_auth.exact_head,'runtime_sha',v_auth.runtime_sha,
+  'step_id','runtime_sha_readback','work_item','PASE-ATOM-F07-X02-R01',
+  'next_gate','POST_DEPLOY_WORKER_QUEUE_REAL_JOB_CANARY');
+exception when others then
+ return jsonb_build_object('decision','VERIFICATION_FAILED','reason','INDEPENDENT_READBACK_RECEIPT_NOT_AUTHENTICATED');
 end $binding$;
--- Pending: verify GitHub run and artifact identity via independently trusted credentials.
+revoke all on function public.lf_runtime_impl_deploy_verification_binding_v1(jsonb) from public;
+grant execute on function public.lf_runtime_impl_deploy_verification_binding_v1(jsonb) to service_role;
