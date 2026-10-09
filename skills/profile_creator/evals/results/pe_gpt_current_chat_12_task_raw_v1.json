@@ -1,0 +1,298 @@
+{
+  "schema": "PE_GPT_NATIVE_IN_CHAT_CALIBRATION_RAW_V1",
+  "status": "GPT_CHAT_AUTHORED_RAW_FROZEN_PRE_ATTESTATION",
+  "batch_scope": "SINGLE_CURRENT_GPT_CONVERSATION_NOT_TWELVE_SEPARATE_PROVIDER_RUNS",
+  "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+  "case_scope": "EXPOSED_SYNTHETIC_CALIBRATION_NOT_BLIND",
+  "case_count": 4,
+  "outputs": [
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D1_STATIC",
+      "input_sha256": "c0d46d45deb23708322c1ecea905537c9cfba4b8ab3e65935cf6bba73300e2e3",
+      "contract_sha256": "2aa02192f7622847bc7a2e2e1cf5ec2d79100aa100e2c63127aff3a42ae96bcc",
+      "raw_output": {
+        "case_id": "HCA-105",
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:OWNER_EXISTS",
+          "REFUTE:H1:OWNER_EXISTS",
+          "MISSING:H2:TOKEN_VALID"
+        ],
+        "reason": "La lectura primaria acredita que el propietario existe y contradice H1. El estado del token proviene de un espejo sin verificación y no permite confirmar ni descartar H2. Solicitar una comprobación autorizada del token antes de inferir causa."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D2_SELECTOR_ONLY",
+      "input_sha256": "4b1aa8707117d92695c90d0c4471b0fef55db096dd820b828388485cecab7310",
+      "contract_sha256": "7b61137dc6df52eccea231012b45debab2c2c97c59c6148b4d4c0bc8f44d540f",
+      "raw_output": {
+        "case_id": "HCA-105",
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:OWNER_EXISTS",
+          "REFUTE:H1:OWNER_EXISTS",
+          "MISSING:H2:TOKEN_VALID"
+        ],
+        "reason": "El selector propone análisis causal, pero no aporta observaciones nuevas. OWNER_EXISTS=true refuta la ausencia del propietario; TOKEN_VALID sigue sin comprobante confiable. La conclusión responsable continúa siendo recopilar evidencia."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D3_TYPED_METHOD",
+      "input_sha256": "e0cf07262c934c8758f759940297c737eb5f32ac25ec66e4222f7513e6c2dd1b",
+      "contract_sha256": "e5876ff02968de1bd4a9e9cd9b0f98cd95ab102a4edc12bb071df1b8bb46d91d",
+      "raw_output": {
+        "case_id": "HCA-105",
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:OWNER_EXISTS",
+          "REFUTE:H1:OWNER_EXISTS",
+          "MISSING:H2:TOKEN_VALID"
+        ],
+        "reason": "El resultado tipado coincide con la lectura verificable: se refuta H1 por OWNER_EXISTS=true y permanece pendiente TOKEN_VALID. Conservar H2 como posibilidad, sin dar por demostrada su causa, y requerir prueba primaria."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D1_STATIC",
+      "input_sha256": "a8a3de511133aceb2211bbaf4c8a6204bc489c6943822809b35b60c322f7ecda",
+      "contract_sha256": "d0c0e1442a5eda929ab31aae391178670b57ba466a48b255bd9abade768ce00b",
+      "raw_output": {
+        "case_id": "HCA-106",
+        "decision": "INVESTIGATE_H3",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:VALID_ROWS_PERSISTED",
+          "OBS:ACK_WRITTEN",
+          "REFUTE:H1:VALID_ROWS_PERSISTED",
+          "REFUTE:H2:ACK_WRITTEN"
+        ],
+        "reason": "Las filas válidas están persistidas y el acuse no fue escrito, ambos datos con evidencia primaria. Esto contradice H1 y H2. H3 es la única hipótesis compatible que corresponde investigar; compatibilidad no equivale a prueba causal."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D2_SELECTOR_ONLY",
+      "input_sha256": "c6144e6d8439a13990db8c7d90c23b20d0252a16c1b165dffcab80d80d3df7f2",
+      "contract_sha256": "e02e726980edf166304e6b77e025e09d042c7f384e78b6a2954abd1e1543a4db",
+      "raw_output": {
+        "case_id": "HCA-106",
+        "decision": "INVESTIGATE_H3",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:VALID_ROWS_PERSISTED",
+          "OBS:ACK_WRITTEN",
+          "REFUTE:H1:VALID_ROWS_PERSISTED",
+          "REFUTE:H2:ACK_WRITTEN"
+        ],
+        "reason": "La selección del método no es un resultado ejecutado. Al comparar predicciones con VALID_ROWS_PERSISTED=true y ACK_WRITTEN=false, H1 y H2 quedan falsadas; investigar H3 sin certificar la causa del fallo de acuse."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D3_TYPED_METHOD",
+      "input_sha256": "bf433c688282febcce2bee6849002f4185d5da6e839cdfeef7391f2937f74b9f",
+      "contract_sha256": "3130986cfd4b055b0faecaef8a9ed1180257ca31fa9297e6e63a95bc2a33528e",
+      "raw_output": {
+        "case_id": "HCA-106",
+        "decision": "INVESTIGATE_H3",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:VALID_ROWS_PERSISTED",
+          "OBS:ACK_WRITTEN",
+          "REFUTE:H1:VALID_ROWS_PERSISTED",
+          "REFUTE:H2:ACK_WRITTEN"
+        ],
+        "reason": "El método presenta H1 y H2 como refutadas; ambas contradicciones se verifican directamente: persistencia real de filas y ausencia del acuse. Priorizar H3 para investigación de la frontera de escritura, sin declararla causa probada."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D1_STATIC",
+      "input_sha256": "c3bd8f2059f93c15dc95874bfe3fed30947565849750f54521d46ab9b334ad15",
+      "contract_sha256": "85498563c50d12b40e6fecdec83fc9d1a808d2c66f361c7666dd24eb603a80ba",
+      "raw_output": {
+        "case_id": "HCA-107",
+        "decision": "INVESTIGATE_H2",
+        "falsified": [
+          "H1"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:DISPATCH_RECEIPT",
+          "OBS:DELIVERY_CONFIRMED",
+          "REFUTE:H1:DISPATCH_RECEIPT"
+        ],
+        "reason": "Existe un recibo auténtico de despacho, por lo que la hipótesis de que nunca se despachó queda refutada. DELIVERY_CONFIRMED=false es compatible con H2. Investigar la entrega posterior, no asumir que el recibo demuestra entrega."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D2_SELECTOR_ONLY",
+      "input_sha256": "176703bf3fdf39cd6fd568ce645ad05b32fc7bc78fec68499d1e37931f0bb8d1",
+      "contract_sha256": "a24dbd5e3e71e62eb2c37c7f461b05958cda02eeba8afc609f03288b26537a9f",
+      "raw_output": {
+        "case_id": "HCA-107",
+        "decision": "INVESTIGATE_H2",
+        "falsified": [
+          "H1"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:DISPATCH_RECEIPT",
+          "OBS:DELIVERY_CONFIRMED",
+          "REFUTE:H1:DISPATCH_RECEIPT"
+        ],
+        "reason": "La selección de análisis causal no ejecutó un método. Los datos verificables ya contradicen H1 porque hubo despacho, mientras H2 coincide con despacho verdadero y entrega no confirmada. Investigar H2 con cautela."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D3_TYPED_METHOD",
+      "input_sha256": "3d7230aae71f5059a938483dcdf4c630d36a098b589bc306019b4a5c7b6fae4b",
+      "contract_sha256": "877c72705288b91373e10e2b9b1086e8b1efab14a8a6c8193253ef3ef465b218",
+      "raw_output": {
+        "case_id": "HCA-107",
+        "decision": "INVESTIGATE_H2",
+        "falsified": [
+          "H1"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:DISPATCH_RECEIPT",
+          "OBS:DELIVERY_CONFIRMED",
+          "REFUTE:H1:DISPATCH_RECEIPT"
+        ],
+        "reason": "El resultado tipado sitúa H2 como hipótesis de trabajo; esto se sostiene en DISPATCH_RECEIPT=true y DELIVERY_CONFIRMED=false. La prueba excluye no-despacho, pero no identifica todavía la causa de la falta de confirmación."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D1_STATIC",
+      "input_sha256": "c00212bd011002ef88d02c4bbc5aaa10ae9df14b3937dcd7d901a1337d220648",
+      "contract_sha256": "6b6ff21c87e23e52740cae8e70e0cdf708d7f46814e4e3f24d83c05f6973ca26",
+      "raw_output": {
+        "case_id": "HCA-108",
+        "decision": "INVESTIGATE_H2",
+        "falsified": [
+          "H1"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:GATE_CLOSED",
+          "OBS:REVIEW_RECEIPT_EXISTS",
+          "REFUTE:H1:REVIEW_RECEIPT_EXISTS"
+        ],
+        "reason": "La evidencia actual acredita que existe un recibo de revisión aunque el gate siga cerrado. H1, que niega toda ejecución de revisión, está contradicha. Reconsiderar el diagnóstico anterior e investigar la reconciliación del gate bajo H2."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D2_SELECTOR_ONLY",
+      "input_sha256": "ca74797c6b18b6469d48ceb7b8bb98bc8483a42793e18e3bb451361780c5df23",
+      "contract_sha256": "f3d4503f830b14d475583caa9548dbea58f2704b457b1c98aa5e0734171668ff",
+      "raw_output": {
+        "case_id": "HCA-108",
+        "decision": "INVESTIGATE_H2",
+        "falsified": [
+          "H1"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:GATE_CLOSED",
+          "OBS:REVIEW_RECEIPT_EXISTS",
+          "REFUTE:H1:REVIEW_RECEIPT_EXISTS"
+        ],
+        "reason": "Seleccionar el método no crea un resultado. El recibo nuevo invalida la hipótesis previa de ausencia total de revisión; el estado GATE_CLOSED=true permanece. H2 merece investigación, no una afirmación definitiva."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    },
+    {
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D3_TYPED_METHOD",
+      "input_sha256": "236538a2d4ca507c22f80ebd2965b47227518c375ec274b78a66d19bbfde5b66",
+      "contract_sha256": "7e120b333263de747eaff8463058d9faece22e9309c4254347c1f15eb69d8107",
+      "raw_output": {
+        "case_id": "HCA-108",
+        "decision": "INVESTIGATE_H2",
+        "falsified": [
+          "H1"
+        ],
+        "causality_proven": false,
+        "reason_claim_ids": [
+          "OBS:GATE_CLOSED",
+          "OBS:REVIEW_RECEIPT_EXISTS",
+          "REFUTE:H1:REVIEW_RECEIPT_EXISTS"
+        ],
+        "reason": "El método tipado propone H2 y refuta H1. La revisión existe según comprobante primario y el gate sigue cerrado; por ello investigar la falta de reconciliación y conservar la incertidumbre causal."
+      },
+      "executor_mode": "GPT_NATIVE",
+      "source": "GPT_IN_CURRENT_CHAT_BATCH",
+      "runtime_provider_attestation": "NOT_YET_VERIFIED",
+      "independent_semantic_review": "NOT_EXECUTED"
+    }
+  ],
+  "tool_outcomes_used_in_d3": true,
+  "gpt_model_weights_evaluated": "GPT-6_CURRENT_CHAT",
+  "independent_provider_attestation": false,
+  "independent_semantic_review": false,
+  "expert_uplift_established": false,
+  "cutover_eligible": false
+}
