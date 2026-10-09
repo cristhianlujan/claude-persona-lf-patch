@@ -1,0 +1,40 @@
+{
+  "authority_state": "NON_AUTHORITY_CANDIDATE",
+  "baseline_revision": "da5e7a6b9583a4401e56f08ea4fce8b6131fedd7",
+  "changes": [
+    {
+      "before_sha256": null,
+      "content": "# Candidate causal-evidence scope — development only\n\nStatus: NON_AUTHORITY_CANDIDATE\nScope: systemic root-cause repair profile; synthetic development tests only.\n\n## Falsification before root-cause recommendation\n\nFor each competing hypothesis, list the binary or otherwise testable predictions, each probe's observed value, its authority source and whether its provenance is independently verifiable. A verified observation refutes a hypothesis only when it contradicts one of that hypothesis's predictions. A supporting observation, by itself, never establishes causality.\n\nUnverified, conflicting, stale or second-hand observations **cannot falsify or confirm** a hypothesis. Preserve the uncertainty explicitly and request the decisive authoritative readback, rather than writing the unverified observation into the narrative as if it were fact.\n\nWhen multiple hypotheses survive, no hypothesis survives, or a surviving hypothesis requires a probe without verified provenance, request additional evidence. When exactly one hypothesis survives and its required predictions have verified readbacks, prioritise investigation of that hypothesis; this still is not proof of an underlying root cause.\n\nIf independently verified evidence arrives after an initial diagnosis, reconstruct the contradiction matrix and choose the next investigative action again. Preserve the superseded hypothesis, the new receipt, and the change in decision. Do not reuse a prior decision without replaying its evidence binding.\n\n## Test-only output expectations\n\n- Return an action, falsified hypothesis IDs, verified evidence references, and explicitly unresolved probes.\n- Write every factual reason as a traceable claim with a verified source reference; separate observation, falsification and tentative inference.\n- Do not promote a candidate recommendation to SYSTEMIC_REPAIR_SPEC or an expert claim without the existing domain's full authority, currentness, topology, recurrence, rollback and acceptance obligations.\n- Do not add a second method engine, grant a method execution permission, update the original profile or claim product activation.\n\n## Demonstration fixtures (not evidence of expertise)\n\nHCA-105 has an authoritative OWNER_EXISTS=true and an unverified TOKEN_VALID=false mirror. The owner-absent hypothesis is refuted; the token-invalid hypothesis remains unresolved pending a trusted token probe.\n\nHCA-106 has authoritative VALID_ROWS_PERSISTED=true and ACK_WRITTEN=false. Competing hypotheses predicting no rows or a committed acknowledgement are refuted; investigate the hypothesis compatible with persistence and missing acknowledgement, without calling it causally proven.\n\nThese fixtures define a **candidate edit to evaluate**, not a benchmark PASS.",
+      "operation": "UPSERT",
+      "path": "contracts/candidate_causal_evidence_scope_v1.md"
+    }
+  ],
+  "evidence_map": [
+    {
+      "source_ref": "skills/profile_creator/evals/profile_causal_unseen_holdout_remaining_v1.json",
+      "supports": [
+        "known synthetic causal probes, not expert performance"
+      ]
+    },
+    {
+      "source_ref": "skills/profile_creator/evals/results/pe_causal_unseen_method_raw_v1.json",
+      "supports": [
+        "candidate method invocations, not production qualification"
+      ]
+    }
+  ],
+  "evolution_mode": "PATCH",
+  "preservation_constraints": [
+    "Preserve all source SKILL.md contents, existing contracts and validators",
+    "No changes inside repository",
+    "No capability/method auto-admission or GPT-native attestation",
+    "Respect all native domain currentness/terminality obligations"
+  ],
+  "production_activation": false,
+  "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "profile_source_write_authorized": false,
+  "reversible": true,
+  "runtime_activation": false,
+  "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1"
+}
