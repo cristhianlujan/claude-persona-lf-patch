@@ -1,6 +1,16 @@
 name: IG M9.3 Governed Read-Only Evidence
 on:
   workflow_dispatch:
+    inputs:
+      rollback_e2e:
+        type: boolean
+        required: true
+        default: false
+      cohort:
+        type: choice
+        required: true
+        default: ALL
+        options: [ALL, AUTH, FORMS, NAVIGATION, DESIGN, ONBOARDING, RECOVERY, API]
 
 permissions:
   contents: read
@@ -39,7 +49,10 @@ jobs:
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
-          python3 sandbox/lf_contract_gate_test/engineering_checkpoints/m9_3/full_pipeline_shadow_runner.py --live --output .lf_ci/m9_3_live_diagnostic.json
+          args=(--live --output .lf_ci/m9_3_live_diagnostic.json)
+          if [ "${{ inputs.rollback_e2e }}" = true ]; then args+=(--rollback-e2e); fi
+          if [ "${{ inputs.cohort }}" != ALL ]; then args+=(--cohort "${{ inputs.cohort }}"); fi
+          python3 sandbox/lf_contract_gate_test/engineering_checkpoints/m9_3/full_pipeline_shadow_runner.py "${args[@]}"
       - name: Preserve diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4
