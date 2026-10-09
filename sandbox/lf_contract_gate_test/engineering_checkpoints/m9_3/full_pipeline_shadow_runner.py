@@ -84,12 +84,12 @@ def fingerprint() -> dict:
     # Entire authoritative-row corpus, not merely count/max(id); detects edits
     # as well as inserts/deletes. No rows escape into reports.
     return db_query("""SELECT jsonb_build_object(
-       'input_readiness_runs',encode(extensions.digest(
+       'input_readiness_runs',encode(extensions.digest(convert_to(
           coalesce((SELECT string_agg(to_jsonb(r)::text, '|' ORDER BY r.id)
-            FROM programacion.input_readiness_runs r),'')::bytea,'sha256'),'hex'),
-       'input_family_assessments',encode(extensions.digest(
+            FROM programacion.input_readiness_runs r),''),'UTF8'),'sha256'),'hex'),
+       'input_family_assessments',encode(extensions.digest(convert_to(
           coalesce((SELECT string_agg(to_jsonb(a)::text, '|' ORDER BY a.id)
-            FROM programacion.input_family_assessments a),'')::bytea,'sha256'),'hex')
+            FROM programacion.input_family_assessments a),''),'UTF8'),'sha256'),'hex')
      );""")
 
 
