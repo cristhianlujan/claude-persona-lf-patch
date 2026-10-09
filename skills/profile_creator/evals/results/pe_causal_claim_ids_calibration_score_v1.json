@@ -1,0 +1,90 @@
+{
+  "cases": [
+    {
+      "blocking_code": null,
+      "case_id": "PE-CAUS-05",
+      "claims": [
+        {
+          "claim_id": "OBS:CALLBACK_LINKED",
+          "evidence_refs": [
+            "fixture-verified://78899ea28f6a6658ff0e3788581df9f5a11671c0ed55c9ecd19a0212f8632c2f"
+          ],
+          "observed": false,
+          "probe_id": "CALLBACK_LINKED",
+          "text": "Verificación CALLBACK_LINKED = false",
+          "type": "OBSERVATION"
+        },
+        {
+          "claim_id": "OBS:WORKER_RECEIPT_EXISTS",
+          "evidence_refs": [
+            "fixture-verified://4cf506448509417f15bf7aeda42535cf1d89250c61a6c271a102623f9495aa75"
+          ],
+          "observed": true,
+          "probe_id": "WORKER_RECEIPT_EXISTS",
+          "text": "Verificación WORKER_RECEIPT_EXISTS = true",
+          "type": "OBSERVATION"
+        },
+        {
+          "claim_id": "REFUTE:H1:WORKER_RECEIPT_EXISTS",
+          "evidence_refs": [
+            "fixture-verified://4cf506448509417f15bf7aeda42535cf1d89250c61a6c271a102623f9495aa75"
+          ],
+          "hypothesis_id": "H1",
+          "probe_id": "WORKER_RECEIPT_EXISTS",
+          "text": "H1 queda contradicha por WORKER_RECEIPT_EXISTS = true",
+          "type": "FALSIFICATION"
+        }
+      ],
+      "decision_fields_match": true,
+      "final_text": "Verificación CALLBACK_LINKED = false [fixture-verified://78899ea28f6a6658ff0e3788581df9f5a11671c0ed55c9ecd19a0212f8632c2f]; Verificación WORKER_RECEIPT_EXISTS = true [fixture-verified://4cf506448509417f15bf7aeda42535cf1d89250c61a6c271a102623f9495aa75]; H1 queda contradicha por WORKER_RECEIPT_EXISTS = true [fixture-verified://4cf506448509417f15bf7aeda42535cf1d89250c61a6c271a102623f9495aa75]. Priorizar investigación de H2. No se ha demostrado causalidad.",
+      "grounding_status": "TEST_ONLY_EVIDENCE_COMPILED"
+    },
+    {
+      "blocking_code": null,
+      "case_id": "PE-CAUS-06",
+      "claims": [
+        {
+          "claim_id": "OBS:AUTH_STATUS_VALID",
+          "evidence_refs": [
+            "fixture-verified://def2254c44972c868cfef62fd00d842b350d2bc6767a80e957ce8c3c7c18287b"
+          ],
+          "observed": true,
+          "probe_id": "AUTH_STATUS_VALID",
+          "text": "Verificación AUTH_STATUS_VALID = true",
+          "type": "OBSERVATION"
+        },
+        {
+          "claim_id": "REFUTE:H1:AUTH_STATUS_VALID",
+          "evidence_refs": [
+            "fixture-verified://def2254c44972c868cfef62fd00d842b350d2bc6767a80e957ce8c3c7c18287b"
+          ],
+          "hypothesis_id": "H1",
+          "probe_id": "AUTH_STATUS_VALID",
+          "text": "H1 queda contradicha por AUTH_STATUS_VALID = true",
+          "type": "FALSIFICATION"
+        },
+        {
+          "claim_id": "MISSING:H2:REPLICA_VALID",
+          "evidence_refs": [
+            "verifier://dc3a4ef814ceb232892c0d4485fbbdfdb34375be698a93dc98132823306ad717"
+          ],
+          "hypothesis_id": "H2",
+          "probe_id": "REPLICA_VALID",
+          "text": "Falta evidencia verificable de REPLICA_VALID para H2",
+          "type": "EVIDENCE_GAP"
+        }
+      ],
+      "decision_fields_match": true,
+      "final_text": "Verificación AUTH_STATUS_VALID = true [fixture-verified://def2254c44972c868cfef62fd00d842b350d2bc6767a80e957ce8c3c7c18287b]; H1 queda contradicha por AUTH_STATUS_VALID = true [fixture-verified://def2254c44972c868cfef62fd00d842b350d2bc6767a80e957ce8c3c7c18287b]; Falta evidencia verificable de REPLICA_VALID para H2 [verifier://dc3a4ef814ceb232892c0d4485fbbdfdb34375be698a93dc98132823306ad717]. Se requiere más evidencia. No se ha demostrado causalidad.",
+      "grounding_status": "TEST_ONLY_EVIDENCE_COMPILED"
+    }
+  ],
+  "cutover_eligible": false,
+  "decision_correct_count": 2,
+  "external_independent_semantic_assurance": "NOT_EXECUTED",
+  "global_quality_uplift": "NOT_ESTABLISHED",
+  "grounding_accepted_count": 2,
+  "producer_sha256": "450a6a05a4a4f08914d444e8558a07effb0c6871d23017eead582f384bfa7c18",
+  "schema": "PE_CAUSAL_CLAIM_IDS_CALIBRATION_SCORE_V1",
+  "scope": "KNOWN_CASES_NOT_HOLDOUT"
+}
