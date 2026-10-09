@@ -144,17 +144,17 @@
     "current_execution_mode": "GPT_NATIVE",
     "openai_api_key_required": false
   },
-  "closure": "IMPLEMENTATION_IN_EXECUTION; PE10P DONE 5/5; PE10_C2B FULL_PROFILE_EVOLUTION_BEHAVIOR IS CURRENT REQUIRED GATE; CUTOVER NOT ADMITTED",
+  "closure": "IMPLEMENTATION_IN_EXECUTION; FULL_BEHAVIOR BENCHMARK PASS; PE10_C3 BLOCKED BECAUSE LIVE INDEPENDENT_ASSURANCE 1.0.1 DOES NOT SUPPORT PROFILE_CANDIDATE; CUTOVER NOT ADMITTED",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
     "unit_count": 13,
     "checkpoint_count": 57,
     "required_checkpoint_count": 54,
-    "required_terminal_count": 48,
-    "required_progress_pct": 88.9,
-    "done_checkpoint_count": 48,
+    "required_terminal_count": 49,
+    "required_progress_pct": 90.7,
+    "done_checkpoint_count": 49,
     "not_applicable_checkpoint_count": 3,
-    "open_blocker_count": 0
+    "open_blocker_count": 1
   },
   "atomic_units": {
     "PE5A": {
@@ -174,14 +174,33 @@
       "materializer_receipt_sha256": "a2c53910ac76bbb9ab23b7b787949940b9500e145f772356a33d1c8075f669ef"
     },
     "PE10": {
-      "status": "IN_PROGRESS",
-      "checkpoints": "2/8",
+      "status": "IN_PROGRESS_BLOCKED_AT_C3",
+      "checkpoints": "3/8",
       "completed": [
         "PE10_C1",
-        "PE10_C2"
+        "PE10_C2",
+        "PE10_C2B"
       ],
-      "current_checkpoint": "PE10_C2B",
-      "current_gate": "FULL_PROFILE_EVOLUTION_BEHAVIOR"
+      "current_checkpoint": "PE10_C3",
+      "blocker_code": "INDEPENDENT_ASSURANCE_PROFILE_SUBJECT_UNSUPPORTED",
+      "full_behavior_summary": {
+        "benchmark_status": "BENCHMARK_PASS",
+        "case_count": 21,
+        "holdout_case_count": 7,
+        "baseline_score": 0.285714,
+        "candidate_score": 0.971429,
+        "paired_ci95": [
+          0.533333,
+          0.828571
+        ],
+        "holdout_ci95": [
+          0.4,
+          0.928571
+        ],
+        "critical_regressions": 0,
+        "false_pass": "6 -> 0",
+        "cost_latency_within_budget": true
+      }
     }
   }
 }
