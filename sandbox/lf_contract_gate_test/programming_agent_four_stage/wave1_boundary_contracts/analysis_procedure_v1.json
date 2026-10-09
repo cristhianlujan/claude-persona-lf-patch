@@ -210,7 +210,7 @@
       "produces": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
       "procedure": "Assemble lossless package, scope_front_matrix and per-scope readiness; compile PROGRAMMING_CONTEXT_SNAPSHOT_V1; define immutable DECISION_CONTEXT_ASOF receipt, digest/currentness, exact PG-01 parity and minimum worker projection; never execute PG-01 in process authoring.",
       "guard": "READY only front-clean current scope; PARTIAL_READY only independent scope with complete dependency closure; otherwise NEED_MORE_EVIDENCE/REQUIRES_DECISION/BLOCKED. No fabricated READY.",
-      "on_success": "SOURCE_PROCEDURE_AUTHORED",
+      "on_success": "PROCEDURE_SOURCE_COMPLETE",
       "execution_this_batch": "NOT_INVOKED"
     }
   ],
