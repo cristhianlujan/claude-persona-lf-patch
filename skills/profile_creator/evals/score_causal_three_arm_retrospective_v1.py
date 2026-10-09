@@ -12,7 +12,7 @@ ROOT=Path(__file__).resolve().parents[3]
 BASE=ROOT/"skills/profile_creator/evals/results"
 CASES=ROOT/"skills/profile_creator/evals/profile_causal_unseen_holdout_remaining_v1.json"
 BASELINE=BASE/"pe_causal_remaining_holdout_model_raw_v1.json"
-D2=ROOT/"pe_causal_d2_selector_model_raw_v1.json"
+D2=ROOT/"skills/profile_creator/evals/results/pe_causal_d2_selector_model_raw_v1.json"
 OUTPUT=BASE/"pe_causal_three_arm_retrospective_diagnostic_v1.json"
 
 def digest(x):
