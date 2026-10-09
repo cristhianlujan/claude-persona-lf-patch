@@ -20,6 +20,9 @@ def check():
     assert b["runtime_mode"]=="GPT_NATIVE"
     assert b["semantic_review_mode"]=="INDEPENDENT_CHAT_CONTEXT"
     assert b["resolver"]=="GPT_RUNTIME_WITH_SUPABASE_CONTEXT"
+    assert b["profile_execution_operation"]=="EJECUCION_PERFIL_LF"
+    assert b["profile_execution_step"]=="execute_profile"
+    assert b["router"]=="ACT-0001"
     assert b["case_count"]==4 and b["run_count"]==12
     assert b["gpt_model_invocations"]==0
     assert b["producer_status"]=="NOT_EXECUTED"
