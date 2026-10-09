@@ -184,3 +184,26 @@ The canonical trajectory contract is `contracts/profile_evolution_state_v1.json`
 E8/E9 optimization is governed by `contracts/profile_evolution_optimization_policy_v1.json` and remains disabled by default. Optimizers propose; holdout measures; assurance challenges; admission decides.
 
 The candidate architecture must not cut over the live v0.1 operation while legacy `ACTUALIZACION_PERFIL_LF` executions are open, because the current common recorder resolves active steps globally. Cutover requires drained legacy executions, benchmark admission and an exact authority migration.
+
+
+## Profile Evolution V2 — competency and expert-performance target
+
+The V1 candidate remains historical architecture-control evidence. It does **not** establish expertise merely from structural compatibility, evolution-mode correctness, candidate contracts or reversible materialization.
+
+The target flow is governed by `contracts/profile_evolution_orchestrator_v2.json`:
+
+`S26 structure -> execute baseline tasks -> PROFILE_ASSESSMENT_V2 competency vector -> METHOD_PACK_REGISTRY_V2 + CAPABILITY_SELECTOR_V3 -> adaptive execute/observe/replan loop -> reversible candidate -> execute candidate profile -> EXPERT_TASK_PERFORMANCE_E2E four-arm benchmark -> Independent Assurance -> Safe Change Admission -> governed write/cutover`.
+
+Rules:
+
+- Maturity is derived from verified task-execution competence, never directly assigned from evidence-field presence.
+- `EXPERT` requires task quality, difficult cases, robustness, adaptation, transfer, preservation and zero critical regressions.
+- `EVIDENCE_OPTIMIZED` additionally requires longitudinal and causal evidence.
+- A method whose signal matches but whose preconditions are not VERIFIED is not selectable.
+- Method/capability composition may be replanned inside a task when new evidence, failure, verifier rejection, plateau, risk or budget changes materially change the decision.
+- Same-run replanning never creates persistent learning authority.
+- Reusable learning requires causal attribution, replication, transfer, holdout, observed cost, independent admission, expiry and retirement conditions; failed transfers remain evidence.
+- Research-inspired approaches such as reasoning-composition search, textual-feedback optimization and workflow search are methods in the registry, not new engines; experimental methods never auto-select.
+- The previous decision/composition and candidate-contract benchmarks are architecture controls only. Cutover requires `PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1`, which executes A=original, B=v0.1 updater, C=current Evolution and D=target Evolution on matched blind tasks with actual execution and independent evaluator receipts.
+- Document presence, expected evolution class or structural compliance cannot be scored as expert performance.
+- Runtime/production activation and write authority remain separate governed decisions.
