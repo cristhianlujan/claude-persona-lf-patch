@@ -91,9 +91,19 @@ def validate(e: dict) -> list[str]:
             need(stage.get("status") == "PASS" and valid_ref(stage.get("execution_ref")),
                  "STAGE_NO_LIVE_PROOF:" + c + "/" + str(stage.get("stage")))
         eq = item.get("t_equiv") or {}
+        result = eq.get("result")
+        diff = eq.get("difference_count")
+        d0 = (eq.get("status") == "PASS" and result == "PASS_EQUIVALENT"
+              and diff == 0 and eq.get("semantic_hold") is not True)
+        d4 = (eq.get("status") == "CLASSIFIED_HOLD"
+              and result == "BLOCKED_DIVERGENCE"
+              and eq.get("comparison_level") == "D4"
+              and type(diff) is int and diff > 0
+              and eq.get("semantic_hold") is True
+              and eq.get("promotion_authorized") is False)
         need(eq.get("capability_code") == "CONTROL_EQUIVALENCE_JUDGE"
              and eq.get("baseline") == "5.13" and eq.get("candidate") == "VNEXT"
-             and eq.get("status") == "PASS" and eq.get("difference_count") == 0
+             and (d0 or d4)
              and valid_ref(eq.get("execution_ref")), "EQUIVALENCE_UNPROVEN:" + c)
 
     writes = e.get("authoritative_readback") or {}
@@ -109,6 +119,7 @@ def validate(e: dict) -> list[str]:
 
     need(e.get("shadow_decisional") is False, "SHADOW_DECISIONAL")
     need(e.get("production_authorized") is False, "PRODUCTION_AUTHORIZATION_CLAIM")
+    need(e.get("promotion_authorized") is False, "PROMOTION_AUTHORIZATION_CLAIM")
     return issues
 
 
