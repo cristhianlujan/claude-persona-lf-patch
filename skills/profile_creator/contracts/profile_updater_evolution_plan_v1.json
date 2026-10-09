@@ -178,9 +178,8 @@
         "Llama remains REMOTE_API option, not GPT dependency"
       ],
       "blockers": [
-        "PE10P_C4: fresh GPT_NATIVE RAW + PROFILE_EXECUTION_RECEIPT_V1 not yet materialized for Profile Evolution smoke",
-        "PE10P_C5: reversible candidate materialization smoke pending after C4",
-        "FULL_PROFILE_EVOLUTION_BEHAVIOR benchmark not yet executed/admitted",
+        "PE10_C2B: FULL_PROFILE_EVOLUTION_BEHAVIOR paired benchmark pending",
+        "PE10_C3: independent assurance pending after full-behavior freeze",
         "0 ADMIT_CUTOVER events",
         "25 v0.1 executions IN_PROGRESS",
         "required candidate capabilities not yet promoted to live authority"
@@ -202,8 +201,8 @@
   "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
   "atomic_plan_summary": {
     "units": 13,
-    "checkpoints": 56,
-    "required_checkpoints": 53,
+    "checkpoints": 57,
+    "required_checkpoints": 54,
     "status": "IN_EXECUTION"
   },
   "validation_policy": {
