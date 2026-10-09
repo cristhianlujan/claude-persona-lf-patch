@@ -33,6 +33,11 @@ Deno.serve(async req => {
    return reply(200,{decision:"VERIFICATION_VERIFIED",receipt_id:rows[0].receipt_id,authenticated_by:"GITHUB_OIDC"});
   } finally { await sql.end({timeout:1}); }
  } catch(e) {
-  return reply(401,{decision:"VERIFICATION_FAILED",reason:String((e as Error).message).slice(0,130)});
+  const reason = String((e as Error).message ?? "");
+  const code = (e as {code?:string}).code;
+  if (code === "23505") return reply(409,{decision:"VERIFICATION_FAILED",reason:"RECEIPT_DUPLICATE"});
+  if (code === "25006" || reason === "WRITER_DATABASE_URL_MISSING" || /connect|timeout|connection|ECONN/i.test(reason)) return reply(503,{decision:"VERIFICATION_FAILED",reason:"RECEIPT_REGISTRATION_UNAVAILABLE"});
+  if (/^(RECEIPT_|RELEASE_PATH_|READBACK_NOT_VERIFIED|MANIFEST_)/.test(reason)) return reply(422,{decision:"VERIFICATION_FAILED",reason});
+  return reply(401,{decision:"VERIFICATION_FAILED",reason:"OIDC_IDENTITY_REJECTED"});
  }
 });
