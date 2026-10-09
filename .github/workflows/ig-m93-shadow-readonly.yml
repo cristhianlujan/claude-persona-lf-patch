@@ -1,0 +1,50 @@
+name: IG M9.3 Governed Read-Only Evidence
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  m93-readonly:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout merged trusted main
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Assert exact sandbox and no production
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ github.ref }}" = "refs/heads/main"
+          test -f sandbox/lf_contract_gate_test/engineering_checkpoints/m9_3/full_pipeline_shadow_runner.py
+          python3 sandbox/lf_contract_gate_test/engineering_checkpoints/m9_3/full_pipeline_shadow_runner.py --self-test
+      - name: Install PostgreSQL client if missing
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+      - name: Live seven-cohort diagnostic (fail closed)
+        shell: bash
+        env:
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/engineering_checkpoints/m9_3/full_pipeline_shadow_runner.py --live --output .lf_ci/m9_3_live_diagnostic.json
+      - name: Preserve diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ig-m93-readonly-diagnostic
+          path: .lf_ci/m9_3_live_diagnostic.json
+          if-no-files-found: warn
+          retention-days: 7
