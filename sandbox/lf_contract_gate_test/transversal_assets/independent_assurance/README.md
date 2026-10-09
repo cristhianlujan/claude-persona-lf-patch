@@ -181,3 +181,18 @@ Do not create a second independent-review capability, operation, table, runner, 
 ## Currentness
 
 This README describes the ownership and semantic boundary, not a permanent lifecycle assertion. Consumers must read live inventory, `lf_capability_current` and the operation contract for every material decision.
+
+## Generic subject contract v3
+
+The subject-aware v2 candidate is superseded **before live cutover** because it still whitelists named subject types. Do not apply that whitelist model for new consumers.
+
+The canonical target architecture is `independent_review_subject_contract_v3.json`:
+
+- `subject_type` is an opaque, non-empty identifier; it is data, not a core dispatch branch;
+- no generic-core whitelist of domain names is allowed;
+- any subject may consume Independent Review when it presents an exact VERIFIED Evidence Ledger receipt bound to its type/ref/SHA/source revision, distinct producer/reviewer identities, `review_required=true`, and a non-empty caller-provided review-dimension contract;
+- the reviewer must cover the exact bound dimension set;
+- Strategy keeps its legacy route only as a backward-compatible specialization;
+- the existing `REVISION_INDEPENDIENTE_ESTRATEGIA_LF` operation, six judges, and Evidence Ledger remain the single review stack.
+
+A rollback-only live probe on 2026-10-08 proved the same generic contract with two unrelated existing subject types (`IG_SCREEN_GRAPH` and `IG_SPEC_TRAVERSAL_PER_RUN`) and negative mismatch/self-review/empty-dimension cases. The probe left no database function or evidence residue.
