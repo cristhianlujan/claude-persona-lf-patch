@@ -1,5 +1,5 @@
 import { generateKeyPair, exportJWK, createLocalJWKSet, SignJWT } from "npm:jose@6.0.11";
-import { ISSUER, AUDIENCE, REPO, REF, WORKFLOW, verifyObserverToken } from "./auth.ts";
+import { ISSUER, AUDIENCE, REPO, REF, WORKFLOW, CALLER_WORKFLOW, verifyObserverToken } from "./auth.ts";
 
 Deno.test("OIDC D7 independent observer negative JWT matrix", async () => {
  const {privateKey,publicKey}=await generateKeyPair("RS256",{extractable:true});
@@ -12,7 +12,7 @@ Deno.test("OIDC D7 independent observer negative JWT matrix", async () => {
   workflow_run_id:"12345",workflow_run_attempt:"1",health_ok:true,files_verified:true,
   manifest_matches:true,process_release_matches:true};
  const claims={repository:REPO,repository_id:"1244397752",ref:REF,
-  workflow_ref:WORKFLOW,job_workflow_ref:WORKFLOW,event_name:"workflow_dispatch",
+  workflow_ref:CALLER_WORKFLOW,job_workflow_ref:WORKFLOW,event_name:"workflow_dispatch",
   run_id:"12345",run_attempt:"1"};
  async function token(c:Record<string,unknown>,expired=false,audience=AUDIENCE) {
    let t=new SignJWT(c).setProtectedHeader({alg:"RS256",kid:"d7-local-test"})
