@@ -17,8 +17,7 @@ BEGIN
   RETURN NEW;
 END
 $f$;
-DROP TRIGGER IF EXISTS trg_input_run_default_validation_scope_v1 ON programacion.input_readiness_runs;
-CREATE TRIGGER trg_input_run_default_validation_scope_v1 BEFORE INSERT ON programacion.input_readiness_runs
+CREATE OR REPLACE TRIGGER trg_input_run_default_validation_scope_v1 BEFORE INSERT ON programacion.input_readiness_runs
   FOR EACH ROW EXECUTE FUNCTION programacion.fn_input_run_default_validation_scope_v1();
 CREATE OR REPLACE FUNCTION programacion.fn_input_governance_validate_v2(p_run_id bigint, p_validator_identity text)
  RETURNS jsonb
