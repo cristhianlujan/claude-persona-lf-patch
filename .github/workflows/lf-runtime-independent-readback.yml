@@ -28,7 +28,8 @@ jobs:
       - name: Checkout exact source for hash manifest
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.exact_head }}
+          ref: main
+          fetch-depth: 0
           persist-credentials: false
       - name: Read VPS and submit OIDC-bound receipt
         env:
