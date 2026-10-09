@@ -12,7 +12,7 @@ on:
         default: ALL
         options: [ALL, AUTH, FORMS, NAVIGATION, DESIGN, ONBOARDING, RECOVERY, API]
 
-# One current sandbox replay at a time; prevents pooler exhaustion and
+# One workflow run and one active cohort replay at a time; prevents pooler exhaustion and
 # preserves per-cohort independently downloadable machine evidence.
 concurrency:
   group: ig-m93-live-sandbox-readback
@@ -50,7 +50,7 @@ jobs:
     if: needs.prepare.result == 'success'
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         cohort: ${{ fromJson(needs.prepare.outputs.cohorts) }}
     runs-on: ubuntu-latest
