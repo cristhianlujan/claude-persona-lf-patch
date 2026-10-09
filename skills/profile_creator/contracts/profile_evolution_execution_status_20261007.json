@@ -144,17 +144,17 @@
     "current_execution_mode": "GPT_NATIVE",
     "openai_api_key_required": false
   },
-  "closure": "IMPLEMENTATION_IN_EXECUTION; PE10P_C4 REQUIRES FRESH GPT_NATIVE CHAT RAW/RECEIPT; OPERATIONAL_CUTOVER NOT ADMITTED",
+  "closure": "IMPLEMENTATION_IN_EXECUTION; PE10P DONE ON CANONICAL GPT_NATIVE; PE10 FULL_BEHAVIOR BENCHMARK EXPLICITLY REQUIRED BEFORE ASSURANCE/CUTOVER",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
     "unit_count": 13,
-    "checkpoint_count": 56,
-    "required_checkpoint_count": 53,
-    "required_terminal_count": 45,
-    "required_progress_pct": 84.9,
-    "done_checkpoint_count": 45,
+    "checkpoint_count": 57,
+    "required_checkpoint_count": 54,
+    "required_terminal_count": 47,
+    "required_progress_pct": 87,
+    "done_checkpoint_count": 47,
     "not_applicable_checkpoint_count": 3,
-    "open_blocker_count": 1
+    "open_blocker_count": 0
   },
   "atomic_units": {
     "PE5A": {
@@ -163,20 +163,19 @@
       "purpose": "reversible candidate materialization bridge"
     },
     "PE10P": {
-      "status": "IN_PROGRESS",
-      "checkpoints": "3/5 expected after canonical route revalidation",
-      "current_checkpoint": "PE10P_C4",
+      "status": "DONE",
+      "checkpoints": "5/5",
       "executor_mode": "GPT_NATIVE",
       "adapter_id": "chatgpt-native-current-context-v1",
-      "provider": "OPENAI_CHATGPT_NATIVE",
       "api_key_required": false,
-      "architecture_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/contract_bound_profile_runtime.py",
-      "note": "Reuse canonical three-route execution architecture; no parallel runner."
+      "llama_required": false
     },
     "PE10": {
-      "status": "BACKLOG_WAITING_PE10P",
-      "checkpoints": "1/7",
-      "completed_checkpoint": "PE10_C1"
+      "status": "READY_AFTER_PE10P",
+      "checkpoints": "1/8",
+      "completed_checkpoint": "PE10_C1",
+      "next_checkpoint": "PE10_C2",
+      "full_behavior_checkpoint": "PE10_C2B"
     }
   }
 }
