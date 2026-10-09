@@ -26,7 +26,7 @@ Preserve this sequence for delegated agents and subagents.
 All database migration writes MUST go exclusively through the authorized LF Migration Merge Train.
 
 Agents MUST NOT:
-- Invoke Supabase MCP `apply_migration`, or execute migration-related DDL/DML through `execute_sql`.
+- Invoke Supabase MCP `apply_migration`, or execute ANY DDL (CREATE/ALTER/DROP/GRANT/REVOKE/COMMENT on any object) or migration-related DML through `execute_sql` or any other route. There is no 'non-migration DDL' exception.
 - Apply migrations through SQL Editor, direct PostgreSQL/`psql`, `supabase db push`, or an alternative API/CLI/connector.
 - Directly modify `supabase_migrations.schema_migrations`.
 - Create or modify workflows that read `LF_SUPABASE_DB_PASSWORD` or any DB credential.
