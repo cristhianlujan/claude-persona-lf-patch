@@ -36,7 +36,7 @@ DEFAULT_POLICY = {
         "critical_failures_max": 0
     },
     "evidence_optimized": {
-        "expert_required": true,
+        "expert_required": True,
         "min_generations": 3,
         "causal_confidence_min": 0.75
     }
