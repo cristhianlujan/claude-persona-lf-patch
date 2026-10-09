@@ -24,7 +24,12 @@ def main():
     classifier=run.load_depth_classifier()
     cases=json.loads((ROOT/"analysis_a14_fresh_cases_v1.json").read_text())
     seed=cases["cases"][0]
-    assert run.execute_case(seed,classifier)["verdict"]=="READY"
+    baseline=run.execute_case(seed,classifier)
+    assert baseline["verdict"]=="READY"
+    assert baseline["false_ready_count"] is None  # Oracle required, never self-scored.
+    assert baseline["source_read_count"]==0 and baseline["duplicate_read_count"]==0
+    assert baseline["source_reads_executed_by_replay"] is False
+    assert baseline["referenced_source_count"]>0
 
     corrupt=copy.deepcopy(seed)
     corrupt["handoff"]["receipt_context_sha256"]="mismatched-currentness"
