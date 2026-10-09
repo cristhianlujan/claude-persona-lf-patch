@@ -8,7 +8,7 @@ CONSUMER=ROOT/"pe_causal_disruptive_consumption_v1.json"
 RAW=ROOT/"pe_causal_disruptive_model_raw_v1.json"
 OUT=ROOT/"pe_causal_disruptive_model_gate_v1.json"
 def main():
- assert not OUT.exists()
+ frozen_preexisting = OUT.exists()
  consumed=json.loads(CONSUMER.read_text())
  models=json.loads(RAW.read_text())
  data={c["case_id"]:c["stages"][-1] for c in consumed["cases"]}
@@ -39,7 +39,10 @@ def main():
       "method_plan_sha256":hashlib.sha256(CONSUMER.read_bytes()).hexdigest(),
       "cases":report,"model_conflict_count":count,"admitted_model_outputs":0,
       "production_activations":0,"cutover_eligible":False}
- OUT.write_text(json.dumps(out,sort_keys=True,ensure_ascii=False,indent=2)+"\n")
+ if frozen_preexisting:
+  assert json.loads(OUT.read_text())==out, 'FROZEN_ARTIFACT_DRIFT'
+ else:
+  OUT.write_text(json.dumps(out,sort_keys=True,ensure_ascii=False,indent=2)+"\n")
  print(json.dumps({"model_conflicts_blocked":count,"positive_fixture":"PASS",
  "raw_sha256":hashlib.sha256(OUT.read_bytes()).hexdigest()}))
 if __name__=="__main__":main()
