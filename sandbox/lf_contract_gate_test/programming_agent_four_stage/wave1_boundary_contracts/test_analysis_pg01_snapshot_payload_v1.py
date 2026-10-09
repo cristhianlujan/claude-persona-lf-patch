@@ -56,6 +56,24 @@ s=fixture()
 assert v.validate_programming_snapshot_payload_v1(s)=={
     "state":"PASS","scopes":2,"fronts":2,"matrix_pairs":2,"ready_scopes":1}
 
+# A9 must derive the matrix from bidirectional canonical A7 links, not copy
+# a fixture or treat the absence of a matrix as a ready admission.
+without_matrix=copy.deepcopy(s)
+without_matrix["scope_front_matrix"]=[]
+matrix=v.assemble_scope_front_matrix_v1(without_matrix)
+assert matrix==s["scope_front_matrix"]
+assert without_matrix["scope_front_matrix"]==[]  # append-only input is untouched
+bad_front=copy.deepcopy(without_matrix)
+bad_front["material_front_coverage"]["material_fronts"][0]["scope_refs"]=["S2"]
+try: v.assemble_scope_front_matrix_v1(bad_front)
+except v.ContractError as e: assert str(e)=="SNAPSHOT_FRONT_SCOPE_PARITY"
+else: raise AssertionError("A9 accepted contradictory front ownership")
+bad_abbrev=copy.deepcopy(without_matrix)
+bad_abbrev["material_front_coverage"]["fronts"]=bad_abbrev["material_front_coverage"].pop("material_fronts")
+try: v.assemble_scope_front_matrix_v1(bad_abbrev)
+except v.ContractError as e: assert str(e)=="SNAPSHOT_CANONICAL_A7_REQUIRED"
+else: raise AssertionError("A9 invented canonical provenance from abbreviated front")
+
 tests=[
   ("SNAPSHOT_PAYLOAD_MATRIX_REQUIRED",lambda x:x.update(scope_front_matrix=[])),
   ("SNAPSHOT_MATRIX_INCOMPLETE",lambda x:x["scope_front_matrix"].pop()),
@@ -76,5 +94,5 @@ for code,mutate in tests:
     variant=copy.deepcopy(s)
     mutate(variant)
     rejected(variant,code)
-print("PASS_ANALYSIS_PG01_SNAPSHOT_PAYLOAD positive=1 negative="+str(len(tests))+
+print("PASS_ANALYSIS_PG01_SNAPSHOT_PAYLOAD positive=1 matrix_assembler_positive=1 matrix_assembler_negatives=2 negative="+str(len(tests))+
       " evidence_tier=DETERMINISTIC_PAYLOAD_VALIDATION pg01_runtime_verified=false")
