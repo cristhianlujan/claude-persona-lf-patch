@@ -142,9 +142,24 @@
     "llama_required": false,
     "execution_architecture": "LF_PROFILE_EXECUTION_CONTRACT_V1: GPT_NATIVE | CLAUDE_NATIVE | REMOTE_API",
     "current_execution_mode": "GPT_NATIVE",
-    "openai_api_key_required": false
+    "openai_api_key_required": false,
+    "independent_assurance_subject_architecture": {
+      "target": "CONTRACT_DRIVEN_ANY_SUBJECT",
+      "subject_type_whitelist": false,
+      "rollback_probe": "PASS",
+      "positive_live_subject_types": [
+        "IG_SCREEN_GRAPH",
+        "IG_SPEC_TRAVERSAL_PER_RUN"
+      ],
+      "negative_cases": [
+        "receipt_subject_mismatch",
+        "producer_equals_reviewer",
+        "empty_required_dimensions"
+      ],
+      "persistent_db_change": false
+    }
   },
-  "closure": "IMPLEMENTATION_IN_EXECUTION; FULL_BEHAVIOR BENCHMARK PASS; PE10_C3 BLOCKED BECAUSE LIVE INDEPENDENT_ASSURANCE 1.0.1 DOES NOT SUPPORT PROFILE_CANDIDATE; CUTOVER NOT ADMITTED",
+  "closure": "IMPLEMENTATION_IN_EXECUTION; FULL_BEHAVIOR BENCHMARK PASS; GENERIC INDEPENDENT_ASSURANCE SUBJECT CONTRACT V3 PROVEN IN ROLLBACK; PE10_C3 WAITS FOR GOVERNED MATERIALIZATION/QUALIFICATION OF THE EXISTING REVIEW STACK; CUTOVER NOT ADMITTED",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
     "unit_count": 13,
@@ -182,7 +197,7 @@
         "PE10_C2B"
       ],
       "current_checkpoint": "PE10_C3",
-      "blocker_code": "INDEPENDENT_ASSURANCE_PROFILE_SUBJECT_UNSUPPORTED",
+      "blocker_code": "INDEPENDENT_ASSURANCE_GENERIC_SUBJECT_RUNTIME_NOT_MATERIALIZED",
       "full_behavior_summary": {
         "benchmark_status": "BENCHMARK_PASS",
         "case_count": 21,
@@ -200,7 +215,8 @@
         "critical_regressions": 0,
         "false_pass": "6 -> 0",
         "cost_latency_within_budget": true
-      }
+      },
+      "blocker_detail": "Name whitelist design repaired at contract level. V3 generic subject envelope passed rollback live probe and local self-test; live canonical review operation/RPC generalization still requires governed materialization and qualification before C3 can execute."
     }
   }
 }
