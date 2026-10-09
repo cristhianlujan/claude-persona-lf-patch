@@ -33,4 +33,67 @@ begin
  end;
 end $unauthorized$;
 reset role;
+
+-- I7: role membership is TEST-ONLY and rolled back with this transaction.
+grant lf_runtime_readback_oidc_writer to postgres with set true;
+set local role lf_runtime_readback_oidc_writer;
+do $positive$
+declare id bigint; h text:=repeat('a',40); d text:=repeat('b',64);
+ declare_claims jsonb;
+begin
+ declare_claims:=jsonb_build_object('repository','cristhianlujan/claude-persona-lf-patch','repository_id','1244397752',
+  'ref','refs/heads/main','event_name','workflow_dispatch',
+  'workflow_ref','cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-runtime-independent-readback-dispatch.yml@refs/heads/main',
+  'job_workflow_ref','cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-runtime-independent-readback.yml@refs/heads/main',
+  'run_id','12345678','run_attempt','1');
+ insert into private.lf_runtime_readback_oidc_receipts
+  (execution_id,exact_head,release_path,runtime_sha,manifest_digest,receipt,claims,
+   workflow_run_id,workflow_run_attempt,token_sha256)
+ values ('EXEC-D7-positive',h,'/opt/lf-profile-runtime-api/releases/'||h,h,d,
+  jsonb_build_object('exact_head',h,'source_sha',h,'runtime_sha',h,'manifest_matches',true,
+   'process_release_matches',true,'health_ok',true,'files_verified',true),
+  declare_claims,'12345678','1',repeat('c',64))
+ returning receipt_id into id;
+ if id is null then raise exception 'I7_POSITIVE_RETURNING_MISSING'; end if;
+ raise notice 'I7_POSITIVE_RETURNING_OK receipt_id=%',id;
+ begin
+  insert into private.lf_runtime_readback_oidc_receipts
+  (execution_id,exact_head,release_path,runtime_sha,manifest_digest,receipt,claims,
+   workflow_run_id,workflow_run_attempt,token_sha256)
+  values('EXEC-D7-duplicate',h,'/opt/lf-profile-runtime-api/releases/'||h,h,repeat('e',64),
+   jsonb_build_object('exact_head',h,'runtime_sha',h,'release_path','/opt/lf-profile-runtime-api/releases/'||h),
+   declare_claims,'12345678','1',repeat('d',64));
+  raise exception 'I7_DUPLICATE_ACCEPTED';
+ exception when unique_violation then
+  raise notice 'I7_DUPLICATE_REJECTED';
+ end;
+ begin
+  insert into private.lf_runtime_readback_oidc_receipts
+  (execution_id,exact_head,release_path,runtime_sha,manifest_digest,receipt,claims,
+   workflow_run_id,workflow_run_attempt,token_sha256)
+  values('EXEC-D7-invalid',h,'/opt/lf-profile-runtime-api/releases/'||h,h,d,
+   jsonb_build_object('exact_head',h,'runtime_sha',h,'release_path','/opt/lf-profile-runtime-api/releases/'||h),
+   jsonb_set(declare_claims,'{event_name}','"push"'::jsonb),'12345679','1',repeat('e',64));
+  raise exception 'I7_INVALID_CLAIM_ACCEPTED';
+ exception when insufficient_privilege or check_violation then
+  raise notice 'I7_RLS_CLAIM_REJECTED';
+ end;
+end $positive$;
+reset role;
+-- Positive binding is checked with source-aligned fixture and an authenticated row.
+do $binding_test$
+declare h text:=repeat('a',40); v bigint; p jsonb; verdict jsonb;
+begin
+ select receipt_id into v from private.lf_runtime_readback_oidc_receipts where workflow_run_id='12345678';
+ p:=jsonb_build_object('execution_id','EXEC-D7-positive','exact_head',h,'source_revision',h,
+ 'runtime_sha',h,'receipt_sha',h,'attestation_ref','attestation:trusted:'||repeat('f',64),
+ 'release_path','/opt/lf-profile-runtime-api/releases/'||h,'previous_release_path','/opt/lf-profile-runtime-api/releases/old',
+ 'release_manifest_matches',true,'health_status','HEALTHY','service_active_after',true,
+ 'changed_paths',jsonb_build_array('services/profile_runtime_api/worker.py'),'runtime_code_delta_count',1,
+ 'worker_only_delta',true,'restart_unit','lf-profile-runtime-queue-worker','mitigation_action','PRESERVE',
+ 'next_gate','POST_DEPLOY_WORKER_QUEUE_REAL_JOB_CANARY','attestation',jsonb_build_object('receipt_id',v));
+ verdict:=public.lf_runtime_impl_deploy_verification_binding_v1(p);
+ if verdict->>'decision' <> 'VERIFICATION_VERIFIED' then raise exception 'I7_BINDING_NOT_VERIFIED:%',verdict; end if;
+ raise notice 'I7_BINDING_VERIFIED';
+end $binding_test$;
 rollback;
