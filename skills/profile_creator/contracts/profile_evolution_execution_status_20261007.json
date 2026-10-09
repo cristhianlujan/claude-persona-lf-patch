@@ -171,14 +171,14 @@
       "persistent_change": false
     }
   },
-  "closure": "IMPLEMENTATION_IN_EXECUTION; FULL_BEHAVIOR BENCHMARK PASS; INDEPENDENT_ASSURANCE V3 GENERIC RUNTIME CANDIDATE ROLLBACK-QUALIFIED; PE10_C3 WAITS ONLY FOR GOVERNED PUBLICATION/REQUALIFICATION; CUTOVER NOT ADMITTED",
+  "closure": "REARCHITECTURE_IN_EXECUTION; V2 CORE COMPONENTS IMPLEMENTED/UNIT_TESTED; CUTOVER BLOCKED UNTIL REAL EXPERT-TASK A/B/C/D BENCHMARK + INDEPENDENT ASSURANCE + ADMISSION",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
-    "unit_count": 13,
-    "checkpoint_count": 57,
-    "required_checkpoint_count": 54,
+    "unit_count": 18,
+    "checkpoint_count": 79,
+    "required_checkpoint_count": 76,
     "required_terminal_count": 49,
-    "required_progress_pct": 90.7,
+    "required_progress_pct": 64.5,
     "done_checkpoint_count": 49,
     "not_applicable_checkpoint_count": 3,
     "open_blocker_count": 1
@@ -230,5 +230,19 @@
       },
       "blocker_detail": "Generic any-subject contract and full runtime candidate passed live transactional rollback. Remaining work is governed publication: formal Git migration -> merge -> exact apply -> operation requalification -> capability current promotion -> independent review."
     }
+  },
+  "repair_audit_rearchitecture": {
+    "decision": "REARCHITECT_PARTIALLY",
+    "implemented_candidate_components": [
+      "PROFILE_ASSESSMENT_V2",
+      "METHOD_PACK_REGISTRY_V2",
+      "CAPABILITY_SELECTOR_V3",
+      "PROFILE_LEARNING_ADMISSION_V2",
+      "PROFILE_EVOLUTION_ORCHESTRATOR_V2",
+      "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1"
+    ],
+    "architecture_control_score_interpretation": "NOT_EXPERTISE_EVIDENCE",
+    "current_full_behavior_score_0_971429": "ARCHITECTURE_AND_CANDIDATE_CONTRACT_CONTROL_ONLY",
+    "cutover_new_required_gate": "PE10E EXPERT_TASK_PERFORMANCE_E2E"
   }
 }
