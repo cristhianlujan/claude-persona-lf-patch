@@ -486,12 +486,26 @@ jobs:
           REPO: ${{ steps.admission.outputs.repository }}
           PR: ${{ steps.admission.outputs.pr_number }}
           EXPECTED_HEAD: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
+          PREVIOUS_HEAD: ${{ steps.source.outputs.head_sha }}
         shell: bash
         run: |
           set -euo pipefail
           for _ in $(seq 1 90); do
-            pr_head="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')"
-            [ "$pr_head" = "$EXPECTED_HEAD" ] || { echo "FAIL_TRAIN_HEAD_MOVED expected=$EXPECTED_HEAD observed=$pr_head"; exit 2; }
+            # A retimestamp can advance the Git ref before the PR API readback catches up.
+            # Accept only the known previous head briefly, never an unrelated revision.
+            for propagation_attempt in $(seq 1 10); do
+              pr_head="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')"
+              if [ "$pr_head" = "$EXPECTED_HEAD" ]; then break; fi
+              if [ "$pr_head" != "$PREVIOUS_HEAD" ]; then
+                echo "FAIL_TRAIN_HEAD_MOVED expected=$EXPECTED_HEAD previous=$PREVIOUS_HEAD observed=$pr_head"
+                exit 2
+              fi
+              if [ "$propagation_attempt" -eq 10 ]; then
+                echo "FAIL_TRAIN_HEAD_PROPAGATION_TIMEOUT expected=$EXPECTED_HEAD previous=$PREVIOUS_HEAD"
+                exit 2
+              fi
+              sleep 2
+            done
             checks="$(gh api --paginate "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"
             bad="$(printf '%s' "$checks" | jq '[.check_runs[]? | select(.name=="lf-independent-change-admission" or .name=="ig-runtime-candidate-judge") | select(.conclusion!=null and (.conclusion!="success" and .conclusion!="skipped" and .conclusion!="neutral"))] | length')"
             [ "$bad" = "0" ] || { echo "FAIL_TRAIN_PASE_CHECK"; exit 2; }
