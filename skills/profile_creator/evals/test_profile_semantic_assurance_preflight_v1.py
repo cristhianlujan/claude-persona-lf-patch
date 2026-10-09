@@ -8,8 +8,8 @@ sys.path.insert(0,str(ROOT/"skills/profile_creator/evals"))
 from profile_semantic_assurance_preflight_v1 import preflight_independent_assurance
 
 def main():
- raw=json.loads((ROOT/"pe_causal_blind_quality_judge_raw_v1.json").read_text())
- score=json.loads((ROOT/"pe_causal_blind_quality_judge_score_v2.json").read_text())
+ raw=json.loads((ROOT/"skills/profile_creator/evals/results/pe_causal_blind_quality_judge_raw_v1.json").read_text())
+ score=json.loads((ROOT/"skills/profile_creator/evals/results/pe_causal_blind_quality_judge_score_v2.json").read_text())
  assert score["status"]=="JUDGE_CALIBRATION_FAIL"
  assert raw["same_underlying_model_as_producer"] is True
  producer={"execution_id":"PE-REAL-PRODUCER", "model_weights_digest":None,
