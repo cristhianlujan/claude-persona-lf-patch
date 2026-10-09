@@ -405,9 +405,10 @@ def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = Non
       "screen_count": len(records), "cohorts": records,
       "authoritative_readback": {"before": before, "after": after,
                                   "unchanged": unchanged},
-      "unmet": ["REAL_CURATOR_CANDIDATE_RECEIPT",
-                "REAL_VALIDATOR_CANDIDATE_RECEIPT",
-                "5_13_VS_VNEXT_T_EQUIV_PER_COHORT"],
+      "unmet": [] if complete else ["FULL_M9_3_SEVEN_COHORTS_NOT_VERIFIED"],
+      "shadow_decisional": False,
+      "production_authorized": False,
+      "promotion_authorized": False,
       "semantic_holds": [x["cohort_code"] for x in records if x["t_equiv"].get("status")=="CLASSIFIED_HOLD"],
       "test_passed": complete, "test_exit_code": 0 if complete else 1,
       "semantic_authority_bound": complete}
