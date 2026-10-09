@@ -1,6 +1,6 @@
 {
   "schema": "PROFILE_CREATOR_SEMANTIC_RUNNER_AVAILABILITY_V1",
-  "status": "BLOCKED",
+  "status": "RUNTIME_IMPLEMENTED_CONFIGURATION_BLOCKED",
   "producer": "PROFILE_CREATOR",
   "required_execution_surface": "GOVERNED_PROFILE_CREATOR_WORKER",
   "observed_surfaces": {
@@ -8,12 +8,23 @@
     "profile_runtime_api": "EXECUTES_REGISTERED_PROFILES_NOT_PROFILE_CREATOR",
     "local_llama_server": "AVAILABLE_BUT_DIRECT_USE_FORBIDDEN_BY_CONTRACT"
   },
-  "blocking_code": "GOVERNED_PROFILE_CREATOR_WORKER_CALLABLE_UNAVAILABLE",
-  "required_action": "Expose or reuse one governed callable execution surface for the existing Profile Creator worker that emits fresh hash-bound raw output receipts without profile-source writes or activation.",
+  "blocking_code": "OPENAI_PROFILE_RUNTIME_CREDENTIAL_MISSING",
+  "required_action": "Configure governed OpenAI GPT runtime credentials for live benchmark execution, or provide another already-governed GPT execution credential binding. Do not use Llama as a substitute.",
   "bypasses_rejected": [
     "DIRECT_LLAMA_SERVER",
     "SYNTHETIC_OUTPUT_GENERATOR",
     "PROFILE_RUNTIME_AS_IMPLICIT_PROFILE_CREATOR"
   ],
-  "runtime_mutation_performed": false
+  "runtime_mutation_performed": false,
+  "current_execution_surface": "OPENAI_RESPONSES_GPT_RUNTIME",
+  "current_executor_class": "GPT",
+  "runtime_adapter": "openai-responses-v1",
+  "runtime_source_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/openai_responses_runtime.py",
+  "provider_tests": "OPENAI_PROFILE_RUNTIME_TESTS_PASS 10/10",
+  "deployed_runtime_source_present": true,
+  "llama_required": false,
+  "credential_state": {
+    "OPENAI_API_KEY": "ABSENT_IN_LF_PROFILE_RUNTIME_SERVICE",
+    "OPENAI_PROFILE_RUNTIME_VERIFY_API_KEY": "ABSENT_IN_LF_PROFILE_RUNTIME_SERVICE"
+  }
 }
