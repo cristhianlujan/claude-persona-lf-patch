@@ -107,21 +107,24 @@
     },
     {
       "id": "E10",
-      "status": "BLOCKED_ON_PE10P_FULL_BEHAVIOR",
+      "status": "BLOCKED_ON_PE10P_C4_GPT_CREDENTIAL",
       "evidence": [
         "PEB-R2 decision/composition RAW frozen before oracle open; 24 cases / 8 strata / 8 holdout",
         "decision benchmark score baseline=0.25 candidate=1.00",
         "primary direction UP; holdout UP; paired CI95 [0.583333,0.916667]",
         "critical regressions=0; false PASS 6 -> 0; preservation=true; cost/latency within budget",
         "decision benchmark cutover_eligible=false; FULL_PROFILE_EVOLUTION_BEHAVIOR still required",
-        "PE10_C1 DONE; PE10_C2-C7 pending"
+        "PE10_C1 DONE; PE10_C2-C7 pending",
+        "GPT runtime reused; Llama not required",
+        "OpenAI provider runtime deterministic tests 10/10",
+        "PE10P C1-C3 DONE with fresh evidence"
       ],
       "blockers": [
-        "PE10P_C3: GOVENED_PROFILE_CREATOR_WORKER callable unavailable",
+        "PE10P_C4: OPENAI_PROFILE_RUNTIME_CREDENTIAL_MISSING",
         "FULL_PROFILE_EVOLUTION_BEHAVIOR not executed/admitted",
         "0 PROFILE_EVOLUTION_CUTOVER_ADMITTED events",
         "25 v0.1 updater executions remain IN_PROGRESS",
-        "PROFILE_ASSESSMENT and METHOD_PACK_REGISTRY are not live-current; CAPABILITY_SELECTOR live-current remains 1.0.0"
+        "required candidate capabilities are not yet all live-current"
       ]
     }
   ],
@@ -135,17 +138,20 @@
     "production_changed": false,
     "updater_authority_changed": false,
     "decision_benchmark_scope": "DECISION_POLICY_AND_COMPOSITION_ONLY_NOT_CUTOVER_ELIGIBLE",
-    "semantic_runner_contract": "PASS_SELF_TEST_POSITIVE_1_NEGATIVE_5_DIRECT_MODEL_BYPASS_BLOCKED"
+    "semantic_runner_contract": "PASS_SELF_TEST_POSITIVE_1_NEGATIVE_5_DIRECT_MODEL_BYPASS_BLOCKED",
+    "gpt_runtime": "DEPLOYED_EXACT_SOURCE_AND_PROVIDER_TESTS_10_OF_10",
+    "llama_required": false,
+    "gpt_live_execution": "BLOCKED_CREDENTIAL_MISSING"
   },
-  "closure": "IMPLEMENTATION_IN_EXECUTION; FULL_BEHAVIOR_BLOCKED_ON_GOVERNED_PROFILE_CREATOR_WORKER; OPERATIONAL_CUTOVER_NOT_ADMITTED",
+  "closure": "IMPLEMENTATION_IN_EXECUTION; PE10P_C4 BLOCKED_ONLY_ON_GOVERNED_GPT_RUNTIME_CREDENTIAL; OPERATIONAL_CUTOVER_NOT_ADMITTED",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
     "unit_count": 13,
     "checkpoint_count": 56,
     "required_checkpoint_count": 53,
-    "required_terminal_count": 44,
-    "required_progress_pct": 83,
-    "done_checkpoint_count": 44,
+    "required_terminal_count": 45,
+    "required_progress_pct": 84.9,
+    "done_checkpoint_count": 45,
     "not_applicable_checkpoint_count": 3,
     "open_blocker_count": 1
   },
@@ -157,9 +163,17 @@
     },
     "PE10P": {
       "status": "IN_PROGRESS_BLOCKED",
-      "checkpoints": "2/5",
-      "current_checkpoint": "PE10P_C3",
-      "blocker_code": "GOVERNED_PROFILE_CREATOR_WORKER_CALLABLE_UNAVAILABLE"
+      "checkpoints": "3/5",
+      "current_checkpoint": "PE10P_C4",
+      "blocker_code": "OPENAI_PROFILE_RUNTIME_CREDENTIAL_MISSING",
+      "executor": "GPT via existing openai-responses-v1 runtime",
+      "llama_required": false,
+      "evidence": [
+        "openai-responses-v1 deployed exact-source blob 5defade484090b3942496f6a87fd10b7fb706029",
+        "OPENAI_PROFILE_RUNTIME_TESTS_PASS 10/10",
+        "service environment OPENAI_API_KEY absent",
+        "service environment OPENAI_PROFILE_RUNTIME_VERIFY_API_KEY absent"
+      ]
     },
     "PE10": {
       "status": "BACKLOG_WAITING_PE10P",
