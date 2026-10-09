@@ -14,6 +14,8 @@ The scorer preserves backward-compatible `verdict=PASS` **only** for that
 evidence tier and always emits `operational_integration_admissible=false`.
 Never promote a replay PASS into analysis-stage operational confidence.
 
+A14 no longer self-reports zero false READY: the producer emits null and the independent oracle scorer measures that metric. It also distinguishes source references enumerated in the fixture from real external source accesses (zero in this replay). Neither reference counts nor microsecond replay time are presented as model research performance.
+
 The A14 replay now fails closed when (1) the two handoff digest pairs are
 missing, malformed or mismatched, (2) material-front references duplicate,
 point outside known scopes or contradict their blocking effect, or (3) a
