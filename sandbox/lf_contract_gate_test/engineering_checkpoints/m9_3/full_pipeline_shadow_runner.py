@@ -33,6 +33,46 @@ def digest(v: object) -> str:
         separators=(",", ":")).encode()).hexdigest()
 
 
+def classify_source_delta(before: object, after: object) -> dict:
+    """Classify differences between frozen 5.13 and current vNext source
+    receipts without silently equating their input snapshots.
+    Explicit version-change observations NEVER authorize promotion.
+    """
+    require(isinstance(before, list) and isinstance(after, list),
+            "SOURCE_MANIFEST_PROVENANCE_MISSING")
+    def index(rows: list) -> dict:
+        out = {}
+        for row in rows:
+            require(isinstance(row, dict) and isinstance(row.get("ref"), dict),
+                    "SOURCE_RECEIPT_MALFORMED")
+            key = json.dumps(row["ref"], sort_keys=True, separators=(",", ":"))
+            require(key not in out, "DUPLICATE_SOURCE_REFERENCE")
+            out[key] = row
+        return out
+    left, right = index(before), index(after)
+    kinds, unknown = set(), set()
+    details = []
+    recognized = {"CONTRACT", "SCREEN_CANONICAL_GRAPH", "CURRENT_VISUAL_ARTIFACT"}
+    for key in sorted(set(left) | set(right)):
+        a, b = left.get(key), right.get(key)
+        if a is not None and b is not None and a.get("observed_sha256") == b.get("observed_sha256"):
+            continue
+        ref = (a or b)["ref"]
+        kind = ref.get("kind", "UNKNOWN")
+        kinds.add(kind)
+        if kind not in recognized:
+            unknown.add(kind)
+        details.append({"kind": kind, "change": "NEW" if a is None
+                        else "REMOVED" if b is None else "OBSERVED_HASH_CHANGED",
+                        "previous_sha256": a.get("observed_sha256") if a else None,
+                        "candidate_sha256": b.get("observed_sha256") if b else None})
+    return {"status": "BLOCKED_UNCLASSIFIED_SOURCE_DELTA" if unknown else
+              "CLASSIFIED_VERSION_SOURCE_DELTA",
+            "change_count": len(details), "changed_kinds": sorted(kinds),
+            "unknown_kinds": sorted(unknown), "changed_receipts": details,
+            "same_snapshot": len(details) == 0}
+
+
 def require(ok: bool, message: str) -> None:
     if not ok:
         raise ValueError(message)
@@ -193,6 +233,8 @@ def capture_rollback_one(row: dict) -> dict:
       SELECT jsonb_build_object(
         'baseline_run_id',(SELECT id FROM m93_baseline),
         'baseline_revision','5.13',
+        'baseline_manifest',(SELECT r.source_manifest FROM programacion.input_readiness_runs r WHERE r.id=(SELECT id FROM m93_baseline)),
+        'candidate_manifest',(SELECT r.source_manifest FROM programacion.input_readiness_runs r WHERE r.id=(SELECT (j->>'run_id')::bigint FROM m93_curator WHERE jsonb_typeof(j->'run_id')='number')),
         'source_snapshot_match',((SELECT source_snapshot_sha256 FROM m93_baseline) IS NOT NULL AND
           (SELECT source_snapshot_sha256 FROM m93_baseline) =
           (SELECT r.source_snapshot_sha256 FROM programacion.input_readiness_runs r
@@ -272,6 +314,8 @@ def capture_rollback_one(row: dict) -> dict:
         require(isinstance(baseline,list) and isinstance(candidate,list) and
                 len(baseline)==47 and len(candidate)==47,
                 "TEQUIV_BASELINE_OR_CANDIDATE_NOT_47")
+        delta=classify_source_delta(result.get('baseline_manifest'),result.get('candidate_manifest'))
+        out['source_delta']=delta
         eq=module.evaluate({"families":baseline},{"families":candidate},
              {"schema_version":"lf-control-equivalence-policy/v1",
               "consumer_ref":"IG_CURATOR_VALIDATOR_REFACTOR_V2:M9.3",
@@ -280,7 +324,7 @@ def capture_rollback_one(row: dict) -> dict:
            "capability_code":"CONTROL_EQUIVALENCE_JUDGE",
            "baseline":"5.13","candidate":"VNEXT",
            "status":"PASS" if eq.get("result")=="PASS_EQUIVALENT" and
-             result.get("source_snapshot_match") is True else "BLOCKED",
+             delta.get("status")=="CLASSIFIED_VERSION_SOURCE_DELTA" else "BLOCKED",
            "difference_count":eq.get("divergence_count"),
            "result":eq.get("result"),
            "evidence_sha256":digest(eq)}
@@ -362,6 +406,16 @@ def self_test() -> int:
         require(False, "NEGATIVE_SHOULD_BLOCK")
     except ValueError as exc:
         require(str(exc) == "NEGATIVE_SHOULD_BLOCK", "NEGATIVE_NOT_TYPED")
+    classified=classify_source_delta(
+        [{"ref":{"kind":"CONTRACT"},"observed_sha256":"old"}],
+        [{"ref":{"kind":"CONTRACT"},"observed_sha256":"new"}])
+    require(classified["status"]=="CLASSIFIED_VERSION_SOURCE_DELTA"
+            and classified["change_count"]==1, "KNOWN_SOURCE_DELTA_NOT_CLASSIFIED")
+    blocked=classify_source_delta(
+        [{"ref":{"kind":"UNKNOWN_SEMANTIC_SOURCE"},"observed_sha256":"old"}],
+        [{"ref":{"kind":"UNKNOWN_SEMANTIC_SOURCE"},"observed_sha256":"new"}])
+    require(blocked["status"]=="BLOCKED_UNCLASSIFIED_SOURCE_DELTA",
+            "UNKNOWN_SOURCE_DELTA_NOT_BLOCKED")
     print(json.dumps({"test_code": CODE, "self_test": "PASS",
        "negative": "PASS", "live_pipeline_pass": False}))
     return 0
