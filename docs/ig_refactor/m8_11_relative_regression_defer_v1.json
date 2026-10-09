@@ -1,0 +1,53 @@
+{
+  "schema_version": "IG_M8_11_RELATIVE_REGRESSION_DEFERRAL_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M8.11",
+  "owner": "SUPER_ADMIN",
+  "decision": "DEFER_RELATIVE_P95_TO_POST_DEPLOY_BASELINE",
+  "decision_evidence": "supabase://programacion.engineering_work_checkpoints/M8.10/BENCH_VIA_TPERF; owner-decision://2026-10-09",
+  "reason": "M8.10 formal exact-source benchmark deferred by owner until after initial production release; no authoritative comparable benchmark or numeric relative regression tolerance exists. Negative test M8.11 exit=1 demonstrates existing M8.10 SLO gate rejects >150000ms but does not reject an injected +25% relative slowdown under the hard SLO.",
+  "lifecycle": "OPEN_DEFERRED_NOT_PASSED",
+  "scope": "ONLY_M8_11_REGRESSION_GATE_NEGATIVE",
+  "preserved_pre_release_control": {
+    "checkpoint": "M8.10/SLO_OVER_LIMIT_NEGATIVE",
+    "assertion": "PASSED",
+    "hard_limit_ms": 150000,
+    "negative_gate_must_remain": "ACTIVE"
+  },
+  "current_checkpoint_disposition": {
+    "checkpoint": "M8.11/REGRESSION_GATE_NEGATIVE",
+    "allowed": "NOT_APPLICABLE_WITH_OWNER_AUTHORITY",
+    "forbidden": [
+      "DONE_WITHOUT_REAL_TEST_PASS",
+      "SYNTHETIC_PASS",
+      "RELATIVE_THRESHOLD_GUESSED",
+      "CONTROL_DISABLED_SYSTEMWIDE"
+    ]
+  },
+  "transfer": {
+    "trigger": "AFTER_INITIAL_PRODUCTION_DEPLOYMENT_AND_AUTHORIZED_COMPARABLE_BASELINE",
+    "obligation_code": "IG_M8_11_RELATIVE_P95_REGRESSION_GATE",
+    "owner": "SUPER_ADMIN",
+    "status": "OPEN_DEFERRED",
+    "required_evidence": [
+      "MEASURED_P95_SAME_GOVERNED_COHORT_AND_RELEASE_SHA",
+      "EXACT_SOURCE_BASELINE_CURRENTNESS",
+      "NUMERIC_TOLERANCE_APPROVED_BY_AUTHORITY",
+      "GATE_RUNTIME_NEGATIVE_AND_POSITIVE_REAL_EXECUTION",
+      "R16_GIT_MERGE_LEDGER_DB_READBACK"
+    ],
+    "failure_semantics": "UNTIL_VERIFIED_NOT_COMPLETED"
+  },
+  "release_safety": {
+    "no_production_activation": true,
+    "no_runtime_change": true,
+    "no_threshold_mutation": true
+  },
+  "verification": {
+    "check_negative_test_result": "REAL_EXIT_CODE_1_EXPECTED_AS_DIAGNOSTIC_NOT_PASS",
+    "check_owner_decision": "M8_10_DEFERRED_CHECKPOINTS_WITH_OWNER_DECISION",
+    "check_abs_slo": "M8_10_NEGATIVE_DONE_WITH_ASSERTION",
+    "check_deferred_metadata": "OPEN_DEFERRED",
+    "check_terminal": "NO_CLAIM_RELATIVE_GATE_PASSED"
+  }
+}
