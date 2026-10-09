@@ -103,7 +103,7 @@ insert into public.lf_capability_registry(
 ) values (
   'INDEPENDENT_ASSURANCE','Independent Assurance','TRANSVERSAL','SUPER_ADMIN','ACTIVE',
   'Independent Assurance capability. Current behavior is selected by lf_capability_current; candidate v3 generalizes subject review by contract through the existing REVISION_INDEPENDIENTE_ESTRATEGIA_LF operation and judges without subject-name whitelists.',
-  'CHATGPT-T-INDEP-PAULO-035-20261002','CHATGPT-T-INDEP-PAULO-035-20261002',true,'ORCHESTRATOR_EXECUTION_GUARD_V1'
+  'EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001','EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001',true,'ORCHESTRATOR_EXECUTION_GUARD_V1'
 )
 on conflict(capability_code) do update set
   capability_name=excluded.capability_name,
@@ -114,7 +114,7 @@ on conflict(capability_code) do update set
   entry_guard_required=true,
   entry_guard_code='ORCHESTRATOR_EXECUTION_GUARD_V1',
   updated_at=clock_timestamp(),
-  updated_by_execution_id='CHATGPT-T-INDEP-PAULO-035-20261002';
+  updated_by_execution_id='EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001';
 
 do $manifest$
 declare
@@ -209,7 +209,7 @@ begin
     'sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/independent_assurance_generic_subject_runtime_v3_candidate.sql',
     'sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/README.md',
     'sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/validate_independent_review_subject_envelope_v3.py',
-    'CHATGPT-T-INDEP-PAULO-035-20261002'
+    'EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001'
   ) on conflict(capability_code,version) do nothing;
 
   if not exists(
@@ -231,7 +231,7 @@ set applies_to_asset_type=null,
     notes=concat_ws(E'\n',nullif(notes,''),
       'T-INDEP v2: existing operation generalized in place for exact subject-aware review. STRATEGY route remains backward-compatible specialization; new consumers enter through INDEPENDENT_ASSURANCE capability binding.'),
     updated_at=clock_timestamp(),
-    updated_by_execution_id='CHATGPT-T-INDEP-PAULO-035-20261002'
+    updated_by_execution_id='EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001'
 where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF';
 
 update public.lf_operation_contracts
@@ -254,7 +254,7 @@ set required_before_write=jsonb_build_array(
     ),
     required_after_write=jsonb_build_array('durable_review_receipt','evidence_refs','authority_readback','next_gate'),
     updated_at=clock_timestamp(),
-    updated_by_execution_id='CHATGPT-T-INDEP-PAULO-035-20261002'
+    updated_by_execution_id='EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001'
 where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF'
   and status='ACTIVE_ENFORCEMENT';
 
@@ -285,7 +285,7 @@ set purpose=case step_id
     when 'report_output' then jsonb_build_array('review_receipt','evidence_refs','authority_readback','next_gate')
     else output_payload end,
   updated_at=clock_timestamp(),
-  updated_by_execution_id='CHATGPT-T-INDEP-PAULO-035-20261002'
+  updated_by_execution_id='EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001'
 where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF'
   and step_id in ('route_bind','target_currentness','semantic_review','judge_record','reviewer_readback','report_output')
   and status='ACTIVE_ENFORCEMENT';
@@ -300,7 +300,7 @@ set required_evidence_keys=case step_id
     when 'report_output' then jsonb_build_array('review_receipt','evidence_refs','authority_readback','next_gate')
     else required_evidence_keys end,
   updated_at=clock_timestamp(),
-  updated_by_execution_id='CHATGPT-T-INDEP-PAULO-035-20261002'
+  updated_by_execution_id='EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001'
 where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF'
   and step_id in ('route_bind','target_currentness','semantic_review','judge_record','reviewer_readback','report_output')
   and status='ACTIVE_ENFORCEMENT';
@@ -324,7 +324,7 @@ set pass_if=case judge_code
     when 'JUDGE-INDEPENDENT-STRATEGY-REVIEW-REPORT-v1' then jsonb_build_array('completion_invalid')
     else fail_if end,
   updated_at=clock_timestamp(),
-  updated_by_execution_id='CHATGPT-T-INDEP-PAULO-035-20261002'
+  updated_by_execution_id='EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001'
 where operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF'
   and judge_code in (
     'JUDGE-INDEPENDENT-STRATEGY-REVIEW-ROUTE-v1',
