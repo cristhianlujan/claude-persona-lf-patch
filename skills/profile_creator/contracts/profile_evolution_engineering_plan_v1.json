@@ -983,7 +983,8 @@
         "PE10P",
         "PE5A",
         "PE8",
-        "PE9"
+        "PE9",
+        "PE10E"
       ],
       "conditional_dependency_policy": "PE9 may be NOT_APPLICABLE; it must never be silently skipped",
       "status": "BLOCKED_PENDING_FULL_BEHAVIOR",
@@ -1024,7 +1025,7 @@
         },
         {
           "checkpoint_code": "PE10_C2B",
-          "title": "Paired FULL_PROFILE_EVOLUTION_BEHAVIOR benchmark passes",
+          "title": "Candidate architecture/control benchmark passes (not expertise evidence)",
           "required": true,
           "status": "PENDING_FRESH_VALIDATION",
           "validator_code": "PROFILE_EVOLUTION_BENCHMARK_ADMISSION_V1",
@@ -1035,7 +1036,7 @@
             "primary_executor_mode": "GPT_NATIVE",
             "paired_route_policy": "SAME_EXECUTOR_MODE_FOR_BASELINE_AND_CANDIDATE"
           },
-          "pass_when": "benchmark_status=BENCHMARK_PASS and benchmark_scope=FULL_PROFILE_EVOLUTION_BEHAVIOR; independent assurance remains a separate next gate",
+          "pass_when": "legacy FULL_PROFILE_EVOLUTION_BEHAVIOR control remains useful for architecture/governance only; cutover still requires PE10E expert task benchmark",
           "failure_code": "FULL_BEHAVIOR_BENCHMARK_FAIL",
           "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_RERUN_FRESH_FULL_BEHAVIOR"
         },
@@ -1112,6 +1113,391 @@
           "resolver_policy": "FIX_OR_ACQUIRE_EVIDENCE_THEN_REVALIDATE"
         }
       ]
+    },
+    {
+      "unit_code": "PE1B",
+      "lot": "E1B",
+      "title": "Competency-grounded Profile Assessment V2",
+      "depends_on": [
+        "PE1"
+      ],
+      "status": "READY_FOR_VALIDATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE1B_C1",
+          "title": "Assessment V2 qualifies against verified task executions",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_ASSESSMENT_V2",
+          "validation_input": {
+            "qualification_mode": "FULL_SELF_TEST"
+          },
+          "pass_when": "self-test passes structural-only, unverified, specialized, expert, longitudinal and critical-regression cases",
+          "failure_code": "PROFILE_ASSESSMENT_V2_QUALIFICATION_FAIL",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE1B_C2",
+          "title": "Structural compatibility alone cannot elevate maturity",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_ASSESSMENT_V2",
+          "validation_input": {
+            "case_family": "STRUCTURAL_ONLY"
+          },
+          "pass_when": "maturity=UNDETERMINED without verified task executions",
+          "failure_code": "STRUCTURAL_PROXY_AS_MATURITY",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE1B_C3",
+          "title": "Expert classification requires transfer preservation and zero critical regressions",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_ASSESSMENT_V2",
+          "validation_input": {
+            "case_family": "EXPERT_VECTOR"
+          },
+          "pass_when": "expert is derived only when task quality+difficulty+robustness+adaptation+transfer+preservation gates pass",
+          "failure_code": "EXPERT_MATURITY_OVERATTRIBUTED",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE1B_C4",
+          "title": "Evidence optimized requires longitudinal and causal evidence",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_ASSESSMENT_V2",
+          "validation_input": {
+            "case_family": "EVIDENCE_OPTIMIZED"
+          },
+          "pass_when": "EVIDENCE_OPTIMIZED requires >=3 verified generations and verified causal confidence",
+          "failure_code": "OPTIMIZED_WITHOUT_LONGITUDINAL_CAUSAL_EVIDENCE",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE1B_C5",
+          "title": "Evolution state V2 persists competency deltas not labels alone",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_evolution_state_v2.json",
+            "must_contain": [
+              "from_competency_vector",
+              "to_competency_vector",
+              "UPWARD_TRANSITION_REQUIRES_ACTUAL_PROFILE_TASK_EXECUTION"
+            ]
+          },
+          "pass_when": "trajectory requires before/after competency vectors and actual task execution",
+          "failure_code": "COMPETENCY_TRAJECTORY_CONTRACT_MISSING",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE2B",
+      "lot": "E2B",
+      "title": "Method Registry V2 with verified preconditions and effectiveness",
+      "depends_on": [
+        "PE2",
+        "PE1B"
+      ],
+      "status": "READY_FOR_VALIDATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE2B_C1",
+          "title": "Registry V2 qualification passes",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "METHOD_PACK_REGISTRY_V2",
+          "validation_input": {
+            "qualification_mode": "FULL_TEST"
+          },
+          "pass_when": "12+ methods including gated experiments satisfy V2 contract",
+          "failure_code": "METHOD_REGISTRY_V2_FAIL",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE2B_C2",
+          "title": "Experimental research methods never auto-select",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "METHOD_PACK_REGISTRY_V2",
+          "validation_input": {
+            "assertion": "EXPERIMENTAL_NOT_ADMITTED auto_select=false"
+          },
+          "pass_when": "all experimental methods require explicit experiment permission",
+          "failure_code": "EXPERIMENTAL_METHOD_AUTOSELECT",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE2B_C3",
+          "title": "Method cost and effectiveness are observable and causal-learning ready",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "METHOD_PACK_REGISTRY_V2",
+          "validation_input": {
+            "assert_fields": [
+              "precondition_contract",
+              "cost_model",
+              "effectiveness_contract",
+              "retirement_conditions"
+            ]
+          },
+          "pass_when": "all methods expose verified preconditions, observed-cost preference, causal effectiveness and retirement contracts",
+          "failure_code": "METHOD_EFFECTIVENESS_CONTRACT_INCOMPLETE",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE2B_C4",
+          "title": "External optimization approaches remain methods not engines",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v2.json",
+            "must_contain": [
+              "external_method_names_are_inspiration_not_engines",
+              "create_parallel_engine"
+            ]
+          },
+          "pass_when": "registry forbids parallel engines for research-inspired methods",
+          "failure_code": "METHOD_ENGINE_DUPLICATION",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE3B",
+      "lot": "E3B",
+      "title": "Adaptive capability/method selection and replanning",
+      "depends_on": [
+        "PE3",
+        "PE2B"
+      ],
+      "status": "READY_FOR_VALIDATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE3B_C1",
+          "title": "Selector V3 qualification passes",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "CAPABILITY_SELECTOR_V3",
+          "validation_input": {
+            "qualification_mode": "FULL_TEST"
+          },
+          "pass_when": "verified preconditions, experiment gating and dynamic replanning tests pass",
+          "failure_code": "CAPABILITY_SELECTOR_V3_FAIL",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE3B_C2",
+          "title": "Matched signal without verified precondition cannot select method",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "CAPABILITY_SELECTOR_V3",
+          "validation_input": {
+            "case_family": "PRECONDITION_UNKNOWN"
+          },
+          "pass_when": "method rejected PRECONDITION_UNKNOWN",
+          "failure_code": "METHOD_SELECTED_WITHOUT_PRECONDITION",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE3B_C3",
+          "title": "Partial task evidence can trigger same-run replanning",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "CAPABILITY_SELECTOR_V3",
+          "validation_input": {
+            "trigger": "QUALITY_PLATEAU"
+          },
+          "pass_when": "selection_cycle increments and failed/stalled method is removed for current run",
+          "failure_code": "STATIC_ROUTING_NO_REPLAN",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE3B_C4",
+          "title": "Replanning cannot self-create persistent learning",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "CAPABILITY_SELECTOR_V3",
+          "validation_input": {
+            "assertion": "persistent_learning_authorized=false"
+          },
+          "pass_when": "replan output never promotes learning",
+          "failure_code": "REPLAN_LEARNING_AUTHORITY_LEAK",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE3B_C5",
+          "title": "Planner V2 binds competency assessment selector and expert benchmark",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EVOLUTION_PLAN_BUILDER_V2",
+          "validation_input": {
+            "qualification_mode": "FULL_TEST"
+          },
+          "pass_when": "planner requires competency evidence, adaptive loop, candidate execution and expert benchmark",
+          "failure_code": "PROFILE_EVOLUTION_PLAN_V2_FAIL",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE7B",
+      "lot": "E7B",
+      "title": "Causal transferable learning admission V2",
+      "depends_on": [
+        "PE7",
+        "PE3B"
+      ],
+      "status": "READY_FOR_VALIDATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE7B_C1",
+          "title": "Learning Admission V2 qualification passes",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_LEARNING_ADMISSION_V2",
+          "validation_input": {
+            "qualification_mode": "FULL_TEST"
+          },
+          "pass_when": "causal, transfer, holdout, negative-outcome and lifecycle cases pass",
+          "failure_code": "PROFILE_LEARNING_ADMISSION_V2_FAIL",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE7B_C2",
+          "title": "Correlation or repeated references cannot become reusable rule",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_LEARNING_ADMISSION_V2",
+          "validation_input": {
+            "case_family": "NO_CAUSAL_CONTROL"
+          },
+          "pass_when": "missing causal control/evidence returns NEEDS_MORE_EVIDENCE",
+          "failure_code": "CORRELATION_PROMOTED_AS_CAUSAL",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE7B_C3",
+          "title": "Transfer scope and failed transfers are retained",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_LEARNING_ADMISSION_V2",
+          "validation_input": {
+            "case_family": "TRANSFER"
+          },
+          "pass_when": "at least two verified target classes and failed_target_classes field are required",
+          "failure_code": "LEARNING_TRANSFER_UNPROVEN",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE7B_C4",
+          "title": "Learning pattern has expiry and retirement conditions",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_LEARNING_ADMISSION_V2",
+          "validation_input": {
+            "case_family": "LIFECYCLE"
+          },
+          "pass_when": "review_after and retirement_conditions are mandatory",
+          "failure_code": "LEARNING_PATTERN_UNBOUNDED",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        }
+      ]
+    },
+    {
+      "unit_code": "PE10E",
+      "lot": "E10E",
+      "title": "Real expert-task performance benchmark before cutover",
+      "depends_on": [
+        "PE5A",
+        "PE6",
+        "PE7B",
+        "PE10P"
+      ],
+      "status": "READY_FOR_PROTOCOL_VALIDATION",
+      "checkpoints": [
+        {
+          "checkpoint_code": "PE10E_C1",
+          "title": "Expert behavior benchmark contract requires actual four-arm profile executions",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/contracts/profile_expert_behavior_benchmark_v1.json",
+            "must_contain": [
+              "EXPERT_TASK_PERFORMANCE_E2E",
+              "A_ORIGINAL",
+              "B_UPDATER_V01",
+              "C_EVOLUTION_CURRENT",
+              "D_EVOLUTION_TARGET",
+              "contract_only_candidate_forbidden"
+            ]
+          },
+          "pass_when": "contract cannot substitute structural/document evidence for executed profile behavior",
+          "failure_code": "EXPERT_BENCHMARK_CONTRACT_INVALID",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10E_C2",
+          "title": "Expert behavior scorer qualifies against positive and hostile fixtures",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1",
+          "validation_input": {
+            "qualification_mode": "FULL_SELF_TEST"
+          },
+          "pass_when": "actual execution passes; document-only/self-review/flat-vs-current cases fail",
+          "failure_code": "EXPERT_BENCHMARK_SCORER_FAIL",
+          "resolver_policy": "FIX_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10E_C3",
+          "title": "Blind power/sample/holdout plan is frozen before semantic RAW",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+          "validation_input": {
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "skills/profile_creator/evals/profile_expert_behavior_campaign_v1.json",
+            "must_contain": [
+              "planned_case_count",
+              "power_analysis_ref",
+              "holdout_manifest_ref",
+              "thresholds_frozen_before_raw"
+            ]
+          },
+          "pass_when": "case count, strata, power assumptions, holdout and thresholds are frozen before generation",
+          "failure_code": "EXPERT_BENCHMARK_CAMPAIGN_NOT_FROZEN",
+          "resolver_policy": "DESIGN_FREEZE_THEN_REVALIDATE"
+        },
+        {
+          "checkpoint_code": "PE10E_C4",
+          "title": "A/B/C/D executed task benchmark demonstrates material expert uplift",
+          "required": true,
+          "status": "PENDING_FRESH_VALIDATION",
+          "validator_code": "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1",
+          "validation_input": {
+            "benchmark_scope": "EXPERT_TASK_PERFORMANCE_E2E",
+            "required_relative_uplift": 0.15,
+            "required_independent_evaluator": true
+          },
+          "pass_when": "D beats original by >=15% with CI excluding zero, beats current Evolution, holdout improves, preservation>=98%, critical regressions=0 and resource budget passes",
+          "failure_code": "EXPERT_TASK_PERFORMANCE_NOT_PROVEN",
+          "resolver_policy": "REPAIR_OR_REARCHITECT_THEN_RERUN_NEW_BLIND_CAMPAIGN"
+        }
+      ]
     }
   ],
   "completion_rule": "ALL_REQUIRED_CHECKPOINTS_HAVE_FRESH_PASS_RECEIPTS_AND_PE10_CUTOVER_READBACK_PASS",
@@ -1122,6 +1508,12 @@
     "PE10P_REMOVED_FALSE_OPENAI_API_CREDENTIAL_DEPENDENCY",
     "PE10_FULL_PROFILE_EVOLUTION_BEHAVIOR_MADE_EXPLICIT_ATOMIC_CHECKPOINT",
     "INDEPENDENT_ASSURANCE_SUBJECT_WHITELIST_REJECTED",
-    "INDEPENDENT_ASSURANCE_V3_CONTRACT_DRIVEN_ANY_SUBJECT_PROVEN_BY_LIVE_ROLLBACK"
+    "INDEPENDENT_ASSURANCE_V3_CONTRACT_DRIVEN_ANY_SUBJECT_PROVEN_BY_LIVE_ROLLBACK",
+    "REPAIR_AUDIT_20261008_RECLASSIFIED_CONTRACT_BENCHMARK_AS_ARCHITECTURE_CONTROL",
+    "PE1B_COMPETENCY_ASSESSMENT_V2_ADDED",
+    "PE2B_METHOD_REGISTRY_V2_ADDED",
+    "PE3B_ADAPTIVE_REPLANNING_SELECTOR_V3_ADDED",
+    "PE7B_CAUSAL_TRANSFER_LEARNING_V2_ADDED",
+    "PE10E_REAL_EXPERT_TASK_BENCHMARK_ADDED"
   ]
 }
