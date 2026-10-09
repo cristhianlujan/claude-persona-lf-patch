@@ -72,6 +72,17 @@ begin
   insert into private.lf_runtime_readback_oidc_receipts
   (execution_id,exact_head,release_path,runtime_sha,manifest_digest,receipt,claims,
    workflow_run_id,workflow_run_attempt,token_sha256)
+  values('EXEC-D7-token-repeat',h,'/opt/lf-profile-runtime-api/releases/'||h,h,d,
+   jsonb_build_object('exact_head',h,'runtime_sha',h,'release_path','/opt/lf-profile-runtime-api/releases/'||h),
+   jsonb_set(declare_claims,'{run_id}','"12345680"'::jsonb),'12345680','1',repeat('c',64));
+  raise exception 'I7_TOKEN_SHA_DUPLICATE_ACCEPTED';
+ exception when unique_violation then
+  raise notice 'I7_TOKEN_SHA_DUPLICATE_REJECTED';
+ end;
+ begin
+  insert into private.lf_runtime_readback_oidc_receipts
+  (execution_id,exact_head,release_path,runtime_sha,manifest_digest,receipt,claims,
+   workflow_run_id,workflow_run_attempt,token_sha256)
   values('EXEC-D7-invalid',h,'/opt/lf-profile-runtime-api/releases/'||h,h,d,
    jsonb_build_object('exact_head',h,'runtime_sha',h,'release_path','/opt/lf-profile-runtime-api/releases/'||h),
    jsonb_set(declare_claims,'{event_name}','"push"'::jsonb),'12345679','1',repeat('e',64));
