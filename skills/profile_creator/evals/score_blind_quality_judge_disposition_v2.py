@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib,json
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[3]
-RAW=ROOT/"pe_causal_blind_quality_judge_raw_v1.json"
+RAW=ROOT/"skills/profile_creator/evals/results/pe_causal_blind_quality_judge_raw_v1.json"
 OUT=ROOT/"pe_causal_blind_quality_judge_score_v2.json"
 EXPECTED={"S01":"CONTRADICTED","S02":"SUPPORTED",
           "S03":"CONTRADICTED","S04":"SUPPORTED"}
