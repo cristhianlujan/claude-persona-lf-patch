@@ -258,6 +258,111 @@
         "expected_profile_source_sha256"
       ],
       "pass_contract": "canonical PROFILE_EXECUTION_RECEIPT_V1 binds exact profile source, input, RAW and runtime attestation; native and remote execution remain mode-bound"
+    },
+    {
+      "validator_code": "PROFILE_ASSESSMENT_V2",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/profile_assessment_v2.py",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/test_profile_assessment_v2.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "competency_observations",
+        "structural_status",
+        "architecture_status",
+        "assessment_policy?",
+        "causal_attribution?"
+      ],
+      "pass_contract": "maturity derived from verified task-execution competency vector; structural-only cannot elevate; expert requires transfer/preservation; no write authority"
+    },
+    {
+      "validator_code": "METHOD_PACK_REGISTRY_V2",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v2.json",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/test_method_pack_registry_v2.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "registry_ref"
+      ],
+      "pass_contract": "typed verified preconditions; observed cost preferred; causal effectiveness/transfer/retirement contracts; experiments not auto-selected"
+    },
+    {
+      "validator_code": "CAPABILITY_SELECTOR_V3",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/capability_selector_v3.py",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/test_capability_selector_v3.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "context",
+        "catalog",
+        "policy",
+        "method_registry_v2",
+        "precondition_state",
+        "execution_observation?"
+      ],
+      "pass_contract": "verified preconditions required; dynamic evidence-bound replanning; experimental methods gated; no persistent learning authority"
+    },
+    {
+      "validator_code": "PROFILE_EVOLUTION_PLAN_BUILDER_V2",
+      "scope": "PROFILE_EVOLUTION",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "skills/profile_creator/validators/plan_profile_evolution_v2.py",
+      "qualification_ref": "skills/profile_creator/validators/test_plan_profile_evolution_v2.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "structural_baseline",
+        "learning_preflight",
+        "assessment_v2",
+        "capability_catalog",
+        "capability_policy",
+        "method_registry_v2",
+        "precondition_state"
+      ],
+      "pass_contract": "competency-grounded plan; adaptive loop; candidate execution and expert benchmark mandatory; no write authority"
+    },
+    {
+      "validator_code": "PROFILE_LEARNING_ADMISSION_V2",
+      "scope": "PROFILE_TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "skills/profile_creator/validators/validate_profile_learning_admission_v2.py",
+      "qualification_ref": "skills/profile_creator/validators/test_profile_learning_admission_v2.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "observations",
+        "hypothesis",
+        "method_ids",
+        "causal_attribution",
+        "replication",
+        "transfer_validation",
+        "holdout",
+        "cost_effectiveness",
+        "negative_outcomes",
+        "admission",
+        "lifecycle"
+      ],
+      "pass_contract": "positive causally attributable effect; replication; transfer; failures retained; independent admission; lifecycle bounded; no auto-promotion"
+    },
+    {
+      "validator_code": "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1",
+      "scope": "PROFILE_EVOLUTION",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "skills/profile_creator/evals/score_profile_expert_behavior_v1.py",
+      "qualification_ref": "skills/profile_creator/evals/test_score_profile_expert_behavior_v1.py",
+      "execution_handler": "PYTHON_TEST_OR_FILE",
+      "input_contract": [
+        "four_arm_raw",
+        "holdout_manifest",
+        "benchmark_protocol"
+      ],
+      "pass_contract": "actual profile execution receipts for A/B/C/D; blind independent evaluator; >=15% D-vs-A target; positive paired/holdout CIs; zero critical regressions; preservation>=98%; observed resource budget"
     }
   ]
 }
