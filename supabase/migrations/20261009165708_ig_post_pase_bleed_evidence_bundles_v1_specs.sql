@@ -1,7 +1,3 @@
--- IG scope correction (recurrence of IG-CROSS-WORKSTREAM-POST-PASE-BLEED-001).
--- M7.14 / M8.12 / M9.13 *_EVIDENCE_BUNDLE still routed to FINAL_EVIDENCE (disabled POST_PASE workstream, needs a Router AUTHORIZED_PLAN).
--- The checkpoint is kept (traceability + closure evidence) but its mechanism becomes IG-owned: a deterministic manifest derived from the
--- engineering ledger (unit status + checkpoint evidence_refs of the macrolot units), hashed with SHA-256, no own store, no FINAL_EVIDENCE.
 do $preflight$
 declare v_n int;
 begin
@@ -44,12 +40,6 @@ begin
   end loop;
 end
 $apply$;
-
-update public.lf_error_knowledge
-   set frecuencia=coalesce(frecuencia,1)+1, ultima_vez=now(), updated_at=now(),
-       evidencia=evidencia||';supabase://programacion.engineering_plan_units/M7.14,M8.12,M9.13',
-       validacion=validacion||' RECURRENCE 2026-10-09: M7.14/M8.12/M9.13 *_EVIDENCE_BUNDLE also routed to FINAL_EVIDENCE; corrected to ledger-derived READBACK_ONCE with activation DECLARED_ONLY.'
- where codigo='IG-CROSS-WORKSTREAM-POST-PASE-BLEED-001';
 
 do $selftest$
 declare v_bad int; s jsonb; u text; cp text;
