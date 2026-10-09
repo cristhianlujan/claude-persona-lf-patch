@@ -8,13 +8,16 @@ BEGIN
   SELECT 1 FROM public.lf_test_suite_runs r
   WHERE r.suite_code='IG_REVERSIBLE_CANDIDATE_ASSURANCE_2_0_1'
     AND r.status='PASSED'
-    AND r.tests_total>=12
-    AND r.tests_passed=r.tests_total
+    AND r.tests_total=1 AND r.tests_passed=1
     AND r.tests_failed=0 AND r.tests_blocked=0
-    AND r.commit_sha='b23416192a2a87e8407c8d758af424611f9fd80a'
+    AND r.commit_sha='1170883a9ff524c0176a78151778ff0fe695d647'
     AND r.metadata->>'source_blob_sha1'='b619ea4238e4a97867b29447f9f80e5ac8079151'
     AND r.metadata->>'test_blob_sha1'='6647b86a71c9489f276e53e013e839310e486163'
     AND r.metadata->>'provider_version'='2.0.1'
+    AND r.metadata->>'scenario_count'='12'
+    AND r.manifest->>'receipt_mode'='LOCAL_DECLARED_TEST_EXECUTION'
+    AND r.manifest->>'python_exit_code'='0'
+    AND (programacion.fn_engineering_run_test_receipt_bundle_v1(r.suite_run_id)->>'status')='VERIFIED'
  )
  THEN RAISE EXCEPTION 'IG_REVERSIBLE_CANDIDATE_2_0_1_TEST_RECEIPT_REQUIRED';
  END IF;
