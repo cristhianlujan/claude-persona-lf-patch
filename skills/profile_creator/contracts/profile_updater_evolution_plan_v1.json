@@ -243,7 +243,7 @@
         "E8_OR_E9",
         "E10E_EXPERT_TASK_BENCHMARK"
       ],
-      "status": "BLOCKED_BY_E10E_AND_ASSURANCE_PUBLICATION",
+      "status": "WAITING_EXPERT_BENCHMARK",
       "closure_evidence": [
         "24+ executed/scored cases across 8 strata",
         "primary capability score UP",
@@ -262,14 +262,16 @@
         "GPT_NATIVE / CLAUDE_NATIVE / REMOTE_API route architecture reused",
         "Llama remains REMOTE_API option, not GPT dependency",
         "architecture/control benchmark explicitly non-expertise",
-        "expert task benchmark A/B/C/D PASS"
+        "expert task benchmark A/B/C/D PASS",
+        "INDEPENDENT_ASSURANCE 2.0.0 published current after exact operation requalification",
+        "Assurance V3 publication PR #2070 merge 32d9b71e33c005e60f4e0a8999def219e6f9dbd4",
+        "Generic requalification repair PR #2073 merge 16b9746476eb908c26486d7aa6a093008c854f6a"
       ],
       "blockers": [
         "PE10E_C4: actual expert-task A/B/C/D benchmark pending",
-        "INDEPENDENT_ASSURANCE V3: formal migration rollback-PASS; merge/apply/requalification/promotion pending",
         "25 v0.1 executions IN_PROGRESS",
         "0 cutover admission events",
-        "required candidate capabilities not yet promoted to live authority"
+        "required Profile Evolution candidate capabilities/cutover authority must be read back before final cutover"
       ],
       "external_controls": {
         "PASE": "NOT_AN_ACTIVE_EXIT_GATE_WHILE_DISABLED; SKIPPED_MUST_NOT_BE_RELABELED_PASS"
@@ -286,7 +288,8 @@
     "MATURITY_DERIVED_FROM_EXECUTABLE_COMPETENCY_VECTOR",
     "ARCHITECTURE_CONTROL_SCORE_IS_NOT_EXPERTISE",
     "UPWARD_EXPERTISE_CLAIM_REQUIRES_ACTUAL_PROFILE_TASK_EXECUTION",
-    "LEARNING_REQUIRES_CAUSAL_ATTRIBUTION_AND_TRANSFER"
+    "LEARNING_REQUIRES_CAUSAL_ATTRIBUTION_AND_TRANSFER",
+    "INDEPENDENT_ASSURANCE_V3_CURRENT_DOES_NOT_SUBSTITUTE_FOR_EXPERT_BENCHMARK"
   ],
   "atomic_execution_plan_ref": "skills/profile_creator/contracts/profile_evolution_engineering_plan_v1.json",
   "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
