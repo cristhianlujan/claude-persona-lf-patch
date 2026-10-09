@@ -3,7 +3,7 @@
   "operation_code": "ACTUALIZACION_PERFIL_LF",
   "target_responsibility": "PROFILE_EVOLUTION_ORCHESTRATOR",
   "plan_status": "IN_EXECUTION",
-  "completion_rule": "PLAN_DONE_ONLY_AFTER_E10_ADMIT_CUTOVER_AND_GOVERNED_V02_AUTHORITY_READBACK",
+  "completion_rule": "PLAN_DONE_ONLY_AFTER_E10E_EXPERT_TASK_BENCHMARK_PASS_PLUS_E10_ASSURANCE_ADMISSION_CUTOVER_AND_GOVERNED_V02_AUTHORITY_READBACK",
   "lots": [
     {
       "id": "E0",
@@ -151,12 +151,94 @@
       "gate": "Optional; may be skipped if E8 is sufficient"
     },
     {
+      "id": "E1B",
+      "work": "Derive maturity from verified executable competency vector",
+      "depends_on": [
+        "E1"
+      ],
+      "status": "IMPLEMENTED_TESTED_CANDIDATE",
+      "closure_evidence": [
+        "PROFILE_ASSESSMENT_V2",
+        "verified task execution receipts",
+        "difficulty/robustness/adaptation/transfer/preservation vector",
+        "structural-only negative case"
+      ]
+    },
+    {
+      "id": "E2B",
+      "work": "Generalize METHOD_PACK_REGISTRY with verified preconditions, observed cost and causal effectiveness contracts",
+      "depends_on": [
+        "E2",
+        "E1B"
+      ],
+      "status": "IMPLEMENTED_TESTED_CANDIDATE",
+      "closure_evidence": [
+        "METHOD_PACK_REGISTRY_V2",
+        "12 methods",
+        "4 experimental non-auto-select methods",
+        "retirement/transfer contracts"
+      ]
+    },
+    {
+      "id": "E3B",
+      "work": "Enable evidence-bound same-task replanning",
+      "depends_on": [
+        "E3",
+        "E2B"
+      ],
+      "status": "IMPLEMENTED_TESTED_CANDIDATE",
+      "closure_evidence": [
+        "CAPABILITY_SELECTOR_V3",
+        "verified preconditions",
+        "QUALITY_PLATEAU replan",
+        "no persistent learning authority"
+      ]
+    },
+    {
+      "id": "E7B",
+      "work": "Admit learning only with causal attribution, transfer and lifecycle",
+      "depends_on": [
+        "E7",
+        "E3B"
+      ],
+      "status": "IMPLEMENTED_TESTED_CANDIDATE",
+      "closure_evidence": [
+        "PROFILE_LEARNING_ADMISSION_V2",
+        "ablation/paired/counterfactual contract",
+        "failed transfers retained",
+        "expiry/retirement"
+      ]
+    },
+    {
+      "id": "E10E",
+      "work": "Execute real expert-task A/B/C/D benchmark before cutover",
+      "depends_on": [
+        "E5",
+        "E7B",
+        "PE10P_GPT_NATIVE"
+      ],
+      "status": "PROTOCOL_IMPLEMENTED_EXECUTION_PENDING",
+      "closure_evidence": [
+        "actual profile execution receipts",
+        "blind independent evaluator",
+        "four arms A/B/C/D",
+        "difficulty-weighted task quality",
+        "transfer/adaptation/preservation",
+        "relative uplift >=15% with predefined uncertainty"
+      ],
+      "blockers": [
+        "blind campaign corpus/power plan not yet frozen",
+        "four-arm semantic RAW not yet executed"
+      ]
+    },
+    {
       "id": "E10",
       "work": "Execute paired blind benchmark, assurance, admission and governed cutover",
       "depends_on": [
         "PE10P_GOVERNED_SEMANTIC_PRODUCER",
         "E5_MATERIALIZATION_BRIDGE",
-        "E8_OR_E9"
+        "E8_OR_E9",
+        "E10E_EXPERT_TASK_BENCHMARK"
       ],
       "status": "BLOCKED_PENDING_EVIDENCE",
       "closure_evidence": [
@@ -175,11 +257,13 @@
         "no Llama dependency",
         "canonical LF_PROFILE_EXECUTION_CONTRACT_V1 reused",
         "GPT_NATIVE / CLAUDE_NATIVE / REMOTE_API route architecture reused",
-        "Llama remains REMOTE_API option, not GPT dependency"
+        "Llama remains REMOTE_API option, not GPT dependency",
+        "architecture/control benchmark explicitly non-expertise",
+        "expert task benchmark A/B/C/D PASS"
       ],
       "blockers": [
-        "PE10_C2B: FULL_PROFILE_EVOLUTION_BEHAVIOR paired benchmark pending",
-        "PE10_C3: independent assurance pending after full-behavior freeze",
+        "E10E: EXPERT_TASK_PERFORMANCE_E2E campaign not yet executed/passed",
+        "PE10_C3: Independent Assurance V3 publication/requalification pending",
         "0 ADMIT_CUTOVER events",
         "25 v0.1 executions IN_PROGRESS",
         "required candidate capabilities not yet promoted to live authority"
@@ -195,15 +279,19 @@
     "NO_CUTOVER_BEFORE_E10_ADMISSION",
     "NO_PLAN_DONE_WITH_UNVERIFIED_LOTS",
     "PATCH_MINIMALITY_ONLY_FOR_PATCH_MODE",
-    "STRUCTURAL_COMPATIBILITY_IS_NOT_CAPABILITY_EXCELLENCE"
+    "STRUCTURAL_COMPATIBILITY_IS_NOT_CAPABILITY_EXCELLENCE",
+    "MATURITY_DERIVED_FROM_EXECUTABLE_COMPETENCY_VECTOR",
+    "ARCHITECTURE_CONTROL_SCORE_IS_NOT_EXPERTISE",
+    "UPWARD_EXPERTISE_CLAIM_REQUIRES_ACTUAL_PROFILE_TASK_EXECUTION",
+    "LEARNING_REQUIRES_CAUSAL_ATTRIBUTION_AND_TRANSFER"
   ],
   "atomic_execution_plan_ref": "skills/profile_creator/contracts/profile_evolution_engineering_plan_v1.json",
   "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
   "atomic_plan_summary": {
-    "units": 13,
-    "checkpoints": 57,
-    "required_checkpoints": 54,
-    "status": "IN_EXECUTION"
+    "units": 18,
+    "checkpoints": 79,
+    "required_checkpoints": 76,
+    "status": "REARCHITECTURE_IN_EXECUTION"
   },
   "validation_policy": {
     "model": "FRESH_DETERMINISTIC_CHECKPOINT_VALIDATION",
