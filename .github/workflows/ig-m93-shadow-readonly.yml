@@ -22,8 +22,37 @@ permissions:
   contents: read
 
 jobs:
-  m93-readonly:
+  prepare:
     if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      cohorts: ${{ steps.select.outputs.cohorts }}
+    steps:
+      - id: select
+        name: Resolve governed cohort type selection
+        shell: bash
+        env:
+          REQUESTED_COHORT: ${{ inputs.cohort }}
+        run: |
+          set -euo pipefail
+          case "$REQUESTED_COHORT" in
+            ALL)
+              echo 'cohorts=["AUTH","FORMS","NAVIGATION","DESIGN","ONBOARDING","RECOVERY","API"]' >> "$GITHUB_OUTPUT"
+              ;;
+            AUTH|FORMS|NAVIGATION|DESIGN|ONBOARDING|RECOVERY|API)
+              printf 'cohorts=["%s"]\n' "$REQUESTED_COHORT" >> "$GITHUB_OUTPUT"
+              ;;
+            *) echo 'UNKNOWN_GOVERNED_COHORT' >&2; exit 1 ;;
+          esac
+
+  m93-readonly:
+    needs: prepare
+    if: needs.prepare.result == 'success'
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        cohort: ${{ fromJson(needs.prepare.outputs.cohorts) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -53,17 +82,18 @@ jobs:
           PGHOST: aws-1-us-east-1.pooler.supabase.com
           PGUSER: postgres.mhwmirqcgxxukpctffuv
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          M93_COHORT: ${{ matrix.cohort }}
         run: |
           set -euo pipefail
           args=(--live --output .lf_ci/m9_3_live_diagnostic.json)
           if [ "${{ inputs.rollback_e2e }}" = true ]; then args+=(--rollback-e2e); fi
-          if [ "${{ inputs.cohort }}" != ALL ]; then args+=(--cohort "${{ inputs.cohort }}"); fi
+          args+=(--cohort "$M93_COHORT")
           python3 sandbox/lf_contract_gate_test/engineering_checkpoints/m9_3/full_pipeline_shadow_runner.py "${args[@]}"
       - name: Preserve diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ig-m93-readonly-diagnostic
+          name: ig-m93-readonly-diagnostic-${{ matrix.cohort }}
           path: .lf_ci/m9_3_live_diagnostic.json
           if-no-files-found: warn
           retention-days: 7
