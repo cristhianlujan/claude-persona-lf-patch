@@ -1,0 +1,83 @@
+name: LF Migration Reconcile Source Only (DRAFT)
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: lf-migrations
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  reconcile-source-only:
+    if: github.event.label.name == 'ready-to-reconcile'
+    runs-on: ubuntu-latest
+    environment: lf-merge-train
+    timeout-minutes: 25
+    steps:
+      - name: Checkout trusted main (never PR code)
+        uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install readonly validation runtime
+        run: python -m pip install 'psycopg[binary]==3.2.10'
+      - uses: actions/create-github-app-token@v2
+        id: app
+        with:
+          app-id: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+      - name: Validate exact PR head and ledger (no writes)
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGPORT: '5432'
+          PGDATABASE: postgres
+          PGUSER: lf_ci_readonly.mhwmirqcgxxukpctffuv
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_READONLY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$PGPASSWORD"
+          info="$(gh api "repos/$REPO/pulls/$PR")"
+          test "$(jq -r '.head.sha' <<< "$info")" = "$EVENT_HEAD"
+          test "$(jq -r '.base.ref' <<< "$info")" = main
+          test "$(jq -r '.head.repo.full_name' <<< "$info")" = "$REPO"
+          test "$(jq -r '.draft' <<< "$info")" = false
+          echo "BASE_SHA=$(jq -r '.base.sha' <<< "$info")" >> "$GITHUB_ENV"
+          gh api --paginate --slurp "repos/$REPO/pulls/$PR/files?per_page=100" \
+            | jq '[.[][]]' > /tmp/reconcile-files.json
+          python sandbox/lf_contract_gate_test/migration_source_parity/reconcile_source_only.py \
+            --pr-files-json /tmp/reconcile-files.json --repo "$REPO" --head-sha "$EVENT_HEAD" \
+            > /tmp/reconcile-receipt.json
+          jq -e '.status == "PASS" and .lane == "RECONCILE_SOURCE_ONLY"' /tmp/reconcile-receipt.json
+          test "$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')" = "$EVENT_HEAD"
+      - name: Publish exact-head App status and merge (only after approval)
+        # DRAFT: keep disabled until governance and secret isolation are approved.
+        if: ${{ false }}
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')" = "$HEAD_SHA"
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state=success -f context=lf-migration-route-guard \
+            -f description="Train reconciliation: exact-head ledger parity" >/dev/null
+          gh api --method PUT "repos/$REPO/pulls/$PR/merge" \
+            -f sha="$HEAD_SHA" -f merge_method=merge >/dev/null
