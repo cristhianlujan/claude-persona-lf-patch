@@ -1,0 +1,49 @@
+name: LF Runtime Independent Readback
+on:
+  workflow_call:
+    inputs:
+      execution_id:
+        description: Exact governed deploy execution
+        required: true
+        type: string
+      exact_head:
+        description: Exact 40-char deployed Git source SHA
+        required: true
+        type: string
+      release_path:
+        description: Canonical absolute release path
+        required: true
+        type: string
+    secrets:
+      LF_RUNTIME_READBACK_SSH_PRIVATE_KEY:
+        required: true
+      LF_RUNTIME_READBACK_KNOWN_HOSTS:
+        required: true
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: lf-runtime-independent-readback-${{ inputs.execution_id }}
+  cancel-in-progress: false
+jobs:
+  independent-readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source for hash manifest
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Read VPS and submit OIDC-bound receipt
+        env:
+          EXECUTION_ID: ${{ inputs.execution_id }}
+          EXACT_HEAD: ${{ inputs.exact_head }}
+          RELEASE_PATH: ${{ inputs.release_path }}
+          OBSERVER_HOST: ${{ vars.LF_RUNTIME_READBACK_HOST }}
+          OBSERVER_USER: ${{ vars.LF_RUNTIME_READBACK_USER }}
+          OBSERVER_PRIVATE_KEY: ${{ secrets.LF_RUNTIME_READBACK_SSH_PRIVATE_KEY }}
+          OBSERVER_KNOWN_HOSTS: ${{ secrets.LF_RUNTIME_READBACK_KNOWN_HOSTS }}
+          READBACK_EDGE_URL: ${{ vars.LF_RUNTIME_READBACK_EDGE_URL }}
+        run: python3 scripts/lf_runtime_independent_readback.py

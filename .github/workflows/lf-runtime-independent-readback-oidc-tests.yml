@@ -1,0 +1,19 @@
+name: LF Runtime Readback OIDC Tests
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/lf-runtime-independent-readback-v1/**'
+      - '.github/workflows/lf-runtime-independent-readback-oidc-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-oidc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: GitHub JWT OIDC adversarial tests
+        run: deno test --allow-net supabase/functions/lf-runtime-independent-readback-v1/
