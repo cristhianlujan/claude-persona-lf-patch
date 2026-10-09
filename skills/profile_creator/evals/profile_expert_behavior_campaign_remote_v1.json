@@ -1,0 +1,55 @@
+{
+  "schema": "PROFILE_EXPERT_BEHAVIOR_CAMPAIGN_REMOTE_V1",
+  "campaign_id": "PEXP-R1-20261008",
+  "benchmark_scope": "EXPERT_TASK_PERFORMANCE_E2E",
+  "status": "FROZEN_BEFORE_RAW",
+  "route": {
+    "executor_mode": "REMOTE_API",
+    "adapter_id": "hetzner-local-llamacpp-http-v1",
+    "provider": "local_llama_cpp_hetzner_persistent",
+    "zero_cost_only": true,
+    "model_id_match": "model.gguf"
+  },
+  "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+  "planned_case_count": 120,
+  "profile_count": 8,
+  "cases_per_profile": 15,
+  "batching": {
+    "enabled": true,
+    "cases_per_model_call": 15,
+    "case_bound_receipts_required": true,
+    "cross_case_reference_forbidden": true,
+    "same_batching_all_arms": true
+  },
+  "arms": {
+    "A_ORIGINAL": "exact baseline profile projection",
+    "B_UPDATER_V01": "actual v0.1 outcome; structurally-valid profiles are expected to remain source-identical, but a separate model execution is required",
+    "C_EVOLUTION_CURRENT": "current Evolution executable source; sidecar-only contracts are not injected unless they actually change profile model source",
+    "D_EVOLUTION_TARGET": "baseline profile plus frozen Evolution V2 addendum in reversible non-authority candidate"
+  },
+  "source_projection_ref": "skills/profile_creator/evals/profile_expert_benchmark_source_projection_v1.json",
+  "task_corpus_ref": "skills/profile_creator/evals/profile_expert_behavior_tasks_remote_v1.json",
+  "oracle_ref": "skills/profile_creator/evals/profile_expert_behavior_oracle_remote_v1.json",
+  "oracle_visible_to_producer": false,
+  "holdout_manifest_ref": "skills/profile_creator/evals/profile_expert_behavior_holdout_v1.json",
+  "holdout_labels_visible_to_producer": false,
+  "thresholds_frozen_before_raw": true,
+  "raw_generation_started": false,
+  "scoring": "EXACT_HIDDEN_CHOICE_ACCURACY_DIFFICULTY_WEIGHTED_PLUS_EXISTING_PROFILE_EXPERT_BEHAVIOR_SCORER",
+  "evaluator": {
+    "type": "DETERMINISTIC_HIDDEN_ORACLE",
+    "blind_to_arm_identity": true,
+    "producer_execution_id_must_differ": true,
+    "verification_state": "VERIFIED"
+  },
+  "admission_thresholds": {
+    "relative_uplift_D_vs_A_min": 0.15,
+    "paired_ci_lower_D_vs_A_gt": 0,
+    "paired_ci_lower_D_vs_C_gt": 0,
+    "holdout_ci_lower_D_vs_A_gt": 0,
+    "holdout_ci_lower_D_vs_C_gt": 0,
+    "critical_regressions_max": 0,
+    "preservation_ratio_min": 0.98
+  },
+  "note": "Separate route-specific campaign. Frozen GPT_NATIVE campaign remains intact and unexecuted; no silent substitution occurred."
+}
