@@ -1,0 +1,3607 @@
+{
+  "campaign_id": "PEXP-R4-20261008",
+  "cases": [
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-001",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Increase retry count so transient failures eventually disappear."
+        },
+        {
+          "letter": "B",
+          "text": "Suppress the semantic judge when the deterministic stage succeeds."
+        },
+        {
+          "letter": "C",
+          "text": "Move completion behind verified semantic PASS and add an idempotent side-effect guard at the earliest shared transition."
+        },
+        {
+          "letter": "D",
+          "text": "Patch the single failing row and keep the completion transition unchanged."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 1: Patch the single failing row and keep the completion transition unchanged is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-002",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Increase retry count so transient failures eventually disappear."
+        },
+        {
+          "letter": "B",
+          "text": "Suppress the semantic judge when the deterministic stage succeeds."
+        },
+        {
+          "letter": "C",
+          "text": "Move completion behind verified semantic PASS and add an idempotent side-effect guard at the earliest shared transition."
+        },
+        {
+          "letter": "D",
+          "text": "Patch the single failing row and keep the completion transition unchanged."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 1: Patch the single failing row and keep the completion transition unchanged is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-003",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Increase retry count so transient failures eventually disappear."
+        },
+        {
+          "letter": "B",
+          "text": "Suppress the semantic judge when the deterministic stage succeeds."
+        },
+        {
+          "letter": "C",
+          "text": "Move completion behind verified semantic PASS and add an idempotent side-effect guard at the earliest shared transition."
+        },
+        {
+          "letter": "D",
+          "text": "Patch the single failing row and keep the completion transition unchanged."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 1: Patch the single failing row and keep the completion transition unchanged is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-004",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add a sleep before transitions."
+        },
+        {
+          "letter": "B",
+          "text": "Handle each caller with a separate exception."
+        },
+        {
+          "letter": "C",
+          "text": "Make currentness/CAS semantics explicit at the generic transition boundary and reject stale state while preserving legitimate nullability only where contracted."
+        },
+        {
+          "letter": "D",
+          "text": "Allow NULL CAS everywhere to avoid blocking stale workers."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 2: Allow NULL CAS everywhere to avoid blocking stale workers is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-005",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add a sleep before transitions."
+        },
+        {
+          "letter": "B",
+          "text": "Handle each caller with a separate exception."
+        },
+        {
+          "letter": "C",
+          "text": "Make currentness/CAS semantics explicit at the generic transition boundary and reject stale state while preserving legitimate nullability only where contracted."
+        },
+        {
+          "letter": "D",
+          "text": "Allow NULL CAS everywhere to avoid blocking stale workers."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 2: Allow NULL CAS everywhere to avoid blocking stale workers is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-006",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add a sleep before transitions."
+        },
+        {
+          "letter": "B",
+          "text": "Handle each caller with a separate exception."
+        },
+        {
+          "letter": "C",
+          "text": "Make currentness/CAS semantics explicit at the generic transition boundary and reject stale state while preserving legitimate nullability only where contracted."
+        },
+        {
+          "letter": "D",
+          "text": "Allow NULL CAS everywhere to avoid blocking stale workers."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 2: Allow NULL CAS everywhere to avoid blocking stale workers is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-007",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Choose the newest-looking source without checking authority."
+        },
+        {
+          "letter": "B",
+          "text": "Average conflicting sources into a confidence score."
+        },
+        {
+          "letter": "C",
+          "text": "Acquire the smallest targeted evidence that can distinguish the competing causes, keep status unresolved, then replan."
+        },
+        {
+          "letter": "D",
+          "text": "Close because most evidence agrees."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 3: Close because most evidence agrees is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-008",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Choose the newest-looking source without checking authority."
+        },
+        {
+          "letter": "B",
+          "text": "Average conflicting sources into a confidence score."
+        },
+        {
+          "letter": "C",
+          "text": "Acquire the smallest targeted evidence that can distinguish the competing causes, keep status unresolved, then replan."
+        },
+        {
+          "letter": "D",
+          "text": "Close because most evidence agrees."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 3: Close because most evidence agrees is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-009",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Choose the newest-looking source without checking authority."
+        },
+        {
+          "letter": "B",
+          "text": "Average conflicting sources into a confidence score."
+        },
+        {
+          "letter": "C",
+          "text": "Acquire the smallest targeted evidence that can distinguish the competing causes, keep status unresolved, then replan."
+        },
+        {
+          "letter": "D",
+          "text": "Close because most evidence agrees."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 3: Close because most evidence agrees is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-010",
+      "critical": true,
+      "difficulty": 4,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Trace the first broken invariant upstream, fix it generically, and add negative plus preservation regression tests before removing downstream symptoms."
+        },
+        {
+          "letter": "B",
+          "text": "Retry downstream until all consumers happen to pass."
+        },
+        {
+          "letter": "C",
+          "text": "Keep all patches and document them."
+        },
+        {
+          "letter": "D",
+          "text": "Add downstream checks to every consumer."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 4: Add downstream checks to every consumer is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-011",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Trace the first broken invariant upstream, fix it generically, and add negative plus preservation regression tests before removing downstream symptoms."
+        },
+        {
+          "letter": "B",
+          "text": "Retry downstream until all consumers happen to pass."
+        },
+        {
+          "letter": "C",
+          "text": "Keep all patches and document them."
+        },
+        {
+          "letter": "D",
+          "text": "Add downstream checks to every consumer."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 4: Add downstream checks to every consumer is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-012",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Trace the first broken invariant upstream, fix it generically, and add negative plus preservation regression tests before removing downstream symptoms."
+        },
+        {
+          "letter": "B",
+          "text": "Retry downstream until all consumers happen to pass."
+        },
+        {
+          "letter": "C",
+          "text": "Keep all patches and document them."
+        },
+        {
+          "letter": "D",
+          "text": "Add downstream checks to every consumer."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 4: Add downstream checks to every consumer is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-013",
+      "critical": true,
+      "difficulty": 5,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use controlled ablation/factorial probes to separate interacting causes, then repair the earliest proven invariant and retain counterevidence."
+        },
+        {
+          "letter": "B",
+          "text": "Declare multiple root causes without falsification."
+        },
+        {
+          "letter": "C",
+          "text": "Pick the easiest cause to repair."
+        },
+        {
+          "letter": "D",
+          "text": "Apply both suspected fixes at once and credit the last change."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 5: Apply both suspected fixes at once and credit the last change is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-014",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use controlled ablation/factorial probes to separate interacting causes, then repair the earliest proven invariant and retain counterevidence."
+        },
+        {
+          "letter": "B",
+          "text": "Declare multiple root causes without falsification."
+        },
+        {
+          "letter": "C",
+          "text": "Pick the easiest cause to repair."
+        },
+        {
+          "letter": "D",
+          "text": "Apply both suspected fixes at once and credit the last change."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 5: Apply both suspected fixes at once and credit the last change is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-015",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "ENGINEERING_REPAIR",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use controlled ablation/factorial probes to separate interacting causes, then repair the earliest proven invariant and retain counterevidence."
+        },
+        {
+          "letter": "B",
+          "text": "Declare multiple root causes without falsification."
+        },
+        {
+          "letter": "C",
+          "text": "Pick the easiest cause to repair."
+        },
+        {
+          "letter": "D",
+          "text": "Apply both suspected fixes at once and credit the last change."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this ENGINEERING_REPAIR task. Scenario level 5: Apply both suspected fixes at once and credit the last change is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-016",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Hide the field from users without documenting the gap."
+        },
+        {
+          "letter": "B",
+          "text": "Bind to an existing governed field or return NEEDS_INPUT; do not invent backend authority."
+        },
+        {
+          "letter": "C",
+          "text": "Hardcode a placeholder value permanently."
+        },
+        {
+          "letter": "D",
+          "text": "Invent the missing backend field in the frontend model."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 1: Invent the missing backend field in the frontend model is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-017",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Hide the field from users without documenting the gap."
+        },
+        {
+          "letter": "B",
+          "text": "Bind to an existing governed field or return NEEDS_INPUT; do not invent backend authority."
+        },
+        {
+          "letter": "C",
+          "text": "Hardcode a placeholder value permanently."
+        },
+        {
+          "letter": "D",
+          "text": "Invent the missing backend field in the frontend model."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 1: Invent the missing backend field in the frontend model is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-018",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Hide the field from users without documenting the gap."
+        },
+        {
+          "letter": "B",
+          "text": "Bind to an existing governed field or return NEEDS_INPUT; do not invent backend authority."
+        },
+        {
+          "letter": "C",
+          "text": "Hardcode a placeholder value permanently."
+        },
+        {
+          "letter": "D",
+          "text": "Invent the missing backend field in the frontend model."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 1: Invent the missing backend field in the frontend model is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-019",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Block the whole page during every fetch."
+        },
+        {
+          "letter": "B",
+          "text": "Use a reusable state pattern covering loading, empty, error and retry while preserving the data contract."
+        },
+        {
+          "letter": "C",
+          "text": "Duplicate four page-specific branches."
+        },
+        {
+          "letter": "D",
+          "text": "Implement only the happy state."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 2: Implement only the happy state is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-020",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use a reusable state pattern covering loading, empty, error and retry while preserving the data contract."
+        },
+        {
+          "letter": "B",
+          "text": "Block the whole page during every fetch."
+        },
+        {
+          "letter": "C",
+          "text": "Duplicate four page-specific branches."
+        },
+        {
+          "letter": "D",
+          "text": "Implement only the happy state."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 2: Implement only the happy state is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-021",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use a reusable state pattern covering loading, empty, error and retry while preserving the data contract."
+        },
+        {
+          "letter": "B",
+          "text": "Block the whole page during every fetch."
+        },
+        {
+          "letter": "C",
+          "text": "Duplicate four page-specific branches."
+        },
+        {
+          "letter": "D",
+          "text": "Implement only the happy state."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 2: Implement only the happy state is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-022",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Reflow layout while preserving semantic order, keyboard access, target sizes and source-bound content."
+        },
+        {
+          "letter": "B",
+          "text": "Use horizontal scrolling for all controls."
+        },
+        {
+          "letter": "C",
+          "text": "Hide all secondary actions on mobile regardless of task."
+        },
+        {
+          "letter": "D",
+          "text": "Shrink text until it fits mobile."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 3: Shrink text until it fits mobile is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-023",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Reflow layout while preserving semantic order, keyboard access, target sizes and source-bound content."
+        },
+        {
+          "letter": "B",
+          "text": "Use horizontal scrolling for all controls."
+        },
+        {
+          "letter": "C",
+          "text": "Hide all secondary actions on mobile regardless of task."
+        },
+        {
+          "letter": "D",
+          "text": "Shrink text until it fits mobile."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 3: Shrink text until it fits mobile is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-024",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Reflow layout while preserving semantic order, keyboard access, target sizes and source-bound content."
+        },
+        {
+          "letter": "B",
+          "text": "Use horizontal scrolling for all controls."
+        },
+        {
+          "letter": "C",
+          "text": "Hide all secondary actions on mobile regardless of task."
+        },
+        {
+          "letter": "D",
+          "text": "Shrink text until it fits mobile."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 3: Shrink text until it fits mobile is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-025",
+      "critical": true,
+      "difficulty": 4,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Create a new parallel component with nearly identical responsibility."
+        },
+        {
+          "letter": "B",
+          "text": "Move the shared behavior into the existing reusable component/contract and prove consumers preserve behavior."
+        },
+        {
+          "letter": "C",
+          "text": "Copy the fix to every screen manually."
+        },
+        {
+          "letter": "D",
+          "text": "Patch the current screen locally."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 4: Patch the current screen locally is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-026",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Create a new parallel component with nearly identical responsibility."
+        },
+        {
+          "letter": "B",
+          "text": "Move the shared behavior into the existing reusable component/contract and prove consumers preserve behavior."
+        },
+        {
+          "letter": "C",
+          "text": "Copy the fix to every screen manually."
+        },
+        {
+          "letter": "D",
+          "text": "Patch the current screen locally."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 4: Patch the current screen locally is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-027",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Create a new parallel component with nearly identical responsibility."
+        },
+        {
+          "letter": "B",
+          "text": "Move the shared behavior into the existing reusable component/contract and prove consumers preserve behavior."
+        },
+        {
+          "letter": "C",
+          "text": "Copy the fix to every screen manually."
+        },
+        {
+          "letter": "D",
+          "text": "Patch the current screen locally."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 4: Patch the current screen locally is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-028",
+      "critical": true,
+      "difficulty": 5,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Remove manual review from the UI."
+        },
+        {
+          "letter": "B",
+          "text": "Represent the unresolved review state explicitly and request the missing decision authority while keeping implemented states functional."
+        },
+        {
+          "letter": "C",
+          "text": "Assume approval to keep flow smooth."
+        },
+        {
+          "letter": "D",
+          "text": "Guess the unspecified manual-review outcome."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 5: Guess the unspecified manual-review outcome is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-029",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Remove manual review from the UI."
+        },
+        {
+          "letter": "B",
+          "text": "Represent the unresolved review state explicitly and request the missing decision authority while keeping implemented states functional."
+        },
+        {
+          "letter": "C",
+          "text": "Assume approval to keep flow smooth."
+        },
+        {
+          "letter": "D",
+          "text": "Guess the unspecified manual-review outcome."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 5: Guess the unspecified manual-review outcome is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-030",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Represent the unresolved review state explicitly and request the missing decision authority while keeping implemented states functional."
+        },
+        {
+          "letter": "B",
+          "text": "Assume approval to keep flow smooth."
+        },
+        {
+          "letter": "C",
+          "text": "Remove manual review from the UI."
+        },
+        {
+          "letter": "D",
+          "text": "Guess the unspecified manual-review outcome."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this FRONTEND_PROGRAMMING task. Scenario level 5: Guess the unspecified manual-review outcome is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-031",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Strengthen hierarchy around the primary task and reduce competing emphasis without changing semantics."
+        },
+        {
+          "letter": "B",
+          "text": "Make every action equally prominent."
+        },
+        {
+          "letter": "C",
+          "text": "Use color alone to distinguish priority."
+        },
+        {
+          "letter": "D",
+          "text": "Add more labels to every element."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this UI_UX task. Scenario level 1: Add more labels to every element is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-032",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Strengthen hierarchy around the primary task and reduce competing emphasis without changing semantics."
+        },
+        {
+          "letter": "B",
+          "text": "Make every action equally prominent."
+        },
+        {
+          "letter": "C",
+          "text": "Use color alone to distinguish priority."
+        },
+        {
+          "letter": "D",
+          "text": "Add more labels to every element."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this UI_UX task. Scenario level 1: Add more labels to every element is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-033",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Strengthen hierarchy around the primary task and reduce competing emphasis without changing semantics."
+        },
+        {
+          "letter": "B",
+          "text": "Make every action equally prominent."
+        },
+        {
+          "letter": "C",
+          "text": "Use color alone to distinguish priority."
+        },
+        {
+          "letter": "D",
+          "text": "Add more labels to every element."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this UI_UX task. Scenario level 1: Add more labels to every element is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-034",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invent a generic help number."
+        },
+        {
+          "letter": "B",
+          "text": "Resolve support data from the governed source and show only channels with verified values."
+        },
+        {
+          "letter": "C",
+          "text": "Remove support entirely to avoid ambiguity."
+        },
+        {
+          "letter": "D",
+          "text": "Hardcode the support phone in the component."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this UI_UX task. Scenario level 2: Hardcode the support phone in the component is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-035",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invent a generic help number."
+        },
+        {
+          "letter": "B",
+          "text": "Resolve support data from the governed source and show only channels with verified values."
+        },
+        {
+          "letter": "C",
+          "text": "Remove support entirely to avoid ambiguity."
+        },
+        {
+          "letter": "D",
+          "text": "Hardcode the support phone in the component."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this UI_UX task. Scenario level 2: Hardcode the support phone in the component is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-036",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invent a generic help number."
+        },
+        {
+          "letter": "B",
+          "text": "Resolve support data from the governed source and show only channels with verified values."
+        },
+        {
+          "letter": "C",
+          "text": "Remove support entirely to avoid ambiguity."
+        },
+        {
+          "letter": "D",
+          "text": "Hardcode the support phone in the component."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this UI_UX task. Scenario level 2: Hardcode the support phone in the component is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-037",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Hide all secondary information below 768px."
+        },
+        {
+          "letter": "B",
+          "text": "Recompose responsively while preserving reading/action order, target sizes, focus order and material content."
+        },
+        {
+          "letter": "C",
+          "text": "Use fixed-width containers with overflow."
+        },
+        {
+          "letter": "D",
+          "text": "Keep desktop layout and scale it down."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this UI_UX task. Scenario level 3: Keep desktop layout and scale it down is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-038",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Hide all secondary information below 768px."
+        },
+        {
+          "letter": "B",
+          "text": "Recompose responsively while preserving reading/action order, target sizes, focus order and material content."
+        },
+        {
+          "letter": "C",
+          "text": "Use fixed-width containers with overflow."
+        },
+        {
+          "letter": "D",
+          "text": "Keep desktop layout and scale it down."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this UI_UX task. Scenario level 3: Keep desktop layout and scale it down is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-039",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Hide all secondary information below 768px."
+        },
+        {
+          "letter": "B",
+          "text": "Recompose responsively while preserving reading/action order, target sizes, focus order and material content."
+        },
+        {
+          "letter": "C",
+          "text": "Use fixed-width containers with overflow."
+        },
+        {
+          "letter": "D",
+          "text": "Keep desktop layout and scale it down."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this UI_UX task. Scenario level 3: Keep desktop layout and scale it down is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-040",
+      "critical": true,
+      "difficulty": 4,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Progressively disclose low-frequency actions while keeping the primary action obvious and destructive actions protected."
+        },
+        {
+          "letter": "B",
+          "text": "Put every action in the top bar."
+        },
+        {
+          "letter": "C",
+          "text": "Remove confirmations from destructive actions."
+        },
+        {
+          "letter": "D",
+          "text": "Show all actions upfront to maximize discoverability."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this UI_UX task. Scenario level 4: Show all actions upfront to maximize discoverability is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-041",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Progressively disclose low-frequency actions while keeping the primary action obvious and destructive actions protected."
+        },
+        {
+          "letter": "B",
+          "text": "Put every action in the top bar."
+        },
+        {
+          "letter": "C",
+          "text": "Remove confirmations from destructive actions."
+        },
+        {
+          "letter": "D",
+          "text": "Show all actions upfront to maximize discoverability."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this UI_UX task. Scenario level 4: Show all actions upfront to maximize discoverability is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-042",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Progressively disclose low-frequency actions while keeping the primary action obvious and destructive actions protected."
+        },
+        {
+          "letter": "B",
+          "text": "Put every action in the top bar."
+        },
+        {
+          "letter": "C",
+          "text": "Remove confirmations from destructive actions."
+        },
+        {
+          "letter": "D",
+          "text": "Show all actions upfront to maximize discoverability."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this UI_UX task. Scenario level 4: Show all actions upfront to maximize discoverability is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-043",
+      "critical": true,
+      "difficulty": 5,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Copy a similar screen and rename it."
+        },
+        {
+          "letter": "B",
+          "text": "Use the default construction/pending state and expose the unresolved decision instead of inventing behavior."
+        },
+        {
+          "letter": "C",
+          "text": "Leave a blank screen."
+        },
+        {
+          "letter": "D",
+          "text": "Design the pending screen as if requirements were final."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this UI_UX task. Scenario level 5: Design the pending screen as if requirements were final is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-044",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Copy a similar screen and rename it."
+        },
+        {
+          "letter": "B",
+          "text": "Use the default construction/pending state and expose the unresolved decision instead of inventing behavior."
+        },
+        {
+          "letter": "C",
+          "text": "Leave a blank screen."
+        },
+        {
+          "letter": "D",
+          "text": "Design the pending screen as if requirements were final."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this UI_UX task. Scenario level 5: Design the pending screen as if requirements were final is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-045",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "UI_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Copy a similar screen and rename it."
+        },
+        {
+          "letter": "B",
+          "text": "Use the default construction/pending state and expose the unresolved decision instead of inventing behavior."
+        },
+        {
+          "letter": "C",
+          "text": "Leave a blank screen."
+        },
+        {
+          "letter": "D",
+          "text": "Design the pending screen as if requirements were final."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this UI_UX task. Scenario level 5: Design the pending screen as if requirements were final is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-046",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Ignore guardrails until statistically significant harm appears."
+        },
+        {
+          "letter": "B",
+          "text": "Optimize the primary outcome subject to explicit trust/safety guardrails and monitor both."
+        },
+        {
+          "letter": "C",
+          "text": "Replace the business objective with engagement."
+        },
+        {
+          "letter": "D",
+          "text": "Maximize conversion even if complaints rise."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this PRODUCT task. Scenario level 1: Maximize conversion even if complaints rise is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-047",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Ignore guardrails until statistically significant harm appears."
+        },
+        {
+          "letter": "B",
+          "text": "Optimize the primary outcome subject to explicit trust/safety guardrails and monitor both."
+        },
+        {
+          "letter": "C",
+          "text": "Replace the business objective with engagement."
+        },
+        {
+          "letter": "D",
+          "text": "Maximize conversion even if complaints rise."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this PRODUCT task. Scenario level 1: Maximize conversion even if complaints rise is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-048",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Ignore guardrails until statistically significant harm appears."
+        },
+        {
+          "letter": "B",
+          "text": "Optimize the primary outcome subject to explicit trust/safety guardrails and monitor both."
+        },
+        {
+          "letter": "C",
+          "text": "Replace the business objective with engagement."
+        },
+        {
+          "letter": "D",
+          "text": "Maximize conversion even if complaints rise."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this PRODUCT task. Scenario level 1: Maximize conversion even if complaints rise is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-049",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add an asterisk to make the claim safe."
+        },
+        {
+          "letter": "B",
+          "text": "Treat the unsupported customer claim as unverified, test evidence/materiality, and block it until supported."
+        },
+        {
+          "letter": "C",
+          "text": "Move the claim lower on the page."
+        },
+        {
+          "letter": "D",
+          "text": "Ship the claim because competitors use similar wording."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this PRODUCT task. Scenario level 2: Ship the claim because competitors use similar wording is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-050",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add an asterisk to make the claim safe."
+        },
+        {
+          "letter": "B",
+          "text": "Move the claim lower on the page."
+        },
+        {
+          "letter": "C",
+          "text": "Treat the unsupported customer claim as unverified, test evidence/materiality, and block it until supported."
+        },
+        {
+          "letter": "D",
+          "text": "Ship the claim because competitors use similar wording."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this PRODUCT task. Scenario level 2: Ship the claim because competitors use similar wording is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-051",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add an asterisk to make the claim safe."
+        },
+        {
+          "letter": "B",
+          "text": "Move the claim lower on the page."
+        },
+        {
+          "letter": "C",
+          "text": "Treat the unsupported customer claim as unverified, test evidence/materiality, and block it until supported."
+        },
+        {
+          "letter": "D",
+          "text": "Ship the claim because competitors use similar wording."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this PRODUCT task. Scenario level 2: Ship the claim because competitors use similar wording is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-052",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Change several features simultaneously."
+        },
+        {
+          "letter": "B",
+          "text": "Compare before/after without a control."
+        },
+        {
+          "letter": "C",
+          "text": "Run a reversible experiment with predefined success, guardrail and stop criteria before scale-up."
+        },
+        {
+          "letter": "D",
+          "text": "Launch the full feature to all users."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this PRODUCT task. Scenario level 3: Launch the full feature to all users is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-053",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Change several features simultaneously."
+        },
+        {
+          "letter": "B",
+          "text": "Compare before/after without a control."
+        },
+        {
+          "letter": "C",
+          "text": "Run a reversible experiment with predefined success, guardrail and stop criteria before scale-up."
+        },
+        {
+          "letter": "D",
+          "text": "Launch the full feature to all users."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this PRODUCT task. Scenario level 3: Launch the full feature to all users is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-054",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Change several features simultaneously."
+        },
+        {
+          "letter": "B",
+          "text": "Compare before/after without a control."
+        },
+        {
+          "letter": "C",
+          "text": "Run a reversible experiment with predefined success, guardrail and stop criteria before scale-up."
+        },
+        {
+          "letter": "D",
+          "text": "Launch the full feature to all users."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this PRODUCT task. Scenario level 3: Launch the full feature to all users is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-055",
+      "critical": true,
+      "difficulty": 4,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Let the loudest stakeholder decide."
+        },
+        {
+          "letter": "B",
+          "text": "Average all KPIs without priority."
+        },
+        {
+          "letter": "C",
+          "text": "Evaluate alternatives against user outcome, business outcome, risk and reversibility; document the tradeoff and decision rule."
+        },
+        {
+          "letter": "D",
+          "text": "Choose the option with the highest single KPI."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this PRODUCT task. Scenario level 4: Choose the option with the highest single KPI is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-056",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Let the loudest stakeholder decide."
+        },
+        {
+          "letter": "B",
+          "text": "Average all KPIs without priority."
+        },
+        {
+          "letter": "C",
+          "text": "Evaluate alternatives against user outcome, business outcome, risk and reversibility; document the tradeoff and decision rule."
+        },
+        {
+          "letter": "D",
+          "text": "Choose the option with the highest single KPI."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this PRODUCT task. Scenario level 4: Choose the option with the highest single KPI is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-057",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Let the loudest stakeholder decide."
+        },
+        {
+          "letter": "B",
+          "text": "Average all KPIs without priority."
+        },
+        {
+          "letter": "C",
+          "text": "Evaluate alternatives against user outcome, business outcome, risk and reversibility; document the tradeoff and decision rule."
+        },
+        {
+          "letter": "D",
+          "text": "Choose the option with the highest single KPI."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this PRODUCT task. Scenario level 4: Choose the option with the highest single KPI is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-058",
+      "critical": true,
+      "difficulty": 5,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Only test the easiest new segment and call it universal."
+        },
+        {
+          "letter": "B",
+          "text": "Assume prior success generalizes."
+        },
+        {
+          "letter": "C",
+          "text": "Treat transfer as a new hypothesis, test matched segments and preserve failed-transfer evidence before widening scope."
+        },
+        {
+          "letter": "D",
+          "text": "Apply the winning pattern to every segment."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this PRODUCT task. Scenario level 5: Apply the winning pattern to every segment is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-059",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Only test the easiest new segment and call it universal."
+        },
+        {
+          "letter": "B",
+          "text": "Assume prior success generalizes."
+        },
+        {
+          "letter": "C",
+          "text": "Treat transfer as a new hypothesis, test matched segments and preserve failed-transfer evidence before widening scope."
+        },
+        {
+          "letter": "D",
+          "text": "Apply the winning pattern to every segment."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this PRODUCT task. Scenario level 5: Apply the winning pattern to every segment is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-060",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "PRODUCT",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Assume prior success generalizes."
+        },
+        {
+          "letter": "B",
+          "text": "Only test the easiest new segment and call it universal."
+        },
+        {
+          "letter": "C",
+          "text": "Treat transfer as a new hypothesis, test matched segments and preserve failed-transfer evidence before widening scope."
+        },
+        {
+          "letter": "D",
+          "text": "Apply the winning pattern to every segment."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this PRODUCT task. Scenario level 5: Apply the winning pattern to every segment is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-061",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Trust the score if it is high enough."
+        },
+        {
+          "letter": "B",
+          "text": "Check only that required fields exist."
+        },
+        {
+          "letter": "C",
+          "text": "Re-evaluate exact RAW/evidence independently and reject self-certification as proof."
+        },
+        {
+          "letter": "D",
+          "text": "Accept the producer's PASS receipt."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this QUALITY_REVIEW task. Scenario level 1: Accept the producer's PASS receipt is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-062",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Trust the score if it is high enough."
+        },
+        {
+          "letter": "B",
+          "text": "Check only that required fields exist."
+        },
+        {
+          "letter": "C",
+          "text": "Re-evaluate exact RAW/evidence independently and reject self-certification as proof."
+        },
+        {
+          "letter": "D",
+          "text": "Accept the producer's PASS receipt."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this QUALITY_REVIEW task. Scenario level 1: Accept the producer's PASS receipt is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-063",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Trust the score if it is high enough."
+        },
+        {
+          "letter": "B",
+          "text": "Check only that required fields exist."
+        },
+        {
+          "letter": "C",
+          "text": "Re-evaluate exact RAW/evidence independently and reject self-certification as proof."
+        },
+        {
+          "letter": "D",
+          "text": "Accept the producer's PASS receipt."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this QUALITY_REVIEW task. Scenario level 1: Accept the producer's PASS receipt is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-064",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Repeat the same positive test twice."
+        },
+        {
+          "letter": "B",
+          "text": "Add more documentation."
+        },
+        {
+          "letter": "C",
+          "text": "Require a negative/falsification test plus preservation/regression evidence for the claimed behavior."
+        },
+        {
+          "letter": "D",
+          "text": "Accept positive-path tests as sufficient."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this QUALITY_REVIEW task. Scenario level 2: Accept positive-path tests as sufficient is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-065",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Repeat the same positive test twice."
+        },
+        {
+          "letter": "B",
+          "text": "Add more documentation."
+        },
+        {
+          "letter": "C",
+          "text": "Require a negative/falsification test plus preservation/regression evidence for the claimed behavior."
+        },
+        {
+          "letter": "D",
+          "text": "Accept positive-path tests as sufficient."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this QUALITY_REVIEW task. Scenario level 2: Accept positive-path tests as sufficient is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-066",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Repeat the same positive test twice."
+        },
+        {
+          "letter": "B",
+          "text": "Add more documentation."
+        },
+        {
+          "letter": "C",
+          "text": "Require a negative/falsification test plus preservation/regression evidence for the claimed behavior."
+        },
+        {
+          "letter": "D",
+          "text": "Accept positive-path tests as sufficient."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this QUALITY_REVIEW task. Scenario level 2: Accept positive-path tests as sufficient is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-067",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add more cases without changing the metric."
+        },
+        {
+          "letter": "B",
+          "text": "Raise the pass threshold."
+        },
+        {
+          "letter": "C",
+          "text": "Check whether the scorer measures real task outcomes; if it scores contracts/expected classes, reclassify it as architecture control."
+        },
+        {
+          "letter": "D",
+          "text": "Use the benchmark score as expertise evidence."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this QUALITY_REVIEW task. Scenario level 3: Use the benchmark score as expertise evidence is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-068",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add more cases without changing the metric."
+        },
+        {
+          "letter": "B",
+          "text": "Raise the pass threshold."
+        },
+        {
+          "letter": "C",
+          "text": "Check whether the scorer measures real task outcomes; if it scores contracts/expected classes, reclassify it as architecture control."
+        },
+        {
+          "letter": "D",
+          "text": "Use the benchmark score as expertise evidence."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this QUALITY_REVIEW task. Scenario level 3: Use the benchmark score as expertise evidence is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-069",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Raise the pass threshold."
+        },
+        {
+          "letter": "B",
+          "text": "Add more cases without changing the metric."
+        },
+        {
+          "letter": "C",
+          "text": "Check whether the scorer measures real task outcomes; if it scores contracts/expected classes, reclassify it as architecture control."
+        },
+        {
+          "letter": "D",
+          "text": "Use the benchmark score as expertise evidence."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this QUALITY_REVIEW task. Scenario level 3: Use the benchmark score as expertise evidence is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-070",
+      "critical": true,
+      "difficulty": 4,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Move leaked cases to training after scoring."
+        },
+        {
+          "letter": "B",
+          "text": "Keep holdout labels sealed from the producer and invalidate/restart the campaign if leakage occurs."
+        },
+        {
+          "letter": "C",
+          "text": "Keep results but note the leak."
+        },
+        {
+          "letter": "D",
+          "text": "Let the producer see holdout labels for debugging."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this QUALITY_REVIEW task. Scenario level 4: Let the producer see holdout labels for debugging is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-071",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Move leaked cases to training after scoring."
+        },
+        {
+          "letter": "B",
+          "text": "Keep holdout labels sealed from the producer and invalidate/restart the campaign if leakage occurs."
+        },
+        {
+          "letter": "C",
+          "text": "Keep results but note the leak."
+        },
+        {
+          "letter": "D",
+          "text": "Let the producer see holdout labels for debugging."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this QUALITY_REVIEW task. Scenario level 4: Let the producer see holdout labels for debugging is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-072",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Move leaked cases to training after scoring."
+        },
+        {
+          "letter": "B",
+          "text": "Keep holdout labels sealed from the producer and invalidate/restart the campaign if leakage occurs."
+        },
+        {
+          "letter": "C",
+          "text": "Keep results but note the leak."
+        },
+        {
+          "letter": "D",
+          "text": "Let the producer see holdout labels for debugging."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this QUALITY_REVIEW task. Scenario level 4: Let the producer see holdout labels for debugging is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-073",
+      "critical": true,
+      "difficulty": 5,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use only average score and ignore critical cases."
+        },
+        {
+          "letter": "B",
+          "text": "Require replicated task performance, preservation, critical-regression review and independent assurance before admission."
+        },
+        {
+          "letter": "C",
+          "text": "Promote and monitor later."
+        },
+        {
+          "letter": "D",
+          "text": "Promote after one strong run."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this QUALITY_REVIEW task. Scenario level 5: Promote after one strong run is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-074",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use only average score and ignore critical cases."
+        },
+        {
+          "letter": "B",
+          "text": "Require replicated task performance, preservation, critical-regression review and independent assurance before admission."
+        },
+        {
+          "letter": "C",
+          "text": "Promote and monitor later."
+        },
+        {
+          "letter": "D",
+          "text": "Promote after one strong run."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this QUALITY_REVIEW task. Scenario level 5: Promote after one strong run is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-075",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "QUALITY_REVIEW",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use only average score and ignore critical cases."
+        },
+        {
+          "letter": "B",
+          "text": "Require replicated task performance, preservation, critical-regression review and independent assurance before admission."
+        },
+        {
+          "letter": "C",
+          "text": "Promote and monitor later."
+        },
+        {
+          "letter": "D",
+          "text": "Promote after one strong run."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this QUALITY_REVIEW task. Scenario level 5: Promote after one strong run is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-076",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Choose the source with more detail."
+        },
+        {
+          "letter": "B",
+          "text": "Prefer the current authoritative source bound to the claim and treat stale/derived sources as context only."
+        },
+        {
+          "letter": "C",
+          "text": "Average old and new values."
+        },
+        {
+          "letter": "D",
+          "text": "Use the newest timestamp regardless of authority."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 1: Use the newest timestamp regardless of authority is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-077",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Choose the source with more detail."
+        },
+        {
+          "letter": "B",
+          "text": "Prefer the current authoritative source bound to the claim and treat stale/derived sources as context only."
+        },
+        {
+          "letter": "C",
+          "text": "Average old and new values."
+        },
+        {
+          "letter": "D",
+          "text": "Use the newest timestamp regardless of authority."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 1: Use the newest timestamp regardless of authority is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-078",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Prefer the current authoritative source bound to the claim and treat stale/derived sources as context only."
+        },
+        {
+          "letter": "B",
+          "text": "Choose the source with more detail."
+        },
+        {
+          "letter": "C",
+          "text": "Average old and new values."
+        },
+        {
+          "letter": "D",
+          "text": "Use the newest timestamp regardless of authority."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 1: Use the newest timestamp regardless of authority is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-079",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Trace to the primary evidence and verify the summary's exact source/revision before relying on it."
+        },
+        {
+          "letter": "B",
+          "text": "Cite both without resolving provenance."
+        },
+        {
+          "letter": "C",
+          "text": "Use the summary because it is shorter."
+        },
+        {
+          "letter": "D",
+          "text": "Treat a derived summary as equivalent to its primary source."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 2: Treat a derived summary as equivalent to its primary source is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-080",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Cite both without resolving provenance."
+        },
+        {
+          "letter": "B",
+          "text": "Trace to the primary evidence and verify the summary's exact source/revision before relying on it."
+        },
+        {
+          "letter": "C",
+          "text": "Use the summary because it is shorter."
+        },
+        {
+          "letter": "D",
+          "text": "Treat a derived summary as equivalent to its primary source."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 2: Treat a derived summary as equivalent to its primary source is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-081",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Cite both without resolving provenance."
+        },
+        {
+          "letter": "B",
+          "text": "Trace to the primary evidence and verify the summary's exact source/revision before relying on it."
+        },
+        {
+          "letter": "C",
+          "text": "Use the summary because it is shorter."
+        },
+        {
+          "letter": "D",
+          "text": "Treat a derived summary as equivalent to its primary source."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 2: Treat a derived summary as equivalent to its primary source is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-082",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use majority vote across receipts."
+        },
+        {
+          "letter": "B",
+          "text": "Identify which receipt is authoritative/current for the exact subject and block the claim until the contradiction is reconciled."
+        },
+        {
+          "letter": "C",
+          "text": "Select the receipt with PASS."
+        },
+        {
+          "letter": "D",
+          "text": "Merge conflicting receipts into one conclusion."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 3: Merge conflicting receipts into one conclusion is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-083",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use majority vote across receipts."
+        },
+        {
+          "letter": "B",
+          "text": "Identify which receipt is authoritative/current for the exact subject and block the claim until the contradiction is reconciled."
+        },
+        {
+          "letter": "C",
+          "text": "Select the receipt with PASS."
+        },
+        {
+          "letter": "D",
+          "text": "Merge conflicting receipts into one conclusion."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 3: Merge conflicting receipts into one conclusion is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-084",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use majority vote across receipts."
+        },
+        {
+          "letter": "B",
+          "text": "Identify which receipt is authoritative/current for the exact subject and block the claim until the contradiction is reconciled."
+        },
+        {
+          "letter": "C",
+          "text": "Select the receipt with PASS."
+        },
+        {
+          "letter": "D",
+          "text": "Merge conflicting receipts into one conclusion."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 3: Merge conflicting receipts into one conclusion is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-085",
+      "critical": true,
+      "difficulty": 4,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Skip evidence because the previous run passed."
+        },
+        {
+          "letter": "B",
+          "text": "Reject cross-run replay unless the contract explicitly binds reusable evidence to the new subject/revision."
+        },
+        {
+          "letter": "C",
+          "text": "Copy the prior receipt and change the ID."
+        },
+        {
+          "letter": "D",
+          "text": "Reuse a prior run's receipt because the input looks similar."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 4: Reuse a prior run's receipt because the input looks similar is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-086",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Skip evidence because the previous run passed."
+        },
+        {
+          "letter": "B",
+          "text": "Reject cross-run replay unless the contract explicitly binds reusable evidence to the new subject/revision."
+        },
+        {
+          "letter": "C",
+          "text": "Copy the prior receipt and change the ID."
+        },
+        {
+          "letter": "D",
+          "text": "Reuse a prior run's receipt because the input looks similar."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 4: Reuse a prior run's receipt because the input looks similar is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-087",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Reject cross-run replay unless the contract explicitly binds reusable evidence to the new subject/revision."
+        },
+        {
+          "letter": "B",
+          "text": "Skip evidence because the previous run passed."
+        },
+        {
+          "letter": "C",
+          "text": "Copy the prior receipt and change the ID."
+        },
+        {
+          "letter": "D",
+          "text": "Reuse a prior run's receipt because the input looks similar."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 4: Reuse a prior run's receipt because the input looks similar is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-088",
+      "critical": true,
+      "difficulty": 5,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Keep the lineage gap explicit, acquire the minimum source needed, and block only claims that depend on the missing edge."
+        },
+        {
+          "letter": "B",
+          "text": "Delete the incomplete branch from the report."
+        },
+        {
+          "letter": "C",
+          "text": "Infer the edge from naming conventions."
+        },
+        {
+          "letter": "D",
+          "text": "Fill the missing lineage link from context."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 5: Fill the missing lineage link from context is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-089",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Keep the lineage gap explicit, acquire the minimum source needed, and block only claims that depend on the missing edge."
+        },
+        {
+          "letter": "B",
+          "text": "Delete the incomplete branch from the report."
+        },
+        {
+          "letter": "C",
+          "text": "Infer the edge from naming conventions."
+        },
+        {
+          "letter": "D",
+          "text": "Fill the missing lineage link from context."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 5: Fill the missing lineage link from context is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-090",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "EVIDENCE_RESEARCH",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Infer the edge from naming conventions."
+        },
+        {
+          "letter": "B",
+          "text": "Keep the lineage gap explicit, acquire the minimum source needed, and block only claims that depend on the missing edge."
+        },
+        {
+          "letter": "C",
+          "text": "Delete the incomplete branch from the report."
+        },
+        {
+          "letter": "D",
+          "text": "Fill the missing lineage link from context."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this EVIDENCE_RESEARCH task. Scenario level 5: Fill the missing lineage link from context is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-091",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use 'up to' without evidence."
+        },
+        {
+          "letter": "B",
+          "text": "State that any offer is conditional/actual only when matched and never guarantee discount or score improvement."
+        },
+        {
+          "letter": "C",
+          "text": "Hide the qualification in terms and conditions."
+        },
+        {
+          "letter": "D",
+          "text": "Promise a guaranteed discount to reduce anxiety."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 1: Promise a guaranteed discount to reduce anxiety is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-092",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use 'up to' without evidence."
+        },
+        {
+          "letter": "B",
+          "text": "State that any offer is conditional/actual only when matched and never guarantee discount or score improvement."
+        },
+        {
+          "letter": "C",
+          "text": "Hide the qualification in terms and conditions."
+        },
+        {
+          "letter": "D",
+          "text": "Promise a guaranteed discount to reduce anxiety."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 1: Promise a guaranteed discount to reduce anxiety is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-093",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use 'up to' without evidence."
+        },
+        {
+          "letter": "B",
+          "text": "State that any offer is conditional/actual only when matched and never guarantee discount or score improvement."
+        },
+        {
+          "letter": "C",
+          "text": "Hide the qualification in terms and conditions."
+        },
+        {
+          "letter": "D",
+          "text": "Promise a guaranteed discount to reduce anxiety."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 1: Promise a guaranteed discount to reduce anxiety is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-094",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use a red timer but allow dismiss."
+        },
+        {
+          "letter": "B",
+          "text": "Avoid coercive urgency; present options, amounts and consequences clearly so the customer can choose."
+        },
+        {
+          "letter": "C",
+          "text": "Show scarcity only to overdue customers."
+        },
+        {
+          "letter": "D",
+          "text": "Add a countdown timer to push payment."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 2: Add a countdown timer to push payment is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-095",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Use a red timer but allow dismiss."
+        },
+        {
+          "letter": "B",
+          "text": "Avoid coercive urgency; present options, amounts and consequences clearly so the customer can choose."
+        },
+        {
+          "letter": "C",
+          "text": "Show scarcity only to overdue customers."
+        },
+        {
+          "letter": "D",
+          "text": "Add a countdown timer to push payment."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 2: Add a countdown timer to push payment is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-096",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Avoid coercive urgency; present options, amounts and consequences clearly so the customer can choose."
+        },
+        {
+          "letter": "B",
+          "text": "Use a red timer but allow dismiss."
+        },
+        {
+          "letter": "C",
+          "text": "Show scarcity only to overdue customers."
+        },
+        {
+          "letter": "D",
+          "text": "Add a countdown timer to push payment."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 2: Add a countdown timer to push payment is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-097",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Clearly distinguish original creditor/current owner and LF's role before asking for a decision."
+        },
+        {
+          "letter": "B",
+          "text": "Show only the LF brand."
+        },
+        {
+          "letter": "C",
+          "text": "Reveal ownership after payment."
+        },
+        {
+          "letter": "D",
+          "text": "Hide the current debt owner to simplify the screen."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 3: Hide the current debt owner to simplify the screen is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-098",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Clearly distinguish original creditor/current owner and LF's role before asking for a decision."
+        },
+        {
+          "letter": "B",
+          "text": "Show only the LF brand."
+        },
+        {
+          "letter": "C",
+          "text": "Reveal ownership after payment."
+        },
+        {
+          "letter": "D",
+          "text": "Hide the current debt owner to simplify the screen."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 3: Hide the current debt owner to simplify the screen is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-099",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Clearly distinguish original creditor/current owner and LF's role before asking for a decision."
+        },
+        {
+          "letter": "B",
+          "text": "Show only the LF brand."
+        },
+        {
+          "letter": "C",
+          "text": "Reveal ownership after payment."
+        },
+        {
+          "letter": "D",
+          "text": "Hide the current debt owner to simplify the screen."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 3: Hide the current debt owner to simplify the screen is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-100",
+      "critical": true,
+      "difficulty": 4,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Block/reconcile conflicting amount/installment facts before presenting them as final; preserve optionality and source."
+        },
+        {
+          "letter": "B",
+          "text": "Average both schedules."
+        },
+        {
+          "letter": "C",
+          "text": "Display whichever payment schedule has more complete data."
+        },
+        {
+          "letter": "D",
+          "text": "Choose the lower amount."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 4: Display whichever payment schedule has more complete data is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-101",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Block/reconcile conflicting amount/installment facts before presenting them as final; preserve optionality and source."
+        },
+        {
+          "letter": "B",
+          "text": "Average both schedules."
+        },
+        {
+          "letter": "C",
+          "text": "Display whichever payment schedule has more complete data."
+        },
+        {
+          "letter": "D",
+          "text": "Choose the lower amount."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 4: Display whichever payment schedule has more complete data is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-102",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Block/reconcile conflicting amount/installment facts before presenting them as final; preserve optionality and source."
+        },
+        {
+          "letter": "B",
+          "text": "Average both schedules."
+        },
+        {
+          "letter": "C",
+          "text": "Display whichever payment schedule has more complete data."
+        },
+        {
+          "letter": "D",
+          "text": "Choose the lower amount."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 4: Display whichever payment schedule has more complete data is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-103",
+      "critical": true,
+      "difficulty": 5,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Explain no current offer neutrally, preserve next steps without pressure, and avoid implying future outcomes."
+        },
+        {
+          "letter": "B",
+          "text": "Suggest payment will improve credit score."
+        },
+        {
+          "letter": "C",
+          "text": "Treat no-offer as a failure state that urges immediate retry."
+        },
+        {
+          "letter": "D",
+          "text": "Add a reward for retrying daily."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 5: Treat no-offer as a failure state that urges immediate retry is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-104",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Explain no current offer neutrally, preserve next steps without pressure, and avoid implying future outcomes."
+        },
+        {
+          "letter": "B",
+          "text": "Suggest payment will improve credit score."
+        },
+        {
+          "letter": "C",
+          "text": "Treat no-offer as a failure state that urges immediate retry."
+        },
+        {
+          "letter": "D",
+          "text": "Add a reward for retrying daily."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 5: Treat no-offer as a failure state that urges immediate retry is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-105",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Explain no current offer neutrally, preserve next steps without pressure, and avoid implying future outcomes."
+        },
+        {
+          "letter": "B",
+          "text": "Suggest payment will improve credit score."
+        },
+        {
+          "letter": "C",
+          "text": "Treat no-offer as a failure state that urges immediate retry."
+        },
+        {
+          "letter": "D",
+          "text": "Add a reward for retrying daily."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this CUSTOMER_FINANCIAL_UX task. Scenario level 5: Treat no-offer as a failure state that urges immediate retry is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-106",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add a larger reward near the deadline."
+        },
+        {
+          "letter": "B",
+          "text": "Avoid mechanics that pressure financial decisions; use non-coercive progress/support signals with clear opt-out."
+        },
+        {
+          "letter": "C",
+          "text": "Reward faster debt payment with an escalating streak."
+        },
+        {
+          "letter": "D",
+          "text": "Keep the streak but hide loss aversion copy."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 1: Reward faster debt payment with an escalating streak is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-107",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add a larger reward near the deadline."
+        },
+        {
+          "letter": "B",
+          "text": "Avoid mechanics that pressure financial decisions; use non-coercive progress/support signals with clear opt-out."
+        },
+        {
+          "letter": "C",
+          "text": "Reward faster debt payment with an escalating streak."
+        },
+        {
+          "letter": "D",
+          "text": "Keep the streak but hide loss aversion copy."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 1: Reward faster debt payment with an escalating streak is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-108",
+      "critical": false,
+      "difficulty": 1,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Add a larger reward near the deadline."
+        },
+        {
+          "letter": "B",
+          "text": "Avoid mechanics that pressure financial decisions; use non-coercive progress/support signals with clear opt-out."
+        },
+        {
+          "letter": "C",
+          "text": "Reward faster debt payment with an escalating streak."
+        },
+        {
+          "letter": "D",
+          "text": "Keep the streak but hide loss aversion copy."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 1: Reward faster debt payment with an escalating streak is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-109",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Notify more aggressively after a miss."
+        },
+        {
+          "letter": "B",
+          "text": "Provide recovery/off paths and avoid punitive loss; measure whether the mechanic supports healthy behavior."
+        },
+        {
+          "letter": "C",
+          "text": "Make missed days reset all progress."
+        },
+        {
+          "letter": "D",
+          "text": "Reset only after two misses."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 2: Make missed days reset all progress is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-110",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Notify more aggressively after a miss."
+        },
+        {
+          "letter": "B",
+          "text": "Make missed days reset all progress."
+        },
+        {
+          "letter": "C",
+          "text": "Provide recovery/off paths and avoid punitive loss; measure whether the mechanic supports healthy behavior."
+        },
+        {
+          "letter": "D",
+          "text": "Reset only after two misses."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 2: Make missed days reset all progress is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-111",
+      "critical": false,
+      "difficulty": 2,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Notify more aggressively after a miss."
+        },
+        {
+          "letter": "B",
+          "text": "Make missed days reset all progress."
+        },
+        {
+          "letter": "C",
+          "text": "Provide recovery/off paths and avoid punitive loss; measure whether the mechanic supports healthy behavior."
+        },
+        {
+          "letter": "D",
+          "text": "Reset only after two misses."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 2: Make missed days reset all progress is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-112",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Show percentile rank instead of names."
+        },
+        {
+          "letter": "B",
+          "text": "Use a public leaderboard to maximize engagement."
+        },
+        {
+          "letter": "C",
+          "text": "Reject or redesign rankings that expose sensitive financial behavior; prefer private, fair, non-comparative progress."
+        },
+        {
+          "letter": "D",
+          "text": "Anonymize only the last name."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 3: Use a public leaderboard to maximize engagement is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-113",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Show percentile rank instead of names."
+        },
+        {
+          "letter": "B",
+          "text": "Use a public leaderboard to maximize engagement."
+        },
+        {
+          "letter": "C",
+          "text": "Reject or redesign rankings that expose sensitive financial behavior; prefer private, fair, non-comparative progress."
+        },
+        {
+          "letter": "D",
+          "text": "Anonymize only the last name."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 3: Use a public leaderboard to maximize engagement is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-114",
+      "critical": false,
+      "difficulty": 3,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Show percentile rank instead of names."
+        },
+        {
+          "letter": "B",
+          "text": "Use a public leaderboard to maximize engagement."
+        },
+        {
+          "letter": "C",
+          "text": "Reject or redesign rankings that expose sensitive financial behavior; prefer private, fair, non-comparative progress."
+        },
+        {
+          "letter": "D",
+          "text": "Anonymize only the last name."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 3: Use a public leaderboard to maximize engagement is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-115",
+      "critical": true,
+      "difficulty": 4,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Keep the mechanic active while engagement is high."
+        },
+        {
+          "letter": "B",
+          "text": "Rely on monthly manual review."
+        },
+        {
+          "letter": "C",
+          "text": "Define causal success, harm/abuse guardrails and automatic deactivation/rollback conditions before activation."
+        },
+        {
+          "letter": "D",
+          "text": "Deactivate only when complaints exceed a high threshold."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 4: Keep the mechanic active while engagement is high is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-116",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Keep the mechanic active while engagement is high."
+        },
+        {
+          "letter": "B",
+          "text": "Rely on monthly manual review."
+        },
+        {
+          "letter": "C",
+          "text": "Define causal success, harm/abuse guardrails and automatic deactivation/rollback conditions before activation."
+        },
+        {
+          "letter": "D",
+          "text": "Deactivate only when complaints exceed a high threshold."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 4: Keep the mechanic active while engagement is high is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-117",
+      "critical": false,
+      "difficulty": 4,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Keep the mechanic active while engagement is high."
+        },
+        {
+          "letter": "B",
+          "text": "Rely on monthly manual review."
+        },
+        {
+          "letter": "C",
+          "text": "Define causal success, harm/abuse guardrails and automatic deactivation/rollback conditions before activation."
+        },
+        {
+          "letter": "D",
+          "text": "Deactivate only when complaints exceed a high threshold."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 4: Keep the mechanic active while engagement is high is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-118",
+      "critical": true,
+      "difficulty": 5,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Roll a successful mechanic to all cohorts."
+        },
+        {
+          "letter": "B",
+          "text": "Expand first, then analyze subgroup harm."
+        },
+        {
+          "letter": "C",
+          "text": "Test transfer with matched cohorts, retain failed-transfer evidence, and retire on critical harm/no uplift/cost failure."
+        },
+        {
+          "letter": "D",
+          "text": "Assume success generalizes."
+        }
+      ],
+      "preservation_case": true,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "The evidence is otherwise current and no production write is authorized. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 5: Roll a successful mechanic to all cohorts is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": true,
+      "case_id": "PEXR-119",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Roll a successful mechanic to all cohorts."
+        },
+        {
+          "letter": "B",
+          "text": "Expand first, then analyze subgroup harm."
+        },
+        {
+          "letter": "C",
+          "text": "Test transfer with matched cohorts, retain failed-transfer evidence, and retire on critical harm/no uplift/cost failure."
+        },
+        {
+          "letter": "D",
+          "text": "Assume success generalizes."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "A second team proposes a faster local workaround; preserve existing valid behavior. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 5: Roll a successful mechanic to all cohorts is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": false
+    },
+    {
+      "adaptation_case": false,
+      "case_id": "PEXR-120",
+      "critical": false,
+      "difficulty": 5,
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "options": [
+        {
+          "letter": "A",
+          "text": "Expand first, then analyze subgroup harm."
+        },
+        {
+          "letter": "B",
+          "text": "Roll a successful mechanic to all cohorts."
+        },
+        {
+          "letter": "C",
+          "text": "Test transfer with matched cohorts, retain failed-transfer evidence, and retire on critical harm/no uplift/cost failure."
+        },
+        {
+          "letter": "D",
+          "text": "Assume success generalizes."
+        }
+      ],
+      "preservation_case": false,
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect",
+      "prompt": "The same pattern may recur in another module; avoid hardcoding to this case. Choose the best action for this GAMIFICATION_SYSTEMS task. Scenario level 5: Roll a successful mechanic to all cohorts is being proposed or observed. Which response is most expert and governed?",
+      "transfer_case": true
+    }
+  ],
+  "producer_safe": true,
+  "schema": "PROFILE_EXPERT_BEHAVIOR_TASK_CORPUS_V1"
+}
