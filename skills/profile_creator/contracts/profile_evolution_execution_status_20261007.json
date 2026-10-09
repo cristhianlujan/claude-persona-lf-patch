@@ -192,7 +192,7 @@
       "raw_generation_started": false
     }
   },
-  "closure": "REARCHITECTURE_IN_EXECUTION; 70/76 REQUIRED TERMINAL. CORE V2 IMPROVEMENTS DONE; PE10E_C4 REAL A/B/C/D EXPERT TASK CAMPAIGN PENDING; INDEPENDENT_ASSURANCE V3 FORMAL MIGRATION ROLLBACK-PASS BUT MERGE/APPLY/REQUALIFY/PROMOTE PENDING; CUTOVER NOT ADMITTED",
+  "closure": "REARCHITECTURE_IN_EXECUTION; 70/76 REQUIRED TERMINAL. PE10E_C4 REAL A/B/C/D EXPERT TASK CAMPAIGN PENDING; INDEPENDENT_ASSURANCE V3 FORMAL MIGRATION ROLLBACK-PASS AND WAITS FOR EXPLICIT MERGE/APPLY/REQUALIFY/PROMOTE; CUTOVER NOT ADMITTED",
   "atomic_plan": {
     "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
     "unit_count": 18,
@@ -230,7 +230,7 @@
         "PE10_C2B"
       ],
       "current_checkpoint": "PE10_C3",
-      "blocker_code": "INDEPENDENT_ASSURANCE_V3_PUBLICATION_PENDING",
+      "blocker_code": "INDEPENDENT_ASSURANCE_V3_MERGE_APPLY_REQUAL_PENDING",
       "full_behavior_summary": {
         "benchmark_status": "BENCHMARK_PASS",
         "case_count": 21,
@@ -249,7 +249,7 @@
         "false_pass": "6 -> 0",
         "cost_latency_within_budget": true
       },
-      "blocker_detail": "Generic any-subject contract and full runtime candidate passed live transactional rollback. Remaining work is governed publication: formal Git migration -> merge -> exact apply -> operation requalification -> capability current promotion -> independent review."
+      "blocker_detail": "Formal V3 migration is Git-first and exact rollback PASS. Remaining governed publication requires explicit merge authorization, exact apply, operation requalification, capability 2.0.0 current promotion and Git=ledger=DB readback."
     },
     "PE1B": {
       "status": "DONE",
