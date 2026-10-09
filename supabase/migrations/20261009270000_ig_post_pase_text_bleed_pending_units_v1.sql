@@ -22,32 +22,36 @@ begin
 end
 $preflight$;
 
-update programacion.engineering_plan_units
-set exit_criterion = case unit_code
-  when 'M9.8' then
-    'Shadow Gate evaluado de forma determinista sobre el manifest de evidencia derivado del ledger de IG, con controles: 0 errores, 0 D4 sin explicar, 0 UNRESOLVED, 0 falso PASS, 47/47, M7 PASS; veredicto PASS persistido. El workstream POST_PASE/SADM queda fuera de alcance mientras permanezca desactivado.'
-  when 'M9.12' then
-    'Cutover Readiness Receipt CUTOVER_READY derivado del manifest del ledger de IG (M9.8 PASS, M9.10 drill PASS, M9.11 soak) y ligado al SHA del bundle M9.0; nunca PRODUCTION_ACTIVE. El workstream POST_PASE/SADM queda fuera de alcance mientras permanezca desactivado.'
-  when 'M10.13' then
-    replace(exit_criterion,
-      'y consumo de CLOSURE_GATE/ARCHITECTURE_CLOSURE de Super Admin (no gate propio)',
-      'y cierre evaluado de forma determinista sobre el ledger de IG (sin gate propio; el workstream POST_PASE/SADM queda fuera de alcance mientras permanezca desactivado)')
-  else exit_criterion
-end
-where plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' and unit_code in ('M9.8','M9.12','M10.13');
+do $apply$
+begin
+  update programacion.engineering_plan_units
+  set exit_criterion = case unit_code
+    when 'M9.8' then
+      'Shadow Gate evaluado de forma determinista sobre el manifest de evidencia derivado del ledger de IG, con controles: 0 errores, 0 D4 sin explicar, 0 UNRESOLVED, 0 falso PASS, 47/47, M7 PASS; veredicto PASS persistido. El workstream POST_PASE/SADM queda fuera de alcance mientras permanezca desactivado.'
+    when 'M9.12' then
+      'Cutover Readiness Receipt CUTOVER_READY derivado del manifest del ledger de IG (M9.8 PASS, M9.10 drill PASS, M9.11 soak) y ligado al SHA del bundle M9.0; nunca PRODUCTION_ACTIVE. El workstream POST_PASE/SADM queda fuera de alcance mientras permanezca desactivado.'
+    when 'M10.13' then
+      replace(exit_criterion,
+        'y consumo de CLOSURE_GATE/ARCHITECTURE_CLOSURE de Super Admin (no gate propio)',
+        'y cierre evaluado de forma determinista sobre el ledger de IG (sin gate propio; el workstream POST_PASE/SADM queda fuera de alcance mientras permanezca desactivado)')
+    else exit_criterion
+  end
+  where plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' and unit_code in ('M9.8','M9.12','M10.13');
 
-update programacion.engineering_work_checkpoints c
-set title = case pu.unit_code||'/'||c.checkpoint_code
-  when 'M9.8/CLOSURE_GATE_ASIS' then 'Readback AS-IS del ledger de IG y de los receipts de controles reutilizables (sin depender del workstream POST_PASE/SADM)'
-  when 'M9.12/PROMOTION_ASIS' then 'Readback AS-IS: programacion.promotions vacío y capacidades de cierre disponibles'
-  when 'M9.12/CLOSURE_GATE_CONSUME' then 'Receipt CUTOVER_READY derivado del manifest del ledger de IG (sin gate propio ni workstream POST_PASE)'
-  when 'M8.11/GATE_READBACK' then 'Readback terminal: gate de regresión registrado como control del ledger de IG'
-  when 'M10.13/CLOSURE_GATE_REUSE' then 'Cierre evaluado de forma determinista sobre el ledger de IG (sin gate propio)'
-  else c.title end,
-    updated_at=now(), updated_by_execution_id='IG_POST_PASE_SCOPE_CORRECTION_V3'
-from programacion.engineering_plan_units pu
-where pu.work_item_id=c.work_item_id and pu.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
-  and (pu.unit_code,c.checkpoint_code) in (('M9.8','CLOSURE_GATE_ASIS'),('M9.12','PROMOTION_ASIS'),('M9.12','CLOSURE_GATE_CONSUME'),('M8.11','GATE_READBACK'),('M10.13','CLOSURE_GATE_REUSE'));
+  update programacion.engineering_work_checkpoints c
+  set title = case pu.unit_code||'/'||c.checkpoint_code
+    when 'M9.8/CLOSURE_GATE_ASIS' then 'Readback AS-IS del ledger de IG y de los receipts de controles reutilizables (sin depender del workstream POST_PASE/SADM)'
+    when 'M9.12/PROMOTION_ASIS' then 'Readback AS-IS: programacion.promotions vacío y capacidades de cierre disponibles'
+    when 'M9.12/CLOSURE_GATE_CONSUME' then 'Receipt CUTOVER_READY derivado del manifest del ledger de IG (sin gate propio ni workstream POST_PASE)'
+    when 'M8.11/GATE_READBACK' then 'Readback terminal: gate de regresión registrado como control del ledger de IG'
+    when 'M10.13/CLOSURE_GATE_REUSE' then 'Cierre evaluado de forma determinista sobre el ledger de IG (sin gate propio)'
+    else c.title end,
+      updated_at=now(), updated_by_execution_id='IG_POST_PASE_SCOPE_CORRECTION_V3'
+  from programacion.engineering_plan_units pu
+  where pu.work_item_id=c.work_item_id and pu.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
+    and (pu.unit_code,c.checkpoint_code) in (('M9.8','CLOSURE_GATE_ASIS'),('M9.12','PROMOTION_ASIS'),('M9.12','CLOSURE_GATE_CONSUME'),('M8.11','GATE_READBACK'),('M10.13','CLOSURE_GATE_REUSE'));
+end
+$apply$;
 
 do $selftest$
 declare v_bad int;
