@@ -51,7 +51,8 @@ begin
    workflow_run_id,workflow_run_attempt,token_sha256)
  values ('EXEC-D7-positive',h,'/opt/lf-profile-runtime-api/releases/'||h,h,d,
   jsonb_build_object('exact_head',h,'source_sha',h,'runtime_sha',h,'manifest_matches',true,
-   'process_release_matches',true,'health_ok',true,'files_verified',true),
+   'process_release_matches',true,'health_ok',true,'files_verified',true,
+   'release_path','/opt/lf-profile-runtime-api/releases/'||h),
   declare_claims,'12345678','1',repeat('c',64))
  returning receipt_id into id;
  if id is null then raise exception 'I7_POSITIVE_RETURNING_MISSING'; end if;
