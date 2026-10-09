@@ -1,0 +1,18 @@
+name: LF parity proposal tests
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/migration_source_parity/**'
+      - '.github/workflows/lf-parity-proposal-tests.yml'
+      - '.github/workflows/lf-migration-merge-train.yml'
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m unittest discover -s sandbox/lf_contract_gate_test/migration_source_parity -p 'test_*.py'
