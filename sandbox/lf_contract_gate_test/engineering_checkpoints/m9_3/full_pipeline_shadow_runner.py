@@ -145,9 +145,10 @@ def capture_rollback_one(row: dict) -> dict:
     sid = row["screen_id"]
     sql = f"""
       SET LOCAL lock_timeout = '2000ms';
-      CREATE TEMP TABLE m93_baseline AS SELECT max(id) AS id
+      CREATE TEMP TABLE m93_baseline AS SELECT id,source_snapshot_sha256
         FROM programacion.input_readiness_runs
-        WHERE pantalla_id={sid} AND version_id=19 AND status='COMPLETED';
+        WHERE pantalla_id={sid} AND version_id=19 AND status='COMPLETED'
+          AND contract_revision='5.13' ORDER BY id DESC LIMIT 1;
       CREATE TEMP TABLE m93_core AS SELECT
         programacion.fn_input_screen_canonical_graph({sid},19) AS j;
       CREATE TEMP TABLE m93_semantics AS SELECT
@@ -167,6 +168,12 @@ def capture_rollback_one(row: dict) -> dict:
         END AS j FROM m93_curator c;
       SELECT jsonb_build_object(
         'baseline_run_id',(SELECT id FROM m93_baseline),
+        'baseline_revision','5.13',
+        'source_snapshot_match',((SELECT source_snapshot_sha256 FROM m93_baseline) IS NOT NULL AND
+          (SELECT source_snapshot_sha256 FROM m93_baseline) =
+          (SELECT r.source_snapshot_sha256 FROM programacion.input_readiness_runs r
+           WHERE r.id=(SELECT (j->>'run_id')::bigint FROM m93_curator
+             WHERE jsonb_typeof(j->'run_id')='number'))),
         'core',(SELECT j FROM m93_core),
         'semantics',(SELECT j FROM m93_semantics),
         'curator',(SELECT j FROM m93_curator),
@@ -239,11 +246,14 @@ def capture_rollback_one(row: dict) -> dict:
         out["t_equiv"]={
            "capability_code":"CONTROL_EQUIVALENCE_JUDGE",
            "baseline":"5.13","candidate":"VNEXT",
-           "status":"PASS" if eq.get("result")=="PASS_EQUIVALENT" else "BLOCKED",
+           "status":"PASS" if eq.get("result")=="PASS_EQUIVALENT" and
+             result.get("source_snapshot_match") is True else "BLOCKED",
            "difference_count":eq.get("divergence_count"),
            "result":eq.get("result"),
            "evidence_sha256":digest(eq)}
         out["baseline_run_id"]=result.get("baseline_run_id")
+        out["baseline_revision"]=result.get("baseline_revision")
+        out["source_snapshot_match"]=result.get("source_snapshot_match")
         out["comparison_sha256"]=digest({"baseline":baseline,"candidate":candidate})
     except (RuntimeError,ValueError,subprocess.TimeoutExpired) as exc:
         out["vnext_pipeline"]=[{"stage":s,"status":"BLOCKED",
