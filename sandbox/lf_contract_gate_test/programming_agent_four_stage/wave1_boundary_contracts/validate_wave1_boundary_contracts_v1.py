@@ -123,6 +123,106 @@ def validate_programming_entry(o):
     if c.get("action")!="EXTEND_ENTRY_BOUNDARY_DO_NOT_DUPLICATE_RUNTIME" or c.get("new_runtime_created") is not False: raise ContractError("PROGRAMMING_PARALLEL_RUNTIME")
     if c.get("story_direct_consumption_after_cutover") is not False: raise ContractError("PROGRAMMING_STORY_CUTOVER")
 
+def validate_programming_snapshot_payload_v1(snapshot):
+    """Validate a concrete A9 -> PG-01 scope/front handoff, not only the contract declaration.
+
+    Fail closed. No new selector or engine, and no claim of physical PG-01 execution.
+    """
+    if not isinstance(snapshot,dict) or snapshot.get("schema_version")!="PROGRAMMING_CONTEXT_SNAPSHOT_V1":
+        raise ContractError("SNAPSHOT_PAYLOAD_SCHEMA")
+    scopes=snapshot.get("scope_readiness")
+    coverage=snapshot.get("material_front_coverage")
+    matrix=snapshot.get("scope_front_matrix")
+    if not isinstance(scopes,list) or not scopes or not isinstance(coverage,dict):
+        raise ContractError("SNAPSHOT_PAYLOAD_SCOPES")
+    fronts=coverage.get("fronts")
+    if not isinstance(fronts,list) or not fronts or coverage.get("all_material_fronts_accounted") is not True:
+        raise ContractError("SNAPSHOT_PAYLOAD_FRONTS")
+    if not isinstance(matrix,list) or not matrix:
+        raise ContractError("SNAPSHOT_PAYLOAD_MATRIX_REQUIRED")
+    front_map={}
+    for front in fronts:
+        if not isinstance(front,dict) or not isinstance(front.get("id"),str) or not front["id"] or front["id"] in front_map:
+            raise ContractError("SNAPSHOT_FRONT_ID")
+        if front.get("status") not in {"REQUIRED","REUSE_AS_IS","NOT_APPLICABLE"}:
+            raise ContractError("SNAPSHOT_FRONT_STATUS")
+        if front.get("closure") not in {"CLOSED","BLOCKED"}:
+            raise ContractError("SNAPSHOT_FRONT_CLOSURE")
+        if front["status"]=="REUSE_AS_IS" and front["closure"]=="CLOSED" and not front.get("currentness_refs"):
+            raise ContractError("SNAPSHOT_FRONT_REUSE_CURRENTNESS")
+        if front["status"]=="NOT_APPLICABLE" and (
+            not front.get("evidence_refs") or not front.get("reason")):
+            raise ContractError("SNAPSHOT_FRONT_NOT_APPLICABLE_PROOF")
+        front_map[front["id"]]=front
+    scope_map={}
+    expected_pairs=set()
+    for scope in scopes:
+        if not isinstance(scope,dict) or not isinstance(scope.get("scope_id"),str) or not scope["scope_id"]:
+            raise ContractError("SNAPSHOT_SCOPE_ID")
+        sid=scope["scope_id"]
+        if sid in scope_map: raise ContractError("SNAPSHOT_DUPLICATE_SCOPE")
+        if scope.get("status") not in {"READY","BLOCKED","REQUIRES_DECISION","NEED_MORE_EVIDENCE","NOT_APPLICABLE"}:
+            raise ContractError("SNAPSHOT_SCOPE_STATUS")
+        refs=scope.get("material_front_refs")
+        deps=scope.get("depends_on_scope_ids")
+        if not isinstance(refs,list) or not refs or len(refs)!=len(set(refs)):
+            raise ContractError("SNAPSHOT_SCOPE_FRONT_REFS")
+        if not isinstance(deps,list) or len(deps)!=len(set(deps)):
+            raise ContractError("SNAPSHOT_SCOPE_DEPENDENCIES")
+        for front_id in refs:
+            if front_id not in front_map: raise ContractError("SNAPSHOT_SCOPE_UNKNOWN_FRONT")
+            expected_pairs.add((sid,front_id))
+        scope_map[sid]=scope
+    for sid,scope in scope_map.items():
+        for dep in scope["depends_on_scope_ids"]:
+            if dep not in scope_map or dep==sid:
+                raise ContractError("SNAPSHOT_SCOPE_DEPENDENCY_INVALID")
+            if scope["status"]=="READY" and scope_map[dep]["status"]!="READY":
+                raise ContractError("SNAPSHOT_READY_BLOCKED_DEPENDENCY")
+        if scope["status"]=="READY" and scope.get("blockers"):
+            raise ContractError("SNAPSHOT_READY_WITH_BLOCKER")
+    # Detect cycles in ALL scopes, including blocked scopes; cycles cannot be
+    # silently accepted as valid dependency closure after a policy change.
+    visited=set()
+    visiting=set()
+    def visit(sid):
+        if sid in visiting: raise ContractError("SNAPSHOT_DEPENDENCY_CYCLE")
+        if sid in visited:return
+        visiting.add(sid)
+        for dep in scope_map[sid]["depends_on_scope_ids"]:visit(dep)
+        visiting.remove(sid)
+        visited.add(sid)
+    for sid in scope_map:visit(sid)
+
+    actual_pairs=set()
+    for row in matrix:
+        if not isinstance(row,dict):
+            raise ContractError("SNAPSHOT_MATRIX_ROW")
+        sid,fid=row.get("scope_id"),row.get("front_id")
+        if (sid,fid) in actual_pairs:raise ContractError("SNAPSHOT_MATRIX_DUPLICATE")
+        if (sid,fid) not in expected_pairs:raise ContractError("SNAPSHOT_MATRIX_ORPHAN")
+        actual_pairs.add((sid,fid))
+        front=front_map[fid]
+        if row.get("front_status")!=front["status"] or row.get("front_closure")!=front["closure"]:
+            raise ContractError("SNAPSHOT_MATRIX_FRONT_MISMATCH")
+        effect=("NOT_APPLICABLE" if front["status"]=="NOT_APPLICABLE" else
+                "BLOCKS" if front["closure"]=="BLOCKED" else "PRESERVE")
+        if row.get("effect_on_scope")!=effect:
+            raise ContractError("SNAPSHOT_MATRIX_EFFECT_MISMATCH")
+        if effect=="BLOCKS" and scope_map[sid]["status"]=="READY":
+            raise ContractError("SNAPSHOT_BLOCKED_FRONT_READY_SCOPE")
+    if actual_pairs!=expected_pairs:
+        raise ContractError("SNAPSHOT_MATRIX_INCOMPLETE")
+    ready=[s for s in scopes if s["status"]=="READY"]
+    if snapshot.get("package_readiness")=="READY" and len(ready)!=len(scopes):
+        raise ContractError("SNAPSHOT_PACKAGE_READY_INCONSISTENT")
+    if snapshot.get("package_readiness")=="PARTIAL_READY" and (
+        not ready or len(ready)==len(scopes)):
+        raise ContractError("SNAPSHOT_PACKAGE_PARTIAL_INCONSISTENT")
+    return {"state":"PASS","scopes":len(scopes),"fronts":len(fronts),"matrix_pairs":len(matrix),
+            "ready_scopes":len(ready)}
+
+
 def validate_analysis_decision_context(o):
     if o.get("schema_version")!="ANALYSIS_DECISION_CONTEXT_ADR_CONTRACT_V1" or o.get("unit")!="A5": raise ContractError("A5_IDENTITY")
     if set(o.get("input_contracts",[]))!={"REQUEST_CONTEXT_V1","ANALYSIS_CHANGE_CLASSIFICATION_V1","TARGETED_EVIDENCE_SET_V1","SHARED_CHANGE_IMPACT_ANALYSIS"}: raise ContractError("A5_INPUTS")
