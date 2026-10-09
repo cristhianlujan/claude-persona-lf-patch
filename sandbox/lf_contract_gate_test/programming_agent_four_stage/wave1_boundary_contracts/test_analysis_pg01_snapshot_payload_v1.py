@@ -15,9 +15,22 @@ def fixture():
       "material_front_coverage":{
         "schema_version":"MATERIAL_FRONT_COVERAGE_V1",
         "all_material_fronts_accounted":True,
-        "fronts":[
-          {"id":"F1","status":"REQUIRED","closure":"CLOSED"},
-          {"id":"F2","status":"REQUIRED","closure":"BLOCKED"},
+        "front_candidate_refs":["F1","F2"],
+        "unmapped_material_signals":[],
+        "source_refs":["source://replay"],
+        "currentness_refs":["currentness://proof"],
+        "coverage_fingerprint_sha256":"a"*64,
+        "material_fronts":[
+          {"front_id":"F1","front_kind":"UI_RULE","status":"REQUIRED",
+           "closure":"CLOSED","source_signal_refs":["signal://f1"],
+           "scope_refs":["S1"],"authority_refs":["authority://f1"],
+           "evidence_refs":["evidence://f1"],"currentness_refs":["currentness://f1"],
+           "blockers":[],"reason":"source-bound requirement"},
+          {"front_id":"F2","front_kind":"AUTHORITY","status":"REQUIRED",
+           "closure":"BLOCKED","source_signal_refs":["signal://f2"],
+           "scope_refs":["S2"],"authority_refs":["authority://f2"],
+           "evidence_refs":[],"currentness_refs":[],
+           "blockers":["OWNER_PENDING"],"reason":"authority unresolved"},
         ]},
       "scope_readiness":[
         {"scope_id":"S1","status":"READY","material_front_refs":["F1"],
@@ -53,8 +66,11 @@ tests=[
   ("SNAPSHOT_BLOCKED_FRONT_READY_SCOPE",lambda x:x["scope_readiness"][1].update(status="READY",blockers=[])),
   ("SNAPSHOT_READY_BLOCKED_DEPENDENCY",lambda x:x["scope_readiness"][0].update(depends_on_scope_ids=["S2"])),
   ("SNAPSHOT_DEPENDENCY_CYCLE",lambda x:x["scope_readiness"][0].update(depends_on_scope_ids=["S2"],status="BLOCKED")),
-  ("SNAPSHOT_FRONT_REUSE_CURRENTNESS",lambda x:x["material_front_coverage"]["fronts"][0].update(status="REUSE_AS_IS")),
-  ("SNAPSHOT_FRONT_NOT_APPLICABLE_PROOF",lambda x:x["material_front_coverage"]["fronts"][0].update(status="NOT_APPLICABLE")),
+  ("SNAPSHOT_FRONT_SCOPE_PARITY",lambda x:x["material_front_coverage"]["material_fronts"][0].update(scope_refs=["S2"])),
+  ("SNAPSHOT_FRONT_REQUIRED_REFS",lambda x:x["material_front_coverage"]["material_fronts"][0].pop("authority_refs")),
+  ("SNAPSHOT_COVERAGE_PROVENANCE",lambda x:x["material_front_coverage"].update(coverage_fingerprint_sha256=None)),
+  ("SNAPSHOT_FRONT_REUSE_CURRENTNESS",lambda x:x["material_front_coverage"]["material_fronts"][0].update(status="REUSE_AS_IS")),
+  ("SNAPSHOT_FRONT_NOT_APPLICABLE_PROOF",lambda x:x["material_front_coverage"]["material_fronts"][0].update(status="NOT_APPLICABLE")),
 ]
 for code,mutate in tests:
     variant=copy.deepcopy(s)
