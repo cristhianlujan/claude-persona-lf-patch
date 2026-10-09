@@ -864,95 +864,114 @@
     {
       "unit_code": "PE10P",
       "lot": "E10",
-      "title": "Governed Profile Creator semantic producer execution",
+      "title": "Canonical three-route execution binding for full behavior",
       "depends_on": [
         "PE5A",
         "PE8"
       ],
-      "status": "IN_PROGRESS_GPT_RUNTIME_CONFIGURATION_BLOCKED",
+      "status": "IN_PROGRESS_GPT_NATIVE",
       "checkpoints": [
         {
           "checkpoint_code": "PE10P_C1",
-          "title": "Profile Creator semantic execution binds to existing GPT runtime with no Llama dependency",
+          "title": "Canonical execution contract exposes GPT_NATIVE, CLAUDE_NATIVE and REMOTE_API",
           "required": true,
           "status": "PENDING_FRESH_VALIDATION",
           "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
           "validation_input": {
             "repository": "cristhianlujan/claude-persona-lf-patch",
             "ref": "agent/profile-evolution-orchestrator-20261007",
-            "path": "skills/profile_creator/contracts/profile_creator_governed_semantic_runner_v1.json",
+            "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/profile_execution_contract.py",
             "must_contain": [
-              "openai-responses-v1",
-              "PROFILE_EXECUTION_RECEIPT_V1",
-              "llama_required",
-              "false",
-              "DIRECT_LLAMA_SERVER"
+              "EXECUTOR_MODES",
+              "GPT_NATIVE",
+              "CLAUDE_NATIVE",
+              "REMOTE_API"
             ]
           },
-          "pass_when": "existing Profile Creator semantic role uses existing governed GPT runtime; llama_required=false; direct llama-server forbidden",
-          "failure_code": "PROFILE_CREATOR_GPT_RUNTIME_BINDING_INVALID",
-          "resolver_policy": "FIX_BINDING_THEN_REVALIDATE"
+          "pass_when": "LF_PROFILE_EXECUTION_CONTRACT_V1 exposes the three canonical execution modes",
+          "failure_code": "PROFILE_EXECUTION_MODES_DRIFT",
+          "resolver_policy": "RECONCILE_TO_CANONICAL_EXECUTION_CONTRACT_THEN_REVALIDATE"
         },
         {
           "checkpoint_code": "PE10P_C2",
-          "title": "Existing OpenAI GPT provider adapter qualifies deterministic boundaries",
+          "title": "Executor adapters are mode-bound and cannot silently substitute",
           "required": true,
           "status": "PENDING_FRESH_VALIDATION",
-          "validator_code": "OPENAI_PROFILE_RUNTIME_PROVIDER_TESTS_V1",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
           "validation_input": {
-            "test_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/run_openai_provider_tests.py",
-            "expected": "OPENAI_PROFILE_RUNTIME_TESTS_PASS 10/10"
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/contract_bound_profile_runtime.py",
+            "must_contain": [
+              "chatgpt-native-current-context-v1",
+              "GPT_NATIVE",
+              "claude-native-current-context-v1",
+              "CLAUDE_NATIVE",
+              "hetzner-local-llamacpp-http-v1",
+              "REMOTE_API",
+              "EXECUTOR_MODE_ADAPTER_MISMATCH"
+            ]
           },
-          "pass_when": "provider adapter/readback/provenance tests pass 10/10",
-          "failure_code": "OPENAI_PROFILE_RUNTIME_PROVIDER_TESTS_FAIL",
-          "resolver_policy": "FIX_TRANSVERSAL_GPT_RUNTIME_THEN_REVALIDATE"
+          "pass_when": "GPT native, Claude native and remote/Llama adapters are explicitly bound to their modes and mismatch fails closed",
+          "failure_code": "EXECUTOR_ROUTE_BINDING_DRIFT",
+          "resolver_policy": "FIX_CANONICAL_RUNTIME_BINDING_THEN_REVALIDATE"
         },
         {
           "checkpoint_code": "PE10P_C3",
-          "title": "Governed GPT runtime is deployed and exact-source available",
+          "title": "Current ChatGPT execution selects GPT_NATIVE without API credential dependency",
           "required": true,
           "status": "PENDING_FRESH_VALIDATION",
-          "validator_code": "OPENAI_PROFILE_RUNTIME_PROVIDER_TESTS_V1",
+          "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
           "validation_input": {
-            "deployed_path": "/opt/lf-profile-runtime-api/current/sandbox/lf_contract_gate_test/profile_execution_runtime/openai_responses_runtime.py",
-            "expected_blob": "5defade484090b3942496f6a87fd10b7fb706029",
-            "llama_required": false
+            "repository": "cristhianlujan/claude-persona-lf-patch",
+            "ref": "agent/profile-evolution-orchestrator-20261007",
+            "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/README.md",
+            "must_contain": [
+              "GPT_NATIVE",
+              "CLAUDE_NATIVE",
+              "REMOTE_API",
+              "none may silently substitute for another",
+              "native ChatGPT"
+            ]
           },
-          "pass_when": "openai-responses-v1 exact source is deployed and provider tests pass; llama is not required",
-          "failure_code": "OPENAI_PROFILE_RUNTIME_NOT_DEPLOYED_OR_DRIFTED",
-          "resolver_policy": "RECONCILE_EXISTING_TRANSVERSAL_RUNTIME_THEN_REVALIDATE"
+          "pass_when": "native chat execution is a first-class canonical mode and does not require selecting REMOTE_API",
+          "failure_code": "GPT_NATIVE_ROUTE_NOT_CANONICAL",
+          "resolver_policy": "REUSE_CANONICAL_NATIVE_ROUTE_THEN_REVALIDATE"
         },
         {
           "checkpoint_code": "PE10P_C4",
-          "title": "Fresh live GPT execution receipt proves provider readback and no authority activation",
+          "title": "Fresh GPT_NATIVE execution receipt is materialized from this chat",
           "required": true,
           "status": "PENDING_FRESH_VALIDATION",
           "validator_code": "PROFILE_EXECUTION_RECEIPT_V1",
           "validation_input": {
-            "provider": "openai",
-            "adapter_id": "openai-responses-v1",
+            "executor_mode": "GPT_NATIVE",
+            "adapter_id": "chatgpt-native-current-context-v1",
+            "provider": "OPENAI_CHATGPT_NATIVE",
             "receipt_type": "PROFILE_EXECUTION_RECEIPT_V1",
-            "fresh_run": true,
-            "required_runtime_attestation": true
+            "raw_materialization_required": true,
+            "github_readback_required": true,
+            "api_key_required": false
           },
-          "pass_when": "one live GPT execution returns canonical verified PROFILE_EXECUTION_RECEIPT_V1 with exact input/source/raw hashes and no self-authorization",
-          "failure_code": "OPENAI_PROFILE_RUNTIME_CREDENTIAL_MISSING_OR_LIVE_RECEIPT_FAIL",
-          "resolver_policy": "CONFIGURE_GOVERNED_GPT_CREDENTIALS_AND_RERUN_FRESH"
+          "pass_when": "fresh native ChatGPT RAW is persisted and a canonical receipt binds exact source/input/raw hashes plus GPT_NATIVE provenance",
+          "failure_code": "GPT_NATIVE_EXECUTION_RECEIPT_MISSING",
+          "resolver_policy": "MATERIALIZE_CURRENT_CHAT_RAW_AND_RECEIPT_THEN_REVALIDATE"
         },
         {
           "checkpoint_code": "PE10P_C5",
-          "title": "Smoke semantic output materializes through reversible candidate bridge",
+          "title": "Native semantic RAW materializes through reversible candidate bridge",
           "required": true,
           "status": "PENDING_FRESH_VALIDATION",
           "validator_code": "PROFILE_CANDIDATE_MATERIALIZER_V1",
           "validation_input": {
             "producer_receipt_required": true,
             "materializer_receipt_required": true,
-            "smoke_cases": 1
+            "smoke_cases": 1,
+            "executor_mode": "GPT_NATIVE"
           },
-          "pass_when": "one fresh GPT Profile Creator raw output becomes a reversible NON_AUTHORITY_CANDIDATE with source_unchanged=true",
-          "failure_code": "SEMANTIC_PRODUCER_TO_MATERIALIZER_SMOKE_FAIL",
-          "resolver_policy": "FIX_BINDING_THEN_RERUN_FRESH_SMOKE"
+          "pass_when": "one fresh GPT_NATIVE semantic RAW becomes a reversible NON_AUTHORITY_CANDIDATE with source_unchanged=true",
+          "failure_code": "GPT_NATIVE_TO_MATERIALIZER_SMOKE_FAIL",
+          "resolver_policy": "FIX_BINDING_THEN_RERUN_FRESH_NATIVE_SMOKE"
         }
       ]
     },
@@ -1083,6 +1102,8 @@
   "discovery_repairs": [
     "PE5A_ADDED_AFTER_FULL_BEHAVIOR_REVEALED_MISSING_CANDIDATE_MATERIALIZATION_BRIDGE",
     "PE10P_ADDED_TO_MATERIALIZE_GOVERNED_SEMANTIC_PRODUCER_EXECUTION_DEPENDENCY",
-    "PE10P_REBOUND_TO_EXISTING_OPENAI_RESPONSES_GPT_RUNTIME_NO_LLAMA_DEPENDENCY"
+    "PE10P_REBOUND_TO_EXISTING_OPENAI_RESPONSES_GPT_RUNTIME_NO_LLAMA_DEPENDENCY",
+    "PE10P_REUSED_CANONICAL_LF_PROFILE_EXECUTION_CONTRACT_THREE_ROUTE_ARCHITECTURE",
+    "PE10P_REMOVED_FALSE_OPENAI_API_CREDENTIAL_DEPENDENCY"
   ]
 }
