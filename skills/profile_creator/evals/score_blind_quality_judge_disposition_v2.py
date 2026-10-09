@@ -15,7 +15,7 @@ EXPECTED={"S01":"CONTRADICTED","S02":"SUPPORTED",
           "S03":"CONTRADICTED","S04":"SUPPORTED"}
 
 def main():
-    assert not OUT.exists()
+
     raw=json.loads(RAW.read_text())
     assert raw["raw_frozen"] and raw["attestation"]["verified"] is True
     actual={x["review_id"]:x for x in raw["reviews"]}
@@ -35,7 +35,12 @@ def main():
          "matches":v==actual[k]["verdict"]} for k,v in EXPECTED.items()],
       "error_class":"SEMANTIC_VERDICT_DISCRIMINATION_FAILURE" if matched!=len(EXPECTED) else None,
       "cutover_eligible":False}
-    OUT.write_text(json.dumps(data,sort_keys=True,indent=2)+"\n")
+    encoded=json.dumps(data,sort_keys=True,indent=2)+"
+"
+if OUT.exists():
+    assert OUT.read_text()==encoded, 'FROZEN_ARTIFACT_DRIFT'
+else:
+    OUT.write_text(encoded)
     print(json.dumps({"status":data["status"],"passed":matched,"total":len(EXPECTED),
        "sha256":hashlib.sha256(OUT.read_bytes()).hexdigest()},sort_keys=True))
 
