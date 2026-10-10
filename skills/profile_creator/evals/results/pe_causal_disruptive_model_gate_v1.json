@@ -1,0 +1,177 @@
+{
+  "admitted_model_outputs": 0,
+  "cases": [
+    {
+      "case_id": "PE-CAUS-01",
+      "model_answer": {
+        "case_id": "PE-CAUS-01",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "result": {
+        "blocking_codes": [
+          "ACTION_CONTRADICTION",
+          "FALSIFICATION_CONTRADICTION"
+        ],
+        "cutover_eligible": false,
+        "model_output_admitted": false,
+        "next_step": "REGENERATE_EXPLANATION_FROM_TYPED_METHOD_RESULT",
+        "production_authorized": false,
+        "publication_authorized": false,
+        "reason": "MODEL_CONTRADICTS_VERIFIED_METHOD",
+        "schema": "PROFILE_METHOD_DECISION_GATE_V1",
+        "status": "BLOCKED",
+        "verified_method_action": "INVESTIGATE_H2"
+      }
+    },
+    {
+      "case_id": "PE-CAUS-02",
+      "model_answer": {
+        "case_id": "PE-CAUS-02",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "result": {
+        "blocking_codes": [
+          "ACTION_CONTRADICTION",
+          "FALSIFICATION_CONTRADICTION"
+        ],
+        "cutover_eligible": false,
+        "model_output_admitted": false,
+        "next_step": "REGENERATE_EXPLANATION_FROM_TYPED_METHOD_RESULT",
+        "production_authorized": false,
+        "publication_authorized": false,
+        "reason": "MODEL_CONTRADICTS_VERIFIED_METHOD",
+        "schema": "PROFILE_METHOD_DECISION_GATE_V1",
+        "status": "BLOCKED",
+        "verified_method_action": "INVESTIGATE_H2"
+      }
+    },
+    {
+      "case_id": "PE-CAUS-03",
+      "model_answer": {
+        "case_id": "PE-CAUS-03",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "result": {
+        "blocking_codes": [
+          "ACTION_CONTRADICTION",
+          "FALSIFICATION_CONTRADICTION"
+        ],
+        "cutover_eligible": false,
+        "model_output_admitted": false,
+        "next_step": "REGENERATE_EXPLANATION_FROM_TYPED_METHOD_RESULT",
+        "production_authorized": false,
+        "publication_authorized": false,
+        "reason": "MODEL_CONTRADICTS_VERIFIED_METHOD",
+        "schema": "PROFILE_METHOD_DECISION_GATE_V1",
+        "status": "BLOCKED",
+        "verified_method_action": "INVESTIGATE_H2"
+      }
+    },
+    {
+      "case_id": "PE-CAUS-04",
+      "model_answer": {
+        "case_id": "PE-CAUS-04",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "result": {
+        "blocking_codes": [
+          "FALSIFICATION_CONTRADICTION"
+        ],
+        "cutover_eligible": false,
+        "model_output_admitted": false,
+        "next_step": "REGENERATE_EXPLANATION_FROM_TYPED_METHOD_RESULT",
+        "production_authorized": false,
+        "publication_authorized": false,
+        "reason": "MODEL_CONTRADICTS_VERIFIED_METHOD",
+        "schema": "PROFILE_METHOD_DECISION_GATE_V1",
+        "status": "BLOCKED",
+        "verified_method_action": "COLLECT_MORE_EVIDENCE"
+      }
+    },
+    {
+      "case_id": "PE-CAUS-05",
+      "model_answer": {
+        "case_id": "PE-CAUS-05",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "result": {
+        "blocking_codes": [
+          "ACTION_CONTRADICTION",
+          "FALSIFICATION_CONTRADICTION"
+        ],
+        "cutover_eligible": false,
+        "model_output_admitted": false,
+        "next_step": "REGENERATE_EXPLANATION_FROM_TYPED_METHOD_RESULT",
+        "production_authorized": false,
+        "publication_authorized": false,
+        "reason": "MODEL_CONTRADICTS_VERIFIED_METHOD",
+        "schema": "PROFILE_METHOD_DECISION_GATE_V1",
+        "status": "BLOCKED",
+        "verified_method_action": "INVESTIGATE_H2"
+      }
+    },
+    {
+      "case_id": "PE-CAUS-06",
+      "model_answer": {
+        "case_id": "PE-CAUS-06",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "result": {
+        "blocking_codes": [
+          "FALSIFICATION_CONTRADICTION"
+        ],
+        "cutover_eligible": false,
+        "model_output_admitted": false,
+        "next_step": "REGENERATE_EXPLANATION_FROM_TYPED_METHOD_RESULT",
+        "production_authorized": false,
+        "publication_authorized": false,
+        "reason": "MODEL_CONTRADICTS_VERIFIED_METHOD",
+        "schema": "PROFILE_METHOD_DECISION_GATE_V1",
+        "status": "BLOCKED",
+        "verified_method_action": "COLLECT_MORE_EVIDENCE"
+      }
+    }
+  ],
+  "cutover_eligible": false,
+  "method_plan_sha256": "8e6d578a9cc075dd17e2100936a58741448ef2fd75eaa1eda2dce6985190dea8",
+  "model_conflict_count": 6,
+  "model_raw_sha256": "4b091ee3b013c18824d65e4d2dd347e657d77aef4da1a62b84c8fe274e881085",
+  "production_activations": 0,
+  "schema": "PE_CAUSAL_DISRUPTIVE_MODEL_RECONCILIATION_V1"
+}

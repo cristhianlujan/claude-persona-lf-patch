@@ -1,0 +1,37 @@
+{
+  "arm_count": 2,
+  "arms": [
+    {
+      "arm": "D1_STATIC",
+      "completion_tokens": 76,
+      "correct_decision": true,
+      "evidence_specific_reason": false,
+      "observed_wall_ms": 17180.6,
+      "prompt_tokens": 3288,
+      "receipt_sha256": "a434ab32729021dd16b41cba9f3b47160a2d6b65de57f485dd32d6d32426d092",
+      "unsupported_case_id_mismatch_claim": true
+    },
+    {
+      "arm": "D3_WITH_VERIFIED_LINEAGE",
+      "completion_tokens": 51,
+      "correct_decision": true,
+      "evidence_specific_reason": true,
+      "observed_wall_ms": 10105.35,
+      "prompt_tokens": 3408,
+      "receipt_sha256": "dee2a9525ab3b3b993c384979ac46a690af53f1ad416cc42c34e8881fe879083",
+      "unsupported_case_id_mismatch_claim": false
+    }
+  ],
+  "causal_effect_on_overall_quality": "NOT_ESTABLISHED",
+  "cutover_eligible": false,
+  "independent_semantic_assurance": "NOT_EXECUTED",
+  "latency_uplift_statistical": "NOT_ESTABLISHED",
+  "method_liveness_sha256": "7ba84d26c11799b67d0f3b1aff8202b64ece91b13abf3a1e10aeeea91143bbb5",
+  "next_step": "FREEZE_MULTIPLE_NEW_INDEPENDENT_DISRUPTIVE_CASES",
+  "producer_sha256": "b93ae56041779aba0f0c2ad32ea29e93ba3f92f6ee988114a1c1df6c5b786f37",
+  "proof": "Cross-run receipt hash does not match its claimed parent although case identifier matches",
+  "result": "DECISION_TIED_EVIDENCE_GROUNDING_DIFFERENT",
+  "sample_count": 1,
+  "schema": "PE_CAUSAL_PILOT_INDEPENDENT_NARROW_SCORE_V1",
+  "source_r3_sha256": "8f891da0aa4a3056a60924ce56458e2dbca2cfb040599e708224893c1d5b83a2"
+}

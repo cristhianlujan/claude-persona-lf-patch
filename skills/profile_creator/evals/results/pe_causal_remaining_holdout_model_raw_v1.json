@@ -1,0 +1,260 @@
+{
+  "arms": [
+    "D1_STATIC",
+    "D3_TYPED_METHOD"
+  ],
+  "batches": [
+    {
+      "answers": [
+        {
+          "case_id": "HCA-105",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The owner record itself is absent. The owner exists but the authorization token is invalid. Both hypotheses are contradicted by current typed evidence."
+        },
+        {
+          "case_id": "HCA-106",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2",
+            "H3"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2",
+            "H2"
+          ],
+          "reason": "The acknowledgement was committed. The rows persisted, but acknowledgement was not written. Both hypotheses are contradicted by current typed evidence."
+        }
+      ],
+      "arm": "D1_STATIC",
+      "batch_index": 1,
+      "case_ids": [
+        "HCA-105",
+        "HCA-106"
+      ],
+      "contract_sha256": "a8d5a395cc0b10fefb2fb67fe645f88ceb249b93834ab991b2fc35cc7b429ef3",
+      "prompt_sha256": "7d171ebd786e092f2c24339de66935fa3235b962a64609ef411b44601397ce43",
+      "receipt_sha256": "b2d387b661c6f0c7d136794d5e13e3eac9c5fcf80e7849b735f5fc2bdf5dd89e",
+      "run_id": "PE-CAUSAL-REMAINING-HOLDOUT-20261009:B1:D1_STATIC",
+      "runtime_attestation": {
+        "evidence_sha256": "ae1156b004b8f9942df80537067e269a59768339e88ce23dec6786e98e26e4e5",
+        "request_sha256": "829d82c6497718ffe8e3812385e65fefb3f991aa215eb885cd9cb8ad9f5010cc",
+        "response_sha256": "1804fcd94d89b7b050938a534293e91abc63cdb7ea6f559202825990aa5f6871",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 241,
+        "prompt_tokens": 3777,
+        "prompt_tokens_details": {
+          "cached_tokens": 3019
+        },
+        "total_tokens": 4018
+      },
+      "wall_ms": 49376.69
+    },
+    {
+      "answers": [
+        {
+          "case_id": "HCA-105",
+          "causality_proven": false,
+          "claim_ids": [
+            "OBS:OWNER_EXISTS",
+            "REFUTE:H1:OWNER_EXISTS",
+            "MISSING:H2:TOKEN_VALID"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1"
+          ],
+          "reason": "The owner record itself is absent."
+        },
+        {
+          "case_id": "HCA-106",
+          "causality_proven": false,
+          "claim_ids": [
+            "OBS:ACK_WRITTEN",
+            "OBS:VALID_ROWS_PERSISTED",
+            "REFUTE:H1:VALID_ROWS_PERSISTED",
+            "REFUTE:H2:ACK_WRITTEN"
+          ],
+          "decision": "INVESTIGATE_H3",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "No validated rows were imported."
+        }
+      ],
+      "arm": "D3_TYPED_METHOD",
+      "batch_index": 1,
+      "case_ids": [
+        "HCA-105",
+        "HCA-106"
+      ],
+      "contract_sha256": "d2c042086a6b933e8c82f3065cd708c765ce8ceecd83714183e1f1564e671f36",
+      "prompt_sha256": "a53ee837013232c259e6eded91cd30703f975a267486b293f6aeaecbd9be5247",
+      "receipt_sha256": "bcca80cd66c958a2e4766b292ab2828eb35b9cb3635f43b8cfcfd642f8a9b91b",
+      "run_id": "PE-CAUSAL-REMAINING-HOLDOUT-20261009:B1:D3_TYPED_METHOD",
+      "runtime_attestation": {
+        "evidence_sha256": "2146b9abd6894d422b38f9b2618d1d4a9ad30cbf0e01c3fa4d03c04dca568b25",
+        "request_sha256": "2155229e44ffebb95e4f25f2a1e1103d890e7b3b0cd1343fd2459b6f34d43a29",
+        "response_sha256": "f497056001ccc0bf1b40d94a037104669f5714bac369b2bd846ae698d740fa07",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 243,
+        "prompt_tokens": 4607,
+        "prompt_tokens_details": {
+          "cached_tokens": 3458
+        },
+        "total_tokens": 4850
+      },
+      "wall_ms": 75619.66
+    },
+    {
+      "answers": [
+        {
+          "case_id": "HCA-107",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The observations are unverified and the hypotheses are not mutually exclusive. Additional evidence is needed to resolve the discrepancy between the trusted execution receipt and un"
+        },
+        {
+          "case_id": "HCA-108",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The observations are unverified and the hypotheses are not mutually exclusive. Additional evidence is needed to resolve the discrepancy between the missing review and the later "
+        }
+      ],
+      "arm": "D1_STATIC",
+      "batch_index": 2,
+      "case_ids": [
+        "HCA-107",
+        "HCA-108"
+      ],
+      "contract_sha256": "47c453e294f248d247b74d18040d41121da362bdc418fceb8d30c1869da1886b",
+      "prompt_sha256": "d45fd6a9165c436bbe81e7c21502d31d2c4b39116fec237d0798d6b4d86c4e12",
+      "receipt_sha256": "c5d31ae1aab1d9624fe5acd283385b87d65c8881a5ed6af91ec6c9b5134fac42",
+      "run_id": "PE-CAUSAL-REMAINING-HOLDOUT-20261009:B2:D1_STATIC",
+      "runtime_attestation": {
+        "evidence_sha256": "4de26e104fb8495c053806400ab82271db0aaa72e6c0071dd94178760c65ff11",
+        "request_sha256": "c0ac51aeaa5c690a2e9c6948e3c0f5dfba2f52f7fc62cfd8471b8723e5fe9a64",
+        "response_sha256": "b2df848670d73dbbb5793433696d50b2b32ba506a8fcd3ca6bd24fd6272019ad",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 239,
+        "prompt_tokens": 3764,
+        "prompt_tokens_details": {
+          "cached_tokens": 3192
+        },
+        "total_tokens": 4003
+      },
+      "wall_ms": 46280.18
+    },
+    {
+      "answers": [
+        {
+          "case_id": "HCA-107",
+          "causality_proven": false,
+          "claim_ids": [
+            "OBS:DELIVERY_CONFIRMED",
+            "OBS:DISPATCH_RECEIPT",
+            "REFUTE:H1:DISPATCH_RECEIPT"
+          ],
+          "decision": "INVESTIGATE_H2",
+          "falsified": [
+            "H1"
+          ],
+          "reason": "Observations do not provide sufficient evidence to conclusively refute or confirm the hypotheses."
+        },
+        {
+          "case_id": "HCA-108",
+          "causality_proven": false,
+          "claim_ids": [
+            "OBS:GATE_CLOSED",
+            "OBS:REVIEW_RECEIPT_EXISTS",
+            "REFUTE:H1:REVIEW_RECEIPT_EXISTS"
+          ],
+          "decision": "INVESTIGATE_H2",
+          "falsified": [
+            "H1"
+          ],
+          "reason": "Observations do not provide sufficient evidence to conclusively refute or confirm the hypotheses."
+        }
+      ],
+      "arm": "D3_TYPED_METHOD",
+      "batch_index": 2,
+      "case_ids": [
+        "HCA-107",
+        "HCA-108"
+      ],
+      "contract_sha256": "d2277733b0598d0b3e6b150575213e2ac1424426e4561fc31ee61f92e6863a2a",
+      "prompt_sha256": "40ed36874a5a8837e37222d1fa0eb672fb7757e843c4a2d76ffa67a4eaca2d23",
+      "receipt_sha256": "763127d94675f2f818dc73baae8c16f383ada475b71f24b3d8141a74de1e53d8",
+      "run_id": "PE-CAUSAL-REMAINING-HOLDOUT-20261009:B2:D3_TYPED_METHOD",
+      "runtime_attestation": {
+        "evidence_sha256": "8477f9e12562e994983f25bf215c19df7a64653b7542a09671db545c2c839d2a",
+        "request_sha256": "3885bd0ab891dd82476a9d6c5c28a87c70f30e12bd7cacf90a5bcd9eff762f5c",
+        "response_sha256": "69f17313d491ccd0b095977c6da101507b803e4d80da4c80e935445d1df1d87e",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 250,
+        "prompt_tokens": 4502,
+        "prompt_tokens_details": {
+          "cached_tokens": 3462
+        },
+        "total_tokens": 4752
+      },
+      "wall_ms": 65222.04
+    }
+  ],
+  "campaign": "PE-CAUSAL-REMAINING-HOLDOUT-20261009",
+  "corpus_sha256": "4f3009b78989ee43e44c895f78d747df50f20daf4a31a604193f742bfe66cd8b",
+  "cutover_eligible": false,
+  "method_sha256": "883119d7c7caaa7f94523032f32a43acdca664c0f44696a44a53607466adcde8",
+  "oracle_opened": false,
+  "raw_frozen": true,
+  "schema": "PE_CAUSAL_UNSEEN_TYPED_PRODUCER_RAW_V1",
+  "score_opened": false
+}

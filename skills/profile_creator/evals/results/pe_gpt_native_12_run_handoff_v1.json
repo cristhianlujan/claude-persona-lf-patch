@@ -1,0 +1,2017 @@
+{
+  "case_count": 4,
+  "causal_semantic_rubric_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+  "cutover_eligible": false,
+  "gpt_model_invocations": 0,
+  "independent_review_invocations": 0,
+  "model_runtime_costs": "NOT_OBSERVED",
+  "operation": "ACTUALIZACION_PERFIL_LF",
+  "producer_status": "NOT_EXECUTED",
+  "production_activation": false,
+  "profile_authority_write": false,
+  "profile_execution_operation": "EJECUCION_PERFIL_LF",
+  "profile_execution_resolver": "public.lf_record_profile_execution_step_v1 + SELECTED_PROFILE_MODEL_RUNTIME",
+  "profile_execution_step": "execute_profile",
+  "quality_pack_visual_rubric_not_causal_oracle": true,
+  "resolver": "GPT_RUNTIME_WITH_SUPABASE_CONTEXT",
+  "router": "ACT-0001",
+  "run_count": 12,
+  "runs": [
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-105",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-105",
+          "D1_STATIC",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "bf85f91e00d9bb27fda71f7f42e705696f7f9a49a6407ab651e113c0170b82bd",
+        "contract_sha256": "2aa02192f7622847bc7a2e2e1cf5ec2d79100aa100e2c63127aff3a42ae96bcc",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D1_STATIC",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-105\",\"hypotheses\":[{\"description\":\"The owner record itself is absent\",\"id\":\"H1\",\"predictions\":{\"OWNER_EXISTS\":false,\"TOKEN_VALID\":true}},{\"description\":\"The owner exists but the authorization token is invalid\",\"id\":\"H2\",\"predictions\":{\"OWNER_EXISTS\":true,\"TOKEN_VALID\":false}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://5f760667a78cb7ae9085d6e78639d5c6e223581d085eddb7c51e2c5c412244bf\",\"observed\":true,\"probe_id\":\"OWNER_EXISTS\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-UNVERIFIED://690b7ef73c04a431b649b39d47d9f31d0bd8349e39360c0b9cdcca0df455f918\",\"observed\":false,\"probe_id\":\"TOKEN_VALID\",\"source_kind\":\"untrusted_mirror\"}],\"scenario\":\"An offer was rendered with disputed ownership status. One authority readback is current, but the decisive authorization replay source cannot be verified.\"}",
+      "input_sha256": "c0d46d45deb23708322c1ecea905537c9cfba4b8ab3e65935cf6bba73300e2e3",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D1_STATIC",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:c0d46d45deb23708322c1ecea905537c9cfba4b8ab3e65935cf6bba73300e2e3",
+            "source_sha256": "c0d46d45deb23708322c1ecea905537c9cfba4b8ab3e65935cf6bba73300e2e3"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D1_STATIC",
+        "input_sha256": "c0d46d45deb23708322c1ecea905537c9cfba4b8ab3e65935cf6bba73300e2e3",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-105",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "a7676f84f4f5b7ff92d0addbbb8149454bf4b7235ca79b2aa1670b33445d84d8",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-105",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-105",
+          "D2_SELECTOR_ONLY",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "cd237c3fc694f7501df26a4894f22a69ec71056e65bf71053c74c7e9d59fc5ba",
+        "contract_sha256": "7b61137dc6df52eccea231012b45debab2c2c97c59c6148b4d4c0bc8f44d540f",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D2_SELECTOR_ONLY",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-105\",\"hypotheses\":[{\"description\":\"The owner record itself is absent\",\"id\":\"H1\",\"predictions\":{\"OWNER_EXISTS\":false,\"TOKEN_VALID\":true}},{\"description\":\"The owner exists but the authorization token is invalid\",\"id\":\"H2\",\"predictions\":{\"OWNER_EXISTS\":true,\"TOKEN_VALID\":false}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://5f760667a78cb7ae9085d6e78639d5c6e223581d085eddb7c51e2c5c412244bf\",\"observed\":true,\"probe_id\":\"OWNER_EXISTS\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-UNVERIFIED://690b7ef73c04a431b649b39d47d9f31d0bd8349e39360c0b9cdcca0df455f918\",\"observed\":false,\"probe_id\":\"TOKEN_VALID\",\"source_kind\":\"untrusted_mirror\"}],\"scenario\":\"An offer was rendered with disputed ownership status. One authority readback is current, but the decisive authorization replay source cannot be verified.\",\"selector_result\":{\"execution_authorized\":false,\"method_executed\":false,\"method_id\":\"CAUSAL_ANALYSIS\",\"method_result_present\":false,\"selection_sha256\":\"1079785dd9e39abc404ca063f9859f3d28d31524c34b1566e98f0f5d5d23f33d\"}}",
+      "input_sha256": "4b1aa8707117d92695c90d0c4471b0fef55db096dd820b828388485cecab7310",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D2_SELECTOR_ONLY",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:4b1aa8707117d92695c90d0c4471b0fef55db096dd820b828388485cecab7310",
+            "source_sha256": "4b1aa8707117d92695c90d0c4471b0fef55db096dd820b828388485cecab7310"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D2_SELECTOR_ONLY",
+        "input_sha256": "4b1aa8707117d92695c90d0c4471b0fef55db096dd820b828388485cecab7310",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-105",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "4679eac5420a249602a31e0376407fff17b7b2e71574b4dd84d15d2cf00886e5",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-105",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-105",
+          "D3_TYPED_METHOD",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "f58eab85948110c90cb5333f3edb60832f9bb2bf573758554309cb90c928083b",
+        "contract_sha256": "e5876ff02968de1bd4a9e9cd9b0f98cd95ab102a4edc12bb071df1b8bb46d91d",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D3_TYPED_METHOD",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-105\",\"hypotheses\":[{\"description\":\"The owner record itself is absent\",\"id\":\"H1\",\"predictions\":{\"OWNER_EXISTS\":false,\"TOKEN_VALID\":true}},{\"description\":\"The owner exists but the authorization token is invalid\",\"id\":\"H2\",\"predictions\":{\"OWNER_EXISTS\":true,\"TOKEN_VALID\":false}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://5f760667a78cb7ae9085d6e78639d5c6e223581d085eddb7c51e2c5c412244bf\",\"observed\":true,\"probe_id\":\"OWNER_EXISTS\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-UNVERIFIED://690b7ef73c04a431b649b39d47d9f31d0bd8349e39360c0b9cdcca0df455f918\",\"observed\":false,\"probe_id\":\"TOKEN_VALID\",\"source_kind\":\"untrusted_mirror\"}],\"scenario\":\"An offer was rendered with disputed ownership status. One authority readback is current, but the decisive authorization replay source cannot be verified.\",\"tool_result\":{\"causality_proven\":false,\"falsified_hypotheses\":[\"H1\"],\"governed_method_admission\":false,\"method_id\":\"CAUSAL_ANALYSIS\",\"method_receipt_sha256\":\"f6fb060a684d47ce9637ff4e38c8d67dc7b44a3f3323f7b0fef35c1698e9db8c\",\"recommended_action\":\"COLLECT_MORE_EVIDENCE\",\"source_attestation\":\"TEST_NON_AUTHORITY\",\"supported_claims\":[{\"claim_id\":\"OBS:OWNER_EXISTS\",\"evidence_refs\":[\"fixture-verified://5f760667a78cb7ae9085d6e78639d5c6e223581d085eddb7c51e2c5c412244bf\"],\"observed\":true,\"probe_id\":\"OWNER_EXISTS\",\"text\":\"Verificación OWNER_EXISTS = true\",\"type\":\"OBSERVATION\"},{\"claim_id\":\"REFUTE:H1:OWNER_EXISTS\",\"evidence_refs\":[\"fixture-verified://5f760667a78cb7ae9085d6e78639d5c6e223581d085eddb7c51e2c5c412244bf\"],\"hypothesis_id\":\"H1\",\"probe_id\":\"OWNER_EXISTS\",\"text\":\"H1 queda contradicha por OWNER_EXISTS = true\",\"type\":\"FALSIFICATION\"},{\"claim_id\":\"MISSING:H2:TOKEN_VALID\",\"evidence_refs\":[\"verifier://39550338952f49883579e8d3d0cda64c7c84adcf7b1c567349043a2b9de6591d\"],\"hypothesis_id\":\"H2\",\"probe_id\":\"TOKEN_VALID\",\"text\":\"Falta evidencia verificable de TOKEN_VALID para H2\",\"type\":\"EVIDENCE_GAP\"}]}}",
+      "input_sha256": "e0cf07262c934c8758f759940297c737eb5f32ac25ec66e4222f7513e6c2dd1b",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D3_TYPED_METHOD",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:e0cf07262c934c8758f759940297c737eb5f32ac25ec66e4222f7513e6c2dd1b",
+            "source_sha256": "e0cf07262c934c8758f759940297c737eb5f32ac25ec66e4222f7513e6c2dd1b"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D3_TYPED_METHOD",
+        "input_sha256": "e0cf07262c934c8758f759940297c737eb5f32ac25ec66e4222f7513e6c2dd1b",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-105",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "daff3c0606af0213089af1ad0ffecca8f40d01464a2bcea23e57b305c075956b",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-106",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-106",
+          "D1_STATIC",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "eb23fe39eff1e2683f2a6dcb3137798d40fedcaa97eb22712ca8f11a5f471714",
+        "contract_sha256": "d0c0e1442a5eda929ab31aae391178670b57ba466a48b255bd9abade768ce00b",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D1_STATIC",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-106\",\"hypotheses\":[{\"description\":\"No validated rows were imported\",\"id\":\"H1\",\"predictions\":{\"ACK_WRITTEN\":false,\"VALID_ROWS_PERSISTED\":false}},{\"description\":\"The acknowledgement was committed\",\"id\":\"H2\",\"predictions\":{\"ACK_WRITTEN\":true,\"VALID_ROWS_PERSISTED\":true}},{\"description\":\"Rows persisted, but acknowledgement was not written\",\"id\":\"H3\",\"predictions\":{\"ACK_WRITTEN\":false,\"VALID_ROWS_PERSISTED\":true}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://8b9db54a33276b1dbdd1934599db2b0754bad0d8169dacda9fe6f8e3b40d27d9\",\"observed\":true,\"probe_id\":\"VALID_ROWS_PERSISTED\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-verified://7126f80af6b161f743bd6c6eecfb7eef6527df42b320f36dd45f7a0f82a3a5a2\",\"observed\":false,\"probe_id\":\"ACK_WRITTEN\",\"source_kind\":\"primary_readback\"}],\"scenario\":\"A bulk-load has valid rows, but the final acknowledgement is missing. Three hypotheses compete, and two are contradicted by current typed evidence.\"}",
+      "input_sha256": "a8a3de511133aceb2211bbaf4c8a6204bc489c6943822809b35b60c322f7ecda",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D1_STATIC",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:a8a3de511133aceb2211bbaf4c8a6204bc489c6943822809b35b60c322f7ecda",
+            "source_sha256": "a8a3de511133aceb2211bbaf4c8a6204bc489c6943822809b35b60c322f7ecda"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D1_STATIC",
+        "input_sha256": "a8a3de511133aceb2211bbaf4c8a6204bc489c6943822809b35b60c322f7ecda",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-106",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "12364744ec7f9e1deed01d80b2c2c1e9748b2d3c3a1aaa50ac876d005b2aadf7",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-106",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-106",
+          "D2_SELECTOR_ONLY",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "d2b6d4bccb2db18d453a0b8defd80844ba7c5c40037a5f56e217d66561cef8c6",
+        "contract_sha256": "e02e726980edf166304e6b77e025e09d042c7f384e78b6a2954abd1e1543a4db",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D2_SELECTOR_ONLY",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-106\",\"hypotheses\":[{\"description\":\"No validated rows were imported\",\"id\":\"H1\",\"predictions\":{\"ACK_WRITTEN\":false,\"VALID_ROWS_PERSISTED\":false}},{\"description\":\"The acknowledgement was committed\",\"id\":\"H2\",\"predictions\":{\"ACK_WRITTEN\":true,\"VALID_ROWS_PERSISTED\":true}},{\"description\":\"Rows persisted, but acknowledgement was not written\",\"id\":\"H3\",\"predictions\":{\"ACK_WRITTEN\":false,\"VALID_ROWS_PERSISTED\":true}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://8b9db54a33276b1dbdd1934599db2b0754bad0d8169dacda9fe6f8e3b40d27d9\",\"observed\":true,\"probe_id\":\"VALID_ROWS_PERSISTED\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-verified://7126f80af6b161f743bd6c6eecfb7eef6527df42b320f36dd45f7a0f82a3a5a2\",\"observed\":false,\"probe_id\":\"ACK_WRITTEN\",\"source_kind\":\"primary_readback\"}],\"scenario\":\"A bulk-load has valid rows, but the final acknowledgement is missing. Three hypotheses compete, and two are contradicted by current typed evidence.\",\"selector_result\":{\"execution_authorized\":false,\"method_executed\":false,\"method_id\":\"CAUSAL_ANALYSIS\",\"method_result_present\":false,\"selection_sha256\":\"a57b57615338ed49d4684624659e600b81fb7a1cbf8162d80d128721bc3140a5\"}}",
+      "input_sha256": "c6144e6d8439a13990db8c7d90c23b20d0252a16c1b165dffcab80d80d3df7f2",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D2_SELECTOR_ONLY",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:c6144e6d8439a13990db8c7d90c23b20d0252a16c1b165dffcab80d80d3df7f2",
+            "source_sha256": "c6144e6d8439a13990db8c7d90c23b20d0252a16c1b165dffcab80d80d3df7f2"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D2_SELECTOR_ONLY",
+        "input_sha256": "c6144e6d8439a13990db8c7d90c23b20d0252a16c1b165dffcab80d80d3df7f2",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-106",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "fd34950da1c262b6e9cb20c715bb1d5b042a79e6ce93ad4f97263781ff203592",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-106",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-106",
+          "D3_TYPED_METHOD",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "200ca0cf8ab08f5dd17c7fc03e19bbeb2c17b2507ad92424439506bc1c561aaa",
+        "contract_sha256": "3130986cfd4b055b0faecaef8a9ed1180257ca31fa9297e6e63a95bc2a33528e",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D3_TYPED_METHOD",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-106\",\"hypotheses\":[{\"description\":\"No validated rows were imported\",\"id\":\"H1\",\"predictions\":{\"ACK_WRITTEN\":false,\"VALID_ROWS_PERSISTED\":false}},{\"description\":\"The acknowledgement was committed\",\"id\":\"H2\",\"predictions\":{\"ACK_WRITTEN\":true,\"VALID_ROWS_PERSISTED\":true}},{\"description\":\"Rows persisted, but acknowledgement was not written\",\"id\":\"H3\",\"predictions\":{\"ACK_WRITTEN\":false,\"VALID_ROWS_PERSISTED\":true}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://8b9db54a33276b1dbdd1934599db2b0754bad0d8169dacda9fe6f8e3b40d27d9\",\"observed\":true,\"probe_id\":\"VALID_ROWS_PERSISTED\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-verified://7126f80af6b161f743bd6c6eecfb7eef6527df42b320f36dd45f7a0f82a3a5a2\",\"observed\":false,\"probe_id\":\"ACK_WRITTEN\",\"source_kind\":\"primary_readback\"}],\"scenario\":\"A bulk-load has valid rows, but the final acknowledgement is missing. Three hypotheses compete, and two are contradicted by current typed evidence.\",\"tool_result\":{\"causality_proven\":false,\"falsified_hypotheses\":[\"H1\",\"H2\"],\"governed_method_admission\":false,\"method_id\":\"CAUSAL_ANALYSIS\",\"method_receipt_sha256\":\"e122072e97d64128c33fe4fc0bb2fa7970e2e7e343700a5e40d4b84deaf4bbf6\",\"recommended_action\":\"INVESTIGATE_H3\",\"source_attestation\":\"TEST_NON_AUTHORITY\",\"supported_claims\":[{\"claim_id\":\"OBS:ACK_WRITTEN\",\"evidence_refs\":[\"fixture-verified://7126f80af6b161f743bd6c6eecfb7eef6527df42b320f36dd45f7a0f82a3a5a2\"],\"observed\":false,\"probe_id\":\"ACK_WRITTEN\",\"text\":\"Verificación ACK_WRITTEN = false\",\"type\":\"OBSERVATION\"},{\"claim_id\":\"OBS:VALID_ROWS_PERSISTED\",\"evidence_refs\":[\"fixture-verified://8b9db54a33276b1dbdd1934599db2b0754bad0d8169dacda9fe6f8e3b40d27d9\"],\"observed\":true,\"probe_id\":\"VALID_ROWS_PERSISTED\",\"text\":\"Verificación VALID_ROWS_PERSISTED = true\",\"type\":\"OBSERVATION\"},{\"claim_id\":\"REFUTE:H1:VALID_ROWS_PERSISTED\",\"evidence_refs\":[\"fixture-verified://8b9db54a33276b1dbdd1934599db2b0754bad0d8169dacda9fe6f8e3b40d27d9\"],\"hypothesis_id\":\"H1\",\"probe_id\":\"VALID_ROWS_PERSISTED\",\"text\":\"H1 queda contradicha por VALID_ROWS_PERSISTED = true\",\"type\":\"FALSIFICATION\"},{\"claim_id\":\"REFUTE:H2:ACK_WRITTEN\",\"evidence_refs\":[\"fixture-verified://7126f80af6b161f743bd6c6eecfb7eef6527df42b320f36dd45f7a0f82a3a5a2\"],\"hypothesis_id\":\"H2\",\"probe_id\":\"ACK_WRITTEN\",\"text\":\"H2 queda contradicha por ACK_WRITTEN = false\",\"type\":\"FALSIFICATION\"}]}}",
+      "input_sha256": "bf433c688282febcce2bee6849002f4185d5da6e839cdfeef7391f2937f74b9f",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D3_TYPED_METHOD",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:bf433c688282febcce2bee6849002f4185d5da6e839cdfeef7391f2937f74b9f",
+            "source_sha256": "bf433c688282febcce2bee6849002f4185d5da6e839cdfeef7391f2937f74b9f"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D3_TYPED_METHOD",
+        "input_sha256": "bf433c688282febcce2bee6849002f4185d5da6e839cdfeef7391f2937f74b9f",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-106",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "9674965fe865f6373c27617c9ba351411577b15949967822b5f61c209b148d53",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-107",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-107",
+          "D1_STATIC",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "71a75173b13fd7bdc3c8357fe2c2650a40ee86aed9df72abc12c66c1731b4c03",
+        "contract_sha256": "85498563c50d12b40e6fecdec83fc9d1a808d2c66f361c7666dd24eb603a80ba",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D1_STATIC",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-107\",\"hypotheses\":[{\"description\":\"Scheduler never dispatched\",\"id\":\"H1\",\"predictions\":{\"DELIVERY_CONFIRMED\":false,\"DISPATCH_RECEIPT\":false}},{\"description\":\"Dispatch occurred and delivery confirmation is missing\",\"id\":\"H2\",\"predictions\":{\"DELIVERY_CONFIRMED\":false,\"DISPATCH_RECEIPT\":true}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://c03dce745b48747bedbaf6023f5c1086cd98bcbaf7f90b1fba94ea4a281ce8c0\",\"observed\":true,\"probe_id\":\"DISPATCH_RECEIPT\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-verified://d0f6ae5dc368ff5bc21e158973998420400472f9d8e0dc7f1acb11cd535034dd\",\"observed\":false,\"probe_id\":\"DELIVERY_CONFIRMED\",\"source_kind\":\"primary_readback\"}],\"scenario\":\"A scheduled job is alleged to be skipped, but a trusted execution receipt has arrived. Which hypothesis remains consistent without claiming proof of ultimate causality?\"}",
+      "input_sha256": "c3bd8f2059f93c15dc95874bfe3fed30947565849750f54521d46ab9b334ad15",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D1_STATIC",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:c3bd8f2059f93c15dc95874bfe3fed30947565849750f54521d46ab9b334ad15",
+            "source_sha256": "c3bd8f2059f93c15dc95874bfe3fed30947565849750f54521d46ab9b334ad15"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D1_STATIC",
+        "input_sha256": "c3bd8f2059f93c15dc95874bfe3fed30947565849750f54521d46ab9b334ad15",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-107",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "9fd08390ec62c08d9cdb09ed5b91b2e6576569ed792a5dcda3dca0390feaaf35",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-107",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-107",
+          "D2_SELECTOR_ONLY",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "6a70c5d735170b9e411de63b8926484cf74aa8aaeafb907bfb5ef9c1fddcb865",
+        "contract_sha256": "a24dbd5e3e71e62eb2c37c7f461b05958cda02eeba8afc609f03288b26537a9f",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D2_SELECTOR_ONLY",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-107\",\"hypotheses\":[{\"description\":\"Scheduler never dispatched\",\"id\":\"H1\",\"predictions\":{\"DELIVERY_CONFIRMED\":false,\"DISPATCH_RECEIPT\":false}},{\"description\":\"Dispatch occurred and delivery confirmation is missing\",\"id\":\"H2\",\"predictions\":{\"DELIVERY_CONFIRMED\":false,\"DISPATCH_RECEIPT\":true}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://c03dce745b48747bedbaf6023f5c1086cd98bcbaf7f90b1fba94ea4a281ce8c0\",\"observed\":true,\"probe_id\":\"DISPATCH_RECEIPT\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-verified://d0f6ae5dc368ff5bc21e158973998420400472f9d8e0dc7f1acb11cd535034dd\",\"observed\":false,\"probe_id\":\"DELIVERY_CONFIRMED\",\"source_kind\":\"primary_readback\"}],\"scenario\":\"A scheduled job is alleged to be skipped, but a trusted execution receipt has arrived. Which hypothesis remains consistent without claiming proof of ultimate causality?\",\"selector_result\":{\"execution_authorized\":false,\"method_executed\":false,\"method_id\":\"CAUSAL_ANALYSIS\",\"method_result_present\":false,\"selection_sha256\":\"fbc9c877ce718297b97ef2f7200148fabb29d7818790e486bb12ae14388935fc\"}}",
+      "input_sha256": "176703bf3fdf39cd6fd568ce645ad05b32fc7bc78fec68499d1e37931f0bb8d1",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D2_SELECTOR_ONLY",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:176703bf3fdf39cd6fd568ce645ad05b32fc7bc78fec68499d1e37931f0bb8d1",
+            "source_sha256": "176703bf3fdf39cd6fd568ce645ad05b32fc7bc78fec68499d1e37931f0bb8d1"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D2_SELECTOR_ONLY",
+        "input_sha256": "176703bf3fdf39cd6fd568ce645ad05b32fc7bc78fec68499d1e37931f0bb8d1",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-107",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "15f41373294e3c758bdf61f6edfedb66b3390beb57d1fd2e9f9646f9b15eed64",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-107",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-107",
+          "D3_TYPED_METHOD",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "500edfc55265a292ae73bf0b097be0f771b9a07daf1ce15e761ef67c56355012",
+        "contract_sha256": "877c72705288b91373e10e2b9b1086e8b1efab14a8a6c8193253ef3ef465b218",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D3_TYPED_METHOD",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-107\",\"hypotheses\":[{\"description\":\"Scheduler never dispatched\",\"id\":\"H1\",\"predictions\":{\"DELIVERY_CONFIRMED\":false,\"DISPATCH_RECEIPT\":false}},{\"description\":\"Dispatch occurred and delivery confirmation is missing\",\"id\":\"H2\",\"predictions\":{\"DELIVERY_CONFIRMED\":false,\"DISPATCH_RECEIPT\":true}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://c03dce745b48747bedbaf6023f5c1086cd98bcbaf7f90b1fba94ea4a281ce8c0\",\"observed\":true,\"probe_id\":\"DISPATCH_RECEIPT\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-verified://d0f6ae5dc368ff5bc21e158973998420400472f9d8e0dc7f1acb11cd535034dd\",\"observed\":false,\"probe_id\":\"DELIVERY_CONFIRMED\",\"source_kind\":\"primary_readback\"}],\"scenario\":\"A scheduled job is alleged to be skipped, but a trusted execution receipt has arrived. Which hypothesis remains consistent without claiming proof of ultimate causality?\",\"tool_result\":{\"causality_proven\":false,\"falsified_hypotheses\":[\"H1\"],\"governed_method_admission\":false,\"method_id\":\"CAUSAL_ANALYSIS\",\"method_receipt_sha256\":\"ea7c17921e45cc748f0f8a6193d1b0d77168eaa18f4e59d868db7c98a74f0449\",\"recommended_action\":\"INVESTIGATE_H2\",\"source_attestation\":\"TEST_NON_AUTHORITY\",\"supported_claims\":[{\"claim_id\":\"OBS:DELIVERY_CONFIRMED\",\"evidence_refs\":[\"fixture-verified://d0f6ae5dc368ff5bc21e158973998420400472f9d8e0dc7f1acb11cd535034dd\"],\"observed\":false,\"probe_id\":\"DELIVERY_CONFIRMED\",\"text\":\"Verificación DELIVERY_CONFIRMED = false\",\"type\":\"OBSERVATION\"},{\"claim_id\":\"OBS:DISPATCH_RECEIPT\",\"evidence_refs\":[\"fixture-verified://c03dce745b48747bedbaf6023f5c1086cd98bcbaf7f90b1fba94ea4a281ce8c0\"],\"observed\":true,\"probe_id\":\"DISPATCH_RECEIPT\",\"text\":\"Verificación DISPATCH_RECEIPT = true\",\"type\":\"OBSERVATION\"},{\"claim_id\":\"REFUTE:H1:DISPATCH_RECEIPT\",\"evidence_refs\":[\"fixture-verified://c03dce745b48747bedbaf6023f5c1086cd98bcbaf7f90b1fba94ea4a281ce8c0\"],\"hypothesis_id\":\"H1\",\"probe_id\":\"DISPATCH_RECEIPT\",\"text\":\"H1 queda contradicha por DISPATCH_RECEIPT = true\",\"type\":\"FALSIFICATION\"}]}}",
+      "input_sha256": "3d7230aae71f5059a938483dcdf4c630d36a098b589bc306019b4a5c7b6fae4b",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D3_TYPED_METHOD",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:3d7230aae71f5059a938483dcdf4c630d36a098b589bc306019b4a5c7b6fae4b",
+            "source_sha256": "3d7230aae71f5059a938483dcdf4c630d36a098b589bc306019b4a5c7b6fae4b"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D3_TYPED_METHOD",
+        "input_sha256": "3d7230aae71f5059a938483dcdf4c630d36a098b589bc306019b4a5c7b6fae4b",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-107",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "6632db9c22596b528920291b1c43f82d698011bf81f89028274d7258de381219",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-108",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-108",
+          "D1_STATIC",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "52ac14f41ceb49d810b6ecbf650649cb316c699b5bcbec653aeabb2b2e1dc311",
+        "contract_sha256": "6b6ff21c87e23e52740cae8e70e0cdf708d7f46814e4e3f24d83c05f6973ca26",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D1_STATIC",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-108\",\"hypotheses\":[{\"description\":\"No independent review was ever executed\",\"id\":\"H1\",\"predictions\":{\"GATE_CLOSED\":true,\"REVIEW_RECEIPT_EXISTS\":false}},{\"description\":\"The review executed but the terminal gate has not reconciled it\",\"id\":\"H2\",\"predictions\":{\"GATE_CLOSED\":true,\"REVIEW_RECEIPT_EXISTS\":true}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://233aa72f0c3937086c647602563f155b290e6c843ce5fc107ca638c0e10c4881\",\"observed\":true,\"probe_id\":\"GATE_CLOSED\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-verified://5d29540be33e4f83cb36c34eeda219930502a402c34799a07d64b6e6a0ed4eb1\",\"observed\":true,\"probe_id\":\"REVIEW_RECEIPT_EXISTS\",\"source_kind\":\"primary_readback\"}],\"scenario\":\"An alert initially shows only a missing review, then a later independent receipt proves the review was created. The profile must reconsider its first hypothesis.\"}",
+      "input_sha256": "c00212bd011002ef88d02c4bbc5aaa10ae9df14b3937dcd7d901a1337d220648",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D1_STATIC",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:c00212bd011002ef88d02c4bbc5aaa10ae9df14b3937dcd7d901a1337d220648",
+            "source_sha256": "c00212bd011002ef88d02c4bbc5aaa10ae9df14b3937dcd7d901a1337d220648"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D1_STATIC",
+        "input_sha256": "c00212bd011002ef88d02c4bbc5aaa10ae9df14b3937dcd7d901a1337d220648",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-108",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "586129fbd5a4ab64f8e80f40aaa588ce7e68cfaf4e29b17059aeedd036805748",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-108",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-108",
+          "D2_SELECTOR_ONLY",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "c74ea18b9baf0e1feed8ca9b803c9cacbc1c2f36849cbdc681e55ee6d196f572",
+        "contract_sha256": "f3d4503f830b14d475583caa9548dbea58f2704b457b1c98aa5e0734171668ff",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D2_SELECTOR_ONLY",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-108\",\"hypotheses\":[{\"description\":\"No independent review was ever executed\",\"id\":\"H1\",\"predictions\":{\"GATE_CLOSED\":true,\"REVIEW_RECEIPT_EXISTS\":false}},{\"description\":\"The review executed but the terminal gate has not reconciled it\",\"id\":\"H2\",\"predictions\":{\"GATE_CLOSED\":true,\"REVIEW_RECEIPT_EXISTS\":true}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://233aa72f0c3937086c647602563f155b290e6c843ce5fc107ca638c0e10c4881\",\"observed\":true,\"probe_id\":\"GATE_CLOSED\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-verified://5d29540be33e4f83cb36c34eeda219930502a402c34799a07d64b6e6a0ed4eb1\",\"observed\":true,\"probe_id\":\"REVIEW_RECEIPT_EXISTS\",\"source_kind\":\"primary_readback\"}],\"scenario\":\"An alert initially shows only a missing review, then a later independent receipt proves the review was created. The profile must reconsider its first hypothesis.\",\"selector_result\":{\"execution_authorized\":false,\"method_executed\":false,\"method_id\":\"CAUSAL_ANALYSIS\",\"method_result_present\":false,\"selection_sha256\":\"ce32550d29fa2e3bf2935f8a2bb092c6562477528c102d6ceebcf4d44b01d627\"}}",
+      "input_sha256": "ca74797c6b18b6469d48ceb7b8bb98bc8483a42793e18e3bb451361780c5df23",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D2_SELECTOR_ONLY",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:ca74797c6b18b6469d48ceb7b8bb98bc8483a42793e18e3bb451361780c5df23",
+            "source_sha256": "ca74797c6b18b6469d48ceb7b8bb98bc8483a42793e18e3bb451361780c5df23"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D2_SELECTOR_ONLY",
+        "input_sha256": "ca74797c6b18b6469d48ceb7b8bb98bc8483a42793e18e3bb451361780c5df23",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-108",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "213b5ee110ae5d1249928fdf46e7f91c2e561f233f5099e62be3312c2630e8f9",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-108",
+      "execution_contract": {
+        "adapter_ref": "GPT_NATIVE:skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py@sha256:3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d",
+        "allowed_actions": [
+          "MODEL_RUNTIME_EXECUTE",
+          "RAW_CAPTURE",
+          "INDEPENDENT_REVIEW_HANDOFF"
+        ],
+        "authorized_scope": [
+          "PROFILE_EVOLUTION_CANDIDATE",
+          "HCA-108",
+          "D3_TYPED_METHOD",
+          "SYNTHETIC_CALIBRATION_ONLY"
+        ],
+        "card_refs_and_hashes": [],
+        "card_resolution": {
+          "core_policy_ref": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+          "core_policy_sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1",
+          "critical_authority_missing": false,
+          "fallback_reason": "No profile-specific card; existing LF native contract and review boundary.",
+          "mode": "GENERIC_SAFE",
+          "unresolved_capabilities": []
+        },
+        "closure_conditions": [
+          "FROZEN_RAW",
+          "INDEPENDENT_SEMANTIC_REVIEW_VALIDATED",
+          "NO_PRODUCTION"
+        ],
+        "context_fingerprint": "611b7943d7b7dd9cabf8cd0e5d7a6ebb74cff24fdaaa54a3a7417ad5b4ff6b12",
+        "contract_sha256": "7e120b333263de747eaff8463058d9faece22e9309c4254347c1f15eb69d8107",
+        "current_gate": "PE10E_C4_GPT_NATIVE_CALIBRATION",
+        "executor_mode": "GPT_NATIVE",
+        "forbidden_actions": [
+          "PROFILE_AUTHORITY_WRITE",
+          "PRODUCTION_ACTIVATION",
+          "CAPABILITY_PROMOTION",
+          "CUTOVER",
+          "PAID_MODEL_API"
+        ],
+        "input_governance_ref": "profile-evolution://known-case-candidate-calibration",
+        "objective": "Evaluate known causal scenarios through the LF GPT_NATIVE lane (test only).",
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_version": "resolved:2bbd4ab01cb459e2",
+        "required_checks": [
+          "GPT_NATIVE_SOURCE_BINDING",
+          "RECEIPT_ATTESTATION",
+          "SCOPED_SEMANTIC_OBLIGATION_COVERAGE",
+          "INDEPENDENT_SEMANTIC_REVIEW"
+        ],
+        "required_evidence": [
+          "profile_execution",
+          "runtime_attestation",
+          "raw_output",
+          "scoped_semantic_manifest",
+          "independent_quality_review"
+        ],
+        "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D3_TYPED_METHOD",
+        "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+        "tool_permissions": [
+          "READ_GITHUB",
+          "READ_SUPABASE"
+        ]
+      },
+      "input_literal": "{\"case_id\":\"HCA-108\",\"hypotheses\":[{\"description\":\"No independent review was ever executed\",\"id\":\"H1\",\"predictions\":{\"GATE_CLOSED\":true,\"REVIEW_RECEIPT_EXISTS\":false}},{\"description\":\"The review executed but the terminal gate has not reconciled it\",\"id\":\"H2\",\"predictions\":{\"GATE_CLOSED\":true,\"REVIEW_RECEIPT_EXISTS\":true}}],\"instruction\":\"Identify refuted hypotheses, choose next action, do not claim causality proven. Return JSON with case_id, decision, falsified, causality_proven, reason_claim_ids.\",\"observations\":[{\"evidence_ref\":\"fixture-verified://233aa72f0c3937086c647602563f155b290e6c843ce5fc107ca638c0e10c4881\",\"observed\":true,\"probe_id\":\"GATE_CLOSED\",\"source_kind\":\"primary_readback\"},{\"evidence_ref\":\"fixture-verified://5d29540be33e4f83cb36c34eeda219930502a402c34799a07d64b6e6a0ed4eb1\",\"observed\":true,\"probe_id\":\"REVIEW_RECEIPT_EXISTS\",\"source_kind\":\"primary_readback\"}],\"scenario\":\"An alert initially shows only a missing review, then a later independent receipt proves the review was created. The profile must reconsider its first hypothesis.\",\"tool_result\":{\"causality_proven\":false,\"falsified_hypotheses\":[\"H1\"],\"governed_method_admission\":false,\"method_id\":\"CAUSAL_ANALYSIS\",\"method_receipt_sha256\":\"adba68d07df3a940c06c82056db8230fdb16b689c831f038e2418e83aea7f3c1\",\"recommended_action\":\"INVESTIGATE_H2\",\"source_attestation\":\"TEST_NON_AUTHORITY\",\"supported_claims\":[{\"claim_id\":\"OBS:GATE_CLOSED\",\"evidence_refs\":[\"fixture-verified://233aa72f0c3937086c647602563f155b290e6c843ce5fc107ca638c0e10c4881\"],\"observed\":true,\"probe_id\":\"GATE_CLOSED\",\"text\":\"Verificación GATE_CLOSED = true\",\"type\":\"OBSERVATION\"},{\"claim_id\":\"OBS:REVIEW_RECEIPT_EXISTS\",\"evidence_refs\":[\"fixture-verified://5d29540be33e4f83cb36c34eeda219930502a402c34799a07d64b6e6a0ed4eb1\"],\"observed\":true,\"probe_id\":\"REVIEW_RECEIPT_EXISTS\",\"text\":\"Verificación REVIEW_RECEIPT_EXISTS = true\",\"type\":\"OBSERVATION\"},{\"claim_id\":\"REFUTE:H1:REVIEW_RECEIPT_EXISTS\",\"evidence_refs\":[\"fixture-verified://5d29540be33e4f83cb36c34eeda219930502a402c34799a07d64b6e6a0ed4eb1\"],\"hypothesis_id\":\"H1\",\"probe_id\":\"REVIEW_RECEIPT_EXISTS\",\"text\":\"H1 queda contradicha por REVIEW_RECEIPT_EXISTS = true\",\"type\":\"FALSIFICATION\"}]}}",
+      "input_sha256": "236538a2d4ca507c22f80ebd2965b47227518c375ec274b78a66d19bbfde5b66",
+      "producer_receipt": null,
+      "producer_status": "PENDING_GPT_NATIVE_EXECUTION",
+      "profile_source_manifest": [
+        {
+          "content_sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250",
+          "ref": "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        }
+      ],
+      "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+      "review_status": "PENDING_INDEPENDENT_CHAT_CONTEXT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D3_TYPED_METHOD",
+      "scoped_semantic_obligation_manifest": {
+        "authority_sources": [
+          {
+            "authority_id": "EXECUTION-INPUT",
+            "authority_type": "EXECUTION_INPUT",
+            "required_obligation_ids": [
+              "INPUT_CASE_ID",
+              "INPUT_DECISION_PROVENANCE",
+              "INPUT_FALSIFICATION_PROVENANCE"
+            ],
+            "source_ref": "payload-sha256:236538a2d4ca507c22f80ebd2965b47227518c375ec274b78a66d19bbfde5b66",
+            "source_sha256": "236538a2d4ca507c22f80ebd2965b47227518c375ec274b78a66d19bbfde5b66"
+          },
+          {
+            "authority_id": "PROFILE-CONTRACT",
+            "authority_type": "PROFILE_CONTRACT",
+            "required_obligation_ids": [
+              "PROFILE_NO_CAUSAL_OVERCLAIM",
+              "PROFILE_GROUNDED_CLAIMS"
+            ],
+            "source_ref": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a"
+          }
+        ],
+        "execution_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D3_TYPED_METHOD",
+        "input_sha256": "236538a2d4ca507c22f80ebd2965b47227518c375ec274b78a66d19bbfde5b66",
+        "obligations": [
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/case_id",
+            "expected_value": "HCA-108",
+            "obligation_id": "INPUT_CASE_ID",
+            "rule": "Must answer the frozen case, not a substituted task"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/decision",
+            "obligation_id": "INPUT_DECISION_PROVENANCE",
+            "question": "Does the decision follow verified observations, and preserve uncertainty when evidence is insufficient?",
+            "rule": "Decision must respect independently verified inputs and method limits"
+          },
+          {
+            "authority_ids": [
+              "EXECUTION-INPUT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/falsified",
+            "obligation_id": "INPUT_FALSIFICATION_PROVENANCE",
+            "question": "Are exactly the refuted hypotheses listed, with verified contradictory evidence?",
+            "rule": "Falsification must cite actual verified contradictory observations"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "SEMANTIC_RELATION",
+            "evidence_pointer": "/reason_claim_ids",
+            "obligation_id": "PROFILE_GROUNDED_CLAIMS",
+            "question": "Are all cited claims supported by verified provenance, with unresolved evidence identified?",
+            "rule": "Every explanation claim must be supported or explicitly uncertain"
+          },
+          {
+            "authority_ids": [
+              "PROFILE-CONTRACT"
+            ],
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/causality_proven",
+            "expected_value": "false",
+            "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
+            "rule": "No unsupported proof of causality"
+          }
+        ],
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_source_sha256": "2bbd4ab01cb459e2d4272764dd51e978e91c3c8ca4c4b5ea205c94fe9d19f32a",
+        "schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1"
+      },
+      "scoped_semantic_obligation_manifest_sha256": "9c7ae4eab3f273d32b2031da045eeaabddddea6df6b4bfc5b66675d418f67bdd",
+      "semantic_obligation_scope": "FIVE_TEST_CASE_OBLIGATIONS_NOT_COMPLETE_EXPERTISE"
+    }
+  ],
+  "runtime_mode": "GPT_NATIVE",
+  "schema": "PROFILE_EVOLUTION_GPT_NATIVE_HANDOFF_V1",
+  "scope": "KNOWN_SYNTHETIC_CALIBRATION_NOT_BLIND_HOLDOUT",
+  "semantic_gate_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py",
+  "semantic_review_contract_ref": "profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+  "semantic_review_mode": "INDEPENDENT_CHAT_CONTEXT",
+  "sources": {
+    "profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md": {
+      "path": "profiles/quality_pack/contracts/independent_chat_semantic_review_contract.md",
+      "sha256": "6f9f978e2dfd0e107e12af88a2fbd81c4e4a4913facd0b09c2051bf867e6e434"
+    },
+    "profiles/systemic_root_cause_repair_lf/SKILL.md": {
+      "path": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+      "sha256": "548df4cb64211cc4468e3af863b9f076cc44990a3030fc61467c06723c39d250"
+    },
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py": {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_semantic_quality.py",
+      "sha256": "90e9156bb7585a6c44a15be4b59a5f548f7bd7be7d073bf3c9903997c67fd5f3"
+    },
+    "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md": {
+      "path": "skills/profile_creator/contracts/profile_evolution_causal_semantic_review_v1.md",
+      "sha256": "77a02375adb9dc540f5b166495442d6ec4606ddda7cf524abfe10ea238a194b1"
+    },
+    "skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py": {
+      "path": "skills/profile_creator/evals/prepare_profile_evolution_gpt_native_v1.py",
+      "sha256": "3e1ce583e13e011f3e00af0446c6387918f1c2a2359486210558aacb9373c67d"
+    },
+    "skills/profile_creator/evals/profile_causal_unseen_holdout_remaining_v1.json": {
+      "path": "skills/profile_creator/evals/profile_causal_unseen_holdout_remaining_v1.json",
+      "sha256": "4f3009b78989ee43e44c895f78d747df50f20daf4a31a604193f742bfe66cd8b"
+    },
+    "skills/profile_creator/evals/results/pe_causal_unseen_remaining_cards_v1.json": {
+      "path": "skills/profile_creator/evals/results/pe_causal_unseen_remaining_cards_v1.json",
+      "sha256": "883119d7c7caaa7f94523032f32a43acdca664c0f44696a44a53607466adcde8"
+    },
+    "skills/profile_creator/evals/results/pe_causal_v3_selector_real_receipts_v1.json": {
+      "path": "skills/profile_creator/evals/results/pe_causal_v3_selector_real_receipts_v1.json",
+      "sha256": "02dbec96739e5a02b21ab5f1775ef113143ec0a4ee045f0d6710b7e6ab20089e"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "attestation": {
+    "evidence_sha256": "218bbe700078f849b2f5db1a86f16ffc82d7a64ead9c8bb8689a15ce5a1ad627",
+    "request_sha256": "3a03a7149ff6f59b1df33bf914f1540386578c6d90512f42d15aa7735ebe6b32",
+    "response_sha256": "eb7c17e5dffb71e4acd6000c4a32d74a983ae57a335152f3784f35bce740e02f",
+    "verified": true,
+    "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+  },
+  "cutover_eligible": false,
+  "not_external_independent_assurance": true,
+  "producer_raw_sha256": "d64b625fe5f6534c052644ecbf144f01f225d9c04a7456e4ceaeece849d7fecd",
+  "raw_frozen": true,
+  "receipt_sha256": "da276b544ca56b8f431bbec2847e227d52502ee58c86cafa1eeee684d8738576",
+  "review_ids_without_arm_disclosure": [
+    "S01",
+    "S02",
+    "S03",
+    "S04"
+  ],
+  "review_profile": "QUALITY_REVIEW",
+  "reviewer_source_revision": "candidate:8ae2e9d4d38b364184d790410b5373afa0b84bc7d4ffebe54183086c5fafcd8e",
+  "reviews": [
+    {
+      "reason": "The text claims the owner record is absent, but the verified observation shows it exists. The text also states that the token is invalid, but the observation does not confirm this. These claims are contradictory.",
+      "relevant_verified_probes": [
+        "OWNER_EXISTS",
+        "TOKEN_VALID"
+      ],
+      "review_id": "S01",
+      "verdict": "MIXED"
+    },
+    {
+      "reason": "The text claims that the trusted readback shows VALID_ROWS_PERSISTED=true and ACK_WRITTEN=false, which contradicts both H1 and H2. However, the observation confirms that VALID_ROWS_PERSISTED is true and ACK_WRITTEN is false. This is contradictory.",
+      "relevant_verified_probes": [
+        "VALID_ROWS_PERSISTED",
+        "ACK_WRITTEN"
+      ],
+      "review_id": "S02",
+      "verdict": "MIXED"
+    },
+    {
+      "reason": "The text claims that no validated rows were imported, but the observation confirms that VALID_ROWS_PERSISTED is true. This is contradictory.",
+      "relevant_verified_probes": [
+        "VALID_ROWS_PERSISTED"
+      ],
+      "review_id": "S03",
+      "verdict": "MIXED"
+    },
+    {
+      "reason": "The text claims that the verified OWNER_EXISTS=true contradicts the hypothesis that the owner is absent, but the observation confirms that the owner exists. The text also states that the token is invalid, but the observation does not confirm this. It",
+      "relevant_verified_probes": [
+        "OWNER_EXISTS",
+        "TOKEN_VALID"
+      ],
+      "review_id": "S04",
+      "verdict": "MIXED"
+    }
+  ],
+  "same_underlying_model_as_producer": true,
+  "schema": "PE_BLIND_SEPARATE_QUALITY_REVIEW_CALIBRATION_V1",
+  "usage": {
+    "completion_tokens": 402,
+    "prompt_tokens": 1830,
+    "prompt_tokens_details": {
+      "cached_tokens": 1342
+    },
+    "total_tokens": 2232
+  },
+  "wall_ms": 47779.01
+}

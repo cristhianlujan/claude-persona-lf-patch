@@ -1,0 +1,268 @@
+{
+  "arms": [
+    "D1_STATIC",
+    "D3_WITH_CAUSAL_VERIFICATION"
+  ],
+  "batches": [
+    {
+      "answers": [
+        {
+          "case_id": "PE-CAUS-01",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The observed evidence does not conclusively falsify either hypothesis."
+        },
+        {
+          "case_id": "PE-CAUS-02",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The observed evidence does not conclusively falsify either hypothesis."
+        },
+        {
+          "case_id": "PE-CAUS-03",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The observed evidence does not conclusively falsify either hypothesis."
+        }
+      ],
+      "arm": "D1_STATIC",
+      "batch_index": 1,
+      "case_ids": [
+        "PE-CAUS-01",
+        "PE-CAUS-02",
+        "PE-CAUS-03"
+      ],
+      "contract_sha256": "28cf3809a0875b71486c5e0b2eb8474d08ecb97c4261fa290b869860d3d6e3d7",
+      "prompt_sha256": "ef7ab2194b179d508f2e9b23b28cacb167bb22969f648f7b4cd4a7bec3b81086",
+      "receipt_sha256": "8431c589f817f8581f673aaa9d17f788f3547f99a29ef1f341931cc98ea13efd",
+      "run_id": "PE-CAUSAL-DIS-20261009-V1:B1:D1_STATIC",
+      "runtime_attestation": {
+        "evidence_sha256": "a20f75f236f9a29836d1781d93a5dcd6c6cec428e85449fd64e4b7192ffc3dca",
+        "request_sha256": "ec55841a469cd692e349c2c6a83f557f5b7d18bf673b5596fccd4f0a50d41653",
+        "response_sha256": "193746dfa372fc8032121eaac76f888c145ca1faa8e919dbc3b468543321a8e9",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 240,
+        "prompt_tokens": 4041,
+        "prompt_tokens_details": {
+          "cached_tokens": 3019
+        },
+        "total_tokens": 4281
+      },
+      "wall_ms": 58737.0
+    },
+    {
+      "answers": [
+        {
+          "case_id": "PE-CAUS-01",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The hypotheses were not falsified, so causality cannot be proven."
+        },
+        {
+          "case_id": "PE-CAUS-02",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The hypotheses were not falsified, so causality cannot be proven."
+        },
+        {
+          "case_id": "PE-CAUS-03",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The hypotheses were not falsified, so causality cannot be proven."
+        }
+      ],
+      "arm": "D3_WITH_CAUSAL_VERIFICATION",
+      "batch_index": 1,
+      "case_ids": [
+        "PE-CAUS-01",
+        "PE-CAUS-02",
+        "PE-CAUS-03"
+      ],
+      "contract_sha256": "d1cd4563cdcadfd299082a6f07c5b05e6f8c048d496eb43468b5f1abffbfe930",
+      "prompt_sha256": "8ca26333ff0a038c17b61bf6e410d6923f1af5dc592b3c011eec9cc2dc9341f8",
+      "receipt_sha256": "d549296f8c4f3877f52951d046f5a0e00dc01de50a79a2946d0ef2dbc84ea43c",
+      "run_id": "PE-CAUSAL-DIS-20261009-V1:B1:D3_WITH_CAUSAL_VERIFICATION",
+      "runtime_attestation": {
+        "evidence_sha256": "44762b1aeae535e537f25971da9324e0b0a5992972d359297c6960c8e116df03",
+        "request_sha256": "0bacf31dd3ab65e4830b132eee00a4471ecc9fd2f86e7e050b81299acf9c4ad9",
+        "response_sha256": "5af603256d26cc382c8eb602fa169308e655c9783721650c952d98b590628085",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 244,
+        "prompt_tokens": 4639,
+        "prompt_tokens_details": {
+          "cached_tokens": 3453
+        },
+        "total_tokens": 4883
+      },
+      "wall_ms": 67487.07
+    },
+    {
+      "answers": [
+        {
+          "case_id": "PE-CAUS-04",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The source feed is delayed hypothesis was not falsified."
+        },
+        {
+          "case_id": "PE-CAUS-05",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The worker never executed hypothesis was not falsified."
+        },
+        {
+          "case_id": "PE-CAUS-06",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The cause cannot be declared with this evidence."
+        }
+      ],
+      "arm": "D1_STATIC",
+      "batch_index": 2,
+      "case_ids": [
+        "PE-CAUS-04",
+        "PE-CAUS-05",
+        "PE-CAUS-06"
+      ],
+      "contract_sha256": "06f1f83e08d0d11610e63e9bf107d5a44c05947074672f63081e9d1bce270de9",
+      "prompt_sha256": "0b00c7b4bd93b369e504be07d663797643f2b2b5146911edde1d8d21a88984d4",
+      "receipt_sha256": "0390b23fabd7e53bd0d4060c301ee8a20940cb842b6790c489d89a5e627694c3",
+      "run_id": "PE-CAUSAL-DIS-20261009-V1:B2:D1_STATIC",
+      "runtime_attestation": {
+        "evidence_sha256": "7d843faea55fc411d5dd7849241bd9306cd309e95680e79be81e2a3c9232cd64",
+        "request_sha256": "df7dc080879e9439c392e1f038381d235756ab253f9eccfefc1a7c1168d0c9bd",
+        "response_sha256": "e5976bdc970b98418a04011b3f14504b869189ec0174723bf18dbd2990db436e",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 234,
+        "prompt_tokens": 4038,
+        "prompt_tokens_details": {
+          "cached_tokens": 3180
+        },
+        "total_tokens": 4272
+      },
+      "wall_ms": 52098.78
+    },
+    {
+      "answers": [
+        {
+          "case_id": "PE-CAUS-04",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The hypotheses were not falsified, so causality cannot be proven."
+        },
+        {
+          "case_id": "PE-CAUS-05",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The hypotheses were not falsified, so causality cannot be proven."
+        },
+        {
+          "case_id": "PE-CAUS-06",
+          "causality_proven": false,
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The hypotheses were not falsified, so causality cannot be proven."
+        }
+      ],
+      "arm": "D3_WITH_CAUSAL_VERIFICATION",
+      "batch_index": 2,
+      "case_ids": [
+        "PE-CAUS-04",
+        "PE-CAUS-05",
+        "PE-CAUS-06"
+      ],
+      "contract_sha256": "525c5a6c33b075462638f17f2b73ae7611144821ad4161180c519592b76ef80f",
+      "prompt_sha256": "188d6c1dc83b0d45b873c70115faa2e05b8732bd972236b22aa517b7c6566561",
+      "receipt_sha256": "11786696267e009fcb544bd0aa8b5814e07ac2cfbe4b7b33ed9632f8f05188ed",
+      "run_id": "PE-CAUSAL-DIS-20261009-V1:B2:D3_WITH_CAUSAL_VERIFICATION",
+      "runtime_attestation": {
+        "evidence_sha256": "2cd18ee36ce8b49268ef4ba59eac0010194ef24db95db46e3faa27f0a607c1d4",
+        "request_sha256": "27c49f3375b358279f19b0286c20311a4c080e9674501d2f50436402749f6725",
+        "response_sha256": "2e889cd2add63178331caa434b45b01de8c6bdb59c11d651194f4a9e73dfbf71",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 247,
+        "prompt_tokens": 4816,
+        "prompt_tokens_details": {
+          "cached_tokens": 3454
+        },
+        "total_tokens": 5063
+      },
+      "wall_ms": 73736.81
+    }
+  ],
+  "campaign": "PE-CAUSAL-DIS-20261009-V1",
+  "corpus_sha256": "8aa2c5bc685239ebd40a165fe429139d27c4c01be36c8f293a62a66d22326ddd",
+  "cutover_eligible": false,
+  "method_sha256": "c4875343a54120c3aa4e4d6b897d778cefcc7237767b694adf240ac80bca2094",
+  "oracle_opened": false,
+  "raw_frozen": true,
+  "schema": "PE_CAUSAL_DISRUPTIVE_PRODUCER_RAW_V1",
+  "score_opened": false
+}

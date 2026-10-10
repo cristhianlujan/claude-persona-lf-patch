@@ -1,0 +1,93 @@
+{
+  "schema": "PROFILE_CONVERSATIONAL_LIVE_SMOKE_INPUT_V1",
+  "case_id": "PE-CONVERSATION-LOAD-UNCONFIRMED-20261009-001",
+  "execution_scope": "CURRENT_GPT_CHAT_PLUS_LIVE_READONLY_SUPABASE_NOT_INDEPENDENT_NATIVE_RUN",
+  "input_kind": "USER_PRIOR_EXAMPLE_REPLAY_NOT_ASSERTED_REAL_INCIDENT",
+  "initial_message": "Una carga B2B terminó, pero no aparece la confirmación. Revisa qué pasó.",
+  "source_context": "LF sandbox project mhwmirqcgxxukpctffuv; only exact authorized schema/read-only aggregates, no actual incident identifier supplied",
+  "readback": {
+    "query": "SELECT count(*) AS loads_total, count(*) FILTER(WHERE processed_at IS NOT NULL) AS processed FROM lf_ops.cargas_lotes",
+    "table_exists": true,
+    "loads_total": 0,
+    "processed": 0,
+    "source_ref": "supabase://mhwmirqcgxxukpctffuv/lf_ops.cargas_lotes",
+    "claim_ceiling": "ZERO_LOADS_IN_THIS_SANDBOX_ONLY_NO_PROOF_ABOUT_OTHER_ENVIRONMENTS"
+  },
+  "planner_request": {
+    "consumer_ref": "PE-LIVE-CONV-20261009-001",
+    "unresolved_reasons": [
+      "load_identity",
+      "processing_evidence"
+    ],
+    "current_evidence": [],
+    "candidates": [
+      {
+        "candidate_ref": "LOAD_BATCH_READBACK",
+        "covers_reasons": [
+          "load_identity",
+          "processing_evidence"
+        ],
+        "source_ref": "supabase://lf_ops.cargas_lotes",
+        "acquisition_cost_rank": 1,
+        "available": true,
+        "material": true
+      }
+    ]
+  },
+  "planner_result_before_readback": {
+    "schema_version": "LF_TARGETED_EVIDENCE_ACQUISITION_RESULT_V1",
+    "state": "CONTINUE",
+    "code": "NEXT_MINIMAL_EVIDENCE_SELECTED",
+    "consumer_ref": "PE-LIVE-CONV-20261009-001",
+    "remaining_reasons": [
+      "load_identity",
+      "processing_evidence"
+    ],
+    "next_evidence": {
+      "candidate_ref": "LOAD_BATCH_READBACK",
+      "covers_reasons": [
+        "load_identity",
+        "processing_evidence"
+      ],
+      "source_ref": "supabase://lf_ops.cargas_lotes",
+      "acquisition_cost_rank": 1,
+      "available": true,
+      "material": true
+    },
+    "automation_options_exhausted": false,
+    "effects_executed": false
+  },
+  "planner_result_after_readback": {
+    "schema_version": "LF_TARGETED_EVIDENCE_ACQUISITION_RESULT_V1",
+    "state": "STOP",
+    "code": "STOP_NO_DECISION_CHANGING_EVIDENCE",
+    "consumer_ref": "PE-LIVE-CONV-20261009-001",
+    "remaining_reasons": [
+      "load_identity",
+      "processing_evidence"
+    ],
+    "next_evidence": null,
+    "automation_options_exhausted": true,
+    "effects_executed": false
+  },
+  "questions": [
+    {
+      "question_id": "load_source",
+      "question": "¿Me compartes el código de esa carga o una captura donde aparezca?",
+      "question_type": "PROVIDE_SOURCE_FOR_VERIFICATION",
+      "covers_reasons": [
+        "load_identity",
+        "processing_evidence"
+      ],
+      "cost_rank": 1
+    }
+  ],
+  "quality_limits": {
+    "proven_missing_actual_incident": true,
+    "diagnosis_not_authorized": true,
+    "user_response_not_yet_received": true,
+    "independent_runtime_attestation": false,
+    "independent_semantic_assurance": false,
+    "production_activation": false
+  }
+}

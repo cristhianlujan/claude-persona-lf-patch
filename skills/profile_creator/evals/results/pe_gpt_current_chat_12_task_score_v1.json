@@ -1,0 +1,173 @@
+{
+  "arms": {
+    "D1_STATIC": {
+      "d3_grounded_claim_ids": 0,
+      "decision_and_falsification_correct": 4,
+      "rows": 4
+    },
+    "D2_SELECTOR_ONLY": {
+      "d3_grounded_claim_ids": 0,
+      "decision_and_falsification_correct": 4,
+      "rows": 4
+    },
+    "D3_TYPED_METHOD": {
+      "d3_grounded_claim_ids": 4,
+      "decision_and_falsification_correct": 4,
+      "rows": 4
+    }
+  },
+  "blind_powered_benchmark": false,
+  "cases_exposed_to_current_chat": true,
+  "cutover_eligible": false,
+  "expertise_uplift_proven": false,
+  "free_text_explanations_admitted": 0,
+  "independent_semantic_reviews_verified": 0,
+  "input_bundle_sha256": "2accf05d47739560556c2fd36e0cd08ad9c976b0974f6e6f77f6cc94ef12c11a",
+  "latency": "NOT_OBSERVED",
+  "method_cards_sha256": "883119d7c7caaa7f94523032f32a43acdca664c0f44696a44a53607466adcde8",
+  "method_raw_sha256": "0cc6c6fe06760e738bd94d914c3c94f414437176958d931f52fd838b6e8f40be",
+  "native_execution_receipts_verified": 0,
+  "producer_scope": "ONE_CURRENT_GPT_CONVERSATION_NOT_INDEPENDENT_RUNS",
+  "raw_sha256": "e7df6d15ee1aec5613a1b366e021802792b8d52b797f2634d666986fe4ee7075",
+  "records": [
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-105",
+      "decision_correct": true,
+      "expected_decision": "COLLECT_MORE_EVIDENCE",
+      "expected_falsified": [
+        "H1"
+      ],
+      "restricted_grounded_claim_status": "NOT_APPLICABLE_UNTRUSTED_NO_METHOD_RECEIPT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D1_STATIC"
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-105",
+      "decision_correct": true,
+      "expected_decision": "COLLECT_MORE_EVIDENCE",
+      "expected_falsified": [
+        "H1"
+      ],
+      "restricted_grounded_claim_status": "NOT_APPLICABLE_UNTRUSTED_NO_METHOD_RECEIPT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D2_SELECTOR_ONLY"
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-105",
+      "decision_correct": true,
+      "expected_decision": "COLLECT_MORE_EVIDENCE",
+      "expected_falsified": [
+        "H1"
+      ],
+      "restricted_grounded_claim_status": "TEST_ONLY_EVIDENCE_COMPILED",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-105:D3_TYPED_METHOD"
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-106",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H3",
+      "expected_falsified": [
+        "H1",
+        "H2"
+      ],
+      "restricted_grounded_claim_status": "NOT_APPLICABLE_UNTRUSTED_NO_METHOD_RECEIPT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D1_STATIC"
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-106",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H3",
+      "expected_falsified": [
+        "H1",
+        "H2"
+      ],
+      "restricted_grounded_claim_status": "NOT_APPLICABLE_UNTRUSTED_NO_METHOD_RECEIPT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D2_SELECTOR_ONLY"
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-106",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H3",
+      "expected_falsified": [
+        "H1",
+        "H2"
+      ],
+      "restricted_grounded_claim_status": "TEST_ONLY_EVIDENCE_COMPILED",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-106:D3_TYPED_METHOD"
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-107",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ],
+      "restricted_grounded_claim_status": "NOT_APPLICABLE_UNTRUSTED_NO_METHOD_RECEIPT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D1_STATIC"
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-107",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ],
+      "restricted_grounded_claim_status": "NOT_APPLICABLE_UNTRUSTED_NO_METHOD_RECEIPT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D2_SELECTOR_ONLY"
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-107",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ],
+      "restricted_grounded_claim_status": "TEST_ONLY_EVIDENCE_COMPILED",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-107:D3_TYPED_METHOD"
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-108",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ],
+      "restricted_grounded_claim_status": "NOT_APPLICABLE_UNTRUSTED_NO_METHOD_RECEIPT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D1_STATIC"
+    },
+    {
+      "arm": "D2_SELECTOR_ONLY",
+      "case_id": "HCA-108",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ],
+      "restricted_grounded_claim_status": "NOT_APPLICABLE_UNTRUSTED_NO_METHOD_RECEIPT",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D2_SELECTOR_ONLY"
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-108",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ],
+      "restricted_grounded_claim_status": "TEST_ONLY_EVIDENCE_COMPILED",
+      "run_id": "PE-GPT-NATIVE-TRANSPORT-CALIBRATION-V1:HCA-108:D3_TYPED_METHOD"
+    }
+  ],
+  "schema": "PE_GPT_CURRENT_CHAT_CALIBRATION_SCORE_V1",
+  "source_tasks_sha256": "4f3009b78989ee43e44c895f78d747df50f20daf4a31a604193f742bfe66cd8b",
+  "status": "CALIBRATION_OBSERVED_NOT_EXPERT_ADMITTED",
+  "token_use": "NOT_OBSERVED"
+}

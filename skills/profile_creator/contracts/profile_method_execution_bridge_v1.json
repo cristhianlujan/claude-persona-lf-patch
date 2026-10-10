@@ -1,0 +1,95 @@
+{
+  "schema": "PROFILE_METHOD_EXECUTION_BRIDGE_CONTRACT_V1",
+  "status": "TESTED_NON_AUTHORITY_ONLY",
+  "purpose": "Convert explicit CAPABILITY_SELECTOR_COMPOSITION_V3 decisions into auditable test-only method invocations without granting authority or conflating test handlers with governed method implementations.",
+  "owner": "SUPER_ADMIN",
+  "registry_ref": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v2.json",
+  "selector_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/capability_selector_v3.py",
+  "bridge_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/method_execution_bridge_v1.py",
+  "loop_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/method_adaptive_loop_v1.py",
+  "execution_scope_allowed": [
+    "TEST_NON_AUTHORITY"
+  ],
+  "production_scope_supported": false,
+  "live_registry_execution_permission": false,
+  "authority_changes": false,
+  "preconditions": [
+    "selector receipt structurally valid with execution_authorized=false and admission_required=true",
+    "independent permission resolver verifies permission receipt for the exact execution_id and test scope",
+    "permission receipt includes allowed_method_ids covering each selected method",
+    "independent selection verifier authenticates the selection output using the caller's trusted evidence",
+    "selected method is active and auto_select=true in the source registry, with verified precondition receipt",
+    "all selected methods have explicit handler, executor_id, source_revision, execution_contract_ref, method-specific typed input",
+    "independent result verifier evaluates each method output; a self-reported VERIFIED field is insufficient",
+    "all selected handlers are preflighted before any method is invoked; no partial missing-binding dispatch"
+  ],
+  "outputs": {
+    "invocation_receipt_schema": "PROFILE_METHOD_INVOCATION_RECEIPT_V1",
+    "required": [
+      "execution_id",
+      "method_id",
+      "method_registry_revision",
+      "executor_id",
+      "execution_contract_ref",
+      "scope",
+      "evidence_refs",
+      "permission_receipt_sha256",
+      "selection_precondition_sha256",
+      "input_sha256",
+      "result_sha256",
+      "result_verifier_id",
+      "result_state",
+      "observed_wall_ms",
+      "receipt_sha256",
+      "authority_write",
+      "production_authorized",
+      "method_outcome_is_profile_improvement"
+    ],
+    "result_states": [
+      "EXECUTED_VERIFIED",
+      "EXECUTED_FAILED"
+    ],
+    "bridge_states": [
+      "EXECUTED_TEST_ONLY",
+      "METHOD_FAILED",
+      "NO_METHOD_REQUIRED",
+      "BLOCKED"
+    ],
+    "loop_states": [
+      "COMPLETED_TEST_ONLY",
+      "STOP_ITERATION_BUDGET",
+      "BLOCKED"
+    ]
+  },
+  "fail_closed": [
+    "unbound method",
+    "mismatched permission",
+    "missing verification callback",
+    "experimental or inactive method",
+    "precondition not verified",
+    "semantic selector unresolved",
+    "no selected method while some matching methods were rejected",
+    "budget invalid",
+    "replanning missing evidence",
+    "result verifier rejection",
+    "handler failure"
+  ],
+  "deferred_for_governed_runtime": [
+    "bind real method_id to type-checked production implementations, not similar-named helpers",
+    "complete independent authority permission resolution with signed/readback references",
+    "enforce per-method runtime timeouts and side-effect idempotency",
+    "persist method receipts in governed append-only ledger",
+    "prove registry liveness and semantic routing with live traces",
+    "execute controlled D1/D2/D3 E2E on new blind holdout",
+    "pass independent assurance and admission"
+  ],
+  "tests": {
+    "bridge": 21,
+    "adaptive_loop": 6,
+    "selector": 12,
+    "existing_selector": "PASS",
+    "existing_registry": "PASS",
+    "method_registry_live_invocations": 0,
+    "cutover_eligible": false
+  }
+}

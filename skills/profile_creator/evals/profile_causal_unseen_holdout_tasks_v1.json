@@ -1,0 +1,315 @@
+{
+  "campaign_id": "PE-CAUSAL-HOLDOUT-V1-20261009",
+  "case_count": 8,
+  "cases": [
+    {
+      "case_id": "HCA-101",
+      "hypotheses": [
+        {
+          "description": "Payment was not committed",
+          "id": "H1",
+          "predictions": {
+            "CACHE_FRESH": true,
+            "LEDGER_POSTED": false
+          }
+        },
+        {
+          "description": "Payment posted but dashboard cache is old",
+          "id": "H2",
+          "predictions": {
+            "CACHE_FRESH": false,
+            "LEDGER_POSTED": true
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://f21edbbb5bc079ce92370792cfb310e96415abd8673967d769114c2d6b081ffb",
+          "observed": true,
+          "probe_id": "LEDGER_POSTED",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://f59bbd03f72506fc13e3ca22857c444e025de09fa4b5297de98f003fc6824b62",
+          "observed": false,
+          "probe_id": "CACHE_FRESH",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "phased_observations": false,
+      "scenario": "A payment ledger and a mobile dashboard disagree after a confirmed transaction. Two root hypotheses predict different ledger and cache states."
+    },
+    {
+      "case_id": "HCA-102",
+      "hypotheses": [
+        {
+          "description": "Source query filters out valid rows",
+          "id": "H1",
+          "predictions": {
+            "REPLICA_LAG": false,
+            "SOURCE_COUNT_MATCH": false
+          }
+        },
+        {
+          "description": "Reporting replica is behind the source",
+          "id": "H2",
+          "predictions": {
+            "REPLICA_LAG": true,
+            "SOURCE_COUNT_MATCH": true
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://3a98d9aeccebb97d22613425307c14866da17caa39ca6da04484cb75fe38f5d2",
+          "observed": true,
+          "probe_id": "SOURCE_COUNT_MATCH",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://4a37fac1a1d348728dc83924e1e572200f2c0ece3976ea59385eb602d2b757ae",
+          "observed": true,
+          "probe_id": "REPLICA_LAG",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "phased_observations": false,
+      "scenario": "An export report shows fewer rows than the current source table. Decide whether the source query or the read replica is responsible."
+    },
+    {
+      "case_id": "HCA-103",
+      "hypotheses": [
+        {
+          "description": "A server-side work queue delay",
+          "id": "H1",
+          "predictions": {
+            "CLIENT_WAITING": true,
+            "QUEUE_HAS_PENDING": true
+          }
+        },
+        {
+          "description": "An external callback wait",
+          "id": "H2",
+          "predictions": {
+            "CLIENT_WAITING": true,
+            "QUEUE_HAS_PENDING": true
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://e97fa9e667ea8b81e89723ce3b2c0849012a6ae4438ed760b383159f3b57e190",
+          "observed": true,
+          "probe_id": "QUEUE_HAS_PENDING",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://44ccc61ca242b53dcda21aa9662f177957812d1a42f05995f366505d20572c8f",
+          "observed": true,
+          "probe_id": "CLIENT_WAITING",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "phased_observations": false,
+      "scenario": "Two mutually competing diagnoses predict the same observable state. The available readbacks cannot distinguish them."
+    },
+    {
+      "case_id": "HCA-104",
+      "hypotheses": [
+        {
+          "description": "Permissions blocked all writes",
+          "id": "H1",
+          "predictions": {
+            "EXECUTOR_RUN": false,
+            "WRITE_GRANTED": false
+          }
+        },
+        {
+          "description": "A worker ran but failed a downstream effect",
+          "id": "H2",
+          "predictions": {
+            "EXECUTOR_RUN": true,
+            "WRITE_GRANTED": true
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://5a7a9aa5952fb4f2bff874a16fc961f05a25e0fe741fd8aa5e923d414462990e",
+          "observed": true,
+          "probe_id": "WRITE_GRANTED",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://367eb7604acb44f1357ec4ef77d36a0d1496da527400597c5af7a86e54d265e9",
+          "observed": false,
+          "probe_id": "EXECUTOR_RUN",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "phased_observations": false,
+      "scenario": "An apparently successful deployment shows incompatible traces for both proposed causes. Distinguish falsification of both from identifying a new cause."
+    },
+    {
+      "case_id": "HCA-105",
+      "hypotheses": [
+        {
+          "description": "The owner record itself is absent",
+          "id": "H1",
+          "predictions": {
+            "OWNER_EXISTS": false,
+            "TOKEN_VALID": true
+          }
+        },
+        {
+          "description": "The owner exists but the authorization token is invalid",
+          "id": "H2",
+          "predictions": {
+            "OWNER_EXISTS": true,
+            "TOKEN_VALID": false
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://5f760667a78cb7ae9085d6e78639d5c6e223581d085eddb7c51e2c5c412244bf",
+          "observed": true,
+          "probe_id": "OWNER_EXISTS",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-UNVERIFIED://690b7ef73c04a431b649b39d47d9f31d0bd8349e39360c0b9cdcca0df455f918",
+          "observed": false,
+          "probe_id": "TOKEN_VALID",
+          "source_kind": "untrusted_mirror"
+        }
+      ],
+      "phased_observations": false,
+      "scenario": "An offer was rendered with disputed ownership status. One authority readback is current, but the decisive authorization replay source cannot be verified."
+    },
+    {
+      "case_id": "HCA-106",
+      "hypotheses": [
+        {
+          "description": "No validated rows were imported",
+          "id": "H1",
+          "predictions": {
+            "ACK_WRITTEN": false,
+            "VALID_ROWS_PERSISTED": false
+          }
+        },
+        {
+          "description": "The acknowledgement was committed",
+          "id": "H2",
+          "predictions": {
+            "ACK_WRITTEN": true,
+            "VALID_ROWS_PERSISTED": true
+          }
+        },
+        {
+          "description": "Rows persisted, but acknowledgement was not written",
+          "id": "H3",
+          "predictions": {
+            "ACK_WRITTEN": false,
+            "VALID_ROWS_PERSISTED": true
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://8b9db54a33276b1dbdd1934599db2b0754bad0d8169dacda9fe6f8e3b40d27d9",
+          "observed": true,
+          "probe_id": "VALID_ROWS_PERSISTED",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://7126f80af6b161f743bd6c6eecfb7eef6527df42b320f36dd45f7a0f82a3a5a2",
+          "observed": false,
+          "probe_id": "ACK_WRITTEN",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "phased_observations": false,
+      "scenario": "A bulk-load has valid rows, but the final acknowledgement is missing. Three hypotheses compete, and two are contradicted by current typed evidence."
+    },
+    {
+      "case_id": "HCA-107",
+      "hypotheses": [
+        {
+          "description": "Scheduler never dispatched",
+          "id": "H1",
+          "predictions": {
+            "DELIVERY_CONFIRMED": false,
+            "DISPATCH_RECEIPT": false
+          }
+        },
+        {
+          "description": "Dispatch occurred and delivery confirmation is missing",
+          "id": "H2",
+          "predictions": {
+            "DELIVERY_CONFIRMED": false,
+            "DISPATCH_RECEIPT": true
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://c03dce745b48747bedbaf6023f5c1086cd98bcbaf7f90b1fba94ea4a281ce8c0",
+          "observed": true,
+          "probe_id": "DISPATCH_RECEIPT",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://d0f6ae5dc368ff5bc21e158973998420400472f9d8e0dc7f1acb11cd535034dd",
+          "observed": false,
+          "probe_id": "DELIVERY_CONFIRMED",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "phased_observations": false,
+      "scenario": "A scheduled job is alleged to be skipped, but a trusted execution receipt has arrived. Which hypothesis remains consistent without claiming proof of ultimate causality?"
+    },
+    {
+      "case_id": "HCA-108",
+      "hypotheses": [
+        {
+          "description": "No independent review was ever executed",
+          "id": "H1",
+          "predictions": {
+            "GATE_CLOSED": true,
+            "REVIEW_RECEIPT_EXISTS": false
+          }
+        },
+        {
+          "description": "The review executed but the terminal gate has not reconciled it",
+          "id": "H2",
+          "predictions": {
+            "GATE_CLOSED": true,
+            "REVIEW_RECEIPT_EXISTS": true
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://233aa72f0c3937086c647602563f155b290e6c843ce5fc107ca638c0e10c4881",
+          "observed": true,
+          "probe_id": "GATE_CLOSED",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://5d29540be33e4f83cb36c34eeda219930502a402c34799a07d64b6e6a0ed4eb1",
+          "observed": true,
+          "probe_id": "REVIEW_RECEIPT_EXISTS",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "phased_observations": true,
+      "scenario": "An alert initially shows only a missing review, then a later independent receipt proves the review was created. The profile must reconsider its first hypothesis."
+    }
+  ],
+  "contains_oracle_answers": false,
+  "evaluation_scope": "CAUSAL_FALSIFICATION_TRANSFER_ONLY",
+  "not_r3_or_older_development_cases": true,
+  "schema": "PE_CAUSAL_UNSEEN_HOLDOUT_TASKS_V1",
+  "status": "FROZEN_BEFORE_PRODUCER_RUN"
+}

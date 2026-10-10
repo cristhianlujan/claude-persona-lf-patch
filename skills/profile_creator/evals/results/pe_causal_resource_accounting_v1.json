@@ -1,0 +1,41 @@
+{
+  "arms": {
+    "D1_STATIC": {
+      "batches": 2,
+      "cases": 4,
+      "model_completion_tokens": 480,
+      "model_prompt_tokens": 7541,
+      "model_reported_cached_tokens": 6211,
+      "model_total_tokens": 8021,
+      "model_wall_ms": 95656.87
+    },
+    "D3_TYPED_METHOD": {
+      "batches": 2,
+      "cases": 4,
+      "model_completion_tokens": 493,
+      "model_prompt_tokens": 9109,
+      "model_reported_cached_tokens": 6920,
+      "model_total_tokens": 9602,
+      "model_wall_ms": 140841.7
+    }
+  },
+  "candidate_method_invocations": 5,
+  "candidate_method_reported_wall_ms_sum": 0.316,
+  "cost_qualifier": "Prompt tokens differ between arms; same model, unequal context.",
+  "cutover_eligible": false,
+  "dollar_costs": "NOT_MEASURED",
+  "excluded_costs": [
+    "selector_compute",
+    "precondition_readback",
+    "evidence_injection",
+    "data_acquisition",
+    "typed_consumption",
+    "semantic_judging",
+    "model_cache_management"
+  ],
+  "model_raw_sha256": "d64b625fe5f6534c052644ecbf144f01f225d9c04a7456e4ceaeece849d7fecd",
+  "schema": "PE_CAUSAL_RESOURCE_ACCOUNTING_V1",
+  "scope": "FOUR_SYNTHETIC_CASES",
+  "statistical_efficiency": "NOT_ESTABLISHED",
+  "status": "OBSERVED_RESOURCE_COSTS_UNMATCHED_CONTEXT_LENGTH"
+}

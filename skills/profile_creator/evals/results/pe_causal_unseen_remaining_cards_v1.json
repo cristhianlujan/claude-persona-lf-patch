@@ -1,0 +1,194 @@
+{
+  "cards": [
+    {
+      "candidate_method_source": "CAUSAL_HYPOTHESIS_FALSIFICATION_V2",
+      "case_id": "HCA-105",
+      "causality_proven": false,
+      "falsified_hypotheses": [
+        "H1"
+      ],
+      "method_decision": "COLLECT_MORE_EVIDENCE",
+      "method_receipt_sha256": "f6fb060a684d47ce9637ff4e38c8d67dc7b44a3f3323f7b0fef35c1698e9db8c",
+      "source_attestation": "TEST_NON_AUTHORITY",
+      "supported_claims": [
+        {
+          "claim_id": "OBS:OWNER_EXISTS",
+          "evidence_refs": [
+            "fixture-verified://5f760667a78cb7ae9085d6e78639d5c6e223581d085eddb7c51e2c5c412244bf"
+          ],
+          "observed": true,
+          "probe_id": "OWNER_EXISTS",
+          "text": "Verificación OWNER_EXISTS = true",
+          "type": "OBSERVATION"
+        },
+        {
+          "claim_id": "REFUTE:H1:OWNER_EXISTS",
+          "evidence_refs": [
+            "fixture-verified://5f760667a78cb7ae9085d6e78639d5c6e223581d085eddb7c51e2c5c412244bf"
+          ],
+          "hypothesis_id": "H1",
+          "probe_id": "OWNER_EXISTS",
+          "text": "H1 queda contradicha por OWNER_EXISTS = true",
+          "type": "FALSIFICATION"
+        },
+        {
+          "claim_id": "MISSING:H2:TOKEN_VALID",
+          "evidence_refs": [
+            "verifier://39550338952f49883579e8d3d0cda64c7c84adcf7b1c567349043a2b9de6591d"
+          ],
+          "hypothesis_id": "H2",
+          "probe_id": "TOKEN_VALID",
+          "text": "Falta evidencia verificable de TOKEN_VALID para H2",
+          "type": "EVIDENCE_GAP"
+        }
+      ]
+    },
+    {
+      "candidate_method_source": "CAUSAL_HYPOTHESIS_FALSIFICATION_V2",
+      "case_id": "HCA-106",
+      "causality_proven": false,
+      "falsified_hypotheses": [
+        "H1",
+        "H2"
+      ],
+      "method_decision": "INVESTIGATE_H3",
+      "method_receipt_sha256": "e122072e97d64128c33fe4fc0bb2fa7970e2e7e343700a5e40d4b84deaf4bbf6",
+      "source_attestation": "TEST_NON_AUTHORITY",
+      "supported_claims": [
+        {
+          "claim_id": "OBS:ACK_WRITTEN",
+          "evidence_refs": [
+            "fixture-verified://7126f80af6b161f743bd6c6eecfb7eef6527df42b320f36dd45f7a0f82a3a5a2"
+          ],
+          "observed": false,
+          "probe_id": "ACK_WRITTEN",
+          "text": "Verificación ACK_WRITTEN = false",
+          "type": "OBSERVATION"
+        },
+        {
+          "claim_id": "OBS:VALID_ROWS_PERSISTED",
+          "evidence_refs": [
+            "fixture-verified://8b9db54a33276b1dbdd1934599db2b0754bad0d8169dacda9fe6f8e3b40d27d9"
+          ],
+          "observed": true,
+          "probe_id": "VALID_ROWS_PERSISTED",
+          "text": "Verificación VALID_ROWS_PERSISTED = true",
+          "type": "OBSERVATION"
+        },
+        {
+          "claim_id": "REFUTE:H1:VALID_ROWS_PERSISTED",
+          "evidence_refs": [
+            "fixture-verified://8b9db54a33276b1dbdd1934599db2b0754bad0d8169dacda9fe6f8e3b40d27d9"
+          ],
+          "hypothesis_id": "H1",
+          "probe_id": "VALID_ROWS_PERSISTED",
+          "text": "H1 queda contradicha por VALID_ROWS_PERSISTED = true",
+          "type": "FALSIFICATION"
+        },
+        {
+          "claim_id": "REFUTE:H2:ACK_WRITTEN",
+          "evidence_refs": [
+            "fixture-verified://7126f80af6b161f743bd6c6eecfb7eef6527df42b320f36dd45f7a0f82a3a5a2"
+          ],
+          "hypothesis_id": "H2",
+          "probe_id": "ACK_WRITTEN",
+          "text": "H2 queda contradicha por ACK_WRITTEN = false",
+          "type": "FALSIFICATION"
+        }
+      ]
+    },
+    {
+      "candidate_method_source": "CAUSAL_HYPOTHESIS_FALSIFICATION_V2",
+      "case_id": "HCA-107",
+      "causality_proven": false,
+      "falsified_hypotheses": [
+        "H1"
+      ],
+      "method_decision": "INVESTIGATE_H2",
+      "method_receipt_sha256": "ea7c17921e45cc748f0f8a6193d1b0d77168eaa18f4e59d868db7c98a74f0449",
+      "source_attestation": "TEST_NON_AUTHORITY",
+      "supported_claims": [
+        {
+          "claim_id": "OBS:DELIVERY_CONFIRMED",
+          "evidence_refs": [
+            "fixture-verified://d0f6ae5dc368ff5bc21e158973998420400472f9d8e0dc7f1acb11cd535034dd"
+          ],
+          "observed": false,
+          "probe_id": "DELIVERY_CONFIRMED",
+          "text": "Verificación DELIVERY_CONFIRMED = false",
+          "type": "OBSERVATION"
+        },
+        {
+          "claim_id": "OBS:DISPATCH_RECEIPT",
+          "evidence_refs": [
+            "fixture-verified://c03dce745b48747bedbaf6023f5c1086cd98bcbaf7f90b1fba94ea4a281ce8c0"
+          ],
+          "observed": true,
+          "probe_id": "DISPATCH_RECEIPT",
+          "text": "Verificación DISPATCH_RECEIPT = true",
+          "type": "OBSERVATION"
+        },
+        {
+          "claim_id": "REFUTE:H1:DISPATCH_RECEIPT",
+          "evidence_refs": [
+            "fixture-verified://c03dce745b48747bedbaf6023f5c1086cd98bcbaf7f90b1fba94ea4a281ce8c0"
+          ],
+          "hypothesis_id": "H1",
+          "probe_id": "DISPATCH_RECEIPT",
+          "text": "H1 queda contradicha por DISPATCH_RECEIPT = true",
+          "type": "FALSIFICATION"
+        }
+      ]
+    },
+    {
+      "candidate_method_source": "CAUSAL_HYPOTHESIS_FALSIFICATION_V2",
+      "case_id": "HCA-108",
+      "causality_proven": false,
+      "falsified_hypotheses": [
+        "H1"
+      ],
+      "method_decision": "INVESTIGATE_H2",
+      "method_receipt_sha256": "adba68d07df3a940c06c82056db8230fdb16b689c831f038e2418e83aea7f3c1",
+      "source_attestation": "TEST_NON_AUTHORITY",
+      "supported_claims": [
+        {
+          "claim_id": "OBS:GATE_CLOSED",
+          "evidence_refs": [
+            "fixture-verified://233aa72f0c3937086c647602563f155b290e6c843ce5fc107ca638c0e10c4881"
+          ],
+          "observed": true,
+          "probe_id": "GATE_CLOSED",
+          "text": "Verificación GATE_CLOSED = true",
+          "type": "OBSERVATION"
+        },
+        {
+          "claim_id": "OBS:REVIEW_RECEIPT_EXISTS",
+          "evidence_refs": [
+            "fixture-verified://5d29540be33e4f83cb36c34eeda219930502a402c34799a07d64b6e6a0ed4eb1"
+          ],
+          "observed": true,
+          "probe_id": "REVIEW_RECEIPT_EXISTS",
+          "text": "Verificación REVIEW_RECEIPT_EXISTS = true",
+          "type": "OBSERVATION"
+        },
+        {
+          "claim_id": "REFUTE:H1:REVIEW_RECEIPT_EXISTS",
+          "evidence_refs": [
+            "fixture-verified://5d29540be33e4f83cb36c34eeda219930502a402c34799a07d64b6e6a0ed4eb1"
+          ],
+          "hypothesis_id": "H1",
+          "probe_id": "REVIEW_RECEIPT_EXISTS",
+          "text": "H1 queda contradicha por REVIEW_RECEIPT_EXISTS = true",
+          "type": "FALSIFICATION"
+        }
+      ]
+    }
+  ],
+  "case_count": 4,
+  "cutover_eligible": false,
+  "external_semantic_assurance": "NOT_EXECUTED",
+  "frozen_corpus_sha256": "9915c1cd88eeb425eba2e666d573c9b39f43843f470e3d072c9702d4fe1232e7",
+  "method_raw_sha256": "0cc6c6fe06760e738bd94d914c3c94f414437176958d931f52fd838b6e8f40be",
+  "schema": "PE_CAUSAL_UNSEEN_TOOL_CARDS_V1",
+  "status": "FROZEN_SUBSET_FROM_PRIOR_SOURCE"
+}
