@@ -68,7 +68,11 @@
     "false_improvement_rate",
     "observed_cost",
     "observed_latency",
-    "human_interventions"
+    "human_interventions",
+    "conversational_context_acquisition",
+    "clarification_utility",
+    "unnecessary_clarifications",
+    "premature_answer_rate"
   ],
   "resource_policy": {
     "cost_budget_pass_required": true,
@@ -82,8 +86,46 @@
     "STRUCTURAL_COMPLIANCE_AS_EXPERTISE",
     "HOLDOUT_LABEL_AVAILABLE_TO_PRODUCER",
     "SAME_PRODUCER_AND_EVALUATOR",
-    "POST_RAW_THRESHOLD_TUNING"
+    "POST_RAW_THRESHOLD_TUNING",
+    "CONVERSATION_BENCHMARK_AS_STATIC_ANSWER_ONLY",
+    "PRODUCER_JUDGES_OWN_CLARIFICATION_QUALITY"
   ],
   "independent_assurance_required_after_score": true,
-  "cutover_eligible_only_after_independent_assurance": true
+  "cutover_eligible_only_after_independent_assurance": true,
+  "conversational_subcampaign": {
+    "mandatory_for_expertise_admission": true,
+    "source": "skills/profile_creator/contracts/profile_conversational_context_policy_v1.json",
+    "minimum_scenarios": 40,
+    "included_in_target_cases_not_additive": true,
+    "minimum_blind_holdout_scenarios": 20,
+    "all_four_arms_required": true,
+    "initial_user_request": "SHORT_NATURAL_LANGUAGE_UNPREPARED",
+    "hidden_context": "LAZY_AUTHORIZED_SOURCES_AND_USER_REPLIES",
+    "user_simulator": "RESPOND_ONLY_TO_QUESTIONS_OR_SCHEDULED_EVENTS",
+    "staged_revelation": true,
+    "source_acquisition_receipts_required": true,
+    "sufficient_context_before_deep_claims": true,
+    "forbidden": [
+      "BIG_HANOFF_WITH_COMPLETE_ORACLE",
+      "DISCLOSE_HIDDEN_FACTS_TO_PRODUCER",
+      "REWARD_UNNECESSARY_QUESTIONS",
+      "TREAT_UNVERIFIED_SOURCE_AS_PRIMARY_READBACK"
+    ],
+    "comparable_resources": "MATCHED_MODEL_TOOLS_EVIDENCE_ACCESS_AND_BUDGET",
+    "mandatory_dialogue_measurements": [
+      "task_outcome_independently_verified",
+      "context_sufficiency_at_each_decision",
+      "retrieval_before_avoidable_question",
+      "decision_changing_question_utility",
+      "unnecessary_or_repeated_questions",
+      "premature_unsupported_conclusions",
+      "adaptation_to_new_and_contradictory_information",
+      "source_provenance_and_tool_correctness",
+      "human_intervention_count",
+      "observed_latency_and_cost"
+    ],
+    "acceptance": "MUST_PASS_SEPARATE_INTERACTIVE_TRANSCRIPT_VALIDATOR_AND_ORIGINAL_PE10E_C4_UPLIFT_GATES",
+    "independent_semantic_review_required": true,
+    "pre_execution_freeze_required": true
+  }
 }
