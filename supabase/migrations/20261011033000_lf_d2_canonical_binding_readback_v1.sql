@@ -103,7 +103,7 @@ BEGIN
             IF v_missing_column_count>0 THEN
                v_result:='BLOCK_BINDING_COLUMN_FILTER_SCHEMA_MISMATCH';
             ELSIF v_metadata->>'max_rows' IS NULL
-              OR (v_metadata->>'max_rows') !~ '^[0-9]{1,4}
+              OR (v_metadata->>'max_rows') !~ '^[0-9]{1,4}$'
               OR (v_metadata->>'max_rows')::integer NOT BETWEEN 1 AND 1000 THEN
                v_result:='BLOCK_BINDING_READ_LIMIT_INVALID';
             ELSE
