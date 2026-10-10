@@ -78,6 +78,7 @@ def discover_sources(request: dict[str, Any], metadata: dict[str, Any], policy: 
             aliases = source.get('aliases', [])
             if (not isinstance(relation_refs, list) or any(not isinstance(r, str) or not r for r in relation_refs)
                 or not isinstance(aliases, list) or any(not isinstance(a, str) for a in aliases)
+                or not isinstance(source.get('description', ''), str)
                 or ref in source_index):
                 raise ContractError('SOURCE_RELATION_OR_ALIAS_INVALID')
             source_index[ref] = source
@@ -159,7 +160,9 @@ def adapt_for_targeted_evidence(
     """
     if (not isinstance(discovery, dict) or not isinstance(unresolved_reasons, list)
         or any(not isinstance(r, str) or not r for r in unresolved_reasons)
-        or not isinstance(admitted, dict) or not isinstance(consumer_ref, str)):
+        or not isinstance(admitted, dict) or not isinstance(consumer_ref, str) or not consumer_ref.strip()
+        or not isinstance(discovery.get('candidate_sources', []), list)
+        or any(not isinstance(c, dict) for c in discovery.get('candidate_sources', []))):
         return {'state': 'BLOCK', 'code': 'D2_CONTRACT_INVALID'}
     if discovery.get('discovery_state') == 'DISCOVERY_EXHAUSTED':
         # This adapter NEVER asserts exhaustion. Canonical exhaustion must be
