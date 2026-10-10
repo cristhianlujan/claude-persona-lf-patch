@@ -27,3 +27,16 @@ def expect(task,action):
     assert out["action"]==action,(action,out)
     assert out["write_authorized"] is False
     return out
+
+def exercise_variants():
+    c=deepcopy(BASE);c["catalog"]=None
+    expect(c,"DISCOVER_SOURCES")
+    c=deepcopy(BASE);c["catalog"]={"state":"NO_SOURCE","receipt_ref":"fixture://catalog","sources":[]}
+    assert "pantalla" in expect(c,"ASK_USER")["user_question"]
+    c=deepcopy(BASE);assert expect(c,"QUERY_SOURCE")["window"]=="RECENT"
+    c["lookups"]=[lookup("RECENT")]
+    assert expect(c,"QUERY_SOURCE")["window"]=="HISTORICAL"
+    c["lookups"].append(lookup("HISTORICAL"))
+    assert "históricas" in expect(c,"ASK_USER")["user_question"]
+    c["asked_question_ids"]=["entity_location"]
+    expect(c,"LIMITED_RESPONSE")
