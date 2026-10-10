@@ -73,8 +73,8 @@ BEGIN
    AND status='ACTIVE' AND object_ref IS NOT NULL
  ), semantic_signals AS (
   SELECT m.*,
-    CASE WHEN pg_catalog.position(m.lookup_term IN
-       pg_catalog.lower(pg_catalog.replace(m.object_name,'_',' ')))>0
+    CASE WHEN pg_catalog.strpos(
+       pg_catalog.lower(pg_catalog.replace(m.object_name,'_',' ')),m.lookup_term)>0
          OR m.match_reason IN ('EXACT_REF','EXACT_NAME')
      THEN 1 ELSE 0 END AS name_alignment
   FROM matched m
