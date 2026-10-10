@@ -184,6 +184,7 @@ def acquire_live_evidence(run_id: int, expected_sha: str, authority_path: Path) 
         steps = {s.get("name"):s.get("conclusion") for s in matches[0].get("steps",[])}
         if (steps.get("Checkout merged trusted main") != "success"
             or steps.get("Assert exact sandbox and no production") != "success"
+            or steps.get("Live seven-cohort diagnostic (fail closed)") != "success"
             or steps.get("Preserve diagnostic evidence") != "success"):
             raise ValueError("GH_COHORT_TRUSTED_STEPS_NOT_COMPLETE:" + code)
     authority = json.loads(authority_path.read_text(encoding="utf-8"))
@@ -215,6 +216,8 @@ def acquire_live_evidence(run_id: int, expected_sha: str, authority_path: Path) 
                 or raw.get("screen_count")!=1
                 or raw.get("test_passed") is not False
                 or raw.get("test_exit_code") != 1
+                or raw.get("cohort_observation_passed") is not True
+                or raw.get("cohort_observation_status") != "OBSERVED"
                 or raw.get("shadow_decisional") is not False
                 or raw.get("promotion_authorized") is not False
                 or raw.get("production_authorized") is not False):
