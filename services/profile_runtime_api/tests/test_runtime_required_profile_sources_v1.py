@@ -23,6 +23,11 @@ class RequiredProfileSourcesTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         root = self.root / PROFILE_ROOT
         (root / "contracts").mkdir(parents=True)
+        (root / "schemas").mkdir()
+        (root / "validators").mkdir()
+        (root / "schemas/runtime_output.schema.json").write_text('{"type":"object"}')
+        (root / "validators/gate.py").write_text("def validate(payload): return []\n")
+        (root / "validators/semantic.py").write_text("def evaluate(payload, gate): return {}\n")
         (root / "SKILL.md").write_text("# Profile\n\n## Purpose\nResolve material evidence.\n")
         (root / "contracts/analysis_source_binding.json").write_text('{"current":false}\n')
         (root / "extra.md").write_text("# Extra source\n")
