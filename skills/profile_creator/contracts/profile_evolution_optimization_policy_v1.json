@@ -1,0 +1,16 @@
+{
+  "schema": "PROFILE_EVOLUTION_OPTIMIZATION_POLICY_V1",
+  "e8": {
+    "method": "EVALUATOR_OPTIMIZER",
+    "default_enabled": false,
+    "enable_only_if": ["frozen_baseline", "grader_contract", "holdout", "uplift_target", "cost_budget"],
+    "disable_if": ["simple_patch", "no_material_uplift", "budget_exhausted", "holdout_regression"]
+  },
+  "e9": {
+    "methods": ["GEPA_LIKE_SEARCH", "MIPRO_LIKE_OPTIMIZATION", "AFLOW_LIKE_WORKFLOW_SEARCH"],
+    "default_enabled": false,
+    "enable_only_if": ["E8_ADMITTED", "benchmark_shows_remaining_material_gap", "search_budget_approved", "holdout_protected"],
+    "auto_admit": false
+  },
+  "authority_rule": "OPTIMIZER_PROPOSES_HOLDOUT_MEASURES_ASSURANCE_CHALLENGES_ADMISSION_DECIDES"
+}

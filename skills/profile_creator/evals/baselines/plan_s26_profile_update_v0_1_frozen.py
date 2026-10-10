@@ -26,7 +26,7 @@ def build_plan(repo: Path, slug: str, preflight_payload: object, *, current_revi
         "write_allowed": write_allowed,
         "authority_resolution_required": baseline["decision"] == "BLOCKED_AUTHORITY_REQUIRED",
         "learning_preflight_required": True,
-        "closure_requirement": "POST_WRITE_BASELINE_13_OF_13_PLUS_FRESH_LEARNING_PREFLIGHT_PLUS_EXISTING_OPERATION_GATES",
+        "closure_requirement": "POST_WRITE_BASELINE_10_OF_10_PLUS_FRESH_LEARNING_PREFLIGHT_PLUS_EXISTING_OPERATION_GATES",
         "automatic_runtime_activation": False,
         "automatic_production_activation": False,
     }

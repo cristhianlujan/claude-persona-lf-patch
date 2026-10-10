@@ -1,0 +1,22 @@
+{
+  "schema": "PROFILE_CANDIDATE_MATERIALIZATION_SMOKE_SUMMARY_V1",
+  "status": "PASS",
+  "baseline_revision": "920b99f745c8c2ad63436a39130d20dd452cfd5a",
+  "candidate_sha256": "26dfbd9a14a94d00dd22c23abe753653ddd5ec57e6e43e5aa509b89e09e17ec9",
+  "materializer_receipt_sha256": "a2c53910ac76bbb9ab23b7b787949940b9500e145f772356a33d1c8075f669ef",
+  "profile_slug": "quality_pack",
+  "changed_paths": [
+    "contracts/profile_evolution_specialization_candidate.md"
+  ],
+  "deleted_paths": [],
+  "source_unchanged": true,
+  "authority_state": "NON_AUTHORITY_CANDIDATE",
+  "profile_source_write_authorized": false,
+  "runtime_activation": false,
+  "production_activation": false,
+  "reproduction": {
+    "raw_ref": "github://cristhianlujan/claude-persona-lf-patch@23cc7b18d5fc6fa81bb606b7e51222eb2cf2feb4/skills/profile_creator/evals/results/pe10p_gpt_native_smoke_20261008/raw_output.json",
+    "materializer_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_candidate_materializer/profile_candidate_materializer_v1.py",
+    "baseline_revision": "920b99f745c8c2ad63436a39130d20dd452cfd5a"
+  }
+}

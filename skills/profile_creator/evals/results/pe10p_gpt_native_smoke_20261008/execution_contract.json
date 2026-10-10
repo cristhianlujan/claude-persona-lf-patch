@@ -1,0 +1,59 @@
+{
+  "adapter_ref": "PROFILE_EVOLUTION_ORCHESTRATOR_V1:PROFILE_CREATOR",
+  "allowed_actions": [
+    "READ_PROFILE_SOURCE",
+    "AUTHOR_CANDIDATE_OVERLAY",
+    "EMIT_RAW"
+  ],
+  "authorized_scope": [
+    "profile:quality_pack",
+    "candidate:reversible-non-authority"
+  ],
+  "card_refs_and_hashes": [],
+  "card_resolution": {
+    "core_policy_ref": "github://cristhianlujan/claude-persona-lf-patch@920b99f745c8c2ad63436a39130d20dd452cfd5a/skills/profile_creator/SKILL.md",
+    "core_policy_sha256": "596cc80a74f02f00e5e21d4cda6a75bc019f7c5aade76ceca4f1c55313ad239f",
+    "critical_authority_missing": false,
+    "fallback_reason": "Profile Creator core contract is sufficient for the bounded PE10P smoke; no task-specific Card is required.",
+    "mode": "GENERIC_SAFE",
+    "unresolved_capabilities": []
+  },
+  "closure_conditions": [
+    "RAW_PERSISTED",
+    "RECEIPT_VALID",
+    "NO_AUTHORITY_WRITE"
+  ],
+  "context_fingerprint": "dc72fb7ceb2dfe4819d1aadc7ed8ed9be441df49ee9328a99266ad40c76b630d",
+  "contract_sha256": "49c66f1c69858b4b03b4f499d9e0383840435b4882174bb57a20fca4aab12f95",
+  "current_gate": "PE10P_C4_GPT_NATIVE_SMOKE",
+  "executor_mode": "GPT_NATIVE",
+  "forbidden_actions": [
+    "WRITE_PROFILE_AUTHORITY",
+    "ACTIVATE_RUNTIME",
+    "ACTIVATE_PRODUCTION",
+    "MERGE_MAIN",
+    "REMOTE_API_SUBSTITUTION"
+  ],
+  "input_governance_ref": "github://cristhianlujan/claude-persona-lf-patch@23cc7b18d5fc6fa81bb606b7e51222eb2cf2feb4/skills/profile_creator/evals/results/pe10p_gpt_native_smoke_20261008/input.txt",
+  "objective": "Author one reversible non-authority specialization overlay for the frozen Quality Pack smoke target.",
+  "profile_code": "PROFILE_CREATOR",
+  "profile_version": "PROFILE_EVOLUTION_CANDIDATE",
+  "required_checks": [
+    "ROUTER",
+    "PROFILE_CREATOR_CONTRACT",
+    "TARGET_PROFILE_SOURCE",
+    "CANDIDATE_AUTHORITY_BOUNDARY"
+  ],
+  "required_evidence": [
+    "router",
+    "profile_creator_contract",
+    "target_profile_source",
+    "profile_execution"
+  ],
+  "run_id": "CHATGPT-NATIVE-PE10P-SMOKE-20261008-001",
+  "schema": "LF_PROFILE_EXECUTION_CONTRACT_V1",
+  "tool_permissions": [
+    "READ_GITHUB",
+    "READ_SUPABASE"
+  ]
+}

@@ -1,0 +1,314 @@
+{
+  "schema": "PROFILE_UPDATER_EVOLUTION_PLAN_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "target_responsibility": "PROFILE_EVOLUTION_ORCHESTRATOR",
+  "plan_status": "IN_EXECUTION",
+  "completion_rule": "PLAN_DONE_ONLY_AFTER_E10E_EXPERT_TASK_BENCHMARK_PASS_PLUS_E10_ASSURANCE_ADMISSION_CUTOVER_AND_GOVERNED_V02_AUTHORITY_READBACK",
+  "lots": [
+    {
+      "id": "E0",
+      "work": "Reconcile currentness and S26 10/10 -> 13/13",
+      "depends_on": [],
+      "status": "DONE_CANDIDATE",
+      "closure_evidence": [
+        "authority/currentness readback",
+        "13/13 references clean"
+      ]
+    },
+    {
+      "id": "E1",
+      "work": "Define PROFILE_ASSESSMENT_V1, maturity model and EVOLUTION_MODE",
+      "depends_on": [
+        "E0"
+      ],
+      "status": "IMPLEMENTED_REQUIRES_FRESH_REQUALIFICATION",
+      "closure_evidence": [
+        "schema",
+        "fixtures",
+        "assessment evals"
+      ],
+      "blockers": [
+        "PROFILE_ASSESSMENT semantic repair must receive a fresh deterministic qualification receipt"
+      ]
+    },
+    {
+      "id": "E2",
+      "work": "Create METHOD_PACK_REGISTRY and transversalize SRCR pattern without copying repair-specific methods",
+      "depends_on": [
+        "E1"
+      ],
+      "status": "DONE_CANDIDATE_TESTED",
+      "closure_evidence": [
+        "typed selectable methods",
+        "preconditions",
+        "cost/risk",
+        "stop/escalation",
+        "registry tests"
+      ]
+    },
+    {
+      "id": "E3",
+      "work": "Evolve CAPABILITY_SELECTOR for capability+method composition",
+      "depends_on": [
+        "E2"
+      ],
+      "status": "DONE_CANDIDATE_TESTED",
+      "closure_evidence": [
+        "v1 compatibility",
+        "composition tests",
+        "negative/budget behavior"
+      ]
+    },
+    {
+      "id": "E4",
+      "work": "Run read-only shadow assessment over frozen real-profile corpus",
+      "depends_on": [
+        "E3"
+      ],
+      "status": "PENDING_EXECUTION",
+      "closure_evidence": [
+        "shadow results per target",
+        "gap/maturity corpus",
+        "zero profile writes"
+      ],
+      "blockers": [
+        "exact repository snapshot execution not completed"
+      ]
+    },
+    {
+      "id": "E5",
+      "work": "Convert pre-write updater intelligence into Profile Evolution Orchestrator and bind Profile Creator to reversible candidate materialization",
+      "depends_on": [
+        "E4"
+      ],
+      "status": "DONE_CANDIDATE_WITH_REVERSIBLE_MATERIALIZATION_BRIDGE",
+      "closure_evidence": [
+        "current-vs-new shadow comparison",
+        "admission-before-write verified",
+        "Profile Creator semantic producer binding",
+        "reversible candidate materializer qualification",
+        "zero authority writes"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "E6",
+      "work": "Add modular bindings and PROFILE_EVOLUTION_STATE",
+      "depends_on": [
+        "E5"
+      ],
+      "status": "IMPLEMENTED_CANDIDATE_PENDING_E5_ADMISSION",
+      "closure_evidence": [
+        "evolution state contract",
+        "backward-compatible profile behavior",
+        "runtime unchanged"
+      ]
+    },
+    {
+      "id": "E7",
+      "work": "Govern learning from admitted results",
+      "depends_on": [
+        "E6"
+      ],
+      "status": "IMPLEMENTED_CANDIDATE_PENDING_REPLAY",
+      "closure_evidence": [
+        "replay",
+        "repeated evidence",
+        "cross-profile validation",
+        "holdout",
+        "no auto-promotion"
+      ]
+    },
+    {
+      "id": "E8",
+      "work": "Enable evaluator-optimizer only if measured uplift justifies cost",
+      "depends_on": [
+        "E7"
+      ],
+      "status": "GATED_NOT_ENABLED",
+      "closure_evidence": [
+        "frozen baseline",
+        "grader contract",
+        "holdout",
+        "uplift vs cost"
+      ],
+      "gate": "Do not enable for simple PATCH or without measurable uplift"
+    },
+    {
+      "id": "E9",
+      "work": "Evaluate optional GEPA/MIPRO/AFlow-like advanced optimization",
+      "depends_on": [
+        "E8"
+      ],
+      "status": "GATED_NOT_ENABLED",
+      "closure_evidence": [
+        "E8 admitted",
+        "remaining material gap",
+        "search budget",
+        "protected holdout",
+        "measured incremental uplift"
+      ],
+      "gate": "Optional; may be skipped if E8 is sufficient"
+    },
+    {
+      "id": "E1B",
+      "work": "Derive maturity from verified executable competency vector",
+      "depends_on": [
+        "E1"
+      ],
+      "status": "DONE",
+      "closure_evidence": [
+        "PROFILE_ASSESSMENT_V2",
+        "verified task execution receipts",
+        "difficulty/robustness/adaptation/transfer/preservation vector",
+        "structural-only negative case"
+      ]
+    },
+    {
+      "id": "E2B",
+      "work": "Generalize METHOD_PACK_REGISTRY with verified preconditions, observed cost and causal effectiveness contracts",
+      "depends_on": [
+        "E2",
+        "E1B"
+      ],
+      "status": "DONE",
+      "closure_evidence": [
+        "METHOD_PACK_REGISTRY_V2",
+        "12 methods",
+        "4 experimental non-auto-select methods",
+        "retirement/transfer contracts"
+      ]
+    },
+    {
+      "id": "E3B",
+      "work": "Enable evidence-bound same-task replanning",
+      "depends_on": [
+        "E3",
+        "E2B"
+      ],
+      "status": "DONE",
+      "closure_evidence": [
+        "CAPABILITY_SELECTOR_V3",
+        "verified preconditions",
+        "QUALITY_PLATEAU replan",
+        "no persistent learning authority"
+      ]
+    },
+    {
+      "id": "E7B",
+      "work": "Admit learning only with causal attribution, transfer and lifecycle",
+      "depends_on": [
+        "E7",
+        "E3B"
+      ],
+      "status": "DONE",
+      "closure_evidence": [
+        "PROFILE_LEARNING_ADMISSION_V2",
+        "ablation/paired/counterfactual contract",
+        "failed transfers retained",
+        "expiry/retirement"
+      ]
+    },
+    {
+      "id": "E10E",
+      "work": "Execute real expert-task A/B/C/D benchmark before cutover",
+      "depends_on": [
+        "E5",
+        "E7B",
+        "PE10P_GPT_NATIVE"
+      ],
+      "status": "IN_PROGRESS_3_OF_4",
+      "closure_evidence": [
+        "actual profile execution receipts",
+        "blind independent evaluator",
+        "four arms A/B/C/D",
+        "difficulty-weighted task quality",
+        "transfer/adaptation/preservation",
+        "relative uplift >=15% with predefined uncertainty",
+        "benchmark contract/scorer hostile self-test PASS",
+        "120-case / 8-family / 5-difficulty campaign design frozen",
+        "60-case holdout sealed without labels exposed to producer",
+        "power analysis and thresholds frozen before RAW"
+      ],
+      "blockers": [
+        "PE10E_C4 actual four-arm task execution and blind independent scoring not yet performed"
+      ]
+    },
+    {
+      "id": "E10",
+      "work": "Execute paired blind benchmark, assurance, admission and governed cutover",
+      "depends_on": [
+        "PE10P_GOVERNED_SEMANTIC_PRODUCER",
+        "E5_MATERIALIZATION_BRIDGE",
+        "E8_OR_E9",
+        "E10E_EXPERT_TASK_BENCHMARK"
+      ],
+      "status": "WAITING_EXPERT_BENCHMARK",
+      "closure_evidence": [
+        "24+ executed/scored cases across 8 strata",
+        "primary capability score UP",
+        "holdout UP",
+        "critical regressions=0",
+        "false-PASS not worse",
+        "valid behavior preserved",
+        "cost/latency within budget",
+        "independent assurance PASS",
+        "ADMIT_CUTOVER event",
+        "v0.1 executions drained",
+        "v0.2 authority readback",
+        "existing OpenAI Responses GPT runtime 10/10 provider tests",
+        "no Llama dependency",
+        "canonical LF_PROFILE_EXECUTION_CONTRACT_V1 reused",
+        "GPT_NATIVE / CLAUDE_NATIVE / REMOTE_API route architecture reused",
+        "Llama remains REMOTE_API option, not GPT dependency",
+        "architecture/control benchmark explicitly non-expertise",
+        "expert task benchmark A/B/C/D PASS",
+        "INDEPENDENT_ASSURANCE 2.0.0 published current after exact operation requalification",
+        "Assurance V3 publication PR #2070 merge 32d9b71e33c005e60f4e0a8999def219e6f9dbd4",
+        "Generic requalification repair PR #2073 merge 16b9746476eb908c26486d7aa6a093008c854f6a"
+      ],
+      "blockers": [
+        "PE10E_C4: actual expert-task A/B/C/D benchmark pending",
+        "25 v0.1 executions IN_PROGRESS",
+        "0 cutover admission events",
+        "required Profile Evolution candidate capabilities/cutover authority must be read back before final cutover"
+      ],
+      "external_controls": {
+        "PASE": "NOT_AN_ACTIVE_EXIT_GATE_WHILE_DISABLED; SKIPPED_MUST_NOT_BE_RELABELED_PASS"
+      }
+    }
+  ],
+  "invariants": [
+    "NO_RUNTIME_AUTO_ACTIVATION",
+    "NO_PRODUCTION_AUTO_PROMOTION",
+    "NO_CUTOVER_BEFORE_E10_ADMISSION",
+    "NO_PLAN_DONE_WITH_UNVERIFIED_LOTS",
+    "PATCH_MINIMALITY_ONLY_FOR_PATCH_MODE",
+    "STRUCTURAL_COMPATIBILITY_IS_NOT_CAPABILITY_EXCELLENCE",
+    "MATURITY_DERIVED_FROM_EXECUTABLE_COMPETENCY_VECTOR",
+    "ARCHITECTURE_CONTROL_SCORE_IS_NOT_EXPERTISE",
+    "UPWARD_EXPERTISE_CLAIM_REQUIRES_ACTUAL_PROFILE_TASK_EXECUTION",
+    "LEARNING_REQUIRES_CAUSAL_ATTRIBUTION_AND_TRANSFER",
+    "INDEPENDENT_ASSURANCE_V3_CURRENT_DOES_NOT_SUBSTITUTE_FOR_EXPERT_BENCHMARK"
+  ],
+  "atomic_execution_plan_ref": "skills/profile_creator/contracts/profile_evolution_engineering_plan_v1.json",
+  "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
+  "atomic_plan_summary": {
+    "units": 18,
+    "checkpoints": 79,
+    "required_checkpoints": 76,
+    "required_terminal": 70,
+    "required_progress_pct": 92.1,
+    "status": "REARCHITECTURE_IN_EXECUTION"
+  },
+  "validation_policy": {
+    "model": "FRESH_DETERMINISTIC_CHECKPOINT_VALIDATION",
+    "previous_pass_reuse": false,
+    "title_inference": false,
+    "generic_or_transversal_validator_first": true,
+    "missing_validator": "CREATE_AND_QUALIFY_BEFORE_EXECUTION",
+    "validator_authority": "GITHUB_VERSIONED_FILES",
+    "repair_flow": "FAIL -> RESOLVE -> FRESH_REVALIDATE -> PASS",
+    "programming_specific_runtime_tables_reused": false
+  }
+}

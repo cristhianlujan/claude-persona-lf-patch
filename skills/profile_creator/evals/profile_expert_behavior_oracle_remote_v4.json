@@ -1,0 +1,727 @@
+{
+  "campaign_id": "PEXP-R4-20261008",
+  "cases": [
+    {
+      "case_id": "PEXR-001",
+      "correct_choice": "C",
+      "difficulty": 1,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-002",
+      "correct_choice": "C",
+      "difficulty": 1,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-003",
+      "correct_choice": "C",
+      "difficulty": 1,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-004",
+      "correct_choice": "C",
+      "difficulty": 2,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-005",
+      "correct_choice": "C",
+      "difficulty": 2,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-006",
+      "correct_choice": "C",
+      "difficulty": 2,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-007",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-008",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-009",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-010",
+      "correct_choice": "A",
+      "difficulty": 4,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-011",
+      "correct_choice": "A",
+      "difficulty": 4,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-012",
+      "correct_choice": "A",
+      "difficulty": 4,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-013",
+      "correct_choice": "A",
+      "difficulty": 5,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-014",
+      "correct_choice": "A",
+      "difficulty": 5,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-015",
+      "correct_choice": "A",
+      "difficulty": 5,
+      "domain_family": "ENGINEERING_REPAIR"
+    },
+    {
+      "case_id": "PEXR-016",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-017",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-018",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-019",
+      "correct_choice": "B",
+      "difficulty": 2,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-020",
+      "correct_choice": "A",
+      "difficulty": 2,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-021",
+      "correct_choice": "A",
+      "difficulty": 2,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-022",
+      "correct_choice": "A",
+      "difficulty": 3,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-023",
+      "correct_choice": "A",
+      "difficulty": 3,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-024",
+      "correct_choice": "A",
+      "difficulty": 3,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-025",
+      "correct_choice": "B",
+      "difficulty": 4,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-026",
+      "correct_choice": "B",
+      "difficulty": 4,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-027",
+      "correct_choice": "B",
+      "difficulty": 4,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-028",
+      "correct_choice": "B",
+      "difficulty": 5,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-029",
+      "correct_choice": "B",
+      "difficulty": 5,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-030",
+      "correct_choice": "A",
+      "difficulty": 5,
+      "domain_family": "FRONTEND_PROGRAMMING"
+    },
+    {
+      "case_id": "PEXR-031",
+      "correct_choice": "A",
+      "difficulty": 1,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-032",
+      "correct_choice": "A",
+      "difficulty": 1,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-033",
+      "correct_choice": "A",
+      "difficulty": 1,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-034",
+      "correct_choice": "B",
+      "difficulty": 2,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-035",
+      "correct_choice": "B",
+      "difficulty": 2,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-036",
+      "correct_choice": "B",
+      "difficulty": 2,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-037",
+      "correct_choice": "B",
+      "difficulty": 3,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-038",
+      "correct_choice": "B",
+      "difficulty": 3,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-039",
+      "correct_choice": "B",
+      "difficulty": 3,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-040",
+      "correct_choice": "A",
+      "difficulty": 4,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-041",
+      "correct_choice": "A",
+      "difficulty": 4,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-042",
+      "correct_choice": "A",
+      "difficulty": 4,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-043",
+      "correct_choice": "B",
+      "difficulty": 5,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-044",
+      "correct_choice": "B",
+      "difficulty": 5,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-045",
+      "correct_choice": "B",
+      "difficulty": 5,
+      "domain_family": "UI_UX"
+    },
+    {
+      "case_id": "PEXR-046",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-047",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-048",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-049",
+      "correct_choice": "B",
+      "difficulty": 2,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-050",
+      "correct_choice": "C",
+      "difficulty": 2,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-051",
+      "correct_choice": "C",
+      "difficulty": 2,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-052",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-053",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-054",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-055",
+      "correct_choice": "C",
+      "difficulty": 4,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-056",
+      "correct_choice": "C",
+      "difficulty": 4,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-057",
+      "correct_choice": "C",
+      "difficulty": 4,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-058",
+      "correct_choice": "C",
+      "difficulty": 5,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-059",
+      "correct_choice": "C",
+      "difficulty": 5,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-060",
+      "correct_choice": "C",
+      "difficulty": 5,
+      "domain_family": "PRODUCT"
+    },
+    {
+      "case_id": "PEXR-061",
+      "correct_choice": "C",
+      "difficulty": 1,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-062",
+      "correct_choice": "C",
+      "difficulty": 1,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-063",
+      "correct_choice": "C",
+      "difficulty": 1,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-064",
+      "correct_choice": "C",
+      "difficulty": 2,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-065",
+      "correct_choice": "C",
+      "difficulty": 2,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-066",
+      "correct_choice": "C",
+      "difficulty": 2,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-067",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-068",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-069",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-070",
+      "correct_choice": "B",
+      "difficulty": 4,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-071",
+      "correct_choice": "B",
+      "difficulty": 4,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-072",
+      "correct_choice": "B",
+      "difficulty": 4,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-073",
+      "correct_choice": "B",
+      "difficulty": 5,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-074",
+      "correct_choice": "B",
+      "difficulty": 5,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-075",
+      "correct_choice": "B",
+      "difficulty": 5,
+      "domain_family": "QUALITY_REVIEW"
+    },
+    {
+      "case_id": "PEXR-076",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-077",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-078",
+      "correct_choice": "A",
+      "difficulty": 1,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-079",
+      "correct_choice": "A",
+      "difficulty": 2,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-080",
+      "correct_choice": "B",
+      "difficulty": 2,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-081",
+      "correct_choice": "B",
+      "difficulty": 2,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-082",
+      "correct_choice": "B",
+      "difficulty": 3,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-083",
+      "correct_choice": "B",
+      "difficulty": 3,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-084",
+      "correct_choice": "B",
+      "difficulty": 3,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-085",
+      "correct_choice": "B",
+      "difficulty": 4,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-086",
+      "correct_choice": "B",
+      "difficulty": 4,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-087",
+      "correct_choice": "A",
+      "difficulty": 4,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-088",
+      "correct_choice": "A",
+      "difficulty": 5,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-089",
+      "correct_choice": "A",
+      "difficulty": 5,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-090",
+      "correct_choice": "B",
+      "difficulty": 5,
+      "domain_family": "EVIDENCE_RESEARCH"
+    },
+    {
+      "case_id": "PEXR-091",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-092",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-093",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-094",
+      "correct_choice": "B",
+      "difficulty": 2,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-095",
+      "correct_choice": "B",
+      "difficulty": 2,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-096",
+      "correct_choice": "A",
+      "difficulty": 2,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-097",
+      "correct_choice": "A",
+      "difficulty": 3,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-098",
+      "correct_choice": "A",
+      "difficulty": 3,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-099",
+      "correct_choice": "A",
+      "difficulty": 3,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-100",
+      "correct_choice": "A",
+      "difficulty": 4,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-101",
+      "correct_choice": "A",
+      "difficulty": 4,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-102",
+      "correct_choice": "A",
+      "difficulty": 4,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-103",
+      "correct_choice": "A",
+      "difficulty": 5,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-104",
+      "correct_choice": "A",
+      "difficulty": 5,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-105",
+      "correct_choice": "A",
+      "difficulty": 5,
+      "domain_family": "CUSTOMER_FINANCIAL_UX"
+    },
+    {
+      "case_id": "PEXR-106",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-107",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-108",
+      "correct_choice": "B",
+      "difficulty": 1,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-109",
+      "correct_choice": "B",
+      "difficulty": 2,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-110",
+      "correct_choice": "C",
+      "difficulty": 2,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-111",
+      "correct_choice": "C",
+      "difficulty": 2,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-112",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-113",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-114",
+      "correct_choice": "C",
+      "difficulty": 3,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-115",
+      "correct_choice": "C",
+      "difficulty": 4,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-116",
+      "correct_choice": "C",
+      "difficulty": 4,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-117",
+      "correct_choice": "C",
+      "difficulty": 4,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-118",
+      "correct_choice": "C",
+      "difficulty": 5,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-119",
+      "correct_choice": "C",
+      "difficulty": 5,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    },
+    {
+      "case_id": "PEXR-120",
+      "correct_choice": "C",
+      "difficulty": 5,
+      "domain_family": "GAMIFICATION_SYSTEMS"
+    }
+  ],
+  "producer_must_not_consume": true,
+  "schema": "PROFILE_EXPERT_BEHAVIOR_HIDDEN_ORACLE_V1"
+}

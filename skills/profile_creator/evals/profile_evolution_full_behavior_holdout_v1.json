@@ -1,0 +1,16 @@
+{
+  "schema": "PROFILE_EVOLUTION_FULL_BEHAVIOR_HOLDOUT_V1",
+  "generation_id": "PEB-FB1-20261008",
+  "benchmark_scope": "FULL_PROFILE_EVOLUTION_BEHAVIOR",
+  "holdout_case_ids": [
+    "PEB2-006",
+    "PEB2-009",
+    "PEB2-012",
+    "PEB2-015",
+    "PEB2-018",
+    "PEB2-021",
+    "PEB2-024"
+  ],
+  "holdout_case_count": 7,
+  "producer_must_not_consume_this_file": true
+}

@@ -1,0 +1,84 @@
+{
+  "schema": "INDEPENDENT_ASSURANCE_GENERIC_SUBJECT_ROLLBACK_PROOF_V1",
+  "tested_at": "2026-10-09T02:00:00Z",
+  "database_project": "mhwmirqcgxxukpctffuv",
+  "transaction_mode": "BEGIN ... ROLLBACK",
+  "persistent_changes": false,
+  "design_under_test": "CONTRACT_DRIVEN_ANY_SUBJECT",
+  "positive_live_receipts": [
+    {
+      "subject_type": "IG_SCREEN_GRAPH",
+      "receipt_id": "20f510b2-c875-4859-97e6-b5a979b03468",
+      "result": "PASS"
+    },
+    {
+      "subject_type": "IG_SPEC_TRAVERSAL_PER_RUN",
+      "receipt_id": "2e4e4628-c971-4335-aa42-1e1b5483ed86",
+      "result": "PASS"
+    }
+  ],
+  "negative_cases": [
+    {
+      "case": "receipt_subject_mismatch",
+      "expected": "SUBJECT_PROVIDER_BOUND_RECEIPT_INVALID",
+      "result": "PASS"
+    },
+    {
+      "case": "producer_equals_reviewer",
+      "expected": "BUILDER_REVIEWER_NOT_INDEPENDENT",
+      "result": "PASS"
+    },
+    {
+      "case": "empty_required_dimensions",
+      "expected": "REQUIRED_DIMENSIONS_MISSING",
+      "result": "PASS"
+    }
+  ],
+  "rollback_readback": {
+    "probe_function_absent_after_rollback": true
+  },
+  "conclusion": "V3 can generalize the single existing review stack by contract, without subject-name whitelist or parallel operation/judges/store. Persistent publication still requires formal Git migration, merge, exact apply, requalification and current-pointer promotion.",
+  "runtime_candidate_ref": "sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/independent_assurance_generic_subject_runtime_v3_candidate.sql",
+  "runtime_candidate_commit": "a4088481aa69b0b95bc9f50cf276a011f7674334",
+  "full_ddl_rollback": {
+    "result": "PASS",
+    "assertions_inside_transaction": "PASS",
+    "candidate_version": "2.0.0",
+    "current_pointer_during_ddl": "1.0.1",
+    "independent_review_operation_count": 1,
+    "active_judge_count": 6,
+    "applies_to_asset_type": null,
+    "generic_begin_rpc_present": true,
+    "generic_step_rpc_present": true,
+    "legacy_strategy_begin_present": true,
+    "generic_core_named_subject_branches": false,
+    "qualification_current_after_revision_change": false,
+    "after_rollback": {
+      "current_version": "1.0.1",
+      "operation_count": 1,
+      "judge_count": 6,
+      "qualification_current": true,
+      "generic_rpc_residue": false,
+      "candidate_version_residue": false
+    }
+  },
+  "provenance_guard": {
+    "initial_failure": "LF_OPERATION_PROVENANCE_UPDATED_EXECUTION_MISSING",
+    "repair": "Use existing execution scoped to REVISION_INDEPENDIENTE_ESTRATEGIA_LF; do not bypass provenance guard.",
+    "actor_execution_id": "EXEC-REQUAL-INDEPENDENT-REVIEW-BASELINE-20261003-001"
+  },
+  "formal_migration": {
+    "path": "supabase/migrations/20261009034500_independent_assurance_generic_subject_v3.sql",
+    "commit": "881cde39bcb0c5c381a36c8eb622d9d34013280d",
+    "blob": "549a67c1f25640d4eed00443aebda346258bb99e",
+    "exact_rollback_result": "PASS",
+    "after_rollback": {
+      "current_version": "1.0.1",
+      "operation_count": 1,
+      "judge_count": 6,
+      "qualification_current": true,
+      "candidate_version_residue": false,
+      "generic_rpc_residue": false
+    }
+  }
+}

@@ -1,0 +1,335 @@
+{
+  "schema": "PROFILE_EVOLUTION_EXECUTION_STATUS_V1",
+  "as_of": "2026-10-08",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "candidate_responsibility": "PROFILE_EVOLUTION_ORCHESTRATOR",
+  "pr": 1947,
+  "authority_state": {
+    "operation_version": "v0.1",
+    "active_contract": "CONTRACT-ACTUALIZACION-PERFIL-LF-v0.1",
+    "active_policy": "POL-PROFILE-UPDATE-PASS@v1.1",
+    "capability_selector": "1.0.0",
+    "profile_assessment_current": false,
+    "method_pack_registry_current": false,
+    "e10_admission_events": 0,
+    "open_v01_executions": 25
+  },
+  "lots": [
+    {
+      "id": "E0",
+      "status": "DONE_VALIDATED",
+      "evidence": [
+        "S26 10/10 references reconciled to 13/13",
+        "SRCR operational v0.2 vs repository V0.6/SRCR_V0_7R1 explicitly reconciled without promotion"
+      ]
+    },
+    {
+      "id": "E1",
+      "status": "DONE_VALIDATED",
+      "evidence": [
+        "PROFILE_ASSESSMENT_V1",
+        "9 assessment behavior cases",
+        "UNKNOWN -> UNDETERMINED / NEEDS_MORE_EVIDENCE",
+        "unreferenced PASS/FAIL fail closed"
+      ]
+    },
+    {
+      "id": "E2",
+      "status": "DONE_VALIDATED",
+      "evidence": [
+        "METHOD_PACK_REGISTRY_V1",
+        "8 governed methods",
+        "SRCR-specific repair methods not copied"
+      ]
+    },
+    {
+      "id": "E3",
+      "status": "DONE_VALIDATED",
+      "evidence": [
+        "CAPABILITY_SELECTOR composition v2",
+        "v1 selector contract preserved",
+        "multi-gap composition fresh PASS",
+        "budget/admission separation fresh PASS"
+      ]
+    },
+    {
+      "id": "E4",
+      "status": "DONE_SHADOW_VALIDATED",
+      "evidence": [
+        "8 current real-profile targets frozen at main@fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+        "shadow PASS target_count=8 writes=0",
+        "no UNKNOWN -> GENERIC/SPECIALIZE",
+        "2 stale targets removed because they are adapter-only, not current profiles"
+      ]
+    },
+    {
+      "id": "E5",
+      "status": "DONE_WITH_REVERSIBLE_MATERIALIZATION_BRIDGE",
+      "evidence": [
+        "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+        "admission before profile-source write",
+        "PROFILE_CREATOR remains sole semantic producer",
+        "PROFILE_CANDIDATE_MATERIALIZER_V1 positive=2 negative=6 authority_writes=0"
+      ]
+    },
+    {
+      "id": "E6",
+      "status": "DONE_VALIDATED",
+      "evidence": [
+        "PROFILE_EVOLUTION_STATE_V1 includes UNDETERMINED",
+        "UNDETERMINED means evidence insufficiency, not low maturity",
+        "v0.2 step gate remains isolated from v0.1"
+      ]
+    },
+    {
+      "id": "E7",
+      "status": "DONE_VALIDATED",
+      "evidence": [
+        "PROFILE_LEARNING_ADMISSION_V1",
+        "no auto-promote from reflection"
+      ]
+    },
+    {
+      "id": "E8",
+      "status": "DONE_POLICY_GATED_NOT_ENABLED",
+      "evidence": [
+        "EVALUATOR_OPTIMIZER policy exists"
+      ],
+      "gate": "Requires frozen baseline, grader, holdout, uplift target and cost budget."
+    },
+    {
+      "id": "E9",
+      "status": "DONE_NOT_APPLICABLE",
+      "evidence": [
+        "Advanced optimization policy exists"
+      ],
+      "gate": "Requires admitted E8, remaining material gap, search budget and protected holdout."
+    },
+    {
+      "id": "E10",
+      "status": "BLOCKED_ON_PE10P_C4_GPT_CREDENTIAL",
+      "evidence": [
+        "PEB-R2 decision/composition RAW frozen before oracle open; 24 cases / 8 strata / 8 holdout",
+        "decision benchmark score baseline=0.25 candidate=1.00",
+        "primary direction UP; holdout UP; paired CI95 [0.583333,0.916667]",
+        "critical regressions=0; false PASS 6 -> 0; preservation=true; cost/latency within budget",
+        "decision benchmark cutover_eligible=false; FULL_PROFILE_EVOLUTION_BEHAVIOR still required",
+        "PE10_C1 DONE; PE10_C2-C7 pending",
+        "GPT runtime reused; Llama not required",
+        "OpenAI provider runtime deterministic tests 10/10",
+        "PE10P C1-C3 DONE with fresh evidence"
+      ],
+      "blockers": [
+        "PE10P_C4: OPENAI_PROFILE_RUNTIME_CREDENTIAL_MISSING",
+        "FULL_PROFILE_EVOLUTION_BEHAVIOR not executed/admitted",
+        "0 PROFILE_EVOLUTION_CUTOVER_ADMITTED events",
+        "25 v0.1 updater executions remain IN_PROGRESS",
+        "required candidate capabilities are not yet all live-current"
+      ]
+    }
+  ],
+  "verification": {
+    "capability_migration_sql": "DRY_RUN_BEGIN_ROLLBACK_PASS",
+    "capability_authority_after_rollback": "UNCHANGED",
+    "v02_step_gate_sql": "DRY_RUN_BEGIN_ROLLBACK_PASS",
+    "v02_trigger_after_rollback": "ABSENT",
+    "cutover_negative_test": "BLOCK_PROFILE_EVOLUTION_CUTOVER_OPEN_V01_EXECUTIONS",
+    "runtime_changed": false,
+    "production_changed": false,
+    "updater_authority_changed": false,
+    "decision_benchmark_scope": "DECISION_POLICY_AND_COMPOSITION_ONLY_NOT_CUTOVER_ELIGIBLE",
+    "semantic_runner_contract": "PASS_SELF_TEST_POSITIVE_1_NEGATIVE_5_DIRECT_MODEL_BYPASS_BLOCKED",
+    "llama_required": false,
+    "execution_architecture": "LF_PROFILE_EXECUTION_CONTRACT_V1: GPT_NATIVE | CLAUDE_NATIVE | REMOTE_API",
+    "current_execution_mode": "GPT_NATIVE",
+    "openai_api_key_required": false,
+    "independent_assurance_subject_architecture": {
+      "target": "CONTRACT_DRIVEN_ANY_SUBJECT",
+      "subject_type_whitelist": false,
+      "rollback_probe": "PASS",
+      "positive_live_subject_types": [
+        "IG_SCREEN_GRAPH",
+        "IG_SPEC_TRAVERSAL_PER_RUN"
+      ],
+      "negative_cases": [
+        "receipt_subject_mismatch",
+        "producer_equals_reviewer",
+        "empty_required_dimensions"
+      ],
+      "persistent_db_change": false
+    },
+    "independent_assurance_v3_runtime_candidate": {
+      "status": "ROLLBACK_QUALIFIED",
+      "candidate_ref": "sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/independent_assurance_generic_subject_runtime_v3_candidate.sql",
+      "candidate_commit": "a4088481aa69b0b95bc9f50cf276a011f7674334",
+      "operation_count": 1,
+      "judge_count": 6,
+      "generic_core_named_subject_branches": false,
+      "strategy_wrapper_preserved": true,
+      "qualification_gate_observed": true,
+      "rollback_restored_1_0_1": true,
+      "persistent_change": false
+    },
+    "independent_assurance_v3_formal_migration": {
+      "path": "supabase/migrations/20261009034500_independent_assurance_generic_subject_v3.sql",
+      "commit": "881cde39bcb0c5c381a36c8eb622d9d34013280d",
+      "blob": "549a67c1f25640d4eed00443aebda346258bb99e",
+      "exact_migration_rollback": "PASS",
+      "post_rollback_current_version": "1.0.1",
+      "post_rollback_operation_count": 1,
+      "post_rollback_judge_count": 6,
+      "post_rollback_qualification_current": true,
+      "residue": false,
+      "merged": false,
+      "applied": false
+    },
+    "expert_behavior_campaign": {
+      "campaign_ref": "skills/profile_creator/evals/profile_expert_behavior_campaign_v1.json",
+      "power_ref": "skills/profile_creator/evals/profile_expert_behavior_power_analysis_v1.json",
+      "holdout_ref": "skills/profile_creator/evals/profile_expert_behavior_holdout_v1.json",
+      "planned_cases": 120,
+      "holdout_cases": 60,
+      "raw_generation_started": false
+    },
+    "independent_assurance_v3_publication": {
+      "status": "PUBLISHED_QUALIFIED_CURRENT",
+      "publication_pr": 2070,
+      "publication_merge_sha": "32d9b71e33c005e60f4e0a8999def219e6f9dbd4",
+      "publication_migration": "supabase/migrations/20261009034500_independent_assurance_generic_subject_v3.sql",
+      "publication_blob": "549a67c1f25640d4eed00443aebda346258bb99e",
+      "publication_db_migration_version": "20261009034828",
+      "compatibility_repair_pr": 2073,
+      "compatibility_repair_merge_sha": "16b9746476eb908c26486d7aa6a093008c854f6a",
+      "compatibility_repair_migration": "supabase/migrations/20261009050000_operation_requalification_nullable_scope_route_resolution_v1.sql",
+      "compatibility_repair_blob": "20563aaf29851ee37e9973d2aa71f55fd0a70412",
+      "compatibility_repair_db_migration_version": "20261009035548",
+      "exact_requalification_execution_id": "EXEC-INDEP-V3-REQUAL-20261008-001",
+      "operation_revision_sha256": "0b6a945a2c1aae8c8ad66b3ca9da40e6112ddc3b99371fcc230b4953d81ccfd6",
+      "operation_qualification_current": true,
+      "capability_current_version": "2.0.0",
+      "capability_current_manifest_sha256": "bfdd4ca3190c3d3e2529f2bfc48db67d898a772aa0d8a9958a911647b3057843",
+      "previous_version": "1.0.1",
+      "operation_count": 1,
+      "judge_count": 6,
+      "parallel_operation_count": 0,
+      "parallel_route_count": 0,
+      "security_advisor_new_v3_rpc_findings": 0,
+      "runtime_activation": false,
+      "production_activation": false,
+      "profile_evolution_cutover": false
+    }
+  },
+  "closure": "REARCHITECTURE_IN_EXECUTION; 70/76 REQUIRED TERMINAL. INDEPENDENT_ASSURANCE V3 IS PUBLISHED, EXACT-REVISION QUALIFIED AND CURRENT 2.0.0. PE10 HAS 0 OPEN BLOCKERS AND WAITS ON PE10E. PE10E_C4 REAL A/B/C/D EXPERT TASK CAMPAIGN REMAINS PENDING. CUTOVER NOT ADMITTED.",
+  "atomic_plan": {
+    "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
+    "unit_count": 18,
+    "checkpoint_count": 79,
+    "required_checkpoint_count": 76,
+    "required_terminal_count": 70,
+    "required_progress_pct": 92.1,
+    "done_checkpoint_count": 70,
+    "not_applicable_checkpoint_count": 3,
+    "open_blocker_count": 0
+  },
+  "atomic_units": {
+    "PE5A": {
+      "status": "DONE",
+      "checkpoints": "5/5",
+      "purpose": "reversible candidate materialization bridge"
+    },
+    "PE10P": {
+      "status": "DONE",
+      "checkpoints": "5/5",
+      "executor_mode": "GPT_NATIVE",
+      "adapter_id": "chatgpt-native-current-context-v1",
+      "provider": "OPENAI_CHATGPT_NATIVE",
+      "api_key_required": false,
+      "llama_required": false,
+      "smoke_receipt_sha256": "9b54a21e64d4673699a832eb3776fce226de99c8af3ca003a96fef80518acb3b",
+      "materializer_receipt_sha256": "a2c53910ac76bbb9ab23b7b787949940b9500e145f772356a33d1c8075f669ef"
+    },
+    "PE10": {
+      "status": "WAIT_DEPENDENCY_PE10E",
+      "checkpoints": "3/8",
+      "completed": [
+        "PE10_C1",
+        "PE10_C2",
+        "PE10_C2B"
+      ],
+      "current_checkpoint": "PE10_C3",
+      "blocker_code": "INDEPENDENT_ASSURANCE_V3_MERGE_APPLY_REQUAL_PENDING",
+      "full_behavior_summary": {
+        "benchmark_status": "BENCHMARK_PASS",
+        "case_count": 21,
+        "holdout_case_count": 7,
+        "baseline_score": 0.285714,
+        "candidate_score": 0.971429,
+        "paired_ci95": [
+          0.533333,
+          0.828571
+        ],
+        "holdout_ci95": [
+          0.4,
+          0.928571
+        ],
+        "critical_regressions": 0,
+        "false_pass": "6 -> 0",
+        "cost_latency_within_budget": true
+      },
+      "blocker_detail": "Formal V3 migration is Git-first and exact rollback PASS. Remaining governed publication requires explicit merge authorization, exact apply, operation requalification, capability 2.0.0 current promotion and Git=ledger=DB readback.",
+      "open_blocker_count": 0,
+      "unmet_dependency": "PE10E",
+      "independent_assurance_v3": "PUBLISHED_QUALIFIED_CURRENT",
+      "note": "PE10_C3 is not closed: independent assurance must evaluate frozen PE10E expert-benchmark evidence after PE10E_C4."
+    },
+    "PE1B": {
+      "status": "DONE",
+      "checkpoints": "5/5",
+      "evidence": "Fresh PROFILE_ASSESSMENT_V2 + PROFILE_EVOLUTION_STATE_V2 validation"
+    },
+    "PE2B": {
+      "status": "DONE",
+      "checkpoints": "4/4",
+      "evidence": "Fresh METHOD_PACK_REGISTRY_V2 validation; 12 methods, 4 experiments non-auto-select"
+    },
+    "PE3B": {
+      "status": "DONE",
+      "checkpoints": "5/5",
+      "evidence": "Fresh CAPABILITY_SELECTOR_V3 + planner V2; verified preconditions and same-run replanning"
+    },
+    "PE7B": {
+      "status": "DONE",
+      "checkpoints": "4/4",
+      "evidence": "Fresh PROFILE_LEARNING_ADMISSION_V2; causal/transfer/lifecycle gates"
+    },
+    "PE10E": {
+      "status": "IN_PROGRESS",
+      "checkpoints": "3/4",
+      "current_checkpoint": "PE10E_C4",
+      "campaign_id": "PEXP-V1-20261008",
+      "campaign_design": {
+        "planned_cases": 120,
+        "domain_families": 8,
+        "holdout_cases": 60,
+        "holdout_labels_visible_to_producer": false,
+        "thresholds_frozen_before_raw": true,
+        "raw_started": false
+      },
+      "remaining": "Execute actual A/B/C/D expert-task campaign; no synthetic/document-only score accepted."
+    }
+  },
+  "repair_audit_rearchitecture": {
+    "decision": "REARCHITECT_PARTIALLY",
+    "implemented_candidate_components": [
+      "PROFILE_ASSESSMENT_V2",
+      "METHOD_PACK_REGISTRY_V2",
+      "CAPABILITY_SELECTOR_V3",
+      "PROFILE_LEARNING_ADMISSION_V2",
+      "PROFILE_EVOLUTION_ORCHESTRATOR_V2",
+      "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1"
+    ],
+    "architecture_control_score_interpretation": "NOT_EXPERTISE_EVIDENCE",
+    "current_full_behavior_score_0_971429": "ARCHITECTURE_AND_CANDIDATE_CONTRACT_CONTROL_ONLY",
+    "cutover_new_required_gate": "PE10E EXPERT_TASK_PERFORMANCE_E2E"
+  }
+}

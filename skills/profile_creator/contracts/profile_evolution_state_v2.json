@@ -1,0 +1,62 @@
+{
+  "schema": "PROFILE_EVOLUTION_STATE_V2",
+  "purpose": "Append-only evidence-bound trajectory where maturity transitions are backed by verified competency deltas.",
+  "required": [
+    "profile_code",
+    "profile_slug",
+    "baseline_revision",
+    "from_competency_vector",
+    "to_competency_vector",
+    "from_maturity",
+    "to_maturity",
+    "evolution_mode",
+    "method_cycles",
+    "capabilities",
+    "candidate_ref",
+    "task_execution_refs",
+    "expert_benchmark_ref",
+    "assurance_ref",
+    "admission_ref",
+    "result",
+    "remaining_gaps",
+    "learning_candidate_ref",
+    "recorded_at"
+  ],
+  "maturity_states": [
+    "UNDETERMINED",
+    "GENERIC",
+    "SPECIALIZED",
+    "ADAPTIVE",
+    "EXPERT",
+    "EVIDENCE_OPTIMIZED"
+  ],
+  "result_states": [
+    "ADMITTED",
+    "REJECTED",
+    "NO_CHANGE",
+    "BLOCKED"
+  ],
+  "competency_delta_required": [
+    "domain_quality",
+    "max_difficulty_solved",
+    "robustness",
+    "adaptation",
+    "transfer",
+    "preservation",
+    "efficiency",
+    "longitudinal_evidence"
+  ],
+  "invariants": [
+    "UNDETERMINED_IS_EVIDENCE_INSUFFICIENCY_NOT_LOW_MATURITY",
+    "MATURITY_IS_DERIVED_FROM_COMPETENCY_VECTOR",
+    "STRUCTURAL_COMPATIBILITY_NEVER_COUNTS_AS_COMPETENCY_UPLIFT",
+    "UPWARD_TRANSITION_REQUIRES_ACTUAL_PROFILE_TASK_EXECUTION",
+    "EXPERT_REQUIRES_TRANSFER_PRESERVATION_AND_ZERO_CRITICAL_REGRESSIONS",
+    "EVIDENCE_OPTIMIZED_REQUIRES_LONGITUDINAL_AND_CAUSAL_EVIDENCE",
+    "METHOD_REPLAN_HISTORY_IS_RETAINED",
+    "FAILED_OR_REJECTED_ATTEMPTS_REMAIN_IN_TRAJECTORY",
+    "NO_SELF_PROMOTION_FROM_REFLECTION",
+    "RUNTIME_AND_PRODUCTION_STATE_ARE_SEPARATE"
+  ],
+  "append_only_trajectory": true
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "PROFILE_EVOLUTION_OPTIMIZATION_POLICY_V2",
+  "default_enabled": false,
+  "registry_ref": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v2.json",
+  "allowed_method_ids": [
+    "EVALUATOR_OPTIMIZER",
+    "PROMPT_OPTIMIZATION",
+    "REASONING_COMPOSITION_SEARCH",
+    "TEXTUAL_FEEDBACK_OPTIMIZATION",
+    "WORKFLOW_SEARCH"
+  ],
+  "experimental_method_rule": "EXPLICIT_EXPERIMENT_PERMISSION_PLUS_VERIFIED_PRECONDITIONS_PLUS_PROTECTED_HOLDOUT",
+  "activation_requires": [
+    "frozen_task_baseline",
+    "verified_preconditions",
+    "expert_task_metric",
+    "protected_holdout",
+    "observed_or_declared_cost_budget",
+    "reversible_candidate"
+  ],
+  "disable_if": [
+    "simple_patch",
+    "no_material_uplift",
+    "budget_exhausted",
+    "holdout_regression",
+    "critical_regression"
+  ],
+  "dynamic_replan": true,
+  "authority_rule": "OPTIMIZER_PROPOSES_TASK_EXECUTION_MEASURES_ASSURANCE_CHALLENGES_ADMISSION_DECIDES",
+  "auto_admit": false
+}
