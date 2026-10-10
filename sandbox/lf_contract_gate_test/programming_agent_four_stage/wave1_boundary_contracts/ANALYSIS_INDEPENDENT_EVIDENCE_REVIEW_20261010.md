@@ -44,3 +44,56 @@
 - Mantener PR #2145 fuente/procedimiento separada de implementación de producto.
 - No construir soluciones ni tocar B2B por usarlo como ejemplo previo; seleccionar evaluación independiente del producto.
 - No merge, migración, runtime productivo ni cambios de estados persistidos sin la gobernanza correspondiente.
+
+
+## Macrolote de diagnóstico operacional — 2026-10-10
+
+**EKB preflight:** se releyeron cuatro entradas activas de Análisis antes de las comprobaciones. `A14-EVIDENCE-TIER-FALSE-READY` sigue `ACTIVO`; ningún control estructural permite declararlo resuelto.
+
+### 1. Servidor LLM y gobernanza
+
+- Host conectado: `scalora-vps` vía SentinelX; **sin cambio de servicios**.
+- API LF Profile Runtime local `http://127.0.0.1:8090/health` (consulta GET): `classification=INSTALLED_NOT_INTEGRATED_PENDING_LIVE_REVERIFY`, `operational_ready=false`, `downstream_authorized=false`; fuente `af6540c5757b39130c92a8ffd7a61d3cd7b8cb58`.
+- El catálogo de perfiles actualmente visible en código tiene `product_director_lf`, `ui_architect`, `quality_pack` como bindings predefinidos; **no se identificó un binding de Agente de Análisis A1–A9**. No es lícito reclamar que `/v1/profile/execute` ejecuta el método A1–A9.
+- Servidor LLM local ya cargado `127.0.0.1:8080`, modelo `/opt/profile-runtime-benchmark/model/model.gguf`, aproximadamente 3.09B parámetros, Q4_K. No se inició modelo nuevo.
+
+### 2. Inferencia real aislada, NO ejecución admitida del Agente de Análisis
+
+Primero una consulta de viabilidad local `/v1/chat/completions` devolvió HTTP 200, respuesta id `chatcmpl-mtRNjBI8KhAZyOYARhmZ4JAAD6N8Fe0L`, 126 tokens, 8.92s. Esto sólo demuestra el transporte de inferencia.
+
+Segundo, se presentó una solicitud **sintética no B2B**: añadir exportación de actividad a un portal sin autoridad de permisos, retención ni formato. El system prompt incluyó resumen A1–A9 y la prohibición explícita de inventar decisiones. El servidor respondió HTTP 200 con `chatcmpl-OuR7cOuX0buEx2MYlZOrqLnS41KJLsLU`, `prompt_tokens=195`, `completion_tokens=96`, `total_tokens=291`, 11.0s. Respuesta:
+
+```json
+{
+  "intent": "Add an option to users to export their activity in the account portal.",
+  "depth": 1,
+  "material_unknowns": [],
+  "material_impacts": [],
+  "required_decisions": [],
+  "scope_readiness": "READY",
+  "reason": "The request is clear and specific, requiring only the addition of an export option for user activity in the account portal. No additional decisions or external sources are needed."
+}
+```
+
+**Finding: exploración modelo = FAIL_SEMANTIC_FALSE_READY.** Los vacíos materiales estaban expresamente señalados en el input; el modelo los omitió y proclamó READY. No es una inferencia del runtime gobernado, no se tomó ninguna decisión de producto ni se escribió en DB.
+
+### 3. Reutilización del validador en PR #2071 (sin engine paralelo)
+
+Se tomó la salida del modelo como candidato de ingreso:
+- Payload bruto → `REJECTED_AS_REQUIRED: SNAPSHOT_PAYLOAD_SCHEMA` por `validate_programming_snapshot_payload_v1` exacto PR #2071, Git blob `0167d817e21ffff74a50c92bc907cd0d94001e9d`.
+- Intento de envolver `READY` con schema `PROGRAMMING_CONTEXT_SNAPSHOT_V1`, sin `material_fronts`, `currentness_refs`, `source_refs` ni matriz → `REJECTED_AS_REQUIRED: SNAPSHOT_PAYLOAD_MATRIX_REQUIRED`.
+
+**Alcance de resultado:** el validador existente bloquea la salida insegura. No prueba que el agente pueda descubrir los impactos sin un oráculo ni sustituye A1–A9.
+
+### 4. Macrolotes y evidencia faltante
+
+| Macrolote | Hallazgo verificable | Estado |
+|---|---|---|
+| M-A: preflight fuente/EKB y replay estructural | 15/15 ledger DONE; PR #2071 passes 99 negativos, A14 replay delimitado | `STRUCTURAL_CHECKS_PASS` |
+| M-B: ejecutor real A1–A9 | LLM local responde, pero la API LF no está integrada y la respuesta sintética fue false READY | `BLOCKED_EXECUTOR_BINDING_AND_SEMANTIC_FAILURE` |
+| M-C: juez independiente y holdout | El A14 histórico usó contract replay; no hay evaluación semántica admitida de outputs reales A1–A9 | `NOT_PROVEN` |
+| M-D: handoff PG-01 | Validador source rechaza negativos; ningún consumo real de snapshot fue ejecutado | `NOT_PROVEN` |
+
+**Admisión operativa:** `NOT_OPERATIONALLY_QUALIFIED`. La corrección PR #2071 y el procedimiento PR #2145 siguen Draft / sin merge. Cualquier porcentaje global de calidad operativa sería inventado. No realizar implementación B2B, no llamar PG-01 productivo ni aplicar SQL.
+
+**Siguiente orden:** (1) enlazar el productor gobernado real de A1–A9 con fuente exacta y control de identidad, (2) preparar evaluación independiente a partir de familias/frentes derivados, no hardcoded de B2B, (3) generar y consumir receipt real de A9→PG-01 en sandbox, con controles de aceptación y rechazo. Si falla el modelo, remediar el método/evidencia general y revaluar, sin promover un PASS falso.
