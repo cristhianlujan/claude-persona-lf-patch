@@ -1,3 +1,15 @@
+-- The catalog-drift view is SECURITY INVOKER and requires this exact helper.
+-- It calls only pg_catalog.pg_get_function_identity_arguments(oid).
+-- No data privileges or client-facing grants are added.
+DO $pre$ BEGIN
+ IF NOT has_table_privilege('service_role','inventory.v_pg_catalog_drift_v1','SELECT')
+ THEN RAISE EXCEPTION 'INVENTORY_DRIFT_VIEW_NOT_READABLE_BY_SERVER'; END IF;
+ IF has_function_privilege('anon','inventory.fn_function_identity_args_stable(oid)','EXECUTE')
+ OR has_function_privilege('authenticated','inventory.fn_function_identity_args_stable(oid)','EXECUTE')
+ THEN RAISE EXCEPTION 'INVENTORY_IDENTITY_HELPER_UNEXPECTED_CLIENT_EXECUTE'; END IF;
+END $pre$;
+GRANT EXECUTE ON FUNCTION inventory.fn_function_identity_args_stable(oid) TO service_role;
+
 -- LF D1: technical qualification readback only; NOT promotion of the inventory asset.
 -- Reuse inventory snapshots, managed currentness, drift view and existing catalogs.
 -- Scope: managed DATABASE_AND_REGISTRIES only. External repo/edge are excluded.
