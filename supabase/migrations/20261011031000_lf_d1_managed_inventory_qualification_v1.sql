@@ -34,11 +34,16 @@ AS $fn$
    (SELECT count(*)::bigint FROM inventory.search_index) AS indexed_objects,
    (SELECT count(*)::bigint FROM inventory.dependencies d WHERE d.active) AS active_dependencies,
    (SELECT count(*)::bigint FROM inventory.v_pg_catalog_drift_v1) AS active_catalog_drift,
-   (SELECT count(*)::int FROM inventory.v_managed_currentness_v1 v
-    WHERE v.source_system IN ('SUPABASE_PG_CATALOG','LF_ACTIVOS',
-                              'PROGRAMACION_CONTRATOS','LF_OPERATION_REGISTRY')
-      AND v.currentness='CATALOG_MANAGED'
-      AND v.snapshot_code=(SELECT snapshot_code FROM latest)) AS current_managed_sources
+   (SELECT count(*)::int
+    FROM (VALUES ('SUPABASE_PG_CATALOG'),('LF_ACTIVOS'),
+                 ('PROGRAMACION_CONTRATOS'),('LF_OPERATION_REGISTRY'))
+      v(source_system)
+    JOIN latest l ON TRUE
+    WHERE inventory.fn_managed_currentness_eval_v1(
+       v.source_system,l.completed_at,l.status,
+       nullif(l.metadata->>'pg_catalog_drift','')::integer,
+       l.metadata#>>'{registries,status}',pg_catalog.clock_timestamp()
+    )='CATALOG_MANAGED') AS current_managed_sources
  ), outcome AS (
   SELECT
    l.snapshot_code,l.status,l.completed_at,l.object_count,l.dependency_count,l.metadata,
