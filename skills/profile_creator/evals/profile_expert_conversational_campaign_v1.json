@@ -1,0 +1,84 @@
+{
+  "schema": "PROFILE_EXPERT_CONVERSATIONAL_CAMPAIGN_V1",
+  "status": "DESIGN_CANDIDATE_NOT_HOLDOUT_FROZEN_NOT_EXECUTED",
+  "operation": "ACTUALIZACION_PERFIL_LF",
+  "authoritative_original_benchmark_ref": "skills/profile_creator/contracts/profile_expert_behavior_benchmark_v1.json",
+  "policy_ref": "skills/profile_creator/contracts/profile_conversational_context_policy_v1.json",
+  "total_original_benchmark_cases": 120,
+  "minimum_conversational_cases_within_total": 40,
+  "minimum_conversational_holdout": 20,
+  "power_and_exact_split": "MUST_FREEZE_BEFORE_ANY_NEW_GPT_RAW; DO_NOT_REUSE_HCA_105_108",
+  "evaluation_arms": [
+    "A_ORIGINAL",
+    "B_UPDATER_V01",
+    "C_EVOLUTION_CURRENT",
+    "D_EVOLUTION_TARGET"
+  ],
+  "profile_runtime": "GPT_NATIVE",
+  "case_source": "SHORT_USER_UTTERANCE_WITHOUT_PREFILLED_HYPOTHESES_EVIDENCE_OR_ORACLE",
+  "scenario_families": [
+    {
+      "family": "SYSTEMIC_CAUSAL_REPAIR",
+      "minimum": 8
+    },
+    {
+      "family": "CONTEXT_ACQUISITION_AND_AMBIGUITY",
+      "minimum": 8
+    },
+    {
+      "family": "CONTRADICTORY_OR_STALE_EVIDENCE",
+      "minimum": 8
+    },
+    {
+      "family": "MID_CONVERSATION_REPLAN",
+      "minimum": 8
+    },
+    {
+      "family": "UNFAMILIAR_DOMAIN_TRANSFER",
+      "minimum": 8
+    }
+  ],
+  "staged_user_simulator": {
+    "initial_message_only": true,
+    "hidden_source_catalog_separate_from_producer": true,
+    "scripted_user_replies_after_valid_questions": true,
+    "tool_results_only_after_actual_authorized_lookup": true,
+    "allow_unknown_and_inaccessible_information": true,
+    "oracle_hidden_until_all_raw_outputs_frozen": true
+  },
+  "observed_steps_required": [
+    "INITIAL_CONTEXT_SUFFICIENCY",
+    "SOURCE_DISCOVERY_AND_AUTHORIZATION",
+    "ACQUISITION_PLANNING_OR_NO_SOURCE",
+    "ACTUAL_READBACK_OR_TARGETED_USER_QUESTION",
+    "REASSESSMENT_AFTER_NEW_INFO",
+    "DYNAMIC_METHOD_SELECTION_AND_EXECUTION_IF_NEEDED",
+    "SOLUTION_WITH_PROOF_OR_EXPLICIT_UNCERTAINTY"
+  ],
+  "independent_metrics": [
+    "E2E_TASK_SUCCESS",
+    "SOURCE_TRUST",
+    "QUESTION_UTILITY",
+    "UNNECESSARY_QUESTIONS",
+    "RECOVERY_FIRST",
+    "FALSE_CERTAINTY",
+    "CONTRADICTION_ADAPTATION",
+    "PRESERVATION",
+    "MEASURED_COST",
+    "MEASURED_LATENCY"
+  ],
+  "technical_qualification_refs": [
+    "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/test_profile_conversational_context_v1.py",
+    "skills/profile_creator/evals/test_profile_conversational_campaign_v1.py"
+  ],
+  "semantic_assurance": "INDEPENDENT_CHAT_CONTEXT_WITH_ACTUAL_RECEIPTS",
+  "admission": "EXISTING_PE10E_C4_A_B_C_D_UPLIFT_GATES_PLUS_CONVERSATIONAL_SUBCAMPAIGN",
+  "forbid": [
+    "COMPLETE_CONTEXT_HANDED_TO_PRODUCER_AT_START",
+    "EVALUATION_FROM_STATIC_EXPECTED_ANSWERS",
+    "SELF_REVIEW",
+    "LARGE_HANDOFF_AS_REQUIRED_USER_INPUT",
+    "CANDIDATE_TEST_PASS_AS_EXPERT_PROOF",
+    "PRODUCTION_PROMOTION"
+  ]
+}
