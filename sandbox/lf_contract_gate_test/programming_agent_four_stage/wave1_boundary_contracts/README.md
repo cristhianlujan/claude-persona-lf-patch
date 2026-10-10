@@ -4,6 +4,8 @@
 
 - [ANALYSIS_PROCEDURE_V1.md](ANALYSIS_PROCEDURE_V1.md): secuencia operativa, responsables, salidas, transiciones, bloqueos y límites de fase.
 - [analysis_procedure_v1.json](analysis_procedure_v1.json): contrato estructurado con las nueve etapas, referencias a fuentes existentes y estados permitidos.
+- [ANALYSIS_INDEPENDENT_EVIDENCE_REVIEW_20261010.md](ANALYSIS_INDEPENDENT_EVIDENCE_REVIEW_20261010.md): revisión offline A14, inferencia local real que detectó false READY y rechazo por validador A9; no es certificación operativa.
+- [ANALYSIS_EXECUTION_QUALIFICATION_BINDING_V1.md](ANALYSIS_EXECUTION_QUALIFICATION_BINDING_V1.md): macrolotes de enlace al ejecutor gobernado, juez independiente y PG-01; todo en estado candidato.
 - **Estado:** `PROCEDURE_SOURCE_COMPLETE / VALIDATION_DEFERRED`; no ejecutar caso, prueba, benchmark ni PG-01 en el lote de construcción del procedimiento. `DONE` del ledger no acredita ejecución integral del agente.
 - **Separación:** el procedimiento puede construirse sin implementar ningún producto; desarrollo y testing tienen sus propios carriles.
 
