@@ -39,7 +39,7 @@ El contrato no prueba aún descubrimiento semántico general, solo recuperación
   provienen del resolutor autorizado de Supabase; NUNCA de GPT/Excel.
 - \`metadata_readonly_candidate_query_v1.sql\`: búsqueda léxica inicial acotada,
   sin SQL generado por GPT, sin lecturas de filas.
-- Pruebas: 17/17 unittest sintéticas PASAN localmente; SHA de Git blobs de
+- Pruebas: 20/20 unittest sintéticas PASAN localmente; SHA de Git blobs de
   fuente/tests verificados contra el mismo contenido ejecutado.
 - Probe estructural real Supabase: \`lf_ops\` tiene 109 objetos relacionales y 181 FK;
   consulta sin nombres de tablas descubrió fuentes de cargas, y aristas hacia
@@ -69,3 +69,5 @@ El contrato no prueba aún descubrimiento semántico general, solo recuperación
 
 **Estado:** candidato de diseño/prototipo; este PR no incluye migración canónica,
 registro de nueva capacidad en Supabase, runtime activo ni benchmark end-to-end.
+
+- Regresiones adicionales: descripción de metadatos de tipo inválido, objetos de candidato mal formados y consumer_ref vacío bloquean sin invocar D2.
