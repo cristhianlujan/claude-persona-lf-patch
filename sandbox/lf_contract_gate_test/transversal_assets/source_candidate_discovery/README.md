@@ -71,3 +71,41 @@ El contrato no prueba aún descubrimiento semántico general, solo recuperación
 registro de nueva capacidad en Supabase, runtime activo ni benchmark end-to-end.
 
 - Regresiones adicionales: descripción de metadatos de tipo inválido, objetos de candidato mal formados y consumer_ref vacío bloquean sin invocar D2.
+
+
+## D2 — Authorization preflight, observed on 2026-10-10
+- Added \`source_access_preflight_deny_only_v1.sql\` and
+  \`source_access_preflight_readonly_probes_v1.sql\`. Both are read-only,
+  candidate-only; neither grants source access nor introduces another policy.
+- Supabase live readback:
+  - \`auth.uid()\`, \`lf_ops.b2b_current_user_id()\` and
+    \`lf_ops.b2b_current_company_id()\` are all NULL on the administrative
+    diagnostic connection. The access preflight returned
+    \`BLOCK_ACTOR_NOT_AUTHENTICATED\`.
+  - Valid catalog source+current policy: catalog and currentness PASS, but
+    data access stays DENIED without authenticated actor.
+  - Missing source: \`BLOCK_SOURCE_NOT_IN_METADATA_SCOPE\`.
+  - Stale policy version: \`BLOCK_POLICY_VERSION_MISMATCH\`.
+  - \`anon\` and \`authenticated\` lack direct SELECT grants on both
+    \`lf_ops.cargas_lotes\` and \`lf_ops.cargas_archivos\`. Admin
+    \`postgres\` grant MUST NOT be used as consumer authority.
+  - \`POL-LF-SOURCE-RESOLUTION\` currently ACTIVE with SHA
+    \`5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46\`.
+  - A scoped search of \`public.lf_activos.metadata\` and
+    \`public.v_lf_fuente_operativa_busqueda\` found no exact existing
+    reference to \`cargas_lotes\` or \`cargas_archivos\`.
+    **Do not infer a canonical source-to-permission binding from a table name.**
+- Existing \`lf_ops.permisos\` provides resource/action permissions (including
+  \`LOAD/VIEW_DETAIL\` and \`LOAD_HISTORY/VIEW\`), but this is not evidence of a
+  governed mapping for each discovered table, nor a right to read rows.
+- The next required *controlled change* is a Supabase-owned binding from
+  \`source_ref\` to a vetted read facade + resource/action + tenant scope and
+  actual permission evidence. It must have genuine pass/fail outcomes, protect
+  against cross-tenant access, and be exercised under a valid authenticated
+  context. Reuse the canonical registry/policy and test contracts; do NOT
+  invent table-name substring routing, permissive GRANTs, or security-definer
+  bypasses.
+
+The preflight in this PR is intentionally a **deny-only diagnostic**, not a
+permanent production gate: before implementation of an admissible read path,
+it must not be mistaken for complete D2.
