@@ -367,6 +367,39 @@ def capture_rollback_one(row: dict) -> dict:
     return out
 
 
+def qualifies_cohort_observation(item: dict) -> bool:
+    """Technical execution+classified semantics. Never an equivalence approval."""
+    stages = item.get("vnext_pipeline")
+    eq = item.get("t_equiv")
+    if not isinstance(stages, list) or not isinstance(eq, dict):
+        return False
+    if [stage.get("stage") for stage in stages if isinstance(stage, dict)] != list(STAGES):
+        return False
+    if len(stages) != len(STAGES) or any(
+        not isinstance(stage, dict) or stage.get("status") != "PASS"
+        for stage in stages
+    ):
+        return False
+    if (item.get("baseline_revision") != "5.13"
+        or item.get("source_delta", {}).get("status")
+            != "CLASSIFIED_VERSION_SOURCE_DELTA"
+        or item.get("validator_blocked_family_count") != 0
+        or not isinstance(item.get("validator_chunk_count"), int)
+        or item["validator_chunk_count"] < 1):
+        return False
+    d0 = (eq.get("status") == "PASS"
+          and eq.get("result") == "PASS_EQUIVALENT"
+          and eq.get("difference_count") == 0
+          and eq.get("semantic_hold") is not True)
+    d4 = (eq.get("status") == "CLASSIFIED_HOLD"
+          and eq.get("result") == "BLOCKED_DIVERGENCE"
+          and eq.get("comparison_level") == "D4"
+          and isinstance(eq.get("difference_count"), int)
+          and eq["difference_count"] > 0
+          and eq.get("semantic_hold") is True)
+    return bool(d0 or d4)
+
+
 def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = None) -> int:
     captured = dt.datetime.now(dt.timezone.utc).isoformat()
     try:
@@ -400,17 +433,7 @@ def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = Non
     # A D4 hold may be successfully *measured* but never promoted as equivalent.
     cohort_observed = bool(
         cohort is not None and rollback_e2e and unchanged and len(records) == 1
-        and all(
-            [stage.get("stage") for stage in item.get("vnext_pipeline", [])] == list(STAGES)
-            and all(stage.get("status") == "PASS" for stage in item["vnext_pipeline"])
-            and item.get("baseline_revision") == "5.13"
-            and item.get("source_delta", {}).get("status") == "CLASSIFIED_VERSION_SOURCE_DELTA"
-            and item.get("validator_blocked_family_count") == 0
-            and isinstance(item.get("validator_chunk_count"), int)
-            and item["validator_chunk_count"] > 0
-            and item.get("t_equiv", {}).get("status") in ("PASS", "CLASSIFIED_HOLD")
-            for item in records
-        )
+        and all(qualifies_cohort_observation(item) for item in records)
     )
     if cohort is not None:
         complete = False
@@ -472,6 +495,32 @@ def self_test() -> int:
         [{"ref":{"kind":"UNKNOWN_SEMANTIC_SOURCE"},"observed_sha256":"new"}])
     require(blocked["status"]=="BLOCKED_UNCLASSIFIED_SOURCE_DELTA",
             "UNKNOWN_SOURCE_DELTA_NOT_BLOCKED")
+    fixture = {
+      "vnext_pipeline":[{"stage":stage,"status":"PASS"} for stage in STAGES],
+      "baseline_revision":"5.13",
+      "source_delta":{"status":"CLASSIFIED_VERSION_SOURCE_DELTA"},
+      "validator_blocked_family_count":0,
+      "validator_chunk_count":1,
+      "t_equiv":{"status":"PASS","result":"PASS_EQUIVALENT",
+                 "difference_count":0}}
+    require(qualifies_cohort_observation(fixture),"D0_OBSERVATION_POSITIVE_FAILED")
+    hold={**fixture,"t_equiv":{"status":"CLASSIFIED_HOLD",
+              "result":"BLOCKED_DIVERGENCE","comparison_level":"D4",
+              "difference_count":2,"semantic_hold":True}}
+    require(qualifies_cohort_observation(hold),"D4_OBSERVATION_WITH_HOLD_FAILED")
+    for mutant in (
+      {**fixture,"vnext_pipeline":[*fixture["vnext_pipeline"][:-1],
+                                  {"stage":"VALIDATOR","status":"BLOCKED"}]},
+      {**fixture,"validator_blocked_family_count":1},
+      {**fixture,"source_delta":{"status":"BLOCKED_UNCLASSIFIED_SOURCE_DELTA"}},
+      {**fixture,"t_equiv":{"status":"CLASSIFIED_HOLD","result":"PASS_EQUIVALENT",
+                            "comparison_level":"D4","difference_count":2,
+                            "semantic_hold":False}},
+      {**fixture,"t_equiv":{"status":"PASS","result":"PASS_EQUIVALENT",
+                           "difference_count":1}},
+    ):
+      require(not qualifies_cohort_observation(mutant),
+              "INVALID_OBSERVATION_FALSE_PASS")
     print(json.dumps({"test_code": CODE, "self_test": "PASS",
        "negative": "PASS", "live_pipeline_pass": False}))
     return 0
