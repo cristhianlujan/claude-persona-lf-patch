@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import json,random,sys
+from validate_profile_conversational_campaign_v1 import validate_conversational_subcampaign
 from pathlib import Path
 from typing import Any
 
@@ -72,6 +73,8 @@ def evaluate(raw:dict[str,Any],holdout:dict[str,Any],protocol:dict[str,Any])->di
         for arm in ARMS:
             for b in _validate_arm(arms.get(arm) if isinstance(arms,dict) else None):
                 blockers.append(f"{c.get('case_id','?')}:{arm}:{b}")
+
+    blockers.extend(validate_conversational_subcampaign(raw,holdout,protocol))
 
     if blockers:
         return {"schema":"PROFILE_EXPERT_BEHAVIOR_SCORE_V1","status":"BLOCK","blocking_codes":sorted(set(blockers)),"cutover_eligible":False}
