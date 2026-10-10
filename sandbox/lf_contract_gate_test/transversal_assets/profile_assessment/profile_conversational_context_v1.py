@@ -6,7 +6,7 @@ claims it has fetched a source, performed a model call or verified a user.
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 SCHEMA = "PROFILE_CONVERSATIONAL_CONTEXT_V1"
 ACQUISITION_SCHEMA = "LF_TARGETED_EVIDENCE_ACQUISITION_RESULT_V1"
@@ -24,7 +24,7 @@ def _block(code: str) -> dict:
     return _out("BLOCKED", [], code, context_sufficient=False)
 
 
-def route_context_turn(task: dict, acquisition_result: dict | None = None) -> dict:
+def route_context_turn(task: dict, acquisition_result: dict | None = None, *, verify_source: Callable[[dict], bool] | None = None) -> dict:
     """Decide whether to proceed, query sources, ask a question or disclose limits.
 
     The external provider result MUST originate from
@@ -72,8 +72,12 @@ def route_context_turn(task: dict, acquisition_result: dict | None = None) -> di
               f["source_type"] == "TRUSTED_READBACK" and
               f["evidence_status"] == "VERIFIED" and
               isinstance(f.get("independent_readback_ref"), str) and
-              f["independent_readback_ref"]):
-            known[reason].append(f)
+              f["independent_readback_ref"] and callable(verify_source)):
+            try:
+                if verify_source(f) is True:
+                    known[reason].append(f)
+            except Exception:
+                pass
     conflicting = sorted(k for k, vals in known.items()
                          if len({repr(f["value"]) for f in vals}) > 1)
     missing = sorted(k for k, vals in known.items() if not vals or k in conflicting)
@@ -126,7 +130,8 @@ def route_context_turn(task: dict, acquisition_result: dict | None = None) -> di
             return _block("QUESTION_INVALID")
         covered = set(q["covers_reasons"]) & set(missing)
         if (covered and q["question_id"] not in asked and
-            all(levels[k] == "USER_CONTEXT" for k in covered)):
+            (all(levels[k] == "USER_CONTEXT" for k in covered) or
+             q.get("question_type") == "PROVIDE_SOURCE_FOR_VERIFICATION")):
             viable.append((q["cost_rank"], -len(covered), q["question_id"], q))
     if len(asked) < budget and viable:
         q = sorted(viable, key=lambda t: t[:3])[0][3]
