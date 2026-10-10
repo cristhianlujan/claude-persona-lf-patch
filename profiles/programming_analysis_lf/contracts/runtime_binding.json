@@ -1,0 +1,41 @@
+{
+  "schema": "LF_PROFILE_RUNTIME_BINDING_V1",
+  "profile_slug": "programming_analysis_lf",
+  "profile_code": "PERFIL-PROGRAMMING-ANALYSIS-LF",
+  "runtime_schema": {
+    "default": "schemas/runtime_output.schema.json",
+    "output_modes": {}
+  },
+  "canonical_validator": {
+    "path": "validators/runtime_validate.py",
+    "callable": "validate"
+  },
+  "semantic_utility": {
+    "path": "validators/runtime_semantic_utility.py",
+    "callable": "evaluate"
+  },
+  "governance": {
+    "source_first_required": true,
+    "schema_invention_allowed": false,
+    "fail_closed": true,
+    "exact_head_evidence_required": true,
+    "post_update_baseline_required": true
+  },
+  "model_context": {
+    "full_source_to_model": false,
+    "required_source_refs": [
+      "profiles/programming_analysis_lf/SKILL.md"
+    ],
+    "allow_additional_sources": true,
+    "source_projection": {
+      "mode": "MARKDOWN_SECTIONS",
+      "include_sections": [
+        "Purpose",
+        "Runtime method capsule",
+        "Routing and evidence boundaries",
+        "Critical separation"
+      ],
+      "max_chars": 8000
+    }
+  }
+}
