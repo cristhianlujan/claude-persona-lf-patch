@@ -33,7 +33,8 @@ def validate_conversational_subcampaign(raw: dict, holdout: dict, protocol: dict
         if case.get("complete_handoff_preloaded") is not False:
             errors.append(cid + ":COMPLETE_HANDOFF_FORBIDDEN")
         for arm in ARMS:
-            a = case.get("arms", {}).get(arm, {})
+            arms = case.get("arms") if isinstance(case.get("arms"), dict) else {}
+            a = arms.get(arm, {})
             trace = a.get("dialogue_trace") if isinstance(a, dict) else None
             if not isinstance(trace, dict):
                 errors.append(cid + ":" + arm + ":DIALOGUE_TRACE_MISSING")
@@ -49,7 +50,8 @@ def validate_conversational_subcampaign(raw: dict, holdout: dict, protocol: dict
             if not isinstance(events, list) or len(events) < 2:
                 errors.append(cid + ":" + arm + ":DIALOGUE_TOO_SHORT")
                 continue
-            if events[0].get("kind") != "USER_INITIAL" or events[-1].get("kind") != "FINAL_RESPONSE":
+            if (not isinstance(events[0], dict) or not isinstance(events[-1], dict) or
+                events[0].get("kind") != "USER_INITIAL" or events[-1].get("kind") != "FINAL_RESPONSE"):
                 errors.append(cid + ":" + arm + ":DIALOGUE_BOUNDARIES_INVALID")
             pending = set()
             for i, e in enumerate(events):
