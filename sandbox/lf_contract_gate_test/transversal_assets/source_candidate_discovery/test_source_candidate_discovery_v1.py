@@ -56,7 +56,63 @@ class TestDiscovery(unittest.TestCase):
     def test_d2_exhausted_can_return_empty_for_existing_planner(self):
         out=adapt_for_targeted_evidence({'discovery_state':'DISCOVERY_EXHAUSTED','candidate_sources':[]},
                                         ['LOCATE_SOURCE'],'run1',{})
-        self.assertEqual(out['state'],'PLANNER_INPUT_READY')
-        self.assertEqual(out['payload']['candidates'],[])
+        self.assertEqual(out['state'],'BLOCK')
+        self.assertEqual(out['code'],'CANONICAL_EXHAUSTION_PROOF_REQUIRED')
+
+    def test_graph_discovers_neighbors_without_domain_route(self):
+        policy={**POLICY,'relation_hops':1,'max_related_candidates':3}
+        out=discover_sources({'objective':'carga'},DATA,policy)
+        self.assertEqual(out['direct_count'],2)
+        self.assertEqual(out['related_count'],0)  # both sides already direct
+
+    def test_graph_adds_nonmatching_related_source(self):
+        policy={**POLICY,'relation_hops':2,'max_related_candidates':3}
+        metadata={'origin':'SUPABASE','snapshot_ref':'supabase://metadata/graph',
+            'sources':[{'source_ref':'s://seed','label':'cargas','columns':[],
+                        'relation_refs':['s://company']},
+                       {'source_ref':'s://company','label':'organizaciones','columns':[],
+                        'relation_refs':['s://seed','s://history']},
+                       {'source_ref':'s://history','label':'auditoria eventos','columns':[],
+                        'relation_refs':[]}]}
+        out=discover_sources({'objective':'carga'},metadata,policy)
+        self.assertEqual(out['direct_count'],1)
+        self.assertEqual([c['source_ref'] for c in out['candidate_sources']],
+                         ['s://seed','s://company','s://history'])
+        self.assertTrue(all(c['authorization_check']=='NOT_VERIFIED'
+                            for c in out['candidate_sources']))
+        self.assertFalse(out['data_access_granted'])
+
+    def test_graph_scope_never_expands_unlisted_source(self):
+        policy={**POLICY,'relation_hops':2,'max_related_candidates':5}
+        metadata={'origin':'SUPABASE','snapshot_ref':'supabase://metadata/scope',
+                 'sources':[{'source_ref':'s://seed','label':'cargas','columns':[],
+                              'relation_refs':['s://not_in_scope']} ]}
+        out=discover_sources({'objective':'carga'},metadata,policy)
+        self.assertEqual(out['related_count'],0)
+
+    def test_bad_graph_settings_fail_closed(self):
+        out=discover_sources({'objective':'carga'},DATA,{**POLICY,'relation_hops':True})
+        self.assertEqual(out['code'],'RELATION_DISCOVERY_POLICY_INVALID')
+
+    def test_duplicate_source_refs_rejected(self):
+        metadata={**DATA,'sources':DATA['sources']+[DATA['sources'][0]]}
+        out=discover_sources({'objective':'carga'},metadata,POLICY)
+        self.assertEqual(out['code'],'SOURCE_RELATION_OR_ALIAS_INVALID')
+
+    def test_renamed_source_found_by_registered_alias(self):
+        metadata={'origin':'SUPABASE','snapshot_ref':'supabase://metadata/rename',
+            'sources':[{'source_ref':'s://renamed','label':'x_34_thing',
+                        'aliases':['carga','registro de carga'], 'columns':[]} ]}
+        out=discover_sources({'objective':'carga'},metadata,POLICY)
+        self.assertEqual(out['candidate_sources'][0]['source_ref'],'s://renamed')
+
+    def test_d2_no_exhaustion_by_injected_state(self):
+        out=adapt_for_targeted_evidence({'discovery_state':'DISCOVERY_EXHAUSTED',
+                        'candidate_sources':[{'source_ref':'s://A'}]},['R1'],'r1',
+                        {'s://A':{'authority':'SUPABASE','authorization_verified':True,
+                                 'currentness_verified':True,
+                                 'admission_receipt_ref':'supabase://receipt/1',
+                                 'covers_reasons':['R1'],'acquisition_cost_rank':0}})
+        self.assertEqual(out['code'],'CANONICAL_EXHAUSTION_PROOF_REQUIRED')
 
 if __name__=='__main__': unittest.main()
