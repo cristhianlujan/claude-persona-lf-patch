@@ -100,7 +100,7 @@ BEGIN
   'source_of_truth_flag',source_of_truth,
   'authority_check','NOT_VERIFIED','authorization_check','NOT_VERIFIED',
   'data_access_granted',false
- ) ORDER BY match_priority,type_priority,object_ref),'[]'::jsonb)
+ ) ORDER BY name_hit DESC,distinct_term_matches DESC,match_priority,type_priority,object_ref),'[]'::jsonb)
  INTO v_candidates FROM best;
  RETURN pg_catalog.jsonb_build_object(
   'schema_version','LF_D1_CANONICAL_INVENTORY_CANDIDATES_V1',
