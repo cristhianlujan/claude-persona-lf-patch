@@ -28,10 +28,12 @@ BEGIN
    v_schema:=split_part(substring(p_source_ref from 6),'.',1);
    v_table:=split_part(substring(p_source_ref from 6),'.',2);
    SELECT count(*)::integer INTO v_inventory_count
-   FROM inventory.objects i
+   FROM inventory.fn_lookup_v3(
+      p_source_ref,ARRAY['DB_TABLE','DB_VIEW']::text[],5,
+      ARRAY['CURRENT']::text[]) i
    WHERE i.object_ref=p_source_ref
-     AND i.object_type IN ('DB_TABLE','DB_VIEW')
-     AND i.active AND i.currentness IN ('CATALOG_MANAGED','CURRENT');
+     AND i.match_reason='EXACT_REF'
+     AND i.currentness IN ('CATALOG_MANAGED','CURRENT');
    IF v_inventory_count<>1 THEN
      v_result:='BLOCK_INVENTORY_SOURCE_NOT_UNIQUE_CURRENT';
    ELSIF private.fn_lf_d1_managed_inventory_qualification_v1()->>'technical_readiness'<>'PASS' THEN
@@ -100,7 +102,58 @@ BEGIN
             );
             IF v_missing_column_count>0 THEN
                v_result:='BLOCK_BINDING_COLUMN_FILTER_SCHEMA_MISMATCH';
-            ELSIF (v_metadata->>'max_rows') !~ '^[0-9]{1,4}$'
+            ELSIF v_metadata->>'max_rows' IS NULL
+              OR (v_metadata->>'max_rows') !~ '^[0-9]{1,4}
+              OR (v_metadata->>'max_rows')::integer NOT BETWEEN 1 AND 1000 THEN
+               v_result:='BLOCK_BINDING_READ_LIMIT_INVALID';
+            ELSE
+               v_facade_signature:=v_metadata->>'read_facade_ref';
+               SELECT count(*)::integer INTO v_facade_count
+               FROM pg_catalog.pg_proc p WHERE p.oid=to_regprocedure(v_facade_signature)
+               AND p.prokind='f' AND NOT p.prosecdef;
+               SELECT count(*)::integer INTO v_step_count
+               FROM public.lf_operation_step_contracts s
+               WHERE s.operation_code=v_metadata->>'operation_code'
+                 AND s.step_id=v_metadata->>'step_id'
+                 AND s.resolver_ref=v_metadata->>'resolver_ref'
+                 AND s.status IN ('VIGENTE','ACTIVE');
+               IF v_facade_count<>1 THEN
+                 v_result:='BLOCK_GOVERNED_INVOKER_FACADE_ABSENT';
+               ELSIF v_step_count<>1 THEN
+                 v_result:='BLOCK_OPERATION_STEP_NOT_CURRENT';
+               ELSE
+                 v_result:='STRUCTURAL_MATCH_REQUIRES_REAL_ACTOR_FACADE_AUTHORIZATION';
+               END IF;
+            END IF;
+         END IF;
+       END IF;
+     END IF;
+   END IF;
+ END IF;
+ RETURN jsonb_build_object(
+   'schema_version','LF_D2_CANONICAL_SOURCE_BINDING_READBACK_V1',
+   'source_ref',p_source_ref,
+   'decision',v_result,
+   'business_data_read_authorized',false,
+   'rows_accessed',false,
+   'global_discovery_exhausted',false,
+   'effects_executed',false,
+   'next_required_gate','FACADE_REAL_IDENTITY_TENANT_PERMISSION_RLS_READBACK');
+EXCEPTION WHEN insufficient_privilege THEN
+ RETURN jsonb_build_object(
+   'schema_version','LF_D2_CANONICAL_SOURCE_BINDING_READBACK_V1',
+   'decision','BLOCK_BINDING_CATALOG_ACL_DENIED',
+   'source_ref',p_source_ref,
+   'business_data_read_authorized',false,
+   'rows_accessed',false,
+   'global_discovery_exhausted',false,
+   'effects_executed',false);
+END $fn$;
+COMMENT ON FUNCTION private.fn_lf_d2_binding_readback_v1(text) IS
+'Canonical read-only binding preflight; never authorizes business reads or bypasses RLS.';
+REVOKE ALL ON FUNCTION private.fn_lf_d2_binding_readback_v1(text) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION private.fn_lf_d2_binding_readback_v1(text) TO service_role;
+
               OR (v_metadata->>'max_rows')::integer NOT BETWEEN 1 AND 1000 THEN
                v_result:='BLOCK_BINDING_READ_LIMIT_INVALID';
             ELSE
