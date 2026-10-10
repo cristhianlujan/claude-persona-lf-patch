@@ -396,6 +396,22 @@ def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = Non
     # bounded actual executor produces those receipts.
     if not rollback_e2e:
         require(not complete, 'READ_ONLY_DIAGNOSTIC_CANNOT_PASS')
+    # A single cohort is an observation, not terminal acceptance.
+    # A D4 hold may be successfully *measured* but never promoted as equivalent.
+    cohort_observed = bool(
+        cohort is not None and rollback_e2e and unchanged and len(records) == 1
+        and all(
+            [stage.get("stage") for stage in item.get("vnext_pipeline", [])] == list(STAGES)
+            and all(stage.get("status") == "PASS" for stage in item["vnext_pipeline"])
+            and item.get("baseline_revision") == "5.13"
+            and item.get("source_delta", {}).get("status") == "CLASSIFIED_VERSION_SOURCE_DELTA"
+            and item.get("validator_blocked_family_count") == 0
+            and isinstance(item.get("validator_chunk_count"), int)
+            and item["validator_chunk_count"] > 0
+            and item.get("t_equiv", {}).get("status") in ("PASS", "CLASSIFIED_HOLD")
+            for item in records
+        )
+    )
     if cohort is not None:
         complete = False
     payload = {"schema_version": "IG_M9_3_ROLLBACK_CAPTURE_V1" if rollback_e2e else "IG_M9_3_DIAGNOSTIC_CAPTURE_V1",
@@ -403,6 +419,8 @@ def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = Non
       "project_id": PROJECT, "captured_at": captured,
       "runtime_mode": "ROLLBACK_ONLY_SANDBOX" if rollback_e2e else "READ_ONLY_TRANSACTIONS",
       "screen_count": len(records), "cohorts": records,
+      "cohort_observation_passed": cohort_observed,
+      "cohort_observation_status": "OBSERVED" if cohort_observed else "BLOCKED",
       "authoritative_readback": {"before": before, "after": after,
                                   "unchanged": unchanged},
       "unmet": [] if complete else ["FULL_M9_3_SEVEN_COHORTS_NOT_VERIFIED"],
@@ -415,11 +433,23 @@ def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = Non
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2,
                                  sort_keys=True), encoding="utf-8")
-    print(json.dumps({"test_code": CODE, "status": "PASS" if complete else "BLOCKED",
+    print(json.dumps({"test_code": CODE,
+        "status": "PASS" if complete else "COHORT_OBSERVED" if cohort_observed else "BLOCKED",
+        "terminal_qualified": complete,
+        "cohort_observation_passed": cohort_observed,
+        "stage_statuses": {item["cohort_code"]:
+            {stage["stage"]: stage["status"] for stage in item["vnext_pipeline"]}
+            for item in records},
+        "stage_failure_codes": {item["cohort_code"]:
+            [stage.get("error_code", stage.get("reason", "")) for stage
+             in item["vnext_pipeline"] if stage.get("status") != "PASS"]
+            for item in records},
+        "equivalence_statuses": {item["cohort_code"]:
+            item["t_equiv"].get("status") for item in records},
         "screen_count": len(records), "authoritative_readback_unchanged": unchanged,
         "capture_sha256": digest(payload), "evidence_file": str(path),
         "unmet": payload["unmet"]}, sort_keys=True))
-    return 0 if complete else 1
+    return 0 if complete or cohort_observed else 1
 
 
 def self_test() -> int:
