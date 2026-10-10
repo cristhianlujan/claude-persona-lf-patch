@@ -47,3 +47,5 @@ def exercise_variants():
     assert "cartera-1.xlsx" in q and "08-10-2026" in q and "código" not in q
     c["lookups"]=[lookup("RECENT",[row(i) for i in range(5)])]
     assert "aproximadamente" in expect(c,"ASK_USER")["user_question"]
+    c["lookups"]=[lookup("RECENT"),lookup("HISTORICAL",[row(9,"2026-08-01T09:40:00")])]
+    assert "01-08-2026" in expect(c,"INVESTIGATE_CANDIDATE")["human_description"]
