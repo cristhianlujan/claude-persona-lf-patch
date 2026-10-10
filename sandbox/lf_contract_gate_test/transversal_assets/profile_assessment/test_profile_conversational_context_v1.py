@@ -36,7 +36,7 @@ STOP = {
     "automation_options_exhausted": True}
 
 def checked(task, expected, provider=None):
-    r = route(task, provider)
+    r = route(task, provider, verify_source=lambda fact: fact.get('independent_readback_ref', '').startswith('supabase://receipt/'))
     assert r["action"] == expected, r
     assert r["write_authorized"] is False
     assert r["production_activation"] is False
@@ -57,6 +57,9 @@ def run():
          "source_ref": "supabase://load-1", "evidence_status": "VERIFIED",
          "independent_readback_ref": "supabase://receipt/load-1"}]
     checked(task, "PROCEED")
+    # A declared receipt string is not enough without independent verifier.
+    assert route(task)["action"] == "RESOLVE_EVIDENCE_PLAN"
+    assert route(task, verify_source=lambda _: False)["action"] == "RESOLVE_EVIDENCE_PLAN"
     # An unverified or user-claimed DB state must not silently become a diagnosis.
     task["facts"][1]["evidence_status"] = "UNVERIFIED"
     checked(task, "RESOLVE_EVIDENCE_PLAN")
@@ -77,6 +80,17 @@ def run():
     # User clarification must be consumed to avoid repeating the same question.
     task["requirements"] = [{"reason": "load_identity", "min_source_level": "USER_CONTEXT"}]
     checked(task, "PROCEED")
+    # User may provide a log or file when no system tool can read it.
+    # The submitted log is NOT automatically trusted until independently verified.
+    task=copy.deepcopy(BASE)
+    task["acquisitions"]=[]
+    task["questions"].append({
+        "question_id":"upload_source",
+        "question":"¿Puedes facilitar el recibo de ejecución o el registro de la carga?",
+        "question_type":"PROVIDE_SOURCE_FOR_VERIFICATION",
+        "covers_reasons":["load_state"],"cost_rank":0})
+    out=checked(task,"ASK_USER")
+    assert out["question"]["id"]=="upload_source"
     # Stop from existing acquisition provider falls back to user ONLY if answerable.
     task = copy.deepcopy(BASE)
     checked(task, "ASK_USER", STOP)
