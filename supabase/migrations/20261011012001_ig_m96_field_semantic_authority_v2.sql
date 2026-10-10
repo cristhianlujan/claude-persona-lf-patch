@@ -1,4 +1,3 @@
-BEGIN;
 -- IG M9.6 governed repair: exact semantic authority, no M1.7 plan drift as shadow per-field authority.
 -- No evidence ledger inserts, no consumer activation, no product-rule mutation.
 CREATE OR REPLACE FUNCTION programacion.fn_ig_m96_verified_field_decision_match_v1(
@@ -122,4 +121,3 @@ BEGIN
  AND estado='VIGENTE' AND decision LIKE '%M1.7%')
  THEN RAISE EXCEPTION 'GOVERNANCE_NOT_ALIGNED'; END IF;
 END $test$;
-COMMIT;
