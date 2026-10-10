@@ -166,3 +166,11 @@ test found 9 neighbor candidate tables from the carga lot source and 2
 from the related file table; missing source and invalid budget fail closed.
 The inventory remains CANDIDATE_PENDING_QUALIFICATION; this is NOT an
 operational decision engine, read facade, or proof of tenant permission.
+
+## Macrolote D1 — ranking y calificación gestionada
+- Ranking v2 mantiene `inventory.fn_lookup_v3` como único índice, ordena por coincidencia en nombre de objeto y cobertura de términos y **preserva el orden en JSON**. No contiene rutas físicas de cargas dentro de la función.
+- Regresión reversible de 9 solicitudes: **9/9 PASS**. «Tengo un código de carga y no figura» mejora `db://lf_ops.cargas_lotes` de posición 12 a posición 2; consultas de cargas antiguas, múltiples, archivo, login y desconocida preservan comportamiento. Ver `canonical_inventory_relevance_regression_v1.sql`.
+- `private.fn_lf_d1_managed_inventory_qualification_v1` es una calificación técnica **read-only** de `DATABASE_AND_REGISTRIES`. Verifica snapshot, cantidad exacta de objetos y relaciones, ausencia de `pg_catalog` drift, finalización de registry, vigencia por el evaluador canónico `inventory.fn_managed_currentness_eval_v1`. Salida NO promueve `LF_GLOBAL_TECHNICAL_INVENTORY_V1` ni activa runtime.
+- La vista de drift `security_invoker=true` usa `inventory.fn_function_identity_args_stable(oid)` (solo llama `pg_get_function_identity_arguments`). Se otorga EXECUTE **solo a service_role**, sin acceso de clientes ni permisos sobre tablas B2B.
+- Test reversible *tras refresco canónico dentro del mismo ROLLBACK*: 6313 objetos, 13150 dependencias, drift=0, 4 fuentes gestionadas vigentes → `MANAGED_METADATA_TECHNICALLY_READY`; expectation stale → BLOCKED. Un objeto nuevo antes del refresco produce BLOCKED, como corresponde.
+- Precisión temporal: el evaluador original usa `now()` de inicio de transacción; después de refrescar dentro de esa misma transacción, un snapshot puede parecer «futuro». El calificador **reutiliza el evaluador canónico** con `clock_timestamp()`, sin reimplementar su política temporal. Aun con técnica PASS, `inventory_governance_admitted=false`, `external_repo_and_edge_qualified=false`, `business_data_read_authorized=false` y `runtime_cutover_authorized=false`.
