@@ -9,28 +9,41 @@ WITH suite_cases AS (
         c.expected_output->>'expected_candidate_family' AS expected_family
  FROM public.lf_test_suite_cases c
  WHERE c.suite_code='TS-LF-D1-D2-SOURCE-DISCOVERY-SMOKE-V1'
+), currentness AS (
+ SELECT count(*)::int AS active_versions,max(policy_sha) AS policy_sha
+ FROM public.lf_policy_versions
+ WHERE policy_code='POL-LF-SOURCE-RESOLUTION' AND status='ACTIVE'
+), fixture_parameters AS (
+ SELECT c.*, p.active_versions,p.policy_sha,
+ CASE WHEN c.scenario='POLICY_DRIFT' THEN repeat('0',64)
+      ELSE p.policy_sha END AS supplied_policy_sha,
+ CASE WHEN c.scenario='SCHEMA_SCOPE_EMPTY' THEN ARRAY[]::text[]
+      ELSE ARRAY['lf_ops']::text[] END AS supplied_metadata_schemas,
+ CASE WHEN c.scenario='BUDGET_INVALID' THEN 0 ELSE 5 END AS supplied_budget
+ FROM suite_cases c CROSS JOIN currentness p
 ), tokenized AS (
- SELECT c.*,regexp_replace(plainto_tsquery('spanish',c.objective)::text,
+ SELECT f.*,
+ (f.active_versions=1
+  AND f.policy_sha IS NOT DISTINCT FROM f.supplied_policy_sha
+  AND cardinality(f.supplied_metadata_schemas) BETWEEN 1 AND 16
+  AND f.supplied_budget BETWEEN 1 AND 20) AS input_guard_pass,
+ regexp_replace(plainto_tsquery('spanish',f.objective)::text,
                            ' +& +',' | ','g')::tsquery AS terms
- FROM suite_cases c
+ FROM fixture_parameters f
 ), metadata_probes AS (
  SELECT c.test_code,
  EXISTS(
    SELECT 1 FROM pg_catalog.pg_class obj
    JOIN pg_catalog.pg_namespace n ON n.oid=obj.relnamespace
-   WHERE n.nspname='lf_ops' AND obj.relkind IN ('r','p','v')
+   WHERE c.input_guard_pass AND n.nspname=ANY(c.supplied_metadata_schemas) AND obj.relkind IN ('r','p','v')
    AND NOT obj.relispartition
    AND ts_rank_cd(to_tsvector('spanish',replace(obj.relname,'_',' ')),c.terms)>0
  ) AS physical_hit,
  EXISTS(
    SELECT 1 FROM public.v_lf_fuente_operativa_busqueda a
-   WHERE ts_rank_cd(to_tsvector('spanish',coalesce(a.router_search_text,'')),c.terms)>0
+   WHERE c.input_guard_pass AND ts_rank_cd(to_tsvector('spanish',coalesce(a.router_search_text,'')),c.terms)>0
  ) AS registered_asset_hit
  FROM tokenized c
-), currentness AS (
- SELECT count(*)::int AS active_versions,max(policy_sha) AS policy_sha
- FROM public.lf_policy_versions
- WHERE policy_code='POL-LF-SOURCE-RESOLUTION' AND status='ACTIVE'
 ), authorization_preconditions AS (
  SELECT count(*) FILTER(WHERE metadata->>'canonical_source_ref'='supabase://catalog/lf_ops/cargas_lotes'
                  AND metadata->>'admission_status'='VIGENTE')::int AS bound_sources
@@ -45,11 +58,7 @@ WITH suite_cases AS (
  SELECT c.test_code,c.test_order,c.scenario,c.expected_state,c.expected_family,
    m.physical_hit,m.registered_asset_hit,
  CASE
- WHEN c.scenario='POLICY_DRIFT'
-    THEN CASE WHEN p.active_versions=1 AND p.policy_sha IS DISTINCT FROM repeat('0',64)
-      THEN 'ERROR_FAIL_CLOSED' ELSE 'ERROR_POLICY_FIXTURE_INVALID' END
- WHEN c.scenario='SCHEMA_SCOPE_EMPTY' THEN 'ERROR_FAIL_CLOSED'
- WHEN c.scenario='BUDGET_INVALID' THEN 'ERROR_FAIL_CLOSED'
+ WHEN NOT c.input_guard_pass THEN 'ERROR_FAIL_CLOSED'
  WHEN c.scenario='NO_CANONICAL_BINDING'
     THEN CASE WHEN a.bound_sources=0 THEN 'BLOCK_CANONICAL_READ_BINDING_ABSENT'
       ELSE 'BINDING_PRESENT_REQUIRES_AUTH_CHECK' END
@@ -69,7 +78,7 @@ WITH suite_cases AS (
  ELSE 'NO_MATCH_IN_SCOPE'
  END AS observed_state
  FROM tokenized c JOIN metadata_probes m USING(test_code)
- CROSS JOIN currentness p CROSS JOIN authorization_preconditions a CROSS JOIN planner
+ CROSS JOIN authorization_preconditions a CROSS JOIN planner
 ), verdicts AS (
  SELECT *,
  CASE
