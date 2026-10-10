@@ -40,3 +40,10 @@ def exercise_variants():
     assert "históricas" in expect(c,"ASK_USER")["user_question"]
     c["asked_question_ids"]=["entity_location"]
     expect(c,"LIMITED_RESPONSE")
+    c=deepcopy(BASE);c["lookups"]=[lookup("RECENT",[row(1)])]
+    assert expect(c,"INVESTIGATE_CANDIDATE")["identity_confirmed_by_user"] is False
+    c["lookups"]=[lookup("RECENT",[row(1),row(2,"2026-10-08T11:30:00")])]
+    q=expect(c,"ASK_USER")["user_question"]
+    assert "cartera-1.xlsx" in q and "08-10-2026" in q and "código" not in q
+    c["lookups"]=[lookup("RECENT",[row(i) for i in range(5)])]
+    assert "aproximadamente" in expect(c,"ASK_USER")["user_question"]
