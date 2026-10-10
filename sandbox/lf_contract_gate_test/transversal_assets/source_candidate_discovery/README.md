@@ -109,3 +109,12 @@ registro de nueva capacidad en Supabase, runtime activo ni benchmark end-to-end.
 The preflight in this PR is intentionally a **deny-only diagnostic**, not a
 permanent production gate: before implementation of an admissible read path,
 it must not be mistaken for complete D2.
+
+## Lote D2 — vínculo canónico y autorización (2026-10-10)
+- EKB actual `GOV-FIELD-LEVEL-SOURCE-RESOLVER-GAP-001` ya indica la solución transversal: binding tipado objeto/campos/query-template/fingerprint; se evita otro buscador o permission engine.
+- Reutilización propuesta: `public.lf_activos` (tipo DB_TABLE/TABLE), `public.v_lf_fuente_operativa`, `public.lf_operation_step_contracts`, `lf_ops.permisos`, asignación usuario–empresa y permisos por empresa. No se creó tabla/función/regla paralela.
+- `source_read_binding_contract_candidate_v1.md` define los metadatos y criterios necesarios para admitir una `read_facade_ref`, sin activar los permisos.
+- `source_permission_admission_matrix_synthetic_v1.sql` fue recuperado de GitHub blob SHA `e6c8844b086a346a097f2b45ada4dd2a5c5ed6dc` y ejecutado tal cual en Supabase sandbox: **12 PASS, 0 FAIL**, con 1 decisión favorable **solo sintética** y 11 negativas (falta de actor, cross-tenant, DENY, binding faltante, estados candidatos, etc.). No demuestra lectura real.
+- `source_access_live_denial_probe_v1.sql` blob SHA `d070330d222428055356e60a5aa22660fe2fe60f`: lectura real solo del catálogo/estados y autenticación; devuelve `metadata_source_exists=true`, binding VIGENTE=false, permiso VIGENTE=false, actor=false, `business_data_read_authorized=false`, `BLOCK_CANONICAL_READ_BINDING_ABSENT`.
+- Resultado de inventario: 44 permisos B2B CANDIDATO, 1 VIGENTE (global); los 13 de cargas son CANDIDATO. No hay usuarios B2B, asignaciones usuario–empresa ni permisos empresariales en el sandbox (0/0/0). No simular un PASS real mediante cuenta administrativa.
+- Mientras no se publique la asociación en Supabase y exista una identidad de prueba autorizada bajo RLS, el D2 real permanece **BLOCKED_REAL_AUTHORIZATION_EVIDENCE**. Sin merge, cutover ni cambio en datos/policies.
