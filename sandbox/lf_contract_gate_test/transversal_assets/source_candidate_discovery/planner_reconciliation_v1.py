@@ -72,6 +72,11 @@ def reconcile_planner_result(
             return _transition("BLOCK", "DISCOVERY_BLOCKED")
         if discovery.get("discovery_state") == "DISCOVERY_EXHAUSTED":
             return _transition("BLOCK", "CANONICAL_EXHAUSTION_RECEIPT_REQUIRED")
+        if discovery.get("discovery_state") not in (
+            "CANDIDATES_FOUND", "NO_MATCH_IN_SCOPE", "DISCOVERY_INCOMPLETE", "AMBIGUOUS",
+            "CANDIDATES_FOUND_PARTIAL", "DISCOVERY_BUDGET_PENDING"
+        ):
+            return _transition("BLOCK", "DISCOVERY_STATE_NOT_RECOGNIZED")
         # Even if planner_result.automation_options_exhausted is true,
         # it is LOCAL to the supplied admitted candidate set.
         return _transition("RETURN_TO_SOURCE_DISCOVERY", "LOCAL_CANDIDATES_EXHAUSTED_ONLY")
