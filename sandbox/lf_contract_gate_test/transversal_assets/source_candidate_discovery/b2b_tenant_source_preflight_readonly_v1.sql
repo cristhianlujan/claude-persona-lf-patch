@@ -34,7 +34,7 @@ WITH input AS (
         current_user::text AS db_role,
         session_user::text AS session_role
 ), chosen_user AS (
- SELECT count(*)::int AS n,max(u.user_id) AS user_id
+ SELECT count(*)::int AS n,max(u.user_id::text)::uuid AS user_id
  FROM lf_ops.empresa_usuarios u CROSS JOIN caller c CROSS JOIN input i
  WHERE c.jwt_auth_user_id IS NOT NULL
    AND u.auth_user_id=c.jwt_auth_user_id
