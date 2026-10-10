@@ -29,6 +29,11 @@ class PlannerReconciliationTests(unittest.TestCase):
         self.assertEqual(result["transition"], "BLOCK")
         self.assertEqual(result["code"], "CANONICAL_EXHAUSTION_RECEIPT_REQUIRED")
 
+    def test_unknown_discovery_state_blocks(self):
+        result = reconcile_planner_result({"discovery_state":"GUESSED_COMPLETE"},E,STOP)
+        self.assertEqual(result["transition"],"BLOCK")
+        self.assertEqual(result["code"],"DISCOVERY_STATE_NOT_RECOGNIZED")
+
     def test_discovery_access_denied_blocks(self):
         self.assertEqual(reconcile_planner_result({"discovery_state": "ACCESS_DENIED"}, E, STOP)["transition"],
                          "BLOCK")
