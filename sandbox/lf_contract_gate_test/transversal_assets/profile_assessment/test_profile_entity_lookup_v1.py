@@ -49,3 +49,5 @@ def exercise_variants():
     assert "aproximadamente" in expect(c,"ASK_USER")["user_question"]
     c["lookups"]=[lookup("RECENT"),lookup("HISTORICAL",[row(9,"2026-08-01T09:40:00")])]
     assert "01-08-2026" in expect(c,"INVESTIGATE_CANDIDATE")["human_description"]
+    c["lookups"]=[lookup("RECENT",state="SOURCE_UNAVAILABLE"),lookup("HISTORICAL",state="SOURCE_UNAVAILABLE")]
+    expect(c,"LIMITED_RESPONSE")
