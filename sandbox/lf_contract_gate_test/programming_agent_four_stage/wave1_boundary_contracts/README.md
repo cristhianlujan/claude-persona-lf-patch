@@ -2,6 +2,59 @@
 
 Source-only contract bundle for the Programming Agent Analysis boundary plus Wave 1 consumers: `A1–A9`, `PG-01`, and `TST-01–TST-05`.
 
+## Evidence boundary: contract replay is not model-level or PG-01 E2E proof
+
+The historical A10 (30), A11 (11), A12 (30) and A14 (12) recorded PASS
+results establish **deterministic contract-replay behavior** at a pinned
+source/case revision. A14's observed processing times are Python replay times,
+not LLM inference latency. The A14 producer intentionally emits null
+`provider_response_id`, null `exact_model_or_profile`, null token accounting,
+`model_inference_executed=false` and `evidence_tier=DETERMINISTIC_CONTRACT_REPLAY`.
+The scorer preserves backward-compatible `verdict=PASS` **only** for that
+evidence tier and always emits `operational_integration_admissible=false`.
+Never promote a replay PASS into analysis-stage operational confidence.
+
+A14 no longer self-reports zero false READY: the producer emits null and the independent oracle scorer measures that metric. It also distinguishes source references enumerated in the fixture from real external source accesses (zero in this replay). Neither reference counts nor microsecond replay time are presented as model research performance.
+
+The A14 replay now fails closed when (1) the two handoff digest pairs are
+missing, malformed or mismatched, (2) material-front references duplicate,
+point outside known scopes or contradict their blocking effect, or (3) a
+provider/model identity is injected into deterministic replay results.
+`PARTIAL_READY` may continue only for independently admissible scopes;
+parity failure blocks every scope. The adversarial regression
+`test_analysis_evidence_boundary_v1.py` tests these paths without a
+profile queue, Llama, GitHub Actions or production activation.
+
+**Before declaring Analysis -> Programming integration complete**, carry out
+a separate, controlled **real-model + receiver-consumption** qualification:
+1. Run fresh non-tuned tasks through a named actual Analysis model/profile and
+   capture its externally verifiable provider execution receipt, exact
+   version, input/output artifacts and token/time metrics. A self-populated
+   JSON identity is not independent attestation.
+2. An independent judge, blind to candidate output while preparing the oracle,
+   must score missed material fronts, unsafe `READY` scopes, decision/authority
+   errors, scope dependencies, required specialists, and unnecessary analysis
+   against the same baseline tasks.
+3. A real PG-01 consumer must resolve the **persisted**
+   `DECISION_CONTEXT_ASOF` snapshot, verify the exact schema/content digest,
+   currentness and ready-scope/front matrix, and return an auditable readback.
+   Confirm zero source rediscovery under unchanged authority fingerprint;
+   permitted requery requires the existing typed trigger and resolver.
+4. Negative checks must show **blocked** admission for missing/stale receipt,
+   altered authority/source, wrong scope, lossy snapshot, material unknown,
+   unavailable required specialist, and receipt/consumer mismatch. A test
+   marked `PASS` on source-shape assertions alone is insufficient.
+5. Record separate evidence tiers: `CONTRACT_REPLAY_PASS`,
+   `REAL_MODEL_EVALUATED`, `PG01_CONSUMED_AND_RECONCILED`. Only the last,
+   with the independent model evidence and exact currentness readback, is a
+   candidate for governed integration. No inferred merge, PASE or runtime
+   activation follows automatically.
+
+The objective is to reuse the **existing** A2 depth policy, A7 material-front
+coverage, A8 stop rule, A6 implementability, A9 persistent snapshot and PG-01
+entry contract. This adds no classifier, selector, parallel engine, second
+provenance ledger, deployment job or additional arbitrary gate.
+
 - **A1 / Analysis intake** produces `REQUEST_CONTEXT_V1` without Story, Functional Version, Agent Task, or solution inference.
 - **A2 / Change classification** makes change type + target granularity + `L1/L2/L3` reproducible. Granularity is evidence-derived (screen/control/rule/API/data/etc.), not a fixed UI-only catalog. Specialist requirements/refs remain late-bound through `CAPABILITY_SELECTOR@CURRENT`; selection is not execution permission.
 - **A3 / Targeted evidence** reuses current evidence first, queries only missing/material evidence, blocks duplicate/full-repository discovery without a trigger, and stops at minimum sufficient context.
