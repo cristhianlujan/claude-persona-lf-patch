@@ -118,3 +118,32 @@ it must not be mistaken for complete D2.
 - `source_access_live_denial_probe_v1.sql` blob SHA `d070330d222428055356e60a5aa22660fe2fe60f`: lectura real solo del catálogo/estados y autenticación; devuelve `metadata_source_exists=true`, binding VIGENTE=false, permiso VIGENTE=false, actor=false, `business_data_read_authorized=false`, `BLOCK_CANONICAL_READ_BINDING_ABSENT`.
 - Resultado de inventario: 44 permisos B2B CANDIDATO, 1 VIGENTE (global); los 13 de cargas son CANDIDATO. No hay usuarios B2B, asignaciones usuario–empresa ni permisos empresariales en el sandbox (0/0/0). No simular un PASS real mediante cuenta administrativa.
 - Mientras no se publique la asociación en Supabase y exista una identidad de prueba autorizada bajo RLS, el D2 real permanece **BLOCKED_REAL_AUTHORIZATION_EVIDENCE**. Sin merge, cutover ni cambio en datos/policies.
+
+## Lote 2026-10-10 — D1 multifamilia + D2 reconciliación
+
+**D1 / fuentes de Supabase**
+- `multifamily_source_discovery_readonly_v1.sql` combina exclusivamente:
+  - `pg_catalog` limitado a esquemas resueltos por adaptador confiable, para objetos/columnas;
+  - `public.v_lf_fuente_operativa_busqueda`, autoridad de inventario de activos, alias y palabras clave.
+- Todas las búsquedas son de metadatos. DOC/CARD son pistas para contexto, **no** fuentes de autoridad operativa ni autorizaciones de lectura. Fuentes físicas derivadas de `pg_catalog` son candidatos sin binding, nunca permisos.
+- La consulta exige versión SHA vigente de `POL-LF-SOURCE-RESOLUTION` y límites de ámbito/costo. El parámetro SHA y el ámbito de esquemas deben provenir del **adaptador confiable**; no existe todavía ese materializador de contexto de actor/tenancy para D1.
+- **Ocho pruebas directas Supabase del mismo SQL (parámetros de prueba acotados): 8/8 PASS**: carga, login, pago (solo DOC), oferta (solo CARD), inexistente/no-match, policy stale, scope vacío y presupuesto inválido. Todos devuelven `data_access_granted=false`, `discovery_exhausted=false`.
+- SQL blob SHA verificado de `multifamily_source_discovery_readonly_v1.sql`: `5a836645b2ffa9efe36e3d305589310b70f85f8b`.
+
+**D2 / planificador vigente**
+- `targeted_evidence_planner_integration_readonly_v1.sql` fue ejecutado exactamente desde GitHub contra `public.lf_targeted_evidence_acquisition_plan_v1` en sandbox: **2/2 PASS**.
+- `CONTINUE` propone evidencia; NO ejecuta efectos. `STOP_NO_DECISION_CHANGING_EVIDENCE` con `automation_options_exhausted=true` solo agota los candidatos pasados al planificador, **no** la búsqueda global.
+- `planner_reconciliation_v1.py` produce transición a nueva exploración, validación de readback o bloqueo por estado falsificado; jamás afirma agotamiento global ni otorga lectura. Su entrada admitida sigue sujeta a implementación de lectura canónica de Supabase desde el runtime.
+- Se agregaron 13 pruebas unitarias del reconciliador en Git; 12 casos equivalentes ejecutados en entorno Python local 12/12 y la regresión de estado desconocido verificada por prueba específica. **No es una ejecución completa del CI ni una prueba E2E del runtime**.
+
+**Binding positivo de metadatos, NO acceso a negocio**
+- `registered_entrypoint_security_probe_v1.sql` ejecutó 2 probes exactos desde GitHub: un activo de login B2B que apunta a vista/RPC físicamente existentes y un activo inexistente rechazado. La vista registrada no declara `security_invoker=true`, y `anon`/`authenticated` carecen de SELECT; **no autorizar** lecturas mediante esta asociación.
+
+**Faltantes obligatorios para cierre operativo**
+1. Adaptador de identidad/ámbito/política/permissions ejecutado por servidor confiable y respaldado por Supabase; nunca flags de GPT.
+2. Binding tipado `source_ref → fuente canónica → permiso/tenant → read_facade` con estado VIGENTE, SHA de esquema/filtros/costo/recibo; usar `lf_activos` y `lf_operation_step_contracts` existentes, no una segunda base de reglas.
+3. Prueba positiva real de lectura autorizada, negativa cross-tenant y negativa sin permiso, sin bypass RLS/roles privilegiados.
+4. Runtime D1→D2→resolver autorizado→evidencia tipada→replanificación con recibos.
+5. Casos, evaluación comparativa pareada y resultados canónicos en tablas de pruebas **Supabase**, no Excel; incluir holdout independiente y adversarial sin fuga de oráculo.
+
+Estado: rama y PR **DRAFT**, sin migraciones aplicadas, sin merge, sin promoción, sin efectos productivos. Ningún resultado equivale a autonomía operacional demostrada.
