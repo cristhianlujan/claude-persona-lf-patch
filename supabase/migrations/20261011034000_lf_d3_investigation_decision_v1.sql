@@ -53,7 +53,9 @@ BEGIN
    IF p_observation->>'record_count' ~ '^[0-9]{1,7}$' THEN
      v_read_count:=(p_observation->>'record_count')::integer;
    ELSE v_read_count:=-1; END IF;
-   IF v_read_count<0 OR v_freshness NOT IN ('CURRENT','STALE','UNKNOWN') THEN
+   IF v_read_count<0 OR v_freshness IS NULL
+      OR v_freshness NOT IN ('CURRENT','STALE','UNKNOWN')
+      OR pg_catalog.jsonb_typeof(p_observation->'search_scope_complete') IS DISTINCT FROM 'boolean' THEN
      v_error:='FACADE_OBSERVATION_INVALID';
    ELSIF v_freshness<>'CURRENT' THEN
      v_provisional:='REFRESH_FACADE_EVIDENCE';
