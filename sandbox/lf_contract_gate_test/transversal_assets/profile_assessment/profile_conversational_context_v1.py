@@ -7,6 +7,7 @@ claims it has fetched a source, performed a model call or verified a user.
 from __future__ import annotations
 
 from typing import Any, Callable
+from profile_entity_lookup_v1 import plan_entity_lookup
 
 SCHEMA = "PROFILE_CONVERSATIONAL_CONTEXT_V1"
 ACQUISITION_SCHEMA = "LF_TARGETED_EVIDENCE_ACQUISITION_RESULT_V1"
@@ -24,7 +25,7 @@ def _block(code: str) -> dict:
     return _out("BLOCKED", [], code, context_sufficient=False)
 
 
-def route_context_turn(task: dict, acquisition_result: dict | None = None, *, verify_source: Callable[[dict], bool] | None = None) -> dict:
+def route_context_turn(task: dict, acquisition_result: dict | None = None, *, verify_source: Callable[[dict], bool] | None = None, verify_entity_receipt: Callable[[str, dict], bool] | None = None) -> dict:
     """Decide whether to proceed, query sources, ask a question or disclose limits.
 
     The external provider result MUST originate from
@@ -38,6 +39,16 @@ def route_context_turn(task: dict, acquisition_result: dict | None = None, *, ve
         return _block("NATURAL_REQUEST_REQUIRED")
     if task.get("requested_depth") not in DEPTHS:
         return _block("DEPTH_INVALID")
+    # Optional, profile-agnostic object discovery extension. This runs before
+    # generic questions. Never certify a runtime readback without verifier.
+    if "entity_lookup" in task:
+        entity=plan_entity_lookup(task["entity_lookup"],verify_entity_receipt)
+        if entity["action"]=="BLOCKED":
+            return _block("ENTITY_LOOKUP_"+entity["code"])
+        return _out(entity["action"],task.get("entity_missing_reasons",["entity_identity"]),
+                    "ENTITY_LOOKUP_"+entity["code"],entity_lookup=entity,
+                    user_question=entity.get("user_question"),
+                    execution_performed=False)
     requirements = task.get("requirements")
     facts = task.get("facts", [])
     acquisitions = task.get("acquisitions", [])
