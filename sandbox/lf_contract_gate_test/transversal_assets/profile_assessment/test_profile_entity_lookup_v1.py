@@ -7,3 +7,7 @@ def run():
 
 if __name__ == '__main__':
     run()
+
+def synthetic_verifier(kind, record):
+    field={"scope":"scope_receipt_ref","catalog":"receipt_ref","lookup":"receipt_ref"}[kind]
+    return str(record.get(field,"")).startswith("fixture://")
