@@ -154,3 +154,15 @@ Estado: rama y PR **DRAFT**, sin migraciones aplicadas, sin merge, sin promoció
 - New `private.fn_lf_d1_inventory_candidates_v1(text,integer)` is **SECURITY INVOKER**, callable only by server role, obtains live `POL-LF-SOURCE-RESOLUTION` snapshot and `LF_GLOBAL_TECHNICAL_INVENTORY_V1` asset currentness, and invokes `inventory.fn_lookup_v3` with bounded lexical forms. It never reads business rows, grants authorization or declares exhaustion. Search produces candidate refs only.
 - Real sandbox ROLLBACK test of function under server role: load sources 2/2, login 6 candidates, unknown query = NO_MATCH_IN_SCOPE, invalid budget = ERROR_FAIL_CLOSED; no effects, no data access. Generic linguistic variants are candidate hints, not proof of meaning.
 - **IMPORTANT:** `LF_GLOBAL_TECHNICAL_INVENTORY_V1.metadata.inventory_status` is currently `CANDIDATE_PENDING_QUALIFICATION`; D1 may run as **isolated shadow/probe only**. No production or Hetzner runtime cutover, no business authorization from `source_of_truth` or inventory status. D2 and end-to-end admission still require canonical read facade, actor/tenant binding and independent real positive/negative tests.
+
+### Canonical graph reuse
+`private.fn_lf_d1_inventory_neighbors_v1(text,integer)` reuses **existing**
+`inventory.objects` and `inventory.dependencies` (`FK_TO` edges from
+`PG_CONSTRAINT`) rather than the earlier Python BFS graph. It validates
+an exact CURRENT `db://` inventory seed via `inventory.fn_lookup_v3`,
+bounds neighbors, deduplicates edges and never reads rows or grants access.
+The graph has 13,089 active dependencies in this sandbox. A ROLLBACK
+test found 9 neighbor candidate tables from the carga lot source and 2
+from the related file table; missing source and invalid budget fail closed.
+The inventory remains CANDIDATE_PENDING_QUALIFICATION; this is NOT an
+operational decision engine, read facade, or proof of tenant permission.
