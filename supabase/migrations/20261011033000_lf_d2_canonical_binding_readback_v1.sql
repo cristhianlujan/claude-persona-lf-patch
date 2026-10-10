@@ -36,8 +36,6 @@ BEGIN
      AND i.currentness IN ('CATALOG_MANAGED','CURRENT');
    IF v_inventory_count<>1 THEN
      v_result:='BLOCK_INVENTORY_SOURCE_NOT_UNIQUE_CURRENT';
-   ELSIF private.fn_lf_d1_managed_inventory_qualification_v1()->>'technical_readiness'<>'PASS' THEN
-     v_result:='BLOCK_MANAGED_INVENTORY_NOT_CURRENT';
    ELSE
      SELECT count(*)::integer,max(policy_sha)
        INTO v_policy_count,v_policy_sha
@@ -52,7 +50,9 @@ BEGIN
        WHERE a.archived_at IS NULL AND a.metadata->>'canonical_source_ref'=p_source_ref;
        IF v_asset_count<>1 THEN
          v_result:='BLOCK_BINDING_ABSENT_OR_AMBIGUOUS';
-       ELSIF v_metadata->>'admission_status'<>'VIGENTE' THEN
+       ELSIF private.fn_lf_d1_managed_inventory_qualification_v1()->>'technical_readiness'<>'PASS' THEN
+         v_result:='BLOCK_MANAGED_INVENTORY_NOT_CURRENT';
+       ELSIF v_metadata->>'admission_status' IS DISTINCT FROM 'VIGENTE' THEN
          v_result:='BLOCK_BINDING_NOT_VIGENTE';
        ELSIF v_metadata->>'policy_sha' IS DISTINCT FROM v_policy_sha THEN
          v_result:='BLOCK_BINDING_POLICY_DRIFT';
