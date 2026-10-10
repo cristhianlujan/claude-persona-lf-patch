@@ -669,6 +669,9 @@ jobs:
           gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
             -f state=success -f context='lf-merge-train/verified' \
             -f description='LF migration train verified exact head' >/dev/null
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state=success -f context='lf-migration-route-guard' \
+            -f description='Verified by LF Migration Merge Train on exact head' >/dev/null
 
       - name: Saga final-evidence hook
         if: always()
