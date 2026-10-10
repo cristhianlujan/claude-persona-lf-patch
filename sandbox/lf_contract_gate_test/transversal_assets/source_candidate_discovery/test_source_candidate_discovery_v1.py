@@ -115,4 +115,21 @@ class TestDiscovery(unittest.TestCase):
                                  'covers_reasons':['R1'],'acquisition_cost_rank':0}})
         self.assertEqual(out['code'],'CANONICAL_EXHAUSTION_PROOF_REQUIRED')
 
+    def test_malformed_description_fails_closed(self):
+        metadata={'origin':'SUPABASE','snapshot_ref':'supabase://metadata/bad',
+                  'sources':[{'source_ref':'s://a','label':'cargas',
+                              'columns':[], 'description':123}]}
+        out=discover_sources({'objective':'carga'},metadata,POLICY)
+        self.assertEqual(out['code'],'SOURCE_RELATION_OR_ALIAS_INVALID')
+
+    def test_malformed_d2_candidates_fail_closed(self):
+        out=adapt_for_targeted_evidence({'discovery_state':'CANDIDATES_FOUND',
+            'candidate_sources':['not an object']},['R1'],'consumer',{})
+        self.assertEqual(out['state'],'BLOCK')
+
+    def test_blank_consumer_ref_fails_closed(self):
+        out=adapt_for_targeted_evidence({'discovery_state':'CANDIDATES_FOUND',
+            'candidate_sources':[]},['R1'],'',{})
+        self.assertEqual(out['code'],'D2_CONTRACT_INVALID')
+
 if __name__=='__main__': unittest.main()
