@@ -53,7 +53,7 @@ def plan_entity_lookup(task:dict, verify_receipt:Callable[[str,dict],bool]|None=
     if task.get("access_scope")!="AUTHORIZED_READ_ONLY" or not _verified(verify_receipt,"scope",task):
         return _reply("BLOCKED","SCOPE_NOT_VERIFIED")
     catalog=task.get("catalog")
-    if catalog is None or catalog.get("state")=="NOT_CHECKED":
+    if catalog is None or (isinstance(catalog,dict) and catalog.get("state")=="NOT_CHECKED"):
         return _reply("DISCOVER_SOURCES","FIND_AUTHORIZED_SOURCE_BEFORE_ASK",
                       discovery_scope="AUTHORIZED_SCHEMA_AND_BINDINGS_ONLY",
                       user_question=None)
@@ -72,6 +72,9 @@ def plan_entity_lookup(task:dict, verify_receipt:Callable[[str,dict],bool]|None=
     if catalog["state"]=="NO_SOURCE" or not sources:
         return _fallback(task,"NO_AUTHORIZED_SOURCE_DISCOVERED",
                          "Revisé las fuentes de cargas que puedo consultar aquí, pero no encontré una fuente disponible.")
+    asked=task.get("asked_question_ids",[])
+    if not isinstance(asked,list) or any(not isinstance(x,str) for x in asked):
+        return _reply("BLOCKED","QUESTION_HISTORY_INVALID")
     logs=task.get("lookups",[])
     if not isinstance(logs,list) or len(logs)>24:
         return _reply("BLOCKED","LOOKUPS_INVALID")
@@ -95,6 +98,8 @@ def plan_entity_lookup(task:dict, verify_receipt:Callable[[str,dict],bool]|None=
                 not row["record_ref"] or not isinstance(row.get("source_ref"),str) or
                 row["source_ref"]!=log["source_ref"]):
                 return _reply("BLOCKED","RECORD_PROVENANCE_INVALID")
+            if row["record_ref"] in candidates and row!=candidates[row["record_ref"]]:
+                return _reply("BLOCKED","CONFLICTING_RECORD_READBACK")
             candidates[row["record_ref"]]=row
         bykey[key]=log
     # All visible results must already be tenant-scoped by the authorized read.
@@ -130,6 +135,12 @@ def plan_entity_lookup(task:dict, verify_receipt:Callable[[str,dict],bool]|None=
             if bykey[key]["state"]=="SOURCE_UNAVAILABLE":
                 # Try alternative bound sources; never pretend unavailable == no rows.
                 continue
+    if (any(log["state"]=="SOURCE_UNAVAILABLE" for log in bykey.values()) and
+        not candidates and all((s["source_ref"],w) in bykey or not s["available"]
+                               for s in sources for w in WINDOWS)):
+        return _reply("LIMITED_RESPONSE","PARTIAL_OR_UNAVAILABLE_SOURCE",
+                      message="No encontré una carga identificable en las fuentes que respondieron; otras consultas no estuvieron disponibles. No puedo descartar que exista en el sistema.",
+                      user_question=None)
     if all(not s["available"] for s in sources) or (
        bykey and all(log["state"]=="SOURCE_UNAVAILABLE" for log in bykey.values())):
         return _reply("LIMITED_RESPONSE","AUTHORIZED_SOURCE_UNAVAILABLE",
