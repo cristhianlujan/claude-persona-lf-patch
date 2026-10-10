@@ -1,4 +1,4 @@
-name: IG M9.3 Governed Read-Only Evidence
+name: IG M9.3 Governed Dynamic Evidence
 on:
   workflow_dispatch:
     inputs:
@@ -6,53 +6,88 @@ on:
         type: boolean
         required: true
         default: false
-      cohort:
+      scope:
         type: choice
         required: true
-        default: ALL
-        options: [ALL, AUTH, FORMS, NAVIGATION, DESIGN, ONBOARDING, RECOVERY, API]
-
-# One workflow run and one active cohort replay at a time; prevents pooler exhaustion and
-# preserves per-cohort independently downloadable machine evidence.
+        default: ALL_ACTIVE
+        options: [ALL_ACTIVE, SCREEN, TYPE]
+      selector:
+        type: string
+        required: false
+        default: ''
 concurrency:
   group: ig-m93-live-sandbox-readback
   cancel-in-progress: false
-
 permissions:
   contents: read
-
 jobs:
   prepare:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
-      cohorts: ${{ steps.select.outputs.cohorts }}
+      memberships: ${{ steps.select.outputs.memberships }}
     steps:
-      - id: select
-        name: Resolve governed cohort type selection
+      - name: Install PostgreSQL client if missing
         shell: bash
-        env:
-          REQUESTED_COHORT: ${{ inputs.cohort }}
         run: |
           set -euo pipefail
-          case "$REQUESTED_COHORT" in
-            ALL)
-              echo 'cohorts=["AUTH","FORMS","NAVIGATION","DESIGN","ONBOARDING","RECOVERY","API"]' >> "$GITHUB_OUTPUT"
-              ;;
-            AUTH|FORMS|NAVIGATION|DESIGN|ONBOARDING|RECOVERY|API)
-              printf 'cohorts=["%s"]\n' "$REQUESTED_COHORT" >> "$GITHUB_OUTPUT"
-              ;;
-            *) echo 'UNKNOWN_GOVERNED_COHORT' >&2; exit 1 ;;
-          esac
-
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+      - id: select
+        name: Resolve live governed memberships
+        shell: bash
+        env:
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          PGHOST: aws-1-us-east-1.pooler.supabase.com
+          PGUSER: postgres.mhwmirqcgxxukpctffuv
+          PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PGSSLMODE: require
+          SELECTION_SCOPE: ${{ inputs.scope }}
+          SELECTION_TARGET: ${{ inputs.selector }}
+        run: |
+          set -euo pipefail
+          test -n "$PGPASSWORD"
+          mkdir -p .lf_ci
+          psql -X -q -A -t --set=ON_ERROR_STOP=1 -d postgres -c "SELECT coalesce(jsonb_agg(jsonb_build_object('cohort',cohort_type_code,'screen_id',pantalla_id) ORDER BY display_order,representative_rank,pantalla_id),'[]'::jsonb) FROM programacion.v_input_governance_representative_cohort_v1" > .lf_ci/m93_memberships.json
+          python3 - <<'PYSELECT'
+          import json,os,re
+          data=json.load(open('.lf_ci/m93_memberships.json',encoding='utf-8'))
+          scope=os.environ['SELECTION_SCOPE']
+          target=os.environ['SELECTION_TARGET']
+          assert isinstance(data,list) and bool(data),'EMPTY_GOVERNED_AUTHORITY'
+          assert len({(x['cohort'],x['screen_id']) for x in data})==len(data),'DUPLICATE_GOVERNED_MEMBERSHIP'
+          assert all(re.fullmatch(r'[A-Za-z0-9_-]{1,64}',x['cohort']) and type(x['screen_id']) is int and x['screen_id']>0 for x in data),'GOVERNED_IDENTITY_INVALID'
+          if scope=='SCREEN':
+            assert target.isdecimal() and int(target)>0,'SCREEN_SELECTOR_INVALID'
+            data=[x for x in data if x['screen_id']==int(target)]
+          elif scope=='TYPE':
+            assert target and re.fullmatch(r'[A-Za-z0-9_-]{1,64}',target),'TYPE_SELECTOR_INVALID'
+            data=[x for x in data if x['cohort']==target]
+          else:
+            assert scope=='ALL_ACTIVE' and target=='','SCOPE_SELECTOR_MISMATCH'
+          assert data,'EMPTY_APPLICABLE_SELECTION'
+          payload=json.dumps(data,sort_keys=True,separators=(',',':'))
+          with open('.lf_ci/m93_selected.json','w',encoding='utf-8') as fp:
+            fp.write(payload)
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as fp:
+            fp.write('memberships='+payload+'\n')
+          PYSELECT
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ig-m93-governed-selection
+          path: .lf_ci/m93_selected.json
+          retention-days: 7
   m93-readonly:
     needs: prepare
     if: needs.prepare.result == 'success'
+    name: m93-readonly (${{ matrix.cohort }}-${{ matrix.screen_id }})
     strategy:
       fail-fast: false
       max-parallel: 1
       matrix:
-        cohort: ${{ fromJson(needs.prepare.outputs.cohorts) }}
+        include: ${{ fromJson(needs.prepare.outputs.memberships) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -65,7 +100,6 @@ jobs:
         run: |
           set -euo pipefail
           test "${{ github.ref }}" = "refs/heads/main"
-          test -f sandbox/lf_contract_gate_test/engineering_checkpoints/m9_3/full_pipeline_shadow_runner.py
           python3 sandbox/lf_contract_gate_test/engineering_checkpoints/m9_3/full_pipeline_shadow_runner.py --self-test
       - name: Install PostgreSQL client if missing
         shell: bash
@@ -75,7 +109,7 @@ jobs:
             sudo apt-get update -qq
             sudo apt-get install -y -qq postgresql-client
           fi
-      - name: Live seven-cohort diagnostic (fail closed)
+      - name: Live governed diagnostic (fail closed)
         shell: bash
         env:
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
@@ -83,17 +117,18 @@ jobs:
           PGUSER: postgres.mhwmirqcgxxukpctffuv
           PGPASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           M93_COHORT: ${{ matrix.cohort }}
+          M93_SCREEN_ID: ${{ matrix.screen_id }}
         run: |
           set -euo pipefail
           args=(--live --output .lf_ci/m9_3_live_diagnostic.json)
           if [ "${{ inputs.rollback_e2e }}" = true ]; then args+=(--rollback-e2e); fi
-          args+=(--cohort "$M93_COHORT")
+          args+=(--cohort "$M93_COHORT" --screen-id "$M93_SCREEN_ID")
           python3 sandbox/lf_contract_gate_test/engineering_checkpoints/m9_3/full_pipeline_shadow_runner.py "${args[@]}"
       - name: Preserve diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ig-m93-readonly-diagnostic-${{ matrix.cohort }}
+          name: ig-m93-readonly-diagnostic-${{ matrix.cohort }}-${{ matrix.screen_id }}
           path: .lf_ci/m9_3_live_diagnostic.json
           if-no-files-found: warn
           retention-days: 7

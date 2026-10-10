@@ -28,7 +28,6 @@ ASSETS = {
     "EDGE_FN_INPUT_GOVERNANCE_CURATOR_V1",
     "EDGE_FN_INPUT_GOVERNANCE_VALIDATOR_V1",
 }
-COHORTS = {"AUTH", "FORMS", "NAVIGATION", "DESIGN", "ONBOARDING", "RECOVERY", "API"}
 STAGES = ("CORE", "SEMANTICS", "CURATOR", "VALIDATOR")
 HEX64 = re.compile(r"^[a-f0-9]{64}$")
 HEX40 = re.compile(r"^[a-f0-9]{40}$")
@@ -108,8 +107,16 @@ def validate(e: dict) -> list[str]:
     rows = e.get("cohorts") or []
     if not isinstance(rows, list):
         rows = []
-    observed = {x.get("cohort_code") for x in rows if isinstance(x, dict)}
-    need(observed == COHORTS and len(rows) == len(COHORTS), "M94_SEVEN_COHORTS_NOT_COVERED")
+    selection=e.get("governed_selection") or {}
+    governed=selection.get("memberships") or []
+    expected={(x.get("cohort_code"),x.get("screen_id"))
+              for x in governed if isinstance(x,dict)}
+    observed={(x.get("cohort_code"),x.get("screen_id"))
+              for x in rows if isinstance(x,dict)}
+    need(isinstance(governed,list) and bool(expected)
+         and len(expected)==len(governed)
+         and observed==expected and len(rows)==len(expected),
+         "DYNAMIC_GOVERNED_SELECTION_MISMATCH")
     for item in rows:
         if not isinstance(item, dict):
             issues.append("INVALID_COHORT_ROW")
@@ -177,24 +184,20 @@ def acquire_live_evidence(run_id: int, expected_sha: str, authority_path: Path) 
     jobs = job_page.get("jobs", [])
     if not isinstance(jobs, list):
         raise ValueError("GH_JOB_LIST_INVALID")
-    for code in COHORTS:
-        matches = [job for job in jobs if job.get("name") == f"m93-readonly ({code})"]
-        if len(matches) != 1 or matches[0].get("status") != "completed":
-            raise ValueError("GH_COHORT_JOB_NOT_COMPLETED:" + code)
-        steps = {s.get("name"):s.get("conclusion") for s in matches[0].get("steps",[])}
-        if (steps.get("Checkout merged trusted main") != "success"
-            or steps.get("Assert exact sandbox and no production") != "success"
-            or steps.get("Live seven-cohort diagnostic (fail closed)") != "success"
-            or steps.get("Preserve diagnostic evidence") != "success"):
-            raise ValueError("GH_COHORT_TRUSTED_STEPS_NOT_COMPLETE:" + code)
+
     authority = json.loads(authority_path.read_text(encoding="utf-8"))
     if not isinstance(authority, dict) or authority.get("project_id") != PROJECT:
         raise ValueError("AUTHORITY_CONTEXT_INVALID")
     governed = authority.get("governed_cohorts")
-    if (not isinstance(governed,list) or len(governed)!=len(COHORTS)
-        or {row.get("cohort_code") for row in governed if isinstance(row,dict)} != COHORTS):
-        raise ValueError("AUTHORITY_SEVEN_COHORTS_INVALID")
-    governed_by_code = {row["cohort_code"]:row for row in governed}
+    if not isinstance(governed,list) or not governed or any(
+         not isinstance(row,dict) or not isinstance(row.get("cohort_code"),str)
+         or type(row.get("screen_id")) is not int or row["screen_id"]<=0
+         or row.get("active") is not True or row.get("joinable") is not True
+         or not valid_ref(row.get("membership_ref")) for row in governed):
+        raise ValueError("GOVERNED_AUTHORITY_INVALID")
+    governed_by_id={(r["cohort_code"],r["screen_id"]):r for r in governed}
+    if len(governed_by_id)!=len(governed):
+        raise ValueError("GOVERNED_AUTHORITY_DUPLICATE")
     stage_refs = []
     cohort_rows = []
     snapshots = {"input_readiness_runs":{"before":[],"after":[]},
@@ -204,8 +207,32 @@ def acquire_live_evidence(run_id: int, expected_sha: str, authority_path: Path) 
                                  text=True,capture_output=True,timeout=90,check=False)
         if command.returncode != 0:
             raise ValueError("GH_COHORT_ARTIFACT_DOWNLOAD_FAILED")
-        for code in sorted(COHORTS):
-            path = (Path(tmp) / f"ig-m93-readonly-diagnostic-{code}" /
+        selection_file=Path(tmp)/"ig-m93-governed-selection"/"m93_selected.json"
+        if not selection_file.is_file():
+            raise ValueError("GH_GOVERNED_SELECTION_ARTIFACT_MISSING")
+        selected=json.loads(selection_file.read_text(encoding="utf-8"))
+        if not isinstance(selected,list) or not selected or any(
+            not isinstance(v,dict) or not isinstance(v.get("cohort"),str)
+            or type(v.get("screen_id")) is not int or v["screen_id"]<=0 for v in selected):
+            raise ValueError("GH_SELECTION_ROWS_INVALID")
+        ids={(v["cohort"],v["screen_id"]) for v in selected}
+        if len(ids)!=len(selected) or not ids.issubset(set(governed_by_id)):
+            raise ValueError("GH_SELECTION_AUTHORITY_MISMATCH")
+        selected_jobs=[j for j in jobs if isinstance(j.get("name"),str)
+             and j["name"].startswith("m93-readonly (")]
+        if len(selected_jobs)!=len(ids):
+            raise ValueError("GH_JOB_SET_MISMATCH")
+        for code,sid in sorted(ids):
+            matches=[job for job in jobs if job.get("name")==f"m93-readonly ({code}-{sid})"]
+            if len(matches)!=1 or matches[0].get("status")!="completed":
+                raise ValueError("GH_COHORT_JOB_NOT_COMPLETED:"+code)
+            steps={step.get("name"):step.get("conclusion") for step in matches[0].get("steps",[])}
+            if (steps.get("Checkout merged trusted main")!="success"
+                or steps.get("Assert exact sandbox and no production")!="success"
+                or steps.get("Live governed diagnostic (fail closed)")!="success"
+                or steps.get("Preserve diagnostic evidence")!="success"):
+                raise ValueError("GH_COHORT_TRUSTED_STEPS_NOT_COMPLETE:"+code)
+            path = (Path(tmp) / f"ig-m93-readonly-diagnostic-{code}-{sid}" /
                     "m9_3_live_diagnostic.json")
             if not path.is_file():
                 raise ValueError("GH_COHORT_ARTIFACT_MISSING:" + code)
@@ -225,7 +252,7 @@ def acquire_live_evidence(run_id: int, expected_sha: str, authority_path: Path) 
             original = raw.get("cohorts")
             if (not isinstance(original,list) or len(original)!=1
                 or original[0].get("cohort_code")!=code
-                or original[0].get("screen_id")!=governed_by_code[code].get("screen_id")):
+                or original[0].get("screen_id")!=sid):
                 raise ValueError("GH_COHORT_AUTHORITY_IDENTITY_MISMATCH:" + code)
             origin = original[0]
             if (origin.get("baseline_revision")!="5.13"
@@ -239,7 +266,7 @@ def acquire_live_evidence(run_id: int, expected_sha: str, authority_path: Path) 
                 [stage.get("stage") for stage in stages]!=list(STAGES) or
                 any(stage.get("status")!="PASS" for stage in stages)):
                 raise ValueError("GH_LIVE_STAGE_NOT_PASS:" + code)
-            ref = f"github://{repo}/actions/runs/{run_id}/artifacts/ig-m93-readonly-diagnostic-{code}"
+            ref = f"github://{repo}/actions/runs/{run_id}/artifacts/ig-m93-readonly-diagnostic-{code}-{sid}"
             stages = [{**stage,"execution_ref":ref} for stage in stages]
             eq = origin.get("t_equiv")
             if not isinstance(eq,dict):
@@ -258,7 +285,7 @@ def acquire_live_evidence(run_id: int, expected_sha: str, authority_path: Path) 
             for key in snapshots:
                 snapshots[key]["before"].append(runback["before"][key])
                 snapshots[key]["after"].append(runback["after"][key])
-            auth_row = governed_by_code[code]
+            auth_row = governed_by_id[(code,sid)]
             if (auth_row.get("active") is not True or auth_row.get("joinable") is not True
                 or not valid_ref(auth_row.get("membership_ref"))):
                 raise ValueError("GH_COHORT_GOVERNED_MEMBERSHIP_UNVERIFIED:" + code)
@@ -292,6 +319,8 @@ def acquire_live_evidence(run_id: int, expected_sha: str, authority_path: Path) 
        "github_head_sha":expected_sha,
        "bundle":bundle,"edge_assets":edges,
        "cohorts":cohort_rows,
+       "governed_selection":{"source":"programacion.v_input_governance_representative_cohort_v1",
+                              "memberships":[governed_by_id[k] for k in sorted(ids)]},
        "authoritative_readback":readback,
        "shadow_decisional":False,
        "production_authorized":False,
@@ -334,7 +363,7 @@ def main() -> int:
         "test_exit_code": 0 if passed else 1,
         "semantic_authority_bound": passed,
         "evidence_sha256": fingerprint,
-        "observed": {"failures": issues, "comparison_required": "7 M9.4 cohorts via T-EQUIV",
+        "observed": {"failures": issues, "comparison_required": "selected governed M9.4 cases via T-EQUIV",
                      "authoritative_writes_allowed": 0},
     }, ensure_ascii=False, sort_keys=True))
     return 0 if passed else 1

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """M9.3 live, fail-closed evidence acquisition.
 
-Reads the seven current M9.4 governed cohorts from LF sandbox. Executes real
+Reads M9.4 governed membership cases from LF sandbox. Executes real
 Core, semantic shadow, Curator *plan* and Validator *scope* using PostgreSQL
 READ ONLY transactions and independent currentness readbacks. A plan/scope
 is NOT a materialized Curator/Validator execution and NEVER counts as a PASS
@@ -22,7 +22,6 @@ import subprocess
 import sys
 
 PROJECT = "mhwmirqcgxxukpctffuv"
-COHORTS = {"AUTH", "FORMS", "NAVIGATION", "DESIGN", "ONBOARDING", "RECOVERY", "API"}
 STAGES = ("CORE", "SEMANTICS", "CURATOR", "VALIDATOR")
 CODE = "ENG_M9_3_LIVE_SHADOW_RUNNER"
 DB_NAMES = ("input_readiness_runs", "input_family_assessments")
@@ -104,32 +103,58 @@ def db_query(sql: str, *, readonly: bool = True) -> object:
     return json.loads(lines[0])
 
 
+def select_governed_memberships(rows: object, scope: str, selector: str | None = None) -> list[dict]:
+    require(isinstance(rows,list) and bool(rows), "GOVERNED_AUTHORITY_EMPTY")
+    seen=set()
+    for row in rows:
+        require(isinstance(row,dict), "INVALID_GOVERNED_ROW")
+        c,sid=row.get("cohort_code"),row.get("screen_id")
+        require(isinstance(c,str) and bool(c.strip()) and isinstance(sid,int) and sid>0,
+                "INVALID_GOVERNED_IDENTITY")
+        require((c,sid) not in seen, "DUPLICATE_GOVERNED_IDENTITY")
+        seen.add((c,sid))
+        require(isinstance(row.get("membership_ref"),str) and bool(row["membership_ref"].strip()),
+                "GOVERNED_MEMBERSHIP_AUTHORITY_MISSING")
+    require(scope in ("ALL_ACTIVE","SCREEN","TYPE"), "UNKNOWN_SELECTION_SCOPE")
+    if scope=="ALL_ACTIVE":
+        require(selector is None, "SELECTOR_UNEXPECTED")
+        selected=rows
+    elif scope=="SCREEN":
+        require(isinstance(selector,str) and selector.isdecimal() and int(selector)>0,
+                "SCREEN_ID_INVALID")
+        selected=[x for x in rows if x["screen_id"]==int(selector)]
+    else:
+        require(isinstance(selector,str) and bool(selector.strip()), "TYPE_CODE_MISSING")
+        selected=[x for x in rows if x["cohort_code"]==selector]
+    require(bool(selected), "GOVERNED_SELECTION_EMPTY")
+    return selected
+
+
 def read_cohorts() -> list[dict]:
     payload = db_query("""SELECT coalesce(jsonb_agg(
         jsonb_build_object('cohort_code',cohort_type_code,
           'screen_id',pantalla_id,'screen_code',screen_code,
           'membership_ref',authority_ref)
-        ORDER BY display_order),'[]'::jsonb)
+        ORDER BY display_order,representative_rank,pantalla_id),'[]'::jsonb)
         FROM programacion.v_input_governance_representative_cohort_v1;""")
-    require(isinstance(payload, list) and len(payload) == 7,
-            "GOVERNED_COHORT_COUNT_NOT_SEVEN")
-    require({x.get("cohort_code") for x in payload} == COHORTS,
-            "GOVERNED_COHORT_SET_CHANGED")
-    require(all(isinstance(x.get("screen_id"), int) and x["screen_id"] > 0
-            for x in payload), "INVALID_GOVERNED_SCREEN_ID")
-    return payload
+    return select_governed_memberships(payload,"ALL_ACTIVE")
 
 
-def fingerprint() -> dict:
-    # Entire authoritative-row corpus, not merely count/max(id); detects edits
-    # as well as inserts/deletes. No rows escape into reports.
-    return db_query("""SELECT jsonb_build_object(
+def fingerprint(rows: list[dict]) -> dict:
+    """Bound full-row hash to the selected governed screens, not unrelated data."""
+    ids=sorted({r["screen_id"] for r in rows})
+    require(bool(ids) and all(type(i) is int and i>0 for i in ids), "FINGERPRINT_SCOPE_INVALID")
+    selection=",".join(str(i) for i in ids)
+    return db_query(f"""SELECT jsonb_build_object(
        'input_readiness_runs',encode(extensions.digest(convert_to(
           coalesce((SELECT string_agg(to_jsonb(r)::text, '|' ORDER BY r.id)
-            FROM programacion.input_readiness_runs r),''),'UTF8'),'sha256'),'hex'),
+            FROM programacion.input_readiness_runs r
+            WHERE r.pantalla_id IN ({selection})),''),'UTF8'),'sha256'),'hex'),
        'input_family_assessments',encode(extensions.digest(convert_to(
           coalesce((SELECT string_agg(to_jsonb(a)::text, '|' ORDER BY a.id)
-            FROM programacion.input_family_assessments a),''),'UTF8'),'sha256'),'hex')
+            FROM programacion.input_family_assessments a
+            JOIN programacion.input_readiness_runs r ON r.id=a.run_id
+            WHERE r.pantalla_id IN ({selection})),''),'UTF8'),'sha256'),'hex')
      );""")
 
 
@@ -400,23 +425,28 @@ def qualifies_cohort_observation(item: dict) -> bool:
     return bool(d0 or d4)
 
 
-def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = None) -> int:
+def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = None,
+             screen_id: int | None = None) -> int:
     captured = dt.datetime.now(dt.timezone.utc).isoformat()
     try:
         cohort_rows = read_cohorts()
     except (RuntimeError, ValueError) as exc:
         raise RuntimeError('COHORT_AUTHORITY_CAPTURE:' + str(exc)) from exc
+    exact=cohort is not None or screen_id is not None
+    if exact:
+        require(isinstance(cohort,str) and bool(cohort.strip())
+                and isinstance(screen_id,int) and screen_id>0, "EXACT_GOVERNED_MEMBERSHIP_REQUIRED")
+        cohort_rows=[x for x in cohort_rows
+                     if x["cohort_code"]==cohort and x["screen_id"]==screen_id]
+        require(len(cohort_rows)==1, "GOVERNED_TARGET_NOT_FOUND")
     try:
-        before = fingerprint()
+        before = fingerprint(cohort_rows)
     except (RuntimeError, ValueError) as exc:
         raise RuntimeError('PRE_AUTHORITATIVE_SNAPSHOT:' + str(exc)) from exc
-    if cohort is not None:
-        require(cohort in COHORTS, 'UNKNOWN_GOVERNED_COHORT')
-        cohort_rows = [x for x in cohort_rows if x['cohort_code']==cohort]
     records = [capture_rollback_one(x) if rollback_e2e else capture_one(x)
                for x in cohort_rows]
     try:
-        after = fingerprint()
+        after = fingerprint(cohort_rows)
     except (RuntimeError, ValueError) as exc:
         raise RuntimeError('POST_AUTHORITATIVE_SNAPSHOT:' + str(exc)) from exc
     unchanged = before == after
@@ -432,21 +462,25 @@ def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = Non
     # A single cohort is an observation, not terminal acceptance.
     # A D4 hold may be successfully *measured* but never promoted as equivalent.
     cohort_observed = bool(
-        cohort is not None and rollback_e2e and unchanged and len(records) == 1
+        exact and rollback_e2e and unchanged and len(records) == 1
         and all(qualifies_cohort_observation(item) for item in records)
     )
-    if cohort is not None:
+    if exact:
         complete = False
     payload = {"schema_version": "IG_M9_3_ROLLBACK_CAPTURE_V1" if rollback_e2e else "IG_M9_3_DIAGNOSTIC_CAPTURE_V1",
       "test_code": CODE, "status": "PASS" if complete else "BLOCKED",
       "project_id": PROJECT, "captured_at": captured,
       "runtime_mode": "ROLLBACK_ONLY_SANDBOX" if rollback_e2e else "READ_ONLY_TRANSACTIONS",
       "screen_count": len(records), "cohorts": records,
+      "governed_selection":{"mode":"TARGET" if exact else "ALL_ACTIVE",
+            "source":"programacion.v_input_governance_representative_cohort_v1",
+            "selected_count":len(cohort_rows),
+            "selection_sha256":digest([{"cohort_code":r["cohort_code"],"screen_id":r["screen_id"]} for r in cohort_rows])},
       "cohort_observation_passed": cohort_observed,
       "cohort_observation_status": "OBSERVED" if cohort_observed else "BLOCKED",
       "authoritative_readback": {"before": before, "after": after,
                                   "unchanged": unchanged},
-      "unmet": [] if complete else ["FULL_M9_3_SEVEN_COHORTS_NOT_VERIFIED"],
+      "unmet": [] if complete else ["GOVERNED_SELECTION_NOT_FULLY_VERIFIED"],
       "shadow_decisional": False,
       "production_authorized": False,
       "promotion_authorized": False,
@@ -476,8 +510,23 @@ def run_live(path: Path, *, rollback_e2e: bool = False, cohort: str | None = Non
 
 
 def self_test() -> int:
-    require(COHORTS == {"AUTH","FORMS","NAVIGATION","DESIGN",
-                        "ONBOARDING","RECOVERY","API"}, "COHORTS_CHANGED")
+    dynamic=[{"cohort_code":"A","screen_id":1,"membership_ref":"governed"},
+             {"cohort_code":"B","screen_id":2,"membership_ref":"governed"}]
+    require(len(select_governed_memberships(dynamic,"ALL_ACTIVE"))==2,
+            "DYNAMIC_ALL_SELECTION_FAILED")
+    require(len(select_governed_memberships(dynamic,"SCREEN","1"))==1,
+            "DYNAMIC_SCREEN_SELECTION_FAILED")
+    require(len(select_governed_memberships(dynamic,"TYPE","B"))==1,
+            "DYNAMIC_TYPE_SELECTION_FAILED")
+    for bad,scope,selector in (([], "ALL_ACTIVE",None),
+                               ([dynamic[0],dynamic[0]],"ALL_ACTIVE",None),
+                               (dynamic,"TYPE","UNLISTED"),
+                               (dynamic,"SCREEN","0")):
+        try:
+            select_governed_memberships(bad,scope,selector)
+            raise AssertionError("INVALID_SELECTION_PASSED")
+        except ValueError:
+            pass
     require(len(STAGES) == 4, "STAGE_COUNT_WRONG")
     require(digest({"b": 2, "a": 1}) == digest({"a": 1, "b": 2}),
             "HASH_NOT_CANONICAL")
@@ -531,13 +580,15 @@ def main() -> int:
     p.add_argument("--self-test", action="store_true")
     p.add_argument("--live", action="store_true")
     p.add_argument("--rollback-e2e", action="store_true")
-    p.add_argument("--cohort", choices=sorted(COHORTS))
+    p.add_argument("--cohort")
+    p.add_argument("--screen-id",type=int)
     p.add_argument("--output", default=".lf_ci/m9_3_live_diagnostic.json")
     args = p.parse_args()
     if args.self_test:
         return self_test()
     require(args.live, "EXPLICIT_LIVE_FLAG_REQUIRED")
-    return run_live(Path(args.output), rollback_e2e=args.rollback_e2e, cohort=args.cohort)
+    return run_live(Path(args.output), rollback_e2e=args.rollback_e2e,
+                    cohort=args.cohort,screen_id=args.screen_id)
 
 
 if __name__ == "__main__":
