@@ -1,0 +1,1 @@
+M9.3 must select applicable test cases from programacion.v_input_governance_representative_cohort_v1. Scope is ALL_ACTIVE, SCREEN, or TYPE. Do not hardcode type names, screen IDs, or a case count. Retain independent provenance, nonempty selection, real stage execution, typed T-EQUIV, zero persistent candidate writes, and baseline 5.13. Production remains out of scope.
