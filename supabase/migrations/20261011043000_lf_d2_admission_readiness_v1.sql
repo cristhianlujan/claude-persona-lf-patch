@@ -90,7 +90,9 @@ BEGIN
     -- Never inspect business rows or infer company permission from JWT claims.
     v_gaps:=v_gaps||pg_catalog.jsonb_build_array(
       'ACTOR_COMPANY_PERMISSION_RLS_PROOF_NOT_EXECUTED');
-    v_decision:='REQUIRES_GOVERNED_SOURCE_AND_ACTOR_ADMISSION';
+    v_decision:=CASE WHEN v_object_count=1
+      THEN 'REQUIRES_GOVERNED_SOURCE_AND_ACTOR_ADMISSION'
+      ELSE 'BLOCK_EXACT_PHYSICAL_SOURCE_NOT_IN_CURRENT_CATALOG' END;
   END IF;
   RETURN pg_catalog.jsonb_build_object(
     'schema_version','LF_D2_ADMISSION_READINESS_V1',
@@ -109,6 +111,7 @@ BEGIN
     'rls_effective_authorization_not_inferred',true,
     'canonical_actor_present',v_actor,
     'ledger_global_service_select_granted',v_ledger_grant,
+    'global_discovery_exhausted',false,
     'business_data_access_authorized',false,
     'business_rows_accessed',false,
     'runtime_enabled',false,'effects_executed',false);
@@ -117,6 +120,7 @@ EXCEPTION WHEN insufficient_privilege THEN
     'schema_version','LF_D2_ADMISSION_READINESS_V1',
     'decision','BLOCK_READINESS_CATALOG_ACL_DENIED',
     'blocking_requirements',pg_catalog.jsonb_build_array('CANONICAL_METADATA_ACL_REQUIRED'),
+    'global_discovery_exhausted',false,
     'business_data_access_authorized',false,'business_rows_accessed',false,
     'runtime_enabled',false,'effects_executed',false);
 END $fn$;
