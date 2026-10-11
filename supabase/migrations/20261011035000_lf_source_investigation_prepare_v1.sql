@@ -7,6 +7,8 @@ CREATE OR REPLACE FUNCTION private.fn_lf_source_investigation_prepare_v1(
 AS $fn$
 DECLARE
  v_qualification jsonb;
+ v_currentness_total integer:=0;
+ v_currentness_ready integer:=0;
  v_discovery jsonb;
  v_checks jsonb:='[]'::jsonb;
  v_candidate jsonb;
@@ -37,6 +39,24 @@ BEGIN
      'runtime_dispatched',false,
      'final_business_answer_allowed',false,
      'effects_executed',false);
+ END IF;
+ -- Canonical lookup v3 uses its own managed-currentness evaluator.
+ -- Never interpret an empty lookup as no source when its clock disagrees
+ -- with the qualified snapshot (e.g. refresh inside the same transaction).
+ SELECT count(*)::integer,
+    count(*) FILTER (WHERE currentness='CATALOG_MANAGED')::integer
+ INTO v_currentness_total,v_currentness_ready
+ FROM inventory.v_managed_currentness_v1;
+ IF v_currentness_total<1 OR v_currentness_total<>v_currentness_ready THEN
+    RETURN pg_catalog.jsonb_build_object(
+       'schema_version','LF_SOURCE_INVESTIGATION_PREPARATION_V1',
+       'next_action','BLOCK_INVENTORY_LOOKUP_CURRENTNESS_UNSTABLE',
+       'discovery',pg_catalog.jsonb_build_object('discovery_state','ERROR_FAIL_CLOSED'),
+       'binding_checks_count',0,'planner_stop_is_local_only',true,
+       'global_discovery_exhausted',false,
+       'business_data_read_authorized',false,
+       'rows_accessed',false,'runtime_dispatched',false,
+       'final_business_answer_allowed',false,'effects_executed',false);
  END IF;
  v_discovery:=private.fn_lf_d1_inventory_candidates_v1(p_objective,p_candidate_budget);
  IF v_discovery->>'discovery_state'='CANDIDATES_FOUND' THEN
