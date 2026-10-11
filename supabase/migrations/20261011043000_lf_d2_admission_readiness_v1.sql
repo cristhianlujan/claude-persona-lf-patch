@@ -54,7 +54,7 @@ BEGIN
     ELSE
       v_gaps:=v_gaps||pg_catalog.jsonb_build_array('EXACT_PHYSICAL_SOURCE_NOT_UNIQUE');
     END IF;
-    v_actor:=auth.uid() IS NOT NULL AND pg_catalog.current_user='authenticated';
+    v_actor:=auth.uid() IS NOT NULL AND current_user='authenticated';
     v_ledger_grant:=pg_catalog.has_table_privilege(
       'service_role','private.lf_evidence_ledger_v1','SELECT');
 
