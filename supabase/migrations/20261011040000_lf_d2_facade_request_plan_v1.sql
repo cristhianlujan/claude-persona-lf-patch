@@ -13,12 +13,14 @@ DECLARE
   v_rpc text;
   v_status text;
 BEGIN
+  -- First check types, then call JSON cardinality functions.
   IF p_source_ref IS NULL OR p_projection IS NULL OR p_filters IS NULL OR
      p_row_limit IS NULL OR p_row_limit NOT BETWEEN 1 AND 1000 OR
      pg_catalog.jsonb_typeof(p_projection) IS DISTINCT FROM 'array' OR
-     pg_catalog.jsonb_typeof(p_filters) IS DISTINCT FROM 'object' OR
-     pg_catalog.jsonb_array_length(p_projection) NOT BETWEEN 1 AND 30 OR
-     (SELECT count(*) FROM pg_catalog.jsonb_object_keys(p_filters))>20 THEN
+     pg_catalog.jsonb_typeof(p_filters) IS DISTINCT FROM 'object' THEN
+    v_status:='BLOCK_UNBOUNDED_OR_INVALID_FACADE_REQUEST';
+  ELSIF pg_catalog.jsonb_array_length(p_projection) NOT BETWEEN 1 AND 30 OR
+        (SELECT count(*) FROM pg_catalog.jsonb_object_keys(p_filters))>20 THEN
     v_status:='BLOCK_UNBOUNDED_OR_INVALID_FACADE_REQUEST';
   ELSE
     v_gate:=private.fn_lf_d2_binding_readback_v1(p_source_ref);
