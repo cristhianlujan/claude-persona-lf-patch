@@ -25,8 +25,8 @@ BEGIN
   ELSIF v_gate->>'decision'='STRUCTURAL_MATCH_REQUIRES_REAL_ACTOR_FACADE_AUTHORIZATION' THEN
     v_status:='BLOCK_ALREADY_STRUCTURALLY_GOVERNED';
   ELSE
-    v_schema:=pg_catalog.split_part(pg_catalog.substring(p_source_ref from 6),'.',1);
-    v_object:=pg_catalog.split_part(pg_catalog.substring(p_source_ref from 6),'.',2);
+    v_schema:=pg_catalog.split_part(pg_catalog.substr(p_source_ref,6),'.',1);
+    v_object:=pg_catalog.split_part(pg_catalog.substr(p_source_ref,6),'.',2);
     SELECT count(*)::int INTO v_count
     FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
     WHERE n.nspname=v_schema AND c.relname=v_object
