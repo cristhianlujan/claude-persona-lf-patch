@@ -31,3 +31,15 @@ Migraciones fuente: `20261011033000` D2, `20261011034000` D3, `20261011035000` c
 - **D5 PRUEBA FINAL:** benchmark ciego pareado, casos reales representativos, degradaciones críticas cero, latencia/costo/calidad y aprobación de admisión.
 
 No se debe interpretar el cierre de la construcción *de preparación* como cierre de autonomía integral.
+
+## Currentness/rollback regression
+
+The coordinator queries **both** existing currentness systems: the managed-snapshot
+qualification and `inventory.v_managed_currentness_v1` (the clock used by
+`fn_lookup_v3`). If an inventory refresh occurs inside the same SQL transaction,
+the managed qualifier may see a new snapshot using `clock_timestamp()` while
+v3's `now()` (transaction start) does not. The coordinator now returns
+`BLOCK_INVENTORY_LOOKUP_CURRENTNESS_UNSTABLE`, **not** `NO_MATCH_IN_SCOPE`.
+A reversible SQL test confirmed this block with no global exhaustion. Post-merge,
+the normal metadata probes must run in a **new** transaction after the canonical
+inventory refresh is committed; this is not a workaround to bypass currentness.
