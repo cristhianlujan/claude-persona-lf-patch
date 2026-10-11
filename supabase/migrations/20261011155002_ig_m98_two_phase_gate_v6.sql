@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION programacion.fn_ig_m98_candidate_field_gate_v2(p_id uuid)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path TO 'pg_catalog' AS $f$
-DECLARE r record; pol jsonb; c jsonb; d jsonb; s jsonb; ok boolean; did uuid; producer jsonb; n int; k int; ord int:=0; current_source jsonb;
+DECLARE r record; pol jsonb; c jsonb; d jsonb; s jsonb; ok boolean; did uuid; producer jsonb; n int; k int; ord int:=0; current_source jsonb; historical_map jsonb; original_adr text;
 BEGIN
  IF p_id IS NULL THEN RETURN jsonb_build_object('status','BLOCKED','reason','PER_FIELD_RECEIPT_MISSING'); END IF;
  SELECT receipt_id,verification_state,verification_payload,receipt_payload,source_head_sha INTO r
@@ -50,6 +50,10 @@ BEGIN
  AND candidate.value->>'current_sha256'=base.value->>'current_sha256'
  AND candidate.value->>'candidate_sha256'=base.value->>'candidate_sha256'))
  THEN RETURN jsonb_build_object('status','BLOCKED','reason','CURRENT_FIELD_DIFF_BINDING_MISMATCH');END IF;
+ c:=jsonb_set(c,'{producer_receipt_ref}',to_jsonb(p_id::text),true);
+ SELECT unit_metadata#>'{m9_8_gate_contract_v2,historical_subjects_v5}' INTO historical_map
+ FROM programacion.engineering_plan_units
+ WHERE plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' AND unit_code='M9.8';
  SELECT especificacion INTO pol FROM programacion.contratos WHERE contrato_codigo='INPUT_GOVERNANCE_DIVERGENCE_LEVELS_CONTRACT'
  ORDER BY version_id DESC,id DESC LIMIT 1;
  -- Read-only candidate qualification; not a requirement to activate the consumer.
@@ -79,6 +83,15 @@ BEGIN
    AND v.source_head_sha=r.source_head_sha;
   IF n<>1 OR k<>1 THEN
    RETURN jsonb_build_object('status','BLOCKED','reason','VERIFIED_INDEPENDENT_DECISION_MISSING_OR_AMBIGUOUS','diff_ref',d->>'diff_ref');END IF;
+  SELECT h.value->>'adr' INTO original_adr
+  FROM jsonb_array_elements(coalesce(historical_map,'[]'::jsonb)) h(value)
+  WHERE h.value->>'family_code'=d->>'family_code'
+  AND h.value->>'screen_id'=split_part(split_part(d->>'subject_scope','/',1),':',2) LIMIT 1;
+  IF original_adr IS NOT NULL AND NOT EXISTS(
+    SELECT 1 FROM private.lf_evidence_ledger_v1 v WHERE v.receipt_id=did
+    AND programacion.fn_ig_m98_historical_hold_receipt_match_v4(
+       to_jsonb(v),original_adr,p_id,r.source_head_sha))
+  THEN RETURN jsonb_build_object('status','BLOCKED','reason','HISTORICAL_HOLD_VERIFICATION_MISSING','adr',original_adr); END IF;
   c:=jsonb_set(c,ARRAY['field_diffs',(ord-1)::text,'decision_receipt_id'],to_jsonb(did::text),true);
  END LOOP;
  s:=programacion.fn_ig_m96_adjudication_structure_v1(c);
