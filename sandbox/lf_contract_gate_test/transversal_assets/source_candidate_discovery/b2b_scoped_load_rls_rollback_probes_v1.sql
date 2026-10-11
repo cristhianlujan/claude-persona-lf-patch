@@ -128,7 +128,53 @@ BEGIN
 END $check_permission$;
 RESET ROLE;
 
+-- Additional reversible denial cases: suspended company, disabled user, missing JWT.
+UPDATE lf_ops.permisos SET status='VIGENTE'
+WHERE permission_code='B2B_LOAD_DETAIL_VIEW';
+UPDATE lf_ops.empresas SET operational_status='SUSPENDED'
+WHERE company_id='a0000000-0000-4000-8000-000000000101';
+SET LOCAL ROLE authenticated;
+DO $check_suspended$
+BEGIN
+ IF (SELECT count(*) FROM lf_ops.cargas_lotes)<>0
+ THEN RAISE EXCEPTION 'SECURITY_TEST_SUSPENDED_COMPANY_NOT_DENIED'; END IF;
+END $check_suspended$;
+RESET ROLE;
+UPDATE lf_ops.empresas SET operational_status='ACTIVE'
+WHERE company_id='a0000000-0000-4000-8000-000000000101';
+UPDATE lf_ops.empresa_usuarios SET status='DISABLED'
+WHERE user_id='a0000000-0000-4000-8000-000000000201';
+SET LOCAL ROLE authenticated;
+DO $check_disabled$
+BEGIN
+ IF (SELECT count(*) FROM lf_ops.cargas_lotes)<>0
+ THEN RAISE EXCEPTION 'SECURITY_TEST_DISABLED_USER_NOT_DENIED'; END IF;
+END $check_disabled$;
+RESET ROLE;
+UPDATE lf_ops.empresa_usuarios SET status='ACTIVE'
+WHERE user_id='a0000000-0000-4000-8000-000000000201';
+SELECT set_config('request.jwt.claim.sub','',true);
+SET LOCAL ROLE authenticated;
+DO $check_no_jwt$
+BEGIN
+ IF (SELECT count(*) FROM lf_ops.cargas_lotes)<>0
+ THEN RAISE EXCEPTION 'SECURITY_TEST_NO_JWT_NOT_DENIED'; END IF;
+END $check_no_jwt$;
+RESET ROLE;
+DO $check_anonymous$
+BEGIN
+ IF pg_catalog.has_table_privilege('anon','lf_ops.cargas_lotes','SELECT')
+ OR pg_catalog.has_column_privilege('anon','lf_ops.cargas_lotes','load_id','SELECT')
+ OR pg_catalog.has_column_privilege('anon','lf_ops.cargas_archivos','file_name','SELECT')
+ THEN RAISE EXCEPTION 'SECURITY_TEST_ANON_ACCESS_NOT_DENIED'; END IF;
+ IF (SELECT count(*) FROM pg_catalog.pg_class
+      WHERE oid IN ('lf_ops.cargas_lotes'::regclass,
+                    'lf_ops.cargas_archivos'::regclass)
+        AND relrowsecurity AND relforcerowsecurity)<>2
+ THEN RAISE EXCEPTION 'SECURITY_TEST_FORCE_RLS_LOST'; END IF;
+END $check_anonymous$;
+
 -- test security result is the successful execution of all preceding assertions
 SELECT 'PASS' AS structural_rls_contract,
-  '8 positive/negative assertions plus metadata checks' AS coverage,
+  'positive, cross-company, DENY, inactive assignment, candidate permission, suspended company, disabled user, absent JWT, anon, column and DML checks' AS coverage,
   (SELECT count(*) FROM lf_ops.empresas WHERE company_code LIKE 'RLS_FIXTURE_%') AS fixtures_within_transaction;
