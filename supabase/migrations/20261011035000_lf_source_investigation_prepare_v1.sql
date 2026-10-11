@@ -6,6 +6,7 @@ CREATE OR REPLACE FUNCTION private.fn_lf_source_investigation_prepare_v1(
 ) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path TO ''
 AS $fn$
 DECLARE
+ v_qualification jsonb;
  v_discovery jsonb;
  v_checks jsonb:='[]'::jsonb;
  v_candidate jsonb;
@@ -21,6 +22,22 @@ DECLARE
  v_stage text;
  v_observation jsonb;
 BEGIN
+ v_qualification:=private.fn_lf_d1_managed_inventory_qualification_v1();
+ IF v_qualification->>'technical_readiness' IS DISTINCT FROM 'PASS' THEN
+   RETURN pg_catalog.jsonb_build_object(
+     'schema_version','LF_SOURCE_INVESTIGATION_PREPARATION_V1',
+     'next_action','BLOCK_MANAGED_INVENTORY_NOT_CURRENT',
+     'qualification',v_qualification,
+     'discovery',pg_catalog.jsonb_build_object('discovery_state','ERROR_FAIL_CLOSED'),
+     'binding_checks_count',0,
+     'planner_stop_is_local_only',true,
+     'global_discovery_exhausted',false,
+     'business_data_read_authorized',false,
+     'rows_accessed',false,
+     'runtime_dispatched',false,
+     'final_business_answer_allowed',false,
+     'effects_executed',false);
+ END IF;
  v_discovery:=private.fn_lf_d1_inventory_candidates_v1(p_objective,p_candidate_budget);
  IF v_discovery->>'discovery_state'='CANDIDATES_FOUND' THEN
    FOR v_candidate IN SELECT value FROM pg_catalog.jsonb_array_elements(
