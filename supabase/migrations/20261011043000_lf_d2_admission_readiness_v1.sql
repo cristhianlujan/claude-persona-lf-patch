@@ -18,6 +18,7 @@ DECLARE
   v_client_grant boolean;
   v_client_policy integer:=0;
   v_client_deny integer:=0;
+  v_client_static_false integer:=0;
   v_actor boolean:=false;
   v_ledger_grant boolean:=false;
   v_decision text;
@@ -48,8 +49,14 @@ BEGIN
              count(*) FILTER (WHERE NOT pol.polpermissive AND
                                   pol.polcmd IN ('r','*') AND
                                   ('authenticated'::regrole=ANY(pol.polroles) OR
-                                   '0'::oid=ANY(pol.polroles)))::integer
-      INTO v_client_policy,v_client_deny
+                                   '0'::oid=ANY(pol.polroles)))::integer,
+             count(*) FILTER (WHERE pol.polcmd IN ('r','*') AND
+                                  ('authenticated'::regrole=ANY(pol.polroles) OR
+                                   '0'::oid=ANY(pol.polroles)) AND
+                                  pg_catalog.lower(pg_catalog.btrim(
+                                    pg_catalog.pg_get_expr(pol.polqual,pol.polrelid)))
+                                     IN ('false','(false)'))::integer
+      INTO v_client_policy,v_client_deny,v_client_static_false
       FROM pg_catalog.pg_policy pol WHERE pol.polrelid=v_object_oid;
     ELSE
       v_gaps:=v_gaps||pg_catalog.jsonb_build_array('EXACT_PHYSICAL_SOURCE_NOT_UNIQUE');
@@ -74,7 +81,7 @@ BEGIN
     IF v_object_count=1 AND v_client_grant IS NOT TRUE THEN
       v_gaps:=v_gaps||pg_catalog.jsonb_build_array('DIRECT_CLIENT_TABLE_READ_UNAVAILABLE_USE_GOVERNED_FACADE');
     END IF;
-    IF v_object_count=1 AND v_rls IS TRUE AND v_client_policy=0 THEN
+    IF v_object_count=1 AND v_rls IS TRUE AND (v_client_policy=0 OR v_client_policy=v_client_static_false) THEN
       v_gaps:=v_gaps||pg_catalog.jsonb_build_array('NO_PERMISSIVE_CLIENT_SELECT_RLS_POLICY');
     END IF;
     IF NOT v_ledger_grant THEN
@@ -98,6 +105,8 @@ BEGIN
     'authenticated_direct_select_granted',v_client_grant,
     'authenticated_permissive_select_policies',v_client_policy,
     'authenticated_restrictive_select_policies',v_client_deny,
+    'authenticated_static_false_select_policies',v_client_static_false,
+    'rls_effective_authorization_not_inferred',true,
     'canonical_actor_present',v_actor,
     'ledger_global_service_select_granted',v_ledger_grant,
     'business_data_access_authorized',false,
