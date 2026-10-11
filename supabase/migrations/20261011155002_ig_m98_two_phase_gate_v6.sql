@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION programacion.fn_ig_m98_candidate_field_gate_v2(p_id uuid)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path TO 'pg_catalog' AS $f$
-DECLARE r record; pol jsonb; c jsonb; d jsonb; s jsonb; ok boolean; did uuid; producer jsonb; n int; k int; ord int:=0;
+DECLARE r record; pol jsonb; c jsonb; d jsonb; s jsonb; ok boolean; did uuid; producer jsonb; n int; k int; ord int:=0; current_source jsonb;
 BEGIN
  IF p_id IS NULL THEN RETURN jsonb_build_object('status','BLOCKED','reason','PER_FIELD_RECEIPT_MISSING'); END IF;
  SELECT receipt_id,verification_state,verification_payload,receipt_payload,source_head_sha INTO r
@@ -24,6 +24,32 @@ BEGIN
  OR (c#>>'{coverage,difference_count}')::integer<>jsonb_array_length(c->'field_diffs')
  OR coalesce(c#>>'{coverage,examined_field_count}','') !~ '^[1-9][0-9]*$'
  THEN RETURN jsonb_build_object('status','BLOCKED','reason','FIELD_UNIVERSE_NOT_VERIFIED');END IF;
+ -- Current-source proof: no empty or old producer can satisfy a newer screen/run.
+ IF coalesce(c->>'screen_id','') !~ '^[0-9]+$' OR coalesce(c->>'version_id','') !~ '^[0-9]+$'
+ OR coalesce(c->>'run_id','') !~ '^[0-9]+$'
+ OR coalesce(c->>'source_snapshot_sha256','') !~ '^[0-9a-f]{64}$'
+ OR coalesce(c->>'canonical_shadow_sha256','') !~ '^[0-9a-f]{64}$'
+ THEN RETURN jsonb_build_object('status','BLOCKED','reason','PRODUCER_SOURCE_SCOPE_INVALID');END IF;
+ IF NOT EXISTS(SELECT 1 FROM programacion.input_readiness_runs run
+ WHERE run.id=(c->>'run_id')::bigint AND run.pantalla_id=(c->>'screen_id')::int
+ AND run.version_id=(c->>'version_id')::bigint
+ AND run.status='COMPLETED' AND run.source_snapshot_sha256=c->>'source_snapshot_sha256'
+ AND programacion.fn_input_readiness_run_is_current(run.id))
+ THEN RETURN jsonb_build_object('status','BLOCKED','reason','PRODUCER_RUN_NOT_CURRENT');END IF;
+ current_source:=programacion.fn_ig_m96_shadow_field_probe_v1((c->>'screen_id')::int,(c->>'version_id')::bigint);
+ IF current_source->>'schema_version' IS DISTINCT FROM 'IG_M96_SHADOW_FIELD_OBSERVATION_V1'
+ OR c->>'canonical_shadow_sha256' IS DISTINCT FROM current_source->>'canonical_shadow_sha256'
+ OR jsonb_typeof(current_source->'field_diffs') IS DISTINCT FROM 'array'
+ OR jsonb_array_length(current_source->'field_diffs')<>jsonb_array_length(c->'field_diffs')
+ THEN RETURN jsonb_build_object('status','BLOCKED','reason','CURRENT_SHADOW_SCOPE_UNVERIFIED'); END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(current_source->'field_diffs') base(value)
+ WHERE NOT EXISTS(SELECT 1 FROM jsonb_array_elements(c->'field_diffs') candidate(value)
+ WHERE candidate.value->>'diff_ref'=base.value->>'diff_ref'
+ AND candidate.value->>'diff_sha256'=base.value->>'diff_sha256'
+ AND candidate.value->>'subject_scope'=base.value->>'subject_scope'
+ AND candidate.value->>'current_sha256'=base.value->>'current_sha256'
+ AND candidate.value->>'candidate_sha256'=base.value->>'candidate_sha256'))
+ THEN RETURN jsonb_build_object('status','BLOCKED','reason','CURRENT_FIELD_DIFF_BINDING_MISMATCH');END IF;
  SELECT especificacion INTO pol FROM programacion.contratos WHERE contrato_codigo='INPUT_GOVERNANCE_DIVERGENCE_LEVELS_CONTRACT'
  ORDER BY version_id DESC,id DESC LIMIT 1;
  -- Read-only candidate qualification; not a requirement to activate the consumer.
