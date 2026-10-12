@@ -177,6 +177,7 @@ def build_fallback_sql(
     name: str,
     source_sql: str,
     source_blob: str,
+    recover_existing_main: bool = False,
 ) -> str:
     if SHA40_RE.fullmatch(source_blob) is None:
         raise ValueError("EXACT_APPLY_SOURCE_BLOB_INVALID")
@@ -190,7 +191,7 @@ begin
   if exists(select 1 from supabase_migrations.schema_migrations where version='{version}') then
     raise exception 'EXACT_APPLY_VERSION_EXISTS:{version}';
   end if;
-  if v_max is not null and v_max >= '{version}' then
+  if not {str(recover_existing_main).lower()} and v_max is not null and v_max >= '{version}' then
     raise exception 'EXACT_APPLY_VERSION_RACE:max=% target={version}',v_max;
   end if;
 end;
@@ -215,12 +216,14 @@ def _fallback_apply(
     name: str,
     source_sql: str,
     source_blob: str,
+    recover_existing_main: bool = False,
 ) -> None:
     payload = build_fallback_sql(
         version=version,
         name=name,
         source_sql=source_sql,
         source_blob=source_blob,
+        recover_existing_main=recover_existing_main,
     )
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".sql", delete=False) as handle:
         handle.write(payload)
@@ -241,6 +244,7 @@ def apply_exact(
     db_url: str,
     source_blob: str,
     allow_fallback: bool,
+    recover_existing_main: bool = False,
 ) -> ApplyReceipt:
     decision = TRANSPORT.select_transport("MIGRATION", migration_path.as_posix())
     if decision.executor != "SUPABASE_CLI_DB_PUSH_LINKED":
@@ -265,7 +269,7 @@ def apply_exact(
         )
 
     floor_before = read_ledger_max(db_url, cwd=project_root)
-    if version <= floor_before:
+    if version <= floor_before and not recover_existing_main:
         raise RuntimeError(f"EXACT_APPLY_VERSION_NOT_MONOTONIC:version={version} floor={floor_before}")
 
     primary_ok, primary_detail = _primary_cli(
@@ -311,6 +315,7 @@ def apply_exact(
         name=name,
         source_sql=source_sql,
         source_blob=source_blob,
+        recover_existing_main=recover_existing_main,
     )
     ledger_version, ledger_name, created_by = read_ledger(db_url, version, cwd=project_root)
     if ledger_version != version or ledger_name != name:
@@ -329,6 +334,7 @@ def main() -> int:
     parser.add_argument("--db-url")
     parser.add_argument("--source-blob", required=True)
     parser.add_argument("--allow-fallback", action="store_true")
+    parser.add_argument("--recover-existing-main", action="store_true")
     args = parser.parse_args()
 
     project_root = Path(args.project_root).resolve()
@@ -345,6 +351,7 @@ def main() -> int:
         db_url=db_url,
         source_blob=args.source_blob.lower(),
         allow_fallback=args.allow_fallback,
+        recover_existing_main=args.recover_existing_main,
     )
     print(json.dumps(asdict(receipt), sort_keys=True, separators=(",", ":")))
     return 0
