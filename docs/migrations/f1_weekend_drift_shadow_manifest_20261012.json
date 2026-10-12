@@ -7,7 +7,11 @@
     "total": 130,
     "embedded": 39,
     "future": 2,
-    "duplicate_canonical_names": 12
+    "duplicate_canonical_names": 12,
+    "main_exact_version": 66,
+    "main_other_version_same_name": 64,
+    "main_no_matching_name": 0,
+    "main_exact_version_and_name": 66
   },
   "items": [
     {
@@ -15,1300 +19,2081 @@
       "name": "ig_m8_11_contract_governance_deferral_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010020000_ig_m8_11_contract_governance_deferral_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010021000",
       "name": "ig_m8_11_gate_readback_ig_owned_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010021000_ig_m8_11_gate_readback_ig_owned_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010021001",
       "name": "b2b_corporate_scope_model_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010021001_b2b_corporate_scope_model_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010021500",
       "name": "ig_m93_shadow_runner_declared_scope_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010021500_ig_m93_shadow_runner_declared_scope_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010021600",
       "name": "ig_bounded_test_runner_target_route_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010021600_ig_bounded_test_runner_target_route_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010021700",
       "name": "ig_security_profile_single_rule_read_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010021700_ig_security_profile_single_rule_read_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010022458",
       "name": "t_remed_layer1_selftest_v3",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010080000_t_remed_layer1_selftest_v3.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010022555",
       "name": "t_remed_layer1_selftest_fix_v3",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010081000_t_remed_layer1_selftest_fix_v3.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010024447",
       "name": "t_remed_layer1_property_test_v3",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010090000_t_remed_layer1_property_test_v3.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010024500",
       "name": "ig_m93_sandbox_diagnostic_route_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010024500_ig_m93_sandbox_diagnostic_route_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010025000",
       "name": "ig_m93_rollback_e2e_contract_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010025000_ig_m93_rollback_e2e_contract_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010030001",
       "name": "lf_f07_x03_binding_execute_hardening_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010030001_lf_f07_x03_binding_execute_hardening_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010033000",
       "name": "ig_m93_observation_terminal_split_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010033000_ig_m93_observation_terminal_split_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010034500",
       "name": "ig_m93_dynamic_applicability_contract_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010034500_ig_m93_dynamic_applicability_contract_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010041000",
       "name": "ig_m93_tequiv_governed_consumer_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010041000_ig_m93_tequiv_governed_consumer_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010042500",
       "name": "ig_m93_tequiv_canonical_case_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010042500_ig_m93_tequiv_canonical_case_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010085150",
       "name": "ig_m9_5_level_declaration",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010085150_ig_m9_5_level_declaration.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010095218",
       "name": "t_remed_layer1_findings_v3",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010110000_t_remed_layer1_findings_v3.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010095224",
       "name": "t_remed_derived_links_and_queue_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010130000_t_remed_derived_links_and_queue_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010095241",
       "name": "t_remed_layer1_selftest_findings_v3",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010111000_t_remed_layer1_selftest_findings_v3.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010095305",
       "name": "t_remed_layer1_property_test_findings_v3",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010112000_t_remed_layer1_property_test_findings_v3.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010100000",
       "name": "t_remed_layer1_test_entry_v3",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010100000_t_remed_layer1_test_entry_v3.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010110321",
       "name": "t_remed_inherited_rules_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010140000_t_remed_inherited_rules_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010110327",
       "name": "t_remed_rule_promotion_judge_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010150000_t_remed_rule_promotion_judge_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010120000",
       "name": "t_remed_layer2_conflict_candidates_v3",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010120000_t_remed_layer2_conflict_candidates_v3.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010140000",
       "name": "ig_m95_declarative_scope_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010140000_ig_m95_declarative_scope_v1.sql",
+        "supabase/migrations/20261010140000_t_remed_inherited_rules_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010142227",
       "name": "t_remed_rule_levels_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010160000_t_remed_rule_levels_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010142235",
       "name": "t_remed_promotion_and_pending_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010170000_t_remed_promotion_and_pending_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010144706",
       "name": "t_remed_inheritance_wiring_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010180000_t_remed_inheritance_wiring_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010150138",
       "name": "t_remed_generic_screen_contract_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010190000_t_remed_generic_screen_contract_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010150741",
       "name": "t_remed_declared_level_and_judge_v2",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010200000_t_remed_declared_level_and_judge_v2.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010163443",
       "name": "t_remed_recommend_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010210000_t_remed_recommend_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010163705",
       "name": "t_remed_recommend_v2_channel",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010220000_t_remed_recommend_v2_channel.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010232400",
       "name": "t_remed_recommend_queue_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010230000_t_remed_recommend_queue_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261010235001",
       "name": "ig_m9_6_field_adjudication_gate_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010235001_ig_m9_6_field_adjudication_gate_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010235002",
       "name": "ig_m96_shadow_field_observation_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010235002_ig_m96_shadow_field_observation_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010235003",
       "name": "ig_m96_authority_scope_alignment_v2",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010235003_ig_m96_authority_scope_alignment_v2.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010235004",
       "name": "ig_m96_negative_sql_gate_contract_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010235004_ig_m96_negative_sql_gate_contract_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010235005",
       "name": "ig_m96_sql_packet_contract_family_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010235005_ig_m96_sql_packet_contract_family_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261010235006",
       "name": "ig_m9_8_controls_as_receipts",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261010235006_ig_m9_8_controls_as_receipts.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011000339",
       "name": "t_remed_scope_judge_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010240000_t_remed_scope_judge_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011000425",
       "name": "20261011033000_lf_d2_canonical_binding_readback_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011033000_lf_d2_canonical_binding_readback_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011000445",
       "name": "20261011034000_lf_d3_investigation_decision_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011034000_lf_d3_investigation_decision_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011000451",
       "name": "20261011035000_lf_source_investigation_prepare_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011035000_lf_source_investigation_prepare_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011001609",
       "name": "t_remed_open_decisions_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010250000_t_remed_open_decisions_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011002854",
       "name": "t_remed_selftest_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010260000_t_remed_selftest_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011005705",
       "name": "t_remed_screen_status_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010270000_t_remed_screen_status_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011012000",
       "name": "lf_d1_d2_source_discovery_smoke_suite_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011012000_lf_d1_d2_source_discovery_smoke_suite_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011012001",
       "name": "ig_m96_field_semantic_authority_v2",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011012001_ig_m96_field_semantic_authority_v2.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011015000",
       "name": "lf_d1d2_canonical_smoke_run_receipt_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011015000_lf_d1d2_canonical_smoke_run_receipt_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011021429",
       "name": "t_remed_function_comments_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261010280000_t_remed_function_comments_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011023000",
       "name": "lf_inventory_v3_service_currentness_select",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011023000_lf_inventory_v3_service_currentness_select.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011024000",
       "name": "lf_d1_canonical_inventory_candidates_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011024000_lf_d1_canonical_inventory_candidates_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011025000",
       "name": "lf_d1_canonical_inventory_neighbors_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011025000_lf_d1_canonical_inventory_neighbors_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011030000",
       "name": "lf_d1_inventory_relevance_ranking_v2",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011030000_lf_d1_inventory_relevance_ranking_v2.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011031000",
       "name": "lf_d1_managed_inventory_qualification_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011031000_lf_d1_managed_inventory_qualification_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011031001",
       "name": "ig_visual_image_applicability_observation_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011031001_ig_visual_image_applicability_observation_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011031002",
       "name": "ig_m98_shadow_image_context_overlay_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011031002_ig_m98_shadow_image_context_overlay_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011033000",
       "name": "lf_d2_canonical_binding_readback_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011033000_lf_d2_canonical_binding_readback_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011034000",
       "name": "lf_d3_investigation_decision_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011034000_lf_d3_investigation_decision_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011035000",
       "name": "lf_source_investigation_prepare_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011035000_lf_source_investigation_prepare_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011035001",
       "name": "ig_m98_unit_checkpoint_governance_gate_v2",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011035001_ig_m98_unit_checkpoint_governance_gate_v2.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011035002",
       "name": "ig_m98_historical_hold_reconciliation_v3",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011035002_ig_m98_historical_hold_reconciliation_v3.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011050556",
       "name": "20261011040000_lf_d2_facade_request_plan_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011040000_lf_d2_facade_request_plan_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011050603",
       "name": "20261011041000_lf_d2_facade_receipt_readback_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011041000_lf_d2_facade_receipt_readback_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011051027",
       "name": "20261011042000_lf_d2_source_binding_candidate_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011042000_lf_d2_source_binding_candidate_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011052000",
       "name": "ig_m98_reuse_verified_field_adjudication_v4",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011052000_ig_m98_reuse_verified_field_adjudication_v4.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011075708",
       "name": "20261011052000_ig_m98_reuse_verified_field_adjudication_v4",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011052000_ig_m98_reuse_verified_field_adjudication_v4.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011080740",
       "name": "20261011043000_lf_d2_admission_readiness_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011043000_lf_d2_admission_readiness_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011081500",
       "name": "ig_source_integrity_rebound_current_cardinality_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011081500_ig_source_integrity_rebound_current_cardinality_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011081610",
       "name": "20261011081500_ig_source_integrity_rebound_current_cardinality_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011081500_ig_source_integrity_rebound_current_cardinality_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011082936",
       "name": "20261011050000_b2b_scoped_load_metadata_rls_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011050000_b2b_scoped_load_metadata_rls_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011083212",
       "name": "20261011051000_lf_d2_admission_column_grants_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011051000_lf_d2_admission_column_grants_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011085000",
       "name": "ig_m98_history_currentness_v5",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011085000_ig_m98_history_currentness_v5.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011085515",
       "name": "20261011085000_ig_m98_history_currentness_v5",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011085000_ig_m98_history_currentness_v5.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011155000",
       "name": "ig_m98_two_phase_field_match_v6",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011155000_ig_m98_two_phase_field_match_v6.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011155001",
       "name": "ig_m98_receipt_governance_v6",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011155001_ig_m98_receipt_governance_v6.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011155002",
       "name": "ig_m98_two_phase_gate_v6",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011155002_ig_m98_two_phase_gate_v6.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011190000",
       "name": "ig_m713_ekb_errors_findings_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011190000_ig_m713_ekb_errors_findings_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011194000",
       "name": "ig_m98_engineering_assurance_v7",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011194000_ig_m98_engineering_assurance_v7.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011194100",
       "name": "ig_m98_engineering_release_governance_v7",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011194100_ig_m98_engineering_release_governance_v7.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011211000",
       "name": "ig_m98_ekb_errors_lessons_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011211000_ig_m98_ekb_errors_lessons_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011223601",
       "name": "20261011054000_lf_source_asset_authority_acl_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011054000_lf_source_asset_authority_acl_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011223638",
       "name": "20261011155000_ig_m98_two_phase_field_match_v6",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011155000_ig_m98_two_phase_field_match_v6.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011223646",
       "name": "20261011155001_ig_m98_receipt_governance_v6",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011155001_ig_m98_receipt_governance_v6.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011223729",
       "name": "20261011155002_ig_m98_two_phase_gate_v6",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011155002_ig_m98_two_phase_gate_v6.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011233708",
       "name": "20261011194000_ig_m98_engineering_assurance_v7",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011194000_ig_m98_engineering_assurance_v7.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011233711",
       "name": "20261011194100_ig_m98_engineering_release_governance_v7",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011194100_ig_m98_engineering_release_governance_v7.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261011234910",
       "name": "ig_m96_ekb_verified_errors_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011234910_ig_m96_ekb_verified_errors_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011235000",
       "name": "ig_m811_ekb_errors_findings_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011235000_ig_m811_ekb_errors_findings_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011235200",
       "name": "ig_m93_ekb_errors_findings_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261011235200_ig_m93_ekb_errors_findings_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261011235413",
       "name": "20261011211000_ig_m98_ekb_errors_lessons_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011211000_ig_m98_ekb_errors_lessons_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012000043",
       "name": "ig_m9_2_ekb_errors_findings_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011235800_ig_m9_2_ekb_errors_findings_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012000842",
       "name": "20261012002200_ig_m99_cohort_authority_reconcile_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012002200_ig_m99_cohort_authority_reconcile_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012001330",
       "name": "20261012001100_ig_m99_ekb_jsonb_null_assertion_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012001100_ig_m99_ekb_jsonb_null_assertion_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012002150",
       "name": "20261012004000_ig_m99_rollback_receipt_policy_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012004000_ig_m99_rollback_receipt_policy_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012003510",
       "name": "20261012005800_ig_m99_transversal_reconciler_decouple_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012005800_ig_m99_transversal_reconciler_decouple_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012003903",
       "name": "20261012010600_ig_m99_runtime_proof_gate_contract_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012010600_ig_m99_runtime_proof_gate_contract_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012004144",
       "name": "20261012011500_ig_m99_reversible_consumer_binding_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012011500_ig_m99_reversible_consumer_binding_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012004206",
       "name": "20261012011000_ig_m910_versioned_cohort_contract_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012011000_ig_m910_versioned_cohort_contract_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012004355",
       "name": "20261011060000_lf_d2_metadata_admission_split_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261011060000_lf_d2_metadata_admission_split_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012004415",
       "name": "20261012015000_ig_m910_residue_delta_ekb_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012015000_ig_m910_residue_delta_ekb_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012005601",
       "name": "20261012021000_ig_m912_readiness_ig_owned_contract_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012021000_ig_m912_readiness_ig_owned_contract_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012005604",
       "name": "20261012021100_ig_m912_receipt_sourcepack_reconcile_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012021100_ig_m912_receipt_sourcepack_reconcile_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012005606",
       "name": "20261012021200_ig_m912_ekb_contract_errors_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012021200_ig_m912_ekb_contract_errors_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012011005",
       "name": "20261012023000_ig_m912_m98_technical_consumption_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012023000_ig_m912_m98_technical_consumption_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012011948",
       "name": "20261012032000_ig_m913_ledger_independent_contract_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012032000_ig_m913_ledger_independent_contract_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012011950",
       "name": "20261012032100_ig_m913_ekb_contract_errors_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012032100_ig_m913_ekb_contract_errors_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012012743",
       "name": "20261012040000_ig_m100_typed_frozen_bundle_contract_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012040000_ig_m100_typed_frozen_bundle_contract_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012012746",
       "name": "20261012040100_ig_m100_human_approval_semantics_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012040100_ig_m100_human_approval_semantics_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012012748",
       "name": "20261012040200_ig_m100_ekb_contract_findings_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012040200_ig_m100_ekb_contract_findings_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012052424",
       "name": "lf_d2_u8_cargas_lotes_invoker_facade_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012054500_lf_d2_u8_cargas_lotes_invoker_facade_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012064408",
       "name": "20261003003000_lf_pilot_srcr_g12_state_authority_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261003003000_lf_pilot_srcr_g12_state_authority_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012070000",
       "name": "ig_m99_two_level_canary_contract_governance_v2",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012070000_ig_m99_two_level_canary_contract_governance_v2.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012071000",
       "name": "ig_m99_sandbox_closeout_v2",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012071000_ig_m99_sandbox_closeout_v2.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012073000",
       "name": "ig_m910_two_level_cohort_contract_governance_v2",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012073000_ig_m910_two_level_cohort_contract_governance_v2.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012074500",
       "name": "ig_ekb_semantic_preflight_first_run_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012074500_ig_ekb_semantic_preflight_first_run_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012080000",
       "name": "ig_m910_sandbox_ephemeral_candidate_ekb_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012080000_ig_m910_sandbox_ephemeral_candidate_ekb_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012080128",
       "name": "20261012072000_lf_gpt_native_in_chat_capture_policy_candidate_v1",
       "embedded_version_name": true,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012072000_lf_gpt_native_in_chat_capture_policy_candidate_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012090000",
       "name": "ig_m912_cutover_receipt_issuer_contract_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012090000_ig_m912_cutover_receipt_issuer_contract_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012091500",
       "name": "ig_m912_ekb_authorized_receipt_producer_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012091500_ig_m912_ekb_authorized_receipt_producer_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012104500",
       "name": "ig_m913_independent_packet_compiler_contract_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012104500_ig_m913_independent_packet_compiler_contract_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012110000",
       "name": "ig_m913_packet_compiler_ekb_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012110000_ig_m913_packet_compiler_ekb_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012114500",
       "name": "ig_m913_independent_runner_closeout_ekb_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012114500_ig_m913_independent_runner_closeout_ekb_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012132744",
       "name": "analysis_a9_pg01_exact_receipt_guard_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": false,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [],
+      "main_same_canonical_name_other_versions": [
+        "supabase/migrations/20261012081500_analysis_a9_pg01_exact_receipt_guard_v1.sql"
+      ],
+      "main_matching_name": true,
+      "main_exact_identity": false
     },
     {
       "version": "20261012133000",
       "name": "ig_m10_1_preflight_consumer_contract_governance_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012133000_ig_m10_1_preflight_consumer_contract_governance_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012133100",
       "name": "ig_m10_1_profiles_adapters_consumers",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012133100_ig_m10_1_profiles_adapters_consumers.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012133200",
       "name": "ig_m10_1_dynamic_inventory_ekb_v1",
       "embedded_version_name": false,
       "future_version": false,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012133200_ig_m10_1_dynamic_inventory_ekb_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012153000",
       "name": "ig_m10_1_router_migrated",
       "embedded_version_name": false,
       "future_version": true,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012153000_ig_m10_1_router_migrated.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     },
     {
       "version": "20261012160000",
       "name": "ig_m10_1_router_facade_closeout_ekb_v1",
       "embedded_version_name": false,
       "future_version": true,
-      "main_same_version": "UNKNOWN",
-      "main_equivalent_other_version": "UNKNOWN",
+      "main_same_version": true,
+      "main_equivalent_other_version": "CONTENT_UNVERIFIED",
       "train_provenance": "UNKNOWN",
-      "canonical_parity": "NOT_EVALUATED"
+      "canonical_parity": "NOT_EVALUATED",
+      "main_exact_version_paths": [
+        "supabase/migrations/20261012160000_ig_m10_1_router_facade_closeout_ekb_v1.sql"
+      ],
+      "main_same_canonical_name_other_versions": [],
+      "main_matching_name": true,
+      "main_exact_identity": true
     }
   ],
   "duplicate_canonical_names": [
@@ -1411,7 +2196,8 @@
   ],
   "notes": [
     "Canonical duplicate is name normalization only; not proof that SQL bytes match.",
-    "Main-file and Train provenance unresolved until full Git tree and PR merge evidence are compared."
+    "Main-file and Train provenance unresolved until full Git tree and PR merge evidence are compared.",
+    "Main Git tree filename inventory completed for 130 rows, but canonical content comparison and Train attribution remain pending."
   ],
   "dry_run_20261010_source_to_ledger": {
     "mode": "READ_ONLY_SQL_CANONICAL_COMPARISON",
@@ -1459,5 +2245,7 @@
         "canonical_equal": true
       }
     ]
-  }
+  },
+  "main_snapshot": "48935dee24621820926378825562dd8ab2c00e11",
+  "main_migration_file_count": 1177
 }
