@@ -14,6 +14,7 @@ RCV_DIR = Path(__file__).resolve().parents[3] / "transversal_assets" / "reversib
 if str(RCV_DIR) not in sys.path:
     sys.path.insert(0, str(RCV_DIR))
 from ig_n9_adapter_v1 import IgN9FlowAdapter
+from false_pass_canonical_readback_v1 import CanonicalM99EvidenceReadback
 from reversible_candidate_verification_v1 import CandidateIdentity, RollbackContract
 
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -37,6 +38,8 @@ class IgM99FalsePassFlowAdapter:
                           rollback: RollbackContract) -> dict[str, Any]:
         meta = _obj(candidate.metadata)
         preflight: list[str] = []
+        if not isinstance(self._verified_readback, CanonicalM99EvidenceReadback):
+            preflight.append("CANONICAL_DB_READBACK_PROVIDER_REQUIRED")
         if rollback.mutation_policy != "ROLLBACK_ONLY":
             preflight.append("ROLLBACK_ONLY_REQUIRED")
         if not isinstance(meta.get("canary_run_ref"), str) or not meta["canary_run_ref"].strip():
@@ -91,7 +94,7 @@ class IgM99FalsePassFlowAdapter:
             decision.get("action") == "ROLLBACK_REQUIRED"
             and decision.get("readback_only") is True
             and "FALSE_PASS" in (decision.get("reason_codes") or [])
-            and decision.get("subject_sha256") == baseline_pin
+            and decision.get("subject_sha256") == meta.get("canary_observation_sha256")
             and _sha(decision.get("receipt_sha256"))
             and isinstance(decision.get("receipt_id"), int)
         ):
@@ -104,7 +107,9 @@ class IgM99FalsePassFlowAdapter:
             and oracle.get("independence_state") == "INDEPENDENT"
             and oracle.get("run_ref") == run_ref
             and oracle.get("candidate_sha256") == candidate.candidate_sha256
+            and oracle.get("issuer_channel") == "EVIDENCE_VERIFIER_V1"
             and _sha(oracle.get("receipt_sha256"))
+            and type(oracle.get("receipt_id")) is int
         ):
             failures.append("INDEPENDENT_LIVE_ORACLE_REQUIRED")
         if not (
@@ -122,11 +127,25 @@ class IgM99FalsePassFlowAdapter:
             and _sha(action.get("receipt_sha256"))
             and isinstance(action.get("receipt_id"), int)
             and action.get("receipt_id") != decision.get("receipt_id")
+            and action.get("receipt_id") != oracle.get("receipt_id")
+            and action.get("decision_receipt_id") == decision.get("receipt_id")
+            and action.get("oracle_receipt_id") == oracle.get("receipt_id")
         ):
             failures.append("AUTOMATIC_ROLLBACK_RECEIPT_REQUIRED")
         if not (isinstance(before, str) and bool(before)
                 and before == after and residue == 0):
             failures.append("POSTSTATE_OR_RESIDUE_MISMATCH")
+        identity = _obj(evidence.get("evidence_identity"))
+        if not (
+            identity.get("read_from") == "programacion.provenance_receipts"
+            and identity.get("run_ref") == run_ref
+            and identity.get("observation_subject_sha256") == meta.get("canary_observation_sha256")
+            and identity.get("baseline_manifest_sha256") == baseline_pin
+            and identity.get("receipt_ids") == [
+                decision.get("receipt_id"), oracle.get("receipt_id"), action.get("receipt_id")
+            ]
+        ):
+            failures.append("CANONICAL_RECEIPT_IDENTITY_CHAIN_INVALID")
         if prior.get("production_authorized") is True:
             failures.append("UNAUTHORIZED_PRODUCTION_FLAG")
 
