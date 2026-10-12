@@ -251,7 +251,7 @@ def _base_observed_anchors(base_sha: str) -> dict[str, dict[str, str]]:
 def _pg_env() -> dict[str, str]:
     project = os.environ.get("SUPABASE_PROJECT_ID", "").strip()
     host = os.environ.get("SUPABASE_POOLER_HOST", "").strip()
-    password = os.environ.get("LF_SUPABASE_DB_PASSWORD", "").strip()
+    password = os.environ.get("LF_SUPABASE_DB_READONLY_PASSWORD", "").strip()
     if not project or not re.fullmatch(r"[a-z0-9]{20}", project):
         _fail("BLOCK_SELF_CHANGE_PROJECT_CONFIG_MISSING_OR_INVALID")
     if not host or not re.fullmatch(r"[A-Za-z0-9.-]+", host):
@@ -263,7 +263,7 @@ def _pg_env() -> dict[str, str]:
         {
             "PGHOST": host,
             "PGPORT": "5432",
-            "PGUSER": f"postgres.{project}",
+            "PGUSER": f"lf_ci_readonly.{project}",
             "PGPASSWORD": password,
             "PGDATABASE": "postgres",
             "PGSSLMODE": "require",
