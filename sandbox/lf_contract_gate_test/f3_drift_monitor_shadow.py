@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Manual shadow parity report. Read-only Postgres; never raises for drift."""
 import json, os, pathlib, re, sys
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[0]))
 from migration_transport_normalization import canonical, sha256, compare_exact_source
 
 ROOT=pathlib.Path(__file__).resolve().parents[2]
-PATH=re.compile(r'^(20[0-9]{12})_(.+)\\.sql$')
+PATH=re.compile(r'^(20[0-9]{12})_(.+)\.sql$')
 
 def compare(source, ledger):
     by_ver={}
