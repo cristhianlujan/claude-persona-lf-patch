@@ -48,5 +48,14 @@
       "A8": "4bb7265c985b06e23cc2428c4332187a9330fdae",
       "A9": "f74fc959975415f28a4ad4e02ad35671b7f4ad23"
     }
+  },
+  "governed_adapter_candidate": {
+    "transport": "ProfileTask.lf_adapter_sources",
+    "adapter_type": "RouterAdapterSource",
+    "packaging": "ONE_AGGREGATE_A1_A9_RECEIPT",
+    "currentness": "CURRENTNESS_AUTHORITY@1.0.0",
+    "router_binding": "MISSING",
+    "pre_inference_gate": "NOT_WIRED_FAIL_CLOSED",
+    "activation_allowed": false
   }
 }
