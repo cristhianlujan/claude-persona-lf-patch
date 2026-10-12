@@ -1,10 +1,9 @@
-"""M9.10 sandbox-only cohort expansion adapter.
+"""M9.10 source-bound sandbox cohort adapter; NEVER a live canary producer.
 
-Uses existing governed producer + M9.9 canonical evidence verifier. No own
-cutover engine, hardcoded cohort IDs, synthetic receipts, or production commits.
-A missing verified observation fails closed before any producer call.
-The injected verifier must be the existing M9.9 canonical implementation; the
-caller, not this adapter, owns binding verification of the Python callable.
+Only a caller-owned, governed, same-transaction SQL promoter may be injected.
+Each ACTIVE cohort is probed once; the candidate is rolled back before the next.
+The returned per-cohort matrix is NOT a receipt and cannot admit live cutover.
+M9.9's six-case rollback matrix is separately reused, not repeated here.
 """
 from __future__ import annotations
 
@@ -12,8 +11,8 @@ from collections import OrderedDict
 from typing import Any, Callable
 
 
-class EvidencePending(RuntimeError):
-    """Canonical evidence is missing; this is NOT a successful expansion."""
+class SandboxProofBlocked(RuntimeError):
+    """No sandbox admission without an actual observed SQL state transition."""
 
 
 def _fetch(conn: Any, sql: str, params: tuple = ()) -> list[tuple]:
@@ -23,43 +22,39 @@ def _fetch(conn: Any, sql: str, params: tuple = ()) -> list[tuple]:
 
 
 def _snapshot(conn: Any) -> tuple:
-    """Immutable baseline, including historic rows: compare deltas, not zero rows."""
-    targets = (
+    """Compare full pre/post states; historical rows may be nonzero."""
+    tables = (
         "public.lf_capability_current",
         "public.lf_capability_version_registry",
-        "programacion.input_governance_cohort_memberships",
+        "public.lf_capability_binding",
         "programacion.input_readiness_runs",
         "programacion.input_family_assessments",
         "programacion.provenance_receipts",
     )
     result = []
-    for table in targets:  # fixed authority table identifiers; never user input
-        rows = _fetch(conn, f"""SELECT count(*), md5(coalesce(string_agg(
-          md5(to_jsonb(t)::text),'' ORDER BY md5(to_jsonb(t)::text)),''))
-          FROM {table} t""")
+    for table in tables:  # fixed trusted authority identifiers, not caller input
+        rows = _fetch(conn, f"""SELECT count(*),md5(coalesce(string_agg(
+          md5(to_jsonb(t)::text),'' ORDER BY md5(to_jsonb(t)::text)),'')) 
+          FROM {table} AS t""")
         result.append((table, rows[0]))
     return tuple(result)
 
 
 def run_sandbox(
-    conn: Any,
-    governed_producer: Callable[..., Any],
-    m99_canonical_readback: Callable[..., dict],
-    run_ref: str,
-) -> dict:
-    """Perform bounded sequential probes; never authorize or publish a cutover.
+    conn: Any, governed_producer: Callable[..., Any], run_ref: str
+) -> dict[str, Any]:
+    """Only a real SQL transaction can qualify a cohort.
 
-    Producer must use *conn* and never commit/open external write connections.
-    M9.9 readback must verify the canonical DB/Independent Assurance receipts.
-    Every candidate transaction is rolled back, including successful probes.
+    governed_producer(conn, cohort_code, governed_members, run_ref) must call
+    the existing versioned promoter through conn without its own COMMIT or a
+    second connection. No durable receipt is minted or accepted here.
     """
     if conn is None or getattr(conn, "autocommit", True) is not False:
         raise ValueError("M910_TRANSACTIONAL_CONNECTION_REQUIRED")
-    if not callable(governed_producer) or not callable(m99_canonical_readback):
-        raise ValueError("M910_EXISTING_PRODUCER_AND_VERIFIER_REQUIRED")
+    if not callable(governed_producer):
+        raise ValueError("M910_EXISTING_GOVERNED_PRODUCER_REQUIRED")
     if not isinstance(run_ref, str) or not run_ref.strip():
         raise ValueError("M910_RUN_REF_REQUIRED")
-
     try:
         rows = _fetch(conn, """SELECT ct.cohort_type_code,cm.pantalla_id,
             cm.authority_ref FROM programacion.input_governance_cohort_types ct
@@ -67,94 +62,73 @@ def run_sandbox(
               USING (cohort_type_code)
             WHERE ct.status='ACTIVE' AND cm.status='ACTIVE'
             ORDER BY ct.display_order,cm.representative_rank,cm.pantalla_id""")
-        cohorts: dict[str, list[tuple]] = OrderedDict()
-        for code, pantalla_id, authority_ref in rows:
-            cohorts.setdefault(code, []).append((pantalla_id, authority_ref))
+        cohorts = OrderedDict()
+        for code, screen_id, authority_ref in rows:
+            cohorts.setdefault(code, []).append((screen_id, authority_ref))
         if not cohorts:
-            raise EvidencePending("M910_NO_ACTIVE_GOVERNED_COHORTS")
-        current = _fetch(conn, """SELECT capability_code,version,manifest_sha256
+            raise SandboxProofBlocked("M910_NO_ACTIVE_GOVERNED_COHORTS")
+        baselines = dict(_fetch(conn, """SELECT capability_code,
+            (version,manifest_sha256,previous_version)::text
             FROM public.lf_capability_current
-            WHERE capability_code IN
-             ('INPUT_GOVERNANCE','REVERSIBLE_CANDIDATE_VERIFICATION')
-            ORDER BY capability_code""")
-        if len(current) != 2 or any(not v or not sha for _, v, sha in current):
-            raise EvidencePending("M910_GOVERNED_CAPABILITY_CURRENT_MISSING")
-        baseline = _snapshot(conn)
-
-        # Read real signed records by the *current* run and cohort. The consumer
-        # never constructs evidence; callers must use the canonical M9.9 verifier.
-        pending = []
-        for code in cohorts:
-            stages = _fetch(conn, """SELECT DISTINCT payload->>'stage'
-                FROM programacion.provenance_receipts
-                WHERE subject_type='IG_CANARY_OBSERVATION'
-                  AND subject_ref=%s
-                  AND issuer_channel='EVIDENCE_VERIFIER_V1'
-                  AND receipt_kind='EVIDENCE_VERIFICATION'
-                  AND payload->>'run_ref'=%s
-                  AND payload->>'verification_status'='VERIFIED'""",
-                  ('IG_CANARY:' + code, run_ref))
-            found = {r[0] for r in stages}
-            if not {'OBSERVATION','INDEPENDENT_ORACLE','ROLLBACK_ACTION'} <= found:
-                pending.append(code)
-        if pending:
-            raise EvidencePending("M910_CANONICAL_RECEIPTS_REQUIRED:" + ','.join(pending))
+            WHERE capability_code IN ('INPUT_GOVERNANCE',
+                                      'REVERSIBLE_CANDIDATE_VERIFICATION')"""))
+        if set(baselines) != {'INPUT_GOVERNANCE',
+                             'REVERSIBLE_CANDIDATE_VERIFICATION'}:
+            raise SandboxProofBlocked("M910_REQUIRED_VERSIONED_AUTHORITIES_MISSING")
+        before = _snapshot(conn)
     finally:
         conn.rollback()
 
-    verified = []
-    for code, members in cohorts.items():
-        # Governed producer is supplied by the existing owner capability;
-        # candidate effects ALWAYS end inside a rollback before readback.
+    proof = []
+    for cohort_code, members in cohorts.items():
         try:
-            candidate = governed_producer(conn, code, tuple(members), run_ref)
+            old_row = _fetch(conn, """SELECT version,manifest_sha256,
+                 previous_version FROM public.lf_capability_current
+                 WHERE capability_code='INPUT_GOVERNANCE'""")
+            if len(old_row) != 1:
+                raise SandboxProofBlocked("M910_BASELINE_MISSING")
+            # The original current/manifest/version pin is verified in SQL.
+            governed_producer(conn, cohort_code, tuple(members), run_ref)
+            promoted = _fetch(conn, """SELECT version,manifest_sha256,
+                 previous_version FROM public.lf_capability_current
+                 WHERE capability_code='INPUT_GOVERNANCE'""")
+            if len(promoted) != 1 or promoted[0] == old_row[0]:
+                raise SandboxProofBlocked("M910_REAL_POINTER_PROMOTION_NOT_OBSERVED")
+            if promoted[0][0] == old_row[0][0] or promoted[0][1] == old_row[0][1]:
+                raise SandboxProofBlocked("M910_PROMOTION_VERSION_OR_SHA_NOT_CHANGED")
+            registry = _fetch(conn, """SELECT count(*) FROM
+                public.lf_capability_version_registry
+                WHERE capability_code='INPUT_GOVERNANCE'
+                  AND version=%s AND manifest_sha256=%s""",
+                  (promoted[0][0], promoted[0][1]))
+            if registry != [(1,)]:
+                raise SandboxProofBlocked("M910_PROMOTED_REGISTRY_MISSING")
+            proof.append({
+                'cohort_type_code': cohort_code,
+                'governed_member_count': len(members),
+                'baseline_version': old_row[0][0],
+                'candidate_version_observed': promoted[0][0],
+                'candidate_manifest_sha256_observed': promoted[0][1],
+                'actual_db_promotion_observed': True,
+                'rollback_evidence_kind': 'SANDBOX_SQL_NOT_SIGNED_LIVE_CANARY',
+            })
         finally:
-            conn.rollback()
+            conn.rollback()  # ALWAYS before next cohort, even on error
         try:
             post = _snapshot(conn)
         finally:
             conn.rollback()
-        if post != baseline:
-            raise RuntimeError("M910_POSTSTATE_DIFFERS_FROM_BASELINE:" + code)
-        evidence = m99_canonical_readback(candidate, {})
-        if not isinstance(evidence, dict) or evidence.get('readback_authority') != 'CANONICAL_PROVENANCE_DB':
-            raise EvidencePending("M910_CANONICAL_READBACK_NOT_VERIFIED:" + code)
-        identity = evidence.get('evidence_identity') or {}
-        if identity.get('cohort_type_code') != code or identity.get('run_ref') != run_ref:
-            raise EvidencePending("M910_PROVENANCE_IDENTITY_DRIFT:" + code)
-        ids = identity.get('receipt_ids')
-        if (not isinstance(ids, list) or len(ids) != 3
-                or any(type(i) is not int or i <= 0 for i in ids)
-                or len(set(ids)) != 3):
-            raise EvidencePending("M910_RECEIPT_IDENTITY_INVALID:" + code)
-        if (evidence.get('canary_gate_readback') or {}).get('receipt_id') != ids[0]:
-            raise EvidencePending("M910_CANARY_GATE_NOT_BOUND:" + code)
-        if (evidence.get('independent_oracle_readback') or {}).get('receipt_id') != ids[1]:
-            raise EvidencePending("M910_INDEPENDENT_RECEIPT_NOT_BOUND:" + code)
-        if (evidence.get('rollback_action_readback') or {}).get('receipt_id') != ids[2]:
-            raise EvidencePending("M910_ROLLBACK_RECEIPT_NOT_BOUND:" + code)
-        try:
-            db_rows = _fetch(conn, """SELECT id,payload->>'stage'
-                FROM programacion.provenance_receipts
-                WHERE id=ANY(%s) AND subject_type='IG_CANARY_OBSERVATION'
-                  AND subject_ref=%s AND issuer_channel='EVIDENCE_VERIFIER_V1'
-                  AND payload->>'run_ref'=%s
-                  AND payload->>'verification_status'='VERIFIED'""",
-                  (ids, 'IG_CANARY:' + code, run_ref))
-        finally:
-            conn.rollback()
-        if set(db_rows) != set(zip(ids,('OBSERVATION','INDEPENDENT_ORACLE','ROLLBACK_ACTION'))):
-            raise EvidencePending("M910_CANONICAL_RECEIPT_IDS_NOT_MATCHED:" + code)
-        try:
-            final = _snapshot(conn)
-        finally:
-            conn.rollback()
-        if final != baseline:
-            raise RuntimeError("M910_FINAL_POSTSTATE_DIFFERS_FROM_BASELINE:" + code)
-        verified.append({'cohort_type_code': code, 'members': len(members),
-                         'receipt_ids': ids})
+        if post != before:
+            raise SandboxProofBlocked("M910_POST_ROLLBACK_RESIDUE:" + cohort_code)
+        proof[-1]['poststate_equals_prestate'] = True
 
-    # Sandbox-only: no runtime activation and no persistent candidate changes.
-    return {'status': 'SANDBOX_PROOF_ONLY', 'verified_cohorts': verified,
-            'current_capabilities': current, 'baseline_restored': True,
-            'production_cutover_authorized': False}
+    return {
+        'status': 'SANDBOX_DB_PROBE_ONLY_PENDING_INDEPENDENT_CHECKPOINT_ASSERTION',
+        'run_ref': run_ref,
+        'coverage': len(proof),
+        'cohorts': proof,
+        'zero_candidate_residue': True,
+        'live_signed_canary_receipt': False,
+        'operational_release_authorized': False,
+        'production_activation': False,
+    }
