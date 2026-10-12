@@ -24,14 +24,25 @@
     "No independently verified governed model and PG-01 real consumption"
   ],
   "next_safe_batch": [
-    "Compare PR #2071 A9/A14 gate to current main",
-    "Check PR #2214 shared runtime compatibility with main",
-    "Run actual Python regressions on reachable authorized executor before merge"
+    "Reconcile branch source with main and run Python regressions on authorized executor",
+    "Resolve Router/currentness source attestation and evidence gate",
+    "Independent governed model evaluation and persisted A9-PG01 receipt"
   ],
-  "safe_work_remaining_count": "AT_LEAST_3; operational qualification incomplete",
+  "safe_work_remaining_count": "AT_LEAST_3: Python regression on PR branches, independent governed model evidence, A9-PG01 real readback",
   "ekb_read": [
     "PROGRAMMING-ANALYSIS-STAGE-SOURCE-ATTESTATION-GAP-001",
     "PROGRAMMING-ANALYSIS-A14-EVIDENCE-TIER-FALSE-READY-001"
   ],
-  "authority_note": "Source-only evidence cursor; no production, SQL mutation, activation, merge, or READY claim."
+  "authority_note": "Source-only evidence cursor; no production, SQL mutation, activation, merge, or READY claim.",
+  "exact_pr_branch_heads": {
+    "2071": "36aadf3cdaf7c696767b8011b95c505fadf7069d",
+    "2145": "6a5d0bf794dbfc1a2f97f4258b38f71da42dfda1",
+    "2214": "a4006efc03c07c0436faf097f09a60efc7aba03f"
+  },
+  "ci_readback": "Each branch has PASE completed/skipped; 0 combined commit status entries; no PASS test suite shown by queried CI",
+  "additional_readback": {
+    "2071": "Main has A14 runner/scorer/base validator but two added negative test files absent; branch carries fixes",
+    "2145": "A1-A9 procedure source verified exact Git blob on PR branch",
+    "2214": "Main repository.py lacks required-source guard; branch adds guard and router_source_receipt.py (file absent in main)"
+  }
 }
