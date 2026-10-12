@@ -1,0 +1,63 @@
+{
+  "candidate_id": "MOTOR-EJECUCION-SKILL-LF-v0.1",
+  "operation_code": "EJECUCION_SKILL_LF",
+  "version": "v0.1",
+  "persistent_status": "CANDIDATO_READ_ONLY",
+  "operation_family": "SKILL_OPERATIONS",
+  "operation_domain": "SKILL_EXECUTION",
+  "operation_type": "SKILL_EXECUTION",
+  "applies_to_asset_type": "SKILL",
+  "contract_code": "CONTRACT-EJECUCION-SKILL-LF-v0.1",
+  "allowed": {
+    "read_only": true,
+    "asset_type": "SKILL",
+    "github_write": false,
+    "runtime_change": false,
+    "asset_must_exist": true,
+    "asset_state_change": false,
+    "automatic_impact": false
+  },
+  "blocked": [
+    "skill_not_found",
+    "ambiguous_skill",
+    "creation_request",
+    "skill_update_request",
+    "github_write",
+    "runtime_enable",
+    "asset_state_change",
+    "automatic_impact"
+  ],
+  "steps": [
+    [0, "init_execution"],
+    [10, "router"],
+    [20, "skill_resolve"],
+    [30, "skill_source_read"],
+    [40, "input_validate"],
+    [50, "execute_skill"],
+    [60, "output_validate"],
+    [70, "semantic_judge"],
+    [80, "report_output"]
+  ],
+  "required_policies": [
+    "POL-LF-OPERATION-LIFECYCLE",
+    "POL-LF-POLICY-CONSUMPTION",
+    "POL-LF-SOURCE-RESOLUTION",
+    "POL-LF-STATE-MODEL"
+  ],
+  "structural_readback": {
+    "registry_count": 1,
+    "contract_count": 1,
+    "step_count": 9,
+    "step_contract_count": 9,
+    "judge_count": 1,
+    "judge_binding_count": 9,
+    "policy_binding_count": 4,
+    "missing_judge_bindings": 0,
+    "evidence_key_drift": 0,
+    "required_policies": 4,
+    "resolved_required_policies": 4,
+    "persistent_router_action_count": 0
+  },
+  "bootstrap_execution_id": "EXEC-BOOTSTRAP-EJECUCION-SKILL-LF-20260909-001",
+  "claim_ceiling": "SANDBOX_CANDIDATE_ONLY_NO_PERSISTENT_ROUTER_ACTIVATION"
+}

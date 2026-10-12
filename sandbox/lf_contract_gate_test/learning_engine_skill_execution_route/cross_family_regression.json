@@ -1,0 +1,49 @@
+{
+  "regression_id": "MOTOR-SKILL-EXECUTION-ROUTE-CROSS-FAMILY-001",
+  "method": "Capture Router JSONB before activation; activate only EJECUCION_SKILL_LF + SKILL/EXECUTE inside one transaction; recapture; assert every non-target JSONB is identical; restore candidate-only state before commit.",
+  "case_count": 23,
+  "target_change_cases": [
+    "R01_SKILL_EXECUTE",
+    "R23_SKILL_MISSING_EXECUTE"
+  ],
+  "non_target_cases": [
+    "R02_SKILL_INSPECT",
+    "R03_SKILL_UPDATE",
+    "R04_SKILL_CREATE",
+    "R05_PROFILE_INSPECT",
+    "R06_PROFILE_EXECUTE",
+    "R07_PROFILE_UPDATE",
+    "R08_PROFILE_CREATE",
+    "R09_ADAPTER_INSPECT",
+    "R10_ADAPTER_UPDATE",
+    "R11_ADAPTER_CREATE",
+    "R12_DOC_INSPECT",
+    "R13_DOC_UPDATE",
+    "R14_RULE_INSPECT",
+    "R15_CARD_CREATE",
+    "R16_STRATEGY_CREATE",
+    "R17_DB_UPDATE",
+    "R18_FUNCTION_UPDATE",
+    "R19_MIGRATION_UPDATE",
+    "R20_TRIGGER_UPDATE",
+    "R21_KNOWLEDGE_BRIDGE",
+    "R22_OPERATION_RUNTIME_UPDATE"
+  ],
+  "observed": {
+    "non_target_changed_count": 0,
+    "target_existing_skill_before": "BLOCKED/BLOCK_OPERATION_NOT_REGISTERED",
+    "target_existing_skill_after": "READY_TO_EXECUTE/EJECUCION_SKILL_LF",
+    "target_missing_skill_after": "BLOCKED/BLOCK_ASSET_NOT_FOUND",
+    "quality_pack_execution_before_after": "BLOCKED/BLOCK_PROFILE_RUNTIME_STATE_NOT_AUTHORIZED",
+    "strategy_create_before_after": "BLOCKED/BLOCK_ACTIVE_CONTRACT_MISSING",
+    "operation_runtime_update_before_after": "BLOCKED/BLOCK_ASSET_NOT_FOUND"
+  },
+  "result": "PASS_NO_NON_TARGET_ROUTER_REGRESSION",
+  "persistent_postcondition": {
+    "EJECUCION_SKILL_LF": "CANDIDATO_READ_ONLY",
+    "SKILL_EXECUTE_active_router_mapping": false,
+    "runtime_change": false,
+    "production_change": false
+  },
+  "evidence_ref": "supabase://public.lf_operation_execution/EXEC-BOOTSTRAP-EJECUCION-SKILL-LF-20260909-001#full_cross_family_regression"
+}

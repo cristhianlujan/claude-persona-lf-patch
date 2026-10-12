@@ -1,0 +1,75 @@
+{
+  "case_id": "MOTOR-AUD018-FULL-ROUTE-001",
+  "execution_id": "EXEC-EJECUCION-SKILL-LF-AUD018-20260909-001",
+  "input": {
+    "learning_signal": "AUD-018",
+    "request": "Ejecutar en read-only la skill ACT-0046 Motor de Aprendizaje sobre el caso real EKB AUD-018, mostrando input y output, sin impacto automático ni producción.",
+    "target": "ACT-0046",
+    "action": "EXECUTE",
+    "asset_type": "SKILL",
+    "distribution_mode": "DIRECT"
+  },
+  "router_before": {
+    "router": "ACT-0001",
+    "status": "BLOCKED",
+    "asset_code": "ACT-0046",
+    "asset_type": "SKILL",
+    "action_code": "EXECUTE",
+    "blocking_code": "BLOCK_OPERATION_NOT_REGISTERED"
+  },
+  "router_during_sandbox": {
+    "router": "ACT-0001",
+    "status": "READY_TO_EXECUTE",
+    "asset_code": "ACT-0046",
+    "asset_type": "SKILL",
+    "action_code": "EXECUTE",
+    "operation_code": "EJECUCION_SKILL_LF",
+    "operation_status": "SANDBOX_ACTIVE",
+    "contract_count": 1,
+    "step_count": 9,
+    "required_policy_count": 4,
+    "resolved_policy_count": 4,
+    "adapters": []
+  },
+  "skill_output": {
+    "status": "PATCH_CANDIDATE_READY",
+    "classification": "GOVERNANCE_EVIDENCE_INTEGRITY_AND_ROUTING_GAP",
+    "attribution": "SANDBOX_OBSERVED",
+    "evidence_level": "EVIDENCIA_PARCIAL",
+    "score": {
+      "total": 80,
+      "scale": "OPERABLE_CON_BRECHAS",
+      "functional_coverage": 15,
+      "internal_sources": 15,
+      "external_reliable_sources": 0,
+      "practical_evidence": 15,
+      "non_duplication": 10,
+      "traceability": 10,
+      "safety_governance": 10,
+      "maintainability": 5
+    },
+    "patch_candidate": {
+      "type": "GOVERNED_OPERATION_ROUTE",
+      "operation_code": "EJECUCION_SKILL_LF",
+      "router_mapping": "SKILL/EXECUTE -> EJECUCION_SKILL_LF",
+      "scope": "READ_ONLY_SKILL_EXECUTION",
+      "persistent_state": "CANDIDATO_READ_ONLY",
+      "production_enabled": false
+    },
+    "blocking_codes": [
+      "INDEPENDENT_SEMANTIC_REVIEW_PENDING",
+      "ACT0046_SOURCE_PARITY_DRIFT"
+    ],
+    "next_gate": "FULL_CROSS_FAMILY_REGRESSION_THEN_SOURCE_PARITY_REMEDIATION_AND_INDEPENDENT_REVIEW"
+  },
+  "execution_steps": {
+    "STEP_PASS_WITH_EVIDENCE": 7,
+    "RETURN_TO_ROUTER": 2,
+    "semantic_judge": "NOT_EXECUTED_INDEPENDENTLY"
+  },
+  "result": "PATCH_CANDIDATE_READY_WITH_OPEN_GATES",
+  "claim_ceiling": "SANDBOX_ROUTE_AND_CANDIDATE_OUTPUT_ONLY_NO_INDEPENDENT_SEMANTIC_PASS",
+  "runtime_change": false,
+  "production_change": false,
+  "automatic_impact": false
+}
