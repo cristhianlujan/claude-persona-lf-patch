@@ -35,18 +35,18 @@
   "source_readback": {
     "tier": "GIT_BLOB_EXISTENCE_ONLY",
     "main_head": "e1c238f48a9fc17c2870243eb2b0b6d14d4bf26b",
-    "stage_blobs": [
-      "cb6cf1c663da4dc12c1f1a6fabedb6e666836d85",
-      "0f07d3603c1bf3e4d2a4b9de5d6c3a3968bb4051",
-      "97d06e88b963690202424a2936ae2b7bf597cea7",
-      "4d38665d7f6da4e556bc05e8ed10489b62ddcc0b",
-      "da77f17283ced275f5498f7a5be07a7180edb7bc",
-      "d000e6900300e12bcc1e1e56490ca3acf40713d1",
-      "a0ef134afc07ed6fcc2385b37212d01e678f0cc6",
-      "4bb7265c985b06e23cc2428c4332187a9330fdae",
-      "f74fc959975415f28a4ad4e02ad35671b7f4ad23"
-    ],
     "external_currentness": "NOT_ATTESTED",
-    "runtime_consumption": "NOT_VERIFIED"
+    "runtime_consumption": "NOT_VERIFIED",
+    "stage_git_blobs": {
+      "A1": "cb6cf1c663da4dc12c1f1a6fabedb6e666836d85",
+      "A2": "0f07d3603c1bf3e4d2a4b9de5d6c3a3968bb4051",
+      "A3": "97d06e88b963690202424a2936ae2b7bf597cea7",
+      "A4": "4d38665d7f6da4e556bc05e8ed10489b62ddcc0b",
+      "A5": "da77f17283ced275f5498f7a5be07a7180edb7bc",
+      "A6": "d000e6900300e12bcc1e1e56490ca3acf40713d1",
+      "A7": "a0ef134afc07ed6fcc2385b37212d01e678f0cc6",
+      "A8": "4bb7265c985b06e23cc2428c4332187a9330fdae",
+      "A9": "f74fc959975415f28a4ad4e02ad35671b7f4ad23"
+    }
   }
 }
