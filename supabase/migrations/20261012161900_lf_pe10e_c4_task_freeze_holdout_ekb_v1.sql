@@ -1,0 +1,2 @@
+-- PE10E_C4 append-only EKB candidate.
+DO $$ BEGIN INSERT INTO public.lf_error_knowledge (id,codigo,categoria,titulo,causa_raiz,prevencion,estado) SELECT gen_random_uuid(),'LF-PE-EXPERT-TASK-CONTENT-NOT-FROZEN-20261012-001','PROFILE_EVOLUTION','PE10E C4 missing task freeze','Task content is not frozen.','Require frozen open-task content before raw.','ACTIVO' WHERE NOT EXISTS (SELECT 1 FROM public.lf_error_knowledge WHERE codigo='LF-PE-EXPERT-TASK-CONTENT-NOT-FROZEN-20261012-001'); END $$;
