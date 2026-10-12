@@ -1,0 +1,77 @@
+{
+  "schema": "LF_CARD_UPDATE_I5_FINAL_RECEIPT_V0_1",
+  "status": "I5_FUNCTIONAL_CLOSED_NO_WRITE_SOURCE_PARITY_PENDING_MERGE",
+  "operation_code": "ACTUALIZACION_CARD_LF",
+  "execution_id": "EXEC-CARD-UPDATE-I5-ADAPTER-INTENT-20260912-001",
+  "execution_status": "CANARY_PREWRITE_PASS_NO_WRITE",
+  "target_card": "CARD-CAND-DASHBOARD-CLIENTE-LECTOR-LF-001",
+  "supabase_migration": {
+    "version": "20260913050553",
+    "name": "lf_card_update_i5_carrier_adapter_intent_v1",
+    "git_path": "supabase/migrations/20260913050553_lf_card_update_i5_carrier_adapter_intent_v1.sql",
+    "source_parity_blob_sha": "59d2656fff47270d93ddd1c8585ec54220410446",
+    "main_parity_state": "PENDING_MERGE"
+  },
+  "functions": [
+    "public.lf_validate_carrier_write_guard_shape_v1",
+    "public.lf_prepare_card_carrier_write_intent_v1",
+    "public.lf_validate_card_carrier_write_intent_v1"
+  ],
+  "security": {
+    "security_invoker": true,
+    "execute_roles": ["postgres", "service_role"],
+    "anon_execute": false,
+    "authenticated_execute": false
+  },
+  "google_docs_canary": {
+    "intent_outcome": "INTENT_PREPARED_NO_WRITE",
+    "intent_sha256": "6ccfb3519f341d511be2642fd0ad4cf50c3c883d47a1792656cdcb11ee581bf2",
+    "provider_guard_kind": "requiredRevisionId",
+    "provider_required_revision_id": "ANLCKQncEv_OKZQB9C7sx2bT31soWvJQROT5ZhSXm_BcZChYHE29jk-0cRxsJZKLulDmZ1sVBWhKTi2d9AlKs8zYX2rAeTqVpQLgJzypPJQ",
+    "exact_intent_validation": "I5_INTENT_EXACT_NO_WRITE",
+    "tampered_intent_validation": "I5_INTENT_TAMPERED_OR_STALE",
+    "stale_revision_validation": "GOOGLE_DOC_TRUST_BINDING_MISMATCH",
+    "wrong_anchor_validation": "GOOGLE_DOC_TRUST_BINDING_MISMATCH",
+    "provider_call_authorized": false,
+    "provider_write_executed": false,
+    "provider_write_control_applied": false,
+    "postread_revision_unchanged": true
+  },
+  "github_adapter": {
+    "live_card_binding_available": false,
+    "structural_exact_result": "GITHUB_GUARD_EXACT",
+    "stale_head_result": "GITHUB_TRUST_BINDING_MISMATCH",
+    "provider_guard_kind": "EXPECTED_HEAD_AND_BLOB_SHA",
+    "claim_ceiling": "STRUCTURAL_ONLY_UNTIL_REAL_GITHUB_FILE_CARD_BINDING_EXISTS"
+  },
+  "gate_results": {
+    "steps_0_through_70": "8_OF_8_CLEAN",
+    "step_80": "STEP_PASS_WITH_EVIDENCE",
+    "step_80_trust_code": "CARD_TRUST_EXACT",
+    "step_90": "BLOCKED_STEP_NOT_CLEAN",
+    "step_90_code": "CARD_UPDATE_WRITE_PHASE_NOT_AUTHORIZED_I4"
+  },
+  "readback": {
+    "card_metadata_md5": "c830827f8eab4ffb2a5634c5abd765ae",
+    "runtime_estado": "PRODUCCION_CONTROLADA_READ_ONLY",
+    "estado_operativo": "READ_ONLY",
+    "estado_documental": "VIGENTE",
+    "impacto_automatico": "BLOQUEADO",
+    "carrier_write_allowed": false,
+    "google_drive_operational_read_allowed": false,
+    "open_card_update_executions_after_close": 0
+  },
+  "claim_ceiling": "CARRIER_ADAPTER_INTENT_AND_GUARDS_VALIDATED_NO_PROVIDER_WRITE",
+  "not_proven": [
+    "REAL_PROVIDER_WRITE",
+    "PROVIDER_RECEIPT_SERVER_DERIVATION_AFTER_MUTATION",
+    "POST_WRITE_INDEPENDENT_READBACK",
+    "ROLLBACK_AFTER_REAL_WRITE",
+    "LIVE_GITHUB_FILE_CARD_BINDING",
+    "PRODUCTION_OR_GOLDEN_READINESS"
+  ],
+  "next_gate": "I6_NEGATIVE_MATRIX_ROLLBACK_AND_FIRST_CONTROLLED_WRITE_READINESS",
+  "merge_authorized": false,
+  "production_authorized": false,
+  "golden_authorized": false
+}
