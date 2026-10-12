@@ -46,6 +46,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "PASS_INDEPENDENT_CHANGE_ADMISSION_NOT_APPLICABLE status=${{ steps.admission_scope.outputs.status }}"
+          echo "RESULT=NOT_APPLICABLE" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Resolve governed independent admission database target
         if: steps.admission_scope.outputs.applicable == 'true'
@@ -62,3 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py validate
+
+      - name: Emit explicit admission PASS result
+        if: steps.admission_scope.outputs.applicable == 'true' && success()
+        run: echo "RESULT=APPLICABLE_PASS" >> "$GITHUB_STEP_SUMMARY"
