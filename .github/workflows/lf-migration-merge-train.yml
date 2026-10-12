@@ -444,6 +444,18 @@ jobs:
           cat "$summary_file" >> "$GITHUB_STEP_SUMMARY"
           printf '%s\n' "$message"
 
+      - name: Classify migration name before any write
+        id: classify_name
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        env:
+          MIGRATION_PATH: ${{ steps.plan.outputs.migration_path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_name_classification_check.py \
+            --failure-code FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY \
+            "$MIGRATION_PATH"
+
       - name: Retimestamp migration atomically on PR head in REAL mode
         id: retimestamp
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
