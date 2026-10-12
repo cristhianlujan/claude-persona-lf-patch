@@ -13,6 +13,8 @@ from migration_transport_normalization import canonical,sha256
 FIXTURE=ROOT/"sandbox/lf_contract_gate_test/migration_source_parity/f1_batch1b_ledger_fixture.json"
 class RealBatchLaneTests(unittest.TestCase):
     def test_exact_62(self):
+        if not os.environ.get("BASE_SHA"):
+            self.skipTest("Only the dedicated F1 batch lane provides exact BASE_SHA and ledger evidence")
         data=json.loads(FIXTURE.read_text())["items"]
         self.assertEqual(len(data),62)
         records={x["version"]: {"name":x["ledger_name"],"sha256":x["sha256"],"statement_count":x["statement_count"]} for x in data}
