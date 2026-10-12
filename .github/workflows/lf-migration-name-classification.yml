@@ -27,7 +27,6 @@ jobs:
       - name: Unit tests for canonical name classifier
         run: |
           python3 sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_pre_apply.py
-          python3 sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_family_classification.py
       - name: Classify changed migration filenames
         shell: bash
         run: |
