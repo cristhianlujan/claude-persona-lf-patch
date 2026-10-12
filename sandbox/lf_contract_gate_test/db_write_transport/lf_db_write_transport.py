@@ -22,7 +22,7 @@ import re
 from dataclasses import asdict, dataclass
 
 CAPABILITY_CODE = "DB_WRITE_TRANSPORT"
-CAPABILITY_VERSION = "2.0.0"
+CAPABILITY_VERSION = "2.1.0"
 MIGRATION_MODE = "EXACT_VERSION_SOURCE_FIRST"
 # Train-internal executors (used only inside the LF Migration Merge Train).
 MIGRATION_PRIMARY = "SUPABASE_CLI_DB_PUSH_LINKED"
@@ -49,12 +49,28 @@ AGENT_FORBIDDEN = (
 )
 TRAIN_STEPS = (
     "WRITE_CHANGE_AS_ONE_MIGRATION_FILE_IN_SUPABASE_MIGRATIONS",
+    "ONE_MIGRATION_PER_PR",
     "NAME_PER_POL_LF_MIGRATION_NAMING",
-    "OPEN_PR",
+    "VERSION_IS_ASSIGNED_OR_REASSIGNED_BY_TRAIN",
+    "OPEN_PR_NOT_DRAFT",
     "REQUIRED_CHECKS_GREEN_ON_EXACT_HEAD",
+    "ONE_TRAIN_AT_A_TIME_NO_OTHER_READY_TO_MERGE_IN_FLIGHT",
     "LABEL_READY_TO_MERGE",
     "MERGE_TRAIN_APPLIES_AND_MERGES",
     "LEDGER_AND_MAIN_READBACK",
+)
+ON_DENIED = "READ_ONLY_OR_PERMISSION_DENIAL_IS_INTENTIONAL_DO_NOT_SEEK_ANOTHER_ROUTE_USE_MERGE_TRAIN"
+EXECUTION_REQUEST = (
+    "IF_NO_ACTUALIZACION_DB_LF_EXECUTION_STATE_EXACT_TARGET_IN_PR_AND_REQUEST_IT_FROM_OWNER"
+    ";TRAIN_MANAGED_EXECUTION_WHEN_ENABLED"
+)
+PREVENTION_RULES = (
+    "PRV-CI-009",
+    "PRV-DB-GIT-FIRST-PERSISTENT-OBJECT-001",
+    "PRV-SQL-001",
+    "PRV-SQL-007",
+    "PRV-SQL-012",
+    "PRV-RTE-006",
 )
 
 
@@ -89,19 +105,29 @@ class AgentRoute:
     steps: tuple[str, ...]
     forbidden: tuple[str, ...]
     policies: tuple[str, ...]
+    on_denied: str
+    execution_request: str | None
+    prevention_rules: tuple[str, ...]
 
 
 def select_route(
     target_type: str,
     migration_path: str | None = None,
     router_execution_id: str | None = None,
+    router_operation: str | None = None,
 ) -> AgentRoute:
-    """Agent-facing route. Always Router first, then Merge Train."""
+    """Agent-facing route. Always Router first, then Merge Train.
+
+    Router passage is shown either by an ``ACTUALIZACION_DB_LF`` execution id or
+    by the operation code returned by ``lf_router_resolve_v1`` (read-only).
+    """
     target = (target_type or "").strip().upper()
     if target not in AGENT_TARGET_TYPES:
         raise ValueError(f"UNSUPPORTED_TARGET_TYPE:{target or 'EMPTY'}")
     execution = (router_execution_id or "").strip()
-    if not EXECUTION_ID_RE.fullmatch(execution):
+    has_execution = EXECUTION_ID_RE.fullmatch(execution) is not None
+    resolved = (router_operation or "").strip().upper() == ROUTER_OPERATION
+    if not has_execution and not resolved:
         return AgentRoute(
             capability_code=CAPABILITY_CODE,
             capability_version=CAPABILITY_VERSION,
@@ -115,13 +141,15 @@ def select_route(
             migration_name=None,
             fail_closed=True,
             steps=(
-                "RESOLVE_ROUTE_VIA_ACT_0001",
-                "OBTAIN_ACTUALIZACION_DB_LF_EXECUTION",
-                "READ_POLICY_SNAPSHOT",
-                "RETRY_SELECT_ROUTE_WITH_EXECUTION_ID",
+                "RESOLVE_ROUTE_VIA_ACT_0001_LF_ROUTER_RESOLVE_V1",
+                "READ_POLICY_SNAPSHOT_V_LF_OPERATION_POLICY_SNAPSHOT",
+                "RETRY_SELECT_ROUTE_WITH_ROUTER_OPERATION_OR_EXECUTION_ID",
             ),
             forbidden=AGENT_FORBIDDEN,
             policies=(),
+            on_denied=ON_DENIED,
+            execution_request=None,
+            prevention_rules=PREVENTION_RULES,
         )
     version = name = None
     if target == "MIGRATION":
@@ -140,13 +168,16 @@ def select_route(
         executor=AGENT_EXECUTOR,
         router_authority=ROUTER_AUTHORITY,
         router_operation=ROUTER_OPERATION,
-        router_execution_id=execution,
+        router_execution_id=execution if has_execution else None,
         migration_version=version,
         migration_name=name,
         fail_closed=True,
         steps=TRAIN_STEPS,
         forbidden=AGENT_FORBIDDEN,
         policies=("POL-LF-MIGRATION-NAMING",),
+        on_denied=ON_DENIED,
+        execution_request=None if has_execution else EXECUTION_REQUEST,
+        prevention_rules=PREVENTION_RULES,
     )
 
 
@@ -233,6 +264,16 @@ def self_test() -> None:
         assert "SUPABASE_MCP_APPLY_MIGRATION" in r.forbidden
         assert "SUPABASE_CLI_DB_PUSH_BY_AGENT" in r.forbidden
         assert r.executor not in (MIGRATION_PRIMARY, MIGRATION_FALLBACK, "SUPABASE_MCP")
+    # Router resolution without execution -> Train route plus execution request.
+    r = select_route("FUNCTION", None, None, "ACTUALIZACION_DB_LF")
+    assert r.route == AGENT_ROUTE_TRAIN and r.router_execution_id is None
+    assert r.execution_request == EXECUTION_REQUEST
+    assert "OPEN_PR_NOT_DRAFT" in r.steps and "ONE_TRAIN_AT_A_TIME_NO_OTHER_READY_TO_MERGE_IN_FLIGHT" in r.steps
+    assert r.on_denied == ON_DENIED and "PRV-CI-009" in r.prevention_rules
+    for wrong in ("ACTUALIZACION_PERFIL_LF", "", None):
+        assert select_route("FUNCTION", None, None, wrong).route == AGENT_ROUTE_REDIRECT
+    r = select_route("FUNCTION", None, "EXEC-X-1", None)
+    assert r.execution_request is None
     r = select_route("MIGRATION", "supabase/migrations/20260917191749_lf_example_v1.sql", "EXEC-X-1")
     assert (r.migration_version, r.migration_name) == ("20260917191749", "lf_example_v1")
     try:
@@ -269,6 +310,7 @@ def main() -> int:
     parser.add_argument("--target-type")
     parser.add_argument("--migration-path")
     parser.add_argument("--router-execution-id")
+    parser.add_argument("--router-operation", help="operation_code returned by lf_router_resolve_v1")
     parser.add_argument(
         "--train-internal",
         action="store_true",
@@ -285,7 +327,7 @@ def main() -> int:
         decision = select_transport(args.target_type, args.migration_path)
         print(json.dumps(asdict(decision), sort_keys=True, separators=(",", ":")))
         return 0
-    route = select_route(args.target_type, args.migration_path, args.router_execution_id)
+    route = select_route(args.target_type, args.migration_path, args.router_execution_id, args.router_operation)
     print(json.dumps(asdict(route), sort_keys=True, separators=(",", ":")))
     return 0
 

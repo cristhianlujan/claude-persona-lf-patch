@@ -8,15 +8,22 @@ Capacidad transversal LF para seleccionar el canal de escritura de base de datos
 
 No concede permisos, no sustituye al Router y no crea una nueva operación.
 
-## v2.0.0 — Router primero, Merge Train siempre
+## v2.1.0 — Router primero, Merge Train siempre
 
 Toda escritura de base de datos de un agente empieza en el Router (ACT-0001) y termina en el LF Migration Merge Train. No existe ruta directa para agentes.
 
 ```
-agente → select_route(target_type, migration_path, router_execution_id)
-   sin ejecución EXEC-… de ACTUALIZACION_DB_LF → REDIRECT_TO_ROUTER
-   con ejecución → MIGRATION_VIA_MERGE_TRAIN (PR + ready-to-merge + Train)
+agente → lf_router_resolve_v1 (solo lectura) → operation_code
+agente → select_route(target_type, migration_path, router_execution_id, router_operation)
+   sin ejecución EXEC-… y sin router_operation=ACTUALIZACION_DB_LF → REDIRECT_TO_ROUTER
+   con cualquiera de las dos → MIGRATION_VIA_MERGE_TRAIN (PR + ready-to-merge + Train)
 ```
+
+v2.1.0 agrega a la respuesta:
+- `steps`: checklist del Train (una migración por PR, PR fuera de borrador, checks en verde en el HEAD exacto, un Train a la vez, la versión la asigna o reasigna el Train).
+- `on_denied`: un rechazo por solo lectura o permisos es intencional; no se busca otra ruta, se va al Train.
+- `execution_request`: si no hay ejecución `ACTUALIZACION_DB_LF`, se indica el target exacto en el PR y se pide al dueño (hasta que el Train gestione ejecuciones).
+- `prevention_rules`: códigos de `transversal.prevention_rules` que aplican (PRV-CI-009, PRV-DB-GIT-FIRST-PERSISTENT-OBJECT-001, PRV-SQL-001, PRV-SQL-007, PRV-SQL-012, PRV-RTE-006).
 
 | target_type | ruta para agentes |
 |---|---|
@@ -30,7 +37,7 @@ CLI para agentes:
 python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py \
   --target-type MIGRATION \
   --migration-path supabase/migrations/<version>_<name>.sql \
-  --router-execution-id EXEC-…
+  --router-operation ACTUALIZACION_DB_LF   # o --router-execution-id EXEC-…
 ```
 
 `select_transport` (y `--train-internal`) es interno del Merge Train: lo usa `lf_migration_exact_apply.py` para elegir su ejecutor sobre una migración ya admitida. No es una ruta para agentes. Las escrituras directas `DB`/`FUNCTION`/`TRIGGER` por `SUPABASE_MCP` de v1.0.0 quedan retiradas.
