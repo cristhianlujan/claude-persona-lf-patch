@@ -151,6 +151,11 @@ class AnalysisCandidateContractTests(unittest.TestCase):
         p["candidate_only"] = False
         rejected(p, "ANALYSIS_CANDIDATE_ONLY_REQUIRED")
 
+    def test_16_closed_front_cannot_retain_blockers(self):
+        p = ready_candidate()
+        p["material_fronts"][0]["blockers"] = ["RISK_STILL_OPEN"]
+        rejected(p, "ANALYSIS_CLOSED_FRONT_HAS_BLOCKERS")
+
     def test_15_schema_is_canonical(self):
         import jsonschema
         schema = json.loads((ROOT / "schemas/runtime_output.schema.json").read_text())

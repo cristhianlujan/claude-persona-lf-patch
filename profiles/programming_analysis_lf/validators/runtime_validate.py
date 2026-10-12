@@ -70,6 +70,8 @@ def validate(payload):
             if not front.get("blockers"):
                 reject("ANALYSIS_BLOCKED_FRONT_NEEDS_BLOCKER")
             blocked_scopes.update(ref_ids)
+        if front.get("closure") == "CLOSED" and front.get("blockers"):
+            reject("ANALYSIS_CLOSED_FRONT_HAS_BLOCKERS")
         if front.get("obligation_mode") in {"REUSE_AS_IS", "NOT_APPLICABLE"}:
             if front.get("closure") != "CLOSED" or not front.get("evidence_refs"):
                 reject("ANALYSIS_REUSE_OR_NA_REQUIRES_CURRENT_EVIDENCE")
