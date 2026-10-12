@@ -79,7 +79,9 @@ class IgM99FalsePassFlowAdapter:
         if not isinstance(self._verified_readback, CanonicalM99EvidenceReadback):
             failures.append("CANONICAL_DB_READBACK_PROVIDER_REQUIRED")
         evidence: dict[str, Any] = {}
-        if not failures:
+        # Untrusted callbacks are diagnostic only: inspect shape for unit regression,
+        # but the permanent provider finding prevents a successful runtime verdict.
+        if not failures or failures == ["CANONICAL_DB_READBACK_PROVIDER_REQUIRED"]:
             try:
                 evidence = _obj(self._verified_readback(candidate, prior))
             except Exception:
