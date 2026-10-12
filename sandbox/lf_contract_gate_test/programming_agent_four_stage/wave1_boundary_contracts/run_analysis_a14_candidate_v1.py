@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, importlib.util, json, time
+import argparse, importlib.util, json, re, time
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parent
@@ -42,11 +42,32 @@ def execute_case(case,classify_depth):
     material_fronts=[x["front_id"] for x in evidence.get("material_fronts",[]) if x.get("material") is True]
     material_fronts=list(dict.fromkeys(material_fronts))
     blocked=set()
+    consistency_ok=True
+    seen_front_ids=set()
     for front in evidence.get("material_fronts",[]):
         if front.get("material") is not True: continue
-        if front.get("effect_on_scope")!="BLOCKS": continue
-        if front.get("status") in {"BLOCKED","UNRESOLVED","NEED_MORE_EVIDENCE","REQUIRES_DECISION"}:
-            blocked.update(front.get("scope_ids",[]))
+        front_id=front.get("front_id")
+        affected=set(front.get("scope_ids",[]))
+        if (not front_id or front_id in seen_front_ids or
+            not affected or not affected.issubset(set(scopes))):
+            consistency_ok=False
+            blocked.update(scopes)
+        seen_front_ids.add(front_id)
+        status=front.get("status")
+        effect=front.get("effect_on_scope")
+        if status not in {"ACCOUNTED","BLOCKED","UNRESOLVED","NEED_MORE_EVIDENCE","REQUIRES_DECISION"}:
+            consistency_ok=False
+            blocked.update(affected)
+        if status in {"BLOCKED","UNRESOLVED","NEED_MORE_EVIDENCE","REQUIRES_DECISION"}:
+            if effect!="BLOCKS":
+                consistency_ok=False
+            blocked.update(affected)
+        elif effect=="BLOCKS":
+            consistency_ok=False
+            blocked.update(affected)
+        elif effect!="PRESERVE":
+            consistency_ok=False
+            blocked.update(affected)
     currentness=evidence.get("currentness",{})
     currentness_decision=currentness.get("decision",case["signals"].get("currentness_decision"))
     if currentness_decision in {"STALE_AFFECTED","UNKNOWN_FAIL_CLOSED"}:
@@ -66,11 +87,22 @@ def execute_case(case,classify_depth):
     else: verdict="BLOCKED"
     handoff=case["handoff"]
     handoff_ok=(
-        handoff.get("producer_schema_digest_sha256")==handoff.get("receiver_schema_digest_sha256")
+        all(isinstance(handoff.get(k),str) and re.fullmatch("[0-9a-f]{64}",handoff[k]) for k in ("producer_schema_digest_sha256","receiver_schema_digest_sha256","context_sha256","receipt_context_sha256"))
+        and handoff.get("producer_schema_digest_sha256")==handoff.get("receiver_schema_digest_sha256")
         and handoff.get("context_sha256")==handoff.get("receipt_context_sha256")
         and handoff.get("lossy_projection") is False
     )
     handoff_verdict="PASS" if handoff_ok else "BLOCK"
+    # A corrupt producer/receiver receipt cannot qualify any scope as READY.
+    # This is independent of the semantic scope classifier and must fail closed.
+    if not handoff_ok:
+        blocked.update(scopes)
+        ready=[]
+        verdict="BLOCKED"
+    elif not consistency_ok:
+        blocked.update(scopes)
+        ready=[]
+        verdict="BLOCKED"
     depth=classify_depth(case["signals"])
     refs=refs_recursive(case)
     unique_refs=list(dict.fromkeys(refs))
@@ -88,19 +120,24 @@ def execute_case(case,classify_depth):
         "material_fronts_observed":material_fronts,
         "ready_scope_ids":ready,
         "blocked_scope_ids":sorted(blocked),
-        "false_ready_count":0,
+        "false_ready_count":None,  # Independent oracle owns this score.
         "specialist_refs":specialist_refs,
         "missing_required_specialists":missing_specialists,
-        "reinterpretation_required":False,
+        "reinterpretation_required":not handoff_ok or not consistency_ok,
         "handoff_parity_verdict":handoff_verdict,
-        "scope_front_consistency_verdict":"PASS",
+        "scope_front_consistency_verdict":"PASS" if consistency_ok else "BLOCK",
         "currentness_verdict":currentness_decision,
-        "source_read_count":len(unique_refs),
-        "duplicate_read_count":duplicate_count,
+        "source_read_count":0,
+        "duplicate_read_count":0,
+        "referenced_source_count":len(unique_refs),
+        "duplicate_reference_count":duplicate_count,
+        "source_reads_executed_by_replay":False,
         "retry_count":0,
         "elapsed_ms":round(elapsed,6),
         "provider_response_id":None,
         "exact_model_or_profile":None,
+        "model_inference_executed":False,
+        "evidence_tier":"DETERMINISTIC_CONTRACT_REPLAY",
         "input_tokens":None,
         "output_tokens":None
     }
@@ -119,6 +156,9 @@ def main():
         "candidate_logic_head":pack["candidate_logic_head"],
         "case_set_id":pack["case_set_id"],
         "case_count":len(results),
+        "evidence_tier":"DETERMINISTIC_CONTRACT_REPLAY",
+        "model_inference_executed":False,
+        "real_programming_consumer_verified":False,
         "results":results,
         "runtime_activation":False,
         "production_activation":False
