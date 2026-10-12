@@ -1,0 +1,17 @@
+-- DRAFT ONLY. NEVER APPLY WITHOUT OWNER APPROVAL.
+-- Role B for IG judge candidate SQL. PostgreSQL 17, Supabase project mhwmirqcgxxukpctffuv.
+-- Source: sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_v1.py
+-- Exact objects, transitively called SECURITY DEFINER routines, pg_temp,
+-- SET ROLE, CREATE EXTENSION and network/filesystem paths must be audited first.
+-- Candidate SQL can contain DDL; no narrow role is inherently safe against untrusted SQL.
+-- Design only, not deployable GRANT list:
+-- CREATE ROLE lf_ig_judge LOGIN PASSWORD '<UNSET>' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+-- GRANT CONNECT ON DATABASE postgres TO lf_ig_judge;
+-- GRANT USAGE ON SCHEMA programacion TO lf_ig_judge;
+-- GRANT SELECT ON programacion.input_readiness_runs,
+--   programacion.input_family_assessments,
+--   programacion.input_validator_chunk_timings TO lf_ig_judge;
+-- Do not grant ALL, schema CREATE, PUBLIC EXECUTE, role membership, or private/vault access.
+-- Required temporary DML and RPC rights must be verified individually against
+-- actual rollback-only judge code before providing any EXECUTE/INSERT/UPDATE.
+-- Preferred long-term isolation: disposable DB / Supabase branch for PR SQL.
