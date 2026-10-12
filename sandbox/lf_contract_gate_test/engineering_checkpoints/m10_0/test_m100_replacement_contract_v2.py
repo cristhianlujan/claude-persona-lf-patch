@@ -20,7 +20,11 @@ class CandidateContract(unittest.TestCase):
     def test_retirement_boundary_explicit(self):
         self.assertIn("NOT TO BE LABELED ready-to-merge UNTIL", self.sql)
         self.assertIn("dbe466b827f10c257dba6449d65d6750f2328057", self.sql)
-        self.assertTrue(PREMERGED.exists(), "historical unapplied source must not be hidden")
+        retirement = ROOT / "docs/ig/M100_RETIRED_UNAPPLIED_SOURCE_BOUNDARY_20261012.md"
+        self.assertTrue(
+            PREMERGED.exists() or retirement.exists(),
+            "before retirement the source exists; after retirement the audit record exists",
+        )
         self.assertNotIn("CREATE OR REPLACE FUNCTION", self.sql)
 
     def test_unit_work_and_governance_repaired_together(self):
