@@ -200,3 +200,7 @@ Heuristic `body_hint` checks SQL keywords in function source. It does not prove 
 | public | `fn_lf_decision_context_asof_record_v1(jsonb,text)` | postgres | POTENTIAL_WRITE |
 | public | `lf_router_downstream_authority_execution_insert_v1()` | postgres | NO_WRITE_TOKEN_DETECTED |
 | public | `lf_router_downstream_authority_execution_update_guard_v1()` | postgres | NO_WRITE_TOKEN_DETECTED |
+
+### 2026-10-12 final live admission proof
+
+**MATCH VERIFIED** against the exact function body between `$function$` delimiters in `supabase/migrations/20260929195705_lf_repository_governance_tombstone_readmodel_v1.sql` (main): repo `md5=655aafa96c3f4aec1be1f42c5f7bb8a2`; live `pg_proc.prosrc` `md5=655aafa96c3f4aec1be1f42c5f7bb8a2`; `provolatile='s'`; `prosecdef=true`. Achieved by SELECT comparing literal Git source function body against live pg_proc, no DB write. Revalidate exact hash on cutover day in case production changes.
