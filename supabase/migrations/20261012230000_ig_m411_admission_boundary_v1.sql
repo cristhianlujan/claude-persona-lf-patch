@@ -122,6 +122,7 @@ BEGIN
       'signed_cutover_receipt_sha256','b4b8174360d8478c122340ca25973ba54cdcd7785d2d168ae8271840fc0c7fc5',
       'bundle_sha256','db84f4ab3cdcc0fe3dcdd463be70ad9b4c96ec7beb9be9cc56b9d344793e7f2f',
       'independence_claim','NOT_MADE',
+      'evidence_ref_required',true,
       'independence_required_at','DECISIONAL_BINDING_VIA_RELEASE',
       'production_authorized',false
     ),
@@ -137,6 +138,7 @@ BEGIN
       'phase','DECISIONAL_ORACLE_ADMISSION',
       'bundle_sha256','db84f4ab3cdcc0fe3dcdd463be70ad9b4c96ec7beb9be9cc56b9d344793e7f2f',
       't_indep_receipt_required',true,
+      'evidence_ref_required',true,
       'producer_root','fn_input_governance_bootstrap_classify_v2',
       'oracle_root','fn_input_governance_shadow_priority_oracle_v2',
       'capability_code','INDEPENDENT_ASSURANCE',
@@ -186,3 +188,38 @@ BEGIN
   END IF;
 END;
 $m411$;
+
+-- Guard reusable y opt-in: applies only to explicit checkpoints declaring
+-- required_evidence_contract.evidence_ref_required=true.
+-- Rejects narrative-only DONE; preserves unrelated units and existing material assertion guard.
+CREATE OR REPLACE FUNCTION programacion.fn_guard_engineering_explicit_evidence_ref_v1()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path TO 'programacion','pg_catalog'
+AS $g$
+DECLARE v_required boolean := false;
+BEGIN
+  IF NEW.status IN ('DONE','NOT_APPLICABLE')
+     AND OLD.status IS DISTINCT FROM NEW.status THEN
+    SELECT EXISTS (
+      SELECT 1 FROM programacion.engineering_plan_units pu
+       WHERE pu.work_item_id=NEW.work_item_id
+         AND pu.disposition='ASSIGNED'
+         AND pu.unit_metadata#>>ARRAY[
+           'action_specs_v1',NEW.checkpoint_code,'required_evidence_contract','evidence_ref_required'
+         ]='true'
+    ) INTO v_required;
+    IF v_required AND nullif(btrim(coalesce(NEW.evidence_ref,'')),'') IS NULL THEN
+      RAISE EXCEPTION 'ENGINEERING_EXPLICIT_EVIDENCE_REF_REQUIRED:%',NEW.checkpoint_code;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$g$;
+
+DROP TRIGGER IF EXISTS trg_engineering_explicit_evidence_ref_v1
+  ON programacion.engineering_work_checkpoints;
+CREATE TRIGGER trg_engineering_explicit_evidence_ref_v1
+BEFORE UPDATE OF status ON programacion.engineering_work_checkpoints
+FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_engineering_explicit_evidence_ref_v1();
+REVOKE ALL ON FUNCTION programacion.fn_guard_engineering_explicit_evidence_ref_v1() FROM PUBLIC;
