@@ -1,5 +1,6 @@
 -- M9.9 FALSO PASS: independent oracle-derived signal (AUTHORED adversarial pairs).
--- M4.9 assertion is real historical evidence; hypothetical producer PASS/FAIL is NOT a live canary.
+-- M4.9 assertion is historical tested evidence, NOT assured independent canary evidence.
+-- Producer PASS/FAIL is an authored pair; never count either as a live canary or proven auto rollback.
 BEGIN TRANSACTION READ ONLY;
 WITH s AS (
  SELECT suite_run_id,status,tests_total,tests_passed,tests_failed,tests_blocked,
@@ -26,19 +27,19 @@ WITH s AS (
  SELECT o.test_code,p.producer_decision,
  g.qualified AND o.expected='DETECTED_FAIL_CLOSED'
  AND o.status='PASS' AND o.v->>'detected'='true'
- AND o.v->>'false_pass'='false' AND p.producer_decision='PASS' AS independently_derived_false_pass
+ AND o.v->>'false_pass'='false' AND p.producer_decision='PASS' AS m49_derived_false_pass
  FROM o CROSS JOIN gate g CROSS JOIN (VALUES('PASS'::text),('FAIL'::text)) p(producer_decision)
 ), decisions AS (
  SELECT p.*,programacion.fn_ig_m99_canary_rollback_decision_v1(
- jsonb_build_object('false_pass_detected',independently_derived_false_pass,
+ jsonb_build_object('false_pass_detected',m49_derived_false_pass,
  'divergence_level','D0','elapsed_ms',100000,'execution_error',false,
  'receipt_present',true,'receipt_verified',true),150000) verdict
  FROM pairs p
 )
 SELECT count(*) AS authored_pairs,
- count(*) FILTER (WHERE independently_derived_false_pass) AS independently_derived_positive_cases,
- count(*) FILTER (WHERE NOT independently_derived_false_pass) AS negative_controls,
- bool_and(CASE WHEN independently_derived_false_pass
+ count(*) FILTER (WHERE m49_derived_false_pass) AS m49_derived_positive_cases,
+ count(*) FILTER (WHERE NOT m49_derived_false_pass) AS negative_controls,
+ bool_and(CASE WHEN m49_derived_false_pass
  THEN verdict->>'action'='ROLLBACK_REQUIRED' AND verdict->'reason_codes' ? 'FALSE_PASS'
  ELSE verdict->>'action'='CONTINUE_OBSERVATION' AND NOT (verdict->'reason_codes' ? 'FALSE_PASS')
  END AND verdict->>'rollback_executed'='false') AS derived_decision_pair_pass,
