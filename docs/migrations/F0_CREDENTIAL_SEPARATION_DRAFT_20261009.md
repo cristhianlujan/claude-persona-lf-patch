@@ -204,3 +204,11 @@ Heuristic `body_hint` checks SQL keywords in function source. It does not prove 
 ### 2026-10-12 final live admission proof
 
 **MATCH VERIFIED** against the exact function body between `$function$` delimiters in `supabase/migrations/20260929195705_lf_repository_governance_tombstone_readmodel_v1.sql` (main): repo `md5=655aafa96c3f4aec1be1f42c5f7bb8a2`; live `pg_proc.prosrc` `md5=655aafa96c3f4aec1be1f42c5f7bb8a2`; `provolatile='s'`; `prosecdef=true`. Achieved by SELECT comparing literal Git source function body against live pg_proc, no DB write. Revalidate exact hash on cutover day in case production changes.
+
+## 2026-10-12 — staged cutover WITHOUT judge (owner decision pending)
+
+**PENDIENTE DE DECISIÓN DEL OWNER:** IG runtime candidate judge. Do not alter judge workflow, isolation design, secret location or reviewer policy in this stage.
+
+**VERIFICADO source dependency:** Train, M93, admission, SSH readback and S30 can be prepared/migrated independently by consumer. However `lf-ig-runtime-candidate-judge` still references the repository-level `LF_SUPABASE_DB_PASSWORD` and **cannot be moved** without owner approval. Keeping this credential at repository level means the privileged lateral route remains open; consequently **F0 global credential isolation is NOT complete and the repository secret MUST NOT be deleted** until judge is resolved.
+
+**Suggested order, not yet authorized for execution:** (1) setup `lf_ci_readonly` with SELECT and reviewed EXECUTE grants; (2) switch admission to that role; (3) isolate Train App/DB credentials to `lf-merge-train`; (4) move both M93 jobs' postgres credential to Train Environment; (5) isolate SSH and S30 keys into legitimate scoped environments after checking dispatch refs; (6) run exact-head functional checks; (7) leave judge unchanged and mark repo-wide postgres password as outstanding exposure; (8) seek separate Cristhian decision for judge and only then remove repo secret. No freeze, configuration change or merge in this document update.
