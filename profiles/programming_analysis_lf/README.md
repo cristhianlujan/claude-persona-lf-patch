@@ -51,3 +51,13 @@ Una prueba independiente del modelo local previa a esta fuente devolvió un fals
 7. Solo con pruebas operativas independientes, pedir `ANALYSIS_V1_OPERATIONALLY_QUALIFIED`; **no inferir 100% del ledger 15/15 DONE ni de esta PR**.
 
 **Invariantes:** EKB preflight; no untrusted source as authority; REUSE_OR_TRANSVERSALIZE_BEFORE_BUILD; NO_PARALLEL_ENGINE; no merges, migrations, product writes or runtime/prod activation.
+
+## Macrolote 2026-10-12 — pinning Git A1–A9
+
+- EKB consultado: `PROGRAMMING-ANALYSIS-STAGE-SOURCE-ATTESTATION-GAP-001` (ACTIVO). PR #2071, #2145 y #2214 permanecen Draft sin merge.
+- Git `main` observado: `e1c238f48a9fc17c2870243eb2b0b6d14d4bf26b`. Los nueve contratos A1–A9 existen y sus Git blob SHA coinciden **9/9** entre `main`, el manifiesto candidato y la rama del PR #2214. Un pin A9 deliberadamente alterado no coincide (negativo de comparación, no prueba del runtime).
+- `contracts/analysis_source_binding.json` ahora registra las nueve huellas exactas por etapa y `GIT_BLOB_EXISTENCE_ONLY`. No equivale a CURRENT RELEASED, receipt de autoridad, lectura del modelo ni consumo PG-01.
+- Frontera defectuosa confirmada: `RepositoryBindings.profile_sources` admite únicamente archivos dentro del perfil; `profile_model_sources` exige SKILL + manifiesto, pero no resuelve ni atestigua los nueve contratos externos. No ampliar silenciosamente ese límite ni convertir el manifiesto en autoridad.
+- Perfil Reparador encontrado en `profiles/systemic_root_cause_repair_lf`, método `SRCR_V0_7R1`; su manifiesto declara `CANDIDATO / READ_ONLY / NO_HABILITADO`. Se aplicó su método de análisis de primera frontera y reutilización, **no** se invocó un runtime Reparador.
+- Alternativa elegible: adaptar el Router/fuentes gobernadas existentes para entregar recibos tipados de los nueve contratos y validarlos antes de inferencia. No crear motor, no hacer auto-READY ni insertar referencias sin currentness. Reconciliar por separado los 3 blobs A14/A9 distintos en PR #2071 y sus negativos antes de admisión.
+- **Cursor persistido:** SOURCE_BLOBS_9_OF_9_READBACK; siguiente `NEXT_SAFE_BATCH=ROUTER_AUTHORITY_SOURCE_RECEIPTS_A1_A9`. Evidencia operativa independiente: `0/3` (ejecutor real, juez independiente, PG-01 persistido). `ANALYSIS_READY=false`. Sin merge, despliegue ni SQL.
