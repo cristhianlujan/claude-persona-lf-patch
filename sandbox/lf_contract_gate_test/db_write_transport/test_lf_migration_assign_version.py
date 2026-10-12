@@ -54,13 +54,43 @@ def main() -> int:
     ) == "20261005202501"
     checks += 1
 
-    # Idempotent retry: already strictly above both is untouched.
+    # Idempotent retry: already strictly above both is untouched when still inside skew.
     assert module.choose_version(
-        current_version="20261005210000",
+        current_version="20261005204500",
         main_max_version="20261005202500",
         ledger_max_version="20261005203000",
         utc_now_version="20261005204000",
-    ) == "20261005210000"
+    ) == "20261005204500"
+    checks += 1
+
+    # A migration timestamp beyond now + skew is rejected instead of being perpetuated.
+    try:
+        module.choose_version(
+            current_version="20261005210001",
+            main_max_version="20261005202500",
+            ledger_max_version="20261005203000",
+            utc_now_version="20261005204000",
+            future_skew_seconds=600,
+        )
+    except ValueError as exc:
+        assert str(exc).startswith("CURRENT_VERSION_FUTURE_SKEW:")
+    else:
+        raise AssertionError("future current version accepted")
+    checks += 1
+
+    # A polluted future floor is also rejected; do not assign floor+1 forever.
+    try:
+        module.choose_version(
+            current_version="20261005200000",
+            main_max_version="20261005210100",
+            ledger_max_version="20261005203000",
+            utc_now_version="20261005204000",
+            future_skew_seconds=600,
+        )
+    except ValueError as exc:
+        assert str(exc).startswith("MAIN_MAX_VERSION_FUTURE_SKEW:")
+    else:
+        raise AssertionError("future main floor accepted")
     checks += 1
 
     # Rename preserves bytes.
@@ -116,7 +146,7 @@ def main() -> int:
             raise AssertionError("collision accepted")
     checks += 1
 
-    print(f"PASS_MIGRATION_ASSIGN_VERSION_TESTS={checks}/8")
+    print(f"PASS_MIGRATION_ASSIGN_VERSION_TESTS={checks}/10")
     return 0
 
 
