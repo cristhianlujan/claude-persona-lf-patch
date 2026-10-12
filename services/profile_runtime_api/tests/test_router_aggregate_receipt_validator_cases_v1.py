@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from test_router_aggregate_receipt_validator_v1 import (
+from profile_runtime_api.router_source_receipt import (
     SourceReceiptError, validate_aggregate_receipt,
 )
 
