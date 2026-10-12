@@ -71,5 +71,25 @@
   ],
   "governance_policy_ref": "supabase://public.lf_policy_versions/POL-PROFILE-UPDATE-PASS/v1.2-gpt-native-in-chat-candidate",
   "deployment": "NOT_APPLIED_TO_OPERATIONAL_GATE",
-  "owner": "TRANSVERSAL_PROFILE_EXECUTION_GOVERNANCE"
+  "owner": "TRANSVERSAL_PROFILE_EXECUTION_GOVERNANCE",
+  "deterministic_exact_value_contract": {
+    "manifest_schema": "PROFILE_SEMANTIC_OBLIGATION_MANIFEST_V1",
+    "expected_value_representation": "TEXT_LEGACY_COMPATIBLE",
+    "typed_json_literals": [
+      "true",
+      "false",
+      "null"
+    ],
+    "boolean_null_literals_require_exact_json_type": true,
+    "ordinary_string_expected_values_require_exact_string": true,
+    "structured_values_compare_canonical_json_text": true,
+    "python_bool_int_equality_forbidden": true,
+    "raw_string_false_does_not_satisfy_boolean_false": true,
+    "existing_frozen_manifest_immutable": true,
+    "materialize_new_version_for_changed_expected_values": true,
+    "source_binding_and_independent_review_unchanged": true,
+    "no_benchmark_admission_from_deterministic_capture": true,
+    "legacy_numeric_text_ambiguous": "FAIL_CLOSED_UNTIL_EXPLICIT_TYPED_MANIFEST",
+    "numeric_json_does_not_satisfy_legacy_text_expected_value": true
+  }
 }
