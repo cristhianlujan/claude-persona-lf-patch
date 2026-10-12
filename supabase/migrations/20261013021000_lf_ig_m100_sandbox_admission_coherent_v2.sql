@@ -301,6 +301,9 @@ BEGIN
       'requires_human_decision',false,
       'operational_admission_ref','m10_0_operational_admission_v2'),true);
 
+  -- jsonb_set(create_missing=true) does not create a missing parent.
+  -- Create parent explicitly, per IG-M99-JSONB-PARENT-NULL-ASSERTION-001.
+  v_meta:=jsonb_set(v_meta,'{m10_0_original_specs_v1}','{}'::jsonb,true);
   FOREACH v_cp IN ARRAY ARRAY['HUMAN_DECISION_RECORD','NEG_SHA_MISMATCH','AUTHORITY_READBACK'] LOOP
     v_spec:=v_specs->v_cp;
     IF v_spec IS NULL THEN RAISE EXCEPTION 'IG_M100_V2_CHECKPOINT_SPEC_MISSING:%',v_cp; END IF;
