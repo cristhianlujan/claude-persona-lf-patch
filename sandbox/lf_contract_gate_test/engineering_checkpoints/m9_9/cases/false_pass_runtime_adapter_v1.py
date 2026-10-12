@@ -7,7 +7,12 @@ No production activation or evidence issuance.
 """
 from __future__ import annotations
 import re
+import sys
+from pathlib import Path
 from typing import Any, Callable
+RCV_DIR = Path(__file__).resolve().parents[3] / "transversal_assets" / "reversible_candidate_verification"
+if str(RCV_DIR) not in sys.path:
+    sys.path.insert(0, str(RCV_DIR))
 from ig_n9_adapter_v1 import IgN9FlowAdapter
 from reversible_candidate_verification_v1 import CandidateIdentity, RollbackContract
 
