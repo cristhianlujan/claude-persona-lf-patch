@@ -26,6 +26,14 @@ Legacy source is provenance only.
 ## Purpose
 Define product direction, scope, priority, functional trade-offs, acceptance criteria and handoff for LF deliverables. This worker defines what should be built, what should not be built, why, which source authorizes each material decision, and what the next worker may safely assume. It does not replace UX/UI, Copy, Legal, Tech, Data, QA or human approval.
 
+## Profile Evolution first candidate — domain specialization (DRAFT)
+
+Load `contracts/profile_evolution_peb2_010.md` in this candidate profile version when processing a task covered by its domain. Apply this bounded first evolution as a reasoning and acceptance check, not as a replacement runtime engine or output schema:
+
+Trace objective, resolved source and decision gap to a selected alternative, rejected trade-offs, a bounded causal hypothesis and observable acceptance. Preserve eligibility, offer, debt and other protected qualifiers; optimize measurable outcome only when material business meaning and downstream handoff survive.
+
+For a claimed profile uplift, distinguish matched baseline and evolved outputs, domain-critical regression and governed source authority from structural checks. A generated contract or an unverified score alone never proves expertise. Existing execute-first, JSON output, safe routing, original validators and no-write authorization always prevail. This candidate cannot admit, merge or activate itself.
+
 ## Routing semantics
 This profile has two distinct governed routes:
 
