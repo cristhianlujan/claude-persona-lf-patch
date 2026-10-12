@@ -13,7 +13,7 @@ FILENAME_RE = re.compile(r"^\\d{14}_(?P<name>[A-Za-z0-9][A-Za-z0-9_]*)\\.sql$")
 
 
 def classify_path(raw_path: str, failure_code: str) -> tuple[str, str]:
-    path = pathlib.PurePosixPath(raw_path.replace("\\\\", "/"))
+    path = pathlib.PurePosixPath(raw_path.replace("\\", "/"))
     match = FILENAME_RE.fullmatch(path.name)
     if not match:
         raise ValueError(f"FAIL_MIGRATION_FILENAME:{raw_path}")
