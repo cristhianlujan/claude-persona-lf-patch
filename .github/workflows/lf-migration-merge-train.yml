@@ -507,7 +507,7 @@ jobs:
               sleep 2
             done
             checks="$(gh api --paginate "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"
-            bad="$(printf '%s' "$checks" | jq '[.check_runs[]? | select(.name=="lf-independent-change-admission" or .name=="ig-runtime-candidate-judge") | select(.conclusion!=null and (.conclusion!="success" and .conclusion!="skipped" and .conclusion!="neutral"))] | length')"
+            bad="$(printf '%s' "$checks" | jq '[.check_runs[]? | select((.name=="lf-independent-change-admission" and .conclusion!=null and .conclusion!="success") or (.name=="ig-runtime-candidate-judge" and .conclusion!=null and (.conclusion!="success" and .conclusion!="skipped" and .conclusion!="neutral")))] | length')"
             [ "$bad" = "0" ] || { echo "FAIL_TRAIN_PASE_CHECK"; exit 2; }
             pending="$(printf '%s' "$checks" | jq '[.check_runs[]? | select(.name=="lf-independent-change-admission" or .name=="ig-runtime-candidate-judge") | select(.status!="completed")] | length')"
             present="$(printf '%s' "$checks" | jq '[.check_runs[]? | select(.name=="lf-independent-change-admission" or .name=="ig-runtime-candidate-judge")] | length')"
