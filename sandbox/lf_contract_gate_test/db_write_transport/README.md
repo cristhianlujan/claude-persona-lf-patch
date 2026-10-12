@@ -6,7 +6,34 @@ Capacidad transversal LF para seleccionar el canal de escritura de base de datos
 
 `DB_WRITE_TRANSPORT` es un selector determinista consumido por `ACTUALIZACION_DB_LF`.
 
-No concede permisos, no sustituye al Router y no crea una nueva operación. Su única responsabilidad es elegir el transporte correcto según `target_type` y mantener fail-closed las migrations que requieren identidad exacta entre Git y `supabase_migrations.schema_migrations`.
+No concede permisos, no sustituye al Router y no crea una nueva operación.
+
+## v2.0.0 — Router primero, Merge Train siempre
+
+Toda escritura de base de datos de un agente empieza en el Router (ACT-0001) y termina en el LF Migration Merge Train. No existe ruta directa para agentes.
+
+```
+agente → select_route(target_type, migration_path, router_execution_id)
+   sin ejecución EXEC-… de ACTUALIZACION_DB_LF → REDIRECT_TO_ROUTER
+   con ejecución → MIGRATION_VIA_MERGE_TRAIN (PR + ready-to-merge + Train)
+```
+
+| target_type | ruta para agentes |
+|---|---|
+| `MIGRATION`, `DB`, `FUNCTION`, `TRIGGER`, `CAPABILITY` | `MIGRATION_VIA_MERGE_TRAIN` (con ejecución del Router) o `REDIRECT_TO_ROUTER` (sin ella) |
+
+Prohibido para agentes: MCP `apply_migration`, MCP `execute_sql` con DDL o DML de migración, `supabase db push`, SQL Editor, `psql` directo, DML manual sobre `supabase_migrations.schema_migrations`, nombres de migración no clasificados (`POL-LF-MIGRATION-NAMING`).
+
+CLI para agentes:
+
+```bash
+python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py \
+  --target-type MIGRATION \
+  --migration-path supabase/migrations/<version>_<name>.sql \
+  --router-execution-id EXEC-…
+```
+
+`select_transport` (y `--train-internal`) es interno del Merge Train: lo usa `lf_migration_exact_apply.py` para elegir su ejecutor sobre una migración ya admitida. No es una ruta para agentes. Las escrituras directas `DB`/`FUNCTION`/`TRIGGER` por `SUPABASE_MCP` de v1.0.0 quedan retiradas.
 
 ## Soluciones encadenadas para MIGRATION
 
@@ -33,14 +60,12 @@ El state gate es determinista e idempotente: reintentar el mismo snapshot produc
 
 La reconciliación es una tercera capacidad separada y condicional ante findings reparables de parity.
 
-## Regla de selección
+## Ejecutor interno del Train
 
-| target_type | transporte |
+| target_type | ejecutor interno (solo Merge Train) |
 |---|---|
 | `MIGRATION` | `EXACT_VERSION_SOURCE_FIRST` |
-| `DB` | `SUPABASE_MCP` |
-| `FUNCTION` | `SUPABASE_MCP` |
-| `TRIGGER` | `SUPABASE_MCP` |
+| `DB`, `FUNCTION`, `TRIGGER`, `CAPABILITY` | retirado en v2.0.0: se expresan como migración |
 
 Para `MIGRATION`, el filename `YYYYMMDDHHMMSS_name.sql` es la identidad canónica. La versión registrada en `supabase_migrations.schema_migrations.version` debe ser exactamente ese prefijo de 14 dígitos.
 
