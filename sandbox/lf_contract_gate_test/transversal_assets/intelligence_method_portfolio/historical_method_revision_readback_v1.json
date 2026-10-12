@@ -1,0 +1,30 @@
+{
+  "schema_version": "HISTORICAL_METHOD_REVISION_READBACK_V1",
+  "authority": "supabase://srcr_benchmark.results",
+  "benchmark_ids": ["LF_IG_QUAL_2026_V1", "LF_IG_QUAL_2026_V1_CORR_IGQ001_R1"],
+  "purpose": "Preserve the exact historical runtime revision stamps used by IG00..IG06 before fresh current-source requalification. These stamps are historical evidence only and do not establish current portfolio eligibility.",
+  "source_head_in_runtime_stamps": "393e3409e8aa407f85deb779d365f059c88c432b",
+  "methods": [
+    {"method_id":"IG00","runs_observed":13,"runtime_revision":"f9087d98235947a99399f366f045ad66ce54e3d8","runtime_stamp_kind":"COMMIT_LIKE_REVISION","critical_false_positives":0},
+    {"method_id":"IG01","runs_observed":13,"runtime_revision":"ARXIV_2601.10112__IG_ADAPTER_V1__2026-10-03","runtime_stamp_kind":"EXTERNAL_METHOD_PLUS_IG_ADAPTER_REVISION","critical_false_positives":0},
+    {"method_id":"IG02","runs_observed":13,"runtime_revision":"ARXIV_2606.01385__IG_ADAPTER_V1__2026-10-03","runtime_stamp_kind":"EXTERNAL_METHOD_PLUS_IG_ADAPTER_REVISION","critical_false_positives":0},
+    {"method_id":"IG03","runs_observed":13,"runtime_revision":"ARXIV_2607.18886__IG_ADAPTER_V1__2026-10-03","runtime_stamp_kind":"EXTERNAL_METHOD_PLUS_IG_ADAPTER_REVISION","critical_false_positives":0},
+    {"method_id":"IG04","runs_observed":13,"runtime_revision":"ARXIV_2607.00269__IG_ADAPTER_V1__2026-10-03","runtime_stamp_kind":"EXTERNAL_METHOD_PLUS_IG_ADAPTER_REVISION","critical_false_positives":0},
+    {"method_id":"IG05","runs_observed":13,"runtime_revision":"RIG2601+MAAD2606__IG_MIX_V1__2026-10-03","runtime_stamp_kind":"GOVERNED_MIX_REVISION","critical_false_positives":0},
+    {"method_id":"IG06","runs_observed":13,"runtime_revision":"TRACEDEV2607+MNEMOSYNE2607__IG_MIX_V1__2026-10-03","runtime_stamp_kind":"GOVERNED_MIX_REVISION","critical_false_positives":0}
+  ],
+  "telemetry_readback": {
+    "input_tokens": "NULL_IN_OBSERVED_BENCHMARK_ROWS",
+    "output_tokens": "NULL_IN_OBSERVED_BENCHMARK_ROWS",
+    "duration_ms": "NULL_IN_OBSERVED_BENCHMARK_ROWS",
+    "consequence": "Historical quality evidence can seed qualification but cannot satisfy the new efficiency/token budget gate; fresh benchmark telemetry is required."
+  },
+  "currentness_rule": {
+    "historical_revision_is_current": false,
+    "exact_current_source_ref_required": true,
+    "exact_current_version_required": true,
+    "family_specific_benchmark_required": true,
+    "sealed_holdout_required": true,
+    "no_champion_inheritance": true
+  }
+}

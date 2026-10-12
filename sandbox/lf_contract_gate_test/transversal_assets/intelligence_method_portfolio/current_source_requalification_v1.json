@@ -1,0 +1,101 @@
+{
+  "schema_version": "SELECTION_METHOD_CURRENT_SOURCE_REQUALIFICATION_V1",
+  "observed_at": "2026-10-05T19:25:00Z",
+  "purpose": "Resolve exact source identity/currentness for IG00..IG06 before any Wave 2 family qualification or Champion/Challenger promotion.",
+  "governance_refs": [
+    "PROGRAMMING-METHOD-CHAMPION-MIX-GOVERNANCE-001",
+    "INTELLIGENCE_METHOD_QUALIFICATION_PROTOCOL_V1",
+    "lf_eventos://20346",
+    "lf_eventos://20355"
+  ],
+  "authority_readback": {
+    "capability_selector": {
+      "capability_code": "CAPABILITY_SELECTOR",
+      "current_version": "1.0.0",
+      "status": "ACTIVE",
+      "manifest_sha256": "fd4d6b41303dad446873c9d9d9ad1e3a87461f880f458b68debfcacacb4c1ff3"
+    },
+    "selection_method_registry_matches": 0,
+    "interpretation": "No IG00..IG06 method has a current RELEASED method-authority row in lf_capability_registry/lf_capability_current. Historical benchmark identity therefore remains prior art only."
+  },
+  "methods": [
+    {
+      "method_id": "IG00",
+      "historical_revision": "f9087d98235947a99399f366f045ad66ce54e3d8",
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch/f9087d98235947a99399f366f045ad66ce54e3d8/sandbox/srcr_benchmark/models/m11_reconstructed_srcr_v0_2/SKILL.md",
+      "source_currentness": "EXACT_HISTORICAL_SOURCE_RESOLVED",
+      "release_authority": "ABSENT",
+      "qualification_state": "BENCHMARK_ONLY",
+      "next_action": "MATERIALIZE_VERSIONED_CURRENT_CANDIDATE_CONTRACT"
+    },
+    {
+      "method_id": "IG01",
+      "historical_revision": "ARXIV_2601.10112__IG_ADAPTER_V1__2026-10-03",
+      "source_ref": "https://arxiv.org/abs/2601.10112v1",
+      "source_title": "Repository Intelligence Graph: Deterministic Architectural Map for LLM Code Assistants",
+      "source_current_version": "v1",
+      "source_currentness": "CURRENT_PRIMARY_SOURCE_VERIFIED",
+      "release_authority": "ABSENT",
+      "qualification_state": "BENCHMARK_ONLY",
+      "next_action": "MATERIALIZE_LF_SELECTION_ADAPTER_V2_AND_REQUALIFY"
+    },
+    {
+      "method_id": "IG02",
+      "historical_revision": "ARXIV_2606.01385__IG_ADAPTER_V1__2026-10-03",
+      "source_ref": "https://arxiv.org/abs/2606.01385v1",
+      "source_title": "Bridging Requirements and Architecture: Multi-Agent Orchestration with External Knowledge and Hierarchical Memory",
+      "source_current_version": "v1",
+      "source_currentness": "CURRENT_PRIMARY_SOURCE_VERIFIED",
+      "release_authority": "ABSENT",
+      "qualification_state": "BENCHMARK_ONLY",
+      "next_action": "MATERIALIZE_LF_SELECTION_ADAPTER_V2_AND_REQUALIFY"
+    },
+    {
+      "method_id": "IG03",
+      "historical_revision": "ARXIV_2607.18886__IG_ADAPTER_V1__2026-10-03",
+      "source_ref": "https://arxiv.org/abs/2607.18886v1",
+      "source_title": "TraceDev: A Traceability-Driven Multi-agent Framework for Requirement-to-Code Development",
+      "source_current_version": "v1",
+      "source_currentness": "CURRENT_PRIMARY_SOURCE_VERIFIED",
+      "release_authority": "ABSENT",
+      "qualification_state": "BENCHMARK_ONLY",
+      "next_action": "MATERIALIZE_LF_SELECTION_ADAPTER_V2_AND_REQUALIFY"
+    },
+    {
+      "method_id": "IG04",
+      "historical_revision": "ARXIV_2607.00269__IG_ADAPTER_V1__2026-10-03",
+      "source_ref": "https://arxiv.org/abs/2607.00269v3",
+      "source_title": "Mnemosyne: Agentic Transaction Processing for Validating and Repairing AI-generated Workflows",
+      "source_current_version": "v3",
+      "source_currentness": "CURRENT_PRIMARY_SOURCE_VERIFIED",
+      "historical_adapter_source_version_binding": "UNPROVEN",
+      "release_authority": "ABSENT",
+      "qualification_state": "BENCHMARK_ONLY",
+      "next_action": "REBASE_ADAPTER_EXPLICITLY_ON_V3_AND_REQUALIFY"
+    },
+    {
+      "method_id": "IG05",
+      "historical_revision": "RIG2601+MAAD2606__IG_MIX_V1__2026-10-03",
+      "components": ["IG01", "IG02"],
+      "source_currentness": "COMPONENT_SOURCES_CURRENT_BUT_COMPONENT_METHODS_NOT_ELIGIBLE",
+      "qualification_state": "BENCHMARK_ONLY",
+      "next_action": "REQUALIFY_COMPONENTS_BEFORE_MIX"
+    },
+    {
+      "method_id": "IG06",
+      "historical_revision": "TRACEDEV2607+MNEMOSYNE2607__IG_MIX_V1__2026-10-03",
+      "components": ["IG03", "IG04"],
+      "source_currentness": "COMPONENT_SOURCE_CURRENTNESS_RESOLVED_BUT_IG04_BINDING_REQUIRES_REFRESH",
+      "qualification_state": "BENCHMARK_ONLY",
+      "next_action": "REQUALIFY_COMPONENTS_BEFORE_MIX"
+    }
+  ],
+  "result": {
+    "historical_methods_checked": 7,
+    "current_primary_sources_resolved": 5,
+    "current_released_method_authorities": 0,
+    "eligible_methods": 0,
+    "champions_promoted": 0,
+    "blocking_reason": "CURRENT_RELEASED_QUALIFIED_METHOD_AUTHORITY_NOT_YET_MATERIALIZED"
+  }
+}

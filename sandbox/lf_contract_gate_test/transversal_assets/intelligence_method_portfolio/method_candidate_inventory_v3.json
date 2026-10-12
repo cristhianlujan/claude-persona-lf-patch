@@ -1,0 +1,41 @@
+{
+  "schema_version": "INTELLIGENCE_METHOD_CANDIDATE_INVENTORY_V3",
+  "supersedes": "INTELLIGENCE_METHOD_CANDIDATE_INVENTORY_V2",
+  "authority_ref": "lf_eventos://20346",
+  "selection_method_prior_art_ref": "selection_method_prior_art_v1.json",
+  "affected_unit_count": 19,
+  "conceptual_boundary": {
+    "selection_method": "Reasoning/decision procedure used to choose, compose or escalate one or more domain options from typed evidence.",
+    "decision_option": "Domain strategy, technique, family, judge type or deployment mode being selected; it is not automatically a Champion selection method.",
+    "selector_infrastructure": "CAPABILITY_SELECTOR@CURRENT performs typed signal/catalog/policy routing and is not itself the semantic decision method.",
+    "champion_applies_to": "SELECTION_METHOD_OR_QUALIFIED_SELECTION_METHOD_MIX_PER_DECISION_FAMILY"
+  },
+  "decision_families": [
+    {"family":"ANALYSIS_CHANGE_CLASSIFICATION","units":["A2"],"selection_method_candidates":["IG00","IG01","IG05","NEW:HYBRID_RULE_FIRST_SEMANTIC_CLASSIFIER"],"decision_options":["CHANGE_TYPE_MULTI_LABEL","DEPTH_L1","DEPTH_L2","DEPTH_L3","UNKNOWN_MATERIAL"],"champion":"UNASSIGNED"},
+    {"family":"ANALYSIS_TARGETED_RESEARCH","units":["A3"],"selection_method_candidates":["IG00","IG01","IG05","TARGETED_EVIDENCE_ACQUISITION@1.0.0"],"decision_options":["CANONICAL_INTERNAL_FIRST","EXACT_SOURCE_LOOKUP","EXTERNAL_PRIMARY_SOURCE","BROAD_WEB_LAST_RESORT","STOP_SUFFICIENT"],"champion":"UNASSIGNED"},
+    {"family":"ANALYSIS_REQUIREMENT_SYNTHESIS","units":["A6"],"selection_method_candidates":["IG02","IG05","IG01"],"decision_options":["OUTCOME_FIRST_SYNTHESIS","CONTRACT_FIRST_SYNTHESIS","SPECIALIST_SECTION_COMPOSITION"],"champion":"UNASSIGNED"},
+    {"family":"ANALYSIS_RISK_QUALITY_SIGNAL_DERIVATION","units":["A7"],"selection_method_candidates":["IG00","IG03","IG06","NEW:DETERMINISTIC_INVARIANT_VETO"],"decision_options":["INVARIANT_FIRST","IMPACT_PROBABILITY_REVERSIBILITY","MULTI_SIGNAL_RISK_SYNTHESIS"],"champion":"UNASSIGNED"},
+    {"family":"ANALYSIS_PACKAGE_QUALIFICATION","units":["A9"],"selection_method_candidates":["IG04","IG06","ASSURANCE_EVALUATOR@1.0.0","INDEPENDENT_ASSURANCE@1.0.0"],"decision_options":["READY","NEED_MORE_EVIDENCE","REQUIRES_DECISION","BLOCKED"],"champion":"UNASSIGNED"},
+    {"family":"PROGRAMMING_CHANGE_CLASSIFICATION","units":["PG-02"],"selection_method_candidates":["IG00","IG01","NEW:DETERMINISTIC_SIGNAL_RULE_CLASSIFIER","NEW:HYBRID_RULE_FIRST_SEMANTIC_CLASSIFIER"],"decision_options":["BUG","FEATURE","REFACTOR","API","DB_MIGRATION","INTEGRATION","RUNTIME","MECHANICAL","OTHER_MATERIAL"],"champion":"UNASSIGNED"},
+    {"family":"PROGRAMMING_IMPLEMENTATION_STRATEGY","units":["PG-03"],"selection_method_candidates":["IG02","IG04","IG05","IG06","NEW:CONSTRAINT_ELIMINATION"],"decision_options":["REPRODUCE_FIRST_TDD","CONTRACT_FIRST","MIGRATION_COMPATIBILITY_FIRST","REFACTOR_PRESERVING","BOUNDED_TRANSFORMATION","STAGED_IMPLEMENTATION"],"champion":"UNASSIGNED"},
+    {"family":"PROGRAMMING_PARTITION_STRATEGY","units":["PG-04"],"selection_method_candidates":["IG02","IG03","IG05","IG06","NEW:DEPENDENCY_CONSTRAINT_PARTITION_SELECTOR"],"decision_options":["VERTICAL_SOLUTION","DOMAIN_CAPABILITY","TECHNICAL_LAYER","CONTRACT_API","RISK_ISOLATION","DEPENDENCY_DAG","TRANSVERSAL_BULK"],"historical_option_prior_art":"STORY_CREATOR_J02_DECOMPOSITION","champion":"UNASSIGNED"},
+    {"family":"TEST_CHANGE_CLASSIFICATION","units":["TST-02"],"selection_method_candidates":["IG00","IG01","IG03","NEW:HYBRID_CHANGE_SIGNAL_FUSION"],"decision_options":["CHANGE_TYPE","AFFECTED_SURFACES","STRUCTURED_SIGNALS"],"champion":"UNASSIGNED"},
+    {"family":"TEST_QUALITY_OBJECTIVE_SELECTION","units":["TST-04"],"selection_method_candidates":["IG02","IG05","NEW:OBLIGATION_TRACEBACK_SELECTION"],"decision_options":["REQUIRED_OBJECTIVES","NOT_APPLICABLE_OBJECTIVES"],"champion":"UNASSIGNED"},
+    {"family":"TEST_FAMILY_SELECTION","units":["TST-07"],"selection_method_candidates":["IG00","IG03","IG04","IG06"],"decision_options":["REQUIRED_TEST_FAMILY","OPTIONAL_TEST_FAMILY","NOT_REQUIRED_TEST_FAMILY"],"champion":"UNASSIGNED"},
+    {"family":"TEST_METHOD_SELECTION","units":["TST-08"],"selection_method_candidates":["IG02","IG04","IG05","IG06","NEW:CLAIM_METHOD_CONSTRAINT_SELECTOR"],"decision_options":["PROPERTY_BASED","STATE_MACHINE","BENCHMARK","LOAD","STRESS","SOAK","MODEL_BASED"],"supporting_provider":"PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0","champion":"UNASSIGNED"},
+    {"family":"TEST_DEPTH_BUDGET_ESCALATION","units":["TST-09"],"selection_method_candidates":["IG04","IG06","NEW:OBLIGATION_PRESERVING_BUDGET","NEW:ADAPTIVE_EVIDENCE_ESCALATION"],"decision_options":["DEPTH_TIER","TOKEN_BUDGET","LATENCY_BUDGET","ESCALATE_EVIDENCE","ESCALATE_COVERAGE"],"supporting_providers":["TIMEOUT_PHASE_BUDGET_POLICY@1.0.0","PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0"],"champion":"UNASSIGNED"},
+    {"family":"TEST_SAFE_FALLBACK","units":["TST-10"],"selection_method_candidates":["IG05","IG06","FULL_SAFE_MIX_V1_CANDIDATE"],"decision_options":["QUALIFIED_ROBUST_DEFAULT","FULL_SAFE_MIX","TARGETED_EVIDENCE_THEN_RESELECT","BLOCK"],"champion":"UNASSIGNED"},
+    {"family":"TEST_RESULT_JUDGE_SELECTION","units":["TST-20"],"selection_method_candidates":["IG04","IG06","NEW:CLAIM_ORACLE_CONSTRAINT_SELECTOR"],"decision_options":["DETERMINISTIC","BASELINE","EQUIVALENCE","SEMANTIC","VISUAL","INDEPENDENT"],"judge_providers":["CONTROL_EQUIVALENCE_JUDGE@1.0.0","ASSURANCE_EVALUATOR@1.0.0","VISUAL_EVIDENCE_GATE@1.0.0","INDEPENDENT_ASSURANCE@1.0.0","REVERSIBLE_CANDIDATE_VERIFICATION@1.0.1"],"champion":"UNASSIGNED"},
+    {"family":"DEPLOYMENT_SURFACE_CLASSIFICATION","units":["DEP-02"],"selection_method_candidates":["IG01","IG03","NEW:HYBRID_SURFACE_CLASSIFIER"],"decision_options":["CODE","RUNTIME","DB","WORKER","MODEL","CONFIGURATION","UI","OTHER"],"champion":"UNASSIGNED"},
+    {"family":"DEPLOYMENT_RISK_BLAST_RADIUS","units":["DEP-03"],"selection_method_candidates":["IG00","IG03","IG06","NEW:DEPENDENCY_GRAPH_BLAST_RADIUS"],"decision_options":["RISK_PROFILE","BLAST_RADIUS","SHARED_STATE_EXPOSURE","REVERSIBILITY_CLASS"],"supporting_provider":"CAUSAL_EFFECT_LINEAGE@1.0.0","champion":"UNASSIGNED"},
+    {"family":"DEPLOYMENT_STRATEGY_SELECTION","units":["DEP-04"],"selection_method_candidates":["IG02","IG04","IG05","IG06","NEW:DEPLOYMENT_CONSTRAINT_ELIMINATION"],"decision_options":["DIRECT","ROLLING","CANARY","BLUE_GREEN","SHADOW","STAGED"],"champion":"UNASSIGNED"},
+    {"family":"DEPLOYMENT_PROGRESSIVE_ANALYSIS","units":["DEP-18"],"selection_method_candidates":["IG00","IG03","IG06","NEW:BASELINE_CAUSAL_COMPARISON"],"decision_options":["BASELINE_COMPARISON","CANARY_METRIC_COMPARISON","SHADOW_COMPARISON","CAUSAL_EFFECT_CHECK"],"supporting_providers":["CAUSAL_EFFECT_LINEAGE@1.0.0","PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0"],"champion":"UNASSIGNED"}
+  ],
+  "global_result": {
+    "decision_families": 19,
+    "affected_units_covered": 19,
+    "champions_promoted": 0,
+    "critical_correction": "Domain options are no longer treated as Champion selection methods.",
+    "next_action": "Requalify exact historical selection methods and new challengers per family, then compare single methods and governed mixes on frozen benchmark plus sealed holdout."
+  }
+}

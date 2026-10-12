@@ -1,0 +1,97 @@
+{
+  "schema_version": "WAVE2_NEW_SELECTION_METHOD_CHALLENGERS_V1",
+  "purpose": "Materialize only the genuinely missing Wave 2 selection-method challengers identified by the corrected candidate inventory.",
+  "common_boundary": {
+    "selection_is_execution_permission": false,
+    "selector_infrastructure": "CAPABILITY_SELECTOR@CURRENT",
+    "shared_evidence_base_required": true,
+    "arbitrary_numeric_weights_forbidden": true,
+    "unknown_and_contradictions_preserved": true,
+    "output_contract": {
+      "schema": "SELECTION_METHOD_RESULT_V1",
+      "required": ["method_ref", "decision_family", "selected_options", "reasons", "evidence_refs", "unknowns", "contradictions", "fallback", "execution_permission"],
+      "execution_permission_constant": false
+    }
+  },
+  "challengers": [
+    {
+      "method_ref": "DETERMINISTIC_INVARIANT_VETO@0.1.0-candidate",
+      "decision_family": "ANALYSIS_RISK_QUALITY_SIGNAL_DERIVATION",
+      "unit": "A7",
+      "accepted_signals": ["typed_invariants", "material_impacts", "reversibility", "uncertainty"],
+      "algorithm": ["collect_applicable_hard_invariants", "evaluate_each_invariant_before_aggregate_risk", "veto_any_option_that_breaks_material_invariant", "preserve_unknown_material_invariant_as_blocking_signal", "emit_remaining_risk_options_with_reason_and_evidence"],
+      "failure_states": ["INVARIANT_EVIDENCE_MISSING", "CONTRADICTORY_INVARIANT_EVIDENCE", "NO_SAFE_OPTION"],
+      "hard_guards": ["UNKNOWN_MATERIAL_RISK_NEVER_DOWNGRADED", "MATERIAL_INVARIANT_NOT_OMITTED", "NO_SCORE_CAN_OVERRIDE_VETO"]
+    },
+    {
+      "method_ref": "DETERMINISTIC_SIGNAL_RULE_CLASSIFIER@0.1.0-candidate",
+      "decision_family": "PROGRAMMING_CHANGE_CLASSIFICATION",
+      "unit": "PG-02",
+      "accepted_signals": ["changed_paths", "typed_artifact_kinds", "migration_presence", "runtime_surface", "api_contract_change", "mechanical_change_markers"],
+      "algorithm": ["normalize_typed_signals", "apply_declared_non_overlapping_rules", "emit_multi_label_classification_when_multiple_material_rules_match", "emit_unknown_material_if_no_rule_safely_covers_signal"],
+      "failure_states": ["CONTRADICTORY_RULE_MATCH", "UNKNOWN_MATERIAL_SIGNAL", "RULESET_CURRENTNESS_UNPROVEN"],
+      "hard_guards": ["CLASSIFICATION_SEPARATE_FROM_STRATEGY", "DB_MIGRATION_SIGNAL_NOT_LOST", "RUNTIME_SIGNAL_NOT_LOST"]
+    },
+    {
+      "method_ref": "HYBRID_RULE_FIRST_SEMANTIC_CLASSIFIER@0.1.0-candidate",
+      "decision_family": "PROGRAMMING_CHANGE_CLASSIFICATION",
+      "unit": "PG-02",
+      "accepted_signals": ["deterministic_rule_result", "typed_change_context", "ambiguous_semantic_evidence"],
+      "algorithm": ["run_deterministic_rule_classifier_first", "accept_clear_non_contradictory_rule_result", "invoke_semantic_reasoning_only_for_unknown_or_contradictory_material_scope", "semantic_layer_may_add_labels_but_may_not_remove_hard_rule_labels_without_explicit_falsification_evidence"],
+      "failure_states": ["SEMANTIC_RULE_CONFLICT_UNRESOLVED", "MISSING_MATERIAL_EVIDENCE", "NO_CLASSIFICATION"],
+      "hard_guards": ["RULE_FIRST", "SEMANTIC_FALLBACK_BOUNDED", "NO_SILENT_HARD_SIGNAL_REMOVAL"]
+    },
+    {
+      "method_ref": "CONSTRAINT_ELIMINATION@0.1.0-candidate",
+      "decision_family": "PROGRAMMING_IMPLEMENTATION_STRATEGY",
+      "unit": "PG-03",
+      "accepted_signals": ["candidate_strategies", "change_classification", "contracts", "compatibility_constraints", "reversibility", "evidence_gaps"],
+      "algorithm": ["enumerate_applicable_strategy_options", "eliminate_options_that_violate_hard_constraints", "compare_remaining_options_by_material_fit_not_global_score", "retain_multiple_options_when evidence does not distinguish them", "emit fallback or requires_decision when no justified winner exists"],
+      "failure_states": ["NO_FEASIBLE_STRATEGY", "MATERIAL_CONSTRAINT_UNKNOWN", "MULTIPLE_NON_DOMINATED_OPTIONS"],
+      "hard_guards": ["NO_UNIVERSAL_STRATEGY", "MIGRATION_COMPATIBILITY_PRECONDITIONS_PRESERVED", "REASON_AND_FALLBACK_REQUIRED"]
+    },
+    {
+      "method_ref": "DEPENDENCY_CONSTRAINT_PARTITION_SELECTOR@0.1.0-candidate",
+      "decision_family": "PROGRAMMING_PARTITION_STRATEGY",
+      "unit": "PG-04",
+      "accepted_signals": ["dependency_graph", "write_conflicts", "functional_outcomes", "context_budget", "rollback_boundaries", "shared_assets"],
+      "algorithm": ["build_dependency_constraints_from_current_evidence", "identify_atomic_outcome_boundaries", "reject_partitions_that_break_required_dependencies_or_create_hidden_write_conflict", "prefer_cohesive_reusable_capability_partition_when equivalent", "repartition_when_context_budget_or_safe_rollback_boundary_is_exceeded"],
+      "failure_states": ["UNRESOLVED_DEPENDENCY_CYCLE", "WRITE_CONFLICT_UNKNOWN", "ATOMICITY_CONFLICT", "CONTEXT_BUDGET_UNSATISFIED"],
+      "hard_guards": ["FUNCTIONAL_ATOMICITY", "NO_FIXED_FRONTEND_BACKEND_SPLIT", "DEPENDENCIES_PRESERVED", "WRITE_CONFLICT_EXPLICIT"]
+    },
+    {
+      "method_ref": "CLAIM_METHOD_CONSTRAINT_SELECTOR@0.1.0-candidate",
+      "decision_family": "TEST_METHOD_SELECTION",
+      "unit": "TST-08",
+      "accepted_signals": ["test_claims", "selected_test_families", "state_space", "timing_constraints", "performance_claims", "oracle_type", "risk_profile"],
+      "algorithm": ["map_each_material_claim_to_required_observation_shape", "eliminate_methods_incapable_of_observing_or_falsifying_claim", "select_minimal_complementary_method_set_that_covers_material_claims", "preserve_not_applicable_explicitly", "escalate_when_no_method_can establish the claim"],
+      "failure_states": ["CLAIM_UNTESTABLE_WITH_AVAILABLE_METHODS", "ORACLE_MISSING", "METHOD_FAMILY_CONTRADICTION"],
+      "hard_guards": ["METHOD_MATCHES_CLAIM", "FAMILY_AND_METHOD_SEPARATE", "METHOD_NOT_SELECTED_BY_EXISTENCE_ONLY"]
+    },
+    {
+      "method_ref": "OBLIGATION_PRESERVING_BUDGET@0.1.0-candidate",
+      "decision_family": "TEST_DEPTH_BUDGET_ESCALATION",
+      "unit": "TST-09",
+      "accepted_signals": ["material_test_obligations", "depth_candidates", "token_budget", "latency_budget", "cost_profile", "coverage_evidence"],
+      "algorithm": ["freeze_material_obligations_before_budgeting", "calculate feasible depth tiers from current budget authority", "reject any tier that removes a material obligation", "choose cheapest tier that preserves every material obligation", "if no feasible tier exists escalate budget or block rather than silently reduce coverage"],
+      "failure_states": ["NO_BUDGET_PRESERVES_OBLIGATIONS", "BUDGET_AUTHORITY_STALE", "OBLIGATION_SET_UNRESOLVED"],
+      "hard_guards": ["COST_REDUCTION_NEVER_REMOVES_MATERIAL_OBLIGATION", "NO_FULL_CONTEXT_WINDOW_CONSUMPTION"]
+    },
+    {
+      "method_ref": "ADAPTIVE_EVIDENCE_ESCALATION@0.1.0-candidate",
+      "decision_family": "TEST_DEPTH_BUDGET_ESCALATION",
+      "unit": "TST-09",
+      "accepted_signals": ["current_evidence_sufficiency", "uncertainty", "contradictions", "coverage_gaps", "budget_headroom"],
+      "algorithm": ["start_from_minimum_sufficient_evidence_tier", "evaluate_material_uncertainty_and_coverage_gaps", "escalate_only_on declared triggers", "stop_when material obligations are proven or a governed blocking condition is reached", "never deescalate because evidence is missing"],
+      "failure_states": ["MATERIAL_UNCERTAINTY_WITHOUT_HEADROOM", "CONTRADICTION_UNRESOLVED", "ESCALATION_LIMIT_REACHED"],
+      "hard_guards": ["UNCERTAINTY_ESCALATES_NOT_DEESCALATES", "NO_DUPLICATE_READS_WITHOUT_TRIGGER", "STOP_WHEN_SUFFICIENT"]
+    }
+  ],
+  "result": {
+    "missing_challenger_contracts_materialized": 8,
+    "families_covered": ["A7", "PG-02", "PG-03", "PG-04", "TST-08", "TST-09"],
+    "champions_promoted": 0,
+    "challengers_promoted": 0,
+    "state": "CANDIDATE_CONTRACTS_ONLY_REQUIRES_VALIDATION_BENCHMARK_HOLDOUT"
+  }
+}
