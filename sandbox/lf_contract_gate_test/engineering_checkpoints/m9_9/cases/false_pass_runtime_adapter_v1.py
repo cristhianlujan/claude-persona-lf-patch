@@ -38,8 +38,6 @@ class IgM99FalsePassFlowAdapter:
                           rollback: RollbackContract) -> dict[str, Any]:
         meta = _obj(candidate.metadata)
         preflight: list[str] = []
-        if not isinstance(self._verified_readback, CanonicalM99EvidenceReadback):
-            preflight.append("CANONICAL_DB_READBACK_PROVIDER_REQUIRED")
         if rollback.mutation_policy != "ROLLBACK_ONLY":
             preflight.append("ROLLBACK_ONLY_REQUIRED")
         if not isinstance(meta.get("canary_run_ref"), str) or not meta["canary_run_ref"].strip():
@@ -78,6 +76,8 @@ class IgM99FalsePassFlowAdapter:
         if not _sha(candidate.candidate_sha256):
             failures.append("CANDIDATE_SHA256_INVALID")
 
+        if not isinstance(self._verified_readback, CanonicalM99EvidenceReadback):
+            failures.append("CANONICAL_DB_READBACK_PROVIDER_REQUIRED")
         evidence: dict[str, Any] = {}
         if not failures:
             try:
