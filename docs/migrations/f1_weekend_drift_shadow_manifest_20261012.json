@@ -1412,5 +1412,52 @@
   "notes": [
     "Canonical duplicate is name normalization only; not proof that SQL bytes match.",
     "Main-file and Train provenance unresolved until full Git tree and PR merge evidence are compared."
-  ]
+  ],
+  "dry_run_20261010_source_to_ledger": {
+    "mode": "READ_ONLY_SQL_CANONICAL_COMPARISON",
+    "result": "5_OF_5_CANONICAL_EQUAL_DIRECT_SOURCE",
+    "caution": "As-is source filename versions differ from ledger versions and would be rejected; hypothetical exact rename to existing ledger identities would pass version/name/content checks; not an authorized migration or production action.",
+    "pairs": [
+      {
+        "source_version": "20261010064000",
+        "ledger_version": "20261009205921",
+        "name": "t_remed_layer3_judge_provisional_v3",
+        "canonical_sha256": "d1636ded5b860430bb02c65f4f6254fae11631992e390d37f82e1e261ad0fc35",
+        "ledger_statement_count": 1,
+        "canonical_equal": true
+      },
+      {
+        "source_version": "20261010070000",
+        "ledger_version": "20261009210015",
+        "name": "t_remed_indexes_v3",
+        "canonical_sha256": "9cdef90892749b33dc1ae546e190b9ab2657c238cfd54b4148fba3f164f71995",
+        "ledger_statement_count": 1,
+        "canonical_equal": true
+      },
+      {
+        "source_version": "20261010080000",
+        "ledger_version": "20261010022458",
+        "name": "t_remed_layer1_selftest_v3",
+        "canonical_sha256": "e15dae6080bca5d367c4606908e166d85fd3639e8bdcb0ce01b35a7d40a6f953",
+        "ledger_statement_count": 1,
+        "canonical_equal": true
+      },
+      {
+        "source_version": "20261010081000",
+        "ledger_version": "20261010022555",
+        "name": "t_remed_layer1_selftest_fix_v3",
+        "canonical_sha256": "70658e3450138871bbe411a1f31417d7fc4e86c57793e54c89cd908d027cff24",
+        "ledger_statement_count": 1,
+        "canonical_equal": true
+      },
+      {
+        "source_version": "20261010090000",
+        "ledger_version": "20261010024447",
+        "name": "t_remed_layer1_property_test_v3",
+        "canonical_sha256": "e840783f83700c6fb4bc62a289e61d8f47626079398818cb04bed974bbfd9a05",
+        "ledger_statement_count": 1,
+        "canonical_equal": true
+      }
+    ]
+  }
 }
