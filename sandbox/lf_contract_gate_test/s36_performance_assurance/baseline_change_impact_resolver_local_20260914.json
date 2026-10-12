@@ -1,0 +1,129 @@
+{
+  "schema": "S36_WP5_LOCAL_PERFORMANCE_BASELINE_V1",
+  "evidence_class": "LOCAL_REPRODUCIBLE_READ_ONLY_SANDBOX",
+  "snapshot_reference": {
+    "id": 61,
+    "snapshot_code": "LF_TEST_ASSURANCE_2026_20260912",
+    "mutated": false
+  },
+  "source_provenance": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "source_main_sha": "c5a01bf4395821cc10cb7d5bbbdf20ba281363fc",
+    "target_path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_resolver_readonly_v1.py",
+    "target_git_blob_sha": "f17ab693b4c90e57c57b64df17ebfecdf3d19773",
+    "fixture_path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_structured_inputs_v1.json",
+    "fixture_git_blob_sha": "59cfcceb2c21d193605a0f4d9b27db610ca9b38e",
+    "historical_baseline_path": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_resolver_eval_local_v1.json",
+    "historical_baseline_git_blob_sha": "afdb90ff776e7a802d40e157348a373208d727d6",
+    "historical_p95_ms": 0.002316,
+    "historical_scope": "algorithm-only local microbenchmark; not SLO"
+  },
+  "execution": {
+    "started_at_utc": "2026-09-14T23:15:59.295484+00:00",
+    "completed_at_utc": "2026-09-14T23:15:59.779961+00:00",
+    "environment_class": "LOCAL_SANDBOX",
+    "python": "3.13.5",
+    "implementation": "CPython",
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+    "machine": "x86_64",
+    "network_calls": 0,
+    "production_calls": 0,
+    "business_effects": 0,
+    "case_count": 50,
+    "association_fields_removed": ["case_id", "case_family"],
+    "rounds": 3,
+    "warmup_repetitions_per_round": 100,
+    "measured_repetitions_per_round": 400,
+    "measured_samples_per_round": 20000,
+    "measured_samples_total": 60000,
+    "resource_calls": 5000,
+    "measurement_method": "monotonic perf_counter_ns for latency; time.process_time for CPU; separate tracemalloc resource pass"
+  },
+  "round_results": [
+    {
+      "round": 1,
+      "samples": 20000,
+      "p50_ms": 0.001772,
+      "p95_ms": 0.002133,
+      "p99_ms": 0.002494,
+      "max_ms": 0.064948,
+      "operations_per_second": 162312.11925838116,
+      "wall_ms": 123.21938799999543,
+      "cpu_ms": 123.78788000000007,
+      "errors": 0,
+      "output_mismatches": 0
+    },
+    {
+      "round": 2,
+      "samples": 20000,
+      "p50_ms": 0.001752,
+      "p95_ms": 0.002094,
+      "p99_ms": 0.0024931099999999824,
+      "max_ms": 0.104698,
+      "operations_per_second": 163667.33589421163,
+      "wall_ms": 122.19909300000609,
+      "cpu_ms": 120.49634099999994,
+      "errors": 0,
+      "output_mismatches": 0
+    },
+    {
+      "round": 3,
+      "samples": 20000,
+      "p50_ms": 0.001752,
+      "p95_ms": 0.002083,
+      "p99_ms": 0.002363,
+      "max_ms": 0.195126,
+      "operations_per_second": 165858.35734432013,
+      "wall_ms": 120.58481899998696,
+      "cpu_ms": 119.72605299999995,
+      "errors": 0,
+      "output_mismatches": 0
+    }
+  ],
+  "summary": {
+    "median_p50_ms": 0.001752,
+    "median_p95_ms": 0.002094,
+    "median_p99_ms": 0.0024931099999999824,
+    "median_operations_per_second": 163667.33589421163,
+    "total_errors": 0,
+    "total_output_mismatches": 0,
+    "historical_p95_ratio": 0.9041450777202072,
+    "historical_p95_delta_percent": -9.585492227979275,
+    "historical_comparison_verdict": "NOT_COVERED_NO_REGRESSION_THRESHOLD"
+  },
+  "resource_behavior": {
+    "measurement_separated_from_latency_loop": true,
+    "calls": 5000,
+    "wall_ms": 79.57421899999417,
+    "tracemalloc_current_bytes": 955,
+    "tracemalloc_peak_bytes": 25627,
+    "ru_maxrss_before_kib_linux": 141896,
+    "ru_maxrss_after_kib_linux": 141896,
+    "rss_delta_kib_linux": 0
+  },
+  "thresholds_with_provenance": {
+    "latency_p95_max_ms": null,
+    "throughput_min_operations_per_second": null,
+    "repeated_reliability": {
+      "max_errors": 0,
+      "max_output_mismatches": 0,
+      "provenance": "EXISTING_CONTRACT: deterministic READ_ONLY resolver candidate"
+    },
+    "resource_peak_alloc_max_bytes": null,
+    "resource_rss_delta_max_kib": null,
+    "timeout_seconds": null
+  },
+  "dimension_verdicts": {
+    "latency": "NOT_COVERED",
+    "throughput": "NOT_COVERED",
+    "repeated_reliability": "PASS",
+    "resource_behavior": "NOT_COVERED",
+    "timeout_behavior": "NOT_COVERED",
+    "production_like": "BLOCK"
+  },
+  "performance_pass_claimed": false,
+  "production_like_authorization": false,
+  "discarded_measurement": {
+    "reason": "tracemalloc was initially placed inside the timing loop and measurably perturbed latency; that run was rejected and is not used as baseline"
+  }
+}

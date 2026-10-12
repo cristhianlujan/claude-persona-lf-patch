@@ -1,0 +1,29 @@
+{
+  "schema": "S36_WP5_THRESHOLD_POLICY_V1",
+  "target_id": "INPUT_GOV_CHANGE_IMPACT_L3C_RESOLVER_READONLY_V1",
+  "thresholds": {
+    "latency_p95_max_ms": null,
+    "throughput_min_operations_per_second": null,
+    "repeated_reliability": {
+      "max_errors": 0,
+      "max_output_mismatches": 0,
+      "provenance": {
+        "type": "EXISTING_CONTRACT",
+        "source": "sandbox/lf_contract_gate_test/input_governance_incremental/change_impact_l3c_resolver_readonly_v1.py",
+        "basis": "Target declares itself deterministic READ_ONLY; repeated identical inputs must remain output-stable."
+      }
+    },
+    "resource_peak_alloc_max_bytes": null,
+    "resource_rss_delta_max_kib": null,
+    "timeout_seconds": null
+  },
+  "production_like": {
+    "authorized": false,
+    "status": "BLOCK",
+    "provenance": "S36_WP5_USER_SCOPE"
+  },
+  "notes": [
+    "No latency, throughput, resource or timeout PASS gate is asserted because no owner/contract limit was found.",
+    "Historical local latency is a comparator baseline only, not an SLO."
+  ]
+}
