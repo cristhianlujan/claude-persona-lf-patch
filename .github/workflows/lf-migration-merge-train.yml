@@ -327,13 +327,46 @@ jobs:
           PR: ${{ steps.admission.outputs.pr_number }}
           EVENT_HEAD: ${{ steps.admission.outputs.head_sha }}
           SYNC_HEAD: ${{ steps.sync.outputs.head_sha }}
+          CURRENT_MAIN: ${{ steps.admission.outputs.current_main }}
+          OP_MODE: ${{ steps.operation_request.outputs.operation_mode }}
+          RECOVER_PATH: ${{ steps.operation_request.outputs.recover_path }}
+          RECOVER_BLOB: ${{ steps.operation_request.outputs.recover_blob }}
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p .lf_train/source
           if [ "$LF_MIGRATION_TRAIN_MODE" = "REAL" ]; then head_sha="$SYNC_HEAD"; else head_sha="$EVENT_HEAD"; fi
-
           gh api --paginate --slurp "repos/$REPO/pulls/$PR/files?per_page=100" > .lf_train/pr-files-pages.json
+
+          if [ "$OP_MODE" = "RECONCILE" ]; then
+            git fetch --no-tags origin "$head_sha" "$CURRENT_MAIN"
+            python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_reconcile_git.py               --repo-root "$GITHUB_WORKSPACE"               --pr-files .lf_train/pr-files-pages.json               --base-sha "$CURRENT_MAIN" --head-sha "$head_sha"
+            echo "migration_count=0" >> "$GITHUB_OUTPUT"
+            echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+            echo "PASS_TRAIN_RECONCILE_GIT_ONLY no_db_write=true no_ledger_write=true"
+            exit 0
+          fi
+
+          if [ "$OP_MODE" = "RECOVER" ]; then
+            [ -n "$RECOVER_PATH" ] && [ -n "$RECOVER_BLOB" ] || { echo "FAIL_RECOVER_IDENTITY_MISSING"; exit 2; }
+            gh api "repos/$REPO/contents/$RECOVER_PATH?ref=$CURRENT_MAIN" > .lf_train/content.json
+            blob="$(jq -r '.sha' .lf_train/content.json)"
+            [ "$blob" = "$RECOVER_BLOB" ] || { echo "FAIL_RECOVER_BLOB_MISMATCH expected=$RECOVER_BLOB observed=$blob"; exit 2; }
+            filename="${RECOVER_PATH##*/}"
+            jq -r '.content' .lf_train/content.json | tr -d '\n' | base64 -d > ".lf_train/source/$filename"
+            sha256="$(sha256sum ".lf_train/source/$filename" | awk '{print $1}')"
+            {
+              echo "migration_count=1"
+              echo "head_sha=$head_sha"
+              echo "migration_path=$RECOVER_PATH"
+              echo "source_file=.lf_train/source/$filename"
+              echo "source_blob=$blob"
+              echo "source_sha256=$sha256"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           python3 - <<'PY'
           import json,re
           pages=json.load(open(".lf_train/pr-files-pages.json",encoding="utf-8"))
