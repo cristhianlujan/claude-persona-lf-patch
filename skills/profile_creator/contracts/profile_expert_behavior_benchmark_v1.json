@@ -1,0 +1,89 @@
+{
+  "schema": "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1",
+  "benchmark_scope": "EXPERT_TASK_PERFORMANCE_E2E",
+  "purpose": "Measure whether evolved profiles actually perform domain tasks better; structural/contract compliance is not a proxy for expertise.",
+  "target_cases": 120,
+  "sample_size_policy": {
+    "planned_case_count_must_be_frozen_before_raw": true,
+    "power_analysis_ref_required": true,
+    "actual_cases_must_meet_or_exceed_planned": true,
+    "holdout_plan_frozen_separately": true
+  },
+  "required_arms": {
+    "A_ORIGINAL": "original profile exact source",
+    "B_UPDATER_V01": "current updater output executed on task",
+    "C_EVOLUTION_CURRENT": "current Profile Evolution candidate executed on task",
+    "D_EVOLUTION_TARGET": "rearchitected Profile Evolution candidate executed on task"
+  },
+  "case_contract": {
+    "required": [
+      "case_id",
+      "domain_family",
+      "difficulty",
+      "critical",
+      "preservation_case",
+      "adaptation_case",
+      "transfer_case",
+      "arms"
+    ],
+    "difficulty_range": [
+      1,
+      5
+    ],
+    "every_arm_requires": [
+      "profile_revision",
+      "execution_receipt_ref",
+      "execution_receipt_sha256",
+      "producer_execution_id",
+      "evaluator_receipt_ref",
+      "evaluator_verification_state",
+      "evaluator_execution_id",
+      "blind_arm",
+      "score"
+    ],
+    "score_range": [
+      0,
+      1
+    ],
+    "evaluator_must_be_independent_from_producer": true,
+    "output_execution_required": true,
+    "contract_only_candidate_forbidden": true
+  },
+  "primary_metric": "DIFFICULTY_WEIGHTED_TASK_QUALITY",
+  "admission_thresholds": {
+    "relative_uplift_D_vs_A_min": 0.15,
+    "paired_ci_lower_D_vs_A_gt": 0,
+    "paired_ci_lower_D_vs_C_gt": 0,
+    "holdout_ci_lower_D_vs_A_gt": 0,
+    "holdout_ci_lower_D_vs_C_gt": 0,
+    "critical_regressions_max": 0,
+    "preservation_ratio_min": 0.98
+  },
+  "secondary_metrics": [
+    "max_difficulty_solved",
+    "robustness",
+    "adaptation",
+    "transfer",
+    "preservation",
+    "false_improvement_rate",
+    "observed_cost",
+    "observed_latency",
+    "human_interventions"
+  ],
+  "resource_policy": {
+    "cost_budget_pass_required": true,
+    "observed_metrics_only": true,
+    "token_status_may_be": "NOT_OBSERVED",
+    "token_estimation_forbidden": true
+  },
+  "forbidden": [
+    "SCORE_BASELINE_FROM_EXPECTED_CLASS",
+    "SCORE_CANDIDATE_FROM_DOCUMENT_PRESENCE",
+    "STRUCTURAL_COMPLIANCE_AS_EXPERTISE",
+    "HOLDOUT_LABEL_AVAILABLE_TO_PRODUCER",
+    "SAME_PRODUCER_AND_EVALUATOR",
+    "POST_RAW_THRESHOLD_TUNING"
+  ],
+  "independent_assurance_required_after_score": true,
+  "cutover_eligible_only_after_independent_assurance": true
+}
