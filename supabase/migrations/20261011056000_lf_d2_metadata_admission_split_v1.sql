@@ -231,9 +231,12 @@ GRANT EXECUTE ON FUNCTION private.fn_lf_source_investigation_prepare_v1(text,int
          AND v_metadata_candidate->>'binding_written'='false'
          AND v_metadata_candidate->>'business_rows_accessed'='false'
          AND v_metadata_candidate->>'business_read_authorized'='false';
-       IF v_metadata_ok THEN v_metadata_verified:=v_metadata_verified+1; END IF;
        v_binding:=private.fn_lf_d2_binding_readback_v1(v_source_ref);
        v_binding_decision:=v_binding->>'decision';
+       -- A pre-existing VIGENTE source remains technically discoverable too.
+       IF v_binding_decision='STRUCTURAL_MATCH_REQUIRES_REAL_ACTOR_FACADE_AUTHORIZATION'
+       THEN v_metadata_ok:=true; END IF;
+       IF v_metadata_ok THEN v_metadata_verified:=v_metadata_verified+1; END IF;
        v_checked:=v_checked+1;
        IF v_first_decision IS NULL THEN v_first_decision:=v_binding_decision; END IF;
        IF v_binding_decision='STRUCTURAL_MATCH_REQUIRES_REAL_ACTOR_FACADE_AUTHORIZATION'
