@@ -1,0 +1,21 @@
+name: LF Admission Conclusion Unit Tests
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/lf-migration-merge-train.yml'
+      - '.github/workflows/lf-independent-change-admission.yml'
+      - 'sandbox/lf_contract_gate_test/s28_ci_lane_router/test_admission_check_conclusion_v1.py'
+      - '.github/workflows/lf-admission-conclusion-unit-tests.yml'
+permissions:
+  contents: read
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s sandbox/lf_contract_gate_test/s28_ci_lane_router -p test_admission_check_conclusion_v1.py -v
