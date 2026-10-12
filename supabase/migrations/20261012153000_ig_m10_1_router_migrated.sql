@@ -76,7 +76,7 @@ BEGIN
        SELECT programacion.fn_input_governance_worker_spec(p_pantalla_id,p_consumer)
     $function$
   $create_worker$;
-  EXECUTE 'REVOKE ALL ON FUNCTION public.fn_input_governance_worker_spec(integer,text) FROM PUBLIC';
+  EXECUTE 'REVOKE ALL ON FUNCTION public.fn_input_governance_worker_spec(integer,text) FROM PUBLIC,anon,authenticated';
   EXECUTE 'GRANT EXECUTE ON FUNCTION public.fn_input_governance_worker_spec(integer,text) TO service_role';
 
   EXECUTE $create_current$
@@ -87,7 +87,7 @@ BEGIN
        SELECT programacion.fn_input_readiness_run_is_current(p_run_id)
     $function$
   $create_current$;
-  EXECUTE 'REVOKE ALL ON FUNCTION public.fn_input_readiness_run_is_current(bigint) FROM PUBLIC';
+  EXECUTE 'REVOKE ALL ON FUNCTION public.fn_input_readiness_run_is_current(bigint) FROM PUBLIC,anon,authenticated,service_role';
   -- Not exposed to service_role: underlying private run-currentness capability
   -- is not granted to service_role. Owner-only invocation from governed Router.
 
