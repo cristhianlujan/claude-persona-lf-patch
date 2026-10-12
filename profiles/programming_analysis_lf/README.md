@@ -61,3 +61,7 @@ Una prueba independiente del modelo local previa a esta fuente devolvió un fals
 - Perfil Reparador encontrado en `profiles/systemic_root_cause_repair_lf`, método `SRCR_V0_7R1`; su manifiesto declara `CANDIDATO / READ_ONLY / NO_HABILITADO`. Se aplicó su método de análisis de primera frontera y reutilización, **no** se invocó un runtime Reparador.
 - Alternativa elegible: adaptar el Router/fuentes gobernadas existentes para entregar recibos tipados de los nueve contratos y validarlos antes de inferencia. No crear motor, no hacer auto-READY ni insertar referencias sin currentness. Reconciliar por separado los 3 blobs A14/A9 distintos en PR #2071 y sus negativos antes de admisión.
 - **Cursor persistido:** SOURCE_BLOBS_9_OF_9_READBACK; siguiente `NEXT_SAFE_BATCH=ROUTER_AUTHORITY_SOURCE_RECEIPTS_A1_A9`. Evidencia operativa independiente: `0/3` (ejecutor real, juez independiente, PG-01 persistido). `ANALYSIS_READY=false`. Sin merge, despliegue ni SQL.
+
+### Router transport readback 2026-10-12
+
+Existing `ProfileTask.lf_adapter_sources` and `RouterAdapterSource` support Router-bound typed adapter context (maximum 4 adapters), with `lf-governed-context-receipt/v2`. Supabase `CURRENTNESS_AUTHORITY@1.0.0` exists, but `v_lf_router_adapter_bindings` has 0 rows for `PERFIL-PROGRAMMING-ANALYSIS-LF`. Use one bounded A1-A9 aggregate authority receipt; no nine adapters, no runtime activation. NEXT_SAFE_BATCH=AGGREGATE_RECEIPT_CONTRACT_AND_FAILCLOSED_TESTS. Operational proofs 0/3.
