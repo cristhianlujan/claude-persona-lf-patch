@@ -656,7 +656,9 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "0c5868f88ba3bc3ee5f9a87b88d6ddb971f9e441",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "main_canonical_content_equal": true,
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
     },
     {
       "version": "20261010163443",
@@ -676,7 +678,9 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "1ac8a9ff4969644dffcea1dc5981d834f1b571a4",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "main_canonical_content_equal": true,
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
     },
     {
       "version": "20261010163705",
@@ -696,7 +700,9 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "d11855209420a7cdf6c4089e98fab6b82b45c2e8",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "main_canonical_content_equal": true,
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
     },
     {
       "version": "20261010232400",
@@ -716,7 +722,9 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "5b7b930dba9d468cbaad2b3ee00171a2b20f7845",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "main_canonical_content_equal": true,
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
     },
     {
       "version": "20261010235001",
@@ -856,7 +864,9 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "b76678b3f0545ee8bdc132346ae4b58606dc6efb",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "main_canonical_content_equal": true,
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
     },
     {
       "version": "20261011000425",
