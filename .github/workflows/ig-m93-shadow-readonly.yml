@@ -22,6 +22,7 @@ permissions:
   contents: read
 jobs:
   prepare:
+    environment: lf-merge-train
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
@@ -80,6 +81,7 @@ jobs:
           path: .lf_ci/m93_selected.json
           retention-days: 7
   m93-readonly:
+    environment: lf-merge-train
     needs: prepare
     if: needs.prepare.result == 'success'
     name: m93-readonly (${{ matrix.cohort }}-${{ matrix.screen_id }})
