@@ -1,0 +1,26 @@
+name: F1 Reconcile Batch 1b Full Offline Lane
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'sandbox/lf_contract_gate_test/migration_source_parity/test_f1_batch1b_actual.py'
+      - '.github/workflows/lf-f1-batch1b-tests.yml'
+permissions:
+  contents: read
+jobs:
+  verify-rows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run existing F1 unit suite and real 62-file verify_rows
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          python -m unittest discover -s sandbox/lf_contract_gate_test/migration_source_parity -p test_reconcile_source_only.py -v
+          python -m unittest discover -s sandbox/lf_contract_gate_test/migration_source_parity -p test_f1_batch1b_actual.py -v
