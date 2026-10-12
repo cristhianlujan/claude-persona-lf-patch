@@ -50,6 +50,7 @@ def sample_row(n,stage):
     payload={
         "schema_version":"IG_CANARY_OBSERVATION_V1",
         "verification_status":"VERIFIED",
+        "verifier_identity":"SUPABASE:TRUSTED_TEST_FIXTURE",
         "stage":stage,
         "run_ref":"M99-CASE-1",
         "cohort_type_code":"AUTH",
@@ -104,6 +105,14 @@ class CanonicalReadbackTests(unittest.TestCase):
             CanonicalM99EvidenceReadback(conn)(CandidateIdentity(
                 "git://candidate","a"*64,meta),{})
         self.assertEqual(conn.sql_calls,[])
+
+    def test_missing_current_independent_assurance_blocks(self):
+        rows={i:sample_row(i,stage) for i,stage in enumerate(
+            ("OBSERVATION","INDEPENDENT_ORACLE","ROLLBACK_ACTION"),1)}
+        conn=FakeConn(rows,gate={"action":"ROLLBACK_REQUIRED","receipt_id":1})
+        with self.assertRaisesRegex(ValueError,"ASSURANCE_BINDING_MISSING"):
+            CanonicalM99EvidenceReadback(conn)(CAND,{})
+        self.assertEqual(conn.rollbacks,1)
 
     def test_gate_failure_is_not_overridden_by_row_shape(self):
         rows={i:sample_row(i,stage) for i,stage in enumerate(

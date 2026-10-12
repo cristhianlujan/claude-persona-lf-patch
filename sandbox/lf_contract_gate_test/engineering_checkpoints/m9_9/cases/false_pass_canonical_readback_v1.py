@@ -74,6 +74,8 @@ class CanonicalM99EvidenceReadback:
                         and SHA.fullmatch(item["receipt_sha256"])
                         and payload.get("schema_version") == SCHEMA
                         and payload.get("verification_status") == "VERIFIED"
+                        and isinstance(payload.get("verifier_identity"),str)
+                        and bool(payload["verifier_identity"].strip())
                         and payload.get("stage") == expected_stage
                         and payload.get("run_ref") == run_ref
                         and payload.get("cohort_type_code") == cohort
@@ -95,6 +97,34 @@ class CanonicalM99EvidenceReadback:
                 decision = next(iter(decision_row.values())) if isinstance(decision_row,dict) else decision_row[0]
                 if not isinstance(decision,dict) or decision.get("receipt_id") != ids[0]:
                     raise ValueError("M99_RECEIPT_GATE_NOT_PROVEN")
+
+                # The independent verdict must use the CURRENT governed
+                # independent-assurance asset, not a free-text INDEPENDENT flag.
+                measure = records[1]["payload"].get("independent_oracle")
+                if not isinstance(measure,dict):
+                    raise ValueError("M99_INDEPENDENT_ASSURANCE_BINDING_MISSING")
+                cur.execute(
+                    """SELECT version,manifest_sha256 FROM public.lf_capability_current
+                       WHERE capability_code=%s""",
+                    ("INDEPENDENT_ASSURANCE",),
+                )
+                current = cur.fetchone()
+                if isinstance(current,dict):
+                    ver,manifest = current.get("version"),current.get("manifest_sha256")
+                elif current is not None:
+                    ver,manifest = current
+                else:
+                    ver,manifest = None,None
+                if not (
+                    ver == "2.0.1" and isinstance(manifest,str)
+                    and SHA.fullmatch(manifest)
+                    and measure.get("independent_assurance_capability_code") == "INDEPENDENT_ASSURANCE"
+                    and measure.get("independent_assurance_version") == ver
+                    and measure.get("independent_assurance_manifest_sha256") == manifest
+                    and isinstance(measure.get("measurement_ref"),str)
+                    and bool(measure["measurement_ref"].strip())
+                ):
+                    raise ValueError("M99_INDEPENDENT_ASSURANCE_NOT_CURRENT_OR_UNATTESTED")
         finally:
             connection.rollback()  # Always leave even the readback transaction closed.
 
