@@ -1,0 +1,42 @@
+{
+  "profile_pack_id": "PROFILE_OPPORTUNITY_EXPANDER_LF_V0_1",
+  "profile_code": "PERFIL-OPPORTUNITY-EXPANDER-LF",
+  "operation": "CREACION_PERFIL_LF",
+  "strategy_id": "S37",
+  "work_package": "S37-WP01",
+  "document_status": "CANDIDATO",
+  "operational_status": "READ_ONLY",
+  "runtime": "NO_HABILITADO",
+  "automatic_impact": "BLOQUEADO",
+  "quality_pack": "EXPLORATORY_PROFILE_QUALITY_PACK_V0_1",
+  "required_files": [
+    "SKILL.md",
+    "README.md",
+    "contracts/main_contract.md",
+    "schemas/output.schema.json",
+    "judges/mini_judge.md",
+    "evals/eval_matrix.json",
+    "manifest.json"
+  ],
+  "selected_optional_files": [
+    "judges/score_rubric.md",
+    "examples/good_output.json",
+    "examples/bad_output.json",
+    "validators/validate_pack.py",
+    "handoffs/to_quality_pack.handoff.json"
+  ],
+  "runtime_enabled": false,
+  "production_authorization": false,
+  "scheduler_authorization": false,
+  "canonical_write_authorization": false,
+  "external_capability_discovery": {
+    "role": "CONSUMER_NOT_OWNER",
+    "free_search_inside_profile": false,
+    "resolution_owner": "ROUTER_OR_ORCHESTRATOR",
+    "missing_context_status": "NEEDS_CAPABILITY_CONTEXT"
+  },
+  "prototype_pr_756_disposition": "PREINVESTIGATION_ONLY_NOT_OFFICIAL_IMPLEMENTATION",
+  "target_repo": "cristhianlujan/claude-persona-lf-patch",
+  "target_base": "main",
+  "package_root": "profiles/opportunity_expander"
+}
