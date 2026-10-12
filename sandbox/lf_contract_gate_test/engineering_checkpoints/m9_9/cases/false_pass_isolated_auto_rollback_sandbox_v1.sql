@@ -9,7 +9,7 @@ CREATE TEMP TABLE m99_false_pass_proof_v1(
  case_code text,oracle_case text,decision text,automatic_temp_rollback boolean,
  state_restored boolean,real_canary_receipt boolean) ON COMMIT DROP;
 DO $fp$
-DECLARE v_suite record;v_case text;v_decision jsonb;v_wrote boolean:=false;
+DECLARE v_suite record;v_case text;v_decision jsonb;v_wrote boolean:=false;v_authored_pass boolean:=true;
 BEGIN
  SELECT suite_run_id,status,tests_total,tests_passed,tests_failed,
    tests_blocked,tests_review_required,manifest
@@ -30,14 +30,14 @@ BEGIN
  AND ar.assertion_code=tr.test_code||'_ASSERT'
  AND ar.actual_value->>'detected'='true' AND ar.actual_value->>'false_pass'='false'
  AND c.expected_output->>'decision'='DETECTED_FAIL_CLOSED'
- AND ar.actual_value->>'detection_surface'<>'VALIDATOR_CLASSIFIER_MISMATCH'
+ AND ar.actual_value->>'detection_surface' NOT IN ('VALIDATOR_CLASSIFIER_MISMATCH','FAIL_CLOSED_SOURCE_TIMEOUT')
  ORDER BY tr.test_code LIMIT 1;
  IF v_case IS NULL THEN RAISE EXCEPTION 'M99_NO_TYPED_ORACLE_CASE'; END IF;
  BEGIN
   UPDATE pg_temp.m99_false_pass_state_v1 SET v='CANDIDATE' WHERE k=1;
   v_wrote:=true;
   v_decision:=programacion.fn_ig_m99_canary_rollback_decision_v1(
-   jsonb_build_object('false_pass_detected',true,'divergence_level','D0',
+   jsonb_build_object('false_pass_detected',(v_wrote AND v_case IS NOT NULL AND v_authored_pass),'divergence_level','D0',
     'elapsed_ms',100000,'execution_error',false,'receipt_present',true,
     'receipt_verified',true),150000);
   IF v_decision->>'action'<>'ROLLBACK_REQUIRED'
