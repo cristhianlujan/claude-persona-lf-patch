@@ -112,7 +112,7 @@ BEGIN
        'benchmark_scope','EXPERT_TASK_PERFORMANCE_E2E',
        'independent_assurance','PASS',
        'critical_regressions',0,
-       'cutover_eligible',false
+       'cutover_eligible',true
      )
    )
  );
