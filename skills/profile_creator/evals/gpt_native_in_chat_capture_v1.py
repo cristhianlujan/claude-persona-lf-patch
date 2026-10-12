@@ -51,6 +51,10 @@ def _matches_exact_value(observed: Any, expected: Any) -> bool:
         return type(observed) is type(typed) and observed == typed
     if isinstance(observed, str):
         return observed == expected
+    # Legacy manifests lack type metadata. Do not infer that numeric text
+    # authorizes a numeric JSON value; fail closed until a typed v2 manifest.
+    if isinstance(observed, (int, float)) and not isinstance(observed, bool):
+        return False
     try:
         return json.dumps(observed, ensure_ascii=False, sort_keys=True,
                           separators=(",", ":"), allow_nan=False) == expected
