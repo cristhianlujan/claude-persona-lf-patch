@@ -21,6 +21,14 @@ BEGIN
  WHERE capability_code='INPUT_GOVERNANCE';
  IF v_candidates<>1 THEN RAISE EXCEPTION 'PREEXISTING_REGISTRY_VERSION_DRIFT'; END IF;
  SELECT count(*) INTO v_receipts FROM programacion.provenance_receipts;
+ -- Positive control: same timing/divergence/receipt flags, no false PASS.
+ v_decision:=programacion.fn_ig_m99_canary_rollback_decision_v1(
+    jsonb_build_object('false_pass_detected',false,'divergence_level','D0',
+    'elapsed_ms',100000,'execution_error',false,
+    'receipt_present',true,'receipt_verified',true),150000);
+ IF v_decision->>'action' IS DISTINCT FROM 'CONTINUE_OBSERVATION'
+    OR (v_decision->'reason_codes' ? 'FALSE_PASS')
+ THEN RAISE EXCEPTION 'FALSE_PASS_POSITIVE_CONTROL_FAILED'; END IF;
  IF NOT EXISTS (
   SELECT 1 FROM public.lf_test_runs tr
   JOIN public.lf_test_assertion_results ar ON ar.test_run_id=tr.test_run_id
