@@ -1,0 +1,43 @@
+name: LF migration name classification
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/**/*.sql"
+      - ".github/workflows/lf-migration-merge-train.yml"
+      - ".github/workflows/lf-migration-name-classification.yml"
+      - "sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py"
+      - "sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_name_classification_check.py"
+      - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_pre_apply.py"
+      - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_family_classification.py"
+
+permissions:
+  contents: read
+
+jobs:
+  classify-migration-names:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit tests for canonical name classifier
+        run: |
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_pre_apply.py
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_family_classification.py
+      - name: Classify changed migration filenames
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "refs/heads/$GITHUB_BASE_REF:refs/remotes/origin/$GITHUB_BASE_REF"
+          mapfile -t migration_paths < <(git diff --name-only "origin/$GITHUB_BASE_REF...HEAD" -- supabase/migrations/)
+          if [ "${#migration_paths[@]}" -eq 0 ]; then
+            echo "PASS_NO_MIGRATION_PATHS_CHANGED"
+            exit 0
+          fi
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_name_classification_check.py \
+            --failure-code FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY \
+            "${migration_paths[@]}"
