@@ -18,7 +18,8 @@
     "exact_version_verified": 65,
     "other_version_verified": 60,
     "canonical_unresolved": 5,
-    "absent_by_name": 0
+    "absent_by_name": 0,
+    "pr_range_evidence_tagged": 4
   },
   "items": [
     {
@@ -2337,7 +2338,7 @@
       "future_version": false,
       "main_same_version": false,
       "main_equivalent_other_version": "CONTENT_UNVERIFIED",
-      "train_provenance": "UNKNOWN",
+      "train_provenance": "OUTSIDE_TRAIN_INFERRED_FROM_PR_2265_THREE_MIGRATIONS",
       "canonical_parity": "NOT_EVALUATED",
       "main_exact_version_paths": [],
       "main_same_canonical_name_other_versions": [
@@ -2358,7 +2359,7 @@
       "future_version": false,
       "main_same_version": false,
       "main_equivalent_other_version": "CONTENT_UNVERIFIED",
-      "train_provenance": "UNKNOWN",
+      "train_provenance": "OUTSIDE_TRAIN_INFERRED_FROM_PR_2265_THREE_MIGRATIONS",
       "canonical_parity": "NOT_EVALUATED",
       "main_exact_version_paths": [],
       "main_same_canonical_name_other_versions": [
@@ -2379,7 +2380,7 @@
       "future_version": false,
       "main_same_version": false,
       "main_equivalent_other_version": "CONTENT_UNVERIFIED",
-      "train_provenance": "UNKNOWN",
+      "train_provenance": "OUTSIDE_TRAIN_INFERRED_FROM_PR_2265_THREE_MIGRATIONS",
       "canonical_parity": "NOT_EVALUATED",
       "main_exact_version_paths": [],
       "main_same_canonical_name_other_versions": [
@@ -2400,7 +2401,7 @@
       "future_version": false,
       "main_same_version": false,
       "main_equivalent_other_version": "CONTENT_UNVERIFIED",
-      "train_provenance": "UNKNOWN",
+      "train_provenance": "NOT_PROVEN_PR_2273_MERGED_BY_CRISTHIANLUJAN",
       "canonical_parity": "NOT_EVALUATED",
       "main_exact_version_paths": [],
       "main_same_canonical_name_other_versions": [
@@ -2896,7 +2897,8 @@
     "Main-file and Train provenance unresolved until full Git tree and PR merge evidence are compared.",
     "Main Git tree filename inventory completed for 130 rows, but canonical content comparison and Train attribution remain pending.",
     "Raw byte identity confirmed by independent Git blob SHA-1 over single stored ledger statement, with Git tree blob SHA; unmatched pairs still require migration_transport_normalization canonical check.",
-    "Content comparison: 110 Git blob byte-exact matches, 15 additional line-canonical matches, 5 require full CLI transport-normalization review; unproven is not necessarily different."
+    "Content comparison: 110 Git blob byte-exact matches, 15 additional line-canonical matches, 5 require full CLI transport-normalization review; unproven is not necessarily different.",
+    "PR #2265 contains 3 migrations; original Train admission accepts one added migration, so cannot establish Train route for that merge. Broader attribution remains UNKNOWN without run receipts."
   ],
   "dry_run_20261010_source_to_ledger": {
     "mode": "READ_ONLY_SQL_CANONICAL_COMPARISON",
@@ -2968,5 +2970,31 @@
       "version": "20261011190000",
       "name": "ig_m713_ekb_errors_findings_v1"
     }
-  ]
+  ],
+  "reviewed_pr_range": {
+    "from": 2264,
+    "to": 2275,
+    "scope": "Merged PRs only, not all weekend changes",
+    "migration_source_prs": [
+      {
+        "pr": 2265,
+        "source_versions": [
+          "20261012040000",
+          "20261012040100",
+          "20261012040200"
+        ],
+        "merged_by": "cristhianlujan",
+        "train_structural_compatibility": "NOT_COMPATIBLE_WITH_SINGLE_ADDED_MIGRATION_TRAIN"
+      },
+      {
+        "pr": 2273,
+        "source_versions": [
+          "20261012054500"
+        ],
+        "merged_by": "cristhianlujan",
+        "train_provenance": "NOT_PROVEN",
+        "note": "ledger equivalent version 20261012052424"
+      }
+    ]
+  }
 }
