@@ -4,21 +4,29 @@
   "operation_code": "ACTUALIZACION_PERFIL_LF",
   "purpose": "Admit expert uplift only after independently evidenced AS-IS and frozen domain-specific TO-BE are measured; retain existing four-arm uplift and safety gates.",
   "baselines": {
-    "A_ORIGINAL": "historic generic profile",
-    "B_UPDATER_V01": "legacy updater",
-    "C_EVOLUTION_CURRENT": "AS_IS effective current profile",
+    "A_ORIGINAL": "original profile (may be AS-IS when effective before update)",
+    "B_UPDATER_V01": "v0.1 updater output (AS-IS only when effective with source-bound readback)",
+    "C_EVOLUTION_CURRENT": "Evolution candidate (AS-IS only if independently confirmed effective)",
     "D_EVOLUTION_TARGET": "POST_UPDATER evolved candidate"
   },
   "measurement": {
     "basis": "EXECUTED_OPEN_TASKS_ONLY",
     "domain_grouping": "domain_family",
     "weight": "difficulty * (2 if critical else 1)",
-    "as_is_arm": "C_EVOLUTION_CURRENT",
+    "as_is_arm": "DYNAMIC_FROZEN_EFFECTIVE_BASELINE_ARM_A_OR_B_OR_C",
     "post_arm": "D_EVOLUTION_TARGET",
     "initial_gap": "max(TO_BE_minimum - AS_IS, 0)",
     "residual_gap": "max(TO_BE_minimum - POST, 0)",
     "closed_gap": "max(initial_gap-residual_gap,0)",
-    "fulfillment": "POST / TO_BE_minimum; report capped at 100% for target attainment"
+    "fulfillment": "POST / TO_BE_minimum; report capped at 100% for target attainment",
+    "as_is_binding_fields": [
+      "arm",
+      "profile_revision",
+      "source_ref",
+      "source_sha256",
+      "authority_readback_ref"
+    ],
+    "as_is_evidence": "MATCH_TARGET_VERSUS_RAW_AND_PER_CASE_PROFILE_REVISION; external authority readback required before admission"
   },
   "target_contract": {
     "frozen_before_first_raw": true,
@@ -39,7 +47,80 @@
     "observed_resource_budget_pass": true,
     "missing_evidence": "BLOCK",
     "target_failed": "TARGET_FAIL",
-    "cutover_eligible_from_this_gate": false
+    "cutover_eligible_from_this_gate": false,
+    "cross_gate_mechanism": "PE10E_C4 requires BOTH authentic upstream PROFILE_EXPERT_BEHAVIOR_SCORE_V1 and TARGET_PASS; this scorer never admits cutover"
   },
-  "scope": "ADDITIVE_COMPANION_GATE; not substitution for PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1; existing frozen corpus unchanged; no production activation"
+  "scope": "ADDITIVE_COMPANION_GATE; not substitution for PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1; existing frozen corpus unchanged; no production activation",
+  "integration_points": [
+    {
+      "key": "currentness",
+      "owner": "profile authority snapshot",
+      "contract": "exact AS-IS profile source, version, source SHA, readback before any candidate"
+    },
+    {
+      "key": "assessment",
+      "owner": "PE1 PROFILE_ASSESSMENT",
+      "contract": "domain/task capabilities and UNKNOWN evidence; don't claim maturity without observed outputs"
+    },
+    {
+      "key": "orchestrator",
+      "owner": "PE5 PROFILE_EVOLUTION_ORCHESTRATOR",
+      "contract": "task-specific TO-BE and gap plan; no write authority"
+    },
+    {
+      "key": "target_freeze",
+      "owner": "PE10E campaign contract",
+      "contract": "domain-specific expert rubrics and minimum scores, source-bound before RAW"
+    },
+    {
+      "key": "campaign",
+      "owner": "PE10E_C3 and existing 4-arm campaign",
+      "contract": "sealed tasks, holdout, frozen sampling, paired executor route"
+    },
+    {
+      "key": "raw_provenance",
+      "owner": "GPT_NATIVE execution recorder",
+      "contract": "genuine independent runtime receipts for A/B/C/D; in-chat capture is not attestation"
+    },
+    {
+      "key": "expert_scorer",
+      "owner": "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1",
+      "contract": "preserve paired uplift, CI, zero critical regressions, preservation and budget"
+    },
+    {
+      "key": "gap_scorer",
+      "owner": "PROFILE_EXPERT_ASIS_TOBE_GAP_GATE_V1",
+      "contract": "calculate AS-IS, TO-BE, POST, gap residual per domain with dynamic effective AS-IS"
+    },
+    {
+      "key": "blind_assurance",
+      "owner": "PE10_C3 independent reviewer",
+      "contract": "authentic producer/reviewer actor separation and verified identities"
+    },
+    {
+      "key": "checkpoint",
+      "owner": "programacion.engineering_plan_units unit PE10E, PE10E_C4",
+      "contract": "conjunctive upstream and target PASS; no DONE on synthetic tests"
+    },
+    {
+      "key": "admission",
+      "owner": "PE10_C5 governed admission",
+      "contract": "must consume signed benchmark and gap receipts; no direct production activation"
+    },
+    {
+      "key": "cutover",
+      "owner": "PE10_C4/C6/C7 and operation registry v0.2",
+      "contract": "legacy drains, dry run rollback, post-cutover authority readback; v0.1 unchanged"
+    },
+    {
+      "key": "learning",
+      "owner": "PE7 PROFILE_LEARNING_ADMISSION",
+      "contract": "consume only admitted results, retain failures, no self-promotion"
+    },
+    {
+      "key": "ledger",
+      "owner": "public.lf_eventos and EKB",
+      "contract": "write through governed runtime only; summary separate technical progress from capability"
+    }
+  ]
 }
