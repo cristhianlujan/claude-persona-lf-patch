@@ -67,469 +67,603 @@
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/0",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "CI_ROUTER_SELFTEST"
     },
     {
       "finding_number": 2,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/1",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "DB_CANDIDATE_APPLY_ROLLBACK"
     },
     {
       "finding_number": 3,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/2",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "DECLARED_GOVERNANCE_PATHS"
     },
     {
       "finding_number": 4,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/3",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "E16_ACTIONS_INVENTORY"
     },
     {
       "finding_number": 5,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/4",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "E16_GOVERNANCE"
     },
     {
       "finding_number": 6,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/5",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "GATE_CHECK_OBSERVABILITY"
     },
     {
       "finding_number": 7,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/6",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "INPUT_GOVERNANCE_MIGRATION_PARITY"
     },
     {
       "finding_number": 8,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/7",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "LEARNING_ENGINE_PACK"
     },
     {
       "finding_number": 9,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/8",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "LF_CONTRACT_CORE"
     },
     {
       "finding_number": 10,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/9",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "LF_VALIDATION_ENGINE"
     },
     {
       "finding_number": 11,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/10",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "MIGRATION_SOURCE_PARITY"
     },
     {
       "finding_number": 12,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/11",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "NO_BYPASS_PROFILE_CARD_SKILL"
     },
     {
       "finding_number": 13,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/12",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "P0_EXACT_HEAD_EXTERNAL"
     },
     {
       "finding_number": 14,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/13",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "P0_FAST_DOCS"
     },
     {
       "finding_number": 15,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/14",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "P0_VISUAL_RUNTIME"
     },
     {
       "finding_number": 16,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/15",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "PASS_EVIDENCE"
     },
     {
       "finding_number": 17,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/16",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "POLICY_RESOLVER_REGRESSION"
     },
     {
       "finding_number": 18,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/17",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "PROFILE_PACK"
     },
     {
       "finding_number": 19,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/18",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "PROFILE_RUNTIME_V3"
     },
     {
       "finding_number": 20,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/19",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "R8_USER_STORY_AUDIT"
     },
     {
       "finding_number": 21,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/20",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "S30_BOUNDED_REGRESSION"
     },
     {
       "finding_number": 22,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/21",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "SKILL_PACK"
     },
     {
       "finding_number": 23,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/22",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "SUPABASE_CONTROL_PLANE_READBACK"
     },
     {
       "finding_number": 24,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/23",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "TRANSVERSAL_README"
     },
     {
       "finding_number": 25,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/24",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R2_CONTROL_WITHOUT_LIVE_CARRIER",
+      "subject": "V7_RUNTIME_REGRESSION"
     },
     {
       "finding_number": 26,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/25",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R5_NO_BLOCKING_CONTROL",
+      "subject": "PASE"
     },
     {
       "finding_number": 27,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/26",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R5_PASE_WORKFLOW_DISABLED",
+      "subject": "pase-merge-gate.yml"
     },
     {
       "finding_number": 28,
       "severity": "BLOCKER",
       "source_pointer": "report_main_current.json#/findings/27",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R5_PASE_WORKFLOW_DISABLED",
+      "subject": "pase.yml"
     },
     {
       "finding_number": 29,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/28",
       "precedence": "ADMIT_PR",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/ig-n9-judge-unit-tests.yml"
     },
     {
       "finding_number": 30,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/29",
       "precedence": "ADMIT_PR",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/ig_ci50_change_impact_qualification.yml"
     },
     {
       "finding_number": 31,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/30",
       "precedence": "ADMIT_PR",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/ig_m46_python_harness.yml"
     },
     {
       "finding_number": 32,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/31",
       "precedence": "ADMIT_PR",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/lf-ig-runtime-candidate-judge.yml"
     },
     {
       "finding_number": 33,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/32",
       "precedence": "ADMIT_PR",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/lf-independent-change-admission.yml"
     },
     {
       "finding_number": 34,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/33",
       "precedence": "ADMIT_PR",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/lf-parity-proposal-tests.yml"
     },
     {
       "finding_number": 35,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/34",
       "precedence": "ADMIT_PR",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/lf-runtime-independent-readback-oidc-tests.yml"
     },
     {
       "finding_number": 36,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/35",
       "precedence": "ADMIT_PR",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/profile-gpt-native-capture-regression.yml"
     },
     {
       "finding_number": 37,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/36",
       "precedence": "C5_QUARANTINE",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R5_REENTRY_ALL_OR_NOTHING",
+      "subject": "pase.yml vs quarantine.reentry_contract"
     },
     {
       "finding_number": 38,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/37",
       "precedence": "S30_MASTER",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R6_LANE_ONLY_IN_PRODUCT_REGISTRY",
+      "subject": "S30-EKB-PREFLIGHT"
     },
     {
       "finding_number": 39,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/38",
       "precedence": "S28_OWNER",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R7_ROUTE_MULTI_OWNER",
+      "subject": "CHANGESET_GOVERNANCE_LF_V1 + PASE_MERGE_ROUTE_V1"
     },
     {
       "finding_number": 40,
       "severity": "CONFLICT",
       "source_pointer": "report_main_current.json#/findings/39",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R9_TRAIN_ACCEPTS_SKIPPED",
+      "subject": "lf-migration-merge-train.yml"
     },
     {
       "finding_number": 41,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/40",
       "precedence": "RETIRE_MISSING",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_ADMITTED_WORKFLOW_MISSING",
+      "subject": ".github/workflows/input-governance-pr418-holdout-replay.yml"
     },
     {
       "finding_number": 42,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/41",
       "precedence": "RETIRE_MISSING",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_ADMITTED_WORKFLOW_MISSING",
+      "subject": ".github/workflows/lf-db-regression.yml"
     },
     {
       "finding_number": 43,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/42",
       "precedence": "RETIRE_MISSING",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_ADMITTED_WORKFLOW_MISSING",
+      "subject": ".github/workflows/lf-github-reconcile-v3.yml"
     },
     {
       "finding_number": 44,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/43",
       "precedence": "RETIRE_MISSING",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_ADMITTED_WORKFLOW_MISSING",
+      "subject": ".github/workflows/lf-pack-validation-core.yml"
     },
     {
       "finding_number": 45,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/44",
       "precedence": "RETIRE_MISSING",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_ADMITTED_WORKFLOW_MISSING",
+      "subject": ".github/workflows/validate-lf-packs.yml"
     },
     {
       "finding_number": 46,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/45",
       "precedence": "RETIRE_MISSING",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R1_ADMITTED_WORKFLOW_MISSING",
+      "subject": ".github/workflows/visual-evidence-gate.yml"
     },
     {
       "finding_number": 47,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/46",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/asset-smoke-test.yml"
     },
     {
       "finding_number": 48,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/47",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/ig-m93-shadow-readonly.yml"
     },
     {
       "finding_number": 49,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/48",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/lf-f04-q99-terminal-scenario-profiles.yml"
     },
     {
       "finding_number": 50,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/49",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/lf-runtime-independent-readback-dispatch.yml"
     },
     {
       "finding_number": 51,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/50",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/lf-runtime-independent-readback.yml"
     },
     {
       "finding_number": 52,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/51",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R1_EXISTING_WORKFLOW_NOT_ADMITTED",
+      "subject": ".github/workflows/story-creator-sc-m2-5-structural-validator.yml"
     },
     {
       "finding_number": 53,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/52",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R3_EXACT_MATCHER_MISSING",
+      "subject": "CI_ROUTER_SELFTEST:.github/workflows/lf-db-regression.yml"
     },
     {
       "finding_number": 54,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/53",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R3_EXACT_MATCHER_MISSING",
+      "subject": "CI_ROUTER_SELFTEST:.github/workflows/validate-lf-packs.yml"
     },
     {
       "finding_number": 55,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/54",
       "precedence": "TOMBSTONE",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R3_EXACT_MATCHER_MISSING",
+      "subject": "LF_CONTRACT_CORE:scripts/lf_contract_check.py"
     },
     {
       "finding_number": 56,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/55",
       "precedence": "TOMBSTONE",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R3_EXACT_MATCHER_MISSING",
+      "subject": "LF_VALIDATION_ENGINE:scripts/lf_contract_check.py"
     },
     {
       "finding_number": 57,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/56",
       "precedence": "TOMBSTONE",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R3_SHARED_OWNERSHIP_PATH_MISSING",
+      "subject": "LF_CONTRACT_CHECK_VALIDATOR:scripts/lf_contract_check.py"
     },
     {
       "finding_number": 58,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/57",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R3_SHARED_OWNERSHIP_PATH_MISSING",
+      "subject": "LF_DB_REGRESSION_WORKFLOW:.github/workflows/lf-db-regression.yml"
     },
     {
       "finding_number": 59,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/58",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R3_SHARED_OWNERSHIP_PATH_MISSING",
+      "subject": "LF_GITHUB_RECONCILE_WORKFLOW:.github/workflows/lf-github-reconcile-v3.yml"
     },
     {
       "finding_number": 60,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/59",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R3_SHARED_OWNERSHIP_PATH_MISSING",
+      "subject": "VALIDATE_LF_PACKS_WORKFLOW:.github/workflows/validate-lf-packs.yml"
     },
     {
       "finding_number": 61,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/60",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R4_MANIFEST_UNKNOWN_DOWNSTREAM",
+      "subject": "manifest_parity:CI_GOVERNANCE"
     },
     {
       "finding_number": 62,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/61",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R4_MANIFEST_UNKNOWN_DOWNSTREAM",
+      "subject": "manifest_paths:CI_GOVERNANCE"
     },
     {
       "finding_number": 63,
       "severity": "DRIFT",
       "source_pointer": "report_main_current.json#/findings/62",
       "precedence": "TOMBSTONE",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R8_RETIRED_PATH_STILL_ACTIVE",
+      "subject": "scripts/lf_contract_check.py"
     },
     {
       "finding_number": 64,
       "severity": "INFO",
       "source_pointer": "report_main_current.json#/findings/63",
       "precedence": "S30_MASTER",
-      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED",
+      "rule": "R6_LANE_DUPLICATED_SOURCE",
+      "subject": "S30-A,S30-B,S30-C,S30-D,S30-POLICY"
     },
     {
       "finding_number": 65,
       "severity": "INFO",
       "source_pointer": "report_main_current.json#/findings/64",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R7_PATH_OWNED_BY_TWO_REGISTRIES",
+      "subject": ".github/workflows/lf-contract-check.yml"
     },
     {
       "finding_number": 66,
       "severity": "INFO",
       "source_pointer": "report_main_current.json#/findings/65",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R9_CHECKS_PASS_WHEN_NOT_APPLICABLE",
+      "subject": "lf-independent-change-admission,ig-runtime-candidate-judge"
     },
     {
       "finding_number": 67,
       "severity": "INFO",
       "source_pointer": "report_main_current.json#/findings/66",
       "precedence": null,
-      "classification": "PENDING"
+      "classification": "PENDING",
+      "rule": "R9_TRAIN_STEP_MISLABELED",
+      "subject": "Verify exact-head PASE checks"
     }
   ],
   "proposed_resolutions": {
@@ -563,5 +697,9 @@
     "missing_live_carriers": "25 R2 BLOCKER remain unresolved; proposed catalogue precedence cannot create workflows",
     "pase_disabled": "R5 blockers 26-28 intentionally persist; do not reactivate PASE"
   },
-  "owner_confirmation": "PENDIENTE_DE_CONFIRMACION_DEL_OWNER"
+  "owner_confirmation": "PENDIENTE_DE_CONFIRMACION_DEL_OWNER",
+  "notes": [
+    "67 source finding subjects/rules copied from user-supplied report_main_current.json, with individual proposed/pending precedence classification.",
+    "Counts reflect PROPOSED resolutions only; no registry changes or PASE activation."
+  ]
 }
