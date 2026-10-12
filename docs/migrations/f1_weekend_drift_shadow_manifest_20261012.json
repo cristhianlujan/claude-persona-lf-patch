@@ -11,7 +11,10 @@
     "main_exact_version": 66,
     "main_other_version_same_name": 64,
     "main_no_matching_name": 0,
-    "main_exact_version_and_name": 66
+    "main_exact_version_and_name": 66,
+    "same_version_raw": 65,
+    "other_version_raw": 45,
+    "needs_canonical": 20
   },
   "items": [
     {
@@ -28,7 +31,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "efe171ae3e8766d01e62b3d2af42886457626815",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010021000",
@@ -44,7 +51,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "355b2db6e646a413ccadffe2f36ff8ac9dd9dbce",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010021001",
@@ -60,7 +71,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "17400e2d73563ac74b92b32f80caf54c0ffc37db",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010021500",
@@ -76,7 +91,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "e4bf4abebce314dee2d2ca6ab13c9ee02e2b4d8a",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010021600",
@@ -92,7 +111,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "4407f0827b86f0cd5f8a36f4835d96223497f39b",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010021700",
@@ -108,7 +131,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "41a88ed97575d2f86a0734fa72fdb456d5bf8374",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010022458",
@@ -124,7 +151,11 @@
         "supabase/migrations/20261010080000_t_remed_layer1_selftest_v3.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "5c0c01467f155c030f11622da4f1151fd31be20c",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261010022555",
@@ -140,7 +171,11 @@
         "supabase/migrations/20261010081000_t_remed_layer1_selftest_fix_v3.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "a2d1d1849803816752b0e988afa03f5358ba7975",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261010024447",
@@ -156,7 +191,11 @@
         "supabase/migrations/20261010090000_t_remed_layer1_property_test_v3.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "cb8685dda753f7c6c9abfceafdefcdf5fdef6618",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261010024500",
@@ -172,7 +211,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "c7831239f41bb0420da647c8b97f22eaf2cef55c",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010025000",
@@ -188,7 +231,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "3a76c6fb6afbc62090c12039faa3b69fd6595a8f",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010030001",
@@ -204,7 +251,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "325e37c056754015d739f1199969c943d680de1a",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010033000",
@@ -220,7 +271,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "67aec6e9620e5ace290fd28c663342b0957b2630",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010034500",
@@ -236,7 +291,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "86890962097ba0579a8b33f24fd08a485bd00a10",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010041000",
@@ -252,7 +311,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "01ec5433a743c9d773f0bc08c547218871072076",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010042500",
@@ -268,7 +331,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "54a452845b30f0f487b709ee0e987ce69cece21e",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010085150",
@@ -284,7 +351,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "4be24d0233fbab61a2805f07f81297709426f8c8",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010095218",
@@ -300,7 +371,11 @@
         "supabase/migrations/20261010110000_t_remed_layer1_findings_v3.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "7955ac1d42feeaf4eade7f13d1202f3838a20b6d",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010095224",
@@ -316,7 +391,11 @@
         "supabase/migrations/20261010130000_t_remed_derived_links_and_queue_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "e5c57f93b4e6a28281954a9508cc96cbefc7379f",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010095241",
@@ -332,7 +411,11 @@
         "supabase/migrations/20261010111000_t_remed_layer1_selftest_findings_v3.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "8c2e90d290c75ae28e3b4234e09970b2abf3cf91",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010095305",
@@ -348,7 +431,11 @@
         "supabase/migrations/20261010112000_t_remed_layer1_property_test_findings_v3.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "52500983b7d67f147b4c644a5800e6797bb2e3fb",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010100000",
@@ -364,7 +451,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "93c2e33cc7c321923aac2a42f9c4d1ddb0c1910e",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010110321",
@@ -380,7 +471,11 @@
         "supabase/migrations/20261010140000_t_remed_inherited_rules_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "ea28356a34ba17daf7c0f493eef5637d3461a94e",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010110327",
@@ -396,7 +491,11 @@
         "supabase/migrations/20261010150000_t_remed_rule_promotion_judge_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "978c27ab283bf04e1462c5e0758dd024b9223ebf",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010120000",
@@ -412,7 +511,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "e45ece98b07429111c6f2e49329370e208760b30",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010140000",
@@ -429,7 +532,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "4edd0414f4c61fff183bc04ba30bc23294804fb8",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010142227",
@@ -445,7 +552,11 @@
         "supabase/migrations/20261010160000_t_remed_rule_levels_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "718defd0a7ba73b28e943b87e7b1aafdb4bc542c",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010142235",
@@ -461,7 +572,11 @@
         "supabase/migrations/20261010170000_t_remed_promotion_and_pending_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "6c63bc9c684a77b0a216d97fa66cefca74edf3f6",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010144706",
@@ -477,7 +592,11 @@
         "supabase/migrations/20261010180000_t_remed_inheritance_wiring_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "9ba9b88c4e16a9358240db12f911424bf330db0a",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010150138",
@@ -493,7 +612,11 @@
         "supabase/migrations/20261010190000_t_remed_generic_screen_contract_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "60b7e1c764c7324fd052352acee65a6c40fa90ea",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010150741",
@@ -509,7 +632,11 @@
         "supabase/migrations/20261010200000_t_remed_declared_level_and_judge_v2.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "0c5868f88ba3bc3ee5f9a87b88d6ddb971f9e441",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010163443",
@@ -525,7 +652,11 @@
         "supabase/migrations/20261010210000_t_remed_recommend_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "1ac8a9ff4969644dffcea1dc5981d834f1b571a4",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010163705",
@@ -541,7 +672,11 @@
         "supabase/migrations/20261010220000_t_remed_recommend_v2_channel.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "d11855209420a7cdf6c4089e98fab6b82b45c2e8",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010232400",
@@ -557,7 +692,11 @@
         "supabase/migrations/20261010230000_t_remed_recommend_queue_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "5b7b930dba9d468cbaad2b3ee00171a2b20f7845",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010235001",
@@ -573,7 +712,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "b889f5452c776aeb4c74a38d0f9626412fde7b91",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010235002",
@@ -589,7 +732,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "4749fabfd136326de7b4b65b5c28642836658e81",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010235003",
@@ -605,7 +752,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "613d7779f19b6143d013b65bc78253f5669b3e7b",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010235004",
@@ -621,7 +772,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "dd353efa98a85918850c8f3a9601a2dd5beb2615",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010235005",
@@ -637,7 +792,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "9286aca0aaff101af36929937d0565a1318c93f5",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261010235006",
@@ -653,7 +812,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "1767954f34fdb908ecfb66b577f3e65b653aa53e",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011000339",
@@ -669,7 +832,11 @@
         "supabase/migrations/20261010240000_t_remed_scope_judge_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "b76678b3f0545ee8bdc132346ae4b58606dc6efb",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011000425",
@@ -685,7 +852,11 @@
         "supabase/migrations/20261011033000_lf_d2_canonical_binding_readback_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "93f521fdcf0df53c962f8eb04a535dbf7e4ac94d",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011000445",
@@ -701,7 +872,11 @@
         "supabase/migrations/20261011034000_lf_d3_investigation_decision_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "c1d616ca8ea7a39dc4c9ff0f09e5ed33be239d57",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011000451",
@@ -717,7 +892,11 @@
         "supabase/migrations/20261011035000_lf_source_investigation_prepare_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "5ed2fa8bc2a8c1905d9e7f217670fac5547a80e1",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011001609",
@@ -733,7 +912,11 @@
         "supabase/migrations/20261010250000_t_remed_open_decisions_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "a378b16532b5a620e854ccf486ff8d97800ff94e",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011002854",
@@ -749,7 +932,11 @@
         "supabase/migrations/20261010260000_t_remed_selftest_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "7c05a1cbeeb9d5dab1c921e413d27e645be31958",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011005705",
@@ -765,7 +952,11 @@
         "supabase/migrations/20261010270000_t_remed_screen_status_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "1fb52284bb2c4b150efe30a51bbf9d720c62a915",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011012000",
@@ -781,7 +972,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "f330891725a58e4ad7f86aded1e00cdf42707c22",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011012001",
@@ -797,7 +992,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "54dc11fa67ec46d44d34524aeb1dcce512800f4e",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011015000",
@@ -813,7 +1012,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "90abffe6d244a38450fbf7e331f6df154f104fdb",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011021429",
@@ -829,7 +1032,11 @@
         "supabase/migrations/20261010280000_t_remed_function_comments_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "41c1f62887d96e2c248df14e7968ddf7d3e170d8",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011023000",
@@ -845,7 +1052,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "e2d7afac7a4a9b02d401acd120a790d69c060fec",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011024000",
@@ -861,7 +1072,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "c0c7ee42954dfecbc79aad5ab4c4c7e61af34b68",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011025000",
@@ -877,7 +1092,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "0bb3130738d5ed7153d8fc2a2960606a0ad4243c",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011030000",
@@ -893,7 +1112,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "eab40296b6c43808b53b2ba08e627a0f2c9d34ea",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011031000",
@@ -909,7 +1132,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "3f10b39b487eab856948796d89a685340f20b521",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011031001",
@@ -925,7 +1152,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "b04dadd71a78301cc437fbea2f6adcdec3c5d72a",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011031002",
@@ -941,7 +1172,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "93b71a4cd593ed3d0b59d27241f531ee2697eb3b",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011033000",
@@ -957,7 +1192,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "93f521fdcf0df53c962f8eb04a535dbf7e4ac94d",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011034000",
@@ -973,7 +1212,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "c1d616ca8ea7a39dc4c9ff0f09e5ed33be239d57",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011035000",
@@ -989,7 +1232,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "5ed2fa8bc2a8c1905d9e7f217670fac5547a80e1",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011035001",
@@ -1005,7 +1252,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "2b0c4e3cef8bc2385253e6e1aaad25c6112bbc39",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011035002",
@@ -1021,7 +1272,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "6dd77a540bd21b189360205502e69d88fb6e8d76",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011050556",
@@ -1037,7 +1292,11 @@
         "supabase/migrations/20261011040000_lf_d2_facade_request_plan_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "47343f5ecda5d802cd20d2310c276d28418e99a3",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011050603",
@@ -1053,7 +1312,11 @@
         "supabase/migrations/20261011041000_lf_d2_facade_receipt_readback_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "0051474f6d2c5bab38292b6634c06f0d5cd94b19",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011051027",
@@ -1069,7 +1332,11 @@
         "supabase/migrations/20261011042000_lf_d2_source_binding_candidate_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "d8fc5361e476a13cb3730ec973284837e3385012",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011052000",
@@ -1085,7 +1352,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "fdad31fde71c4da2ab3f6da08282af6244f4c6cc",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011075708",
@@ -1101,7 +1372,11 @@
         "supabase/migrations/20261011052000_ig_m98_reuse_verified_field_adjudication_v4.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "fdad31fde71c4da2ab3f6da08282af6244f4c6cc",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011080740",
@@ -1117,7 +1392,11 @@
         "supabase/migrations/20261011043000_lf_d2_admission_readiness_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "07265afc339415609ea1f6c1843d5dc2395c9940",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011081500",
@@ -1133,7 +1412,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "c23b753d260349b3a84397dfb20ef550041648d1",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011081610",
@@ -1149,7 +1432,11 @@
         "supabase/migrations/20261011081500_ig_source_integrity_rebound_current_cardinality_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "c23b753d260349b3a84397dfb20ef550041648d1",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011082936",
@@ -1165,7 +1452,11 @@
         "supabase/migrations/20261011050000_b2b_scoped_load_metadata_rls_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "acbdc60d14685993d03ee11aec381a8bc71e7648",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011083212",
@@ -1181,7 +1472,11 @@
         "supabase/migrations/20261011051000_lf_d2_admission_column_grants_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "94b5c2c160f948d59f3ea8f05acbbac06ab9dc35",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011085000",
@@ -1197,7 +1492,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "74841a345c02b49737a6085bdeb9949e7c1e0687",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011085515",
@@ -1213,7 +1512,11 @@
         "supabase/migrations/20261011085000_ig_m98_history_currentness_v5.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "74841a345c02b49737a6085bdeb9949e7c1e0687",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011155000",
@@ -1229,7 +1532,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "13c5fc9fb2b03886e598f07b79e7e6d6035a8808",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011155001",
@@ -1245,7 +1552,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "c47cbcb4b7489f89ab54ac0cb1605d768f7338f6",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011155002",
@@ -1261,7 +1572,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "de048e7642ff9a872785a7a12ee528ebed309b62",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011190000",
@@ -1277,7 +1592,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "0bb3960b1c3ac33f8db1c6e82a037f7dff3f0c7b",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011194000",
@@ -1293,7 +1612,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "17962713dbc2a97758f020e5f745efdc7a0f118f",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011194100",
@@ -1309,7 +1632,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "ac1a0e2b5559c75667f6b89d6c8916b84ebdc7af",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011211000",
@@ -1325,7 +1652,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "983eb2c72701fc487d2341f2a68cd46a65f551dc",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011223601",
@@ -1341,7 +1672,11 @@
         "supabase/migrations/20261011054000_lf_source_asset_authority_acl_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "26acc4f67557db2d608a8176e7b7cbb44c2c2ed7",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011223638",
@@ -1357,7 +1692,11 @@
         "supabase/migrations/20261011155000_ig_m98_two_phase_field_match_v6.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "13c5fc9fb2b03886e598f07b79e7e6d6035a8808",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011223646",
@@ -1373,7 +1712,11 @@
         "supabase/migrations/20261011155001_ig_m98_receipt_governance_v6.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "c47cbcb4b7489f89ab54ac0cb1605d768f7338f6",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011223729",
@@ -1389,7 +1732,11 @@
         "supabase/migrations/20261011155002_ig_m98_two_phase_gate_v6.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "de048e7642ff9a872785a7a12ee528ebed309b62",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011233708",
@@ -1405,7 +1752,11 @@
         "supabase/migrations/20261011194000_ig_m98_engineering_assurance_v7.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "17962713dbc2a97758f020e5f745efdc7a0f118f",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011233711",
@@ -1421,7 +1772,11 @@
         "supabase/migrations/20261011194100_ig_m98_engineering_release_governance_v7.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "ac1a0e2b5559c75667f6b89d6c8916b84ebdc7af",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261011234910",
@@ -1437,7 +1792,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "99358aff284b82a0b5c5d229164fde30df85b695",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011235000",
@@ -1453,7 +1812,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "7664054d739894291d9a96a9fe2ab0abdf7074ae",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011235200",
@@ -1469,7 +1832,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "a605fd5e78f98ab7ab90108c139d66edb1c5d1df",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261011235413",
@@ -1485,7 +1852,11 @@
         "supabase/migrations/20261011211000_ig_m98_ekb_errors_lessons_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "983eb2c72701fc487d2341f2a68cd46a65f551dc",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012000043",
@@ -1501,7 +1872,11 @@
         "supabase/migrations/20261011235800_ig_m9_2_ekb_errors_findings_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "b946485614514d5b3efabf7685f8ca480723101f",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012000842",
@@ -1517,7 +1892,11 @@
         "supabase/migrations/20261012002200_ig_m99_cohort_authority_reconcile_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "97bc26beefce2f4ce714032b12b01ea7870959bb",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012001330",
@@ -1533,7 +1912,11 @@
         "supabase/migrations/20261012001100_ig_m99_ekb_jsonb_null_assertion_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "a4c5791ff90d0f30ec62ad37a22f6aba336f29c9",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012002150",
@@ -1549,7 +1932,11 @@
         "supabase/migrations/20261012004000_ig_m99_rollback_receipt_policy_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "1e5827f2e91f8295b5c6da5f52222c154f5868ce",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012003510",
@@ -1565,7 +1952,11 @@
         "supabase/migrations/20261012005800_ig_m99_transversal_reconciler_decouple_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "fe7b1047367468d418459aa6ebdc67e8631576f9",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012003903",
@@ -1581,7 +1972,11 @@
         "supabase/migrations/20261012010600_ig_m99_runtime_proof_gate_contract_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "80a8e36b676e094e83a090cf68a6aee56a428acd",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012004144",
@@ -1597,7 +1992,11 @@
         "supabase/migrations/20261012011500_ig_m99_reversible_consumer_binding_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "66ef56f7154f65d7aa6abede2c8e27c0c94be743",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012004206",
@@ -1613,7 +2012,11 @@
         "supabase/migrations/20261012011000_ig_m910_versioned_cohort_contract_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "ed2ebbee41efbd9202fb38f8417c1eef7d36f617",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012004355",
@@ -1629,7 +2032,11 @@
         "supabase/migrations/20261011060000_lf_d2_metadata_admission_split_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "311becd61a8bf4fdfb6e0e28179cb9669a7446c9",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012004415",
@@ -1645,7 +2052,11 @@
         "supabase/migrations/20261012015000_ig_m910_residue_delta_ekb_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "766fdcaf21dda78f9f2e5a736671e30e1619c248",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012005601",
@@ -1661,7 +2072,11 @@
         "supabase/migrations/20261012021000_ig_m912_readiness_ig_owned_contract_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "61a440fbf5cbc8585e3c2ad31ea891d93c0b814f",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012005604",
@@ -1677,7 +2092,11 @@
         "supabase/migrations/20261012021100_ig_m912_receipt_sourcepack_reconcile_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "3244a86c8feb87022625d9265b96b780e5d88432",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012005606",
@@ -1693,7 +2112,11 @@
         "supabase/migrations/20261012021200_ig_m912_ekb_contract_errors_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "940a2557d55e7fc1749bb75c7847e4e6a1b29cee",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012011005",
@@ -1709,7 +2132,11 @@
         "supabase/migrations/20261012023000_ig_m912_m98_technical_consumption_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "2727a0426e321ec76a76b08616515d6693624ec8",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012011948",
@@ -1725,7 +2152,11 @@
         "supabase/migrations/20261012032000_ig_m913_ledger_independent_contract_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "c6749c01b991cfc82b015d408aa7f5a6a3943421",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012011950",
@@ -1741,7 +2172,11 @@
         "supabase/migrations/20261012032100_ig_m913_ekb_contract_errors_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "5889135603dd6392933e9de3d24e067d75e3656f",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012012743",
@@ -1757,7 +2192,11 @@
         "supabase/migrations/20261012040000_ig_m100_typed_frozen_bundle_contract_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "9b91e5beb09218ed8bdc2e4744ff25b75818e26c",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012012746",
@@ -1773,7 +2212,11 @@
         "supabase/migrations/20261012040100_ig_m100_human_approval_semantics_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "07e09dc3bff828b8ee71860921e935aaa74ff1c9",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012012748",
@@ -1789,7 +2232,11 @@
         "supabase/migrations/20261012040200_ig_m100_ekb_contract_findings_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "a44f556feafb3833ca9abf066e57a6d9144e1bf8",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012052424",
@@ -1805,7 +2252,11 @@
         "supabase/migrations/20261012054500_lf_d2_u8_cargas_lotes_invoker_facade_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "08a0d57878e7383c0b269e3ad0a89285a3a3a2ff",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012064408",
@@ -1821,7 +2272,11 @@
         "supabase/migrations/20261003003000_lf_pilot_srcr_g12_state_authority_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "11b8fa42a2a44a3e0ce9628eb1f8d59950d51e75",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012070000",
@@ -1837,7 +2292,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "70641b5fe90a91506f5ae8a698d9569f166e8528",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012071000",
@@ -1853,7 +2312,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "e842f5c7e66ef87ba08ef6bdce8be5c05c69d1a5",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012073000",
@@ -1869,7 +2332,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "60ee615dd51439c930c9129aad1846086a5ead1d",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012074500",
@@ -1885,7 +2352,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "ced7bde1edadec7c0045c1bec720f4ab82de52e7",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012080000",
@@ -1901,7 +2372,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "d8b5a792d9b24d3576ecc061a4df0bfcbf1b36cf",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012080128",
@@ -1917,7 +2392,11 @@
         "supabase/migrations/20261012072000_lf_gpt_native_in_chat_capture_policy_candidate_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "c571e9623815f170188564deddd915d14f430ac8",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012090000",
@@ -1933,7 +2412,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "1d289e02e0bc49c9c50599ffd91e399b44abb935",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012091500",
@@ -1949,7 +2432,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "a0e04496695e6e756ae59f26f201852acab272ed",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012104500",
@@ -1965,7 +2452,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "a6b5b8536d847de903ef55fd8684cc144f6fb426",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012110000",
@@ -1981,7 +2472,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "999b3355294e374c52d39e48d2e1f899b0389225",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012114500",
@@ -1997,7 +2492,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "6177fc985c4fb1519a9e106aa7a4c83f9bf02fa6",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012132744",
@@ -2013,7 +2512,11 @@
         "supabase/migrations/20261012081500_analysis_a9_pg01_exact_receipt_guard_v1.sql"
       ],
       "main_matching_name": true,
-      "main_exact_identity": false
+      "main_exact_identity": false,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "fbd3fe24f74dd4bbb7760927d08e8f5174f11cbe",
+      "main_same_version_raw_byte_match": false,
+      "other_version_raw_byte_match": true
     },
     {
       "version": "20261012133000",
@@ -2029,7 +2532,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "2a74a4e81e230d64022440f1537ddd223784f232",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012133100",
@@ -2045,7 +2552,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "f3aef4730a8793b35f1b7fb95e7bd623a7204394",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012133200",
@@ -2061,7 +2572,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "22ac64b1e87dca693ea2ad57c3a8b8755a7c6d4f",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012153000",
@@ -2077,7 +2592,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "f0855085cdae425d5a742541702cfa56ac0d9d34",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     },
     {
       "version": "20261012160000",
@@ -2093,7 +2612,11 @@
       ],
       "main_same_canonical_name_other_versions": [],
       "main_matching_name": true,
-      "main_exact_identity": true
+      "main_exact_identity": true,
+      "ledger_statement_count": 1,
+      "raw_git_blob_sha1": "77f2151e2bf11f258a8f22192cc2760d3e111e88",
+      "main_same_version_raw_byte_match": true,
+      "other_version_raw_byte_match": false
     }
   ],
   "duplicate_canonical_names": [
@@ -2197,7 +2720,8 @@
   "notes": [
     "Canonical duplicate is name normalization only; not proof that SQL bytes match.",
     "Main-file and Train provenance unresolved until full Git tree and PR merge evidence are compared.",
-    "Main Git tree filename inventory completed for 130 rows, but canonical content comparison and Train attribution remain pending."
+    "Main Git tree filename inventory completed for 130 rows, but canonical content comparison and Train attribution remain pending.",
+    "Raw byte identity confirmed by independent Git blob SHA-1 over single stored ledger statement, with Git tree blob SHA; unmatched pairs still require migration_transport_normalization canonical check."
   ],
   "dry_run_20261010_source_to_ledger": {
     "mode": "READ_ONLY_SQL_CANONICAL_COMPARISON",
