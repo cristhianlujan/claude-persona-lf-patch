@@ -20,7 +20,7 @@ def compare(source, ledger):
         else:
             try:
                 compare_exact_source(version=version,source_name=f["name"],source_sql=f["sql"],
-                                     remote_name=l["name"],remote_statements=l["statements"])
+                                     remote_name=l["name"],remote_sha256=sha256(canonical("\\n".join(l["statements"]))),\n                                     remote_statement_count=len(l["statements"]))
                 kind="MATCH"
             except Exception as exc:
                 kind="MISMATCH"
