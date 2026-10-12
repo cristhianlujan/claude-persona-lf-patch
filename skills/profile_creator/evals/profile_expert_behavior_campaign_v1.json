@@ -1,0 +1,1273 @@
+{
+  "schema": "PROFILE_EXPERT_BEHAVIOR_CAMPAIGN_V1",
+  "campaign_id": "PEXP-V1-20261008",
+  "benchmark_scope": "EXPERT_TASK_PERFORMANCE_E2E",
+  "status": "DESIGN_FROZEN_TASK_CONTENT_PENDING",
+  "planned_case_count": 120,
+  "domain_family_count": 8,
+  "cases_per_domain_family": 15,
+  "difficulty_levels": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "cases_per_difficulty_per_domain": 3,
+  "power_analysis_ref": "skills/profile_creator/evals/profile_expert_behavior_power_analysis_v1.json",
+  "holdout_manifest_ref": "skills/profile_creator/evals/profile_expert_behavior_holdout_v1.json",
+  "holdout_manifest_commit": "ae623337c6c54de0e8e766ab287b11d2c8766c4a",
+  "holdout_case_count": 60,
+  "holdout_labels_visible_to_producer": false,
+  "thresholds_frozen_before_raw": true,
+  "task_content_frozen": false,
+  "raw_generation_started": false,
+  "architecture_control_benchmarks_are_inputs_to_design_not_expertise_scores": true,
+  "arms": [
+    "A_ORIGINAL",
+    "B_UPDATER_V01",
+    "C_EVOLUTION_CURRENT",
+    "D_EVOLUTION_TARGET"
+  ],
+  "route_policy": {
+    "primary_executor_mode": "GPT_NATIVE",
+    "same_execution_route_per_paired_case": true,
+    "silent_route_substitution": false
+  },
+  "evaluator_policy": {
+    "blind_to_arm_identity": true,
+    "evaluator_execution_must_differ_from_producer": true,
+    "verification_state_required": "VERIFIED",
+    "independent_assurance_after_score": true
+  },
+  "domain_families": [
+    "ENGINEERING",
+    "PROGRAMMING",
+    "UX",
+    "PRODUCT",
+    "RESEARCH",
+    "CAUSAL_REASONING",
+    "GOVERNANCE_REVIEW",
+    "EXTERNAL_GENERAL_DOMAIN"
+  ],
+  "allocation": [
+    {
+      "case_id": "PEXP-001",
+      "domain_family": "ENGINEERING",
+      "difficulty": 1,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-002",
+      "domain_family": "ENGINEERING",
+      "difficulty": 1,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-003",
+      "domain_family": "ENGINEERING",
+      "difficulty": 1,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-004",
+      "domain_family": "ENGINEERING",
+      "difficulty": 2,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-005",
+      "domain_family": "ENGINEERING",
+      "difficulty": 2,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-006",
+      "domain_family": "ENGINEERING",
+      "difficulty": 2,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-007",
+      "domain_family": "ENGINEERING",
+      "difficulty": 3,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-008",
+      "domain_family": "ENGINEERING",
+      "difficulty": 3,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-009",
+      "domain_family": "ENGINEERING",
+      "difficulty": 3,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-010",
+      "domain_family": "ENGINEERING",
+      "difficulty": 4,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-011",
+      "domain_family": "ENGINEERING",
+      "difficulty": 4,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-012",
+      "domain_family": "ENGINEERING",
+      "difficulty": 4,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-013",
+      "domain_family": "ENGINEERING",
+      "difficulty": 5,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-014",
+      "domain_family": "ENGINEERING",
+      "difficulty": 5,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-015",
+      "domain_family": "ENGINEERING",
+      "difficulty": 5,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-016",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 1,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-017",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 1,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-018",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 1,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-019",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 2,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-020",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 2,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-021",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 2,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-022",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 3,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-023",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 3,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-024",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 3,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-025",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 4,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-026",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 4,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-027",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 4,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-028",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 5,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-029",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 5,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-030",
+      "domain_family": "PROGRAMMING",
+      "difficulty": 5,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-031",
+      "domain_family": "UX",
+      "difficulty": 1,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-032",
+      "domain_family": "UX",
+      "difficulty": 1,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-033",
+      "domain_family": "UX",
+      "difficulty": 1,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-034",
+      "domain_family": "UX",
+      "difficulty": 2,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-035",
+      "domain_family": "UX",
+      "difficulty": 2,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-036",
+      "domain_family": "UX",
+      "difficulty": 2,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-037",
+      "domain_family": "UX",
+      "difficulty": 3,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-038",
+      "domain_family": "UX",
+      "difficulty": 3,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-039",
+      "domain_family": "UX",
+      "difficulty": 3,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-040",
+      "domain_family": "UX",
+      "difficulty": 4,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-041",
+      "domain_family": "UX",
+      "difficulty": 4,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-042",
+      "domain_family": "UX",
+      "difficulty": 4,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-043",
+      "domain_family": "UX",
+      "difficulty": 5,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-044",
+      "domain_family": "UX",
+      "difficulty": 5,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-045",
+      "domain_family": "UX",
+      "difficulty": 5,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-046",
+      "domain_family": "PRODUCT",
+      "difficulty": 1,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-047",
+      "domain_family": "PRODUCT",
+      "difficulty": 1,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-048",
+      "domain_family": "PRODUCT",
+      "difficulty": 1,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-049",
+      "domain_family": "PRODUCT",
+      "difficulty": 2,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-050",
+      "domain_family": "PRODUCT",
+      "difficulty": 2,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-051",
+      "domain_family": "PRODUCT",
+      "difficulty": 2,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-052",
+      "domain_family": "PRODUCT",
+      "difficulty": 3,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-053",
+      "domain_family": "PRODUCT",
+      "difficulty": 3,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-054",
+      "domain_family": "PRODUCT",
+      "difficulty": 3,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-055",
+      "domain_family": "PRODUCT",
+      "difficulty": 4,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-056",
+      "domain_family": "PRODUCT",
+      "difficulty": 4,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-057",
+      "domain_family": "PRODUCT",
+      "difficulty": 4,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-058",
+      "domain_family": "PRODUCT",
+      "difficulty": 5,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-059",
+      "domain_family": "PRODUCT",
+      "difficulty": 5,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-060",
+      "domain_family": "PRODUCT",
+      "difficulty": 5,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-061",
+      "domain_family": "RESEARCH",
+      "difficulty": 1,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-062",
+      "domain_family": "RESEARCH",
+      "difficulty": 1,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-063",
+      "domain_family": "RESEARCH",
+      "difficulty": 1,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-064",
+      "domain_family": "RESEARCH",
+      "difficulty": 2,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-065",
+      "domain_family": "RESEARCH",
+      "difficulty": 2,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-066",
+      "domain_family": "RESEARCH",
+      "difficulty": 2,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-067",
+      "domain_family": "RESEARCH",
+      "difficulty": 3,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-068",
+      "domain_family": "RESEARCH",
+      "difficulty": 3,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-069",
+      "domain_family": "RESEARCH",
+      "difficulty": 3,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-070",
+      "domain_family": "RESEARCH",
+      "difficulty": 4,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-071",
+      "domain_family": "RESEARCH",
+      "difficulty": 4,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-072",
+      "domain_family": "RESEARCH",
+      "difficulty": 4,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-073",
+      "domain_family": "RESEARCH",
+      "difficulty": 5,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-074",
+      "domain_family": "RESEARCH",
+      "difficulty": 5,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-075",
+      "domain_family": "RESEARCH",
+      "difficulty": 5,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-076",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 1,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-077",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 1,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-078",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 1,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-079",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 2,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-080",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 2,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-081",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 2,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-082",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 3,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-083",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 3,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-084",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 3,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-085",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 4,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-086",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 4,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-087",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 4,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-088",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 5,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-089",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 5,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-090",
+      "domain_family": "CAUSAL_REASONING",
+      "difficulty": 5,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-091",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 1,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-092",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 1,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-093",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 1,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-094",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 2,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-095",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 2,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-096",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 2,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-097",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 3,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-098",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 3,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-099",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 3,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-100",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 4,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-101",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 4,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-102",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 4,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-103",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 5,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-104",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 5,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-105",
+      "domain_family": "GOVERNANCE_REVIEW",
+      "difficulty": 5,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-106",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 1,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-107",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 1,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-108",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 1,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-109",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 2,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-110",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 2,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-111",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 2,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-112",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 3,
+      "replicate_slot": 1,
+      "critical": false,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-113",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 3,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-114",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 3,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-115",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 4,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-116",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 4,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-117",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 4,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    },
+    {
+      "case_id": "PEXP-118",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 5,
+      "replicate_slot": 1,
+      "critical": true,
+      "preservation_case": true,
+      "adaptation_case": false,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-119",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 5,
+      "replicate_slot": 2,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": true,
+      "transfer_case": false
+    },
+    {
+      "case_id": "PEXP-120",
+      "domain_family": "EXTERNAL_GENERAL_DOMAIN",
+      "difficulty": 5,
+      "replicate_slot": 3,
+      "critical": false,
+      "preservation_case": false,
+      "adaptation_case": false,
+      "transfer_case": true
+    }
+  ],
+  "admission_thresholds": {
+    "relative_uplift_D_vs_A_min": 0.15,
+    "paired_ci_lower_D_vs_A_gt": 0,
+    "paired_ci_lower_D_vs_C_gt": 0,
+    "holdout_ci_lower_D_vs_A_gt": 0,
+    "holdout_ci_lower_D_vs_C_gt": 0,
+    "critical_regressions_max": 0,
+    "preservation_ratio_min": 0.98
+  },
+  "anti_contamination": [
+    "HOLDOUT_LABELS_NOT_VISIBLE_TO_PRODUCER",
+    "NO_TASK_EXPECTATIONS_IN_PROFILE_EVOLUTION_INPUT",
+    "NO_POST_RAW_THRESHOLD_TUNING",
+    "NO_DOCUMENT_ONLY_SCORING",
+    "NO_EXPECTED_EVOLUTION_CLASS_AS_TASK_SCORE"
+  ],
+  "next_required_artifact": "FROZEN_BLIND_TASK_CORPUS_V1",
+  "note": "This freezes design, sample size, strata, allocation, holdout count/ref and thresholds. Semantic task content has not yet been generated and no benchmark RAW exists."
+}
