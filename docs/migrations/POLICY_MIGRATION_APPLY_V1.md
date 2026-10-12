@@ -164,3 +164,53 @@ must not be run or declared DONE if another pending source remains.
 This one-off exception never permits stamping an unexecuted migration as
 applied, changing a production pointer, suppressing evidence or bypassing
 the independent operational canary gate. Do not generalize to other files.
+
+
+## Narrow recovery: two pre-merged, unapplied M9.10/EKB migrations (2026-10-12)
+
+Status: authorized only for the exact two immutable source blobs below.
+This exception repairs a Git-first-order violation after merge; it does not
+relax exact-source identity, version sequence, pointer permissions, or ROLLBACK
+test obligations. Never infer a new general-purpose DB transport.
+
+The original "STOP on any pending on main" rule applies to all other cases.
+It is replaced only for this exact frozen pair by an ordered recovery,
+because the files already exist on main and cannot be prepared as fresh PR
+heads without changing their canonical identities.
+
+| Order | Version | Name | Git blob SHA |
+|---|---|---|---|
+| 1 | 20261012073000 | ig_m910_two_level_cohort_contract_governance_v2 | 60ee615dd51439c930c9129aad1846086a5ead1d |
+| 2 | 20261012074500 | ig_ekb_semantic_preflight_first_run_v1 | ced7bde1edadec7c0045c1bec720f4ab82de52e7 |
+
+Preflight MUST first read current main SHA/tree, all timestamped migration
+paths on main, and live ledger max. The pending set at this boundary MUST be
+exactly those two paths; existing applied versions 20261012070000 and
+20261012071000 must have their registered blob identities intact. Any
+unexpected pending path, unexpected DB max, changed blob or already-partially
+applied mismatch means STOP, not best-effort skipping.
+
+Then, one candidate at a time in canonical version ascending order:
+
+1. Re-fetch the candidate's exact main blob immediately before write.
+2. Test candidate source in an independent BEGIN/ROLLBACK transaction;
+   assert post-state is unchanged.
+3. In a single transaction, lock supabase_migrations.schema_migrations,
+   assert expected predecessor max and target absence, apply the unmodified
+   candidate SQL, and insert one exact-version ledger row with the complete
+   source in statements[1], created_by and idempotency_key=gitblob:<SHA>
+   as defined in this policy. COMMIT atomically.
+4. Read back source/ledger/authority. If parity fails, STOP and diagnose
+   rather than replay or stamp as applied.
+5. Re-freeze current main and ledger before considering the second candidate.
+
+Do not use Supabase MCP apply_migration, retimestamp, create a second
+migration to mask the gap, or assert either receipt succeeded unless live
+SQL+ledger+readback truly agree.
+
+The first migration changes engineering contract/governance metadata only.
+The second adds only an EKB finding. Neither activates runtime, canary, or
+production. Engineering checkpoint completion still requires independent
+real DB sandbox evidence, not this migration repair.
+
+Scope expires as soon as both exact ledger identities are reconciled.
