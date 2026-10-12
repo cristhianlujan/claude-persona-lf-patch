@@ -1,0 +1,65 @@
+{
+  "schema_version": "PROGRAMMING_CONTEXT_RUNTIME_GUARD_PROBE_V1",
+  "mode": "TRANSACTIONAL_ROLLBACK_ONLY",
+  "subject": "B2B_APP_SHELL",
+  "historical_context_id": "38a8f5c8-a6f3-45d6-b1ee-823af130e647",
+  "historical_snapshot_result": "BLOCKED_AS_EXPECTED",
+  "historical_reason": "Persisted B2B snapshot predates runtime payload conformance and omits mandatory programming snapshot structure.",
+  "synthetic_complete_snapshot_result": "VALID_AS_EXPECTED",
+  "post_probe_live_candidate_function_count": 0,
+  "runtime_activation": false,
+  "production_activation": false,
+  "migration_ref": "supabase/migrations/20261007183500_programming_context_snapshot_runtime_guard_v1.sql",
+  "notes": [
+    "Generic DECISION_CONTEXT_ASOF outer validation is reused.",
+    "Programming-specific payload conformance is enforced by a guarded wrapper.",
+    "No new context store is created."
+  ],
+  "probe_revision": "V3_SYSTEMIC",
+  "runtime_probe_summary": {
+    "total": 7,
+    "positive": 1,
+    "negative": 6,
+    "status": "PASS"
+  },
+  "negative_cases": [
+    {
+      "case": "historical_b2b_snapshot",
+      "expected": "BLOCKED",
+      "result": "PASS"
+    },
+    {
+      "case": "implementation_absence_misclassified_as_blocker",
+      "expected_code": "PROGRAMMING_IMPLEMENTATION_ABSENCE_MISCLASSIFIED_AS_BLOCKER",
+      "result": "PASS"
+    },
+    {
+      "case": "requires_decision_without_packet",
+      "expected_code": "PROGRAMMING_HUMAN_DECISION_PACKET_MISSING",
+      "result": "PASS"
+    },
+    {
+      "case": "requires_decision_with_current_authority",
+      "expected_code": "PROGRAMMING_REQUIRES_DECISION_WITH_CURRENT_AUTHORITY",
+      "result": "PASS"
+    },
+    {
+      "case": "missing_scope_front_matrix",
+      "expected_code": "PROGRAMMING_SCOPE_FRONT_MATRIX_INCOMPLETE",
+      "result": "PASS"
+    },
+    {
+      "case": "a6_missing_permission_field",
+      "expected_code": "PROGRAMMING_IMPLEMENTABILITY_REQUIREMENT_INVALID",
+      "result": "PASS"
+    }
+  ],
+  "positive_cases": [
+    {
+      "case": "synthetic_complete_snapshot",
+      "expected": "VALID",
+      "result": "PASS"
+    }
+  ],
+  "runtime_field_coverage": "PASS"
+}

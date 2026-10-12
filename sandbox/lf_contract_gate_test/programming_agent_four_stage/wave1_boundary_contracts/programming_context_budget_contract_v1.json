@@ -1,0 +1,74 @@
+{
+  "schema_version": "PROGRAMMING_CONTEXT_BUDGET_CONTRACT_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "unit": "PG-07",
+  "capability": {
+    "code": "CONTEXT_BUDGET_GOVERNANCE",
+    "version_policy": "CURRENT",
+    "compiler_enforcement": "public.fn_lf_router_preflight_v1(text)",
+    "ledger": "private.lf_context_budget_events_v2",
+    "readback": "public.v_lf_context_budget_latest_v2",
+    "parallel_budget_engine_forbidden": true
+  },
+  "projection": {
+    "source": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+    "partition_source": "PROGRAMMING_SOLUTION_PARTITION_SET_V1",
+    "task_scoped_projection_required": true,
+    "lossy_summary_forbidden": true,
+    "full_spec_copy_to_every_worker_forbidden": true,
+    "full_repo_context_forbidden": true,
+    "material_context_truncation_forbidden": true,
+    "jit_exact_ref_fetch_allowed": true,
+    "required_material_refs": [
+      "solution_objective",
+      "applicable_requirement_refs",
+      "applicable_rule_refs",
+      "shared_contract_refs",
+      "dependency_refs",
+      "interface_refs",
+      "source_refs",
+      "acceptance_refs",
+      "write_scope",
+      "hard_boundaries"
+    ]
+  },
+  "budget_policy": {
+    "model_context_limit_source": "RUNTIME_MODEL_CONTEXT_PROFILE",
+    "hardcoded_model_token_limit_forbidden": true,
+    "reserve_values_source": "MODEL_PROFILE_AND_BENCHMARK_DERIVED",
+    "usable_input_budget_formula": "MODEL_CONTEXT_LIMIT - GOVERNANCE_RESERVE - TOOL_READBACK_RESERVE - OUTPUT_RESERVE - RECOVERY_RESERVE",
+    "transversal_policy_limit_must_be_current": true,
+    "effective_limit_rule": "MIN(CURRENT_TRANSVERSAL_HARD_LIMIT, MODEL_SAFE_USABLE_INPUT_BUDGET)",
+    "window_saturation_forbidden": true,
+    "soft_limit_status": "YELLOW",
+    "hard_limit_status": "RED",
+    "red_action": "BLOCK_AND_RETURN_TO_PG04_REPARTITION_OR_JIT",
+    "yellow_action": "NO_ADDITIONAL_PREFETCH_PREFER_JIT",
+    "green_action": "CONTINUE"
+  },
+  "receipt": {
+    "schema_version": "PROGRAMMING_CONTEXT_BUDGET_RECEIPT_V1",
+    "required_fields": [
+      "projection_id",
+      "solution_id",
+      "projection_sha256",
+      "model_profile_ref",
+      "budget_policy_ref",
+      "estimated_tokens",
+      "soft_limit_tokens",
+      "hard_limit_tokens",
+      "model_safe_usable_input_budget",
+      "effective_limit_tokens",
+      "context_status",
+      "source_refs[]",
+      "verdict",
+      "overflow_action"
+    ],
+    "verdict_values": [
+      "ACCEPT",
+      "BLOCK"
+    ]
+  },
+  "runtime_activation": false,
+  "production_activation": false
+}
