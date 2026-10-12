@@ -1,0 +1,20 @@
+name: F0 Workflow Activation Static Tests
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'sandbox/lf_contract_gate_test/f0_workflow_activation/**'
+permissions:
+  contents: read
+jobs:
+  activation-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate workflow syntax using actionlint
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.7 -color
+      - name: Validate guarded scope
+        run: python3 sandbox/lf_contract_gate_test/f0_workflow_activation/test_scope.py
