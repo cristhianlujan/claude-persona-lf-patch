@@ -171,8 +171,7 @@ BEGIN
     ),true);
 
   UPDATE programacion.engineering_plan_units
-     SET unit_metadata=v_new_meta,
-         exit_criterion='M4.11 engineering: CP2 signed historical upstream readback M4.10/M9.8/M9.12; CP3 independently verified T-INDEP (DEPENDENCIES/DATA/AUTHOR) and exact bundle release binding; CP4 0 PASS without oracle; CP5 47/47 real oracle strategies; CP6 versioned activation readback. No production/runtime authorization by engineering closure.'
+     SET unit_metadata=v_new_meta
    WHERE id=v_id;
 
   v_after:=programacion.fn_engineering_checkpoint_action_spec_v3(
