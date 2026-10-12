@@ -1,0 +1,2 @@
+GitHub connector write capability probe, 2026-10-12.
+Diagnostic only; no production, SQL, or PR changes.
