@@ -7,6 +7,7 @@ A caller-supplied 'verified' dict has no standing at this boundary.
 from __future__ import annotations
 
 import re
+import uuid
 from typing import Any
 
 SHA = re.compile(r"^[0-9a-f]{64}$")
@@ -125,6 +126,51 @@ class CanonicalM99EvidenceReadback:
                     and bool(measure["measurement_ref"].strip())
                 ):
                     raise ValueError("M99_INDEPENDENT_ASSURANCE_NOT_CURRENT_OR_UNATTESTED")
+                # Do not infer independence from a field inside a canary receipt.
+                # Resolve the separately issued reviewer output in Evidence Ledger.
+                review_ref = measure.get("review_receipt_id")
+                try:
+                    review_id = str(uuid.UUID(review_ref))
+                except (TypeError, ValueError, AttributeError):
+                    raise ValueError("M99_INDEPENDENT_REVIEW_LEDGER_ID_REQUIRED")
+                cur.execute(
+                    """SELECT receipt_id,receipt_sha256,subject_type,subject_ref,
+                              subject_sha256,source_head_sha,capability_code,
+                              verification_state,execution_id,receipt_payload
+                       FROM private.lf_evidence_ledger_v1
+                       WHERE receipt_id=%s::uuid""",
+                    (review_id,),
+                )
+                review_row = cur.fetchone()
+                cols = ("receipt_id","receipt_sha256","subject_type","subject_ref",
+                        "subject_sha256","source_head_sha","capability_code",
+                        "verification_state","execution_id","receipt_payload")
+                review = (review_row if isinstance(review_row,dict)
+                          else dict(zip(cols,review_row)) if review_row is not None else {})
+                review_body = review.get("receipt_payload")
+                review_body = review_body if isinstance(review_body,dict) else {}
+                independence = review_body.get("independence_measure")
+                independence = independence if isinstance(independence,dict) else {}
+                producer_id = review_body.get("producer_execution_id")
+                reviewer_id = review_body.get("reviewer_identity")
+                if not (
+                    str(review.get("receipt_id")) == review_id
+                    and review.get("capability_code") == "INDEPENDENT_ASSURANCE"
+                    and review.get("verification_state") == "VERIFIED"
+                    and review.get("subject_type") == "IG_CANARY_OBSERVATION"
+                    and review.get("subject_ref") == "IG_CANARY:" + cohort
+                    and review.get("subject_sha256") == observation_sha
+                    and review.get("source_head_sha") == records[0]["head_sha"]
+                    and review.get("receipt_sha256") == measure.get("review_receipt_sha256")
+                    and isinstance(producer_id,str) and bool(producer_id.strip())
+                    and isinstance(reviewer_id,str) and bool(reviewer_id.strip())
+                    and reviewer_id != producer_id
+                    and independence.get("state") == "INDEPENDENT"
+                    and review_body.get("run_ref") == run_ref
+                    and review_body.get("candidate_sha256") == candidate.candidate_sha256
+                ):
+                    raise ValueError("M99_INDEPENDENT_REVIEW_NOT_PROVIDER_BOUND")
+
         finally:
             connection.rollback()  # Always leave even the readback transaction closed.
 
