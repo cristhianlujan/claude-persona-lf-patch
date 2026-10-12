@@ -34,7 +34,6 @@ WITH latest AS (
 SELECT 'FALSE_PASS' AS case_code,'REUSED_M49_PRIOR_ART_ONLY' AS evidence_level,
        suite_run_id,created_at,assertions,correct_detections,generic_classifications,
        original_qualified AS prior_art_qualified,
-       (original_qualified AND NOT (original_qualified AND 1=0)) AS assertion_guard_selfcheck,
        false AS independent_canary_oracle_proven,
        false AS real_m99_canary_receipts_verified,
        false AS automatic_rollback_proven,
