@@ -666,7 +666,6 @@ jobs:
       - name: Router execution patch step (Train-managed, post-apply)
         id: train_exec_commit
         if: steps.train_exec.outcome == 'success' && steps.real_apply.outputs.applied == 'true'
-        continue-on-error: true
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         shell: bash
@@ -840,7 +839,6 @@ jobs:
 
       - name: Router execution verify and close (Train-managed, post-merge)
         if: needs.lf-migration-merge-train.outputs.train_exec_state != ''
-        continue-on-error: true
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           STATE_B64: ${{ needs.lf-migration-merge-train.outputs.train_exec_state }}
