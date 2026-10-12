@@ -6,7 +6,7 @@ import pathlib
 import re
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from lf_migration_source_parity_ci_context import classified, managed  # noqa: E402
 
 FILENAME_RE = re.compile(r"^\\d{14}_(?P<name>[A-Za-z0-9][A-Za-z0-9_]*)\\.sql$")
