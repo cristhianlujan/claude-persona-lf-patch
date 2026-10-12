@@ -45,6 +45,7 @@ jobs:
       migration_version: ${{ steps.plan.outputs.migration_version }}
       migration_name: ${{ steps.plan.outputs.migration_name }}
       mode: ${{ steps.plan.outputs.mode }}
+      operation_mode: ${{ steps.operation_request.outputs.operation_mode }}
       applied: ${{ steps.real_apply.outputs.applied || 'false' }}
       trusted_main: ${{ steps.admission.outputs.current_main }}
       train_exec_state: ${{ steps.train_exec_commit.outputs.state_b64 || steps.train_exec.outputs.state_b64 }}
@@ -197,6 +198,52 @@ jobs:
             printf '%s\n' "head_ref=$PR_HEAD_REF"
             printf '%s\n' "current_main=$current_main"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Resolve requested migration operation mode
+        id: operation_request
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .lf_train
+          printf '%s' "${PR_BODY:-}" > .lf_train/pr-body.txt
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_operation_request.py             --body-file .lf_train/pr-body.txt --github-output "$GITHUB_OUTPUT"
+
+      - name: Require owner approval for RECOVER
+        if: steps.operation_request.outputs.operation_mode == 'RECOVER'
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          ISSUE: ${{ steps.operation_request.outputs.recover_issue }}
+          RECOVER_PATH: ${{ steps.operation_request.outputs.recover_path }}
+          RECOVER_BLOB: ${{ steps.operation_request.outputs.recover_blob }}
+          OWNER_ACTORS: ${{ vars.LF_MIGRATION_TRAIN_OWNER_ACTORS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          allowed=",paulozterra,cristhianlujan,"
+          if [ -n "${OWNER_ACTORS:-}" ]; then
+            normalized="$(printf '%s' "$OWNER_ACTORS" | tr ' ' ',' | tr -d '\n\r')"
+            allowed="$allowed$normalized,"
+          fi
+          gh api --paginate "repos/$REPO/issues/$ISSUE/comments?per_page=100" > .lf_train/recover-comments.jsonl
+          python3 - "$allowed" "$RECOVER_PATH" "$RECOVER_BLOB" <<'PY'
+          import json,sys
+          allowed={x for x in sys.argv[1].strip(",").split(",") if x}
+          path,blob=sys.argv[2],sys.argv[3]
+          token=f"APPROVE_MIGRATION_RECOVER path={path} blob={blob}"
+          rows=[]
+          for line in open(".lf_train/recover-comments.jsonl",encoding="utf-8"):
+              line=line.strip()
+              if not line: continue
+              obj=json.loads(line)
+              rows.extend(obj if isinstance(obj,list) else [obj])
+          ok=[r for r in rows if (r.get("user") or {}).get("login") in allowed and token in str(r.get("body") or "")]
+          if not ok:
+              raise SystemExit("FAIL_RECOVER_OWNER_APPROVAL_MISSING")
+          print("PASS_RECOVER_OWNER_APPROVAL owner="+str((ok[-1].get("user") or {}).get("login")))
+          PY
 
       - name: Sync PR branch with current main in REAL mode
         id: sync
