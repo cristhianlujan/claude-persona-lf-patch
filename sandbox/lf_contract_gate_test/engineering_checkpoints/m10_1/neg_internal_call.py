@@ -74,7 +74,7 @@ def main():
         "semantic_authority_bound": snapshot.get("source") == "pg_catalog.pg_proc"
             and snapshot.get("selection_contract") == "PUBLIC_NON_FACADE_PLUS_ROUTER_EXTERNAL_SQL_ENTRYPOINTS",
         "adversarial_case_executed": adversarial_rejected,
-        "external_direct_call_count": len(violations),
+        "external_direct_call_count": len(snapshot.get("external_private_calls") or []),
         "scanned_entrypoints": snapshot.get("scanned_entrypoints"),
         "public_facade_count": snapshot.get("public_facade_count"),
         "router_source_sha256": snapshot.get("router_source_sha256"),
