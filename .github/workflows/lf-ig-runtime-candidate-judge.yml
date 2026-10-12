@@ -13,10 +13,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ig-runtime-candidate-judge:
-    name: ig-runtime-candidate-judge
+  classify-ig-n9-applicability:
+    name: IG N9 applicability without secrets
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
+    outputs:
+      applicable: ${{ steps.scope.outputs.applicable }}
     permissions:
       contents: read
       pull-requests: read
@@ -42,6 +44,7 @@ jobs:
           python3 sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_request_v1.py self-test
 
       - name: Classify exact IG judge request without executing PR code
+        id: scope
         env:
           REPOSITORY: ${{ github.repository }}
           HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
@@ -56,7 +59,7 @@ jobs:
           git fetch --no-tags --depth=200 origin "$HEAD_SHA"
           REQUEST_PATH='sandbox/ig_cv/n9_requests/request.json'
           if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- "$REQUEST_PATH"; then
-            echo "IG_N9_APPLICABLE=false" >> "$GITHUB_ENV"
+            echo "applicable=false" >> "$GITHUB_OUTPUT"
             echo "PASS_IG_N9_NOT_APPLICABLE request_path=$REQUEST_PATH"
             exit 0
           fi
@@ -71,22 +74,62 @@ jobs:
           fi
           git show "$HEAD_SHA:$REQUEST_PATH" > /tmp/ig-n9-request.json
           python3 -m json.tool /tmp/ig-n9-request.json >/dev/null
-          echo "IG_N9_APPLICABLE=true" >> "$GITHUB_ENV"
+          echo "applicable=true" >> "$GITHUB_OUTPUT"
           echo "IG_N9_HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
 
-      - name: Resolve governed independent IG database target
-        if: env.IG_N9_APPLICABLE == 'true'
+  run-ig-n9-when-applicable:
+    name: Execute IG N9 candidate
+    needs: classify-ig-n9-applicability
+    if: needs.classify-ig-n9-applicability.outputs.applicable == 'true'
+    environment: lf-ig-judge
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - name: Fetch governed candidate request
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
+          git fetch --no-tags --depth=200 origin "$HEAD_SHA"
+          git show "$HEAD_SHA:sandbox/ig_cv/n9_requests/request.json" > "$RUNNER_TEMP/ig-n9-request.json"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.10'
+      - name: Resolve governed independent IG database target
+                run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py self-test
           python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py emit-env --consumer ig-runtime-candidate-judge
 
       - name: Execute rollback-only independent IG flow judge
-        if: env.IG_N9_APPLICABLE == 'true'
-        env:
+                env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/ig_runtime_candidate_judge_request_v1.py run \
-            --request /tmp/ig-n9-request.json \
-            --head-sha "$IG_N9_HEAD_SHA"
+            --request "$RUNNER_TEMP/ig-n9-request.json" \
+            --head-sha "${{ github.event.pull_request.head.sha }}"
+  ig-runtime-candidate-judge:
+    name: ig-runtime-candidate-judge
+    needs: [classify-ig-n9-applicability, run-ig-n9-when-applicable]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail-closed exact-name check
+        env:
+          CLASSIFIER: ${{ needs.classify-ig-n9-applicability.result }}
+          APPLICABLE: ${{ needs.classify-ig-n9-applicability.outputs.applicable }}
+          EXECUTOR: ${{ needs.run-ig-n9-when-applicable.result }}
+        run: |
+          test "$CLASSIFIER" = "success" || exit 2
+          if [ "$APPLICABLE" = "false" ]; then
+            test "$EXECUTOR" = "skipped" || exit 2
+            echo "RESULT=NOT_APPLICABLE" >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$APPLICABLE" = "true" ]; then
+            test "$EXECUTOR" = "success" || exit 2
+            echo "RESULT=APPLICABLE_PASS" >> "$GITHUB_STEP_SUMMARY"
+          else exit 2; fi
