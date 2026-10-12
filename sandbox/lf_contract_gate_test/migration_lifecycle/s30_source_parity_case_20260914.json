@@ -1,0 +1,24 @@
+{
+  "schema_version": "lf-migration-lifecycle-case/v1",
+  "case_id": "S30-SOURCE-PARITY-20260914",
+  "authority": "supabase_migrations.schema_migrations",
+  "owner_prefix": "s30_",
+  "min_version": "20260914061116",
+  "max_version": "20260914065909",
+  "expected_remote_only_count": 11,
+  "ddl_replay_allowed": false,
+  "manual_source_reformat_allowed": false,
+  "items": [
+    {"version":"20260914061116","name":"s30_canonical_lifecycle_and_terminal_strategy_ops_v3","bytes":32885,"git_blob_sha1":"526f4661445cd07d0db462b5dd92e6e646ffbdef","sha256":"22e76649386d2378b8c50d4abfa99618eb153814ba45b58d7d88b38663465e8e"},
+    {"version":"20260914061449","name":"s30_strategy_ops_operational_contract_cleanup_v1","bytes":8697,"git_blob_sha1":"6651727ace1fee862fe7cb2e4d3f7eb963ce9391","sha256":"92f6cc99aab48ef990bcc8edc834704e506e018f696cad9bb4a73c7841d074eb"},
+    {"version":"20260914063742","name":"s30_table_driven_lifecycle_qualification_schema_v1","bytes":27927,"git_blob_sha1":"93b6d96abd162d21acf48f0000d348e869f20b91","sha256":"7e92649c0a559a10fbadf95fce105c650c33ba73fa42840c9fb70c6d957dc3f4"},
+    {"version":"20260914063835","name":"s30_strategy_state_writer_table_driven_refactor_v1","bytes":17317,"git_blob_sha1":"4d447c7535639037991d021dd69377439e21bd69","sha256":"164e1a842552c020358d64d93bbd7c175706925cad2218cdccb62550e2ec2165"},
+    {"version":"20260914064101","name":"s30_strategy_qualification_matrix_runner_v1","bytes":44437,"git_blob_sha1":"ba869bf096dd865e06ab390b3074f7b422a8b513","sha256":"0274cb47ed1dcb409b12bce1707d2801be3a042b69d951996c6bbbd31d895474"},
+    {"version":"20260914064215","name":"s30_strategy_matrix_function_literal_detector_fix_v1","bytes":7593,"git_blob_sha1":"01c6ff44136923a7450e545fc92b7cdafa6943f8","sha256":"7a227c13d9d5ffd700319a20b59362fa555d487cf7ce64bbec51acae60dd6e21"},
+    {"version":"20260914064618","name":"s30_strategy_qualification_contract_bindings_v2","bytes":12674,"git_blob_sha1":"e77f9721df7ede70061fadb3c24adde2fe32cfed","sha256":"03d357a09fa7cb701832b5bcfae82f0ad29f288402a58b4a102a4c61c1a59158"},
+    {"version":"20260914064739","name":"s30_strategy_qualification_gate_activation_v1","bytes":7601,"git_blob_sha1":"cddad02b0959dcf772a24b65dd64e40b824a34b1","sha256":"d1f0b3719a7258f0045c7ab4144a26215bfc0aaf14ebe202e9ad483c47230cfe"},
+    {"version":"20260914065046","name":"s30_strategy_matrix_revision_and_negative_canaries_v1","bytes":29594,"git_blob_sha1":"fa3fa3a7fb0108990d8fa0072a4017aecf51cedb","sha256":"90b7630efc704e839830212ad0a25d8650deb3ec521b81f70a67e1bdd96e573e"},
+    {"version":"20260914065154","name":"s30_strategy_matrix_engine_currentness_v1","bytes":10445,"git_blob_sha1":"c7d7bab27155512b64ae3d997704019b6976e108","sha256":"474cef7e77abe61f8dea48710a3cea5356bf6b4d1ad69adab38fd17b46348375"},
+    {"version":"20260914065909","name":"s30_strategy_execution_transactional_begin_v1","bytes":15050,"git_blob_sha1":"82767997930728e4b33bc1ec4612b047c7ec88e4","sha256":"697bcffd1642878470b10d24c64a8c832e973804d3fb10ffd047e3be2148bd1e"}
+  ]
+}
