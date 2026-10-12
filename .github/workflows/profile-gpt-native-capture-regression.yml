@@ -1,0 +1,20 @@
+name: Profile GPT Native Capture Regression
+on:
+  pull_request:
+    paths:
+      - 'skills/profile_creator/evals/gpt_native_in_chat_capture_v1.py'
+      - 'skills/profile_creator/evals/test_gpt_native_in_chat_capture_v1.py'
+      - '.github/workflows/profile-gpt-native-capture-regression.yml'
+  workflow_dispatch:
+jobs:
+  capture-regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test exact source with positive and negative controls
+        run: python skills/profile_creator/evals/test_gpt_native_in_chat_capture_v1.py
