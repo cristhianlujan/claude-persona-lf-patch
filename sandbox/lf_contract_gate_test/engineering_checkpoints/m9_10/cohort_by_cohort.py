@@ -40,6 +40,23 @@ def _snapshot(conn: Any) -> tuple:
     return tuple(result)
 
 
+class _RollbackOnlyConnection:
+    """No COMMIT permission on the connection delegated to a producer."""
+
+    def __init__(self, conn: Any):
+        self._conn = conn
+
+    @property
+    def autocommit(self) -> bool:
+        return False
+
+    def cursor(self):
+        return self._conn.cursor()
+
+    def commit(self):
+        raise SandboxProofBlocked("M910_PRODUCER_COMMIT_FORBIDDEN")
+
+
 def run_sandbox(
     conn: Any, governed_producer: Callable[..., Any], run_ref: str
 ) -> dict[str, Any]:
@@ -88,7 +105,7 @@ def run_sandbox(
             if len(old_row) != 1:
                 raise SandboxProofBlocked("M910_BASELINE_MISSING")
             # The original current/manifest/version pin is verified in SQL.
-            governed_producer(conn, cohort_code, tuple(members), run_ref)
+            governed_producer(_RollbackOnlyConnection(conn), cohort_code, tuple(members), run_ref)
             promoted = _fetch(conn, """SELECT version,manifest_sha256,
                  previous_version FROM public.lf_capability_current
                  WHERE capability_code='INPUT_GOVERNANCE'""")
