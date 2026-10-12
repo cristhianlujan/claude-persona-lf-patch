@@ -100,13 +100,13 @@ jobs:
           python-version: "3.12"
       - run: python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.10'
       - name: Resolve governed independent IG database target
-                run: |
+        run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py self-test
           python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py emit-env --consumer ig-runtime-candidate-judge
 
       - name: Execute rollback-only independent IG flow judge
-                env:
+        env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
