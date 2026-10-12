@@ -26,3 +26,18 @@ UPDATE programacion.engineering_plan_units SET unit_metadata=jsonb_set(unit_meta
 DO $guard$ BEGIN
  IF (SELECT unit_metadata#>>'{action_specs_v1,COHORT_BY_COHORT,status}' FROM programacion.engineering_plan_units WHERE plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' AND unit_code='M9.10') IS DISTINCT FROM 'BLOCK_M99_RECEIPT_AND_CONSUMER_ADAPTER_REQUIRED' THEN RAISE EXCEPTION 'M910_POSTSTATE_MISSING'; END IF;
 END $guard$;
+
+-- M10.5: correct stale performance-source claim; preserve actual deferred relative gate.
+UPDATE programacion.engineering_plan_units
+SET unit_metadata = jsonb_set(
+ jsonb_set(unit_metadata,
+  '{source_pack_v1,checkpoint_inputs,PERF_M8_GREEN,missing}','["M8.2 performance timing metrics PUBLISHED con 417 receipts y 47 familias; M8.11 relative P95 gate OPEN_DEFERRED_NOT_PASSED: no computar relative PASS ni bloquear por falsa ausencia de superficie."]'::jsonb,true),
+  '{source_pack_v1,checkpoint_inputs,PERF_M8_GREEN,missing_typed}','[{"kind":"RELATIVE_PERFORMANCE_OBLIGATION","text":"M8.11 relative P95 OPEN_DEFERRED_NOT_PASSED","blocking":true,"resolver":"M8.11","provider":"fn_ig_performance_timing_metrics_v1"}]'::jsonb,true)
+WHERE plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' AND unit_code='M10.5'
+AND unit_metadata#>>'{source_pack_v1,checkpoint_inputs,PERF_M8_GREEN,missing,0}'='Superficie de performance receipts de M8.11 aún no existe';
+DO $readback$
+BEGIN
+ IF (SELECT unit_metadata#>>'{source_pack_v1,checkpoint_inputs,PERF_M8_GREEN,missing,0}' FROM programacion.engineering_plan_units WHERE plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' AND unit_code='M10.5') NOT LIKE 'M8.2 performance timing metrics PUBLISHED%' THEN
+   RAISE EXCEPTION 'M105_CONTRACT_NOT_RECONCILED';
+ END IF;
+END $readback$;
