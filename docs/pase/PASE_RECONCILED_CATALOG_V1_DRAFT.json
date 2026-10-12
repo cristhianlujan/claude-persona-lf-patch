@@ -49,5 +49,519 @@
     "reason": "Raw v0 item-level inventory absent; cannot compute resolved BLOCKER count or conflict/DRIFT after applying proposed precedence without inventing entries."
   },
   "disablement": "Do not change pase.yml, if:false, or POST-PASE",
-  "provenance": "Not reconciled against item-level v0; no PASS."
+  "provenance": "Not reconciled against item-level v0; no PASS.",
+  "source_report": {
+    "file": "report_main_current.json",
+    "repo_head": "376d5b47f386516c91b4960375df01f33661c654",
+    "report_sha256": "9f8cdff4f4d860d08d760e983168c44d5560d643e75bcd811316e3d0d1a64779",
+    "counts": {
+      "BLOCKER": 28,
+      "CONFLICT": 12,
+      "DRIFT": 23,
+      "INFO": 4
+    }
+  },
+  "findings": [
+    {
+      "finding_number": 1,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/0",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 2,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/1",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 3,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/2",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 4,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/3",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 5,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/4",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 6,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/5",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 7,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/6",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 8,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/7",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 9,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/8",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 10,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/9",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 11,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/10",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 12,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/11",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 13,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/12",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 14,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/13",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 15,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/14",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 16,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/15",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 17,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/16",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 18,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/17",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 19,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/18",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 20,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/19",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 21,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/20",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 22,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/21",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 23,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/22",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 24,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/23",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 25,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/24",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 26,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/25",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 27,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/26",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 28,
+      "severity": "BLOCKER",
+      "source_pointer": "report_main_current.json#/findings/27",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 29,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/28",
+      "precedence": "ADMIT_PR",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 30,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/29",
+      "precedence": "ADMIT_PR",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 31,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/30",
+      "precedence": "ADMIT_PR",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 32,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/31",
+      "precedence": "ADMIT_PR",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 33,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/32",
+      "precedence": "ADMIT_PR",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 34,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/33",
+      "precedence": "ADMIT_PR",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 35,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/34",
+      "precedence": "ADMIT_PR",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 36,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/35",
+      "precedence": "ADMIT_PR",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 37,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/36",
+      "precedence": "C5_QUARANTINE",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 38,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/37",
+      "precedence": "S30_MASTER",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 39,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/38",
+      "precedence": "S28_OWNER",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 40,
+      "severity": "CONFLICT",
+      "source_pointer": "report_main_current.json#/findings/39",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 41,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/40",
+      "precedence": "RETIRE_MISSING",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 42,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/41",
+      "precedence": "RETIRE_MISSING",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 43,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/42",
+      "precedence": "RETIRE_MISSING",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 44,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/43",
+      "precedence": "RETIRE_MISSING",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 45,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/44",
+      "precedence": "RETIRE_MISSING",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 46,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/45",
+      "precedence": "RETIRE_MISSING",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 47,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/46",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 48,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/47",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 49,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/48",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 50,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/49",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 51,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/50",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 52,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/51",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 53,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/52",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 54,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/53",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 55,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/54",
+      "precedence": "TOMBSTONE",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 56,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/55",
+      "precedence": "TOMBSTONE",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 57,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/56",
+      "precedence": "TOMBSTONE",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 58,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/57",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 59,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/58",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 60,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/59",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 61,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/60",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 62,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/61",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 63,
+      "severity": "DRIFT",
+      "source_pointer": "report_main_current.json#/findings/62",
+      "precedence": "TOMBSTONE",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 64,
+      "severity": "INFO",
+      "source_pointer": "report_main_current.json#/findings/63",
+      "precedence": "S30_MASTER",
+      "classification": "PROPOSED_RESOLUTION_NOT_APPLIED"
+    },
+    {
+      "finding_number": 65,
+      "severity": "INFO",
+      "source_pointer": "report_main_current.json#/findings/64",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 66,
+      "severity": "INFO",
+      "source_pointer": "report_main_current.json#/findings/65",
+      "precedence": null,
+      "classification": "PENDING"
+    },
+    {
+      "finding_number": 67,
+      "severity": "INFO",
+      "source_pointer": "report_main_current.json#/findings/66",
+      "precedence": null,
+      "classification": "PENDING"
+    }
+  ],
+  "proposed_resolutions": {
+    "BLOCKER": 0,
+    "CONFLICT": 11,
+    "DRIFT": 10,
+    "INFO": 1
+  },
+  "remaining_unresolved": {
+    "BLOCKER": 28,
+    "CONFLICT": 1,
+    "DRIFT": 13,
+    "INFO": 3
+  },
+  "external_unlisted_blocker": {
+    "rule": "R10_MAIN_HAS_NO_REQUIRED_CHECKS",
+    "severity": "BLOCKER",
+    "state": "PENDING",
+    "evidence": "previous independent ruleset readback; omitted by generator without --github-ruleset-json"
+  },
+  "important_findings": {
+    "new_conflict": {
+      "id": 36,
+      "subject": ".github/workflows/profile-gpt-native-capture-regression.yml",
+      "precedence": "ADMIT_PR"
+    },
+    "skipped_neutral": {
+      "id": 40,
+      "state": "PENDING until approved Train fail-closed PR merged"
+    },
+    "missing_live_carriers": "25 R2 BLOCKER remain unresolved; proposed catalogue precedence cannot create workflows",
+    "pase_disabled": "R5 blockers 26-28 intentionally persist; do not reactivate PASE"
+  },
+  "owner_confirmation": "PENDIENTE_DE_CONFIRMACION_DEL_OWNER"
 }
