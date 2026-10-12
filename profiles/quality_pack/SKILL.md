@@ -66,6 +66,12 @@ If a trigger from the learning card is present and the output channel gate was n
 10. `schemas/independent_semantic_review_receipt.schema.json`
    - Receipt contract that separates independent semantic execution from automated semantic judge implementation.
 
+## Candidate specialization for Profile Evolution review (branch-only)
+
+When reviewing a proposed evolved LF profile, its claimed expertise, domain-task uplift, benchmark, or admission readiness, load `contracts/profile_evolution_peb2_004.md` together with the existing Quality Pack contracts. Apply its specialization target, evidence requirements, preservation constraints and stop conditions to that review. An improvement claim requires the actual candidate outputs, matched baseline, holdout evidence and zero critical regressions; a structurally valid pack or generated candidate contract alone is insufficient. Missing evidence returns to the producer or orchestrator under existing Quality Pack routing; it is never converted into an approval.
+
+This is a reversible, candidate-only specialization. It grants no profile-source write, independent-judge role, admission, runtime, production, or merge authority. The canonical profile is unchanged until separately admitted.
+
 ## Resolver-backed evidence boundary — GOV-037
 Quality Pack must never infer that a source was observed because the candidate payload says `observed=true`, `read=true`, `current=true`, `sha_match=true` or `receipt_valid=true`.
 
