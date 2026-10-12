@@ -1,0 +1,20 @@
+# Governance review ownership; required review is enforced separately by ruleset.
+# Owner review is NOT automatically mandatory until Cristhian enables it.
+/.github/** @cristhianlujan @paulozterra
+/.github/CODEOWNERS @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/s28_ci_lane_router/** @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/migration_transport_normalization.py @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/db_write_transport/** @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/pase_*/** @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/post_pase_*/** @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/canonical_route_guard/** @cristhianlujan @paulozterra
+/CLAUDE.md @cristhianlujan @paulozterra
+/AGENTS.md @cristhianlujan @paulozterra
+/.claude/operational-execution.md @cristhianlujan @paulozterra
+/.github/workflows/lf-f3-drift-monitor-shadow.yml @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/f3_drift_monitor_shadow.py @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/test_f3_drift_monitor_shadow.py @cristhianlujan @paulozterra
+/.github/workflows/lf-migration-reconcile-source-only.yml @cristhianlujan @paulozterra
+/.github/workflows/lf-f1-reconcile-unit-tests.yml @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/migration_source_parity/reconcile_source_only.py @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/migration_source_parity/test_reconcile_source_only.py @cristhianlujan @paulozterra
