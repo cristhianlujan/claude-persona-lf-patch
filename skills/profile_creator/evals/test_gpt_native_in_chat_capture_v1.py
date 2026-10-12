@@ -6,7 +6,7 @@ import hashlib
 import json
 import tempfile
 from pathlib import Path
-from gpt_native_in_chat_capture_v1 import _sha, _text_sha, capture
+from gpt_native_in_chat_capture_v1 import _sha, _text_sha, _matches_exact_value, capture
 
 
 def must_fail(code, packet, raw, root):
@@ -38,7 +38,7 @@ def main():
                         {"check_type": "EXACT_VALUE", "obligation_id": "INPUT_CASE_ID",
                          "evidence_pointer": "/case_id", "expected_value": "HCA-TEST"},
                         {"check_type": "EXACT_VALUE", "obligation_id": "PROFILE_NO_CAUSAL_OVERCLAIM",
-                         "evidence_pointer": "/causality_proven", "expected_value": False},
+                         "evidence_pointer": "/causality_proven", "expected_value": "false"},
                         {"check_type": "SEMANTIC_RELATION", "obligation_id": "GROUNDED_CLAIMS",
                          "evidence_pointer": "/reason"}]}
         packet = {
@@ -65,9 +65,22 @@ def main():
         must_fail("PROFILE_SOURCE_DRIFT", bad, raw, root)
         bad_raw = dict(raw, causality_proven=True)
         must_fail("DETERMINISTIC_OBLIGATION_FAILED:PROFILE_NO_CAUSAL_OVERCLAIM", packet, bad_raw, root)
+        # A string that spells a boolean, or Python bool/int equality, cannot bypass typed control.
+        must_fail("DETERMINISTIC_OBLIGATION_FAILED:PROFILE_NO_CAUSAL_OVERCLAIM",
+                  packet, dict(raw, causality_proven="false"), root)
+        must_fail("DETERMINISTIC_OBLIGATION_FAILED:PROFILE_NO_CAUSAL_OVERCLAIM",
+                  packet, dict(raw, causality_proven=0), root)
+        must_fail("DETERMINISTIC_OBLIGATION_FAILED:PROFILE_NO_CAUSAL_OVERCLAIM",
+                  packet, dict(raw, causality_proven=None), root)
+        assert _matches_exact_value(True, "true")
+        assert not _matches_exact_value(1, "true")
+        assert _matches_exact_value(None, "null")
+        assert not _matches_exact_value("null", "null")
+        assert _matches_exact_value({"a": 1}, '{"a":1}')
+        assert not _matches_exact_value({"a": 2}, '{"a":1}')
         bad_raw = dict(raw, provider_signature="forged")
         must_fail("RAW_FORGED_ATTESTATION_FIELD", packet, bad_raw, root)
-        print("PASS_POSITIVE_AND_5_NEGATIVE_NO_MODEL_CALLS")
+        print("PASS_POSITIVE_AND_8_NEGATIVE_TYPED_NO_MODEL_CALLS")
 
 
 if __name__ == "__main__":

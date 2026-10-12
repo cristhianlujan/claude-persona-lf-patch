@@ -42,6 +42,22 @@ def _at_pointer(raw: Any, pointer: str) -> Any:
     return value
 
 
+def _matches_exact_value(observed: Any, expected: Any) -> bool:
+    """Compare canonical manifest text with JSON scalar type safety."""
+    if not isinstance(expected, str):
+        return False
+    if expected in ("true", "false", "null"):
+        typed = json.loads(expected)
+        return type(observed) is type(typed) and observed == typed
+    if isinstance(observed, str):
+        return observed == expected
+    try:
+        return json.dumps(observed, ensure_ascii=False, sort_keys=True,
+                          separators=(",", ":"), allow_nan=False) == expected
+    except (TypeError, ValueError):
+        return False
+
+
 def capture(frozen: dict, raw_output: dict, *, root: Path, profile_slug: str) -> dict:
     """Freeze current ChatGPT-chat RAW without pretending to invoke a model."""
     _require(frozen.get("run_id") and isinstance(raw_output, dict) and bool(raw_output), "CAPTURE_INPUT_INVALID")
@@ -70,8 +86,9 @@ def capture(frozen: dict, raw_output: dict, *, root: Path, profile_slug: str) ->
              "OBLIGATION_MANIFEST_SHA_MISMATCH")
     for obligation in obligations.get("obligations", []):
         if obligation.get("check_type") == "EXACT_VALUE":
-            _require(_at_pointer(raw_output, obligation["evidence_pointer"]) ==
-                     obligation["expected_value"], "DETERMINISTIC_OBLIGATION_FAILED:" + obligation["obligation_id"])
+            _require(_matches_exact_value(
+                _at_pointer(raw_output, obligation["evidence_pointer"]),
+                obligation["expected_value"]), "DETERMINISTIC_OBLIGATION_FAILED:" + obligation["obligation_id"])
     _require(not any(k in raw_output for k in
             ("runtime_attestation", "provider_signature", "independent_semantic_review_receipt")),
             "RAW_FORGED_ATTESTATION_FIELD")
