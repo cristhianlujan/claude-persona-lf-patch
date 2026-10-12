@@ -88,6 +88,8 @@
     "existing_frozen_manifest_immutable": true,
     "materialize_new_version_for_changed_expected_values": true,
     "source_binding_and_independent_review_unchanged": true,
-    "no_benchmark_admission_from_deterministic_capture": true
+    "no_benchmark_admission_from_deterministic_capture": true,
+    "legacy_numeric_text_ambiguous": "FAIL_CLOSED_UNTIL_EXPLICIT_TYPED_MANIFEST",
+    "numeric_json_does_not_satisfy_legacy_text_expected_value": true
   }
 }
