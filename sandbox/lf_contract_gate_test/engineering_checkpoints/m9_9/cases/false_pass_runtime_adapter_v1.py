@@ -35,6 +35,28 @@ class IgM99FalsePassFlowAdapter:
 
     def run_rollback_only(self, candidate: CandidateIdentity,
                           rollback: RollbackContract) -> dict[str, Any]:
+        meta = _obj(candidate.metadata)
+        preflight: list[str] = []
+        if rollback.mutation_policy != "ROLLBACK_ONLY":
+            preflight.append("ROLLBACK_ONLY_REQUIRED")
+        if not isinstance(meta.get("canary_run_ref"), str) or not meta["canary_run_ref"].strip():
+            preflight.append("CANARY_RUN_REF_REQUIRED")
+        if not _sha(meta.get("baseline_manifest_sha256")):
+            preflight.append("BASELINE_MANIFEST_PIN_REQUIRED")
+        if not _sha(candidate.candidate_sha256):
+            preflight.append("CANDIDATE_SHA256_INVALID")
+        if preflight:
+            return {
+                "baseline": {}, "candidate": {},
+                "rollback": {"status": "UNVERIFIED_AUTOMATIC_ROLLBACK",
+                             "post_state_digest": None, "material_residue_count": None},
+                "m99_false_pass_proof": {
+                    "case_code": "FALSE_PASS", "findings": sorted(set(preflight)),
+                    "automatic_rollback_verified": False,
+                    "production_authorized": False,
+                    "proof_scope": "CONSUMER_ADAPTER_CONTRACT",
+                },
+            }
         source = self._inner.run_rollback_only(candidate, rollback)
         prior = _obj(source.get("prior_art_receipt"))
         before = _obj(source.get("baseline")).get("state_digest")
