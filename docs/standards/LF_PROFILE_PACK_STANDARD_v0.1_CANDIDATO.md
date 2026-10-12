@@ -2,7 +2,8 @@
 
 Status: CANDIDATE_READ_ONLY / SANDBOX  
 Patch ID: PATCH_LF_SKILL_PROFILE_PACK_STANDARD_001  
-Source of authority: ACT-0045 — SKILL_CREADORA_PERFILES_Y_CARDS_LF_v0.1_CANDIDATO  
+Operational authority: Supabase `public.v_lf_fuente_operativa` under ACT-0001 Router  
+Factory governing asset: ACT-0045 — SKILL_CREADORA_PERFILES_Y_CARDS_LF_v0.1_CANDIDATO  
 Created at: 2026-05-23T05:13:22.144126+00:00
 
 ## Purpose
@@ -47,12 +48,13 @@ CANDIDATE
 ## Mandatory gates
 
 - No official impact without Router.
-- Supabase / v_lf_fuente_operativa is the operational source.
-- ACT-0045 governs Skill/Profile Factory behavior.
-- GitHub stores technical packs.
-- Google Docs remains human-readable governance documentation.
-- Python may prepare and validate, but not write official documents without queue, lock, requiredRevisionId and postflight.
-- n8n or Drive API handles file metadata operations such as move/archive/delete when needed.
+- Supabase `public.v_lf_fuente_operativa`, plus the Supabase registries/contracts it resolves, is the only operational authority.
+- ACT-0045 governs Skill/Profile Factory behavior only after resolution from Supabase.
+- GitHub stores technical implementation packs; operational use requires an explicit Supabase binding and GitHub is not an independent operational authority.
+- Google Drive, Google Docs and Google Sheets are storage/human-readable mirror layers only. They must never be read or hydrated to determine operational state, authority, rules, routing or permissions.
+- A Google Drive/Docs/Sheets URL may be retained only as a storage reference or lineage value in Supabase; it is not an operational source.
+- Python may prepare and validate, but not write official artifacts without the applicable governed operation.
+- n8n or Drive API may handle approved file-storage metadata operations such as move/archive/delete when needed; those operations do not confer operational authority on Drive.
 
 ## Pack readiness definition
 
