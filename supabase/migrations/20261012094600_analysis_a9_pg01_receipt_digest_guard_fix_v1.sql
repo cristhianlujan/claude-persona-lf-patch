@@ -3,30 +3,31 @@
 -- Expected receipt identity/hash/schema MUST originate from governed A9 handoff,
 -- independently of the resolved context. Does not activate PG-01 runtime.
 -- Regression: 8/8 positive/negative cases PASS in BEGIN/ROLLBACK against live A9.
-CREATE OR REPLACE FUNCTION programacion.fn_analysis_pg01_exact_receipt_guard_v1(p_receipt jsonb, p_expected jsonb)
-RETURNS jsonb LANGUAGE plpgsql STABLE AS $$
-DECLARE
-  v_snapshot jsonb;
-  v_digest text;
-BEGIN
-  v_snapshot := p_receipt->'snapshot';
-  IF v_snapshot IS NULL OR jsonb_typeof(v_snapshot) <> 'object' THEN
-    RETURN jsonb_build_object('status','BLOCKED','reason','MISSING_SNAPSHOT');
-  END IF;
-  IF p_expected IS NULL OR jsonb_typeof(p_expected) <> 'object' THEN
-    RETURN jsonb_build_object('status','BLOCKED','reason','MISSING_EXPECTED_HANDOFF');
-  END IF;
-  IF v_snapshot->>'schema_version' IS DISTINCT FROM p_expected->>'schema_version' THEN
-    RETURN jsonb_build_object('status','BLOCKED','reason','SCHEMA_MISMATCH');
-  END IF;
-  v_digest := encode(digest(convert_to(v_snapshot::text,'UTF8'),'sha256'),'hex');
-  IF v_digest IS DISTINCT FROM p_receipt->>'snapshot_sha256'
-     OR v_digest IS DISTINCT FROM p_expected->>'snapshot_sha256' THEN
-    RETURN jsonb_build_object('status','BLOCKED','reason','DIGEST_MISMATCH');
-  END IF;
-  IF p_receipt->>'receipt_id' IS DISTINCT FROM p_expected->>'receipt_id' THEN
-    RETURN jsonb_build_object('status','BLOCKED','reason','RECEIPT_MISMATCH');
-  END IF;
-  RETURN jsonb_build_object('status','PASS','reason','EXACT_RECEIPT');
-END;
-$$;
+CREATE OR REPLACE FUNCTION programacion.fn_analysis_pg01_exact_receipt_guard_v1(
+  p_resolution jsonb,
+  p_expected_context_id text,
+  p_expected_context_sha256 text,
+  p_expected_schema_version text
+) RETURNS boolean
+LANGUAGE sql IMMUTABLE SECURITY INVOKER
+SET search_path = pg_catalog
+AS $guard$
+  SELECT coalesce(
+    p_resolution->>'state' = 'RESOLVED'
+    AND p_resolution->>'resolution_basis' = 'IMMUTABLE_RECORDED_CONTEXT'
+    AND p_resolution->>'latest_reinterpreted' = 'false'
+    AND nullif(btrim(p_expected_context_id),'') IS NOT NULL
+    AND nullif(btrim(p_expected_context_sha256),'') IS NOT NULL
+    AND nullif(btrim(p_expected_schema_version),'') IS NOT NULL
+    AND p_resolution->>'context_id' = p_expected_context_id
+    AND p_resolution->>'context_sha256' = p_expected_context_sha256
+    AND jsonb_typeof(p_resolution->'context') = 'object'
+    AND p_resolution#>>'{context,schema_version}' = 'LF_DECISION_CONTEXT_ASOF_INPUT_V1'
+    AND p_resolution#>>'{context,extensions,programming_context_snapshot,schema_version}' = p_expected_schema_version
+    AND p_resolution->>'context_sha256' =
+      encode(extensions.digest(convert_to((p_resolution->'context')::text,'UTF8'),'sha256'),'hex'),
+    false
+  );
+$guard$;
+-- PG-01 consumer wiring, schema digest parity, material-path validation and
+-- independent currentness admission remain separate mandatory boundaries.
