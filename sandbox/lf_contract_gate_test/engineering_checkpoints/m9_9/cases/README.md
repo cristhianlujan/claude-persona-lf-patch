@@ -27,3 +27,37 @@ Esta separación de **artefactos Git** no altera los checkpoints de Supabase. La
 
 ## Ruta de implementación del desglose oficial
 Separar el checkpoint 4 (25 puntos) en cinco checkpoints obligatorios de 5 puntos, conservar 55 puntos ya cerrados y 20 puntos de CANARY_READBACK; emitir y aplicar esa migración solo por el Merge Train gobernado después de reconciliar #2261. Orden: FALSE_PASS, DIVERGENCE, TIMEOUT (código histórico ROLLBACK_TRIGGER_NEGATIVE), EXECUTION_ERROR, MISSING_RECEIPT. Cada prueba se ejecuta, valida, reporta y cierra individualmente.
+
+## First bad boundary: authentic readback is not a provider flag
+
+The existing M9.9 false-pass consumer accepted a caller-provided dictionary
+with `readback_authority=CANONICAL_PROVENANCE_DB` and well-formed receipt IDs
+without querying the canonical authority. Its test fixture could therefore
+make `rollback.status=ROLLED_BACK` from invented evidence.
+
+The local `CanonicalM99EvidenceReadback` is the **only admitted evidence
+provider** for the M9.9 false-pass consumer. It performs three parameterized
+SELECTs on `programacion.provenance_receipts` and invokes the existing
+`fn_ig_m99_canary_receipt_gate_v1` inside a READ ONLY transaction. It verifies
+stage, cohort, run reference, candidate SHA, head SHA, baseline manifest pin,
+receipt issuer/kind and subject hashes. It rolls back even the read transaction.
+A plain callback remains useful for negative diagnostic tests, but cannot
+authorize or report an automatic runtime rollback.
+
+**Two distinct SHA meanings must never be conflated:** `canary_observation_sha256`
+identifies the signed observation receipt subject. `baseline_manifest_sha256`
+pins the authority state to restore. The existing receipt gate expects the
+*former*. The earlier adapter compared the receipt subject SHA to the *latter*.
+
+The three provenance stages `OBSERVATION`, `INDEPENDENT_ORACLE` and
+`ROLLBACK_ACTION` are a **candidate local consumer contract**, not a live
+issuer or an admitted Supabase schema change. All three must come from the
+preexisting EVIDENCE_VERIFIER_V1 channel, with independent attribution
+established by a separate assurance mechanism. Zero canonical M9.9 canary
+receipts currently exist. Until issuer/governance and runtime invocation are
+materially proven, the result remains BLOCKED and no M9.9 checkpoint may close.
+
+Source preparation here is not a migration. Respect
+`docs/migrations/POLICY_MIGRATION_APPLY_V1.md` and reconcile the missing
+`20261012013000_ig_m99_existing_n9_adapter_proof_boundary_v1.sql` ledger
+identity before any subsequent official M9.9 contract/governance migration.

@@ -69,10 +69,12 @@ class M99FalsePassContractTests(unittest.TestCase):
         r=self.outcome(failure)
         self.assertIn("CANONICAL_READBACK_FAILED",r["m99_false_pass_proof"]["findings"])
 
-    def test_only_complete_mocked_structure_passes_local_unit_contract(self):
+    def test_even_complete_mocked_structure_cannot_qualify_live_rollback(self):
         r=self.outcome(mocked_readback)
-        self.assertEqual(r["rollback"]["status"],"ROLLED_BACK")
-        # No external verifier or actual rollback is invoked by this unit test.
+        self.assertEqual(r["rollback"]["status"],"UNVERIFIED_AUTOMATIC_ROLLBACK")
+        self.assertIn("CANONICAL_DB_READBACK_PROVIDER_REQUIRED",
+                      r["m99_false_pass_proof"]["findings"])
+        self.assertFalse(r["m99_false_pass_proof"]["automatic_rollback_verified"])
 
     def test_manual_rollback_does_not_qualify(self):
         def read(c,n):
