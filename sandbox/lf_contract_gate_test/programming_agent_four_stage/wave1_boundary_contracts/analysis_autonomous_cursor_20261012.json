@@ -1,0 +1,37 @@
+{
+  "schema": "ANALYSIS_AUTONOMOUS_SOURCE_ONLY_CURSOR_V1",
+  "scope": "PROGRAMMING_AGENT_ANALYSIS_A1_A15_ONLY",
+  "observed_at_lima": "2026-10-12 00:41:54 -0500 (precheck)",
+  "main_sha_at_precheck": "55c82bb7228ef7139dc6a5fb2b9b8ebedb4f0906",
+  "source_refs": {
+    "procedure_pr": 2145,
+    "candidate_pr": 2214,
+    "evidence_gate_pr": 2071
+  },
+  "verified": {
+    "plan_units_done": "15/15 documentary, not operational readiness",
+    "source_blobs": "10/10 match: procedure on PR branch, nine stage contracts on main",
+    "source_contract_tests": "8/8 JS structural assertions including two negative mutations",
+    "runtime_python_tests": "NOT_RUN",
+    "model_inference": "NOT_RUN",
+    "router_attestation": "NOT_ATTESTED",
+    "pg01_real_readback": "NOT_VERIFIED"
+  },
+  "blockers": [
+    "PR #2145 source not released in main",
+    "PR #2214 candidate not released; Router binding missing",
+    "PR #2071 evidence gate not reconciled",
+    "No independently verified governed model and PG-01 real consumption"
+  ],
+  "next_safe_batch": [
+    "Compare PR #2071 A9/A14 gate to current main",
+    "Check PR #2214 shared runtime compatibility with main",
+    "Run actual Python regressions on reachable authorized executor before merge"
+  ],
+  "safe_work_remaining_count": "AT_LEAST_3; operational qualification incomplete",
+  "ekb_read": [
+    "PROGRAMMING-ANALYSIS-STAGE-SOURCE-ATTESTATION-GAP-001",
+    "PROGRAMMING-ANALYSIS-A14-EVIDENCE-TIER-FALSE-READY-001"
+  ],
+  "authority_note": "Source-only evidence cursor; no production, SQL mutation, activation, merge, or READY claim."
+}
