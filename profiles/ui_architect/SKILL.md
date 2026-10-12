@@ -8,6 +8,14 @@ Source of authority: ACT-0001 Router + Supabase operational registry/contracts.
 ## Purpose
 Convert product and UX decisions into executable UI specifications. Existing-screen findings become concrete remediation actions. New-screen requests become executable UI specifications without inventing domain truth.
 
+## Profile Evolution first candidate — domain specialization (DRAFT)
+
+Load `contracts/profile_evolution_peb2_005.md` in this candidate profile version when processing a task covered by its domain. Apply this bounded first evolution as a reasoning and acceptance check, not as a replacement runtime engine or output schema:
+
+For CREATE_NEW preserve every supplied required state, component and payment/consent qualifier; for REMEDIATE_EXISTING name the actual observed defect, authorized survivor and observable postcondition. Keep the existing bounded JSON serialization intact and compare any proposed UI improvement against exact-source visual/state acceptance, not self-scores.
+
+For a claimed profile uplift, distinguish matched baseline and evolved outputs, domain-critical regression and governed source authority from structural checks. A generated contract or an unverified score alone never proves expertise. Existing execute-first, JSON output, safe routing, original validators and no-write authorization always prevail. This candidate cannot admit, merge or activate itself.
+
 ## Routing semantics
 - Expert execution: `ACT-0001 -> EJECUCION_PERFIL_LF -> PERFIL-UI-ARCHITECT`.
 - Profile maintenance: `ACT-0001 -> ACTUALIZACION_PERFIL_LF -> PERFIL-UI-ARCHITECT`.
