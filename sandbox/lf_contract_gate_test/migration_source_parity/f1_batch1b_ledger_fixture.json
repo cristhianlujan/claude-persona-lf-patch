@@ -1,0 +1,625 @@
+{
+  "schema_version": "F1_BATCH1B_LEDGER_FIXTURE_V1",
+  "items": [
+    {
+      "filename": "supabase/migrations/20261010022458_t_remed_layer1_selftest_v3.sql",
+      "previous_filename": "supabase/migrations/20261010080000_t_remed_layer1_selftest_v3.sql",
+      "status": "renamed",
+      "version": "20261010022458",
+      "name": "t_remed_layer1_selftest_v3",
+      "sha256": "e15dae6080bca5d367c4606908e166d85fd3639e8bdcb0ce01b35a7d40a6f953",
+      "statement_count": 1,
+      "ledger_name": "t_remed_layer1_selftest_v3"
+    },
+    {
+      "filename": "supabase/migrations/20261010022555_t_remed_layer1_selftest_fix_v3.sql",
+      "previous_filename": "supabase/migrations/20261010081000_t_remed_layer1_selftest_fix_v3.sql",
+      "status": "renamed",
+      "version": "20261010022555",
+      "name": "t_remed_layer1_selftest_fix_v3",
+      "sha256": "70658e3450138871bbe411a1f31417d7fc4e86c57793e54c89cd908d027cff24",
+      "statement_count": 1,
+      "ledger_name": "t_remed_layer1_selftest_fix_v3"
+    },
+    {
+      "filename": "supabase/migrations/20261010024447_t_remed_layer1_property_test_v3.sql",
+      "previous_filename": "supabase/migrations/20261010090000_t_remed_layer1_property_test_v3.sql",
+      "status": "renamed",
+      "version": "20261010024447",
+      "name": "t_remed_layer1_property_test_v3",
+      "sha256": "e840783f83700c6fb4bc62a289e61d8f47626079398818cb04bed974bbfd9a05",
+      "statement_count": 1,
+      "ledger_name": "t_remed_layer1_property_test_v3"
+    },
+    {
+      "filename": "supabase/migrations/20261010095218_t_remed_layer1_findings_v3.sql",
+      "previous_filename": "supabase/migrations/20261010110000_t_remed_layer1_findings_v3.sql",
+      "status": "renamed",
+      "version": "20261010095218",
+      "name": "t_remed_layer1_findings_v3",
+      "sha256": "1b8ec192b9b07137061f6f89660d6c48ad3c24aca9fb6a0b64b3a8e26c5182f6",
+      "statement_count": 1,
+      "ledger_name": "t_remed_layer1_findings_v3"
+    },
+    {
+      "filename": "supabase/migrations/20261010095241_t_remed_layer1_selftest_findings_v3.sql",
+      "previous_filename": "supabase/migrations/20261010111000_t_remed_layer1_selftest_findings_v3.sql",
+      "status": "renamed",
+      "version": "20261010095241",
+      "name": "t_remed_layer1_selftest_findings_v3",
+      "sha256": "ceb11f7d5c231a82d1290de6883c4b9a0776c2f21130fcc5cfd069d514196753",
+      "statement_count": 1,
+      "ledger_name": "t_remed_layer1_selftest_findings_v3"
+    },
+    {
+      "filename": "supabase/migrations/20261010110321_t_remed_inherited_rules_v1.sql",
+      "previous_filename": "supabase/migrations/20261010140000_t_remed_inherited_rules_v1.sql",
+      "status": "renamed",
+      "version": "20261010110321",
+      "name": "t_remed_inherited_rules_v1",
+      "sha256": "a8b87ebbe34ed3c7c3f0c295c3fe8290fa8802b6cd0abdaf13141621883c4106",
+      "statement_count": 1,
+      "ledger_name": "t_remed_inherited_rules_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261010110327_t_remed_rule_promotion_judge_v1.sql",
+      "previous_filename": "supabase/migrations/20261010150000_t_remed_rule_promotion_judge_v1.sql",
+      "status": "renamed",
+      "version": "20261010110327",
+      "name": "t_remed_rule_promotion_judge_v1",
+      "sha256": "3cde6349a9bf9efde42a0680210f4ae99a413804acacce0e95efe144326c165f",
+      "statement_count": 1,
+      "ledger_name": "t_remed_rule_promotion_judge_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261010142235_t_remed_promotion_and_pending_v1.sql",
+      "previous_filename": "supabase/migrations/20261010170000_t_remed_promotion_and_pending_v1.sql",
+      "status": "renamed",
+      "version": "20261010142235",
+      "name": "t_remed_promotion_and_pending_v1",
+      "sha256": "27ca69603f020c4b8029ff27669a7d04445ede3ed45ffa075b316d41e0ca6633",
+      "statement_count": 1,
+      "ledger_name": "t_remed_promotion_and_pending_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261010144706_t_remed_inheritance_wiring_v1.sql",
+      "previous_filename": "supabase/migrations/20261010180000_t_remed_inheritance_wiring_v1.sql",
+      "status": "renamed",
+      "version": "20261010144706",
+      "name": "t_remed_inheritance_wiring_v1",
+      "sha256": "9d8186198dbc2e2bd55ae4978b63fef4a730aaf26863fa0fb00a50087306e721",
+      "statement_count": 1,
+      "ledger_name": "t_remed_inheritance_wiring_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261010150138_t_remed_generic_screen_contract_v1.sql",
+      "previous_filename": "supabase/migrations/20261010190000_t_remed_generic_screen_contract_v1.sql",
+      "status": "renamed",
+      "version": "20261010150138",
+      "name": "t_remed_generic_screen_contract_v1",
+      "sha256": "89fb5c0d16eb8ac5ae0245f82d40768e073b9aeaa168937e472ca0f33674d05d",
+      "statement_count": 1,
+      "ledger_name": "t_remed_generic_screen_contract_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261010150741_t_remed_declared_level_and_judge_v2.sql",
+      "previous_filename": "supabase/migrations/20261010200000_t_remed_declared_level_and_judge_v2.sql",
+      "status": "renamed",
+      "version": "20261010150741",
+      "name": "t_remed_declared_level_and_judge_v2",
+      "sha256": "aafeb08f39e7b4ba1787773c993a42842c9a33751170fddc5e51c252ffcd7656",
+      "statement_count": 1,
+      "ledger_name": "t_remed_declared_level_and_judge_v2"
+    },
+    {
+      "filename": "supabase/migrations/20261010163443_t_remed_recommend_v1.sql",
+      "previous_filename": "supabase/migrations/20261010210000_t_remed_recommend_v1.sql",
+      "status": "renamed",
+      "version": "20261010163443",
+      "name": "t_remed_recommend_v1",
+      "sha256": "220a08a474b6e74eb81a61d56755a1c592c2b45c5284937594d8de5725fd2fbe",
+      "statement_count": 1,
+      "ledger_name": "t_remed_recommend_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261010163705_t_remed_recommend_v2_channel.sql",
+      "previous_filename": "supabase/migrations/20261010220000_t_remed_recommend_v2_channel.sql",
+      "status": "renamed",
+      "version": "20261010163705",
+      "name": "t_remed_recommend_v2_channel",
+      "sha256": "f6759ab6f055adbd212aeae8954e9855c08b87d23cb5e7538e22d3966f880914",
+      "statement_count": 1,
+      "ledger_name": "t_remed_recommend_v2_channel"
+    },
+    {
+      "filename": "supabase/migrations/20261010232400_t_remed_recommend_queue_v1.sql",
+      "previous_filename": "supabase/migrations/20261010230000_t_remed_recommend_queue_v1.sql",
+      "status": "renamed",
+      "version": "20261010232400",
+      "name": "t_remed_recommend_queue_v1",
+      "sha256": "8979baeacf61a49556c4d5554154c9b289e3f01e17ff3bb4e6d170b386f60824",
+      "statement_count": 1,
+      "ledger_name": "t_remed_recommend_queue_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011000339_t_remed_scope_judge_v1.sql",
+      "previous_filename": "supabase/migrations/20261010240000_t_remed_scope_judge_v1.sql",
+      "status": "renamed",
+      "version": "20261011000339",
+      "name": "t_remed_scope_judge_v1",
+      "sha256": "039cbe6661a851414d372b16062757bafc8b74ba672d896e69e82c885135059b",
+      "statement_count": 1,
+      "ledger_name": "t_remed_scope_judge_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011000425_20261011033000_lf_d2_canonical_binding_readback_v1.sql",
+      "previous_filename": "supabase/migrations/20261011033000_lf_d2_canonical_binding_readback_v1.sql",
+      "status": "renamed",
+      "version": "20261011000425",
+      "name": "20261011033000_lf_d2_canonical_binding_readback_v1",
+      "sha256": "0a05074f8cf4a0658f6f6a96e530e234d3e7806392d277f02716d431c4884ba3",
+      "statement_count": 1,
+      "ledger_name": "20261011033000_lf_d2_canonical_binding_readback_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011000445_20261011034000_lf_d3_investigation_decision_v1.sql",
+      "previous_filename": "supabase/migrations/20261011034000_lf_d3_investigation_decision_v1.sql",
+      "status": "renamed",
+      "version": "20261011000445",
+      "name": "20261011034000_lf_d3_investigation_decision_v1",
+      "sha256": "0325c716d7dc0e34c8ffa71c185b8a496a83ad1d574d7a2c5e7203a2744ed006",
+      "statement_count": 1,
+      "ledger_name": "20261011034000_lf_d3_investigation_decision_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011000451_20261011035000_lf_source_investigation_prepare_v1.sql",
+      "previous_filename": "supabase/migrations/20261011035000_lf_source_investigation_prepare_v1.sql",
+      "status": "renamed",
+      "version": "20261011000451",
+      "name": "20261011035000_lf_source_investigation_prepare_v1",
+      "sha256": "a70ad6e651cbc3b2018dbfc029116b7bd16ef8b9b795371057f8dba079a7a216",
+      "statement_count": 1,
+      "ledger_name": "20261011035000_lf_source_investigation_prepare_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011001609_t_remed_open_decisions_v1.sql",
+      "previous_filename": "supabase/migrations/20261010250000_t_remed_open_decisions_v1.sql",
+      "status": "renamed",
+      "version": "20261011001609",
+      "name": "t_remed_open_decisions_v1",
+      "sha256": "ae35814c2bcc1d9f056f1670fcbf61f0302cbb371f4f756520b106d54f87c7e4",
+      "statement_count": 1,
+      "ledger_name": "t_remed_open_decisions_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011002854_t_remed_selftest_v1.sql",
+      "previous_filename": "supabase/migrations/20261010260000_t_remed_selftest_v1.sql",
+      "status": "renamed",
+      "version": "20261011002854",
+      "name": "t_remed_selftest_v1",
+      "sha256": "4385efb4517856d941c1820340fc25e0b3890be413eade05e7226c0ece628e70",
+      "statement_count": 1,
+      "ledger_name": "t_remed_selftest_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011005705_t_remed_screen_status_v1.sql",
+      "previous_filename": "supabase/migrations/20261010270000_t_remed_screen_status_v1.sql",
+      "status": "renamed",
+      "version": "20261011005705",
+      "name": "t_remed_screen_status_v1",
+      "sha256": "72f2a89bf408228438d2e81814966024590a6f3a1597e172286e2270740d9e6e",
+      "statement_count": 1,
+      "ledger_name": "t_remed_screen_status_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011050556_20261011040000_lf_d2_facade_request_plan_v1.sql",
+      "previous_filename": "supabase/migrations/20261011040000_lf_d2_facade_request_plan_v1.sql",
+      "status": "renamed",
+      "version": "20261011050556",
+      "name": "20261011040000_lf_d2_facade_request_plan_v1",
+      "sha256": "e00eb01ada6513c3c949a939ff4a3fda09c2996015b463fcd1a4c3fa8498027d",
+      "statement_count": 1,
+      "ledger_name": "20261011040000_lf_d2_facade_request_plan_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011050603_20261011041000_lf_d2_facade_receipt_readback_v1.sql",
+      "previous_filename": "supabase/migrations/20261011041000_lf_d2_facade_receipt_readback_v1.sql",
+      "status": "renamed",
+      "version": "20261011050603",
+      "name": "20261011041000_lf_d2_facade_receipt_readback_v1",
+      "sha256": "7503b8fdf364352f2771e7402ecd260c0d8cd26635cdf15438fedd460dda56e5",
+      "statement_count": 1,
+      "ledger_name": "20261011041000_lf_d2_facade_receipt_readback_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011051027_20261011042000_lf_d2_source_binding_candidate_v1.sql",
+      "previous_filename": "supabase/migrations/20261011042000_lf_d2_source_binding_candidate_v1.sql",
+      "status": "renamed",
+      "version": "20261011051027",
+      "name": "20261011042000_lf_d2_source_binding_candidate_v1",
+      "sha256": "94ef32181b43508bbead0e02342d45bf513cd8800470f22a6bfc1be6e3941bcc",
+      "statement_count": 1,
+      "ledger_name": "20261011042000_lf_d2_source_binding_candidate_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011075708_20261011052000_ig_m98_reuse_verified_field_adjudication_v4.sql",
+      "previous_filename": "supabase/migrations/20261011052000_ig_m98_reuse_verified_field_adjudication_v4.sql",
+      "status": "renamed",
+      "version": "20261011075708",
+      "name": "20261011052000_ig_m98_reuse_verified_field_adjudication_v4",
+      "sha256": "d864895b591d983ecf4047eec9172c4798b1a1debb9cb6a22075776b93b6a782",
+      "statement_count": 1,
+      "ledger_name": "20261011052000_ig_m98_reuse_verified_field_adjudication_v4"
+    },
+    {
+      "filename": "supabase/migrations/20261011080740_20261011043000_lf_d2_admission_readiness_v1.sql",
+      "previous_filename": "supabase/migrations/20261011043000_lf_d2_admission_readiness_v1.sql",
+      "status": "renamed",
+      "version": "20261011080740",
+      "name": "20261011043000_lf_d2_admission_readiness_v1",
+      "sha256": "935721846ef248883abab4426ff8093224465fd037f1772339f613ae1fa722fc",
+      "statement_count": 1,
+      "ledger_name": "20261011043000_lf_d2_admission_readiness_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011081610_20261011081500_ig_source_integrity_rebound_current_cardinality_v1.sql",
+      "previous_filename": "supabase/migrations/20261011081500_ig_source_integrity_rebound_current_cardinality_v1.sql",
+      "status": "renamed",
+      "version": "20261011081610",
+      "name": "20261011081500_ig_source_integrity_rebound_current_cardinality_v1",
+      "sha256": "f4f93c81a767561dbe8a4a42b559bb6a719074a4ae0b0f764d3de59c343eefca",
+      "statement_count": 1,
+      "ledger_name": "20261011081500_ig_source_integrity_rebound_current_cardinality_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011082936_20261011050000_b2b_scoped_load_metadata_rls_v1.sql",
+      "previous_filename": "supabase/migrations/20261011050000_b2b_scoped_load_metadata_rls_v1.sql",
+      "status": "renamed",
+      "version": "20261011082936",
+      "name": "20261011050000_b2b_scoped_load_metadata_rls_v1",
+      "sha256": "7a93d928eb1a7624f0e1071c77beb107496d8539daee729d4211f8be6e8b57b6",
+      "statement_count": 1,
+      "ledger_name": "20261011050000_b2b_scoped_load_metadata_rls_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011083212_20261011051000_lf_d2_admission_column_grants_v1.sql",
+      "previous_filename": "supabase/migrations/20261011051000_lf_d2_admission_column_grants_v1.sql",
+      "status": "renamed",
+      "version": "20261011083212",
+      "name": "20261011051000_lf_d2_admission_column_grants_v1",
+      "sha256": "6848d2b554f86ea93c3b7150853663d30e3d501fe88e2a67622bc0e2a0406fac",
+      "statement_count": 1,
+      "ledger_name": "20261011051000_lf_d2_admission_column_grants_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011085515_20261011085000_ig_m98_history_currentness_v5.sql",
+      "previous_filename": "supabase/migrations/20261011085000_ig_m98_history_currentness_v5.sql",
+      "status": "renamed",
+      "version": "20261011085515",
+      "name": "20261011085000_ig_m98_history_currentness_v5",
+      "sha256": "1509f791dfdb0aa173ff95240204001be4c1acd4d742116042f399eb5506a9c9",
+      "statement_count": 1,
+      "ledger_name": "20261011085000_ig_m98_history_currentness_v5"
+    },
+    {
+      "filename": "supabase/migrations/20261011223601_20261011054000_lf_source_asset_authority_acl_v1.sql",
+      "previous_filename": "supabase/migrations/20261011054000_lf_source_asset_authority_acl_v1.sql",
+      "status": "renamed",
+      "version": "20261011223601",
+      "name": "20261011054000_lf_source_asset_authority_acl_v1",
+      "sha256": "335c063ee19b491663ff9c2f7be9d3d159c16becbbcbffcfdce3bcf7a1b9948d",
+      "statement_count": 1,
+      "ledger_name": "20261011054000_lf_source_asset_authority_acl_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261011223638_20261011155000_ig_m98_two_phase_field_match_v6.sql",
+      "previous_filename": "supabase/migrations/20261011155000_ig_m98_two_phase_field_match_v6.sql",
+      "status": "renamed",
+      "version": "20261011223638",
+      "name": "20261011155000_ig_m98_two_phase_field_match_v6",
+      "sha256": "98e691a7c09d30173966f26173c630797a92f7768fd01b5329f5d042a1b2f2a1",
+      "statement_count": 1,
+      "ledger_name": "20261011155000_ig_m98_two_phase_field_match_v6"
+    },
+    {
+      "filename": "supabase/migrations/20261011223646_20261011155001_ig_m98_receipt_governance_v6.sql",
+      "previous_filename": "supabase/migrations/20261011155001_ig_m98_receipt_governance_v6.sql",
+      "status": "renamed",
+      "version": "20261011223646",
+      "name": "20261011155001_ig_m98_receipt_governance_v6",
+      "sha256": "2a97e5e5b6db3e233a38db5c90c370d951e3a6987e3a313247ca3ff8c8420cd3",
+      "statement_count": 1,
+      "ledger_name": "20261011155001_ig_m98_receipt_governance_v6"
+    },
+    {
+      "filename": "supabase/migrations/20261011223729_20261011155002_ig_m98_two_phase_gate_v6.sql",
+      "previous_filename": "supabase/migrations/20261011155002_ig_m98_two_phase_gate_v6.sql",
+      "status": "renamed",
+      "version": "20261011223729",
+      "name": "20261011155002_ig_m98_two_phase_gate_v6",
+      "sha256": "784f938314a5c0d209411135e4bebbe4544779ba8861bc0445419c61cf7c1248",
+      "statement_count": 1,
+      "ledger_name": "20261011155002_ig_m98_two_phase_gate_v6"
+    },
+    {
+      "filename": "supabase/migrations/20261011233708_20261011194000_ig_m98_engineering_assurance_v7.sql",
+      "previous_filename": "supabase/migrations/20261011194000_ig_m98_engineering_assurance_v7.sql",
+      "status": "renamed",
+      "version": "20261011233708",
+      "name": "20261011194000_ig_m98_engineering_assurance_v7",
+      "sha256": "4f56e1c4dc554b5b4c0316453a1a2f12cb394ea963e93cb955b0236536ac80b7",
+      "statement_count": 1,
+      "ledger_name": "20261011194000_ig_m98_engineering_assurance_v7"
+    },
+    {
+      "filename": "supabase/migrations/20261011233711_20261011194100_ig_m98_engineering_release_governance_v7.sql",
+      "previous_filename": "supabase/migrations/20261011194100_ig_m98_engineering_release_governance_v7.sql",
+      "status": "renamed",
+      "version": "20261011233711",
+      "name": "20261011194100_ig_m98_engineering_release_governance_v7",
+      "sha256": "d3c1a924281a2d6f5a6fb6a00df497478bbc86840187e86e762c1816f2769291",
+      "statement_count": 1,
+      "ledger_name": "20261011194100_ig_m98_engineering_release_governance_v7"
+    },
+    {
+      "filename": "supabase/migrations/20261011235413_20261011211000_ig_m98_ekb_errors_lessons_v1.sql",
+      "previous_filename": "supabase/migrations/20261011211000_ig_m98_ekb_errors_lessons_v1.sql",
+      "status": "renamed",
+      "version": "20261011235413",
+      "name": "20261011211000_ig_m98_ekb_errors_lessons_v1",
+      "sha256": "2020cf244fe7ced4da62711090930518a6c3c71bdc457f5d0b89c38af758d428",
+      "statement_count": 1,
+      "ledger_name": "20261011211000_ig_m98_ekb_errors_lessons_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012000043_ig_m9_2_ekb_errors_findings_v1.sql",
+      "previous_filename": "supabase/migrations/20261011235800_ig_m9_2_ekb_errors_findings_v1.sql",
+      "status": "renamed",
+      "version": "20261012000043",
+      "name": "ig_m9_2_ekb_errors_findings_v1",
+      "sha256": "8f8c5794b2ed621818cfc45e6a2d5a1589a1cdc1b806e6526112151495fb3df3",
+      "statement_count": 1,
+      "ledger_name": "ig_m9_2_ekb_errors_findings_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012000842_20261012002200_ig_m99_cohort_authority_reconcile_v1.sql",
+      "previous_filename": "supabase/migrations/20261012002200_ig_m99_cohort_authority_reconcile_v1.sql",
+      "status": "renamed",
+      "version": "20261012000842",
+      "name": "20261012002200_ig_m99_cohort_authority_reconcile_v1",
+      "sha256": "41eaeefecb41fbac81727a203e4aff3ab327aae39be9b6f30d1464cb8d801e9c",
+      "statement_count": 1,
+      "ledger_name": "20261012002200_ig_m99_cohort_authority_reconcile_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012001330_20261012001100_ig_m99_ekb_jsonb_null_assertion_v1.sql",
+      "previous_filename": "supabase/migrations/20261012001100_ig_m99_ekb_jsonb_null_assertion_v1.sql",
+      "status": "renamed",
+      "version": "20261012001330",
+      "name": "20261012001100_ig_m99_ekb_jsonb_null_assertion_v1",
+      "sha256": "4886b1cb340371edd1d6335708da98dee8e35ed13baf608fccd2e1a1798b1db3",
+      "statement_count": 1,
+      "ledger_name": "20261012001100_ig_m99_ekb_jsonb_null_assertion_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012002150_20261012004000_ig_m99_rollback_receipt_policy_v1.sql",
+      "previous_filename": "supabase/migrations/20261012004000_ig_m99_rollback_receipt_policy_v1.sql",
+      "status": "renamed",
+      "version": "20261012002150",
+      "name": "20261012004000_ig_m99_rollback_receipt_policy_v1",
+      "sha256": "3ae9672fcdc517ecbacd5c33cbb92d7ed8dcb90c2327f0ae6e253ee9bf36516c",
+      "statement_count": 1,
+      "ledger_name": "20261012004000_ig_m99_rollback_receipt_policy_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012003510_20261012005800_ig_m99_transversal_reconciler_decouple_v1.sql",
+      "previous_filename": "supabase/migrations/20261012005800_ig_m99_transversal_reconciler_decouple_v1.sql",
+      "status": "renamed",
+      "version": "20261012003510",
+      "name": "20261012005800_ig_m99_transversal_reconciler_decouple_v1",
+      "sha256": "9e009b9f09ba8cecbe5f3fc94d6af55103663872a35cb238684eb5a50b954967",
+      "statement_count": 1,
+      "ledger_name": "20261012005800_ig_m99_transversal_reconciler_decouple_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012003903_20261012010600_ig_m99_runtime_proof_gate_contract_v1.sql",
+      "previous_filename": "supabase/migrations/20261012010600_ig_m99_runtime_proof_gate_contract_v1.sql",
+      "status": "renamed",
+      "version": "20261012003903",
+      "name": "20261012010600_ig_m99_runtime_proof_gate_contract_v1",
+      "sha256": "29a851f5209c50c99f05df4d77d541120526333c3143a42ee23f530844a2bece",
+      "statement_count": 1,
+      "ledger_name": "20261012010600_ig_m99_runtime_proof_gate_contract_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012004144_20261012011500_ig_m99_reversible_consumer_binding_v1.sql",
+      "previous_filename": "supabase/migrations/20261012011500_ig_m99_reversible_consumer_binding_v1.sql",
+      "status": "renamed",
+      "version": "20261012004144",
+      "name": "20261012011500_ig_m99_reversible_consumer_binding_v1",
+      "sha256": "c75302294228f560380dc380e5104b2fb0ac146b5a0ab9438703cec289451b0e",
+      "statement_count": 1,
+      "ledger_name": "20261012011500_ig_m99_reversible_consumer_binding_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012004206_20261012011000_ig_m910_versioned_cohort_contract_v1.sql",
+      "previous_filename": "supabase/migrations/20261012011000_ig_m910_versioned_cohort_contract_v1.sql",
+      "status": "renamed",
+      "version": "20261012004206",
+      "name": "20261012011000_ig_m910_versioned_cohort_contract_v1",
+      "sha256": "d716c2b5d160537c2b57d6a214830f06991a74b924860939f569973236df4193",
+      "statement_count": 1,
+      "ledger_name": "20261012011000_ig_m910_versioned_cohort_contract_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012004355_20261011060000_lf_d2_metadata_admission_split_v1.sql",
+      "previous_filename": "supabase/migrations/20261011060000_lf_d2_metadata_admission_split_v1.sql",
+      "status": "renamed",
+      "version": "20261012004355",
+      "name": "20261011060000_lf_d2_metadata_admission_split_v1",
+      "sha256": "c37a92e9444fec61c9e2ecf137976be81b285ef561d242005b880297fa0663c1",
+      "statement_count": 1,
+      "ledger_name": "20261011060000_lf_d2_metadata_admission_split_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012004415_20261012015000_ig_m910_residue_delta_ekb_v1.sql",
+      "previous_filename": "supabase/migrations/20261012015000_ig_m910_residue_delta_ekb_v1.sql",
+      "status": "renamed",
+      "version": "20261012004415",
+      "name": "20261012015000_ig_m910_residue_delta_ekb_v1",
+      "sha256": "e028e8aac8f562f25c5ea8b78e00cdb780de8b7107ffd77c071b48ab1b7e347c",
+      "statement_count": 1,
+      "ledger_name": "20261012015000_ig_m910_residue_delta_ekb_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012005601_20261012021000_ig_m912_readiness_ig_owned_contract_v1.sql",
+      "previous_filename": "supabase/migrations/20261012021000_ig_m912_readiness_ig_owned_contract_v1.sql",
+      "status": "renamed",
+      "version": "20261012005601",
+      "name": "20261012021000_ig_m912_readiness_ig_owned_contract_v1",
+      "sha256": "59f0ef6e35dc9a28c069566622e8b43c37dd1ec07939caa6636e2302f33607f6",
+      "statement_count": 1,
+      "ledger_name": "20261012021000_ig_m912_readiness_ig_owned_contract_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012005604_20261012021100_ig_m912_receipt_sourcepack_reconcile_v1.sql",
+      "previous_filename": "supabase/migrations/20261012021100_ig_m912_receipt_sourcepack_reconcile_v1.sql",
+      "status": "renamed",
+      "version": "20261012005604",
+      "name": "20261012021100_ig_m912_receipt_sourcepack_reconcile_v1",
+      "sha256": "2cd0e69a30547d734280232237f955a3c8acb7b27383b982851d2686e7246201",
+      "statement_count": 1,
+      "ledger_name": "20261012021100_ig_m912_receipt_sourcepack_reconcile_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012005606_20261012021200_ig_m912_ekb_contract_errors_v1.sql",
+      "previous_filename": "supabase/migrations/20261012021200_ig_m912_ekb_contract_errors_v1.sql",
+      "status": "renamed",
+      "version": "20261012005606",
+      "name": "20261012021200_ig_m912_ekb_contract_errors_v1",
+      "sha256": "7ff9d3fef0d995b7e38028b9b0b470f1dd870a5aaa783593e4626ed4570253f9",
+      "statement_count": 1,
+      "ledger_name": "20261012021200_ig_m912_ekb_contract_errors_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012011005_20261012023000_ig_m912_m98_technical_consumption_v1.sql",
+      "previous_filename": "supabase/migrations/20261012023000_ig_m912_m98_technical_consumption_v1.sql",
+      "status": "renamed",
+      "version": "20261012011005",
+      "name": "20261012023000_ig_m912_m98_technical_consumption_v1",
+      "sha256": "c0d29af5f0bf21ad51b4b491bcc670ce22169ee6c27e34313fdaa4fbd63cbb83",
+      "statement_count": 1,
+      "ledger_name": "20261012023000_ig_m912_m98_technical_consumption_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012011948_20261012032000_ig_m913_ledger_independent_contract_v1.sql",
+      "previous_filename": "supabase/migrations/20261012032000_ig_m913_ledger_independent_contract_v1.sql",
+      "status": "renamed",
+      "version": "20261012011948",
+      "name": "20261012032000_ig_m913_ledger_independent_contract_v1",
+      "sha256": "885a2bd5e5d8a35590d9c90101bbb8ebba954df9cd88548b2a69e65a324d2fa1",
+      "statement_count": 1,
+      "ledger_name": "20261012032000_ig_m913_ledger_independent_contract_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012011950_20261012032100_ig_m913_ekb_contract_errors_v1.sql",
+      "previous_filename": "supabase/migrations/20261012032100_ig_m913_ekb_contract_errors_v1.sql",
+      "status": "renamed",
+      "version": "20261012011950",
+      "name": "20261012032100_ig_m913_ekb_contract_errors_v1",
+      "sha256": "fb80e5a5c69bd5ae8efd2dad9f5452bba221b39ef55d609a4ef629cb16383b2d",
+      "statement_count": 1,
+      "ledger_name": "20261012032100_ig_m913_ekb_contract_errors_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012012743_20261012040000_ig_m100_typed_frozen_bundle_contract_v1.sql",
+      "previous_filename": "supabase/migrations/20261012040000_ig_m100_typed_frozen_bundle_contract_v1.sql",
+      "status": "renamed",
+      "version": "20261012012743",
+      "name": "20261012040000_ig_m100_typed_frozen_bundle_contract_v1",
+      "sha256": "d9de7324c0650d913cae161368ca2752830d58195cc7abbc333f8cc8c61c996a",
+      "statement_count": 1,
+      "ledger_name": "20261012040000_ig_m100_typed_frozen_bundle_contract_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012012746_20261012040100_ig_m100_human_approval_semantics_v1.sql",
+      "previous_filename": "supabase/migrations/20261012040100_ig_m100_human_approval_semantics_v1.sql",
+      "status": "renamed",
+      "version": "20261012012746",
+      "name": "20261012040100_ig_m100_human_approval_semantics_v1",
+      "sha256": "1c5015d2441c6c1bd0bbb18edc48da168729dd5fbf3476225a3a0597d014875e",
+      "statement_count": 1,
+      "ledger_name": "20261012040100_ig_m100_human_approval_semantics_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012012748_20261012040200_ig_m100_ekb_contract_findings_v1.sql",
+      "previous_filename": "supabase/migrations/20261012040200_ig_m100_ekb_contract_findings_v1.sql",
+      "status": "renamed",
+      "version": "20261012012748",
+      "name": "20261012040200_ig_m100_ekb_contract_findings_v1",
+      "sha256": "2a0738d85f0de6254682056aaab7fc7e5ab11ac8d5d8d98b799dbf37dbb93163",
+      "statement_count": 1,
+      "ledger_name": "20261012040200_ig_m100_ekb_contract_findings_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012052424_lf_d2_u8_cargas_lotes_invoker_facade_v1.sql",
+      "previous_filename": "supabase/migrations/20261012054500_lf_d2_u8_cargas_lotes_invoker_facade_v1.sql",
+      "status": "renamed",
+      "version": "20261012052424",
+      "name": "lf_d2_u8_cargas_lotes_invoker_facade_v1",
+      "sha256": "286768675c110938c0eacc403d017a02c0c47074b2656c47f9f7f5cb37ec7683",
+      "statement_count": 1,
+      "ledger_name": "lf_d2_u8_cargas_lotes_invoker_facade_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012064408_20261003003000_lf_pilot_srcr_g12_state_authority_v1.sql",
+      "previous_filename": "supabase/migrations/20261003003000_lf_pilot_srcr_g12_state_authority_v1.sql",
+      "status": "renamed",
+      "version": "20261012064408",
+      "name": "20261003003000_lf_pilot_srcr_g12_state_authority_v1",
+      "sha256": "012212894b632feff765546cdf4dac5b2f382cd0d9f7b0c5616267c6b304a770",
+      "statement_count": 1,
+      "ledger_name": "20261003003000_lf_pilot_srcr_g12_state_authority_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012080128_20261012072000_lf_gpt_native_in_chat_capture_policy_candidate_v1.sql",
+      "previous_filename": "supabase/migrations/20261012072000_lf_gpt_native_in_chat_capture_policy_candidate_v1.sql",
+      "status": "renamed",
+      "version": "20261012080128",
+      "name": "20261012072000_lf_gpt_native_in_chat_capture_policy_candidate_v1",
+      "sha256": "98ba73f61e26035dfdc4a644edc4bc16843aa5750446173be1e9c924e16b8076",
+      "statement_count": 1,
+      "ledger_name": "20261012072000_lf_gpt_native_in_chat_capture_policy_candidate_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012132744_analysis_a9_pg01_exact_receipt_guard_v1.sql",
+      "previous_filename": "supabase/migrations/20261012081500_analysis_a9_pg01_exact_receipt_guard_v1.sql",
+      "status": "renamed",
+      "version": "20261012132744",
+      "name": "analysis_a9_pg01_exact_receipt_guard_v1",
+      "sha256": "9b1b8b83e9d51cc377d97d998e1ebb24beaf672e03346551942810a136beefa4",
+      "statement_count": 1,
+      "ledger_name": "analysis_a9_pg01_exact_receipt_guard_v1"
+    },
+    {
+      "filename": "supabase/migrations/20261012163602_ig_m100_pinned_signed_receipt_not_legacy_probe_v2.sql",
+      "previous_filename": null,
+      "status": "added",
+      "version": "20261012163602",
+      "name": "ig_m100_pinned_signed_receipt_not_legacy_probe_v2",
+      "sha256": "95a09f8f007c4b28689fecbcfbb00c0c981fc3a3566c49637e54517befbaf2cb",
+      "statement_count": 1,
+      "ledger_name": "ig_m100_pinned_signed_receipt_not_legacy_probe_v2"
+    },
+    {
+      "filename": "supabase/migrations/20261012163941_ig_m100_m912_verified_receipt_gate_v2.sql",
+      "previous_filename": null,
+      "status": "added",
+      "version": "20261012163941",
+      "name": "ig_m100_m912_verified_receipt_gate_v2",
+      "sha256": "f17bc0ed645c0fd70c3fd3953fc07214bf27577cbf5e3bd9dec54c60c78b45af",
+      "statement_count": 1,
+      "ledger_name": "ig_m100_m912_verified_receipt_gate_v2"
+    }
+  ]
+}
