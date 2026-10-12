@@ -36,7 +36,7 @@ def validate(value: object, consumer: str) -> tuple[str, str]:
     require(config.get("scope") == "TRUSTED_GITHUB_BASE_CI_ONLY", "TARGET_SCOPE_INVALID")
     require(config.get("purpose") == "INDEPENDENT_ADMISSION_AND_ROLLBACK_ONLY_IG_JUDGE", "TARGET_PURPOSE_INVALID")
     require(config.get("pase_applicability") == "NOT_APPLICABLE", "TARGET_PASE_BOUNDARY_INVALID")
-    require(config.get("credential_source") == "GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_PASSWORD", "TARGET_CREDENTIAL_BOUNDARY_INVALID")
+    require(config.get("credential_source") in ("GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_PASSWORD", "GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_READONLY_PASSWORD"), "TARGET_CREDENTIAL_BOUNDARY_INVALID")
     consumers = config.get("allowed_consumers")
     require(isinstance(consumers, list) and set(consumers) == CONSUMERS, "TARGET_CONSUMER_COVERAGE_INVALID")
     require(consumer in CONSUMERS, "TARGET_CONSUMER_UNSUPPORTED")
