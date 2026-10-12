@@ -1,0 +1,75 @@
+{
+  "schema": "LF_GPT_NATIVE_IN_CHAT_CAPTURE_CONTRACT_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "producer_mode": "GPT_NATIVE",
+  "producer_transport": "CHAT_SESSION_AUTHORING",
+  "lifecycle": "CANDIDATE_TEST_ONLY",
+  "objective": "Capture exact ChatGPT-authored RAW against frozen profile/input/contract without a callable model adapter; do not conflate chat-source readback with provider attestation.",
+  "flow": [
+    "RESOLVE_FROZEN_PROFILE_AND_INPUT",
+    "BIND_EXACT_REQUEST_SHA256",
+    "AUTHOR_RAW_IN_CURRENT_GPT_CHAT",
+    "CAPTURE_UNATTESTED_RAW_WITH_EXACT_BINDINGS",
+    "READBACK_SOURCE_BYTES",
+    "DERIVE_DETERMINISTIC_CONTROLS",
+    "INDEPENDENT_CONTEXT_REVIEW_WHEN_AVAILABLE",
+    "GOVERNED_ADMISSION_SEPARATELY"
+  ],
+  "producer_capture_schema": "LF_GPT_NATIVE_IN_CHAT_CAPTURE_V1",
+  "allowed_evidence_tier": "CURRENT_CHAT_AUTHOR_CLAIM_SOURCE_BOUND",
+  "forbid_runtime_adapter_impersonation": true,
+  "no_external_inference": true,
+  "required_bindings": [
+    "run_id",
+    "profile_code",
+    "profile_source_sha256",
+    "input_sha256",
+    "execution_contract_sha256",
+    "request_sha256",
+    "raw_output_sha256"
+  ],
+  "producer_claim_only": {
+    "provider": "OPENAI_CHATGPT_NATIVE",
+    "model": "GPT-6",
+    "runtime_attested": false,
+    "independent_reviewer": false
+  },
+  "distinct_from": [
+    "PROFILE_RUNTIME_RESPONSE_V1",
+    "PROFILE_EXECUTION_RECEIPT_V1",
+    "INDEPENDENT_CHAT_SEMANTIC_REVIEW_RECEIPT"
+  ],
+  "exact_source_readback_is_provider_attestation": false,
+  "capture_must_not_include": [
+    "runtime_attestation",
+    "runtime_attestation_verification",
+    "attestation_verifier",
+    "provider_signature"
+  ],
+  "status_machine": {
+    "captured": "GPT_CHAT_RAW_CAPTURED_UNATTESTED",
+    "source_bound": "GPT_CHAT_SOURCE_READBACK_BOUND_UNATTESTED",
+    "pending": "PENDING_INDEPENDENT_GPT_REVIEW",
+    "admitted": "ADMISSION_REQUIRES_SEPARATE_GOVERNED_GATE"
+  },
+  "forbidden_effects": [
+    "PROFILE_AUTHORITY_WRITE",
+    "BENCHMARK_ADMISSION",
+    "CUTOVER",
+    "METHOD_PROMOTION",
+    "PRODUCTION_ACTIVATION",
+    "FORGE_RUNTIME_ATTESTATION",
+    "SELF_REVIEW_AS_INDEPENDENT"
+  ],
+  "admission_requires": [
+    "EXACT_SOURCE_READBACK",
+    "AUTHENTIC_RUNTIME_PROVENANCE_OR_APPROVED_EQUIVALENT",
+    "BLINDED_INDEPENDENT_REVIEW",
+    "FROZEN_PAIRED_BENCHMARK_PASS",
+    "ZERO_CRITICAL_REGRESSIONS",
+    "SAFE_CHANGE_ADMISSION"
+  ],
+  "governance_policy_ref": "supabase://public.lf_policy_versions/POL-PROFILE-UPDATE-PASS/v1.2-gpt-native-in-chat-candidate",
+  "deployment": "NOT_APPLIED_TO_OPERATIONAL_GATE",
+  "owner": "TRANSVERSAL_PROFILE_EXECUTION_GOVERNANCE"
+}
