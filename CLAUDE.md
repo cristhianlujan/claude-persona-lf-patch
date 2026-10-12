@@ -64,7 +64,7 @@ Merge Train checklist:
 
 A write rejected for read-only access or missing permission is intentional. Do not look for another route; use the Merge Train.
 
-If you have no `ACTUALIZACION_DB_LF` execution and cannot create one (read-only), state the exact target in the PR and ask the owner for it.
+You do not need to create the `ACTUALIZACION_DB_LF` execution: the Merge Train reserves it when the PR is labeled, records preflight/patch/verify with real evidence and closes it (`EXEC-DB-TRAIN-PR<n>-<version>-R<run>`). Do not reserve executions by hand for Train migrations.
 
 ### Migration naming — check before opening a migration PR
 
