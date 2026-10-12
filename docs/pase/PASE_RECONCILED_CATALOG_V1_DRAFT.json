@@ -1,0 +1,53 @@
+{
+  "schema_version": "LF_PASE_RECONCILED_CATALOG_V1_DRAFT",
+  "source": "Owner-provided v0 checkpoint summary",
+  "baseline_counts": {
+    "BLOCKER": 29,
+    "CONFLICT": 11,
+    "DRIFT": 23
+  },
+  "decision_status": "PENDIENTE_DE_CONFIRMACION_DEL_OWNER",
+  "activation": false,
+  "precedence": [
+    {
+      "id": "C1",
+      "rule": "PR-running workflows absent from admission registry -> propose admission",
+      "state": "PROPOSED",
+      "requires": "enumerate workflows and registry"
+    },
+    {
+      "id": "C2",
+      "rule": "Admitted workflows missing on current tree -> propose registry retirement",
+      "state": "PROPOSED",
+      "requires": "review current exact paths"
+    },
+    {
+      "id": "C5",
+      "rule": "Per-item quarantine precedence over pase.yml all-or-nothing",
+      "state": "PROPOSED",
+      "requires": "owner approval"
+    },
+    {
+      "id": "S30",
+      "rule": "Consolidate duplicate S30 lane registrations under one master S30",
+      "state": "PROPOSED"
+    },
+    {
+      "id": "S28",
+      "rule": "CHANGESET_GOVERNANCE_LF_V1 controls s28_ci_lane_router ownership",
+      "state": "PROPOSED"
+    },
+    {
+      "id": "TOMBSTONE",
+      "rule": "Remove scripts/lf_contract_check.py from three controls",
+      "state": "PROPOSED",
+      "requires": "confirm tombstone references"
+    }
+  ],
+  "unresolved": {
+    "BLOCKER": 29,
+    "reason": "Raw v0 item-level inventory absent; cannot compute resolved BLOCKER count or conflict/DRIFT after applying proposed precedence without inventing entries."
+  },
+  "disablement": "Do not change pase.yml, if:false, or POST-PASE",
+  "provenance": "Not reconciled against item-level v0; no PASS."
+}
