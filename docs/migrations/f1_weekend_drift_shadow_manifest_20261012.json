@@ -14,7 +14,11 @@
     "main_exact_version_and_name": 66,
     "same_version_raw": 65,
     "other_version_raw": 45,
-    "needs_canonical": 20
+    "needs_canonical": 20,
+    "exact_version_verified": 65,
+    "other_version_verified": 60,
+    "canonical_unresolved": 5,
+    "absent_by_name": 0
   },
   "items": [
     {
@@ -35,7 +39,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "efe171ae3e8766d01e62b3d2af42886457626815",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010021000",
@@ -55,7 +60,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "355b2db6e646a413ccadffe2f36ff8ac9dd9dbce",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010021001",
@@ -75,7 +81,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "17400e2d73563ac74b92b32f80caf54c0ffc37db",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010021500",
@@ -95,7 +102,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "e4bf4abebce314dee2d2ca6ab13c9ee02e2b4d8a",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010021600",
@@ -115,7 +123,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "4407f0827b86f0cd5f8a36f4835d96223497f39b",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010021700",
@@ -135,7 +144,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "41a88ed97575d2f86a0734fa72fdb456d5bf8374",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010022458",
@@ -155,7 +165,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "5c0c01467f155c030f11622da4f1151fd31be20c",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010022555",
@@ -175,7 +186,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "a2d1d1849803816752b0e988afa03f5358ba7975",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010024447",
@@ -195,7 +207,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "cb8685dda753f7c6c9abfceafdefcdf5fdef6618",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010024500",
@@ -215,7 +228,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "c7831239f41bb0420da647c8b97f22eaf2cef55c",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010025000",
@@ -235,7 +249,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "3a76c6fb6afbc62090c12039faa3b69fd6595a8f",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010030001",
@@ -255,7 +270,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "325e37c056754015d739f1199969c943d680de1a",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010033000",
@@ -275,7 +291,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "67aec6e9620e5ace290fd28c663342b0957b2630",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010034500",
@@ -295,7 +312,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "86890962097ba0579a8b33f24fd08a485bd00a10",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010041000",
@@ -315,7 +333,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "01ec5433a743c9d773f0bc08c547218871072076",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010042500",
@@ -335,7 +354,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "54a452845b30f0f487b709ee0e987ce69cece21e",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010085150",
@@ -355,7 +375,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "4be24d0233fbab61a2805f07f81297709426f8c8",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010095218",
@@ -377,7 +398,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010095224",
@@ -399,7 +421,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": false,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "CANONICAL_NOT_PROVEN"
     },
     {
       "version": "20261010095241",
@@ -421,7 +444,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010095305",
@@ -443,7 +467,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": false,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "CANONICAL_NOT_PROVEN"
     },
     {
       "version": "20261010100000",
@@ -463,7 +488,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "93c2e33cc7c321923aac2a42f9c4d1ddb0c1910e",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010110321",
@@ -485,7 +511,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010110327",
@@ -507,7 +534,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010120000",
@@ -527,7 +555,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "e45ece98b07429111c6f2e49329370e208760b30",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010140000",
@@ -548,7 +577,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "4edd0414f4c61fff183bc04ba30bc23294804fb8",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010142227",
@@ -570,7 +600,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": false,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "CANONICAL_NOT_PROVEN"
     },
     {
       "version": "20261010142235",
@@ -592,7 +623,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010144706",
@@ -614,7 +646,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010150138",
@@ -636,7 +669,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010150741",
@@ -658,7 +692,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010163443",
@@ -680,7 +715,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010163705",
@@ -702,7 +738,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010232400",
@@ -724,7 +761,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010235001",
@@ -744,7 +782,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "b889f5452c776aeb4c74a38d0f9626412fde7b91",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010235002",
@@ -764,7 +803,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "4749fabfd136326de7b4b65b5c28642836658e81",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010235003",
@@ -784,7 +824,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "613d7779f19b6143d013b65bc78253f5669b3e7b",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010235004",
@@ -804,7 +845,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "dd353efa98a85918850c8f3a9601a2dd5beb2615",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010235005",
@@ -824,7 +866,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "9286aca0aaff101af36929937d0565a1318c93f5",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261010235006",
@@ -844,7 +887,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "1767954f34fdb908ecfb66b577f3e65b653aa53e",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011000339",
@@ -866,7 +910,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011000425",
@@ -886,7 +931,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "93f521fdcf0df53c962f8eb04a535dbf7e4ac94d",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011000445",
@@ -906,7 +952,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "c1d616ca8ea7a39dc4c9ff0f09e5ed33be239d57",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011000451",
@@ -926,7 +973,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "5ed2fa8bc2a8c1905d9e7f217670fac5547a80e1",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011001609",
@@ -948,7 +996,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011002854",
@@ -970,7 +1019,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011005705",
@@ -992,7 +1042,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": true,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011012000",
@@ -1012,7 +1063,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "f330891725a58e4ad7f86aded1e00cdf42707c22",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011012001",
@@ -1032,7 +1084,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "54dc11fa67ec46d44d34524aeb1dcce512800f4e",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011015000",
@@ -1052,7 +1105,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "90abffe6d244a38450fbf7e331f6df154f104fdb",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011021429",
@@ -1074,7 +1128,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": false,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "CANONICAL_NOT_PROVEN"
     },
     {
       "version": "20261011023000",
@@ -1094,7 +1149,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "e2d7afac7a4a9b02d401acd120a790d69c060fec",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011024000",
@@ -1114,7 +1170,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "c0c7ee42954dfecbc79aad5ab4c4c7e61af34b68",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011025000",
@@ -1134,7 +1191,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "0bb3130738d5ed7153d8fc2a2960606a0ad4243c",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011030000",
@@ -1154,7 +1212,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "eab40296b6c43808b53b2ba08e627a0f2c9d34ea",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011031000",
@@ -1174,7 +1233,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "3f10b39b487eab856948796d89a685340f20b521",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011031001",
@@ -1194,7 +1254,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "b04dadd71a78301cc437fbea2f6adcdec3c5d72a",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011031002",
@@ -1214,7 +1275,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "93b71a4cd593ed3d0b59d27241f531ee2697eb3b",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011033000",
@@ -1234,7 +1296,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "93f521fdcf0df53c962f8eb04a535dbf7e4ac94d",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011034000",
@@ -1254,7 +1317,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "c1d616ca8ea7a39dc4c9ff0f09e5ed33be239d57",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011035000",
@@ -1274,7 +1338,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "5ed2fa8bc2a8c1905d9e7f217670fac5547a80e1",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011035001",
@@ -1294,7 +1359,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "2b0c4e3cef8bc2385253e6e1aaad25c6112bbc39",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011035002",
@@ -1314,7 +1380,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "6dd77a540bd21b189360205502e69d88fb6e8d76",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011050556",
@@ -1334,7 +1401,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "47343f5ecda5d802cd20d2310c276d28418e99a3",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011050603",
@@ -1354,7 +1422,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "0051474f6d2c5bab38292b6634c06f0d5cd94b19",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011051027",
@@ -1374,7 +1443,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "d8fc5361e476a13cb3730ec973284837e3385012",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011052000",
@@ -1394,7 +1464,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "fdad31fde71c4da2ab3f6da08282af6244f4c6cc",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011075708",
@@ -1414,7 +1485,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "fdad31fde71c4da2ab3f6da08282af6244f4c6cc",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011080740",
@@ -1434,7 +1506,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "07265afc339415609ea1f6c1843d5dc2395c9940",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011081500",
@@ -1454,7 +1527,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "c23b753d260349b3a84397dfb20ef550041648d1",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011081610",
@@ -1474,7 +1548,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "c23b753d260349b3a84397dfb20ef550041648d1",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011082936",
@@ -1494,7 +1569,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "acbdc60d14685993d03ee11aec381a8bc71e7648",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011083212",
@@ -1514,7 +1590,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "94b5c2c160f948d59f3ea8f05acbbac06ab9dc35",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011085000",
@@ -1534,7 +1611,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "74841a345c02b49737a6085bdeb9949e7c1e0687",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011085515",
@@ -1554,7 +1632,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "74841a345c02b49737a6085bdeb9949e7c1e0687",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011155000",
@@ -1574,7 +1653,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "13c5fc9fb2b03886e598f07b79e7e6d6035a8808",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011155001",
@@ -1594,7 +1674,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "c47cbcb4b7489f89ab54ac0cb1605d768f7338f6",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011155002",
@@ -1614,7 +1695,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "de048e7642ff9a872785a7a12ee528ebed309b62",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011190000",
@@ -1636,7 +1718,8 @@
       "main_same_version_raw_byte_match": false,
       "other_version_raw_byte_match": false,
       "main_canonical_content_equal": false,
-      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION",
+      "content_status": "CANONICAL_NOT_PROVEN"
     },
     {
       "version": "20261011194000",
@@ -1656,7 +1739,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "17962713dbc2a97758f020e5f745efdc7a0f118f",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011194100",
@@ -1676,7 +1760,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "ac1a0e2b5559c75667f6b89d6c8916b84ebdc7af",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011211000",
@@ -1696,7 +1781,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "983eb2c72701fc487d2341f2a68cd46a65f551dc",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011223601",
@@ -1716,7 +1802,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "26acc4f67557db2d608a8176e7b7cbb44c2c2ed7",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011223638",
@@ -1736,7 +1823,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "13c5fc9fb2b03886e598f07b79e7e6d6035a8808",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011223646",
@@ -1756,7 +1844,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "c47cbcb4b7489f89ab54ac0cb1605d768f7338f6",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011223729",
@@ -1776,7 +1865,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "de048e7642ff9a872785a7a12ee528ebed309b62",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011233708",
@@ -1796,7 +1886,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "17962713dbc2a97758f020e5f745efdc7a0f118f",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011233711",
@@ -1816,7 +1907,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "ac1a0e2b5559c75667f6b89d6c8916b84ebdc7af",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011234910",
@@ -1836,7 +1928,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "99358aff284b82a0b5c5d229164fde30df85b695",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011235000",
@@ -1856,7 +1949,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "7664054d739894291d9a96a9fe2ab0abdf7074ae",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011235200",
@@ -1876,7 +1970,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "a605fd5e78f98ab7ab90108c139d66edb1c5d1df",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261011235413",
@@ -1896,7 +1991,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "983eb2c72701fc487d2341f2a68cd46a65f551dc",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012000043",
@@ -1916,7 +2012,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "b946485614514d5b3efabf7685f8ca480723101f",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012000842",
@@ -1936,7 +2033,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "97bc26beefce2f4ce714032b12b01ea7870959bb",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012001330",
@@ -1956,7 +2054,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "a4c5791ff90d0f30ec62ad37a22f6aba336f29c9",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012002150",
@@ -1976,7 +2075,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "1e5827f2e91f8295b5c6da5f52222c154f5868ce",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012003510",
@@ -1996,7 +2096,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "fe7b1047367468d418459aa6ebdc67e8631576f9",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012003903",
@@ -2016,7 +2117,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "80a8e36b676e094e83a090cf68a6aee56a428acd",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012004144",
@@ -2036,7 +2138,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "66ef56f7154f65d7aa6abede2c8e27c0c94be743",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012004206",
@@ -2056,7 +2159,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "ed2ebbee41efbd9202fb38f8417c1eef7d36f617",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012004355",
@@ -2076,7 +2180,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "311becd61a8bf4fdfb6e0e28179cb9669a7446c9",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012004415",
@@ -2096,7 +2201,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "766fdcaf21dda78f9f2e5a736671e30e1619c248",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012005601",
@@ -2116,7 +2222,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "61a440fbf5cbc8585e3c2ad31ea891d93c0b814f",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012005604",
@@ -2136,7 +2243,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "3244a86c8feb87022625d9265b96b780e5d88432",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012005606",
@@ -2156,7 +2264,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "940a2557d55e7fc1749bb75c7847e4e6a1b29cee",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012011005",
@@ -2176,7 +2285,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "2727a0426e321ec76a76b08616515d6693624ec8",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012011948",
@@ -2196,7 +2306,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "c6749c01b991cfc82b015d408aa7f5a6a3943421",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012011950",
@@ -2216,7 +2327,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "5889135603dd6392933e9de3d24e067d75e3656f",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012012743",
@@ -2236,7 +2348,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "9b91e5beb09218ed8bdc2e4744ff25b75818e26c",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012012746",
@@ -2256,7 +2369,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "07e09dc3bff828b8ee71860921e935aaa74ff1c9",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012012748",
@@ -2276,7 +2390,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "a44f556feafb3833ca9abf066e57a6d9144e1bf8",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012052424",
@@ -2296,7 +2411,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "08a0d57878e7383c0b269e3ad0a89285a3a3a2ff",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012064408",
@@ -2316,7 +2432,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "11b8fa42a2a44a3e0ce9628eb1f8d59950d51e75",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012070000",
@@ -2336,7 +2453,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "70641b5fe90a91506f5ae8a698d9569f166e8528",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012071000",
@@ -2356,7 +2474,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "e842f5c7e66ef87ba08ef6bdce8be5c05c69d1a5",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012073000",
@@ -2376,7 +2495,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "60ee615dd51439c930c9129aad1846086a5ead1d",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012074500",
@@ -2396,7 +2516,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "ced7bde1edadec7c0045c1bec720f4ab82de52e7",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012080000",
@@ -2416,7 +2537,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "d8b5a792d9b24d3576ecc061a4df0bfcbf1b36cf",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012080128",
@@ -2436,7 +2558,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "c571e9623815f170188564deddd915d14f430ac8",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012090000",
@@ -2456,7 +2579,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "1d289e02e0bc49c9c50599ffd91e399b44abb935",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012091500",
@@ -2476,7 +2600,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "a0e04496695e6e756ae59f26f201852acab272ed",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012104500",
@@ -2496,7 +2621,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "a6b5b8536d847de903ef55fd8684cc144f6fb426",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012110000",
@@ -2516,7 +2642,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "999b3355294e374c52d39e48d2e1f899b0389225",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012114500",
@@ -2536,7 +2663,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "6177fc985c4fb1519a9e106aa7a4c83f9bf02fa6",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012132744",
@@ -2556,7 +2684,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "fbd3fe24f74dd4bbb7760927d08e8f5174f11cbe",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": true
+      "other_version_raw_byte_match": true,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012133000",
@@ -2576,7 +2705,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "2a74a4e81e230d64022440f1537ddd223784f232",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012133100",
@@ -2596,7 +2726,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "f3aef4730a8793b35f1b7fb95e7bd623a7204394",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012133200",
@@ -2616,7 +2747,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "22ac64b1e87dca693ea2ad57c3a8b8755a7c6d4f",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012153000",
@@ -2636,7 +2768,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "f0855085cdae425d5a742541702cfa56ac0d9d34",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     },
     {
       "version": "20261012160000",
@@ -2656,7 +2789,8 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "77f2151e2bf11f258a8f22192cc2760d3e111e88",
       "main_same_version_raw_byte_match": true,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "content_status": "MATCH_VERIFIED"
     }
   ],
   "duplicate_canonical_names": [
@@ -2761,7 +2895,8 @@
     "Canonical duplicate is name normalization only; not proof that SQL bytes match.",
     "Main-file and Train provenance unresolved until full Git tree and PR merge evidence are compared.",
     "Main Git tree filename inventory completed for 130 rows, but canonical content comparison and Train attribution remain pending.",
-    "Raw byte identity confirmed by independent Git blob SHA-1 over single stored ledger statement, with Git tree blob SHA; unmatched pairs still require migration_transport_normalization canonical check."
+    "Raw byte identity confirmed by independent Git blob SHA-1 over single stored ledger statement, with Git tree blob SHA; unmatched pairs still require migration_transport_normalization canonical check.",
+    "Content comparison: 110 Git blob byte-exact matches, 15 additional line-canonical matches, 5 require full CLI transport-normalization review; unproven is not necessarily different."
   ],
   "dry_run_20261010_source_to_ledger": {
     "mode": "READ_ONLY_SQL_CANONICAL_COMPARISON",
@@ -2811,5 +2946,27 @@
     ]
   },
   "main_snapshot": "48935dee24621820926378825562dd8ab2c00e11",
-  "main_migration_file_count": 1177
+  "main_migration_file_count": 1177,
+  "unresolved_content": [
+    {
+      "version": "20261010095224",
+      "name": "t_remed_derived_links_and_queue_v1"
+    },
+    {
+      "version": "20261010095305",
+      "name": "t_remed_layer1_property_test_findings_v3"
+    },
+    {
+      "version": "20261010142227",
+      "name": "t_remed_rule_levels_v1"
+    },
+    {
+      "version": "20261011021429",
+      "name": "t_remed_function_comments_v1"
+    },
+    {
+      "version": "20261011190000",
+      "name": "ig_m713_ekb_errors_findings_v1"
+    }
+  ]
 }
