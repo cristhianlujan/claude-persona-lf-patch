@@ -122,8 +122,37 @@ def run_sandbox(
         identity = evidence.get('evidence_identity') or {}
         if identity.get('cohort_type_code') != code or identity.get('run_ref') != run_ref:
             raise EvidencePending("M910_PROVENANCE_IDENTITY_DRIFT:" + code)
+        ids = identity.get('receipt_ids')
+        if (not isinstance(ids, list) or len(ids) != 3
+                or any(type(i) is not int or i <= 0 for i in ids)
+                or len(set(ids)) != 3):
+            raise EvidencePending("M910_RECEIPT_IDENTITY_INVALID:" + code)
+        if (evidence.get('canary_gate_readback') or {}).get('receipt_id') != ids[0]:
+            raise EvidencePending("M910_CANARY_GATE_NOT_BOUND:" + code)
+        if (evidence.get('independent_oracle_readback') or {}).get('receipt_id') != ids[1]:
+            raise EvidencePending("M910_INDEPENDENT_RECEIPT_NOT_BOUND:" + code)
+        if (evidence.get('rollback_action_readback') or {}).get('receipt_id') != ids[2]:
+            raise EvidencePending("M910_ROLLBACK_RECEIPT_NOT_BOUND:" + code)
+        try:
+            db_rows = _fetch(conn, """SELECT id,payload->>'stage'
+                FROM programacion.provenance_receipts
+                WHERE id=ANY(%s) AND subject_type='IG_CANARY_OBSERVATION'
+                  AND subject_ref=%s AND issuer_channel='EVIDENCE_VERIFIER_V1'
+                  AND payload->>'run_ref'=%s
+                  AND payload->>'verification_status'='VERIFIED'""",
+                  (ids, 'IG_CANARY:' + code, run_ref))
+        finally:
+            conn.rollback()
+        if set(db_rows) != set(zip(ids,('OBSERVATION','INDEPENDENT_ORACLE','ROLLBACK_ACTION'))):
+            raise EvidencePending("M910_CANONICAL_RECEIPT_IDS_NOT_MATCHED:" + code)
+        try:
+            final = _snapshot(conn)
+        finally:
+            conn.rollback()
+        if final != baseline:
+            raise RuntimeError("M910_FINAL_POSTSTATE_DIFFERS_FROM_BASELINE:" + code)
         verified.append({'cohort_type_code': code, 'members': len(members),
-                         'receipt_ids': identity.get('receipt_ids')})
+                         'receipt_ids': ids})
 
     # Sandbox-only: no runtime activation and no persistent candidate changes.
     return {'status': 'SANDBOX_PROOF_ONLY', 'verified_cohorts': verified,
