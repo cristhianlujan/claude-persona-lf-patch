@@ -1,0 +1,14 @@
+{
+  "case_id": "HCA-105",
+  "decision": "COLLECT_MORE_EVIDENCE",
+  "falsified": [
+    "H1"
+  ],
+  "causality_proven": false,
+  "reason_claim_ids": [
+    "OBS:OWNER_EXISTS",
+    "REFUTE:H1:OWNER_EXISTS",
+    "MISSING:H2:TOKEN_VALID"
+  ],
+  "reason": "La fuente primaria confirma OWNER_EXISTS=true, lo que contradice la predicción de H1 y permite descartarla. La lectura TOKEN_VALID=false proviene de un espejo no verificado: no sirve para probar que el token sea inválido ni para cerrar causalmente H2. La siguiente acción es obtener el readback autorizado del token y volver a evaluar las hipótesis; no se justifica afirmar causalidad."
+}
