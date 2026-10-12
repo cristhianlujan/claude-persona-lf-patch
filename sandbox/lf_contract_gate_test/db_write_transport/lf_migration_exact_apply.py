@@ -171,6 +171,21 @@ def _dollar_tag(source: str) -> str:
     raise RuntimeError("EXACT_APPLY_DOLLAR_TAG_EXHAUSTED")
 
 
+def _strip_outer_transaction(source_sql: str) -> str:
+    lines = source_sql.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    significant = [i for i, line in enumerate(lines) if line.strip() and not line.lstrip().startswith("--")]
+    if len(significant) < 2:
+        raise ValueError("EXACT_APPLY_RECOVER_TRANSACTION_SHAPE_INVALID")
+    first, last = significant[0], significant[-1]
+    if lines[first].strip().upper() not in {"BEGIN;", "BEGIN"}:
+        raise ValueError("EXACT_APPLY_RECOVER_BEGIN_REQUIRED")
+    if lines[last].strip().upper() not in {"COMMIT;", "COMMIT"}:
+        raise ValueError("EXACT_APPLY_RECOVER_COMMIT_REQUIRED")
+    lines[first] = ""
+    lines[last] = ""
+    return "\n".join(lines)
+
+
 def build_fallback_sql(
     *,
     version: str,
@@ -182,6 +197,7 @@ def build_fallback_sql(
     if SHA40_RE.fullmatch(source_blob) is None:
         raise ValueError("EXACT_APPLY_SOURCE_BLOB_INVALID")
     tag = _dollar_tag(source_sql)
+    executable_sql = _strip_outer_transaction(source_sql) if recover_existing_main else source_sql
     return f"""begin;
 lock table supabase_migrations.schema_migrations in share row exclusive mode;
 do $lfguard$
@@ -197,7 +213,7 @@ begin
 end;
 $lfguard$;
 
-{source_sql}
+{executable_sql}
 
 insert into supabase_migrations.schema_migrations
 (version,statements,name,created_by,idempotency_key)
