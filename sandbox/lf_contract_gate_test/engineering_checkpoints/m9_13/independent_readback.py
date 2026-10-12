@@ -110,7 +110,7 @@ def verify(packet, runner_identity):
 def self_test():
     peers, hu = [], []
     for i in range(13):
-        unit = "M9." + str(i if i < 10 else i + 1)
+        unit = "M9." + str(i)
         peers.append({"unit_code": unit, "work_code": "PAULO-" + str(i), "status": "DONE",
                       "checkpoints": [{"sequence_no": 1, "checkpoint_code": "CP",
                                         "status": "DONE", "evidence_ref": "real:" + unit}]})
