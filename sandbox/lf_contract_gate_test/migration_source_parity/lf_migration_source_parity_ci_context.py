@@ -78,6 +78,7 @@ MANAGED_EXACT_NAMES = {
     "r5e_vacuum_inventory_activation_v1",
     "inventory_distinct_refresh_v1",
     "inventory_unused_gin_cleanup_v1",
+    "f0_train_credential_canary_noop_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
