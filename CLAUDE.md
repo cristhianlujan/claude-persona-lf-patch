@@ -64,7 +64,7 @@ Read that file on `main` before naming a migration. Its lists are the authority;
 
 If the name does not fit, first open a separate code-only PR that registers the exact name (or a family the owner approved) with a positive and a negative test (pattern: `test_f0_train_exact_classification.py`), get it merged into `main`, and only then label the migration PR `ready-to-merge`. The Train reads the classifier from `main`, so registering the name inside the migration PR itself does not work. Never broaden prefixes without owner approval.
 
-Until the Train checks classification before applying, an unclassified name is applied to the database first and then rejected (`FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION`), leaving `main` unreconciled. Do not label an unclassified migration.
+The PR check `classify-migration-names` flags unclassified names early, and the Train rejects them before any database write (`FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY`). Do not label an unclassified migration.
 
 ## Soft canonical-route guard
 
