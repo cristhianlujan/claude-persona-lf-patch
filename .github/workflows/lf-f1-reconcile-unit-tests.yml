@@ -1,0 +1,25 @@
+name: F1 Reconcile Source Only Unit Tests
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/migration_source_parity/reconcile_source_only.py'
+      - 'sandbox/lf_contract_gate_test/migration_source_parity/test_reconcile_source_only.py'
+      - '.github/workflows/lf-f1-reconcile-unit-tests.yml'
+permissions:
+  contents: read
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Record main tree for controlled draft rebase
+        run: |
+          git fetch --no-tags origin main
+          echo "MAIN_HEAD=$(git rev-parse origin/main)"
+          echo "MAIN_TREE=$(git rev-parse 'origin/main^{tree}')"
+      - run: python -m unittest discover -s sandbox/lf_contract_gate_test/migration_source_parity -p test_reconcile_source_only.py -v
