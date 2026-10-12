@@ -26,6 +26,16 @@ class MigrationNamePreApplyTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("classification=MANAGED", result.stdout)
 
+    def test_exact_m100_source_is_classified_before_train_apply(self) -> None:
+        result = self.run_checker("ig_m100_sandbox_technical_vs_operational_authority_v1")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("classification=MANAGED", result.stdout)
+
+    def test_unreviewed_m100_names_still_fail_closed(self) -> None:
+        result = self.run_checker("ig_m100_unreviewed_future_migration_v9")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY", result.stderr)
+
     def test_unknown_f0_name_fails_closed(self) -> None:
         result = self.run_checker("f0_unreviewed_name_v1")
         self.assertNotEqual(result.returncode, 0)
