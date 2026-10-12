@@ -18,3 +18,12 @@ assert "LF_SUPABASE_DB_PASSWORD: ${{ secrets." not in (p/"lf-migration-source-pa
 assert "environment: lf-runtime-readback" in (p/"lf-runtime-independent-readback.yml").read_text()
 assert "environment: lf-s30-broker" in (p/"profile-driven-screen-generation.yml").read_text()
 print("PASS_F0_STATIC_ENV_SEPARATION")
+
+# Stale-base rejection must happen ONLY when N9 request is applicable.
+classify=judge.split("  classify-ig-n9-applicability:",1)[1].split("  run-ig-n9-when-applicable:",1)[0]
+assert classify.index('HEAD_REPOSITORY') < classify.index('git fetch --no-tags') < classify.index('git diff --quiet') < classify.index('BLOCK_IG_N9_STALE_BASE')
+import json
+config=json.loads(Path("sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.json").read_text())
+assert config["credential_sources"]["lf-independent-change-admission"]=="GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_READONLY_PASSWORD"
+assert config["credential_sources"]["ig-runtime-candidate-judge"]=="GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_PASSWORD"
+print("PASS_F0_N9_NONAPPLICABLE_BEFORE_STALE_AND_PER_CONSUMER_SECRETS")
