@@ -7,6 +7,9 @@ declare
   s jsonb;
   v jsonb;
 begin
+  if exists (select 1 from supabase_migrations.schema_migrations
+             where version='20261013001500')
+  then raise exception 'PE10E_V2_OLD_MIGRATION_ALREADY_APPLIED'; end if;
   select unit_metadata into strict m
   from programacion.engineering_plan_units
   where plan_code='PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1'
@@ -84,4 +87,19 @@ select policy_code,'v1.3-phase-separation-candidate',payload,
   'skills/profile_creator/contracts/profile_evolution_phase_separation_v1.json',
   'EXEC-PE-PHASE-BOUNDARY-20261012-001'
 from p;
+insert into public.lf_error_knowledge(
+  codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
+  severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,source_ref)
+select
+  'LF-PE-PHASE-CONFLATION-20261012-001','PROFILE_EVOLUTION',
+  'Release de codigo confundido con admision experta',
+  'Primera evolucion aceptada no constituye benchmark experto ni habilita v0.2.',
+  'PE10E_C4 exigia cuatro ejecuciones GPT_NATIVE y juez independiente, pero la accion READBACK_ONCE no tenia SQL.',
+  'READ_QUERY_MISSING oculta la ausencia de productor y juez autenticos.',
+  'Separar etapas; bloquear ejecucion experta sin trazabilidad; migraciones solo por Train.',
+  'Positivo: codigo de 9 perfiles reconocido; negativo: experto sigue PENDING y policy activa v1.1.',
+  'HIGH',1,clock_timestamp(),clock_timestamp(),'PE10E_C4','ACTIVO',
+  'skills/profile_creator/contracts/profile_evolution_phase_separation_v1.json'
+where not exists (select 1 from public.lf_error_knowledge
+                  where codigo='LF-PE-PHASE-CONFLATION-20261012-001');
 commit;
