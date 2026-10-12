@@ -14,11 +14,6 @@ on:
         description: Canonical absolute release path
         required: true
         type: string
-    secrets:
-      LF_RUNTIME_READBACK_SSH_PRIVATE_KEY:
-        required: true
-      LF_RUNTIME_READBACK_KNOWN_HOSTS:
-        required: true
 permissions:
   contents: read
   id-token: write
@@ -27,6 +22,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   independent-readback:
+    environment: lf-runtime-readback
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

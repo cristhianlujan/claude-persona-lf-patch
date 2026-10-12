@@ -1,0 +1,22 @@
+name: F0 Workflow Activation Static Tests
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'sandbox/lf_contract_gate_test/f0_workflow_activation/**'
+permissions:
+  contents: read
+jobs:
+  activation-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate workflow syntax using actionlint
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.7 -color -shellcheck= -pyflakes= -ignore 'unexpected key "queue"' .github/workflows/lf-migration-merge-train.yml .github/workflows/ig-m93-shadow-readonly.yml .github/workflows/lf-independent-change-admission.yml .github/workflows/lf-ig-runtime-candidate-judge.yml .github/workflows/lf-runtime-independent-readback.yml .github/workflows/lf-runtime-independent-readback-dispatch.yml .github/workflows/profile-driven-screen-generation.yml .github/workflows/pase-merge-gate.yml .github/workflows/lf-migration-source-parity-core.yml
+      - name: Validate database target consumer credential mapping
+        run: python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py self-test
+      - name: Validate guarded scope
+        run: python3 sandbox/lf_contract_gate_test/f0_workflow_activation/test_scope.py

@@ -38,7 +38,7 @@ on:
         type: string
     secrets:
       LF_SUPABASE_DB_PASSWORD:
-        required: true
+        required: false
 
 permissions:
   contents: read
@@ -63,8 +63,8 @@ jobs:
           python-version: "3.11"
 
       - name: Execute context-aware canonical Migration Source Parity flow
+        if: ${{ false }} # No privileged secret until separate PASE authorization.
         env:
-          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
           SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
           GITHUB_TOKEN: ${{ github.token }}

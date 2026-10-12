@@ -15,6 +15,7 @@ concurrency:
 jobs:
   independent-change-admission:
     name: lf-independent-change-admission
+    environment: lf-ci-readonly
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -58,7 +59,7 @@ jobs:
         if: steps.admission_scope.outputs.applicable == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          LF_SUPABASE_DB_READONLY_PASSWORD: ${{ secrets.LF_SUPABASE_DB_READONLY_PASSWORD }}
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py validate

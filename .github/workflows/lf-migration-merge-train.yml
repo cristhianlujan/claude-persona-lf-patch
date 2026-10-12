@@ -25,6 +25,7 @@ jobs:
   lf-migration-merge-train:
     if: github.event.label.name == 'ready-to-merge'
     name: lf-migration-merge-train
+    environment: lf-merge-train
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
@@ -713,6 +714,7 @@ jobs:
 
   lf-migration-merge:
     name: lf-migration-merge
+    environment: lf-merge-train
     needs: lf-migration-merge-train
     if: needs.lf-migration-merge-train.result == 'success' && needs.lf-migration-merge-train.outputs.mode == 'REAL'
     runs-on: ubuntu-latest

@@ -36,7 +36,9 @@ def validate(value: object, consumer: str) -> tuple[str, str]:
     require(config.get("scope") == "TRUSTED_GITHUB_BASE_CI_ONLY", "TARGET_SCOPE_INVALID")
     require(config.get("purpose") == "INDEPENDENT_ADMISSION_AND_ROLLBACK_ONLY_IG_JUDGE", "TARGET_PURPOSE_INVALID")
     require(config.get("pase_applicability") == "NOT_APPLICABLE", "TARGET_PASE_BOUNDARY_INVALID")
-    require(config.get("credential_source") == "GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_PASSWORD", "TARGET_CREDENTIAL_BOUNDARY_INVALID")
+    expected_sources = {"lf-independent-change-admission": "GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_READONLY_PASSWORD", "ig-runtime-candidate-judge": "GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_PASSWORD"}
+    require(config.get("credential_sources") == expected_sources, "TARGET_CREDENTIAL_BOUNDARY_INVALID")
+    require(config.get("credential_sources", {}).get(consumer) == expected_sources[consumer], "TARGET_CONSUMER_CREDENTIAL_INVALID")
     consumers = config.get("allowed_consumers")
     require(isinstance(consumers, list) and set(consumers) == CONSUMERS, "TARGET_CONSUMER_COVERAGE_INVALID")
     require(consumer in CONSUMERS, "TARGET_CONSUMER_UNSUPPORTED")
@@ -66,13 +68,15 @@ def self_test() -> None:
         {**data, "target": {"project_id": project, "pooler_host": host + "\nEVIL=1"}},
         {**data, "pase_applicability": "ACTIVE"},
         {**data, "allowed_consumers": ["ig-runtime-candidate-judge"]},
+        {**data, "credential_sources": {**data["credential_sources"], "ig-runtime-candidate-judge": "GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_READONLY_PASSWORD"}},
+        {**data, "credential_sources": {**data["credential_sources"], "lf-independent-change-admission": "GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_PASSWORD"}},
     ):
         try:
             validate(bad, "ig-runtime-candidate-judge")
         except TargetConfigError:
             continue
         raise AssertionError("NEGATIVE_CONFIG_NOT_REJECTED")
-    print("PASS_LF_CI_DB_TARGET_SELF_TEST negative=5 independent_consumers=2")
+    print("PASS_LF_CI_DB_TARGET_SELF_TEST negative=7 independent_consumers=2")
 
 
 def main() -> int:
