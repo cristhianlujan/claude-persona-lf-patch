@@ -252,7 +252,32 @@ class RepositoryBindings:
         binding = self.runtime_binding(profile_slug)
         if binding is None or binding.model_context is None:
             return [dict(item) for item in canonical_sources]
-        projection = binding.model_context["source_projection"]
+        context_contract = binding.model_context
+        required_refs = context_contract.get("required_source_refs")
+        if (
+            not isinstance(required_refs, list)
+            or not required_refs
+            or any(not isinstance(ref, str) or not ref.strip() for ref in required_refs)
+            or len(required_refs) != len(set(required_refs))
+        ):
+            raise RepositoryError("PROFILE_RUNTIME_REQUIRED_SOURCE_CONTRACT_INVALID", profile_slug)
+        supplied_refs = [item.get("ref") for item in canonical_sources]
+        if (
+            any(not isinstance(ref, str) or not ref for ref in supplied_refs)
+            or len(supplied_refs) != len(set(supplied_refs))
+        ):
+            raise RepositoryError("PROFILE_RUNTIME_MODEL_SOURCE_LIST_INVALID", profile_slug)
+        missing = sorted(set(required_refs) - set(supplied_refs))
+        if missing:
+            raise RepositoryError("PROFILE_RUNTIME_REQUIRED_SOURCE_MISSING", ",".join(missing))
+        allow_additional = context_contract.get("allow_additional_sources")
+        if not isinstance(allow_additional, bool):
+            raise RepositoryError("PROFILE_RUNTIME_ADDITIONAL_SOURCE_POLICY_INVALID", profile_slug)
+        if not allow_additional:
+            extras = sorted(set(supplied_refs) - set(required_refs))
+            if extras:
+                raise RepositoryError("PROFILE_RUNTIME_ADDITIONAL_SOURCE_FORBIDDEN", ",".join(extras))
+        projection = context_contract["source_projection"]
         out: list[dict[str, str]] = []
         total_chars = 0
         for item in canonical_sources:
