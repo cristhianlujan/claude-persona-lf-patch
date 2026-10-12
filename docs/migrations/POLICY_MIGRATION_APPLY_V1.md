@@ -143,3 +143,24 @@ This policy does not create a new transport. It makes the already-registered
 - blocked condition: `exact_version_migration_via_apply_migration`.
 
 Related EKB: `CI-MIGRATION-SOURCE-PARITY-001`.
+
+## Narrow exception: retire obsolete, never-applied migration in the same PR
+
+The normal source-first order remains binding. A *single* exception exists for
+M9.9 legacy migration `20261012013000_ig_m99_existing_n9_adapter_proof_boundary_v1.sql`
+(Git blob `1b648348503d3deb75ec3610c9abfccdb37ac751`), which was
+never applied to the ledger and conflicts with the new, already-applied
+two-level sandbox/operational contract `20261012070000`.
+
+A PR that explicitly deletes this old *unapplied* file, records its identity
+and retirement in `docs/ig/M99_RETIRE_UNAPPLIED_20261012.md`, and introduces
+at most one newer governed migration may be merged **before applying that
+newer migration**, solely to remove the obsolete pending source from `main`.
+Only then use `DB_WRITE_TRANSPORT/EXACT_VERSION_SOURCE_FIRST` with:
+the exact merged Git blob, a new strictly increasing canonical version, an
+atomic SQL+ledger transaction, and exact readback. The replacement migration
+must not be run or declared DONE if another pending source remains.
+
+This one-off exception never permits stamping an unexecuted migration as
+applied, changing a production pointer, suppressing evidence or bypassing
+the independent operational canary gate. Do not generalize to other files.
