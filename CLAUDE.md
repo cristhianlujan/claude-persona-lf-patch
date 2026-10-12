@@ -38,6 +38,19 @@ Allowed with separate authorization: read-only SQL and inspection; local develop
 
 On attempted unauthorized database write: `BLOCK_DB_WRITE_OUTSIDE_MERGE_TRAIN`. Stop before execution and report the attempted operation, target, and canonical route. A soft route guard, exploratory mode, prior success, or agent judgment NEVER overrides this hard block. Any exception requires explicit owner approval with bounded scope, recorded evidence, and an approved controlled execution path.
 
+### Router first for every database write
+
+Every database write by an agent (migration, table, function, trigger or capability) starts at the Router (ACT-0001) and must hold an `ACTUALIZACION_DB_LF` execution. Then ask `DB_WRITE_TRANSPORT` for the route:
+
+```bash
+python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py \
+  --target-type <MIGRATION|DB|FUNCTION|TRIGGER|CAPABILITY> \
+  [--migration-path supabase/migrations/<version>_<name>.sql] \
+  --router-execution-id EXEC-…
+```
+
+Without a Router execution the answer is `REDIRECT_TO_ROUTER`: go back to ACT-0001 first. With one, the only route is `MIGRATION_VIA_MERGE_TRAIN`: one migration file, PR, `ready-to-merge`, Merge Train. There is no direct executor for agents.
+
 ### Migration naming — check before opening a migration PR
 
 The Merge Train rejects any migration whose name (the filename without the 14-digit version and `.sql`) is not classified in `sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py`. A name is accepted only if it:
