@@ -5,6 +5,7 @@ import sys
 import unittest
 
 PARITY = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(PARITY.parent))
 sys.path.insert(0, str(PARITY))
 from lf_migration_source_parity_ci_context import classified, managed  # noqa: E402
 
