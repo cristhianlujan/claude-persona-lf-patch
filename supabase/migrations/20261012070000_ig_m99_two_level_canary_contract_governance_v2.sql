@@ -123,3 +123,12 @@ BEGIN
  )#>>'{sandbox_readback_acceptance_v2,source_bound_case_count}' IS DISTINCT FROM '6'
  THEN RAISE EXCEPTION 'M99_RESCOPING_COMPILER_READBACK_FAILED'; END IF;
 END $m99$;
+
+-- Record scope-repair reasoning without closing unrelated historical incidents.
+UPDATE transversal.error_knowledge
+SET evidencia=CASE WHEN position('M99_SCOPE_SPLIT_V2_20261012' IN coalesce(evidencia,''))>0
+ THEN evidencia ELSE concat_ws(E'\\n',evidencia,
+ 'M99_SCOPE_SPLIT_V2_20261012: Distinct acceptance for sandbox reversible engineering and operational canary. Six-case sandbox proof allowed only for engineering qualification. Signed independent live receipts remain mandatory for operational cutover, which remains blocked. Source: new M9.9 two-level contract/governance; no production activation.') END,
+ updated_at=clock_timestamp()
+WHERE codigo IN ('IG-M99-RUNTIME-EXECUTOR-RECEIPT-DISCONNECTED-001',
+                 'IG-M99-ROLLBACK-FIVE-TRIGGERS-VALIDATION-GAP-001');
