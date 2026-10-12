@@ -4,7 +4,7 @@ import json, os, pathlib, re, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from migration_transport_normalization import canonical, sha256, compare_exact_source
 
-ROOT=pathlib.Path(__file__).resolve().parents[3]
+ROOT=pathlib.Path(__file__).resolve().parents[2]
 PATH=re.compile(r'^(20[0-9]{12})_(.+)\\.sql$')
 
 def compare(source, ledger):
@@ -20,7 +20,8 @@ def compare(source, ledger):
         else:
             try:
                 compare_exact_source(version=version,source_name=f["name"],source_sql=f["sql"],
-                                     remote_name=l["name"],remote_sha256=sha256(canonical("\\n".join(l["statements"]))),\n                                     remote_statement_count=len(l["statements"]))
+                                     remote_name=l["name"],remote_sha256=sha256(canonical("\n".join(l["statements"]))),
+                                     remote_statement_count=len(l["statements"]))
                 kind="MATCH"
             except Exception as exc:
                 kind="MISMATCH"
