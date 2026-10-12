@@ -38,6 +38,34 @@ Allowed with separate authorization: read-only SQL and inspection; local develop
 
 On attempted unauthorized database write: `BLOCK_DB_WRITE_OUTSIDE_MERGE_TRAIN`. Stop before execution and report the attempted operation, target, and canonical route. A soft route guard, exploratory mode, prior success, or agent judgment NEVER overrides this hard block. Any exception requires explicit owner approval with bounded scope, recorded evidence, and an approved controlled execution path.
 
+### Router first for every database write
+
+Every database write by an agent (migration, table, function, trigger or capability) starts at the Router (ACT-0001) and must hold an `ACTUALIZACION_DB_LF` execution. Then ask `DB_WRITE_TRANSPORT` for the route:
+
+```bash
+python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py \
+  --target-type <MIGRATION|DB|FUNCTION|TRIGGER|CAPABILITY> \
+  [--migration-path supabase/migrations/<version>_<name>.sql] \
+  --router-execution-id EXEC-…
+```
+
+Without a Router execution the answer is `REDIRECT_TO_ROUTER`: go back to ACT-0001 first. With one, the only route is `MIGRATION_VIA_MERGE_TRAIN`: one migration file, PR, `ready-to-merge`, Merge Train. There is no direct executor for agents.
+
+### Migration naming — check before opening a migration PR
+
+The Merge Train rejects any migration whose name (the filename without the 14-digit version and `.sql`) is not classified in `sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py`. A name is accepted only if it:
+
+- starts with a prefix in `MANAGED_PREFIXES` (e.g. `lf_`, `pr93_`, `programacion_…`); or
+- matches `STRATEGY_MIGRATION_RE` (`s<N>_…`, e.g. `s30_…`); or
+- is listed in `MANAGED_EXACT_NAMES`; or
+- starts with a prefix in `CLASSIFIED_EXTERNAL_PREFIXES` or is listed in `CLASSIFIED_EXTERNAL_NAMES`.
+
+Read that file on `main` before naming a migration. Its lists are the authority; this section only points to them.
+
+If the name does not fit, first open a separate code-only PR that registers the exact name (or a family the owner approved) with a positive and a negative test (pattern: `test_f0_train_exact_classification.py`), get it merged into `main`, and only then label the migration PR `ready-to-merge`. The Train reads the classifier from `main`, so registering the name inside the migration PR itself does not work. Never broaden prefixes without owner approval.
+
+Until the Train checks classification before applying, an unclassified name is applied to the database first and then rejected (`FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION`), leaving `main` unreconciled. Do not label an unclassified migration.
+
 ## Soft canonical-route guard
 
 Before any repository, database, API, or external-system write, resolve the
