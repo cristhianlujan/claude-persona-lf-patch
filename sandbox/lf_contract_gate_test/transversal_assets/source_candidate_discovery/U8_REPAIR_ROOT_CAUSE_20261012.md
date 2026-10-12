@@ -30,3 +30,9 @@ Git PR+merge+readback si se modifica código; migración exacta si hay DDL; prue
 
 ## Riesgo residual / segunda recurrencia
 Una versión vieja de policy/fingerprint, actor o empresa cruzada, rutas alternativas de lectura, replay y recibo autodeclarado podrían recrear la falla. Verificar en consumidor y readback, no solo en el productor.
+
+## Scope isolation amendment — 2026-10-12 (proposed; requires governance reconciliation)
+- `SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6` is a READ_ONLY diagnostic profile. D2 U8 BUSINESS_ADMISSION and U9 enterprise read receipts are not prerequisites to invoking the profile for evidence-based diagnosis unless an explicit, current, verified dependency proves otherwise.
+- Keep U8 BUSINESS_ADMISSION pending, never convert technical tests into enterprise acceptance, and never bypass actor identity, RLS, grants, or tenant isolation.
+- Schedule independent repair-profile validation (root cause, three alternatives, falsification, minimal repair, validator/judge) separately from enterprise D2 acceptance. Dependency edges must be checked against canonical ledger before alteration.
+- This document is a scope clarification, NOT a ledger transition, DB authority update, binding activation, or proof of completion. Governed dependency/validator updates require separate tests and readback.
