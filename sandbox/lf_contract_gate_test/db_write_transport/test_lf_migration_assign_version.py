@@ -93,6 +93,16 @@ def main() -> int:
         raise AssertionError("future main floor accepted")
     checks += 1
 
+    # RECOVER preserves an older original version after future validation.
+    assert module.choose_version(
+        current_version="20261005200000",
+        main_max_version="20261005202500",
+        ledger_max_version="20261005203000",
+        utc_now_version="20261005204000",
+        preserve_current=True,
+    ) == "20261005200000"
+    checks += 1
+
     # Rename preserves bytes.
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
@@ -146,7 +156,7 @@ def main() -> int:
             raise AssertionError("collision accepted")
     checks += 1
 
-    print(f"PASS_MIGRATION_ASSIGN_VERSION_TESTS={checks}/10")
+    print(f"PASS_MIGRATION_ASSIGN_VERSION_TESTS={checks}/11")
     return 0
 
 
