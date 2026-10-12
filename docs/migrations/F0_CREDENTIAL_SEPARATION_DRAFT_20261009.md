@@ -237,3 +237,8 @@ Heuristic `body_hint` checks SQL keywords in function source. It does not prove 
 - [ ] **7. Post-cutover — Cristhian:** confirm main protections and case receipts, unfreeze agents. **NO postgres password rotation in this window** until external worker consumers are migrated and tested.
 
 **Reminder:** dynamic untrusted Judge SQL executed as postgres is still a privilege boundary risk even when an Environment is main-restricted. The Environment separation enables removal of the repo-wide secret, not a security sandbox for its contents.
+
+
+### Workflow activation PR for owner-approved window
+**Actual workflow changes prepared:** [PR #2316](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2316), branch `agent/f0-workflow-activation` (DRAFT). Replace the generic "activation PR" in runbook step 4 with **#2316** and verify that exact HEAD before owner merge. Required Environments are `lf-merge-train`, `lf-ci-readonly`, `lf-ig-judge` (main branch / NO reviewers), `lf-runtime-readback`, and `lf-s30-broker`. **All five must be precreated and configured BEFORE merge**. GitHub auto-creates a referenced nonexistent Environment without restrictions, making a missing precreation a STOP condition.
+Premerge: actionlint + static scope test (run 38286164321, SUCCESS); source analysis, no consumer executes the PR version for `pull_request_target` until merge. Postmerge only: exact-head nonapplicable/applicable IG Judge check finalizer, Train, Admission, M93 and SSH/S30 runtime canaries. **NO credential secrets removed until all pass.**
