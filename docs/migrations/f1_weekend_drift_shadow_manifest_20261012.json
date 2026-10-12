@@ -946,7 +946,9 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "a378b16532b5a620e854ccf486ff8d97800ff94e",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "main_canonical_content_equal": true,
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
     },
     {
       "version": "20261011002854",
@@ -966,7 +968,9 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "7c05a1cbeeb9d5dab1c921e413d27e645be31958",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "main_canonical_content_equal": true,
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
     },
     {
       "version": "20261011005705",
@@ -986,7 +990,9 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "1fb52284bb2c4b150efe30a51bbf9d720c62a915",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "main_canonical_content_equal": true,
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
     },
     {
       "version": "20261011012000",
@@ -1066,7 +1072,9 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "41c1f62887d96e2c248df14e7968ddf7d3e170d8",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "main_canonical_content_equal": false,
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
     },
     {
       "version": "20261011023000",
@@ -1626,7 +1634,9 @@
       "ledger_statement_count": 1,
       "raw_git_blob_sha1": "0bb3960b1c3ac33f8db1c6e82a037f7dff3f0c7b",
       "main_same_version_raw_byte_match": false,
-      "other_version_raw_byte_match": false
+      "other_version_raw_byte_match": false,
+      "main_canonical_content_equal": false,
+      "canonical_comparison_mode": "READ_ONLY_SQL_CANONICAL_LINE_NORMALIZATION"
     },
     {
       "version": "20261011194000",
