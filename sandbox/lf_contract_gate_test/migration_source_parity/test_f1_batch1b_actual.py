@@ -21,7 +21,7 @@ class RealBatchLaneTests(unittest.TestCase):
             if old:
                 return subprocess.check_output(["git","show",base+":"+path],cwd=ROOT).decode()
             return (ROOT/path).read_text()
-        self.assertEqual(len(verify_rows(data,read_source,records)["migrations"]),62)
+        self.assertEqual(len(verify_rows(data,read_source,lambda version:records.get(version))["migrations"]),62)
         for x in data:
             self.assertEqual(x["sha256"],sha256(canonical(read_source(x["filename"]))))
         print("PASS_F1_REAL_BATCH_62_OF_62")
