@@ -74,16 +74,34 @@ def main() -> int:
         data=json.loads(psql(url,(
             "select coalesce((select jsonb_build_object("
             "'version',version,'name',name,'statement_count',cardinality(statements),"
-            "'source_sha256',encode(extensions.digest(convert_to(statements[1],'UTF8'),'sha256'),'hex'))"
+            "'statement_hex',encode(convert_to(statements[1],'UTF8'),'hex'))"
             " from supabase_migrations.schema_migrations where version='"+version+"'),'{}'::jsonb);"
         )))
+        file_sql=path.read_text(encoding="utf-8")
         expected_sha=hashlib.sha256(path.read_bytes()).hexdigest()
+        stored=bytes.fromhex(data.get("statement_hex") or "")
         if (data.get("version")!=version or data.get("name")!=name
-                or data.get("statement_count")!=1 or data.get("source_sha256")!=expected_sha):
+                or data.get("statement_count")!=1
+                or hashlib.sha256(stored).hexdigest()!=expected_sha):
             raise RuntimeError("RECOVER_EXACT_LEDGER_CONTENT_MISMATCH")
+        import sys
+        sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+        from migration_source_parity.migration_source_parity_core import evaluate_exact_parity
+        import migration_transport_normalization as transport
+        remote_sql=stored.decode("utf-8")
+        parity=evaluate_exact_parity(
+            {version:(name,transport.direct_source_hash(file_sql),file_sql)},
+            {version:(name,transport.sha256(transport.canonical(remote_sql)))},
+            {version:1},
+        )
+        if parity.status!="PASS" or parity.version_count!=1:
+            raise RuntimeError("RECOVER_CANONICAL_PARITY_NOT_PASS")
         print(json.dumps({"status":"PASS","code":"RECOVER_EXACT_LEDGER_READBACK_PASS",
                           "migration_version":version,"migration_name":name,
-                          "source_sha256":expected_sha},sort_keys=True))
+                          "source_sha256":expected_sha,
+                          "parity_status":parity.status,"parity_code":parity.code,
+                          "parity_version_count":parity.version_count,
+                          "parity_source":"MIGRATION_SOURCE_PARITY/evaluate_exact_parity"},sort_keys=True))
         return 0
 
     if not args.train_state:
