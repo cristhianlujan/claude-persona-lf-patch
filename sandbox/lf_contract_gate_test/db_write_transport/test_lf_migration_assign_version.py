@@ -123,7 +123,7 @@ def main() -> int:
     # Retry is no-op and leaves same path.
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
-        source = root / "20261005210000_probe.sql"
+        source = root / "20261005204500_probe.sql"
         source.write_bytes(b"select 1;\n")
         result = module.assign_path(
             source,
