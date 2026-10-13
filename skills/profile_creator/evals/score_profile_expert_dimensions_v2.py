@@ -16,7 +16,7 @@ DIMENSIONS = (
     "domain_quality", "complexity", "robustness", "adaptation",
     "transfer", "preservation", "efficiency", "longitudinal",
 )
-CORE_ARMS = ("A_ORIGINAL", "C_EVOLUTION_CURRENT", "D_EVOLUTION_TARGET")
+CORE_ARMS = ARMS
 
 
 def _num(v: Any) -> bool:
@@ -72,16 +72,21 @@ def _longitudinal(raw: dict) -> dict:
         if not isinstance(w, dict):
             return {"status": "NOT_OBSERVED", "reason": "WAVE_INVALID"}
         required = ("wave_id", "observed_at", "cohort_sha256", "evaluator_execution_id",
-                    "evaluator_receipt_ref", "execution_receipt_ref", "causal_attribution_ref",
+                    "evaluator_receipt_ref", "execution_receipt_ref", "producer_execution_id", "causal_attribution_ref",
                     "holdout_receipt_ref")
-        if any(not w.get(k) for k in required) or w.get("evaluator_verification_state") != "VERIFIED":
+        if (any(not w.get(k) for k in required)
+                or w.get("evaluator_verification_state") != "VERIFIED"
+                or w.get("producer_execution_id") == w.get("evaluator_execution_id")):
             return {"status": "NOT_OBSERVED", "reason": "INDEPENDENT_WAVE_PROVENANCE_MISSING"}
         if (not _num(w.get("quality_A")) or not _num(w.get("quality_D"))
                 or not all(0 <= w[k] <= 1 for k in ("quality_A", "quality_D"))):
             return {"status": "NOT_OBSERVED", "reason": "WAVE_SCORE_INVALID"}
         try:
-            times.append(datetime.fromisoformat(w["observed_at"].replace("Z", "+00:00")))
-        except (TypeError, ValueError):
+            stamp = datetime.fromisoformat(w["observed_at"].replace("Z", "+00:00"))
+            if stamp.tzinfo is None or stamp.utcoffset() is None:
+                raise ValueError("Timezone required")
+            times.append(stamp)
+        except (AttributeError, TypeError, ValueError):
             return {"status": "NOT_OBSERVED", "reason": "WAVE_TIMESTAMP_INVALID"}
         ids.add(w["wave_id"])
         evaluator_ids.add(w["evaluator_execution_id"])
