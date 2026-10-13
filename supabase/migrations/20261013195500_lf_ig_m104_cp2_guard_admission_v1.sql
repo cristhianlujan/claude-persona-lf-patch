@@ -95,7 +95,8 @@ BEGIN
  IF coalesce(v_spec->>'action_kind','')<>'MATERIALIZE_DECLARED_DELIVERABLE'
  THEN RAISE EXCEPTION 'M104_CP2_INCOMPATIBLE_ACTION_SPEC'; END IF;
  v_spec:=jsonb_set(v_spec,'{target,declared_artifacts}',v_artifacts,true);
- v_spec:=jsonb_set(v_spec,'{target,mutation_artifacts}',v_artifacts,true);
+ v_spec:=jsonb_set(v_spec,'{target,mutation_artifacts}',
+   (SELECT jsonb_agg(a.value) FROM jsonb_array_elements(v_artifacts) a WHERE a.value->>'role'='MUTATION_TARGET'),true);
  v_spec:=jsonb_set(v_spec,'{target,declared_objects}',
    '["programacion.engineering_plan_units","public.lf_error_knowledge"]'::jsonb,true);
  v_spec:=jsonb_set(v_spec,'{authoring_contract,db_targets_exact}',
@@ -108,7 +109,11 @@ BEGIN
 
  -- Executable source pack must point at the installed source, not only EKB.
  v_pack:=v_metadata#>'{source_pack_v1,checkpoint_inputs,FREEZE_RULE,inputs}';
- v_pack:=jsonb_set(v_pack,'{artifacts}',v_artifacts,true);
+ v_pack:=jsonb_set(v_pack,'{artifacts}',jsonb_build_array(
+   jsonb_build_object('path','cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/engineering_checkpoints/m10_4/legacy_freeze_manifest_v1.json','verified',true),
+   jsonb_build_object('path','cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/engineering_checkpoints/m10_4/legacy_freeze_guard.py','verified',true),
+   jsonb_build_object('path','cristhianlujan/claude-persona-lf-patch/.github/workflows/lf-independent-change-admission.yml','verified',true)
+ ),true);
  v_pack:=jsonb_set(v_pack,'{db_objects}',
     '["programacion.engineering_plan_units","public.lf_error_knowledge"]'::jsonb,true);
  v_pack:=jsonb_set(v_pack,'{queries}',v_spec->'verification_queries',true);
