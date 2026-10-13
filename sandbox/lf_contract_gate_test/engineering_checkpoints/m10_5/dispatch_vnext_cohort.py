@@ -67,11 +67,11 @@ def execute(snapshot, release, gateway, *, allowed=False):
                     item["status"] = "ERROR_READBACK"
                 else:
                     item["run_id"] = rows[0]["run_id"]
-                    agent_run = (result.get("result") or {}).get("run_id")
+                    agent_run = result.get("run_id")
                     if agent_run is None:
-                        agent_run = (result.get("result") or {}).get("latest_run_id")
+                        agent_run = result.get("latest_run_id")
                     if agent_run is None:
-                        agent_run = ((result.get("result") or {}).get("worker_spec") or {}).get("latest_run_id")
+                        agent_run = (result.get("worker_spec") or {}).get("latest_run_id")
                     if type(agent_run) is not int or agent_run != item["run_id"]:
                         item["status"] = "ERROR_RUN_ID_MISMATCH"
                         item["reason"] = "EDGE_AND_CANONICAL_RUN_DISAGREE"
