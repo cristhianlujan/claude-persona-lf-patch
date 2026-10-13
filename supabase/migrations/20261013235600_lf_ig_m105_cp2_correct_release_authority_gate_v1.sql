@@ -275,10 +275,10 @@ BEGIN
  FROM programacion.v_ig_m105_cp2_execution_preflight_v1 v
  WHERE v.capability_code='INPUT_GOVERNANCE';
  v_pass:=coalesce(v_pass,false)
-  AND v_release.previous_version IS NOT NULL
-  AND v_release.version IS DISTINCT FROM v_release.previous_version
-  AND v_release.release_state='RELEASED'
-  AND v_release.manifest_sha256 ~ '^[0-9a-f]{64}
+ AND v_release.previous_version IS NOT NULL
+ AND v_release.version IS DISTINCT FROM v_release.previous_version
+ AND v_release.release_state='RELEASED'
+ AND v_release.manifest_sha256 ~ '^[0-9a-f]{64}$';
  RETURN jsonb_build_object(
    'status','AUTHORIZED_CONTEXT','scope',v_scope,
    'release',jsonb_build_object('version',v_release.version,
@@ -288,19 +288,7 @@ BEGIN
    'reason',CASE WHEN v_pass THEN 'AUTHENTIC_CURRENT_RELEASE_READBACK'
                  ELSE 'VNEXT_RELEASE_OR_SIGNED_AUTHORITY_MISSING' END,
    'no_promotion',true,'no_receipt_fabrication',true);
-END $function$
-;
- RETURN jsonb_build_object(
-   'status','AUTHORIZED_CONTEXT','scope',v_scope,
-   'release',jsonb_build_object('version',v_release.version,
-      'previous_version',v_release.previous_version,
-      'manifest_sha256',v_release.manifest_sha256),
-   'dispatch_permitted',v_pass,
-   'reason',CASE WHEN v_pass THEN 'AUTHENTIC_CURRENT_RELEASE_READBACK'
-                 ELSE 'CURRENT_VNEXT_RELEASE_NOT_PROMOTED' END,
-   'no_promotion',true,'no_receipt_fabrication',true);
-END $function$
-
+END $function$;
 
 DO $align$
 DECLARE m jsonb; w bigint;
