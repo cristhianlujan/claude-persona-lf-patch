@@ -1,0 +1,62 @@
+{
+  "schema_version": "LF_CAPABILITY_MANIFEST_V1",
+  "capability_code": "EXECUTION_CONTINUITY",
+  "version": "0.1.0",
+  "status": "CANDIDATE_NOT_REGISTERED_NOT_ACTIVE",
+  "kind": "TRANSVERSAL",
+  "owner_scope": "SUPER_ADMIN",
+  "authoritative_entry": "ACT-0001_ROUTER",
+  "scope": "MULTIPROJECT_REUSABLE_PROJECT_NEUTRAL",
+  "contract": {
+    "input": "LF_EXECUTION_CONTINUITY_REQUEST_V1",
+    "output": "LF_EXECUTION_CONTINUITY_DECISION_V1",
+    "authority": "EVALUATOR_ONLY_NO_PERMISSION_GRANT"
+  },
+  "source": "sandbox/lf_contract_gate_test/transversal_assets/execution_continuity/continuity_core_v1.py",
+  "modes": [
+    "RECOVER",
+    "RECONCILE",
+    "RESUME"
+  ],
+  "consumers_known": [
+    "ACTUALIZACION_DB_LF_ADAPTER_CANDIDATE"
+  ],
+  "dependencies": {
+    "capabilities": [
+      "DB_WRITE_TRANSPORT",
+      "MIGRATION_SOURCE_PARITY"
+    ],
+    "governance": [
+      "ACT-0001",
+      "lf_operation_execution",
+      "lf_operation_effect_guard",
+      "lf_capability_registry",
+      "lf_capability_version_registry",
+      "lf_capability_current",
+      "lf_activos",
+      "EKB"
+    ]
+  },
+  "boundaries": {
+    "recover": "immutable_original_source_owner_approved_rollback_compatible_no_superseded_effect",
+    "reconcile": "GIT_ONLY_NO_DB_NO_LEDGER_MUTATION",
+    "resume": "checkpoint_and_effect_guard_verified_no_duplicate_dispatch",
+    "production_allowed": false,
+    "automatic_cutover": false
+  },
+  "promotion": {
+    "entry_guard_required": true,
+    "current_pointer_required": true,
+    "consumer_bindings_individual": true,
+    "positive_and_negative_tests": true,
+    "owner_approval_required": true
+  },
+  "transversal_inventory": {
+    "schema_version": "TRANSVERSAL_ASSET_INDEX_V1",
+    "no_duplicate_engine": true,
+    "consumers_known": [
+      "ACTUALIZACION_DB_LF_ADAPTER_CANDIDATE"
+    ],
+    "inventory_status": "CANDIDATE_SOURCE_ONLY"
+  }
+}
