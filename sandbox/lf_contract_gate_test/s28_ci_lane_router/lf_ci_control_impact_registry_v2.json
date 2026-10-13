@@ -48,6 +48,10 @@
         {
           "kind": "exact",
           "value": ".github/workflows/lf-migration-route-guard.yml"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-migration-name-classification.yml"
         }
       ],
       "material_matchers": [],
@@ -229,6 +233,10 @@
         {
           "kind": "prefix",
           "value": "sandbox/lf_contract_gate_test/migration_route_guard/"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-migration-name-classification.yml"
         }
       ],
       "material_matchers": [],
