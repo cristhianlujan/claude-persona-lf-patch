@@ -29,6 +29,14 @@ def main() -> None:
         assert fz.validate(drifted, base) == ("BLOCK_FREEZE_SOURCE_DRIFT", ["A2:b.json"])
         (base / "b.json").unlink()
         assert fz.validate(good, base) == ("BLOCK_FREEZE_SOURCE_MISSING", ["A2:b.json"])
+        (base / "b.json").write_bytes(b'{"b":2}\n')  # restore current bytes
+        pending = dict(good, refreeze={"independent_confirmation_ref": None})
+        assert fz.validate(pending, base) == (
+            "BLOCK_FREEZE_INDEPENDENT_CONFIRMATION_PENDING", ["refreeze.independent_confirmation_ref"])
+        blank = dict(good, refreeze={"independent_confirmation_ref": "  "})
+        assert fz.validate(blank, base)[0] == "BLOCK_FREEZE_INDEPENDENT_CONFIRMATION_PENDING"
+        confirmed = dict(good, refreeze={"independent_confirmation_ref": "lf_eventos://example"})
+        assert fz.validate(confirmed, base) == ("PASS_FREEZE_CURRENT", [])
         cases = {
             "BLOCK_FREEZE_MERGE_CLAIMED": dict(good, merge_performed=True),
             "BLOCK_FREEZE_RETIREMENT_AUTHORIZED": dict(
@@ -45,7 +53,7 @@ def main() -> None:
     probe = HERE / "analysis_v1_freeze_manifest_v1.json"
     assert fz.git_blob_id(probe.read_bytes()) == subprocess.check_output(
         ["git", "hash-object", str(probe)], text=True).strip()
-    print("PASS_ANALYSIS_V1_FREEZE_VALIDATOR positives=1 negatives=8 governed_receipts=0")
+    print("PASS_ANALYSIS_V1_FREEZE_VALIDATOR positives=1 negatives=10 governed_receipts=0")
 
 
 if __name__ == "__main__":
