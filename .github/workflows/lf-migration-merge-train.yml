@@ -821,7 +821,7 @@ jobs:
           git fetch --no-tags origin "$PERSISTED_HEAD"
           git checkout --detach "$PERSISTED_HEAD"
           apply_args=(--project-root "$GITHUB_WORKSPACE" --migration-path "$GITHUB_WORKSPACE/$TARGET_PATH" --source-blob "$SOURCE_BLOB" --allow-fallback)
-          if [ "$OP_MODE" = "RECOVER" ]; then apply_args+=(--recover-existing-main); fi
+          if [ "$OP_MODE" = "RECOVER" ]; then apply_args+=(--recover-existing-main --train-state .lf_train/train-exec-state.json); fi
           python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_exact_apply.py \
             "${apply_args[@]}" | tee .lf_train/exact-apply-receipt.json
           jq -e '.status=="PASS" and .ledger_version==.migration_version and .ledger_name==.migration_name' .lf_train/exact-apply-receipt.json >/dev/null
