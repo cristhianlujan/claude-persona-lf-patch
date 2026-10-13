@@ -21,6 +21,23 @@ WITH facts AS (
  (SELECT count(*) FROM private.lf_human_decision_authority_policies_v1
   WHERE status='ACTIVE')
   AS active_authority_policies_total,
+ (SELECT count(*)
+    FROM private.lf_human_decision_route_policies_v1 r
+    JOIN private.lf_human_decision_authority_policies_v1 a
+      ON a.authority_ref=r.required_authority_ref
+     AND a.reviewer_role=r.required_reviewer_role
+    JOIN programacion.provenance_channels ch
+      ON ch.channel_code=a.issuer_channel
+   WHERE r.producer_code='LF_OPERATION_EXECUTOR'
+     AND r.subject_type='OPERATIONAL_EXECUTION'
+     AND r.decision_class='DATA_OPERATIONS'
+     AND r.status='ACTIVE' AND a.status='ACTIVE'
+     AND a.receipt_kind='HUMAN_ROUTING_DECISION'
+     AND ch.allowed_kinds @> ARRAY['HUMAN_ROUTING_DECISION']::text[])
+  AS active_authority_with_verified_channel_for_operation,
+ (SELECT count(*) FROM programacion.provenance_channels
+   WHERE allowed_kinds @> ARRAY['HUMAN_ROUTING_DECISION']::text[])
+  AS channels_allowed_for_human_routing_decision,
  (SELECT count(*) FROM private.lf_human_decision_requests_v1
   WHERE producer_code='LF_OPERATION_EXECUTOR'
     AND subject_type='OPERATIONAL_EXECUTION' AND status='DECIDED')
@@ -56,8 +73,10 @@ SELECT jsonb_build_object(
      THEN 'BLOCK_OPERATIONAL_DECISION_CLASSIFICATION_NOT_EXACT' END,
    CASE WHEN active_decision_routes<>1
      THEN 'BLOCK_OPERATIONAL_DECISION_ROUTE_NOT_ACTIVE' END,
-   CASE WHEN active_authority_policies_total<1
-     THEN 'BLOCK_HUMAN_DECISION_AUTHORITY_NOT_MATERIALIZED' END,
+   CASE WHEN active_authority_with_verified_channel_for_operation<>1
+     THEN 'BLOCK_OPERATIONAL_AUTHORITY_AND_CHANNEL_BINDING_NOT_CURRENT' END,
+   CASE WHEN channels_allowed_for_human_routing_decision<1
+     THEN 'BLOCK_HUMAN_ROUTING_PROVENANCE_CHANNEL_NOT_PROVISIONED' END,
    CASE WHEN decided_operational_requests<1 OR operational_approval_receipts<1
      THEN 'BLOCK_OPERATIONAL_VERIFIED_APPROVAL_NOT_PRESENT' END,
    CASE WHEN operational_operation_count<>1 OR operational_router_binding_count<>1
