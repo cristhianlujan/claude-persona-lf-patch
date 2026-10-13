@@ -87,18 +87,27 @@ def validate_router(url: str, execution_id: str, repository: str, base_sha: str,
 
 
 def ledger_row(url: str, version: str) -> tuple[str, str, int] | None:
-    if re.fullmatch(r"[0-9]{14}",version) is None:
+    if re.fullmatch(r"[0-9]{14}", version) is None:
         raise ValueError("RECONCILE_VERSION_INVALID")
     sql = (
-        "select name||'|'||cardinality(statements)::text||'|'||encode(convert_to(statements[1],'UTF8'),'hex') "
+        "select jsonb_build_object('name',name,'statement_count',cardinality(statements),"
+        "'statements',to_jsonb(statements)) "
         "from supabase_migrations.schema_migrations "
         f"where version='{version}';"
     )
-    rows=read_only_query(url,sql)
-    if not rows: return None
-    if len(rows)!=1: raise RuntimeError("RECONCILE_LEDGER_CARDINALITY_INVALID")
-    name,count,hex_sql=rows[0].split("|",2)
-    return name,bytes.fromhex(hex_sql).decode("utf-8"),int(count)
+    rows = read_only_query(url, sql)
+    if not rows:
+        return None
+    if len(rows) != 1:
+        raise RuntimeError("RECONCILE_LEDGER_CARDINALITY_INVALID")
+    record = json.loads(rows[0])
+    statements = record.get("statements")
+    count = record.get("statement_count")
+    if (not isinstance(statements, list) or not statements
+            or not isinstance(count, int) or count != len(statements)
+            or any(not isinstance(item, str) or not item.strip() for item in statements)):
+        raise RuntimeError("RECONCILE_LEDGER_STATEMENT_PAYLOAD_INVALID")
+    return str(record.get("name") or ""), "\n".join(statements), count
 
 
 def main() -> int:
@@ -147,8 +156,6 @@ def main() -> int:
             raise RuntimeError(
                 f"RECONCILE_TARGET_NAME_MISMATCH:{nm.group('version')}:{ledger_name}:{nm.group('name')}"
             )
-        if statement_count != 1:
-            raise RuntimeError(f"RECONCILE_LEDGER_CARDINALITY_INVALID:{new}:{statement_count}")
         source_sql = after.decode("utf-8")
         try:
             result = evaluate_exact_parity(
