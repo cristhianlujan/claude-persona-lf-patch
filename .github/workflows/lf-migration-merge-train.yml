@@ -344,13 +344,48 @@ jobs:
           PR: ${{ steps.admission.outputs.pr_number }}
           EVENT_HEAD: ${{ steps.admission.outputs.head_sha }}
           SYNC_HEAD: ${{ steps.sync.outputs.head_sha }}
+          OP_MODE: ${{ steps.recover_mode.outputs.operation_mode }}
+          RECOVER_PATH: ${{ steps.recover_mode.outputs.recover_path }}
+          RECOVER_BLOB: ${{ steps.recover_mode.outputs.recover_blob }}
+          CURRENT_MAIN: ${{ steps.admission.outputs.current_main }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p .lf_train/source
-          if [ "$LF_MIGRATION_TRAIN_MODE" = "REAL" ]; then head_sha="$SYNC_HEAD"; else head_sha="$EVENT_HEAD"; fi
+          if [ "$LF_MIGRATION_TRAIN_MODE" = "REAL" ] && [ "$OP_MODE" != "RECOVER" ]; then head_sha="$SYNC_HEAD"; else head_sha="$EVENT_HEAD"; fi
 
           gh api --paginate --slurp "repos/$REPO/pulls/$PR/files?per_page=100" > .lf_train/pr-files-pages.json
+
+          if [ "$OP_MODE" = "RECOVER" ]; then
+            git fetch --no-tags origin "$head_sha" "$CURRENT_MAIN"
+            git merge-base --is-ancestor "$CURRENT_MAIN" "$head_sha" || {
+              echo "FAIL_RECOVER_PR_NOT_CURRENT_MAIN"; exit 2;
+            }
+            python3 - <<'PY'
+          import json
+          pages=json.load(open(".lf_train/pr-files-pages.json"))
+          rows=[r for page in pages for r in page]
+          if not rows or any(not r.get("filename","").startswith("docs/migrations/") or
+                             r.get("status") not in ("added","modified") for r in rows):
+              raise SystemExit("FAIL_RECOVER_OPERATION_PR_SCOPE_MUST_BE_DOCS_ONLY")
+          PY
+            gh api "repos/$REPO/contents/$RECOVER_PATH?ref=$CURRENT_MAIN" > .lf_train/recover-content.json
+            blob="$(jq -r '.sha' .lf_train/recover-content.json)"
+            [ "$blob" = "$RECOVER_BLOB" ] || { echo "FAIL_RECOVER_MAIN_BLOB_NOT_EXACT"; exit 2; }
+            filename="${RECOVER_PATH##*/}"
+            jq -r '.content' .lf_train/recover-content.json | tr -d '\n' | base64 -d > ".lf_train/source/$filename"
+            sha256="$(sha256sum ".lf_train/source/$filename" | cut -d' ' -f1)"
+            {
+              echo "migration_count=1"
+              echo "head_sha=$head_sha"
+              echo "migration_path=$RECOVER_PATH"
+              echo "source_file=.lf_train/source/$filename"
+              echo "source_blob=$blob"
+              echo "source_sha256=$sha256"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           python3 - <<'PY'
           import json,re
           pages=json.load(open(".lf_train/pr-files-pages.json",encoding="utf-8"))
