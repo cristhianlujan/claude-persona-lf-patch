@@ -7,6 +7,11 @@ on:
       - 'sandbox/lf_contract_gate_test/operational_executor/test_pg_plpgsql_compile_v1.py'
       - 'sandbox/lf_contract_gate_test/operational_executor/test_pg17_decision_slice_rollback_v1.py'
       - 'sandbox/lf_contract_gate_test/operational_executor/test_upstream_source_dependencies_v1.py'
+      - 'sandbox/lf_contract_gate_test/operational_executor/test_baseline_catalog_observation_v1.py'
+      - 'sandbox/lf_contract_gate_test/operational_executor/baseline_catalog_observation_v1.json'
+      - 'sandbox/lf_contract_gate_test/operational_executor/baseline_catalog_readback_v1.sql'
+      - 'sandbox/lf_contract_gate_test/operational_executor/baseline_fk_closure_observation_v1.json'
+      - 'sandbox/lf_contract_gate_test/operational_executor/baseline_fk_closure_readback_v1.sql'
       - '.github/workflows/lf-operational-executor-postgres-rbac.yml'
 permissions:
   contents: read
@@ -45,6 +50,8 @@ jobs:
           psql --version
       - name: Verify canonical upstream LF source dependency coverage
         run: python3 sandbox/lf_contract_gate_test/operational_executor/test_upstream_source_dependencies_v1.py
+      - name: Validate current-scope LF catalog evidence and FK closure
+        run: python3 sandbox/lf_contract_gate_test/operational_executor/test_baseline_catalog_observation_v1.py
       - name: Compile exact PLpgSQL bodies and reject corrupted admission
         run: python3 sandbox/lf_contract_gate_test/operational_executor/test_pg_plpgsql_compile_v1.py
       - name: Apply exact LF decision-catalogue slice with rollback
