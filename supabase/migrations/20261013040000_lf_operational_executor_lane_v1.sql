@@ -690,6 +690,20 @@ BEGIN
      OR NOT (coalesce(v_policy->'allowed_actions','[]'::jsonb) ? 'APPROVE') THEN
     RAISE EXCEPTION 'OPERATIONAL_ADMISSION_AUTHORITY_POLICY_NOT_ACTIVE';
   END IF;
+  -- A revoked provenance channel cannot authorize new operational effects.
+  IF NOT EXISTS (
+    SELECT 1
+      FROM private.lf_human_decision_authority_policies_v1 a
+      JOIN programacion.provenance_channels ch
+        ON ch.channel_code=a.issuer_channel
+     WHERE a.authority_ref=v_required_authority
+       AND a.reviewer_role=v_required_role
+       AND a.status='ACTIVE'
+       AND a.receipt_kind='HUMAN_ROUTING_DECISION'
+       AND ch.allowed_kinds @> ARRAY['HUMAN_ROUTING_DECISION']::text[]
+  ) THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_PROVENANCE_CHANNEL_NOT_CURRENT';
+  END IF;
   IF private.fn_lf_human_decision_assert_authority_receipt_v1(
        v_req_id,'APPROVE',
        v_decision #>> '{decision_receipt,reviewer_role}',
@@ -842,6 +856,20 @@ BEGIN
      OR v_policy->>'required_reviewer_role' IS DISTINCT FROM v_reviewer
      OR NOT (coalesce(v_policy->'allowed_actions','[]'::jsonb) ? 'APPROVE') THEN
     RAISE EXCEPTION 'OPERATIONAL_DECISION_ROUTE_POLICY_NO_LONGER_ACTIVE';
+  END IF;
+  -- A revoked provenance channel cannot authorize new operational effects.
+  IF NOT EXISTS (
+    SELECT 1
+      FROM private.lf_human_decision_authority_policies_v1 a
+      JOIN programacion.provenance_channels ch
+        ON ch.channel_code=a.issuer_channel
+     WHERE a.authority_ref=v_authority
+       AND a.reviewer_role=v_reviewer
+       AND a.status='ACTIVE'
+       AND a.receipt_kind='HUMAN_ROUTING_DECISION'
+       AND ch.allowed_kinds @> ARRAY['HUMAN_ROUTING_DECISION']::text[]
+  ) THEN
+    RAISE EXCEPTION 'OPERATIONAL_DECISION_PROVENANCE_CHANNEL_NO_LONGER_ACTIVE';
   END IF;
   PERFORM private.fn_lf_human_decision_assert_authority_receipt_v1(
     v_req,'APPROVE',
