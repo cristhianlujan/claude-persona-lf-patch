@@ -48,6 +48,8 @@ jobs:
       applied: ${{ steps.real_apply.outputs.applied || 'false' }}
       trusted_main: ${{ steps.admission.outputs.current_main }}
       train_exec_state: ${{ steps.train_exec_commit.outputs.state_b64 || steps.train_exec.outputs.state_b64 }}
+      train_exec_commit_outcome: ${{ steps.train_exec_commit.outcome }}
+      train_exec_required: ${{ steps.real_apply.outputs.applied == 'true' || steps.train_exec.outputs.result == 'TRAIN_EXECUTION_RESUMED' }}
 
     steps:
       - name: Checkout trusted current main only
@@ -395,7 +397,7 @@ jobs:
             echo "PASS_TRAIN_ALREADY_APPLIED_EXACT_READBACK version=$version name=$current_name"
             echo "migration_path=$target_path" >> "$GITHUB_OUTPUT"
             echo "migration_version=$version" >> "$GITHUB_OUTPUT"
-            echo "migration_name=${target_path##*/}" >> "$GITHUB_OUTPUT"
+            echo "migration_name=$current_name" >> "$GITHUB_OUTPUT"
             echo "already_applied_exact=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -615,9 +617,9 @@ jobs:
           echo "persisted_head_sha=$persisted_head" >> "$GITHUB_OUTPUT"
           echo "source_blob=$source_blob" >> "$GITHUB_OUTPUT"
 
-      - name: Router execution begin (Train-managed, pre-apply)
+      - name: Router execution begin or resume (Train-managed, pre-apply)
         id: train_exec
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && env.LF_TRAIN_EXECUTION_MODE == 'ENFORCED' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && env.LF_TRAIN_EXECUTION_MODE == 'ENFORCED' && steps.plan.outputs.migration_count == '1'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           PR: ${{ steps.admission.outputs.pr_number }}
@@ -625,24 +627,35 @@ jobs:
           VERSION: ${{ steps.plan.outputs.migration_version }}
           NAME: ${{ steps.plan.outputs.migration_name }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
-          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob }}
+          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob || steps.source.outputs.source_blob }}
           SOURCE_SHA256: ${{ steps.source.outputs.source_sha256 }}
           HEAD_SHA: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
-          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha }}
+          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha || steps.source.outputs.head_sha }}
+          ALREADY_APPLIED_EXACT: ${{ steps.plan.outputs.already_applied_exact }}
         shell: bash
         run: |
           set -euo pipefail
-          # Trusted copy from main: later steps check out the PR source, never run code from it.
           trusted="$RUNNER_TEMP/lf-train-trusted"
           mkdir -p "$trusted"
           cp sandbox/lf_contract_gate_test/db_write_transport/lf_train_execution_recorder.py \
              sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py "$trusted/"
-          python3 "$trusted/lf_train_execution_recorder.py" begin \
-            --pr "$PR" --version "$VERSION" --name "$NAME" --path "$TARGET_PATH" \
-            --source-blob "$SOURCE_BLOB" --source-sha256 "$SOURCE_SHA256" --repo "$REPO" \
-            --head-sha "$HEAD_SHA" --persisted-head-sha "$PERSISTED_HEAD" --run-id "$GITHUB_RUN_ID" \
-            --state .lf_train/train-exec-state.json
-          echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
+          common=(--pr "$PR" --version "$VERSION" --name "$NAME" --path "$TARGET_PATH"
+                  --source-blob "$SOURCE_BLOB" --source-sha256 "$SOURCE_SHA256" --repo "$REPO"
+                  --head-sha "$HEAD_SHA" --persisted-head-sha "$PERSISTED_HEAD" --run-id "$GITHUB_RUN_ID"
+                  --state .lf_train/train-exec-state.json)
+          if [ "$ALREADY_APPLIED_EXACT" = "true" ]; then
+            python3 "$trusted/lf_train_execution_recorder.py" resume "${common[@]}" | tee .lf_train/train-exec-result.json
+            if [ -f .lf_train/train-exec-state.json ]; then
+              jq '.ledger_receipt | {ledger_version, ledger_name, executor, code}' .lf_train/train-exec-state.json \
+                > .lf_train/exact-apply-receipt.json
+            fi
+          else
+            python3 "$trusted/lf_train_execution_recorder.py" begin "${common[@]}" | tee .lf_train/train-exec-result.json
+          fi
+          echo "result=$(jq -r '.result' .lf_train/train-exec-result.json)" >> "$GITHUB_OUTPUT"
+          if [ -f .lf_train/train-exec-state.json ]; then
+            echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Apply exact version and ledger readback
         id: real_apply
@@ -666,7 +679,7 @@ jobs:
 
       - name: Router execution patch step (Train-managed, post-apply)
         id: train_exec_commit
-        if: steps.train_exec.outcome == 'success' && steps.real_apply.outputs.applied == 'true'
+        if: steps.train_exec.outputs.result == 'TRAIN_EXECUTION_RESUMED' || (steps.train_exec.outcome == 'success' && steps.real_apply.outputs.applied == 'true')
         continue-on-error: true
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
@@ -678,6 +691,23 @@ jobs:
             --state .lf_train/train-exec-state.json \
             --apply-receipt .lf_train/exact-apply-receipt.json
           echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Abort Train execution after pre-apply failure
+        id: train_exec_abort
+        if: failure() && steps.train_exec.outcome == 'success' && steps.real_apply.outputs.applied != 'true'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          FAILED_STEP_NAME: Apply exact version and ledger readback
+          ERROR_SUMMARY: Exact apply step failed or did not publish applied=true; inspect run logs. Outputs and credentials are excluded.
+        shell: bash
+        run: |
+          set -euo pipefail
+          trusted="$RUNNER_TEMP/lf-train-trusted"
+          python3 "$trusted/lf_train_execution_recorder.py" abort \
+            --state .lf_train/train-exec-state.json \
+            --run-id "$GITHUB_RUN_ID" \
+            --failed-step "$FAILED_STEP_NAME" \
+            --error-summary "$ERROR_SUMMARY"
 
       - name: Run changeset-scoped parity from trusted persisted source
         id: parity
@@ -840,6 +870,7 @@ jobs:
           persist-credentials: false
 
       - name: Router execution verify and close (Train-managed, post-merge)
+        id: execution_close
         if: needs.lf-migration-merge-train.outputs.train_exec_state != ''
         continue-on-error: true
         env:
@@ -855,3 +886,33 @@ jobs:
             || { echo "WARN_TRAIN_EXECUTION_PATCH_NOT_RECORDED: execution left IN_PROGRESS for review"; exit 1; }
           python3 sandbox/lf_contract_gate_test/db_write_transport/lf_train_execution_recorder.py close \
             --state "$state" --merge-sha "$MAIN_SHA" --parity-status PASS
+
+      - name: execution bookkeeping verdict
+        id: execution_bookkeeping_verdict
+        if: always()
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ needs.lf-migration-merge-train.outputs.pr_number }}
+          TRAIN_STATE_B64: ${{ needs.lf-migration-merge-train.outputs.train_exec_state }}
+          EXECUTION_REQUIRED: ${{ needs.lf-migration-merge-train.outputs.train_exec_required }}
+          COMMIT_OUTCOME: ${{ needs.lf-migration-merge-train.outputs.train_exec_commit_outcome }}
+          CLOSE_OUTCOME: ${{ steps.execution_close.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$EXECUTION_REQUIRED" != "true" ]; then
+            echo "PASS_EXECUTION_BOOKKEEPING_NOT_REQUIRED"
+            exit 0
+          fi
+          state="$RUNNER_TEMP/train-exec-verdict.json"
+          printf '%s' "$TRAIN_STATE_B64" | base64 -d > "$state"
+          execution_id="$(jq -r '.ids.execution_id // empty' "$state")"
+          [ -n "$execution_id" ] || { echo "FAIL_EXECUTION_BOOKKEEPING_ID_MISSING"; exit 1; }
+          if [ "$COMMIT_OUTCOME" != "success" ] || [ "$CLOSE_OUTCOME" != "success" ]; then
+            body="EXECUTION_BOOKKEEPING_INCOMPLETE $execution_id run $GITHUB_RUN_ID"
+            gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null
+            echo "FAIL_EXECUTION_BOOKKEEPING_INCOMPLETE commit=$COMMIT_OUTCOME close=$CLOSE_OUTCOME execution=$execution_id"
+            exit 1
+          fi
+          echo "PASS_EXECUTION_BOOKKEEPING execution=$execution_id"
