@@ -59,6 +59,7 @@ BEGIN
   IF v_exec.status = 'BLOCKED'
      AND v_exec.manifest ? 'failure_evidence'
      AND v_exec.manifest ? 'failure_effect_receipt'
+     AND v_exec.manifest->>'failure_reason' = 'APPLY_FAILED_BEFORE_LEDGER_EFFECT'
      AND v_effect.state = 'ABANDONED' THEN
     RETURN jsonb_build_object('result', 'REPLAY_ALREADY_FAILED', 'execution_id', p_execution_id);
   END IF;
@@ -175,6 +176,7 @@ BEGIN
   IF v_exec.status = 'BLOCKED'
      AND v_exec.manifest ? 'stale_abandonment'
      AND v_exec.manifest ? 'failure_effect_receipt'
+     AND v_exec.manifest->>'failure_reason' IN ('TARGET_VERSION_ABSENT_FROM_LEDGER', 'LEDGER_TARGET_REPLACED_BY_COMPLETED_EXECUTION')
      AND v_effect.state = 'ABANDONED' THEN
     RETURN jsonb_build_object(
       'result', 'REPLAY_ALREADY_ABANDONED',
