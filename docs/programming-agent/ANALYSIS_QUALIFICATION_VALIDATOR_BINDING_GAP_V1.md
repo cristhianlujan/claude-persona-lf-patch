@@ -54,3 +54,18 @@ Los nombres anteriores son **familias propuestas, no validadores registrados/exi
 **Bloqueo explícito:** `45/45 CRITERIA_DEFINED`, `0/45 EXECUTABLE_VALIDATOR_BINDINGS`, `0/45 RECEIPT_VERIFIED`. Añadir al catálogo fuente `validator_code`, `validation_input`, `positive_test_ref`, `negative_test_ref`, `pass_condition`, `failure_code`, `evidence/receipt expected schema` por checkpoint, enlazados a las tres familias validables. Resolver el handler y atestar PASS/FAIL con controles antes de habilitar `action_specs`. Cualquier validador inexistente debe quedar `NOT_IMPLEMENTED`, no `ACTIVE`, no DONE.
 
 No cambiar los 15 DONE históricos ni crear 45 validadores especializados; tampoco activar runtime/producción, insertar casos de producto o aplicar la migración hasta cerrar esta deuda estructural.
+
+
+## Actualización: contratos individuales vinculados en fuente (13 de octubre)
+
+**Estado posterior a esta auditoría** (la sección inicial conserva el diagnóstico que motivó la reparación):
+- Se añadieron exactamente **45 `validator_contract` distintos**, uno por checkpoint, al catálogo y la migración candidata; todos tienen `checkpoint_code`, `subject_ref` específico, assertion individual, proveedor existente a reutilizar, expected evidence, controles positivo/negativo y condiciones fail-closed.
+- **C1:** tres validadores canónicos registrados y activos de GitHub/Supabase + `CURRENTNESS_AUTHORITY@1.0.0` + validador estructural A1–A9 cuando aplica. A10–A14 reutilizan `validate_analysis_evaluation_campaign_v1.py` solo para forma de campaña. A15 exige fuente y comprobación de freeze independiente, sin apropiarse de `validate_manifest` Wave1.
+- **C2:** `profiles/programming_analysis_lf/validators/runtime_validate.py` + salida/contenido específicos por etapa; la identidad del modelo debe proceder del transporte gobernado, nunca del texto producido.
+- **C3:** `INDEPENDENT_ASSURANCE@2.0.1` con `public.lf_independent_review_begin_v3`, subject digest y recibo VERIFIED del ledger; A9 exige además `programacion.fn_analysis_pg01_exact_receipt_guard_v1` y consumo físico; A14 exige resultados reales y umbrales independientes; A15 exige 14 calificadores anteriores.
+- El validador de source-only `test_analysis_qualification_validator_mapping_v1.py` se ejecutó en `scalora-vps` con archivos recuperados de GitHub: `PASS_45_INDIVIDUAL_BINDINGS_SOURCE_ONLY positives=45 negatives=8 operational_receipts=0 source_only=true`.
+- No se introdujo motor de juicio, nuevo handler o nuevo registro `ACTIVE` en `programacion.programming_validation_registry`.
+
+**Estado de cierres:** criterios individuales `45/45`; reutilizaciones declaradas en fuente `45/45`; consumidores operativos atestados para cada checkpoint `0/45`; receipts de cualificación real `0/45`. Los `action_specs_v1.status` permanecen `BLOCK_VERIFIED_OPERATIONAL_EVIDENCE_REQUIRED` y los registros reales de la base no existen hasta Merge Train. El paso siguiente es **conectar los consumidores específicos y aportar evidence source/current, profile runtime e independent assurance**, no inventar 45 validadores nuevos.
+
+Referencias EKB adicionales: `PROGRAMMING-VALIDATOR-RESOLVER-USAGE-GUIDE-001` y `LF-PE10-C3-WRONG-ASSURANCE-LEDGER-20261012-001`.
