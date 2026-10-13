@@ -34,6 +34,9 @@ DECLARE
   v_no_approval boolean;
   v_no_promotion boolean;
   v_checks jsonb;
+  v_router_refs jsonb;
+  v_escalation_manifest jsonb;
+  v_route_count integer;
   v_sql text;
   v_spec jsonb;
   v_cp text;
@@ -210,6 +213,46 @@ BEGIN
     RAISE EXCEPTION 'IG_M100_V2_GUARD_MATRIX_FAILED';
   END IF;
 
+  -- Bind current cross-cutting judges. No new judge or authority.
+  SELECT count(*),jsonb_object_agg(c.capability_code,
+      jsonb_build_object('version',c.version,'manifest_sha256',c.manifest_sha256))
+  INTO v_route_count,v_router_refs
+  FROM public.lf_capability_current c
+  JOIN public.lf_capability_version_registry vr
+    ON vr.capability_code=c.capability_code AND vr.version=c.version
+    AND vr.manifest_sha256=c.manifest_sha256 AND vr.release_state='RELEASED'
+  WHERE c.capability_code IN ('SAFE_CHANGE_ADMISSION',
+      'HUMAN_ESCALATION_ADMISSION','TARGETED_EVIDENCE_ACQUISITION');
+
+  SELECT vr.manifest INTO v_escalation_manifest
+  FROM public.lf_capability_current c
+  JOIN public.lf_capability_version_registry vr
+    ON vr.capability_code=c.capability_code AND vr.version=c.version
+    AND vr.manifest_sha256=c.manifest_sha256
+  WHERE c.capability_code='HUMAN_ESCALATION_ADMISSION'
+    AND vr.release_state='RELEASED';
+  IF v_route_count IS DISTINCT FROM 3
+     OR v_escalation_manifest#>>'{dependencies,SAFE_CHANGE_ADMISSION,version}'
+        IS DISTINCT FROM v_router_refs#>>'{SAFE_CHANGE_ADMISSION,version}'
+     OR v_escalation_manifest#>>'{dependencies,SAFE_CHANGE_ADMISSION,manifest_sha256}'
+        IS DISTINCT FROM v_router_refs#>>'{SAFE_CHANGE_ADMISSION,manifest_sha256}'
+     OR v_escalation_manifest#>>'{dependencies,TARGETED_EVIDENCE_ACQUISITION,version}'
+        IS DISTINCT FROM v_router_refs#>>'{TARGETED_EVIDENCE_ACQUISITION,version}'
+     OR v_escalation_manifest#>>'{dependencies,TARGETED_EVIDENCE_ACQUISITION,manifest_sha256}'
+        IS DISTINCT FROM v_router_refs#>>'{TARGETED_EVIDENCE_ACQUISITION,manifest_sha256}'
+     OR v_escalation_manifest#>>'{contract,human_queue_allowed_only_on}'
+        IS DISTINCT FROM 'HUMAN_ELIGIBLE'
+  THEN
+    RAISE EXCEPTION 'IG_M100_V2_PREHUMAN_CAPABILITY_DRIFT';
+  END IF;
+  IF (SELECT count(*) FROM private.lf_human_escalation_policies_v1
+      WHERE status='ACTIVE' AND producer_code='INPUT_GOVERNANCE'
+      AND subject_type='INPUT_GAP_PROPOSAL'
+      AND mode='EVIDENCE_THEN_HUMAN' AND targeted_evidence_required
+      AND human_after_exhaustion) < 1 THEN
+    RAISE EXCEPTION 'IG_M100_V2_IG_ESCALATION_POLICY_NOT_ACTIVE';
+  END IF;
+
   v_checks:=jsonb_build_object(
     'result','PASS','schema','IG_M100_ENGINEERING_PRECHECK_V2',
     'verified_by','CANONICAL_PROVENANCE_VERIFIER_AND_DB_CATALOG',
@@ -225,6 +268,8 @@ BEGIN
     'negative_forged_authority_rejected',v_forged_authority,
     'negative_wrong_readiness_subject_rejected',v_wrong_ready_subject,
     'negative_test_count',5,
+    'existing_decision_classifiers_current',v_router_refs,
+    'pre_human_escalation_policy_verified',true,
     'decision_check_enforced',v_literal_check,
     'head_check_enforced',v_constraints_ok,
     'authority_triggers_enabled',v_triggers_ok,
