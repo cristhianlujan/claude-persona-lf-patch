@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import pathlib
+import subprocess
 import tempfile
 import unittest
 
@@ -104,6 +105,98 @@ class ReconcileInventoryTests(unittest.TestCase):
         first = build_inventory(self.root, export)
         second = build_inventory(self.root, export)
         self.assertEqual(first, second)
+
+
+
+    def test_direct_source_hash_matches_and_mismatch_is_unknown(self) -> None:
+        version = "20261009000001"
+        name = "direct_fixture_v1"
+        source = "select 10;\n"
+        self.add_git(version, name, source)
+        export = self.make_export([
+            {"version": "20261009000002", "name": "direct_fixture_v2", "statements": [source]},
+        ])
+        rows, _ = build_inventory(self.root, export)
+        self.assertIn("A_RENAME", [row["category"] for row in rows])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            self.root = root
+            self.migrations = root / "supabase" / "migrations"
+            self.migrations.mkdir(parents=True)
+            self.add_git(version, name, source)
+            export = self.make_export([
+                {"version": version, "name": name, "statements": ["select 11;"]},
+            ])
+            rows, _ = build_inventory(self.root, export)
+            self.assertIn("D_UNKNOWN", [row["category"] for row in rows])
+
+    def test_cli_statement_storage_hash_matches_and_mismatch_is_unknown(self) -> None:
+        version = "20261009000001"
+        name = "cli_fixture_v1"
+        source = "select 10;\nselect 20;\n"
+        self.add_git(version, name, source)
+        export = self.make_export([
+            {"version": "20261009000002", "name": "cli_fixture_v2",
+             "statements": ["select 10", "select 20"]},
+        ])
+        rows, _ = build_inventory(self.root, export)
+        self.assertIn("A_RENAME", [row["category"] for row in rows])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            self.root = root
+            self.migrations = root / "supabase" / "migrations"
+            self.migrations.mkdir(parents=True)
+            self.add_git(version, name, source)
+            export = self.make_export([
+                {"version": version, "name": name, "statements": ["select 10", "select 21"]},
+            ])
+            rows, _ = build_inventory(self.root, export)
+            self.assertIn("D_UNKNOWN", [row["category"] for row in rows])
+
+    def test_github_blob_pointer_matches_git_hash_object_and_mismatch_is_unknown(self) -> None:
+        version = "20261009000001"
+        name = "blob_fixture_v1"
+        source = "select 10;\n"
+        self.add_git(version, name, source)
+        source_path = self.migrations / f"{version}_{name}.sql"
+        raw = source_path.read_bytes()
+        git_blob_sha = subprocess.run(
+            ["git", "hash-object", str(source_path)],
+            text=True, capture_output=True, check=True,
+        ).stdout.strip()
+        blob_sha = hashlib.sha1(f"blob {len(raw)}\0".encode("ascii") + raw).hexdigest()
+        self.assertEqual(blob_sha, git_blob_sha)
+        pointer = (
+            "github://github.com/example/repo/blob/main/"
+            f"supabase/migrations/{version}_{name}.sql#blob={blob_sha}"
+        )
+        export = self.make_export([
+            {"version": "20261009000002", "name": "blob_fixture_v2", "statements": [pointer]},
+        ])
+        rows, _ = build_inventory(self.root, export)
+        self.assertIn("A_RENAME", [row["category"] for row in rows])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            self.root = root
+            self.migrations = root / "supabase" / "migrations"
+            self.migrations.mkdir(parents=True)
+            self.add_git(version, name, source)
+            wrong_raw = b"select 11;\n"
+            wrong_sha = hashlib.sha1(
+                f"blob {len(wrong_raw)}\0".encode("ascii") + wrong_raw
+            ).hexdigest()
+            bad_pointer = (
+                "github://github.com/example/repo/blob/main/"
+                f"supabase/migrations/{version}_{name}.sql#blob={wrong_sha}"
+            )
+            export = self.make_export([
+                {"version": version, "name": name, "statements": [bad_pointer]},
+            ])
+            rows, _ = build_inventory(self.root, export)
+            self.assertIn("D_UNKNOWN", [row["category"] for row in rows])
 
 
 if __name__ == "__main__":

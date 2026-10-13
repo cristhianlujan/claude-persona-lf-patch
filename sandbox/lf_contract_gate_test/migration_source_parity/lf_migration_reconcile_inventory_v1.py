@@ -25,7 +25,10 @@ if str(CONTRACT_ROOT) not in sys.path:
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-from migration_transport_normalization import canonical  # noqa: E402
+from migration_transport_normalization import (  # noqa: E402
+    canonical,
+    cli_statement_storage_hash,
+)
 from run_migration_source_parity_flow_v1 import (  # noqa: E402
     CUTOVER,
     LEGACY_END,
@@ -34,6 +37,7 @@ from run_migration_source_parity_flow_v1 import (  # noqa: E402
 from lf_migration_source_parity_ci_context import MARKER_RE  # noqa: E402
 
 FILENAME_RE = re.compile(r"^(\d{14})_(.+)\.sql$")
+GITHUB_BLOB_POINTER_RE = re.compile(r"^github://[^#]+#blob=([0-9a-f]{40})$")
 VERSION_SUFFIX_RE = re.compile(r"(?:_v\d+)+(?=_|$)", re.IGNORECASE)
 THEME_QUALIFIER_SUFFIX_RE = re.compile(r"(?:_(?:train))+$", re.IGNORECASE)
 THEME_ALIASES = {
@@ -62,6 +66,8 @@ class GitMigration:
     path: str
     sql: str
     digest: str
+    cli_digest: str
+    blob_sha1: str
 
 
 @dataclass(frozen=True)
@@ -70,10 +76,27 @@ class LedgerMigration:
     name: str
     statements: tuple[str, ...]
     digest: str
+    source_blob_sha1: str | None
 
 
 def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def _git_blob_sha1(raw: bytes) -> str:
+    header = f"blob {len(raw)}\0".encode("ascii")
+    return hashlib.sha1(header + raw).hexdigest()
+
+
+def _same_source(git_row: GitMigration, ledger_row: LedgerMigration) -> bool:
+    return (
+        git_row.digest == ledger_row.digest
+        or git_row.cli_digest == ledger_row.digest
+        or (
+            ledger_row.source_blob_sha1 is not None
+            and git_row.blob_sha1 == ledger_row.source_blob_sha1
+        )
+    )
 
 
 def _theme(name: str) -> str:
@@ -99,9 +122,21 @@ def _read_git(root: pathlib.Path) -> list[GitMigration]:
             # baseline/classifier and cannot belong to POST_CUTOVER.
             continue
         version, name = match.groups()
-        sql = path.read_text(encoding="utf-8")
-        rows.append(GitMigration(version, name, path.relative_to(root).as_posix(),
-                                 sql, _sha(canonical(sql))))
+        raw = path.read_bytes()
+        try:
+            sql = raw.decode("utf-8")
+            cli_digest = cli_statement_storage_hash(sql)
+        except (UnicodeDecodeError, ValueError) as exc:
+            raise InventoryError(f"MIGRATION_SOURCE_NORMALIZATION_INVALID:{path.name}") from exc
+        rows.append(GitMigration(
+            version,
+            name,
+            path.relative_to(root).as_posix(),
+            sql,
+            _sha(canonical(sql)),
+            cli_digest,
+            _git_blob_sha1(raw),
+        ))
     return rows
 
 
@@ -128,8 +163,18 @@ def _read_ledger(path: pathlib.Path) -> list[LedgerMigration]:
         if not isinstance(statements, list) or not statements or not all(isinstance(s, str) for s in statements):
             raise InventoryError(f"LEDGER_STATEMENTS_INVALID:{version}")
         seen.add(version)
-        sql = "\n".join(statements)
-        rows.append(LedgerMigration(version, name, tuple(statements), _sha(canonical(sql))))
+        pointer_sha = None
+        if len(statements) == 1:
+            pointer_match = GITHUB_BLOB_POINTER_RE.fullmatch(statements[0].strip())
+            if pointer_match:
+                pointer_sha = pointer_match.group(1)
+            elif statements[0].strip().startswith("github://"):
+                raise InventoryError(f"LEDGER_GITHUB_BLOB_POINTER_INVALID:{version}")
+        elif any(statement.strip().startswith("github://") for statement in statements):
+            raise InventoryError(f"LEDGER_GITHUB_BLOB_POINTER_INVALID:{version}")
+        sql = "\n".join(statements) if pointer_sha is None else ""
+        digest = _sha(canonical(sql)) if pointer_sha is None else ""
+        rows.append(LedgerMigration(version, name, tuple(statements), digest, pointer_sha))
     return sorted(rows, key=lambda row: (row.version, row.name))
 
 
@@ -200,39 +245,51 @@ def build_inventory(root: pathlib.Path, ledger_json: pathlib.Path) -> tuple[list
             "reason": reason,
         })
 
-    # Exact identities are either parity matches or content drift (D).
+    # Exact identities are either source matches (direct, CLI, or blob) or content drift (D).
     for identity in sorted(set(git_by_identity) & set(ledger_by_identity)):
         g, l = git_by_identity[identity], ledger_by_identity[identity]
         exact_git.add(identity); exact_ledger.add(identity)
-        if g.digest != l.digest:
+        if not _same_source(g, l):
             emit("D_UNKNOWN", g, l, "SAME_VERSION_NAME_CONTENT_MISMATCH")
 
     remaining_git = [g for g in git if (g.version, g.name) not in exact_git]
     remaining_ledger = [l for l in ledger if (l.version, l.name) not in exact_ledger]
-    by_digest_git: dict[str, list[GitMigration]] = {}
-    by_digest_ledger: dict[str, list[LedgerMigration]] = {}
-    for row in remaining_git:
-        by_digest_git.setdefault(row.digest, []).append(row)
-    for row in remaining_ledger:
-        by_digest_ledger.setdefault(row.digest, []).append(row)
+    git_matches = {
+        (g.version, g.name): [l for l in remaining_ledger if _same_source(g, l)]
+        for g in remaining_git
+    }
+    ledger_matches = {
+        (l.version, l.name): [g for g in remaining_git if _same_source(g, l)]
+        for l in remaining_ledger
+    }
 
     paired_git: set[tuple[str, str]] = set()
     paired_ledger: set[tuple[str, str]] = set()
     ambiguous_git: set[tuple[str, str]] = set()
     ambiguous_ledger: set[tuple[str, str]] = set()
-    for digest in sorted(set(by_digest_git) & set(by_digest_ledger)):
-        gs, ls = by_digest_git[digest], by_digest_ledger[digest]
-        if len(gs) == len(ls) == 1:
-            g, l = gs[0], ls[0]
-            paired_git.add((g.version, g.name)); paired_ledger.add((l.version, l.name))
-            emit("A_RENAME", g, l, "UNIQUE_CANONICAL_CONTENT_MATCH")
-        else:
-            for g in gs:
-                ambiguous_git.add((g.version, g.name))
-                emit("D_UNKNOWN", g, None, "AMBIGUOUS_CANONICAL_CONTENT_MATCH")
-            for l in ls:
-                ambiguous_ledger.add((l.version, l.name))
-                emit("D_UNKNOWN", None, l, "AMBIGUOUS_CANONICAL_CONTENT_MATCH")
+    for g in remaining_git:
+        g_key = (g.version, g.name)
+        matches = git_matches[g_key]
+        if len(matches) == 1 and len(ledger_matches[(matches[0].version, matches[0].name)]) == 1:
+            l = matches[0]
+            l_key = (l.version, l.name)
+            if g_key not in paired_git and l_key not in paired_ledger:
+                paired_git.add(g_key); paired_ledger.add(l_key)
+                emit("A_RENAME", g, l, "UNIQUE_SOURCE_CONTENT_MATCH")
+    for g in remaining_git:
+        g_key = (g.version, g.name)
+        if g_key in paired_git:
+            continue
+        if git_matches[g_key]:
+            ambiguous_git.add(g_key)
+            emit("D_UNKNOWN", g, None, "AMBIGUOUS_SOURCE_CONTENT_MATCH")
+    for l in remaining_ledger:
+        l_key = (l.version, l.name)
+        if l_key in paired_ledger:
+            continue
+        if ledger_matches[l_key]:
+            ambiguous_ledger.add(l_key)
+            emit("D_UNKNOWN", None, l, "AMBIGUOUS_SOURCE_CONTENT_MATCH")
 
     unmatched_git = [g for g in remaining_git
                      if (g.version, g.name) not in paired_git | ambiguous_git]
@@ -276,7 +333,7 @@ def build_inventory(root: pathlib.Path, ledger_json: pathlib.Path) -> tuple[list
             "git_files": len(git),
             "ledger_rows": len(ledger),
             "exact_identity_matches": sum(1 for identity in set(git_by_identity) & set(ledger_by_identity)
-                                           if git_by_identity[identity].digest == ledger_by_identity[identity].digest),
+                                           if _same_source(git_by_identity[identity], ledger_by_identity[identity])),
             "differences": len(result),
             "categories": {key: counts.get(key, 0) for key in (
                 "A_RENAME", "B_SOURCE_FROM_LEDGER", "C_RETIRE", "D_UNKNOWN")},
