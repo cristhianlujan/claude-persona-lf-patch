@@ -32,6 +32,62 @@ class ResumeEffectGuardTests(unittest.TestCase):
         with patch.object(r,"call",side_effect=fake),patch.object(r,"_effect_readback",return_value={"dispatch_key":r.identity("2362","20261013010000","100")["dispatch_key"]}),patch.object(r,"_record_step_if_needed",return_value={"status":r.CLEAN}),patch.object(r,"_ledger_readback",return_value=ledger):
             return r.begin(ctx())
 
+    def _verified_close(self, *, ledger_sha=None, effect_state="SUCCEEDED",
+                        receipt_name="lf_example_v1", parity="PASS", router_valid=True):
+        state={"result":"TRAIN_EXECUTION_PATCH_RECORDED", "context":ctx(),
+               "ids":{**r.identity("2362","20261013010000","100"),"lease_fence":"2"}}
+        ledger={"version":ctx()["version"],"name":ctx()["name"],
+                "source_sha256":ledger_sha or ctx()["source_sha256"]}
+        effect={"state":effect_state,"dispatch_key":state["ids"]["dispatch_key"],
+                "effect_request_sha256":ctx()["source_sha256"],
+                "receipt":{"apply_receipt":{"ledger_version":ctx()["version"],
+                                             "ledger_name":receipt_name}}}
+        def authority(execution_id):
+            if not router_valid:
+                raise RuntimeError("TRAIN_EXEC_ROUTER_AUTHORITY_MISSING_OR_STALE")
+        with patch.object(r,"_require_router_authority",side_effect=authority), \\
+             patch.object(r,"_ledger_readback",return_value=ledger), \\
+             patch.object(r,"_effect_readback",return_value=effect), \\
+             patch.object(r,"_record_step_if_needed",return_value={"status":r.CLEAN}), \\
+             patch.object(r,"call",return_value={"result":"EXECUTION_COMPLETED"}) as effect_call:
+            result=r.close(state,"a"*40,parity)
+            self.assertEqual(result["result"],"TRAIN_EXECUTION_COMPLETED")
+            self.assertEqual(effect_call.call_count,1)
+
+    def test_verified_close_works_without_replay(self):
+        self._verified_close()
+
+    def test_closure_blocks_wrong_ledger_digest(self):
+        with self.assertRaisesRegex(RuntimeError,"CLOSE_EXACT_LEDGER_UNVERIFIED"):
+            self._verified_close(ledger_sha="f"*64)
+
+    def test_closure_blocks_unfinished_effect(self):
+        with self.assertRaisesRegex(RuntimeError,"CLOSE_EFFECT_RECEIPT_UNVERIFIED"):
+            self._verified_close(effect_state="RESERVED")
+
+    def test_closure_blocks_receipt_mismatch(self):
+        with self.assertRaisesRegex(RuntimeError,"CLOSE_EFFECT_RECEIPT_UNVERIFIED"):
+            self._verified_close(receipt_name="other")
+
+    def test_closure_blocks_stale_router(self):
+        with self.assertRaisesRegex(RuntimeError,"ROUTER_AUTHORITY_MISSING_OR_STALE"):
+            self._verified_close(router_valid=False)
+
+    def test_closure_blocks_missing_parity(self):
+        with self.assertRaisesRegex(RuntimeError,"CLOSE_STATE_MERGE_OR_PARITY_INVALID"):
+            self._verified_close(parity="SKIPPED")
+
+    def test_commit_rejects_forged_ledger(self):
+        state={"result":"TRAIN_EXECUTION_READY_TO_APPLY","apply_required":True,
+               "context":ctx(),"ids":{**r.identity("2362","20261013010000","100"),"lease_fence":"2"}}
+        receipt={"status":"PASS","ledger_version":ctx()["version"],"ledger_name":ctx()["name"]}
+        with patch.object(r,"_require_router_authority"), \\
+             patch.object(r,"_ledger_readback",return_value={"version":ctx()["version"],"name":ctx()["name"],"source_sha256":"0"*64}), \\
+             patch.object(r,"call") as mutation:
+            with self.assertRaisesRegex(RuntimeError,"COMMIT_EXACT_LEDGER_UNVERIFIED"):
+                r.commit(state,{"route":"TEST"},receipt)
+            mutation.assert_not_called()
+
     def test_workflow_uses_resume_effect_decision_and_fatal_close(self):
         from pathlib import Path
         wf=(Path(__file__).resolve().parents[3]/".github/workflows/lf-migration-merge-train.yml").read_text()
