@@ -1066,7 +1066,16 @@
         "CRITICAL_REGRESSION"
       ],
       "evaluation_hypothesis": "Improves first broken boundary localization without false causal proof",
-      "execution_permission": false
+      "execution_permission": false,
+      "candidate_implementation": {
+        "source_path": "skills/profile_creator/evals/profile_causal_graph_candidate_v1.py",
+        "exported_function": "assess_paths",
+        "test_path": "skills/profile_creator/evals/test_profile_causal_graph_candidate_v1.py",
+        "status": "SOURCE_AVAILABLE_SHADOW_ONLY",
+        "callable_scope": "EXPLICIT_OFFLINE_EVALUATION_ONLY",
+        "invocation_authorized": false,
+        "production_binding": false
+      }
     },
     {
       "method_id": "OCHIAI_SUSPICIOUSNESS",
@@ -1156,7 +1165,16 @@
         "CRITICAL_REGRESSION"
       ],
       "evaluation_hypothesis": "Improves top-ranked culprit localization on held-out labeled failures",
-      "execution_permission": false
+      "execution_permission": false,
+      "candidate_implementation": {
+        "source_path": "skills/profile_creator/evals/profile_ochiai_candidate_v1.py",
+        "exported_function": "rank_ochiai",
+        "test_path": "skills/profile_creator/evals/test_profile_ochiai_candidate_v1.py",
+        "status": "SOURCE_AVAILABLE_SHADOW_ONLY",
+        "callable_scope": "EXPLICIT_OFFLINE_EVALUATION_ONLY",
+        "invocation_authorized": false,
+        "production_binding": false
+      }
     },
     {
       "method_id": "RECIPROCAL_RANK_FUSION",
@@ -1246,7 +1264,16 @@
         "CRITICAL_REGRESSION"
       ],
       "evaluation_hypothesis": "Improves downstream evidence relevance over best individual source without source double counting",
-      "execution_permission": false
+      "execution_permission": false,
+      "candidate_implementation": {
+        "source_path": "skills/profile_creator/evals/profile_rrf_candidate_v1.py",
+        "exported_function": "reciprocal_rank_fusion",
+        "test_path": "skills/profile_creator/evals/test_profile_rrf_candidate_v1.py",
+        "status": "SOURCE_AVAILABLE_SHADOW_ONLY",
+        "callable_scope": "EXPLICIT_OFFLINE_EVALUATION_ONLY",
+        "invocation_authorized": false,
+        "production_binding": false
+      }
     },
     {
       "method_id": "DELTA_DEBUGGING",
@@ -1335,7 +1362,16 @@
         "CRITICAL_REGRESSION"
       ],
       "evaluation_hypothesis": "Reduces reproducer size while preserving failure predicate within bounded probes",
-      "execution_permission": false
+      "execution_permission": false,
+      "candidate_implementation": {
+        "source_path": "skills/profile_creator/evals/profile_delta_debug_candidate_v1.py",
+        "exported_function": "minimize_failure",
+        "test_path": "skills/profile_creator/evals/test_profile_delta_debug_candidate_v1.py",
+        "status": "SOURCE_AVAILABLE_SHADOW_ONLY",
+        "callable_scope": "EXPLICIT_OFFLINE_EVALUATION_ONLY",
+        "invocation_authorized": false,
+        "production_binding": false
+      }
     },
     {
       "method_id": "MCNEMAR_AND_CONFIDENCE_INTERVALS",
@@ -1434,7 +1470,16 @@
         "CRITICAL_REGRESSION"
       ],
       "evaluation_hypothesis": "Quantifies paired binary gains and losses without substituting admission judge",
-      "execution_permission": false
+      "execution_permission": false,
+      "candidate_implementation": {
+        "source_path": "skills/profile_creator/evals/paired_binary_mcnemar_v1.py",
+        "exported_function": "evaluate_mcnemar",
+        "test_path": "skills/profile_creator/evals/test_paired_binary_mcnemar_v1.py",
+        "status": "SOURCE_AVAILABLE_SHADOW_ONLY",
+        "callable_scope": "EXPLICIT_OFFLINE_EVALUATION_ONLY",
+        "invocation_authorized": false,
+        "production_binding": false
+      }
     }
   ],
   "dynamic_policy": {
@@ -1483,6 +1528,9 @@
     "preconditions": "TYPED_VERIFIED_AT_RECEIPT_FIELD_LEVEL",
     "external_attestation_required": true,
     "auto_execute": false,
-    "real_benchmark_pending": true
+    "real_benchmark_pending": true,
+    "source_binding_state": "ALL_FIVE_SOURCE_LINKED_SHADOW_ONLY",
+    "executable_from_selector": false,
+    "executable_from_method_bridge": false
   }
 }
