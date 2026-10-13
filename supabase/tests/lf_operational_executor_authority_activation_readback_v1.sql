@@ -66,7 +66,7 @@ SELECT jsonb_build_object(
      THEN 'BLOCK_OPERATIONAL_ROLE_GROUPS_NOT_INSTALLED' END,
    CASE WHEN migration_train_binding_count<>1
      THEN 'BLOCK_MIGRATION_TRAIN_ROUTE_NOT_PRESERVED' END
- ],NULL::text[])),
+ ],NULL::text)),
  'authorization_verified',false,
  'note','Catalog counts are discovery only. Even zero blockers do not prove a specific decision is current, nor authorize deployment.'
 ) AS readback
