@@ -1,0 +1,51 @@
+name: LF Migration Route Guard
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: One or more open PR numbers against main, separated by commas or spaces
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  route-guard:
+    name: lf-migration-route-guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: lf-merge-train
+    steps:
+      - name: Create status-only Train App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          permission-statuses: write
+
+      - name: Fetch trusted classifier through GitHub API
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          BASE_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          path='sandbox/lf_contract_gate_test/migration_route_guard/lf_migration_route_guard.py'
+          gh api "repos/$REPOSITORY/contents/$path?ref=$BASE_SHA" --jq '.content' \
+            | tr -d '\n' | base64 --decode > "$RUNNER_TEMP/lf_migration_route_guard.py"
+
+      - name: Classify pull request and publish only the non-migration success
+        env:
+          GH_READ_TOKEN: ${{ github.token }}
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER_INPUT: ${{ inputs.pr_number || '' }}
+        shell: bash
+        run: python3 "$RUNNER_TEMP/lf_migration_route_guard.py"
