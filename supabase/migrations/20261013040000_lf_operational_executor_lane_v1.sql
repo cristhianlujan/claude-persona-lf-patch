@@ -378,6 +378,7 @@ BEGIN
      OR v_admission->>'dispatch_key' IS DISTINCT FROM p_dispatch_key THEN
     RAISE EXCEPTION 'OPERATIONAL_BEGIN_MANIFEST_NOT_EXACT';
   END IF;
+  PERFORM public.lf_operational_executor_assert_decision_current_v1(p_execution_id);
   v_auth:=public.lf_router_downstream_authority_validate_v1(p_execution_id);
   IF v_auth->>'code' IS DISTINCT FROM 'ROUTER_DOWNSTREAM_AUTHORITY_VALID'
      OR v_auth->>'applicable' IS DISTINCT FROM 'true'
@@ -422,6 +423,7 @@ DECLARE
   v_close jsonb;
 BEGIN
   PERFORM public.lf_operational_executor_assert_principal_v1('lf_operation_executor_runtime');
+  PERFORM public.lf_operational_executor_assert_decision_current_v1(p_execution_id);
   v_auth:=public.lf_router_downstream_authority_validate_v1(p_execution_id);
   IF v_auth->>'code' IS DISTINCT FROM 'ROUTER_DOWNSTREAM_AUTHORITY_VALID'
      OR v_auth->>'applicable' IS DISTINCT FROM 'true'
@@ -668,6 +670,94 @@ BEGIN
   );
 END $admit$;
 
+-- Re-check decision currentness at execution time and before effect close.
+-- Uses LF's existing canonical decision ledger, not a parallel approval store.
+CREATE OR REPLACE FUNCTION public.lf_operational_executor_assert_decision_current_v1(
+  p_execution_id text
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=pg_catalog,public,private,extensions
+AS $decision_current$
+DECLARE
+  v_exec public.lf_operation_execution%rowtype;
+  v_proof jsonb;
+  v_decision jsonb;
+  v_subject jsonb;
+  v_meta jsonb;
+  v_expires timestamptz;
+  v_authority text;
+  v_reviewer text;
+  v_policy jsonb;
+  v_req uuid;
+BEGIN
+  SELECT * INTO v_exec FROM public.lf_operation_execution
+   WHERE execution_id=p_execution_id FOR UPDATE;
+  IF NOT FOUND OR v_exec.operation_code IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+     OR v_exec.target_type IS DISTINCT FROM 'OPERATIONAL_DB'
+     OR v_exec.status IS DISTINCT FROM 'IN_PROGRESS' THEN
+    RAISE EXCEPTION 'OPERATIONAL_DECISION_EXECUTION_NOT_ACTIVE';
+  END IF;
+  v_proof:=v_exec.manifest->'operational_authority_receipt';
+  IF coalesce(v_proof->>'decision_request_id','')
+      !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+     OR coalesce(v_proof->>'decision_receipt_sha256','') !~ '^[0-9a-f]{64}$'
+     OR coalesce(v_proof->>'currentness_sha256','') !~ '^[0-9a-f]{64}$' THEN
+    RAISE EXCEPTION 'OPERATIONAL_DECISION_PROOF_NOT_DURABLE';
+  END IF;
+  v_req:=(v_proof->>'decision_request_id')::uuid;
+  v_decision:=private.fn_lf_human_decision_consume_v1(v_req);
+  IF v_decision IS NULL
+     OR v_decision->>'request_status' IS DISTINCT FROM 'DECIDED'
+     OR v_decision->>'producer_code' IS DISTINCT FROM 'LF_OPERATION_EXECUTOR'
+     OR v_decision->>'subject_type' IS DISTINCT FROM 'OPERATIONAL_EXECUTION'
+     OR v_decision->>'subject_key' IS DISTINCT FROM p_execution_id
+     OR v_decision->>'currentness_sha256' IS DISTINCT FROM v_proof->>'currentness_sha256'
+     OR v_decision #>> '{decision_receipt,decision_code}' IS DISTINCT FROM 'APPROVE'
+     OR v_decision #>> '{decision_receipt,receipt_sha256}'
+           IS DISTINCT FROM v_proof->>'decision_receipt_sha256'
+     OR v_proof->>'approval_ref'
+           IS DISTINCT FROM 'supabase://private/lf_human_decision_receipts_v1/'
+             ||coalesce(v_decision #>> '{decision_receipt,receipt_id}','') THEN
+    RAISE EXCEPTION 'OPERATIONAL_DECISION_NO_LONGER_CURRENT';
+  END IF;
+  SELECT r.subject_ref,r.metadata,r.expires_at,
+         r.required_authority_ref,r.required_reviewer_role
+    INTO v_subject,v_meta,v_expires,v_authority,v_reviewer
+    FROM private.lf_human_decision_requests_v1 r
+   WHERE r.request_id=v_req AND r.status='DECIDED';
+  IF NOT FOUND OR (v_expires IS NOT NULL AND v_expires<=clock_timestamp())
+     OR v_subject->>'operation_code' IS DISTINCT FROM v_exec.operation_code
+     OR v_subject->>'execution_id' IS DISTINCT FROM p_execution_id
+     OR v_subject->>'handler_code' IS DISTINCT FROM v_exec.target_code
+     OR v_subject->>'payload_sha256' IS DISTINCT FROM v_exec.request_sha256
+     OR v_subject->>'handler_revision' IS DISTINCT FROM
+        v_exec.manifest #>> '{operational_transaction_admission,handler_revision}'
+     OR v_subject->>'effect_scope' IS DISTINCT FROM
+        v_exec.manifest #>> '{operational_transaction_admission,effect_scope}'
+     OR v_subject->>'dispatch_key' IS DISTINCT FROM
+        v_exec.manifest #>> '{operational_transaction_admission,dispatch_key}'
+     OR v_subject->>'idempotency_key' IS DISTINCT FROM v_exec.idempotency_key THEN
+    RAISE EXCEPTION 'OPERATIONAL_DECISION_BINDING_OR_EXPIRY_STALE';
+  END IF;
+  v_policy:=private.fn_lf_human_decision_resolve_policy_v1(
+    'LF_OPERATION_EXECUTOR','OPERATIONAL_EXECUTION',
+    coalesce(v_meta->'classification_context','{}'::jsonb)
+  );
+  IF v_policy->>'state' IS DISTINCT FROM 'ACTIVE'
+     OR v_policy->>'required_authority_ref' IS DISTINCT FROM v_authority
+     OR v_policy->>'required_reviewer_role' IS DISTINCT FROM v_reviewer
+     OR NOT (coalesce(v_policy->'allowed_actions','[]'::jsonb) ? 'APPROVE') THEN
+    RAISE EXCEPTION 'OPERATIONAL_DECISION_ROUTE_POLICY_NO_LONGER_ACTIVE';
+  END IF;
+  PERFORM private.fn_lf_human_decision_assert_authority_receipt_v1(
+    v_req,'APPROVE',
+    v_decision #>> '{decision_receipt,reviewer_role}',
+    v_decision #>> '{decision_receipt,authority_ref}',
+    v_decision #>> '{decision_receipt,authority_receipt_ref}',
+    v_decision #>> '{decision_receipt,authority_receipt_sha256}',
+    v_decision #>> '{decision_receipt,observed_currentness_sha256}'
+  );
+END $decision_current$;
+
 -- An operational lane never creates a login or directly grants table writes.
 DO $role$
 BEGIN
@@ -702,6 +792,7 @@ END $roles_verify$;
 
 GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
 GRANT USAGE ON SCHEMA public TO lf_operational_admission_authority;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_decision_current_v1(text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_principal_v1(text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
