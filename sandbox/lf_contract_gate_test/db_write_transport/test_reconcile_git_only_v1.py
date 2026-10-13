@@ -43,6 +43,19 @@ class ReconcileGitOnlyTest(unittest.TestCase):
         finally:
             tmp.cleanup()
 
+    def test_mode_contract_extends_existing_judge_without_promoting(self):
+        root=Path(__file__).resolve().parents[3]
+        path=root/"docs/migrations/LF_TRAIN_RECONCILE_JUDGE_EXTENSION_CANDIDATE_V1.json"
+        candidate=json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(candidate["status"],"CANDIDATE_NOT_REGISTERED_NOT_ACTIVE")
+        self.assertEqual(candidate["operation_code"],"ACTUALIZACION_DB_LF")
+        self.assertEqual(candidate["mode"],"RECONCILE_GIT_ONLY")
+        self.assertEqual(candidate["authority_boundary"]["entry"],"ACT-0001")
+        self.assertFalse(candidate["authority_boundary"]["db_writes_allowed"])
+        self.assertFalse(candidate["authority_boundary"]["ledger_dml_allowed"])
+        self.assertEqual(candidate["existing_bindings_not_to_override"]["judge_code"],"JUDGE_DB_MUTATION_SANDBOX_MINIMAL_V1")
+        self.assertEqual(sorted(candidate["proposed_mode_judge"]),["patch","preflight","verify"])
+        self.assertEqual(candidate["implementation_state"]["git_only_closeout"],"NOT_IMPLEMENTED")
     def test_train_routes_reconcile_without_db_apply(self):
         wf=(Path(__file__).resolve().parents[3]/".github/workflows/lf-migration-merge-train.yml").read_text()
         self.assertLess(wf.index("- name: Resolve RECONCILE governed mode"),
