@@ -10,7 +10,7 @@ def ctx():
                 head_sha="c"*40,persisted_head_sha="d"*40,run_id="100")
 
 class ResumeEffectGuardTests(unittest.TestCase):
-    def invoke(self, effect, ledger, receipt=None):
+    def invoke(self, effect, ledger, receipt=None, allow_mark=False):
         calls=[]
         def fake(sql,**kwargs):
             calls.append(sql)
@@ -25,6 +25,8 @@ class ResumeEffectGuardTests(unittest.TestCase):
             if "fn_lf_operation_reserve_effect_v1" in sql:
                 return effect
             if "fn_lf_operation_mark_effect_succeeded_v1" in sql:
+                if allow_mark:
+                    return {"result":"EFFECT_SUCCESS_PERSISTED"}
                 self.fail("effect must not be marked on an unverified ledger")
             raise AssertionError(sql)
         with patch.object(r,"call",side_effect=fake),patch.object(r,"_effect_readback",return_value={"dispatch_key":r.identity("2362","20261013010000","100")["dispatch_key"]}),patch.object(r,"_record_step_if_needed",return_value={"status":r.CLEAN}),patch.object(r,"_ledger_readback",return_value=ledger):
@@ -46,6 +48,13 @@ class ResumeEffectGuardTests(unittest.TestCase):
         state=self.invoke(effect,ledger)
         self.assertFalse(state["apply_required"])
         self.assertEqual(state["resume"],"EFFECT_ALREADY_SUCCEEDED")
+
+    def test_reserved_effect_with_exact_ledger_reconciles_without_apply(self):
+        ledger={"version":"20261013010000","name":"lf_example_v1","source_sha256":"b"*64,
+                "created_by":"SOURCE_FIRST"}
+        state=self.invoke({"result":"RECONCILIATION_REQUIRED"},ledger,allow_mark=True)
+        self.assertFalse(state["apply_required"])
+        self.assertEqual(state["resume"],"LEDGER_EFFECT_RECONCILED")
 
     def test_already_applied_plan_reports_true_name_not_filename(self):
         from pathlib import Path
