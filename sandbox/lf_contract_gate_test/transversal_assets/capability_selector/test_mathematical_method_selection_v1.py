@@ -59,6 +59,19 @@ def run():
     assert any(x["method_id"] == "CAUSAL_GRAPH_ANALYSIS" and
                x["reason"] == "PRECONDITION_UNKNOWN" for x in blocked["rejected"])
 
+    # Normal-method selection cannot depend on the catalog declaration order.
+    # A shared budget must be allocated by typed relevance, not first match.
+    normal_ctx = {"complexity": "HIGH", "optimization_need": "REQUIRED",
+                  "budget": {"max_method_cost_points": 7}}
+    base_r = evaluate(normal_ctx)
+    reversed_registry = {**REG, "methods": list(reversed(REG["methods"]))}
+    reversed_r = compose_capabilities_v3(
+        normal_ctx, [], {"fallback_capabilities": ["CURRENTNESS_AUTHORITY"]},
+        reversed_registry, preconditions())
+    assert [x["method_id"] for x in base_r["selected_methods"]] == [
+        x["method_id"] for x in reversed_r["selected_methods"]]
+    assert all("matched_signal_types" in x for x in base_r["selected_methods"])
+
     # Five separate task shapes cause five different math trial recommendations.
     cases = [
         ({"causal_requirement": "REQUIRED"}, "CAUSAL_GRAPH_ANALYSIS"),
