@@ -32,6 +32,12 @@ def verify(source: str) -> list[str]:
       "fn_lf_operation_reserve_effect_v1",
       "fn_lf_operation_mark_effect_succeeded_v1",
       "lf_record_operation_step_core_v1",
+      "CREATE OR REPLACE FUNCTION public.lf_operational_executor_assert_principal_v1",
+      "OPERATIONAL_PRINCIPAL_EXTERNAL_LOGIN_REQUIRED",
+      "OPERATIONAL_PRINCIPAL_LEAST_PRIVILEGE_REQUIRED",
+      "OPERATIONAL_PRINCIPAL_ROLE_CROSSOVER_OR_MEMBERSHIP_INVALID",
+      "REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_principal_v1",
+      "GRANT EXECUTE ON FUNCTION public.lf_operational_executor_assert_principal_v1",
       "CREATE OR REPLACE FUNCTION public.lf_operational_executor_admit_v1",
       "lf_operational_admission_authority",
       "OPERATIONAL_ADMISSION_INDEPENDENT_PRINCIPAL_REQUIRED",
@@ -113,6 +119,25 @@ class GovernedCandidateStaticTests(unittest.TestCase):
         self.assertIn("session_user IN ('postgres','authenticator','service_role')",source)
         self.assertTrue(verify(source.replace("OPERATIONAL_ADMISSION_ROLE_NOT_INDEPENDENT",
                                               "ROUTER_NOT_ENFORCED")))
+
+    def test_all_three_facades_require_same_principal_verifier(self):
+        source=SQL.read_text(encoding="utf-8")
+        self.assertEqual(len(re.findall(
+            r"(?m)^CREATE OR REPLACE FUNCTION public\\.lf_operational_executor_assert_principal_v1\\(",source)),1)
+        for fname,role in (
+            ("admit","lf_operational_admission_authority"),
+            ("begin","lf_operation_executor_runtime"),
+            ("finish","lf_operation_executor_runtime"),
+        ):
+            start=source.index("CREATE OR REPLACE FUNCTION public.lf_operational_executor_"+fname+"_v1")
+            end=source.index("END $"+fname+"$;",start)
+            body=source[start:end]
+            self.assertIn("PERFORM public.lf_operational_executor_assert_principal_v1('"+role+"')",body)
+            self.assertLess(body.index("PERFORM public.lf_operational_executor_assert_principal_v1"),
+                            body.index("v_auth:=") if "v_auth:=" in body else body.index("v_route:="))
+        self.assertTrue(verify(source.replace(
+            "OPERATIONAL_PRINCIPAL_ROLE_CROSSOVER_OR_MEMBERSHIP_INVALID",
+            "AUTHORITY_PRINCIPAL_NOT_CHECKED")))
 
     def test_existing_authority_roles_are_fail_closed(self):
         source=SQL.read_text(encoding="utf-8")
