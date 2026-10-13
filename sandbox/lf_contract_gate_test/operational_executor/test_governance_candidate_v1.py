@@ -92,6 +92,21 @@ def verify(source: str) -> list[str]:
       r"(?i)\bINSERT\s+INTO\s+public\.lf_operation_execution_steps\b",
     ):
       if re.search(regex,source): problems.append("FORBIDDEN:"+regex)
+    # Supabase's public-schema DEFAULT ACL grants EXECUTE directly to the API roles.
+    # Revoking PUBLIC alone does not remove those explicit default grants.
+    restricted_signatures = (
+      "lf_operational_executor_assert_decision_current_v1(text)",
+      "lf_operational_executor_assert_principal_v1(text)",
+      "lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb)",
+      "lf_close_operational_execution_v1(text,text,bigint,jsonb,text)",
+      "lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)",
+      "lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)",
+    )
+    for signature in restricted_signatures:
+      statement = ("REVOKE ALL ON FUNCTION public." + signature
+                   + " FROM PUBLIC, anon, authenticated, service_role;")
+      if source.count(statement) != 1:
+        problems.append("DEFAULT_RPC_GRANT_REVOKE_MISSING_OR_DUPLICATE:" + signature)
     if len(re.findall(r"(?m)^CREATE OR REPLACE FUNCTION public\.lf_operational_executor_begin_v1\(",source))!=1:
       problems.append("AMBIGUOUS_BEGIN_FACADE")
     if len(re.findall(r"(?m)^CREATE OR REPLACE FUNCTION public\.lf_operational_executor_finish_v1\(",source))!=1:
