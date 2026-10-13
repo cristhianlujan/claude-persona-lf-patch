@@ -49,6 +49,7 @@ jobs:
       trusted_main: ${{ steps.admission.outputs.current_main }}
       train_exec_state: ${{ steps.train_exec_commit.outputs.state_b64 || steps.train_exec.outputs.state_b64 }}
       recover_mode: ${{ steps.recover_mode.outputs.operation_mode }}
+      recover_parity_status: ${{ steps.recover_readback.outputs.parity_status }}
 
     steps:
       - name: Checkout trusted current main only
@@ -869,7 +870,8 @@ jobs:
           }
           python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_recover_preflight.py \
             --migration-path "$SOURCE_FILE" --readback | tee .lf_train/recover-readback.json
-          jq -e '.status=="PASS" and .code=="RECOVER_EXACT_LEDGER_READBACK_PASS"' .lf_train/recover-readback.json >/dev/null
+          jq -e '.status=="PASS" and .code=="RECOVER_EXACT_LEDGER_READBACK_PASS" and .parity_status=="PASS" and .parity_code=="PASS_LF_MIGRATION_SOURCE_PARITY" and .parity_version_count==1' .lf_train/recover-readback.json >/dev/null
+          echo "parity_status=PASS" >> "$GITHUB_OUTPUT"
 
       - name: Run changeset-scoped parity from trusted persisted source
         id: parity
@@ -988,6 +990,18 @@ jobs:
           private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
+
+      - name: Require canonical RECOVER parity evidence before merge
+        if: needs.lf-migration-merge-train.outputs.recover_mode == 'RECOVER'
+        env:
+          RECOVER_PARITY: ${{ needs.lf-migration-merge-train.outputs.recover_parity_status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$RECOVER_PARITY" = "PASS" ] || {
+            echo "FAIL_RECOVER_CANONICAL_PARITY_RECEIPT_MISSING"; exit 2;
+          }
+          echo "PASS_RECOVER_CANONICAL_PARITY_RECEIPT"
 
       - name: Merge exact head only
         env:
