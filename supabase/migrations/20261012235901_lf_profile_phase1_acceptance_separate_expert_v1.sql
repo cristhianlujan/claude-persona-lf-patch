@@ -19,6 +19,7 @@ DECLARE
   v_transition jsonb;
   v_post jsonb;
   v_snapshot jsonb;
+  v_proof jsonb;
   v_active_count integer;
 BEGIN
   SELECT id,work_item_id,unit_metadata
@@ -181,15 +182,20 @@ BEGIN
   THEN RAISE EXCEPTION 'LF_PE_PHASE1_CANONICAL_TRANSITION_FAILED'; END IF;
 
   -- Attach typed evidence to the new checkpoint only, never reclassify expert evidence.
-  UPDATE programacion.engineering_work_checkpoints
-    SET assertion_receipt=jsonb_build_object(
+  v_proof:=jsonb_build_object(
       'schema','PROFILE_EVOLUTION_FIRST_RELEASE_ACCEPTANCE_V1',
       'result','CODE_ONLY_ACCEPTED',
       'code_delivery_receipts',v_receipts,
       'qualitative_user_acceptance',true,
       'expert_certified',false,'independent_assurance','NOT_EXECUTED',
       'runtime_activated',false,
-      'source_contract','skills/profile_creator/contracts/profile_evolution_phase_separation_v1.json'),
+      'source_contract','skills/profile_creator/contracts/profile_evolution_phase_separation_v1.json');
+  UPDATE programacion.engineering_work_checkpoints
+    SET assertion_contract_sha256=encode(
+        extensions.digest(convert_to((v_spec->'assertion_contract')::text,'UTF8'),'sha256'),'hex'),
+      assertion_receipt=v_proof,
+      assertion_receipt_sha256=encode(
+        extensions.digest(convert_to(v_proof::text,'UTF8'),'sha256'),'hex'),
       assertion_recorded_at=clock_timestamp(),
       assertion_recorded_by='EXEC-PE-PHASE1-ACCEPTANCE-20261012-001'
   WHERE work_item_id=v_w_pe10e AND checkpoint_code='PE10E_C3B' AND status='DONE';
