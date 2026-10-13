@@ -44,6 +44,14 @@
       "full_canonical_sources_retained": true,
       "canonical_stage_contracts_loaded_by_authority_context": true,
       "proposed_profile_pack_does_not_authorize_runtime": true
-    }
+    },
+    "conditional_sections": [
+      {
+        "when_source_ref": "profiles/programming_analysis_lf/contracts/profile_evolution_first_candidate_v1.md",
+        "include_sections": [
+          "Profile Evolution first candidate — domain specialization (DRAFT)"
+        ]
+      }
+    ]
   }
 }
