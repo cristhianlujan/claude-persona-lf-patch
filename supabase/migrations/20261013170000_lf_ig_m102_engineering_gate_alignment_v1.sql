@@ -81,6 +81,7 @@ BEGIN
       'engineering_gate','REQUIRES_SOURCE_BOUND_REUSABLE_TEST_AND_ASSERTION',
       'operational_gate','BLOCKED_PENDING_REGISTERED_CANDIDATE_AND_GOVERNED_AUTHORITY',
       'operational_authority_ref','M10.0:AUTHORITY_READBACK',
+      'runtime_activation','FORBIDDEN_IN_CONSTRUCTION_SANDBOX',
       'activation_performed',false,
       'no_pointer_mutation',true,
       'no_data_migration',true,
@@ -222,10 +223,10 @@ BEGIN
     jsonb_build_array('public.lf_capability_current',
      'public.lf_capability_version_registry','programacion.engineering_work_checkpoints'),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,SWITCH_ONLY_MIGRATION,inputs,queries}',
-    jsonb_build_array(q_current,q_versions,q_m100),true);
+    jsonb_build_array(q_m92,q_current,q_versions),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,SWITCH_ONLY_MIGRATION,inputs,db_objects}',
     jsonb_build_array('public.lf_capability_current',
-      'public.lf_capability_version_registry'),true);
+      'public.lf_capability_version_registry','programacion.engineering_work_checkpoints'),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,RUNTIME_PREFLIGHT,inputs,queries}',
     jsonb_build_array(q_runtime),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,RUNTIME_PREFLIGHT,inputs,db_objects}',
