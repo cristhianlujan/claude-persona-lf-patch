@@ -1,0 +1,44 @@
+name: LF Operational Executor PostgreSQL RBAC Sandbox
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/*_lf_operational_executor_lane_v1.sql'
+      - 'sandbox/lf_contract_gate_test/operational_executor/test_postgres_principal_rbac_v1.py'
+      - '.github/workflows/lf-operational-executor-postgres-rbac.yml'
+permissions:
+  contents: read
+jobs:
+  operational-principal-real-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ci_ephemeral_test_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: ci_ephemeral_test_only
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare PostgreSQL 16 client
+        run: |
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y postgresql-client
+          fi
+          psql --version
+      - name: Real PostgreSQL principal RBAC negatives and rollback
+        run: python3 sandbox/lf_contract_gate_test/operational_executor/test_postgres_principal_rbac_v1.py
