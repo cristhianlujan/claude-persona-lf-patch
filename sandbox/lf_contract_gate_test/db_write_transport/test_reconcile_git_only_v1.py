@@ -48,6 +48,13 @@ class ReconcileGitOnlyTest(unittest.TestCase):
         self.assertLess(wf.index("- name: Resolve RECONCILE governed mode"),
                         wf.index("- name: Sync PR branch with current main in REAL mode"))
         self.assertIn("RECONCILE_GIT_ONLY_PASS",wf)
+        gate = wf.index("- name: Block RECONCILE promotion until governed Git-only closeout exists")
+        publish = wf.index("- name: Publish lf-merge-train/verified before REAL merge")
+        merge = wf.index("- name: Merge exact head only")
+        self.assertLess(gate,publish)
+        self.assertLess(publish,merge)
+        self.assertIn("BLOCK_RECONCILE_GIT_ONLY_CLOSURE_JUDGE_NOT_ADMITTED",wf[gate:publish])
+        self.assertIn("exit 2",wf[gate:publish])
         self.assertIn("migration_count=0",wf)
         self.assertIn("--router-execution-id",wf)
         self.assertIn("steps.reconcile_mode.outputs.mode != 'RECONCILE'",wf)
