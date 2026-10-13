@@ -20,6 +20,9 @@ env:
   LF_MIGRATION_TRAIN_MODE: REAL
   SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
   SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+  # Option C: the Train opens, records and closes the ACTUALIZACION_DB_LF Router execution.
+  # ENFORCED = pre-apply recording is fatal; OFF = disabled (emergency switch, by PR).
+  LF_TRAIN_EXECUTION_MODE: ENFORCED
 
 jobs:
   lf-migration-merge-train:
@@ -43,6 +46,8 @@ jobs:
       migration_name: ${{ steps.plan.outputs.migration_name }}
       mode: ${{ steps.plan.outputs.mode }}
       applied: ${{ steps.real_apply.outputs.applied || 'false' }}
+      trusted_main: ${{ steps.admission.outputs.current_main }}
+      train_exec_state: ${{ steps.train_exec_commit.outputs.state_b64 || steps.train_exec.outputs.state_b64 }}
 
     steps:
       - name: Checkout trusted current main only
@@ -609,6 +614,35 @@ jobs:
           echo "persisted_head_sha=$persisted_head" >> "$GITHUB_OUTPUT"
           echo "source_blob=$source_blob" >> "$GITHUB_OUTPUT"
 
+      - name: Router execution begin (Train-managed, pre-apply)
+        id: train_exec
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && env.LF_TRAIN_EXECUTION_MODE == 'ENFORCED' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          VERSION: ${{ steps.plan.outputs.migration_version }}
+          NAME: ${{ steps.plan.outputs.migration_name }}
+          TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
+          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob }}
+          SOURCE_SHA256: ${{ steps.source.outputs.source_sha256 }}
+          HEAD_SHA: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
+          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Trusted copy from main: later steps check out the PR source, never run code from it.
+          trusted="$RUNNER_TEMP/lf-train-trusted"
+          mkdir -p "$trusted"
+          cp sandbox/lf_contract_gate_test/db_write_transport/lf_train_execution_recorder.py \
+             sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py "$trusted/"
+          python3 "$trusted/lf_train_execution_recorder.py" begin \
+            --pr "$PR" --version "$VERSION" --name "$NAME" --path "$TARGET_PATH" \
+            --source-blob "$SOURCE_BLOB" --source-sha256 "$SOURCE_SHA256" --repo "$REPO" \
+            --head-sha "$HEAD_SHA" --persisted-head-sha "$PERSISTED_HEAD" --run-id "$GITHUB_RUN_ID" \
+            --state .lf_train/train-exec-state.json
+          echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
+
       - name: Apply exact version and ledger readback
         id: real_apply
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
@@ -628,6 +662,21 @@ jobs:
             --allow-fallback | tee .lf_train/exact-apply-receipt.json
           jq -e '.status=="PASS" and .ledger_version==.migration_version and .ledger_name==.migration_name' .lf_train/exact-apply-receipt.json >/dev/null
           echo "applied=true" >> "$GITHUB_OUTPUT"
+
+      - name: Router execution patch step (Train-managed, post-apply)
+        id: train_exec_commit
+        if: steps.train_exec.outcome == 'success' && steps.real_apply.outputs.applied == 'true'
+        continue-on-error: true
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          trusted="$RUNNER_TEMP/lf-train-trusted"
+          python3 "$trusted/lf_train_execution_recorder.py" commit \
+            --state .lf_train/train-exec-state.json \
+            --apply-receipt .lf_train/exact-apply-receipt.json
+          echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
 
       - name: Run changeset-scoped parity from trusted persisted source
         id: parity
@@ -763,6 +812,7 @@ jobs:
             -f commit_title="merge(train): PR #$PR" >/dev/null
 
       - name: Post-merge readback
+        id: postmerge
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ github.repository }}
@@ -779,3 +829,28 @@ jobs:
             gh api "repos/$REPO/contents/$TARGET_PATH?ref=$main_sha" >/dev/null
           fi
           echo "PASS_TRAIN_POSTMERGE main=$main_sha"
+          echo "main_sha=$main_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout trusted pre-merge main for execution close
+        if: needs.lf-migration-merge-train.outputs.train_exec_state != ''
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.lf-migration-merge-train.outputs.trusted_main }}
+          persist-credentials: false
+
+      - name: Router execution verify and close (Train-managed, post-merge)
+        if: needs.lf-migration-merge-train.outputs.train_exec_state != ''
+        continue-on-error: true
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          STATE_B64: ${{ needs.lf-migration-merge-train.outputs.train_exec_state }}
+          MAIN_SHA: ${{ steps.postmerge.outputs.main_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          state="$RUNNER_TEMP/train-exec-state.json"
+          printf '%s' "$STATE_B64" | base64 -d > "$state"
+          jq -e '.result=="TRAIN_EXECUTION_PATCH_RECORDED"' "$state" >/dev/null \
+            || { echo "WARN_TRAIN_EXECUTION_PATCH_NOT_RECORDED: execution left IN_PROGRESS for review"; exit 1; }
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_train_execution_recorder.py close \
+            --state "$state" --merge-sha "$MAIN_SHA" --parity-status PASS
