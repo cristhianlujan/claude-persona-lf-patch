@@ -1,9 +1,10 @@
 -- IG M10.0 ONLY: engineering sandbox admission is not an operational cutover.
--- This candidate replaces, it does NOT replay, never-applied Git source
+-- New independently governed changeset: do NOT replay the historical, unapplied
 -- 20261012223000_ig_m100_sandbox_technical_vs_operational_authority_v1.sql
 -- Git blob dbe466b827f10c257dba6449d65d6750f2328057.
--- STOP: NOT TO BE LABELED ready-to-merge UNTIL that old source is governed-retired
--- in the authorized Train source-reconciliation lane. No direct DB write.
+-- Historical source remains in Git as tracked technical debt, issue #2357.
+-- Its clean-up is NOT a prerequisite for new scoped migration admission.
+-- Train executes only the new SQL with exact source/version/ledger readback.
 -- This migration changes only programacion engineering unit 283 / work item 472,
 -- its checkpoint wording and its action_spec/source_pack; no human approvals,
 -- promotion actions, registry, production pointers, or new validation engines.
@@ -47,6 +48,15 @@ BEGIN
   WHERE u.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
     AND u.unit_code='M10.0'
   FOR UPDATE;
+
+  -- Do not execute the previously merged source or disguise it as applied.
+  -- This new changeset is admitted independently. Old Git source is debt only.
+  IF EXISTS (SELECT 1 FROM supabase_migrations.schema_migrations
+             WHERE version='20261012223000'
+                OR name='ig_m100_sandbox_technical_vs_operational_authority_v1')
+  THEN
+    RAISE EXCEPTION 'IG_M100_V2_LEGACY_MIGRATION_NOT_UNAPPLIED';
+  END IF;
 
   IF v_unit_id IS DISTINCT FROM 283
     OR v_work_id IS DISTINCT FROM 472
@@ -315,6 +325,16 @@ BEGIN
       'acceptance_criteria',v_old_work.acceptance_criteria),true);
   v_meta:=jsonb_set(v_meta,'{m10_0_original_governance_v3}',
     v_meta->'m10_0_contract_governance_v3',true);
+  v_meta:=jsonb_set(v_meta,'{m10_0_historical_migration_debt_v1}',
+    jsonb_build_object(
+      'status','DEBT_RECONCILIATION_SEPARATE',
+      'ledger_state_at_admission','UNAPPLIED_AT_ORIGINAL_VERSION',
+      'source_path','supabase/migrations/20261012223000_ig_m100_sandbox_technical_vs_operational_authority_v1.sql',
+      'source_git_blob','dbe466b827f10c257dba6449d65d6750f2328057',
+      'tracking_issue','github://cristhianlujan/claude-persona-lf-patch/issues/2357',
+      'not_engineering_checkpoint_dependency',true,
+      'never_auto_stamp_ledger',true,
+      'never_replay_old_migration',true),true);
   v_meta:=jsonb_set(v_meta,'{m10_0_operational_admission_v2}',
     jsonb_build_object(
       'status','BLOCKED_PENDING_GOVERNED_HUMAN_AUTHORITY',
