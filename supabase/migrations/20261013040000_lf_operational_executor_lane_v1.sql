@@ -432,6 +432,239 @@ BEGIN
   RETURN v_close;
 END $finish$;
 
+
+-- Independent admission principal: the effect executor cannot approve itself.
+-- Role membership and an external decision receipt are independently checked.
+CREATE OR REPLACE FUNCTION public.lf_operational_executor_admit_v1(
+  p_execution_id text,p_handler_code text,p_handler_revision text,
+  p_payload_sha text,p_effect_scope text,p_dispatch_key text,
+  p_idempotency_key text,p_approval_receipt jsonb
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=pg_catalog,public,extensions
+AS $admit$
+DECLARE
+  v_login pg_roles%rowtype;
+  v_route jsonb;
+  v_manifest jsonb;
+  v_reserved jsonb;
+  v_authority jsonb;
+BEGIN
+  IF session_user IN ('postgres','authenticator','service_role')
+     OR session_user = current_user THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_INDEPENDENT_PRINCIPAL_REQUIRED';
+  END IF;
+  SELECT * INTO v_login FROM pg_roles WHERE rolname=session_user;
+  IF NOT FOUND OR NOT v_login.rolcanlogin OR v_login.rolsuper
+     OR v_login.rolcreatedb OR v_login.rolcreaterole
+     OR v_login.rolinherit OR v_login.rolreplication OR v_login.rolbypassrls THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_LEAST_PRIVILEGE_LOGIN_REQUIRED';
+  END IF;
+  IF NOT EXISTS(
+      SELECT 1 FROM pg_auth_members m
+      JOIN pg_roles granted ON granted.oid=m.roleid
+      JOIN pg_roles member ON member.oid=m.member
+      WHERE granted.rolname='lf_operational_admission_authority'
+        AND member.rolname=session_user
+        AND m.set_option=true AND m.inherit_option=false AND m.admin_option=false
+     )
+     OR EXISTS(
+      SELECT 1 FROM pg_auth_members m
+      JOIN pg_roles granted ON granted.oid=m.roleid
+      JOIN pg_roles member ON member.oid=m.member
+      WHERE granted.rolname='lf_operation_executor_runtime'
+        AND member.rolname=session_user
+     ) THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_ROLE_NOT_INDEPENDENT';
+  END IF;
+  IF p_execution_id !~ '^EXEC-[A-Z0-9_-]{3,200}
+-- The login is provisioned separately after sandbox validation and EKB approval.
+DO $role$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operation_executor_runtime') THEN
+   CREATE ROLE lf_operation_executor_runtime NOLOGIN NOINHERIT;
+ END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operational_admission_authority') THEN
+   CREATE ROLE lf_operational_admission_authority NOLOGIN NOINHERIT;
+ END IF;
+END $role$;
+GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
+GRANT USAGE ON SCHEMA public TO lf_operational_admission_authority;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb)
+  TO lf_operational_admission_authority;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)
+  TO lf_operation_executor_runtime;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)
+  TO lf_operation_executor_runtime;
+
+DO $verify$
+DECLARE v_migration text; v_route jsonb;
+BEGIN
+ SELECT operation_code INTO v_migration FROM public.lf_router_action_registry
+ WHERE asset_type='DB' AND action_code='UPDATE';
+ IF v_migration IS DISTINCT FROM 'ACTUALIZACION_DB_LF' THEN
+   RAISE EXCEPTION 'OPERATIONAL_MIGRATION_ROUTE_CHANGED';
+ END IF;
+ v_route:=public.lf_router_resolve_v1(
+   'Governed operational handler',NULL,'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
+ );
+ IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
+    OR v_route->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+    OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
+   RAISE EXCEPTION 'OPERATIONAL_ROUTER_ADMISSION_READBACK_BLOCKED';
+ END IF;
+END $verify$;
+COMMIT;
+
+     OR p_handler_code !~ '^[A-Z][A-Z0-9_]{1,100}
+-- The login is provisioned separately after sandbox validation and EKB approval.
+DO $role$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operation_executor_runtime') THEN
+   CREATE ROLE lf_operation_executor_runtime NOLOGIN NOINHERIT;
+ END IF;
+END $role$;
+GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
+REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)
+  TO lf_operation_executor_runtime;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)
+  TO lf_operation_executor_runtime;
+
+DO $verify$
+DECLARE v_migration text; v_route jsonb;
+BEGIN
+ SELECT operation_code INTO v_migration FROM public.lf_router_action_registry
+ WHERE asset_type='DB' AND action_code='UPDATE';
+ IF v_migration IS DISTINCT FROM 'ACTUALIZACION_DB_LF' THEN
+   RAISE EXCEPTION 'OPERATIONAL_MIGRATION_ROUTE_CHANGED';
+ END IF;
+ v_route:=public.lf_router_resolve_v1(
+   'Governed operational handler',NULL,'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
+ );
+ IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
+    OR v_route->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+    OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
+   RAISE EXCEPTION 'OPERATIONAL_ROUTER_ADMISSION_READBACK_BLOCKED';
+ END IF;
+END $verify$;
+COMMIT;
+
+     OR btrim(coalesce(p_handler_revision,''))=''
+     OR coalesce(p_payload_sha,'') !~ '^[0-9a-f]{64}
+-- The login is provisioned separately after sandbox validation and EKB approval.
+DO $role$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operation_executor_runtime') THEN
+   CREATE ROLE lf_operation_executor_runtime NOLOGIN NOINHERIT;
+ END IF;
+END $role$;
+GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
+REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)
+  TO lf_operation_executor_runtime;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)
+  TO lf_operation_executor_runtime;
+
+DO $verify$
+DECLARE v_migration text; v_route jsonb;
+BEGIN
+ SELECT operation_code INTO v_migration FROM public.lf_router_action_registry
+ WHERE asset_type='DB' AND action_code='UPDATE';
+ IF v_migration IS DISTINCT FROM 'ACTUALIZACION_DB_LF' THEN
+   RAISE EXCEPTION 'OPERATIONAL_MIGRATION_ROUTE_CHANGED';
+ END IF;
+ v_route:=public.lf_router_resolve_v1(
+   'Governed operational handler',NULL,'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
+ );
+ IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
+    OR v_route->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+    OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
+   RAISE EXCEPTION 'OPERATIONAL_ROUTER_ADMISSION_READBACK_BLOCKED';
+ END IF;
+END $verify$;
+COMMIT;
+
+     OR btrim(coalesce(p_effect_scope,''))=''
+     OR btrim(coalesce(p_dispatch_key,''))=''
+     OR btrim(coalesce(p_idempotency_key,''))='' THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_IDENTITY_INVALID';
+  END IF;
+  IF jsonb_typeof(p_approval_receipt) IS DISTINCT FROM 'object'
+     OR p_approval_receipt->>'schema_version'
+        IS DISTINCT FROM 'LF_OPERATIONAL_REQUEST_AUTHORIZATION_V1'
+     OR p_approval_receipt->>'decision' IS DISTINCT FROM 'APPROVED'
+     OR p_approval_receipt->>'approval_ref' IS NULL
+     OR btrim(p_approval_receipt->>'approval_ref')=''
+     OR p_approval_receipt->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+     OR p_approval_receipt->>'handler_code' IS DISTINCT FROM p_handler_code
+     OR p_approval_receipt->>'handler_revision' IS DISTINCT FROM p_handler_revision
+     OR p_approval_receipt->>'payload_sha256' IS DISTINCT FROM p_payload_sha
+     OR p_approval_receipt->>'effect_scope' IS DISTINCT FROM p_effect_scope
+     OR p_approval_receipt->>'dispatch_key' IS DISTINCT FROM p_dispatch_key
+     OR p_approval_receipt->>'idempotency_key' IS DISTINCT FROM p_idempotency_key THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_EXTERNAL_DECISION_NOT_EXACT';
+  END IF;
+  v_route:=public.lf_router_resolve_v1(
+    'Governed operational handler',NULL,
+    'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
+  );
+  IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
+     OR v_route->>'router' IS DISTINCT FROM 'ACT-0001'
+     OR v_route->>'asset_type' IS DISTINCT FROM 'OPERATIONAL_DB'
+     OR v_route->>'action_code' IS DISTINCT FROM 'OPERATION_EXECUTE'
+     OR v_route->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+     OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_ROUTER_BLOCKED';
+  END IF;
+  -- The authority service signs off on exact scope. The runtime service never
+  -- receives the authority role, its login, or its credentials.
+  v_authority:=jsonb_build_object(
+    'issuer_role','lf_operational_admission_authority',
+    'issuer_login',session_user,
+    'approval_ref',p_approval_receipt->>'approval_ref',
+    'approval_sha256',encode(
+      extensions.digest(convert_to(p_approval_receipt::text,'UTF8'),'sha256'),'hex'),
+    'router_result',v_route
+  );
+  v_manifest:=jsonb_build_object(
+    'operational_transaction_admission',jsonb_build_object(
+      'status','APPROVED','verification','PASS',
+      'lane','GOVERNED_OPERATIONAL_DML',
+      'connector','LF_OPERATION_EXECUTOR_V1',
+      'handler_code',p_handler_code,'handler_revision',p_handler_revision,
+      'payload_sha256',p_payload_sha,'effect_scope',p_effect_scope,
+      'dispatch_key',p_dispatch_key
+    ),
+    'operational_authority_receipt',v_authority
+  );
+  v_reserved:=public.fn_lf_operation_reserve_execution_v1(
+    p_execution_id,'EJECUCION_OPERATIVA_LF',
+    'OPERATIONAL_DB',p_handler_code,
+    p_idempotency_key,p_payload_sha,
+    'OP-ADMISSION:'||session_user,
+    NULL,NULL,v_manifest
+  );
+  IF v_reserved->>'result' IS DISTINCT FROM 'RESERVED_NEW_EXECUTION'
+     OR v_reserved->>'dispatch_permitted' IS DISTINCT FROM 'true'
+     OR v_reserved->>'execution_id' IS DISTINCT FROM p_execution_id THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_REPLAY_OR_EXECUTION_MISMATCH';
+  END IF;
+  -- Insert trigger binds canonical Router authority receipt atomically.
+  RETURN jsonb_build_object(
+    'result','OPERATIONAL_EXECUTION_ADMITTED',
+    'execution_id',p_execution_id,
+    'operation_code','EJECUCION_OPERATIVA_LF',
+    'handler_code',p_handler_code,
+    'payload_sha256',p_payload_sha,
+    'approval_ref',p_approval_receipt->>'approval_ref'
+  );
+END $admit$;
+
 -- The runtime gets a NOLOGIN group privilege, never a superuser/service_role DSN.
 -- The login is provisioned separately after sandbox validation and EKB approval.
 DO $role$ BEGIN
