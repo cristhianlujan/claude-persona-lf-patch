@@ -19,7 +19,7 @@ BEGIN
   v_pre := programacion.fn_engineering_unit_bootstrap_v3(v_plan,v_unit);
   IF v_pre->>'terminal_action' IS DISTINCT FROM 'CONTINUE_CURRENT_CHECKPOINT'
     OR v_pre#>>'{current_checkpoint,checkpoint_code}' IS DISTINCT FROM 'NEW_RUNS_VNEXT'
-    OR v_pre#>>'{state,progress_pct}'::numeric IS DISTINCT FROM 15::numeric
+    OR (v_pre#>>'{state,progress_pct}')::numeric IS DISTINCT FROM 15::numeric
   THEN RAISE EXCEPTION 'M105_CP2_BOOTSTRAP_PRESTATE_DRIFT'; END IF;
 
   IF (SELECT count(*) FROM programacion.engineering_work_checkpoints
@@ -162,7 +162,7 @@ $q$;
   v_post:=programacion.fn_engineering_unit_bootstrap_v3(v_plan,v_unit);
   IF v_post->>'terminal_action' IS DISTINCT FROM 'CONTINUE_CURRENT_CHECKPOINT'
     OR v_post#>>'{current_checkpoint,checkpoint_code}' IS DISTINCT FROM 'NEW_RUNS_VNEXT'
-    OR v_post#>>'{state,progress_pct}'::numeric IS DISTINCT FROM 15::numeric
+    OR (v_post#>>'{state,progress_pct}')::numeric IS DISTINCT FROM 15::numeric
   THEN RAISE EXCEPTION 'M105_CP2_PREMATURE_DONE_OR_BOOTSTRAP_DRIFT'; END IF;
 END
 $m105_cp2$;
