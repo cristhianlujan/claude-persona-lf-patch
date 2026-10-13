@@ -115,92 +115,35 @@ def run_transaction(connection, req: Request, handlers: Mapping[str, Handler]) -
         raise Blocked("BLOCK_DIGEST_INVALID")
 
     with connection.cursor() as cur:
-        route = one(cur, "SELECT public.lf_router_resolve_v1(%s,%s,%s,%s,%s)",
-                    ("Governed operational handler", None, handler.action_code, handler.target_type, "ROUTER"))
-        if (not isinstance(route, dict) or route.get("router") != "ACT-0001"
-                or route.get("status") != "READY_TO_EXECUTE"
-                or route.get("downstream_execution_allowed") is not True
-                or route.get("operation_code") != handler.operation_code
-                or route.get("asset_type") != handler.target_type
-                or route.get("action_code") != handler.action_code):
-            raise Blocked("BLOCK_ROUTER_ROUTE_UNAUTHORIZED")
-
-        record = one(cur,
-            "SELECT jsonb_build_object('operation_code',operation_code,'target_type',target_type,"
-            "'target_code',target_code,'status',status,'manifest',manifest,"
-            "'request_sha256',request_sha256) "
-            "FROM public.lf_operation_execution WHERE execution_id=%s",
-            (req.execution_id,))
-        if (not isinstance(record, dict) or record.get("status") != "IN_PROGRESS"
-                or record.get("operation_code") != handler.operation_code
-                or record.get("target_type") != handler.target_type
-                or record.get("target_code") != handler.target_code):
-            raise Blocked("BLOCK_ROUTER_EXECUTION_NOT_ADMITTED")
-        admission = (record.get("manifest") or {}).get("operational_transaction_admission")
-        expected = {"status": "APPROVED", "verification": "PASS", "lane": ACTIVE_LANE,
-                    "connector": CONNECTOR, "handler_code": handler.code,
-                    "handler_revision": handler.revision, "payload_sha256": payload_sha,
-                    "effect_scope": req.effect_scope, "dispatch_key": req.dispatch_key}
-        if not isinstance(admission, dict) or any(admission.get(k) != v for k, v in expected.items()):
-            raise Blocked("BLOCK_OPERATIONAL_ADMISSION_NOT_EXACT")
-        if record.get("request_sha256") != payload_sha:
-            raise Blocked("BLOCK_ROUTER_EXECUTION_PAYLOAD_MISMATCH")
-
-        authority = one(cur, "SELECT public.lf_router_downstream_authority_validate_v1(%s)",
-                        (req.execution_id,))
-        if (not isinstance(authority, dict) or authority.get("valid") is not True
-                or authority.get("applicable") is not True
-                or authority.get("code") != "ROUTER_DOWNSTREAM_AUTHORITY_VALID"
-                or authority.get("execution_id") != req.execution_id
-                or authority.get("operation_code") != req.operation_code
-                or authority.get("target_type") != handler.target_type
-                or authority.get("target_code") != handler.target_code):
-            raise Blocked("BLOCK_ROUTER_AUTHORITY_STALE")
-
-        owner = "operational-executor-" + hashlib.sha256(req.execution_id.encode()).hexdigest()[:32]
-        lease = one(cur, "SELECT public.fn_lf_operation_acquire_lease_v1(%s,%s,%s,%s)",
-                    (req.execution_id, owner, 120, req.actor))
-        if not isinstance(lease, dict) or lease.get("result") != "LEASE_ACQUIRED":
-            raise Blocked("BLOCK_EFFECT_LEASE_UNAVAILABLE")
-        fence = lease.get("lease_fence")
-        if not isinstance(fence, int) or fence < 1:
-            raise Blocked("BLOCK_EFFECT_LEASE_INVALID")
-        reserved = one(cur,
-            "SELECT public.fn_lf_operation_reserve_effect_v1(%s,%s,%s,%s,%s,%s,%s)",
-            (req.execution_id, owner, fence, req.effect_scope, payload_sha, req.dispatch_key, req.actor))
-        if not isinstance(reserved, dict) or reserved.get("result") != "EFFECT_RESERVED_NEW" or reserved.get("dispatch_permitted") is not True:
-            raise Blocked("BLOCK_EFFECT_NOT_NEW_OR_UNRESOLVED_NO_REPLAY")
-
-        # Only a trusted, server-registered handler may perform the domain effect.
+        # Dedicated narrow SECURITY DEFINER facade: the runtime DB login has
+        # NO direct SELECT/INSERT/UPDATE grant on operation or effect tables.
+        begin = one(cur,
+            "SELECT public.lf_operational_executor_begin_v1(%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (req.execution_id, req.operation_code, handler.target_code,
+             handler.code, handler.revision, payload_sha,
+             req.effect_scope, req.dispatch_key, req.actor))
+        if (not isinstance(begin, dict)
+                or begin.get("result") != "READY_FOR_HANDLER"
+                or begin.get("execution_id") != req.execution_id
+                or begin.get("effect_scope") != req.effect_scope
+                or begin.get("payload_sha256") != payload_sha
+                or not isinstance(begin.get("lease_owner"), str)
+                or not isinstance(begin.get("lease_fence"), int)
+                or begin["lease_fence"] < 1):
+            raise Blocked("BLOCK_OPERATIONAL_BEGIN_RECEIPT_INVALID")
         effect = handler.perform(cur, req.payload)
         evidence = handler.verify(cur, req.payload, effect)
         if not isinstance(evidence, dict) or evidence.get("verified") is not True:
             raise Blocked("BLOCK_HANDLER_READBACK_UNVERIFIED")
-        # Router must remain authoritative immediately before the receipt is stored.
-        again = one(cur, "SELECT public.lf_router_downstream_authority_validate_v1(%s)",
-                    (req.execution_id,))
-        if (not isinstance(again, dict) or again.get("valid") is not True
-                or again.get("applicable") is not True
-                or again.get("execution_id") != req.execution_id
-                or again.get("operation_code") != req.operation_code
-                or again.get("target_type") != handler.target_type
-                or again.get("target_code") != handler.target_code
-                or again.get("code") != "ROUTER_DOWNSTREAM_AUTHORITY_VALID"):
-            raise Blocked("BLOCK_ROUTER_AUTHORITY_CHANGED_BEFORE_RECEIPT")
         receipt = {"schema_version": "lf-operation-executor-receipt/v1",
                    "handler_code": handler.code, "handler_revision": handler.revision,
                    "execution_id": req.execution_id, "effect_scope": req.effect_scope,
                    "dispatch_key": req.dispatch_key, "payload_sha256": payload_sha,
                    "readback": evidence}
-        marked = one(cur, "SELECT public.fn_lf_operation_mark_effect_succeeded_v1(%s,%s,%s,%s,%s::jsonb,%s)",
-                     (req.execution_id, owner, fence, req.effect_scope, canonical(receipt), req.actor))
-        if not isinstance(marked, dict) or marked.get("result") != "EFFECT_SUCCESS_PERSISTED":
-            raise Blocked("BLOCK_EFFECT_RECEIPT_NOT_DURABLE")
-        # A receipt alone is NOT a completed operation. Both must be durable
-        # in the SAME transaction. This canonical closure is admitted separately.
         closure = one(cur,
-            "SELECT public.lf_close_operational_execution_v1(%s,%s,%s,%s::jsonb,%s)",
-            (req.execution_id, owner, fence, canonical(receipt), req.actor))
+            "SELECT public.lf_operational_executor_finish_v1(%s,%s,%s,%s,%s::jsonb,%s)",
+            (req.execution_id, begin["lease_owner"], begin["lease_fence"],
+             req.effect_scope, canonical(receipt), req.actor))
         if (not isinstance(closure, dict)
                 or closure.get("result") != "EXECUTION_COMPLETED"
                 or closure.get("execution_id") != req.execution_id):
