@@ -38,6 +38,8 @@ def evaluate(snapshot: dict) -> dict:
         failures.append("BLOCK_OPERATIONAL_EXECUTION_ADMISSION_NOT_PROVEN")
     if snapshot.get("durable_human_decision_authority_current_proven") is not True:
         failures.append("BLOCK_DURABLE_HUMAN_DECISION_AUTHORITY_NOT_CURRENT")
+    if snapshot.get("private_decision_function_execute_proven") is not True:
+        failures.append("BLOCK_PRIVATE_DECISION_FUNCTION_EXECUTE_NOT_PROVEN")
     if snapshot.get("active_contract_count", 0) < 1:
         failures.append("BLOCK_OPERATION_CONTRACT_NOT_ACTIVE")
     if snapshot.get("active_required_step_count", 0) < 1:
