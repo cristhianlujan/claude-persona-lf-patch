@@ -18,10 +18,11 @@ BEGIN
  IF m#>>'{transversal_execution_v1,RUNTIME_PREFLIGHT,activation}'<>'ACTIVE'
  OR m#>>'{transversal_execution_v1,RUNTIME_PREFLIGHT,capabilities,0,capability_code}'<>'RUNTIME_DEPLOY_VERIFICATION'
  THEN RAISE EXCEPTION 'CP4_HANDLER_PRESTATE_DRIFT'; END IF;
- m:=jsonb_set(m,'{transversal_execution_v1,RUNTIME_PREFLIGHT,activation}','"DECLARED_ONLY"'::jsonb,true);
+ m:=jsonb_set(m,'{m10_2_cp4_inapplicable_deploy_handler_v1}',m#>'{transversal_execution_v1,RUNTIME_PREFLIGHT}',true);
+ m:=m#-'{transversal_execution_v1,RUNTIME_PREFLIGHT}';
  m:=jsonb_set(m,'{m10_2_cp4_nature_alignment_v1}',jsonb_build_object(
  'nature','READBACK_ONCE','deployment_verification','NOT_APPLICABLE_NO_DEPLOY',
- 'handler_binding_preserved',true,'operational_activation',false),true);
+ 'historical_handler_preserved_in_metadata',true,'operational_activation',false),true);
  UPDATE programacion.engineering_plan_units SET unit_metadata=m
  WHERE plan_code=p AND unit_code='M10.2' AND work_item_id=199;
  a:=programacion.fn_engineering_checkpoint_action_spec_v3(p,'M10.2','RUNTIME_PREFLIGHT');
