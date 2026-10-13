@@ -10,6 +10,7 @@
     "LEARNING_ENGINE_PACK",
     "LF_CONTRACT_CORE",
     "LF_VALIDATION_ENGINE",
+    "MIGRATION_ROUTE_GUARD",
     "MIGRATION_SOURCE_PARITY",
     "NO_BYPASS_PROFILE_CARD_SKILL",
     "P0_VISUAL_RUNTIME",
@@ -43,6 +44,10 @@
         {
           "kind": "exact",
           "value": ".github/workflows/lf-db-regression.yml"
+        },
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-migration-route-guard.yml"
         }
       ],
       "material_matchers": [],
@@ -208,6 +213,22 @@
         {
           "kind": "exact",
           "value": "scripts/lf_contract_check.py"
+        }
+      ],
+      "material_matchers": [],
+      "dependencies": []
+    },
+    {
+      "control_id": "MIGRATION_ROUTE_GUARD",
+      "carrier": "VALIDATE_LF_PACKS",
+      "path_matchers": [
+        {
+          "kind": "exact",
+          "value": ".github/workflows/lf-migration-route-guard.yml"
+        },
+        {
+          "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/migration_route_guard/"
         }
       ],
       "material_matchers": [],
