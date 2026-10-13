@@ -166,9 +166,23 @@ def run():
 
     selection2 = compose_capabilities_v3(
         {"complexity": "HIGH"}, CATALOG, POLICY, reg, pre)
-    assert {x["method_id"] for x in selection2["selected_methods"]}=={"SELF_REFINE","VERIFIER_GUIDED_SEARCH"}
-    # No partial invocation if a later method is unbound.
-    r=invoke(selection=selection2, verify_selection=lambda v: _sha(v)==_sha(selection2))
+    assert {x["method_id"] for x in selection2["selected_methods"]} == {"SELF_REFINE"}
+    assert any(x["method_id"] == "VERIFIER_GUIDED_SEARCH" and
+               x["reason"] == "DEFERRED_NO_MARGINAL_TASK_SIGNAL"
+               for x in selection2["rejected_methods"])
+    # A distinct governed capability must preserve the second method,
+    # even though the same complexity signal selected both candidates.
+    complementary_registry = copy.deepcopy(reg)
+    for method in complementary_registry["methods"]:
+        if method["method_id"] == "VERIFIER_GUIDED_SEARCH":
+            method["compatible_capabilities"].append("INDEPENDENT_VERIFIER_OUTPUT")
+    complementary = compose_capabilities_v3(
+        {"complexity": "HIGH"}, CATALOG, POLICY, complementary_registry, pre)
+    assert {x["method_id"] for x in complementary["selected_methods"]} == {
+        "SELF_REFINE", "VERIFIER_GUIDED_SEARCH"}
+    # No partial invocation if a complementary method is unbound.
+    r=invoke(selection=complementary, registry=complementary_registry,
+             verify_selection=lambda v: _sha(v)==_sha(complementary))
     assert r["status"]=="BLOCKED" and r["actual_method_invocations"]==0
     total += 1
 
