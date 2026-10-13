@@ -1,11 +1,12 @@
--- T-REMED layer 1 property test: adds detection relations R5-R8 for the findings (permutation of findings, duplicate detected, incomplete reference detected, empty rule detected).
--- Instead of fixed expected outputs, a seeded generator builds random rule sets and checks relations that must always hold:
---   R1 permutation invariance : the order of the rules does not change the proposals.
---   R2 duplicate tolerance    : adding an exact copy of an existing rule does not change the proposals.
---   R3 no silent upgrade      : adding any rule never turns a non-LINK_CANDIDATE verdict into LINK_CANDIDATE.
---   R4 determinism            : two reconcile calls on the same input return the same result.
--- Everything runs in a sub-transaction that is ALWAYS rolled back. The seed is returned so any failure is reproducible.
-
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261010095305
+-- source_name=t_remed_layer1_property_test_findings_v3
 create or replace function programacion.fn_t_remed_pt_make_v3(p_tag text, p_rules jsonb)
  returns integer
  language plpgsql security definer set search_path to 'pg_catalog','programacion','lf_ops'
@@ -56,7 +57,6 @@ begin
                                  'pend',random()<0.12,'estado',case when random()<0.2 then 'VIGENTE' else 'CANDIDATO' end);
         rules:=rules||jsonb_build_array(rule);
       end loop;
-      -- relation inputs
       select coalesce(jsonb_agg(x order by o desc),'[]'::jsonb) into rules_rev from jsonb_array_elements(rules) with ordinality t(x,o);
       dupidx:=floor(random()*n)::int; dupv:=rules->dupidx->'v';
       rules_dup:=rules||jsonb_build_array(rules->dupidx);
@@ -76,23 +76,16 @@ begin
       execute function_norm into o1 using r_rev;
       execute function_norm into o2 using r_dup;
       execute function_norm into o3 using programacion.fn_t_remed_reconcile_v3(p3);
-      -- R4
       c4:=c4+1; if r_a is distinct from r_b then f4:=f4||jsonb_build_array(jsonb_build_object('run',v_run,'rules',rules)); end if;
-      -- R1
       c1:=c1+1; if base is distinct from o1 then f1:=f1||jsonb_build_array(jsonb_build_object('run',v_run,'rules',rules,'base',base,'reversed',o1)); end if;
-      -- R2
       c2:=c2+1; if base is distinct from o2 then f2:=f2||jsonb_build_array(jsonb_build_object('run',v_run,'rules',rules,'base',base,'with_duplicate',o2)); end if;
-      -- findings normalised to type+role
       select coalesce(jsonb_agg(distinct jsonb_build_object('type',x->>'type','role',x->'reference_role')),'[]'::jsonb) into fa from jsonb_array_elements(r_a->'findings') x;
       select coalesce(jsonb_agg(distinct jsonb_build_object('type',x->>'type','role',x->'reference_role')),'[]'::jsonb) into fr from jsonb_array_elements(r_rev->'findings') x;
-      -- R5 findings are order independent
       c5:=c5+1; if fa is distinct from fr then f5:=f5||jsonb_build_array(jsonb_build_object('run',v_run,'rules',rules,'base',fa,'reversed',fr)); end if;
-      -- R6 a duplicated non-empty rule is always reported as DUPLICATE_RULES
       c6:=c6+1;
       if dupv<>'{}'::jsonb and not exists(select 1 from jsonb_array_elements(r_dup->'findings') x where x->>'type'='DUPLICATE_RULES') then
         f6:=f6||jsonb_build_array(jsonb_build_object('run',v_run,'rules_with_duplicate',rules_dup,'findings',r_dup->'findings'));
       end if;
-      -- R7 every null/text *_policy_id value is reported as INCOMPLETE_REFERENCE for exactly that role
       c7:=c7+1;
       select coalesce(jsonb_agg(distinct e.key order by e.key),'[]'::jsonb) into exp_roles
         from jsonb_array_elements(rules) r cross join lateral jsonb_each(r->'v') e
@@ -100,13 +93,11 @@ begin
       select coalesce(jsonb_agg(distinct x->>'reference_role' order by x->>'reference_role'),'[]'::jsonb) into obs_roles
         from jsonb_array_elements(r_a->'findings') x where x->>'type'='INCOMPLETE_REFERENCE';
       if exp_roles is distinct from obs_roles then f7:=f7||jsonb_build_array(jsonb_build_object('run',v_run,'rules',rules,'expected_roles',exp_roles,'observed_roles',obs_roles)); end if;
-      -- R8 a rule with no configuration is reported as EMPTY_RULE_CONFIG (and only then)
       c8:=c8+1;
       if exists(select 1 from jsonb_array_elements(rules) r where r->'v'='{}'::jsonb)
          is distinct from exists(select 1 from jsonb_array_elements(r_a->'findings') x where x->>'type'='EMPTY_RULE_CONFIG') then
         f8:=f8||jsonb_build_array(jsonb_build_object('run',v_run,'rules',rules,'findings',r_a->'findings'));
       end if;
-      -- R3
       c3:=c3+1;
       if exists(select 1 from jsonb_array_elements(base) b join jsonb_array_elements(o3) e
                   on b->>'role'=e->>'role' and b->>'target'=e->>'target'

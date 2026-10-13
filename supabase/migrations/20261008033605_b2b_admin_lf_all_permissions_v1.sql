@@ -1,3 +1,12 @@
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261008033605
+-- source_name=b2b_admin_lf_all_permissions_v1
 -- LF product super-admin permission invariant
 -- B2B_ADMIN_LF is the LF product super-admin. It is distinct from software-governance SUPER_ADMIN.
 -- Invariant: every B2B permission is assigned to B2B_ADMIN_LF, and future B2B permissions
@@ -22,7 +31,7 @@ begin
     raise exception 'B2B_ADMIN_LF_PROFILE_REQUIRED';
   end if;
 
-  if new.permission_code like 'B2B\_%' escape '\' then
+  if new.permission_code like 'B2B_%' escape '' then
     insert into lf_ops.perfiles_permisos(
       profile_code,
       permission_code,
@@ -55,8 +64,8 @@ begin
         updated_at=now();
 
   elsif tg_op='UPDATE'
-        and old.permission_code like 'B2B\_%' escape '\'
-        and new.permission_code not like 'B2B\_%' escape '\' then
+        and old.permission_code like 'B2B_%' escape ''
+        and new.permission_code not like 'B2B_%' escape '' then
     update lf_ops.perfiles_permisos pp
     set permission_code=new.permission_code,
         access_effect='ALLOW',
@@ -80,7 +89,6 @@ on lf_ops.permisos
 for each row
 execute function lf_ops.sync_b2b_admin_lf_permission_v1();
 
--- Backfill any current B2B permission that is not yet assigned to the LF product super-admin.
 insert into lf_ops.perfiles_permisos(
   profile_code,
   permission_code,
@@ -105,7 +113,7 @@ select
 from lf_ops.permisos p
 join lf_ops.perfiles pf
   on pf.profile_code='B2B_ADMIN_LF'
-where p.permission_code like 'B2B\_%' escape '\'
+where p.permission_code like 'B2B_%' escape ''
   and not exists(
     select 1
     from lf_ops.perfiles_permisos pp
@@ -113,8 +121,6 @@ where p.permission_code like 'B2B\_%' escape '\'
       and pp.permission_id=p.permission_id
   );
 
--- Enforce ALLOW and lifecycle parity for every current B2B permission while preserving
--- any existing condition_config (e.g. MFA recovery safeguards).
 update lf_ops.perfiles_permisos pp
 set access_effect='ALLOW',
     status=p.status,
@@ -127,7 +133,7 @@ from lf_ops.perfiles pf,
 where pf.profile_code='B2B_ADMIN_LF'
   and pp.profile_id=pf.profile_id
   and pp.permission_id=p.permission_id
-  and p.permission_code like 'B2B\_%' escape '\';
+  and p.permission_code like 'B2B_%' escape '';
 
 comment on function lf_ops.sync_b2b_admin_lf_permission_v1() is
 'Keeps LF product super-admin B2B_ADMIN_LF assigned with ALLOW to every B2B_* permission. Distinct from software-governance SUPER_ADMIN. Preserves existing condition_config on updates.';

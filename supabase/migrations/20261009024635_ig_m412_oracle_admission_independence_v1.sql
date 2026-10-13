@@ -1,23 +1,12 @@
--- IG M4.12 package 1: oracle admission measures independence of derived conclusions, not of shared canonical sources.
--- Scope: replaces only programacion.fn_input_validator_oracle_admission_v1(bigint,text). No table/data change,
--- no Curator or Validator rewiring, no new judge. The oracle stays comparison-only
--- (semantic_pass_authorized=false, promotion_authorized=false, production_authorized=false).
---
--- Why: the admission called the independence measure with an empty context, so the 7 canonical readers/hash
--- utilities shared by the Curator classifier and the oracle always ended in BLOCKED_NOT_INDEPENDENT, and the
--- function had no "admitted" outcome at all.
---
--- What changes:
---  1. A shared function is an earned exception only if it is a pure canonical reader/utility: unique name,
---     IMMUTABLE/STABLE, no programacion.input_* table, no DML, not a classifier/probe/semantic function.
---  2. Data dimension compares Curator-derived tables (programacion.input_*) read by each side's function closure,
---     computed by static scan; shared canonical lf_ops/lf_design sources are allowed.
---  3. Author dimension: producer = run.curator_identity, reviewer = ORACLE:<root>@<live md5>.
---  4. New outcome ADMITTED_COMPARISON_ONLY when version parity, INDEPENDENT measure and an implemented shadow
---     oracle hold. It replaces BLOCKED_INDEPENDENT_RECEIPT_UNPROVEN; payload carries independent_receipt_persisted=false.
---
--- Tested with ROLLBACK (see PR): 100/100 BLOCKED_NOT_INDEPENDENT before -> 4 ADMITTED_COMPARISON_ONLY +
--- 96 BLOCKED_ORACLE_NOT_IMPLEMENTED after; negatives N1/N2/N4/N5 all NOT_INDEPENDENT.
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261009024635
+-- source_name=ig_m412_oracle_admission_independence_v1
 CREATE OR REPLACE FUNCTION programacion.fn_input_validator_oracle_admission_v1(p_run_id bigint, p_family_code text)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -193,14 +182,3 @@ BEGIN
 END;
 $function$
 ;
-
-DO $ig_admission_readback$
-BEGIN
-  IF pg_get_functiondef('programacion.fn_input_validator_oracle_admission_v1(bigint,text)'::regprocedure)
-       NOT LIKE '%ADMITTED_COMPARISON_ONLY%'
-     OR pg_get_functiondef('programacion.fn_input_validator_oracle_admission_v1(bigint,text)'::regprocedure)
-       NOT LIKE '%earned_dependency_exceptions%' THEN
-    RAISE EXCEPTION 'IG_ORACLE_ADMISSION_READBACK_MISMATCH';
-  END IF;
-END
-$ig_admission_readback$;
