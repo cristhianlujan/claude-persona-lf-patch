@@ -643,23 +643,9 @@ jobs:
           echo "FAIL_TRAIN_PASE_CHECK_TIMEOUT"
           exit 2
 
-      - name: RECOVER compatibility preflight with rollback
-        id: recover_preflight
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.recover_mode.outputs.operation_mode == 'RECOVER'
-        env:
-          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
-          SOURCE_FILE: ${{ steps.source.outputs.source_file }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          [ "$LF_TRAIN_EXECUTION_MODE" = "ENFORCED" ] || { echo "FAIL_RECOVER_ROUTER_EXECUTION_ENFORCEMENT_OFF"; exit 2; }
-          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_recover_preflight.py \
-            --migration-path "$SOURCE_FILE" | tee .lf_train/recover-preflight.json
-          jq -e '.status=="PASS" and .code=="RECOVER_COMPATIBILITY_ROLLBACK_PASS" and .residue==false' .lf_train/recover-preflight.json >/dev/null
-
       - name: RECOVER reuse exact persisted main source and Saga
         id: recover_binding
-        if: steps.recover_preflight.outcome == 'success'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.recover_mode.outputs.operation_mode == 'RECOVER'
         env:
           REPO: ${{ steps.admission.outputs.repository }}
           PR: ${{ steps.admission.outputs.pr_number }}
@@ -803,9 +789,25 @@ jobs:
             --state .lf_train/train-exec-state.json
           echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
 
+      - name: RECOVER compatibility preflight with rollback
+        id: recover_preflight
+        if: steps.recover_mode.outputs.operation_mode == 'RECOVER' && steps.train_exec.outcome == 'success'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SOURCE_FILE: ${{ steps.source.outputs.source_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$LF_TRAIN_EXECUTION_MODE" = "ENFORCED" ] || { echo "FAIL_RECOVER_ROUTER_EXECUTION_ENFORCEMENT_OFF"; exit 2; }
+          jq -e '.result=="TRAIN_EXECUTION_READY_TO_APPLY" and .ids.execution_id != null' .lf_train/train-exec-state.json >/dev/null
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_recover_preflight.py \
+            --migration-path "$SOURCE_FILE" --train-state .lf_train/train-exec-state.json \
+            | tee .lf_train/recover-preflight.json
+          jq -e '.status=="PASS" and .code=="RECOVER_COMPATIBILITY_ROLLBACK_PASS" and .residue==false' .lf_train/recover-preflight.json >/dev/null
+
       - name: Apply exact version and ledger readback
         id: real_apply
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true' && (steps.recover_mode.outputs.operation_mode != 'RECOVER' || steps.recover_preflight.outcome == 'success')
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
