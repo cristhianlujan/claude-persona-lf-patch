@@ -1,7 +1,13 @@
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261007041013
+-- source_name=engineering_plan_contract_reduction_prepass_v1
 -- ENGINEERING plan contract reduction prepass v1.
--- Root change: contract authoring/implementation debt is plan-reduction work,
--- not lane work. ENGINEERING_PARALLEL_EXECUTOR_V1 claims EXECUTION_READY only.
-
 create or replace function programacion.fn_engineering_plan_contract_reduction_v1(
   p_plan_code text
 )
@@ -309,7 +315,7 @@ $function$;
 update public.lf_error_knowledge
 set estado='SUPERSEDED',
     validacion='SUPERSEDED 2026-10-07: CONTRACT_REPAIR no longer consumes executor lanes. Contract debt is grouped by plan reduction before scheduler claim; canonical lanes require EXECUTION_READY.',
-    evidencia=coalesce(evidencia,'') || E'\\n[SUPERSEDED_BY_PLAN_REDUCTION_20261007] programacion.fn_engineering_plan_contract_reduction_v1; scheduler admission REDUCTION_REQUIRED is non-claimable.',
+    evidencia=coalesce(evidencia,'') || E'\n[SUPERSEDED_BY_PLAN_REDUCTION_20261007] programacion.fn_engineering_plan_contract_reduction_v1; scheduler admission REDUCTION_REQUIRED is non-claimable.',
     ultima_vez=now(),
     updated_at=now()
 where codigo='ENGINEERING-SCHEDULER-REPAIRABLE-ADMISSION-001';
