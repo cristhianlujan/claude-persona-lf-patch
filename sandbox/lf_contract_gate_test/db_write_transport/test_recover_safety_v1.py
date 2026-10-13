@@ -11,6 +11,70 @@ class RecoverSafetyTest(unittest.TestCase):
         path.write_text("-- example\nBEGIN;\nselect 1;\nCOMMIT;\n")
         return version,name,path
 
+    def _simulate_controlled_rollback(self, *, initial_count=0, final_floor=None, bad_digest=False):
+        import json,sys
+        from contextlib import redirect_stdout
+        from io import StringIO
+        with tempfile.TemporaryDirectory() as tmp:
+            version,name,path=self.source(tmp)
+            source_sha="f"*64 if bad_digest else __import__("hashlib").sha256(path.read_bytes()).hexdigest()
+            state_path=pathlib.Path(tmp)/"train-state.json"
+            state_path.write_text(json.dumps({
+                "result":"TRAIN_EXECUTION_READY_TO_APPLY",
+                "context":{"version":version,"name":name,"path":"supabase/migrations/"+path.name,
+                           "source_sha256":source_sha},
+                "ids":{"execution_id":"EXEC-TRAIN-TEST-1","effect_scope":"MIGRATION:"+version}
+            }))
+            queries=[]
+            reads=[{"target_count":initial_count,"ledger_max":"20261013020004"},
+                   {"target_count":0,"ledger_max":final_floor or "20261013020004"}]
+            def fake_psql(url,sql):
+                queries.append(sql)
+                if "lf_router_downstream_authority_validate_v1" in sql:
+                    return json.dumps({"applicable":True,"valid":True,
+                        "code":"ROUTER_DOWNSTREAM_AUTHORITY_VALID",
+                        "operation_code":"ACTUALIZACION_DB_LF","target_type":"MIGRATION",
+                        "target_code":version+"_"+name})
+                if sql.startswith("begin;"):
+                    if not sql.rstrip().endswith("rollback;"):
+                        raise AssertionError("RECOVER_ROLLBACK_NOT_TERMINAL")
+                    return "BEGIN\nROLLBACK"
+                return json.dumps(reads.pop(0))
+            argv=["preflight","--migration-path",str(path),"--train-state",str(state_path),"--db-url","sandbox-simulation"]
+            with patch.object(p,"psql",side_effect=fake_psql),patch.object(sys,"argv",argv):
+                with redirect_stdout(StringIO()) as capture:
+                    if bad_digest:
+                        with self.assertRaisesRegex(RuntimeError,"RECOVER_ROUTER_TRAIN_IDENTITY_MISMATCH"):
+                            p.main()
+                    elif initial_count:
+                        with self.assertRaisesRegex(RuntimeError,"RECOVER_TARGET_ALREADY_IN_LEDGER"):
+                            p.main()
+                    elif final_floor:
+                        with self.assertRaisesRegex(RuntimeError,"RECOVER_PREFLIGHT_LEFT_LEDGER_RESIDUE"):
+                            p.main()
+                    else:
+                        self.assertEqual(p.main(),0)
+                        self.assertEqual(json.loads(capture.getvalue())["code"],"RECOVER_COMPATIBILITY_ROLLBACK_PASS")
+            rollback_calls=[q for q in queries if q.startswith("begin;")]
+            self.assertEqual(len(rollback_calls),0 if (bad_digest or initial_count) else 1)
+            self.assertTrue(all("rollback;" in q for q in rollback_calls))
+            return queries
+
+    def test_controlled_rollback_success_without_database(self):
+        calls=self._simulate_controlled_rollback()
+        self.assertEqual(len(calls),4)
+
+    def test_controlled_rollback_rejects_wrong_source_before_db(self):
+        calls=self._simulate_controlled_rollback(bad_digest=True)
+        self.assertEqual(calls,[])
+
+    def test_controlled_rollback_blocks_applied_original(self):
+        calls=self._simulate_controlled_rollback(initial_count=1)
+        self.assertFalse(any(q.startswith("begin;") for q in calls))
+
+    def test_controlled_rollback_detects_ledger_residue(self):
+        calls=self._simulate_controlled_rollback(final_floor="20261014000000")
+        self.assertEqual(len([q for q in calls if q.startswith("begin;")]),1)
     def test_router_precedes_rollback_preflight_and_apply(self):
         wf=(pathlib.Path(__file__).resolve().parents[3]/".github/workflows/lf-migration-merge-train.yml").read_text()
         self.assertLess(wf.index("Router execution begin (Train-managed, pre-apply)"),
