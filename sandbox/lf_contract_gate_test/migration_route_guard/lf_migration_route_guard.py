@@ -2,6 +2,12 @@
 
 The status is published only for a complete, migration-free file list and an
 unchanged pull-request head. API failures never produce the required status.
+
+Since 2026-10-13 every PR, with or without migrations, merges only through the
+Train queue (CLAUDE.md "One merge path to `main`"). With
+DIRECT_MERGE_FOR_NON_MIGRATION = False the guard classifies but publishes no
+status, so `lf-merge-train/verified` is set only by the Train right before its
+exact-head merge. Set it back to True to re-enable direct merges (rollback).
 """
 from __future__ import annotations
 
@@ -21,6 +27,12 @@ MAX_FILES = 3000
 PAGE_SIZE = 100
 STATUS_CONTEXT = "lf-merge-train/verified"
 STATUS_DESCRIPTION = "no migrations; train not required"
+# False: non-migration PRs also wait for the Train queue (label ready-to-merge).
+DIRECT_MERGE_FOR_NON_MIGRATION = False
+QUEUE_ONLY_MESSAGE = (
+    "no migration paths; direct merge disabled, label ready-to-merge to merge through the Train queue; "
+    "no {context} status published."
+)
 
 
 @dataclass(frozen=True)
@@ -149,6 +161,10 @@ def process_pull(repo: str, number: int, event_head: str | None, read_token: str
     classification = classify_files(files, pagination_complete=complete)
     if classification.requires_train:
         write_summary(prefix + f"{classification.reason}; requires Train; no {STATUS_CONTEXT} status published.")
+        return True
+
+    if not DIRECT_MERGE_FOR_NON_MIGRATION:
+        write_summary(prefix + QUEUE_ONLY_MESSAGE.format(context=STATUS_CONTEXT))
         return True
 
     try:

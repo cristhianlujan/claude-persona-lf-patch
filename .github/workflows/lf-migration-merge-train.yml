@@ -916,3 +916,23 @@ jobs:
             exit 1
           fi
           echo "PASS_EXECUTION_BOOKKEEPING execution=$execution_id"
+          
+      - name: Merge failure handling
+        if: failure() && steps.postmerge.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ needs.lf-migration-merge-train.outputs.pr_number }}
+          APPLIED: ${{ needs.lf-migration-merge-train.outputs.applied }}
+          MIGRATION_COUNT: ${{ needs.lf-migration-merge-train.outputs.migration_count }}
+        shell: bash
+        run: |
+          set +e
+          gh api --method DELETE "repos/$REPO/issues/$PR/labels/ready-to-merge" >/dev/null 2>&1
+          if [ "$APPLIED" = "true" ]; then
+            body="LF migration merge train MERGE STOP after DB apply (FAIL_TRAIN_MERGE_AFTER_APPLY). The migration IS applied in the database but the PR is NOT merged. Do NOT re-apply: update the branch from main and re-label ready-to-merge so the Train RESUMEs. Run $GITHUB_RUN_ID."
+          else
+            body="LF migration merge train MERGE STOP (FAIL_TRAIN_MERGE_NOT_COMPLETED; migrations in PR: ${MIGRATION_COUNT:-0}, no DB apply in this run). Usually main advanced during the run: update the branch from main, wait for green checks and re-label ready-to-merge. Run $GITHUB_RUN_ID."
+          fi
+          gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1
+          exit 0
