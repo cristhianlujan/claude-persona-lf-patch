@@ -73,7 +73,7 @@ class DispatcherTests(unittest.TestCase):
         t=FakeTransport(statuses=["UNRESOLVED"])
         out=mod.execute(SCOPE, RELEASE, t, allowed=True)
         self.assertEqual(out["cp2_pass_count"],0)
-        self.assertTrue(all(x["status"]=="ERROR_RUN_ID_MISMATCH" or x["status"]=="NO_EJECUTADO_VNEXT" for x in out["results"]) is False)
+        self.assertTrue(all(x["status"]=="ERROR_EDGE_NONTERMINAL" for x in out["results"]))
 
 if __name__=="__main__":
     unittest.main()
