@@ -10,6 +10,8 @@ on:
       - "sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_name_classification_check.py"
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_pre_apply.py"
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_family_classification.py"
+      - ".github/workflows/lf-migration-route-guard.yml"
+      - "sandbox/lf_contract_gate_test/migration_route_guard/**"
 
 permissions:
   contents: read
@@ -27,6 +29,9 @@ jobs:
       - name: Unit tests for canonical name classifier
         run: |
           python3 sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_pre_apply.py
+      - name: Unit tests for migration route guard classifier
+        run: |
+          python3 sandbox/lf_contract_gate_test/migration_route_guard/test_lf_migration_route_guard.py
       - name: Classify changed migration filenames
         shell: bash
         run: |
