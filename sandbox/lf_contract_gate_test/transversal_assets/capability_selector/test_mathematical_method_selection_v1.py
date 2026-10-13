@@ -104,6 +104,46 @@ def run():
     assert all(m["method_id"] not in MATH or m.get("selection_state") == "SHADOW_TRIAL_ONLY"
                for m in shadow["recommended_trials"])
 
+    # Surgical C19/C20 decision closure. Exercise all relevant normal methods
+    # with verified fixture fields (not provider-attested task outcomes).
+    full_pre = preconditions()
+    for method in REG["methods"]:
+        if method["availability_state"] == "EXPERIMENTAL_NOT_ADMITTED":
+            continue
+        for rule in method.get("precondition_contract", []):
+            if rule["key"] not in full_pre:
+                value = rule["expected"] if rule["operator"] == "EQ" else "SUFFICIENT"
+                full_pre[rule["key"]] = verified(value)
+    c19 = dict(mix, allow_experimental_methods=False,
+               budget={"max_method_cost_points": 15})
+    r19 = evaluate(c19, full_pre)
+    expected_normal = [
+        "CAUSAL_ANALYSIS", "SELF_REFINE",
+        "PARALLEL_EVIDENCE_SEARCH", "EVALUATOR_OPTIMIZER",
+    ]
+    assert [m["method_id"] for m in r19["selected_methods"]] == expected_normal, r19
+    deferred = [m for m in r19["rejected_methods"]
+                if m["reason"] == "DEFERRED_NO_MARGINAL_TASK_SIGNAL"]
+    assert len(deferred) == 1 and deferred[0]["method_id"] == "VERIFIER_GUIDED_SEARCH"
+    assert deferred[0]["already_covered_by"] == ["SELF_REFINE"]
+    assert r19["estimated_or_observed_cost"]["method_cost_points"] == 12
+    assert [m["method_id"] for m in math_plan(r19)["recommended_trials"]] == ["DELTA_DEBUGGING"]
+    assert not r19["execution_authorized"] and not math_plan(r19)["execution_authorized"]
+
+    c20 = dict(c19, method_effectiveness_observations={
+        "MCNEMAR_AND_CONFIDENCE_INTERVALS": {
+            "verification_state": "VERIFIED", "evidence_refs": ["fixture://self-report"],
+            "paired_quality_delta": .99, "critical_regressions": 0,
+            "independent_holdout_verified": True,
+        }
+    })
+    r20 = evaluate(c20, full_pre)
+    assert [m["method_id"] for m in r20["selected_methods"]] == expected_normal
+    assert [m["method_id"] for m in math_plan(r20)["recommended_trials"]] == ["DELTA_DEBUGGING"]
+    assert len([m for m in r20["rejected_methods"]
+                if m["reason"] == "DEFERRED_NO_MARGINAL_TASK_SIGNAL"]) == 1
+    assert r20["estimated_or_observed_cost"]["method_cost_points"] == 12
+
     # Explicit budget can allow several independent trials but cannot authorize them.
     budgeted = dict(mix, budget={
         "max_method_cost_points": 10, "max_shadow_method_trials": 2,
@@ -170,7 +210,7 @@ def run():
     })
     assert math_plan(evaluate(unproven))["recommended_trials"][0]["effectiveness"]["state"] == "UNPROVEN"
 
-        invalid = math_plan(evaluate(dict(causal, budget={"max_shadow_method_cost_points": -1})))
+    invalid = math_plan(evaluate(dict(causal, budget={"max_shadow_method_cost_points": -1})))
     assert invalid["status"] == "BLOCK" and not invalid["execution_authorized"]
     assert math_plan(evaluate(dict(causal, budget={"max_shadow_method_trials": True})))["status"] == "BLOCK"
     invalid_exclusion = math_plan(evaluate(dict(causal, blocked_methods=[7])))
