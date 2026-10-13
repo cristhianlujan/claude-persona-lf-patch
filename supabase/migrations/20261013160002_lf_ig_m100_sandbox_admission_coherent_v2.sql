@@ -411,8 +411,32 @@ BEGIN
   v_meta:=jsonb_set(v_meta,'{m10_0_original_specs_v1}','{}'::jsonb,true);
   FOREACH v_cp IN ARRAY ARRAY['HUMAN_DECISION_RECORD','NEG_SHA_MISMATCH','AUTHORITY_READBACK'] LOOP
     v_spec:=v_specs->v_cp;
+    -- Canonical CP7 source/checkpoint exists, but the original action_spec
+    -- was absent. Preserve this absence and build only a read-only contract.
+    v_meta:=jsonb_set(v_meta,ARRAY['m10_0_original_specs_v1',v_cp],
+      coalesce(v_spec,'null'::jsonb),true);
+    IF v_spec IS NULL AND v_cp='AUTHORITY_READBACK' THEN
+      PERFORM 1 FROM programacion.engineering_work_checkpoints c
+        WHERE c.work_item_id=v_work_id AND c.checkpoint_code=v_cp
+          AND c.sequence_no=7 AND c.status='PENDING'
+          AND coalesce(length(btrim(c.title)),0)>0;
+      IF NOT FOUND
+        OR jsonb_typeof(v_src#>ARRAY['checkpoint_inputs',v_cp,'inputs'])
+           IS DISTINCT FROM 'object'
+      THEN
+        RAISE EXCEPTION 'IG_M100_V2_CP7_CANONICAL_SOURCE_ABSENT';
+      END IF;
+      v_spec:=jsonb_build_object(
+        'schema_version','ENGINEERING_ACTION_SPEC_V3',
+        'checkpoint_code',v_cp,
+        'contract_source','EXPLICIT_ACTION_SPEC',
+        'forbidden',jsonb_build_array(
+          'INFER_EXECUTION_SEMANTICS_FROM_TITLE',
+          'SYNTHETIC_PASS_WITHOUT_MACHINE_ASSERTION'),
+        'source_pack_missing_typed','[]'::jsonb
+      );
+    END IF;
     IF v_spec IS NULL THEN RAISE EXCEPTION 'IG_M100_V2_CHECKPOINT_SPEC_MISSING:%',v_cp; END IF;
-    v_meta:=jsonb_set(v_meta,ARRAY['m10_0_original_specs_v1',v_cp],v_spec,true);
     v_spec:=v_spec-'decision_authority_contract'
                   -'test_execution_contract'-'negative_contract_v1';
     v_spec:=v_spec || jsonb_build_object(
