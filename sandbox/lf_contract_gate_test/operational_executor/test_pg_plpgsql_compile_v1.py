@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS public.lf_operation_effect_guard(
 SET check_function_bodies=on;
 """
 psql(setup+"\n\n"+"\n\n".join(definitions)+"\n",expected_ok=True)
-clean=definitions[-1]
+clean=definitions[4]  # admission body; sixth definition is the currentness guard
 broken=clean.replace(
     "PERFORM public.lf_operational_executor_assert_principal_v1",
     "IF THEN\n  PERFORM public.lf_operational_executor_assert_principal_v1",1
