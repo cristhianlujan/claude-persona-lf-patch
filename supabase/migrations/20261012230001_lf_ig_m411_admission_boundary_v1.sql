@@ -223,3 +223,77 @@ CREATE TRIGGER trg_engineering_explicit_evidence_ref_v1
 BEFORE UPDATE OF status ON programacion.engineering_work_checkpoints
 FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_engineering_explicit_evidence_ref_v1();
 REVOKE ALL ON FUNCTION programacion.fn_guard_engineering_explicit_evidence_ref_v1() FROM PUBLIC;
+
+-- Reversible, real trigger exercise. No canonical checkpoint is updated.
+-- The temporary relation is dropped before transaction commit.
+CREATE TEMP TABLE ig_m411_guard_probe_v1 (
+  work_item_id bigint NOT NULL,
+  checkpoint_code text NOT NULL,
+  status text NOT NULL,
+  evidence_ref text
+) ON COMMIT DROP;
+
+CREATE TRIGGER trg_ig_m411_guard_probe_v1
+BEFORE UPDATE OF status ON ig_m411_guard_probe_v1
+FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_engineering_explicit_evidence_ref_v1();
+
+DO $m411_guard_test$
+DECLARE
+  v_id bigint;
+  v_negative_rejected boolean := false;
+  v_whitespace_rejected boolean := false;
+  v_status text;
+BEGIN
+  SELECT work_item_id INTO STRICT v_id
+    FROM programacion.engineering_plan_units
+   WHERE plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
+     AND unit_code='M4.11' AND disposition='ASSIGNED';
+
+  INSERT INTO pg_temp.ig_m411_guard_probe_v1(work_item_id, checkpoint_code, status, evidence_ref)
+  VALUES(v_id,'PREREQ_GATES_PASS','PENDING',NULL);
+
+  BEGIN
+    UPDATE pg_temp.ig_m411_guard_probe_v1 SET status='DONE'
+    WHERE work_item_id=v_id AND checkpoint_code='PREREQ_GATES_PASS';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM LIKE 'ENGINEERING_EXPLICIT_EVIDENCE_REF_REQUIRED:%' THEN
+      v_negative_rejected := true;
+    ELSE
+      RAISE;
+    END IF;
+  END;
+  IF NOT v_negative_rejected THEN
+    RAISE EXCEPTION 'M411_GUARD_FALSE_PASS_NULL_EVIDENCE';
+  END IF;
+
+  BEGIN
+    UPDATE pg_temp.ig_m411_guard_probe_v1
+      SET status='DONE', evidence_ref='   '
+    WHERE work_item_id=v_id AND checkpoint_code='PREREQ_GATES_PASS';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM LIKE 'ENGINEERING_EXPLICIT_EVIDENCE_REF_REQUIRED:%' THEN
+      v_whitespace_rejected := true;
+    ELSE
+      RAISE;
+    END IF;
+  END;
+  IF NOT v_whitespace_rejected THEN
+    RAISE EXCEPTION 'M411_GUARD_FALSE_PASS_WHITESPACE';
+  END IF;
+
+  UPDATE pg_temp.ig_m411_guard_probe_v1
+     SET status='DONE',
+         evidence_ref='supabase://programacion.provenance_receipts/1667#sha=b4b8174360d8478c122340ca25973ba54cdcd7785d2d168ae8271840fc0c7fc5'
+   WHERE work_item_id=v_id AND checkpoint_code='PREREQ_GATES_PASS';
+
+  SELECT status INTO v_status FROM pg_temp.ig_m411_guard_probe_v1
+   WHERE work_item_id=v_id AND checkpoint_code='PREREQ_GATES_PASS';
+  IF v_status <> 'DONE' THEN
+    RAISE EXCEPTION 'M411_GUARD_FALSE_NEGATIVE_VALID_EVIDENCE';
+  END IF;
+  RAISE NOTICE 'M411_TEMP_GUARD_SELFTEST_PASS negatives=2 positives=1 domain_mutation=0';
+END;
+$m411_guard_test$;
+
+DROP TABLE pg_temp.ig_m411_guard_probe_v1;
+
