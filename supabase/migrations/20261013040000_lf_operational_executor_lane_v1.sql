@@ -554,12 +554,23 @@ BEGIN
      ) THEN
     RAISE EXCEPTION 'OPERATIONAL_PRINCIPAL_ROLE_CROSSOVER_OR_MEMBERSHIP_INVALID';
   END IF;
-  -- A dedicated login must not be able to SET ROLE any third principal.
+  -- Reject EVERY extra membership, including indirect memberships through
+  -- the approved group. NOINHERIT on a LOGIN is not enough to prevent SET ROLE
+  -- via a membership chain created after this contract was registered.
   IF EXISTS(
-    SELECT 1 FROM pg_auth_members m
-    JOIN pg_roles g ON g.oid=m.roleid
-    JOIN pg_roles u ON u.oid=m.member
-    WHERE u.rolname=session_user AND g.rolname<>p_expected_role
+    WITH RECURSIVE effective_memberships(roleid) AS (
+      SELECT m.roleid
+      FROM pg_auth_members m
+      JOIN pg_roles login ON login.oid=m.member
+      WHERE login.rolname=session_user
+      UNION
+      SELECT m.roleid
+      FROM pg_auth_members m
+      JOIN effective_memberships parent ON parent.roleid=m.member
+    )
+    SELECT 1 FROM effective_memberships e
+    JOIN pg_roles granted ON granted.oid=e.roleid
+    WHERE granted.rolname<>p_expected_role
   ) THEN
     RAISE EXCEPTION 'OPERATIONAL_PRINCIPAL_EXTRA_ROLE_MEMBERSHIP_FORBIDDEN';
   END IF;
