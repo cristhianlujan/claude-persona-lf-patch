@@ -916,23 +916,52 @@ jobs:
             exit 1
           fi
           echo "PASS_EXECUTION_BOOKKEEPING execution=$execution_id"
-          
       - name: Merge failure handling
         if: failure() && steps.postmerge.outcome != 'success'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ github.repository }}
           PR: ${{ needs.lf-migration-merge-train.outputs.pr_number }}
+          HEAD_SHA: ${{ needs.lf-migration-merge-train.outputs.final_head_sha }}
+          TRUSTED_MAIN: ${{ needs.lf-migration-merge-train.outputs.trusted_main }}
           APPLIED: ${{ needs.lf-migration-merge-train.outputs.applied }}
           MIGRATION_COUNT: ${{ needs.lf-migration-merge-train.outputs.migration_count }}
+          MAX_AUTO_RETRIES: "2"
         shell: bash
         run: |
           set +e
           gh api --method DELETE "repos/$REPO/issues/$PR/labels/ready-to-merge" >/dev/null 2>&1
-          if [ "$APPLIED" = "true" ]; then
-            body="LF migration merge train MERGE STOP after DB apply (FAIL_TRAIN_MERGE_AFTER_APPLY). The migration IS applied in the database but the PR is NOT merged. Do NOT re-apply: update the branch from main and re-label ready-to-merge so the Train RESUMEs. Run $GITHUB_RUN_ID."
+          merged="$(gh api "repos/$REPO/pulls/$PR" --jq '.merged' 2>/dev/null)"
+          if [ "$merged" = "true" ]; then echo "PR already merged; nothing to do"; exit 0; fi
+          observed_head="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha' 2>/dev/null)"
+          live_main="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha' 2>/dev/null)"
+          if [ -n "$observed_head" ] && [ "$observed_head" != "$HEAD_SHA" ]; then
+            reason="HEAD_MOVED_BY_PUSH"
+          elif [ -n "$live_main" ] && [ "$live_main" != "$TRUSTED_MAIN" ]; then
+            reason="BASE_MOVED"
           else
-            body="LF migration merge train MERGE STOP (FAIL_TRAIN_MERGE_NOT_COMPLETED; migrations in PR: ${MIGRATION_COUNT:-0}, no DB apply in this run). Usually main advanced during the run: update the branch from main, wait for green checks and re-label ready-to-merge. Run $GITHUB_RUN_ID."
+            reason="MERGE_API_ERROR"
           fi
-          gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1
+          if [ "$APPLIED" = "true" ]; then
+            code="FAIL_TRAIN_MERGE_AFTER_APPLY"
+            state="The migration IS applied in the database but the PR is NOT merged; a new Train run RESUMEs without re-applying."
+          else
+            code="FAIL_TRAIN_MERGE_NOT_COMPLETED"
+            state="No DB apply in this run (migrations in PR: ${MIGRATION_COUNT:-0})."
+          fi
+          retries="$(gh api --paginate "repos/$REPO/issues/$PR/comments?per_page=100" \
+            --jq '[.[] | select(.user.type=="Bot" and (.body|contains("LF_TRAIN_AUTO_RETRY")))] | length' 2>/dev/null \
+            | awk '{s+=$1} END {print s+0}')"
+          if [ "$reason" = "BASE_MOVED" ] && [ "$retries" -lt "$MAX_AUTO_RETRIES" ]; then
+            n=$((retries + 1))
+            body="LF migration merge train MERGE STOP ($code, reason=$reason). $state LF_TRAIN_AUTO_RETRY $n/$MAX_AUTO_RETRIES: re-queued automatically; the next run syncs with main. Run $GITHUB_RUN_ID."
+            gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1
+            gh api --method POST "repos/$REPO/issues/$PR/labels" -f "labels[]=ready-to-merge" >/dev/null 2>&1 \
+              || gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="LF_TRAIN_AUTO_RETRY could not re-add ready-to-merge; re-label manually. Run $GITHUB_RUN_ID." >/dev/null 2>&1
+          else
+            body="LF migration merge train MERGE STOP ($code, reason=$reason, auto-retries used: $retries/$MAX_AUTO_RETRIES). $state No automatic retry: update the branch from main if needed, wait for green checks and re-label ready-to-merge. Do NOT re-apply. Run $GITHUB_RUN_ID."
+            gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1
+          fi
           exit 0
+          
+          
