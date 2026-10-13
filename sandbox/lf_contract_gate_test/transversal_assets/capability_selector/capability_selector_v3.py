@@ -4,6 +4,7 @@ from copy import deepcopy
 from typing import Any
 
 from capability_selector_v2 import build_selection_signals, _select_capabilities_multilabel
+from mathematical_method_selection_v1 import prioritize_mathematical_methods
 
 REPLAN_TRIGGERS={
     "NEW_EVIDENCE","METHOD_FAILED","QUALITY_PLATEAU","VERIFIER_REJECTED",
@@ -60,8 +61,16 @@ def compose_capabilities_v3(
     allow_experimental=bool(context.get("allow_experimental_methods",False))
     blocked=set(context.get("blocked_methods",[])) if isinstance(context.get("blocked_methods"),list) else set()
 
+    shadow_math = prioritize_mathematical_methods(
+        context, signals, methods if isinstance(methods, list) else [],
+        precondition_state, verify_method_preconditions, _method_cost)
     selected=[]; rejected=[]; total=0.0
     for method in methods if isinstance(methods,list) else []:
+        # Gated math candidates are evaluated by the existing selector in shadow
+        # but may NEVER appear in operational selected_methods, even if a caller
+        # asks for allow_experimental_methods=True.
+        if isinstance(method, dict) and method.get("selection_lane") == "SHADOW_ONLY":
+            continue
         if not isinstance(method,dict) or not _method_matches(method,signals):
             continue
         mid=method.get("method_id")
@@ -104,6 +113,7 @@ def compose_capabilities_v3(
         "selected_capabilities":base["selected_capabilities"],
         "selected_methods":selected,
         "rejected_methods":rejected,
+        "mathematical_method_selection":shadow_math,
         "composition_order":composition,
         "reason":base["reasons"],
         "estimated_or_observed_cost":{"method_cost_points":total,"budget_limit":max_cost},
