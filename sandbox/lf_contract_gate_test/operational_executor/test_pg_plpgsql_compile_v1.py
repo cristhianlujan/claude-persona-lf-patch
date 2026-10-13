@@ -15,6 +15,7 @@ names=(
   ("operational_executor_finish","finish"),
   ("operational_executor_assert_principal","principal"),
   ("operational_executor_admit","admit"),
+  ("operational_executor_assert_decision_current","decision_current"),
 )
 definitions=[]
 for suffix,tag in names:
@@ -68,5 +69,5 @@ broken=clean.replace(
 )
 assert broken!=clean, "BLOCK_MUTATION_FIXTURE_NOT_INSERTED"
 psql("SET check_function_bodies=on;\n"+broken+"\n",expected_ok=False)
-print("PASS_REAL_POSTGRES17_PLPGSQL_COMPILATION function_bodies=5 "
+print("PASS_REAL_POSTGRES17_PLPGSQL_COMPILATION function_bodies=6 "
       "corrupted_admission_rejected=true")
