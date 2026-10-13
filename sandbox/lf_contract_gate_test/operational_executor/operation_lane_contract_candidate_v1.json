@@ -24,7 +24,8 @@
     "public.lf_router_downstream_authority_validate_v1",
     "public.fn_lf_operation_acquire_lease_v1",
     "public.fn_lf_operation_reserve_effect_v1",
-    "public.fn_lf_operation_mark_effect_succeeded_v1"
+    "public.fn_lf_operation_mark_effect_succeeded_v1",
+    "public.lf_record_operation_step_core_v1"
   ],
   "per_execution_binding": [
     "execution_id",
@@ -46,8 +47,9 @@
     "pre_effect": "ROUTER_VALIDATION_LEASE_AND_EFFECT_GUARD",
     "effect": "ONE_REGISTERED_TRUSTED_HANDLER_NO_CALLER_SQL",
     "post_effect": "READBACK_AND_SUCCEEDED_RECEIPT_IN_ONE_DB_TRANSACTION",
-    "close": "GOVERNED_OPERATIONAL_CLOSE_REQUIRED_NOT_IMPLEMENTED",
-    "connector": "MCP_HTTPS_WITH_AUTH_REQUIRED_NOT_DEPLOYED"
+    "close": "GOVERNED_OPERATIONAL_CLOSE_CANDIDATE_IN_PR2372_NOT_APPLIED",
+    "connector": "MCP_HTTPS_WITH_AUTH_REQUIRED_NOT_DEPLOYED",
+    "privilege_boundary": "TWO_SECURITY_DEFINER_FACADES_NO_TABLE_DML"
   },
   "migration_transit_policy": {
     "new_migration_requires_separate_single_sql_pr": true,
@@ -69,5 +71,10 @@
     "ROLLBACK_AND_COMMIT_TESTED_IN_SANDBOX",
     "REMOTE_MCP_AUTHENTICATED",
     "EKB_AND_INDEPENDENT_CLOSE_READBACK"
-  ]
+  ],
+  "candidate_migration": {
+    "pull_request": 2372,
+    "source": "supabase/migrations/20261013040000_lf_operational_executor_lane_v1.sql",
+    "state": "DRAFT_NOT_APPLIED"
+  }
 }
