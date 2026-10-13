@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from dataclasses import asdict, dataclass
 import importlib.util
 import json
@@ -171,16 +172,40 @@ def _dollar_tag(source: str) -> str:
     raise RuntimeError("EXACT_APPLY_DOLLAR_TAG_EXHAUSTED")
 
 
+def _strip_outer_transaction(source_sql: str) -> str:
+    lines = source_sql.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    significant = [i for i, line in enumerate(lines) if line.strip() and not line.lstrip().startswith("--")]
+    if len(significant) < 2:
+        raise ValueError("EXACT_APPLY_RECOVER_TRANSACTION_SHAPE_INVALID")
+    first, last = significant[0], significant[-1]
+    if lines[first].strip().upper() not in {"BEGIN;", "BEGIN"}:
+        raise ValueError("EXACT_APPLY_RECOVER_BEGIN_REQUIRED")
+    if lines[last].strip().upper() not in {"COMMIT;", "COMMIT"}:
+        raise ValueError("EXACT_APPLY_RECOVER_COMMIT_REQUIRED")
+    lines[first] = ""
+    lines[last] = ""
+    body = "\n".join(lines)
+    # Never allow inner transaction control or psql client meta commands:
+    # either would invalidate the rollback-only compatibility evidence.
+    if re.search(r"(?im)^\s*(?:COMMIT|ROLLBACK|START\s+TRANSACTION|SAVEPOINT|RELEASE\s+SAVEPOINT)\b", body):
+        raise ValueError("RECOVER_NESTED_TRANSACTION_CONTROL_FORBIDDEN")
+    if re.search(r"(?m)^\s*\\", body):
+        raise ValueError("RECOVER_PSQL_META_COMMAND_FORBIDDEN")
+    return body
+
+
 def build_fallback_sql(
     *,
     version: str,
     name: str,
     source_sql: str,
     source_blob: str,
+    recover_existing_main: bool = False,
 ) -> str:
     if SHA40_RE.fullmatch(source_blob) is None:
         raise ValueError("EXACT_APPLY_SOURCE_BLOB_INVALID")
     tag = _dollar_tag(source_sql)
+    executable_sql = _strip_outer_transaction(source_sql) if recover_existing_main else source_sql
     return f"""begin;
 lock table supabase_migrations.schema_migrations in share row exclusive mode;
 do $lfguard$
@@ -190,13 +215,13 @@ begin
   if exists(select 1 from supabase_migrations.schema_migrations where version='{version}') then
     raise exception 'EXACT_APPLY_VERSION_EXISTS:{version}';
   end if;
-  if v_max is not null and v_max >= '{version}' then
+  if not {str(recover_existing_main).lower()} and v_max is not null and v_max >= '{version}' then
     raise exception 'EXACT_APPLY_VERSION_RACE:max=% target={version}',v_max;
   end if;
 end;
 $lfguard$;
 
-{source_sql}
+{executable_sql}
 
 insert into supabase_migrations.schema_migrations
 (version,statements,name,created_by,idempotency_key)
@@ -215,12 +240,14 @@ def _fallback_apply(
     name: str,
     source_sql: str,
     source_blob: str,
+    recover_existing_main: bool = False,
 ) -> None:
     payload = build_fallback_sql(
         version=version,
         name=name,
         source_sql=source_sql,
         source_blob=source_blob,
+        recover_existing_main=recover_existing_main,
     )
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".sql", delete=False) as handle:
         handle.write(payload)
@@ -234,6 +261,29 @@ def _fallback_apply(
         tmp.unlink(missing_ok=True)
 
 
+def _verify_recover_router(*, db_url: str, project_root: Path, migration_path: Path,
+                           source_blob: str, train_state_path: Path | None) -> None:
+    if train_state_path is None or not train_state_path.is_file():
+        raise RuntimeError("RECOVER_TRAIN_STATE_FILE_REQUIRED")
+    state = json.loads(train_state_path.read_text(encoding="utf-8"))
+    ctx, ids = state.get("context") or {}, state.get("ids") or {}
+    execution = str(ids.get("execution_id") or "")
+    sha256 = hashlib.sha256(migration_path.read_bytes()).hexdigest()
+    if (state.get("result")!="TRAIN_EXECUTION_READY_TO_APPLY"
+            or re.fullmatch(r"EXEC-[A-Z0-9][A-Z0-9_-]*",execution) is None
+            or ctx.get("source_blob")!=source_blob
+            or ctx.get("source_sha256")!=sha256
+            or ctx.get("path")!="supabase/migrations/"+migration_path.name):
+        raise RuntimeError("RECOVER_TRAIN_EXACT_IDENTITY_UNVERIFIED")
+    auth=json.loads(_psql(db_url,
+        "select public.lf_router_downstream_authority_validate_v1('"+execution+"');",
+        cwd=project_root))
+    if (auth.get("applicable") is not True or auth.get("valid") is not True
+            or auth.get("code")!="ROUTER_DOWNSTREAM_AUTHORITY_VALID"
+            or auth.get("operation_code")!="ACTUALIZACION_DB_LF"):
+        raise RuntimeError("RECOVER_ROUTER_EXECUTION_AUTHORITY_UNVERIFIED")
+
+
 def apply_exact(
     *,
     project_root: Path,
@@ -241,6 +291,8 @@ def apply_exact(
     db_url: str,
     source_blob: str,
     allow_fallback: bool,
+    recover_existing_main: bool = False,
+    train_state_path: Path | None = None,
 ) -> ApplyReceipt:
     decision = TRANSPORT.select_transport("MIGRATION", migration_path.as_posix())
     if decision.executor != "SUPABASE_CLI_DB_PUSH_LINKED":
@@ -251,9 +303,15 @@ def apply_exact(
     version = str(decision.migration_version)
     name = str(decision.migration_name)
     source_sql = migration_path.read_text(encoding="utf-8")
+    if recover_existing_main:
+        _verify_recover_router(db_url=db_url, project_root=project_root,
+            migration_path=migration_path, source_blob=source_blob,
+            train_state_path=train_state_path)
 
     existing_version, existing_name, existing_created_by = read_ledger(db_url, version, cwd=project_root)
     if existing_version is not None:
+        if recover_existing_main:
+            raise RuntimeError("RECOVER_ALREADY_APPLIED_OR_SUPERSEDED_RECHECK_REQUIRED")
         if existing_name != name:
             raise RuntimeError(
                 f"EXACT_APPLY_EXISTING_IDENTITY_MISMATCH:{existing_version}/{existing_name}"
@@ -265,8 +323,26 @@ def apply_exact(
         )
 
     floor_before = read_ledger_max(db_url, cwd=project_root)
-    if version <= floor_before:
+    if version <= floor_before and not recover_existing_main:
         raise RuntimeError(f"EXACT_APPLY_VERSION_NOT_MONOTONIC:version={version} floor={floor_before}")
+
+    if recover_existing_main:
+        # A historical version must never enter Supabase CLI's bulk pending queue.
+        # The governed Train preflight must have succeeded before this call.
+        if not allow_fallback or os.environ.get("LF_RECOVER_AUTHORIZED") != "TRAIN_PREFLIGHT_PASSED":
+            raise RuntimeError("RECOVER_TRAIN_PREFLIGHT_AUTHORITY_REQUIRED")
+        _fallback_apply(
+            project_root=project_root, db_url=db_url, version=version, name=name,
+            source_sql=source_sql, source_blob=source_blob, recover_existing_main=True,
+        )
+        ledger_version, ledger_name, created_by = read_ledger(db_url, version, cwd=project_root)
+        if ledger_version != version or ledger_name != name:
+            raise RuntimeError("RECOVER_EXACT_LEDGER_READBACK_MISMATCH")
+        return ApplyReceipt(
+            "lf-migration-exact-apply/v1", "PASS", "RECOVER_EXACT_ORIGINAL_APPLIED",
+            "SOURCE_FIRST_EXACT_VERSION_MANUAL_LEDGER_DML", True,
+            version, name, ledger_version, ledger_name,
+        )
 
     primary_ok, primary_detail = _primary_cli(
         project_root=project_root,
@@ -311,6 +387,7 @@ def apply_exact(
         name=name,
         source_sql=source_sql,
         source_blob=source_blob,
+        recover_existing_main=recover_existing_main,
     )
     ledger_version, ledger_name, created_by = read_ledger(db_url, version, cwd=project_root)
     if ledger_version != version or ledger_name != name:
@@ -329,6 +406,8 @@ def main() -> int:
     parser.add_argument("--db-url")
     parser.add_argument("--source-blob", required=True)
     parser.add_argument("--allow-fallback", action="store_true")
+    parser.add_argument("--recover-existing-main", action="store_true")
+    parser.add_argument("--train-state")
     args = parser.parse_args()
 
     project_root = Path(args.project_root).resolve()
@@ -345,6 +424,8 @@ def main() -> int:
         db_url=db_url,
         source_blob=args.source_blob.lower(),
         allow_fallback=args.allow_fallback,
+        recover_existing_main=args.recover_existing_main,
+        train_state_path=Path(args.train_state).resolve() if args.train_state else None,
     )
     print(json.dumps(asdict(receipt), sort_keys=True, separators=(",", ":")))
     return 0

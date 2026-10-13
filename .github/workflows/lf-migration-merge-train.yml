@@ -48,6 +48,8 @@ jobs:
       applied: ${{ steps.real_apply.outputs.applied || 'false' }}
       trusted_main: ${{ steps.admission.outputs.current_main }}
       train_exec_state: ${{ steps.train_exec_commit.outputs.state_b64 || steps.train_exec.outputs.state_b64 }}
+      recover_mode: ${{ steps.recover_mode.outputs.operation_mode }}
+      recover_parity_status: ${{ steps.recover_readback.outputs.parity_status }}
 
     steps:
       - name: Checkout trusted current main only
@@ -198,9 +200,73 @@ jobs:
             printf '%s\n' "current_main=$current_main"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Resolve RECOVER governed request
+        id: recover_mode
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,re
+          fields={}
+          for raw in os.environ.get("PR_BODY","").splitlines():
+              if ":" in raw:
+                  k,v=raw.split(":",1)
+                  fields[k.strip().upper()]=v.strip()
+          mode=(fields.get("LF_MIGRATION_MODE") or "NORMAL").upper()
+          if mode not in ("NORMAL","RECOVER"):
+              raise SystemExit("FAIL_RECOVER_OPERATION_UNSUPPORTED:"+mode)
+          result={"operation_mode":mode}
+          if mode=="RECOVER":
+              path=fields.get("LF_RECOVER_PATH","")
+              blob=fields.get("LF_RECOVER_BLOB","").lower()
+              issue=fields.get("LF_RECOVER_ISSUE","")
+              if re.fullmatch(r"supabase/migrations/[0-9]{14}_[A-Za-z0-9][A-Za-z0-9_]*[.]sql",path) is None:
+                  raise SystemExit("FAIL_RECOVER_SOURCE_PATH_INVALID")
+              if re.fullmatch(r"[0-9a-f]{40}",blob) is None or not issue.isdigit():
+                  raise SystemExit("FAIL_RECOVER_BLOB_OR_ISSUE_INVALID")
+              result.update(recover_path=path,recover_blob=blob,recover_issue=issue)
+          with open(os.environ["GITHUB_OUTPUT"],"a") as output:
+              for k,v in result.items():
+                  print(k+"="+v,file=output)
+          PY
+
+      - name: Require Super Admin approval and downstream conflict review
+        if: steps.recover_mode.outputs.operation_mode == 'RECOVER'
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          ISSUE: ${{ steps.recover_mode.outputs.recover_issue }}
+          TARGET: ${{ steps.recover_mode.outputs.recover_path }}
+          BLOB: ${{ steps.recover_mode.outputs.recover_blob }}
+          SUPER_ADMIN_ACTORS: ${{ vars.LF_MIGRATION_TRAIN_SUPER_ADMIN_ACTORS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "$SUPER_ADMIN_ACTORS" ] || { echo "FAIL_RECOVER_SUPER_ADMIN_REGISTRY_MISSING"; exit 2; }
+          mkdir -p .lf_train
+          gh api --paginate --slurp "repos/$REPO/issues/$ISSUE/comments?per_page=100" > .lf_train/recover-approvals.json
+          python3 - <<'PY'
+          import json,os
+          rows=json.load(open(".lf_train/recover-approvals.json"))
+          comments=[comment for page in rows for comment in page]
+          authorized=set(os.environ["SUPER_ADMIN_ACTORS"].replace(" ",",").split(","))
+          authorized.discard("")
+          token="APPROVE_MIGRATION_RECOVER repo={repo} pr={pr} path={path} blob={blob} CONFLICT_REVIEW_PASS".format(
+              repo=os.environ["REPO"],pr=os.environ["PR"],path=os.environ["TARGET"],blob=os.environ["BLOB"])
+          approved=[comment for comment in comments if
+              (comment.get("user") or {}).get("login") in authorized and
+              token in str(comment.get("body") or "")]
+          if not approved:
+              raise SystemExit("FAIL_RECOVER_OWNER_OR_CONFLICT_REVIEW_APPROVAL_MISSING")
+          print("PASS_RECOVER_SUPER_ADMIN_REVIEW",approved[-1]["id"])
+          PY
+
       - name: Sync PR branch with current main in REAL mode
         id: sync
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.recover_mode.outputs.operation_mode != 'RECOVER'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
@@ -280,13 +346,48 @@ jobs:
           PR: ${{ steps.admission.outputs.pr_number }}
           EVENT_HEAD: ${{ steps.admission.outputs.head_sha }}
           SYNC_HEAD: ${{ steps.sync.outputs.head_sha }}
+          OP_MODE: ${{ steps.recover_mode.outputs.operation_mode }}
+          RECOVER_PATH: ${{ steps.recover_mode.outputs.recover_path }}
+          RECOVER_BLOB: ${{ steps.recover_mode.outputs.recover_blob }}
+          CURRENT_MAIN: ${{ steps.admission.outputs.current_main }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p .lf_train/source
-          if [ "$LF_MIGRATION_TRAIN_MODE" = "REAL" ]; then head_sha="$SYNC_HEAD"; else head_sha="$EVENT_HEAD"; fi
+          if [ "$LF_MIGRATION_TRAIN_MODE" = "REAL" ] && [ "$OP_MODE" != "RECOVER" ]; then head_sha="$SYNC_HEAD"; else head_sha="$EVENT_HEAD"; fi
 
           gh api --paginate --slurp "repos/$REPO/pulls/$PR/files?per_page=100" > .lf_train/pr-files-pages.json
+
+          if [ "$OP_MODE" = "RECOVER" ]; then
+            git fetch --no-tags origin "$head_sha" "$CURRENT_MAIN"
+            git merge-base --is-ancestor "$CURRENT_MAIN" "$head_sha" || {
+              echo "FAIL_RECOVER_PR_NOT_CURRENT_MAIN"; exit 2;
+            }
+            python3 - <<'PY'
+          import json
+          pages=json.load(open(".lf_train/pr-files-pages.json"))
+          rows=[r for page in pages for r in page]
+          if not rows or any(not r.get("filename","").startswith("docs/migrations/") or
+                             r.get("status") not in ("added","modified") for r in rows):
+              raise SystemExit("FAIL_RECOVER_OPERATION_PR_SCOPE_MUST_BE_DOCS_ONLY")
+          PY
+            gh api "repos/$REPO/contents/$RECOVER_PATH?ref=$CURRENT_MAIN" > .lf_train/recover-content.json
+            blob="$(jq -r '.sha' .lf_train/recover-content.json)"
+            [ "$blob" = "$RECOVER_BLOB" ] || { echo "FAIL_RECOVER_MAIN_BLOB_NOT_EXACT"; exit 2; }
+            filename="${RECOVER_PATH##*/}"
+            jq -r '.content' .lf_train/recover-content.json | tr -d '\n' | base64 -d > ".lf_train/source/$filename"
+            sha256="$(sha256sum ".lf_train/source/$filename" | cut -d' ' -f1)"
+            {
+              echo "migration_count=1"
+              echo "head_sha=$head_sha"
+              echo "migration_path=$RECOVER_PATH"
+              echo "source_file=.lf_train/source/$filename"
+              echo "source_blob=$blob"
+              echo "source_sha256=$sha256"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           python3 - <<'PY'
           import json,re
           pages=json.load(open(".lf_train/pr-files-pages.json",encoding="utf-8"))
@@ -336,6 +437,7 @@ jobs:
           MIGRATION_COUNT: ${{ steps.source.outputs.migration_count }}
           MIGRATION_PATH: ${{ steps.source.outputs.migration_path }}
           SOURCE_FILE: ${{ steps.source.outputs.source_file }}
+          OP_MODE: ${{ steps.recover_mode.outputs.operation_mode }}
         shell: bash
         run: |
           set -euo pipefail
@@ -371,6 +473,7 @@ jobs:
           existing_row="$(printf '%s' "$existing_row" | tr -d '\r\n')"
           existing_name="${existing_row%%|*}"
           if [ -n "$existing_row" ]; then
+            [ "$OP_MODE" != "RECOVER" ] || { echo "FAIL_RECOVER_ORIGINAL_ALREADY_IN_LEDGER"; exit 2; }
             [ "$existing_name" = "$current_name" ] || { echo "FAIL_TRAIN_EXISTING_LEDGER_IDENTITY_MISMATCH version=$current_version ledger=$existing_name pr=$current_name"; exit 2; }
             ledger_hex="${existing_row#*|}"
             file_sha="$(python3 - "$SOURCE_FILE" <<'PY'
@@ -401,17 +504,23 @@ jobs:
           fi
           echo "already_applied_exact=false" >> "$GITHUB_OUTPUT"
 
-          assign_out="$(python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py \
-            "$SOURCE_FILE" --main-max "$main_max" --ledger-max "$ledger_max" --dry-run)"
+          assign_args=("$SOURCE_FILE" --main-max "$main_max" --ledger-max "$ledger_max" --dry-run)
+          if [ "$OP_MODE" = "RECOVER" ]; then assign_args+=(--preserve-current); fi
+          assign_out="$(python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py "${assign_args[@]}")"
           echo "$assign_out"
           version="$(printf '%s' "$assign_out" | sed -nE 's/.* version=([0-9]{14}) .*/\1/p')"
           [ -n "$version" ] || { echo "FAIL_TRAIN_ASSIGN_VERSION_PARSE"; exit 2; }
 
           old_name="${MIGRATION_PATH##*/}"
           suffix="${old_name#???????????????}"
-          target_path="supabase/migrations/${version}_${suffix}"
-          python3 sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_version_order_check.py \
-            --new-migration "$target_path" --main-max "$main_max" --ledger-max "$ledger_max"
+          if [ "$OP_MODE" = "RECOVER" ]; then
+            [ "$version" = "$current_version" ] || { echo "FAIL_RECOVER_VERSION_NOT_ORIGINAL"; exit 2; }
+            target_path="$MIGRATION_PATH"
+          else
+            target_path="supabase/migrations/${version}_${suffix}"
+            python3 sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_version_order_check.py \
+              --new-migration "$target_path" --main-max "$main_max" --ledger-max "$ledger_max"
+          fi
 
           name="${target_path##*/}"
           name="${name#???????????????}"
@@ -463,7 +572,7 @@ jobs:
 
       - name: Retimestamp migration atomically on PR head in REAL mode
         id: retimestamp
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.recover_mode.outputs.operation_mode != 'RECOVER'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
@@ -535,9 +644,24 @@ jobs:
           echo "FAIL_TRAIN_PASE_CHECK_TIMEOUT"
           exit 2
 
+      - name: RECOVER bind exact main source
+        id: recover_binding
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.recover_mode.outputs.operation_mode == 'RECOVER'
+        env:
+          MAIN_SHA: ${{ steps.admission.outputs.current_main }}
+          SOURCE_BLOB: ${{ steps.source.outputs.source_blob }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "$MAIN_SHA" ] && [ -n "$SOURCE_BLOB" ] || {
+            echo "FAIL_RECOVER_SOURCE_BINDING_MISSING"; exit 2;
+          }
+          echo "persisted_head_sha=$MAIN_SHA" >> "$GITHUB_OUTPUT"
+          echo "source_blob=$SOURCE_BLOB" >> "$GITHUB_OUTPUT"
+
       - name: Persist exact source and require Saga READY_TO_APPLY
         id: write_ahead
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true' && steps.recover_mode.outputs.operation_mode != 'RECOVER'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
@@ -624,10 +748,10 @@ jobs:
           VERSION: ${{ steps.plan.outputs.migration_version }}
           NAME: ${{ steps.plan.outputs.migration_name }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
-          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob }}
+          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob || steps.recover_binding.outputs.source_blob }}
           SOURCE_SHA256: ${{ steps.source.outputs.source_sha256 }}
           HEAD_SHA: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
-          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha }}
+          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha || steps.recover_binding.outputs.persisted_head_sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -643,30 +767,84 @@ jobs:
             --state .lf_train/train-exec-state.json
           echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
 
-      - name: Apply exact version and ledger readback
-        id: real_apply
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+      - name: RECOVER verify Saga with Router execution identity
+        id: recover_saga
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.recover_mode.outputs.operation_mode == 'RECOVER' && steps.train_exec.outcome == 'success'
         env:
-          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
-          TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
-          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob }}
+          MAIN_SHA: ${{ steps.admission.outputs.current_main }}
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin "${{ steps.write_ahead.outputs.persisted_head_sha }}"
-          git checkout --detach "${{ steps.write_ahead.outputs.persisted_head_sha }}"
+          python3 - <<'PY'
+          import json,os
+          state=json.load(open(".lf_train/train-exec-state.json"))
+          ctx, ids=state.get("context") or {},state.get("ids") or {}
+          if state.get("result")!="TRAIN_EXECUTION_READY_TO_APPLY" or not ids.get("execution_id"):
+              raise SystemExit("FAIL_RECOVER_SAGA_ROUTER_EXECUTION_NOT_READY")
+          if ctx.get("persisted_head_sha")!=os.environ["MAIN_SHA"]:
+              raise SystemExit("FAIL_RECOVER_SAGA_MAIN_SOURCE_MISMATCH")
+          payload={
+            "schema_version":"lf-migration-orchestrated-saga/v1",
+            "operation_code":"ACTUALIZACION_DB_LF",
+            "execution_id":ids["execution_id"],
+            "effect_scope":ids["effect_scope"],
+            "target_path":ctx["path"],
+            "migration_version":ctx["version"],
+            "migration_name":ctx["name"],
+            "source_sha256":ctx["source_sha256"],
+            "git":{"persisted":True,"readback":True,"path":ctx["path"],
+                   "head_sha":ctx["persisted_head_sha"],"blob_sha1":ctx["source_blob"],
+                   "source_sha256":ctx["source_sha256"]},
+            "supabase":{"applied":False},"parity":{}
+          }
+          open(".lf_train/recover-saga-ready.json","w").write(json.dumps(payload,sort_keys=True))
+          PY
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_orchestrated_saga.py \
+            --file .lf_train/recover-saga-ready.json | tee .lf_train/recover-saga-receipt.json
+          jq -e '.status=="READY_TO_APPLY" and .code=="WRITE_AHEAD_READY_FOR_EXACT_APPLY"' .lf_train/recover-saga-receipt.json >/dev/null
+
+      - name: RECOVER compatibility preflight with rollback
+        id: recover_preflight
+        if: steps.recover_mode.outputs.operation_mode == 'RECOVER' && steps.recover_saga.outcome == 'success' && steps.train_exec.outcome == 'success'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SOURCE_FILE: ${{ steps.source.outputs.source_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$LF_TRAIN_EXECUTION_MODE" = "ENFORCED" ] || { echo "FAIL_RECOVER_ROUTER_EXECUTION_ENFORCEMENT_OFF"; exit 2; }
+          jq -e '.result=="TRAIN_EXECUTION_READY_TO_APPLY" and .ids.execution_id != null' .lf_train/train-exec-state.json >/dev/null
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_recover_preflight.py \
+            --migration-path "$SOURCE_FILE" --train-state .lf_train/train-exec-state.json \
+            | tee .lf_train/recover-preflight.json
+          jq -e '.status=="PASS" and .code=="RECOVER_COMPATIBILITY_ROLLBACK_PASS" and .residue==false' .lf_train/recover-preflight.json >/dev/null
+
+      - name: Apply exact version and ledger readback
+        id: real_apply
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true' && (steps.recover_mode.outputs.operation_mode != 'RECOVER' || steps.recover_preflight.outcome == 'success')
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
+          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob || steps.recover_binding.outputs.source_blob }}
+          OP_MODE: ${{ steps.recover_mode.outputs.operation_mode }}
+          LF_RECOVER_AUTHORIZED: ${{ steps.recover_preflight.outcome == 'success' && 'TRAIN_PREFLIGHT_PASSED' || 'DENY' }}
+          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha || steps.recover_binding.outputs.persisted_head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$PERSISTED_HEAD"
+          git checkout --detach "$PERSISTED_HEAD"
+          apply_args=(--project-root "$GITHUB_WORKSPACE" --migration-path "$GITHUB_WORKSPACE/$TARGET_PATH" --source-blob "$SOURCE_BLOB" --allow-fallback)
+          if [ "$OP_MODE" = "RECOVER" ]; then apply_args+=(--recover-existing-main --train-state .lf_train/train-exec-state.json); fi
           python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_exact_apply.py \
-            --project-root "$GITHUB_WORKSPACE" \
-            --migration-path "$GITHUB_WORKSPACE/$TARGET_PATH" \
-            --source-blob "$SOURCE_BLOB" \
-            --allow-fallback | tee .lf_train/exact-apply-receipt.json
+            "${apply_args[@]}" | tee .lf_train/exact-apply-receipt.json
           jq -e '.status=="PASS" and .ledger_version==.migration_version and .ledger_name==.migration_name' .lf_train/exact-apply-receipt.json >/dev/null
           echo "applied=true" >> "$GITHUB_OUTPUT"
 
       - name: Router execution patch step (Train-managed, post-apply)
         id: train_exec_commit
         if: steps.train_exec.outcome == 'success' && steps.real_apply.outputs.applied == 'true'
-        continue-on-error: true
+        continue-on-error: ${{ steps.recover_mode.outputs.operation_mode != 'RECOVER' }}
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         shell: bash
@@ -678,9 +856,26 @@ jobs:
             --apply-receipt .lf_train/exact-apply-receipt.json
           echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
 
+      - name: RECOVER exact original SQL ledger readback
+        id: recover_readback
+        if: steps.recover_mode.outputs.operation_mode == 'RECOVER' && steps.real_apply.outputs.applied == 'true'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SOURCE_FILE: ${{ steps.source.outputs.source_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "${{ steps.train_exec_commit.outcome }}" = "success" ] || {
+            echo "FAIL_RECOVER_ROUTER_EFFECT_RECEIPT_MISSING"; exit 2;
+          }
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_recover_preflight.py \
+            --migration-path "$SOURCE_FILE" --readback | tee .lf_train/recover-readback.json
+          jq -e '.status=="PASS" and .code=="RECOVER_EXACT_LEDGER_READBACK_PASS" and .parity_status=="PASS" and .parity_code=="PASS_LF_MIGRATION_SOURCE_PARITY" and .parity_version_count==1' .lf_train/recover-readback.json >/dev/null
+          echo "parity_status=PASS" >> "$GITHUB_OUTPUT"
+
       - name: Run changeset-scoped parity from trusted persisted source
         id: parity
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.recover_mode.outputs.operation_mode != 'RECOVER'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
@@ -796,6 +991,18 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
 
+      - name: Require canonical RECOVER parity evidence before merge
+        if: needs.lf-migration-merge-train.outputs.recover_mode == 'RECOVER'
+        env:
+          RECOVER_PARITY: ${{ needs.lf-migration-merge-train.outputs.recover_parity_status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$RECOVER_PARITY" = "PASS" ] || {
+            echo "FAIL_RECOVER_CANONICAL_PARITY_RECEIPT_MISSING"; exit 2;
+          }
+          echo "PASS_RECOVER_CANONICAL_PARITY_RECEIPT"
+
       - name: Merge exact head only
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
@@ -840,7 +1047,7 @@ jobs:
 
       - name: Router execution verify and close (Train-managed, post-merge)
         if: needs.lf-migration-merge-train.outputs.train_exec_state != ''
-        continue-on-error: true
+        continue-on-error: ${{ needs.lf-migration-merge-train.outputs.recover_mode != 'RECOVER' }}
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           STATE_B64: ${{ needs.lf-migration-merge-train.outputs.train_exec_state }}

@@ -38,19 +38,49 @@ def choose_version(
     main_max_version: str,
     ledger_max_version: str,
     utc_now_version: str,
+    future_skew_seconds: int = 600,
+    preserve_current: bool = False,
 ) -> str:
     current = _require_version(current_version, "CURRENT_VERSION")
     main_max = _require_version(main_max_version, "MAIN_MAX_VERSION")
     ledger_max = _require_version(ledger_max_version, "LEDGER_MAX_VERSION")
     now = _require_version(utc_now_version, "UTC_NOW_VERSION")
+    if future_skew_seconds < 0:
+        raise ValueError(f"FUTURE_SKEW_SECONDS_INVALID:{future_skew_seconds}")
+
+    def as_dt(version: str) -> datetime:
+        return datetime.strptime(version, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+
+    ceiling_dt = as_dt(now) + timedelta(seconds=future_skew_seconds)
+    ceiling = ceiling_dt.strftime("%Y%m%d%H%M%S")
+    for label, value in (
+        ("CURRENT_VERSION", current),
+        ("MAIN_MAX_VERSION", main_max),
+        ("LEDGER_MAX_VERSION", ledger_max),
+    ):
+        if as_dt(value) > ceiling_dt:
+            raise ValueError(
+                f"{label}_FUTURE_SKEW:value={value}:now={now}:ceiling={ceiling}"
+            )
+
     floor = max(main_max, ledger_max)
 
-    # Idempotent retry: a candidate already strictly above the live floor stays put.
+    # RECOVER keeps the exact original identity after the same future-skew guard.
+    if preserve_current:
+        return current
+
+    # Idempotent retry is allowed only after the future-skew guard above.
     if current > floor:
         return current
     if now > floor:
         return now
-    return _plus_one_second(floor)
+
+    candidate = _plus_one_second(floor)
+    if as_dt(candidate) > ceiling_dt:
+        raise ValueError(
+            f"ASSIGNED_VERSION_FUTURE_SKEW:value={candidate}:now={now}:ceiling={ceiling}"
+        )
+    return candidate
 
 
 def assign_path(
@@ -59,6 +89,8 @@ def assign_path(
     main_max_version: str,
     ledger_max_version: str,
     utc_now_version: str,
+    future_skew_seconds: int = 600,
+    preserve_current: bool = False,
     perform_rename: bool = True,
 ) -> Assignment:
     match = FILENAME_RE.fullmatch(migration_path.name)
@@ -72,6 +104,8 @@ def assign_path(
         main_max_version=main_max_version,
         ledger_max_version=ledger_max_version,
         utc_now_version=utc_now_version,
+        future_skew_seconds=future_skew_seconds,
+        preserve_current=preserve_current,
     )
     target = migration_path.with_name(f"{version}_{match.group('name')}.sql")
     changed = target != migration_path
@@ -94,6 +128,8 @@ def main() -> int:
     parser.add_argument("--main-max", required=True)
     parser.add_argument("--ledger-max", required=True)
     parser.add_argument("--utc-now")
+    parser.add_argument("--future-skew-seconds", type=int, default=600)
+    parser.add_argument("--preserve-current", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -102,6 +138,8 @@ def main() -> int:
         main_max_version=args.main_max,
         ledger_max_version=args.ledger_max,
         utc_now_version=args.utc_now or _utc_now_version(),
+        future_skew_seconds=args.future_skew_seconds,
+        preserve_current=args.preserve_current,
         perform_rename=not args.dry_run,
     )
     print(
