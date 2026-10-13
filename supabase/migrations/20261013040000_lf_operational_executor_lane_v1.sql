@@ -915,12 +915,12 @@ END $roles_verify$;
 
 GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
 GRANT USAGE ON SCHEMA public TO lf_operational_admission_authority;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_decision_current_v1(text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_principal_v1(text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_decision_current_v1(text) FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_principal_v1(text) FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb) FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.lf_operational_executor_assert_principal_v1(text)
   TO lf_operational_admission_authority,lf_operation_executor_runtime;
 GRANT EXECUTE ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb)
