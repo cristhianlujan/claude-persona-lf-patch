@@ -1,0 +1,3077 @@
+{
+  "authority": "LIVE_PG_CATALOG_READONLY_NOT_MIGRATION_SOURCE",
+  "relations": [
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [],
+      "columns": [
+        {
+          "name": "channel_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "secret_sha256",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "allowed_kinds",
+          "type": "text[]",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "programacion.provenance_channels_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX provenance_channels_pkey ON programacion.provenance_channels USING btree (channel_code)"
+        }
+      ],
+      "policies": [],
+      "relation": "programacion.provenance_channels",
+      "triggers": [
+        {
+          "name": "trg_provenance_channels_immutable",
+          "enabled": "O",
+          "function": "programacion.fn_provenance_channels_immutable()",
+          "definition": "CREATE TRIGGER trg_provenance_channels_immutable BEFORE INSERT OR DELETE OR UPDATE ON programacion.provenance_channels FOR EACH ROW EXECUTE FUNCTION programacion.fn_provenance_channels_immutable()",
+          "function_source_sha256": "0bbcd40ba6c5c8fba5e82252e75efdd1d4da059b3a7fbea2a34d5f127242c5e4"
+        }
+      ],
+      "force_rls": true,
+      "constraints": [
+        {
+          "name": "provenance_channels_allowed_kinds_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (cardinality(allowed_kinds) > 0)",
+          "references": null
+        },
+        {
+          "name": "provenance_channels_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (channel_code)",
+          "references": null
+        },
+        {
+          "name": "provenance_channels_secret_sha256_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (secret_sha256 ~ '^[0-9a-f]{64}$'::text)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "default": null,
+          "identity": "a",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "codigo_activo",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "nombre_canonico",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "tipo_activo",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "subtipo_activo",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "tipo_original",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "formato_nativo",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "linea_codigo",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "estado_original",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "estado_documental",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "estado_operativo",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "nivel_control",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "runtime_estado",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "impacto_automatico",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "accion_migracion",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "version",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "ruta_esperada",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "url",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "owner_name",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "ultima_revision",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "rol_arquitectura",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_spreadsheet_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_spreadsheet_title",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_sheet_name",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_row_number",
+          "type": "integer",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "migration_batch_id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "archived_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "archived_reason",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_activos_batch_idx",
+          "valid": true,
+          "unique": false,
+          "definition": "CREATE INDEX lf_activos_batch_idx ON public.lf_activos USING btree (migration_batch_id)"
+        },
+        {
+          "name": "lf_activos_codigo_activo_key",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_activos_codigo_activo_key ON public.lf_activos USING btree (codigo_activo)"
+        },
+        {
+          "name": "lf_activos_estado_documental_idx",
+          "valid": true,
+          "unique": false,
+          "definition": "CREATE INDEX lf_activos_estado_documental_idx ON public.lf_activos USING btree (estado_documental)"
+        },
+        {
+          "name": "lf_activos_estado_operativo_idx",
+          "valid": true,
+          "unique": false,
+          "definition": "CREATE INDEX lf_activos_estado_operativo_idx ON public.lf_activos USING btree (estado_operativo)"
+        },
+        {
+          "name": "lf_activos_linea_idx",
+          "valid": true,
+          "unique": false,
+          "definition": "CREATE INDEX lf_activos_linea_idx ON public.lf_activos USING btree (linea_codigo)"
+        },
+        {
+          "name": "lf_activos_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_activos_pkey ON public.lf_activos USING btree (id)"
+        },
+        {
+          "name": "lf_activos_tipo_idx",
+          "valid": true,
+          "unique": false,
+          "definition": "CREATE INDEX lf_activos_tipo_idx ON public.lf_activos USING btree (tipo_activo)"
+        },
+        {
+          "name": "lf_activos_updated_at_idx",
+          "valid": true,
+          "unique": false,
+          "definition": "CREATE INDEX lf_activos_updated_at_idx ON public.lf_activos USING btree (updated_at DESC)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "lf_activos_authenticated_select",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_activos",
+      "triggers": [
+        {
+          "name": "trg_lf_activos_timestamp",
+          "enabled": "O",
+          "function": "fn_update_lf_activos_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_activos_timestamp BEFORE UPDATE ON lf_activos FOR EACH ROW EXECUTE FUNCTION fn_update_lf_activos_timestamp()",
+          "function_source_sha256": "eec5570684489e8527a1d977b08e5e35684c9edd8a1ce973e96f1e63ce531566"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_activos_codigo_activo_key",
+          "type": "u",
+          "validated": true,
+          "definition": "UNIQUE (codigo_activo)",
+          "references": null
+        },
+        {
+          "name": "lf_activos_linea_codigo_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (linea_codigo) REFERENCES lf_lineas(codigo) ON UPDATE CASCADE",
+          "references": "lf_lineas"
+        },
+        {
+          "name": "lf_activos_operational_url_supabase_only_chk",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (archived_at IS NOT NULL OR url IS NULL OR url ~~ 'supabase://%'::text)",
+          "references": null
+        },
+        {
+          "name": "lf_activos_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (id)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "name": "operation_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "contract_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "contract_path",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "contract_sha",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "required_before_write",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "allowed",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "blocked",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "required_after_write",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'CANDIDATO_READ_ONLY'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_operation_contracts_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_operation_contracts_pkey ON public.lf_operation_contracts USING btree (operation_code, contract_code)"
+        },
+        {
+          "name": "uq_lf_operation_contracts_operation_contract",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX uq_lf_operation_contracts_operation_contract ON public.lf_operation_contracts USING btree (operation_code, contract_code)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "lf_operation_contracts_authenticated_read_v01",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_operation_contracts",
+      "triggers": [
+        {
+          "name": "trg_lf_operation_contracts_timestamp",
+          "enabled": "O",
+          "function": "fn_update_lf_operation_contracts_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_operation_contracts_timestamp BEFORE UPDATE ON lf_operation_contracts FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_contracts_timestamp()",
+          "function_source_sha256": "7f6378edbe5f2adea34fe1507f702ed8524a5790815561b532aa67b3dea309d8"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_operation_contracts_operation_code_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (operation_code) REFERENCES lf_operation_registry(operation_code) ON DELETE CASCADE",
+          "references": "lf_operation_registry"
+        },
+        {
+          "name": "lf_operation_contracts_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (operation_code, contract_code)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "lf_ci_readonly",
+          "grantable": false,
+          "privilege": "SELECT"
+        }
+      ],
+      "columns": [
+        {
+          "name": "execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "operation_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "target_type",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "target_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "target_repo",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "target_path",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'IN_PROGRESS'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "manifest",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "idempotency_key",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "request_sha256",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "lease_owner",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "lease_expires_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "lease_fence",
+          "type": "bigint",
+          "default": "0",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "checkpoint_seq",
+          "type": "bigint",
+          "default": "0",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "checkpoint_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_operation_execution_idempotency_uq",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_operation_execution_idempotency_uq ON public.lf_operation_execution USING btree (operation_code, idempotency_key) WHERE (idempotency_key IS NOT NULL)"
+        },
+        {
+          "name": "lf_operation_execution_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_operation_execution_pkey ON public.lf_operation_execution USING btree (execution_id)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "lf_operation_execution_authenticated_read_v01",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_operation_execution",
+      "triggers": [
+        {
+          "name": "trg_00_lf_operation_policy_snapshot_v1",
+          "enabled": "O",
+          "function": "lf_attach_operation_policy_snapshot_v1()",
+          "definition": "CREATE TRIGGER trg_00_lf_operation_policy_snapshot_v1 BEFORE INSERT ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION lf_attach_operation_policy_snapshot_v1()",
+          "function_source_sha256": "483451ba3aa1cfd4c9c4fe767325ac54bedde2f4b1362ea17d22cfba1beec674"
+        },
+        {
+          "name": "trg_01_lf_operation_policy_snapshot_guard_v1",
+          "enabled": "O",
+          "function": "lf_operation_policy_snapshot_guard_v1()",
+          "definition": "CREATE TRIGGER trg_01_lf_operation_policy_snapshot_guard_v1 BEFORE UPDATE OF status, manifest ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION lf_operation_policy_snapshot_guard_v1()",
+          "function_source_sha256": "9e32778549d02bf2ed81f6d17dc5c403ba4edbac754f769b9ed9567c6c62acb1"
+        },
+        {
+          "name": "trg_lf_operation_execution_timestamp",
+          "enabled": "O",
+          "function": "fn_update_lf_operation_execution_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_operation_execution_timestamp BEFORE UPDATE ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_execution_timestamp()",
+          "function_source_sha256": "f2d3f4719e1420dce935a5f05333fea0ac6263cf0e73dc5ed27dfb675611e3d4"
+        },
+        {
+          "name": "trg_lf_prod_enforcement_execution_v01",
+          "enabled": "O",
+          "function": "lf_prod_enforcement_execution_gate_v01()",
+          "definition": "CREATE TRIGGER trg_lf_prod_enforcement_execution_v01 BEFORE INSERT OR UPDATE ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION lf_prod_enforcement_execution_gate_v01()",
+          "function_source_sha256": "70ef0ebd2be07a2ba7fe44d0b14f0a6c35e5fa668b3a1322d41bebc70a10d2de"
+        },
+        {
+          "name": "trg_lf_router_downstream_authority_insert_v1",
+          "enabled": "O",
+          "function": "lf_router_downstream_authority_execution_insert_v1()",
+          "definition": "CREATE TRIGGER trg_lf_router_downstream_authority_insert_v1 BEFORE INSERT ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION lf_router_downstream_authority_execution_insert_v1()",
+          "function_source_sha256": "1be0a52527a9a3ef82a353bb1cbe12217ad628c433a39901ce93ead38070308b"
+        },
+        {
+          "name": "trg_lf_router_downstream_authority_update_guard_v1",
+          "enabled": "O",
+          "function": "lf_router_downstream_authority_execution_update_guard_v1()",
+          "definition": "CREATE TRIGGER trg_lf_router_downstream_authority_update_guard_v1 BEFORE UPDATE OF operation_code, target_type, target_code, target_repo, target_path, manifest ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION lf_router_downstream_authority_execution_update_guard_v1()",
+          "function_source_sha256": "f4daa3c6b95cc43f3d1cff724673d1472729f67643b26e724b9cb0acd79b9f78"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_operation_execution_idempotency_pair_ck",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (idempotency_key IS NULL AND request_sha256 IS NULL OR idempotency_key IS NOT NULL AND btrim(idempotency_key) <> ''::text AND length(idempotency_key) <= 200 AND request_sha256 ~ '^[0-9a-f]{64}$'::text)",
+          "references": null
+        },
+        {
+          "name": "lf_operation_execution_lease_pair_ck",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (lease_owner IS NULL AND lease_expires_at IS NULL OR lease_owner IS NOT NULL AND btrim(lease_owner) <> ''::text AND lease_expires_at IS NOT NULL)",
+          "references": null
+        },
+        {
+          "name": "lf_operation_execution_nonnegative_control_ck",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (lease_fence >= 0 AND checkpoint_seq >= 0)",
+          "references": null
+        },
+        {
+          "name": "lf_operation_execution_operation_code_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (operation_code) REFERENCES lf_operation_registry(operation_code) ON DELETE RESTRICT",
+          "references": "lf_operation_registry"
+        },
+        {
+          "name": "lf_operation_execution_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (execution_id)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "lf_ci_readonly",
+          "grantable": false,
+          "privilege": "SELECT"
+        }
+      ],
+      "columns": [
+        {
+          "name": "execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "step_order",
+          "type": "integer",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "step_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "evidence_ref",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "evidence_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_operation_execution_steps_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_operation_execution_steps_pkey ON public.lf_operation_execution_steps USING btree (execution_id, step_order)"
+        },
+        {
+          "name": "uq_lf_operation_execution_steps_execution_step",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX uq_lf_operation_execution_steps_execution_step ON public.lf_operation_execution_steps USING btree (execution_id, step_id)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "lf_operation_execution_steps_authenticated_read_v01",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_operation_execution_steps",
+      "triggers": [
+        {
+          "name": "trg_lf_db_operation_step_authority_guard_v1",
+          "enabled": "O",
+          "function": "lf_db_operation_step_authority_guard_v1()",
+          "definition": "CREATE TRIGGER trg_lf_db_operation_step_authority_guard_v1 BEFORE INSERT OR UPDATE OF status, evidence_payload ON lf_operation_execution_steps FOR EACH ROW EXECUTE FUNCTION lf_db_operation_step_authority_guard_v1()",
+          "function_source_sha256": "269a681c620eff277657d31d7e650fc159318b33c0cd4932a08fd8383c89bc0e"
+        },
+        {
+          "name": "trg_lf_operation_execution_steps_timestamp",
+          "enabled": "O",
+          "function": "fn_update_lf_operation_execution_steps_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_operation_execution_steps_timestamp BEFORE UPDATE ON lf_operation_execution_steps FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_execution_steps_timestamp()",
+          "function_source_sha256": "963894d871730702553198b04a67f6f4f8c18d149bd5ce35e1065ab0eda4a21e"
+        },
+        {
+          "name": "trg_lf_pre_ekb_clean_retry_guard_v1",
+          "enabled": "O",
+          "function": "private.fn_lf_pre_ekb_clean_retry_guard_v1()",
+          "definition": "CREATE TRIGGER trg_lf_pre_ekb_clean_retry_guard_v1 BEFORE INSERT OR UPDATE OF status ON lf_operation_execution_steps FOR EACH ROW EXECUTE FUNCTION private.fn_lf_pre_ekb_clean_retry_guard_v1()",
+          "function_source_sha256": "db90897d9e783a7cf40c7ca2cfcd53b1ce60f33d0082e66abee99320c5167277"
+        },
+        {
+          "name": "trg_lf_pre_ekb_step_failure_autopersist_v1",
+          "enabled": "O",
+          "function": "private.fn_lf_pre_ekb_step_failure_autopersist_v1()",
+          "definition": "CREATE TRIGGER trg_lf_pre_ekb_step_failure_autopersist_v1 AFTER INSERT OR UPDATE OF status ON lf_operation_execution_steps FOR EACH ROW EXECUTE FUNCTION private.fn_lf_pre_ekb_step_failure_autopersist_v1()",
+          "function_source_sha256": "786e5fac36864504e90486b3f775b083427ccf78cea1dc1e073b59331fd1c1f8"
+        },
+        {
+          "name": "trg_lf_prod_enforcement_step_v01",
+          "enabled": "O",
+          "function": "lf_prod_enforcement_step_gate_v01()",
+          "definition": "CREATE TRIGGER trg_lf_prod_enforcement_step_v01 BEFORE INSERT OR UPDATE ON lf_operation_execution_steps FOR EACH ROW EXECUTE FUNCTION lf_prod_enforcement_step_gate_v01()",
+          "function_source_sha256": "9bc1b183922e81d839bfbaff1a33648e9b0b38aab11e87afb61394b467d4a7dc"
+        },
+        {
+          "name": "trg_lf_strategy_lifecycle_from_execution_step_v1",
+          "enabled": "O",
+          "function": "lf_strategy_lifecycle_from_execution_step_v1()",
+          "definition": "CREATE TRIGGER trg_lf_strategy_lifecycle_from_execution_step_v1 AFTER INSERT OR UPDATE OF status ON lf_operation_execution_steps FOR EACH ROW EXECUTE FUNCTION lf_strategy_lifecycle_from_execution_step_v1()",
+          "function_source_sha256": "caac1892bff64184c47c4f2e47d0af9a41ce658f629e123626d824bc71b38fc9"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_operation_execution_steps_execution_id_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (execution_id) REFERENCES lf_operation_execution(execution_id) ON DELETE CASCADE",
+          "references": "lf_operation_execution"
+        },
+        {
+          "name": "lf_operation_execution_steps_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (execution_id, step_order)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "name": "operation_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "judge_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "judge_path",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "judge_sha",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "pass_if",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "fail_if",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "result_values",
+          "type": "jsonb",
+          "default": "'[\"PASS\", \"FAIL\", \"BLOCKED\"]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'CANDIDATO_READ_ONLY'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_operation_judges_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_operation_judges_pkey ON public.lf_operation_judges USING btree (operation_code, judge_code)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "lf_operation_judges_authenticated_read_v01",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_operation_judges",
+      "triggers": [
+        {
+          "name": "trg_lf_operation_judges_provenance_guard_v1",
+          "enabled": "O",
+          "function": "fn_lf_operation_provenance_guard_v1()",
+          "definition": "CREATE TRIGGER trg_lf_operation_judges_provenance_guard_v1 BEFORE INSERT OR UPDATE OF operation_code, created_by_execution_id, updated_by_execution_id ON lf_operation_judges FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_provenance_guard_v1()",
+          "function_source_sha256": "0e3b4b7d8b6e164ad2cc353c200385a616aa51210e3ef71219abc658f89eeb5c"
+        },
+        {
+          "name": "trg_lf_operation_judges_timestamp",
+          "enabled": "O",
+          "function": "fn_update_lf_operation_judges_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_operation_judges_timestamp BEFORE UPDATE ON lf_operation_judges FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_judges_timestamp()",
+          "function_source_sha256": "b72d7d81a8291912f6f4c9c7972e337aeb8f320a95a055761f6de9258e9ca515"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_operation_judges_operation_code_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (operation_code) REFERENCES lf_operation_registry(operation_code) ON DELETE CASCADE",
+          "references": "lf_operation_registry"
+        },
+        {
+          "name": "lf_operation_judges_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (operation_code, judge_code)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "name": "operation_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "version",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_model",
+          "type": "text",
+          "default": "'GIT_FIRST_YAML'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_repo",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_paths",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "operation_family",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "operation_domain",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "operation_type",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "applies_to_asset_type",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "lifecycle_state_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_lf_operation_registry_classification",
+          "valid": true,
+          "unique": false,
+          "definition": "CREATE INDEX idx_lf_operation_registry_classification ON public.lf_operation_registry USING btree (operation_family, operation_domain, operation_type, applies_to_asset_type)"
+        },
+        {
+          "name": "idx_lf_operation_registry_lifecycle_state",
+          "valid": true,
+          "unique": false,
+          "definition": "CREATE INDEX idx_lf_operation_registry_lifecycle_state ON public.lf_operation_registry USING btree (lifecycle_state_code)"
+        },
+        {
+          "name": "lf_operation_registry_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_operation_registry_pkey ON public.lf_operation_registry USING btree (operation_code)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "lf_operation_registry_authenticated_read_v01",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_operation_registry",
+      "triggers": [
+        {
+          "name": "trg_lf_operation_registry_initial_lifecycle_v1",
+          "enabled": "O",
+          "function": "lf_assign_initial_lifecycle_state_v1()",
+          "definition": "CREATE TRIGGER trg_lf_operation_registry_initial_lifecycle_v1 BEFORE INSERT ON lf_operation_registry FOR EACH ROW EXECUTE FUNCTION lf_assign_initial_lifecycle_state_v1('OPERATION_LIFECYCLE')",
+          "function_source_sha256": "74c2692552a7ec244ee8a3af609d485be0f9b9a3efd5b698bf9107ecfe6dd443"
+        },
+        {
+          "name": "trg_lf_operation_registry_lifecycle_transition_v1",
+          "enabled": "O",
+          "function": "lf_enforce_lifecycle_transition_v1()",
+          "definition": "CREATE TRIGGER trg_lf_operation_registry_lifecycle_transition_v1 BEFORE UPDATE OF lifecycle_state_code ON lf_operation_registry FOR EACH ROW EXECUTE FUNCTION lf_enforce_lifecycle_transition_v1('OPERATION_LIFECYCLE')",
+          "function_source_sha256": "8ba694aed72358783874eb62eb6bd510bb36891f7f9ab2a0c189bc3f34b8ea85"
+        },
+        {
+          "name": "trg_lf_operation_registry_materialization_guard_v1",
+          "enabled": "O",
+          "function": "fn_lf_operation_registry_materialization_guard_v1()",
+          "definition": "CREATE TRIGGER trg_lf_operation_registry_materialization_guard_v1 BEFORE INSERT OR UPDATE OF status ON lf_operation_registry FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_registry_materialization_guard_v1()",
+          "function_source_sha256": "925eee1c30292d1944c1bb582ed0e3bddda70713d417f21463624119d2b5bf8e"
+        },
+        {
+          "name": "trg_lf_operation_registry_provenance_guard_v1",
+          "enabled": "O",
+          "function": "fn_lf_operation_provenance_guard_v1()",
+          "definition": "CREATE TRIGGER trg_lf_operation_registry_provenance_guard_v1 BEFORE INSERT OR UPDATE OF operation_code, created_by_execution_id, updated_by_execution_id ON lf_operation_registry FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_provenance_guard_v1()",
+          "function_source_sha256": "0e3b4b7d8b6e164ad2cc353c200385a616aa51210e3ef71219abc658f89eeb5c"
+        },
+        {
+          "name": "trg_lf_operation_registry_timestamp",
+          "enabled": "O",
+          "function": "fn_update_lf_operation_registry_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_operation_registry_timestamp BEFORE UPDATE ON lf_operation_registry FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_registry_timestamp()",
+          "function_source_sha256": "a6f311dc1e54bc8e0e7a4d62c0a546f8e29e76bb10fd0e924c290beb043df412"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_operation_registry_lifecycle_prefix_ck",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (lifecycle_state_code ~~ 'OP_%'::text)",
+          "references": null
+        },
+        {
+          "name": "lf_operation_registry_lifecycle_state_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (lifecycle_state_code) REFERENCES lf_ops.estados_catalogo(state_code) ON UPDATE RESTRICT ON DELETE RESTRICT",
+          "references": "lf_ops.estados_catalogo"
+        },
+        {
+          "name": "lf_operation_registry_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (operation_code)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "name": "operation_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "step_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "step_order",
+          "type": "integer",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "execution_order",
+          "type": "integer",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "contract_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "purpose",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "input_required",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "resolver_ref",
+          "type": "text",
+          "default": "'GPT_RUNTIME_WITH_SUPABASE_CONTEXT'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "output_payload",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "pass_condition",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "block_condition",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "blocking_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "mini_judge_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "required_evidence_keys",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "next_if_pass",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "next_if_blocked",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'ACTIVE'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "execution_sql",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "fail_condition",
+          "type": "jsonb",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_operation_step_contracts_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_operation_step_contracts_pkey ON public.lf_operation_step_contracts USING btree (operation_code, step_id)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "authenticated_select_lf_operation_step_contracts",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_operation_step_contracts",
+      "triggers": [
+        {
+          "name": "trg_lf_operation_step_contracts_provenance_guard_v1",
+          "enabled": "O",
+          "function": "fn_lf_operation_provenance_guard_v1()",
+          "definition": "CREATE TRIGGER trg_lf_operation_step_contracts_provenance_guard_v1 BEFORE INSERT OR UPDATE OF operation_code, created_by_execution_id, updated_by_execution_id ON lf_operation_step_contracts FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_provenance_guard_v1()",
+          "function_source_sha256": "0e3b4b7d8b6e164ad2cc353c200385a616aa51210e3ef71219abc658f89eeb5c"
+        },
+        {
+          "name": "trg_lf_operation_step_contracts_timestamp",
+          "enabled": "O",
+          "function": "fn_update_lf_operation_step_contracts_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_operation_step_contracts_timestamp BEFORE UPDATE ON lf_operation_step_contracts FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_step_contracts_timestamp()",
+          "function_source_sha256": "65f13103f2b99cc241d9b9936a7ab0eebb8ab1acd65afc1cb5924c8f4453b3bc"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_operation_step_contracts_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (operation_code, step_id)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "name": "operation_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "step_order",
+          "type": "integer",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "step_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "judge_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "clean_result_value",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "blocked_result_value",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "return_result_value",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "required_evidence_keys",
+          "type": "jsonb",
+          "default": "'[]'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'ACTIVE_ENFORCEMENT'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_operation_step_judge_bindings_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_operation_step_judge_bindings_pkey ON public.lf_operation_step_judge_bindings USING btree (operation_code, step_order, step_id)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "authenticated_select_lf_operation_step_judge_bindings",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_operation_step_judge_bindings",
+      "triggers": [
+        {
+          "name": "trg_lf_operation_step_judge_bindings_provenance_guard_v1",
+          "enabled": "O",
+          "function": "fn_lf_operation_provenance_guard_v1()",
+          "definition": "CREATE TRIGGER trg_lf_operation_step_judge_bindings_provenance_guard_v1 BEFORE INSERT OR UPDATE OF operation_code, created_by_execution_id, updated_by_execution_id ON lf_operation_step_judge_bindings FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_provenance_guard_v1()",
+          "function_source_sha256": "0e3b4b7d8b6e164ad2cc353c200385a616aa51210e3ef71219abc658f89eeb5c"
+        },
+        {
+          "name": "trg_lf_operation_step_judge_bindings_timestamp",
+          "enabled": "O",
+          "function": "fn_update_lf_operation_step_judge_bindings_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_operation_step_judge_bindings_timestamp BEFORE UPDATE ON lf_operation_step_judge_bindings FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_step_judge_bindings_timestamp()",
+          "function_source_sha256": "3d8e3e5c52d4b79aabed81185d1c688451c98886be848c4cbd249c08515e05d3"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_operation_step_judge_bindings_operation_code_judge_code_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (operation_code, judge_code) REFERENCES lf_operation_judges(operation_code, judge_code) ON DELETE CASCADE",
+          "references": "lf_operation_judges"
+        },
+        {
+          "name": "lf_operation_step_judge_bindings_operation_code_step_order_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (operation_code, step_order) REFERENCES lf_operation_steps(operation_code, step_order) ON DELETE CASCADE",
+          "references": "lf_operation_steps"
+        },
+        {
+          "name": "lf_operation_step_judge_bindings_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (operation_code, step_order, step_id)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "name": "operation_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "step_order",
+          "type": "integer",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "step_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "required",
+          "type": "boolean",
+          "default": "true",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "evidence_required",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_path",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_sha",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "default": "true",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "execution_order",
+          "type": "integer",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_operation_steps_operation_code_step_id_key",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_operation_steps_operation_code_step_id_key ON public.lf_operation_steps USING btree (operation_code, step_id)"
+        },
+        {
+          "name": "lf_operation_steps_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_operation_steps_pkey ON public.lf_operation_steps USING btree (operation_code, step_order)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "lf_operation_steps_authenticated_read_v01",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_operation_steps",
+      "triggers": [
+        {
+          "name": "trg_lf_operation_steps_provenance_guard_v1",
+          "enabled": "O",
+          "function": "fn_lf_operation_provenance_guard_v1()",
+          "definition": "CREATE TRIGGER trg_lf_operation_steps_provenance_guard_v1 BEFORE INSERT OR UPDATE OF operation_code, created_by_execution_id, updated_by_execution_id ON lf_operation_steps FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_provenance_guard_v1()",
+          "function_source_sha256": "0e3b4b7d8b6e164ad2cc353c200385a616aa51210e3ef71219abc658f89eeb5c"
+        },
+        {
+          "name": "trg_lf_operation_steps_timestamp",
+          "enabled": "O",
+          "function": "fn_update_lf_operation_steps_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_operation_steps_timestamp BEFORE UPDATE ON lf_operation_steps FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_steps_timestamp()",
+          "function_source_sha256": "6a2112a62a14ac0f8dd6fc4675960a5c1cb2224171af659df06109868c6d697c"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_operation_steps_operation_code_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (operation_code) REFERENCES lf_operation_registry(operation_code) ON DELETE CASCADE",
+          "references": "lf_operation_registry"
+        },
+        {
+          "name": "lf_operation_steps_operation_code_step_id_key",
+          "type": "u",
+          "validated": true,
+          "definition": "UNIQUE (operation_code, step_id)",
+          "references": null
+        },
+        {
+          "name": "lf_operation_steps_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (operation_code, step_order)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "name": "asset_type",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "action_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "operation_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "operation_resolution",
+          "type": "text",
+          "default": "'STATIC'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "requires_existing_target",
+          "type": "boolean",
+          "default": "true",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "requires_missing_target",
+          "type": "boolean",
+          "default": "false",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "write_allowed",
+          "type": "boolean",
+          "default": "false",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'ACTIVE'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'EXEC-GOV-ROUTER-ACT0001-20260827-001'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_router_action_registry_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_router_action_registry_pkey ON public.lf_router_action_registry USING btree (asset_type, action_code)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "lf_internal_client_deny",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "false",
+          "command": "*",
+          "permissive": true,
+          "with_check": "false"
+        }
+      ],
+      "relation": "public.lf_router_action_registry",
+      "triggers": [],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_router_action_registry_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (NOT (requires_existing_target AND requires_missing_target))",
+          "references": null
+        },
+        {
+          "name": "lf_router_action_registry_operation_resolution_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (operation_resolution = ANY (ARRAY['STATIC'::text, 'NONE'::text]))",
+          "references": null
+        },
+        {
+          "name": "lf_router_action_registry_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (asset_type, action_code)",
+          "references": null
+        }
+      ]
+    }
+  ],
+  "observed_at": "2026-10-13 09:17:58.807898+00",
+  "schema_version": "LF_OPERATIONAL_BASELINE_CATALOG_READBACK_V1",
+  "expected_relations": 11,
+  "resolved_relations": 11
+}
