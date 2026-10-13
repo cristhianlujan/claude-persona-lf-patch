@@ -74,7 +74,9 @@ def _longitudinal(raw: dict) -> dict:
         required = ("wave_id", "observed_at", "cohort_sha256", "evaluator_execution_id",
                     "evaluator_receipt_ref", "execution_receipt_ref", "producer_execution_id", "causal_attribution_ref",
                     "holdout_receipt_ref")
-        if (any(not w.get(k) for k in required)
+        if (any(not isinstance(w.get(k), str) or not w[k].strip() for k in required)
+                or len(w["cohort_sha256"]) != 64
+                or any(c not in "0123456789abcdef" for c in w["cohort_sha256"])
                 or w.get("evaluator_verification_state") != "VERIFIED"
                 or w.get("producer_execution_id") == w.get("evaluator_execution_id")):
             return {"status": "NOT_OBSERVED", "reason": "INDEPENDENT_WAVE_PROVENANCE_MISSING"}
@@ -106,7 +108,12 @@ def _longitudinal(raw: dict) -> dict:
 def evaluate_dimensions(raw: dict, holdout: dict) -> dict:
     """Secondary measurements. NEVER authorizes benchmark PASS or cutover."""
     blockers = []
-    if raw.get("benchmark_scope") != "EXPERT_TASK_PERFORMANCE_E2E" or raw.get("raw_frozen") is not True:
+    if not isinstance(raw, dict):
+        return {"schema": "PROFILE_EXPERT_DIMENSIONS_V2", "status": "BLOCK",
+                "blocking_codes": ["RAW_INVALID"], "cutover_eligible": False}
+    if (raw.get("benchmark_scope") != "EXPERT_TASK_PERFORMANCE_E2E"
+            or raw.get("raw_frozen") is not True
+            or raw.get("thresholds_frozen_before_raw") is not True):
         blockers.append("FROZEN_EXPERT_RAW_REQUIRED")
     cases = raw.get("cases")
     if not isinstance(cases, list) or not cases:
@@ -114,8 +121,10 @@ def evaluate_dimensions(raw: dict, holdout: dict) -> dict:
         cases = []
     ids = [c.get("case_id") for c in cases if isinstance(c, dict)]
     hold_ids = holdout.get("holdout_case_ids") if isinstance(holdout, dict) else None
-    if (len(ids) != len(cases) or any(not i for i in ids) or len(set(ids)) != len(ids)
+    if (len(ids) != len(cases) or any(not isinstance(i, str) or not i for i in ids)
+            or len(set(i for i in ids if isinstance(i, str))) != len(ids)
             or not isinstance(hold_ids, list) or not hold_ids
+            or any(not isinstance(i, str) or not i for i in hold_ids)
             or not set(hold_ids).issubset(set(ids)) or len(hold_ids) != len(set(hold_ids))):
         blockers.append("CASE_OR_HOLDOUT_IDENTITY_INVALID")
     for case in cases:
