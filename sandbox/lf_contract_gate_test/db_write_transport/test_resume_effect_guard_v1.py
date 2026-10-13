@@ -16,6 +16,8 @@ class ResumeEffectGuardTests(unittest.TestCase):
             calls.append(sql)
             if "fn_lf_operation_reserve_execution_v1" in sql:
                 return {"status":"IN_PROGRESS","execution_id":r.identity("2362","20261013010000","100")["execution_id"]}
+            if "lf_router_downstream_authority_validate_v1" in sql:
+                return {"applicable":True,"valid":True,"code":"ROUTER_DOWNSTREAM_AUTHORITY_VALID","operation_code":"ACTUALIZACION_DB_LF"}
             if "fn_lf_operation_acquire_lease_v1" in sql:
                 return {"result":"LEASE_ACQUIRED","lease_fence":2}
             if "v_lf_capability_entry_guard_v1" in sql:
