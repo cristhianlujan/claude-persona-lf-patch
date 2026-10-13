@@ -766,6 +766,17 @@ jobs:
           live="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha')"
           [ "$live" = "$EXPECTED_MAIN" ] || { echo "FAIL_TRAIN_MAIN_MOVED_POST_APPLY expected=$EXPECTED_MAIN live=$live"; exit 2; }
 
+      # RECONCILE is read-only during validation, but it cannot be merged until
+      # the EXISTING ACTUALIZACION_DB_LF step judge can close a Git-only effect.
+      - name: Block RECONCILE promotion until governed Git-only closeout exists
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.reconcile_mode.outputs.mode == 'RECONCILE'
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '.status=="PASS" and .code=="RECONCILE_GIT_ONLY_PASS"' .lf_train/reconcile-readback.json >/dev/null
+          echo 'BLOCK_RECONCILE_GIT_ONLY_CLOSURE_JUDGE_NOT_ADMITTED'
+          echo 'The existing operation requires a versioned Git-only judge and post-merge receipt.'
+          exit 2
       - name: Publish lf-merge-train/verified before REAL merge
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && success()
         env:
