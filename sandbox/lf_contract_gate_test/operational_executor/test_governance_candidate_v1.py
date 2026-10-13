@@ -68,11 +68,11 @@ def verify(source: str) -> list[str]:
       r"(?i)\bINSERT\s+INTO\s+public\.lf_operation_execution_steps\b",
     ):
       if re.search(regex,source): problems.append("FORBIDDEN:"+regex)
-    if len(re.findall(r"(?m)^CREATE OR REPLACE FUNCTION public\\.lf_operational_executor_begin_v1\\(",source))!=1:
+    if len(re.findall(r"(?m)^CREATE OR REPLACE FUNCTION public\.lf_operational_executor_begin_v1\(",source))!=1:
       problems.append("AMBIGUOUS_BEGIN_FACADE")
-    if len(re.findall(r"(?m)^CREATE OR REPLACE FUNCTION public\\.lf_operational_executor_finish_v1\\(",source))!=1:
+    if len(re.findall(r"(?m)^CREATE OR REPLACE FUNCTION public\.lf_operational_executor_finish_v1\(",source))!=1:
       problems.append("AMBIGUOUS_FINISH_FACADE")
-    if len(re.findall(r"(?m)^CREATE OR REPLACE FUNCTION public\\.lf_close_operational_execution_v1\\(",source))!=1:
+    if len(re.findall(r"(?m)^CREATE OR REPLACE FUNCTION public\.lf_close_operational_execution_v1\(",source))!=1:
       problems.append("AMBIGUOUS_CLOSE_FACADE")
     if not source.strip().startswith("-- LF_OPERATION_EXECUTOR governance candidate"):
       problems.append("NOT_A_GOVERNANCE_CANDIDATE")
@@ -122,7 +122,7 @@ class GovernedCandidateStaticTests(unittest.TestCase):
 
     def test_generic_execution_reservation_is_reused(self):
         source=SQL.read_text(encoding="utf-8")
-        self.assertEqual(len(re.findall(r"(?m)^  v_reserved:=public\\.fn_lf_operation_reserve_execution_v1\\(",source)),1)
+        self.assertEqual(len(re.findall(r"(?m)^  v_reserved:=public\.fn_lf_operation_reserve_execution_v1\(",source)),1)
         self.assertIn("RESERVED_NEW_EXECUTION",source)
         self.assertTrue(verify(source.replace(
           "OPERATIONAL_ADMISSION_REPLAY_OR_EXECUTION_MISMATCH","PERMIT_REPLAY")))
