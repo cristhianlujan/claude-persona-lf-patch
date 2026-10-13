@@ -181,5 +181,11 @@ def denial_sql() -> list[str]:
         "RAISE EXCEPTION 'BLOCK_DENIAL_PRODUCED_EXECUTION_OR_STEP_WRITE'; END IF; "
         "END $no_effect$;"
     )
+    inputs.append(
+        "SELECT 'PASS_PG17_OPERATIONAL_ENTRYPOINT_DENIAL "
+        "missing_approval=true forged_approval=true "
+        "invalid_begin=true unadmitted_finish=true "
+        "role_isolation=true no_effect_writes=true';"
+    )
     return inputs
 
