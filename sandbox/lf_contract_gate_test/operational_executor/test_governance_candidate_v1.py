@@ -55,6 +55,8 @@ def verify(source: str) -> list[str]:
       "OPERATIONAL_ADMISSION_VERIFIED_DECISION_NOT_CURRENT",
       "OPERATIONAL_ADMISSION_DECISION_SCOPE_OR_EXPIRY_INVALID",
       "OPERATIONAL_ADMISSION_AUTHORITY_POLICY_NOT_ACTIVE",
+      "OPERATIONAL_ADMISSION_PROVENANCE_CHANNEL_NOT_CURRENT",
+      "OPERATIONAL_DECISION_PROVENANCE_CHANNEL_NO_LONGER_ACTIVE",
       "OPERATIONAL_ADMISSION_AUTHORITY_RECEIPT_INVALID",
       "OPERATIONAL_DECISION_PENDING_AUTHORITY_INVARIANT_VIOLATED",
       "OPERATIONAL_DECISION_CATALOGUE_COLLISION_REQUIRES_RECONCILIATION",
@@ -165,6 +167,17 @@ class GovernedCandidateStaticTests(unittest.TestCase):
     def test_candidate_version_can_be_assigned_by_train(self):
         self.assertTrue(SQL.name.endswith(MIGRATION_SUFFIX))
         self.assertEqual(len(list((ROOT/"supabase/migrations").glob("*"+MIGRATION_SUFFIX))),1)
+
+    def test_provenance_channel_remains_authoritative_after_receipt(self):
+        source=SQL.read_text(encoding="utf-8")
+        self.assertEqual(source.count(
+            "ch.allowed_kinds @> ARRAY['HUMAN_ROUTING_DECISION']::text[]"),2)
+        self.assertTrue(verify(source.replace(
+            "OPERATIONAL_DECISION_PROVENANCE_CHANNEL_NO_LONGER_ACTIVE",
+            "PERMIT_REVOKED_CHANNEL")))
+        self.assertTrue(verify(source.replace(
+            "OPERATIONAL_ADMISSION_PROVENANCE_CHANNEL_NOT_CURRENT",
+            "PERMIT_NO_CHANNEL")))
 
     def test_decision_route_is_pending_never_approved_by_migration(self):
         source=SQL.read_text(encoding="utf-8")
