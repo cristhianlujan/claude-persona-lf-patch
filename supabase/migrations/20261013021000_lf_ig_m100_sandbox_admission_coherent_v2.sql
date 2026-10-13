@@ -298,6 +298,15 @@ BEGIN
   END IF;
 
   v_meta:=jsonb_set(v_meta,'{m10_0_original_unit_exit_criterion_v2}',to_jsonb(v_old_criterion),true);
+  v_meta:=jsonb_set(v_meta,'{m10_0_original_exit_criterion_v2}',
+    coalesce(v_meta->'exit_criterion_v2','null'::jsonb),true);
+  v_meta:=jsonb_set(v_meta,'{exit_criterion_v2}',
+    jsonb_build_object(
+      'phase','SANDBOX_ENGINEERING_QUALIFICATION',
+      'human_approval_required_for_CP5',false,
+      'operational_cutover_authority_separate',true,
+      'decision_routing_policy','m10_0_decision_routing_v1',
+      'technical_readback_required',true),true);
   v_meta:=jsonb_set(v_meta,'{m10_0_original_work_contract_v1}',
     jsonb_build_object('title',v_old_work.title,'objective',v_old_work.objective,
       'expected_result',v_old_work.expected_result,
@@ -331,8 +340,37 @@ BEGIN
       'm90_frozen_anchor',v_bundle.id,'m912_readiness_anchor',v_ready.id,
       'verifier','EXISTING_PROVENANCE_VERIFIER',
       'independent_operational_gate','m10_0_operational_admission_v2',
+      'pre_human_decision_routing','m10_0_decision_routing_v1',
       'no_new_shared_validator',true,
       'production_activation',false),true);
+  -- Pre-human judgment is for IG diagnostic proposals; it must not
+  -- override real cutover human authorization for an operational release.
+  -- The existing IG adapter resolves live canonical currentness first.
+  v_meta:=jsonb_set(v_meta,'{m10_0_decision_routing_v1}',
+    jsonb_build_object(
+      'schema','IG_M100_EXISTING_PREHUMAN_JUDGE_BINDING_V1',
+      'pre_human_gate','HUMAN_ESCALATION_ADMISSION',
+      'safe_change_gate','SAFE_CHANGE_ADMISSION',
+      'evidence_gate','TARGETED_EVIDENCE_ACQUISITION',
+      'current_capabilities',v_router_refs,
+      'source_currentness','IG_LIVE_CANONICAL_CLASSIFIER_REQUIRED',
+      'ig_live_disposition','private.fn_lf_ig_human_decision_live_disposition_v1',
+      'ig_eligibility_adapter','private.fn_lf_human_decision_open_ig_v3',
+      'policy_authority','private.lf_human_escalation_policies_v1',
+      'route_policy',jsonb_build_object(
+        'no_human_for',jsonb_build_array('NO_HUMAN_REQUIRED',
+          'AUTO_RESOLVE_FIRST','AUTO_EXECUTION_ELIGIBLE',
+          'ACQUIRE_EVIDENCE','EVIDENCE_REQUIRED'),
+        'blocked_and_unknown_not_approval',true,
+        'recommended_is_not_permission',true,
+        'only_human_eligible_routes_to_queue',true,
+        'evidence_exhaustion_requires_proof',true,
+        'policy_governs_human_eligibility',true),
+      'technical_checkpoint_CP5_human_approval_required',false,
+      'operational_cutover_authority_gate','m10_0_operational_admission_v2',
+      'cutover_human_receipt_not_replaced_by_safe_change',true,
+      'classification_executes_effects',false,
+      'qualification_automatically_promotes',false),true);
   v_meta:=jsonb_set(v_meta,'{m10_0_engineering_admission_v2}',
     jsonb_build_object('status','QUALIFIED_IN_MIGRATION_PREFLIGHT',
       'phase','SANDBOX_ENGINEERING_ONLY',
@@ -407,6 +445,7 @@ BEGIN
       acceptance_criteria=jsonb_build_array(
         'CP5–CP7 prueban controles reales en sandbox y ledger',
         'M9.0/M9.12 pinned, 7/7 componentes, sin reproducción de bundle',
+        'Escalamiento previo por SAFE_CHANGE_ADMISSION y HUMAN_ESCALATION_ADMISSION: no escalar recomendaciones sin agotar opciones automáticas',
         'Cutover humano independiente: APPROVE real, authority_receipt HUMAN_DECISION; no activación automática'
       )
   WHERE id=v_work_id AND work_code='PAULO-159' AND status='IN_PROGRESS';
