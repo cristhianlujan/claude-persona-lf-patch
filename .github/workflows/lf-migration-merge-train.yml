@@ -198,9 +198,34 @@ jobs:
             printf '%s\n' "current_main=$current_main"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Resolve RECONCILE governed mode
+        id: reconcile_mode
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,re
+          fields={}
+          for line in os.environ.get("PR_BODY","").splitlines():
+              if ":" in line:
+                  key,value=line.split(":",1)
+                  fields[key.strip().upper()]=value.strip()
+          mode=(fields.get("LF_MIGRATION_MODE") or "NORMAL").upper()
+          if mode not in ("NORMAL","RECONCILE"):
+              raise SystemExit("FAIL_TRAIN_MODE_NOT_SUPPORTED:"+mode)
+          execution=fields.get("LF_ROUTER_EXECUTION_ID","")
+          if mode=="RECONCILE" and re.fullmatch(r"EXEC-[A-Z0-9][A-Z0-9_-]*",execution) is None:
+              raise SystemExit("FAIL_RECONCILE_ROUTER_EXECUTION_REQUIRED")
+          with open(os.environ["GITHUB_OUTPUT"],"a") as out:
+              out.write("mode="+mode+"\\n")
+              out.write("router_execution_id="+execution+"\\n")
+          PY
+
       - name: Sync PR branch with current main in REAL mode
         id: sync
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.reconcile_mode.outputs.mode != 'RECONCILE'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
@@ -280,13 +305,35 @@ jobs:
           PR: ${{ steps.admission.outputs.pr_number }}
           EVENT_HEAD: ${{ steps.admission.outputs.head_sha }}
           SYNC_HEAD: ${{ steps.sync.outputs.head_sha }}
+          CURRENT_MAIN: ${{ steps.admission.outputs.current_main }}
+          OP_MODE: ${{ steps.reconcile_mode.outputs.mode }}
+          ROUTER_EXECUTION_ID: ${{ steps.reconcile_mode.outputs.router_execution_id }}
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p .lf_train/source
-          if [ "$LF_MIGRATION_TRAIN_MODE" = "REAL" ]; then head_sha="$SYNC_HEAD"; else head_sha="$EVENT_HEAD"; fi
+          if [ "$LF_MIGRATION_TRAIN_MODE" = "REAL" ] && [ "$OP_MODE" != "RECONCILE" ]; then head_sha="$SYNC_HEAD"; else head_sha="$EVENT_HEAD"; fi
 
           gh api --paginate --slurp "repos/$REPO/pulls/$PR/files?per_page=100" > .lf_train/pr-files-pages.json
+
+          if [ "$OP_MODE" = "RECONCILE" ]; then
+            git fetch --no-tags origin "$head_sha" "$CURRENT_MAIN"
+            git merge-base --is-ancestor "$CURRENT_MAIN" "$head_sha" || {
+              echo "FAIL_RECONCILE_BRANCH_NOT_CURRENT_MAIN"; exit 2;
+            }
+            python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_reconcile_git.py \
+              --repo-root "$GITHUB_WORKSPACE" \
+              --pr-files .lf_train/pr-files-pages.json \
+              --base-sha "$CURRENT_MAIN" --head-sha "$head_sha" \
+              --repository "$REPO" --router-execution-id "$ROUTER_EXECUTION_ID" \
+              | tee .lf_train/reconcile-readback.json
+            jq -e '.status=="PASS" and .code=="RECONCILE_GIT_ONLY_PASS" and .count>0' .lf_train/reconcile-readback.json >/dev/null
+            echo "migration_count=0" >> "$GITHUB_OUTPUT"
+            echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           python3 - <<'PY'
           import json,re
           pages=json.load(open(".lf_train/pr-files-pages.json",encoding="utf-8"))
