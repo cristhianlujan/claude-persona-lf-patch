@@ -6,7 +6,17 @@ import re
 import unittest
 
 ROOT=Path(__file__).resolve().parents[3]
-SQL=ROOT/"supabase/migrations/20261013040000_lf_operational_executor_lane_v1.sql"
+MIGRATION_SUFFIX="_lf_operational_executor_lane_v1.sql"
+
+
+def resolve_candidate() -> Path:
+    matches=sorted((ROOT/"supabase/migrations").glob("*"+MIGRATION_SUFFIX))
+    if len(matches)!=1:
+        raise AssertionError(f"GOVERNANCE_SOURCE_CARDINALITY_INVALID:{len(matches)}")
+    return matches[0]
+
+
+SQL=resolve_candidate()
 
 
 def verify(source: str) -> list[str]:
@@ -62,6 +72,10 @@ def verify(source: str) -> list[str]:
 
 
 class GovernedCandidateStaticTests(unittest.TestCase):
+    def test_candidate_version_can_be_assigned_by_train(self):
+        self.assertTrue(SQL.name.endswith(MIGRATION_SUFFIX))
+        self.assertEqual(len(list((ROOT/"supabase/migrations").glob("*"+MIGRATION_SUFFIX))),1)
+
     def test_complete_candidate(self):
         self.assertEqual(verify(SQL.read_text(encoding="utf-8")),[])
     def test_cannot_disable_router_authority(self):
