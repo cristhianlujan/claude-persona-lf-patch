@@ -59,8 +59,8 @@ def execute(snapshot, release, gateway, *, allowed=False):
             else:
                 item["status"] = "ERROR_CONTINUATION_LIMIT"
             if "status" not in item:
-                rows = gateway.query("/rest/v1/v_ig_m105_cp2_verdict_v1?select=pantalla_id,run_id,cp2_verdict,technical_verdict&pantalla_id=eq." + str(screen))
-                if len(rows) != 1:
+                rows = gateway.query("/rest/v1/rpc/fn_ig_m105_cp2_screen_readback_v1", {"p_pantalla_id": screen})
+                if not isinstance(rows, list) or len(rows) != 1:
                     item["status"] = "ERROR_READBACK"
                 else:
                     item["run_id"] = rows[0]["run_id"]
@@ -75,26 +75,27 @@ def execute(snapshot, release, gateway, *, allowed=False):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--scope", required=True)
-    p.add_argument("--release", required=True)
     p.add_argument("--execute", action="store_true")
     args = p.parse_args()
-    with open(args.scope, encoding="utf8") as f:
-        snapshot = json.load(f)
-    with open(args.release, encoding="utf8") as f:
-        release = json.load(f)
-    if not args.execute:
-        result = execute(snapshot, release, None)
-    else:
-        endpoint = os.environ.get("IG_CANONICAL_ENDPOINT", "")
-        credential = os.environ.get("IG_CANONICAL_AUTH", "")
-        if not endpoint or not credential:
-            result = dict(status="AUTHENTICATED_TRANSPORT_UNAVAILABLE", attempts=0, results=[])
-        else:
-            gateway = Transport(endpoint, {"authorization": "Bearer " + credential,
-                 "apikey": credential, "content-type": "application/json",
-                 "accept-profile": "programacion"})
-            result = execute(snapshot, release, gateway, allowed=True)
+    endpoint = os.environ.get("IG_CANONICAL_ENDPOINT", "")
+    credential = os.environ.get("IG_CANONICAL_AUTH", "")
+    if not endpoint or not credential:
+        print(json.dumps({"status": "AUTHENTICATED_TRANSPORT_UNAVAILABLE", "attempts": 0}))
+        return 2
+    gateway = Transport(endpoint, {"authorization": "Bearer " + credential,
+             "apikey": credential, "content-type": "application/json"})
+    try:
+        authority = gateway.query("/rest/v1/rpc/fn_ig_m105_cp2_dispatch_context_v1", {})
+        if not isinstance(authority, dict) or authority.get("status") != "AUTHORIZED_CONTEXT":
+            print(json.dumps({"status": "GOVERNED_DISPATCH_CONTEXT_UNAVAILABLE", "attempts": 0}))
+            return 2
+        if authority.get("dispatch_permitted") is not True:
+            print(json.dumps({"status": "CUTOVER_NOT_AUTHORIZED", "attempts": 0}))
+            return 2
+        result = execute(authority["scope"], authority["release"], gateway, allowed=args.execute)
+    except Exception as exc:
+        print(json.dumps({"status": "DISPATCH_TRANSPORT_FAILURE", "exception_type": type(exc).__name__}))
+        return 2
     print(json.dumps(result, sort_keys=True))
     return 0 if result["status"] in ("PREFLIGHT_ONLY", "RECORDED_NOT_CERTIFIED") else 2
 
