@@ -6,7 +6,7 @@ DO $m103_cp4$
 DECLARE
  p constant text := 'IG_CURATOR_VALIDATOR_REFACTOR_V2';
  cp constant text := 'ROLLBACK_SUITE';
- test_code constant text := 'ENG_M10_3_ROLLBACK_DRILL';
+ v_case_code constant text := 'ENG_M10_3_ROLLBACK_DRILL';
  suite constant text := 'INPUT_GOVERNANCE_REGRESSION';
  actor constant text := 'IG_M103_CP4_SCOPED_REGRESSION_REUSE_20261013';
  ev text; b jsonb; t jsonb; a jsonb; cp3_sha text; cp3_evidence text;
@@ -55,7 +55,7 @@ BEGIN
  IF v_registry_count<>1 THEN RAISE EXCEPTION 'M103_CP4_BASELINE_NOT_CLEAN'; END IF;
 
  IF EXISTS(SELECT 1 FROM public.lf_test_suite_cases
-           WHERE suite_code=suite AND test_code=test_code)
+           WHERE suite_code=suite AND test_code=v_case_code)
  OR EXISTS(SELECT 1 FROM public.lf_test_suite_runs
            WHERE suite_code=suite
              AND metadata->>'unit_code'='M10.3'
@@ -67,7 +67,7 @@ BEGIN
    suite_code,test_code,test_order,title,test_type,execution_mode,severity,
    preconditions,input_payload,expected_output,prohibited_output,status,
    metadata,created_by_execution_id)
- SELECT suite,test_code,coalesce(max(test_order),0)+1,
+ SELECT suite,v_case_code,coalesce(max(test_order),0)+1,
    'M10.3 sandbox pointer rollback: material CP3 re-used (positive+negative+revert+zero residue)',
    'DETERMINISTIC','AUTOMATED','HIGH',
    jsonb_build_object('source_checkpoint','M10.3.ROLLBACK_DRILL',
@@ -95,7 +95,7 @@ BEGIN
   suite,actor,'sandbox','VERIFIED_EVIDENCE_REUSE','M10.3 CP3 Train PostgreSQL',
   'PASSED',v_cp3_at,v_cp3_at,1,1,0,0,0,
   jsonb_build_object('scope','CHECKPOINT_SCOPED_SINGLE_CASE',
-   'test_code',test_code,'cp3_assertion_sha256',cp3_sha),
+   'test_code',v_case_code,'cp3_assertion_sha256',cp3_sha),
   jsonb_build_object('plan_code',p,'unit_code','M10.3','checkpoint_code',cp,
    'source_checkpoint','ROLLBACK_DRILL','source_assertion_sha256',cp3_sha,
    'source_evidence_ref',cp3_evidence,'source_execution_time',v_cp3_at,
@@ -110,7 +110,7 @@ BEGIN
   executor_name,status,input_payload,expected_output,actual_output,
   evidence_payload,metadata,started_at,completed_at,created_by_execution_id)
  VALUES(
-  run_id,suite,test_code,actor,'sandbox','VERIFIED_EVIDENCE_REUSE','M10.3 CP3 Train PostgreSQL',
+  run_id,suite,v_case_code,actor,'sandbox','VERIFIED_EVIDENCE_REUSE','M10.3 CP3 Train PostgreSQL',
   'PASS',jsonb_build_object('source_checkpoint','M10.3.ROLLBACK_DRILL'),
   jsonb_build_object('negative_sha_rejected',true,'positive_switch',true,
       'pointer_reverted',true,'zero_residues',true),
@@ -124,7 +124,7 @@ BEGIN
   v_cp3_at,v_cp3_at,actor) RETURNING test_run_id INTO test_id;
 
  SELECT count(*) INTO owner_cases FROM public.lf_test_runs
- WHERE suite_run_id=run_id AND status='PASS' AND test_code=test_code;
+ WHERE suite_run_id=run_id AND status='PASS' AND test_code=v_case_code;
  SELECT count(*) INTO case_count FROM public.lf_test_suite_cases
  WHERE suite_code=suite;
  IF owner_cases<>1 OR case_count<1
@@ -134,7 +134,7 @@ BEGIN
      WHERE s.suite_run_id=run_id AND s.tests_total=1 AND s.tests_passed=1
        AND s.tests_failed=0 AND s.status='PASSED'
        AND s.metadata->>'full_catalog_evaluated'='false'
-       AND r.test_code=test_code AND r.status='PASS')
+       AND r.test_code=v_case_code AND r.status='PASS')
  THEN RAISE EXCEPTION 'M103_CP4_SCOPED_SUITE_EVIDENCE_INVALID'; END IF;
 
  ev := 'supabase://public.lf_test_suite_runs/'||run_id::text||
