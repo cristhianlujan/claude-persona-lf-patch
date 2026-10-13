@@ -168,9 +168,23 @@ BEGIN
         'target',jsonb_build_object(
           'declared_objects',jsonb_build_array(
             'public.lf_capability_current','public.lf_capability_version_registry'),
-          'declared_artifacts',jsonb_build_array(jsonb_build_object(
-            'path','cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/engineering_checkpoints/m9_2/switch_revert_sandbox.py',
-            'role','EVIDENCE_ONLY'))),
+          'declared_artifacts',jsonb_build_array(
+            jsonb_build_object(
+              'path','cristhianlujan/claude-persona-lf-patch:sandbox/lf_contract_gate_test/engineering_checkpoints/m10_2/neg_reverse.py',
+              'role','MUTATION_TARGET',
+              'purpose','CHECKPOINT_TEST_ARTIFACT',
+              'target_kind','EXACT_NEW_OR_UPDATE_FILE'),
+            jsonb_build_object(
+              'path','cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/engineering_checkpoints/m9_2/switch_revert_sandbox.py',
+              'role','EVIDENCE_ONLY'))),
+        'test_execution_contract',
+          coalesce(v_specs#>'{NEG_REVERSE,test_execution_contract}','{}'::jsonb)
+            || jsonb_build_object(
+              'declared_objects',jsonb_build_array(
+                'public.lf_capability_current','public.lf_capability_version_registry'),
+              'declared_queries',jsonb_build_array(q_current,q_m92),
+              'canonical_exit_criterion','SANDBOX canary positive and negative, baseline 1.0.0 restored, zero residue; operational cutover not implied',
+              'checkpoint_title_context','Revertir puntero CURRENT 1.0.0 sin residuos'),
         'verification_queries',jsonb_build_array(q_current,q_m92),
         'status','BLOCK_GENUINE_ASSERTION_UNTIL_EXECUTED')),true);
 
@@ -210,6 +224,8 @@ BEGIN
       'public.lf_capability_version_registry'),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,RUNTIME_PREFLIGHT,inputs,queries}',
     jsonb_build_array(q_runtime),true);
+  v_source := jsonb_set(v_source,'{checkpoint_inputs,RUNTIME_PREFLIGHT,inputs,db_objects}',
+    jsonb_build_array('public.lf_capability_current'),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,NEG_REVERSE,inputs,queries}',
     jsonb_build_array(q_current,q_m92),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,NEG_REVERSE,inputs,db_objects}',
