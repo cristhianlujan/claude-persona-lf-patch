@@ -81,6 +81,23 @@ BEGIN
     RAISE EXCEPTION 'M1011_VERIFIED_RECEIPT_REQUIRED'; END IF;
  IF position(receipt.suite_run_id::text IN coalesce(NEW.evidence_ref,''))=0 THEN
     RAISE EXCEPTION 'M1011_RECEIPT_EVIDENCE_BINDING_REQUIRED'; END IF;
+ -- Re-verify exact source and effective ACL against prior sandbox observation.
+ IF EXISTS (
+    SELECT 1 FROM programacion.engineering_plan_units u
+    CROSS JOIN LATERAL jsonb_array_elements(
+      u.unit_metadata#>'{m1011_live_sql_recheck_v2,functions}') f
+    LEFT JOIN pg_proc p ON p.oid=to_regprocedure(f->>'observed_signature')
+    WHERE u.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
+      AND u.unit_code='M10.11'
+      AND (p.oid IS NULL
+        OR md5(p.prosrc) IS DISTINCT FROM f->>'function_source_md5'
+        OR has_function_privilege('anon',p.oid,'EXECUTE') IS DISTINCT FROM
+            (f#>>'{effective_execute,anon}')::boolean
+        OR has_function_privilege('authenticated',p.oid,'EXECUTE') IS DISTINCT FROM
+            (f#>>'{effective_execute,authenticated}')::boolean
+        OR has_function_privilege('service_role',p.oid,'EXECUTE') IS DISTINCT FROM
+            (f#>>'{effective_execute,service_role}')::boolean)
+ ) THEN RAISE EXCEPTION 'M1011_SQL_OR_ACL_DRIFT'; END IF;
  RETURN NEW;
 END;
 $guard$;
@@ -155,3 +172,46 @@ BEGIN
  THEN RAISE EXCEPTION 'M1011_PREMATURE_CHECKPOINT_CLOSE'; END IF;
 END;
 $verify$;
+
+
+-- Executable positive compilation and two adverse checkpoint transitions.
+-- The two rejected transitions run in nested exception subtransactions and
+-- leave no checkpoint or assertion receipts.
+DO $adversarial$
+DECLARE err text;
+BEGIN
+ BEGIN
+   PERFORM programacion.fn_engineering_checkpoint_transition_v1(
+      'IG_CURATOR_VALIDATOR_REFACTOR_V2','M10.11',
+      'REVOKE_MIGRATION','NOT_APPLICABLE',
+      'supabase://test/unsigned-fake','IG_M1011_ADVERSARIAL','Missing independent evidence');
+   RAISE EXCEPTION 'M1011_FALSE_NA_PASS';
+ EXCEPTION WHEN raise_exception THEN
+   GET STACKED DIAGNOSTICS err=MESSAGE_TEXT;
+   IF err NOT LIKE 'M1011_INDEPENDENT_MULTISOURCE_SUITE_REQUIRED%'
+      AND err NOT LIKE 'M1011_RECEIPT_EVIDENCE_BINDING_REQUIRED%' THEN
+      RAISE EXCEPTION 'M1011_UNEXPECTED_NA_REJECTION:%',err;
+   END IF;
+ END;
+ BEGIN
+   PERFORM programacion.fn_engineering_checkpoint_transition_v1(
+      'IG_CURATOR_VALIDATOR_REFACTOR_V2','M10.11',
+      'REVOKE_MIGRATION','DONE',
+      'supabase://test/no-revoke','IG_M1011_ADVERSARIAL','No approved target');
+   RAISE EXCEPTION 'M1011_FALSE_MATERIAL_PASS';
+ EXCEPTION WHEN raise_exception THEN
+   GET STACKED DIAGNOSTICS err=MESSAGE_TEXT;
+   IF err NOT LIKE 'M1011_MATERIAL_DONE_WITHOUT_TARGET%' THEN
+      RAISE EXCEPTION 'M1011_UNEXPECTED_DONE_REJECTION:%',err;
+   END IF;
+ END;
+ IF (SELECT status FROM programacion.engineering_work_checkpoints
+    WHERE work_item_id=197 AND checkpoint_code='REVOKE_MIGRATION')
+    IS DISTINCT FROM 'IN_PROGRESS' THEN
+   RAISE EXCEPTION 'M1011_ADVERSARIAL_TRANSITION_RESIDUE';
+ END IF;
+ IF programacion.fn_engineering_effective_open_blocker_count_v1(197)<>0 THEN
+   RAISE EXCEPTION 'M1011_BLOCKER_REMAINS_AFTER_SCOPE_REPAIR';
+ END IF;
+END;
+$adversarial$;
