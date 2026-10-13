@@ -163,7 +163,7 @@ BEGIN
 
   v_boot:=programacion.fn_engineering_unit_bootstrap_v3(
     'IG_CURATOR_VALIDATOR_REFACTOR_V2','M10.0');
-  IF v_boot#>>'{state,progress_pct}' IS DISTINCT FROM '100'
+  IF coalesce((v_boot#>>'{state,progress_pct}')::numeric,-1)<>100
      OR v_boot#>>'{state,done_checkpoint_count}' IS DISTINCT FROM '7'
      OR (SELECT status FROM programacion.engineering_work_items
          WHERE id=v_work_id) IS DISTINCT FROM 'DONE'
