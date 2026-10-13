@@ -505,187 +505,16 @@ CREATE OR REPLACE FUNCTION public.lf_operational_executor_admit_v1(
 SET search_path=pg_catalog,public,extensions
 AS $admit$
 DECLARE
-  v_login pg_roles%rowtype;
   v_route jsonb;
   v_manifest jsonb;
   v_reserved jsonb;
   v_authority jsonb;
 BEGIN
   PERFORM public.lf_operational_executor_assert_principal_v1('lf_operational_admission_authority');
-  IF session_user IN ('postgres','authenticator','service_role')
-     OR session_user = current_user THEN
-    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_INDEPENDENT_PRINCIPAL_REQUIRED';
-  END IF;
-  SELECT * INTO v_login FROM pg_roles WHERE rolname=session_user;
-  IF NOT FOUND OR NOT v_login.rolcanlogin OR v_login.rolsuper
-     OR v_login.rolcreatedb OR v_login.rolcreaterole
-     OR v_login.rolinherit OR v_login.rolreplication OR v_login.rolbypassrls THEN
-    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_LEAST_PRIVILEGE_LOGIN_REQUIRED';
-  END IF;
-  IF NOT EXISTS(
-      SELECT 1 FROM pg_auth_members m
-      JOIN pg_roles granted ON granted.oid=m.roleid
-      JOIN pg_roles member ON member.oid=m.member
-      WHERE granted.rolname='lf_operational_admission_authority'
-        AND member.rolname=session_user
-        AND m.set_option=true AND m.inherit_option=false AND m.admin_option=false
-     )
-     OR EXISTS(
-      SELECT 1 FROM pg_auth_members m
-      JOIN pg_roles granted ON granted.oid=m.roleid
-      JOIN pg_roles member ON member.oid=m.member
-      WHERE granted.rolname='lf_operation_executor_runtime'
-        AND member.rolname=session_user
-     ) THEN
-    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_ROLE_NOT_INDEPENDENT';
-  END IF;
-  IF p_execution_id !~ '^EXEC-[A-Z0-9_-]{3,200}
--- The login is provisioned separately after sandbox validation and EKB approval.
-DO $role$ BEGIN
- IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operation_executor_runtime') THEN
-   CREATE ROLE lf_operation_executor_runtime NOLOGIN NOINHERIT;
- END IF;
- IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operational_admission_authority') THEN
-   CREATE ROLE lf_operational_admission_authority NOLOGIN NOINHERIT;
- END IF;
- IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operational_admission_authority') THEN
-   CREATE ROLE lf_operational_admission_authority NOLOGIN NOINHERIT;
- END IF;
-END $role$;
--- Existing roles must already satisfy minimum privilege; never silently reuse
--- a login, inherited, superuser or cross-authority group.
-DO $roles_verify$
-BEGIN
- IF (
-    SELECT count(*) FROM pg_roles r
-    WHERE r.rolname IN ('lf_operational_admission_authority','lf_operation_executor_runtime')
-      AND r.rolcanlogin=false AND r.rolinherit=false AND r.rolsuper=false
-      AND r.rolcreatedb=false AND r.rolcreaterole=false
-      AND r.rolreplication=false AND r.rolbypassrls=false
- ) <> 2 THEN
-   RAISE EXCEPTION 'OPERATIONAL_AUTHORITY_ROLE_PRIVILEGES_UNSAFE';
- END IF;
- IF EXISTS(
-   SELECT 1 FROM pg_auth_members m
-   JOIN pg_roles g ON g.oid=m.roleid
-   JOIN pg_roles u ON u.oid=m.member
-   WHERE g.rolname IN ('lf_operational_admission_authority','lf_operation_executor_runtime')
-     AND u.rolname IN ('lf_operational_admission_authority','lf_operation_executor_runtime')
- ) THEN
-   RAISE EXCEPTION 'OPERATIONAL_AUTHORITY_ROLE_CROSS_MEMBERSHIP_FORBIDDEN';
- END IF;
-END $roles_verify$;
-
-GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
-GRANT USAGE ON SCHEMA public TO lf_operational_admission_authority;
-GRANT USAGE ON SCHEMA public TO lf_operational_admission_authority;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_principal_v1(text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.lf_operational_executor_assert_principal_v1(text)
-  TO lf_operational_admission_authority,lf_operation_executor_runtime;
-GRANT EXECUTE ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb)
-  TO lf_operational_admission_authority;
-GRANT EXECUTE ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb)
-  TO lf_operational_admission_authority;
-GRANT EXECUTE ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)
-  TO lf_operation_executor_runtime;
-GRANT EXECUTE ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)
-  TO lf_operation_executor_runtime;
-
-DO $verify$
-DECLARE v_migration text; v_route jsonb;
-BEGIN
- SELECT operation_code INTO v_migration FROM public.lf_router_action_registry
- WHERE asset_type='DB' AND action_code='UPDATE';
- IF v_migration IS DISTINCT FROM 'ACTUALIZACION_DB_LF' THEN
-   RAISE EXCEPTION 'OPERATIONAL_MIGRATION_ROUTE_CHANGED';
- END IF;
- v_route:=public.lf_router_resolve_v1(
-   'Governed operational handler',NULL,'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
- );
- IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
-    OR v_route->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
-    OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
-   RAISE EXCEPTION 'OPERATIONAL_ROUTER_ADMISSION_READBACK_BLOCKED';
- END IF;
-END $verify$;
-COMMIT;
-
-     OR p_handler_code !~ '^[A-Z][A-Z0-9_]{1,100}
--- The login is provisioned separately after sandbox validation and EKB approval.
-DO $role$ BEGIN
- IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operation_executor_runtime') THEN
-   CREATE ROLE lf_operation_executor_runtime NOLOGIN NOINHERIT;
- END IF;
-END $role$;
-GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
-REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)
-  TO lf_operation_executor_runtime;
-GRANT EXECUTE ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)
-  TO lf_operation_executor_runtime;
-
-DO $verify$
-DECLARE v_migration text; v_route jsonb;
-BEGIN
- SELECT operation_code INTO v_migration FROM public.lf_router_action_registry
- WHERE asset_type='DB' AND action_code='UPDATE';
- IF v_migration IS DISTINCT FROM 'ACTUALIZACION_DB_LF' THEN
-   RAISE EXCEPTION 'OPERATIONAL_MIGRATION_ROUTE_CHANGED';
- END IF;
- v_route:=public.lf_router_resolve_v1(
-   'Governed operational handler',NULL,'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
- );
- IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
-    OR v_route->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
-    OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
-   RAISE EXCEPTION 'OPERATIONAL_ROUTER_ADMISSION_READBACK_BLOCKED';
- END IF;
-END $verify$;
-COMMIT;
-
+  IF coalesce(p_execution_id,'') !~ '^EXEC-[A-Z0-9_-]{3,200}$'
+     OR coalesce(p_handler_code,'') !~ '^[A-Z][A-Z0-9_]{1,100}$'
      OR btrim(coalesce(p_handler_revision,''))=''
-     OR coalesce(p_payload_sha,'') !~ '^[0-9a-f]{64}
--- The login is provisioned separately after sandbox validation and EKB approval.
-DO $role$ BEGIN
- IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operation_executor_runtime') THEN
-   CREATE ROLE lf_operation_executor_runtime NOLOGIN NOINHERIT;
- END IF;
-END $role$;
-GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
-REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)
-  TO lf_operation_executor_runtime;
-GRANT EXECUTE ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)
-  TO lf_operation_executor_runtime;
-
-DO $verify$
-DECLARE v_migration text; v_route jsonb;
-BEGIN
- SELECT operation_code INTO v_migration FROM public.lf_router_action_registry
- WHERE asset_type='DB' AND action_code='UPDATE';
- IF v_migration IS DISTINCT FROM 'ACTUALIZACION_DB_LF' THEN
-   RAISE EXCEPTION 'OPERATIONAL_MIGRATION_ROUTE_CHANGED';
- END IF;
- v_route:=public.lf_router_resolve_v1(
-   'Governed operational handler',NULL,'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
- );
- IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
-    OR v_route->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
-    OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
-   RAISE EXCEPTION 'OPERATIONAL_ROUTER_ADMISSION_READBACK_BLOCKED';
- END IF;
-END $verify$;
-COMMIT;
-
+     OR coalesce(p_payload_sha,'') !~ '^[0-9a-f]{64}$'
      OR btrim(coalesce(p_effect_scope,''))=''
      OR btrim(coalesce(p_dispatch_key,''))=''
      OR btrim(coalesce(p_idempotency_key,''))='' THEN
@@ -695,8 +524,7 @@ COMMIT;
      OR p_approval_receipt->>'schema_version'
         IS DISTINCT FROM 'LF_OPERATIONAL_REQUEST_AUTHORIZATION_V1'
      OR p_approval_receipt->>'decision' IS DISTINCT FROM 'APPROVED'
-     OR p_approval_receipt->>'approval_ref' IS NULL
-     OR btrim(p_approval_receipt->>'approval_ref')=''
+     OR btrim(coalesce(p_approval_receipt->>'approval_ref',''))=''
      OR p_approval_receipt->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
      OR p_approval_receipt->>'handler_code' IS DISTINCT FROM p_handler_code
      OR p_approval_receipt->>'handler_revision' IS DISTINCT FROM p_handler_revision
@@ -706,9 +534,10 @@ COMMIT;
      OR p_approval_receipt->>'idempotency_key' IS DISTINCT FROM p_idempotency_key THEN
     RAISE EXCEPTION 'OPERATIONAL_ADMISSION_EXTERNAL_DECISION_NOT_EXACT';
   END IF;
+  -- Role identity proves an independent issuer, NOT cryptographic provenance
+  -- of the provided receipt. Actual issuer/currentness EKB remains a hard gate.
   v_route:=public.lf_router_resolve_v1(
-    'Governed operational handler',NULL,
-    'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
+    'Governed operational handler',NULL,'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
   );
   IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
      OR v_route->>'router' IS DISTINCT FROM 'ACT-0001'
@@ -718,8 +547,6 @@ COMMIT;
      OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
     RAISE EXCEPTION 'OPERATIONAL_ADMISSION_ROUTER_BLOCKED';
   END IF;
-  -- The authority service signs off on exact scope. The runtime service never
-  -- receives the authority role, its login, or its credentials.
   v_authority:=jsonb_build_object(
     'issuer_role','lf_operational_admission_authority',
     'issuer_login',session_user,
@@ -751,7 +578,6 @@ COMMIT;
      OR v_reserved->>'execution_id' IS DISTINCT FROM p_execution_id THEN
     RAISE EXCEPTION 'OPERATIONAL_ADMISSION_REPLAY_OR_EXECUTION_MISMATCH';
   END IF;
-  -- Insert trigger binds canonical Router authority receipt atomically.
   RETURN jsonb_build_object(
     'result','OPERATIONAL_EXECUTION_ADMITTED',
     'execution_id',p_execution_id,
@@ -762,17 +588,49 @@ COMMIT;
   );
 END $admit$;
 
--- The runtime gets a NOLOGIN group privilege, never a superuser/service_role DSN.
--- The login is provisioned separately after sandbox validation and EKB approval.
-DO $role$ BEGIN
+-- An operational lane never creates a login or directly grants table writes.
+DO $role$
+BEGIN
  IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operation_executor_runtime') THEN
    CREATE ROLE lf_operation_executor_runtime NOLOGIN NOINHERIT;
  END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operational_admission_authority') THEN
+   CREATE ROLE lf_operational_admission_authority NOLOGIN NOINHERIT;
+ END IF;
 END $role$;
+DO $roles_verify$
+BEGIN
+ IF (
+    SELECT count(*) FROM pg_roles r
+    WHERE r.rolname IN ('lf_operational_admission_authority','lf_operation_executor_runtime')
+      AND r.rolcanlogin=false AND r.rolinherit=false AND r.rolsuper=false
+      AND r.rolcreatedb=false AND r.rolcreaterole=false
+      AND r.rolreplication=false AND r.rolbypassrls=false
+ ) <> 2 THEN
+   RAISE EXCEPTION 'OPERATIONAL_AUTHORITY_ROLE_PRIVILEGES_UNSAFE';
+ END IF;
+ IF EXISTS(
+   SELECT 1 FROM pg_auth_members m
+   JOIN pg_roles g ON g.oid=m.roleid
+   JOIN pg_roles u ON u.oid=m.member
+   WHERE g.rolname IN ('lf_operational_admission_authority','lf_operation_executor_runtime')
+     AND u.rolname IN ('lf_operational_admission_authority','lf_operation_executor_runtime')
+ ) THEN
+   RAISE EXCEPTION 'OPERATIONAL_AUTHORITY_ROLE_CROSS_MEMBERSHIP_FORBIDDEN';
+ END IF;
+END $roles_verify$;
+
 GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
+GRANT USAGE ON SCHEMA public TO lf_operational_admission_authority;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_principal_v1(text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_assert_principal_v1(text)
+  TO lf_operational_admission_authority,lf_operation_executor_runtime;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb)
+  TO lf_operational_admission_authority;
 GRANT EXECUTE ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)
   TO lf_operation_executor_runtime;
 GRANT EXECUTE ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)
