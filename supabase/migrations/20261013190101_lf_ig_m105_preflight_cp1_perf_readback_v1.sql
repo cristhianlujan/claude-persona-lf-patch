@@ -17,6 +17,7 @@ DECLARE
   v_q_as text;
   v_q_perf text;
   v_q_release text;
+  v_q_terminal text;
   v_q_columns text;
   v_n integer;
   v_current integer;
@@ -100,10 +101,19 @@ SELECT column_name FROM information_schema.columns
 $query$;
 
   v_q_perf:=$query$
-SELECT scope,phase,family_code,sample_count,p50_ms,p95_ms,status,detail
+WITH metrics AS (
+ SELECT scope,phase,sample_count,p95_ms,status
  FROM programacion.fn_ig_performance_timing_metrics_v1()
- WHERE scope='SUMMARY' OR phase='VALIDATOR'
- ORDER BY scope,phase,family_code
+)
+SELECT CASE WHEN count(*) FILTER (
+ WHERE scope='SUMMARY' AND status='PUBLISHED' AND sample_count>0)>0
+ AND count(*) FILTER (
+ WHERE phase='VALIDATOR' AND status='MEASURED'
+   AND sample_count>0 AND p95_ms<=150000)>0
+ THEN 'PASS' ELSE 'FAIL' END AS verdict,
+ max(sample_count) FILTER(WHERE scope='SUMMARY') AS total_receipts,
+ max(p95_ms) FILTER(WHERE phase='VALIDATOR') AS validator_p95_ms
+FROM metrics
 $query$;
 
   v_q_release:=$query$
@@ -128,6 +138,39 @@ SELECT l.pantalla_id,l.run_id,l.status,
  FROM latest l CROSS JOIN public.lf_capability_current c
  WHERE c.capability_code='INPUT_GOVERNANCE'
  ORDER BY l.pantalla_id
+$query$;
+
+  -- CP6: terminal validator MUST reject absent vNext release provenance
+  -- (current live snapshot is expected FAIL, not a synthetic PASS).
+  v_q_terminal:=$query$
+WITH cohort AS (
+ SELECT jsonb_array_elements_text(unit_metadata#>'{m105_scope_v1,screen_ids}')::integer AS pantalla_id
+ FROM programacion.engineering_plan_units
+ WHERE plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' AND unit_code='M10.5'
+), latest AS (
+ SELECT c.pantalla_id,r.id AS run_id,r.scope,r.source_manifest
+ FROM cohort c LEFT JOIN LATERAL (
+  SELECT id,scope,source_manifest FROM programacion.input_readiness_runs
+  WHERE pantalla_id=c.pantalla_id ORDER BY id DESC LIMIT 1
+ ) r ON true
+), evidence AS (
+ SELECT l.*,CASE WHEN l.run_id IS NULL THEN false
+   ELSE programacion.fn_input_run_is_source_current(l.run_id) END AS source_current,
+ p.version,p.previous_version
+ FROM latest l CROSS JOIN public.lf_capability_current p
+ WHERE p.capability_code='INPUT_GOVERNANCE'
+)
+SELECT CASE WHEN count(*)=13
+ AND bool_and(source_current AND previous_version IS NOT NULL
+   AND scope->>'release_id'=version AND source_manifest->>'release_id'=version)
+ THEN 'PASS' ELSE 'FAIL' END AS verdict,
+ count(*) AS screen_count,
+ count(*) FILTER(WHERE source_current) AS source_current_count,
+ count(*) FILTER(WHERE scope->>'release_id'=version
+   AND source_manifest->>'release_id'=version) AS release_bound_count,
+ max(version) AS bound_version,
+ max(previous_version) AS prior_version
+FROM evidence
 $query$;
 
   -- CP1: make action and its authoritative source executable by this readonly connector.
@@ -193,7 +236,7 @@ $query$;
       'action_kind','READBACK_ONCE','recipe_mode','READBACK_EXACT',
       'requires_material_execution',false,'mutation_policy','NO_DOMAIN_MUTATION',
       'expected','13/13 latest runs source-current and release vNext authenticated by release binding; never accept NULL release_id',
-      'verification_queries',jsonb_build_array(v_q_release),
+      'verification_queries',jsonb_build_array(v_q_terminal),
       'target',jsonb_build_object('checkpoint','E2E_READBACK',
          'declared_objects',jsonb_build_array('programacion.input_readiness_runs','public.lf_capability_current')),
       'forbidden',jsonb_build_array('NULL_RELEASE_ID_COUNTS_AS_VNEXT','CONTRACT_REVISION_COUNTS_AS_RELEASE','POST_CUTOVER_ASIS_COUNTS_AS_TERMINAL_PASS')),true);
@@ -201,7 +244,7 @@ $query$;
     jsonb_build_object('inputs',jsonb_build_object(
        'events','[]'::jsonb,'assets','[]'::jsonb,'artifacts','[]'::jsonb,
        'db_objects',jsonb_build_array('programacion.input_readiness_runs','public.lf_capability_current'),
-       'queries',jsonb_build_array(v_q_release)),
+       'queries',jsonb_build_array(v_q_terminal)),
        'missing','[]'::jsonb,'missing_typed','[]'::jsonb),true);
 
   v_meta:=jsonb_set(v_meta,'{m105_preflight_v1}',jsonb_build_object(
