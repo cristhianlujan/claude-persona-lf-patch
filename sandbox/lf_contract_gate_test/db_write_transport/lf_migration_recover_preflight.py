@@ -110,15 +110,22 @@ def main() -> int:
     execution=str((state.get("ids") or {}).get("execution_id") or "")
     if not re.fullmatch(r"EXEC-[A-Z0-9][A-Z0-9_-]*",execution):
         raise RuntimeError("RECOVER_ROUTER_EXECUTION_ID_INVALID")
+    ctx=state.get("context") or {}
+    ids=state.get("ids") or {}
     if (state.get("result")!="TRAIN_EXECUTION_READY_TO_APPLY"
-            or (state.get("context") or {}).get("version")!=version
-            or (state.get("context") or {}).get("name")!=name):
+            or ctx.get("version")!=version
+            or ctx.get("name")!=name
+            or ctx.get("path")!="supabase/migrations/"+path.name
+            or ctx.get("source_sha256")!=hashlib.sha256(path.read_bytes()).hexdigest()
+            or ids.get("effect_scope")!="MIGRATION:"+version):
         raise RuntimeError("RECOVER_ROUTER_TRAIN_IDENTITY_MISMATCH")
     authority=json.loads(psql(url,
         "select public.lf_router_downstream_authority_validate_v1('"+execution+"');"))
     if (authority.get("applicable") is not True or authority.get("valid") is not True
             or authority.get("code")!="ROUTER_DOWNSTREAM_AUTHORITY_VALID"
-            or authority.get("operation_code")!="ACTUALIZACION_DB_LF"):
+            or authority.get("operation_code")!="ACTUALIZACION_DB_LF"
+            or authority.get("target_type")!="MIGRATION"
+            or authority.get("target_code")!=version+"_"+name):
         raise RuntimeError("RECOVER_ROUTER_AUTHORITY_NOT_VALID")
 
     before = psql(url, (
