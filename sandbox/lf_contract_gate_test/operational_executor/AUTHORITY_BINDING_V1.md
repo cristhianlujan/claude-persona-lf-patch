@@ -22,6 +22,16 @@ La invocación `lf_operational_executor_admit_v1` recibe un **localizador**, no 
 
 Admisión, BEGIN y FINISH verifican la vigencia y la ausencia de nuevas solicitudes superiores. No hay ejecución si la autoridad está desactivada, el recibo cambia, la solicitud expira o el sujeto no coincide.
 
+## Clasificación y ruta de decisión — candidata, no aplicada
+
+La misma migración Train-only declara **una regla de clasificación ACTIVE** para el productor genérico `LF_OPERATION_EXECUTOR` y sujeto `OPERATIONAL_EXECUTION` bajo la clase canónica existente `DATA_OPERATIONS` (dominio `LF_DATA_OPERATIONS`).
+
+También declara una **ruta `PENDING_AUTHORITY`**, exclusivamente para `APPROVE`/`REJECT`, con `required_authority_ref=NULL` y `required_reviewer_role=NULL`. Los hashes se obtienen de las funciones existentes `private.fn_lf_human_decision_rule_sha_v1` y `private.fn_lf_human_decision_route_policy_sha_v1`, sin inventar autoridad o recibos.
+
+**Aplicar la migración no activa esta ruta.** Materializar el referente y rol de autoridad, su política activa y un recibo verificado es trabajo de gobernanza LF; la función de admisión responde BLOCK hasta entonces.
+
+`supabase/tests/lf_operational_executor_authority_activation_readback_v1.sql` es un diagnóstico `SELECT` de solo lectura, ejecutado contra la base actual para enumerar faltantes. Sus conteos no son una certificación individual de autorización.
+
 ## Dependencias que siguen bloqueadas
 
 El readback de LF observa **cero políticas de autoridad activas y cero recibos de decisión humana**: no se ha habilitado ni inventado autoridad. La materialización de la clasificación, política de ruta y fuente verificable de decisión debe pasar por el gobierno existente; ninguna migración de este PR inserta una aprobación o credencial humana.
