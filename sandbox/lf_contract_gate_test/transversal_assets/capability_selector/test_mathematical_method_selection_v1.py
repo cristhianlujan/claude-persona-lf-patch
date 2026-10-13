@@ -173,6 +173,10 @@ def run():
         invalid = math_plan(evaluate(dict(causal, budget={"max_shadow_method_cost_points": -1})))
     assert invalid["status"] == "BLOCK" and not invalid["execution_authorized"]
     assert math_plan(evaluate(dict(causal, budget={"max_shadow_method_trials": True})))["status"] == "BLOCK"
+    invalid_exclusion = math_plan(evaluate(dict(causal, blocked_methods=[7])))
+    assert invalid_exclusion["status"] == "BLOCK"
+    assert invalid_exclusion["recommended_trials"] == []
+
 
     print("PASS_CAPABILITY_SELECTOR_MATH_V3 five_task_types=5 "
           "simple_no_math=1 verified_preconditions=1 cost_budget=1 "
