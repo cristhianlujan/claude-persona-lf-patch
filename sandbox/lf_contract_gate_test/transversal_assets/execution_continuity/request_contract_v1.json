@@ -1,0 +1,76 @@
+{
+  "schema_version": "LF_EXECUTION_CONTINUITY_REQUEST_CONTRACT_V1",
+  "mode_enum": [
+    "RECOVER",
+    "RECONCILE",
+    "RESUME"
+  ],
+  "required_common": [
+    "project",
+    "operation_code",
+    "router_execution_id",
+    "source_ref",
+    "exact_identity",
+    "owner_approval_ref",
+    "currentness_receipt",
+    "contract_ref",
+    "policy_ref",
+    "transport_ref",
+    "scope",
+    "execution_authorized",
+    "dependencies_verified"
+  ],
+  "required_by_mode": {
+    "RECOVER": [
+      "immutable_source_digest",
+      "original_version",
+      "target_absent",
+      "compatibility_rollback_pass",
+      "conflict_scan_pass",
+      "replay_equivalent_absent",
+      "utc_now"
+    ],
+    "RECONCILE": [
+      "target_kind",
+      "db_write",
+      "ledger_write",
+      "ledger_identity_readback",
+      "byte_identity_verified",
+      "rename_only_verified"
+    ],
+    "RESUME": [
+      "checkpoint_verified",
+      "effect_guard_verified",
+      "effect_state"
+    ]
+  },
+  "adapter_obligations": [
+    "VERIFY_ROUTER_EXECUTION_AND_OPERATION_CODE",
+    "VERIFY_CURRENT_CAPABILITY_VERSION_AND_ENTRY_GUARD",
+    "VERIFY_OWNER_APPROVAL_IN_AUTHORITY_STORE",
+    "VERIFY_SOURCE_DIGEST_AND_IMMUTABLE_IDENTITY",
+    "VERIFY_SCOPE_POLICIES_EKB_AND_CONSUMER_BINDING",
+    "DO_NOT_TRUST_REQUEST_BOOLEAN_WITHOUT_RECEIPT",
+    "RECHECK_BEFORE_EFFECT_FOR_TOCTOU",
+    "PERSIST_EFFECT_GUARD_CHECKPOINT_AND_READBACK",
+    "PUBLISH_CAUSAL_RECEIPT_WITH_SHA_AND_PROJECT",
+    "NO_CROSS_PROJECT_IMPLICIT_AUTHORITY"
+  ],
+  "output": {
+    "fields": [
+      "mode",
+      "verdict",
+      "code",
+      "next_action"
+    ],
+    "type": "DECISION_NO_SIDE_EFFECTS"
+  },
+  "forbidden": [
+    "BYPASS_ROUTER",
+    "SKIP_EKB",
+    "WRITE_DB_DURING_RECONCILE",
+    "REUSE_OLD_APPROVAL_FOR_NEW_PROJECT",
+    "REPLAY_SUCCEEDED_EFFECT",
+    "CLOSE_WITHOUT_READBACK"
+  ]
+}
