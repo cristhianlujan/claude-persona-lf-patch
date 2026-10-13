@@ -5,6 +5,7 @@ on:
       - 'supabase/migrations/*_lf_operational_executor_lane_v1.sql'
       - 'sandbox/lf_contract_gate_test/operational_executor/test_postgres_principal_rbac_v1.py'
       - 'sandbox/lf_contract_gate_test/operational_executor/test_pg_plpgsql_compile_v1.py'
+      - 'sandbox/lf_contract_gate_test/operational_executor/test_pg17_decision_slice_rollback_v1.py'
       - '.github/workflows/lf-operational-executor-postgres-rbac.yml'
 permissions:
   contents: read
@@ -43,5 +44,7 @@ jobs:
           psql --version
       - name: Compile exact PLpgSQL bodies and reject corrupted admission
         run: python3 sandbox/lf_contract_gate_test/operational_executor/test_pg_plpgsql_compile_v1.py
+      - name: Apply exact LF decision-catalogue slice with rollback
+        run: python3 sandbox/lf_contract_gate_test/operational_executor/test_pg17_decision_slice_rollback_v1.py
       - name: Real PostgreSQL principal RBAC negatives and rollback
         run: python3 sandbox/lf_contract_gate_test/operational_executor/test_postgres_principal_rbac_v1.py
