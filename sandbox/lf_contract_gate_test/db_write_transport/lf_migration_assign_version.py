@@ -9,6 +9,7 @@ import re
 
 FILENAME_RE = re.compile(r"^(?P<version>\d{14})_(?P<name>[A-Za-z0-9][A-Za-z0-9_]*)\.sql$")
 VERSION_RE = re.compile(r"^\d{14}$")
+MAX_FUTURE_SKEW = timedelta(minutes=15)
 
 
 @dataclass(frozen=True)
@@ -45,9 +46,14 @@ def choose_version(
     now = _require_version(utc_now_version, "UTC_NOW_VERSION")
     floor = max(main_max, ledger_max)
 
-    # Idempotent retry: a candidate already strictly above the live floor stays put.
-    if current > floor:
+    now_dt = datetime.strptime(now, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+    current_dt = datetime.strptime(current, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+
+    # Preserve an idempotent candidate only when within the tolerated clock skew.
+    if current > floor and current_dt <= now_dt + MAX_FUTURE_SKEW:
         return current
+    # A future-dated candidate must not keep pushing the floor hours ahead.
+    # One second past floor is mandatory even when the floor itself is future.
     if now > floor:
         return now
     return _plus_one_second(floor)
@@ -97,15 +103,25 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
+    utc_now = args.utc_now or _utc_now_version()
     result = assign_path(
         Path(args.migration_path),
         main_max_version=args.main_max,
         ledger_max_version=args.ledger_max,
-        utc_now_version=args.utc_now or _utc_now_version(),
+        utc_now_version=utc_now,
         perform_rename=not args.dry_run,
+    )
+    current = FILENAME_RE.fullmatch(Path(args.migration_path).name).group("version")
+    is_future = (
+        datetime.strptime(current, "%Y%m%d%H%M%S")
+        > datetime.strptime(utc_now, "%Y%m%d%H%M%S") + MAX_FUTURE_SKEW
+    )
+    reason = "FUTURE_VERSION_REASSIGNED" if is_future else (
+        "FLOOR_VERSION_REASSIGNED" if result.changed else "UNCHANGED"
     )
     print(
         "PASS_MIGRATION_ASSIGN_VERSION "
+        f"reason={reason} current={current} assigned={result.version} now={utc_now} "
         f"changed={str(result.changed).lower()} "
         f"version={result.version} "
         f"path={result.new_path.as_posix()}"
