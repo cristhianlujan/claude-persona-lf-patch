@@ -757,21 +757,27 @@ jobs:
 
       - name: Apply exact version and ledger readback
         id: real_apply
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.train_exec.outputs.apply_required == 'true'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
-          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob }}
+          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob || steps.recover_binding.outputs.source_blob || steps.resume_binding.outputs.source_blob }}
+          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha || steps.recover_binding.outputs.persisted_head_sha || steps.resume_binding.outputs.persisted_head_sha }}
+          OP_MODE: ${{ steps.operation_request.outputs.operation_mode }}
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin "${{ steps.write_ahead.outputs.persisted_head_sha }}"
-          git checkout --detach "${{ steps.write_ahead.outputs.persisted_head_sha }}"
+          git fetch --no-tags origin "$PERSISTED_HEAD"
+          git checkout --detach "$PERSISTED_HEAD"
+          apply_args=(
+            --project-root "$GITHUB_WORKSPACE"
+            --migration-path "$GITHUB_WORKSPACE/$TARGET_PATH"
+            --source-blob "$SOURCE_BLOB"
+            --allow-fallback
+          )
+          if [ "$OP_MODE" = "RECOVER" ]; then apply_args+=(--recover-existing-main); fi
           python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_exact_apply.py \
-            --project-root "$GITHUB_WORKSPACE" \
-            --migration-path "$GITHUB_WORKSPACE/$TARGET_PATH" \
-            --source-blob "$SOURCE_BLOB" \
-            --allow-fallback | tee .lf_train/exact-apply-receipt.json
+            "${apply_args[@]}" | tee .lf_train/exact-apply-receipt.json
           jq -e '.status=="PASS" and .ledger_version==.migration_version and .ledger_name==.migration_name' .lf_train/exact-apply-receipt.json >/dev/null
           echo "applied=true" >> "$GITHUB_OUTPUT"
 
