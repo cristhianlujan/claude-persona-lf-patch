@@ -32,10 +32,20 @@ def verify(source: str) -> list[str]:
       "fn_lf_operation_reserve_effect_v1",
       "fn_lf_operation_mark_effect_succeeded_v1",
       "lf_record_operation_step_core_v1",
+      "CREATE OR REPLACE FUNCTION public.lf_operational_executor_admit_v1",
+      "lf_operational_admission_authority",
+      "OPERATIONAL_ADMISSION_INDEPENDENT_PRINCIPAL_REQUIRED",
+      "OPERATIONAL_ADMISSION_ROLE_NOT_INDEPENDENT",
+      "OPERATIONAL_ADMISSION_EXTERNAL_DECISION_NOT_EXACT",
+      "OPERATIONAL_ADMISSION_REPLAY_OR_EXECUTION_MISMATCH",
+      "OPERATIONAL_BEGIN_INDEPENDENT_ADMISSION_PROVENANCE_MISSING",
+      "fn_lf_operation_reserve_execution_v1",
       "CREATE OR REPLACE FUNCTION public.lf_operational_executor_begin_v1",
       "CREATE OR REPLACE FUNCTION public.lf_operational_executor_finish_v1",
       "CREATE OR REPLACE FUNCTION public.lf_close_operational_execution_v1",
       "SECURITY DEFINER",
+      "REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1",
+      "GRANT EXECUTE ON FUNCTION public.lf_operational_executor_admit_v1",
       "NOLOGIN NOINHERIT",
       "REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1",
       "REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1",
@@ -92,6 +102,31 @@ class GovernedCandidateStaticTests(unittest.TestCase):
     def test_cannot_open_general_role(self):
         s=SQL.read_text(encoding="utf-8")
         self.assertTrue(verify(s.replace("NOLOGIN NOINHERIT","LOGIN")))
+    def test_runtime_role_cannot_admit_its_own_execution(self):
+        source=SQL.read_text(encoding="utf-8")
+        self.assertIn("TO lf_operational_admission_authority",source)
+        self.assertIn("TO lf_operation_executor_runtime",source)
+        self.assertIn("granted.rolname='lf_operation_executor_runtime'",source)
+        self.assertIn("member.rolname=session_user",source)
+        self.assertIn("session_user IN ('postgres','authenticator','service_role')",source)
+        self.assertTrue(verify(source.replace("OPERATIONAL_ADMISSION_ROLE_NOT_INDEPENDENT",
+                                              "ROUTER_NOT_ENFORCED")))
+
+    def test_independent_admission_provenance_cannot_be_removed(self):
+        source=SQL.read_text(encoding="utf-8")
+        self.assertIn("operational_authority_receipt",source)
+        self.assertIn("created_by_execution_id",source)
+        self.assertTrue(verify(source.replace(
+            "OPERATIONAL_BEGIN_INDEPENDENT_ADMISSION_PROVENANCE_MISSING",
+            "UNGUARDED")))
+
+    def test_generic_execution_reservation_is_reused(self):
+        source=SQL.read_text(encoding="utf-8")
+        self.assertEqual(source.count("fn_lf_operation_reserve_execution_v1("),1)
+        self.assertIn("RESERVED_NEW_EXECUTION",source)
+        self.assertTrue(verify(source.replace(
+          "OPERATIONAL_ADMISSION_REPLAY_OR_EXECUTION_MISMATCH","PERMIT_REPLAY")))
+
     def test_cannot_redirect_migration_route(self):
         s=SQL.read_text(encoding="utf-8")
         self.assertTrue(verify(s.replace("MIGRATION_TRAIN_ROUTE_NOT_PRESERVED","NO_ROUTE_GUARD")))
