@@ -247,6 +247,61 @@ BEGIN
    'production_activation',false);
 END $m105$;
 
+CREATE OR REPLACE FUNCTION public.fn_ig_m105_cp2_dispatch_context_v1()
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public', 'programacion'
+AS $function$
+DECLARE v_scope jsonb; v_release record; v_cohort integer; v_pass boolean;
+BEGIN
+ IF auth.role() IS DISTINCT FROM 'service_role' THEN
+   RAISE EXCEPTION 'IG_M105_CP2_SERVICE_ROLE_REQUIRED';
+ END IF;
+ SELECT u.unit_metadata#>'{m105_scope_v1}' INTO STRICT v_scope
+ FROM programacion.engineering_plan_units u
+ WHERE u.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' AND u.unit_code='M10.5';
+ IF v_scope->>'schema_version' IS DISTINCT FROM 'M105_SCOPE_SNAPSHOT_V1'
+ OR jsonb_typeof(v_scope->'screen_ids') IS DISTINCT FROM 'array'
+ OR jsonb_array_length(v_scope->'screen_ids')<>13
+ OR (SELECT count(DISTINCT value) FROM jsonb_array_elements_text(v_scope->'screen_ids'))<>13
+ THEN RAISE EXCEPTION 'IG_M105_CP2_COHORT_DRIFT'; END IF;
+ SELECT c.version,c.previous_version,c.manifest_sha256,r.release_state
+ INTO STRICT v_release FROM public.lf_capability_current c
+ JOIN public.lf_capability_version_registry r
+ ON r.capability_code=c.capability_code AND r.version=c.version
+ WHERE c.capability_code='INPUT_GOVERNANCE';
+ SELECT v.can_attempt_real_cp2 INTO STRICT v_pass
+ FROM programacion.v_ig_m105_cp2_execution_preflight_v1 v
+ WHERE v.capability_code='INPUT_GOVERNANCE';
+ v_pass:=coalesce(v_pass,false)
+  AND v_release.previous_version IS NOT NULL
+  AND v_release.version IS DISTINCT FROM v_release.previous_version
+  AND v_release.release_state='RELEASED'
+  AND v_release.manifest_sha256 ~ '^[0-9a-f]{64}
+ RETURN jsonb_build_object(
+   'status','AUTHORIZED_CONTEXT','scope',v_scope,
+   'release',jsonb_build_object('version',v_release.version,
+      'previous_version',v_release.previous_version,
+      'manifest_sha256',v_release.manifest_sha256),
+   'dispatch_permitted',v_pass,
+   'reason',CASE WHEN v_pass THEN 'AUTHENTIC_CURRENT_RELEASE_READBACK'
+                 ELSE 'VNEXT_RELEASE_OR_SIGNED_AUTHORITY_MISSING' END,
+   'no_promotion',true,'no_receipt_fabrication',true);
+END $function$
+;
+ RETURN jsonb_build_object(
+   'status','AUTHORIZED_CONTEXT','scope',v_scope,
+   'release',jsonb_build_object('version',v_release.version,
+      'previous_version',v_release.previous_version,
+      'manifest_sha256',v_release.manifest_sha256),
+   'dispatch_permitted',v_pass,
+   'reason',CASE WHEN v_pass THEN 'AUTHENTIC_CURRENT_RELEASE_READBACK'
+                 ELSE 'CURRENT_VNEXT_RELEASE_NOT_PROMOTED' END,
+   'no_promotion',true,'no_receipt_fabrication',true);
+END $function$
+
+
 DO $align$
 DECLARE m jsonb; w bigint;
 BEGIN
