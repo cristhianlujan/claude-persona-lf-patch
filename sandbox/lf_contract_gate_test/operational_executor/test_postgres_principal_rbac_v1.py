@@ -70,6 +70,9 @@ def as_login(login: str, sql: str) -> str:
     return psql(
         "BEGIN;\n"
         + f"SET SESSION AUTHORIZATION {login};\n"
+        + (("SET ROLE lf_operational_admission_authority;\n" if login == "lf_op_sandbox_admit"
+            else "SET ROLE lf_operation_executor_runtime;\n" if login == "lf_op_sandbox_effect"
+            else ""))
         + sql
         + "\nRESET SESSION AUTHORIZATION;\n"
         + "ROLLBACK;\n"
@@ -94,6 +97,8 @@ BEGIN
 END $negative$;
 """
 
+# NOINHERIT must be paired with explicit SET ROLE on each operation
+# session. The session_user remains the independent LOGIN principal.
 as_login("lf_op_sandbox_effect",
          "SELECT public.lf_operational_executor_assert_principal_v1('lf_operation_executor_runtime');")
 as_login("lf_op_sandbox_admit",
