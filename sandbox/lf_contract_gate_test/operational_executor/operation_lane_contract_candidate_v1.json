@@ -50,7 +50,7 @@
     "close": "GOVERNED_OPERATIONAL_CLOSE_CANDIDATE_IN_PR2372_NOT_APPLIED",
     "connector": "MCP_HTTPS_WITH_AUTH_REQUIRED_NOT_DEPLOYED",
     "privilege_boundary": "TWO_SECURITY_DEFINER_FACADES_NO_TABLE_DML",
-    "execution_admission": "NOT_IMPLEMENTED_ROUTER_AUTHORIZED_DURABLE_EXECUTION_REQUIRED",
+    "execution_admission": "INDEPENDENT_ADMISSION_FACADE_CANDIDATE_PR2372_NOT_APPLIED",
     "effect_constraint": "SAME_DATABASE_TRANSACTION_ONLY_NO_EXTERNAL_SIDE_EFFECTS"
   },
   "migration_transit_policy": {
@@ -73,11 +73,24 @@
     "ATOMIC_GOVERNED_EXECUTION_CLOSEOUT",
     "ROLLBACK_AND_COMMIT_TESTED_IN_SANDBOX",
     "REMOTE_MCP_AUTHENTICATED",
-    "EKB_AND_INDEPENDENT_CLOSE_READBACK"
+    "EKB_AND_INDEPENDENT_CLOSE_READBACK",
+    "EXTERNAL_ADMISSION_AUTHORITY_LOGIN_INDEPENDENCE_TESTED"
   ],
   "candidate_migration": {
     "pull_request": 2372,
     "source": "supabase/migrations/20261013040000_lf_operational_executor_lane_v1.sql",
     "state": "DRAFT_NOT_APPLIED"
+  },
+  "independent_admission": {
+    "facade": "public.lf_operational_executor_admit_v1",
+    "authority_group": "lf_operational_admission_authority",
+    "executor_group": "lf_operation_executor_runtime",
+    "same_login_allowed": false,
+    "self_approval_allowed": false,
+    "receipt_schema": "LF_OPERATIONAL_REQUEST_AUTHORIZATION_V1",
+    "receipt_signature": "NOT_A_CRYPTOGRAPHIC_SIGNATURE",
+    "authenticated_trusted_issuer_service": "NOT_DEPLOYED",
+    "execution_reserve_reuse": "public.fn_lf_operation_reserve_execution_v1",
+    "approval_authority_external_to_executor": true
   }
 }
