@@ -4,6 +4,7 @@ from copy import deepcopy
 from typing import Any
 
 from capability_selector_v2 import build_selection_signals, _select_capabilities_multilabel
+from mathematical_method_selection_v1 import prioritize_mathematical_methods
 
 REPLAN_TRIGGERS={
     "NEW_EVIDENCE","METHOD_FAILED","QUALITY_PLATEAU","VERIFIER_REJECTED",
@@ -54,16 +55,64 @@ def compose_capabilities_v3(
 ) -> dict[str,Any]:
     signals=build_selection_signals(context)
     base=_select_capabilities_multilabel(signals,catalog,policy)
+    if base["fallback_state"] in {"CONTRADICTORY", "CAPABILITY_FAILURE"}:
+        return {
+            "schema": "CAPABILITY_SELECTOR_COMPOSITION_V3",
+            "selection_cycle": int(context.get("selection_cycle", 0)),
+            "selected_capabilities": [], "selected_methods": [],
+            "rejected_methods": [],
+            "mathematical_method_selection": {
+                "schema": "CAPABILITY_SELECTOR_MATH_SHADOW_V1",
+                "status": "BLOCK", "reason": "BASE_SELECTOR_NOT_VALID",
+                "recommended_trials": [], "execution_authorized": False,
+            },
+            "composition_order": [], "reason": base["reasons"],
+            "fallback_state": base["fallback_state"],
+            "execution_authorized": False, "admission_required": True,
+            "replan_allowed": False,
+        }
     methods=method_registry.get("methods",[]) if isinstance(method_registry,dict) else []
     budget=context.get("budget",{}) if isinstance(context.get("budget"),dict) else {}
     max_cost=budget.get("max_method_cost_points")
     allow_experimental=bool(context.get("allow_experimental_methods",False))
     blocked=set(context.get("blocked_methods",[])) if isinstance(context.get("blocked_methods"),list) else set()
 
-    selected=[]; rejected=[]; total=0.0
-    for method in methods if isinstance(methods,list) else []:
-        if not isinstance(method,dict) or not _method_matches(method,signals):
+    shadow_math = prioritize_mathematical_methods(
+        context, signals, methods if isinstance(methods, list) else [],
+        precondition_state, verify_method_preconditions, _method_cost)
+    # Rank normal methods by evidence-relevant typed signal specificity before
+    # spending a shared budget. Catalog declaration order carries no priority.
+    # Observed resource telemetry wins cost-confidence ties; estimates are still
+    # explicitly tagged, never represented as measurements.
+    eligible = []
+    for method in methods if isinstance(methods, list) else []:
+        # Gated math candidates are evaluated by the same selector in shadow
+        # but NEVER enter executable method composition.
+        if not isinstance(method, dict) or method.get("selection_lane") == "SHADOW_ONLY":
             continue
+        if not _method_matches(method, signals):
+            continue
+        matching = sorted({rule.get("type") for rule in method.get("signals", [])
+                           if isinstance(rule, dict) and isinstance(rule.get("type"), str)
+                           and isinstance(rule.get("accepted_values"), list)
+                           and any(sg.get("type") == rule["type"]
+                                   and sg.get("value") in rule["accepted_values"]
+                                   and sg.get("status", "OK") == "OK"
+                                   for sg in signals)})
+        observed_cost, cost_state = _method_cost(method, context)
+        eligible.append((method, matching, observed_cost, cost_state))
+    # Do not reward an untrusted claimed OBSERVED cost status in ranking;
+    # provenance must be authenticated externally before cost-effectiveness learning.
+    eligible.sort(key=lambda item: (-len(item[1]),
+                                    item[2], str(item[0].get("method_id", ""))))
+    selected=[]; rejected=[]; total=0.0
+    # Cover each independently signalled task need once in the first composition
+    # stage. Methods can also add a distinct governed capability: sharing a
+    # signal alone does not make them redundant. A NEW_EVIDENCE replan may
+    # reconsider deferred methods.
+    covered_signal_types: dict[str,str] = {}
+    covered_method_capabilities: set[str] = set()
+    for method, matching, _, _ in eligible:
         mid=method.get("method_id")
         if mid in blocked:
             rejected.append({"method_id":mid,"reason":"BLOCKED_FOR_CURRENT_RUN"})
@@ -78,18 +127,42 @@ def compose_capabilities_v3(
         if pre["status"]!="PASS":
             rejected.append({"method_id":mid,"reason":"PRECONDITION_"+pre["status"],"preconditions":pre})
             continue
+        marginal=[t for t in matching if t not in covered_signal_types]
+        candidate_capabilities=[
+            c for c in method.get("compatible_capabilities", [])
+            if isinstance(c, str) and c and c not in covered_method_capabilities
+        ]
+        if not marginal and not candidate_capabilities:
+            rejected.append({
+                "method_id":mid,
+                "reason":"DEFERRED_NO_MARGINAL_TASK_SIGNAL",
+                "matched_signal_types":matching,
+                "already_covered_by":sorted({
+                    covered_signal_types[t] for t in matching
+                    if t in covered_signal_types
+                }),
+                "reconsider_after":"NEW_EVIDENCE_OR_METHOD_FAILED",
+                "execution_authorized":False,
+            })
+            continue
         cost,cost_status=_method_cost(method,context)
         if max_cost is not None and total+cost>float(max_cost):
             rejected.append({"method_id":mid,"reason":"BUDGET_INSUFFICIENT","cost":cost,"cost_status":cost_status})
             continue
         selected.append({
             "method_id":mid,"cost_points":cost,"cost_status":cost_status,
+            "matched_signal_types":matching,
+            "marginal_signal_types":marginal,
+            "marginal_capability_codes":candidate_capabilities,
             "precondition_receipt":pre,
             "stop_conditions":method.get("stop_conditions",[]),
             "validation_method":method.get("validation_method"),
             "availability_state":method.get("availability_state")
         })
         total+=cost
+        for signal_type in marginal:
+            covered_signal_types[signal_type]=mid
+        covered_method_capabilities.update(candidate_capabilities)
 
     composition=list(base["selected_capabilities"])
     by_id={m.get("method_id"):m for m in methods if isinstance(m,dict)}
@@ -104,6 +177,7 @@ def compose_capabilities_v3(
         "selected_capabilities":base["selected_capabilities"],
         "selected_methods":selected,
         "rejected_methods":rejected,
+        "mathematical_method_selection":shadow_math,
         "composition_order":composition,
         "reason":base["reasons"],
         "estimated_or_observed_cost":{"method_cost_points":total,"budget_limit":max_cost},
