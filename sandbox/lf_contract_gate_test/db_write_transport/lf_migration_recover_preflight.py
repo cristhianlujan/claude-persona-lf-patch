@@ -53,6 +53,7 @@ def main() -> int:
     parser.add_argument("--migration-path", required=True)
     parser.add_argument("--db-url")
     parser.add_argument("--readback",action="store_true")
+    parser.add_argument("--train-state")
     args = parser.parse_args()
     path = Path(args.migration_path)
     match = FILENAME_RE.fullmatch(path.name)
@@ -77,6 +78,23 @@ def main() -> int:
                           "migration_version":version,"migration_name":name,
                           "source_sha256":expected_sha},sort_keys=True))
         return 0
+
+    if not args.train_state:
+        raise RuntimeError("RECOVER_ROUTER_TRAIN_STATE_REQUIRED")
+    state=json.loads(Path(args.train_state).read_text(encoding="utf-8"))
+    execution=str((state.get("ids") or {}).get("execution_id") or "")
+    if not re.fullmatch(r"EXEC-[A-Z0-9][A-Z0-9_-]*",execution):
+        raise RuntimeError("RECOVER_ROUTER_EXECUTION_ID_INVALID")
+    if (state.get("result")!="TRAIN_EXECUTION_READY_TO_APPLY"
+            or (state.get("context") or {}).get("version")!=version
+            or (state.get("context") or {}).get("name")!=name):
+        raise RuntimeError("RECOVER_ROUTER_TRAIN_IDENTITY_MISMATCH")
+    authority=json.loads(psql(url,
+        "select public.lf_router_downstream_authority_validate_v1('"+execution+"');"))
+    if (authority.get("applicable") is not True or authority.get("valid") is not True
+            or authority.get("code")!="ROUTER_DOWNSTREAM_AUTHORITY_VALID"
+            or authority.get("operation_code")!="ACTUALIZACION_DB_LF"):
+        raise RuntimeError("RECOVER_ROUTER_AUTHORITY_NOT_VALID")
 
     before = psql(url, (
         "select jsonb_build_object("
