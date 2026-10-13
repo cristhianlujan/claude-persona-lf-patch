@@ -9,6 +9,8 @@ DECLARE
  v_release record;
  v_handoff programacion.provenance_receipts%rowtype;
  v_promotion record;
+ v_cutover_receipt programacion.provenance_receipts%rowtype;
+ v_authority_receipt programacion.provenance_receipts%rowtype;
  v_families bigint; v_valid bigint;
  v_source jsonb; v_sha text; v_ref text;
  v_token text; v_payload jsonb;
@@ -95,6 +97,24 @@ BEGIN
  ORDER BY p.id DESC LIMIT 1;
  IF v_promotion.promotion_id IS NULL THEN
    RAISE EXCEPTION 'IG_M105_CP2_GOVERNED_CUTOVER_RECEIPT_REQUIRED'; END IF;
+ SELECT * INTO STRICT v_cutover_receipt
+ FROM programacion.provenance_receipts WHERE id=v_promotion.audit_receipt_id;
+ IF v_cutover_receipt.head_sha IS DISTINCT FROM v_promotion.head_sha
+ OR v_cutover_receipt.receipt_kind IS DISTINCT FROM 'EVIDENCE_VERIFICATION'
+ OR v_cutover_receipt.issuer_channel IS DISTINCT FROM 'EVIDENCE_VERIFIER_V1'
+ OR v_cutover_receipt.payload->>'verification_status' IS DISTINCT FROM 'VERIFIED'
+ THEN RAISE EXCEPTION 'IG_M105_CP2_CUTOVER_AUDIT_RECEIPT_INVALID'; END IF;
+ PERFORM programacion.fn_assert_provenance_receipt(
+   v_cutover_receipt.id,v_cutover_receipt.receipt_kind,v_cutover_receipt.execution_id,
+   v_cutover_receipt.head_sha,v_cutover_receipt.subject_type,
+   v_cutover_receipt.subject_ref,v_cutover_receipt.subject_sha256);
+ SELECT * INTO STRICT v_authority_receipt
+ FROM programacion.provenance_receipts WHERE id=v_promotion.authority_receipt_id;
+ PERFORM programacion.fn_assert_provenance_receipt(
+   v_authority_receipt.id,v_authority_receipt.receipt_kind,
+   v_authority_receipt.execution_id,v_authority_receipt.head_sha,
+   v_authority_receipt.subject_type,v_authority_receipt.subject_ref,
+   v_authority_receipt.subject_sha256);
  v_ref:='input-readiness-run:'||v_run.id::text;
  v_source:=jsonb_build_object(
     'schema_version','IG_M105_CP2_RELEASE_RUN_BINDING_SUBJECT_V1',
@@ -189,6 +209,14 @@ BEGIN
    'true'::jsonb,true);
  u:=jsonb_set(u,'{action_specs_v1,NEW_RUNS_VNEXT,test_execution_contract,attestation_rpc}',
    to_jsonb('public.fn_ig_m105_cp2_attest_run_v1'::text),true);
+ u:=jsonb_set(u,'{action_specs_v1,NEW_RUNS_VNEXT,test_execution_contract,canonical_exit_criterion}',
+   to_jsonb('13 authentic vNext Edge runs with independently signed receipts and per-screen readback; semantic rejections and manual reviews are outcomes, not execution errors'::text),true);
+ u:=jsonb_set(u,'{action_specs_v1,NEW_RUNS_VNEXT,assertion_contract,pass_when}',
+   jsonb_build_object('cohort_count',13,'technical_pass_count',13,
+   'technical_error_count',0,'cp2_pass_count',13,'cp2_not_executed_count',0,
+   'cp2_provenance_error_count',0,'cp2_pending_count',0,
+   'edge_provenance_receipt_count',13,'release_bound_count',13,
+   'not_a_production_authorization',true),true);
  u:=jsonb_set(u,'{action_specs_v1,NEW_RUNS_VNEXT,target,declared_objects}',
    u#>'{action_specs_v1,NEW_RUNS_VNEXT,target,declared_objects}'
    || jsonb_build_array('public.fn_ig_m105_cp2_attest_run_v1'),true);
