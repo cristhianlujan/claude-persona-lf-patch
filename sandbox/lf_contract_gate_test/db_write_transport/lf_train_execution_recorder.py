@@ -332,6 +332,18 @@ def begin(ctx: dict) -> dict:
 
 def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
     ctx, ids = state["context"], state["ids"]
+    _require_router_authority(ids["execution_id"])
+    if (state.get("result") != "TRAIN_EXECUTION_READY_TO_APPLY"
+            or state.get("apply_required") is not True
+            or apply_receipt.get("status") != "PASS"
+            or apply_receipt.get("ledger_version") != ctx["version"]
+            or apply_receipt.get("ledger_name") != ctx["name"]):
+        raise RuntimeError("TRAIN_EXEC_COMMIT_APPLY_RECEIPT_OR_STATE_INVALID")
+    ledger = _ledger_readback(ctx["version"])
+    if (ledger.get("version") != ctx["version"]
+            or ledger.get("name") != ctx["name"]
+            or ledger.get("source_sha256") != ctx["source_sha256"]):
+        raise RuntimeError("TRAIN_EXEC_COMMIT_EXACT_LEDGER_UNVERIFIED")
     receipt = {"apply_receipt": apply_receipt, "train_run_id": ctx["run_id"]}
     call(
         "select public.fn_lf_operation_mark_effect_succeeded_v1(:'exec', :'owner', :fence, :'scope', (:'receipt')::jsonb, :'actor');",
@@ -344,14 +356,24 @@ def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
 
 def close(state: dict, merge_sha: str, parity_status: str) -> dict:
     ctx, ids = state["context"], state["ids"]
+    if (state.get("result") != "TRAIN_EXECUTION_PATCH_RECORDED"
+            or SHA1_RE.fullmatch(merge_sha or "") is None
+            or parity_status != "PASS"):
+        raise RuntimeError("TRAIN_EXEC_CLOSE_STATE_MERGE_OR_PARITY_INVALID")
     _require_router_authority(ids["execution_id"])
-    ledger = call(
-        "select coalesce((select jsonb_build_object('version', version, 'name', name)"
-        " from supabase_migrations.schema_migrations where version = :'v'), '{}'::jsonb);",
-        v=ctx["version"],
-    )
-    if ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]:
-        raise RuntimeError(f"TRAIN_EXEC_LEDGER_READBACK_MISMATCH:{json.dumps(ledger)}")
+    ledger = _ledger_readback(ctx["version"])
+    if (ledger.get("version") != ctx["version"]
+            or ledger.get("name") != ctx["name"]
+            or ledger.get("source_sha256") != ctx["source_sha256"]):
+        raise RuntimeError("TRAIN_EXEC_CLOSE_EXACT_LEDGER_UNVERIFIED")
+    effect = _effect_readback(ids["execution_id"], ids["effect_scope"])
+    apply_receipt = (effect.get("receipt") or {}).get("apply_receipt") or {}
+    if (effect.get("state") != "SUCCEEDED"
+            or effect.get("effect_request_sha256") != ctx["source_sha256"]
+            or effect.get("dispatch_key") != ids["dispatch_key"]
+            or apply_receipt.get("ledger_version") != ctx["version"]
+            or apply_receipt.get("ledger_name") != ctx["name"]):
+        raise RuntimeError("TRAIN_EXEC_CLOSE_EFFECT_RECEIPT_UNVERIFIED")
     _record_step_if_needed(ids, "verify", verify_evidence(ctx, ids, ledger, merge_sha, parity_status))
     evidence = {"train_run_id": ctx["run_id"], "pr": int(ctx["pr"]), "merge_sha": merge_sha,
                 "ledger": ledger, "parity": parity_status}
