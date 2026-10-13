@@ -55,7 +55,9 @@ Contract/governance are updated **together** in `engineering_plan_units`, `engin
 
 ## Train / evidence boundary
 
-- PR #2355 remains DRAFT. It may not enter Train until PR #2356 has retired the old, never-applied source using an authorized source-only path; tracked in #2357.
+- **Owner decision 2026-10-13:** PR #2355 is an **independent new changeset** eligible for existing scoped LF Migration Merge Train. Its application does **not** depend on retiring the historical unapplied SQL. Train must still validate the new PR, source identity, current prestate, exact ledger version and real DB readback.
+- Historical premerged, never-applied `20261012223000_ig_m100_sandbox_technical_vs_operational_authority_v1.sql` (blob `dbe466b827f10c257dba6449d65d6750f2328057`) **stays in Git**. It is **technical debt, not a checkpoint dependency**, tracked by issue #2357; do not stamp its ledger, replay its SQL or change its blob to manufacture parity.
+- PR #2356 attempted retirement through a source-only lane not currently supported by Train. Its merge is not required for M10.0; leaving it open must not hold PR #2355 in DRAFT.
 - No agent may apply SQL or edit a credential-reading workflow to bypass Train.
 - A GitHub PASS, a draft PR, or this document is not evidence of checkpoint DONE. Only Train's exact SQL+ledger+DB readback and canonical transitions can change M10.0 from 60%.
 - Read-only connector calls to `lf_human_escalation_admission_v1` may be denied by ACL; such denial is not an admissible test PASS and must not be retried with elevated credentials.
