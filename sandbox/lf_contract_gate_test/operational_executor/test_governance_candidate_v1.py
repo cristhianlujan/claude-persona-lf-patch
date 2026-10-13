@@ -35,6 +35,8 @@ def verify(source: str) -> list[str]:
       "CREATE OR REPLACE FUNCTION public.lf_operational_executor_admit_v1",
       "lf_operational_admission_authority",
       "OPERATIONAL_ADMISSION_INDEPENDENT_PRINCIPAL_REQUIRED",
+      "OPERATIONAL_AUTHORITY_ROLE_PRIVILEGES_UNSAFE",
+      "OPERATIONAL_AUTHORITY_ROLE_CROSS_MEMBERSHIP_FORBIDDEN",
       "OPERATIONAL_ADMISSION_ROLE_NOT_INDEPENDENT",
       "OPERATIONAL_ADMISSION_EXTERNAL_DECISION_NOT_EXACT",
       "OPERATIONAL_ADMISSION_REPLAY_OR_EXECUTION_MISMATCH",
@@ -111,6 +113,14 @@ class GovernedCandidateStaticTests(unittest.TestCase):
         self.assertIn("session_user IN ('postgres','authenticator','service_role')",source)
         self.assertTrue(verify(source.replace("OPERATIONAL_ADMISSION_ROLE_NOT_INDEPENDENT",
                                               "ROUTER_NOT_ENFORCED")))
+
+    def test_existing_authority_roles_are_fail_closed(self):
+        source=SQL.read_text(encoding="utf-8")
+        self.assertIn("AND r.rolcanlogin=false AND r.rolinherit=false",source)
+        self.assertIn("AND r.rolsuper=false",source)
+        self.assertIn("AND r.rolbypassrls=false",source)
+        self.assertTrue(verify(source.replace(
+          "OPERATIONAL_AUTHORITY_ROLE_CROSS_MEMBERSHIP_FORBIDDEN","UNSAFE_ROLE_REUSE")))
 
     def test_independent_admission_provenance_cannot_be_removed(self):
         source=SQL.read_text(encoding="utf-8")
