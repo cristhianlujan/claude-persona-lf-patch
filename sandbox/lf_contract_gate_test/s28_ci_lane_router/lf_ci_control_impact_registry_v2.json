@@ -467,6 +467,10 @@
         },
         {
           "kind": "prefix",
+          "value": "sandbox/lf_contract_gate_test/engineering_checkpoint_mcp/"
+        },
+        {
+          "kind": "prefix",
           "value": "sandbox/lf_contract_gate_test/db_write_transport/"
         },
         {
