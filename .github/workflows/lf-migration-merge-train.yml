@@ -795,15 +795,41 @@ jobs:
             --apply-receipt .lf_train/exact-apply-receipt.json
           echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
 
+      - name: RECOVER exact source-to-ledger readback
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.operation_request.outputs.operation_mode == 'RECOVER' && (steps.real_apply.outputs.applied == 'true' || steps.plan.outputs.already_applied_exact == 'true')
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          VERSION: ${{ steps.plan.outputs.migration_version }}
+          NAME: ${{ steps.plan.outputs.migration_name }}
+          SOURCE_FILE: ${{ steps.source.outputs.source_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ledger_hex="$(docker run --rm             -e PGPASSWORD="$LF_SUPABASE_DB_PASSWORD" postgres:17.6             psql "host=$SUPABASE_POOLER_HOST port=5432 user=postgres.$SUPABASE_PROJECT_ID dbname=postgres sslmode=require"             -X -At -F '|' -v ON_ERROR_STOP=1             -c "select name,encode(convert_to(statements[1],'UTF8'),'hex') from supabase_migrations.schema_migrations where version='$VERSION';")"
+          ledger_name="${ledger_hex%%|*}"
+          [ "$ledger_name" = "$NAME" ] || { echo "FAIL_RECOVER_LEDGER_NAME_READBACK"; exit 2; }
+          sql_hex="${ledger_hex#*|}"
+          python3 - "$SOURCE_FILE" "$sql_hex" <<'PY'
+          import hashlib,sys
+          def canonical(sql):
+              sql=sql.replace("\r\n","\n").replace("\r","\n")
+              return "\n".join(line for line in sql.split("\n") if not line.lstrip().startswith("--")).rstrip("\n").encode()
+          file_sha=hashlib.sha256(canonical(open(sys.argv[1],encoding="utf-8").read())).hexdigest()
+          ledger_sha=hashlib.sha256(canonical(bytes.fromhex(sys.argv[2]).decode("utf-8"))).hexdigest()
+          if file_sha != ledger_sha:
+              raise SystemExit("FAIL_RECOVER_LEDGER_CONTENT_READBACK")
+          print("PASS_RECOVER_EXACT_SOURCE_LEDGER_READBACK sha256="+file_sha)
+          PY
+
       - name: Run changeset-scoped parity from trusted persisted source
         id: parity
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.operation_request.outputs.operation_mode != 'RECOVER'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           BASE_SHA: ${{ steps.admission.outputs.current_main }}
-          PARITY_HEAD: ${{ steps.plan.outputs.already_applied_exact == 'true' && (steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha) || steps.write_ahead.outputs.persisted_head_sha }}
+          PARITY_HEAD: ${{ steps.plan.outputs.already_applied_exact == 'true' && (steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha) || steps.write_ahead.outputs.persisted_head_sha || steps.resume_binding.outputs.persisted_head_sha }}
         shell: bash
         run: |
           set -euo pipefail
