@@ -92,6 +92,15 @@ BEGIN
   v_specs := jsonb_set(v_specs,'{BINDING_ASIS}',
     (coalesce(v_specs->'BINDING_ASIS','{}'::jsonb) ||
       jsonb_build_object(
+        'schema_version','ENGINEERING_ACTION_SPEC_V3',
+        'checkpoint_code','BINDING_ASIS',
+        'contract_source','EXPLICIT_ACTION_SPEC',
+        'action_kind','READBACK_ONCE',
+        'status','READY',
+        'recipe_mode','OBSERVE_AND_PERSIST',
+        'target',jsonb_build_object('declared_objects',jsonb_build_array(
+          'public.lf_capability_current','public.lf_capability_version_registry',
+          'programacion.engineering_work_checkpoints')),
         'expected','Observe CURRENT 1.0.0, no CANDIDATE, M10.0 sandbox DONE but operational authority blocked',
         'checkpoint_title','Readback CURRENT/registry de IG y gate operativo M10.0 separado',
         'verification_queries',jsonb_build_array(q_current,q_versions,q_m100),
@@ -122,6 +131,10 @@ BEGIN
          'status','BLOCK_REGISTERED_CANDIDATE_AND_AUTHORITY_REQUIRED',
          'expected','Only a future authorized pointer-only migration; never create an implicit candidate or run activation here',
          'domain_mutation_target','public.lf_capability_current',
+         'target',jsonb_build_object('declared_objects',jsonb_build_array(
+            'public.lf_capability_current')),
+         'authoring_contract',coalesce(v_specs#>'{SWITCH_ONLY_MIGRATION,authoring_contract}','{}'::jsonb)
+            || jsonb_build_object('db_targets_exact',jsonb_build_array('public.lf_capability_current')),
          'migration_ledger_role','EVIDENCE_ONLY',
          'runtime_activation','FORBIDDEN_IN_CONSTRUCTION_SANDBOX',
          'verification_queries',jsonb_build_array(q_current,q_versions,q_m100))),true);
@@ -152,6 +165,12 @@ BEGIN
         'expected','Actual canary positive, negative and rollback readback with baseline 1.0.0; zero delta, source-bound assertion',
         'baseline_version','1.0.0',
         'preexisting_case_ref','M9.2:SWITCH_REVERT_SANDBOX',
+        'target',jsonb_build_object(
+          'declared_objects',jsonb_build_array(
+            'public.lf_capability_current','public.lf_capability_version_registry'),
+          'declared_artifacts',jsonb_build_array(jsonb_build_object(
+            'path','cristhianlujan/claude-persona-lf-patch/sandbox/lf_contract_gate_test/engineering_checkpoints/m9_2/switch_revert_sandbox.py',
+            'role','EVIDENCE_ONLY'))),
         'verification_queries',jsonb_build_array(q_current,q_m92),
         'status','BLOCK_GENUINE_ASSERTION_UNTIL_EXECUTED')),true);
 
@@ -177,14 +196,25 @@ BEGIN
   v_source := coalesce(v_meta->'source_pack_v1','{}'::jsonb);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,BINDING_ASIS,inputs,queries}',
     jsonb_build_array(q_current,q_versions,q_m100),true);
+  v_source := jsonb_set(v_source,'{checkpoint_inputs,BINDING_ASIS,missing}','[]'::jsonb,true);
+  v_source := jsonb_set(v_source,'{checkpoint_inputs,BINDING_ASIS,missing_typed}','[]'::jsonb,true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,REUSE_CAPABILITY_CUTOVER,inputs,queries}',
     jsonb_build_array(q_m92,q_current),true);
+  v_source := jsonb_set(v_source,'{checkpoint_inputs,REUSE_CAPABILITY_CUTOVER,inputs,db_objects}',
+    jsonb_build_array('public.lf_capability_current',
+     'public.lf_capability_version_registry','programacion.engineering_work_checkpoints'),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,SWITCH_ONLY_MIGRATION,inputs,queries}',
     jsonb_build_array(q_current,q_versions,q_m100),true);
+  v_source := jsonb_set(v_source,'{checkpoint_inputs,SWITCH_ONLY_MIGRATION,inputs,db_objects}',
+    jsonb_build_array('public.lf_capability_current',
+      'public.lf_capability_version_registry'),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,RUNTIME_PREFLIGHT,inputs,queries}',
     jsonb_build_array(q_runtime),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,NEG_REVERSE,inputs,queries}',
     jsonb_build_array(q_current,q_m92),true);
+  v_source := jsonb_set(v_source,'{checkpoint_inputs,NEG_REVERSE,inputs,db_objects}',
+    jsonb_build_array('public.lf_capability_current',
+      'public.lf_capability_version_registry'),true);
   v_source := jsonb_set(v_source,'{checkpoint_inputs,SWITCH_READBACK}',
     jsonb_build_object('inputs',jsonb_build_object(
       'queries',jsonb_build_array(q_current,q_versions),
