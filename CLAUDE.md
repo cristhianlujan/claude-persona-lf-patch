@@ -91,6 +91,10 @@ Rules for every agent:
 - PRs that change the Train itself (`.github/workflows/lf-migration-merge-train.yml`, `sandbox/lf_contract_gate_test/db_write_transport/**`, guard or parity code) always go through the Train.
 - If a Train run fails because `main` advanced (stale head, not a content conflict), update the branch from `main`, wait for green checks on the new head, then remove and re-add `ready-to-merge`. Do not force-push and do not hand-merge.
 
+This is enforced: the route guard (`DIRECT_MERGE_FOR_NON_MIGRATION = False` in `sandbox/lf_contract_gate_test/migration_route_guard/lf_migration_route_guard.py`) no longer publishes `lf-merge-train/verified` for code-only PRs, so the merge button stays blocked until the Train publishes the status right before its own exact-head merge. A PR showing "Expected — waiting for status" is normal: label it `ready-to-merge`.
+
+Emergency (Train itself broken): only the repository admin may temporarily relax the `protect-main` ruleset to merge the Train fix, restore it immediately after, and record both changes in that PR.
+
 ## Soft canonical-route guard
 
 Before any repository, database, API, or external-system write, resolve the

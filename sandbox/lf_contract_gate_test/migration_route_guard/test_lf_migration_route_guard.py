@@ -63,7 +63,8 @@ class MigrationRouteGuardTests(unittest.TestCase):
             "APP_TOKEN": "app-token",
             "GITHUB_EVENT_PATH": "",
             "PR_NUMBER_INPUT": "1,2",
-        }), patch.object(guard, "pull_files", return_value=([{"filename": "README.md"}], True)), \
+        }), patch.object(guard, "DIRECT_MERGE_FOR_NON_MIGRATION", True), \
+            patch.object(guard, "pull_files", return_value=([{"filename": "README.md"}], True)), \
             patch.object(guard, "write_summary") as summary, \
             patch.object(guard, "api_request", side_effect=[
                 pull_1, pull_1, guard.ApiError("simulated status API failure"),
@@ -76,6 +77,36 @@ class MigrationRouteGuardTests(unittest.TestCase):
         self.assertTrue(any("PR #1: status publication failed" in item.args[0] for item in summary.call_args_list))
         self.assertTrue(any("PR #2: SUCCESS" in item.args[0] for item in summary.call_args_list))
         self.assertTrue(any("failed PRs: #1" in item.args[0] for item in summary.call_args_list))
+
+    def _run_queue_only(self, files):
+        pull = {"state": "open", "base": {"ref": "main"}, "head": {"sha": "head-1"}}
+        with patch.dict(os.environ, {
+            "GITHUB_REPOSITORY": "owner/repo",
+            "GH_READ_TOKEN": "read-token",
+            "APP_TOKEN": "app-token",
+            "GITHUB_EVENT_PATH": "",
+            "PR_NUMBER_INPUT": "1",
+        }), patch.object(guard, "pull_files", return_value=(files, True)), \
+            patch.object(guard, "write_summary") as summary, \
+            patch.object(guard, "api_request", side_effect=[pull]) as api_request:
+            result = guard.main()
+        return result, api_request, summary
+
+    def test_default_is_queue_only(self):
+        self.assertFalse(guard.DIRECT_MERGE_FOR_NON_MIGRATION)
+
+    def test_queue_only_non_migration_publishes_no_status(self):
+        result, api_request, summary = self._run_queue_only([{"filename": "README.md"}])
+        self.assertEqual(result, 0)
+        self.assertEqual(api_request.call_count, 1)
+        self.assertFalse(any(c.kwargs.get("method") == "POST" for c in api_request.call_args_list))
+        self.assertTrue(any("direct merge disabled" in item.args[0] for item in summary.call_args_list))
+
+    def test_queue_only_migration_still_requires_train(self):
+        result, api_request, summary = self._run_queue_only([{"filename": "supabase/migrations/a.sql"}])
+        self.assertEqual(result, 0)
+        self.assertFalse(any(c.kwargs.get("method") == "POST" for c in api_request.call_args_list))
+        self.assertTrue(any("requires Train" in item.args[0] for item in summary.call_args_list))
 
 
 if __name__ == "__main__":
