@@ -149,5 +149,16 @@ psql("REVOKE lf_op_sandbox_extra FROM lf_op_sandbox_effect;")
 as_login("lf_op_sandbox_effect",
          "SELECT public.lf_operational_executor_assert_principal_v1('lf_operation_executor_runtime');")
 
+# Reject transitive memberships (LOGIN -> approved group -> unrelated group)
+# even if the login has no directly granted extra role.
+psql("""GRANT lf_op_sandbox_extra TO lf_operation_executor_runtime
+  WITH ADMIN FALSE, INHERIT FALSE, SET TRUE;""")
+as_login("lf_op_sandbox_effect",
+         expected_block("lf_operation_executor_runtime",
+                        "OPERATIONAL_PRINCIPAL_EXTRA_ROLE_MEMBERSHIP_FORBIDDEN"))
+psql("REVOKE lf_op_sandbox_extra FROM lf_operation_executor_runtime;")
+as_login("lf_op_sandbox_effect",
+         "SELECT public.lf_operational_executor_assert_principal_v1('lf_operation_executor_runtime');")
+
 print("PASS_REAL_POSTGRES17_PRINCIPAL_RBAC_NEGATIVES_AND_ROLLBACK "
       "separate_logins=2 denies=3 no_public_execute=true")
