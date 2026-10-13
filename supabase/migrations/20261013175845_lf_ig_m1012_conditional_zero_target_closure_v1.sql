@@ -24,6 +24,9 @@ DECLARE
  v_snapshot_after jsonb;
  v_boot jsonb;
  v_result jsonb;
+ v_assertion jsonb;
+ v_assertion_observed jsonb;
+ v_assertion_negative_error text;
  v_states jsonb;
  v_progress numeric;
  v_ref_prior text;
@@ -228,6 +231,64 @@ BEGIN
  v_boot:=programacion.fn_engineering_unit_bootstrap_v3(v_plan,v_unit);
  IF v_boot#>>'{current_checkpoint,checkpoint_code}' IS DISTINCT FROM 'NEG_CASCADE'
  THEN RAISE EXCEPTION 'M1012_CP5_NOT_CURRENT'; END IF;
+ -- The material checkpoint guard requires a CURRENT canonical assertion
+ -- receipt, independent of the suite's VERIFIED graph. The observed fields
+ -- are derived from the real provider-bound test, never hand-set as PASS.
+ v_assertion_observed:=jsonb_build_object(
+   'test_passed',
+       v_suite_test.status='PASSED'
+       AND v_suite_test.tests_passed=v_suite_test.tests_total
+       AND coalesce(v_suite_test.tests_failed,0)=0
+       AND v_bundle_test->>'status'='VERIFIED',
+   'test_exit_code',(v_suite_test.metadata->>'provider_returncode')::integer,
+   'semantic_authority_bound',
+       (v_suite_test.metadata->>'semantic_authority_bound')::boolean,
+   'adversarial_case_executed',
+       (v_suite_test.manifest->>'adversarial_case_executed')::boolean,
+   'real_db_drop_tested',
+       (v_suite_test.metadata->>'real_db_drop_tested')::boolean,
+   'train_gate_enforced',
+       (v_suite_test.metadata->>'train_gate_enforced')::boolean,
+   'suite_run_id',v_suite_test.suite_run_id
+ );
+ -- True negative rehearsal of the existing recorder. The subtransaction
+ -- must reject an intentionally wrong observed exit code with no residue.
+ BEGIN
+   PERFORM programacion.fn_engineering_checkpoint_assertion_record_v1(
+     v_plan,v_unit,'NEG_CASCADE',
+     jsonb_build_object(
+       'status','PASS','evidence_ref',v_ref_test,
+       'observed',jsonb_set(v_assertion_observed,
+                            '{test_exit_code}','1'::jsonb,true)),
+     v_actor
+   );
+   RAISE EXCEPTION 'M1012_ASSERTION_NEGATIVE_FALSE_PASS';
+ EXCEPTION WHEN raise_exception THEN
+   GET STACKED DIAGNOSTICS v_assertion_negative_error=MESSAGE_TEXT;
+   IF v_assertion_negative_error NOT LIKE 'ENGINEERING_ASSERTION_RESULT_FAILED:%' THEN
+     RAISE EXCEPTION 'M1012_ASSERTION_NEGATIVE_WRONG_REJECTION:%',
+         v_assertion_negative_error;
+   END IF;
+ END;
+ IF (SELECT c.assertion_receipt FROM programacion.engineering_work_checkpoints c
+     WHERE c.work_item_id=v_work AND c.checkpoint_code='NEG_CASCADE') IS NOT NULL
+ THEN RAISE EXCEPTION 'M1012_NEGATIVE_ASSERTION_LEFT_RESIDUE'; END IF;
+ v_assertion:=programacion.fn_engineering_checkpoint_assertion_record_v1(
+   v_plan,v_unit,'NEG_CASCADE',
+   jsonb_build_object('status','PASS',
+                      'evidence_ref',v_ref_test,
+                      'observed',v_assertion_observed),
+   v_actor
+ );
+ IF v_assertion->>'passed' IS DISTINCT FROM 'true'
+   OR v_assertion->>'checkpoint_code' IS DISTINCT FROM 'NEG_CASCADE'
+   OR v_assertion->>'evidence_ref' IS DISTINCT FROM v_ref_test
+   OR v_assertion->>'mode' IS DISTINCT FROM 'EXPLICIT_PASS_WHEN_SUBSET'
+   OR (SELECT c.assertion_receipt_sha256
+       FROM programacion.engineering_work_checkpoints c
+       WHERE c.work_item_id=v_work AND c.checkpoint_code='NEG_CASCADE')
+       IS DISTINCT FROM v_assertion->>'assertion_receipt_sha256'
+ THEN RAISE EXCEPTION 'M1012_CP5_CANONICAL_ASSERTION_NOT_RECORDED'; END IF;
  v_result:=programacion.fn_engineering_checkpoint_transition_v1(
    v_plan,v_unit,'NEG_CASCADE','DONE',v_ref_test,v_actor,
    'Bounded independent policy-oracle Python test 9/9 with CASCADE/dependent/caller adversarials, provenance exact Git; no real DB DROP and no runtime enforcement claim');
