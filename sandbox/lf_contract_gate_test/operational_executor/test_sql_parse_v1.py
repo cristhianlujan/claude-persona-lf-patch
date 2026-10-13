@@ -14,7 +14,7 @@ def main() -> None:
     ast = parse_sql(source)
     if len(ast) < 15:
         raise AssertionError(f"OP_GOVERNANCE_SQL_STATEMENT_COUNT_SUSPICIOUS:{len(ast)}")
-    test_file=SQL.parents[2]/"tests/lf_operational_executor_authority_readback_rollback_v1.sql"
+    test_file=SQL.parents[1]/"tests/lf_operational_executor_authority_readback_rollback_v1.sql"
     check=test_file.read_text(encoding="utf-8")
     test_ast=parse_sql(check)
     if len(test_ast)!=3 or not check.startswith("-- Execute ONLY after") or not check.rstrip().endswith("ROLLBACK;"):
