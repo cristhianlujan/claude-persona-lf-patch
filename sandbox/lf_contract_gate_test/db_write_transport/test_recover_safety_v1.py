@@ -27,6 +27,26 @@ class RecoverSafetyTest(unittest.TestCase):
         self.assertIn("steps.recover_preflight.outcome == 'success'",wf)
         self.assertIn("--recover-existing-main",wf)
 
+    def test_canonical_parity_exact_and_negative_readback(self):
+        import json,sys
+        from contextlib import redirect_stdout
+        from io import StringIO
+        with tempfile.TemporaryDirectory() as tmp:
+            version,name,path=self.source(tmp)
+            ledger={"version":version,"name":name,"statement_count":1,
+                    "statement_hex":path.read_bytes().hex()}
+            argv=["recover","--migration-path",str(path),"--db-url","test","--readback"]
+            with patch.object(p,"psql",return_value=json.dumps(ledger)),patch.object(sys,"argv",argv):
+                with redirect_stdout(StringIO()) as out:
+                    self.assertEqual(p.main(),0)
+                data=json.loads(out.getvalue())
+                self.assertEqual(data["parity_code"],"PASS_LF_MIGRATION_SOURCE_PARITY")
+                self.assertEqual(data["parity_version_count"],1)
+            ledger["statement_hex"]=b"select 999;".hex()
+            with patch.object(p,"psql",return_value=json.dumps(ledger)),patch.object(sys,"argv",argv):
+                with self.assertRaisesRegex(RuntimeError,"RECOVER_EXACT_LEDGER_CONTENT_MISMATCH"):
+                    p.main()
+
     def test_missing_train_execution_cannot_enter_recover(self):
         with tempfile.TemporaryDirectory() as tmp:
             version,name,path=self.source(tmp)
