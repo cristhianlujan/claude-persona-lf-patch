@@ -61,8 +61,12 @@ def prioritize_mathematical_methods(
         return {"status": "BLOCK", "reason": "SHADOW_TRIAL_LIMIT_INVALID",
                 "recommended_trials": [], "rejected": [], "execution_authorized": False}
     allowed_trials = max_trials if max_trials is not None else 1
-    blocked = context.get("blocked_methods")
-    blocked = set(blocked) if isinstance(blocked, list) and all(isinstance(x, str) for x in blocked) else set()
+    blocked = context.get("blocked_methods", [])
+    if (not isinstance(blocked, list)
+            or any(not isinstance(x, str) or not x.strip() for x in blocked)):
+        return {"status": "BLOCK", "reason": "BLOCKED_METHODS_INVALID",
+                "recommended_trials": [], "rejected": [], "execution_authorized": False}
+    blocked = set(blocked)
     candidates = []
     rejected = []
     evidence_required = False
