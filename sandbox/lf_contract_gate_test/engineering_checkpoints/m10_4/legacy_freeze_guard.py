@@ -65,7 +65,7 @@ def load_manifest() -> tuple[dict, set[tuple[str, str]]]:
         targets.add((match.group(1).lower(), match.group(2).lower()))
     digest = hashlib.md5("|".join(
         f"{item['identity']}:{item['prosrc_md5']}"
-        for item in sorted(members, key=lambda x: x["identity"])
+        for item in members
     ).encode()).hexdigest()
     if digest != m.get("source_aggregate_md5"):
         raise ValueError("FAIL_M104_MANIFEST_DRIFT:" + digest)
