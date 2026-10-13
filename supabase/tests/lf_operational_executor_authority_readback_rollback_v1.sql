@@ -14,6 +14,12 @@ DECLARE
     'public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)'::regprocedure;
   v_finish regprocedure :=
     'public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)'::regprocedure;
+  v_close regprocedure :=
+    'public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text)'::regprocedure;
+  v_decision regprocedure :=
+    'public.lf_operational_executor_assert_decision_current_v1(text)'::regprocedure;
+  v_facade regprocedure;
+  v_api_role text;
 BEGIN
  SELECT operation_code INTO v_migration FROM public.lf_router_action_registry
  WHERE asset_type='DB' AND action_code='UPDATE';
@@ -67,6 +73,25 @@ BEGIN
      AND acl.grantee=0 AND acl.privilege_type='EXECUTE'
  ) THEN
    RAISE EXCEPTION 'TEST_OPERATIONAL_FACADE_EXPOSED_TO_PUBLIC';
+ END IF;
+ -- Verify the exact six new facades against effective grants, not just PUBLIC ACL.
+ -- Supabase creates functions with additional explicit default EXECUTE grants
+ -- for anon, authenticated, and service_role.
+ FOR v_facade IN SELECT unnest(ARRAY[
+   v_principal,v_admit,v_begin,v_finish,v_close,v_decision
+ ]) LOOP
+   FOREACH v_api_role IN ARRAY ARRAY['anon','authenticated','service_role'] LOOP
+     IF has_function_privilege(v_api_role,v_facade,'EXECUTE') THEN
+       RAISE EXCEPTION 'TEST_OPERATIONAL_FACADE_EFFECTIVE_API_EXECUTE:%:%',
+         v_facade::text,v_api_role;
+     END IF;
+   END LOOP;
+ END LOOP;
+ IF has_function_privilege('lf_operation_executor_runtime',v_close,'EXECUTE')
+    OR has_function_privilege('lf_operational_admission_authority',v_close,'EXECUTE')
+    OR has_function_privilege('lf_operation_executor_runtime',v_decision,'EXECUTE')
+    OR has_function_privilege('lf_operational_admission_authority',v_decision,'EXECUTE') THEN
+   RAISE EXCEPTION 'TEST_INTERNAL_CLOSE_OR_DECISION_EXPOSED_TO_GROUP_ROLES';
  END IF;
 END $test$;
 ROLLBACK;
