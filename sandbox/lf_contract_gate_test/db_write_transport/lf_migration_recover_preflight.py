@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -51,6 +52,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--migration-path", required=True)
     parser.add_argument("--db-url")
+    parser.add_argument("--readback",action="store_true")
     args = parser.parse_args()
     path = Path(args.migration_path)
     match = FILENAME_RE.fullmatch(path.name)
@@ -59,6 +61,22 @@ def main() -> int:
     version = match.group("version")
     name = match.group("name")
     url = args.db_url or db_url()
+
+    if args.readback:
+        data=json.loads(psql(url,(
+            "select coalesce((select jsonb_build_object("
+            "'version',version,'name',name,'statement_count',cardinality(statements),"
+            "'source_sha256',encode(extensions.digest(convert_to(statements[1],'UTF8'),'sha256'),'hex'))"
+            " from supabase_migrations.schema_migrations where version='"+version+"'),'{}'::jsonb);"
+        )))
+        expected_sha=hashlib.sha256(path.read_bytes()).hexdigest()
+        if (data.get("version")!=version or data.get("name")!=name
+                or data.get("statement_count")!=1 or data.get("source_sha256")!=expected_sha):
+            raise RuntimeError("RECOVER_EXACT_LEDGER_CONTENT_MISMATCH")
+        print(json.dumps({"status":"PASS","code":"RECOVER_EXACT_LEDGER_READBACK_PASS",
+                          "migration_version":version,"migration_name":name,
+                          "source_sha256":expected_sha},sort_keys=True))
+        return 0
 
     before = psql(url, (
         "select jsonb_build_object("
