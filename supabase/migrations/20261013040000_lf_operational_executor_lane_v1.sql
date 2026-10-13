@@ -509,6 +509,15 @@ DECLARE
   v_manifest jsonb;
   v_reserved jsonb;
   v_authority jsonb;
+  v_decision jsonb;
+  v_policy jsonb;
+  v_subject jsonb;
+  v_meta jsonb;
+  v_req_id uuid;
+  v_expires timestamptz;
+  v_required_authority text;
+  v_required_role text;
+  v_allowed_actions jsonb;
 BEGIN
   PERFORM public.lf_operational_executor_assert_principal_v1('lf_operational_admission_authority');
   IF coalesce(p_execution_id,'') !~ '^EXEC-[A-Z0-9_-]{3,200}$'
@@ -534,6 +543,74 @@ BEGIN
      OR p_approval_receipt->>'idempotency_key' IS DISTINCT FROM p_idempotency_key THEN
     RAISE EXCEPTION 'OPERATIONAL_ADMISSION_EXTERNAL_DECISION_NOT_EXACT';
   END IF;
+  -- The caller's JSON is only a locator; LF's durable, verified decision
+  -- is the authority. Do not create a second approval ledger.
+  IF coalesce(p_approval_receipt->>'request_id','')
+         !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+     OR coalesce(p_approval_receipt->>'receipt_sha256','')
+         !~ '^[0-9a-f]{64}$'
+     OR coalesce(p_approval_receipt->>'currentness_sha256','')
+         !~ '^[0-9a-f]{64}$' THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_DURABLE_DECISION_REF_REQUIRED';
+  END IF;
+  v_req_id:=(p_approval_receipt->>'request_id')::uuid;
+  v_decision:=private.fn_lf_human_decision_consume_v1(v_req_id);
+  IF v_decision IS NULL
+     OR v_decision->>'schema_version' IS DISTINCT FROM 'lf-human-decision-consume/v1'
+     OR v_decision->>'request_status' IS DISTINCT FROM 'DECIDED'
+     OR v_decision->>'producer_code' IS DISTINCT FROM 'LF_OPERATION_EXECUTOR'
+     OR v_decision->>'subject_type' IS DISTINCT FROM 'OPERATIONAL_EXECUTION'
+     OR v_decision->>'subject_key' IS DISTINCT FROM p_execution_id
+     OR v_decision->>'currentness_sha256'
+          IS DISTINCT FROM p_approval_receipt->>'currentness_sha256'
+     OR v_decision #>> '{decision_receipt,decision_code}' IS DISTINCT FROM 'APPROVE'
+     OR v_decision #>> '{decision_receipt,receipt_sha256}'
+          IS DISTINCT FROM p_approval_receipt->>'receipt_sha256'
+     OR v_decision #>> '{decision_receipt,receipt_id}'
+          IS DISTINCT FROM p_approval_receipt->>'receipt_id'
+     OR p_approval_receipt->>'approval_ref'
+          IS DISTINCT FROM 'supabase://private/lf_human_decision_receipts_v1/'
+                            ||coalesce(v_decision #>> '{decision_receipt,receipt_id}','') THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_VERIFIED_DECISION_NOT_CURRENT';
+  END IF;
+  SELECT r.subject_ref,r.metadata,r.expires_at,
+         r.required_authority_ref,r.required_reviewer_role,r.allowed_actions
+    INTO v_subject,v_meta,v_expires,v_required_authority,
+         v_required_role,v_allowed_actions
+    FROM private.lf_human_decision_requests_v1 r
+   WHERE r.request_id=v_req_id AND r.status='DECIDED';
+  IF NOT FOUND OR (v_expires IS NOT NULL AND v_expires<=clock_timestamp())
+     OR v_subject->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+     OR v_subject->>'execution_id' IS DISTINCT FROM p_execution_id
+     OR v_subject->>'handler_code' IS DISTINCT FROM p_handler_code
+     OR v_subject->>'handler_revision' IS DISTINCT FROM p_handler_revision
+     OR v_subject->>'payload_sha256' IS DISTINCT FROM p_payload_sha
+     OR v_subject->>'effect_scope' IS DISTINCT FROM p_effect_scope
+     OR v_subject->>'dispatch_key' IS DISTINCT FROM p_dispatch_key
+     OR v_subject->>'idempotency_key' IS DISTINCT FROM p_idempotency_key
+     OR NOT (v_allowed_actions ? 'APPROVE') THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_DECISION_SCOPE_OR_EXPIRY_INVALID';
+  END IF;
+  v_policy:=private.fn_lf_human_decision_resolve_policy_v1(
+     'LF_OPERATION_EXECUTOR','OPERATIONAL_EXECUTION',
+     coalesce(v_meta->'classification_context','{}'::jsonb)
+  );
+  IF v_policy->>'state' IS DISTINCT FROM 'ACTIVE'
+     OR v_policy->>'required_authority_ref' IS DISTINCT FROM v_required_authority
+     OR v_policy->>'required_reviewer_role' IS DISTINCT FROM v_required_role
+     OR NOT (coalesce(v_policy->'allowed_actions','[]'::jsonb) ? 'APPROVE') THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_AUTHORITY_POLICY_NOT_ACTIVE';
+  END IF;
+  IF private.fn_lf_human_decision_assert_authority_receipt_v1(
+       v_req_id,'APPROVE',
+       v_decision #>> '{decision_receipt,reviewer_role}',
+       v_decision #>> '{decision_receipt,authority_ref}',
+       v_decision #>> '{decision_receipt,authority_receipt_ref}',
+       v_decision #>> '{decision_receipt,authority_receipt_sha256}',
+       v_decision #>> '{decision_receipt,observed_currentness_sha256}'
+     ) IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'OPERATIONAL_ADMISSION_AUTHORITY_RECEIPT_INVALID';
+  END IF;
   -- Role identity proves an independent issuer, NOT cryptographic provenance
   -- of the provided receipt. Actual issuer/currentness EKB remains a hard gate.
   v_route:=public.lf_router_resolve_v1(
@@ -551,6 +628,9 @@ BEGIN
     'issuer_role','lf_operational_admission_authority',
     'issuer_login',session_user,
     'approval_ref',p_approval_receipt->>'approval_ref',
+    'decision_request_id',v_req_id::text,
+    'decision_receipt_sha256',v_decision #>> '{decision_receipt,receipt_sha256}',
+    'currentness_sha256',v_decision->>'currentness_sha256',
     'approval_sha256',encode(
       extensions.digest(convert_to(p_approval_receipt::text,'UTF8'),'sha256'),'hex'),
     'router_result',v_route
