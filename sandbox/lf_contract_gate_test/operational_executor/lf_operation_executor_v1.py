@@ -196,7 +196,16 @@ def run_transaction(connection, req: Request, handlers: Mapping[str, Handler]) -
                      (req.execution_id, owner, fence, req.effect_scope, canonical(receipt), req.actor))
         if not isinstance(marked, dict) or marked.get("result") != "EFFECT_SUCCESS_PERSISTED":
             raise Blocked("BLOCK_EFFECT_RECEIPT_NOT_DURABLE")
-        return receipt
+        # A receipt alone is NOT a completed operation. Both must be durable
+        # in the SAME transaction. This canonical closure is admitted separately.
+        closure = one(cur,
+            "SELECT public.lf_close_operational_execution_v1(%s,%s,%s,%s::jsonb,%s)",
+            (req.execution_id, owner, fence, canonical(receipt), req.actor))
+        if (not isinstance(closure, dict)
+                or closure.get("result") != "EXECUTION_COMPLETED"
+                or closure.get("execution_id") != req.execution_id):
+            raise Blocked("BLOCK_OPERATIONAL_CLOSEOUT_NOT_DURABLE")
+        return {**receipt, "close": closure}
 
 
 def dispatch(req: Request, handlers: Mapping[str, Handler], connection_factory,
