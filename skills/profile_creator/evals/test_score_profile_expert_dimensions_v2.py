@@ -91,6 +91,19 @@ def run():
     assert evaluate_dimensions(tampered, hold())["status"] == "BLOCK"
 
     assert evaluate_dimensions(prepared, {"holdout_case_ids": ["NON_EXISTENT"]})["status"] == "BLOCK"
+    assert evaluate_dimensions(None, hold())["status"] == "BLOCK"
+
+    tampered = deepcopy(prepared)
+    tampered["cases"][0]["case_id"] = ["unhashable"]
+    assert evaluate_dimensions(tampered, hold())["status"] == "BLOCK"
+
+    tampered = deepcopy(prepared)
+    tampered["thresholds_frozen_before_raw"] = False
+    assert evaluate_dimensions(tampered, hold())["status"] == "BLOCK"
+
+    tampered = deepcopy(prepared)
+    tampered["longitudinal_evidence"][0]["wave_id"] = ["unhashable"]
+    assert "longitudinal" in evaluate_dimensions(tampered, hold())["missing_dimensions"]
     print("PASS_PROFILE_EXPERT_DIMENSIONS_V2 8_dimensions=1 missing_evidence_negative=1 "
           "fake_telemetry_negative=1 independence_negative=1 no_cutover=1")
 
