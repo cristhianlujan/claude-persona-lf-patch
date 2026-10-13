@@ -39,11 +39,11 @@ La reserva de ejecución existente `public.fn_lf_operation_reserve_execution_v1`
 
 ## Activación de privilegios en conexión
 
-Los dos roles agrupadores son `NOLOGIN NOINHERIT`: por diseño el login técnico **no hereda** sus permisos automáticamente. La prueba con PostgreSQL 16 detectó que, sin `SET ROLE`, la función SECURITY DEFINER devuelve `permission denied` antes de validar la autoridad.
+Los dos roles agrupadores son `NOLOGIN NOINHERIT`: por diseño el login técnico **no hereda** sus permisos automáticamente. La prueba con PostgreSQL 17 detectó que, sin `SET ROLE`, la función SECURITY DEFINER devuelve `permission denied` antes de validar la autoridad.
 
 El runtime del executor ejecuta **`SET LOCAL ROLE lf_operation_executor_runtime`**, con nombre fijo y dentro de la misma transacción que BEGIN/handler/FINISH. No acepta nombres de rol provenientes del caller; `ROLLBACK` o `COMMIT` restablece el rol. El servicio independiente de admisión debe realizar su propia activación transaccional `SET LOCAL ROLE lf_operational_admission_authority` con una credencial distinta. No se debe conceder `INHERIT` ni EXECUTE a `PUBLIC` como solución alternativa.
 
-En #2372: `test_postgres_principal_rbac_v1.py` ejecuta **la función original propuesta** contra un contenedor PostgreSQL 16 desechable y prueba esta frontera en una base real. Esto **no equivale** a aplicar la migración LF completa, ni a una prueba de handler/transacción de negocio en Supabase.
+En #2372: `test_postgres_principal_rbac_v1.py` ejecuta **la función original propuesta** contra un contenedor PostgreSQL 17 desechable y prueba esta frontera en una base real. Esto **no equivale** a aplicar la migración LF completa, ni a una prueba de handler/transacción de negocio en Supabase.
 
 ## Transacción y control
 
