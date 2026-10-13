@@ -626,9 +626,29 @@ jobs:
           echo "FAIL_TRAIN_PASE_CHECK_TIMEOUT"
           exit 2
 
+      - name: Bind RECOVER source already persisted in main
+        id: recover_binding
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.operation_request.outputs.operation_mode == 'RECOVER' && steps.plan.outputs.migration_count == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "persisted_head_sha=${{ steps.admission.outputs.current_main }}" >> "$GITHUB_OUTPUT"
+          echo "source_blob=${{ steps.source.outputs.source_blob }}" >> "$GITHUB_OUTPUT"
+          echo "PASS_RECOVER_SOURCE_ALREADY_PERSISTED_IN_MAIN"
+
+      - name: Bind RESUME source without repeating write-ahead
+        id: resume_binding
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.operation_request.outputs.operation_mode == 'RESUME' && steps.plan.outputs.already_applied_exact == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "persisted_head_sha=${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}" >> "$GITHUB_OUTPUT"
+          echo "source_blob=${{ steps.source.outputs.source_blob }}" >> "$GITHUB_OUTPUT"
+          echo "PASS_RESUME_SOURCE_BINDING_REUSED"
+
       - name: Persist exact source and require Saga READY_TO_APPLY
         id: write_ahead
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true' && steps.operation_request.outputs.operation_mode != 'RECOVER'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
@@ -707,7 +727,7 @@ jobs:
 
       - name: Router execution begin (Train-managed, pre-apply)
         id: train_exec
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && env.LF_TRAIN_EXECUTION_MODE == 'ENFORCED' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && env.LF_TRAIN_EXECUTION_MODE == 'ENFORCED' && steps.plan.outputs.migration_count == '1' && (steps.plan.outputs.already_applied_exact != 'true' || steps.operation_request.outputs.operation_mode == 'RESUME')
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           PR: ${{ steps.admission.outputs.pr_number }}
@@ -715,10 +735,10 @@ jobs:
           VERSION: ${{ steps.plan.outputs.migration_version }}
           NAME: ${{ steps.plan.outputs.migration_name }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
-          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob }}
+          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob || steps.recover_binding.outputs.source_blob || steps.resume_binding.outputs.source_blob }}
           SOURCE_SHA256: ${{ steps.source.outputs.source_sha256 }}
           HEAD_SHA: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
-          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha }}
+          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha || steps.recover_binding.outputs.persisted_head_sha || steps.resume_binding.outputs.persisted_head_sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -733,6 +753,7 @@ jobs:
             --head-sha "$HEAD_SHA" --persisted-head-sha "$PERSISTED_HEAD" --run-id "$GITHUB_RUN_ID" \
             --state .lf_train/train-exec-state.json
           echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
+          echo "apply_required=$(jq -r '.apply_required // false' .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
 
       - name: Apply exact version and ledger readback
         id: real_apply
