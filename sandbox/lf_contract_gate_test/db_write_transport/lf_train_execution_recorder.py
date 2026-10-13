@@ -182,6 +182,17 @@ def record_step(ids: dict, step: str, evidence: dict) -> dict:
     return res
 
 
+def _require_router_authority(execution_id: str) -> None:
+    auth = call(
+        "select public.lf_router_downstream_authority_validate_v1(:'exec');",
+        exec=execution_id,
+    )
+    if (auth.get("applicable") is not True or auth.get("valid") is not True
+            or auth.get("code") != "ROUTER_DOWNSTREAM_AUTHORITY_VALID"
+            or auth.get("operation_code") != "ACTUALIZACION_DB_LF"):
+        raise RuntimeError("TRAIN_EXEC_ROUTER_AUTHORITY_MISSING_OR_STALE")
+
+
 def _execution_readback(execution_id: str) -> dict:
     return call(
         "select coalesce((select jsonb_build_object('execution_id',execution_id,'status',status,'lease_owner',lease_owner,'lease_fence',lease_fence,'lease_expires_at',lease_expires_at) from public.lf_operation_execution where execution_id=:'exec'),'{}'::jsonb);",
@@ -240,6 +251,7 @@ def begin(ctx: dict) -> dict:
         raise RuntimeError(f"TRAIN_EXEC_RESERVE_FAILED:{json.dumps(res, sort_keys=True)[:600]}")
 
     ids["execution_id"] = str(res["execution_id"])
+    _require_router_authority(ids["execution_id"])
     existing_effect = _effect_readback(ids["execution_id"], ids["effect_scope"])
     if existing_effect.get("dispatch_key"):
         ids["dispatch_key"] = str(existing_effect["dispatch_key"])
@@ -332,6 +344,7 @@ def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
 
 def close(state: dict, merge_sha: str, parity_status: str) -> dict:
     ctx, ids = state["context"], state["ids"]
+    _require_router_authority(ids["execution_id"])
     ledger = call(
         "select coalesce((select jsonb_build_object('version', version, 'name', name)"
         " from supabase_migrations.schema_migrations where version = :'v'), '{}'::jsonb);",
