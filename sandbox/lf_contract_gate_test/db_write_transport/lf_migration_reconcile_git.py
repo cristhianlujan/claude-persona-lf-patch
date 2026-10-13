@@ -34,21 +34,64 @@ def db_url() -> str:
     return f"postgresql://postgres.{project}:{quote(password, safe='')}@{host}:5432/postgres?sslmode=require"
 
 
-def ledger_row(url: str, version: str) -> tuple[str, str] | None:
+def read_only_query(url: str, sql: str) -> list[str]:
+    proc = subprocess.run(
+        ["psql", url, "-X", "-At", "-v", "ON_ERROR_STOP=1", "-f", "-"],
+        input="BEGIN TRANSACTION READ ONLY;\n" + sql + "\nCOMMIT;\n",
+        capture_output=True, text=True, check=False, timeout=120,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError("RECONCILE_READ_ONLY_QUERY_FAILED")
+    return [line for line in proc.stdout.strip().splitlines() if line and line not in ("BEGIN","COMMIT")]
+
+
+def validate_router(url: str, execution_id: str, repository: str, base_sha: str, head_sha: str) -> None:
+    if re.fullmatch(r"EXEC-[A-Z0-9][A-Z0-9_-]*", execution_id or "") is None:
+        raise RuntimeError("RECONCILE_ROUTER_EXECUTION_REQUIRED")
+    if re.fullmatch(r"[a-f0-9]{40}", head_sha) is None or re.fullmatch(r"[a-f0-9]{40}",base_sha) is None:
+        raise RuntimeError("RECONCILE_HEAD_IDENTITY_INVALID")
+    # Binding issued by the existing ACT-0001 execution insert trigger, not supplied by caller.
     sql = (
-        "select name,encode(convert_to(statements[1],'UTF8'),'hex') "
+        "select jsonb_build_object('execution_id',e.execution_id,'status',e.status,"
+        "'operation_code',e.operation_code,'target_type',e.target_type,'target_code',e.target_code,"
+        "'target_repo',e.target_repo,'target_path',e.target_path,"
+        "'source_base',e.manifest->>'reconcile_base_sha',"
+        "'source_head',e.manifest->>'reconcile_head_sha',"
+        "'authority',public.lf_router_downstream_authority_validate_v1(e.execution_id)) "
+        "from public.lf_operation_execution e "
+        f"where e.execution_id='{execution_id}';"
+    )
+    rows=read_only_query(url,sql)
+    if len(rows)!=1:
+        raise RuntimeError("RECONCILE_ROUTER_EXECUTION_READBACK_MISSING")
+    row=json.loads(rows[0])
+    authority=row.get("authority") or {}
+    expected={
+        "status":"IN_PROGRESS","operation_code":"ACTUALIZACION_DB_LF",
+        "target_type":"MIGRATION","target_code":"RECONCILE_GIT_ONLY",
+        "target_repo":repository,"target_path":"supabase/migrations",
+        "source_base":base_sha,"source_head":head_sha
+    }
+    if any(row.get(key)!=value for key,value in expected.items()):
+        raise RuntimeError("RECONCILE_ROUTER_EXECUTION_BINDING_MISMATCH")
+    if (authority.get("applicable") is not True or authority.get("valid") is not True
+            or authority.get("code")!="ROUTER_DOWNSTREAM_AUTHORITY_VALID"):
+        raise RuntimeError("RECONCILE_ROUTER_AUTHORITY_NOT_VALID")
+
+
+def ledger_row(url: str, version: str) -> tuple[str, str] | None:
+    if re.fullmatch(r"[0-9]{14}",version) is None:
+        raise ValueError("RECONCILE_VERSION_INVALID")
+    sql = (
+        "select name||'|'||encode(convert_to(statements[1],'UTF8'),'hex') "
         "from supabase_migrations.schema_migrations "
         f"where version='{version}';"
     )
-    p = subprocess.run(["psql", url, "-X", "-At", "-F", "|", "-v", "ON_ERROR_STOP=1", "-c", sql],
-                       capture_output=True, text=True, check=False, timeout=120)
-    if p.returncode != 0:
-        raise RuntimeError("RECONCILE_LEDGER_READ_FAILED")
-    raw = p.stdout.strip()
-    if not raw:
-        return None
-    name, hex_sql = raw.split("|", 1)
-    return name, bytes.fromhex(hex_sql).decode("utf-8")
+    rows=read_only_query(url,sql)
+    if not rows: return None
+    if len(rows)!=1: raise RuntimeError("RECONCILE_LEDGER_CARDINALITY_INVALID")
+    name,hex_sql=rows[0].split("|",1)
+    return name,bytes.fromhex(hex_sql).decode("utf-8")
 
 
 def main() -> int:
@@ -58,14 +101,19 @@ def main() -> int:
     ap.add_argument("--base-sha", required=True)
     ap.add_argument("--head-sha", required=True)
     ap.add_argument("--db-url")
+    ap.add_argument("--router-execution-id",required=True)
+    ap.add_argument("--repository",required=True)
     args = ap.parse_args()
     root = Path(args.repo_root).resolve()
     pages = json.loads(Path(args.pr_files).read_text(encoding="utf-8"))
     rows = [r for page in pages for r in page] if pages and isinstance(pages[0], list) else pages
     mig = [r for r in rows if str(r.get("filename") or "").startswith("supabase/migrations/")]
+    if len(rows)!=len(mig):
+        raise RuntimeError("RECONCILE_MIXED_SCOPE_FORBIDDEN")
     if not 1 <= len(mig) <= 10:
         raise RuntimeError(f"RECONCILE_MIGRATION_COUNT_INVALID:{len(mig)}")
     url = args.db_url or db_url()
+    validate_router(url,args.router_execution_id,args.repository,args.base_sha,args.head_sha)
     out = []
     for row in mig:
         if row.get("status") != "renamed":
