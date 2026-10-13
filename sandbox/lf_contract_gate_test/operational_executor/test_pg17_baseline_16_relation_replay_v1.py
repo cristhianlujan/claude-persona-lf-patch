@@ -183,6 +183,11 @@ def main() -> None:
                               + " TO " + dest
                               + (" WITH GRANT OPTION" if grant["grantable"] else "") + ";")
 
+    # Fail-closed entrypoint negatives with the six exact candidate functions.
+    # No synthetic human authority, handler dispatch or Router acceptance.
+    from test_pg17_operational_denial_slice_v1 import denial_sql
+    statements.extend(denial_sql())
+
     table_list = ", ".join("'" + x + "'::regclass" for x in sorted(names))
     expected = {
         "columns": sum(len(x["columns"]) for x in tables),
