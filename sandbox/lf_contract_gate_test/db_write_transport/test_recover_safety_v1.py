@@ -48,6 +48,18 @@ class RecoverSafetyTest(unittest.TestCase):
                       db_url="test",source_blob="a"*40,allow_fallback=True,recover_existing_main=True)
                 fallback.assert_not_called()
 
+    def test_reject_escaped_transaction_or_psql_command(self):
+        dangerous=[
+            "BEGIN;\nselect 1;\nCOMMIT;\nCOMMIT;\n",
+            "BEGIN;\n\\\\! echo no\nselect 1;\nCOMMIT;\n",
+            "BEGIN;\nselect 1;\nROLLBACK;\nCOMMIT;\n"
+        ]
+        for sql in dangerous:
+            with self.subTest(sql=sql):
+                for fn in (p.strip_outer_transaction,a._strip_outer_transaction):
+                    with self.assertRaises(ValueError):
+                        fn(sql)
+
     def test_transaction_wrapper_is_not_replayed_inside_outer_transaction(self):
         sql="-- source\nBEGIN;\nselect 1;\nCOMMIT;\n"
         out=a.build_fallback_sql(version="20261012010000",name="lf_candidate_v1",
