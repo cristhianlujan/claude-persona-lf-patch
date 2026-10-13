@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from dataclasses import asdict, dataclass
 import importlib.util
 import json
@@ -260,6 +261,29 @@ def _fallback_apply(
         tmp.unlink(missing_ok=True)
 
 
+def _verify_recover_router(*, db_url: str, project_root: Path, migration_path: Path,
+                           source_blob: str, train_state_path: Path | None) -> None:
+    if train_state_path is None or not train_state_path.is_file():
+        raise RuntimeError("RECOVER_TRAIN_STATE_FILE_REQUIRED")
+    state = json.loads(train_state_path.read_text(encoding="utf-8"))
+    ctx, ids = state.get("context") or {}, state.get("ids") or {}
+    execution = str(ids.get("execution_id") or "")
+    sha256 = hashlib.sha256(migration_path.read_bytes()).hexdigest()
+    if (state.get("result")!="TRAIN_EXECUTION_READY_TO_APPLY"
+            or re.fullmatch(r"EXEC-[A-Z0-9][A-Z0-9_-]*",execution) is None
+            or ctx.get("source_blob")!=source_blob
+            or ctx.get("source_sha256")!=sha256
+            or ctx.get("path")!="supabase/migrations/"+migration_path.name):
+        raise RuntimeError("RECOVER_TRAIN_EXACT_IDENTITY_UNVERIFIED")
+    auth=json.loads(_psql(db_url,
+        "select public.lf_router_downstream_authority_validate_v1('"+execution+"');",
+        cwd=project_root))
+    if (auth.get("applicable") is not True or auth.get("valid") is not True
+            or auth.get("code")!="ROUTER_DOWNSTREAM_AUTHORITY_VALID"
+            or auth.get("operation_code")!="ACTUALIZACION_DB_LF"):
+        raise RuntimeError("RECOVER_ROUTER_EXECUTION_AUTHORITY_UNVERIFIED")
+
+
 def apply_exact(
     *,
     project_root: Path,
@@ -268,6 +292,7 @@ def apply_exact(
     source_blob: str,
     allow_fallback: bool,
     recover_existing_main: bool = False,
+    train_state_path: Path | None = None,
 ) -> ApplyReceipt:
     decision = TRANSPORT.select_transport("MIGRATION", migration_path.as_posix())
     if decision.executor != "SUPABASE_CLI_DB_PUSH_LINKED":
@@ -278,6 +303,10 @@ def apply_exact(
     version = str(decision.migration_version)
     name = str(decision.migration_name)
     source_sql = migration_path.read_text(encoding="utf-8")
+    if recover_existing_main:
+        _verify_recover_router(db_url=db_url, project_root=project_root,
+            migration_path=migration_path, source_blob=source_blob,
+            train_state_path=train_state_path)
 
     existing_version, existing_name, existing_created_by = read_ledger(db_url, version, cwd=project_root)
     if existing_version is not None:
@@ -378,6 +407,7 @@ def main() -> int:
     parser.add_argument("--source-blob", required=True)
     parser.add_argument("--allow-fallback", action="store_true")
     parser.add_argument("--recover-existing-main", action="store_true")
+    parser.add_argument("--train-state")
     args = parser.parse_args()
 
     project_root = Path(args.project_root).resolve()
@@ -395,6 +425,7 @@ def main() -> int:
         source_blob=args.source_blob.lower(),
         allow_fallback=args.allow_fallback,
         recover_existing_main=args.recover_existing_main,
+        train_state_path=Path(args.train_state).resolve() if args.train_state else None,
     )
     print(json.dumps(asdict(receipt), sort_keys=True, separators=(",", ":")))
     return 0
