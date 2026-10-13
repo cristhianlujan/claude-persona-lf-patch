@@ -123,8 +123,8 @@ class GovernedCandidateStaticTests(unittest.TestCase):
 
     def test_all_three_facades_require_same_principal_verifier(self):
         source=SQL.read_text(encoding="utf-8")
-        self.assertEqual(len(re.findall(
-            r"(?m)^CREATE OR REPLACE FUNCTION public\\.lf_operational_executor_assert_principal_v1\\(",source)),1)
+        self.assertEqual(source.count(
+            "CREATE OR REPLACE FUNCTION public.lf_operational_executor_assert_principal_v1("),1)
         for fname,role in (
             ("admit","lf_operational_admission_authority"),
             ("begin","lf_operation_executor_runtime"),
