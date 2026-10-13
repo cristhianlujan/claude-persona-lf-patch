@@ -76,7 +76,26 @@ def execute(snapshot, release, gateway, *, allowed=False):
                         item["status"] = "ERROR_RUN_ID_MISMATCH"
                         item["reason"] = "EDGE_AND_CANONICAL_RUN_DISAGREE"
                     else:
-                        item["status"] = rows[0]["cp2_verdict"]
+                        # An independently signed receipt is issued only after DB verifies
+                        # the real Edge Curator handoff, terminal Validator and cutover.
+                        receipt = gateway.query(
+                            "/rest/v1/rpc/fn_ig_m105_cp2_attest_run_v1",
+                            {"p_run_id": agent_run})
+                        if not isinstance(receipt, dict) or receipt.get("status") != "PERSISTED_VERIFIED":
+                            item["status"] = "ERROR_CANONICAL_ATTESTATION"
+                        elif receipt.get("run_id") != agent_run:
+                            item["status"] = "ERROR_ATTESTATION_RUN_ID_MISMATCH"
+                        else:
+                            item["signed_receipt_id"] = receipt.get("receipt_id")
+                            verified = gateway.query(
+                                "/rest/v1/rpc/fn_ig_m105_cp2_screen_readback_v1",
+                                {"p_pantalla_id": screen})
+                            if not isinstance(verified, list) or len(verified) != 1:
+                                item["status"] = "ERROR_POST_ATTEST_READBACK"
+                            elif verified[0]["run_id"] != agent_run:
+                                item["status"] = "ERROR_POST_ATTEST_RUN_MISMATCH"
+                            else:
+                                item["status"] = verified[0]["cp2_verdict"]
                     item["technical"] = rows[0]["technical_verdict"]
         except HTTPError as exc:
             item["status"] = "ERROR_PROVIDER_HTTP"
@@ -115,7 +134,11 @@ def main():
         print(json.dumps({"status": "DISPATCH_TRANSPORT_FAILURE", "exception_type": type(exc).__name__}))
         return 2
     print(json.dumps(result, sort_keys=True))
-    return 0 if result["status"] in ("PREFLIGHT_ONLY", "RECORDED_NOT_CERTIFIED") else 2
+    if result["status"] == "PREFLIGHT_ONLY":
+        return 0
+    if result["status"] == "RECORDED_NOT_CERTIFIED" and result["cp2_pass_count"] == COUNT:
+        return 0
+    return 2
 
 if __name__ == "__main__":
     sys.exit(main())
