@@ -67,6 +67,14 @@
       "full_canonical_sources_retained": true,
       "deterministic_output_contract_retained": true,
       "note": "Model receives only the semantic execution capsule. Full SKILL/contracts/schemas/validators/judges remain canonical and are enforced outside the prompt."
-    }
+    },
+    "conditional_sections": [
+      {
+        "when_source_ref": "profiles/systemic_root_cause_repair_lf/contracts/profile_evolution_first_candidate_v1.md",
+        "include_sections": [
+          "Profile Evolution first candidate — domain specialization (DRAFT)"
+        ]
+      }
+    ]
   }
 }
