@@ -45,10 +45,10 @@ class ResumeEffectGuardTests(unittest.TestCase):
         def authority(execution_id):
             if not router_valid:
                 raise RuntimeError("TRAIN_EXEC_ROUTER_AUTHORITY_MISSING_OR_STALE")
-        with patch.object(r,"_require_router_authority",side_effect=authority), \\
-             patch.object(r,"_ledger_readback",return_value=ledger), \\
-             patch.object(r,"_effect_readback",return_value=effect), \\
-             patch.object(r,"_record_step_if_needed",return_value={"status":r.CLEAN}), \\
+        with patch.object(r,"_require_router_authority",side_effect=authority), \
+             patch.object(r,"_ledger_readback",return_value=ledger), \
+             patch.object(r,"_effect_readback",return_value=effect), \
+             patch.object(r,"_record_step_if_needed",return_value={"status":r.CLEAN}), \
              patch.object(r,"call",return_value={"result":"EXECUTION_COMPLETED"}) as effect_call:
             result=r.close(state,"a"*40,parity)
             self.assertEqual(result["result"],"TRAIN_EXECUTION_COMPLETED")
@@ -81,8 +81,8 @@ class ResumeEffectGuardTests(unittest.TestCase):
         state={"result":"TRAIN_EXECUTION_READY_TO_APPLY","apply_required":True,
                "context":ctx(),"ids":{**r.identity("2362","20261013010000","100"),"lease_fence":"2"}}
         receipt={"status":"PASS","ledger_version":ctx()["version"],"ledger_name":ctx()["name"]}
-        with patch.object(r,"_require_router_authority"), \\
-             patch.object(r,"_ledger_readback",return_value={"version":ctx()["version"],"name":ctx()["name"],"source_sha256":"0"*64}), \\
+        with patch.object(r,"_require_router_authority"), \
+             patch.object(r,"_ledger_readback",return_value={"version":ctx()["version"],"name":ctx()["name"],"source_sha256":"0"*64}), \
              patch.object(r,"call") as mutation:
             with self.assertRaisesRegex(RuntimeError,"COMMIT_EXACT_LEDGER_UNVERIFIED"):
                 r.commit(state,{"route":"TEST"},receipt)
