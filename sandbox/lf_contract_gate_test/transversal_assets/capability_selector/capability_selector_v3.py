@@ -106,6 +106,11 @@ def compose_capabilities_v3(
     eligible.sort(key=lambda item: (-len(item[1]),
                                     item[2], str(item[0].get("method_id", ""))))
     selected=[]; rejected=[]; total=0.0
+    # Cover each independently signalled task need once in the first composition
+    # stage. Shared provider capabilities are NOT by themselves evidence of
+    # redundancy; methods are deferred only when they add no typed need beyond
+    # an already selected method. A NEW_EVIDENCE replan may then reconsider.
+    covered_signal_types: dict[str,str] = {}
     for method, matching, _, _ in eligible:
         mid=method.get("method_id")
         if mid in blocked:
@@ -121,6 +126,20 @@ def compose_capabilities_v3(
         if pre["status"]!="PASS":
             rejected.append({"method_id":mid,"reason":"PRECONDITION_"+pre["status"],"preconditions":pre})
             continue
+        marginal=[t for t in matching if t not in covered_signal_types]
+        if not marginal:
+            rejected.append({
+                "method_id":mid,
+                "reason":"DEFERRED_NO_MARGINAL_TASK_SIGNAL",
+                "matched_signal_types":matching,
+                "already_covered_by":sorted({
+                    covered_signal_types[t] for t in matching
+                    if t in covered_signal_types
+                }),
+                "reconsider_after":"NEW_EVIDENCE_OR_METHOD_FAILED",
+                "execution_authorized":False,
+            })
+            continue
         cost,cost_status=_method_cost(method,context)
         if max_cost is not None and total+cost>float(max_cost):
             rejected.append({"method_id":mid,"reason":"BUDGET_INSUFFICIENT","cost":cost,"cost_status":cost_status})
@@ -128,12 +147,15 @@ def compose_capabilities_v3(
         selected.append({
             "method_id":mid,"cost_points":cost,"cost_status":cost_status,
             "matched_signal_types":matching,
+            "marginal_signal_types":marginal,
             "precondition_receipt":pre,
             "stop_conditions":method.get("stop_conditions",[]),
             "validation_method":method.get("validation_method"),
             "availability_state":method.get("availability_state")
         })
         total+=cost
+        for signal_type in marginal:
+            covered_signal_types[signal_type]=mid
 
     composition=list(base["selected_capabilities"])
     by_id={m.get("method_id"):m for m in methods if isinstance(m,dict)}
