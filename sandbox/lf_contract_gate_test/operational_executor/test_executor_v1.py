@@ -269,6 +269,7 @@ class ExecutorTests(unittest.TestCase):
           active_required_step_count=3,active_judge_binding_count=3,
           governed_closeout_function=True,
           governed_execution_admission_proven=True,
+          durable_human_decision_authority_current_proven=True,
           runtime_role_grant_audit_passed=True,
           public_security_definer_exposure_reviewed=True
         )
@@ -281,6 +282,11 @@ class ExecutorTests(unittest.TestCase):
         self.assertIn("BLOCK_OPERATIONAL_EXECUTION_ADMISSION_NOT_PROVEN",
                       evaluate_activation(snap)["blocking_codes"])
         snap["governed_execution_admission_proven"]=True
+        snap["durable_human_decision_authority_current_proven"]=False
+        self.assertIn("BLOCK_DURABLE_HUMAN_DECISION_AUTHORITY_NOT_CURRENT",
+                      evaluate_activation(snap)["blocking_codes"])
+        snap["durable_human_decision_authority_current_proven"]=True
+
         snap["migration_route"]["operation_code"]=OPERATION_CODE
         self.assertIn("BLOCK_MIGRATION_ROUTE_NOT_PRESERVED",evaluate_activation(snap)["blocking_codes"])
 
