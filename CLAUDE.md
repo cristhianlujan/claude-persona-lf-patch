@@ -34,6 +34,8 @@ Agents MUST NOT:
 
 Every migration MUST be proposed by PR and admitted through `ready-to-merge` into the canonical Train. Source-only reconciliation requires its separately approved Train lane; do not apply it manually.
 
+Una migración ya aplicada (presente en el ledger) no se edita, no se renombra y no se borra. Todo arreglo es una migración nueva hacia adelante (fail-forward) por el Train. Excepciones, solo por su carril aprobado: (a) RECONCILE, que renombra archivos de Git para igualarlos al ledger y nunca cambia el contenido; (b) retiro de archivos que nunca se aplicaron, con aprobación del owner.
+
 Allowed with separate authorization: read-only SQL and inspection; local development and SQL tests; isolated Supabase development branches; draft PRs; non-migration operational DML via its own approved runtime. Local/branch tests never constitute application to LF_SUPABASE_SANDBOX.
 
 On attempted unauthorized database write: `BLOCK_DB_WRITE_OUTSIDE_MERGE_TRAIN`. Stop before execution and report the attempted operation, target, and canonical route. A soft route guard, exploratory mode, prior success, or agent judgment NEVER overrides this hard block. Any exception requires explicit owner approval with bounded scope, recorded evidence, and an approved controlled execution path.
