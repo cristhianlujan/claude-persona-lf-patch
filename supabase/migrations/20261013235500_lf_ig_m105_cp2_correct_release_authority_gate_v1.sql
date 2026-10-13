@@ -39,10 +39,10 @@ WITH release AS (
    AND d.created_at<=v.promoted_at
    AND a.receipt_kind='HUMAN_DECISION' AND a.issuer_channel='HUMAN_AUTHORITY_V1'
    AND a.subject_type='human_decision' AND a.subject_ref=d.approval_ref
-   AND a.subject_sha256=programacion.fn_v09_sha256_jsonb(jsonb_build_object(
+   AND a.subject_sha256=pg_catalog.encode(extensions.digest(pg_catalog.convert_to(programacion.fn_v09_canonical_jsonb_text(jsonb_build_object(
     'execution_id',d.execution_id,'head_sha',d.head_sha,
     'decision',d.decision,'actor_identity',d.actor_identity,
-    'approval_ref',d.approval_ref,'metadata',d.metadata))
+    'approval_ref',d.approval_ref,'metadata',d.metadata)),'UTF8'),'sha256'),'hex')
   ) signed_release_authorization_present
  FROM release v
 )
