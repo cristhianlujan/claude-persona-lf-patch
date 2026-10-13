@@ -28,12 +28,12 @@ def with_telemetry(raw):
 def waves():
     return [
         {"wave_id": "W1", "observed_at": "2026-10-11T11:00:00Z", "cohort_sha256": "a" * 64,
-         "evaluator_execution_id": "J1", "evaluator_receipt_ref": "judge://W1",
+         "evaluator_execution_id": "J1", "producer_execution_id": "P1", "evaluator_receipt_ref": "judge://W1",
          "execution_receipt_ref": "execution://W1",
          "causal_attribution_ref": "ablation://W1", "holdout_receipt_ref": "holdout://W1",
          "evaluator_verification_state": "VERIFIED", "quality_A": 0.60, "quality_D": 0.72},
         {"wave_id": "W2", "observed_at": "2026-10-12T11:00:00Z", "cohort_sha256": "a" * 64,
-         "evaluator_execution_id": "J2", "evaluator_receipt_ref": "judge://W2",
+         "evaluator_execution_id": "J2", "producer_execution_id": "P2", "evaluator_receipt_ref": "judge://W2",
          "execution_receipt_ref": "execution://W2",
          "causal_attribution_ref": "ablation://W2", "holdout_receipt_ref": "holdout://W2",
          "evaluator_verification_state": "VERIFIED", "quality_A": 0.60, "quality_D": 0.77},
@@ -69,6 +69,10 @@ def run():
     result = evaluate_dimensions(tampered, hold())
     assert "efficiency" in result["missing_dimensions"]
     assert result["dimensions"]["efficiency"]["reason"] == "TELEMETRY_UNVERIFIED_OR_UNBOUND"
+
+    tampered = deepcopy(prepared)
+    tampered["longitudinal_evidence"][0]["observed_at"] = "2026-10-11T11:00:00"
+    assert "longitudinal" in evaluate_dimensions(tampered, hold())["missing_dimensions"]
 
     tampered = deepcopy(prepared)
     tampered["longitudinal_evidence"][1]["cohort_sha256"] = "b" * 64
