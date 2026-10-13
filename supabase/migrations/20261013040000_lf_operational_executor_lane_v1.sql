@@ -167,6 +167,9 @@ DECLARE
   v_admission jsonb;
   v_count integer;
   v_now timestamptz := clock_timestamp();
+  v_step record;
+  v_step_result jsonb;
+  v_payload jsonb;
 BEGIN
   IF jsonb_typeof(p_closure_evidence) IS DISTINCT FROM 'object'
      OR btrim(coalesce(p_actor_execution_id,''))='' THEN
@@ -243,34 +246,53 @@ BEGIN
     RAISE EXCEPTION 'OPERATIONAL_CLOSE_PREEXISTING_STEP_EVIDENCE';
   END IF;
 
-  -- Evidence is derived solely from durable authoritative rows and the verified
-  -- handler receipt; no caller-supplied PASS/step status is accepted.
-  INSERT INTO public.lf_operation_execution_steps(
-     execution_id,step_order,step_id,status,evidence_ref,evidence_payload,created_by_execution_id
-  )
-  SELECT p_execution_id,s.step_order,s.step_id,b.clean_result_value,
-         'LF_OPERATION_EXECUTOR_V1:'||p_execution_id,
-         CASE s.step_id
-           WHEN 'preflight' THEN jsonb_build_object(
-             'router_authority_validation',v_auth,'operation_admission',v_admission,
-             'handler_binding',v_exec.target_code)
-           WHEN 'effect' THEN jsonb_build_object(
-             'effect_guard_reservation',jsonb_build_object(
-               'effect_scope',v_effect.effect_scope,'dispatch_key',v_effect.dispatch_key,
-               'effect_request_sha256',v_effect.effect_request_sha256),
-             'effect_receipt',v_effect.receipt)
-           WHEN 'verify' THEN jsonb_build_object(
-             'effect_guard_readback',jsonb_build_object(
-               'state',v_effect.state,'receipt',v_effect.receipt),
-             'handler_readback',p_closure_evidence->'readback',
-             'router_authority_readback',v_auth)
-         END,
-         p_actor_execution_id
-  FROM public.lf_operation_steps s
-  JOIN public.lf_operation_step_judge_bindings b
-    ON b.operation_code=s.operation_code AND b.step_order=s.step_order AND b.step_id=s.step_id
-  WHERE s.operation_code='EJECUCION_OPERATIVA_LF'
-    AND s.required AND s.active AND b.status='ACTIVE_ENFORCEMENT';
+  -- Reuse the operation-neutral recorder and registered mini-judge.
+  -- Assertions are server-derived after verifying durable Router, effect and readback.
+  FOR v_step IN
+    SELECT step_id FROM public.lf_operation_steps
+    WHERE operation_code='EJECUCION_OPERATIVA_LF'
+      AND required AND active ORDER BY execution_order,step_order
+  LOOP
+    v_payload:=CASE v_step.step_id
+      WHEN 'preflight' THEN jsonb_build_object(
+        'router_authority_validation',v_auth,'operation_admission',v_admission,
+        'handler_binding',v_exec.target_code)
+      WHEN 'effect' THEN jsonb_build_object(
+        'effect_guard_reservation',jsonb_build_object(
+          'effect_scope',v_effect.effect_scope,'dispatch_key',v_effect.dispatch_key,
+          'effect_request_sha256',v_effect.effect_request_sha256),
+        'effect_receipt',v_effect.receipt)
+      WHEN 'verify' THEN jsonb_build_object(
+        'effect_guard_readback',jsonb_build_object(
+          'state',v_effect.state,'receipt',v_effect.receipt),
+        'handler_readback',p_closure_evidence->'readback',
+        'router_authority_readback',v_auth)
+      ELSE NULL
+    END;
+    IF v_payload IS NULL THEN
+      RAISE EXCEPTION 'OPERATIONAL_CLOSE_UNRECOGNIZED_REQUIRED_STEP:%',v_step.step_id;
+    END IF;
+    v_step_result:=public.lf_record_operation_step_core_v1(
+      p_execution_id,v_step.step_id,
+      'LF_OPERATION_EXECUTOR_V1:'||p_execution_id,v_payload,
+      p_actor_execution_id,
+      'EJECUCION_OPERATIVA_LF','OPERATIONAL_DB',
+      'ACTIVE_ENFORCEMENT','ACTIVE_ENFORCEMENT','ACTIVE_ENFORCEMENT',
+      jsonb_build_object('valid',true,'code','OPERATIONAL_SQL_AUTHORITY_TRUST_VALID',
+        'server_assertions',jsonb_build_array('server_validated'),
+        'server_hard_fails','[]'::jsonb),
+      false,'lf_close_operational_execution_v1'
+    );
+    IF v_step_result->>'outcome' IS DISTINCT FROM 'STEP_RECORDED'
+       OR v_step_result->>'status' IS DISTINCT FROM 'PASS_CLEAN' THEN
+      RAISE EXCEPTION 'OPERATIONAL_CLOSE_CANONICAL_JUDGE_BLOCKED:%:%',
+        v_step.step_id,v_step_result->>'code';
+    END IF;
+  END LOOP;
+  IF (SELECT count(*) FROM public.lf_operation_execution_steps
+      WHERE execution_id=p_execution_id AND status='PASS_CLEAN')<>3 THEN
+    RAISE EXCEPTION 'OPERATIONAL_CLOSE_REQUIRED_STEPS_NOT_CLEAN';
+  END IF;
 
   UPDATE public.lf_operation_execution
      SET status='COMPLETED',completed_at=v_now,lease_owner=NULL,
