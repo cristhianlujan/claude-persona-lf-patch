@@ -73,7 +73,7 @@ WHERE NOT EXISTS(SELECT 1 FROM transversal.error_knowledge WHERE codigo='IG-M105
 
 -- M10.5 unified, read-only evidence projection. One frozen cohort, one release,
 -- one latest-run identity per screen. Does not execute, promote or admit a release.
-CREATE OR REPLACE VIEW programacion.v_ig_m105_cohort_evidence_v1 AS
+CREATE OR REPLACE VIEW programacion.v_ig_m105_cohort_evidence_v1 WITH (security_invoker=true) AS
 WITH cohort AS (
  SELECT jsonb_array_elements_text(u.unit_metadata#>'{m105_scope_v1,screen_ids}')::integer pantalla_id
  FROM programacion.engineering_plan_units u
@@ -180,6 +180,11 @@ BEGIN
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'target','declared_objects'],
  coalesce(m#>ARRAY['action_specs_v1',c,'target','declared_objects'],'[]'::jsonb)
  || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ IF c IN ('NEW_RUNS_VNEXT','NEG_STALE_RUN') THEN
+  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'test_execution_contract','declared_objects'],
+  coalesce(m#>ARRAY['action_specs_v1',c,'test_execution_contract','declared_objects'],'[]'::jsonb)
+  || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ END IF;
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'test_execution_contract','declared_queries'],jsonb_build_array(q),true);
  n:=n+1;
 
@@ -234,6 +239,11 @@ SELECT CASE WHEN (SELECT count(*) FROM cohort)=13
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'target','declared_objects'],
  coalesce(m#>ARRAY['action_specs_v1',c,'target','declared_objects'],'[]'::jsonb)
  || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ IF c IN ('NEW_RUNS_VNEXT','NEG_STALE_RUN') THEN
+  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'test_execution_contract','declared_objects'],
+  coalesce(m#>ARRAY['action_specs_v1',c,'test_execution_contract','declared_objects'],'[]'::jsonb)
+  || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ END IF;
  
  n:=n+1;
 
@@ -261,6 +271,11 @@ SELECT CASE WHEN (SELECT count(*) FROM cohort)=13 AND (SELECT count(*) FROM qual
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'target','declared_objects'],
  coalesce(m#>ARRAY['action_specs_v1',c,'target','declared_objects'],'[]'::jsonb)
  || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ IF c IN ('NEW_RUNS_VNEXT','NEG_STALE_RUN') THEN
+  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'test_execution_contract','declared_objects'],
+  coalesce(m#>ARRAY['action_specs_v1',c,'test_execution_contract','declared_objects'],'[]'::jsonb)
+  || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ END IF;
  
  n:=n+1;
 
@@ -285,6 +300,11 @@ FROM e$cpquery_3$;
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'target','declared_objects'],
  coalesce(m#>ARRAY['action_specs_v1',c,'target','declared_objects'],'[]'::jsonb)
  || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ IF c IN ('NEW_RUNS_VNEXT','NEG_STALE_RUN') THEN
+  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'test_execution_contract','declared_objects'],
+  coalesce(m#>ARRAY['action_specs_v1',c,'test_execution_contract','declared_objects'],'[]'::jsonb)
+  || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ END IF;
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'test_execution_contract','declared_queries'],jsonb_build_array(q),true);
  n:=n+1;
 
@@ -326,6 +346,11 @@ FROM aggregate a$cpquery_4$;
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'target','declared_objects'],
  coalesce(m#>ARRAY['action_specs_v1',c,'target','declared_objects'],'[]'::jsonb)
  || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ IF c IN ('NEW_RUNS_VNEXT','NEG_STALE_RUN') THEN
+  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'test_execution_contract','declared_objects'],
+  coalesce(m#>ARRAY['action_specs_v1',c,'test_execution_contract','declared_objects'],'[]'::jsonb)
+  || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ END IF;
  
  n:=n+1;
 
