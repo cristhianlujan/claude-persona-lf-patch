@@ -284,6 +284,8 @@ BEGIN
     ||'(u.unit_metadata#>>''{m10_0_engineering_admission_v2,verification,result}''=''PASS'') AS preflight_pass,'
     ||'(u.unit_metadata#>>''{m10_0_engineering_admission_v2,verification,negative_test_count}''=''5'') AS five_negative_cases,'
     ||'(u.unit_metadata#>>''{m10_0_operational_admission_v2,status}''=''BLOCKED_PENDING_GOVERNED_HUMAN_AUTHORITY'') AS operational_blocked,'
+    ||'(u.unit_metadata#>>''{m10_0_decision_routing_v1,pre_human_gate}''=''HUMAN_ESCALATION_ADMISSION'') AS prehuman_gate_bound,'
+    ||'(u.unit_metadata#>>''{m10_0_decision_routing_v1,route_policy,only_human_eligible_routes_to_queue}''=''true'') AS only_eligible_human,'
     ||'(SELECT count(*)=0 FROM programacion.human_decisions hd WHERE hd.decision=''APPROVE'' AND hd.head_sha='''
       ||v_bundle.head_sha||''' AND hd.metadata->>''decision_class''=''CUTOVER_AUTHORIZED'') AS no_cutover_approval,'
     ||'(SELECT count(*)=0 FROM programacion.promotions p WHERE p.head_sha='''
@@ -405,6 +407,7 @@ BEGIN
          'mode','EXPLICIT_PASS_WHEN_SUBSET',
          'pass_when',jsonb_build_object('preflight_pass',true,
            'five_negative_cases',true,'operational_blocked',true,
+           'prehuman_gate_bound',true,'only_eligible_human',true,
            'no_cutover_approval',true,'no_promotion',true)),
       'target',jsonb_build_object(
         'declared_objects',jsonb_build_array(
@@ -463,6 +466,12 @@ BEGIN
         AND status='PENDING')<>3
     OR (SELECT unit_metadata#>>'{m10_0_engineering_admission_v2,verification,result}'
         FROM programacion.engineering_plan_units WHERE id=v_unit_id)<>'PASS'
+    OR (SELECT unit_metadata#>>'{m10_0_decision_routing_v1,pre_human_gate}'
+        FROM programacion.engineering_plan_units WHERE id=v_unit_id)
+       IS DISTINCT FROM 'HUMAN_ESCALATION_ADMISSION'
+    OR (SELECT unit_metadata#>>'{exit_criterion_v2,phase}'
+        FROM programacion.engineering_plan_units WHERE id=v_unit_id)
+       IS DISTINCT FROM 'SANDBOX_ENGINEERING_QUALIFICATION'
     OR (SELECT expected_result FROM programacion.engineering_work_items
         WHERE id=v_work_id) NOT LIKE 'Ingeniería sandbox%'
   THEN
