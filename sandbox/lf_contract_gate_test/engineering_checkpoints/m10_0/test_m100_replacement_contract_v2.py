@@ -8,13 +8,14 @@ import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[4]
-SOURCE = ROOT / "supabase/migrations/20261013021000_lf_ig_m100_sandbox_admission_coherent_v2.sql"
+SOURCE = next(iter(sorted((ROOT / 'supabase/migrations').glob('*_lf_ig_m100_sandbox_admission_coherent_v2.sql'))), None)
 PREMERGED = ROOT / "supabase/migrations/20261012223000_ig_m100_sandbox_technical_vs_operational_authority_v1.sql"
 
 
 class CandidateContract(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        assert SOURCE is not None, 'Train migration source missing'
         cls.sql = SOURCE.read_text(encoding="utf-8")
 
     def test_prior_unapplied_source_is_separate_nonblocking_debt(self):
