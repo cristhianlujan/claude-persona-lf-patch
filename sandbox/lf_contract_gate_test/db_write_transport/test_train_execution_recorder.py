@@ -17,6 +17,12 @@ class TrainExecutionRecorderTest(unittest.TestCase):
         self.assertEqual(out.returncode, 0, out.stderr)
         self.assertIn("PASS_TRAIN_EXECUTION_RECORDER_SELFTEST", out.stdout)
 
+    def test_reservation_idempotency_is_version_scoped(self) -> None:
+        source = RECORDER.read_text()
+        self.assertIn('idem=f"train:{ctx[\'version\']}:{ctx[\'source_blob\']}"', source)
+        self.assertNotIn('idem=f"gitblob:{ctx[\'source_blob\']}"', source)
+        self.assertIn("fn_lf_operation_reserve_execution_v1", source)
+
     def test_workflow_order(self) -> None:
         wf = WORKFLOW.read_text()
         begin = wf.index("Router execution begin (Train-managed, pre-apply)")

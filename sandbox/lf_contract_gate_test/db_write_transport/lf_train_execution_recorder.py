@@ -191,7 +191,7 @@ def begin(ctx: dict) -> dict:
         "select public.fn_lf_operation_reserve_execution_v1(:'exec', 'ACTUALIZACION_DB_LF', 'MIGRATION',"
         " :'target', :'idem', :'reqsha', :'actor', :'repo', :'path', (:'manifest')::jsonb);",
         exec=ids["execution_id"], target=f"{ctx['version']}_{ctx['name']}",
-        idem=f"gitblob:{ctx['source_blob']}", reqsha=ctx["source_sha256"], actor=ids["actor"],
+        idem=f"train:{ctx['version']}:{ctx['source_blob']}", reqsha=ctx["source_sha256"], actor=ids["actor"],
         repo=ctx["repo"], path=ctx["path"], manifest=json.dumps(manifest, sort_keys=True),
     )
     if res.get("status") != "IN_PROGRESS":
