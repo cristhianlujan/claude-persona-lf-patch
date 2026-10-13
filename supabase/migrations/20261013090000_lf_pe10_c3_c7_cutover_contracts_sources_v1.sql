@@ -174,7 +174,7 @@ INSERT INTO public.lf_error_knowledge
  severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,source_ref)
 SELECT x.codigo,'PROFILE_EVOLUTION',x.titulo,x.descripcion,x.causa_raiz,
  'Missing checkpoint source+action+governance parity',
- x.prevencion,x.validacion,'HIGH',1,clock_timestamp(),clock_timestamp(),
+ x.prevencion,v.validacion,'HIGH',1,clock_timestamp(),clock_timestamp(),
  'PE10_C3_C7_MACROLOT','ACTIVO','supabase://programacion.engineering_plan_units/PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1/PE10'
 FROM (VALUES
  ('LF-PE10-C4-LEGACY-UNCLASSIFIED-20261013-001',
