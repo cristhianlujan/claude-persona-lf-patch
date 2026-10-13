@@ -30,12 +30,12 @@ class TrainExecutionRecorderTest(unittest.TestCase):
         self.assertLess(commit, parity)
         self.assertLess(merge, close)
 
-    def test_post_apply_steps_never_block(self) -> None:
+    def test_execution_steps_fail_closed(self) -> None:
         wf = WORKFLOW.read_text()
         for name in ("Router execution patch step (Train-managed, post-apply)",
                      "Router execution verify and close (Train-managed, post-merge)"):
             block = wf[wf.index(name):wf.index(name) + 400]
-            self.assertIn("continue-on-error: true", block, name)
+            self.assertNotIn("continue-on-error: true", block, name)
         begin = wf[wf.index("Router execution begin (Train-managed, pre-apply)"):]
         begin = begin[:begin.index("- name: Apply exact version")]
         self.assertNotIn("continue-on-error", begin)

@@ -49,9 +49,9 @@ def identity(pr: str, version: str, run_id: str) -> dict[str, str]:
     return {
         "execution_id": f"EXEC-DB-TRAIN-PR{pr}-{version}-R{run_id}",
         "actor": f"LF-MIGRATION-TRAIN-RUN-{run_id}",
-        "lease_owner": f"lf-migration-train-{run_id}",
+        "lease_owner": f"lf-migration-train-pr{pr}-{version}",
         "effect_scope": f"MIGRATION:{version}",
-        "dispatch_key": f"lf-migration-train-run-{run_id}",
+        "dispatch_key": f"lf-migration-train-pr{pr}-{version}",
     }
 
 
@@ -182,6 +182,57 @@ def record_step(ids: dict, step: str, evidence: dict) -> dict:
     return res
 
 
+def _require_router_authority(execution_id: str) -> None:
+    auth = call(
+        "select public.lf_router_downstream_authority_validate_v1(:'exec');",
+        exec=execution_id,
+    )
+    if (auth.get("applicable") is not True or auth.get("valid") is not True
+            or auth.get("code") != "ROUTER_DOWNSTREAM_AUTHORITY_VALID"
+            or auth.get("operation_code") != "ACTUALIZACION_DB_LF"):
+        raise RuntimeError("TRAIN_EXEC_ROUTER_AUTHORITY_MISSING_OR_STALE")
+
+
+def _execution_readback(execution_id: str) -> dict:
+    return call(
+        "select coalesce((select jsonb_build_object('execution_id',execution_id,'status',status,'lease_owner',lease_owner,'lease_fence',lease_fence,'lease_expires_at',lease_expires_at) from public.lf_operation_execution where execution_id=:'exec'),'{}'::jsonb);",
+        exec=execution_id,
+    )
+
+
+def _effect_readback(execution_id: str, effect_scope: str) -> dict:
+    return call(
+        "select coalesce((select jsonb_build_object('state',state,'dispatch_key',dispatch_key,'effect_request_sha256',effect_request_sha256,'receipt',receipt) from public.lf_operation_effect_guard where execution_id=:'exec' and effect_scope=:'scope'),'{}'::jsonb);",
+        exec=execution_id, scope=effect_scope,
+    )
+
+
+def _ledger_readback(version: str) -> dict:
+    return call(
+        "select coalesce((select jsonb_build_object('version',version,'name',name,'created_by',created_by,"
+        "'source_sha256',encode(extensions.digest(convert_to(array_to_string(statements,''),'UTF8'),'sha256'),'hex'))"
+        " from supabase_migrations.schema_migrations where version=:'v'),'{}'::jsonb);",
+        v=version,
+    )
+
+
+def _step_status(execution_id: str, step_id: str) -> str | None:
+    row = call(
+        "select coalesce((select jsonb_build_object('status',status) from public.lf_operation_execution_steps where execution_id=:'exec' and step_id=:'step'),'{}'::jsonb);",
+        exec=execution_id, step=step_id,
+    )
+    return row.get("status")
+
+
+def _record_step_if_needed(ids: dict, step: str, evidence: dict) -> dict:
+    status = _step_status(ids["execution_id"], step)
+    if status == CLEAN:
+        return {"outcome": "REPLAY_STEP_ALREADY_CLEAN", "status": CLEAN}
+    if status not in (None, ""):
+        raise RuntimeError(f"TRAIN_EXEC_EXISTING_STEP_NOT_CLEAN:{step}:{status}")
+    return record_step(ids, step, evidence)
+
+
 def begin(ctx: dict) -> dict:
     validate_context(ctx)
     ids = identity(ctx["pr"], ctx["version"], ctx["run_id"])
@@ -194,8 +245,17 @@ def begin(ctx: dict) -> dict:
         idem=f"gitblob:{ctx['source_blob']}", reqsha=ctx["source_sha256"], actor=ids["actor"],
         repo=ctx["repo"], path=ctx["path"], manifest=json.dumps(manifest, sort_keys=True),
     )
+    if res.get("status") == "COMPLETED":
+        raise RuntimeError("TRAIN_EXEC_ALREADY_COMPLETED_NEW_MERGE_FORBIDDEN")
     if res.get("status") != "IN_PROGRESS":
         raise RuntimeError(f"TRAIN_EXEC_RESERVE_FAILED:{json.dumps(res, sort_keys=True)[:600]}")
+
+    ids["execution_id"] = str(res["execution_id"])
+    _require_router_authority(ids["execution_id"])
+    existing_effect = _effect_readback(ids["execution_id"], ids["effect_scope"])
+    if existing_effect.get("dispatch_key"):
+        ids["dispatch_key"] = str(existing_effect["dispatch_key"])
+
     lease = call(
         "select public.fn_lf_operation_acquire_lease_v1(:'exec', :'owner', :ttl, :'actor');",
         exec=ids["execution_id"], owner=ids["lease_owner"], ttl=str(LEASE_TTL_SECONDS), actor=ids["actor"],
@@ -210,39 +270,111 @@ def begin(ctx: dict) -> dict:
     )
     if capability.get("entry_guard_state") != "GUARDED":
         raise RuntimeError("TRAIN_EXEC_TRANSPORT_NOT_GUARDED")
-    record_step(ids, "preflight", preflight_evidence(ctx, capability))
+    _record_step_if_needed(ids, "preflight", preflight_evidence(ctx, capability))
+
     effect = call(
         "select public.fn_lf_operation_reserve_effect_v1(:'exec', :'owner', :fence, :'scope', :'sha', :'dispatch', :'actor');",
         exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
         scope=ids["effect_scope"], sha=ctx["source_sha256"], dispatch=ids["dispatch_key"], actor=ids["actor"],
     )
-    if effect.get("dispatch_permitted") is not True:
-        raise RuntimeError(f"TRAIN_EXEC_EFFECT_NOT_PERMITTED:{json.dumps(effect, sort_keys=True)[:600]}")
-    return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_READY_TO_APPLY"}
+    result = effect.get("result")
+    if result == "EFFECT_RESERVED_NEW":
+        return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_READY_TO_APPLY",
+                "apply_required": True}
+
+    if result == "REPLAY_SUCCEEDED_EFFECT":
+        receipt = (effect.get("receipt") or {}).get("apply_receipt") or {}
+        if not receipt:
+            raise RuntimeError("TRAIN_EXEC_RESUME_SUCCEEDED_EFFECT_RECEIPT_MISSING")
+        ledger = _ledger_readback(ctx["version"])
+        if (ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]
+                or ledger.get("source_sha256") != ctx["source_sha256"]
+                or receipt.get("ledger_version") != ctx["version"]
+                or receipt.get("ledger_name") != ctx["name"]):
+            raise RuntimeError("TRAIN_EXEC_RESUME_SUCCEEDED_LEDGER_OR_RECEIPT_MISMATCH")
+        _record_step_if_needed(ids, "patch", patch_evidence(
+            ctx, ids, {"route": "RESUME_SUCCEEDED_EFFECT"}, receipt))
+        return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_PATCH_RECORDED",
+                "apply_required": False, "resume": "EFFECT_ALREADY_SUCCEEDED"}
+
+    if result == "RECONCILIATION_REQUIRED":
+        ledger = _ledger_readback(ctx["version"])
+        if not ledger:
+            raise RuntimeError("TRAIN_EXEC_RESUME_RESERVED_WITHOUT_LEDGER_UNRESOLVED_NO_REPLAY")
+        if (ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]
+                or ledger.get("source_sha256") != ctx["source_sha256"]):
+            raise RuntimeError("TRAIN_EXEC_RESUME_LEDGER_EXACT_SOURCE_MISMATCH")
+        receipt = {
+            "schema_version": "lf-migration-exact-apply/v1",
+            "status": "PASS",
+            "code": "RESUME_RECONCILED_FROM_EXACT_LEDGER",
+            "executor": ledger.get("created_by") or "UNKNOWN",
+            "fallback_used": False,
+            "migration_version": ctx["version"],
+            "migration_name": ctx["name"],
+            "ledger_version": ctx["version"],
+            "ledger_name": ctx["name"],
+        }
+        mark_receipt = {"apply_receipt": receipt, "train_run_id": ctx["run_id"],
+                        "resume_reconciled": True}
+        call(
+            "select public.fn_lf_operation_mark_effect_succeeded_v1(:'exec', :'owner', :fence, :'scope', (:'receipt')::jsonb, :'actor');",
+            exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
+            scope=ids["effect_scope"], receipt=json.dumps(mark_receipt, sort_keys=True), actor=ids["actor"],
+        )
+        _record_step_if_needed(ids, "patch", patch_evidence(
+            ctx, ids, {"route": "RESUME_LEDGER_RECONCILIATION"}, receipt))
+        return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_PATCH_RECORDED",
+                "apply_required": False, "resume": "LEDGER_EFFECT_RECONCILED"}
+
+    raise RuntimeError(f"TRAIN_EXEC_EFFECT_NOT_RESUMABLE:{json.dumps(effect, sort_keys=True)[:600]}")
 
 
 def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
     ctx, ids = state["context"], state["ids"]
+    _require_router_authority(ids["execution_id"])
+    if (state.get("result") != "TRAIN_EXECUTION_READY_TO_APPLY"
+            or state.get("apply_required") is not True
+            or apply_receipt.get("status") != "PASS"
+            or apply_receipt.get("ledger_version") != ctx["version"]
+            or apply_receipt.get("ledger_name") != ctx["name"]):
+        raise RuntimeError("TRAIN_EXEC_COMMIT_APPLY_RECEIPT_OR_STATE_INVALID")
+    ledger = _ledger_readback(ctx["version"])
+    if (ledger.get("version") != ctx["version"]
+            or ledger.get("name") != ctx["name"]
+            or ledger.get("source_sha256") != ctx["source_sha256"]):
+        raise RuntimeError("TRAIN_EXEC_COMMIT_EXACT_LEDGER_UNVERIFIED")
     receipt = {"apply_receipt": apply_receipt, "train_run_id": ctx["run_id"]}
     call(
         "select public.fn_lf_operation_mark_effect_succeeded_v1(:'exec', :'owner', :fence, :'scope', (:'receipt')::jsonb, :'actor');",
         exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
         scope=ids["effect_scope"], receipt=json.dumps(receipt, sort_keys=True), actor=ids["actor"],
     )
-    record_step(ids, "patch", patch_evidence(ctx, ids, decision, apply_receipt))
+    _record_step_if_needed(ids, "patch", patch_evidence(ctx, ids, decision, apply_receipt))
     return {**state, "result": "TRAIN_EXECUTION_PATCH_RECORDED"}
 
 
 def close(state: dict, merge_sha: str, parity_status: str) -> dict:
     ctx, ids = state["context"], state["ids"]
-    ledger = call(
-        "select coalesce((select jsonb_build_object('version', version, 'name', name)"
-        " from supabase_migrations.schema_migrations where version = :'v'), '{}'::jsonb);",
-        v=ctx["version"],
-    )
-    if ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]:
-        raise RuntimeError(f"TRAIN_EXEC_LEDGER_READBACK_MISMATCH:{json.dumps(ledger)}")
-    record_step(ids, "verify", verify_evidence(ctx, ids, ledger, merge_sha, parity_status))
+    if (state.get("result") != "TRAIN_EXECUTION_PATCH_RECORDED"
+            or SHA1_RE.fullmatch(merge_sha or "") is None
+            or parity_status != "PASS"):
+        raise RuntimeError("TRAIN_EXEC_CLOSE_STATE_MERGE_OR_PARITY_INVALID")
+    _require_router_authority(ids["execution_id"])
+    ledger = _ledger_readback(ctx["version"])
+    if (ledger.get("version") != ctx["version"]
+            or ledger.get("name") != ctx["name"]
+            or ledger.get("source_sha256") != ctx["source_sha256"]):
+        raise RuntimeError("TRAIN_EXEC_CLOSE_EXACT_LEDGER_UNVERIFIED")
+    effect = _effect_readback(ids["execution_id"], ids["effect_scope"])
+    apply_receipt = (effect.get("receipt") or {}).get("apply_receipt") or {}
+    if (effect.get("state") != "SUCCEEDED"
+            or effect.get("effect_request_sha256") != ctx["source_sha256"]
+            or effect.get("dispatch_key") != ids["dispatch_key"]
+            or apply_receipt.get("ledger_version") != ctx["version"]
+            or apply_receipt.get("ledger_name") != ctx["name"]):
+        raise RuntimeError("TRAIN_EXEC_CLOSE_EFFECT_RECEIPT_UNVERIFIED")
+    _record_step_if_needed(ids, "verify", verify_evidence(ctx, ids, ledger, merge_sha, parity_status))
     evidence = {"train_run_id": ctx["run_id"], "pr": int(ctx["pr"]), "merge_sha": merge_sha,
                 "ledger": ledger, "parity": parity_status}
     res = call(
@@ -259,6 +391,8 @@ def self_test() -> None:
     ids = identity("2350", "20261013010000", "123456")
     assert ids["execution_id"] == "EXEC-DB-TRAIN-PR2350-20261013010000-R123456"
     assert ids["effect_scope"] == "MIGRATION:20261013010000"
+    assert ids["lease_owner"] == "lf-migration-train-pr2350-20261013010000"
+    assert ids["dispatch_key"] == "lf-migration-train-pr2350-20261013010000"
     for bad in (("x", "20261013010000", "1"), ("1", "2026", "1"), ("1", "20261013010000", "a")):
         try:
             identity(*bad)
