@@ -17,6 +17,12 @@ class RecoverSafetyTest(unittest.TestCase):
                         wf.index("- name: RECOVER compatibility preflight with rollback"))
         self.assertLess(wf.index("- name: RECOVER compatibility preflight with rollback"),
                         wf.index("- name: Apply exact version and ledger readback"))
+        self.assertLess(wf.index("- name: Router execution begin (Train-managed, pre-apply)"),
+                        wf.index("- name: RECOVER verify Saga with Router execution identity"))
+        self.assertLess(wf.index("- name: RECOVER verify Saga with Router execution identity"),
+                        wf.index("- name: RECOVER compatibility preflight with rollback"))
+        self.assertIn('"execution_id":ids["execution_id"]',wf)
+        self.assertNotIn('"execution_id":"EXEC-TRAIN-RECOVER-',wf)
         self.assertIn("LF_RECOVER_AUTHORIZED",wf)
         self.assertIn("steps.recover_preflight.outcome == 'success'",wf)
         self.assertIn("--recover-existing-main",wf)
