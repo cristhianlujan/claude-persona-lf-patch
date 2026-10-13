@@ -1,0 +1,66 @@
+-- Execute ONLY after the candidate migration is installed on an isolated
+-- authorized sandbox. Every assertion is a read; the transaction rolls back.
+BEGIN TRANSACTION READ ONLY;
+DO $test$
+DECLARE
+  v_route jsonb;
+  v_migration text;
+  v_role text;
+  v_admit regprocedure :=
+    'public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb)'::regprocedure;
+  v_begin regprocedure :=
+    'public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)'::regprocedure;
+  v_finish regprocedure :=
+    'public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)'::regprocedure;
+BEGIN
+ SELECT operation_code INTO v_migration FROM public.lf_router_action_registry
+ WHERE asset_type='DB' AND action_code='UPDATE';
+ IF v_migration IS DISTINCT FROM 'ACTUALIZACION_DB_LF' THEN
+   RAISE EXCEPTION 'TEST_MIGRATION_TRAIN_ROUTE_CHANGED';
+ END IF;
+ v_route:=public.lf_router_resolve_v1(
+   'Governed operational handler',NULL,'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
+ );
+ IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
+    OR v_route->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+    OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
+   RAISE EXCEPTION 'TEST_OPERATIONAL_ROUTE_UNRESOLVED';
+ END IF;
+ IF (SELECT count(*) FROM public.lf_operation_steps
+     WHERE operation_code='EJECUCION_OPERATIVA_LF' AND required AND active)<>3 THEN
+   RAISE EXCEPTION 'TEST_REQUIRED_STEPS_NOT_EXACT';
+ END IF;
+ IF NOT public.lf_router_downstream_authority_consumer_v1('EJECUCION_OPERATIVA_LF') THEN
+   RAISE EXCEPTION 'TEST_AUTHORITY_CONSUMER_NOT_BOUND';
+ END IF;
+ FOREACH v_role IN ARRAY ARRAY['lf_operational_admission_authority','lf_operation_executor_runtime'] LOOP
+   IF NOT EXISTS(
+      SELECT 1 FROM pg_roles WHERE rolname=v_role AND NOT rolcanlogin AND NOT rolinherit
+       AND NOT rolsuper AND NOT rolcreatedb AND NOT rolcreaterole
+       AND NOT rolreplication AND NOT rolbypassrls
+   ) THEN RAISE EXCEPTION 'TEST_ROLE_NOT_MINIMAL:%',v_role; END IF;
+   IF has_table_privilege(v_role,'public.lf_operation_execution','INSERT')
+      OR has_table_privilege(v_role,'public.lf_operation_execution','UPDATE')
+      OR has_table_privilege(v_role,'public.lf_operation_effect_guard','INSERT')
+      OR has_table_privilege(v_role,'public.lf_operation_effect_guard','UPDATE') THEN
+     RAISE EXCEPTION 'TEST_DIRECT_GOVERNANCE_TABLE_WRITE_GRANT:%',v_role;
+   END IF;
+ END LOOP;
+ IF NOT has_function_privilege('lf_operational_admission_authority',v_admit,'EXECUTE')
+    OR has_function_privilege('lf_operation_executor_runtime',v_admit,'EXECUTE')
+    OR has_function_privilege('lf_operational_admission_authority',v_begin,'EXECUTE')
+    OR has_function_privilege('lf_operational_admission_authority',v_finish,'EXECUTE')
+    OR NOT has_function_privilege('lf_operation_executor_runtime',v_begin,'EXECUTE')
+    OR NOT has_function_privilege('lf_operation_executor_runtime',v_finish,'EXECUTE') THEN
+   RAISE EXCEPTION 'TEST_ADMISSION_RUNTIME_EXECUTE_BOUNDARY_BROKEN';
+ END IF;
+ IF EXISTS(
+   SELECT 1 FROM pg_proc p
+   CROSS JOIN LATERAL aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) acl
+   WHERE p.oid IN (v_admit::oid,v_begin::oid,v_finish::oid)
+     AND acl.grantee=0 AND acl.privilege_type='EXECUTE'
+ ) THEN
+   RAISE EXCEPTION 'TEST_OPERATIONAL_FACADE_EXPOSED_TO_PUBLIC';
+ END IF;
+END $test$;
+ROLLBACK;
