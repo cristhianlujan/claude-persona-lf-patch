@@ -21,10 +21,33 @@ class RecoverSafetyTest(unittest.TestCase):
         self.assertIn("steps.recover_preflight.outcome == 'success'",wf)
         self.assertIn("--recover-existing-main",wf)
 
+    def test_missing_train_execution_cannot_enter_recover(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            version,name,path=self.source(tmp)
+            with self.assertRaisesRegex(RuntimeError,"RECOVER_TRAIN_STATE_FILE_REQUIRED"):
+                a._verify_recover_router(db_url="unused",project_root=pathlib.Path(tmp),
+                    migration_path=path,source_blob="a"*40,train_state_path=None)
+
+    def test_router_identity_or_authority_cannot_be_spoofed(self):
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            version,name,path=self.source(tmp)
+            state=pathlib.Path(tmp)/"state.json"
+            state.write_text(json.dumps({
+                "result":"TRAIN_EXECUTION_READY_TO_APPLY",
+                "ids":{"execution_id":"EXEC-EXAMPLE-1"},
+                "context":{"path":"supabase/migrations/"+path.name,
+                           "source_blob":"a"*40,
+                           "source_sha256":"invalid"}
+            }))
+            with self.assertRaisesRegex(RuntimeError,"RECOVER_TRAIN_EXACT_IDENTITY_UNVERIFIED"):
+                a._verify_recover_router(db_url="unused",project_root=pathlib.Path(tmp),
+                    migration_path=path,source_blob="a"*40,train_state_path=state)
+
     def test_historical_version_must_not_use_bulk_push(self):
         with tempfile.TemporaryDirectory() as tmp:
             version,name,path=self.source(tmp)
-            with patch.object(a,"read_ledger",side_effect=[(None,None,None),(version,name,"SOURCE_FIRST")]),patch.object(a,"read_ledger_max",return_value="20261013020000"),patch.object(a,"_fallback_apply") as fallback,patch.object(a,"_primary_cli") as primary,patch.dict(os.environ,{"LF_RECOVER_AUTHORIZED":"TRAIN_PREFLIGHT_PASSED"}):
+            with patch.object(a,"_verify_recover_router"),patch.object(a,"read_ledger",side_effect=[(None,None,None),(version,name,"SOURCE_FIRST")]),patch.object(a,"read_ledger_max",return_value="20261013020000"),patch.object(a,"_fallback_apply") as fallback,patch.object(a,"_primary_cli") as primary,patch.dict(os.environ,{"LF_RECOVER_AUTHORIZED":"TRAIN_PREFLIGHT_PASSED"}):
                 result=a.apply_exact(project_root=pathlib.Path(tmp),migration_path=path,
                     db_url="test",source_blob="a"*40,allow_fallback=True,recover_existing_main=True)
                 self.assertEqual(result.code,"RECOVER_EXACT_ORIGINAL_APPLIED")
@@ -33,7 +56,7 @@ class RecoverSafetyTest(unittest.TestCase):
     def test_no_train_authority_cannot_apply(self):
         with tempfile.TemporaryDirectory() as tmp:
             version,name,path=self.source(tmp)
-            with patch.object(a,"read_ledger",return_value=(None,None,None)),patch.object(a,"read_ledger_max",return_value="20261013020000"),patch.object(a,"_fallback_apply") as fallback,patch.dict(os.environ,{"LF_RECOVER_AUTHORIZED":"DENY"}):
+            with patch.object(a,"_verify_recover_router"),patch.object(a,"read_ledger",return_value=(None,None,None)),patch.object(a,"read_ledger_max",return_value="20261013020000"),patch.object(a,"_fallback_apply") as fallback,patch.dict(os.environ,{"LF_RECOVER_AUTHORIZED":"DENY"}):
                 with self.assertRaisesRegex(RuntimeError,"RECOVER_TRAIN_PREFLIGHT_AUTHORITY_REQUIRED"):
                     a.apply_exact(project_root=pathlib.Path(tmp),migration_path=path,
                       db_url="test",source_blob="a"*40,allow_fallback=True,recover_existing_main=True)
