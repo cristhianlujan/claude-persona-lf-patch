@@ -230,28 +230,7 @@ BEGIN
         v_v01,v_unclassified,v_open;
     END IF;
 
-    IF v_checkpoint_status='PENDING' THEN
-      v_r:=programacion.fn_engineering_checkpoint_transition_v1(
-        'PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1',
-        'PE10','PE10_C4','IN_PROGRESS',
-        'supabase://public/lf_operation_execution#22-open-after-ui-terminal-drain',
-        v_actor,
-        'C4 drain underway: two immutable-snapshot terminal-only executions rehearsed cleanly; 22 updater executions remain.'
-      );
-      IF coalesce(v_r->>'status','') NOT IN ('IN_PROGRESS','OK','TRANSITIONED') THEN
-        -- Accept function-specific wrapper only when authoritative row changed.
-        IF NOT EXISTS (
-          SELECT 1
-          FROM programacion.engineering_work_checkpoints c
-          JOIN programacion.engineering_plan_units u ON u.work_item_id=c.work_item_id
-          WHERE u.plan_code='PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1'
-            AND u.unit_code='PE10' AND c.checkpoint_code='PE10_C4'
-            AND c.status='IN_PROGRESS'
-        ) THEN
-          RAISE EXCEPTION 'PE10_C4_UI_DRY_CHECKPOINT_TRANSITION_FAILED:%',v_r;
-        END IF;
-      END IF;
-    END IF;
+    -- Checkpoint transition is not part of historical execution cleanup.
 
     RAISE EXCEPTION 'PE10_C4_UI_DRY_RUN_ROLLBACK_SENTINEL';
   EXCEPTION
@@ -357,35 +336,14 @@ BEGIN
       v_v01,v_unclassified,v_open;
   END IF;
 
-  IF v_checkpoint_status='PENDING' THEN
-    v_r:=programacion.fn_engineering_checkpoint_transition_v1(
-      'PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1',
-      'PE10','PE10_C4','IN_PROGRESS',
-      'supabase://public/lf_operation_execution#22-open-after-ui-terminal-drain',
-      v_actor,
-      'C4 drain underway: 3 historical executions closed across verified lots; 22 updater executions remain.'
-    );
-    IF NOT EXISTS (
-      SELECT 1
-      FROM programacion.engineering_work_checkpoints c
-      JOIN programacion.engineering_plan_units u ON u.work_item_id=c.work_item_id
-      WHERE u.plan_code='PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1'
-        AND u.unit_code='PE10' AND c.checkpoint_code='PE10_C4'
-        AND c.status='IN_PROGRESS'
-    ) THEN
-      RAISE EXCEPTION 'PE10_C4_UI_CHECKPOINT_TRANSITION_FINAL_FAILED:%',v_r;
-    END IF;
-  END IF;
-
-  UPDATE programacion.engineering_plan_units
-  SET unit_metadata=jsonb_set(
-    unit_metadata,
-    '{phase_separation_v1,cutover_checkpoints_v1,c4}',
-    to_jsonb('22_OPEN_RESOLVED_V01_0_UNCLASSIFIED_REQUIRE_PER_EXECUTION_DRAIN'::text),
-    true
-  )
-  WHERE plan_code='PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1'
-    AND unit_code='PE10';
+  -- C3 is still the current checkpoint: no C4 transition or unit_metadata mutation.
+  IF EXISTS (
+    SELECT 1 FROM programacion.engineering_work_checkpoints c
+    JOIN programacion.engineering_plan_units u ON u.work_item_id=c.work_item_id
+    WHERE u.plan_code='PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1'
+      AND u.unit_code='PE10' AND c.checkpoint_code='PE10_C4'
+      AND c.status IS DISTINCT FROM v_checkpoint_status
+  ) THEN RAISE EXCEPTION 'PE10_C4_UI_CHECKPOINT_DRIFT'; END IF;
 
   -- Negative assertion: terminal-only historical closure must not mutate the
   -- current UI Architect authority/currentness/runtime state.
