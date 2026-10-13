@@ -43,6 +43,16 @@ class ReconcileGitOnlyTest(unittest.TestCase):
         finally:
             tmp.cleanup()
 
+    def test_train_routes_reconcile_without_db_apply(self):
+        wf=(Path(__file__).resolve().parents[3]/".github/workflows/lf-migration-merge-train.yml").read_text()
+        self.assertLess(wf.index("- name: Resolve RECONCILE governed mode"),
+                        wf.index("- name: Sync PR branch with current main in REAL mode"))
+        self.assertIn("RECONCILE_GIT_ONLY_PASS",wf)
+        self.assertIn("migration_count=0",wf)
+        self.assertIn("--router-execution-id",wf)
+        self.assertIn("steps.reconcile_mode.outputs.mode != 'RECONCILE'",wf)
+        self.assertIn("RECONCILE_MIXED_SCOPE_FORBIDDEN",(Path(__file__).resolve().parent/"lf_migration_reconcile_git.py").read_text())
+
     def test_git_only_exact_content_passes(self):
         got,auth=self.run_case()
         self.assertEqual(got["code"],"RECONCILE_GIT_ONLY_PASS")
