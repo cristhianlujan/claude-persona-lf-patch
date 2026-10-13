@@ -274,6 +274,8 @@ def apply_exact(
 
     existing_version, existing_name, existing_created_by = read_ledger(db_url, version, cwd=project_root)
     if existing_version is not None:
+        if recover_existing_main:
+            raise RuntimeError("RECOVER_ALREADY_APPLIED_OR_SUPERSEDED_RECHECK_REQUIRED")
         if existing_name != name:
             raise RuntimeError(
                 f"EXACT_APPLY_EXISTING_IDENTITY_MISMATCH:{existing_version}/{existing_name}"
@@ -287,6 +289,24 @@ def apply_exact(
     floor_before = read_ledger_max(db_url, cwd=project_root)
     if version <= floor_before and not recover_existing_main:
         raise RuntimeError(f"EXACT_APPLY_VERSION_NOT_MONOTONIC:version={version} floor={floor_before}")
+
+    if recover_existing_main:
+        # A historical version must never enter Supabase CLI's bulk pending queue.
+        # The governed Train preflight must have succeeded before this call.
+        if not allow_fallback or os.environ.get("LF_RECOVER_AUTHORIZED") != "TRAIN_PREFLIGHT_PASSED":
+            raise RuntimeError("RECOVER_TRAIN_PREFLIGHT_AUTHORITY_REQUIRED")
+        _fallback_apply(
+            project_root=project_root, db_url=db_url, version=version, name=name,
+            source_sql=source_sql, source_blob=source_blob, recover_existing_main=True,
+        )
+        ledger_version, ledger_name, created_by = read_ledger(db_url, version, cwd=project_root)
+        if ledger_version != version or ledger_name != name:
+            raise RuntimeError("RECOVER_EXACT_LEDGER_READBACK_MISMATCH")
+        return ApplyReceipt(
+            "lf-migration-exact-apply/v1", "PASS", "RECOVER_EXACT_ORIGINAL_APPLIED",
+            "SOURCE_FIRST_EXACT_VERSION_MANUAL_LEDGER_DML", True,
+            version, name, ledger_version, ledger_name,
+        )
 
     primary_ok, primary_detail = _primary_cli(
         project_root=project_root,
