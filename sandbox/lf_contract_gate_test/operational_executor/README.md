@@ -36,6 +36,12 @@ runtime_dispatch() requiere LF_OPERATION_EXECUTOR_LANE=GOVERNED_OPERATIONAL_DML 
 
 El PR #2372 define el rol agrupador `lf_operation_executor_runtime NOLOGIN NOINHERIT`, sin acceso a tablas y con EXECUTE solo sobre las dos fachadas. Un usuario de conexión y su concesión de rol, autenticación y contraseñas quedan PENDIENTES de validación y aprovisionamiento seguro. NO desplegar con postgres, service_role o una credencial de DML general. El administrador debe revisar EXECUTE mínimo, SECURITY INVOKER y privilegios de tablas. Si un handler requiere permisos adicionales, utilizar una fachada SQL restringida, versionada y aplicada únicamente por Migration Train. El ejecutor no se convierte en DB_WRITE_TRANSPORT para migraciones.
 
+## Resultado de auditoría de privilegios (read-only)
+
+Consulta a `pg_proc` / `aclexplode`: 298 funciones SECURITY DEFINER en esquemas `public` y `programacion`, 39 ejecutables por el rol implícito PUBLIC. Este conteo **no prueba explotación** y **no autoriza** revocación masiva; obliga a revisar su comportamiento y la exposición efectiva del usuario de conexión antes de concederle LOGIN o membresía en `lf_operation_executor_runtime`.
+
+El rol NOLOGIN definido en el PR #2372 no es una credencial y no se debe utilizar para conexión directa. La activación comprueba también `runtime_role_grant_audit_passed` y `public_security_definer_exposure_reviewed`; ambos parten de BLOCK hasta contar con evidencia independiente.
+
 ## Estado y próximos gates
 
 CODE-ONLY / NO CONECTADO / NO DESPLEGADO / SIN HANDLERS REGISTRADOS.
