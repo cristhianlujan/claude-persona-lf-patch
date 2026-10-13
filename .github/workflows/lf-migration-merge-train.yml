@@ -642,9 +642,61 @@ jobs:
           echo "FAIL_TRAIN_PASE_CHECK_TIMEOUT"
           exit 2
 
+      - name: RECOVER compatibility preflight with rollback
+        id: recover_preflight
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.recover_mode.outputs.operation_mode == 'RECOVER'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SOURCE_FILE: ${{ steps.source.outputs.source_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$LF_TRAIN_EXECUTION_MODE" = "ENFORCED" ] || { echo "FAIL_RECOVER_ROUTER_EXECUTION_ENFORCEMENT_OFF"; exit 2; }
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_recover_preflight.py \
+            --migration-path "$SOURCE_FILE" | tee .lf_train/recover-preflight.json
+          jq -e '.status=="PASS" and .code=="RECOVER_COMPATIBILITY_ROLLBACK_PASS" and .residue==false' .lf_train/recover-preflight.json >/dev/null
+
+      - name: RECOVER reuse exact persisted main source and Saga
+        id: recover_binding
+        if: steps.recover_preflight.outcome == 'success'
+        env:
+          REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          MAIN_SHA: ${{ steps.admission.outputs.current_main }}
+          VERSION: ${{ steps.plan.outputs.migration_version }}
+          NAME: ${{ steps.plan.outputs.migration_name }}
+          TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
+          SOURCE_BLOB: ${{ steps.source.outputs.source_blob }}
+          SOURCE_SHA256: ${{ steps.source.outputs.source_sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os
+          o=os.environ
+          data={
+            "schema_version":"lf-migration-orchestrated-saga/v1",
+            "operation_code":"ACTUALIZACION_DB_LF",
+            "execution_id":"EXEC-TRAIN-RECOVER-PR"+o["PR"]+"-"+o["GITHUB_RUN_ID"],
+            "effect_scope":"MIGRATION:"+o["VERSION"],
+            "target_path":o["TARGET_PATH"],"migration_version":o["VERSION"],
+            "migration_name":o["NAME"],"source_sha256":o["SOURCE_SHA256"],
+            "git":{"persisted":True,"readback":True,"path":o["TARGET_PATH"],
+                   "head_sha":o["MAIN_SHA"],"blob_sha1":o["SOURCE_BLOB"],
+                   "source_sha256":o["SOURCE_SHA256"]},
+            "supabase":{"applied":False},"parity":{}
+          }
+          open(".lf_train/recover-saga-ready.json","w").write(json.dumps(data,sort_keys=True))
+          PY
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_orchestrated_saga.py \
+            --file .lf_train/recover-saga-ready.json | tee .lf_train/recover-saga-receipt.json
+          jq -e '.status=="READY_TO_APPLY" and .code=="WRITE_AHEAD_READY_FOR_EXACT_APPLY"' .lf_train/recover-saga-receipt.json >/dev/null
+          echo "persisted_head_sha=$MAIN_SHA" >> "$GITHUB_OUTPUT"
+          echo "source_blob=$SOURCE_BLOB" >> "$GITHUB_OUTPUT"
+
       - name: Persist exact source and require Saga READY_TO_APPLY
         id: write_ahead
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true' && steps.recover_mode.outputs.operation_mode != 'RECOVER'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
@@ -731,10 +783,10 @@ jobs:
           VERSION: ${{ steps.plan.outputs.migration_version }}
           NAME: ${{ steps.plan.outputs.migration_name }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
-          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob }}
+          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob || steps.recover_binding.outputs.source_blob }}
           SOURCE_SHA256: ${{ steps.source.outputs.source_sha256 }}
           HEAD_SHA: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
-          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha }}
+          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha || steps.recover_binding.outputs.persisted_head_sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -756,17 +808,19 @@ jobs:
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
-          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob }}
+          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob || steps.recover_binding.outputs.source_blob }}
+          OP_MODE: ${{ steps.recover_mode.outputs.operation_mode }}
+          LF_RECOVER_AUTHORIZED: ${{ steps.recover_preflight.outcome == 'success' && 'TRAIN_PREFLIGHT_PASSED' || 'DENY' }}
+          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha || steps.recover_binding.outputs.persisted_head_sha }}
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin "${{ steps.write_ahead.outputs.persisted_head_sha }}"
-          git checkout --detach "${{ steps.write_ahead.outputs.persisted_head_sha }}"
+          git fetch --no-tags origin "$PERSISTED_HEAD"
+          git checkout --detach "$PERSISTED_HEAD"
+          apply_args=(--project-root "$GITHUB_WORKSPACE" --migration-path "$GITHUB_WORKSPACE/$TARGET_PATH" --source-blob "$SOURCE_BLOB" --allow-fallback)
+          if [ "$OP_MODE" = "RECOVER" ]; then apply_args+=(--recover-existing-main); fi
           python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_exact_apply.py \
-            --project-root "$GITHUB_WORKSPACE" \
-            --migration-path "$GITHUB_WORKSPACE/$TARGET_PATH" \
-            --source-blob "$SOURCE_BLOB" \
-            --allow-fallback | tee .lf_train/exact-apply-receipt.json
+            "${apply_args[@]}" | tee .lf_train/exact-apply-receipt.json
           jq -e '.status=="PASS" and .ledger_version==.migration_version and .ledger_name==.migration_name' .lf_train/exact-apply-receipt.json >/dev/null
           echo "applied=true" >> "$GITHUB_OUTPUT"
 
