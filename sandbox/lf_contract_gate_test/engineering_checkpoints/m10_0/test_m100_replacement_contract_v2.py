@@ -89,6 +89,13 @@ class CandidateContract(unittest.TestCase):
         self.assertLess(parent, child)
 
 
+    def test_cp7_legacy_missing_spec_is_materialized_from_canonical_source(self):
+        self.assertIn("IF v_spec IS NULL AND v_cp='AUTHORITY_READBACK'", self.sql)
+        self.assertIn("IG_M100_V2_CP7_CANONICAL_SOURCE_ABSENT", self.sql)
+        self.assertIn("coalesce(v_spec,'null'::jsonb)", self.sql)
+        self.assertIn("'ENGINEERING_ACTION_SPEC_V3'", self.sql)
+        self.assertIn("'source_pack_missing_typed','[]'::jsonb", self.sql)
+
     def test_existing_pre_human_gates_reused_not_rebuilt(self):
         for capability in (
             "SAFE_CHANGE_ADMISSION",
