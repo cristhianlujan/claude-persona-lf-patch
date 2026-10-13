@@ -484,6 +484,15 @@ BEGIN
      ) THEN
     RAISE EXCEPTION 'OPERATIONAL_PRINCIPAL_ROLE_CROSSOVER_OR_MEMBERSHIP_INVALID';
   END IF;
+  -- A dedicated login must not be able to SET ROLE any third principal.
+  IF EXISTS(
+    SELECT 1 FROM pg_auth_members m
+    JOIN pg_roles g ON g.oid=m.roleid
+    JOIN pg_roles u ON u.oid=m.member
+    WHERE u.rolname=session_user AND g.rolname<>p_expected_role
+  ) THEN
+    RAISE EXCEPTION 'OPERATIONAL_PRINCIPAL_EXTRA_ROLE_MEMBERSHIP_FORBIDDEN';
+  END IF;
 END $principal$;
 
 -- Independent admission principal: the effect executor cannot approve itself.
