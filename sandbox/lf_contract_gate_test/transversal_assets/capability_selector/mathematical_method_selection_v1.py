@@ -33,7 +33,7 @@ def _observed_uplift(method_id: str, context: dict[str, Any]) -> dict[str, Any]:
                 "evidence_refs": refs}
     if item.get("independent_holdout_verified") is not True:
         return {"state": "UNPROVEN"}
-    return {"state": "OBSERVED_POSITIVE_NOT_ADMITTED", "paired_quality_delta": float(gain),
+    return {"state": "REPORTED_POSITIVE_UNATTESTED", "paired_quality_delta": float(gain),
             "evidence_refs": refs}
 
 
@@ -60,7 +60,7 @@ def prioritize_mathematical_methods(
             (type(max_trials) is not int or max_trials < 0)):
         return {"status": "BLOCK", "reason": "SHADOW_TRIAL_LIMIT_INVALID",
                 "recommended_trials": [], "rejected": [], "execution_authorized": False}
-    allowed_trials = max_trials if max_trials is not None else len(methods)
+    allowed_trials = max_trials if max_trials is not None else 1
     blocked = context.get("blocked_methods")
     blocked = set(blocked) if isinstance(blocked, list) and all(isinstance(x, str) for x in blocked) else set()
     candidates = []
@@ -127,7 +127,7 @@ def prioritize_mathematical_methods(
     # Empirical replicated gains take priority; absent those, evidence fit wins.
     # Cost breaks ties only; estimated cost is NOT presented as a measured benefit.
     candidates.sort(key=lambda m: (
-        -(m["effectiveness"]["state"] == "OBSERVED_POSITIVE_NOT_ADMITTED"),
+        -(m["effectiveness"]["state"] == "REPORTED_POSITIVE_UNATTESTED"),
         -float(m["effectiveness"].get("paired_quality_delta", 0)),
         -len(m["matched_signal_types"]),
         m["cost_points"],
