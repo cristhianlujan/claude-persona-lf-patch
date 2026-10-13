@@ -109,8 +109,13 @@ BEGIN
  THEN RAISE EXCEPTION 'TEST_UNAUTHORIZED_OPERATIONAL_ROUTE_NOT_BLOCKED:%',route; END IF;
  BEGIN
    UPDATE private.lf_human_decision_route_policies_v1
-      SET status='ACTIVE' WHERE producer_code='LF_OPERATION_EXECUTOR'
-                               AND subject_type='OPERATIONAL_EXECUTION';
+      SET status='ACTIVE',
+          policy_sha256=private.fn_lf_human_decision_route_policy_sha_v1(
+            policy_code,decision_class,producer_code,subject_type,authority_domain,
+            required_authority_ref,reviewer_role_mode,required_reviewer_role,
+            allowed_actions_mode,static_allowed_actions,'ACTIVE',metadata)
+    WHERE producer_code='LF_OPERATION_EXECUTOR'
+      AND subject_type='OPERATIONAL_EXECUTION';
  EXCEPTION WHEN check_violation THEN blocked:=true;
  END;
  IF NOT blocked THEN RAISE EXCEPTION 'TEST_AUTHORITYLESS_ACTIVATION_ACCEPTED'; END IF;
