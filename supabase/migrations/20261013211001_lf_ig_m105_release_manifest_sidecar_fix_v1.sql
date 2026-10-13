@@ -30,11 +30,11 @@ BEGIN
     EXISTS(SELECT 1 FROM programacion.provenance_receipts pr
       WHERE pr.receipt_kind='EVIDENCE_VERIFICATION'$new$);
  newq:=replace(newq,
- $old$      AND source_manifest->>'release_id'=version
+ $old$      AND scope->>'release_id'=version
+      AND source_manifest->>'release_id'=version
       AND scope->>'release_manifest_sha256'=manifest_sha256
       AND source_manifest->>'release_manifest_sha256'=manifest_sha256$old$,
- $new$      AND scope->>'release_manifest_sha256'=manifest_sha256
-      AND verified_release_receipt$new$);
+ $new$      AND verified_release_receipt$new$);
  IF newq=oldq OR newq NOT LIKE '%AS verified_release_receipt%' OR
     newq LIKE '%source_manifest->>''release_id''%' THEN
     RAISE EXCEPTION 'M105_CP2_REPLACEMENT_FAILED'; END IF;
