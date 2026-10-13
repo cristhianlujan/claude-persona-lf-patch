@@ -8,28 +8,22 @@ Capacidad transversal LF para seleccionar el canal de escritura de base de datos
 
 No concede permisos, no sustituye al Router y no crea una nueva operación.
 
-## v2.1.0 — Router primero, Merge Train siempre
+## v2.2.0 — Router primero, Merge Train como única ruta
 
-Toda escritura de base de datos de un agente empieza en el Router (ACT-0001) y termina en el LF Migration Merge Train. No existe ruta directa para agentes.
+Toda escritura de base de datos empieza en el Router (ACT-0001) y se entrega al LF Migration Merge Train. El Train reserva, registra y cierra la ejecución actual `ACTUALIZACION_DB_LF` (`EXEC-DB-TRAIN-PR<n>-<version>-R<run>`); el agente no reserva ni solicita una ejecución al dueño.
 
 ```
 agente → lf_router_resolve_v1 (solo lectura) → operation_code
-agente → select_route(target_type, migration_path, router_execution_id, router_operation)
-   sin ejecución EXEC-… y sin router_operation=ACTUALIZACION_DB_LF → REDIRECT_TO_ROUTER
-   con cualquiera de las dos → MIGRATION_VIA_MERGE_TRAIN (PR + ready-to-merge + Train)
+agente → select_route(target_type, migration_path, router_operation)
+   sin ruta del Router → REDIRECT_TO_ROUTER
+   con ruta del Router → MIGRATION_VIA_MERGE_TRAIN
 ```
 
-v2.1.0 agrega a la respuesta:
-- `steps`: checklist del Train (una migración por PR, PR fuera de borrador, checks en verde en el HEAD exacto, un Train a la vez, la versión la asigna o reasigna el Train).
-- `on_denied`: un rechazo por solo lectura o permisos es intencional; no se busca otra ruta, se va al Train.
-- `execution_request`: si no hay ejecución `ACTUALIZACION_DB_LF`, se indica el target exacto en el PR y se pide al dueño (hasta que el Train gestione ejecuciones).
-- `prevention_rules`: códigos de `transversal.prevention_rules` que aplican (PRV-CI-009, PRV-DB-GIT-FIRST-PERSISTENT-OBJECT-001, PRV-SQL-001, PRV-SQL-007, PRV-SQL-012, PRV-RTE-006).
+La respuesta usa `execution_request=NONE_TRAIN_RESERVES_AND_CLOSES_EXECUTION`. El único flujo de escritura es PR + checks + `ready-to-merge` + Merge Train. El Train asigna o reasigna la versión.
 
-| target_type | ruta para agentes |
-|---|---|
-| `MIGRATION`, `DB`, `FUNCTION`, `TRIGGER`, `CAPABILITY` | `MIGRATION_VIA_MERGE_TRAIN` (con ejecución del Router) o `REDIRECT_TO_ROUTER` (sin ella) |
+Para objetivos de migración, pase también el estado del cambio y las evidencias de presencia en `main` y en el ledger. Si el target está en cualquiera de ellos, una edición, renombre o borrado produce `BLOCK_APPLIED_MIGRATION_IMMUTABLE`; el arreglo debe ser una migración nueva fail-forward por el Train. Un archivo realmente nuevo (`added`, ausente de `main` y del ledger) sigue por `MIGRATION_VIA_MERGE_TRAIN`.
 
-Prohibido para agentes: MCP `apply_migration`, MCP `execute_sql` con DDL o DML de migración, `supabase db push`, SQL Editor, `psql` directo, DML manual sobre `supabase_migrations.schema_migrations`, nombres de migración no clasificados (`POL-LF-MIGRATION-NAMING`).
+`select_transport` es interno del Train y no habilita una ruta directa. No hay fallback de DML manual del ledger. MCP `apply_migration`, MCP `execute_sql` para DDL o DML de migración, `supabase db push` por un agente, SQL Editor, `psql` directo y DML manual sobre `supabase_migrations.schema_migrations` están prohibidos.
 
 CLI para agentes:
 
@@ -37,10 +31,8 @@ CLI para agentes:
 python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py \
   --target-type MIGRATION \
   --migration-path supabase/migrations/<version>_<name>.sql \
-  --router-operation ACTUALIZACION_DB_LF   # o --router-execution-id EXEC-…
+  --router-operation ACTUALIZACION_DB_LF
 ```
-
-`select_transport` (y `--train-internal`) es interno del Merge Train: lo usa `lf_migration_exact_apply.py` para elegir su ejecutor sobre una migración ya admitida. No es una ruta para agentes. Las escrituras directas `DB`/`FUNCTION`/`TRIGGER` por `SUPABASE_MCP` de v1.0.0 quedan retiradas.
 
 ## Soluciones encadenadas para MIGRATION
 

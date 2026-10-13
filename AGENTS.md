@@ -6,6 +6,6 @@ Agents MUST NOT create or modify workflows that read `LF_SUPABASE_DB_PASSWORD` o
 
 Before naming a migration, apply **Migration naming** in [CLAUDE.md](CLAUDE.md): the Merge Train rejects migration names that are not classified in `sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py`.
 
-Every database write starts at the Router (ACT-0001) with an `ACTUALIZACION_DB_LF` execution and ends in the Merge Train; see **Router first for every database write** in [CLAUDE.md](CLAUDE.md).
+Every database write starts at the Router (ACT-0001) and ends in the Merge Train. The Train reserves, records, and closes the current `ACTUALIZACION_DB_LF` execution; agents do not reserve or request it. See **Router first for every database write** in [CLAUDE.md](CLAUDE.md).
 
 The Router (ACT-0001) is the authority: resolve with `lf_router_resolve_v1` before any database work, and treat read-only or permission denials as intentional (go to the Merge Train, never another route).
