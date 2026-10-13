@@ -63,19 +63,21 @@ GRANT EXECUTE ON FUNCTION public.lf_operational_executor_assert_principal_v1(tex
 """)
 
 # Real DB checks under separate database session principals.
-def as_login(login: str, sql: str) -> str:
+def as_login(login: str, sql: str, *, activate_role: bool = True,
+             expected_ok: bool = True) -> str:
     if login not in ("lf_op_sandbox_admit", "lf_op_sandbox_effect",
                      "lf_op_sandbox_untrusted"):
         raise ValueError("Unexpected test principal")
     return psql(
         "BEGIN;\n"
         + f"SET SESSION AUTHORIZATION {login};\n"
-        + (("SET ROLE lf_operational_admission_authority;\n" if login == "lf_op_sandbox_admit"
-            else "SET ROLE lf_operation_executor_runtime;\n" if login == "lf_op_sandbox_effect"
-            else ""))
+        + ((("SET LOCAL ROLE lf_operational_admission_authority;\n" if login == "lf_op_sandbox_admit"
+             else "SET LOCAL ROLE lf_operation_executor_runtime;\n" if login == "lf_op_sandbox_effect"
+             else "")) if activate_role else "")
         + sql
         + "\nRESET SESSION AUTHORIZATION;\n"
-        + "ROLLBACK;\n"
+        + "ROLLBACK;\n",
+        expected_ok=expected_ok
     )
 
 def expected_block(role: str, code: str) -> str:
@@ -96,6 +98,12 @@ BEGIN
   END IF;
 END $negative$;
 """
+
+# Without an explicit role switch, the NOINHERIT login has no EXECUTE
+# privilege. This negative assertion caught the original production-path bug.
+as_login("lf_op_sandbox_effect",
+         "SELECT public.lf_operational_executor_assert_principal_v1('lf_operation_executor_runtime');",
+         activate_role=False, expected_ok=False)
 
 # NOINHERIT must be paired with explicit SET ROLE on each operation
 # session. The session_user remains the independent LOGIN principal.
