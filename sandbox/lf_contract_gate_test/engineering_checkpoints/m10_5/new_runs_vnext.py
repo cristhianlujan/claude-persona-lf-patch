@@ -126,13 +126,100 @@ def self_test():
                       "material_cp2_pass": False, "cases": cases}))
 
 
+
+def verify_live(gateway):
+    """A canonical service-role RPC readback, never a local fixture, may yield PASS."""
+    context = gateway.call("fn_ig_m105_cp2_dispatch_context_v1")
+    if not isinstance(context, dict) or context.get("status") != "AUTHORIZED_CONTEXT":
+        return {"status": "BLOCK_AUTHORITY_CONTEXT"}
+    if context.get("dispatch_permitted") is not True:
+        return {"status": "BLOCK_SIGNED_CUTOVER_NOT_AUTHORIZED"}
+    scope = context.get("scope") or {}
+    release = context.get("release") or {}
+    ids = scope.get("screen_ids")
+    if scope.get("schema_version") != "M105_SCOPE_SNAPSHOT_V1" or \
+       not isinstance(ids, list) or len(ids) != COUNT or \
+       any(type(x) is not int or x <= 0 for x in ids) or len(set(ids)) != COUNT:
+        return {"status": "BLOCK_CANONICAL_COHORT"}
+    if not release.get("previous_version") or \
+       not release.get("version") or \
+       release["previous_version"] == release["version"] or \
+       not isinstance(release.get("manifest_sha256"), str) or \
+       len(release["manifest_sha256"]) != 64:
+        return {"status": "BLOCK_REAL_RELEASE"}
+    results = []
+    unique_runs = set()
+    for screen in ids:
+        rows = gateway.call("fn_ig_m105_cp2_screen_readback_v1", {"p_pantalla_id": screen})
+        if not isinstance(rows, list) or len(rows) != 1:
+            return {"status": "BLOCK_READBACK_MISSING", "pantalla_id": screen}
+        row = rows[0]
+        if not isinstance(row, dict) or row.get("pantalla_id") != screen:
+            return {"status": "BLOCK_READBACK_SCREEN_IDENTITY", "pantalla_id": screen}
+        run_id = row.get("run_id")
+        if type(run_id) is not int or run_id <= 0 or run_id in unique_runs:
+            return {"status": "BLOCK_RUN_IDENTITY", "pantalla_id": screen}
+        unique_runs.add(run_id)
+        verdict = row.get("cp2_verdict")
+        results.append({"pantalla_id": screen, "run_id": run_id,
+                        "cp2_verdict": verdict, "technical_verdict": row.get("technical_verdict")})
+    passed = sum(row["cp2_verdict"] == "PASS_CP2" and
+                 row["technical_verdict"] == "PASS_TECNICO" for row in results)
+    return {"status": "PASS_MATERIAL_CANONICAL" if passed == COUNT else "FAIL_MATERIAL_CANONICAL",
+            "release": release["version"], "manifest_sha256": release["manifest_sha256"],
+            "verified": passed, "required": COUNT, "results": results}
+
+
+class CanonicalGateway:
+    """No writable request or local source may stand in for the actual authority."""
+    def __init__(self, endpoint, credential):
+        from urllib.parse import urlsplit
+        from urllib.request import Request, urlopen
+        from urllib.error import HTTPError, URLError
+        parts = urlsplit(endpoint)
+        if parts.scheme != "https" or not parts.netloc or not credential:
+            raise ValueError("CANONICAL_CONNECTION_MISSING")
+        self.url = endpoint.rstrip("/")
+        self.key = credential
+        self.urlopen = urlopen
+        self.Request = Request
+        self.HTTPError = HTTPError
+        self.URLError = URLError
+
+    def call(self, name, arguments=None):
+        path = "/rest/v1/rpc/" + name
+        body = json.dumps(arguments or {}).encode("utf-8")
+        req = self.Request(self.url + path, data=body, method="POST", headers={
+            "authorization": "Bearer " + self.key, "apikey": self.key,
+            "content-type": "application/json"
+        })
+        try:
+            with self.urlopen(req, timeout=35) as response:
+                raw = response.read(2_000_000)
+            return json.loads(raw)
+        except self.HTTPError as error:
+            raise RuntimeError("CANONICAL_HTTP_" + str(error.code)) from None
+        except self.URLError:
+            raise RuntimeError("CANONICAL_NETWORK_ERROR") from None
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--readback")
+    parser.add_argument("--verify-live", action="store_true")
     args = parser.parse_args()
     if args.self_test:
         self_test()
+    elif args.verify_live:
+        import os
+        try:
+            source = CanonicalGateway(os.environ.get("IG_CANONICAL_ENDPOINT", ""),
+                                      os.environ.get("IG_CANONICAL_AUTH", ""))
+            result = verify_live(source)
+        except (RuntimeError, ValueError) as exc:
+            result = {"status": "BLOCK_CANONICAL_CONNECTOR", "error_type": type(exc).__name__}
+        print(json.dumps(result, sort_keys=True))
+        sys.exit(0 if result["status"] == "PASS_MATERIAL_CANONICAL" else 2)
     else:
         if not args.readback:
             parser.error("--readback required")
@@ -140,4 +227,5 @@ if __name__ == "__main__":
             v = json.load(fp)
         result = classify(v)
         print(result)
+        # A supplied JSON file can never cause an admitted PASS.
         sys.exit(3 if result == "ELIGIBLE_UNATTESTED" else 2)
