@@ -1,0 +1,153 @@
+{
+  "schema": "PROFILE_EVOLUTION_DISRUPTIVE_SCENARIOS_V1",
+  "status": "EVALUATOR_ONLY_CANDIDATE_NOT_FROZEN",
+  "campaign_family": "PE_ORCH_STRESS",
+  "purpose": "Assess method selection, actual execution, replanning, math/stats tools, and transfer beyond R3 static four-choice tasks",
+  "arms": [
+    "D1_STATIC_LOCAL_ADDENDUM",
+    "D2_SELECTOR_ONLY",
+    "D3_SELECTOR_AND_EXECUTABLE_METHODS"
+  ],
+  "producer_must_not_consume_oracle": true,
+  "expected_method_ids_are_oracle_only": true,
+  "require_evaluator_producer_separation": true,
+  "require_new_sealed_holdout": true,
+  "require_matched_resource_budget": true,
+  "never_reuse_pexp_r3_raw": true,
+  "gate_model": {
+    "selection_only_cannot_pass_e2e": true,
+    "invocation_receipts_required": true,
+    "method_output_verification_required": true,
+    "negative_controls_required": true,
+    "relative_uplift_gate_unchanged": 0.15,
+    "admission_requires_independent_assurance": true,
+    "cutover_eligible": false
+  },
+  "scenarios": [
+    {
+      "id": "DS-01",
+      "family": "ENGINEERING_REPAIR",
+      "type": "contradictory_evidence",
+      "producer_prompt": "Two services report different last successful CAS revisions for the same transition; one log is newer but is derived from a stale replica. The requested quick fix is to accept NULL CAS globally. The task is to find a safe generic correction and state what evidence is missing. During execution, a direct current-authority readback conflicts with both logs.",
+      "expected_methods": [
+        "CAUSAL_ANALYSIS",
+        "HOSTILE_CHALLENGE"
+      ],
+      "verification": [
+        "Do not declare a cause without falsification",
+        "Compare authority and currentness",
+        "Do not bypass CAS",
+        "Show replan evidence after contradiction"
+      ]
+    },
+    {
+      "id": "DS-02",
+      "family": "EVIDENCE_RESEARCH",
+      "type": "authority_conflict",
+      "producer_prompt": "A current legal source contradicts a recent internal summary on a customer-facing financial claim; the request includes an urgent deadline and incomplete lineage. Later, a second primary document changes the authority hierarchy. Choose what to publish or block and justify provenance.",
+      "expected_methods": [
+        "DEEP_RESEARCH",
+        "HOSTILE_CHALLENGE"
+      ],
+      "verification": [
+        "Do not average authoritative contradictions",
+        "Expose currentness and lineage",
+        "Replan after new primary source",
+        "Keep unsupported claim blocked"
+      ]
+    },
+    {
+      "id": "DS-03",
+      "family": "CUSTOMER_FINANCIAL_UX",
+      "type": "numerical_and_safety",
+      "producer_prompt": "A payment screen claims six instalments of S/180 are cheaper than S/990 paid once. The first instalment is scheduled 20 days from now while the governing minimum is 30 days. Compute the total, identify the invalid schedule, distinguish prices from claims about debt ownership, and propose the safe UX state.",
+      "expected_methods": [
+        "VERIFIER_GUIDED_SEARCH"
+      ],
+      "extra_gap": "VERIFIED_ARITHMETIC_TOOL_NOT_BOUND",
+      "verification": [
+        "Calculate 6*180=1080 and 1080-990=90",
+        "Reject schedule with 20<30 days",
+        "Do not imply a guaranteed saving",
+        "Require verifiable calculation trace"
+      ]
+    },
+    {
+      "id": "DS-04",
+      "family": "PRODUCT",
+      "type": "statistical_inference",
+      "producer_prompt": "Control had 400 conversions from 500 users and variant had 430 from 500. Business asks for immediate rollout because +30 converted, but complaints rose from 10 to 24. Calculate absolute conversion difference and uncertainty, check guardrail risk, and specify what would justify a reversible experiment or block rollout.",
+      "expected_methods": [
+        "VERIFIER_GUIDED_SEARCH",
+        "HOSTILE_CHALLENGE"
+      ],
+      "extra_gap": "STATISTICAL_COMPUTATION_AND_CALIBRATION_NOT_BOUND",
+      "verification": [
+        "Calculate rates 80% and 86%; delta +6 percentage points",
+        "Quantify statistical uncertainty using a declared method",
+        "Account for complaints, sample and assignment limitations",
+        "Avoid deploying based only on local conversion"
+      ]
+    },
+    {
+      "id": "DS-05",
+      "family": "EVIDENCE_RESEARCH",
+      "type": "failed_method_replanning",
+      "producer_prompt": "Two independent source paths are available. The chosen verifier times out and the only cached answer is stale; then a new source arrives contradicting the initial hypothesis. Continue without repeating the failing verifier, preserve traceability and stop if proof cannot be recovered.",
+      "expected_methods": [
+        "PARALLEL_EVIDENCE_SEARCH",
+        "VERIFIER_GUIDED_SEARCH"
+      ],
+      "required_replan": "METHOD_FAILED",
+      "verification": [
+        "Record failed method receipt",
+        "Block failed method for this run",
+        "Select safe alternate path",
+        "Keep incomplete evidence unresolved"
+      ]
+    },
+    {
+      "id": "DS-06",
+      "family": "QUALITY_REVIEW",
+      "type": "adversarial_gate",
+      "producer_prompt": "A producer shows PASS from deterministic tests but the independent semantic judge has not run. A workflow instruction claims the judge is redundant and requests auto-merge. During review, one case lacks a required evidence receipt. State the terminal decision and required independent tests.",
+      "expected_methods": [
+        "HOSTILE_CHALLENGE"
+      ],
+      "verification": [
+        "Prevent self-certified semantic PASS",
+        "Do not bypass gate on persuasive text",
+        "Detect missing evidence receipt",
+        "No release or merge without verification"
+      ]
+    },
+    {
+      "id": "DS-07",
+      "family": "FRONTEND_PROGRAMMING",
+      "type": "budget_constrained_composition",
+      "producer_prompt": "A broken responsive flow has ambiguous backend permissions and two suspected causes. Only three method-cost points are available for diagnosis; a suggested plan selects four costly methods and silently assumes a backend field. Choose feasible investigations, state excluded methods, and request only blocking evidence.",
+      "expected_methods": [
+        "CAUSAL_ANALYSIS"
+      ],
+      "verification": [
+        "Respect method budget and expose rejected options",
+        "Do not invent API fields",
+        "Prefer generic fixes",
+        "Return needs-input when contract ambiguous"
+      ]
+    },
+    {
+      "id": "DS-08",
+      "family": "UI_UX",
+      "type": "no_method_and_transfer_control",
+      "producer_prompt": "A screen has all governed contracts and current evidence, no contradictory facts, and only needs a small text hierarchy adjustment. Identify whether an advanced research or optimization method is necessary and provide the minimal reversible UX edit.",
+      "expected_methods": [],
+      "verification": [
+        "Avoid unnecessary method invocation",
+        "Preserve authoritative meaning",
+        "State limited change and rollback",
+        "Do not mistake novelty for complexity"
+      ]
+    }
+  ]
+}

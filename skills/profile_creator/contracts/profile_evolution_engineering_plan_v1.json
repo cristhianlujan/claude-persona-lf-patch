@@ -1455,9 +1455,11 @@
           "status": "PENDING_FRESH_VALIDATION",
           "validator_code": "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1",
           "validation_input": {
-            "qualification_mode": "FULL_SELF_TEST"
+            "qualification_mode": "FULL_SELF_TEST",
+            "interactive_qualification_runner": "skills/profile_creator/evals/test_profile_conversational_campaign_v1.py",
+            "context_router_qualification_runner": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/test_profile_conversational_context_v1.py"
           },
-          "pass_when": "actual execution passes; document-only/self-review/flat-vs-current cases fail",
+          "pass_when": "actual execution passes; document-only/self-review/flat-vs-current cases fail; conversational context route and staged dialogue trace qualify with positive and hostile negatives",
           "failure_code": "EXPERT_BENCHMARK_SCORER_FAIL",
           "resolver_policy": "FIX_THEN_REVALIDATE"
         },
@@ -1476,9 +1478,12 @@
               "power_analysis_ref",
               "holdout_manifest_ref",
               "thresholds_frozen_before_raw"
-            ]
+            ],
+            "conversational_campaign_ref": "skills/profile_creator/evals/profile_expert_conversational_campaign_v1.json",
+            "minimum_interactive_scenarios": 40,
+            "minimum_interactive_holdout": 20
           },
-          "pass_when": "case count, strata, power assumptions, holdout and thresholds are frozen before generation",
+          "pass_when": "case count, strata, power assumptions, holdout and thresholds are frozen before generation; >=40 interactive natural-language scenarios with >=20 fresh sealed holdout cases are frozen before actual GPT execution",
           "failure_code": "EXPERT_BENCHMARK_CAMPAIGN_NOT_FROZEN",
           "resolver_policy": "DESIGN_FREEZE_THEN_REVALIDATE"
         },
@@ -1491,9 +1496,11 @@
           "validation_input": {
             "benchmark_scope": "EXPERT_TASK_PERFORMANCE_E2E",
             "required_relative_uplift": 0.15,
-            "required_independent_evaluator": true
+            "required_independent_evaluator": true,
+            "conversational_subcampaign_mandatory": true,
+            "conversational_policy_ref": "skills/profile_creator/contracts/profile_conversational_context_policy_v1.json"
           },
-          "pass_when": "D beats original by >=15% with CI excluding zero, beats current Evolution, holdout improves, preservation>=98%, critical regressions=0 and resource budget passes",
+          "pass_when": "D beats original by >=15% with CI excluding zero, beats current Evolution, holdout improves, preservation>=98%, critical regressions=0 and resource budget passes; at least 40 staged conversations, including >=20 blind holdouts, demonstrate recovery-before-questioning and verified outcomes with actual four-arm producer/evaluator receipts",
           "failure_code": "EXPERT_TASK_PERFORMANCE_NOT_PROVEN",
           "resolver_policy": "REPAIR_OR_REARCHITECT_THEN_RERUN_NEW_BLIND_CAMPAIGN"
         }
@@ -1515,5 +1522,22 @@
     "PE3B_ADAPTIVE_REPLANNING_SELECTOR_V3_ADDED",
     "PE7B_CAUSAL_TRANSFER_LEARNING_V2_ADDED",
     "PE10E_REAL_EXPERT_TASK_BENCHMARK_ADDED"
-  ]
+  ],
+  "conversational_context_extension": {
+    "status": "IMPLEMENTED_CANDIDATE_TESTED_NOT_EXPERT_ADMITTED",
+    "rationale": "Real users start with short natural requests, not full prefilled case handoffs",
+    "reuse": [
+      "PROFILE_ASSESSMENT_V2",
+      "TARGETED_EVIDENCE_ACQUISITION",
+      "TYPED_EVIDENCE_REGISTRY",
+      "CAPABILITY_SELECTOR_V3"
+    ],
+    "runtime_path": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/profile_conversational_context_v1.py",
+    "policy_ref": "skills/profile_creator/contracts/profile_conversational_context_policy_v1.json",
+    "test_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/test_profile_conversational_context_v1.py",
+    "benchmark_test_ref": "skills/profile_creator/evals/test_profile_conversational_campaign_v1.py",
+    "existing_required_checkpoint_count_unchanged": true,
+    "closes_PE10E_C4": false,
+    "candidate_only": true
+  }
 }

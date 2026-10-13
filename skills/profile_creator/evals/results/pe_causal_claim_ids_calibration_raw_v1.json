@@ -1,0 +1,61 @@
+{
+  "answer": {
+    "answers": [
+      {
+        "case_id": "PE-CAUS-05",
+        "causality_proven": false,
+        "claim_ids": [
+          "OBS:CALLBACK_LINKED",
+          "OBS:WORKER_RECEIPT_EXISTS",
+          "REFUTE:H1:WORKER_RECEIPT_EXISTS"
+        ],
+        "decision": "INVESTIGATE_H2",
+        "falsified": [
+          "H1"
+        ]
+      },
+      {
+        "case_id": "PE-CAUS-06",
+        "causality_proven": false,
+        "claim_ids": [
+          "OBS:AUTH_STATUS_VALID",
+          "REFUTE:H1:AUTH_STATUS_VALID",
+          "MISSING:H2:REPLICA_VALID"
+        ],
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1"
+        ]
+      }
+    ]
+  },
+  "cutover_eligible": false,
+  "known_cases": [
+    "PE-CAUS-05",
+    "PE-CAUS-06"
+  ],
+  "not_holdout": true,
+  "production_activation": false,
+  "profile_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+  "raw_frozen": true,
+  "receipt_sha256": "2c3ee5cfceacc0bcf5d6828be1aa973e365bc589628eed4a9419c0c8011acd9a",
+  "run_id": "PE-CAUSAL-CLAIM-IDS-20261009-CALIB:D_COMPACT",
+  "runtime_attestation": {
+    "evidence_sha256": "873be7df67d31defbdb29d8f6cfdfd0884ee46208d92c1e2f751ec2393ad85bf",
+    "request_sha256": "7939d9037a000444cf0cabed0026141b7276971714b32ea2b639234ac4fad190",
+    "response_sha256": "a0ee90dd10ee01ceb46f8f7563233b0f1ba825140f42bac23553ca17e3f0019e",
+    "verified": true,
+    "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+  },
+  "schema": "PE_CAUSAL_COMPACT_CALIBRATION_RAW_V1",
+  "tool_plans_embedded": true,
+  "usage": {
+    "completion_tokens": 210,
+    "prompt_tokens": 3881,
+    "prompt_tokens_details": {
+      "cached_tokens": 3020
+    },
+    "total_tokens": 4091
+  },
+  "wall_ms": 50120.28
+}

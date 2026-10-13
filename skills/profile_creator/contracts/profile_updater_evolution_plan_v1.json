@@ -211,7 +211,7 @@
     },
     {
       "id": "E10E",
-      "work": "Execute real expert-task A/B/C/D benchmark before cutover",
+      "work": "Execute real expert-task A/B/C/D benchmark, including progressive short-request conversations and verified context acquisition, before cutover",
       "depends_on": [
         "E5",
         "E7B",
@@ -228,10 +228,14 @@
         "benchmark contract/scorer hostile self-test PASS",
         "120-case / 8-family / 5-difficulty campaign design frozen",
         "60-case holdout sealed without labels exposed to producer",
-        "power analysis and thresholds frozen before RAW"
+        "power analysis and thresholds frozen before RAW",
+        "candidate conversational context router and live TARGETED_EVIDENCE_ACQUISITION positive/negative read-only preflight",
+        "40 staged conversational tasks inside existing 120 tasks, including at least 20 blind holdouts, frozen before new GPT RAW",
+        "independent verification of retrieval usefulness, targeted clarification, adaptation and final task success"
       ],
       "blockers": [
-        "PE10E_C4 actual four-arm task execution and blind independent scoring not yet performed"
+        "PE10E_C4 actual four-arm task execution and blind independent scoring not yet performed",
+        "Conversations with verified native GPT execution receipts and independent evaluator not yet produced; interactive holdout candidate remains unfrozen"
       ]
     },
     {
@@ -310,5 +314,19 @@
     "validator_authority": "GITHUB_VERSIONED_FILES",
     "repair_flow": "FAIL -> RESOLVE -> FRESH_REVALIDATE -> PASS",
     "programming_specific_runtime_tables_reused": false
+  },
+  "context_acquisition_workstream": {
+    "status": "IMPLEMENTED_CANDIDATE_TESTED_NOT_OPERATIONALLY_ADMITTED",
+    "physical_runtime_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/profile_conversational_context_v1.py",
+    "existing_evidence_provider": "public.lf_targeted_evidence_acquisition_plan_v1",
+    "orchestrator_binding_ref": "skills/profile_creator/contracts/profile_evolution_orchestrator_v2.json",
+    "qualification_refs": [
+      "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/test_profile_conversational_context_v1.py",
+      "skills/profile_creator/evals/test_profile_conversational_campaign_v1.py"
+    ],
+    "benchmark_extension_ref": "skills/profile_creator/evals/profile_expert_conversational_campaign_v1.json",
+    "required_benchmark_case_count_unchanged": true,
+    "no_automatic_production_activation": true,
+    "expert_quality_admitted": false
   }
 }

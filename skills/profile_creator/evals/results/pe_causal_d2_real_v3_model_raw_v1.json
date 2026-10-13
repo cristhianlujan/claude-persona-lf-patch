@@ -1,0 +1,144 @@
+{
+  "arms": [
+    "D2_SELECTOR_ONLY"
+  ],
+  "batches": [
+    {
+      "answers": [
+        {
+          "case_id": "HCA-105",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The owner record itself is absent hypothesis is not verified by the observed evidence."
+        },
+        {
+          "case_id": "HCA-106",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The hypotheses are contradicted by current typed evidence."
+        }
+      ],
+      "arm": "D2_SELECTOR_ONLY",
+      "batch_index": 1,
+      "case_ids": [
+        "HCA-105",
+        "HCA-106"
+      ],
+      "contract_sha256": "2d21fe2c8c05a48d77e536ceb359bacb0a941144745e11e4fac6840439408613",
+      "prompt_sha256": "92eb906d4094c04a9f4665d7c44907562f6d79a6a6075f99a4dc7c6385c2c00f",
+      "receipt_sha256": "d326f49c940db144e1f22f22156de9d02822b3964d0b3be434f267c876afb124",
+      "run_id": "PE-CAUSAL-D2-REAL-SELECTOR-V3-20261009:B1:D2_SELECTOR_ONLY",
+      "runtime_attestation": {
+        "evidence_sha256": "5794b61b2f88663b0fa795efd8a0b2b2ed2844bb132d2bd0ed648aad1ac16308",
+        "request_sha256": "05ace4d1dbca8b69928155f16012e250713eae9fab29ff3ea045d5a6d4d34a1d",
+        "response_sha256": "f6b37cb27323c01f809d50789c90c4018c370695ab306258b3c6c1f16e6b100d",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 204,
+        "prompt_tokens": 4058,
+        "prompt_tokens_details": {
+          "cached_tokens": 3021
+        },
+        "total_tokens": 4262
+      },
+      "wall_ms": 64768.02
+    },
+    {
+      "answers": [
+        {
+          "case_id": "HCA-107",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The hypotheses do not survive the terminality gate. The first hypothesis 'Scheduler never dispatched' is not supported by the evidence. The second hypothesis 'Dispatch occurred and"
+        },
+        {
+          "case_id": "HCA-108",
+          "causality_proven": false,
+          "claim_ids": [
+            "H1",
+            "H2"
+          ],
+          "decision": "COLLECT_MORE_EVIDENCE",
+          "falsified": [
+            "H1",
+            "H2"
+          ],
+          "reason": "The hypotheses do not survive the terminality gate. The first hypothesis 'No independent review was ever executed' is not supported by the evidence. The second hypothesis 'The"
+        }
+      ],
+      "arm": "D2_SELECTOR_ONLY",
+      "batch_index": 2,
+      "case_ids": [
+        "HCA-107",
+        "HCA-108"
+      ],
+      "contract_sha256": "5948220a0e9ccf657a552bbf7e28686b2686a601a7d814784379e43149c2484b",
+      "prompt_sha256": "192fdecdfc1b82bbe44ed067e833fa39371bd8d99bebba6725fd63e6068c479f",
+      "receipt_sha256": "cf0d1a67ebd94634f0728392ba0031ec449f13a04dbc90bf1d4cd43f90f83341",
+      "run_id": "PE-CAUSAL-D2-REAL-SELECTOR-V3-20261009:B2:D2_SELECTOR_ONLY",
+      "runtime_attestation": {
+        "evidence_sha256": "6ea4da7133c8ea77c2628ebf6dbb6d15f4f616919c61ecc41b3a042f37849240",
+        "request_sha256": "41ff5cf51b4ae7a0b63a43c62b98fc3f3ef8a35e86ff9a23e2e79d2da8e67a7c",
+        "response_sha256": "b04a43d3aaeac59205c14fb1c41f9f251e47f2236beb548f5be5d0e04f4ea8ef",
+        "verified": true,
+        "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+      },
+      "source_model_sha256": "2000b0ceb06b00ae78811cc87842a60498eea3bcd1b3ccea95bb1089e6032f97",
+      "source_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+      "usage": {
+        "completion_tokens": 248,
+        "prompt_tokens": 4038,
+        "prompt_tokens_details": {
+          "cached_tokens": 3217
+        },
+        "total_tokens": 4286
+      },
+      "wall_ms": 54002.39
+    }
+  ],
+  "campaign": "PE-CAUSAL-D2-REAL-SELECTOR-V3-20261009",
+  "corpus_sha256": "4f3009b78989ee43e44c895f78d747df50f20daf4a31a604193f742bfe66cd8b",
+  "cutover_eligible": false,
+  "method_invocations": 0,
+  "oracle_opened": false,
+  "raw_frozen": true,
+  "retrospective_diagnostic_not_blind_holdout": true,
+  "schema": "PE_CAUSAL_D2_REAL_SELECTOR_MODEL_RAW_V1",
+  "score_opened": false,
+  "selection_sha256_by_case": {
+    "HCA-105": "1079785dd9e39abc404ca063f9859f3d28d31524c34b1566e98f0f5d5d23f33d",
+    "HCA-106": "a57b57615338ed49d4684624659e600b81fb7a1cbf8162d80d128721bc3140a5",
+    "HCA-107": "fbc9c877ce718297b97ef2f7200148fabb29d7818790e486bb12ae14388935fc",
+    "HCA-108": "ce32550d29fa2e3bf2935f8a2bb092c6562477528c102d6ceebcf4d44b01d627"
+  },
+  "selector_real_v3_called_separately": true,
+  "selector_sha256": "02dbec96739e5a02b21ab5f1775ef113143ec0a4ee045f0d6710b7e6ab20089e"
+}

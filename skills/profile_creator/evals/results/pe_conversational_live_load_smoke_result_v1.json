@@ -1,0 +1,24 @@
+{
+  "case_id": "PE-CONVERSATION-LOAD-UNCONFIRMED-20261009-001",
+  "cutover_eligible": false,
+  "expert_uplift_proven": false,
+  "independent_gpt_runtime_attestation": false,
+  "independent_semantic_review": false,
+  "initial_user_request": "Una carga B2B terminó, pero no aparece la confirmación. Revisa qué pasó.",
+  "loads_found": 0,
+  "next_question": "¿Me compartes el código de esa carga o una captura donde aparezca?",
+  "production_activation": false,
+  "real_user_reply": false,
+  "resolved_incident": false,
+  "schema": "PE_CONVERSATIONAL_LIVE_READBACK_REPLAY_V1",
+  "source_checked": "supabase://mhwmirqcgxxukpctffuv/lf_ops.cargas_lotes",
+  "source_claim_scope": "ZERO_LOADS_IN_THIS_SANDBOX_ONLY_NO_PROOF_ABOUT_OTHER_ENVIRONMENTS",
+  "stage_actions": [
+    "RESOLVE_EVIDENCE_PLAN",
+    "RETRIEVE",
+    "ASK_USER",
+    "LIMITED_RESPONSE"
+  ],
+  "status": "PASS_REAL_READONLY_TOOL_SNAPSHOT_REPLAY",
+  "tool_provenance": "LIVE_SUPABASE_READONLY_RESPONSES_FROZEN_IN_GIT_NOT_PROVIDER_SIGNED"
+}

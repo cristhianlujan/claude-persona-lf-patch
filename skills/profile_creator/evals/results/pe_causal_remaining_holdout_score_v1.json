@@ -1,0 +1,223 @@
+{
+  "arms": {
+    "D1_STATIC": {
+      "decision_correct": 0,
+      "grounded_claims": 0,
+      "total": 4
+    },
+    "D3_TYPED_METHOD": {
+      "decision_correct": 4,
+      "grounded_claims": 4,
+      "total": 4
+    }
+  },
+  "cutover_eligible": false,
+  "free_text_explanations_admitted": 0,
+  "holdout_tasks_sha256": "4f3009b78989ee43e44c895f78d747df50f20daf4a31a604193f742bfe66cd8b",
+  "independent_external_semantic_assurance": "NOT_EXECUTED",
+  "method_cards_sha256": "883119d7c7caaa7f94523032f32a43acdca664c0f44696a44a53607466adcde8",
+  "producer_raw_sha256": "d64b625fe5f6534c052644ecbf144f01f225d9c04a7456e4ceaeece849d7fecd",
+  "records": [
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-105",
+      "decision_correct": false,
+      "expected_decision": "COLLECT_MORE_EVIDENCE",
+      "expected_falsified": [
+        "H1"
+      ],
+      "grounded_claims": "NOT_APPLICABLE_D1",
+      "output": {
+        "case_id": "HCA-105",
+        "causality_proven": false,
+        "claim_ids": [
+          "H1",
+          "H2"
+        ],
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The owner record itself is absent. The owner exists but the authorization token is invalid. Both hypotheses are contradicted by current typed evidence."
+      }
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-105",
+      "decision_correct": true,
+      "expected_decision": "COLLECT_MORE_EVIDENCE",
+      "expected_falsified": [
+        "H1"
+      ],
+      "grounded_claims": "TEST_ONLY_EVIDENCE_COMPILED",
+      "output": {
+        "case_id": "HCA-105",
+        "causality_proven": false,
+        "claim_ids": [
+          "OBS:OWNER_EXISTS",
+          "REFUTE:H1:OWNER_EXISTS",
+          "MISSING:H2:TOKEN_VALID"
+        ],
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1"
+        ],
+        "reason": "The owner record itself is absent."
+      }
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-106",
+      "decision_correct": false,
+      "expected_decision": "INVESTIGATE_H3",
+      "expected_falsified": [
+        "H1",
+        "H2"
+      ],
+      "grounded_claims": "NOT_APPLICABLE_D1",
+      "output": {
+        "case_id": "HCA-106",
+        "causality_proven": false,
+        "claim_ids": [
+          "H1",
+          "H2",
+          "H3"
+        ],
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2",
+          "H2"
+        ],
+        "reason": "The acknowledgement was committed. The rows persisted, but acknowledgement was not written. Both hypotheses are contradicted by current typed evidence."
+      }
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-106",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H3",
+      "expected_falsified": [
+        "H1",
+        "H2"
+      ],
+      "grounded_claims": "TEST_ONLY_EVIDENCE_COMPILED",
+      "output": {
+        "case_id": "HCA-106",
+        "causality_proven": false,
+        "claim_ids": [
+          "OBS:ACK_WRITTEN",
+          "OBS:VALID_ROWS_PERSISTED",
+          "REFUTE:H1:VALID_ROWS_PERSISTED",
+          "REFUTE:H2:ACK_WRITTEN"
+        ],
+        "decision": "INVESTIGATE_H3",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "No validated rows were imported."
+      }
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-107",
+      "decision_correct": false,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ],
+      "grounded_claims": "NOT_APPLICABLE_D1",
+      "output": {
+        "case_id": "HCA-107",
+        "causality_proven": false,
+        "claim_ids": [
+          "H1",
+          "H2"
+        ],
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The observations are unverified and the hypotheses are not mutually exclusive. Additional evidence is needed to resolve the discrepancy between the trusted execution receipt and un"
+      }
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-107",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ],
+      "grounded_claims": "TEST_ONLY_EVIDENCE_COMPILED",
+      "output": {
+        "case_id": "HCA-107",
+        "causality_proven": false,
+        "claim_ids": [
+          "OBS:DELIVERY_CONFIRMED",
+          "OBS:DISPATCH_RECEIPT",
+          "REFUTE:H1:DISPATCH_RECEIPT"
+        ],
+        "decision": "INVESTIGATE_H2",
+        "falsified": [
+          "H1"
+        ],
+        "reason": "Observations do not provide sufficient evidence to conclusively refute or confirm the hypotheses."
+      }
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "HCA-108",
+      "decision_correct": false,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ],
+      "grounded_claims": "NOT_APPLICABLE_D1",
+      "output": {
+        "case_id": "HCA-108",
+        "causality_proven": false,
+        "claim_ids": [
+          "H1",
+          "H2"
+        ],
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The observations are unverified and the hypotheses are not mutually exclusive. Additional evidence is needed to resolve the discrepancy between the missing review and the later "
+      }
+    },
+    {
+      "arm": "D3_TYPED_METHOD",
+      "case_id": "HCA-108",
+      "decision_correct": true,
+      "expected_decision": "INVESTIGATE_H2",
+      "expected_falsified": [
+        "H1"
+      ],
+      "grounded_claims": "TEST_ONLY_EVIDENCE_COMPILED",
+      "output": {
+        "case_id": "HCA-108",
+        "causality_proven": false,
+        "claim_ids": [
+          "OBS:GATE_CLOSED",
+          "OBS:REVIEW_RECEIPT_EXISTS",
+          "REFUTE:H1:REVIEW_RECEIPT_EXISTS"
+        ],
+        "decision": "INVESTIGATE_H2",
+        "falsified": [
+          "H1"
+        ],
+        "reason": "Observations do not provide sufficient evidence to conclusively refute or confirm the hypotheses."
+      }
+    }
+  ],
+  "schema": "PE_CAUSAL_REMAINING_HOLDOUT_SCORE_V1",
+  "statistical_uplift_admission": "NOT_DEMONSTRATED_N8_SYNTHETIC",
+  "status": "TRANSFER_PILOT_SCORED_NO_EXPERT_CUTOVER"
+}

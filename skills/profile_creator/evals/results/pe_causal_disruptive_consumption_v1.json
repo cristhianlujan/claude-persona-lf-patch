@@ -1,0 +1,118 @@
+{
+  "cases": [
+    {
+      "case_id": "PE-CAUS-01",
+      "final_action": "INVESTIGATE_H2",
+      "stages": [
+        {
+          "causality_proven": false,
+          "falsified_hypotheses": [
+            "H1"
+          ],
+          "phase": 0,
+          "receipt": "922d99a38755397d6ba6a224ec30f687845585a8224b4e0b2950213576e8b37e",
+          "reconciled_action": "INVESTIGATE_H2",
+          "unverified_probes": []
+        }
+      ]
+    },
+    {
+      "case_id": "PE-CAUS-02",
+      "final_action": "INVESTIGATE_H2",
+      "stages": [
+        {
+          "causality_proven": false,
+          "falsified_hypotheses": [
+            "H1"
+          ],
+          "phase": 0,
+          "receipt": "c3c48f606aad30188f71d4c8e03ffc5f6d613334c2ef925654e32cddb157bf80",
+          "reconciled_action": "INVESTIGATE_H2",
+          "unverified_probes": []
+        }
+      ]
+    },
+    {
+      "case_id": "PE-CAUS-03",
+      "final_action": "INVESTIGATE_H2",
+      "stages": [
+        {
+          "causality_proven": false,
+          "falsified_hypotheses": [
+            "H1"
+          ],
+          "phase": 0,
+          "receipt": "93419e6124dc997859a61c61bb24d0601c76143704ea7f8db931ae16e94529ba",
+          "reconciled_action": "INVESTIGATE_H2",
+          "unverified_probes": []
+        }
+      ]
+    },
+    {
+      "case_id": "PE-CAUS-04",
+      "final_action": "COLLECT_MORE_EVIDENCE",
+      "stages": [
+        {
+          "causality_proven": false,
+          "falsified_hypotheses": [],
+          "phase": 0,
+          "receipt": "e226bac127109c83fee7f54d4ea73499765431347165742e192be0b2a94691e3",
+          "reconciled_action": "COLLECT_MORE_EVIDENCE",
+          "unverified_probes": []
+        }
+      ]
+    },
+    {
+      "case_id": "PE-CAUS-05",
+      "final_action": "INVESTIGATE_H2",
+      "stages": [
+        {
+          "causality_proven": false,
+          "falsified_hypotheses": [],
+          "phase": 0,
+          "receipt": "e2bcecd75da0c5b1b7a6b017b52b07c7274759e33d5b1a08d39454edb1e670a6",
+          "reconciled_action": "COLLECT_MORE_EVIDENCE",
+          "unverified_probes": [
+            "WORKER_RECEIPT_EXISTS"
+          ]
+        },
+        {
+          "causality_proven": false,
+          "falsified_hypotheses": [
+            "H1"
+          ],
+          "phase": 1,
+          "receipt": "b3bdf52d171197f4b5d5af9f1dc2024658a283e47d9064ef7d26076aa541f71d",
+          "reconciled_action": "INVESTIGATE_H2",
+          "unverified_probes": []
+        }
+      ]
+    },
+    {
+      "case_id": "PE-CAUS-06",
+      "final_action": "COLLECT_MORE_EVIDENCE",
+      "stages": [
+        {
+          "causality_proven": false,
+          "falsified_hypotheses": [
+            "H1"
+          ],
+          "phase": 0,
+          "receipt": "7d913beb1efce950021bdba6e263def13e42a0215c296faf333855d2f73ec910",
+          "reconciled_action": "COLLECT_MORE_EVIDENCE",
+          "unverified_probes": [
+            "REPLICA_VALID"
+          ]
+        }
+      ]
+    }
+  ],
+  "causal_proof": false,
+  "cutover_eligible": false,
+  "model_reasoning_uplift_claimed": false,
+  "production_activation": false,
+  "provider_method_raw_sha256": "c4875343a54120c3aa4e4d6b897d778cefcc7237767b694adf240ac80bca2094",
+  "schema": "PE_CAUSAL_METHOD_RESULT_CONSUMPTION_V1",
+  "scope": "TEST_NON_AUTHORITY",
+  "stage_count": 7
+}

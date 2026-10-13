@@ -1,0 +1,35 @@
+{
+  "actual_provider_calls": 2,
+  "cutover_eligible": false,
+  "governed_registry_permission": false,
+  "method_id": "CAUSAL_ANALYSIS",
+  "producer_raw_sha256": "8f891da0aa4a3056a60924ce56458e2dbca2cfb040599e708224893c1d5b83a2",
+  "production_invocations": 0,
+  "schema": "PE_CAUSAL_PROVIDER_LIVENESS_V1",
+  "source_capability": "CAUSAL_EFFECT_LINEAGE",
+  "source_version": "1.0.1",
+  "status": "SUBCAPABILITY_E2E_PASS_NOT_FULL_CAUSAL_ANALYSIS",
+  "test_scope": "TEST_NON_AUTHORITY",
+  "tests": [
+    {
+      "case": "MATCHED_ACTUAL_CHILD",
+      "observed_wall_ms": 0.116,
+      "provider": "CAUSAL_EFFECT_LINEAGE",
+      "reasons": [
+        "EXPLICIT_CAUSAL_EDGE_AND_RECEIVER_READBACK_VERIFIED"
+      ],
+      "receipt_sha256": "db95da8a429f11179408455f10e8806910a5d141d1206dc192c45afff0251146",
+      "state": "LINKED"
+    },
+    {
+      "case": "CROSS_EXECUTION_ACTUAL_CHILD",
+      "observed_wall_ms": 0.076,
+      "provider": "CAUSAL_EFFECT_LINEAGE",
+      "reasons": [
+        "RECEIVER_DOES_NOT_CROSSLINK_PRODUCER"
+      ],
+      "receipt_sha256": "f07ab47c99e4713cc5114451e06435cb2b57fbe1ac989f8364eb28c21345c11c",
+      "state": "UNLINKED"
+    }
+  ]
+}

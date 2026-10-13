@@ -1,0 +1,388 @@
+{
+  "case_results": [
+    {
+      "arm": "D1_STATIC",
+      "case_id": "PE-CAUS-01",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": false,
+      "expected": {
+        "expected_decision": "INVESTIGATE_H2",
+        "expected_falsified": [
+          "H1"
+        ],
+        "unverified_probes": [],
+        "verified_probes": [
+          "AUTH_HAS_RECORD",
+          "REPLICA_BEHIND"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-01",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The observed evidence does not conclusively falsify either hypothesis."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "PE-CAUS-02",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": false,
+      "expected": {
+        "expected_decision": "INVESTIGATE_H2",
+        "expected_falsified": [
+          "H1"
+        ],
+        "unverified_probes": [],
+        "verified_probes": [
+          "HAS_CAS_CONSTRAINT",
+          "REQUEST_CARRIED_CAS"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-02",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The observed evidence does not conclusively falsify either hypothesis."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "PE-CAUS-03",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": false,
+      "expected": {
+        "expected_decision": "INVESTIGATE_H2",
+        "expected_falsified": [
+          "H1"
+        ],
+        "unverified_probes": [],
+        "verified_probes": [
+          "CASE_IDENTIFIERS_MATCH",
+          "PARENT_SHA_MATCH"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-03",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The observed evidence does not conclusively falsify either hypothesis."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "PE-CAUS-04",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": true,
+      "expected": {
+        "expected_decision": "COLLECT_MORE_EVIDENCE",
+        "expected_falsified": [],
+        "unverified_probes": [],
+        "verified_probes": [
+          "AUTH_FEED_ADVANCED",
+          "CACHE_STALE"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-04",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The source feed is delayed hypothesis was not falsified."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "PE-CAUS-05",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": false,
+      "expected": {
+        "expected_decision": "INVESTIGATE_H2",
+        "expected_falsified": [
+          "H1"
+        ],
+        "unverified_probes": [],
+        "verified_probes": [
+          "CALLBACK_LINKED",
+          "WORKER_RECEIPT_EXISTS"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-05",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The worker never executed hypothesis was not falsified."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D1_STATIC",
+      "case_id": "PE-CAUS-06",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": true,
+      "expected": {
+        "expected_decision": "COLLECT_MORE_EVIDENCE",
+        "expected_falsified": [
+          "H1"
+        ],
+        "unverified_probes": [
+          "REPLICA_VALID"
+        ],
+        "verified_probes": [
+          "AUTH_STATUS_VALID"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-06",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The cause cannot be declared with this evidence."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D3_WITH_CAUSAL_VERIFICATION",
+      "case_id": "PE-CAUS-01",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": false,
+      "expected": {
+        "expected_decision": "INVESTIGATE_H2",
+        "expected_falsified": [
+          "H1"
+        ],
+        "unverified_probes": [],
+        "verified_probes": [
+          "AUTH_HAS_RECORD",
+          "REPLICA_BEHIND"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-01",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D3_WITH_CAUSAL_VERIFICATION",
+      "case_id": "PE-CAUS-02",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": false,
+      "expected": {
+        "expected_decision": "INVESTIGATE_H2",
+        "expected_falsified": [
+          "H1"
+        ],
+        "unverified_probes": [],
+        "verified_probes": [
+          "HAS_CAS_CONSTRAINT",
+          "REQUEST_CARRIED_CAS"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-02",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D3_WITH_CAUSAL_VERIFICATION",
+      "case_id": "PE-CAUS-03",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": false,
+      "expected": {
+        "expected_decision": "INVESTIGATE_H2",
+        "expected_falsified": [
+          "H1"
+        ],
+        "unverified_probes": [],
+        "verified_probes": [
+          "CASE_IDENTIFIERS_MATCH",
+          "PARENT_SHA_MATCH"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-03",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D3_WITH_CAUSAL_VERIFICATION",
+      "case_id": "PE-CAUS-04",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": true,
+      "expected": {
+        "expected_decision": "COLLECT_MORE_EVIDENCE",
+        "expected_falsified": [],
+        "unverified_probes": [],
+        "verified_probes": [
+          "AUTH_FEED_ADVANCED",
+          "CACHE_STALE"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-04",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D3_WITH_CAUSAL_VERIFICATION",
+      "case_id": "PE-CAUS-05",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": false,
+      "expected": {
+        "expected_decision": "INVESTIGATE_H2",
+        "expected_falsified": [
+          "H1"
+        ],
+        "unverified_probes": [],
+        "verified_probes": [
+          "CALLBACK_LINKED",
+          "WORKER_RECEIPT_EXISTS"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-05",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    },
+    {
+      "arm": "D3_WITH_CAUSAL_VERIFICATION",
+      "case_id": "PE-CAUS-06",
+      "causal_proof_not_overclaimed": true,
+      "decision_correct": true,
+      "expected": {
+        "expected_decision": "COLLECT_MORE_EVIDENCE",
+        "expected_falsified": [
+          "H1"
+        ],
+        "unverified_probes": [
+          "REPLICA_VALID"
+        ],
+        "verified_probes": [
+          "AUTH_STATUS_VALID"
+        ]
+      },
+      "falsification_correct": false,
+      "observed": {
+        "case_id": "PE-CAUS-06",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1",
+          "H2"
+        ],
+        "reason": "The hypotheses were not falsified, so causality cannot be proven."
+      },
+      "unsupported_case_id_causal_claim": false,
+      "verified_probe_named_in_reason": false
+    }
+  ],
+  "cutover_eligible": false,
+  "frozen_corpus_sha256": "8aa2c5bc685239ebd40a165fe429139d27c4c01be36c8f293a62a66d22326ddd",
+  "full_causal_analysis_admission": false,
+  "independent_semantic_assurance": "NOT_EXECUTED",
+  "n_paired": 6,
+  "per_arm": {
+    "D1_STATIC": {
+      "cases": 6,
+      "decisions_correct": 2,
+      "falsification_correct": 0,
+      "no_causal_overclaim": 6,
+      "verified_probe_named": 0
+    },
+    "D3_WITH_CAUSAL_VERIFICATION": {
+      "cases": 6,
+      "decisions_correct": 2,
+      "falsification_correct": 0,
+      "no_causal_overclaim": 6,
+      "verified_probe_named": 0
+    }
+  },
+  "producer_raw_sha256": "4b091ee3b013c18824d65e4d2dd347e657d77aef4da1a62b84c8fe274e881085",
+  "schema": "PE_CAUSAL_DISRUPTIVE_DETERMINISTIC_SCORE_V1",
+  "scorer_independent_of_producer_verdict": true,
+  "statistical_uplift": "NOT_DETERMINED_SMALL_SYNTHETIC_CORPUS",
+  "status": "PILOT_SCORED_NOT_EXPERTISE_ADMITTED"
+}

@@ -25,6 +25,7 @@
     "init_execution",
     "router",
     "profile_resolve",
+    "conversational_context_sufficiency_loop",
     "S26_structural_baseline",
     "freeze_task_baseline",
     "execute_original_profile_on_baseline_tasks",
@@ -85,7 +86,8 @@
       "B_UPDATER_V01",
       "C_EVOLUTION_CURRENT",
       "D_EVOLUTION_TARGET"
-    ]
+    ],
+    "interactive_context_benchmark_ref": "skills/profile_creator/contracts/profile_expert_behavior_benchmark_v1.json#conversational_subcampaign"
   },
   "method_policy": {
     "registry_ref": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v2.json",
@@ -120,5 +122,27 @@
   ],
   "silent_route_substitution": false,
   "runtime_activation": false,
-  "automatic_production_activation": false
+  "automatic_production_activation": false,
+  "conversational_context_policy": {
+    "ref": "skills/profile_creator/contracts/profile_conversational_context_policy_v1.json",
+    "runtime_router": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/profile_conversational_context_v1.py",
+    "existing_evidence_provider": "public.lf_targeted_evidence_acquisition_plan_v1",
+    "context_sources": "AUTHORIZED_ONLY_WITH_READBACK",
+    "default_input": "NATURAL_REQUEST_NO_BULK_HANDOFF",
+    "actions": [
+      "PROCEED",
+      "RESOLVE_EVIDENCE_PLAN",
+      "RETRIEVE",
+      "ASK_USER",
+      "LIMITED_RESPONSE",
+      "BLOCKED"
+    ],
+    "after_every_new_source_or_user_reply": "REASSESS_SUFFICIENCY",
+    "cannot_treat_provider_STOP_as_admission": true,
+    "cannot_diagnose_from_user_assertion_as_trusted_system_readback": true,
+    "priority": "RETRIEVE_AUTHORIZED_CONTEXT_BEFORE_USER_CLARIFICATION",
+    "question_policy": "ONE_DECISION_CHANGING_QUESTION_PER_TURN_WITH_BOUND",
+    "semantic_reason_selection": "PROFILE_MODEL_OR_PROFILE_ASSESSMENT_REQUIRED",
+    "promotion_authorized": false
+  }
 }

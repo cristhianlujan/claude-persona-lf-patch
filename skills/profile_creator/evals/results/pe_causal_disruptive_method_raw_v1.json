@@ -1,0 +1,495 @@
+{
+  "campaign": "PE-CAUSAL-DIS-20261009-V1",
+  "candidate_only": true,
+  "cases": [
+    {
+      "case_id": "PE-CAUS-01",
+      "stages": [
+        {
+          "evidence_refs": [
+            "fixture-verified://af717cb2f73242d987fa0cefd5dc9dedb8244b657335a75516cb24cac11e9132",
+            "fixture-verified://e2faaff2b3298457fcdd944383ad1fe6f9f63f2d24c64b691b90554c83637f2c"
+          ],
+          "hypothesis_report": {
+            "candidate_only": true,
+            "causal_proof": false,
+            "execution_permission": false,
+            "hypotheses": [
+              {
+                "consistent_with": [],
+                "falsified_by": [
+                  "AUTH_HAS_RECORD",
+                  "REPLICA_BEHIND"
+                ],
+                "hypothesis_id": "H1",
+                "state": "FALSIFIED",
+                "unverified_prediction_probes": []
+              },
+              {
+                "consistent_with": [
+                  "AUTH_HAS_RECORD",
+                  "REPLICA_BEHIND"
+                ],
+                "falsified_by": [],
+                "hypothesis_id": "H2",
+                "state": "NOT_FALSIFIED",
+                "unverified_prediction_probes": []
+              }
+            ],
+            "next_action": "EVALUATE_ALTERNATIVE_CAUSES_AND_STOP_GATES",
+            "rejected_evidence": [],
+            "schema": "CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "status": "EVALUATED",
+            "verified_probe_count": 2
+          },
+          "phase": 0,
+          "receipt": {
+            "authority_write": false,
+            "evidence_refs": [
+              "fixture-verified://af717cb2f73242d987fa0cefd5dc9dedb8244b657335a75516cb24cac11e9132",
+              "fixture-verified://e2faaff2b3298457fcdd944383ad1fe6f9f63f2d24c64b691b90554c83637f2c"
+            ],
+            "execution_contract_ref": "candidate://CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "execution_id": "PE-CAUS-DIS-METHOD:PE-CAUS-01",
+            "executor_id": "CANDIDATE_HYPOTHESIS_VERIFIER_NON_AUTHORITY",
+            "input_sha256": "43b255e4f70792d552cd152c4916d3a4705e449a590ccabbc8ee230b0a06e896",
+            "method_id": "CAUSAL_ANALYSIS",
+            "method_outcome_is_profile_improvement": false,
+            "method_registry_revision": "CANDIDATE_ONLY_V1",
+            "observed_wall_ms": 0.189,
+            "permission_receipt_sha256": "bfd02808cec57ab038cfb717e8571c7e203c9147e624e4581e288fdb0d280448",
+            "production_authorized": false,
+            "reason": "EXECUTED_AND_INDEPENDENTLY_VERIFIED",
+            "receipt_sha256": "922d99a38755397d6ba6a224ec30f687845585a8224b4e0b2950213576e8b37e",
+            "result_sha256": "776aed90d22eadccae151369e94cc207eadc9565900dbbe979b8f9c095bd0332",
+            "result_state": "EXECUTED_VERIFIED",
+            "result_verifier_id": "SEPARATE_HYPOTHESIS_PREDICTION_VALIDATOR",
+            "schema": "PROFILE_METHOD_INVOCATION_RECEIPT_V1",
+            "scope": "TEST_NON_AUTHORITY",
+            "selection_precondition_sha256": "47be51de9538e12af54b5d1e5449b3977b0d82e6fc9323a88428b628540c5319"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "PE-CAUS-02",
+      "stages": [
+        {
+          "evidence_refs": [
+            "fixture-verified://1be70ad30892cbb5616b27717424d03918c9393872155cedf231cd180d45188f",
+            "fixture-verified://35d83541a99593d3a486e75bfefef21e80b531d9377b474af5f1f3b35e21b4e7"
+          ],
+          "hypothesis_report": {
+            "candidate_only": true,
+            "causal_proof": false,
+            "execution_permission": false,
+            "hypotheses": [
+              {
+                "consistent_with": [],
+                "falsified_by": [
+                  "HAS_CAS_CONSTRAINT",
+                  "REQUEST_CARRIED_CAS"
+                ],
+                "hypothesis_id": "H1",
+                "state": "FALSIFIED",
+                "unverified_prediction_probes": []
+              },
+              {
+                "consistent_with": [
+                  "HAS_CAS_CONSTRAINT",
+                  "REQUEST_CARRIED_CAS"
+                ],
+                "falsified_by": [],
+                "hypothesis_id": "H2",
+                "state": "NOT_FALSIFIED",
+                "unverified_prediction_probes": []
+              }
+            ],
+            "next_action": "EVALUATE_ALTERNATIVE_CAUSES_AND_STOP_GATES",
+            "rejected_evidence": [],
+            "schema": "CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "status": "EVALUATED",
+            "verified_probe_count": 2
+          },
+          "phase": 0,
+          "receipt": {
+            "authority_write": false,
+            "evidence_refs": [
+              "fixture-verified://1be70ad30892cbb5616b27717424d03918c9393872155cedf231cd180d45188f",
+              "fixture-verified://35d83541a99593d3a486e75bfefef21e80b531d9377b474af5f1f3b35e21b4e7"
+            ],
+            "execution_contract_ref": "candidate://CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "execution_id": "PE-CAUS-DIS-METHOD:PE-CAUS-02",
+            "executor_id": "CANDIDATE_HYPOTHESIS_VERIFIER_NON_AUTHORITY",
+            "input_sha256": "bfc3c030c9a793c20993dc728df6e06c1292dd337935d32a3ba05689a9975751",
+            "method_id": "CAUSAL_ANALYSIS",
+            "method_outcome_is_profile_improvement": false,
+            "method_registry_revision": "CANDIDATE_ONLY_V1",
+            "observed_wall_ms": 0.076,
+            "permission_receipt_sha256": "9269e0b973d6afb34cc6d37ae02c57f13973faffbc1605c9679d16006f9b84da",
+            "production_authorized": false,
+            "reason": "EXECUTED_AND_INDEPENDENTLY_VERIFIED",
+            "receipt_sha256": "c3c48f606aad30188f71d4c8e03ffc5f6d613334c2ef925654e32cddb157bf80",
+            "result_sha256": "d986039742271cb18c6119bde3573c0feeede1a727511a1b32883dfcff8ad5e7",
+            "result_state": "EXECUTED_VERIFIED",
+            "result_verifier_id": "SEPARATE_HYPOTHESIS_PREDICTION_VALIDATOR",
+            "schema": "PROFILE_METHOD_INVOCATION_RECEIPT_V1",
+            "scope": "TEST_NON_AUTHORITY",
+            "selection_precondition_sha256": "47be51de9538e12af54b5d1e5449b3977b0d82e6fc9323a88428b628540c5319"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "PE-CAUS-03",
+      "stages": [
+        {
+          "evidence_refs": [
+            "fixture-verified://527153d45543d60bce02c4b6e0c0c0fbcaebce024a8b36565625e44c015d1e68",
+            "fixture-verified://b8498bbf94b6f1f224b0723b6060e70e0681f24b012b1003937124c5f8b1aadd"
+          ],
+          "hypothesis_report": {
+            "candidate_only": true,
+            "causal_proof": false,
+            "execution_permission": false,
+            "hypotheses": [
+              {
+                "consistent_with": [],
+                "falsified_by": [
+                  "CASE_IDENTIFIERS_MATCH",
+                  "PARENT_SHA_MATCH"
+                ],
+                "hypothesis_id": "H1",
+                "state": "FALSIFIED",
+                "unverified_prediction_probes": []
+              },
+              {
+                "consistent_with": [
+                  "CASE_IDENTIFIERS_MATCH",
+                  "PARENT_SHA_MATCH"
+                ],
+                "falsified_by": [],
+                "hypothesis_id": "H2",
+                "state": "NOT_FALSIFIED",
+                "unverified_prediction_probes": []
+              }
+            ],
+            "next_action": "EVALUATE_ALTERNATIVE_CAUSES_AND_STOP_GATES",
+            "rejected_evidence": [],
+            "schema": "CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "status": "EVALUATED",
+            "verified_probe_count": 2
+          },
+          "phase": 0,
+          "receipt": {
+            "authority_write": false,
+            "evidence_refs": [
+              "fixture-verified://527153d45543d60bce02c4b6e0c0c0fbcaebce024a8b36565625e44c015d1e68",
+              "fixture-verified://b8498bbf94b6f1f224b0723b6060e70e0681f24b012b1003937124c5f8b1aadd"
+            ],
+            "execution_contract_ref": "candidate://CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "execution_id": "PE-CAUS-DIS-METHOD:PE-CAUS-03",
+            "executor_id": "CANDIDATE_HYPOTHESIS_VERIFIER_NON_AUTHORITY",
+            "input_sha256": "9421f6a8480863d8a859ef84515a7b1a0f1321d8cf3f935e50f76d751564c06d",
+            "method_id": "CAUSAL_ANALYSIS",
+            "method_outcome_is_profile_improvement": false,
+            "method_registry_revision": "CANDIDATE_ONLY_V1",
+            "observed_wall_ms": 0.072,
+            "permission_receipt_sha256": "0011196cbc002355c56b4d779931bbe98f2632169ab721d5c77ce26049db52b2",
+            "production_authorized": false,
+            "reason": "EXECUTED_AND_INDEPENDENTLY_VERIFIED",
+            "receipt_sha256": "93419e6124dc997859a61c61bb24d0601c76143704ea7f8db931ae16e94529ba",
+            "result_sha256": "8eb5ce85fe090d1f1100ac9b4af84c7724737628ff287993ec3efa7e2f1c76e9",
+            "result_state": "EXECUTED_VERIFIED",
+            "result_verifier_id": "SEPARATE_HYPOTHESIS_PREDICTION_VALIDATOR",
+            "schema": "PROFILE_METHOD_INVOCATION_RECEIPT_V1",
+            "scope": "TEST_NON_AUTHORITY",
+            "selection_precondition_sha256": "47be51de9538e12af54b5d1e5449b3977b0d82e6fc9323a88428b628540c5319"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "PE-CAUS-04",
+      "stages": [
+        {
+          "evidence_refs": [
+            "fixture-verified://e0726a940dd2598e74cb078deea4146cbb364ad3719f678c15ae0a3e3b136b9e",
+            "fixture-verified://7fed8bd2b421dd698888e4040c63c1030c9b460b6d67ff4d54fc95937f500702"
+          ],
+          "hypothesis_report": {
+            "candidate_only": true,
+            "causal_proof": false,
+            "execution_permission": false,
+            "hypotheses": [
+              {
+                "consistent_with": [
+                  "AUTH_FEED_ADVANCED",
+                  "CACHE_STALE"
+                ],
+                "falsified_by": [],
+                "hypothesis_id": "H1",
+                "state": "NOT_FALSIFIED",
+                "unverified_prediction_probes": []
+              },
+              {
+                "consistent_with": [
+                  "AUTH_FEED_ADVANCED",
+                  "CACHE_STALE"
+                ],
+                "falsified_by": [],
+                "hypothesis_id": "H2",
+                "state": "NOT_FALSIFIED",
+                "unverified_prediction_probes": []
+              }
+            ],
+            "next_action": "EVALUATE_ALTERNATIVE_CAUSES_AND_STOP_GATES",
+            "rejected_evidence": [],
+            "schema": "CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "status": "EVALUATED",
+            "verified_probe_count": 2
+          },
+          "phase": 0,
+          "receipt": {
+            "authority_write": false,
+            "evidence_refs": [
+              "fixture-verified://e0726a940dd2598e74cb078deea4146cbb364ad3719f678c15ae0a3e3b136b9e",
+              "fixture-verified://7fed8bd2b421dd698888e4040c63c1030c9b460b6d67ff4d54fc95937f500702"
+            ],
+            "execution_contract_ref": "candidate://CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "execution_id": "PE-CAUS-DIS-METHOD:PE-CAUS-04",
+            "executor_id": "CANDIDATE_HYPOTHESIS_VERIFIER_NON_AUTHORITY",
+            "input_sha256": "bb25e289532e51d785516ce6c4a5cd9d2b3105a170adfc5c34402184e498fcf5",
+            "method_id": "CAUSAL_ANALYSIS",
+            "method_outcome_is_profile_improvement": false,
+            "method_registry_revision": "CANDIDATE_ONLY_V1",
+            "observed_wall_ms": 0.07,
+            "permission_receipt_sha256": "ba8fb8b4df52ae1bc3a7b8375ef400cd99da090bf7f72120c07a456c8bbcb819",
+            "production_authorized": false,
+            "reason": "EXECUTED_AND_INDEPENDENTLY_VERIFIED",
+            "receipt_sha256": "e226bac127109c83fee7f54d4ea73499765431347165742e192be0b2a94691e3",
+            "result_sha256": "c9a080bffc17e172599cc9f92f5096e75e6207871b23fb905e78a6c3839bafe3",
+            "result_state": "EXECUTED_VERIFIED",
+            "result_verifier_id": "SEPARATE_HYPOTHESIS_PREDICTION_VALIDATOR",
+            "schema": "PROFILE_METHOD_INVOCATION_RECEIPT_V1",
+            "scope": "TEST_NON_AUTHORITY",
+            "selection_precondition_sha256": "47be51de9538e12af54b5d1e5449b3977b0d82e6fc9323a88428b628540c5319"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "PE-CAUS-05",
+      "stages": [
+        {
+          "evidence_refs": [
+            "fixture-verified://78899ea28f6a6658ff0e3788581df9f5a11671c0ed55c9ecd19a0212f8632c2f"
+          ],
+          "hypothesis_report": {
+            "candidate_only": true,
+            "causal_proof": false,
+            "execution_permission": false,
+            "hypotheses": [
+              {
+                "consistent_with": [
+                  "CALLBACK_LINKED"
+                ],
+                "falsified_by": [],
+                "hypothesis_id": "H1",
+                "state": "NOT_FALSIFIED",
+                "unverified_prediction_probes": [
+                  "WORKER_RECEIPT_EXISTS"
+                ]
+              },
+              {
+                "consistent_with": [
+                  "CALLBACK_LINKED"
+                ],
+                "falsified_by": [],
+                "hypothesis_id": "H2",
+                "state": "NOT_FALSIFIED",
+                "unverified_prediction_probes": [
+                  "WORKER_RECEIPT_EXISTS"
+                ]
+              }
+            ],
+            "next_action": "EVALUATE_ALTERNATIVE_CAUSES_AND_STOP_GATES",
+            "rejected_evidence": [],
+            "schema": "CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "status": "EVALUATED",
+            "verified_probe_count": 1
+          },
+          "phase": 0,
+          "receipt": {
+            "authority_write": false,
+            "evidence_refs": [
+              "fixture-verified://78899ea28f6a6658ff0e3788581df9f5a11671c0ed55c9ecd19a0212f8632c2f"
+            ],
+            "execution_contract_ref": "candidate://CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "execution_id": "PE-CAUS-DIS-METHOD:PE-CAUS-05",
+            "executor_id": "CANDIDATE_HYPOTHESIS_VERIFIER_NON_AUTHORITY",
+            "input_sha256": "6d6ccd44fad1e528bf5c718d2e04120b2075d6427a1ac6952a82590a071c24d7",
+            "method_id": "CAUSAL_ANALYSIS",
+            "method_outcome_is_profile_improvement": false,
+            "method_registry_revision": "CANDIDATE_ONLY_V1",
+            "observed_wall_ms": 0.947,
+            "permission_receipt_sha256": "1f4be8679ce2b1774b6fdd60c632deeb837967e96e854293735ed13bcbbdbafa",
+            "production_authorized": false,
+            "reason": "EXECUTED_AND_INDEPENDENTLY_VERIFIED",
+            "receipt_sha256": "e2bcecd75da0c5b1b7a6b017b52b07c7274759e33d5b1a08d39454edb1e670a6",
+            "result_sha256": "ea9d2d51f56cca885396745b8600d0f2c24c5972bec72da28c60e8763f0d86bb",
+            "result_state": "EXECUTED_VERIFIED",
+            "result_verifier_id": "SEPARATE_HYPOTHESIS_PREDICTION_VALIDATOR",
+            "schema": "PROFILE_METHOD_INVOCATION_RECEIPT_V1",
+            "scope": "TEST_NON_AUTHORITY",
+            "selection_precondition_sha256": "47be51de9538e12af54b5d1e5449b3977b0d82e6fc9323a88428b628540c5319"
+          }
+        },
+        {
+          "evidence_refs": [
+            "fixture-verified://78899ea28f6a6658ff0e3788581df9f5a11671c0ed55c9ecd19a0212f8632c2f",
+            "fixture-verified://4cf506448509417f15bf7aeda42535cf1d89250c61a6c271a102623f9495aa75"
+          ],
+          "hypothesis_report": {
+            "candidate_only": true,
+            "causal_proof": false,
+            "execution_permission": false,
+            "hypotheses": [
+              {
+                "consistent_with": [
+                  "CALLBACK_LINKED"
+                ],
+                "falsified_by": [
+                  "WORKER_RECEIPT_EXISTS"
+                ],
+                "hypothesis_id": "H1",
+                "state": "FALSIFIED",
+                "unverified_prediction_probes": []
+              },
+              {
+                "consistent_with": [
+                  "CALLBACK_LINKED",
+                  "WORKER_RECEIPT_EXISTS"
+                ],
+                "falsified_by": [],
+                "hypothesis_id": "H2",
+                "state": "NOT_FALSIFIED",
+                "unverified_prediction_probes": []
+              }
+            ],
+            "next_action": "EVALUATE_ALTERNATIVE_CAUSES_AND_STOP_GATES",
+            "rejected_evidence": [],
+            "schema": "CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "status": "EVALUATED",
+            "verified_probe_count": 2
+          },
+          "phase": 1,
+          "receipt": {
+            "authority_write": false,
+            "evidence_refs": [
+              "fixture-verified://78899ea28f6a6658ff0e3788581df9f5a11671c0ed55c9ecd19a0212f8632c2f",
+              "fixture-verified://4cf506448509417f15bf7aeda42535cf1d89250c61a6c271a102623f9495aa75"
+            ],
+            "execution_contract_ref": "candidate://CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "execution_id": "PE-CAUS-DIS-METHOD:PE-CAUS-05",
+            "executor_id": "CANDIDATE_HYPOTHESIS_VERIFIER_NON_AUTHORITY",
+            "input_sha256": "94b254cceddd9c434d1b5617cba4519434a6ca1037cd2f74a2e57df84378ecd4",
+            "method_id": "CAUSAL_ANALYSIS",
+            "method_outcome_is_profile_improvement": false,
+            "method_registry_revision": "CANDIDATE_ONLY_V1",
+            "observed_wall_ms": 0.068,
+            "permission_receipt_sha256": "1f4be8679ce2b1774b6fdd60c632deeb837967e96e854293735ed13bcbbdbafa",
+            "production_authorized": false,
+            "reason": "EXECUTED_AND_INDEPENDENTLY_VERIFIED",
+            "receipt_sha256": "b3bdf52d171197f4b5d5af9f1dc2024658a283e47d9064ef7d26076aa541f71d",
+            "result_sha256": "d8d9731a4b4044b756afc24fddd94d86415886596dae2df235e197747aa79c6a",
+            "result_state": "EXECUTED_VERIFIED",
+            "result_verifier_id": "SEPARATE_HYPOTHESIS_PREDICTION_VALIDATOR",
+            "schema": "PROFILE_METHOD_INVOCATION_RECEIPT_V1",
+            "scope": "TEST_NON_AUTHORITY",
+            "selection_precondition_sha256": "47be51de9538e12af54b5d1e5449b3977b0d82e6fc9323a88428b628540c5319"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "PE-CAUS-06",
+      "stages": [
+        {
+          "evidence_refs": [
+            "fixture-verified://def2254c44972c868cfef62fd00d842b350d2bc6767a80e957ce8c3c7c18287b",
+            "fixture-UNVERIFIED://0ff3378a1ffdf7866474bc9fff1e7f8346ba73c5b4f6daaa151f00df67074b63"
+          ],
+          "hypothesis_report": {
+            "candidate_only": true,
+            "causal_proof": false,
+            "execution_permission": false,
+            "hypotheses": [
+              {
+                "consistent_with": [],
+                "falsified_by": [
+                  "AUTH_STATUS_VALID"
+                ],
+                "hypothesis_id": "H1",
+                "state": "FALSIFIED",
+                "unverified_prediction_probes": [
+                  "REPLICA_VALID"
+                ]
+              },
+              {
+                "consistent_with": [
+                  "AUTH_STATUS_VALID"
+                ],
+                "falsified_by": [],
+                "hypothesis_id": "H2",
+                "state": "NOT_FALSIFIED",
+                "unverified_prediction_probes": [
+                  "REPLICA_VALID"
+                ]
+              }
+            ],
+            "next_action": "EVALUATE_ALTERNATIVE_CAUSES_AND_STOP_GATES",
+            "rejected_evidence": [
+              "REPLICA_VALID"
+            ],
+            "schema": "CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "status": "EVALUATED",
+            "verified_probe_count": 1
+          },
+          "phase": 0,
+          "receipt": {
+            "authority_write": false,
+            "evidence_refs": [
+              "fixture-verified://def2254c44972c868cfef62fd00d842b350d2bc6767a80e957ce8c3c7c18287b",
+              "fixture-UNVERIFIED://0ff3378a1ffdf7866474bc9fff1e7f8346ba73c5b4f6daaa151f00df67074b63"
+            ],
+            "execution_contract_ref": "candidate://CAUSAL_HYPOTHESIS_FALSIFICATION_V1",
+            "execution_id": "PE-CAUS-DIS-METHOD:PE-CAUS-06",
+            "executor_id": "CANDIDATE_HYPOTHESIS_VERIFIER_NON_AUTHORITY",
+            "input_sha256": "6fd706f5f676b7c8daf08c59ae12ad6fbff1a32960ce469fcf37f0406281c614",
+            "method_id": "CAUSAL_ANALYSIS",
+            "method_outcome_is_profile_improvement": false,
+            "method_registry_revision": "CANDIDATE_ONLY_V1",
+            "observed_wall_ms": 0.07,
+            "permission_receipt_sha256": "788351288259225b0fcda048fa9d1b0b856d5f70a4a30a5ec61f63ea01442a36",
+            "production_authorized": false,
+            "reason": "EXECUTED_AND_INDEPENDENTLY_VERIFIED",
+            "receipt_sha256": "7d913beb1efce950021bdba6e263def13e42a0215c296faf333855d2f73ec910",
+            "result_sha256": "182c847ee354c22e8417502101061707f79f5440ba0412bf39ba21b05d6a96dd",
+            "result_state": "EXECUTED_VERIFIED",
+            "result_verifier_id": "SEPARATE_HYPOTHESIS_PREDICTION_VALIDATOR",
+            "schema": "PROFILE_METHOD_INVOCATION_RECEIPT_V1",
+            "scope": "TEST_NON_AUTHORITY",
+            "selection_precondition_sha256": "47be51de9538e12af54b5d1e5449b3977b0d82e6fc9323a88428b628540c5319"
+          }
+        }
+      ]
+    }
+  ],
+  "corpus_sha256": "8aa2c5bc685239ebd40a165fe429139d27c4c01be36c8f293a62a66d22326ddd",
+  "frozen": true,
+  "method_invocations": 7,
+  "method_registry_permission": false,
+  "production_invocations": 0,
+  "schema": "PE_CAUSAL_DISRUPTIVE_METHOD_RAW_V1"
+}

@@ -1,0 +1,53 @@
+{
+  "answer": {
+    "answers": [
+      {
+        "case_id": "PE-CAUS-05",
+        "causality_proven": false,
+        "decision": "INVESTIGATE_H2",
+        "falsified": [
+          "H1"
+        ],
+        "reason": "The worker receipt exists, indicating the worker executed. The absence of the callback link suggests the worker's callback is not linked, which is a plausible cause for the missing"
+      },
+      {
+        "case_id": "PE-CAUS-06",
+        "causality_proven": false,
+        "decision": "COLLECT_MORE_EVIDENCE",
+        "falsified": [
+          "H1"
+        ],
+        "reason": "The replica is stale while the authority status remains valid. The unverifiable mirror replica suggests the replica is stale, which is a plausible cause for the missing"
+      }
+    ]
+  },
+  "cutover_eligible": false,
+  "known_cases": [
+    "PE-CAUS-05",
+    "PE-CAUS-06"
+  ],
+  "not_holdout": true,
+  "production_activation": false,
+  "profile_revision": "candidate:37707451319f9fc66f5bfd1741ccae27a89c9883b7f3343124514c8c7e4e9fb2",
+  "raw_frozen": true,
+  "receipt_sha256": "28582817f782490763dd51874c3fd294fa3fea02ba8d3b2dc545cafb29795f77",
+  "run_id": "PE-CAUSAL-TRANSPORT-20261009-CALIB:D_COMPACT",
+  "runtime_attestation": {
+    "evidence_sha256": "a3ad14c193ba3492983d86dec4bbc4d91ae53e780043c57d8d8050f602315dfd",
+    "request_sha256": "4217ba7ee271811ffb5985c55f8f1abb8d4683cce6049394425868f49afe9c6f",
+    "response_sha256": "b10e5632dc3840a19a513d249ffc11b4434843c23bf8ec768677fe3afd24b73d",
+    "verified": true,
+    "verifier_id": "hetzner-local-llamacpp-http-readback-v1"
+  },
+  "schema": "PE_CAUSAL_COMPACT_CALIBRATION_RAW_V1",
+  "tool_plans_embedded": true,
+  "usage": {
+    "completion_tokens": 188,
+    "prompt_tokens": 3622,
+    "prompt_tokens_details": {
+      "cached_tokens": 3019
+    },
+    "total_tokens": 3810
+  },
+  "wall_ms": 38498.41
+}

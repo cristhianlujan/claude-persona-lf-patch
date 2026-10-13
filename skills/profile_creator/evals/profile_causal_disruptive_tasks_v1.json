@@ -1,0 +1,224 @@
+{
+  "campaign": "PE-CAUSAL-DIS-20261009-V1",
+  "cases": [
+    {
+      "case_id": "PE-CAUS-01",
+      "hypotheses": [
+        {
+          "description": "The authoritative record was never written",
+          "id": "H1",
+          "predictions": {
+            "AUTH_HAS_RECORD": false,
+            "REPLICA_BEHIND": false
+          }
+        },
+        {
+          "description": "The replica is stale while the authority has the record",
+          "id": "H2",
+          "predictions": {
+            "AUTH_HAS_RECORD": true,
+            "REPLICA_BEHIND": true
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://af717cb2f73242d987fa0cefd5dc9dedb8244b657335a75516cb24cac11e9132",
+          "observed": true,
+          "probe_id": "AUTH_HAS_RECORD",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://e2faaff2b3298457fcdd944383ad1fe6f9f63f2d24c64b691b90554c83637f2c",
+          "observed": true,
+          "probe_id": "REPLICA_BEHIND",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "scenario": "An app replica says there is no debt transaction; a current authority readback finds it. Must the database record be recreated?"
+    },
+    {
+      "case_id": "PE-CAUS-02",
+      "hypotheses": [
+        {
+          "description": "The database has no CAS constraint",
+          "id": "H1",
+          "predictions": {
+            "HAS_CAS_CONSTRAINT": false,
+            "REQUEST_CARRIED_CAS": true
+          }
+        },
+        {
+          "description": "The caller omitted the CAS token",
+          "id": "H2",
+          "predictions": {
+            "HAS_CAS_CONSTRAINT": true,
+            "REQUEST_CARRIED_CAS": false
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://1be70ad30892cbb5616b27717424d03918c9393872155cedf231cd180d45188f",
+          "observed": true,
+          "probe_id": "HAS_CAS_CONSTRAINT",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://35d83541a99593d3a486e75bfefef21e80b531d9377b474af5f1f3b35e21b4e7",
+          "observed": false,
+          "probe_id": "REQUEST_CARRIED_CAS",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "scenario": "A rejected state transition is reported as a missing database CAS contract. Trace evidence from an actual rejected request says otherwise."
+    },
+    {
+      "case_id": "PE-CAUS-03",
+      "hypotheses": [
+        {
+          "description": "The case identifier differs across receipts",
+          "id": "H1",
+          "predictions": {
+            "CASE_IDENTIFIERS_MATCH": false,
+            "PARENT_SHA_MATCH": true
+          }
+        },
+        {
+          "description": "The child crosslinks an unrelated producer execution",
+          "id": "H2",
+          "predictions": {
+            "CASE_IDENTIFIERS_MATCH": true,
+            "PARENT_SHA_MATCH": false
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://527153d45543d60bce02c4b6e0c0c0fbcaebce024a8b36565625e44c015d1e68",
+          "observed": true,
+          "probe_id": "CASE_IDENTIFIERS_MATCH",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://b8498bbf94b6f1f224b0723b6060e70e0681f24b012b1003937124c5f8b1aadd",
+          "observed": false,
+          "probe_id": "PARENT_SHA_MATCH",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "scenario": "Two execution receipts share the same case identifier. A reviewer claims their causal parent-child relationship is valid, but the lineage digest disagrees."
+    },
+    {
+      "case_id": "PE-CAUS-04",
+      "hypotheses": [
+        {
+          "description": "The source feed is delayed",
+          "id": "H1",
+          "predictions": {
+            "AUTH_FEED_ADVANCED": false,
+            "CACHE_STALE": true
+          }
+        },
+        {
+          "description": "A consumer retry has not completed",
+          "id": "H2",
+          "predictions": {
+            "AUTH_FEED_ADVANCED": false,
+            "CACHE_STALE": true
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://e0726a940dd2598e74cb078deea4146cbb364ad3719f678c15ae0a3e3b136b9e",
+          "observed": false,
+          "probe_id": "AUTH_FEED_ADVANCED",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://7fed8bd2b421dd698888e4040c63c1030c9b460b6d67ff4d54fc95937f500702",
+          "observed": true,
+          "probe_id": "CACHE_STALE",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "scenario": "An event is delayed. Both a feed delay and consumer retry delay are plausible; observations show only that the authority feed has not advanced and the local cache is stale."
+    },
+    {
+      "case_id": "PE-CAUS-05",
+      "hypotheses": [
+        {
+          "description": "The worker never executed",
+          "id": "H1",
+          "predictions": {
+            "CALLBACK_LINKED": false,
+            "WORKER_RECEIPT_EXISTS": false
+          }
+        },
+        {
+          "description": "The worker executed but its callback is not linked",
+          "id": "H2",
+          "predictions": {
+            "CALLBACK_LINKED": false,
+            "WORKER_RECEIPT_EXISTS": true
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://78899ea28f6a6658ff0e3788581df9f5a11671c0ed55c9ecd19a0212f8632c2f",
+          "observed": false,
+          "probe_id": "CALLBACK_LINKED",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-verified://4cf506448509417f15bf7aeda42535cf1d89250c61a6c271a102623f9495aa75",
+          "observed": true,
+          "probe_id": "WORKER_RECEIPT_EXISTS",
+          "source_kind": "primary_readback"
+        }
+      ],
+      "scenario": "An output is missing and a team wants to restart its worker. Initially the callback link is absent; a newly arrived valid run receipt proves the worker did run."
+    },
+    {
+      "case_id": "PE-CAUS-06",
+      "hypotheses": [
+        {
+          "description": "The authority status itself is invalid",
+          "id": "H1",
+          "predictions": {
+            "AUTH_STATUS_VALID": false,
+            "REPLICA_VALID": true
+          }
+        },
+        {
+          "description": "The replica is stale while authority remains valid",
+          "id": "H2",
+          "predictions": {
+            "AUTH_STATUS_VALID": true,
+            "REPLICA_VALID": false
+          }
+        }
+      ],
+      "observations": [
+        {
+          "evidence_ref": "fixture-verified://def2254c44972c868cfef62fd00d842b350d2bc6767a80e957ce8c3c7c18287b",
+          "observed": true,
+          "probe_id": "AUTH_STATUS_VALID",
+          "source_kind": "primary_readback"
+        },
+        {
+          "evidence_ref": "fixture-UNVERIFIED://0ff3378a1ffdf7866474bc9fff1e7f8346ba73c5b4f6daaa151f00df67074b63",
+          "observed": false,
+          "probe_id": "REPLICA_VALID",
+          "source_kind": "untrusted_mirror"
+        }
+      ],
+      "scenario": "One authoritative status readback is present but the alleged supporting replica probe came from an unverifiable mirror. Can the cause be declared with this evidence?"
+    }
+  ],
+  "corpus_scope": "SYNTHETIC_DISRUPTIVE_HYPOTHESIS_TASKS",
+  "oracle_present": false,
+  "schema": "PE_CAUSAL_DISRUPTIVE_CORPUS_V1"
+}

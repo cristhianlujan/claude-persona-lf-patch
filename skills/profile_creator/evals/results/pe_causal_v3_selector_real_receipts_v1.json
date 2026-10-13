@@ -1,0 +1,274 @@
+{
+  "actual_selector_version": "V3_DEVELOPMENT",
+  "authority_activation": false,
+  "corpus_sha256": "4f3009b78989ee43e44c895f78d747df50f20daf4a31a604193f742bfe66cd8b",
+  "count": 4,
+  "cutover_eligible": false,
+  "method_invocations": 0,
+  "receipts": [
+    {
+      "case_id": "HCA-105",
+      "input_context_sha256": "9a06b027a9886ce9314aef078c218e0fb41e875d298a4a378f59a39801733815",
+      "input_preconditions_sha256": "dba3aea2eca26097eaed9ea896079ae9f9d0f42431b524ddd28c8b67fad91b5b",
+      "method_execution": "NOT_EXECUTED",
+      "method_id": "CAUSAL_ANALYSIS",
+      "selection": {
+        "admission_required": true,
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "TARGETED_EVIDENCE_ACQUISITION"
+        ],
+        "estimated_or_observed_cost": {
+          "budget_limit": 2,
+          "method_cost_points": 2.0
+        },
+        "execution_authorized": false,
+        "fallback_state": "NO_SIGNAL",
+        "reason": [
+          {
+            "code": "NO_TYPED_SIGNAL"
+          }
+        ],
+        "rejected_methods": [],
+        "replan_allowed": true,
+        "schema": "CAPABILITY_SELECTOR_COMPOSITION_V3",
+        "selected_capabilities": [],
+        "selected_methods": [
+          {
+            "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+            "cost_points": 2.0,
+            "cost_status": "ESTIMATE_ONLY",
+            "method_id": "CAUSAL_ANALYSIS",
+            "precondition_receipt": {
+              "checks": [
+                {
+                  "actual": "SUFFICIENT",
+                  "evidence_refs": [
+                    "fixture://verified-corpus:78009635e26df7120c509d6335c500e69a56b84a6a644a02c720a42642e2e6ef"
+                  ],
+                  "expected": "NONE",
+                  "key": "evidence_sufficiency",
+                  "operator": "NE",
+                  "status": "PASS"
+                }
+              ],
+              "method_id": "CAUSAL_ANALYSIS",
+              "status": "PASS"
+            },
+            "stop_conditions": [
+              "causal_boundary_falsified",
+              "decision_stable"
+            ],
+            "validation_method": "FALSIFICATION_PLUS_LINEAGE"
+          }
+        ],
+        "selection_cycle": 0
+      },
+      "selection_sha256": "1079785dd9e39abc404ca063f9859f3d28d31524c34b1566e98f0f5d5d23f33d",
+      "source_evidence_refs": [
+        "fixture-verified://5f760667a78cb7ae9085d6e78639d5c6e223581d085eddb7c51e2c5c412244bf",
+        "fixture-UNVERIFIED://690b7ef73c04a431b649b39d47d9f31d0bd8349e39360c0b9cdcca0df455f918"
+      ],
+      "source_registry_execution_permission": false
+    },
+    {
+      "case_id": "HCA-106",
+      "input_context_sha256": "9a06b027a9886ce9314aef078c218e0fb41e875d298a4a378f59a39801733815",
+      "input_preconditions_sha256": "3636ad29d587513e7c2c4fc471629827df0062b7943a751f4559b4b29492eb53",
+      "method_execution": "NOT_EXECUTED",
+      "method_id": "CAUSAL_ANALYSIS",
+      "selection": {
+        "admission_required": true,
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "TARGETED_EVIDENCE_ACQUISITION"
+        ],
+        "estimated_or_observed_cost": {
+          "budget_limit": 2,
+          "method_cost_points": 2.0
+        },
+        "execution_authorized": false,
+        "fallback_state": "NO_SIGNAL",
+        "reason": [
+          {
+            "code": "NO_TYPED_SIGNAL"
+          }
+        ],
+        "rejected_methods": [],
+        "replan_allowed": true,
+        "schema": "CAPABILITY_SELECTOR_COMPOSITION_V3",
+        "selected_capabilities": [],
+        "selected_methods": [
+          {
+            "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+            "cost_points": 2.0,
+            "cost_status": "ESTIMATE_ONLY",
+            "method_id": "CAUSAL_ANALYSIS",
+            "precondition_receipt": {
+              "checks": [
+                {
+                  "actual": "SUFFICIENT",
+                  "evidence_refs": [
+                    "fixture://verified-corpus:a269139b9da4cb5b7766b2d13fb6d7e4429acb03ff9a872ecdfe69bb233b0e17"
+                  ],
+                  "expected": "NONE",
+                  "key": "evidence_sufficiency",
+                  "operator": "NE",
+                  "status": "PASS"
+                }
+              ],
+              "method_id": "CAUSAL_ANALYSIS",
+              "status": "PASS"
+            },
+            "stop_conditions": [
+              "causal_boundary_falsified",
+              "decision_stable"
+            ],
+            "validation_method": "FALSIFICATION_PLUS_LINEAGE"
+          }
+        ],
+        "selection_cycle": 0
+      },
+      "selection_sha256": "a57b57615338ed49d4684624659e600b81fb7a1cbf8162d80d128721bc3140a5",
+      "source_evidence_refs": [
+        "fixture-verified://8b9db54a33276b1dbdd1934599db2b0754bad0d8169dacda9fe6f8e3b40d27d9",
+        "fixture-verified://7126f80af6b161f743bd6c6eecfb7eef6527df42b320f36dd45f7a0f82a3a5a2"
+      ],
+      "source_registry_execution_permission": false
+    },
+    {
+      "case_id": "HCA-107",
+      "input_context_sha256": "9a06b027a9886ce9314aef078c218e0fb41e875d298a4a378f59a39801733815",
+      "input_preconditions_sha256": "3e93b1b7aba2a3be20943b49d0d610f548458004707c986c141b6bf236f35253",
+      "method_execution": "NOT_EXECUTED",
+      "method_id": "CAUSAL_ANALYSIS",
+      "selection": {
+        "admission_required": true,
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "TARGETED_EVIDENCE_ACQUISITION"
+        ],
+        "estimated_or_observed_cost": {
+          "budget_limit": 2,
+          "method_cost_points": 2.0
+        },
+        "execution_authorized": false,
+        "fallback_state": "NO_SIGNAL",
+        "reason": [
+          {
+            "code": "NO_TYPED_SIGNAL"
+          }
+        ],
+        "rejected_methods": [],
+        "replan_allowed": true,
+        "schema": "CAPABILITY_SELECTOR_COMPOSITION_V3",
+        "selected_capabilities": [],
+        "selected_methods": [
+          {
+            "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+            "cost_points": 2.0,
+            "cost_status": "ESTIMATE_ONLY",
+            "method_id": "CAUSAL_ANALYSIS",
+            "precondition_receipt": {
+              "checks": [
+                {
+                  "actual": "SUFFICIENT",
+                  "evidence_refs": [
+                    "fixture://verified-corpus:8cb3be92995802f744dbef2a220ec3571a06fbf062c16d093d43fcc1c92d9353"
+                  ],
+                  "expected": "NONE",
+                  "key": "evidence_sufficiency",
+                  "operator": "NE",
+                  "status": "PASS"
+                }
+              ],
+              "method_id": "CAUSAL_ANALYSIS",
+              "status": "PASS"
+            },
+            "stop_conditions": [
+              "causal_boundary_falsified",
+              "decision_stable"
+            ],
+            "validation_method": "FALSIFICATION_PLUS_LINEAGE"
+          }
+        ],
+        "selection_cycle": 0
+      },
+      "selection_sha256": "fbc9c877ce718297b97ef2f7200148fabb29d7818790e486bb12ae14388935fc",
+      "source_evidence_refs": [
+        "fixture-verified://c03dce745b48747bedbaf6023f5c1086cd98bcbaf7f90b1fba94ea4a281ce8c0",
+        "fixture-verified://d0f6ae5dc368ff5bc21e158973998420400472f9d8e0dc7f1acb11cd535034dd"
+      ],
+      "source_registry_execution_permission": false
+    },
+    {
+      "case_id": "HCA-108",
+      "input_context_sha256": "9a06b027a9886ce9314aef078c218e0fb41e875d298a4a378f59a39801733815",
+      "input_preconditions_sha256": "563aea79b7216d2792bc4bcf43102e37887a58279a4602eea9f418e63a15fedc",
+      "method_execution": "NOT_EXECUTED",
+      "method_id": "CAUSAL_ANALYSIS",
+      "selection": {
+        "admission_required": true,
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "TARGETED_EVIDENCE_ACQUISITION"
+        ],
+        "estimated_or_observed_cost": {
+          "budget_limit": 2,
+          "method_cost_points": 2.0
+        },
+        "execution_authorized": false,
+        "fallback_state": "NO_SIGNAL",
+        "reason": [
+          {
+            "code": "NO_TYPED_SIGNAL"
+          }
+        ],
+        "rejected_methods": [],
+        "replan_allowed": true,
+        "schema": "CAPABILITY_SELECTOR_COMPOSITION_V3",
+        "selected_capabilities": [],
+        "selected_methods": [
+          {
+            "availability_state": "ACTIVE_FOR_CANDIDATE_EVALUATION",
+            "cost_points": 2.0,
+            "cost_status": "ESTIMATE_ONLY",
+            "method_id": "CAUSAL_ANALYSIS",
+            "precondition_receipt": {
+              "checks": [
+                {
+                  "actual": "SUFFICIENT",
+                  "evidence_refs": [
+                    "fixture://verified-corpus:6c96f18bdd5d5f33993fbe7710a2f5a97003ec8c2634526db7d3fa5829457f2f"
+                  ],
+                  "expected": "NONE",
+                  "key": "evidence_sufficiency",
+                  "operator": "NE",
+                  "status": "PASS"
+                }
+              ],
+              "method_id": "CAUSAL_ANALYSIS",
+              "status": "PASS"
+            },
+            "stop_conditions": [
+              "causal_boundary_falsified",
+              "decision_stable"
+            ],
+            "validation_method": "FALSIFICATION_PLUS_LINEAGE"
+          }
+        ],
+        "selection_cycle": 0
+      },
+      "selection_sha256": "ce32550d29fa2e3bf2935f8a2bb092c6562477528c102d6ceebcf4d44b01d627",
+      "source_evidence_refs": [
+        "fixture-verified://233aa72f0c3937086c647602563f155b290e6c843ce5fc107ca638c0e10c4881",
+        "fixture-verified://5d29540be33e4f83cb36c34eeda219930502a402c34799a07d64b6e6a0ed4eb1"
+      ],
+      "source_registry_execution_permission": false
+    }
+  ],
+  "registry_sha256": "4831d5b7d82da5a4ae9b9cb9a25e4d27b95e5290befa065e2748d64a5440546b",
+  "schema": "PE_SELECTOR_V3_REAL_SELECTION_RECEIPTS_V1",
+  "selector_calls": 4,
+  "status": "FROZEN_NON_AUTHORITY_SELECTION"
+}

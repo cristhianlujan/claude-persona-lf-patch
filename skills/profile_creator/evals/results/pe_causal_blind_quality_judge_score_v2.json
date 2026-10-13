@@ -1,0 +1,40 @@
+{
+  "actual_matches": 0,
+  "cutover_eligible": false,
+  "error_class": "SEMANTIC_VERDICT_DISCRIMINATION_FAILURE",
+  "evaluator_eligible_for_admission": false,
+  "independent_external_semantic_assurance": "NOT_EXECUTED",
+  "raw_sha256": "397b2877d5eff23f8cae2de14dc6bce2fa1020bbb37477acd89e4cce48b4c2d3",
+  "required_matches": 4,
+  "results": [
+    {
+      "expected": "CONTRADICTED",
+      "id": "S01",
+      "matches": false,
+      "observed": "MIXED"
+    },
+    {
+      "expected": "SUPPORTED",
+      "id": "S02",
+      "matches": false,
+      "observed": "MIXED"
+    },
+    {
+      "expected": "CONTRADICTED",
+      "id": "S03",
+      "matches": false,
+      "observed": "MIXED"
+    },
+    {
+      "expected": "SUPPORTED",
+      "id": "S04",
+      "matches": false,
+      "observed": "MIXED"
+    }
+  ],
+  "reviewer_profile": "QUALITY_REVIEW",
+  "reviewer_separate_from_producer_execution": true,
+  "same_underlying_model_as_producer": true,
+  "schema": "PE_BLIND_QUALITY_JUDGE_DISPOSITION_V2",
+  "status": "JUDGE_CALIBRATION_FAIL"
+}

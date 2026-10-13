@@ -1,0 +1,97 @@
+{
+  "schema": "PROFILE_CONVERSATIONAL_CONTEXT_POLICY_V1",
+  "status": "CANDIDATE_TEST_ONLY",
+  "owner_operation": "ACTUALIZACION_PERFIL_LF",
+  "transversal_consumers": [
+    "PROFILE_ASSESSMENT",
+    "PROFILE_EVOLUTION_ORCHESTRATOR",
+    "PROFILE_RUNTIME"
+  ],
+  "existing_capability_reuse": {
+    "targeted_acquisition": "public.lf_targeted_evidence_acquisition_plan_v1",
+    "typed_evidence": "TYPED_EVIDENCE_REGISTRY",
+    "resolver": "EVIDENCE_RESOLVER_REGISTRY",
+    "assessment": "PROFILE_ASSESSMENT_V2",
+    "selector": "CAPABILITY_SELECTOR_V3",
+    "input_governance": "INPUT_GOVERNANCE"
+  },
+  "input_policy": {
+    "request_type": "NATURAL_USER_UTTERANCE",
+    "context_default": "MINIMAL",
+    "context_may_come_from": [
+      "CURRENT_CONVERSATION",
+      "AUTHORIZED_MEMORY",
+      "AUTHORIZED_GITHUB",
+      "AUTHORIZED_SUPABASE",
+      "AUTHORIZED_FILES",
+      "USER_CLARIFICATION"
+    ],
+    "source_claims_without_readback_are_not_verified": true,
+    "all_sources_require_scope_authorization": true,
+    "user_is_not_replacement_for_system_readback": true,
+    "goals_and_decision_critical_gaps_are_assessed_before_tools": true
+  },
+  "dialogue_loop": [
+    "INTERPRET_REQUEST",
+    "ASSESS_SUFFICIENCY_AT_REQUESTED_DEPTH",
+    "CHECK_ALREADY_AVAILABLE_CONTEXT",
+    "SELECT_NEXT_DECISION_CHANGING_EVIDENCE",
+    "ACQUIRE_WITH_EXISTING_AUTHORIZED_RESOLVER",
+    "REASSESS",
+    "ASK_ONE_TARGETED_QUESTION_IF_UNRECOVERABLE",
+    "REASSESS",
+    "EXECUTE_PROFILE_METHODS_WHEN_SUFFICIENT",
+    "VERIFY_OR_RESPOND_WITH_LIMITS"
+  ],
+  "per_turn_actions": [
+    "PROCEED",
+    "RESOLVE_EVIDENCE_PLAN",
+    "RETRIEVE",
+    "ASK_USER",
+    "LIMITED_RESPONSE",
+    "BLOCKED"
+  ],
+  "decision_invariants": {
+    "no_handoff_required_from_user": true,
+    "recovery_before_questions": true,
+    "no_question_if_accessible_evidence_changes_decision": true,
+    "ask_only_for_user_answerable_decision_critical_gap": true,
+    "ask_one_question_per_turn": true,
+    "no_repeated_question_without_new_information": true,
+    "evidence_not_gathered_is_never_marked_observed": true,
+    "no_auto_approval_from_acquisition_STOP": true,
+    "no_root_cause_proof_from_surviving_hypothesis": true,
+    "stop_when_no_decision_changing_acquisition_remains": true,
+    "finite_budget_and_stop_conditions": true,
+    "missing_authorization_blocks_rather_than_substituting_provider": true
+  },
+  "validation_policy": {
+    "candidate_only": true,
+    "no_production_activation": true,
+    "no_auto_promote": true,
+    "keep_existing_benchmark_thresholds": true,
+    "real_dialogue_and_holdout_required_for_expertise": true
+  },
+  "references": [
+    {
+      "source": "Anthropic",
+      "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+      "role": "context engineering guidance, not guarantee of LF expertise"
+    },
+    {
+      "source": "Anthropic",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "role": "simple tool loop and feedback"
+    },
+    {
+      "source": "NAACL-2025",
+      "url": "https://aclanthology.org/2025.findings-naacl.306/",
+      "role": "when clarification is useful"
+    },
+    {
+      "source": "tau-bench",
+      "url": "https://arxiv.org/abs/2406.12045",
+      "role": "interactive tool/user evaluation design"
+    }
+  ]
+}
