@@ -5,6 +5,7 @@ import json
 import os
 import sys
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
 
 EXPECTED = "M105_SCOPE_SNAPSHOT_V1"
 COUNT = 13
@@ -66,8 +67,14 @@ def execute(snapshot, release, gateway, *, allowed=False):
                     item["run_id"] = rows[0]["run_id"]
                     item["status"] = rows[0]["cp2_verdict"]
                     item["technical"] = rows[0]["technical_verdict"]
-        except Exception as exc:
+        except HTTPError as exc:
+            item["status"] = "ERROR_PROVIDER_HTTP"
+            item["http_status"] = exc.code
+        except (URLError, TimeoutError) as exc:
             item["status"] = "ERROR_TRANSPORT"
+            item["exception_type"] = type(exc).__name__
+        except (KeyError, TypeError, ValueError) as exc:
+            item["status"] = "ERROR_INVALID_PROVIDER_RESPONSE"
             item["exception_type"] = type(exc).__name__
         results.append(item)
     return dict(status="RECORDED_NOT_CERTIFIED", attempts=len(results), results=results,
