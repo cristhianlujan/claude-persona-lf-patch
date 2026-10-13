@@ -4,6 +4,7 @@ on:
     paths:
       - 'supabase/migrations/*_lf_operational_executor_lane_v1.sql'
       - 'sandbox/lf_contract_gate_test/operational_executor/test_governance_candidate_v1.py'
+      - 'sandbox/lf_contract_gate_test/operational_executor/test_sql_parse_v1.py'
       - '.github/workflows/lf-operational-executor-governance-static.yml'
 permissions:
   contents: read
@@ -16,3 +17,7 @@ jobs:
           persist-credentials: false
       - name: Reject broad DML grants and missing Router authority
         run: python3 sandbox/lf_contract_gate_test/operational_executor/test_governance_candidate_v1.py
+      - name: Parse PostgreSQL migration grammar without DB writes
+        run: |
+          python3 -m pip install --disable-pip-version-check pglast==8.5
+          python3 sandbox/lf_contract_gate_test/operational_executor/test_sql_parse_v1.py
