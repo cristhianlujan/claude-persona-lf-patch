@@ -56,20 +56,25 @@ INSERT INTO public.lf_operation_contracts (
   'ACTIVE_ENFORCEMENT','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
 );
 
+WITH steps(ord,id,evidence) AS (VALUES
+ (10,'preflight','["router_authority_validation","operation_admission","handler_binding"]'::jsonb),
+ (20,'effect','["effect_guard_reservation","effect_receipt"]'::jsonb),
+ (30,'verify','["effect_guard_readback","handler_readback","router_authority_readback"]'::jsonb)
+)
+INSERT INTO public.lf_operation_steps (
+  operation_code,step_order,step_id,required,evidence_required,source_path,active,
+  execution_order,created_by_execution_id
+)
+SELECT 'EJECUCION_OPERATIVA_LF',ord,id,true,
+       array_to_string(ARRAY(SELECT jsonb_array_elements_text(evidence)),','),
+       'supabase://public/lf_operation_step_contracts/EJECUCION_OPERATIVA_LF/'||id,
+       true,ord,'EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
+FROM steps;
+
 WITH steps(ord,id,evidence,next_step) AS (VALUES
  (10,'preflight','["router_authority_validation","operation_admission","handler_binding"]'::jsonb,'effect'),
  (20,'effect','["effect_guard_reservation","effect_receipt"]'::jsonb,'verify'),
  (30,'verify','["effect_guard_readback","handler_readback","router_authority_readback"]'::jsonb,NULL::text)
-), ins AS (
- INSERT INTO public.lf_operation_steps (
-   operation_code,step_order,step_id,required,evidence_required,source_path,active,
-   execution_order,created_by_execution_id
- )
- SELECT 'EJECUCION_OPERATIVA_LF',ord,id,true,
-        array_to_string(ARRAY(SELECT jsonb_array_elements_text(evidence)),','),
-        'supabase://public/lf_operation_step_contracts/EJECUCION_OPERATIVA_LF/'||id,
-        true,ord,'EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
- FROM steps RETURNING 1
 )
 INSERT INTO public.lf_operation_step_contracts (
   operation_code,step_id,step_order,execution_order,contract_code,purpose,
@@ -77,14 +82,14 @@ INSERT INTO public.lf_operation_step_contracts (
   blocking_code,mini_judge_code,required_evidence_keys,next_if_pass,next_if_blocked,
   status,created_by_execution_id
 )
-SELECT 'EJECUCION_OPERATIVA_LF',s.id,s.ord,s.ord,'CONTRACT-EJECUCION-OPERATIVA-LF-v1',
-       'SQL-validated operational executor '||s.id,
-       '[]'::jsonb,'public.lf_close_operational_execution_v1',s.evidence,
+SELECT 'EJECUCION_OPERATIVA_LF',id,ord,ord,'CONTRACT-EJECUCION-OPERATIVA-LF-v1',
+       'SQL-validated operational executor '||id,'[]'::jsonb,
+       'public.lf_close_operational_execution_v1',evidence,
        '{"server_validated":true}'::jsonb,'{"server_invalid":true}'::jsonb,
-       'BLOCK_OPERATIONAL_'||upper(s.id),
-       'JUDGE-OPERATIONAL-EXECUTION-V1',s.evidence,s.next_step,'RETURN_TO_ROUTER',
+       'BLOCK_OPERATIONAL_'||upper(id),'JUDGE-OPERATIONAL-EXECUTION-V1',
+       evidence,next_step,'RETURN_TO_ROUTER',
        'ACTIVE_ENFORCEMENT','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
-FROM steps s;
+FROM steps;
 
 INSERT INTO public.lf_operation_judges (
   operation_code,judge_code,judge_path,pass_if,fail_if,result_values,status,
