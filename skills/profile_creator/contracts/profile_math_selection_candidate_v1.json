@@ -1,0 +1,108 @@
+{
+  "schema": "PROFILE_EVOLUTION_MATHEMATICAL_SELECTION_V1",
+  "scope": "CANDIDATE_ADDITIVE_TO_EXISTING_CAPABILITY_SELECTOR_V3",
+  "source_branch_base": "agent/profile-evolution-orchestrator-20261007",
+  "baseline_pr": 1947,
+  "selection_contract": {
+    "inputs": [
+      "context.profile_gaps",
+      "context.complexity",
+      "context.novelty",
+      "context.uncertainty",
+      "context.causal_requirement",
+      "context.risk",
+      "context.repeated_pattern",
+      "context.evidence_paths",
+      "context.optimization_need",
+      "precondition_state",
+      "method_cost_observations",
+      "method_effectiveness_observations",
+      "context.budget"
+    ],
+    "source": "METHOD_PACK_REGISTRY_V2.methods",
+    "method_family": "MATHEMATICAL",
+    "lane": "SHADOW_ONLY",
+    "logic": [
+      "Select by typed task signals, not profile name",
+      "Require all applicable preconditions with typed evidence refs",
+      "Exclude failed/blocked methods on replans",
+      "Reject candidates with observed nonpositive outcomes or critical regressions",
+      "Prioritize held-out paired improvements where reported and independently verifiable; otherwise rank by number of matching typed signals and cost as tie break only",
+      "Select at most one shadow trial by default; use explicit budget to expand",
+      "Return NONE/EVIDENCE_REQUIRED/BUDGET/RECOMMENDED distinction"
+    ],
+    "execution_permission": false,
+    "admission_permission": false,
+    "caveat": "VERIFIED provided in a payload is not provider-signed attestation. Positive uplift remains REPORTED_POSITIVE_UNATTESTED until independent source readback."
+  },
+  "five_math_methods": {
+    "CAUSAL_GRAPH_ANALYSIS": {
+      "trigger": "causal requirement or boundary ambiguity",
+      "guards": [
+        "material_graph_bound",
+        "causal_edge_receipts_present"
+      ],
+      "reuse": "CAUSAL_EFFECT_LINEAGE",
+      "candidate_pr": 2426
+    },
+    "OCHIAI_SUSPICIOUSNESS": {
+      "trigger": "repeated incidents with labeled failures",
+      "guards": [
+        "labeled_failure_spectrum_exists",
+        "passing_negative_controls_exist"
+      ],
+      "reuse": "TYPED_EVIDENCE_REGISTRY",
+      "candidate_pr": 2427
+    },
+    "RECIPROCAL_RANK_FUSION": {
+      "trigger": "multiple independent ranked evidence routes",
+      "guards": [
+        "independent_ranked_sources_exist",
+        "rank_source_currentness_verified"
+      ],
+      "reuse": "TARGETED_EVIDENCE_ACQUISITION",
+      "candidate_pr": 2428
+    },
+    "DELTA_DEBUGGING": {
+      "trigger": "complex repeatable error",
+      "guards": [
+        "safe_deterministic_replay_exists",
+        "failure_predicate_reproduced"
+      ],
+      "reuse": "REVERSIBLE_CANDIDATE_VERIFICATION",
+      "candidate_pr": 2429
+    },
+    "MCNEMAR_AND_CONFIDENCE_INTERVALS": {
+      "trigger": "paired behavioral comparison",
+      "guards": [
+        "paired_binary_execution_receipts_exist",
+        "blind_independent_evaluator_exists",
+        "holdout_frozen"
+      ],
+      "reuse": "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+      "candidate_pr": 2423
+    }
+  },
+  "quality_path": [
+    "Structured profile assessment -> existing V3 selection -> math shadow recommendation or no method",
+    "Candidate method tests -> frozen matched four-arm executed RAW -> blind independent judge -> benefit/cost/critical regressions",
+    "Governed method admission -> registry release/currentness -> explicit compatible runtime projection -> shadow to admitted activation separately"
+  ],
+  "required_negative_tests": [
+    "simple task -> no mathematical technique",
+    "matching signal lacking evidence -> evidence required",
+    "failed method -> excluded this run",
+    "critical regression history -> no promotion",
+    "invalid budget -> BLOCK",
+    "allow_experimental=true never places shadow math in operational selected_methods",
+    "unproven statistical gain -> no expertise claim"
+  ],
+  "environment_effects": {
+    "profile_assets": false,
+    "supabase_changes": false,
+    "production": false,
+    "pase_activation": false,
+    "main_merge": false
+  },
+  "status": "SOURCE_CANDIDATE_ONLY_EXACT_HEAD_RUNTIME_TEST_PENDING"
+}
