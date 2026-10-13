@@ -538,7 +538,7 @@
         {
           "name": "trg_lf_activos_timestamp",
           "enabled": "O",
-          "function": "fn_update_lf_activos_timestamp()",
+          "function": "public.fn_update_lf_activos_timestamp()",
           "definition": "CREATE TRIGGER trg_lf_activos_timestamp BEFORE UPDATE ON lf_activos FOR EACH ROW EXECUTE FUNCTION fn_update_lf_activos_timestamp()",
           "function_source_sha256": "eec5570684489e8527a1d977b08e5e35684c9edd8a1ce973e96f1e63ce531566"
         }
@@ -557,7 +557,7 @@
           "type": "f",
           "validated": true,
           "definition": "FOREIGN KEY (linea_codigo) REFERENCES lf_lineas(codigo) ON UPDATE CASCADE",
-          "references": "lf_lineas"
+          "references": "public.lf_lineas"
         },
         {
           "name": "lf_activos_operational_url_supabase_only_chk",
@@ -776,7 +776,7 @@
         {
           "name": "trg_lf_operation_contracts_timestamp",
           "enabled": "O",
-          "function": "fn_update_lf_operation_contracts_timestamp()",
+          "function": "public.fn_update_lf_operation_contracts_timestamp()",
           "definition": "CREATE TRIGGER trg_lf_operation_contracts_timestamp BEFORE UPDATE ON lf_operation_contracts FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_contracts_timestamp()",
           "function_source_sha256": "7f6378edbe5f2adea34fe1507f702ed8524a5790815561b532aa67b3dea309d8"
         }
@@ -788,7 +788,7 @@
           "type": "f",
           "validated": true,
           "definition": "FOREIGN KEY (operation_code) REFERENCES lf_operation_registry(operation_code) ON DELETE CASCADE",
-          "references": "lf_operation_registry"
+          "references": "public.lf_operation_registry"
         },
         {
           "name": "lf_operation_contracts_pkey",
@@ -1077,42 +1077,42 @@
         {
           "name": "trg_00_lf_operation_policy_snapshot_v1",
           "enabled": "O",
-          "function": "lf_attach_operation_policy_snapshot_v1()",
+          "function": "public.lf_attach_operation_policy_snapshot_v1()",
           "definition": "CREATE TRIGGER trg_00_lf_operation_policy_snapshot_v1 BEFORE INSERT ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION lf_attach_operation_policy_snapshot_v1()",
           "function_source_sha256": "483451ba3aa1cfd4c9c4fe767325ac54bedde2f4b1362ea17d22cfba1beec674"
         },
         {
           "name": "trg_01_lf_operation_policy_snapshot_guard_v1",
           "enabled": "O",
-          "function": "lf_operation_policy_snapshot_guard_v1()",
+          "function": "public.lf_operation_policy_snapshot_guard_v1()",
           "definition": "CREATE TRIGGER trg_01_lf_operation_policy_snapshot_guard_v1 BEFORE UPDATE OF status, manifest ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION lf_operation_policy_snapshot_guard_v1()",
           "function_source_sha256": "9e32778549d02bf2ed81f6d17dc5c403ba4edbac754f769b9ed9567c6c62acb1"
         },
         {
           "name": "trg_lf_operation_execution_timestamp",
           "enabled": "O",
-          "function": "fn_update_lf_operation_execution_timestamp()",
+          "function": "public.fn_update_lf_operation_execution_timestamp()",
           "definition": "CREATE TRIGGER trg_lf_operation_execution_timestamp BEFORE UPDATE ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_execution_timestamp()",
           "function_source_sha256": "f2d3f4719e1420dce935a5f05333fea0ac6263cf0e73dc5ed27dfb675611e3d4"
         },
         {
           "name": "trg_lf_prod_enforcement_execution_v01",
           "enabled": "O",
-          "function": "lf_prod_enforcement_execution_gate_v01()",
+          "function": "public.lf_prod_enforcement_execution_gate_v01()",
           "definition": "CREATE TRIGGER trg_lf_prod_enforcement_execution_v01 BEFORE INSERT OR UPDATE ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION lf_prod_enforcement_execution_gate_v01()",
           "function_source_sha256": "70ef0ebd2be07a2ba7fe44d0b14f0a6c35e5fa668b3a1322d41bebc70a10d2de"
         },
         {
           "name": "trg_lf_router_downstream_authority_insert_v1",
           "enabled": "O",
-          "function": "lf_router_downstream_authority_execution_insert_v1()",
+          "function": "public.lf_router_downstream_authority_execution_insert_v1()",
           "definition": "CREATE TRIGGER trg_lf_router_downstream_authority_insert_v1 BEFORE INSERT ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION lf_router_downstream_authority_execution_insert_v1()",
           "function_source_sha256": "1be0a52527a9a3ef82a353bb1cbe12217ad628c433a39901ce93ead38070308b"
         },
         {
           "name": "trg_lf_router_downstream_authority_update_guard_v1",
           "enabled": "O",
-          "function": "lf_router_downstream_authority_execution_update_guard_v1()",
+          "function": "public.lf_router_downstream_authority_execution_update_guard_v1()",
           "definition": "CREATE TRIGGER trg_lf_router_downstream_authority_update_guard_v1 BEFORE UPDATE OF operation_code, target_type, target_code, target_repo, target_path, manifest ON lf_operation_execution FOR EACH ROW EXECUTE FUNCTION lf_router_downstream_authority_execution_update_guard_v1()",
           "function_source_sha256": "f4daa3c6b95cc43f3d1cff724673d1472729f67643b26e724b9cb0acd79b9f78"
         }
@@ -1145,7 +1145,7 @@
           "type": "f",
           "validated": true,
           "definition": "FOREIGN KEY (operation_code) REFERENCES lf_operation_registry(operation_code) ON DELETE RESTRICT",
-          "references": "lf_operation_registry"
+          "references": "public.lf_operation_registry"
         },
         {
           "name": "lf_operation_execution_pkey",
@@ -1353,14 +1353,14 @@
         {
           "name": "trg_lf_db_operation_step_authority_guard_v1",
           "enabled": "O",
-          "function": "lf_db_operation_step_authority_guard_v1()",
+          "function": "public.lf_db_operation_step_authority_guard_v1()",
           "definition": "CREATE TRIGGER trg_lf_db_operation_step_authority_guard_v1 BEFORE INSERT OR UPDATE OF status, evidence_payload ON lf_operation_execution_steps FOR EACH ROW EXECUTE FUNCTION lf_db_operation_step_authority_guard_v1()",
           "function_source_sha256": "269a681c620eff277657d31d7e650fc159318b33c0cd4932a08fd8383c89bc0e"
         },
         {
           "name": "trg_lf_operation_execution_steps_timestamp",
           "enabled": "O",
-          "function": "fn_update_lf_operation_execution_steps_timestamp()",
+          "function": "public.fn_update_lf_operation_execution_steps_timestamp()",
           "definition": "CREATE TRIGGER trg_lf_operation_execution_steps_timestamp BEFORE UPDATE ON lf_operation_execution_steps FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_execution_steps_timestamp()",
           "function_source_sha256": "963894d871730702553198b04a67f6f4f8c18d149bd5ce35e1065ab0eda4a21e"
         },
@@ -1381,14 +1381,14 @@
         {
           "name": "trg_lf_prod_enforcement_step_v01",
           "enabled": "O",
-          "function": "lf_prod_enforcement_step_gate_v01()",
+          "function": "public.lf_prod_enforcement_step_gate_v01()",
           "definition": "CREATE TRIGGER trg_lf_prod_enforcement_step_v01 BEFORE INSERT OR UPDATE ON lf_operation_execution_steps FOR EACH ROW EXECUTE FUNCTION lf_prod_enforcement_step_gate_v01()",
           "function_source_sha256": "9bc1b183922e81d839bfbaff1a33648e9b0b38aab11e87afb61394b467d4a7dc"
         },
         {
           "name": "trg_lf_strategy_lifecycle_from_execution_step_v1",
           "enabled": "O",
-          "function": "lf_strategy_lifecycle_from_execution_step_v1()",
+          "function": "public.lf_strategy_lifecycle_from_execution_step_v1()",
           "definition": "CREATE TRIGGER trg_lf_strategy_lifecycle_from_execution_step_v1 AFTER INSERT OR UPDATE OF status ON lf_operation_execution_steps FOR EACH ROW EXECUTE FUNCTION lf_strategy_lifecycle_from_execution_step_v1()",
           "function_source_sha256": "caac1892bff64184c47c4f2e47d0af9a41ce658f629e123626d824bc71b38fc9"
         }
@@ -1400,7 +1400,7 @@
           "type": "f",
           "validated": true,
           "definition": "FOREIGN KEY (execution_id) REFERENCES lf_operation_execution(execution_id) ON DELETE CASCADE",
-          "references": "lf_operation_execution"
+          "references": "public.lf_operation_execution"
         },
         {
           "name": "lf_operation_execution_steps_pkey",
@@ -1597,14 +1597,14 @@
         {
           "name": "trg_lf_operation_judges_provenance_guard_v1",
           "enabled": "O",
-          "function": "fn_lf_operation_provenance_guard_v1()",
+          "function": "public.fn_lf_operation_provenance_guard_v1()",
           "definition": "CREATE TRIGGER trg_lf_operation_judges_provenance_guard_v1 BEFORE INSERT OR UPDATE OF operation_code, created_by_execution_id, updated_by_execution_id ON lf_operation_judges FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_provenance_guard_v1()",
           "function_source_sha256": "0e3b4b7d8b6e164ad2cc353c200385a616aa51210e3ef71219abc658f89eeb5c"
         },
         {
           "name": "trg_lf_operation_judges_timestamp",
           "enabled": "O",
-          "function": "fn_update_lf_operation_judges_timestamp()",
+          "function": "public.fn_update_lf_operation_judges_timestamp()",
           "definition": "CREATE TRIGGER trg_lf_operation_judges_timestamp BEFORE UPDATE ON lf_operation_judges FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_judges_timestamp()",
           "function_source_sha256": "b72d7d81a8291912f6f4c9c7972e337aeb8f320a95a055761f6de9258e9ca515"
         }
@@ -1616,7 +1616,7 @@
           "type": "f",
           "validated": true,
           "definition": "FOREIGN KEY (operation_code) REFERENCES lf_operation_registry(operation_code) ON DELETE CASCADE",
-          "references": "lf_operation_registry"
+          "references": "public.lf_operation_registry"
         },
         {
           "name": "lf_operation_judges_pkey",
@@ -1861,35 +1861,35 @@
         {
           "name": "trg_lf_operation_registry_initial_lifecycle_v1",
           "enabled": "O",
-          "function": "lf_assign_initial_lifecycle_state_v1()",
+          "function": "public.lf_assign_initial_lifecycle_state_v1()",
           "definition": "CREATE TRIGGER trg_lf_operation_registry_initial_lifecycle_v1 BEFORE INSERT ON lf_operation_registry FOR EACH ROW EXECUTE FUNCTION lf_assign_initial_lifecycle_state_v1('OPERATION_LIFECYCLE')",
           "function_source_sha256": "74c2692552a7ec244ee8a3af609d485be0f9b9a3efd5b698bf9107ecfe6dd443"
         },
         {
           "name": "trg_lf_operation_registry_lifecycle_transition_v1",
           "enabled": "O",
-          "function": "lf_enforce_lifecycle_transition_v1()",
+          "function": "public.lf_enforce_lifecycle_transition_v1()",
           "definition": "CREATE TRIGGER trg_lf_operation_registry_lifecycle_transition_v1 BEFORE UPDATE OF lifecycle_state_code ON lf_operation_registry FOR EACH ROW EXECUTE FUNCTION lf_enforce_lifecycle_transition_v1('OPERATION_LIFECYCLE')",
           "function_source_sha256": "8ba694aed72358783874eb62eb6bd510bb36891f7f9ab2a0c189bc3f34b8ea85"
         },
         {
           "name": "trg_lf_operation_registry_materialization_guard_v1",
           "enabled": "O",
-          "function": "fn_lf_operation_registry_materialization_guard_v1()",
+          "function": "public.fn_lf_operation_registry_materialization_guard_v1()",
           "definition": "CREATE TRIGGER trg_lf_operation_registry_materialization_guard_v1 BEFORE INSERT OR UPDATE OF status ON lf_operation_registry FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_registry_materialization_guard_v1()",
           "function_source_sha256": "925eee1c30292d1944c1bb582ed0e3bddda70713d417f21463624119d2b5bf8e"
         },
         {
           "name": "trg_lf_operation_registry_provenance_guard_v1",
           "enabled": "O",
-          "function": "fn_lf_operation_provenance_guard_v1()",
+          "function": "public.fn_lf_operation_provenance_guard_v1()",
           "definition": "CREATE TRIGGER trg_lf_operation_registry_provenance_guard_v1 BEFORE INSERT OR UPDATE OF operation_code, created_by_execution_id, updated_by_execution_id ON lf_operation_registry FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_provenance_guard_v1()",
           "function_source_sha256": "0e3b4b7d8b6e164ad2cc353c200385a616aa51210e3ef71219abc658f89eeb5c"
         },
         {
           "name": "trg_lf_operation_registry_timestamp",
           "enabled": "O",
-          "function": "fn_update_lf_operation_registry_timestamp()",
+          "function": "public.fn_update_lf_operation_registry_timestamp()",
           "definition": "CREATE TRIGGER trg_lf_operation_registry_timestamp BEFORE UPDATE ON lf_operation_registry FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_registry_timestamp()",
           "function_source_sha256": "a6f311dc1e54bc8e0e7a4d62c0a546f8e29e76bb10fd0e924c290beb043df412"
         }
@@ -2288,14 +2288,14 @@
         {
           "name": "trg_lf_operation_step_contracts_provenance_guard_v1",
           "enabled": "O",
-          "function": "fn_lf_operation_provenance_guard_v1()",
+          "function": "public.fn_lf_operation_provenance_guard_v1()",
           "definition": "CREATE TRIGGER trg_lf_operation_step_contracts_provenance_guard_v1 BEFORE INSERT OR UPDATE OF operation_code, created_by_execution_id, updated_by_execution_id ON lf_operation_step_contracts FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_provenance_guard_v1()",
           "function_source_sha256": "0e3b4b7d8b6e164ad2cc353c200385a616aa51210e3ef71219abc658f89eeb5c"
         },
         {
           "name": "trg_lf_operation_step_contracts_timestamp",
           "enabled": "O",
-          "function": "fn_update_lf_operation_step_contracts_timestamp()",
+          "function": "public.fn_update_lf_operation_step_contracts_timestamp()",
           "definition": "CREATE TRIGGER trg_lf_operation_step_contracts_timestamp BEFORE UPDATE ON lf_operation_step_contracts FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_step_contracts_timestamp()",
           "function_source_sha256": "65f13103f2b99cc241d9b9936a7ab0eebb8ab1acd65afc1cb5924c8f4453b3bc"
         }
@@ -2581,14 +2581,14 @@
         {
           "name": "trg_lf_operation_step_judge_bindings_provenance_guard_v1",
           "enabled": "O",
-          "function": "fn_lf_operation_provenance_guard_v1()",
+          "function": "public.fn_lf_operation_provenance_guard_v1()",
           "definition": "CREATE TRIGGER trg_lf_operation_step_judge_bindings_provenance_guard_v1 BEFORE INSERT OR UPDATE OF operation_code, created_by_execution_id, updated_by_execution_id ON lf_operation_step_judge_bindings FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_provenance_guard_v1()",
           "function_source_sha256": "0e3b4b7d8b6e164ad2cc353c200385a616aa51210e3ef71219abc658f89eeb5c"
         },
         {
           "name": "trg_lf_operation_step_judge_bindings_timestamp",
           "enabled": "O",
-          "function": "fn_update_lf_operation_step_judge_bindings_timestamp()",
+          "function": "public.fn_update_lf_operation_step_judge_bindings_timestamp()",
           "definition": "CREATE TRIGGER trg_lf_operation_step_judge_bindings_timestamp BEFORE UPDATE ON lf_operation_step_judge_bindings FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_step_judge_bindings_timestamp()",
           "function_source_sha256": "3d8e3e5c52d4b79aabed81185d1c688451c98886be848c4cbd249c08515e05d3"
         }
@@ -2600,14 +2600,14 @@
           "type": "f",
           "validated": true,
           "definition": "FOREIGN KEY (operation_code, judge_code) REFERENCES lf_operation_judges(operation_code, judge_code) ON DELETE CASCADE",
-          "references": "lf_operation_judges"
+          "references": "public.lf_operation_judges"
         },
         {
           "name": "lf_operation_step_judge_bindings_operation_code_step_order_fkey",
           "type": "f",
           "validated": true,
           "definition": "FOREIGN KEY (operation_code, step_order) REFERENCES lf_operation_steps(operation_code, step_order) ON DELETE CASCADE",
-          "references": "lf_operation_steps"
+          "references": "public.lf_operation_steps"
         },
         {
           "name": "lf_operation_step_judge_bindings_pkey",
@@ -2819,14 +2819,14 @@
         {
           "name": "trg_lf_operation_steps_provenance_guard_v1",
           "enabled": "O",
-          "function": "fn_lf_operation_provenance_guard_v1()",
+          "function": "public.fn_lf_operation_provenance_guard_v1()",
           "definition": "CREATE TRIGGER trg_lf_operation_steps_provenance_guard_v1 BEFORE INSERT OR UPDATE OF operation_code, created_by_execution_id, updated_by_execution_id ON lf_operation_steps FOR EACH ROW EXECUTE FUNCTION fn_lf_operation_provenance_guard_v1()",
           "function_source_sha256": "0e3b4b7d8b6e164ad2cc353c200385a616aa51210e3ef71219abc658f89eeb5c"
         },
         {
           "name": "trg_lf_operation_steps_timestamp",
           "enabled": "O",
-          "function": "fn_update_lf_operation_steps_timestamp()",
+          "function": "public.fn_update_lf_operation_steps_timestamp()",
           "definition": "CREATE TRIGGER trg_lf_operation_steps_timestamp BEFORE UPDATE ON lf_operation_steps FOR EACH ROW EXECUTE FUNCTION fn_update_lf_operation_steps_timestamp()",
           "function_source_sha256": "6a2112a62a14ac0f8dd6fc4675960a5c1cb2224171af659df06109868c6d697c"
         }
@@ -2838,7 +2838,7 @@
           "type": "f",
           "validated": true,
           "definition": "FOREIGN KEY (operation_code) REFERENCES lf_operation_registry(operation_code) ON DELETE CASCADE",
-          "references": "lf_operation_registry"
+          "references": "public.lf_operation_registry"
         },
         {
           "name": "lf_operation_steps_operation_code_step_id_key",
@@ -3070,7 +3070,7 @@
       ]
     }
   ],
-  "observed_at": "2026-10-13 09:17:58.807898+00",
+  "observed_at": "2026-10-13 09:19:22.152404+00",
   "schema_version": "LF_OPERATIONAL_BASELINE_CATALOG_READBACK_V1",
   "expected_relations": 11,
   "resolved_relations": 11
