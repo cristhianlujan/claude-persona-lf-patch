@@ -234,7 +234,9 @@ class GovernedCandidateStaticTests(unittest.TestCase):
 
     def test_extra_role_memberships_fail_closed(self):
         source=SQL.read_text(encoding="utf-8")
-        self.assertIn("WHERE u.rolname=session_user AND g.rolname<>p_expected_role",source)
+        self.assertIn("WITH RECURSIVE effective_memberships(roleid)",source)
+        self.assertIn("JOIN effective_memberships parent ON parent.roleid=m.member",source)
+        self.assertIn("WHERE granted.rolname<>p_expected_role",source)
         self.assertTrue(verify(source.replace(
             "OPERATIONAL_PRINCIPAL_EXTRA_ROLE_MEMBERSHIP_FORBIDDEN",
             "ALLOW_EXTRA_PRIVILEGES")))
