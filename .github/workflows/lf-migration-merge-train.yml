@@ -48,6 +48,7 @@ jobs:
       applied: ${{ steps.real_apply.outputs.applied || 'false' }}
       trusted_main: ${{ steps.admission.outputs.current_main }}
       train_exec_state: ${{ steps.train_exec_commit.outputs.state_b64 || steps.train_exec.outputs.state_b64 }}
+      recover_mode: ${{ steps.recover_mode.outputs.operation_mode }}
 
     steps:
       - name: Checkout trusted current main only
@@ -827,7 +828,7 @@ jobs:
       - name: Router execution patch step (Train-managed, post-apply)
         id: train_exec_commit
         if: steps.train_exec.outcome == 'success' && steps.real_apply.outputs.applied == 'true'
-        continue-on-error: true
+        continue-on-error: ${{ steps.recover_mode.outputs.operation_mode != 'RECOVER' }}
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         shell: bash
@@ -839,9 +840,25 @@ jobs:
             --apply-receipt .lf_train/exact-apply-receipt.json
           echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
 
+      - name: RECOVER exact original SQL ledger readback
+        id: recover_readback
+        if: steps.recover_mode.outputs.operation_mode == 'RECOVER' && steps.real_apply.outputs.applied == 'true'
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SOURCE_FILE: ${{ steps.source.outputs.source_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "${{ steps.train_exec_commit.outcome }}" = "success" ] || {
+            echo "FAIL_RECOVER_ROUTER_EFFECT_RECEIPT_MISSING"; exit 2;
+          }
+          python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_recover_preflight.py \
+            --migration-path "$SOURCE_FILE" --readback | tee .lf_train/recover-readback.json
+          jq -e '.status=="PASS" and .code=="RECOVER_EXACT_LEDGER_READBACK_PASS"' .lf_train/recover-readback.json >/dev/null
+
       - name: Run changeset-scoped parity from trusted persisted source
         id: parity
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.recover_mode.outputs.operation_mode != 'RECOVER'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
@@ -1001,7 +1018,7 @@ jobs:
 
       - name: Router execution verify and close (Train-managed, post-merge)
         if: needs.lf-migration-merge-train.outputs.train_exec_state != ''
-        continue-on-error: true
+        continue-on-error: ${{ needs.lf-migration-merge-train.outputs.recover_mode != 'RECOVER' }}
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           STATE_B64: ${{ needs.lf-migration-merge-train.outputs.train_exec_state }}
