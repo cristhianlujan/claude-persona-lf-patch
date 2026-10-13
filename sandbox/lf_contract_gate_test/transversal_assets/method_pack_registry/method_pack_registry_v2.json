@@ -1074,7 +1074,19 @@
         "status": "SOURCE_AVAILABLE_SHADOW_ONLY",
         "callable_scope": "EXPLICIT_OFFLINE_EVALUATION_ONLY",
         "invocation_authorized": false,
-        "production_binding": false
+        "production_binding": false,
+        "argument_contract": {
+          "positional": [
+            "nodes",
+            "edges",
+            "start",
+            "end"
+          ],
+          "optional": {
+            "max_paths": 128
+          },
+          "externally_bound": []
+        }
       }
     },
     {
@@ -1173,7 +1185,15 @@
         "status": "SOURCE_AVAILABLE_SHADOW_ONLY",
         "callable_scope": "EXPLICIT_OFFLINE_EVALUATION_ONLY",
         "invocation_authorized": false,
-        "production_binding": false
+        "production_binding": false,
+        "argument_contract": {
+          "positional": [
+            "cases",
+            "suspects"
+          ],
+          "optional": {},
+          "externally_bound": []
+        }
       }
     },
     {
@@ -1272,7 +1292,16 @@
         "status": "SOURCE_AVAILABLE_SHADOW_ONLY",
         "callable_scope": "EXPLICIT_OFFLINE_EVALUATION_ONLY",
         "invocation_authorized": false,
-        "production_binding": false
+        "production_binding": false,
+        "argument_contract": {
+          "positional": [
+            "sources"
+          ],
+          "optional": {
+            "k": 60
+          },
+          "externally_bound": []
+        }
       }
     },
     {
@@ -1370,7 +1399,18 @@
         "status": "SOURCE_AVAILABLE_SHADOW_ONLY",
         "callable_scope": "EXPLICIT_OFFLINE_EVALUATION_ONLY",
         "invocation_authorized": false,
-        "production_binding": false
+        "production_binding": false,
+        "argument_contract": {
+          "positional": [
+            "atoms"
+          ],
+          "optional": {
+            "probe_budget": 100
+          },
+          "externally_bound": [
+            "reproduces_failure"
+          ]
+        }
       }
     },
     {
@@ -1478,7 +1518,15 @@
         "status": "SOURCE_AVAILABLE_SHADOW_ONLY",
         "callable_scope": "EXPLICIT_OFFLINE_EVALUATION_ONLY",
         "invocation_authorized": false,
-        "production_binding": false
+        "production_binding": false,
+        "argument_contract": {
+          "positional": [
+            "raw",
+            "holdout"
+          ],
+          "optional": {},
+          "externally_bound": []
+        }
       }
     }
   ],
