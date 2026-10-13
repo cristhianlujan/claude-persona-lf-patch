@@ -231,9 +231,15 @@ class ExecutorTests(unittest.TestCase):
           operation_registry_count=1,router_action_count=1,
           router_authority_consumer=True,active_contract_count=1,
           active_required_step_count=3,active_judge_binding_count=3,
-          governed_closeout_function=True
+          governed_closeout_function=True,
+          runtime_role_grant_audit_passed=True,
+          public_security_definer_exposure_reviewed=True
         )
         self.assertEqual(evaluate_activation(snap)["status"],"PASS")
+        snap["public_security_definer_exposure_reviewed"]=False
+        self.assertIn("BLOCK_PUBLIC_DEFINER_EXPOSURE_UNREVIEWED",
+                      evaluate_activation(snap)["blocking_codes"])
+        snap["public_security_definer_exposure_reviewed"]=True
         snap["migration_route"]["operation_code"]=OPERATION_CODE
         self.assertIn("BLOCK_MIGRATION_ROUTE_NOT_PRESERVED",evaluate_activation(snap)["blocking_codes"])
 
