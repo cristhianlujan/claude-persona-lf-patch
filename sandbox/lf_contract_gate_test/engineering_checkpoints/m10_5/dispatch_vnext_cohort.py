@@ -56,6 +56,8 @@ def execute(snapshot, release, gateway, *, allowed=False):
                 if status == "VALIDATOR_RESUME_REQUIRED":
                     continue
                 item["agent_result"] = status
+                if status not in {"READY", "BLOCKED", "HUMAN_DECISION_REQUIRED"}:
+                    item["status"] = "ERROR_EDGE_NONTERMINAL"
                 break
             else:
                 item["status"] = "ERROR_CONTINUATION_LIMIT"
