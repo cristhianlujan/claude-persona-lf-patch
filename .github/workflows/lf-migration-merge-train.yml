@@ -435,6 +435,7 @@ jobs:
           MIGRATION_COUNT: ${{ steps.source.outputs.migration_count }}
           MIGRATION_PATH: ${{ steps.source.outputs.migration_path }}
           SOURCE_FILE: ${{ steps.source.outputs.source_file }}
+          OP_MODE: ${{ steps.recover_mode.outputs.operation_mode }}
         shell: bash
         run: |
           set -euo pipefail
@@ -470,6 +471,7 @@ jobs:
           existing_row="$(printf '%s' "$existing_row" | tr -d '\r\n')"
           existing_name="${existing_row%%|*}"
           if [ -n "$existing_row" ]; then
+            [ "$OP_MODE" != "RECOVER" ] || { echo "FAIL_RECOVER_ORIGINAL_ALREADY_IN_LEDGER"; exit 2; }
             [ "$existing_name" = "$current_name" ] || { echo "FAIL_TRAIN_EXISTING_LEDGER_IDENTITY_MISMATCH version=$current_version ledger=$existing_name pr=$current_name"; exit 2; }
             ledger_hex="${existing_row#*|}"
             file_sha="$(python3 - "$SOURCE_FILE" <<'PY'
@@ -500,17 +502,23 @@ jobs:
           fi
           echo "already_applied_exact=false" >> "$GITHUB_OUTPUT"
 
-          assign_out="$(python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py \
-            "$SOURCE_FILE" --main-max "$main_max" --ledger-max "$ledger_max" --dry-run)"
+          assign_args=("$SOURCE_FILE" --main-max "$main_max" --ledger-max "$ledger_max" --dry-run)
+          if [ "$OP_MODE" = "RECOVER" ]; then assign_args+=(--preserve-current); fi
+          assign_out="$(python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py "${assign_args[@]}")"
           echo "$assign_out"
           version="$(printf '%s' "$assign_out" | sed -nE 's/.* version=([0-9]{14}) .*/\1/p')"
           [ -n "$version" ] || { echo "FAIL_TRAIN_ASSIGN_VERSION_PARSE"; exit 2; }
 
           old_name="${MIGRATION_PATH##*/}"
           suffix="${old_name#???????????????}"
-          target_path="supabase/migrations/${version}_${suffix}"
-          python3 sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_version_order_check.py \
-            --new-migration "$target_path" --main-max "$main_max" --ledger-max "$ledger_max"
+          if [ "$OP_MODE" = "RECOVER" ]; then
+            [ "$version" = "$current_version" ] || { echo "FAIL_RECOVER_VERSION_NOT_ORIGINAL"; exit 2; }
+            target_path="$MIGRATION_PATH"
+          else
+            target_path="supabase/migrations/${version}_${suffix}"
+            python3 sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_version_order_check.py \
+              --new-migration "$target_path" --main-max "$main_max" --ledger-max "$ledger_max"
+          fi
 
           name="${target_path##*/}"
           name="${name#???????????????}"
@@ -562,7 +570,7 @@ jobs:
 
       - name: Retimestamp migration atomically on PR head in REAL mode
         id: retimestamp
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.recover_mode.outputs.operation_mode != 'RECOVER'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
