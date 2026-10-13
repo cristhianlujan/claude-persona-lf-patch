@@ -165,12 +165,12 @@ as_login("lf_op_sandbox_effect",
 # job. Explicitly simulate default EXECUTE on each, then run the EXACT
 # REVOKE statements in the candidate migration and verify effective ACLs.
 facade_revokes = re.findall(
-    r"(?m)^REVOKE ALL ON FUNCTION (public\\.lf_[a-z_]+_v1\\([^)]+\\)) "
+    r"(?m)^REVOKE ALL ON FUNCTION (public\.lf_[a-z_]+_v1\([^)]+\)) "
     r"FROM PUBLIC, anon, authenticated, service_role;$",
     source,
 )
-assert len(facade_revokes) == len(set(facade_revokes)) == 6, \\
-    "BLOCK_OP_EXECUTOR_EXACT_DEFAULT_ROLE_REVOKES_MISSING"
+assert len(facade_revokes) == len(set(facade_revokes)) == 6, (
+    "BLOCK_OP_EXECUTOR_EXACT_DEFAULT_ROLE_REVOKES_MISSING")
 psql("""DO $role_setup$
 DECLARE r text;
 BEGIN
@@ -180,7 +180,7 @@ BEGIN
     END IF;
   END LOOP;
 END $role_setup$;""")
-psql("\\n".join(
+psql("\n".join(
     f"GRANT EXECUTE ON FUNCTION {signature} TO anon, authenticated, service_role;"
     for signature in facade_revokes
 ))
@@ -194,7 +194,7 @@ pre = psql(
     "AND has_function_privilege('service_role', fn, 'EXECUTE');"
 ).strip()
 assert pre == "6", "BLOCK_SUPABASE_DEFAULT_GRANT_REPRO_FAILED"
-psql("\\n".join(
+psql("\n".join(
     f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC, anon, authenticated, service_role;"
     for signature in facade_revokes
 ))
