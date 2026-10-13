@@ -36,7 +36,7 @@ class ReconcileGitOnlyTest(unittest.TestCase):
         try:
             args=["test","--repo-root",str(root),"--pr-files",str(changes),"--base-sha",base,"--head-sha",head,
                   "--router-execution-id","EXEC-RECONCILE-1","--repository","o/r","--db-url","test-db"]
-            with patch.object(sys,"argv",args),patch.object(m,"validate_router") as auth,patch.object(m,"ledger_row",return_value=("ig_example_v1","select 1;\n")):
+            with patch.object(sys,"argv",args),patch.object(m,"validate_router") as auth,patch.object(m,"ledger_row",return_value=("ig_example_v1","select 1;\n",1)):
                 with redirect_stdout(StringIO()) as out:
                     m.main()
                 return json.loads(out.getvalue()),auth.call_count
@@ -53,6 +53,31 @@ class ReconcileGitOnlyTest(unittest.TestCase):
         self.assertIn("steps.reconcile_mode.outputs.mode != 'RECONCILE'",wf)
         self.assertIn("RECONCILE_MIXED_SCOPE_FORBIDDEN",(Path(__file__).resolve().parent/"lf_migration_reconcile_git.py").read_text())
 
+    def test_multi_statement_ledger_blocks_without_any_write(self):
+        tmp,root,changes,base,head=self.prepare()
+        try:
+            args=["test","--repo-root",str(root),"--pr-files",str(changes),
+                  "--base-sha",base,"--head-sha",head,
+                  "--router-execution-id","EXEC-RECONCILE-1","--repository","o/r","--db-url","read-only"]
+            with patch.object(sys,"argv",args),patch.object(m,"validate_router"),\
+                 patch.object(m,"ledger_row",return_value=("ig_example_v1","select 1;\n",2)):
+                with self.assertRaisesRegex(RuntimeError,"RECONCILE_LEDGER_CARDINALITY_INVALID"):
+                    m.main()
+        finally:
+            tmp.cleanup()
+
+    def test_ledger_sql_mismatch_is_rejected_by_canonical_core(self):
+        tmp,root,changes,base,head=self.prepare()
+        try:
+            args=["test","--repo-root",str(root),"--pr-files",str(changes),
+                  "--base-sha",base,"--head-sha",head,
+                  "--router-execution-id","EXEC-RECONCILE-1","--repository","o/r","--db-url","read-only"]
+            with patch.object(sys,"argv",args),patch.object(m,"validate_router"),\
+                 patch.object(m,"ledger_row",return_value=("ig_example_v1","select 99;\n",1)):
+                with self.assertRaisesRegex(RuntimeError,"RECONCILE_CANONICAL_PARITY_FAILED"):
+                    m.main()
+        finally:
+            tmp.cleanup()
     def test_git_only_exact_content_passes(self):
         got,auth=self.run_case()
         self.assertEqual(got["code"],"RECONCILE_GIT_ONLY_PASS")
