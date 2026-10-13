@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch
 
 from lf_operation_executor_v1 import (
-    ACTIVE_LANE, CONNECTOR, Handler, Request, Blocked,
+    ACTIVE_LANE, CONNECTOR, OPERATIONAL_ASSET_TYPE, OPERATIONAL_ACTION, Handler, Request, Blocked,
     digest, dispatch, runtime_dispatch,
 )
 
@@ -14,7 +14,7 @@ def request():
 
 def handler(perform=None, verify=None):
     return Handler("EXAMPLE_HANDLER", "v1", "EXAMPLE_OPERATION",
-                   "DB", "example.logical_target", "UPDATE",
+                   OPERATIONAL_ASSET_TYPE, "example.logical_target", OPERATIONAL_ACTION,
                    perform or (lambda cur, payload: {"changed": payload["item"]}),
                    verify or (lambda cur, payload, effect:
                               {"verified": effect.get("changed") == payload["item"], "source": "trusted-handler"}))
@@ -57,6 +57,7 @@ class FakeCursor:
             override = self.db.second_auth_overrides if self.db.auth_reads > 1 else self.db.auth_overrides
             return ({"applicable":True,"valid":True,"code":"ROUTER_DOWNSTREAM_AUTHORITY_VALID",
                      "operation_code":req.operation_code,"execution_id":req.execution_id,
+                     "target_type":h.target_type,"target_code":h.target_code,
                      **override},)
         if "fn_lf_operation_acquire_lease_v1" in sql:
             return ({"result":"LEASE_ACQUIRED","lease_fence":1, **self.db.lease_overrides},)
@@ -127,6 +128,28 @@ class ExecutorTests(unittest.TestCase):
         result=dispatch(req,{h.code:bad},lambda:db,admitted=True)
         self.assertEqual(result["code"],"BLOCK_MIGRATION_RESERVED_FOR_TRAIN")
         self.assertEqual(db.queries,[])
+    def test_migration_db_alias_not_accepted_as_operation(self):
+        from dataclasses import replace
+        req,h,db=self.make()
+        bad=replace(h,target_type="DB",action_code="UPDATE")
+        result=dispatch(req,{h.code:bad},lambda:db,admitted=True)
+        self.assertEqual(result["code"],"BLOCK_MIGRATION_RESERVED_FOR_TRAIN")
+        self.assertEqual(db.queries,[])
+
+    def test_router_uses_dedicated_operational_route(self):
+        result,db=self.run_valid()
+        self.assertEqual(result["status"],"DRY_RUN_ROLLBACK_PASS")
+        query,values=db.queries[0]
+        self.assertEqual(query.count("%s"),5)
+        self.assertEqual(values,( "Governed operational handler",None,OPERATIONAL_ACTION,OPERATIONAL_ASSET_TYPE,"ROUTER"))
+
+    def test_authority_cannot_switch_target_after_handler(self):
+        req,h,db=self.make()
+        db.second_auth_overrides["target_code"]="other.target"
+        result=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
+        self.assertEqual(result["code"],"BLOCK_ROUTER_AUTHORITY_CHANGED_BEFORE_RECEIPT")
+        self.assertEqual(db.commits,0)
+
     def test_route_must_allow_exact_operation(self):
         req,h,db=self.make()
         db.route_overrides["status"]="BLOCKED"
