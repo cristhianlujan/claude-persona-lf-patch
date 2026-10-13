@@ -56,6 +56,6 @@ BEGIN
  IF (SELECT count(*) FROM programacion.engineering_work_checkpoints
  WHERE work_item_id=199 AND status='DONE')<>6
  OR (SELECT status FROM programacion.engineering_work_items WHERE id=199)<>'DONE'
- OR b#>>'{state,progress_pct}'::text IS NULL
+ OR coalesce((b#>>'{state,progress_pct}')::numeric,0)<>100
  THEN RAISE EXCEPTION 'CP6_FINAL_UNIT_NOT_DONE'; END IF;
 END $cp6$;
