@@ -155,7 +155,9 @@ BEGIN
  v_cp3:=v_specs->'DECISIONAL_BINDING_VIA_RELEASE';
  v_cp4:=v_specs->'NO_PASS_WITHOUT_ORACLE_NEG';
  v_cp5:=v_specs->'FAMILY_COVERAGE_47';
- v_cp6:=v_specs->'ORACLE_ACTIVATION_READBACK';
+ v_cp6:=coalesce(v_specs->'ORACLE_ACTIVATION_READBACK',
+   programacion.fn_engineering_checkpoint_action_spec_v3(
+     'IG_CURATOR_VALIDATOR_REFACTOR_V2','M4.11','ORACLE_ACTIVATION_READBACK'));
  IF v_cp4->>'action_kind' IS DISTINCT FROM 'BOUNDED_CHECKPOINT_TEST_AUTHORING'
  OR v_cp5->>'action_kind' IS DISTINCT FROM 'READBACK_ONCE'
  OR COALESCE(v_cp6->>'action_kind',
