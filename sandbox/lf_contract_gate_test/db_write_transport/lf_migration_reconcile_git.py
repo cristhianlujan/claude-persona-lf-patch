@@ -2,13 +2,20 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
+import sys
 import json
 import os
 from pathlib import Path
 import re
 import subprocess
 from urllib.parse import quote
+
+# Reuse the canonical MIGRATION_SOURCE_PARITY comparator; no duplicate parity logic.
+PARITY_PARENT = Path(__file__).resolve().parents[1]
+if str(PARITY_PARENT) not in sys.path:
+    sys.path.insert(0, str(PARITY_PARENT))
+from migration_source_parity.migration_source_parity_core import evaluate_exact_parity
+import migration_transport_normalization as transport
 
 FILE_RE = re.compile(r"^(?P<version>\d{14})_(?P<name>[A-Za-z0-9][A-Za-z0-9_]*)\.sql$")
 
@@ -79,19 +86,19 @@ def validate_router(url: str, execution_id: str, repository: str, base_sha: str,
         raise RuntimeError("RECONCILE_ROUTER_AUTHORITY_NOT_VALID")
 
 
-def ledger_row(url: str, version: str) -> tuple[str, str] | None:
+def ledger_row(url: str, version: str) -> tuple[str, str, int] | None:
     if re.fullmatch(r"[0-9]{14}",version) is None:
         raise ValueError("RECONCILE_VERSION_INVALID")
     sql = (
-        "select name||'|'||encode(convert_to(statements[1],'UTF8'),'hex') "
+        "select name||'|'||cardinality(statements)::text||'|'||encode(convert_to(statements[1],'UTF8'),'hex') "
         "from supabase_migrations.schema_migrations "
         f"where version='{version}';"
     )
     rows=read_only_query(url,sql)
     if not rows: return None
     if len(rows)!=1: raise RuntimeError("RECONCILE_LEDGER_CARDINALITY_INVALID")
-    name,hex_sql=rows[0].split("|",1)
-    return name,bytes.fromhex(hex_sql).decode("utf-8")
+    name,count,hex_sql=rows[0].split("|",2)
+    return name,bytes.fromhex(hex_sql).decode("utf-8"),int(count)
 
 
 def main() -> int:
@@ -135,13 +142,24 @@ def main() -> int:
         row_db = ledger_row(url, nm.group("version"))
         if row_db is None:
             raise RuntimeError(f"RECONCILE_TARGET_LEDGER_VERSION_MISSING:{nm.group('version')}")
-        ledger_name, ledger_sql = row_db
+        ledger_name, ledger_sql, statement_count = row_db
         if ledger_name != nm.group("name"):
             raise RuntimeError(
                 f"RECONCILE_TARGET_NAME_MISMATCH:{nm.group('version')}:{ledger_name}:{nm.group('name')}"
             )
-        if hashlib.sha256(canonical(after.decode("utf-8"))).hexdigest() != hashlib.sha256(canonical(ledger_sql)).hexdigest():
-            raise RuntimeError(f"RECONCILE_CONTENT_LEDGER_MISMATCH:{new}")
+        if statement_count != 1:
+            raise RuntimeError(f"RECONCILE_LEDGER_CARDINALITY_INVALID:{new}:{statement_count}")
+        source_sql = after.decode("utf-8")
+        try:
+            result = evaluate_exact_parity(
+                {nm.group("version"): (nm.group("name"), transport.direct_source_hash(source_sql), source_sql)},
+                {nm.group("version"): (ledger_name, transport.sha256(transport.canonical(ledger_sql)))},
+                {nm.group("version"): statement_count},
+            )
+        except (ValueError, RuntimeError) as error:
+            raise RuntimeError(f"RECONCILE_CANONICAL_PARITY_FAILED:{new}:{error}") from error
+        if result.status != "PASS" or result.version_count != 1:
+            raise RuntimeError(f"RECONCILE_CANONICAL_PARITY_NOT_PASS:{new}")
         out.append({"old": old, "new": new, "version": nm.group("version"), "name": nm.group("name")})
     print(json.dumps({"status": "PASS", "code": "RECONCILE_GIT_ONLY_PASS", "count": len(out), "renames": out}, sort_keys=True))
     return 0
