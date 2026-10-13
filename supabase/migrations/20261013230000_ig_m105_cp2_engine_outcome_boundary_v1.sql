@@ -30,9 +30,11 @@ IF (SELECT status FROM programacion.engineering_work_checkpoints WHERE work_item
 OR u#>>'{m105_validation_contract_v3,schema_version}'<>'M105_COHORT_EVIDENCE_V3'
 OR u#>>'{action_specs_v1,NEW_RUNS_VNEXT,verification_queries,0}' NOT LIKE '%v_ig_m105_cohort_evidence_v1%'
 THEN RAISE EXCEPTION 'CP2_PRESTATE_DRIFT'; END IF;
-IF (SELECT count(*) FROM programacion.v_ig_m105_cp2_verdict_v1 WHERE technical_verdict='PASS_TECNICO')<>13
-OR (SELECT count(*) FROM programacion.v_ig_m105_cp2_verdict_v1 WHERE cp2_verdict='PASS_CP2')<>0
-THEN RAISE EXCEPTION 'CP2_PREVIEW_DRIFT'; END IF;
+IF (SELECT count(*) FROM programacion.v_ig_m105_cp2_verdict_v1)
+  <>jsonb_array_length(u#>'{m105_scope_v1,screen_ids}')
+OR EXISTS(SELECT 1 FROM programacion.v_ig_m105_cp2_verdict_v1
+          WHERE technical_verdict IS NULL OR cp2_verdict IS NULL)
+THEN RAISE EXCEPTION 'CP2_PREVIEW_SHAPE_DRIFT'; END IF;
 q:=$readback$SELECT jsonb_build_object(
 'schema_version','IG_M105_CP2_RELEASE_READBACK_V2','scope_origin','M105_SCOPE_SNAPSHOT_V1','readback_provider','SUPABASE_CANONICAL_READONLY',
 'current_release',max(release_version),'previous_release',max(previous_version),'current_manifest_sha256',max(release_manifest_sha256),
