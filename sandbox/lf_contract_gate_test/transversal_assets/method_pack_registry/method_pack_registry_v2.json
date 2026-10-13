@@ -976,6 +976,465 @@
         "COST_NOT_EFFECTIVE",
         "CRITICAL_REGRESSION"
       ]
+    },
+    {
+      "method_id": "CAUSAL_GRAPH_ANALYSIS",
+      "method_family": "MATHEMATICAL",
+      "selection_lane": "SHADOW_ONLY",
+      "signals": [
+        {
+          "type": "causal_requirement",
+          "accepted_values": [
+            "HIGH",
+            "REQUIRED"
+          ]
+        },
+        {
+          "type": "profile_gap",
+          "accepted_values": [
+            "CAUSAL_BOUNDARY_AMBIGUITY"
+          ]
+        }
+      ],
+      "preconditions": [
+        "material_graph_bound==true",
+        "causal_edge_receipts_present==true"
+      ],
+      "precondition_contract": [
+        {
+          "key": "material_graph_bound",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "causal_edge_receipts_present",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "problem_classes": [
+        "causal_requirement:HIGH,REQUIRED",
+        "profile_gap:CAUSAL_BOUNDARY_AMBIGUITY"
+      ],
+      "cost_points": 2,
+      "risk": "MEDIUM",
+      "evidence_required": [
+        "material_graph_bound_evidence_ref",
+        "causal_edge_receipts_present_evidence_ref"
+      ],
+      "compatible_capabilities": [
+        "CAUSAL_EFFECT_LINEAGE",
+        "EVIDENCE_LEDGER"
+      ],
+      "stop_conditions": [
+        "NO_REPRODUCIBLE_GAIN",
+        "CRITICAL_REGRESSION",
+        "BUDGET_EXHAUSTED"
+      ],
+      "escalation": [],
+      "validation_method": "MATCHED_TASK_ABLATION_PLUS_INDEPENDENT_JUDGE",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "auto_select": false,
+      "cost_model": {
+        "estimate_points": 2,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "provider_token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ],
+      "evaluation_hypothesis": "Improves first broken boundary localization without false causal proof",
+      "execution_permission": false
+    },
+    {
+      "method_id": "OCHIAI_SUSPICIOUSNESS",
+      "method_family": "MATHEMATICAL",
+      "selection_lane": "SHADOW_ONLY",
+      "signals": [
+        {
+          "type": "repeated_pattern",
+          "accepted_values": [
+            true
+          ]
+        },
+        {
+          "type": "profile_gap",
+          "accepted_values": [
+            "ROOT_CAUSE_RANKING"
+          ]
+        }
+      ],
+      "preconditions": [
+        "labeled_failure_spectrum_exists==true",
+        "passing_negative_controls_exist==true"
+      ],
+      "precondition_contract": [
+        {
+          "key": "labeled_failure_spectrum_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "passing_negative_controls_exist",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "problem_classes": [
+        "repeated_pattern:true",
+        "profile_gap:ROOT_CAUSE_RANKING"
+      ],
+      "cost_points": 1,
+      "risk": "LOW",
+      "evidence_required": [
+        "labeled_failure_spectrum_exists_evidence_ref",
+        "passing_negative_controls_exist_evidence_ref"
+      ],
+      "compatible_capabilities": [
+        "TYPED_EVIDENCE_REGISTRY",
+        "EVIDENCE_LEDGER"
+      ],
+      "stop_conditions": [
+        "NO_REPRODUCIBLE_GAIN",
+        "CRITICAL_REGRESSION",
+        "BUDGET_EXHAUSTED"
+      ],
+      "escalation": [],
+      "validation_method": "MATCHED_TASK_ABLATION_PLUS_INDEPENDENT_JUDGE",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "auto_select": false,
+      "cost_model": {
+        "estimate_points": 1,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "provider_token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ],
+      "evaluation_hypothesis": "Improves top-ranked culprit localization on held-out labeled failures",
+      "execution_permission": false
+    },
+    {
+      "method_id": "RECIPROCAL_RANK_FUSION",
+      "method_family": "MATHEMATICAL",
+      "selection_lane": "SHADOW_ONLY",
+      "signals": [
+        {
+          "type": "evidence_paths",
+          "accepted_values": [
+            "MULTIPLE_INDEPENDENT"
+          ]
+        },
+        {
+          "type": "profile_gap",
+          "accepted_values": [
+            "EVIDENCE_RANKING_CONFLICT"
+          ]
+        }
+      ],
+      "preconditions": [
+        "independent_ranked_sources_exist==true",
+        "rank_source_currentness_verified==true"
+      ],
+      "precondition_contract": [
+        {
+          "key": "independent_ranked_sources_exist",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "rank_source_currentness_verified",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "problem_classes": [
+        "evidence_paths:MULTIPLE_INDEPENDENT",
+        "profile_gap:EVIDENCE_RANKING_CONFLICT"
+      ],
+      "cost_points": 1,
+      "risk": "LOW",
+      "evidence_required": [
+        "independent_ranked_sources_exist_evidence_ref",
+        "rank_source_currentness_verified_evidence_ref"
+      ],
+      "compatible_capabilities": [
+        "CAPABILITY_SELECTOR",
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "stop_conditions": [
+        "NO_REPRODUCIBLE_GAIN",
+        "CRITICAL_REGRESSION",
+        "BUDGET_EXHAUSTED"
+      ],
+      "escalation": [],
+      "validation_method": "MATCHED_TASK_ABLATION_PLUS_INDEPENDENT_JUDGE",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "auto_select": false,
+      "cost_model": {
+        "estimate_points": 1,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "provider_token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ],
+      "evaluation_hypothesis": "Improves downstream evidence relevance over best individual source without source double counting",
+      "execution_permission": false
+    },
+    {
+      "method_id": "DELTA_DEBUGGING",
+      "method_family": "MATHEMATICAL",
+      "selection_lane": "SHADOW_ONLY",
+      "signals": [
+        {
+          "type": "complexity",
+          "accepted_values": [
+            "HIGH"
+          ]
+        },
+        {
+          "type": "profile_gap",
+          "accepted_values": [
+            "MINIMIZE_REPRODUCIBLE_FAILURE"
+          ]
+        }
+      ],
+      "preconditions": [
+        "safe_deterministic_replay_exists==true",
+        "failure_predicate_reproduced==true"
+      ],
+      "precondition_contract": [
+        {
+          "key": "safe_deterministic_replay_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "failure_predicate_reproduced",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "problem_classes": [
+        "complexity:HIGH",
+        "profile_gap:MINIMIZE_REPRODUCIBLE_FAILURE"
+      ],
+      "cost_points": 2,
+      "risk": "LOW",
+      "evidence_required": [
+        "safe_deterministic_replay_exists_evidence_ref",
+        "failure_predicate_reproduced_evidence_ref"
+      ],
+      "compatible_capabilities": [
+        "REVERSIBLE_CANDIDATE_VERIFICATION"
+      ],
+      "stop_conditions": [
+        "NO_REPRODUCIBLE_GAIN",
+        "CRITICAL_REGRESSION",
+        "BUDGET_EXHAUSTED"
+      ],
+      "escalation": [],
+      "validation_method": "MATCHED_TASK_ABLATION_PLUS_INDEPENDENT_JUDGE",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "auto_select": false,
+      "cost_model": {
+        "estimate_points": 2,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "provider_token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ],
+      "evaluation_hypothesis": "Reduces reproducer size while preserving failure predicate within bounded probes",
+      "execution_permission": false
+    },
+    {
+      "method_id": "MCNEMAR_AND_CONFIDENCE_INTERVALS",
+      "method_family": "MATHEMATICAL",
+      "selection_lane": "SHADOW_ONLY",
+      "signals": [
+        {
+          "type": "optimization_need",
+          "accepted_values": [
+            "REQUIRED",
+            "ADVANCED"
+          ]
+        },
+        {
+          "type": "profile_gap",
+          "accepted_values": [
+            "PAIRED_BINARY_BEHAVIOR_COMPARISON"
+          ]
+        }
+      ],
+      "preconditions": [
+        "paired_binary_execution_receipts_exist==true",
+        "blind_independent_evaluator_exists==true",
+        "holdout_frozen==true"
+      ],
+      "precondition_contract": [
+        {
+          "key": "paired_binary_execution_receipts_exist",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "blind_independent_evaluator_exists",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        },
+        {
+          "key": "holdout_frozen",
+          "operator": "EQ",
+          "expected": true,
+          "verification_required": true
+        }
+      ],
+      "problem_classes": [
+        "optimization_need:REQUIRED,ADVANCED",
+        "profile_gap:PAIRED_BINARY_BEHAVIOR_COMPARISON"
+      ],
+      "cost_points": 1,
+      "risk": "LOW",
+      "evidence_required": [
+        "paired_binary_execution_receipts_exist_evidence_ref",
+        "blind_independent_evaluator_exists_evidence_ref",
+        "holdout_frozen_evidence_ref"
+      ],
+      "compatible_capabilities": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+        "INDEPENDENT_ASSURANCE"
+      ],
+      "stop_conditions": [
+        "NO_REPRODUCIBLE_GAIN",
+        "CRITICAL_REGRESSION",
+        "BUDGET_EXHAUSTED"
+      ],
+      "escalation": [],
+      "validation_method": "MATCHED_TASK_ABLATION_PLUS_INDEPENDENT_JUDGE",
+      "availability_state": "EXPERIMENTAL_NOT_ADMITTED",
+      "auto_select": false,
+      "cost_model": {
+        "estimate_points": 1,
+        "estimate_status": "ESTIMATE_ONLY",
+        "observed_cost_fields": [
+          "wall_ms",
+          "tool_calls",
+          "provider_token_usage_if_observable"
+        ],
+        "observed_cost_preferred": true,
+        "token_estimation_forbidden": true
+      },
+      "effectiveness_contract": {
+        "required_for_learning": [
+          "baseline_metric_ref",
+          "outcome_metric_ref",
+          "paired_or_counterfactual_ref",
+          "holdout_ref"
+        ],
+        "transfer_scope": "UNPROVEN_UNTIL_ADMITTED",
+        "causal_attribution_required": true,
+        "negative_results_retained": true
+      },
+      "retirement_conditions": [
+        "REPEATED_NO_UPLIFT",
+        "TRANSFER_FAILURE",
+        "COST_NOT_EFFECTIVE",
+        "CRITICAL_REGRESSION"
+      ],
+      "evaluation_hypothesis": "Quantifies paired binary gains and losses without substituting admission judge",
+      "execution_permission": false
     }
   ],
   "dynamic_policy": {
@@ -1010,5 +1469,20 @@
   "research_relationship": {
     "external_method_names_are_inspiration_not_engines": true,
     "create_parallel_engine": false
+  },
+  "math_extension": {
+    "status": "SHADOW_ONLY_NOT_ADMITTED",
+    "method_ids": [
+      "CAUSAL_GRAPH_ANALYSIS",
+      "OCHIAI_SUSPICIOUSNESS",
+      "RECIPROCAL_RANK_FUSION",
+      "DELTA_DEBUGGING",
+      "MCNEMAR_AND_CONFIDENCE_INTERVALS"
+    ],
+    "selection_source": "capability_selector_v3.compose_capabilities_v3",
+    "preconditions": "TYPED_VERIFIED_AT_RECEIPT_FIELD_LEVEL",
+    "external_attestation_required": true,
+    "auto_execute": false,
+    "real_benchmark_pending": true
   }
 }
