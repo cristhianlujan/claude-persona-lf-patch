@@ -128,6 +128,9 @@ def prioritize_mathematical_methods(
             "cost_state": cost_state,
             "compatible_capabilities": method.get("compatible_capabilities", []),
             "hypothesis": method.get("evaluation_hypothesis"),
+            # Source-only binding from canonical registry: descriptive identity,
+            # not an executor or callable permission for the existing bridge.
+            "candidate_implementation": method.get("candidate_implementation"),
             "availability_state": method["availability_state"],
             "execution_authorized": False,
         })
