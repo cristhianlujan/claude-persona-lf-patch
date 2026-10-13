@@ -55,6 +55,22 @@ def compose_capabilities_v3(
 ) -> dict[str,Any]:
     signals=build_selection_signals(context)
     base=_select_capabilities_multilabel(signals,catalog,policy)
+    if base["fallback_state"] in {"CONTRADICTORY", "CAPABILITY_FAILURE"}:
+        return {
+            "schema": "CAPABILITY_SELECTOR_COMPOSITION_V3",
+            "selection_cycle": int(context.get("selection_cycle", 0)),
+            "selected_capabilities": [], "selected_methods": [],
+            "rejected_methods": [],
+            "mathematical_method_selection": {
+                "schema": "CAPABILITY_SELECTOR_MATH_SHADOW_V1",
+                "status": "BLOCK", "reason": "BASE_SELECTOR_NOT_VALID",
+                "recommended_trials": [], "execution_authorized": False,
+            },
+            "composition_order": [], "reason": base["reasons"],
+            "fallback_state": base["fallback_state"],
+            "execution_authorized": False, "admission_required": True,
+            "replan_allowed": False,
+        }
     methods=method_registry.get("methods",[]) if isinstance(method_registry,dict) else []
     budget=context.get("budget",{}) if isinstance(context.get("budget"),dict) else {}
     max_cost=budget.get("max_method_cost_points")
@@ -85,8 +101,9 @@ def compose_capabilities_v3(
                                    for sg in signals)})
         observed_cost, cost_state = _method_cost(method, context)
         eligible.append((method, matching, observed_cost, cost_state))
+    # Do not reward an untrusted claimed OBSERVED cost status in ranking;
+    # provenance must be authenticated externally before cost-effectiveness learning.
     eligible.sort(key=lambda item: (-len(item[1]),
-                                    item[3] != "OBSERVED",
                                     item[2], str(item[0].get("method_id", ""))))
     selected=[]; rejected=[]; total=0.0
     for method, matching, _, _ in eligible:
