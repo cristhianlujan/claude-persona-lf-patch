@@ -34,6 +34,8 @@ def evaluate(snapshot: dict) -> dict:
         failures.append("BLOCK_ROUTER_ACTION_UNVERIFIED")
     if snapshot.get("router_authority_consumer") is not True:
         failures.append("BLOCK_ROUTER_AUTHORITY_CONSUMER_NOT_REGISTERED")
+    if snapshot.get("governed_execution_admission_proven") is not True:
+        failures.append("BLOCK_OPERATIONAL_EXECUTION_ADMISSION_NOT_PROVEN")
     if snapshot.get("active_contract_count", 0) < 1:
         failures.append("BLOCK_OPERATION_CONTRACT_NOT_ACTIVE")
     if snapshot.get("active_required_step_count", 0) < 1:
