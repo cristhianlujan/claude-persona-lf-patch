@@ -219,8 +219,8 @@ jobs:
           if mode=="RECONCILE" and re.fullmatch(r"EXEC-[A-Z0-9][A-Z0-9_-]*",execution) is None:
               raise SystemExit("FAIL_RECONCILE_ROUTER_EXECUTION_REQUIRED")
           with open(os.environ["GITHUB_OUTPUT"],"a") as out:
-              out.write("mode="+mode+"\\n")
-              out.write("router_execution_id="+execution+"\\n")
+              out.write("mode="+mode+"\n")
+              out.write("router_execution_id="+execution+"\n")
           PY
 
       - name: Sync PR branch with current main in REAL mode
