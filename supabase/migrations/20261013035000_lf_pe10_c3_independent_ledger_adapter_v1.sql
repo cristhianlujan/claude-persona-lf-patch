@@ -13,11 +13,11 @@ DECLARE
       'plan','PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1',
       'unit','PE10',
       'c1',(select assertion_receipt_sha256 from programacion.engineering_work_checkpoints
-            where work_item_id=1103 and checkpoint_code='PE10_C1'),
+            where work_item_id=(select work_item_id from programacion.engineering_plan_units where plan_code='PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1' and unit_code='PE10') and checkpoint_code='PE10_C1'),
       'c2',(select assertion_receipt_sha256 from programacion.engineering_work_checkpoints
-            where work_item_id=1103 and checkpoint_code='PE10_C2'),
+            where work_item_id=(select work_item_id from programacion.engineering_plan_units where plan_code='PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1' and unit_code='PE10') and checkpoint_code='PE10_C2'),
       'c2b',(select assertion_receipt_sha256 from programacion.engineering_work_checkpoints
-            where work_item_id=1103 and checkpoint_code='PE10_C2B'),
+            where work_item_id=(select work_item_id from programacion.engineering_plan_units where plan_code='PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1' and unit_code='PE10') and checkpoint_code='PE10_C2B'),
       'first_evolution',(select c.assertion_receipt_sha256
             from programacion.engineering_work_checkpoints c
             join programacion.engineering_plan_units u on u.work_item_id=c.work_item_id
