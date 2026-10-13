@@ -66,6 +66,8 @@ class FakeCursor:
                      **self.db.effect_overrides},)
         if "fn_lf_operation_mark_effect_succeeded_v1" in sql:
             return ({"result":"EFFECT_SUCCESS_PERSISTED",**self.db.receipt_overrides},)
+        if "lf_close_operational_execution_v1" in sql:
+            return ({"result":"EXECUTION_COMPLETED","execution_id":req.execution_id,**self.db.close_overrides},)
         raise AssertionError("unexpected query:"+sql)
 
 class FakeConnection:
@@ -75,7 +77,7 @@ class FakeConnection:
         self.route_overrides, self.admission_overrides = {}, {}
         self.execution_overrides, self.auth_overrides = {}, {}
         self.second_auth_overrides, self.lease_overrides = {}, {}
-        self.effect_overrides, self.receipt_overrides = {}, {}
+        self.effect_overrides, self.receipt_overrides, self.close_overrides = {}, {}, {}
         self.auth_reads = 0
         self.commits = self.rollbacks = self.closed = 0
     def cursor(self):
@@ -114,8 +116,10 @@ class ExecutorTests(unittest.TestCase):
         result,db=self.run_valid(dry_run=False)
         self.assertEqual(result["status"],"COMMITTED_READBACK_PASS")
         self.assertEqual((db.commits,db.rollbacks),(1,0))
-        self.assertEqual(db.queries[-1][0].split("(")[0],
+        self.assertEqual(db.queries[-2][0].split("(")[0],
                          "SELECT public.fn_lf_operation_mark_effect_succeeded_v1")
+        self.assertEqual(db.queries[-1][0].split("(")[0],
+                         "SELECT public.lf_close_operational_execution_v1")
     def test_unknown_handler_blocks_before_route(self):
         req,h,db=self.make()
         result=dispatch(req,{},lambda:db,admitted=True)
@@ -200,6 +204,21 @@ class ExecutorTests(unittest.TestCase):
         result=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
         self.assertEqual(result["code"],"BLOCK_EFFECT_RECEIPT_NOT_DURABLE")
         self.assertEqual(db.commits,0)
+    def test_failed_canonical_closeout_rolls_back_effect_and_handler(self):
+        req,h,db=self.make()
+        db.close_overrides["result"]="BLOCKED"
+        result=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
+        self.assertEqual(result["code"],"BLOCK_OPERATIONAL_CLOSEOUT_NOT_DURABLE")
+        self.assertEqual(db.commits,0)
+        self.assertEqual(db.rollbacks,1)
+
+    def test_closure_wrong_execution_id_cannot_commit(self):
+        req,h,db=self.make()
+        db.close_overrides["execution_id"]="EXEC-OTHER"
+        result=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
+        self.assertEqual(result["code"],"BLOCK_OPERATIONAL_CLOSEOUT_NOT_DURABLE")
+        self.assertEqual(db.commits,0)
+
     def test_runtime_requires_lane_before_importing_driver(self):
         req,h,_=self.make()
         with patch.dict("os.environ",{"LF_OPERATION_EXECUTOR_LANE":"","LF_OPERATION_EXECUTOR_DSN":""}):
