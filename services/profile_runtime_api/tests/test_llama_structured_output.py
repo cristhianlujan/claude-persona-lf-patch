@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,20 @@ from profile_runtime_api.llama import (
 )
 from profile_runtime_api.repository import SchemaBinding
 from profile_runtime_api.settings import Settings
+
+
+class FakeStreamingResponse:
+    def __init__(self, lines: list[bytes]) -> None:
+        self.lines = lines
+
+    def __enter__(self) -> "FakeStreamingResponse":
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        return None
+
+    def __iter__(self):
+        return iter(self.lines)
 
 
 class RecordingClient(LlamaHTTPClient):
@@ -84,6 +99,31 @@ class StructuredOutputBoundaryTest(unittest.TestCase):
             schema_mode=schema_mode,
         )
         return client
+
+    def test_streaming_transport_reassembles_sse_without_total_timeout_semantics(self) -> None:
+        client = LlamaHTTPClient(self.settings)
+        lines = [
+            b'data: {"id":"c1","model":"m","choices":[{"index":0,"delta":{"role":"assistant","content":null},"finish_reason":null}]}\n',
+            b'data: {"id":"c1","model":"m","choices":[{"index":0,"delta":{"content":"{\\"ok\\":"},"finish_reason":null}]}\n',
+            b'data: {"id":"c1","model":"m","choices":[{"index":0,"delta":{"content":"true}"},"finish_reason":null}]}\n',
+            b'data: {"id":"c1","model":"m","timings":{"predicted_n":3},"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}\n',
+            b'data: [DONE]\n',
+        ]
+        with patch(
+            "profile_runtime_api.llama.urllib.request.urlopen",
+            return_value=FakeStreamingResponse(lines),
+        ):
+            response = client._request(
+                "POST", "/v1/chat/completions", {"stream": True}, timeout=5
+            )
+        self.assertEqual(response["choices"][0]["message"]["content"], '{"ok":true}')
+        self.assertEqual(response["choices"][0]["finish_reason"], "stop")
+        self.assertEqual(response["timings"]["predicted_n"], 3)
+
+    def test_chat_uses_streaming_transport_by_default(self) -> None:
+        client = self.call('{"ok":true}', profile_slug="quality_pack")
+        assert client.last_payload is not None
+        self.assertIs(client.last_payload["stream"], True)
 
     def test_ui_architect_auto_preserves_proven_unconstrained_v27_fallback(self) -> None:
         client = self.call('{"ok":true}', profile_slug="ui_architect", schema_mode="AUTO")
