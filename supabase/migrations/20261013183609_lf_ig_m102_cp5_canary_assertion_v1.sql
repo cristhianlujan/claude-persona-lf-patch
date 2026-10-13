@@ -12,7 +12,7 @@ DECLARE
  test_executed boolean:=false;
 BEGIN
  base:=programacion.fn_engineering_unit_bootstrap_v3(p,'M10.2');
- IF base->>'terminal_action'<>'CONTINUE_CURRENT_CHECKPOINT'
+ IF base->>'terminal_action'<>'STOP_ACTION_SPEC_INCOMPLETE'
  OR base#>>'{current_checkpoint,checkpoint_code}'<>cp
  OR (SELECT count(*) FROM programacion.engineering_work_checkpoints
    WHERE work_item_id=199 AND status='DONE')<>4
@@ -23,6 +23,10 @@ BEGIN
  OR meta#>>'{m10_2_contract_governance_v1,phase}'<>'CONSTRUCTION_SANDBOX'
  OR meta#>>'{m10_2_contract_governance_v1,operational_gate}'<>'BLOCKED_PENDING_REGISTERED_CANDIDATE_AND_GOVERNED_AUTHORITY'
  THEN RAISE EXCEPTION 'CP5_CONTRACT_SCOPE_DRIFT'; END IF;
+ meta:=jsonb_set(meta,'{action_specs_v1,NEG_REVERSE,status}','"READY"'::jsonb,true);
+ UPDATE programacion.engineering_plan_units SET unit_metadata=meta WHERE plan_code=p AND unit_code='M10.2' AND work_item_id=199;
+ base:=programacion.fn_engineering_unit_bootstrap_v3(p,'M10.2');
+ IF base->>'terminal_action'<>'CONTINUE_CURRENT_CHECKPOINT' THEN RAISE EXCEPTION 'CP5_AUTHORING_NOT_READY'; END IF;
  IF NOT EXISTS(SELECT 1 FROM public.lf_capability_current
    WHERE capability_code='INPUT_GOVERNANCE' AND version='1.0.0'
    AND manifest_sha256=old_sha AND previous_version IS NULL)
