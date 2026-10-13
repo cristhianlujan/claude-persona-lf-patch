@@ -211,18 +211,21 @@ jobs:
           python3 - "$GITHUB_OUTPUT" <<'PY'
           import re,sys
           body=open(".lf_train/pr-body.txt",encoding="utf-8").read()
-          def field(key):
-              m=re.search(rf"(?mi)^\\s*{re.escape(key)}\\s*:\\s*(\\S+)\\s*$",body)
-              return m.group(1).strip() if m else None
-          mode=(field("LF_MIGRATION_MODE") or "NORMAL").upper()
+          fields={}
+          for raw in body.splitlines():
+              if ":" not in raw:
+                  continue
+              key,value=raw.split(":",1)
+              fields[key.strip().upper()]=value.strip()
+          mode=(fields.get("LF_MIGRATION_MODE") or "NORMAL").upper()
           if mode not in {"NORMAL","RECOVER","RECONCILE","RESUME"}:
               raise SystemExit("LF_MIGRATION_MODE_INVALID:"+mode)
           out={"operation_mode":mode}
           if mode=="RECOVER":
-              path=field("LF_RECOVER_PATH") or ""
-              blob=(field("LF_RECOVER_BLOB") or "").lower()
-              issue=field("LF_RECOVER_ISSUE") or ""
-              if re.fullmatch(r"supabase/migrations/\\d{14}_[A-Za-z0-9][A-Za-z0-9_]*\\.sql",path) is None:
+              path=fields.get("LF_RECOVER_PATH","")
+              blob=fields.get("LF_RECOVER_BLOB","").lower()
+              issue=fields.get("LF_RECOVER_ISSUE","")
+              if re.fullmatch(r"supabase/migrations/[0-9]{14}_[A-Za-z0-9][A-Za-z0-9_]*[.]sql",path) is None:
                   raise SystemExit("LF_RECOVER_PATH_INVALID")
               if re.fullmatch(r"[0-9a-f]{40}",blob) is None:
                   raise SystemExit("LF_RECOVER_BLOB_INVALID")
@@ -230,7 +233,8 @@ jobs:
                   raise SystemExit("LF_RECOVER_ISSUE_INVALID")
               out.update(recover_path=path,recover_blob=blob,recover_issue=issue)
           with open(sys.argv[1],"a",encoding="utf-8") as h:
-              for k,v in out.items(): h.write(f"{k}={v}\\n")
+              for k,v in out.items():
+                  h.write("{}={}\n".format(k,v))
           print(out)
           PY
 
