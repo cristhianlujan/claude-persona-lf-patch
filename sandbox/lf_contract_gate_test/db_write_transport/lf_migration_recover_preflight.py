@@ -45,12 +45,12 @@ def strip_outer_transaction(sql: str) -> str:
         raise ValueError("RECOVER_SOURCE_COMMIT_REQUIRED")
     lines[first] = ""
     lines[last] = ""
-    body = "\\n".join(lines)
+    body = "\n".join(lines)
     # Never allow inner transaction control or psql client meta commands:
     # either would invalidate the rollback-only compatibility evidence.
-    if re.search(r"(?im)^\\s*(?:COMMIT|ROLLBACK|START\\s+TRANSACTION|SAVEPOINT|RELEASE\\s+SAVEPOINT)\\b", body):
+    if re.search(r"(?im)^\s*(?:COMMIT|ROLLBACK|START\s+TRANSACTION|SAVEPOINT|RELEASE\s+SAVEPOINT)\b", body):
         raise ValueError("RECOVER_NESTED_TRANSACTION_CONTROL_FORBIDDEN")
-    if re.search(r"(?m)^\\s*\\\\", body):
+    if re.search(r"(?m)^\s*\\", body):
         raise ValueError("RECOVER_PSQL_META_COMMAND_FORBIDDEN")
     return body
 
