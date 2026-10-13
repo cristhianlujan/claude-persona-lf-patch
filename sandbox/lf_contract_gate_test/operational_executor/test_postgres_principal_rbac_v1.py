@@ -160,5 +160,55 @@ psql("REVOKE lf_op_sandbox_extra FROM lf_operation_executor_runtime;")
 as_login("lf_op_sandbox_effect",
          "SELECT public.lf_operational_executor_assert_principal_v1('lf_operation_executor_runtime');")
 
+# Real PostgreSQL repro of Supabase's per-role default RPC grants.
+# The six original functions were compiled earlier in the same disposable PG17
+# job. Explicitly simulate default EXECUTE on each, then run the EXACT
+# REVOKE statements in the candidate migration and verify effective ACLs.
+facade_revokes = re.findall(
+    r"(?m)^REVOKE ALL ON FUNCTION (public\\.lf_[a-z_]+_v1\\([^)]+\\)) "
+    r"FROM PUBLIC, anon, authenticated, service_role;$",
+    source,
+)
+assert len(facade_revokes) == len(set(facade_revokes)) == 6, \\
+    "BLOCK_OP_EXECUTOR_EXACT_DEFAULT_ROLE_REVOKES_MISSING"
+psql("""DO $role_setup$
+DECLARE r text;
+BEGIN
+  FOREACH r IN ARRAY ARRAY['anon','authenticated','service_role'] LOOP
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname=r) THEN
+      EXECUTE format('CREATE ROLE %I NOLOGIN',r);
+    END IF;
+  END LOOP;
+END $role_setup$;""")
+psql("\\n".join(
+    f"GRANT EXECUTE ON FUNCTION {signature} TO anon, authenticated, service_role;"
+    for signature in facade_revokes
+))
+regprocedure_array = ("ARRAY[" + ",".join(
+    "'" + signature + "'::regprocedure" for signature in facade_revokes
+) + "]")
+pre = psql(
+    f"SELECT count(*) FROM unnest({regprocedure_array}) fn "
+    "WHERE has_function_privilege('anon', fn, 'EXECUTE') "
+    "AND has_function_privilege('authenticated', fn, 'EXECUTE') "
+    "AND has_function_privilege('service_role', fn, 'EXECUTE');"
+).strip()
+assert pre == "6", "BLOCK_SUPABASE_DEFAULT_GRANT_REPRO_FAILED"
+psql("\\n".join(
+    f"REVOKE ALL ON FUNCTION {signature} FROM PUBLIC, anon, authenticated, service_role;"
+    for signature in facade_revokes
+))
+post = psql(
+    f"SELECT count(*) FROM unnest({regprocedure_array}) fn "
+    "WHERE NOT has_function_privilege('anon', fn, 'EXECUTE') "
+    "AND NOT has_function_privilege('authenticated', fn, 'EXECUTE') "
+    "AND NOT has_function_privilege('service_role', fn, 'EXECUTE') "
+    "AND NOT EXISTS (SELECT 1 FROM pg_proc p, "
+    "LATERAL aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a "
+    "WHERE p.oid=fn::oid AND a.grantee=0 AND a.privilege_type='EXECUTE');"
+).strip()
+assert post == "6", "BLOCK_SUPABASE_DEFAULT_EXECUTE_GRANTS_NOT_REVOKED"
+print("PASS_REAL_POSTGRES17_SUPABASE_DEFAULT_ROLE_EXECUTE_DENIED facades=6")
+
 print("PASS_REAL_POSTGRES17_PRINCIPAL_RBAC_NEGATIVES_AND_ROLLBACK "
       "separate_logins=2 denies=3 no_public_execute=true")
