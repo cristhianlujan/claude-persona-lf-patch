@@ -164,6 +164,27 @@ class GovernedCandidateStaticTests(unittest.TestCase):
         self.assertTrue(SQL.name.endswith(MIGRATION_SUFFIX))
         self.assertEqual(len(list((ROOT/"supabase/migrations").glob("*"+MIGRATION_SUFFIX))),1)
 
+    def test_decision_route_is_pending_never_approved_by_migration(self):
+        source=SQL.read_text(encoding="utf-8")
+        for marker in (
+            "HDR_RULE_LF_OPERATION_EXECUTOR_ALL",
+            "HDR_ROUTE_LF_OPERATION_EXECUTOR_DATA_OPERATIONS",
+            "'LF_DATA_OPERATIONS'",
+            "private.fn_lf_human_decision_rule_sha_v1(",
+            "private.fn_lf_human_decision_route_policy_sha_v1(",
+            "OPERATIONAL_DECISION_CATALOGUE_COLLISION_REQUIRES_RECONCILIATION",
+            "OPERATIONAL_DECISION_PENDING_AUTHORITY_INVARIANT_VIOLATED",
+        ):
+            self.assertIn(marker,source)
+        catalogue=source[source.index("-- Register classification and a *pending* decision route only."):
+                         source.index("INSERT INTO public.lf_operation_registry (")]
+        self.assertIn("'PENDING_AUTHORITY'",catalogue)
+        self.assertNotIn("INSERT INTO private.lf_human_decision_authority_policies_v1",catalogue)
+        self.assertNotIn("INSERT INTO private.lf_human_decision_receipts_v1",catalogue)
+        self.assertTrue(verify(source.replace(
+            "OPERATIONAL_DECISION_PENDING_AUTHORITY_INVARIANT_VIOLATED",
+            "OPERATIONAL_DECISION_SELF_ACTIVATED")))
+
     def test_complete_candidate(self):
         self.assertEqual(verify(SQL.read_text(encoding="utf-8")),[])
     def test_cannot_disable_router_authority(self):
