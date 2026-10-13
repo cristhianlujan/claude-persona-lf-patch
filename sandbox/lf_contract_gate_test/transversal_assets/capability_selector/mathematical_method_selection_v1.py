@@ -95,7 +95,10 @@ def prioritize_mathematical_methods(
             continue
         pre = verify_preconditions(method, precondition_state)
         if pre.get("status") != "PASS":
-            evidence_required = True
+            # UNKNOWN means obtain evidence; verified FAIL means inapplicable.
+            # Do not request human evidence to force a known-false condition.
+            if pre.get("status") == "UNKNOWN":
+                evidence_required = True
             rejected.append({"method_id": mid, "reason": "PRECONDITION_" + str(pre.get("status")),
                              "missing_or_failed": [c.get("key") for c in pre.get("checks", [])
                                                    if c.get("status") != "PASS"]})
