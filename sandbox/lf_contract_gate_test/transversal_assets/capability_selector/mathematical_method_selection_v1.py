@@ -124,12 +124,13 @@ def prioritize_mathematical_methods(
             "availability_state": method["availability_state"],
             "execution_authorized": False,
         })
-    # Empirical replicated gains take priority; absent those, evidence fit wins.
-    # Cost breaks ties only; estimated cost is NOT presented as a measured benefit.
+    # A payload claiming VERIFIED is not independent authenticated evidence.
+    # Its reported historical delta is shown for investigation but MUST NOT
+    # influence ranking until an external authority validates the receipt.
+    # Signal relevance comes first; cost is only a deterministic tie breaker.
     candidates.sort(key=lambda m: (
-        -(m["effectiveness"]["state"] == "REPORTED_POSITIVE_UNATTESTED"),
-        -float(m["effectiveness"].get("paired_quality_delta", 0)),
         -len(m["matched_signal_types"]),
+        m["cost_state"] != "OBSERVED",
         m["cost_points"],
         m["method_id"],
     ))
