@@ -59,7 +59,7 @@ def main() -> int:
         current_version="20261005210000",
         main_max_version="20261005202500",
         ledger_max_version="20261005203000",
-        utc_now_version="20261005204000",
+        utc_now_version="20261005205500",
     ) == "20261005210000"
     checks += 1
 
@@ -89,7 +89,7 @@ def main() -> int:
             source,
             main_max_version="20261005202500",
             ledger_max_version="20261005203000",
-            utc_now_version="20261005204000",
+            utc_now_version="20261005205500",
         )
         assert not result.changed
         assert result.new_path == source
@@ -116,7 +116,58 @@ def main() -> int:
             raise AssertionError("collision accepted")
     checks += 1
 
-    print(f"PASS_MIGRATION_ASSIGN_VERSION_TESTS={checks}/8")
+
+    # +2h future: reassign to current UTC instant when floor is historical.
+    assert module.choose_version(
+        current_version="20261013163000", main_max_version="20261013130000",
+        ledger_max_version="20261013133000", utc_now_version="20261013143000",
+    ) == "20261013143000"
+    checks += 1
+
+    # Future floor: advance one second only, never compound the skew.
+    assert module.choose_version(
+        current_version="20261013190000", main_max_version="20261013160000",
+        ledger_max_version="20261013163004", utc_now_version="20261013143000",
+    ) == "20261013163005"
+    checks += 1
+
+    # At most five minutes ahead: keep idempotent source version.
+    assert module.choose_version(
+        current_version="20261013143500", main_max_version="20261013130000",
+        ledger_max_version="20261013133000", utc_now_version="20261013143000",
+    ) == "20261013143500"
+    checks += 1
+
+    # At or below floor: preserve existing next-version semantics.
+    assert module.choose_version(
+        current_version="20261013130000", main_max_version="20261013133000",
+        ledger_max_version="20261013140000", utc_now_version="20261013143000",
+    ) == "20261013143000"
+    checks += 1
+
+    # True date arithmetic: 23:59:59 plus one second is next day.
+    assert module.choose_version(
+        current_version="20261014120000", main_max_version="20261013235959",
+        ledger_max_version="20261013235958", utc_now_version="20261013143000",
+    ) == "20261014000000"
+    checks += 1
+
+    # Invariant: all outputs strictly exceed the strongest floor.
+    scenarios = [
+        ("20261013163000", "20261013130000", "20261013133000", "20261013143000"),
+        ("20261013190000", "20261013160000", "20261013163004", "20261013143000"),
+        ("20261013143500", "20261013130000", "20261013133000", "20261013143000"),
+        ("20261013130000", "20261013133000", "20261013140000", "20261013143000"),
+        ("20261014120000", "20261013235959", "20261013235958", "20261013143000"),
+    ]
+    for current, main, ledger, now in scenarios:
+        assert module.choose_version(
+            current_version=current, main_max_version=main,
+            ledger_max_version=ledger, utc_now_version=now,
+        ) > max(main, ledger)
+    checks += 1
+
+    print(f"PASS_MIGRATION_ASSIGN_VERSION_TESTS={checks}/14")
     return 0
 
 
