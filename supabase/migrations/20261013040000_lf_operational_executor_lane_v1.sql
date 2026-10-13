@@ -331,6 +331,7 @@ DECLARE
   v_lease jsonb;
   v_reserve jsonb;
 BEGIN
+  PERFORM public.lf_operational_executor_assert_principal_v1('lf_operation_executor_runtime');
   IF p_operation_code IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
      OR p_target_code IS DISTINCT FROM p_handler_code
      OR coalesce(p_payload_sha,'') !~ '^[0-9a-f]{64}$'
@@ -420,6 +421,7 @@ DECLARE
   v_mark jsonb;
   v_close jsonb;
 BEGIN
+  PERFORM public.lf_operational_executor_assert_principal_v1('lf_operation_executor_runtime');
   v_auth:=public.lf_router_downstream_authority_validate_v1(p_execution_id);
   IF v_auth->>'code' IS DISTINCT FROM 'ROUTER_DOWNSTREAM_AUTHORITY_VALID'
      OR v_auth->>'applicable' IS DISTINCT FROM 'true'
@@ -442,6 +444,48 @@ BEGIN
   RETURN v_close;
 END $finish$;
 
+-- Shared principal verifier for the independent admission and effect runtime.
+-- Called before any reservation, handler execution or finish-side mutation.
+CREATE OR REPLACE FUNCTION public.lf_operational_executor_assert_principal_v1(
+  p_expected_role text
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=pg_catalog,public
+AS $principal$
+DECLARE v_login pg_roles%rowtype;
+BEGIN
+  IF p_expected_role NOT IN (
+    'lf_operational_admission_authority','lf_operation_executor_runtime'
+  ) THEN RAISE EXCEPTION 'OPERATIONAL_PRINCIPAL_ROLE_UNKNOWN'; END IF;
+  IF session_user IN ('postgres','authenticator','service_role','programacion_builder')
+     OR session_user=current_user THEN
+    RAISE EXCEPTION 'OPERATIONAL_PRINCIPAL_EXTERNAL_LOGIN_REQUIRED';
+  END IF;
+  SELECT * INTO v_login FROM pg_roles WHERE rolname=session_user;
+  IF NOT FOUND OR NOT v_login.rolcanlogin OR v_login.rolsuper
+     OR v_login.rolcreatedb OR v_login.rolcreaterole OR v_login.rolinherit
+     OR v_login.rolreplication OR v_login.rolbypassrls THEN
+    RAISE EXCEPTION 'OPERATIONAL_PRINCIPAL_LEAST_PRIVILEGE_REQUIRED';
+  END IF;
+  IF NOT EXISTS(
+      SELECT 1 FROM pg_auth_members m
+      JOIN pg_roles g ON g.oid=m.roleid
+      JOIN pg_roles u ON u.oid=m.member
+      WHERE g.rolname=p_expected_role AND u.rolname=session_user
+        AND m.set_option=true AND m.inherit_option=false AND m.admin_option=false
+     ) OR EXISTS (
+      SELECT 1 FROM pg_auth_members m
+      JOIN pg_roles g ON g.oid=m.roleid
+      JOIN pg_roles u ON u.oid=m.member
+      WHERE u.rolname=session_user
+        AND g.rolname IN (
+          'lf_operational_admission_authority','lf_operation_executor_runtime'
+        )
+        AND g.rolname<>p_expected_role
+     ) THEN
+    RAISE EXCEPTION 'OPERATIONAL_PRINCIPAL_ROLE_CROSSOVER_OR_MEMBERSHIP_INVALID';
+  END IF;
+END $principal$;
+
 -- Independent admission principal: the effect executor cannot approve itself.
 -- Role membership and an external decision receipt are independently checked.
 CREATE OR REPLACE FUNCTION public.lf_operational_executor_admit_v1(
@@ -458,6 +502,7 @@ DECLARE
   v_reserved jsonb;
   v_authority jsonb;
 BEGIN
+  PERFORM public.lf_operational_executor_assert_principal_v1('lf_operational_admission_authority');
   IF session_user IN ('postgres','authenticator','service_role')
      OR session_user = current_user THEN
     RAISE EXCEPTION 'OPERATIONAL_ADMISSION_INDEPENDENT_PRINCIPAL_REQUIRED';
@@ -525,11 +570,14 @@ END $roles_verify$;
 GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
 GRANT USAGE ON SCHEMA public TO lf_operational_admission_authority;
 GRANT USAGE ON SCHEMA public TO lf_operational_admission_authority;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_principal_v1(text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_assert_principal_v1(text)
+  TO lf_operational_admission_authority,lf_operation_executor_runtime;
 GRANT EXECUTE ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb)
   TO lf_operational_admission_authority;
 GRANT EXECUTE ON FUNCTION public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb)
