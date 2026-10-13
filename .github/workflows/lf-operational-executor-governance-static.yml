@@ -1,0 +1,18 @@
+name: LF Operation Executor Governance Candidate Tests
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/*_lf_operational_executor_lane_v1.sql'
+      - 'sandbox/lf_contract_gate_test/operational_executor/test_governance_candidate_v1.py'
+      - '.github/workflows/lf-operational-executor-governance-static.yml'
+permissions:
+  contents: read
+jobs:
+  operational-governance-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Reject broad DML grants and missing Router authority
+        run: python3 sandbox/lf_contract_gate_test/operational_executor/test_governance_candidate_v1.py
