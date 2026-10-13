@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+"""Bounded operational DML adapter. Router-first; NOT a migration executor.
+
+Code-only until an approved operational lane, handler registry and least-privilege
+runtime are deployed. No caller-supplied SQL or dynamic database function names.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import re
+from dataclasses import dataclass
+from typing import Callable, Mapping
+
+CONNECTOR = "LF_OPERATION_EXECUTOR_V1"
+OPERATION_CODE = "EJECUCION_OPERATIVA_LF"
+ACTIVE_LANE = "GOVERNED_OPERATIONAL_DML"
+OPERATIONAL_ASSET_TYPE = "OPERATIONAL_DB"
+OPERATIONAL_ACTION = "OPERATION_EXECUTE"
+EXEC_RE = re.compile(r"^EXEC-[A-Z0-9_-]{3,200}$")
+CODE_RE = re.compile(r"^[A-Z][A-Z0-9_]{1,100}$")
+SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
+
+
+class Blocked(Exception):
+    """A security or contractual precondition was not satisfied."""
+
+
+def canonical(value: object) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+@dataclass(frozen=True)
+class Request:
+    operation_code: str
+    execution_id: str
+    handler_code: str
+    payload: dict
+    effect_scope: str
+    dispatch_key: str
+    actor: str
+
+    def validate(self) -> None:
+        if self.operation_code != OPERATION_CODE:
+            raise Blocked("BLOCK_OPERATION_CODE_INVALID")
+        if not (isinstance(self.execution_id, str) and EXEC_RE.fullmatch(self.execution_id)):
+            raise Blocked("BLOCK_EXECUTION_ID_INVALID")
+        if not (isinstance(self.handler_code, str) and CODE_RE.fullmatch(self.handler_code)):
+            raise Blocked("BLOCK_HANDLER_CODE_INVALID")
+        if not isinstance(self.payload, dict) or not self.payload:
+            raise Blocked("BLOCK_PAYLOAD_INVALID")
+        if len(canonical(self.payload).encode("utf-8")) > 8192:
+            raise Blocked("BLOCK_PAYLOAD_TOO_LARGE")
+        if not isinstance(self.effect_scope, str) or not 1 <= len(self.effect_scope) <= 200:
+            raise Blocked("BLOCK_EFFECT_SCOPE_INVALID")
+        if not isinstance(self.dispatch_key, str) or not 1 <= len(self.dispatch_key) <= 200:
+            raise Blocked("BLOCK_DISPATCH_KEY_INVALID")
+        if not isinstance(self.actor, str) or not 1 <= len(self.actor) <= 200:
+            raise Blocked("BLOCK_ACTOR_INVALID")
+
+
+@dataclass(frozen=True)
+class Handler:
+    code: str
+    revision: str
+    operation_code: str
+    target_type: str
+    target_code: str
+    action_code: str
+    perform: Callable
+    verify: Callable
+
+    def validate(self) -> None:
+        for value in (self.code, self.revision, self.operation_code, self.target_type,
+                      self.target_code, self.action_code):
+            if not isinstance(value, str) or not value or len(value) > 256:
+                raise Blocked("BLOCK_HANDLER_REGISTRATION_INVALID")
+        if self.operation_code != OPERATION_CODE:
+            raise Blocked("BLOCK_HANDLER_OPERATION_NOT_OPERATIONAL")
+        if not callable(self.perform) or not callable(self.verify):
+            raise Blocked("BLOCK_HANDLER_CALLBACK_INVALID")
+        if self.target_type in ("MIGRATION", "DB", "FUNCTION", "TRIGGER", "CAPABILITY"):
+            raise Blocked("BLOCK_MIGRATION_RESERVED_FOR_TRAIN")
+        if self.target_type != OPERATIONAL_ASSET_TYPE or self.action_code != OPERATIONAL_ACTION:
+            raise Blocked("BLOCK_HANDLER_TARGET_NOT_OPERATIONAL_DB")
+
+
+def digest(req: Request, handler: Handler) -> str:
+    data = {"operation_code": req.operation_code, "handler_code": req.handler_code,
+            "handler_revision": handler.revision, "payload": req.payload,
+            "effect_scope": req.effect_scope}
+    return hashlib.sha256(canonical(data).encode("utf-8")).hexdigest()
+
+
+def one(cursor, sql: str, values: tuple):
+    cursor.execute(sql, values)
+    result = cursor.fetchone()
+    if result is None:
+        raise Blocked("BLOCK_GOVERNED_DB_READBACK_MISSING")
+    return result[0]
+
+
+def run_transaction(connection, req: Request, handlers: Mapping[str, Handler]) -> dict:
+    """Execute within the caller-owned transaction; commit is NEVER done here."""
+    req.validate()
+    handler = handlers.get(req.handler_code)
+    if handler is None:
+        raise Blocked("BLOCK_HANDLER_NOT_REGISTERED")
+    handler.validate()
+    if req.operation_code != handler.operation_code:
+        raise Blocked("BLOCK_OPERATION_HANDLER_MISMATCH")
+    payload_sha = digest(req, handler)
+    if not SHA256_RE.fullmatch(payload_sha):
+        raise Blocked("BLOCK_DIGEST_INVALID")
+
+    with connection.cursor() as cur:
+        # Dedicated narrow SECURITY DEFINER facade: the runtime DB login has
+        # NO direct SELECT/INSERT/UPDATE grant on operation or effect tables.
+        begin = one(cur,
+            "SELECT public.lf_operational_executor_begin_v1(%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+            (req.execution_id, req.operation_code, handler.target_code,
+             handler.code, handler.revision, payload_sha,
+             req.effect_scope, req.dispatch_key, req.actor))
+        if (not isinstance(begin, dict)
+                or begin.get("result") != "READY_FOR_HANDLER"
+                or begin.get("execution_id") != req.execution_id
+                or begin.get("effect_scope") != req.effect_scope
+                or begin.get("payload_sha256") != payload_sha
+                or not isinstance(begin.get("lease_owner"), str)
+                or not isinstance(begin.get("lease_fence"), int)
+                or begin["lease_fence"] < 1):
+            raise Blocked("BLOCK_OPERATIONAL_BEGIN_RECEIPT_INVALID")
+        effect = handler.perform(cur, req.payload)
+        evidence = handler.verify(cur, req.payload, effect)
+        if not isinstance(evidence, dict) or evidence.get("verified") is not True:
+            raise Blocked("BLOCK_HANDLER_READBACK_UNVERIFIED")
+        receipt = {"schema_version": "lf-operation-executor-receipt/v1",
+                   "handler_code": handler.code, "handler_revision": handler.revision,
+                   "execution_id": req.execution_id, "effect_scope": req.effect_scope,
+                   "dispatch_key": req.dispatch_key, "payload_sha256": payload_sha,
+                   "readback": evidence}
+        closure = one(cur,
+            "SELECT public.lf_operational_executor_finish_v1(%s,%s,%s,%s,%s::jsonb,%s)",
+            (req.execution_id, begin["lease_owner"], begin["lease_fence"],
+             req.effect_scope, canonical(receipt), req.actor))
+        if (not isinstance(closure, dict)
+                or closure.get("result") != "EXECUTION_COMPLETED"
+                or closure.get("execution_id") != req.execution_id):
+            raise Blocked("BLOCK_OPERATIONAL_CLOSEOUT_NOT_DURABLE")
+        return {**receipt, "close": closure}
+
+
+def dispatch(req: Request, handlers: Mapping[str, Handler], connection_factory,
+             *, dry_run: bool = True, admitted: bool = False) -> dict:
+    """Commit/rollback boundary; inactive by default, including for dry-runs."""
+    if not admitted:
+        return {"status": "BLOCKED", "code": "BLOCK_OPERATIONAL_EXECUTOR_NOT_ADMITTED"}
+    if type(dry_run) is not bool:
+        return {"status": "BLOCKED", "code": "BLOCK_DRY_RUN_FLAG_INVALID"}
+    conn = None
+    try:
+        conn = connection_factory()
+        receipt = run_transaction(conn, req, handlers)
+        if dry_run:
+            conn.rollback()
+            return {"status": "DRY_RUN_ROLLBACK_PASS", "execution_id": req.execution_id,
+                    "receipt": receipt, "committed": False}
+        conn.commit()
+        return {"status": "COMMITTED_READBACK_PASS", "execution_id": req.execution_id,
+                "receipt": receipt, "committed": True}
+    except Blocked as exc:
+        if conn is not None:
+            conn.rollback()
+        return {"status": "BLOCKED", "code": str(exc)}
+    except Exception:
+        if conn is not None:
+            conn.rollback()
+        return {"status": "BLOCKED", "code": "BLOCK_OPERATIONAL_EXECUTOR_RUNTIME_NO_COMMIT_CLAIM"}
+    finally:
+        if conn is not None:
+            conn.close()
+
+
+def runtime_dispatch(req: Request, handlers: Mapping[str, Handler], *, dry_run: bool = True) -> dict:
+    """Dedicated runtime only. Existing ChatGPT Supabase connector remains read-only."""
+    if os.environ.get("LF_OPERATION_EXECUTOR_LANE") != ACTIVE_LANE:
+        return {"status": "BLOCKED", "code": "BLOCK_OPERATIONAL_EXECUTOR_NOT_ADMITTED"}
+    dsn = os.environ.get("LF_OPERATION_EXECUTOR_DSN")
+    if not dsn:
+        return {"status": "BLOCKED", "code": "BLOCK_OPERATIONAL_EXECUTOR_CREDENTIAL_NOT_PROVISIONED"}
+    def factory():
+        import psycopg
+        conn = psycopg.connect(dsn, autocommit=False, connect_timeout=8)
+        try:
+            # NOINHERIT grants no implicit EXECUTE privileges. SET LOCAL ROLE
+            # is scoped to this exact transaction and reverted at commit/rollback.
+            # The independent database LOGIN identity stays in session_user.
+            conn.execute("SET LOCAL ROLE lf_operation_executor_runtime")
+        except Exception:
+            conn.rollback()
+            conn.close()
+            raise
+        return conn
+    return dispatch(req, handlers, factory, dry_run=dry_run, admitted=True)
