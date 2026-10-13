@@ -1,0 +1,1172 @@
+{
+  "authority": "LIVE_PG_CATALOG_READONLY_NOT_MIGRATION_SOURCE",
+  "relations": [
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [],
+      "columns": [
+        {
+          "name": "component_token_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "design_system_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "component_name",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "component_state",
+          "type": "text",
+          "default": "'default'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "token_bindings",
+          "type": "jsonb",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "allowed_usage",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "blocked_usage",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'VIGENTE'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_decision_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "component_token_id",
+          "type": "bigint",
+          "default": null,
+          "identity": "d",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_decision_number",
+          "type": "bigint",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "design_system_id",
+          "type": "bigint",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_design.component_tokens_pkey_numeric",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX component_tokens_pkey_numeric ON lf_design.component_tokens USING btree (component_token_id)"
+        },
+        {
+          "name": "lf_design.ux_component_token_alias",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX ux_component_token_alias ON lf_design.component_tokens USING btree (component_token_code)"
+        },
+        {
+          "name": "lf_design.ux_component_tokens_numeric",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX ux_component_tokens_numeric ON lf_design.component_tokens USING btree (component_token_id)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "deny_direct_client_access",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "false",
+          "command": "*",
+          "permissive": true,
+          "with_check": "false"
+        }
+      ],
+      "relation": "lf_design.component_tokens",
+      "triggers": [],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "component_tokens_design_system_id_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (design_system_id) REFERENCES lf_design.design_systems(design_system_id)",
+          "references": "lf_design.design_systems"
+        },
+        {
+          "name": "component_tokens_pkey_numeric",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (component_token_id)",
+          "references": null
+        },
+        {
+          "name": "fk_component_tokens_decision_number",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (source_decision_number) REFERENCES lf_decisiones_gov(decision_number)",
+          "references": "public.lf_decisiones_gov"
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [],
+      "columns": [
+        {
+          "name": "design_system_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "project_code",
+          "type": "text",
+          "default": "'LF'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "version",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'CANDIDATO_OPERATIVO'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_decision_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "design_system_id",
+          "type": "bigint",
+          "default": null,
+          "identity": "d",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_decision_number",
+          "type": "bigint",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_design.design_systems_pkey_numeric",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX design_systems_pkey_numeric ON lf_design.design_systems USING btree (design_system_id)"
+        },
+        {
+          "name": "lf_design.ux_design_system_alias",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX ux_design_system_alias ON lf_design.design_systems USING btree (design_system_code)"
+        },
+        {
+          "name": "lf_design.ux_design_systems_numeric",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX ux_design_systems_numeric ON lf_design.design_systems USING btree (design_system_id)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "deny_direct_client_access",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "false",
+          "command": "*",
+          "permissive": true,
+          "with_check": "false"
+        }
+      ],
+      "relation": "lf_design.design_systems",
+      "triggers": [],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "design_systems_pkey_numeric",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (design_system_id)",
+          "references": null
+        },
+        {
+          "name": "fk_design_systems_decision_number",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (source_decision_number) REFERENCES lf_decisiones_gov(decision_number)",
+          "references": "public.lf_decisiones_gov"
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [],
+      "columns": [
+        {
+          "name": "state_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "entity_type",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "state_name",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "is_initial",
+          "type": "boolean",
+          "default": "false",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "is_terminal",
+          "type": "boolean",
+          "default": "false",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "badge_component_token_code",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'CANDIDATO'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_decision_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "state_id",
+          "type": "bigint",
+          "default": null,
+          "identity": "d",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_decision_number",
+          "type": "bigint",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "badge_component_token_id",
+          "type": "bigint",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_ops.estados_catalogo_entity_name_uk",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX estados_catalogo_entity_name_uk ON lf_ops.estados_catalogo USING btree (entity_type, state_name)"
+        },
+        {
+          "name": "lf_ops.estados_catalogo_pkey_numeric",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX estados_catalogo_pkey_numeric ON lf_ops.estados_catalogo USING btree (state_id)"
+        },
+        {
+          "name": "lf_ops.estados_catalogo_state_code_uk",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX estados_catalogo_state_code_uk ON lf_ops.estados_catalogo USING btree (state_code)"
+        },
+        {
+          "name": "lf_ops.ux_estados_numeric",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX ux_estados_numeric ON lf_ops.estados_catalogo USING btree (state_id)"
+        },
+        {
+          "name": "lf_ops.ux_state_alias",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX ux_state_alias ON lf_ops.estados_catalogo USING btree (state_code)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "deny_direct_client_access",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "false",
+          "command": "*",
+          "permissive": true,
+          "with_check": "false"
+        }
+      ],
+      "relation": "lf_ops.estados_catalogo",
+      "triggers": [
+        {
+          "name": "trg_estados_catalogo_touch_updated_at",
+          "enabled": "O",
+          "function": "lf_ops.touch_updated_at()",
+          "definition": "CREATE TRIGGER trg_estados_catalogo_touch_updated_at BEFORE UPDATE ON lf_ops.estados_catalogo FOR EACH ROW EXECUTE FUNCTION lf_ops.touch_updated_at()",
+          "function_source_sha256": "cdb375afe64fa3e0702a0e02634e10fa45b9b0c30468ca42fb318a060c810341"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "estados_badge_component_id_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (badge_component_token_id) REFERENCES lf_design.component_tokens(component_token_id)",
+          "references": "lf_design.component_tokens"
+        },
+        {
+          "name": "estados_catalogo_entity_name_uk",
+          "type": "u",
+          "validated": true,
+          "definition": "UNIQUE (entity_type, state_name)",
+          "references": null
+        },
+        {
+          "name": "estados_catalogo_pkey_numeric",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (state_id)",
+          "references": null
+        },
+        {
+          "name": "estados_catalogo_state_code_uk",
+          "type": "u",
+          "validated": true,
+          "definition": "UNIQUE (state_code)",
+          "references": null
+        },
+        {
+          "name": "estados_catalogo_status_ck",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (status = ANY (ARRAY['CANDIDATO'::text, 'EN_REVISION'::text, 'VIGENTE'::text, 'INACTIVO'::text, 'ARCHIVADO'::text]))",
+          "references": null
+        },
+        {
+          "name": "fk_estados_catalogo_decision_number",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (source_decision_number) REFERENCES lf_decisiones_gov(decision_number)",
+          "references": "public.lf_decisiones_gov"
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "name": "id_decision",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "fecha",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "decision",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "contexto",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "impacto",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "estado_original",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "estado_normalizado",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "documento_relacionado",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "observaciones",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "source_sheet_name",
+          "type": "text",
+          "default": "'06_DECISIONES'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "migration_batch_id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "decision_number",
+          "type": "bigint",
+          "default": null,
+          "identity": "d",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_decisiones_gov_id_decision_uk",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_decisiones_gov_id_decision_uk ON public.lf_decisiones_gov USING btree (id_decision)"
+        },
+        {
+          "name": "lf_decisiones_gov_pkey_numeric",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_decisiones_gov_pkey_numeric ON public.lf_decisiones_gov USING btree (decision_number)"
+        },
+        {
+          "name": "ux_lf_decisiones_gov_alias",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX ux_lf_decisiones_gov_alias ON public.lf_decisiones_gov USING btree (id_decision)"
+        },
+        {
+          "name": "ux_lf_decisiones_gov_decision_number",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX ux_lf_decisiones_gov_decision_number ON public.lf_decisiones_gov USING btree (decision_number)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "lf_decisiones_insert",
+          "roles": [
+            "authenticated"
+          ],
+          "using": null,
+          "command": "a",
+          "permissive": true,
+          "with_check": "true"
+        },
+        {
+          "name": "lf_decisiones_select",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_decisiones_gov",
+      "triggers": [
+        {
+          "name": "trg_lf_decisiones_gov_timestamp",
+          "enabled": "O",
+          "function": "public.fn_update_lf_decisiones_gov_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_decisiones_gov_timestamp BEFORE UPDATE ON lf_decisiones_gov FOR EACH ROW EXECUTE FUNCTION fn_update_lf_decisiones_gov_timestamp()",
+          "function_source_sha256": "a7b48de5e005f0393a7c0f8e8d172b5b09a5f411c0926b1ac2beb44a98755644"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_decisiones_gov_id_decision_uk",
+          "type": "u",
+          "validated": true,
+          "definition": "UNIQUE (id_decision)",
+          "references": null
+        },
+        {
+          "name": "lf_decisiones_gov_pkey_numeric",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (decision_number)",
+          "references": null
+        }
+      ]
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "owner": "postgres",
+      "grants": [
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "name": "codigo",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "nombre",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "descripcion",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "migration_batch_id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "created_by_execution_id",
+          "type": "text",
+          "default": "'UNKNOWN'::text",
+          "identity": "",
+          "not_null": true,
+          "collation": null,
+          "generated": ""
+        },
+        {
+          "name": "updated_by_execution_id",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "collation": null,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "lf_lineas_pkey",
+          "valid": true,
+          "unique": true,
+          "definition": "CREATE UNIQUE INDEX lf_lineas_pkey ON public.lf_lineas USING btree (codigo)"
+        }
+      ],
+      "policies": [
+        {
+          "name": "lf_lineas_authenticated_insert",
+          "roles": [
+            "authenticated"
+          ],
+          "using": null,
+          "command": "a",
+          "permissive": true,
+          "with_check": "true"
+        },
+        {
+          "name": "lf_lineas_authenticated_select",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "true",
+          "command": "r",
+          "permissive": true,
+          "with_check": null
+        }
+      ],
+      "relation": "public.lf_lineas",
+      "triggers": [
+        {
+          "name": "trg_lf_lineas_timestamp",
+          "enabled": "O",
+          "function": "public.fn_update_lf_lineas_timestamp()",
+          "definition": "CREATE TRIGGER trg_lf_lineas_timestamp BEFORE UPDATE ON lf_lineas FOR EACH ROW EXECUTE FUNCTION fn_update_lf_lineas_timestamp()",
+          "function_source_sha256": "af34d1fe13bbe583e8cd9d0ba373390170e83c79d2a7a17924eb667c26631833"
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "lf_lineas_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (codigo)",
+          "references": null
+        }
+      ]
+    }
+  ],
+  "observed_at": "2026-10-13 09:46:41.532486+00",
+  "schema_version": "LF_OPERATIONAL_FK_DEPENDENCIES_CATALOG_READBACK_V1",
+  "expected_relations": 5,
+  "resolved_relations": 5
+}
