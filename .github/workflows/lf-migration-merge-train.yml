@@ -616,7 +616,7 @@ jobs:
 
       - name: Router execution begin (Train-managed, pre-apply)
         id: train_exec
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && env.LF_TRAIN_EXECUTION_MODE == 'ENFORCED' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && env.LF_TRAIN_EXECUTION_MODE == 'ENFORCED' && steps.plan.outputs.migration_count == '1'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           PR: ${{ steps.admission.outputs.pr_number }}
@@ -624,10 +624,10 @@ jobs:
           VERSION: ${{ steps.plan.outputs.migration_version }}
           NAME: ${{ steps.plan.outputs.migration_name }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
-          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob }}
+          SOURCE_BLOB: ${{ steps.write_ahead.outputs.source_blob || steps.source.outputs.source_blob }}
           SOURCE_SHA256: ${{ steps.source.outputs.source_sha256 }}
           HEAD_SHA: ${{ steps.retimestamp.outputs.head_sha || steps.source.outputs.head_sha }}
-          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha }}
+          PERSISTED_HEAD: ${{ steps.write_ahead.outputs.persisted_head_sha || steps.source.outputs.head_sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -642,10 +642,11 @@ jobs:
             --head-sha "$HEAD_SHA" --persisted-head-sha "$PERSISTED_HEAD" --run-id "$GITHUB_RUN_ID" \
             --state .lf_train/train-exec-state.json
           echo "state_b64=$(base64 -w0 .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
+          echo "apply_required=$(jq -r '.apply_required // false' .lf_train/train-exec-state.json)" >> "$GITHUB_OUTPUT"
 
       - name: Apply exact version and ledger readback
         id: real_apply
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && env.LF_TRAIN_EXECUTION_MODE == 'ENFORCED' && steps.plan.outputs.migration_count == '1' && steps.train_exec.outputs.apply_required == 'true'
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           TARGET_PATH: ${{ steps.plan.outputs.migration_path }}
@@ -666,7 +667,6 @@ jobs:
       - name: Router execution patch step (Train-managed, post-apply)
         id: train_exec_commit
         if: steps.train_exec.outcome == 'success' && steps.real_apply.outputs.applied == 'true'
-        continue-on-error: true
         env:
           LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
         shell: bash
@@ -718,6 +718,17 @@ jobs:
           set -euo pipefail
           live="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha')"
           [ "$live" = "$EXPECTED_MAIN" ] || { echo "FAIL_TRAIN_MAIN_MOVED_POST_APPLY expected=$EXPECTED_MAIN live=$live"; exit 2; }
+
+      - name: Enforce governed execution receipt before merge
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        env:
+          STATE_B64: ${{ steps.train_exec_commit.outputs.state_b64 || steps.train_exec.outputs.state_b64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "$STATE_B64" ] || { echo "FAIL_TRAIN_EXECUTION_RECEIPT_MISSING"; exit 2; }
+          printf '%s' "$STATE_B64" | base64 -d | jq -e '.result=="TRAIN_EXECUTION_PATCH_RECORDED" and .ids.execution_id != null and .ids.lease_fence != null' >/dev/null
+          echo "PASS_TRAIN_EXECUTION_PATCH_DURABLE"
 
       - name: Publish lf-merge-train/verified before REAL merge
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && success()
