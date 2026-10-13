@@ -37,7 +37,7 @@ BEGIN
        WHERE work_code ~ '^PA-AN-Q(0[1-9]|1[0-5])$')
   THEN RAISE EXCEPTION 'ANALYSIS_QUALIFICATION_PRESTATE_DRIFT'; END IF;
 
-  FOR v_record IN SELECT value FROM jsonb_array_elements(v_catalog) LOOP
+  FOR v_record IN SELECT item FROM jsonb_array_elements(v_catalog) AS x(item) LOOP
     v_code := v_record->>'unit_code';
     IF (v_record->>'qualification_unit_code') IS DISTINCT FROM v_code||'Q'
        OR jsonb_array_length(v_record->'checkpoints') <> 3
@@ -55,7 +55,7 @@ BEGIN
 
     v_specs := '{}'::jsonb;
     v_inputs := '{}'::jsonb;
-    FOR v_checkpoint IN SELECT value FROM jsonb_array_elements(v_record->'checkpoints') LOOP
+    FOR v_checkpoint IN SELECT item FROM jsonb_array_elements(v_record->'checkpoints') AS x(item) LOOP
       IF (v_checkpoint->>'code') IS DISTINCT FROM v_code||'Q_C'||(v_checkpoint->>'order')
          OR (v_checkpoint->>'order')::int NOT BETWEEN 1 AND 3
          OR coalesce(v_checkpoint->>'required_proof','')=''
