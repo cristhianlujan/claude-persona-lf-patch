@@ -37,6 +37,14 @@ La reserva de ejecución existente `public.fn_lf_operation_reserve_execution_v1`
 
 **Dependencia todavía pendiente:** integrar el servicio independiente que verifica decisiones reales y mantiene las credenciales de admisión. No reutilizar el login del executor para esa función, ni concederle las dos membresías. La simple existencia de la función SQL no habilita a ningún usuario a aprobar una ejecución.
 
+## Activación de privilegios en conexión
+
+Los dos roles agrupadores son `NOLOGIN NOINHERIT`: por diseño el login técnico **no hereda** sus permisos automáticamente. La prueba con PostgreSQL 16 detectó que, sin `SET ROLE`, la función SECURITY DEFINER devuelve `permission denied` antes de validar la autoridad.
+
+El runtime del executor ejecuta **`SET LOCAL ROLE lf_operation_executor_runtime`**, con nombre fijo y dentro de la misma transacción que BEGIN/handler/FINISH. No acepta nombres de rol provenientes del caller; `ROLLBACK` o `COMMIT` restablece el rol. El servicio independiente de admisión debe realizar su propia activación transaccional `SET LOCAL ROLE lf_operational_admission_authority` con una credencial distinta. No se debe conceder `INHERIT` ni EXECUTE a `PUBLIC` como solución alternativa.
+
+En #2372: `test_postgres_principal_rbac_v1.py` ejecuta **la función original propuesta** contra un contenedor PostgreSQL 16 desechable y prueba esta frontera en una base real. Esto **no equivale** a aplicar la migración LF completa, ni a una prueba de handler/transacción de negocio en Supabase.
+
 ## Transacción y control
 
 dispatch() utiliza una sola transacción y **únicamente dos fachadas SQL autorizadas**: `lf_operational_executor_begin_v1` valida Router, admisión, lease y effect guard; el handler empaquetado realiza el efecto y lee su resultado; `lf_operational_executor_finish_v1` vuelve a validar Router, marca el efecto y llama `lf_close_operational_execution_v1` que registra tres pasos con `lf_record_operation_step_core_v1` antes de COMMIT. El cierre debe comprobar la ejecución, su lease/fence, los pasos gobernados y el recibo; las tres funciones siguen siendo CANDIDATAS en el PR #2372 y NO EXISTEN aún en la base. Hasta que esté versionada/admitida, cualquier operación real falla cerrada en vez de dejar una ejecución IN_PROGRESS o reclamar un COMMIT válido.
