@@ -6,6 +6,8 @@ DECLARE
   v_route jsonb;
   v_migration text;
   v_role text;
+  v_principal regprocedure :=
+    'public.lf_operational_executor_assert_principal_v1(text)'::regprocedure;
   v_admit regprocedure :=
     'public.lf_operational_executor_admit_v1(text,text,text,text,text,text,text,jsonb)'::regprocedure;
   v_begin regprocedure :=
@@ -46,6 +48,10 @@ BEGIN
      RAISE EXCEPTION 'TEST_DIRECT_GOVERNANCE_TABLE_WRITE_GRANT:%',v_role;
    END IF;
  END LOOP;
+ IF NOT has_function_privilege('lf_operational_admission_authority',v_principal,'EXECUTE')
+    OR NOT has_function_privilege('lf_operation_executor_runtime',v_principal,'EXECUTE') THEN
+   RAISE EXCEPTION 'TEST_PRINCIPAL_GUARD_EXECUTE_GRANTS_INVALID';
+ END IF;
  IF NOT has_function_privilege('lf_operational_admission_authority',v_admit,'EXECUTE')
     OR has_function_privilege('lf_operation_executor_runtime',v_admit,'EXECUTE')
     OR has_function_privilege('lf_operational_admission_authority',v_begin,'EXECUTE')
@@ -57,7 +63,7 @@ BEGIN
  IF EXISTS(
    SELECT 1 FROM pg_proc p
    CROSS JOIN LATERAL aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) acl
-   WHERE p.oid IN (v_admit::oid,v_begin::oid,v_finish::oid)
+   WHERE p.oid IN (v_principal::oid,v_admit::oid,v_begin::oid,v_finish::oid)
      AND acl.grantee=0 AND acl.privilege_type='EXECUTE'
  ) THEN
    RAISE EXCEPTION 'TEST_OPERATIONAL_FACADE_EXPOSED_TO_PUBLIC';
