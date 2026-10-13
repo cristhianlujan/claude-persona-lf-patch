@@ -191,5 +191,15 @@ def runtime_dispatch(req: Request, handlers: Mapping[str, Handler], *, dry_run: 
         return {"status": "BLOCKED", "code": "BLOCK_OPERATIONAL_EXECUTOR_CREDENTIAL_NOT_PROVISIONED"}
     def factory():
         import psycopg
-        return psycopg.connect(dsn, autocommit=False, connect_timeout=8)
+        conn = psycopg.connect(dsn, autocommit=False, connect_timeout=8)
+        try:
+            # NOINHERIT grants no implicit EXECUTE privileges. SET LOCAL ROLE
+            # is scoped to this exact transaction and reverted at commit/rollback.
+            # The independent database LOGIN identity stays in session_user.
+            conn.execute("SET LOCAL ROLE lf_operation_executor_runtime")
+        except Exception:
+            conn.rollback()
+            conn.close()
+            raise
+        return conn
     return dispatch(req, handlers, factory, dry_run=dry_run, admitted=True)
