@@ -217,6 +217,11 @@ def main() -> None:
     text = psql("\n".join(statements))
     lines = [s.strip() for s in text.splitlines() if s.strip()]
     # psql emits command tags? -tA typically includes SELECT rows only.
+    marker = ("PASS_PG17_OPERATIONAL_ENTRYPOINT_DENIAL "
+              "missing_approval=true forged_approval=true "
+              "invalid_begin=true unadmitted_finish=true "
+              "role_isolation=true no_effect_writes=true")
+    assert marker in lines, "BLOCK_OPERATIONAL_ENTRYPOINT_NEGATIVES_NO_RECEIPT"
     expected_line = "|".join(str(expected[x]) for x in
         ("columns", "constraints", "indexes", "triggers", "policies", "rls", "forced"))
     assert expected_line in lines, (
@@ -231,6 +236,12 @@ def main() -> None:
         + "]);"
     ).strip()
     assert residual == "0", "BLOCK_PUBLIC_BASELINE_RELATION_RESIDUE"
+    role_residue = psql(
+        "SELECT count(*) FROM pg_roles WHERE rolname IN ("
+        "'lf_op_ci_admit','lf_op_ci_effect','lf_op_ci_unknown',"
+        "'lf_operation_executor_runtime','lf_operational_admission_authority');"
+    ).strip()
+    assert role_residue == "0", "BLOCK_OPERATIONAL_REPLAY_ROLLBACK_ROLE_RESIDUE"
     print("PASS_PG17_LF_16_RELATION_CATALOG_REPLAY_ROLLBACK "
           + " ".join(f"{k}={v}" for k, v in expected.items())
           + " exact_trigger_sources=27 rollback_clean=true "
