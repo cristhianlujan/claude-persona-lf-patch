@@ -61,11 +61,11 @@ CASES = [
     ("C06", {"complexity": "LOW"}, {}, None, "NO_MATHEMATICAL_METHOD_NEEDED"),
     ("C07", {"novelty": "HIGH"}, {}, None, "NO_MATHEMATICAL_METHOD_NEEDED"),
     ("C08", {"risk": "HIGH"}, {}, None, "NO_MATHEMATICAL_METHOD_NEEDED"),
-    ("C09", {"causal_requirement": "HIGH"}, {"material_graph_bound": False}, None, "EVIDENCE_REQUIRED"),
-    ("C10", {"repeated_pattern": True}, {"passing_negative_controls_exist": False}, None, "EVIDENCE_REQUIRED"),
-    ("C11", {"evidence_paths": "MULTIPLE_INDEPENDENT"}, {"rank_source_currentness_verified": False}, None, "EVIDENCE_REQUIRED"),
-    ("C12", {"profile_gaps": ["MINIMIZE_REPRODUCIBLE_FAILURE"]}, {"safe_deterministic_replay_exists": False}, None, "EVIDENCE_REQUIRED"),
-    ("C13", {"optimization_need": "REQUIRED"}, {"blind_independent_evaluator_exists": False}, None, "EVIDENCE_REQUIRED"),
+    ("C09", {"causal_requirement": "HIGH"}, {"material_graph_bound": None}, None, "EVIDENCE_REQUIRED"),
+    ("C10", {"repeated_pattern": True}, {"passing_negative_controls_exist": None}, None, "EVIDENCE_REQUIRED"),
+    ("C11", {"evidence_paths": "MULTIPLE_INDEPENDENT"}, {"rank_source_currentness_verified": None}, None, "EVIDENCE_REQUIRED"),
+    ("C12", {"profile_gaps": ["MINIMIZE_REPRODUCIBLE_FAILURE"]}, {"safe_deterministic_replay_exists": None}, None, "EVIDENCE_REQUIRED"),
+    ("C13", {"optimization_need": "REQUIRED"}, {"blind_independent_evaluator_exists": None}, None, "EVIDENCE_REQUIRED"),
     ("C14", {"causal_requirement": "HIGH", "budget": {"max_shadow_method_cost_points": 0}}, {}, None, "NO_ELIGIBLE_MATHEMATICAL_METHOD"),
     ("C15", {"repeated_pattern": True, "method_effectiveness_observations": {"OCHIAI_SUSPICIOUSNESS": verified_regression(.7, 1)}}, {}, None, "NO_ELIGIBLE_MATHEMATICAL_METHOD"),
     ("C16", {"repeated_pattern": True, "method_effectiveness_observations": {"OCHIAI_SUSPICIOUSNESS": verified_regression(-.1, 0)}}, {}, None, "NO_ELIGIBLE_MATHEMATICAL_METHOD"),
@@ -73,7 +73,7 @@ CASES = [
     ("C18", {"causal_requirement": "HIGH", "budget": {"max_shadow_method_trials": 0}}, {}, None, "NO_ELIGIBLE_MATHEMATICAL_METHOD"),
     ("C19", MIX, {}, "DELTA_DEBUGGING", "SHADOW_RECOMMENDATIONS_READY"),
     ("C20", {**MIX, "method_effectiveness_observations": {"MCNEMAR_AND_CONFIDENCE_INTERVALS": verified_regression(.99, 0)}}, {}, "DELTA_DEBUGGING", "SHADOW_RECOMMENDATIONS_READY"),
-    ("C21", {"complexity": "HIGH"}, {"failure_predicate_reproduced": False}, None, "EVIDENCE_REQUIRED"),
+    ("C21", {"complexity": "HIGH"}, {"failure_predicate_reproduced": False}, None, "NO_ELIGIBLE_MATHEMATICAL_METHOD"),
     ("C22", {"repeated_pattern": True, "method_effectiveness_observations": {"OCHIAI_SUSPICIOUSNESS": verified_regression(-1, 100, "UNKNOWN")}}, {}, "OCHIAI_SUSPICIOUSNESS", "SHADOW_RECOMMENDATIONS_READY"),
     ("C23", {"repeated_pattern": True, "budget": {"max_shadow_method_cost_points": 1}}, {}, "OCHIAI_SUSPICIOUSNESS", "SHADOW_RECOMMENDATIONS_READY"),
     ("C24", {"profile_gaps": ["MINIMIZE_REPRODUCIBLE_FAILURE"], "budget": {"max_shadow_method_cost_points": 1}}, {}, None, "NO_ELIGIBLE_MATHEMATICAL_METHOD"),
@@ -104,7 +104,8 @@ def run(baseline_ref=None):
     for code, context, omissions, expected, expected_status in CASES:
         pre = conditions()
         for key, val in omissions.items():
-            pre[key] = verified(val)
+            pre[key] = verified(val) if val is not None else {
+                "value": None, "verification_state": "UNKNOWN", "evidence_refs": []}
         result = compose_capabilities_v3(context, catalog(),
                                          {"fallback_capabilities": []}, REG, pre)
         math = result["mathematical_method_selection"]
