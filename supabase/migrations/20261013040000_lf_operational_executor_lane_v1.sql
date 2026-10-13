@@ -1,0 +1,439 @@
+-- LF_OPERATION_EXECUTOR governance candidate v1.
+-- Migration Train ONLY. No project/checkpoint-specific values.
+-- All effects, authorization, and governed closure must share one transaction.
+BEGIN;
+
+DO $guard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM public.lf_operation_registry WHERE operation_code='EJECUCION_OPERATIVA_LF')
+     OR EXISTS (SELECT 1 FROM public.lf_router_action_registry
+                WHERE asset_type='OPERATIONAL_DB' AND action_code='OPERATION_EXECUTE') THEN
+    RAISE EXCEPTION 'OP_EXECUTOR_CANDIDATE_CONFLICT_REQUIRES_RECONCILIATION';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.lf_router_action_registry
+                 WHERE asset_type='DB' AND action_code='UPDATE'
+                   AND operation_code='ACTUALIZACION_DB_LF' AND status='ACTIVE') THEN
+    RAISE EXCEPTION 'MIGRATION_TRAIN_ROUTE_NOT_PRESERVED';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.lf_activos
+                 WHERE codigo_activo='ROUTER_DOWNSTREAM_AUTHORITY' AND archived_at IS NULL
+                   AND estado_operativo='ACTIVO'
+                   AND jsonb_typeof(metadata #> '{transversal_inventory,consumers_known}')='array') THEN
+    RAISE EXCEPTION 'ROUTER_AUTHORITY_CONSUMER_CATALOGUE_NOT_READY';
+  END IF;
+END $guard$;
+
+INSERT INTO public.lf_operation_registry (
+  operation_code,version,status,source_model,source_repo,source_paths,notes,
+  operation_family,operation_domain,operation_type,applies_to_asset_type,
+  lifecycle_state_code,created_by_execution_id
+) VALUES (
+  'EJECUCION_OPERATIVA_LF','v1.0.0','SANDBOX_ACTIVE','GIT_FIRST_SQL',
+  'cristhianlujan/claude-persona-lf-patch',
+  '["supabase/migrations/20261013040000_lf_operational_executor_lane_v1.sql",
+    "sandbox/lf_contract_gate_test/operational_executor/operation_lane_contract_candidate_v1.json"]'::jsonb,
+  'Bounded operational handler dispatcher; no migrations, no caller-provided SQL or broad DML.',
+  'OPERATIONAL_EXECUTION','OPERATIONAL_DATA','EXECUTION_PROTOCOL',
+  'OPERATIONAL_DB','OP_CANDIDATE','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
+);
+
+INSERT INTO public.lf_operation_contracts (
+  operation_code,contract_code,contract_path,required_before_write,allowed,blocked,
+  required_after_write,status,created_by_execution_id
+) VALUES (
+  'EJECUCION_OPERATIVA_LF','CONTRACT-EJECUCION-OPERATIVA-LF-v1',
+  'supabase://public/lf_operation_contracts/EJECUCION_OPERATIVA_LF/v1',
+  '["router_authority_receipt","current_execution","exact_handler_manifest",
+    "effect_guard_reservation","lease_fence","contract_currentness"]'::jsonb,
+  '{"lane":"GOVERNED_OPERATIONAL_DML","executor":"LF_OPERATION_EXECUTOR_V1",
+    "router":"ACT-0001","target_type":"OPERATIONAL_DB",
+    "action":"OPERATION_EXECUTE","handler_registry":"TRUSTED_ONLY",
+    "transaction":"ATOMIC_ONE_CONNECTION"}'::jsonb,
+  '["DB_UPDATE_ROUTE","MIGRATION","DDL","ARBITRARY_SQL",
+    "UNREGISTERED_HANDLER","CROSS_OPERATION_REPLAY","UNSCOPED_DML"]'::jsonb,
+  '["handler_readback","operation_effect_guard_readback","router_authority_readback",
+    "governed_execution_closeout"]'::jsonb,
+  'ACTIVE_ENFORCEMENT','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
+);
+
+WITH steps(ord,id,evidence,next_step) AS (VALUES
+ (10,'preflight','["router_authority_validation","operation_admission","handler_binding"]'::jsonb,'effect'),
+ (20,'effect','["effect_guard_reservation","effect_receipt"]'::jsonb,'verify'),
+ (30,'verify','["effect_guard_readback","handler_readback","router_authority_readback"]'::jsonb,NULL::text)
+), ins AS (
+ INSERT INTO public.lf_operation_steps (
+   operation_code,step_order,step_id,required,evidence_required,source_path,active,
+   execution_order,created_by_execution_id
+ )
+ SELECT 'EJECUCION_OPERATIVA_LF',ord,id,true,
+        array_to_string(ARRAY(SELECT jsonb_array_elements_text(evidence)),','),
+        'supabase://public/lf_operation_step_contracts/EJECUCION_OPERATIVA_LF/'||id,
+        true,ord,'EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
+ FROM steps RETURNING 1
+)
+INSERT INTO public.lf_operation_step_contracts (
+  operation_code,step_id,step_order,execution_order,contract_code,purpose,
+  input_required,resolver_ref,output_payload,pass_condition,block_condition,
+  blocking_code,mini_judge_code,required_evidence_keys,next_if_pass,next_if_blocked,
+  status,created_by_execution_id
+)
+SELECT 'EJECUCION_OPERATIVA_LF',s.id,s.ord,s.ord,'CONTRACT-EJECUCION-OPERATIVA-LF-v1',
+       'SQL-validated operational executor '||s.id,
+       '[]'::jsonb,'public.lf_close_operational_execution_v1',s.evidence,
+       '{"server_validated":true}'::jsonb,'{"server_invalid":true}'::jsonb,
+       'BLOCK_OPERATIONAL_'||upper(s.id),
+       'JUDGE-OPERATIONAL-EXECUTION-V1',s.evidence,s.next_step,'RETURN_TO_ROUTER',
+       'ACTIVE_ENFORCEMENT','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
+FROM steps s;
+
+INSERT INTO public.lf_operation_judges (
+  operation_code,judge_code,judge_path,pass_if,fail_if,result_values,status,
+  created_by_execution_id
+) VALUES (
+  'EJECUCION_OPERATIVA_LF','JUDGE-OPERATIONAL-EXECUTION-V1',
+  'supabase://public/lf_operation_judges/EJECUCION_OPERATIVA_LF/V1',
+  '{"server_validated":true}'::jsonb,'{"server_invalid":true}'::jsonb,
+  '["PASS_CLEAN","BLOCKED_BY_ENFORCEMENT","RETURN_TO_WORKER"]'::jsonb,
+  'ACTIVE_ENFORCEMENT','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
+);
+
+WITH s(ord,id,keys) AS (VALUES
+ (10,'preflight','["router_authority_validation","operation_admission","handler_binding"]'::jsonb),
+ (20,'effect','["effect_guard_reservation","effect_receipt"]'::jsonb),
+ (30,'verify','["effect_guard_readback","handler_readback","router_authority_readback"]'::jsonb)
+)
+INSERT INTO public.lf_operation_step_judge_bindings (
+  operation_code,step_order,step_id,judge_code,clean_result_value,
+  blocked_result_value,return_result_value,required_evidence_keys,status,
+  created_by_execution_id
+)
+SELECT 'EJECUCION_OPERATIVA_LF',ord,id,'JUDGE-OPERATIONAL-EXECUTION-V1',
+       'PASS_CLEAN','BLOCKED_BY_ENFORCEMENT','RETURN_TO_WORKER',
+       keys,'ACTIVE_ENFORCEMENT','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
+FROM s;
+
+INSERT INTO public.lf_operation_policy_bindings (
+  operation_code,policy_code,policy_role,required,distribution_modes,
+  binding_status,created_by_execution_id
+) VALUES
+ ('EJECUCION_OPERATIVA_LF','POL-LF-OPERATION-LIFECYCLE','GOVERNANCE_LIFECYCLE',true,ARRAY['ROUTER','DIRECT'],'ACTIVE','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'),
+ ('EJECUCION_OPERATIVA_LF','POL-LF-POLICY-CONSUMPTION','POLICY_CONSUMPTION',true,ARRAY['ROUTER','DIRECT'],'ACTIVE','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'),
+ ('EJECUCION_OPERATIVA_LF','POL-LF-SOURCE-RESOLUTION','SOURCE_RESOLUTION',true,ARRAY['ROUTER','DIRECT'],'ACTIVE','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'),
+ ('EJECUCION_OPERATIVA_LF','POL-LF-STATE-MODEL','STATE_MODEL',true,ARRAY['ROUTER','DIRECT'],'ACTIVE','EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1');
+
+INSERT INTO public.lf_router_action_registry (
+  asset_type,action_code,operation_code,operation_resolution,
+  requires_existing_target,requires_missing_target,write_allowed,status,
+  notes,created_by_execution_id
+) VALUES (
+  'OPERATIONAL_DB','OPERATION_EXECUTE','EJECUCION_OPERATIVA_LF','STATIC',
+  false,false,true,'ACTIVE',
+  'Dedicated operational-handler route; DB/UPDATE migration path remains exclusive.',
+  'EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
+);
+
+UPDATE public.lf_activos a
+SET metadata=jsonb_set(
+      a.metadata,'{transversal_inventory,consumers_known}',
+      (a.metadata #> '{transversal_inventory,consumers_known}') ||
+      '["EJECUCION_OPERATIVA_LF"]'::jsonb,
+      false
+    ),
+    updated_by_execution_id='EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1'
+WHERE a.codigo_activo='ROUTER_DOWNSTREAM_AUTHORITY'
+  AND a.archived_at IS NULL
+  AND a.estado_operativo='ACTIVO'
+  AND NOT ((a.metadata #> '{transversal_inventory,consumers_known}') ? 'EJECUCION_OPERATIVA_LF');
+
+DO $authority$
+BEGIN
+  IF NOT public.lf_router_downstream_authority_consumer_v1('EJECUCION_OPERATIVA_LF') THEN
+    RAISE EXCEPTION 'OPERATIONAL_ROUTER_AUTHORITY_CONSUMER_NOT_BOUND';
+  END IF;
+END $authority$;
+
+-- SQL definer close: unlike the migration close, never reuses
+-- ACTUALIZACION_DB_LF's judge or mutates that operation's registry.
+CREATE OR REPLACE FUNCTION public.lf_close_operational_execution_v1(
+  p_execution_id text,p_lease_owner text,p_lease_fence bigint,
+  p_closure_evidence jsonb,p_actor_execution_id text
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=pg_catalog,public,extensions
+AS $close$
+DECLARE
+  v_exec public.lf_operation_execution%rowtype;
+  v_effect public.lf_operation_effect_guard%rowtype;
+  v_auth jsonb;
+  v_admission jsonb;
+  v_count integer;
+  v_now timestamptz := clock_timestamp();
+BEGIN
+  IF jsonb_typeof(p_closure_evidence) IS DISTINCT FROM 'object'
+     OR btrim(coalesce(p_actor_execution_id,''))='' THEN
+    RAISE EXCEPTION 'OPERATIONAL_CLOSE_RECEIPT_OR_ACTOR_INVALID';
+  END IF;
+  SELECT * INTO v_exec FROM public.lf_operation_execution
+  WHERE execution_id=p_execution_id FOR UPDATE;
+  IF NOT FOUND OR v_exec.operation_code<>'EJECUCION_OPERATIVA_LF'
+     OR v_exec.target_type<>'OPERATIONAL_DB'
+     OR v_exec.status<>'IN_PROGRESS' THEN
+    RAISE EXCEPTION 'OPERATIONAL_CLOSE_EXECUTION_NOT_ADMITTED';
+  END IF;
+  IF v_exec.lease_owner IS DISTINCT FROM p_lease_owner
+     OR v_exec.lease_fence IS DISTINCT FROM p_lease_fence
+     OR v_exec.lease_expires_at IS NULL OR v_exec.lease_expires_at<=v_now THEN
+    RAISE EXCEPTION 'OPERATIONAL_CLOSE_STALE_LEASE';
+  END IF;
+  v_auth:=public.lf_router_downstream_authority_validate_v1(p_execution_id);
+  IF v_auth->>'code' IS DISTINCT FROM 'ROUTER_DOWNSTREAM_AUTHORITY_VALID'
+     OR v_auth->>'valid' IS DISTINCT FROM 'true'
+     OR v_auth->>'applicable' IS DISTINCT FROM 'true'
+     OR v_auth->>'target_code' IS DISTINCT FROM v_exec.target_code THEN
+    RAISE EXCEPTION 'OPERATIONAL_CLOSE_ROUTER_NOT_CURRENT';
+  END IF;
+  v_admission:=v_exec.manifest->'operational_transaction_admission';
+  IF v_admission->>'status' IS DISTINCT FROM 'APPROVED'
+     OR v_admission->>'verification' IS DISTINCT FROM 'PASS'
+     OR v_admission->>'lane' IS DISTINCT FROM 'GOVERNED_OPERATIONAL_DML'
+     OR v_admission->>'connector' IS DISTINCT FROM 'LF_OPERATION_EXECUTOR_V1'
+     OR v_admission->>'handler_code' IS DISTINCT FROM p_closure_evidence->>'handler_code'
+     OR v_admission->>'handler_revision' IS DISTINCT FROM p_closure_evidence->>'handler_revision'
+     OR v_admission->>'payload_sha256' IS DISTINCT FROM p_closure_evidence->>'payload_sha256'
+     OR v_admission->>'effect_scope' IS DISTINCT FROM p_closure_evidence->>'effect_scope'
+     OR v_admission->>'dispatch_key' IS DISTINCT FROM p_closure_evidence->>'dispatch_key'
+     OR v_exec.request_sha256 IS DISTINCT FROM p_closure_evidence->>'payload_sha256'
+     OR v_exec.target_code IS DISTINCT FROM v_admission->>'handler_code' THEN
+    RAISE EXCEPTION 'OPERATIONAL_CLOSE_HANDLER_BINDING_NOT_EXACT';
+  END IF;
+  IF p_closure_evidence->>'execution_id' IS DISTINCT FROM p_execution_id
+     OR p_closure_evidence->>'schema_version' IS DISTINCT FROM 'lf-operation-executor-receipt/v1'
+     OR p_closure_evidence #>> '{readback,verified}' IS DISTINCT FROM 'true' THEN
+    RAISE EXCEPTION 'OPERATIONAL_CLOSE_READBACK_NOT_VERIFIED';
+  END IF;
+  SELECT * INTO v_effect FROM public.lf_operation_effect_guard
+  WHERE execution_id=p_execution_id
+    AND effect_scope=p_closure_evidence->>'effect_scope' FOR UPDATE;
+  IF NOT FOUND OR v_effect.state<>'SUCCEEDED'
+     OR v_effect.receipt IS DISTINCT FROM p_closure_evidence
+     OR v_effect.dispatch_key IS DISTINCT FROM p_closure_evidence->>'dispatch_key'
+     OR v_effect.effect_request_sha256 IS DISTINCT FROM p_closure_evidence->>'payload_sha256' THEN
+    RAISE EXCEPTION 'OPERATIONAL_CLOSE_EFFECT_RECEIPT_MISMATCH';
+  END IF;
+  SELECT count(*) INTO v_count FROM public.lf_operation_effect_guard
+  WHERE execution_id=p_execution_id;
+  IF v_count<>1 THEN RAISE EXCEPTION 'OPERATIONAL_CLOSE_EFFECT_CARDINALITY_INVALID'; END IF;
+  SELECT count(*) INTO v_count FROM public.lf_operation_steps s
+  JOIN public.lf_operation_step_contracts c
+    ON c.operation_code=s.operation_code AND c.step_id=s.step_id AND c.step_order=s.step_order
+  JOIN public.lf_operation_step_judge_bindings b
+    ON b.operation_code=s.operation_code AND b.step_order=s.step_order AND b.step_id=s.step_id
+  JOIN public.lf_operation_judges j
+    ON j.operation_code=b.operation_code AND j.judge_code=b.judge_code
+  WHERE s.operation_code='EJECUCION_OPERATIVA_LF'
+    AND s.required AND s.active AND c.status='ACTIVE_ENFORCEMENT'
+    AND b.status='ACTIVE_ENFORCEMENT' AND j.status='ACTIVE_ENFORCEMENT'
+    AND b.clean_result_value='PASS_CLEAN';
+  IF v_count<>3 OR
+     (SELECT count(*) FROM public.lf_operation_steps
+      WHERE operation_code='EJECUCION_OPERATIVA_LF' AND required AND active)<>3 THEN
+    RAISE EXCEPTION 'OPERATIONAL_CLOSE_JUDGE_OR_STEPS_NOT_EXACT';
+  END IF;
+  IF EXISTS(SELECT 1 FROM public.lf_operation_execution_steps
+            WHERE execution_id=p_execution_id) THEN
+    RAISE EXCEPTION 'OPERATIONAL_CLOSE_PREEXISTING_STEP_EVIDENCE';
+  END IF;
+
+  -- Evidence is derived solely from durable authoritative rows and the verified
+  -- handler receipt; no caller-supplied PASS/step status is accepted.
+  INSERT INTO public.lf_operation_execution_steps(
+     execution_id,step_order,step_id,status,evidence_ref,evidence_payload,created_by_execution_id
+  )
+  SELECT p_execution_id,s.step_order,s.step_id,b.clean_result_value,
+         'LF_OPERATION_EXECUTOR_V1:'||p_execution_id,
+         CASE s.step_id
+           WHEN 'preflight' THEN jsonb_build_object(
+             'router_authority_validation',v_auth,'operation_admission',v_admission,
+             'handler_binding',v_exec.target_code)
+           WHEN 'effect' THEN jsonb_build_object(
+             'effect_guard_reservation',jsonb_build_object(
+               'effect_scope',v_effect.effect_scope,'dispatch_key',v_effect.dispatch_key,
+               'effect_request_sha256',v_effect.effect_request_sha256),
+             'effect_receipt',v_effect.receipt)
+           WHEN 'verify' THEN jsonb_build_object(
+             'effect_guard_readback',jsonb_build_object(
+               'state',v_effect.state,'receipt',v_effect.receipt),
+             'handler_readback',p_closure_evidence->'readback',
+             'router_authority_readback',v_auth)
+         END,
+         p_actor_execution_id
+  FROM public.lf_operation_steps s
+  JOIN public.lf_operation_step_judge_bindings b
+    ON b.operation_code=s.operation_code AND b.step_order=s.step_order AND b.step_id=s.step_id
+  WHERE s.operation_code='EJECUCION_OPERATIVA_LF'
+    AND s.required AND s.active AND b.status='ACTIVE_ENFORCEMENT';
+
+  UPDATE public.lf_operation_execution
+     SET status='COMPLETED',completed_at=v_now,lease_owner=NULL,
+         lease_expires_at=NULL,
+         manifest=manifest || jsonb_build_object(
+           'operation_closed',true,
+           'closed_by','lf_close_operational_execution_v1',
+           'closure_evidence',p_closure_evidence),
+         updated_by_execution_id=p_actor_execution_id,updated_at=v_now
+   WHERE execution_id=p_execution_id AND status='IN_PROGRESS';
+  IF NOT FOUND THEN RAISE EXCEPTION 'OPERATIONAL_CLOSE_WRITE_CONFLICT'; END IF;
+  RETURN jsonb_build_object('result','EXECUTION_COMPLETED',
+                            'execution_id',p_execution_id,'completed_at',v_now);
+END $close$;
+
+CREATE OR REPLACE FUNCTION public.lf_operational_executor_begin_v1(
+  p_execution_id text,p_operation_code text,p_target_code text,p_handler_code text,
+  p_handler_revision text,p_payload_sha text,p_effect_scope text,p_dispatch_key text,
+  p_actor text
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=pg_catalog,public,extensions
+AS $begin$
+DECLARE
+  v_exec public.lf_operation_execution%rowtype;
+  v_admission jsonb;
+  v_auth jsonb;
+  v_route jsonb;
+  v_owner text;
+  v_lease jsonb;
+  v_reserve jsonb;
+BEGIN
+  IF p_operation_code IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+     OR p_target_code IS DISTINCT FROM p_handler_code
+     OR coalesce(p_payload_sha,'') !~ '^[0-9a-f]{64}$'
+     OR btrim(coalesce(p_actor,''))='' THEN
+    RAISE EXCEPTION 'OPERATIONAL_BEGIN_INPUT_OR_SCOPE_INVALID';
+  END IF;
+  v_route:=public.lf_router_resolve_v1(
+    'Governed operational handler',NULL,'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
+  );
+  IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
+     OR v_route->>'router' IS DISTINCT FROM 'ACT-0001'
+     OR v_route->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+     OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
+    RAISE EXCEPTION 'OPERATIONAL_BEGIN_ROUTER_ROUTE_BLOCKED';
+  END IF;
+  SELECT * INTO v_exec FROM public.lf_operation_execution
+   WHERE execution_id=p_execution_id FOR UPDATE;
+  IF NOT FOUND OR v_exec.operation_code IS DISTINCT FROM p_operation_code
+     OR v_exec.target_type IS DISTINCT FROM 'OPERATIONAL_DB'
+     OR v_exec.target_code IS DISTINCT FROM p_target_code
+     OR v_exec.status IS DISTINCT FROM 'IN_PROGRESS'
+     OR v_exec.request_sha256 IS DISTINCT FROM p_payload_sha THEN
+    RAISE EXCEPTION 'OPERATIONAL_BEGIN_EXECUTION_NOT_ADMITTED';
+  END IF;
+  v_admission:=v_exec.manifest->'operational_transaction_admission';
+  IF v_admission->>'status' IS DISTINCT FROM 'APPROVED'
+     OR v_admission->>'verification' IS DISTINCT FROM 'PASS'
+     OR v_admission->>'lane' IS DISTINCT FROM 'GOVERNED_OPERATIONAL_DML'
+     OR v_admission->>'connector' IS DISTINCT FROM 'LF_OPERATION_EXECUTOR_V1'
+     OR v_admission->>'handler_code' IS DISTINCT FROM p_handler_code
+     OR v_admission->>'handler_revision' IS DISTINCT FROM p_handler_revision
+     OR v_admission->>'payload_sha256' IS DISTINCT FROM p_payload_sha
+     OR v_admission->>'effect_scope' IS DISTINCT FROM p_effect_scope
+     OR v_admission->>'dispatch_key' IS DISTINCT FROM p_dispatch_key THEN
+    RAISE EXCEPTION 'OPERATIONAL_BEGIN_MANIFEST_NOT_EXACT';
+  END IF;
+  v_auth:=public.lf_router_downstream_authority_validate_v1(p_execution_id);
+  IF v_auth->>'code' IS DISTINCT FROM 'ROUTER_DOWNSTREAM_AUTHORITY_VALID'
+     OR v_auth->>'applicable' IS DISTINCT FROM 'true'
+     OR v_auth->>'valid' IS DISTINCT FROM 'true'
+     OR v_auth->>'target_type' IS DISTINCT FROM 'OPERATIONAL_DB'
+     OR v_auth->>'target_code' IS DISTINCT FROM p_target_code THEN
+    RAISE EXCEPTION 'OPERATIONAL_BEGIN_ROUTER_AUTHORITY_INVALID';
+  END IF;
+  v_owner:='operational-executor-' ||
+    substr(encode(extensions.digest(convert_to(p_execution_id,'UTF8'),'sha256'),'hex'),1,32);
+  v_lease:=public.fn_lf_operation_acquire_lease_v1(
+    p_execution_id,v_owner,120,p_actor
+  );
+  IF v_lease->>'result' IS DISTINCT FROM 'LEASE_ACQUIRED' THEN
+    RAISE EXCEPTION 'OPERATIONAL_BEGIN_LEASE_NOT_ACQUIRED';
+  END IF;
+  v_reserve:=public.fn_lf_operation_reserve_effect_v1(
+    p_execution_id,v_owner,(v_lease->>'lease_fence')::bigint,
+    p_effect_scope,p_payload_sha,p_dispatch_key,p_actor
+  );
+  IF v_reserve->>'result' IS DISTINCT FROM 'EFFECT_RESERVED_NEW'
+     OR v_reserve->>'dispatch_permitted' IS DISTINCT FROM 'true' THEN
+    RAISE EXCEPTION 'OPERATIONAL_BEGIN_EFFECT_REPLAY_OR_AMBIGUOUS';
+  END IF;
+  RETURN jsonb_build_object(
+    'result','READY_FOR_HANDLER','execution_id',p_execution_id,
+    'lease_owner',v_owner,'lease_fence',(v_lease->>'lease_fence')::bigint,
+    'payload_sha256',p_payload_sha,'effect_scope',p_effect_scope,
+    'router_authority_validation',v_auth
+  );
+END $begin$;
+
+CREATE OR REPLACE FUNCTION public.lf_operational_executor_finish_v1(
+  p_execution_id text,p_lease_owner text,p_lease_fence bigint,p_effect_scope text,
+  p_receipt jsonb,p_actor text
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=pg_catalog,public,extensions
+AS $finish$
+DECLARE
+  v_auth jsonb;
+  v_mark jsonb;
+  v_close jsonb;
+BEGIN
+  v_auth:=public.lf_router_downstream_authority_validate_v1(p_execution_id);
+  IF v_auth->>'code' IS DISTINCT FROM 'ROUTER_DOWNSTREAM_AUTHORITY_VALID'
+     OR v_auth->>'applicable' IS DISTINCT FROM 'true'
+     OR v_auth->>'valid' IS DISTINCT FROM 'true'
+     OR v_auth->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF' THEN
+    RAISE EXCEPTION 'OPERATIONAL_FINISH_ROUTER_AUTHORITY_STALE';
+  END IF;
+  v_mark:=public.fn_lf_operation_mark_effect_succeeded_v1(
+    p_execution_id,p_lease_owner,p_lease_fence,p_effect_scope,p_receipt,p_actor
+  );
+  IF v_mark->>'result' IS DISTINCT FROM 'EFFECT_SUCCESS_PERSISTED' THEN
+    RAISE EXCEPTION 'OPERATIONAL_FINISH_EFFECT_NOT_NEWLY_SUCCEEDED';
+  END IF;
+  v_close:=public.lf_close_operational_execution_v1(
+    p_execution_id,p_lease_owner,p_lease_fence,p_receipt,p_actor
+  );
+  IF v_close->>'result' IS DISTINCT FROM 'EXECUTION_COMPLETED' THEN
+    RAISE EXCEPTION 'OPERATIONAL_FINISH_GOVERNED_CLOSE_NOT_DURABLE';
+  END IF;
+  RETURN v_close;
+END $finish$;
+
+-- The runtime gets a NOLOGIN group privilege, never a superuser/service_role DSN.
+-- The login is provisioned separately after sandbox validation and EKB approval.
+DO $role$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='lf_operation_executor_runtime') THEN
+   CREATE ROLE lf_operation_executor_runtime NOLOGIN NOINHERIT;
+ END IF;
+END $role$;
+GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
+REVOKE ALL ON FUNCTION public.lf_close_operational_execution_v1(text,text,bigint,jsonb,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_begin_v1(text,text,text,text,text,text,text,text,text)
+  TO lf_operation_executor_runtime;
+GRANT EXECUTE ON FUNCTION public.lf_operational_executor_finish_v1(text,text,bigint,text,jsonb,text)
+  TO lf_operation_executor_runtime;
+
+DO $verify$
+DECLARE v_migration text; v_route jsonb;
+BEGIN
+ SELECT operation_code INTO v_migration FROM public.lf_router_action_registry
+ WHERE asset_type='DB' AND action_code='UPDATE';
+ IF v_migration IS DISTINCT FROM 'ACTUALIZACION_DB_LF' THEN
+   RAISE EXCEPTION 'OPERATIONAL_MIGRATION_ROUTE_CHANGED';
+ END IF;
+ v_route:=public.lf_router_resolve_v1(
+   'Governed operational handler',NULL,'OPERATION_EXECUTE','OPERATIONAL_DB','ROUTER'
+ );
+ IF v_route->>'status' IS DISTINCT FROM 'READY_TO_EXECUTE'
+    OR v_route->>'operation_code' IS DISTINCT FROM 'EJECUCION_OPERATIVA_LF'
+    OR v_route->>'downstream_execution_allowed' IS DISTINCT FROM 'true' THEN
+   RAISE EXCEPTION 'OPERATIONAL_ROUTER_ADMISSION_READBACK_BLOCKED';
+ END IF;
+END $verify$;
+COMMIT;
