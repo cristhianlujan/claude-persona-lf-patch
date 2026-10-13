@@ -91,8 +91,6 @@ def verify(source: str) -> list[str]:
 class GovernedCandidateStaticTests(unittest.TestCase):
     def test_plpgsql_bodies_have_unique_balanced_delimiters(self):
         source=SQL.read_text(encoding="utf-8")
-        # pglast validates only the outer CREATE FUNCTION SQL. This gate
-        # rejects embedded copies of the tail or stray COMMIT inside bodies.
         tags=["guard","authority","close","begin","finish","principal",
               "admit","role","roles_verify","verify"]
         self.assertEqual(source.count("COMMIT;"),1)
@@ -107,99 +105,14 @@ class GovernedCandidateStaticTests(unittest.TestCase):
         b=source.index("END $admit$;",a)
         self.assertNotIn("DO $role$",source[a:b])
         self.assertNotIn("COMMIT;",source[a:b])
-        self.assertIn("!~ '^[0-9a-f]{64}
-        self.assertTrue(SQL.name.endswith(MIGRATION_SUFFIX))
-        self.assertEqual(len(list((ROOT/"supabase/migrations").glob("*"+MIGRATION_SUFFIX))),1)
-
-    def test_complete_candidate(self):
-        self.assertEqual(verify(SQL.read_text(encoding="utf-8")),[])
-    def test_cannot_disable_router_authority(self):
-        s=SQL.read_text(encoding="utf-8")
-        self.assertTrue(verify(s.replace("lf_router_downstream_authority_validate_v1",
-                                         "missing_authority_function")))
-    def test_cannot_grant_direct_dml(self):
-        s=SQL.read_text(encoding="utf-8")
-        self.assertTrue(verify(s+"\nGRANT UPDATE ON TABLE public.lf_operation_execution TO lf_operation_executor_runtime;\n"))
-    def test_cannot_fake_canonical_judge_by_direct_step_inserts(self):
-        s=SQL.read_text(encoding="utf-8")
-        self.assertTrue(verify(s.replace("lf_record_operation_step_core_v1","unused_core")))
-        self.assertTrue(verify(s+"\nINSERT INTO public.lf_operation_execution_steps SELECT 1;\n"))
-    def test_cannot_open_general_role(self):
-        s=SQL.read_text(encoding="utf-8")
-        self.assertTrue(verify(s.replace("NOLOGIN NOINHERIT","LOGIN")))
-    def test_runtime_role_cannot_admit_its_own_execution(self):
-        source=SQL.read_text(encoding="utf-8")
-        self.assertIn("TO lf_operational_admission_authority",source)
-        self.assertIn("TO lf_operation_executor_runtime",source)
-        self.assertIn("g.rolname<>p_expected_role",source)
-        self.assertIn("u.rolname=session_user",source)
-        self.assertIn("session_user IN ('postgres','authenticator','service_role','programacion_builder')",source)
-        self.assertTrue(verify(source.replace("OPERATIONAL_PRINCIPAL_ROLE_CROSSOVER_OR_MEMBERSHIP_INVALID",
-                                              "ROUTER_NOT_ENFORCED"))))
-
-    def test_all_three_facades_require_same_principal_verifier(self):
-        source=SQL.read_text(encoding="utf-8")
-        self.assertEqual(source.count(
-            "CREATE OR REPLACE FUNCTION public.lf_operational_executor_assert_principal_v1("),1)
-        for fname,role in (
-            ("admit","lf_operational_admission_authority"),
-            ("begin","lf_operation_executor_runtime"),
-            ("finish","lf_operation_executor_runtime"),
-        ):
-            start=source.index("CREATE OR REPLACE FUNCTION public.lf_operational_executor_"+fname+"_v1")
-            end=source.index("END $"+fname+"$;",start)
-            body=source[start:end]
-            self.assertIn("PERFORM public.lf_operational_executor_assert_principal_v1('"+role+"')",body)
-            self.assertLess(body.index("PERFORM public.lf_operational_executor_assert_principal_v1"),
-                            body.index("v_auth:=") if "v_auth:=" in body else body.index("v_route:="))
-        self.assertTrue(verify(source.replace(
-            "OPERATIONAL_PRINCIPAL_ROLE_CROSSOVER_OR_MEMBERSHIP_INVALID",
-            "AUTHORITY_PRINCIPAL_NOT_CHECKED")))
-
-    def test_extra_role_memberships_fail_closed(self):
-        source=SQL.read_text(encoding="utf-8")
-        self.assertIn("WHERE u.rolname=session_user AND g.rolname<>p_expected_role",source)
-        self.assertTrue(verify(source.replace(
-            "OPERATIONAL_PRINCIPAL_EXTRA_ROLE_MEMBERSHIP_FORBIDDEN",
-            "ALLOW_EXTRA_PRIVILEGES")))
-
-    def test_existing_authority_roles_are_fail_closed(self):
-        source=SQL.read_text(encoding="utf-8")
-        self.assertIn("AND r.rolcanlogin=false AND r.rolinherit=false",source)
-        self.assertIn("AND r.rolsuper=false",source)
-        self.assertIn("AND r.rolbypassrls=false",source)
-        self.assertTrue(verify(source.replace(
-          "OPERATIONAL_AUTHORITY_ROLE_CROSS_MEMBERSHIP_FORBIDDEN","UNSAFE_ROLE_REUSE")))
-
-    def test_independent_admission_provenance_cannot_be_removed(self):
-        source=SQL.read_text(encoding="utf-8")
-        self.assertIn("operational_authority_receipt",source)
-        self.assertIn("created_by_execution_id",source)
-        self.assertTrue(verify(source.replace(
-            "OPERATIONAL_BEGIN_INDEPENDENT_ADMISSION_PROVENANCE_MISSING",
-            "UNGUARDED")))
-
-    def test_generic_execution_reservation_is_reused(self):
-        source=SQL.read_text(encoding="utf-8")
-        self.assertEqual(len(re.findall(r"(?m)^  v_reserved:=public\.fn_lf_operation_reserve_execution_v1\(",source)),1)
-        self.assertIn("RESERVED_NEW_EXECUTION",source)
-        self.assertTrue(verify(source.replace(
-          "OPERATIONAL_ADMISSION_REPLAY_OR_EXECUTION_MISMATCH","PERMIT_REPLAY")))
-
-    def test_cannot_redirect_migration_route(self):
-        s=SQL.read_text(encoding="utf-8")
-        self.assertTrue(verify(s.replace("MIGRATION_TRAIN_ROUTE_NOT_PRESERVED","NO_ROUTE_GUARD")))
-
-
-if __name__=="__main__":
-    unittest.main()
-",source[a:b])
+        self.assertIn("p_payload_sha",source[a:b])
         self.assertEqual(source.count("REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1"),1)
 
     def test_mutated_admission_body_is_rejected(self):
         source=SQL.read_text(encoding="utf-8")
-        corrupted=source.replace("OR p_approval_receipt->>'decision' IS DISTINCT FROM 'APPROVED'",
-                  "COMMIT; OR p_approval_receipt->>'decision' IS DISTINCT FROM 'APPROVED'")
+        corrupted=source.replace(
+            "OR p_approval_receipt->>'decision' IS DISTINCT FROM 'APPROVED'",
+            "COMMIT; OR p_approval_receipt->>'decision' IS DISTINCT FROM 'APPROVED'")
         self.assertNotEqual(corrupted.count("COMMIT;"),1)
 
     def test_candidate_version_can_be_assigned_by_train(self):
@@ -230,7 +143,7 @@ if __name__=="__main__":
         self.assertIn("u.rolname=session_user",source)
         self.assertIn("session_user IN ('postgres','authenticator','service_role','programacion_builder')",source)
         self.assertTrue(verify(source.replace("OPERATIONAL_PRINCIPAL_ROLE_CROSSOVER_OR_MEMBERSHIP_INVALID",
-                                              "ROUTER_NOT_ENFORCED"))))
+                                              "ROUTER_NOT_ENFORCED")))
 
     def test_all_three_facades_require_same_principal_verifier(self):
         source=SQL.read_text(encoding="utf-8")
