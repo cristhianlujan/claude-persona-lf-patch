@@ -1,0 +1,49 @@
+from __future__ import annotations
+import os, pathlib, tempfile, unittest
+from unittest.mock import patch
+import lf_migration_exact_apply as a
+import lf_migration_recover_preflight as p
+
+class RecoverSafetyTest(unittest.TestCase):
+    def source(self, root):
+        version="20261012010000";name="lf_candidate_v1"
+        path=pathlib.Path(root)/(version+"_"+name+".sql")
+        path.write_text("-- example\nBEGIN;\nselect 1;\nCOMMIT;\n")
+        return version,name,path
+
+    def test_historical_version_must_not_use_bulk_push(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            version,name,path=self.source(tmp)
+            with patch.object(a,"read_ledger",side_effect=[(None,None,None),(version,name,"SOURCE_FIRST")]),patch.object(a,"read_ledger_max",return_value="20261013020000"),patch.object(a,"_fallback_apply") as fallback,patch.object(a,"_primary_cli") as primary,patch.dict(os.environ,{"LF_RECOVER_AUTHORIZED":"TRAIN_PREFLIGHT_PASSED"}):
+                result=a.apply_exact(project_root=pathlib.Path(tmp),migration_path=path,
+                    db_url="test",source_blob="a"*40,allow_fallback=True,recover_existing_main=True)
+                self.assertEqual(result.code,"RECOVER_EXACT_ORIGINAL_APPLIED")
+                fallback.assert_called_once();primary.assert_not_called()
+
+    def test_no_train_authority_cannot_apply(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            version,name,path=self.source(tmp)
+            with patch.object(a,"read_ledger",return_value=(None,None,None)),patch.object(a,"read_ledger_max",return_value="20261013020000"),patch.object(a,"_fallback_apply") as fallback,patch.dict(os.environ,{"LF_RECOVER_AUTHORIZED":"DENY"}):
+                with self.assertRaisesRegex(RuntimeError,"RECOVER_TRAIN_PREFLIGHT_AUTHORITY_REQUIRED"):
+                    a.apply_exact(project_root=pathlib.Path(tmp),migration_path=path,
+                      db_url="test",source_blob="a"*40,allow_fallback=True,recover_existing_main=True)
+                fallback.assert_not_called()
+
+    def test_applied_original_must_not_replay(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            version,name,path=self.source(tmp)
+            with patch.object(a,"read_ledger",return_value=(version,name,"EXISTING")),patch.object(a,"_fallback_apply") as fallback:
+                with self.assertRaisesRegex(RuntimeError,"RECOVER_ALREADY_APPLIED"):
+                    a.apply_exact(project_root=pathlib.Path(tmp),migration_path=path,
+                      db_url="test",source_blob="a"*40,allow_fallback=True,recover_existing_main=True)
+                fallback.assert_not_called()
+
+    def test_transaction_wrapper_is_not_replayed_inside_outer_transaction(self):
+        sql="-- source\nBEGIN;\nselect 1;\nCOMMIT;\n"
+        out=a.build_fallback_sql(version="20261012010000",name="lf_candidate_v1",
+              source_sql=sql,source_blob="a"*40,recover_existing_main=True)
+        self.assertIn("if not true and v_max",out)
+        self.assertIn("array[$lfmig",out)
+        self.assertEqual(p.strip_outer_transaction(sql),a._strip_outer_transaction(sql))
+
+if __name__=="__main__":unittest.main()
