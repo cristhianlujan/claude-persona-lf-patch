@@ -4,16 +4,16 @@ import unittest
 from unittest.mock import patch
 
 from lf_operation_executor_v1 import (
-    ACTIVE_LANE, CONNECTOR, OPERATIONAL_ASSET_TYPE, OPERATIONAL_ACTION, Handler, Request, Blocked,
+    ACTIVE_LANE, CONNECTOR, OPERATION_CODE, OPERATIONAL_ASSET_TYPE, OPERATIONAL_ACTION, Handler, Request, Blocked,
     digest, dispatch, runtime_dispatch,
 )
 
 def request():
-    return Request("EXAMPLE_OPERATION", "EXEC-EXAMPLE-TEST", "EXAMPLE_HANDLER",
+    return Request(OPERATION_CODE, "EXEC-EXAMPLE-TEST", "EXAMPLE_HANDLER",
                    {"item": "test-value"}, "OPERATIONAL:TEST", "dispatch-test", "TEST-ACTOR")
 
 def handler(perform=None, verify=None):
-    return Handler("EXAMPLE_HANDLER", "v1", "EXAMPLE_OPERATION",
+    return Handler("EXAMPLE_HANDLER", "v1", OPERATION_CODE,
                    OPERATIONAL_ASSET_TYPE, "example.logical_target", OPERATIONAL_ACTION,
                    perform or (lambda cur, payload: {"changed": payload["item"]}),
                    verify or (lambda cur, payload, effect:
@@ -128,6 +128,14 @@ class ExecutorTests(unittest.TestCase):
         result=dispatch(req,{h.code:bad},lambda:db,admitted=True)
         self.assertEqual(result["code"],"BLOCK_MIGRATION_RESERVED_FOR_TRAIN")
         self.assertEqual(db.queries,[])
+    def test_cannot_impersonate_migration_operation(self):
+        from dataclasses import replace
+        req,h,db=self.make()
+        forged=replace(req,operation_code="ACTUALIZACION_DB_LF")
+        result=dispatch(forged,{h.code:h},lambda:db,admitted=True)
+        self.assertEqual(result["code"],"BLOCK_OPERATION_CODE_INVALID")
+        self.assertEqual(db.queries,[])
+
     def test_migration_db_alias_not_accepted_as_operation(self):
         from dataclasses import replace
         req,h,db=self.make()
