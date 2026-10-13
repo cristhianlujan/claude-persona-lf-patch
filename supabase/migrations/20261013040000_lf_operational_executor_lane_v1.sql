@@ -498,6 +498,30 @@ DO $role$ BEGIN
    CREATE ROLE lf_operational_admission_authority NOLOGIN NOINHERIT;
  END IF;
 END $role$;
+-- Existing roles must already satisfy minimum privilege; never silently reuse
+-- a login, inherited, superuser or cross-authority group.
+DO $roles_verify$
+BEGIN
+ IF (
+    SELECT count(*) FROM pg_roles r
+    WHERE r.rolname IN ('lf_operational_admission_authority','lf_operation_executor_runtime')
+      AND r.rolcanlogin=false AND r.rolinherit=false AND r.rolsuper=false
+      AND r.rolcreatedb=false AND r.rolcreaterole=false
+      AND r.rolreplication=false AND r.rolbypassrls=false
+ ) <> 2 THEN
+   RAISE EXCEPTION 'OPERATIONAL_AUTHORITY_ROLE_PRIVILEGES_UNSAFE';
+ END IF;
+ IF EXISTS(
+   SELECT 1 FROM pg_auth_members m
+   JOIN pg_roles g ON g.oid=m.roleid
+   JOIN pg_roles u ON u.oid=m.member
+   WHERE g.rolname IN ('lf_operational_admission_authority','lf_operation_executor_runtime')
+     AND u.rolname IN ('lf_operational_admission_authority','lf_operation_executor_runtime')
+ ) THEN
+   RAISE EXCEPTION 'OPERATIONAL_AUTHORITY_ROLE_CROSS_MEMBERSHIP_FORBIDDEN';
+ END IF;
+END $roles_verify$;
+
 GRANT USAGE ON SCHEMA public TO lf_operation_executor_runtime;
 GRANT USAGE ON SCHEMA public TO lf_operational_admission_authority;
 GRANT USAGE ON SCHEMA public TO lf_operational_admission_authority;
