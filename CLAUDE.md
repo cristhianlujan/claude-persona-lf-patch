@@ -81,6 +81,16 @@ If the name does not fit, first open a separate code-only PR that registers the 
 
 The PR check `classify-migration-names` flags unclassified names early, and the Train rejects them before any database write (`FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY`). Do not label an unclassified migration.
 
+### One merge path to `main`: the Train queue
+
+The Train runs one PR at a time (`concurrency: lf-migrations`) and syncs each PR with `main` when it starts. A merge that bypasses the Train while a Train run is in flight moves `main` under it, and the Train's final exact-head merge is rejected (observed 2026-10-13: #2484 merged directly during the Train run of #2485).
+
+Rules for every agent:
+- Merge every PR, with or without migrations, by labeling it `ready-to-merge`. Do not merge PRs directly from the web, `gh pr merge`, or the merge API, even when `lf-merge-train/verified` is already green for a code-only PR.
+- Before labeling, check that no Train run is `queued` or `in_progress` for a PR you are not handling; if one is, wait for it to finish.
+- PRs that change the Train itself (`.github/workflows/lf-migration-merge-train.yml`, `sandbox/lf_contract_gate_test/db_write_transport/**`, guard or parity code) always go through the Train.
+- If a Train run fails because `main` advanced (stale head, not a content conflict), update the branch from `main`, wait for green checks on the new head, then remove and re-add `ready-to-merge`. Do not force-push and do not hand-merge.
+
 ## Soft canonical-route guard
 
 Before any repository, database, API, or external-system write, resolve the
