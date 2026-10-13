@@ -97,7 +97,9 @@ BEGIN
  FROM programacion.engineering_plan_units
  WHERE plan_code=v_plan AND unit_code=v_unit AND work_item_id=476
  FOR UPDATE;
- v_spec:=v_metadata#>'{action_specs_v1,FREEZE_READBACK}';
+ v_spec:=programacion.fn_engineering_checkpoint_action_spec_v3(v_plan,v_unit,v_cp);
+ IF v_spec->>'status'<>'READY' OR v_spec->>'action_kind'<>'READBACK_ONCE'
+ THEN RAISE EXCEPTION 'M104_CP4_SOURCE_ACTION_NOT_READY'; END IF;
  v_spec:=jsonb_set(v_spec,'{verification_queries}',to_jsonb(array[v_query,
   'select version,name from supabase_migrations.schema_migrations where name like ''%m104_cp%'' order by version'
  ]),true);
