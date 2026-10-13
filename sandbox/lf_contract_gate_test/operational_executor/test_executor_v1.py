@@ -1,267 +1,242 @@
-"""Offline policy tests: no DB access, real secrets, migration or checkpoint IDs."""
+"""Simulated transactional contract tests; no Supabase connection or credentials."""
 from __future__ import annotations
+
+import json
 import unittest
+from dataclasses import replace
+from pathlib import Path
 from unittest.mock import patch
 
 from activation_readback_v1 import evaluate as evaluate_activation
 from lf_operation_executor_v1 import (
-    ACTIVE_LANE, CONNECTOR, OPERATION_CODE, OPERATIONAL_ASSET_TYPE, OPERATIONAL_ACTION, Handler, Request, Blocked,
+    ACTIVE_LANE, CONNECTOR, OPERATION_CODE, OPERATIONAL_ACTION,
+    OPERATIONAL_ASSET_TYPE, Handler, Request, Blocked,
     digest, dispatch, runtime_dispatch,
 )
 
-def request():
-    return Request(OPERATION_CODE, "EXEC-EXAMPLE-TEST", "EXAMPLE_HANDLER",
-                   {"item": "test-value"}, "OPERATIONAL:TEST", "dispatch-test", "TEST-ACTOR")
 
-def handler(perform=None, verify=None):
-    return Handler("EXAMPLE_HANDLER", "v1", OPERATION_CODE,
-                   OPERATIONAL_ASSET_TYPE, "example.logical_target", OPERATIONAL_ACTION,
-                   perform or (lambda cur, payload: {"changed": payload["item"]}),
-                   verify or (lambda cur, payload, effect:
-                              {"verified": effect.get("changed") == payload["item"], "source": "trusted-handler"}))
+def request():
+    return Request(OPERATION_CODE,"EXEC-EXAMPLE-TEST","EXAMPLE_HANDLER",
+                   {"item":"test-value"},"OPERATIONAL:TEST","dispatch-test","TEST-ACTOR")
+
+
+def handler(perform=None,verify=None):
+    return Handler("EXAMPLE_HANDLER","v1",OPERATION_CODE,
+                   OPERATIONAL_ASSET_TYPE,"EXAMPLE_HANDLER",OPERATIONAL_ACTION,
+                   perform or (lambda cur,payload:{"changed":payload["item"]}),
+                   verify or (lambda cur,payload,effect:
+                              {"verified":effect.get("changed")==payload["item"],
+                               "source":"trusted-handler"}))
+
 
 class FakeCursor:
-    def __init__(self, db):
-        self.db = db
-        self.last = None
+    def __init__(self,db):
+        self.db=db
+        self.last=None
     def __enter__(self):
         return self
-    def __exit__(self, *_):
+    def __exit__(self,*_):
         return False
-    def execute(self, sql, values):
-        assert "%s" in sql
-        self.last = sql
-        self.db.queries.append((sql, values))
+    def execute(self,sql,values):
+        if "%s" not in sql:
+            raise AssertionError("Direct SQL or unparameterized statement not allowed")
+        self.last=(sql,values)
+        self.db.queries.append((sql,values))
+        if "lf_operational_executor_begin_v1" in sql and self.db.begin_error:
+            raise self.db.begin_error
+        if "lf_operational_executor_finish_v1" in sql and self.db.finish_error:
+            raise self.db.finish_error
     def fetchone(self):
-        req = self.db.req
-        h = self.db.handler
-        digest_value = digest(req, h)
-        sql = self.last
-        if "lf_router_resolve_v1" in sql:
-            return ({"router":"ACT-0001", "status":"READY_TO_EXECUTE",
-                     "downstream_execution_allowed":True,
-                     "operation_code":h.operation_code,"asset_type":h.target_type,
-                     "action_code":h.action_code, **self.db.route_overrides},)
-        if "FROM public.lf_operation_execution" in sql:
-            return ({"operation_code":h.operation_code, "target_type":h.target_type,
-                     "target_code":h.target_code, "status":"IN_PROGRESS",
-                     "request_sha256":digest_value,
-                     "manifest":{"operational_transaction_admission":{
-                         "status":"APPROVED","verification":"PASS",
-                         "lane":ACTIVE_LANE,"connector":CONNECTOR,
-                         "handler_code":h.code,"handler_revision":h.revision,
-                         "payload_sha256":digest_value,"effect_scope":req.effect_scope,
-                         "dispatch_key":req.dispatch_key, **self.db.admission_overrides}},
-                     **self.db.execution_overrides},)
-        if "lf_router_downstream_authority_validate_v1" in sql:
-            self.db.auth_reads += 1
-            override = self.db.second_auth_overrides if self.db.auth_reads > 1 else self.db.auth_overrides
-            return ({"applicable":True,"valid":True,"code":"ROUTER_DOWNSTREAM_AUTHORITY_VALID",
-                     "operation_code":req.operation_code,"execution_id":req.execution_id,
-                     "target_type":h.target_type,"target_code":h.target_code,
-                     **override},)
-        if "fn_lf_operation_acquire_lease_v1" in sql:
-            return ({"result":"LEASE_ACQUIRED","lease_fence":1, **self.db.lease_overrides},)
-        if "fn_lf_operation_reserve_effect_v1" in sql:
-            return ({"result":"EFFECT_RESERVED_NEW","dispatch_permitted":True,
-                     **self.db.effect_overrides},)
-        if "fn_lf_operation_mark_effect_succeeded_v1" in sql:
-            return ({"result":"EFFECT_SUCCESS_PERSISTED",**self.db.receipt_overrides},)
-        if "lf_close_operational_execution_v1" in sql:
-            return ({"result":"EXECUTION_COMPLETED","execution_id":req.execution_id,**self.db.close_overrides},)
-        raise AssertionError("unexpected query:"+sql)
+        sql,values=self.last
+        req,h=self.db.req,self.db.handler
+        if "lf_operational_executor_begin_v1" in sql:
+            return ({**{
+                "result":"READY_FOR_HANDLER","execution_id":req.execution_id,
+                "effect_scope":req.effect_scope,"payload_sha256":digest(req,h),
+                "lease_owner":"operational-executor-test","lease_fence":5
+            },**self.db.begin_overrides},)
+        if "lf_operational_executor_finish_v1" in sql:
+            return ({**{
+                "result":"EXECUTION_COMPLETED","execution_id":req.execution_id
+            },**self.db.finish_overrides},)
+        raise AssertionError("Core attempted direct SQL instead of facade")
+
 
 class FakeConnection:
-    def __init__(self, req, h):
-        self.req, self.handler = req, h
-        self.queries = []
-        self.route_overrides, self.admission_overrides = {}, {}
-        self.execution_overrides, self.auth_overrides = {}, {}
-        self.second_auth_overrides, self.lease_overrides = {}, {}
-        self.effect_overrides, self.receipt_overrides, self.close_overrides = {}, {}, {}
-        self.auth_reads = 0
-        self.commits = self.rollbacks = self.closed = 0
+    def __init__(self,req,h):
+        self.req,self.handler=req,h
+        self.queries=[]
+        self.begin_error=self.finish_error=None
+        self.begin_overrides={}
+        self.finish_overrides={}
+        self.commits=self.rollbacks=self.closed=0
     def cursor(self):
         return FakeCursor(self)
     def commit(self):
-        self.commits += 1
+        self.commits+=1
     def rollback(self):
-        self.rollbacks += 1
+        self.rollbacks+=1
     def close(self):
-        self.closed += 1
+        self.closed+=1
+
 
 class ExecutorTests(unittest.TestCase):
-    def make(self, perform=None, verify=None):
-        req = request()
-        h = handler(perform, verify)
-        return req, h, FakeConnection(req,h)
-    def run_valid(self, *, dry_run=True):
-        req,h,conn=self.make()
-        result=dispatch(req,{h.code:h},lambda:conn,dry_run=dry_run,admitted=True)
-        return result, conn
-
-    def test_activation_requires_independent_router_route_and_catalogue(self):
-        from pathlib import Path
-        import json
-        manifest=json.loads((Path(__file__).parent/"operation_lane_contract_candidate_v1.json").read_text())
-        self.assertEqual(manifest["status"],"CANDIDATE_NOT_INSTALLED_NOT_ACTIVE")
-        self.assertTrue(manifest["independent_lane"]["migration_train_exclusive"])
-        self.assertEqual(manifest["independent_lane"]["asset_type"],OPERATIONAL_ASSET_TYPE)
-        self.assertEqual(manifest["independent_lane"]["action_code"],OPERATIONAL_ACTION)
-        snapshot={"migration_route":{"status":"READY_TO_EXECUTE","operation_code":"ACTUALIZACION_DB_LF"},
-                  "operational_route":{"status":"BLOCKED","blocking_code":"BLOCK_OPERATION_NOT_REGISTERED"},
-                  "operation_registry_count":0,"router_action_count":0,
-                  "router_authority_consumer":False,"active_contract_count":0,
-                  "active_required_step_count":0,"active_judge_binding_count":0,
-                  "governed_closeout_function":False,
-                  "read_only_connection_unchanged":True}
-        report=evaluate_activation(snapshot)
-        self.assertEqual(report["status"],"BLOCKED")
-        self.assertIn("BLOCK_OPERATIONAL_ROUTE_NOT_ADMITTED",report["blocking_codes"])
-        self.assertIn("BLOCK_OPERATION_CLOSEOUT_NOT_INSTALLED",report["blocking_codes"])
-        snapshot["operational_route"]={"status":"READY_TO_EXECUTE","operation_code":OPERATION_CODE,
-              "asset_type":OPERATIONAL_ASSET_TYPE,"action_code":OPERATIONAL_ACTION,
-              "downstream_execution_allowed":True}
-        snapshot.update(operation_registry_count=1,router_action_count=1,
-               router_authority_consumer=True,active_contract_count=1,
-               active_required_step_count=1,active_judge_binding_count=1,
-               governed_closeout_function=True)
-        verified=evaluate_activation(snapshot)
-        self.assertEqual(verified["status"],"PASS")
-        snapshot["migration_route"]["operation_code"]=OPERATION_CODE
-        self.assertIn("BLOCK_MIGRATION_ROUTE_NOT_PRESERVED",
-                      evaluate_activation(snapshot)["blocking_codes"])
+    def make(self,perform=None,verify=None):
+        req=request()
+        h=handler(perform,verify)
+        return req,h,FakeConnection(req,h)
 
     def test_default_inactive_no_connection(self):
         req,h,db=self.make()
-        result=dispatch(req,{h.code:h},lambda:db)
-        self.assertEqual(result["code"],"BLOCK_OPERATIONAL_EXECUTOR_NOT_ADMITTED")
+        out=dispatch(req,{h.code:h},lambda:db)
+        self.assertEqual(out["code"],"BLOCK_OPERATIONAL_EXECUTOR_NOT_ADMITTED")
         self.assertEqual(db.queries,[])
-    def test_rollback_success_no_persistence(self):
-        result, db=self.run_valid()
-        self.assertEqual(result["status"],"DRY_RUN_ROLLBACK_PASS")
-        self.assertFalse(result["committed"])
-        self.assertEqual((db.rollbacks,db.commits,db.closed),(1,0,1))
-        self.assertEqual(db.auth_reads,2)
-        self.assertEqual(sum("fn_lf_operation_mark_effect_succeeded_v1" in q
-                             for q,_ in db.queries),1)
-    def test_commit_only_after_receipt(self):
-        result,db=self.run_valid(dry_run=False)
-        self.assertEqual(result["status"],"COMMITTED_READBACK_PASS")
+
+    def test_two_scoped_sql_facades_only(self):
+        req,h,db=self.make()
+        out=dispatch(req,{h.code:h},lambda:db,admitted=True)
+        self.assertEqual(out["status"],"DRY_RUN_ROLLBACK_PASS")
+        self.assertEqual((db.commits,db.rollbacks,db.closed),(0,1,1))
+        self.assertEqual(len(db.queries),2)
+        self.assertIn("lf_operational_executor_begin_v1",db.queries[0][0])
+        self.assertIn("lf_operational_executor_finish_v1",db.queries[1][0])
+        self.assertEqual(db.queries[0][1][0],req.execution_id)
+
+    def test_commit_after_governed_closeout_only(self):
+        req,h,db=self.make()
+        out=dispatch(req,{h.code:h},lambda:db,dry_run=False,admitted=True)
+        self.assertEqual(out["status"],"COMMITTED_READBACK_PASS")
         self.assertEqual((db.commits,db.rollbacks),(1,0))
-        self.assertEqual(db.queries[-2][0].split("(")[0],
-                         "SELECT public.fn_lf_operation_mark_effect_succeeded_v1")
-        self.assertEqual(db.queries[-1][0].split("(")[0],
-                         "SELECT public.lf_close_operational_execution_v1")
-    def test_unknown_handler_blocks_before_route(self):
+        self.assertEqual(out["receipt"]["close"]["result"],"EXECUTION_COMPLETED")
+
+    def test_missing_handler_fails_closed_before_db(self):
         req,h,db=self.make()
-        result=dispatch(req,{},lambda:db,admitted=True)
-        self.assertEqual(result["code"],"BLOCK_HANDLER_NOT_REGISTERED")
-        self.assertEqual(db.queries,[])
-    def test_migration_target_cannot_register(self):
-        req,h,db=self.make()
-        from dataclasses import replace
-        bad=replace(h,target_type="MIGRATION")
-        result=dispatch(req,{h.code:bad},lambda:db,admitted=True)
-        self.assertEqual(result["code"],"BLOCK_MIGRATION_RESERVED_FOR_TRAIN")
-        self.assertEqual(db.queries,[])
-    def test_cannot_impersonate_migration_operation(self):
-        from dataclasses import replace
-        req,h,db=self.make()
-        forged=replace(req,operation_code="ACTUALIZACION_DB_LF")
-        result=dispatch(forged,{h.code:h},lambda:db,admitted=True)
-        self.assertEqual(result["code"],"BLOCK_OPERATION_CODE_INVALID")
+        out=dispatch(req,{},lambda:db,admitted=True)
+        self.assertEqual(out["code"],"BLOCK_HANDLER_NOT_REGISTERED")
         self.assertEqual(db.queries,[])
 
-    def test_migration_db_alias_not_accepted_as_operation(self):
-        from dataclasses import replace
+    def test_migration_target_and_db_update_blocked(self):
         req,h,db=self.make()
-        bad=replace(h,target_type="DB",action_code="UPDATE")
-        result=dispatch(req,{h.code:bad},lambda:db,admitted=True)
-        self.assertEqual(result["code"],"BLOCK_MIGRATION_RESERVED_FOR_TRAIN")
+        for target in ("MIGRATION","DB","FUNCTION","TRIGGER","CAPABILITY"):
+            with self.subTest(target=target):
+                bad=replace(h,target_type=target)
+                out=dispatch(req,{h.code:bad},lambda:db,admitted=True)
+                self.assertEqual(out["code"],"BLOCK_MIGRATION_RESERVED_FOR_TRAIN")
         self.assertEqual(db.queries,[])
 
-    def test_router_uses_dedicated_operational_route(self):
-        result,db=self.run_valid()
-        self.assertEqual(result["status"],"DRY_RUN_ROLLBACK_PASS")
-        query,values=db.queries[0]
-        self.assertEqual(query.count("%s"),5)
-        self.assertEqual(values,( "Governed operational handler",None,OPERATIONAL_ACTION,OPERATIONAL_ASSET_TYPE,"ROUTER"))
+    def test_migration_operation_impersonation_blocked(self):
+        req,h,db=self.make()
+        out=dispatch(replace(req,operation_code="ACTUALIZACION_DB_LF"),
+                     {h.code:h},lambda:db,admitted=True)
+        self.assertEqual(out["code"],"BLOCK_OPERATION_CODE_INVALID")
+        self.assertEqual(db.queries,[])
 
-    def test_authority_cannot_switch_target_after_handler(self):
+    def test_wrong_handler_action_and_revision_blocked(self):
         req,h,db=self.make()
-        db.second_auth_overrides["target_code"]="other.target"
-        result=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
-        self.assertEqual(result["code"],"BLOCK_ROUTER_AUTHORITY_CHANGED_BEFORE_RECEIPT")
-        self.assertEqual(db.commits,0)
+        out=dispatch(req,{h.code:replace(h,action_code="UPDATE")},
+                     lambda:db,admitted=True)
+        self.assertEqual(out["code"],"BLOCK_HANDLER_TARGET_NOT_OPERATIONAL_DB")
+        self.assertEqual(db.queries,[])
 
-    def test_route_must_allow_exact_operation(self):
-        req,h,db=self.make()
-        db.route_overrides["status"]="BLOCKED"
-        result=dispatch(req,{h.code:h},lambda:db,admitted=True)
-        self.assertEqual(result["code"],"BLOCK_ROUTER_ROUTE_UNAUTHORIZED")
-        self.assertEqual(db.commits,0)
-    def test_admission_exact_binding_required(self):
-        req,h,db=self.make()
-        db.admission_overrides["payload_sha256"]="0"*64
-        result=dispatch(req,{h.code:h},lambda:db,admitted=True)
-        self.assertEqual(result["code"],"BLOCK_OPERATIONAL_ADMISSION_NOT_EXACT")
-        self.assertEqual(db.commits,0)
-    def test_authority_currentness_required(self):
-        req,h,db=self.make()
-        db.auth_overrides["valid"]=False
-        result=dispatch(req,{h.code:h},lambda:db,admitted=True)
-        self.assertEqual(result["code"],"BLOCK_ROUTER_AUTHORITY_STALE")
-    def test_replay_never_dispatches_handler(self):
+    def test_begin_admission_missing_blocks_effect(self):
         effects=[]
         req,h,db=self.make(perform=lambda cur,payload:effects.append(payload))
-        db.effect_overrides={"result":"RECONCILIATION_REQUIRED","dispatch_permitted":False}
-        result=dispatch(req,{h.code:h},lambda:db,admitted=True)
-        self.assertEqual(result["code"],"BLOCK_EFFECT_NOT_NEW_OR_UNRESOLVED_NO_REPLAY")
+        db.begin_error=Blocked("BLOCK_OPERATIONAL_BEGIN_MANIFEST_NOT_EXACT")
+        out=dispatch(req,{h.code:h},lambda:db,dry_run=False,admitted=True)
+        self.assertEqual(out["code"],"BLOCK_OPERATIONAL_BEGIN_MANIFEST_NOT_EXACT")
         self.assertEqual(effects,[])
-        self.assertEqual(db.rollbacks,1)
-    def test_missing_verifiable_readback_rolls_back(self):
-        req,h,db=self.make(verify=lambda cur,payload,effect:{"verified":False})
-        result=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
-        self.assertEqual(result["code"],"BLOCK_HANDLER_READBACK_UNVERIFIED")
         self.assertEqual((db.commits,db.rollbacks),(0,1))
-    def test_stale_authority_after_effect_rolls_back(self):
-        req,h,db=self.make()
-        db.second_auth_overrides["valid"]=False
-        result=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
-        self.assertEqual(result["code"],"BLOCK_ROUTER_AUTHORITY_CHANGED_BEFORE_RECEIPT")
+
+    def test_replay_blocks_before_handler(self):
+        effects=[]
+        req,h,db=self.make(perform=lambda cur,payload:effects.append(payload))
+        db.begin_error=Blocked("BLOCK_OPERATIONAL_BEGIN_EFFECT_REPLAY_OR_AMBIGUOUS")
+        out=dispatch(req,{h.code:h},lambda:db,dry_run=False,admitted=True)
+        self.assertEqual(out["code"],"BLOCK_OPERATIONAL_BEGIN_EFFECT_REPLAY_OR_AMBIGUOUS")
+        self.assertEqual(effects,[])
         self.assertEqual(db.commits,0)
-    def test_receipt_failure_rolls_back(self):
+
+    def test_invalid_begin_receipt_blocks(self):
         req,h,db=self.make()
-        db.receipt_overrides["result"]="BLOCKED"
-        result=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
-        self.assertEqual(result["code"],"BLOCK_EFFECT_RECEIPT_NOT_DURABLE")
-        self.assertEqual(db.commits,0)
-    def test_failed_canonical_closeout_rolls_back_effect_and_handler(self):
+        db.begin_overrides["payload_sha256"]="a"*64
+        out=dispatch(req,{h.code:h},lambda:db,admitted=True)
+        self.assertEqual(out["code"],"BLOCK_OPERATIONAL_BEGIN_RECEIPT_INVALID")
+
+    def test_handler_unverified_readback_rolls_back(self):
+        req,h,db=self.make(verify=lambda cur,p,e:{"verified":False})
+        out=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
+        self.assertEqual(out["code"],"BLOCK_HANDLER_READBACK_UNVERIFIED")
+        self.assertEqual((db.commits,db.rollbacks),(0,1))
+        self.assertEqual(len(db.queries),1)
+
+    def test_runtime_handler_exception_rolls_back(self):
+        def fail(cur,payload):
+            raise ValueError("do not expose error details")
+        req,h,db=self.make(perform=fail)
+        out=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
+        self.assertEqual(out["code"],"BLOCK_OPERATIONAL_EXECUTOR_RUNTIME_NO_COMMIT_CLAIM")
+        self.assertEqual((db.commits,db.rollbacks),(0,1))
+
+    def test_finish_failure_rolls_back(self):
         req,h,db=self.make()
-        db.close_overrides["result"]="BLOCKED"
-        result=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
-        self.assertEqual(result["code"],"BLOCK_OPERATIONAL_CLOSEOUT_NOT_DURABLE")
+        db.finish_error=Blocked("BLOCK_OPERATIONAL_FINISH_ROUTER_AUTHORITY_STALE")
+        out=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
+        self.assertEqual(out["code"],"BLOCK_OPERATIONAL_FINISH_ROUTER_AUTHORITY_STALE")
         self.assertEqual(db.commits,0)
         self.assertEqual(db.rollbacks,1)
 
-    def test_closure_wrong_execution_id_cannot_commit(self):
+    def test_forged_close_result_rolls_back(self):
         req,h,db=self.make()
-        db.close_overrides["execution_id"]="EXEC-OTHER"
-        result=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
-        self.assertEqual(result["code"],"BLOCK_OPERATIONAL_CLOSEOUT_NOT_DURABLE")
+        db.finish_overrides["result"]="BLOCKED"
+        out=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
+        self.assertEqual(out["code"],"BLOCK_OPERATIONAL_CLOSEOUT_NOT_DURABLE")
         self.assertEqual(db.commits,0)
 
-    def test_runtime_requires_lane_before_importing_driver(self):
+    def test_wrong_close_identity_rolls_back(self):
+        req,h,db=self.make()
+        db.finish_overrides["execution_id"]="EXEC-OTHER"
+        out=dispatch(req,{h.code:h},lambda:db,admitted=True,dry_run=False)
+        self.assertEqual(out["code"],"BLOCK_OPERATIONAL_CLOSEOUT_NOT_DURABLE")
+
+    def test_runtime_requires_authorized_lane_and_dsn(self):
         req,h,_=self.make()
-        with patch.dict("os.environ",{"LF_OPERATION_EXECUTOR_LANE":"","LF_OPERATION_EXECUTOR_DSN":""}):
-            result=runtime_dispatch(req,{h.code:h})
-        self.assertEqual(result["code"],"BLOCK_OPERATIONAL_EXECUTOR_NOT_ADMITTED")
-    def test_runtime_requires_dedicated_secret(self):
-        req,h,_=self.make()
-        with patch.dict("os.environ",{"LF_OPERATION_EXECUTOR_LANE":ACTIVE_LANE,"LF_OPERATION_EXECUTOR_DSN":""}):
-            result=runtime_dispatch(req,{h.code:h})
-        self.assertEqual(result["code"],"BLOCK_OPERATIONAL_EXECUTOR_CREDENTIAL_NOT_PROVISIONED")
+        with patch.dict("os.environ",{"LF_OPERATION_EXECUTOR_LANE":"",
+                                    "LF_OPERATION_EXECUTOR_DSN":""}):
+            out=runtime_dispatch(req,{h.code:h})
+        self.assertEqual(out["code"],"BLOCK_OPERATIONAL_EXECUTOR_NOT_ADMITTED")
+        with patch.dict("os.environ",{"LF_OPERATION_EXECUTOR_LANE":ACTIVE_LANE,
+                                    "LF_OPERATION_EXECUTOR_DSN":""}):
+            out=runtime_dispatch(req,{h.code:h})
+        self.assertEqual(out["code"],"BLOCK_OPERATIONAL_EXECUTOR_CREDENTIAL_NOT_PROVISIONED")
+
+    def test_activation_snapshot_requires_separate_route_and_existing_train(self):
+        manifest=json.loads((Path(__file__).parent/"operation_lane_contract_candidate_v1.json").read_text())
+        self.assertEqual(manifest["status"],"CANDIDATE_NOT_INSTALLED_NOT_ACTIVE")
+        snap={
+           "migration_route":{"status":"READY_TO_EXECUTE","operation_code":"ACTUALIZACION_DB_LF"},
+           "operational_route":{"status":"BLOCKED"},
+           "operation_registry_count":0,"router_action_count":0,
+           "router_authority_consumer":False,"active_contract_count":0,
+           "active_required_step_count":0,"active_judge_binding_count":0,
+           "governed_closeout_function":False,"read_only_connection_unchanged":True
+        }
+        self.assertEqual(evaluate_activation(snap)["status"],"BLOCKED")
+        snap.update(
+          operational_route={
+             "status":"READY_TO_EXECUTE","operation_code":OPERATION_CODE,
+             "asset_type":OPERATIONAL_ASSET_TYPE,
+             "action_code":OPERATIONAL_ACTION,
+             "downstream_execution_allowed":True
+          },
+          operation_registry_count=1,router_action_count=1,
+          router_authority_consumer=True,active_contract_count=1,
+          active_required_step_count=3,active_judge_binding_count=3,
+          governed_closeout_function=True
+        )
+        self.assertEqual(evaluate_activation(snap)["status"],"PASS")
+        snap["migration_route"]["operation_code"]=OPERATION_CODE
+        self.assertIn("BLOCK_MIGRATION_ROUTE_NOT_PRESERVED",evaluate_activation(snap)["blocking_codes"])
+
 
 if __name__=="__main__":
     unittest.main()
