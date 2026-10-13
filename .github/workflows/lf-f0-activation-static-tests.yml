@@ -4,6 +4,8 @@ on:
     paths:
       - '.github/workflows/**'
       - 'sandbox/lf_contract_gate_test/f0_workflow_activation/**'
+      - 'sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py'
+      - 'sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_assign_version.py'
 permissions:
   contents: read
 jobs:
@@ -20,3 +22,5 @@ jobs:
         run: python3 sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_target_v1.py self-test
       - name: Validate guarded scope
         run: python3 sandbox/lf_contract_gate_test/f0_workflow_activation/test_scope.py
+      - name: Test Train UTC future-version policy
+        run: python3 sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_assign_version.py

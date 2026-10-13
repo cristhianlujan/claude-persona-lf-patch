@@ -9,6 +9,14 @@ execution of every migration it applies, using only evidence it produced:
   commit  (post-apply)        mark effect SUCCEEDED with the apply receipt ->
                               patch step
   close   (post-merge)        verify step -> lf_close_db_operation_execution_v1
+                              -> typed receipt (LF_MIGRATION_TRAIN_RECEIPT_V1)
+
+PASE-ATOM-F07-X01: begin/resume also capture the human authorization (label,
+actor, authorized head from the triggering event), main before the Train and
+the owner rule D1 (between the authorized head and the final head there may be
+only the main sync and the version retimestamp). An unexpected change is fatal
+before any database effect. close and abort append one typed receipt per
+execution through public.lf_record_migration_train_receipt_v1.
 
 Every call goes through the canonical SQL functions; this module never
 writes tables directly and never invents evidence.
@@ -39,6 +47,119 @@ PREVENTION_RULES = (
 VERSION_RE = re.compile(r"^\d{14}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 SHA1_RE = re.compile(r"^[0-9a-f]{40}$")
+MIGRATION_PATH_RE = re.compile(r"^supabase/migrations/(\d{14})_([A-Za-z0-9][A-Za-z0-9_]*)\.sql$")
+TRAIN_LABEL = "ready-to-merge"
+DIFF_NO_CHANGE = "NO_CHANGE"
+DIFF_SYNC_ONLY = "SYNC_AND_RETIMESTAMP_ONLY"
+DIFF_UNEXPECTED = "UNEXPECTED_CHANGES"
+DIFF_NOT_EVALUATED = "NOT_EVALUATED"
+
+
+# ------------------------------------------------- provenance and rule D1
+
+
+def git(*args: str, cwd: str | None = None) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", *args], cwd=cwd, text=True, capture_output=True, timeout=120, check=False)
+
+
+def git_out(*args: str, cwd: str | None = None) -> str | None:
+    proc = git(*args, cwd=cwd)
+    return proc.stdout.strip() if proc.returncode == 0 else None
+
+
+def ensure_commit(sha: str, cwd: str | None = None) -> bool:
+    if git("cat-file", "-e", f"{sha}^{{commit}}", cwd=cwd).returncode == 0:
+        return True
+    git("fetch", "--no-tags", "--quiet", "origin", sha, cwd=cwd)
+    return git("cat-file", "-e", f"{sha}^{{commit}}", cwd=cwd).returncode == 0
+
+
+def classify_head_diff(authorized: str, main: str, final: str, target_path: str,
+                       source_blob: str, cwd: str | None = None) -> dict:
+    """Owner rule D1: final may differ from authorized only by the main sync
+    (recomputed independently with merge-tree) and the version retimestamp
+    (same blob, same migration name, new path = target path)."""
+    if authorized == final:
+        return {"class": DIFF_NO_CHANGE, "unexpected_paths": []}
+    for sha in (authorized, main, final):
+        if not SHA1_RE.fullmatch(sha or "") or not ensure_commit(sha, cwd):
+            return {"class": DIFF_NOT_EVALUATED, "unexpected_paths": [], "note": f"commit unavailable: {sha}"}
+    merged = git("merge-tree", "--write-tree", authorized, main, cwd=cwd)
+    expected_tree = merged.stdout.splitlines()[0].strip() if merged.returncode == 0 and merged.stdout else ""
+    if not SHA1_RE.fullmatch(expected_tree):
+        return {"class": DIFF_NOT_EVALUATED, "unexpected_paths": [], "note": f"merge-tree rc={merged.returncode}"}
+    final_tree = git_out("rev-parse", f"{final}^{{tree}}", cwd=cwd) or ""
+    if final_tree == expected_tree:
+        return {"class": DIFF_SYNC_ONLY, "unexpected_paths": []}
+    raw = git_out("diff-tree", "-r", "--no-renames", "--raw", expected_tree, final_tree, cwd=cwd)
+    if raw is None:
+        return {"class": DIFF_NOT_EVALUATED, "unexpected_paths": [], "note": "diff-tree failed"}
+    entries = []
+    for line in raw.splitlines():
+        meta, _, path = line.partition("\t")
+        parts = meta.split()
+        if len(parts) >= 5:
+            entries.append({"old": parts[2], "new": parts[3], "op": parts[4][:1], "path": path})
+    target = MIGRATION_PATH_RE.fullmatch(target_path or "")
+    deleted = [x for x in entries if x["op"] == "D"]
+    added = [x for x in entries if x["op"] == "A"]
+    if (target and len(entries) == 2 and len(deleted) == 1 and len(added) == 1
+            and added[0]["path"] == target_path and added[0]["new"] == source_blob
+            and deleted[0]["old"] == source_blob):
+        old = MIGRATION_PATH_RE.fullmatch(deleted[0]["path"])
+        if old and old.group(2) == target.group(2) and old.group(1) != target.group(1):
+            return {"class": DIFF_SYNC_ONLY, "unexpected_paths": []}
+    return {"class": DIFF_UNEXPECTED, "unexpected_paths": sorted({x["path"] for x in entries})[:50]}
+
+
+def read_event() -> dict:
+    path = os.environ.get("GITHUB_EVENT_PATH", "").strip()
+    if not path or not Path(path).is_file():
+        return {}
+    try:
+        return json.loads(Path(path).read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def authorization_from_env() -> dict:
+    event = read_event()
+    return {
+        "label": (event.get("label") or {}).get("name"),
+        "authorized_by": (event.get("sender") or {}).get("login") or os.environ.get("GITHUB_ACTOR"),
+        "github_actor": os.environ.get("GITHUB_ACTOR"),
+        "triggering_actor": os.environ.get("GITHUB_TRIGGERING_ACTOR"),
+        "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+        "authorized_head": ((event.get("pull_request") or {}).get("head") or {}).get("sha"),
+    }
+
+
+def capture_provenance(ctx: dict, cwd: str | None = None) -> dict:
+    """Taken at begin/resume, inside the Train job, before any database effect."""
+    prov = authorization_from_env()
+    prov["final_head"] = ctx["head_sha"]
+    prov["main_before"] = git_out("rev-parse", "refs/remotes/origin/main", cwd=cwd)
+    if not SHA1_RE.fullmatch(prov.get("authorized_head") or ""):
+        prov["diff_class"], prov["diff_unexpected_paths"] = DIFF_NOT_EVALUATED, []
+        prov["diff_note"] = "authorized head unavailable from triggering event"
+    elif not SHA1_RE.fullmatch(prov.get("main_before") or ""):
+        prov["diff_class"], prov["diff_unexpected_paths"] = DIFF_NOT_EVALUATED, []
+        prov["diff_note"] = "main before unavailable"
+    else:
+        diff = classify_head_diff(prov["authorized_head"], prov["main_before"], ctx["head_sha"],
+                                  ctx["path"], ctx["source_blob"], cwd=cwd)
+        prov["diff_class"] = diff["class"]
+        prov["diff_unexpected_paths"] = diff["unexpected_paths"]
+        if diff.get("note"):
+            prov["diff_note"] = diff["note"]
+    return {k: v for k, v in prov.items() if v not in (None, "")}
+
+
+def enforce_d1(prov: dict) -> None:
+    if prov.get("label") not in (None, TRAIN_LABEL):
+        raise RuntimeError(f"TRAIN_EXEC_LABEL_NOT_TRAIN:{prov.get('label')}")
+    if prov.get("diff_class") == DIFF_UNEXPECTED:
+        raise RuntimeError("TRAIN_EXEC_D1_UNEXPECTED_CHANGES:" + ",".join(prov.get("diff_unexpected_paths", []))[:600])
 
 
 def identity(pr: str, version: str, run_id: str) -> dict[str, str]:
@@ -172,6 +293,15 @@ def call(sql: str, **params: str) -> dict:
 
 
 def record_step(ids: dict, step: str, evidence: dict) -> dict:
+    prior = call(
+        "select coalesce((select jsonb_build_object('status', status)"
+        " from public.lf_operation_execution_steps"
+        " where execution_id = :'exec' and step_id = :'step'"
+        " order by step_order limit 1), '{}'::jsonb);",
+        exec=ids["execution_id"], step=step,
+    )
+    if prior.get("status") == CLEAN:
+        return {"outcome": "STEP_ALREADY_PASS_CLEAN", "status": CLEAN, "step_id": step}
     res = call(
         "select public.lf_record_db_operation_step_v1(:'exec', :'step', :'ref', (:'payload')::jsonb, :'actor');",
         exec=ids["execution_id"], step=step, ref=f"{ids['actor']}:{step}",
@@ -182,8 +312,32 @@ def record_step(ids: dict, step: str, evidence: dict) -> dict:
     return res
 
 
+def record_receipt(state: dict) -> dict:
+    """Append the typed terminal receipt; the SQL side builds it from canonical state."""
+    ctx, ids = state["context"], state["ids"]
+    prov = dict(state.get("provenance") or {})
+    if not prov:
+        prov = authorization_from_env()
+        prov.update({"final_head": ctx["head_sha"], "diff_class": DIFF_NOT_EVALUATED,
+                     "diff_unexpected_paths": [], "diff_note": "provenance not captured at begin"})
+        prov = {k: v for k, v in prov.items() if v not in (None, "")}
+    # close runs on a checkout of the exact pre-Train main: read it back.
+    observed_main = git_out("rev-parse", "HEAD")
+    if not prov.get("main_before") and SHA1_RE.fullmatch(observed_main or ""):
+        prov["main_before"] = observed_main
+    res = call(
+        "select public.lf_record_migration_train_receipt_v1(:'exec', (:'prov')::jsonb, :'actor');",
+        exec=ids["execution_id"], prov=json.dumps(prov, sort_keys=True), actor=ids["actor"],
+    )
+    if res.get("outcome") not in ("TRAIN_RECEIPT_RECORDED", "TRAIN_RECEIPT_REPLAY"):
+        raise RuntimeError(f"TRAIN_EXEC_RECEIPT_FAILED:{json.dumps(res, sort_keys=True)[:600]}")
+    return res
+
+
 def begin(ctx: dict) -> dict:
     validate_context(ctx)
+    provenance = capture_provenance(ctx)
+    enforce_d1(provenance)
     ids = identity(ctx["pr"], ctx["version"], ctx["run_id"])
     manifest = {"producer": "lf-migration-merge-train", "train_run_id": ctx["run_id"],
                 "pr": int(ctx["pr"]), "head_sha": ctx["head_sha"]}
@@ -191,7 +345,7 @@ def begin(ctx: dict) -> dict:
         "select public.fn_lf_operation_reserve_execution_v1(:'exec', 'ACTUALIZACION_DB_LF', 'MIGRATION',"
         " :'target', :'idem', :'reqsha', :'actor', :'repo', :'path', (:'manifest')::jsonb);",
         exec=ids["execution_id"], target=f"{ctx['version']}_{ctx['name']}",
-        idem=f"gitblob:{ctx['source_blob']}", reqsha=ctx["source_sha256"], actor=ids["actor"],
+        idem=f"train:{ctx['version']}:{ctx['source_blob']}", reqsha=ctx["source_sha256"], actor=ids["actor"],
         repo=ctx["repo"], path=ctx["path"], manifest=json.dumps(manifest, sort_keys=True),
     )
     if res.get("status") != "IN_PROGRESS":
@@ -218,17 +372,117 @@ def begin(ctx: dict) -> dict:
     )
     if effect.get("dispatch_permitted") is not True:
         raise RuntimeError(f"TRAIN_EXEC_EFFECT_NOT_PERMITTED:{json.dumps(effect, sort_keys=True)[:600]}")
-    return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_READY_TO_APPLY"}
+    return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_READY_TO_APPLY", "effect_state": "RESERVED",
+            "provenance": provenance}
+
+
+def resume(ctx: dict) -> dict:
+    """Resume one expired open execution only when its exact migration is in the ledger."""
+    validate_context(ctx)
+    provenance = capture_provenance(ctx)
+    enforce_d1(provenance)
+    ids = identity(ctx["pr"], ctx["version"], ctx["run_id"])
+    ledger = call(
+        "select coalesce((select jsonb_build_object('version', version, 'name', name)"
+        " from supabase_migrations.schema_migrations where version = :'v'), '{}'::jsonb);",
+        v=ctx["version"],
+    )
+    if ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]:
+        raise RuntimeError(f"TRAIN_EXEC_RESUME_LEDGER_IDENTITY_MISMATCH:{json.dumps(ledger, sort_keys=True)}")
+
+    target = f"{ctx['version']}_{ctx['name']}"
+    rows = call(
+        "select jsonb_build_object('matches', coalesce(jsonb_agg(q.row), '[]'::jsonb))"
+        " from (select jsonb_build_object("
+        " 'execution_id', e.execution_id, 'target_path', e.target_path,"
+        " 'target_repo', e.target_repo, 'effect_scope', g.effect_scope,"
+        " 'effect_request_sha256', g.effect_request_sha256, 'dispatch_key', g.dispatch_key,"
+        " 'effect_state', g.state, 'effect_receipt', g.receipt) AS row"
+        " from public.lf_operation_execution e"
+        " join public.lf_operation_effect_guard g on g.execution_id = e.execution_id"
+        " where e.execution_id like :'exec_prefix'"
+        " and e.operation_code = 'ACTUALIZACION_DB_LF'"
+        " and e.target_code = :'target' and e.target_type = 'MIGRATION'"
+        " and e.target_repo = :'repo' and e.target_path = :'path'"
+        " and e.status = 'IN_PROGRESS' and e.lease_expires_at <= clock_timestamp()"
+        " and e.request_sha256 = :'sha'"
+        " and g.effect_scope = 'MIGRATION:' || :'v'"
+        " and g.effect_request_sha256 = :'sha' and g.state in ('RESERVED','SUCCEEDED')"
+        " order by e.created_at desc limit 2) q;",
+        exec_prefix=f"EXEC-DB-TRAIN-PR{ctx['pr']}-{ctx['version']}-R%",
+        target=target, repo=ctx["repo"], path=ctx["path"],
+        sha=ctx["source_sha256"], v=ctx["version"],
+    )
+    matches = rows.get("matches", [])
+    if not matches:
+        return {"result": "TRAIN_EXECUTION_NOT_FOUND", "execution_id": None}
+    if len(matches) != 1:
+        raise RuntimeError(f"TRAIN_EXEC_RESUME_AMBIGUOUS:{len(matches)}")
+    candidate = matches[0]
+    if candidate.get("effect_state") == "SUCCEEDED" and not candidate.get("effect_receipt"):
+        raise RuntimeError("TRAIN_EXEC_RESUME_SUCCEEDED_RECEIPT_MISSING")
+
+    ids["execution_id"] = candidate["execution_id"]
+    ids["effect_scope"] = candidate["effect_scope"]
+    ids["dispatch_key"] = candidate["dispatch_key"]
+    ids["lease_owner"] = f"lf-migration-train-{ctx['run_id']}"
+    ids["effect_request_sha256"] = candidate["effect_request_sha256"]
+    lease = call(
+        "select public.fn_lf_operation_acquire_lease_v1(:'exec', :'owner', :ttl, :'actor');",
+        exec=ids["execution_id"], owner=ids["lease_owner"],
+        ttl=str(LEASE_TTL_SECONDS), actor=ids["actor"],
+    )
+    if lease.get("result") != "LEASE_ACQUIRED":
+        raise RuntimeError(f"TRAIN_EXEC_RESUME_LEASE_FAILED:{json.dumps(lease, sort_keys=True)}")
+    ids["lease_fence"] = str(lease["lease_fence"])
+    ledger_receipt = {
+        "ledger_version": ledger["version"],
+        "ledger_name": ledger["name"],
+        "executor": "supabase_migrations.schema_migrations",
+        "code": "ALREADY_APPLIED_EXACT",
+    }
+    return {
+        "context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_RESUMED",
+        "effect_state": candidate["effect_state"], "ledger_receipt": ledger_receipt,
+        "provenance": provenance,
+    }
+
+
+def abort(state: dict, run_id: str, failed_step: str, error_summary: str) -> dict:
+    """Record pre-apply failure; SQL independently rejects any version in the ledger."""
+    ctx, ids = state["context"], state["ids"]
+    evidence = {
+        "train_run_id": str(run_id),
+        "failed_step": " ".join(str(failed_step).split())[:160],
+        "error_summary": " ".join(str(error_summary).split())[:1000],
+        "secrets_included": False,
+    }
+    result = call(
+        "select public.lf_fail_db_operation_execution_v1(:'exec', :'owner', :fence, (:'ev')::jsonb, :'actor');",
+        exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
+        ev=json.dumps(evidence, sort_keys=True), actor=ids["actor"],
+    )
+    if result.get("result") not in ("EXECUTION_BLOCKED_NO_LEDGER_EFFECT", "REPLAY_ALREADY_FAILED"):
+        raise RuntimeError(f"TRAIN_EXEC_ABORT_FAILED:{json.dumps(result, sort_keys=True)}")
+    out = {**state, "result": "TRAIN_EXECUTION_ABORTED", "abort": result}
+    try:
+        out["receipt"] = record_receipt(state)
+    except Exception as exc:  # the abort itself already succeeded; never mask it
+        out["receipt_error"] = str(exc)[:600]
+        print(f"WARN_TRAIN_EXEC_RECEIPT_NOT_RECORDED:{out['receipt_error']}", file=sys.stderr)
+    return out
 
 
 def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
     ctx, ids = state["context"], state["ids"]
     receipt = {"apply_receipt": apply_receipt, "train_run_id": ctx["run_id"]}
-    call(
-        "select public.fn_lf_operation_mark_effect_succeeded_v1(:'exec', :'owner', :fence, :'scope', (:'receipt')::jsonb, :'actor');",
-        exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
-        scope=ids["effect_scope"], receipt=json.dumps(receipt, sort_keys=True), actor=ids["actor"],
-    )
+    if state.get("effect_state") != "SUCCEEDED":
+        call(
+            "select public.fn_lf_operation_mark_effect_succeeded_v1(:'exec', :'owner', :fence, :'scope', (:'receipt')::jsonb, :'actor');",
+            exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
+            scope=ids["effect_scope"], receipt=json.dumps(receipt, sort_keys=True), actor=ids["actor"],
+        )
+        state["effect_state"] = "SUCCEEDED"
     record_step(ids, "patch", patch_evidence(ctx, ids, decision, apply_receipt))
     return {**state, "result": "TRAIN_EXECUTION_PATCH_RECORDED"}
 
@@ -252,7 +506,9 @@ def close(state: dict, merge_sha: str, parity_status: str) -> dict:
     )
     if res.get("result") not in ("EXECUTION_COMPLETED", "REPLAY_ALREADY_COMPLETED"):
         raise RuntimeError(f"TRAIN_EXEC_CLOSE_FAILED:{json.dumps(res)}")
-    return {**state, "result": "TRAIN_EXECUTION_COMPLETED", "close": res}
+    done = {**state, "result": "TRAIN_EXECUTION_COMPLETED", "close": res}
+    done["receipt"] = record_receipt(done)
+    return done
 
 
 def self_test() -> None:
@@ -299,10 +555,17 @@ def main() -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("self-test")
     b = sub.add_parser("begin")
-    for key in ("pr", "version", "name", "path", "source-blob", "source-sha256",
-                "repo", "head-sha", "persisted-head-sha", "run-id"):
-        b.add_argument(f"--{key}", required=True)
-    b.add_argument("--state", required=True)
+    r = sub.add_parser("resume")
+    for command in (b, r):
+        for key in ("pr", "version", "name", "path", "source-blob", "source-sha256",
+                    "repo", "head-sha", "persisted-head-sha", "run-id"):
+            command.add_argument(f"--{key}", required=True)
+        command.add_argument("--state", required=True)
+    a = sub.add_parser("abort")
+    a.add_argument("--state", required=True)
+    a.add_argument("--run-id", required=True)
+    a.add_argument("--failed-step", required=True)
+    a.add_argument("--error-summary", required=True)
     c = sub.add_parser("commit")
     c.add_argument("--state", required=True)
     c.add_argument("--apply-receipt", required=True)
@@ -314,11 +577,17 @@ def main() -> int:
     if args.cmd == "self-test":
         self_test()
         return 0
-    if args.cmd == "begin":
+    if args.cmd in ("begin", "resume"):
         ctx = {key.replace("-", "_"): getattr(args, key.replace("-", "_"))
                for key in ("pr", "version", "name", "path", "source-blob", "source-sha256",
                            "repo", "head-sha", "persisted-head-sha", "run-id")}
-        state = begin(ctx)
+        state = begin(ctx) if args.cmd == "begin" else resume(ctx)
+        if state.get("result") == "TRAIN_EXECUTION_NOT_FOUND":
+            print(json.dumps(state, sort_keys=True))
+            return 0
+    elif args.cmd == "abort":
+        state = json.loads(Path(args.state).read_text())
+        state = abort(state, args.run_id, args.failed_step, args.error_summary)
     elif args.cmd == "commit":
         state = json.loads(Path(args.state).read_text())
         receipt = json.loads(Path(args.apply_receipt).read_text())

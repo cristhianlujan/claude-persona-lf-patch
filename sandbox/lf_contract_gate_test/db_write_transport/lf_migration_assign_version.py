@@ -9,6 +9,7 @@ import re
 
 FILENAME_RE = re.compile(r"^(?P<version>\d{14})_(?P<name>[A-Za-z0-9][A-Za-z0-9_]*)\.sql$")
 VERSION_RE = re.compile(r"^\d{14}$")
+MAX_FUTURE_SKEW = timedelta(minutes=15)
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class Assignment:
     new_path: Path
     version: str
     changed: bool
+    reason: str = "UNCHANGED"
 
 
 def _require_version(value: str, label: str) -> str:
@@ -45,10 +47,17 @@ def choose_version(
     now = _require_version(utc_now_version, "UTC_NOW_VERSION")
     floor = max(main_max, ledger_max)
 
-    # Idempotent retry: a candidate already strictly above the live floor stays put.
-    if current > floor:
+    # Compare real UTC instants, not integer timestamps (including day rollover).
+    now_dt = datetime.strptime(now, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+    current_dt = datetime.strptime(current, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+    floor_dt = datetime.strptime(floor, "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+
+    # Preserve only idempotent versions not more than 15 minutes ahead.
+    if floor_dt < current_dt <= now_dt + MAX_FUTURE_SKEW:
         return current
-    if now > floor:
+    if current_dt > now_dt + MAX_FUTURE_SKEW:
+        return max(floor_dt + timedelta(seconds=1), now_dt).strftime("%Y%m%d%H%M%S")
+    if now_dt > floor_dt:
         return now
     return _plus_one_second(floor)
 
@@ -81,7 +90,11 @@ def assign_path(
     if changed and perform_rename:
         migration_path.rename(target)
 
-    return Assignment(migration_path, target, version, changed)
+    now_dt = datetime.strptime(_require_version(utc_now_version, "UTC_NOW_VERSION"), "%Y%m%d%H%M%S")
+    current_dt = datetime.strptime(match.group("version"), "%Y%m%d%H%M%S")
+    reason = ("FUTURE_VERSION_REASSIGNED" if changed and current_dt > now_dt + MAX_FUTURE_SKEW
+              else "FLOOR_VERSION_REASSIGNED" if changed else "UNCHANGED")
+    return Assignment(migration_path, target, version, changed, reason)
 
 
 def _utc_now_version() -> str:
@@ -97,17 +110,19 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
+    effective_now = args.utc_now or _utc_now_version()
     result = assign_path(
         Path(args.migration_path),
         main_max_version=args.main_max,
         ledger_max_version=args.ledger_max,
-        utc_now_version=args.utc_now or _utc_now_version(),
+        utc_now_version=effective_now,
         perform_rename=not args.dry_run,
     )
     print(
         "PASS_MIGRATION_ASSIGN_VERSION "
         f"changed={str(result.changed).lower()} "
         f"version={result.version} "
+        f"reason={result.reason} current={result.old_path.name[:14]} assigned={result.version} now={effective_now} "
         f"path={result.new_path.as_posix()}"
     )
     return 0
