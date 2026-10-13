@@ -104,5 +104,56 @@
     "pase_activation": false,
     "main_merge": false
   },
-  "status": "SOURCE_CANDIDATE_ONLY_EXACT_HEAD_RUNTIME_TEST_PENDING"
+  "status": "SOURCE_CANDIDATE_24_POLICY_CASES_ADDED_PYTHON_EXEC_PENDING",
+  "policy_diagnostic": {
+    "script": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/test_profile_math_selector_policy_24_v1.py",
+    "scenario_count": 24,
+    "scenario_families": [
+      "five_positive_method_matches",
+      "unnecessary_math_absent",
+      "unknown_precondition_requests_evidence",
+      "verified_false_precondition_suppresses_method",
+      "budget_exhausted",
+      "failed_method_excluded",
+      "critical_regression",
+      "reported_uplift_does_not_drive_ranking",
+      "mixed_signals_choose_more_relevant_method"
+    ],
+    "comparator": "load original Selector V3 from exact Git baseline-ref without duplicating selector implementation",
+    "metric": "FROZEN_POLICY_DECISION_CORRECTNESS_NOT_DOMAIN_TASK_QUALITY",
+    "current_result": "EXACT_HEAD_PYTHON_NOT_EXECUTED",
+    "independent_reconstruction_result": "24/24 simulated policy choices (not source-code or GPT execution)",
+    "false_positive_constraint": "if no math needed -> no math recommended",
+    "mandatory_negatives": [
+      "UNKNOWN!=FALSE",
+      "INVALID_BASE_SELECTOR_NO_MATH",
+      "NO_FABRICATED_UPLIFT",
+      "NO_SHADOW_RUNTIME_EXECUTION",
+      "MALFORMED_BLOCK_LIST_BLOCKS"
+    ],
+    "pass_requirement": "full exact-head Python tests plus baseline compare; then independent blind A/B task benchmark with true evaluator receipts"
+  },
+  "behavioral_admission": {
+    "gate": "EXPERT_TASK_PERFORMANCE_E2E",
+    "arms": [
+      "A_ORIGINAL",
+      "B_UPDATER_V01",
+      "C_EVOLUTION_CURRENT",
+      "D_EVOLUTION_TARGET"
+    ],
+    "measure": [
+      "selection_precision",
+      "selection_recall",
+      "unnecessary_method_rate",
+      "critical_regressions",
+      "weighted_domain_task_quality",
+      "adaptation",
+      "transfer",
+      "preservation",
+      "latency_and_cost_observed"
+    ],
+    "proof": "matched real GPT Native outputs, sealed holdout and independent judge; candidate method on/off ablation",
+    "status": "PENDING_REAL_RAW_AND_ATTESTATION",
+    "no_promotion_until_proven": true
+  }
 }
