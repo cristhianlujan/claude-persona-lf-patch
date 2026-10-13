@@ -35,7 +35,7 @@
           "required_status_checks": [
             {
               "context": "lf-merge-train/verified",
-              "integration_id": 0
+              "integration_id": 5203655
             }
           ]
         }

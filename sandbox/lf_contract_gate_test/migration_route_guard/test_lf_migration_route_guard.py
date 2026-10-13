@@ -1,6 +1,9 @@
 """Unit tests for fail-closed migration route classification."""
+import os
 import unittest
+from unittest.mock import call, patch
 
+import lf_migration_route_guard as guard
 from lf_migration_route_guard import classify_files, should_publish_success
 
 
@@ -50,6 +53,29 @@ class MigrationRouteGuardTests(unittest.TestCase):
 
     def test_malformed_path_fails_closed(self):
         self.assertTrue(classify_files([{"status": "modified"}], pagination_complete=True).requires_train)
+
+    def test_status_publication_failure_continues_and_returns_nonzero(self):
+        pull_1 = {"state": "open", "base": {"ref": "main"}, "head": {"sha": "head-1"}}
+        pull_2 = {"state": "open", "base": {"ref": "main"}, "head": {"sha": "head-2"}}
+        with patch.dict(os.environ, {
+            "GITHUB_REPOSITORY": "owner/repo",
+            "GH_READ_TOKEN": "read-token",
+            "APP_TOKEN": "app-token",
+            "GITHUB_EVENT_PATH": "",
+            "PR_NUMBER_INPUT": "1,2",
+        }), patch.object(guard, "pull_files", return_value=([{"filename": "README.md"}], True)), \
+            patch.object(guard, "write_summary") as summary, \
+            patch.object(guard, "api_request", side_effect=[
+                pull_1, pull_1, guard.ApiError("simulated status API failure"),
+                pull_2, pull_2, {},
+            ]) as api_request:
+            result = guard.main()
+
+        self.assertEqual(result, 1)
+        self.assertEqual(api_request.call_count, 6)
+        self.assertTrue(any("PR #1: status publication failed" in item.args[0] for item in summary.call_args_list))
+        self.assertTrue(any("PR #2: SUCCESS" in item.args[0] for item in summary.call_args_list))
+        self.assertTrue(any("failed PRs: #1" in item.args[0] for item in summary.call_args_list))
 
 
 if __name__ == "__main__":

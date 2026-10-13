@@ -130,36 +130,36 @@ def write_summary(message: str) -> None:
     print(message)
 
 
-def process_pull(repo: str, number: int, event_head: str | None, read_token: str, app_token: str) -> None:
+def process_pull(repo: str, number: int, event_head: str | None, read_token: str, app_token: str) -> bool:
     prefix = f"PR #{number}: "
     try:
         pull = api_request(f"/repos/{repo}/pulls/{number}", read_token)
     except ApiError as exc:
         write_summary(prefix + f"BLOCKED; could not read PR ({exc}); no status published.")
-        return
+        return False
     if not isinstance(pull, dict) or pull.get("state") != "open" or pull.get("base", {}).get("ref") != "main":
         write_summary(prefix + "not an open PR against main; no status published.")
-        return
+        return True
     initial_head = pull.get("head", {}).get("sha")
     if not isinstance(initial_head, str) or (event_head and event_head != initial_head):
         write_summary(prefix + "event head is stale or missing; no status published.")
-        return
+        return True
 
     files, complete = pull_files(repo, number, read_token)
     classification = classify_files(files, pagination_complete=complete)
     if classification.requires_train:
         write_summary(prefix + f"{classification.reason}; requires Train; no {STATUS_CONTEXT} status published.")
-        return
+        return True
 
     try:
         latest = api_request(f"/repos/{repo}/pulls/{number}", read_token)
     except ApiError as exc:
         write_summary(prefix + f"BLOCKED; could not re-read head ({exc}); no status published.")
-        return
+        return False
     latest_head = latest.get("head", {}).get("sha") if isinstance(latest, dict) else None
     if latest_head != initial_head or latest.get("base", {}).get("ref") != "main":
         write_summary(prefix + "head/base changed during verification; no status published.")
-        return
+        return True
 
     try:
         api_request(
@@ -167,9 +167,10 @@ def process_pull(repo: str, number: int, event_head: str | None, read_token: str
             body={"state": "success", "context": STATUS_CONTEXT, "description": STATUS_DESCRIPTION},
         )
     except ApiError as exc:
-        write_summary(prefix + f"status publication failed ({exc}).")
-        raise
+        write_summary(prefix + f"status publication failed ({exc}); continuing with the next PR.")
+        return False
     write_summary(prefix + f"SUCCESS {STATUS_CONTEXT} on {initial_head}: {STATUS_DESCRIPTION}.")
+    return True
 
 
 def main() -> int:
@@ -182,8 +183,13 @@ def main() -> int:
     numbers, event_heads = parse_pr_numbers(
         os.environ.get("GITHUB_EVENT_PATH"), os.environ.get("PR_NUMBER_INPUT")
     )
+    failed_numbers: list[int] = []
     for number in numbers:
-        process_pull(repo, number, event_heads.get(number), read_token, app_token)
+        if not process_pull(repo, number, event_heads.get(number), read_token, app_token):
+            failed_numbers.append(number)
+    if failed_numbers:
+        write_summary("Backfill incomplete; failed PRs: " + ", ".join(f"#{number}" for number in failed_numbers) + ".")
+        return 1
     return 0
 
 
