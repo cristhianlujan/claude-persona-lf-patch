@@ -94,6 +94,7 @@ MANAGED_EXACT_NAMES = {
     "inventory_distinct_refresh_v1",
     "inventory_unused_gin_cleanup_v1",
     "f0_train_credential_canary_noop_v1",
+    "ig_m100_sandbox_technical_vs_operational_authority_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (

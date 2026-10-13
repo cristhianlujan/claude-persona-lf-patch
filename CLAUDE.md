@@ -40,16 +40,31 @@ On attempted unauthorized database write: `BLOCK_DB_WRITE_OUTSIDE_MERGE_TRAIN`. 
 
 ### Router first for every database write
 
-Every database write by an agent (migration, table, function, trigger or capability) starts at the Router (ACT-0001) and must hold an `ACTUALIZACION_DB_LF` execution. Then ask `DB_WRITE_TRANSPORT` for the route:
+The Router (ACT-0001, Supabase) is the authority for database writes; this file only points to it. If this file and the Router disagree, the Router wins.
+
+1. Resolve the route with `public.lf_router_resolve_v1` (read-only users can run it). Database targets resolve to `ACTUALIZACION_DB_LF`; read its policies in `public.v_lf_operation_policy_snapshot`.
+2. Ask `DB_WRITE_TRANSPORT` for the route:
 
 ```bash
 python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py \
   --target-type <MIGRATION|DB|FUNCTION|TRIGGER|CAPABILITY> \
   [--migration-path supabase/migrations/<version>_<name>.sql] \
-  --router-execution-id EXEC-…
+  --router-operation ACTUALIZACION_DB_LF   # or --router-execution-id EXEC-…
 ```
 
-Without a Router execution the answer is `REDIRECT_TO_ROUTER`: go back to ACT-0001 first. With one, the only route is `MIGRATION_VIA_MERGE_TRAIN`: one migration file, PR, `ready-to-merge`, Merge Train. There is no direct executor for agents.
+Without Router passage the answer is `REDIRECT_TO_ROUTER`. With it, the only route is `MIGRATION_VIA_MERGE_TRAIN`. There is no direct executor for agents.
+
+Merge Train checklist:
+- one migration file per PR;
+- classified name (see below);
+- PR not in Draft (`FAIL_TRAIN_DRAFT_PR`);
+- required checks green on the exact HEAD;
+- no other `ready-to-merge` PR in flight;
+- then label `ready-to-merge`. The Train assigns or reassigns the version; do not hand-pick one to dodge a collision.
+
+A write rejected for read-only access or missing permission is intentional. Do not look for another route; use the Merge Train.
+
+You do not need to create the `ACTUALIZACION_DB_LF` execution: the Merge Train reserves it when the PR is labeled, records preflight/patch/verify with real evidence and closes it (`EXEC-DB-TRAIN-PR<n>-<version>-R<run>`). Do not reserve executions by hand for Train migrations.
 
 ### Migration naming — check before opening a migration PR
 
@@ -64,7 +79,7 @@ Read that file on `main` before naming a migration. Its lists are the authority;
 
 If the name does not fit, first open a separate code-only PR that registers the exact name (or a family the owner approved) with a positive and a negative test (pattern: `test_f0_train_exact_classification.py`), get it merged into `main`, and only then label the migration PR `ready-to-merge`. The Train reads the classifier from `main`, so registering the name inside the migration PR itself does not work. Never broaden prefixes without owner approval.
 
-Until the Train checks classification before applying, an unclassified name is applied to the database first and then rejected (`FAIL_UNCLASSIFIED_POST_CUTOVER_MIGRATION`), leaving `main` unreconciled. Do not label an unclassified migration.
+The PR check `classify-migration-names` flags unclassified names early, and the Train rejects them before any database write (`FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY`). Do not label an unclassified migration.
 
 ## Soft canonical-route guard
 
