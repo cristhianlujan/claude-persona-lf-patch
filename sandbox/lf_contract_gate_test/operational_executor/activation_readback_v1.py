@@ -44,6 +44,10 @@ def evaluate(snapshot: dict) -> dict:
         failures.append("BLOCK_OPERATION_CLOSEOUT_NOT_INSTALLED")
     if snapshot.get("read_only_connection_unchanged") is not True:
         failures.append("BLOCK_READ_ONLY_BOUNDARY_NOT_VERIFIED")
+    if snapshot.get("runtime_role_grant_audit_passed") is not True:
+        failures.append("BLOCK_RUNTIME_PRIVILEGE_AUDIT_REQUIRED")
+    if snapshot.get("public_security_definer_exposure_reviewed") is not True:
+        failures.append("BLOCK_PUBLIC_DEFINER_EXPOSURE_UNREVIEWED")
     return {
         "schema_version": "LF_OPERATION_EXECUTOR_ACTIVATION_READBACK_V1",
         "status": "PASS" if not failures else "BLOCKED",
