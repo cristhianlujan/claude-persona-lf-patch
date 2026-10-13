@@ -26,6 +26,17 @@ El manifest durable liga estado APPROVED, verification PASS, lane GOVERNED_OPERA
 
 El contrato de admisión propuesto (NO activado) está en operation_lane_contract_candidate_v1.json. Registrar esa ruta, su contrato, sus pasos, el consumidor de Router Authority y el juez sin alterar DB_WRITE_TRANSPORT es una tarea de gobernanza distinta, sometida al Train.
 
+## Admisión independiente de operaciones (PR #2372)
+
+La reserva de ejecución existente `public.fn_lf_operation_reserve_execution_v1` se reutiliza mediante una tercera fachada, **solo para la autoridad de admisión**: `lf_operational_executor_admit_v1`. No pertenece al runtime del executor ni se publica en su herramienta MCP.
+
+- `lf_operational_admission_authority`: rol agrupador NOLOGIN independiente, con EXECUTE únicamente sobre admit; un servicio autorizado con LOGIN/NOINHERIT validará el recibo externo y solicitará la reserva exacta mediante Router.
+- `lf_operation_executor_runtime`: rol distinto, solo BEGIN/FINISH. No puede llamar admit ni autoaprobar su propio manifest.
+- El recibo de autorización debe ligar handler, revisión, SHA-256 del payload, effect_scope, dispatch_key e idempotency_key, y tener un approval_ref real. No equivale a una firma criptográfica: el emisor independiente autenticado es la frontera de confianza. No marcar `governed_execution_admission_proven` hasta integrar y verificar ese emisor.
+- El trigger vigente de Router añade el `router_authority_receipt` inmutable al crear la ejecución. La fachada BEGIN comprueba adicionalmente el emisor/approval_ref de la admisión.
+
+**Dependencia todavía pendiente:** integrar el servicio independiente que verifica decisiones reales y mantiene las credenciales de admisión. No reutilizar el login del executor para esa función, ni concederle las dos membresías. La simple existencia de la función SQL no habilita a ningún usuario a aprobar una ejecución.
+
 ## Transacción y control
 
 dispatch() utiliza una sola transacción y **únicamente dos fachadas SQL autorizadas**: `lf_operational_executor_begin_v1` valida Router, admisión, lease y effect guard; el handler empaquetado realiza el efecto y lee su resultado; `lf_operational_executor_finish_v1` vuelve a validar Router, marca el efecto y llama `lf_close_operational_execution_v1` que registra tres pasos con `lf_record_operation_step_core_v1` antes de COMMIT. El cierre debe comprobar la ejecución, su lease/fence, los pasos gobernados y el recibo; las tres funciones siguen siendo CANDIDATAS en el PR #2372 y NO EXISTEN aún en la base. Hasta que esté versionada/admitida, cualquier operación real falla cerrada en vez de dejar una ejecución IN_PROGRESS o reclamar un COMMIT válido.
