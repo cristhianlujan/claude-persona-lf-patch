@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 
@@ -14,6 +15,7 @@ def load(name: str):
     spec = importlib.util.spec_from_file_location(name, p)
     assert spec and spec.loader
     m = importlib.util.module_from_spec(spec)
+    sys.modules[name] = m
     spec.loader.exec_module(m)
     return m
 
