@@ -6,8 +6,10 @@ No crear otra conexión Supabase general con lectura/escritura. La conexión de 
 
 ORQUESTADOR → ACT-0001 Router
 - READ_ONLY → Supabase actual read-only.
-- MIGRATION → LF Migration Merge Train exclusivo.
-- OPERATION → Operation Executor (handler autorizado, lease, effect guard, readback, commit/rollback).
+- DB + UPDATE → ACTUALIZACION_DB_LF → LF Migration Merge Train exclusivo.
+- OPERATIONAL_DB + OPERATION_EXECUTE → EJECUCION_OPERATIVA_LF → Operation Executor (handler autorizado, lease, effect guard, readback, cierre y commit/rollback).
+
+**Readback actual en Supabase:** la ruta OPERATIONAL_DB/OPERATION_EXECUTE devuelve BLOCK_OPERATION_NOT_REGISTERED (0 operaciones y 0 rutas registradas); DB/UPDATE continúa apuntando a ACTUALIZACION_DB_LF. Es intencional: no cambiar el Router de migraciones para probar el executor.
 
 ## Componentes reutilizados
 
@@ -20,11 +22,13 @@ ORQUESTADOR → ACT-0001 Router
 
 El núcleo NO conoce ninguna tabla o unidad de negocio. Los handlers se agregan como código empaquetado y aprobado: NO admite nombre de función o SQL del caller. La registry de handlers está deliberadamente vacía hasta admitir las capacidades consumidoras.
 
-El manifest durable liga estado APPROVED, verification PASS, lane GOVERNED_OPERATIONAL_DML, connector LF_OPERATION_EXECUTOR_V1, handler_code, handler_revision, payload_sha256, effect_scope y dispatch_key. Sin igualdad exacta, BLOCK.
+El manifest durable liga estado APPROVED, verification PASS, lane GOVERNED_OPERATIONAL_DML, connector LF_OPERATION_EXECUTOR_V1, handler_code, handler_revision, payload_sha256, effect_scope y dispatch_key. Solo se acepta la operación transversal EJECUCION_OPERATIVA_LF; ningún proyecto ni función de negocio se fija en el núcleo. Sin igualdad exacta, BLOCK.
+
+El contrato de admisión propuesto (NO activado) está en operation_lane_contract_candidate_v1.json. Registrar esa ruta, su contrato, sus pasos, el consumidor de Router Authority y el juez sin alterar DB_WRITE_TRANSPORT es una tarea de gobernanza distinta, sometida al Train.
 
 ## Transacción y control
 
-dispatch() trabaja en UNA transacción: Router → ejecución → admission → autoridad → lease → effect reservation → callback confiable → readback obligatorio → revalidación de autoridad → marca efecto SUCCEEDED → commit.
+dispatch() trabaja en UNA transacción: Router → ejecución → admission → autoridad → lease → effect reservation → callback confiable → readback obligatorio → revalidación de autoridad → marca efecto SUCCEEDED → lf_close_operational_execution_v1 → commit. El cierre debe comprobar la ejecución, su lease/fence, los pasos gobernados y el recibo; esa función aún NO EXISTE en la base. Hasta que esté versionada/admitida, cualquier operación real falla cerrada en vez de dejar una ejecución IN_PROGRESS o reclamar un COMMIT válido.
 
 dry_run=true revierte también reserva y recibo. Un effect reservado sin desenlace queda BLOQUEADO, no se repite automáticamente. La ruta READ_ONLY nunca escribe.
 
@@ -36,7 +40,7 @@ NO desplegar con postgres, service_role o una credencial de DML general. El admi
 
 CODE-ONLY / NO CONECTADO / NO DESPLEGADO / SIN HANDLERS REGISTRADOS.
 
-1. Autorizar extensión operacional en Router/policies sin cambiar el carril exclusivo de migraciones.
+1. Preparar en un PR separado de una sola migración el registro EJECUCION_OPERATIVA_LF + OPERATIONAL_DB/OPERATION_EXECUTE, contratos/policies/steps/authority y función de cierre gobernado. No crear rutas paralelas.
 2. Registrar por separado cada handler con versión y bind exacto. Mantener independencia de proyectos.
 3. Auditar rol DB de privilegio mínimo. Cualquier cambio DDL o de políticas se aplica mediante Train.
 4. Probar positivo, denegación, conflicto, replay, rollback y readback real en sandbox.
