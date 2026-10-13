@@ -35,7 +35,7 @@ Los 45 checkpoints propuestos en `ANALYSIS_QUALIFICATION_CHECKPOINT_CATALOG_V1.j
 | A12 | Benchmark de contrato histórico, no modelo | Baseline y candidato reales; time/token medidos | Comparación pareada de calidad/costo, no proxy |
 | A13 | `analysis_a13_remediation_changelog_v1.json` fuente | Ejecución antes/después de corrección general | Regresión semántica/adversarial sin pérdida |
 | A14 | `score_analysis_a14_holdout_v1.py` **replay solo** | Holdout con respuestas reales provider-bound | 0 críticos; >=95% classification/usability por juez externo |
-| A15 | `validate_manifest` para freeze de fuente | Readback Git–Supabase–Router–PG01 exacto | A1Q–A14Q completos + dictamen independiente terminal |
+| A15 | **SIN callable de freeze A15 acreditado**; `validate_manifest` es de Wave1 y NO sirve para A15 | Readback Git–Supabase–Router–PG01 exacto | A1Q–A14Q completos + dictamen independiente terminal |
 
 **No equivalencia:** encontrar una función Python capaz de validar forma no es suficiente para marcar `C1` DONE: C1 exige además fuente realmente recuperada, atestación vigente, identidades y SHA. Del mismo modo, los C2 y C3 no pueden calificarse por modelo/autoevaluación ni replay estructural.
 
@@ -48,6 +48,12 @@ Los 45 checkpoints propuestos en `ANALYSIS_QUALIFICATION_CHECKPOINT_CATALOG_V1.j
 3. **INDEPENDENT_SEMANTIC_AND_CONSUMER_ASSURANCE_V1 (C3):** juez independiente con oráculo/holdout ciego y criterios de unidad. Para A9, también recibo *real* PG-01 y `fn_analysis_pg01_exact_receipt_guard_v1`; para A14, scorer operacional separado del replay. A15 requiere 14/14 hijos elegibles con evidencia y freeze.
 
 Los nombres anteriores son **familias propuestas, no validadores registrados/existentes**. No crear nuevos motores de juez, fuente ni inferencia: enlazar adaptadores actuales, extender/componer validadores canonizados y registrar solo reglas de admisión demostradas. Reusar `fn_engineering_checkpoint_action_spec_v3`, `fn_engineering_checkpoint_assertion_record_v1`, `fn_engineering_checkpoint_transition_v1`; cada checkpoint terminal exige receipt admitido y validación positiva y negativa.
+
+## Preflight vivo 2026-10-13: referencias operativas pendientes
+
+- **C3, 15/15 sujetos afectados:** Supabase declara `INDEPENDENT_ASSURANCE@2.0.1` como `RELEASED` con `validator_ref=sandbox/lf_contract_gate_test/transversal_assets/independent_assurance/validate_independent_review_subject_envelope_v3.py`, pero GitHub devuelve **404** en `main` y en HEAD `e4692457ebc29f70bc474dd5367bf7a1c82dbac6` de este PR. El directorio existe y no contiene ese archivo. La capacidad SQL `public.lf_independent_review_begin_v3` y el validador Python referenciado son superficies distintas: la primera NO demuestra que exista el segundo. Mantener C3 `BLOCK`; reconciliar referencia/código por la autoridad transversal y su carril gobernado, sin crear juez paralelo.
+- **A15Q_C1:** no tiene `stage_structure_validator` ni callable de freeze A15. El source-only audit solo impide `validate_manifest` de Wave1, **no** verifica un callable alternativo. Mantener A15Q_C1 `BLOCK` hasta adaptar un verificador de freeze real y demostrar positivo/negativo.
+- **Cobertura de prueba:** `PASS_45_INDIVIDUAL_BINDINGS_SOURCE_ONLY` valida contratos declarados y 8 mutaciones, **no verifica existencia de `validator_ref`, handler operacional, recibos, ni CI de ejecución**. No elevar 45/45 contratos a READY. Estos dos defectos se descubrieron mediante readback independiente de Supabase y GitHub.
 
 ## Requisito antes de merge/aplicación #2416
 
