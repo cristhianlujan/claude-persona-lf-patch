@@ -1,6 +1,14 @@
--- Solo comentarios (COMMENT ON FUNCTION). No cambia codigo de funciones ni datos.
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261011021429
+-- source_name=t_remed_function_comments_v1
 do $c$
-declare r record; v_old text; v_new text; v_purpose text; v_effects text; v_args text;
+declare r record; v_old text; v_new text; v_purpose text; v_effects text;
 begin
   for r in
     select p.oid, p.proname, p.provolatile, pg_get_function_identity_arguments(p.oid) idargs,
@@ -8,7 +16,7 @@ begin
            d.description old
     from pg_proc p join pg_namespace n on n.oid=p.pronamespace
     left join pg_description d on d.objoid=p.oid and d.classoid='pg_proc'::regclass and d.objsubid=0
-    where n.nspname='programacion' and p.proname like 'fn_t_remed\_%' and p.prokind='f'
+    where n.nspname='programacion' and p.proname like 'fn\_t\_remed\_%' and p.prokind='f'
   loop
     v_old := r.old;
     if v_old like 'LF_METADATA_V1%' then continue; end if;

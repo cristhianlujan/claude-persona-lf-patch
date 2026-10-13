@@ -1,15 +1,12 @@
--- T-REMED: derived links (no storage) and a derived work queue (no storage).
--- Both are read-only STABLE functions: they cannot be stale because they are computed from the source rows on every call.
---
--- fn_t_remed_effective_links_v1(pantalla): the screen -> policy links implied by its rules, one row per (reference_role, target).
---   status VIGENTE when the rules and the target are all VIGENTE, otherwise CANDIDATO (weakest-state inheritance).
---   Built only on fn_t_remed_reconcile_v3 proposals (LINK_CANDIDATE and ESCALATE:SOURCE_CONFLICT). Writes nothing.
--- fn_t_remed_queue_v1(limit): screens that need a turn, one screen per job.
---   SIN_CORRIDA  : no readiness run exists
---   INVALIDADA   : the latest run was invalidated
---   FUENTE_CAMBIO: the latest run is no longer current against its sources (fn_input_run_is_source_current)
---   Screens whose latest run is current are not listed. Order: SIN_CORRIDA, INVALIDADA, FUENTE_CAMBIO, then pantalla_id.
-
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261010095224
+-- source_name=t_remed_derived_links_and_queue_v1
 create or replace function programacion.fn_t_remed_effective_links_v1(p_pantalla_id integer)
  returns table(reference_role text, target_table text, target_id bigint, status text, rule_ids jsonb)
  language sql stable security definer set search_path to 'pg_catalog','programacion','lf_ops'

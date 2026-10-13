@@ -1,9 +1,12 @@
--- T-REMED: rule levels derived from real use (no table, no stored flag).
--- fn_t_remed_global_rules_v1(min_share): rules used by at least min_share of all screens that are either VIGENTE or
---   CANDIDATO with a PASS verdict from the independent promotion judge. The share is a caller parameter (default 0.25), not code.
--- fn_t_remed_effective_rules_v1(screen, min_share): the rules a screen has by itself plus the global ones it inherits.
--- Read-only. Measured (16 screens, rolled back): share 0.25 -> MISSING 227->136, COMPLETE 287->349; share 0.10 -> MISSING 129, COMPLETE 380; share 0.50 -> no rule qualifies.
-
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261010142227
+-- source_name=t_remed_rule_levels_v1
 create or replace function programacion.fn_t_remed_global_rules_v1(p_min_share numeric default 0.25)
  returns table(regla_id bigint, regla_codigo text, regla_estado text, screens integer, share numeric, basis text)
  language sql stable security definer set search_path to 'pg_catalog','programacion','lf_ops'

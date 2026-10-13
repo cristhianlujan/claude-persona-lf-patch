@@ -1,3 +1,12 @@
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261009133656
+-- source_name=ig_m4_12_validator_fail_closed_route_v1
 -- IG M4.12: fail-closed Validator route for SAFE_AUTOFIX runs (validate_v2) + explicit default validation scope at run creation.
 -- * validate_v2 no longer recomputes the Curator classifier; it evaluates canonical source assertions only (SOURCE_INTEGRITY) and ends
 --   BLOCKED for families the run scope selects for semantic comparison (no independent oracle accredited). PASS never accredits semantics.
@@ -74,10 +83,6 @@ begin
     limit 10
   loop
     v_comparison_requested:=a.family_code=ANY(v_semantic_required_families);
-    v_phase_started:=clock_timestamp();
-    -- The Curator classifier is not an independent semantic source.
-    -- Only canonical source assertions are evaluated in this phase.
-
     v_phase_started:=clock_timestamp();
     v_assertions:=case
       when v_parent is not null
@@ -160,7 +165,6 @@ begin
     v_families_processed:=v_families_processed+1;
   end loop;
 
-  -- PASS here is SOURCE_INTEGRITY only; it never accredits semantics.
   select count(*) filter (where validator_outcome='PASS'),
          count(*) filter (where validator_outcome='FAIL'),
          count(*) filter (where validator_outcome='BLOCKED'),
@@ -218,3 +222,4 @@ begin
 end;
 $function$
 ;
+

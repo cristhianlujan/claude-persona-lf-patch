@@ -1,8 +1,12 @@
--- Deterministic contract repair auto-hook v1.
--- Reconciles tested runtime functions into canonical Git source.
--- Supported blockers are repaired only with exact registered/explicit inputs.
--- Missing semantic inputs remain fail-closed; title/regex inference is forbidden.
-
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261007045438
+-- source_name=engineering_deterministic_contract_repair_auto_hook_v1
 CREATE OR REPLACE FUNCTION programacion.fn_engineering_jsonb_nonempty_array_v1(p_value jsonb)
  RETURNS boolean
  LANGUAGE sql
@@ -1568,3 +1572,4 @@ on conflict (codigo) do update set
   estado=excluded.estado,
   ultima_vez=now(),
   updated_at=now();
+
