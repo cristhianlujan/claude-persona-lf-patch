@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+import sys
+import types
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -70,6 +72,12 @@ class FakeConnection:
         self.begin_overrides={}
         self.finish_overrides={}
         self.commits=self.rollbacks=self.closed=0
+        self.session_statements=[]
+        self.role_error=None
+    def execute(self,sql):
+        self.session_statements.append(sql)
+        if self.role_error:
+            raise self.role_error
     def cursor(self):
         return FakeCursor(self)
     def commit(self):
@@ -208,6 +216,34 @@ class ExecutorTests(unittest.TestCase):
                                     "LF_OPERATION_EXECUTOR_DSN":""}):
             out=runtime_dispatch(req,{h.code:h})
         self.assertEqual(out["code"],"BLOCK_OPERATIONAL_EXECUTOR_CREDENTIAL_NOT_PROVISIONED")
+
+    def test_runtime_activates_only_scoped_noinherit_role(self):
+        req,h,db=self.make()
+        driver=types.SimpleNamespace(connect=lambda *args,**kwargs: db)
+        with patch.dict(sys.modules,{"psycopg":driver}), patch.dict(
+                "os.environ",{"LF_OPERATION_EXECUTOR_LANE":ACTIVE_LANE,
+                              "LF_OPERATION_EXECUTOR_DSN":"sandbox-mocked-dsn"}):
+            out=runtime_dispatch(req,{h.code:h})
+        self.assertEqual(out["status"],"DRY_RUN_ROLLBACK_PASS")
+        self.assertEqual(db.session_statements,[
+            "SET LOCAL ROLE lf_operation_executor_runtime"])
+        self.assertEqual((db.commits,db.rollbacks,db.closed),(0,1,1))
+        self.assertEqual(len(db.queries),2)
+
+    def test_runtime_role_denial_prevents_handler_effect(self):
+        effects=[]
+        req,h,db=self.make(perform=lambda cur,p:effects.append(p))
+        db.role_error=PermissionError("postgres role switch denied")
+        driver=types.SimpleNamespace(connect=lambda *args,**kwargs: db)
+        with patch.dict(sys.modules,{"psycopg":driver}), patch.dict(
+                "os.environ",{"LF_OPERATION_EXECUTOR_LANE":ACTIVE_LANE,
+                              "LF_OPERATION_EXECUTOR_DSN":"sandbox-mocked-dsn"}):
+            out=runtime_dispatch(req,{h.code:h},dry_run=False)
+        self.assertEqual(out["code"],
+                         "BLOCK_OPERATIONAL_EXECUTOR_RUNTIME_NO_COMMIT_CLAIM")
+        self.assertEqual(effects,[])
+        self.assertEqual(db.queries,[])
+        self.assertEqual((db.commits,db.rollbacks,db.closed),(0,1,1))
 
     def test_activation_snapshot_requires_separate_route_and_existing_train(self):
         manifest=json.loads((Path(__file__).parent/"operation_lane_contract_candidate_v1.json").read_text())
