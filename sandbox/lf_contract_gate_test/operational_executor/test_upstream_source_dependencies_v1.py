@@ -16,21 +16,21 @@ CANDIDATES = sorted(MIGRATIONS.glob("*_lf_operational_executor_lane_v1.sql"))
 assert len(CANDIDATES) == 1, "BLOCK_OPERATIONAL_CANDIDATE_SOURCE_CARDINALITY"
 CANDIDATE = CANDIDATES[0]
 
-IDENT = r"(?:public|private|programacion)\\.[a-zA-Z_][a-zA-Z_0-9]*"
-FUNC_CALL = re.compile(r"\\b(" + IDENT + r")\\s*\\(", re.IGNORECASE)
+IDENT = r"(?:public|private|programacion)\.[a-zA-Z_][a-zA-Z_0-9]*"
+FUNC_CALL = re.compile(r"\b(" + IDENT + r")\s*\(", re.IGNORECASE)
 FUNCTION_DEF = re.compile(
-    r"\\bcreate\\s+(?:or\\s+replace\\s+)?function\\s+(" + IDENT + r")\\s*\\(",
+    r"\bcreate\s+(?:or\s+replace\s+)?function\s+(" + IDENT + r")\s*\(",
     re.IGNORECASE,
 )
 RELATION_USE = re.compile(
-    r"\\b(?:from|join|update|insert\\s+into|references)\\s+(" + IDENT + r")\\b",
+    r"\b(?:from|join|update|insert\s+into|references)\s+(" + IDENT + r")\b",
     re.IGNORECASE,
 )
-ROWTYPE_USE = re.compile(r"\\b(" + IDENT + r")\\s*%rowtype\\b", re.IGNORECASE)
+ROWTYPE_USE = re.compile(r"\b(" + IDENT + r")\s*%rowtype\b", re.IGNORECASE)
 RELATION_DEF = re.compile(
-    r"\\bcreate\\s+(?:or\\s+replace\\s+)?"
-    r"(?:(?:materialized|temporary|temp|unlogged)\\s+)?"
-    r"(?:table|view)\\s+(?:if\\s+not\\s+exists\\s+)?(" + IDENT + r")\\b",
+    r"\bcreate\s+(?:or\s+replace\s+)?"
+    r"(?:(?:materialized|temporary|temp|unlogged)\s+)?"
+    r"(?:table|view)\s+(?:if\s+not\s+exists\s+)?(" + IDENT + r")\b",
     re.IGNORECASE,
 )
 
@@ -57,7 +57,7 @@ def upstream_definitions(paths: list[Path]):
         text = path.read_text(encoding="utf-8")
         # Ignore ordinary line comments. SQL definitions are still parsed as
         # source text; execution or semantic correctness is *not* claimed.
-        text = re.sub(r"(?m)^\\s*--[^\\n]*$", "", text)
+        text = re.sub(r"(?m)^\s*--[^\n]*$", "", text)
         for name in FUNCTION_DEF.findall(text):
             functions.setdefault(normalize(name), path.name)
         for name in RELATION_DEF.findall(text):
@@ -73,7 +73,7 @@ def main():
 
     earlier = sorted(
         path for path in MIGRATIONS.glob("*.sql")
-        if re.fullmatch(r"[0-9]{14}_.*\\.sql", path.name)
+        if re.fullmatch(r"[0-9]{14}_.*\.sql", path.name)
         and path.name[:14] < CANDIDATE.name[:14]
     )
     assert earlier, "BLOCK_NO_PRIOR_MIGRATION_SOURCE"
