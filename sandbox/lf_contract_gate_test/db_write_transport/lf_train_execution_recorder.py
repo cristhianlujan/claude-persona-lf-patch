@@ -198,7 +198,9 @@ def _effect_readback(execution_id: str, effect_scope: str) -> dict:
 
 def _ledger_readback(version: str) -> dict:
     return call(
-        "select coalesce((select jsonb_build_object('version',version,'name',name,'created_by',created_by) from supabase_migrations.schema_migrations where version=:'v'),'{}'::jsonb);",
+        "select coalesce((select jsonb_build_object('version',version,'name',name,'created_by',created_by,"
+        "'source_sha256',encode(extensions.digest(convert_to(array_to_string(statements,''),'UTF8'),'sha256'),'hex'))"
+        " from supabase_migrations.schema_migrations where version=:'v'),'{}'::jsonb);",
         v=version,
     )
 
@@ -233,9 +235,7 @@ def begin(ctx: dict) -> dict:
         repo=ctx["repo"], path=ctx["path"], manifest=json.dumps(manifest, sort_keys=True),
     )
     if res.get("status") == "COMPLETED":
-        ids["execution_id"] = str(res["execution_id"])
-        return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_COMPLETED_REPLAY",
-                "apply_required": False}
+        raise RuntimeError("TRAIN_EXEC_ALREADY_COMPLETED_NEW_MERGE_FORBIDDEN")
     if res.get("status") != "IN_PROGRESS":
         raise RuntimeError(f"TRAIN_EXEC_RESERVE_FAILED:{json.dumps(res, sort_keys=True)[:600]}")
 
@@ -274,6 +274,12 @@ def begin(ctx: dict) -> dict:
         receipt = (effect.get("receipt") or {}).get("apply_receipt") or {}
         if not receipt:
             raise RuntimeError("TRAIN_EXEC_RESUME_SUCCEEDED_EFFECT_RECEIPT_MISSING")
+        ledger = _ledger_readback(ctx["version"])
+        if (ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]
+                or ledger.get("source_sha256") != ctx["source_sha256"]
+                or receipt.get("ledger_version") != ctx["version"]
+                or receipt.get("ledger_name") != ctx["name"]):
+            raise RuntimeError("TRAIN_EXEC_RESUME_SUCCEEDED_LEDGER_OR_RECEIPT_MISMATCH")
         _record_step_if_needed(ids, "patch", patch_evidence(
             ctx, ids, {"route": "RESUME_SUCCEEDED_EFFECT"}, receipt))
         return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_PATCH_RECORDED",
@@ -282,10 +288,10 @@ def begin(ctx: dict) -> dict:
     if result == "RECONCILIATION_REQUIRED":
         ledger = _ledger_readback(ctx["version"])
         if not ledger:
-            return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_READY_TO_APPLY",
-                    "apply_required": True, "resume": "RESERVATION_WITHOUT_LEDGER_EFFECT"}
-        if ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]:
-            raise RuntimeError(f"TRAIN_EXEC_RESUME_LEDGER_IDENTITY_MISMATCH:{json.dumps(ledger)}")
+            raise RuntimeError("TRAIN_EXEC_RESUME_RESERVED_WITHOUT_LEDGER_UNRESOLVED_NO_REPLAY")
+        if (ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]
+                or ledger.get("source_sha256") != ctx["source_sha256"]):
+            raise RuntimeError("TRAIN_EXEC_RESUME_LEDGER_EXACT_SOURCE_MISMATCH")
         receipt = {
             "schema_version": "lf-migration-exact-apply/v1",
             "status": "PASS",
@@ -320,7 +326,7 @@ def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
         exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
         scope=ids["effect_scope"], receipt=json.dumps(receipt, sort_keys=True), actor=ids["actor"],
     )
-    record_step(ids, "patch", patch_evidence(ctx, ids, decision, apply_receipt))
+    _record_step_if_needed(ids, "patch", patch_evidence(ctx, ids, decision, apply_receipt))
     return {**state, "result": "TRAIN_EXECUTION_PATCH_RECORDED"}
 
 
@@ -333,7 +339,7 @@ def close(state: dict, merge_sha: str, parity_status: str) -> dict:
     )
     if ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]:
         raise RuntimeError(f"TRAIN_EXEC_LEDGER_READBACK_MISMATCH:{json.dumps(ledger)}")
-    record_step(ids, "verify", verify_evidence(ctx, ids, ledger, merge_sha, parity_status))
+    _record_step_if_needed(ids, "verify", verify_evidence(ctx, ids, ledger, merge_sha, parity_status))
     evidence = {"train_run_id": ctx["run_id"], "pr": int(ctx["pr"]), "merge_sha": merge_sha,
                 "ledger": ledger, "parity": parity_status}
     res = call(
