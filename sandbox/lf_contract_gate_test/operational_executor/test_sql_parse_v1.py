@@ -19,7 +19,15 @@ def main() -> None:
     test_ast=parse_sql(check)
     if len(test_ast)!=3 or not check.startswith("-- Execute ONLY after") or not check.rstrip().endswith("ROLLBACK;"):
         raise AssertionError("OPERATIONAL_AUTHORITY_TEST_NOT_TRANSACTIONAL_READ_ONLY")
+    diagnostic=SQL.parents[1]/"tests/lf_operational_executor_authority_activation_readback_v1.sql"
+    diagnostic_sql=diagnostic.read_text(encoding="utf-8")
+    diagnostic_ast=parse_sql(diagnostic_sql)
+    if (len(diagnostic_ast)!=1
+            or diagnostic_ast[0].stmt.__class__.__name__!="SelectStmt"
+            or "'authorization_verified',false" not in diagnostic_sql):
+        raise AssertionError("OPERATIONAL_DIAGNOSTIC_NOT_A_READ_ONLY_UNAUTHORIZED_REPORT")
     print(f"PASS_OP_GOVERNANCE_SQL_PG_PARSE statements={len(ast)} source={SQL.name}")
+    print(f"PASS_OP_GOVERNANCE_CATALOGUE_READBACK_PARSE statements={len(diagnostic_ast)} source={diagnostic.name}")
     print(f"PASS_OP_GOVERNANCE_READ_ONLY_TEST_PARSE statements={len(test_ast)} source={test_file.name}")
 
 
