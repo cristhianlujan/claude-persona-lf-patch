@@ -11,6 +11,16 @@ class RecoverSafetyTest(unittest.TestCase):
         path.write_text("-- example\nBEGIN;\nselect 1;\nCOMMIT;\n")
         return version,name,path
 
+    def test_router_precedes_rollback_preflight_and_apply(self):
+        wf=(pathlib.Path(__file__).resolve().parents[3]/".github/workflows/lf-migration-merge-train.yml").read_text()
+        self.assertLess(wf.index("Router execution begin (Train-managed, pre-apply)"),
+                        wf.index("- name: RECOVER compatibility preflight with rollback"))
+        self.assertLess(wf.index("- name: RECOVER compatibility preflight with rollback"),
+                        wf.index("- name: Apply exact version and ledger readback"))
+        self.assertIn("LF_RECOVER_AUTHORIZED",wf)
+        self.assertIn("steps.recover_preflight.outcome == 'success'",wf)
+        self.assertIn("--recover-existing-main",wf)
+
     def test_historical_version_must_not_use_bulk_push(self):
         with tempfile.TemporaryDirectory() as tmp:
             version,name,path=self.source(tmp)
