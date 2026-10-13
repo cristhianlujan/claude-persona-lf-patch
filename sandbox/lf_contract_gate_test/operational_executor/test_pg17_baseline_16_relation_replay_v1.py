@@ -177,7 +177,7 @@ def main() -> None:
                           + " FROM PUBLIC, anon, authenticated, service_role, lf_ci_readonly;")
         for grant in row["grants"]:
             assert grant["role"] in ALLOWED_ROLES
-            assert grant["privilege"] in {"SELECT", "INSERT", "UPDATE", "DELETE", "REFERENCES", "TRIGGER", "TRUNCATE"}
+            assert grant["privilege"] in {"SELECT", "INSERT", "UPDATE", "DELETE", "REFERENCES", "TRIGGER", "TRUNCATE", "MAINTAIN"}
             dest = "PUBLIC" if grant["role"] == "PUBLIC" else ident(grant["role"])
             statements.append("GRANT " + grant["privilege"] + " ON TABLE " + rel
                               + " TO " + dest
