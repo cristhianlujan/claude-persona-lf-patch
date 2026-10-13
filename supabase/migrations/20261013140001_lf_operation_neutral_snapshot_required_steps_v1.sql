@@ -1,4 +1,3 @@
-BEGIN;
 -- PE10 C4 operation-neutral frozen-required-step parity. No profile-specific exception.
 -- Preflight: preserve known enforcement logic except frozen step membership.
 DO $check$
@@ -295,7 +294,7 @@ begin
 
   return jsonb_build_object('outcome',case when v_derived_result=v_binding.clean_result_value then 'STEP_RECORDED' when v_derived_result=v_binding.return_result_value then 'RETURN_TO_ROUTER' else 'BLOCKED' end,'replay',false,'execution_id',p_execution_id,'operation_code',v_execution.operation_code,'step_id',p_step_id,'step_order',v_step.step_order,'execution_order',v_step.execution_order,'status',v_derived_result,'mini_judge_code',v_binding.judge_code,'mini_judge_result',v_derived_result,'next_gate',v_contract.next_if_pass,'resumed_from_blocked',v_existing_retryable,'prior_attempt_count',jsonb_array_length(v_attempt_history),'code',v_block_code);
 end;
-$function$
+$function$;
 
 
 -- Structural readback after function replacement, before any durable execution close.
@@ -306,4 +305,3 @@ BEGIN
  IF position('FROZEN_REQUIRED_STEPS_INVALID' in v_def)=0 OR position('v_snapshot_applies' in v_def)=0 OR position('not v_snapshot_applies or exists' in v_def)=0 THEN RAISE EXCEPTION 'RECORDER_FROZEN_GUARD_NOT_INSTALLED'; END IF;
  IF (SELECT count(*) FROM public.lf_operation_execution WHERE operation_code='ACTUALIZACION_PERFIL_LF' AND status='IN_PROGRESS')<>24 THEN RAISE EXCEPTION 'RECORDER_UNEXPECTED_EXECUTION_MUTATION'; END IF;
 END; $verify$;
-COMMIT;
