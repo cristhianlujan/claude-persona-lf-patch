@@ -1,6 +1,6 @@
 {
   "schema_version": "ANALYSIS_V1_FREEZE_MANIFEST_V1",
-  "state": "ANALYSIS_V1_FROZEN_CANDIDATE",
+  "state": "ANALYSIS_V1_REFREEZE_CANDIDATE",
   "plan_code": "PROGRAMMING_AGENT_ANALYSIS_REMEDIATION_V1",
   "unit": "A15",
   "work_code": "PA-AN-015",
@@ -30,6 +30,11 @@
       "blob": "4d38665d7f6da4e556bc05e8ed10489b62ddcc0b"
     },
     {
+      "unit": "A5",
+      "path": "analysis_decision_context_adr_contract_v1.json",
+      "blob": "da77f17283ced275f5498f7a5be07a7180edb7bc"
+    },
+    {
       "unit": "A6",
       "path": "analysis_implementability_contract_v1.json",
       "blob": "d000e6900300e12bcc1e1e56490ca3acf40713d1"
@@ -52,12 +57,12 @@
     {
       "unit": "A9_PG01",
       "path": "programming_entry_contract_v1.json",
-      "blob": "3d6ebb52bdd2d6ca3fffbc9ea6e3b9bc85ead026"
+      "blob": "56e561a72f8cfd9d085dd8087b854ff2ac740b1b"
     },
     {
       "unit": "VALIDATOR",
       "path": "validate_wave1_boundary_contracts_v1.py",
-      "blob": "80c3b2e9a2edfcfabe70de9f9d8672a7f95b503c"
+      "blob": "0167d817e21ffff74a50c92bc907cd0d94001e9d"
     }
   ],
   "empirical_gates": {
@@ -150,5 +155,32 @@
     "testing_story_test_deriver_rehome_frozen_required": true,
     "all_applicable_specialist_responsibilities_rehomed_required": true
   },
-  "merge_performed": false
+  "merge_performed": false,
+  "refreeze": {
+    "supersedes": {
+      "freeze_head": "cf0a935001d66644bbfdccbbaf5a54f0f4aaaa68",
+      "base_main_sha": "e5aac3eee1db017360a1c3a3eabbff34e9f39513",
+      "pull_request": 1858,
+      "state": "ANALYSIS_V1_FROZEN_CANDIDATE"
+    },
+    "reason": "PROGRAMMING_ENTRY_CONTRACT_AND_WAVE1_VALIDATOR_CHANGED_AFTER_FIRST_FREEZE (A5 decision_context added by PR #2436); A5 contract was missing from the first bundle",
+    "bundle_recomputed_from_main_sha": "8eb83b58957c3088b08f74018eae0e33bc100dfc",
+    "local_rerun_not_governed": {
+      "wave1_boundary_contracts_self_test": "PASS",
+      "evaluation_campaign_self_test": "PASS negatives=9",
+      "a14_fresh_candidate_replay": "PASS cases=12",
+      "a14_fresh_score": {
+        "classification_accuracy": 1.0,
+        "critical_false_ready": 0,
+        "critical_impacts_omitted": 0,
+        "verdict": "PASS"
+      },
+      "evidence_tier": "DETERMINISTIC_CONTRACT_REPLAY",
+      "model_inference_verified": false,
+      "real_programming_consumer_verified": false
+    },
+    "empirical_gates_status": "PRIOR_GATES_FROM_FIRST_FREEZE_NOT_RERUN_BY_INDEPENDENT_JUDGE",
+    "independent_confirmation_ref": null,
+    "note": "empirical_gates above belong to the first freeze. This refreeze records local deterministic reruns only; it is not a governed receipt and does not qualify A15Q_C1."
+  }
 }

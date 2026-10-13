@@ -4,7 +4,7 @@
 For every source_bundle entry it recomputes the git blob id of the current file and blocks on
 drift or missing files. It also blocks if the manifest claims a merge was performed, authorizes
 story retirement, or has the wrong schema/plan/unit. A drifted bundle means the freeze must be
-re-issued under governance; this validator never rewrites the manifest and never emits a receipt.
+re-issued under governance. A refreeze stays blocked until it carries an independent_confirmation_ref; this validator never rewrites the manifest and never emits a receipt.
 """
 from __future__ import annotations
 
@@ -51,6 +51,11 @@ def validate(manifest, base: Path = HERE) -> tuple[str, list[str]]:
         return "BLOCK_FREEZE_SOURCE_MISSING", missing
     if drift:
         return "BLOCK_FREEZE_SOURCE_DRIFT", drift
+    refreeze = manifest.get("refreeze")
+    if refreeze is not None:
+        ref = refreeze.get("independent_confirmation_ref") if isinstance(refreeze, dict) else None
+        if not isinstance(ref, str) or not ref.strip():
+            return "BLOCK_FREEZE_INDEPENDENT_CONFIRMATION_PENDING", ["refreeze.independent_confirmation_ref"]
     return "PASS_FREEZE_CURRENT", []
 
 
