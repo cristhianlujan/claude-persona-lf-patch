@@ -144,6 +144,24 @@ def run():
                 if m["reason"] == "DEFERRED_NO_MARGINAL_TASK_SIGNAL"]) == 1
     assert r20["estimated_or_observed_cost"]["method_cost_points"] == 12
 
+    # Protective negative: a method with the same complexity signal but a
+    # distinct governed capability is NOT discarded solely by signal overlap.
+    distinct_registry = {**REG, "methods": []}
+    for item in REG["methods"]:
+        if item["method_id"] == "VERIFIER_GUIDED_SEARCH":
+            distinct_registry["methods"].append({
+                **item, "compatible_capabilities": ["DISTINCT_VERIFIED_OUTPUT"],
+            })
+        else:
+            distinct_registry["methods"].append(item)
+    distinct = compose_capabilities_v3(
+        c19, [], {"fallback_capabilities": []}, distinct_registry, full_pre)
+    assert "VERIFIER_GUIDED_SEARCH" in [
+        m["method_id"] for m in distinct["selected_methods"]]
+    assert not any(x.get("method_id") == "VERIFIER_GUIDED_SEARCH"
+                   and x["reason"] == "DEFERRED_NO_MARGINAL_TASK_SIGNAL"
+                   for x in distinct["rejected_methods"])
+
     # Explicit budget can allow several independent trials but cannot authorize them.
     budgeted = dict(mix, budget={
         "max_method_cost_points": 10, "max_shadow_method_trials": 2,
