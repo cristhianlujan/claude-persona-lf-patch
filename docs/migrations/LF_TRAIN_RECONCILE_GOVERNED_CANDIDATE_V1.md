@@ -32,3 +32,17 @@ El workflow LF Migration Merge Train fue extendido en este PR para este modo, us
 **Pendiente previo a uso transversal:** validación E2E sandbox con recibo Router actual y exact-head, reconciliación de currentness y binding por proyecto, EKB + contrato de cierre, rollback/readback independiente y veredicto de gobernanza. No fusionar ni activar solo por CI estática.
 
 **Identidad exacta esperada en ejecución Router:** operation_code=ACTUALIZACION_DB_LF, target_type=MIGRATION, target_code=RECONCILE_GIT_ONLY, target_path=supabase/migrations, target_repo y reconcile_base_sha/reconcile_head_sha del PR. El script requiere autoridad canonical ACT-0001 válida. No se atribuye cierre de operación de DB a un cambio Git-only.
+
+## Diagnóstico de admisión E2E — contrato Git-only pendiente (2026-10-12)
+
+**Readback oficial, sin efectos:** `ACTUALIZACION_DB_LF` tiene los pasos `preflight`, `patch`, `verify`, actualmente asociados al mismo `JUDGE_DB_MUTATION_SANDBOX_MINIMAL_V1`. Los recibos obligatorios de patch/verify incluyen `db_write_transport_receipt`, `write_receipt` y `db_write_transport_readback`. No son recibos válidos para un renombre Git-only. **No inventarlos ni emitir PASS ficticio.**
+
+**Extensión recomendada al sistema vigente, no motor paralelo:**
+
+1. Incorporar variante `RECONCILE_GIT_ONLY` en el contrato versionado y la selección de juez por modo, preservando íntegros los bindings de `ACTUALIZACION_DB_LF` que ejecutan SQL.
+2. `preflight`: receipt ACT-0001 con ejecución admitida, política/currentness, exact base/head SHA, readback canónico del ledger y diff rename-only.
+3. `patch`: recibo de rename Git efectivamente fusionado por Train, sin credenciales DB de escritura, ni DDL, ni ledger DML.
+4. `verify`: confirmar blob exacto en `main`, nombre/versión/representación SQL coincidentes con el ledger, ausencia de mutaciones en ledger, cierre con juez Git-only versionado y EKB. No cerrar la ejecución antes del merge ni permitir un verde sin veredicto.
+5. Antes de mover punteros/jueces, ensayar regresión positiva y negativa para ejecuciones SQL actuales y verificar impacto sobre su `operation_revision_sha256` / receipts Router emitidos. Edición de contrato oficial, migración y activación requieren autorización específica.
+
+**Hallazgo de implementación:** el modo actual valida el diff y retorna `migration_count=0`, pero no produce `train_exec_state` ni un cierre correspondiente en el job post-merge. **BLOQUEO funcional**, aunque actionlint/tests unitarios pasen. No marcar Ready ni permitir su despliegue hasta implementar el flujo completo de cierre.
