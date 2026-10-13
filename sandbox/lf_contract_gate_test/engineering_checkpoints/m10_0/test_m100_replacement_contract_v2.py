@@ -87,5 +87,56 @@ class CandidateContract(unittest.TestCase):
         self.assertLess(parent, child)
 
 
+    def test_existing_pre_human_gates_reused_not_rebuilt(self):
+        for capability in (
+            "SAFE_CHANGE_ADMISSION",
+            "HUMAN_ESCALATION_ADMISSION",
+            "TARGETED_EVIDENCE_ACQUISITION",
+        ):
+            with self.subTest(capability=capability):
+                self.assertIn(capability, self.sql)
+        self.assertIn("public.lf_capability_current", self.sql)
+        self.assertIn("public.lf_capability_version_registry", self.sql)
+        self.assertIn("v_route_count IS DISTINCT FROM 3", self.sql)
+        self.assertIn("private.lf_human_escalation_policies_v1", self.sql)
+        self.assertIn("'IG_LIVE_CANONICAL_CLASSIFIER_REQUIRED'", self.sql)
+        self.assertIn("private.fn_lf_ig_human_decision_live_disposition_v1", self.sql)
+        self.assertIn("private.fn_lf_human_decision_open_ig_v3", self.sql)
+        self.assertNotIn("CREATE OR REPLACE FUNCTION", self.sql)
+
+    def test_human_escalation_only_on_admitted_policy_and_exhaustion(self):
+        for state in (
+            "NO_HUMAN_REQUIRED",
+            "AUTO_RESOLVE_FIRST",
+            "AUTO_EXECUTION_ELIGIBLE",
+            "ACQUIRE_EVIDENCE",
+            "EVIDENCE_REQUIRED",
+        ):
+            with self.subTest(state=state):
+                self.assertIn(state, self.sql)
+        self.assertIn("'HUMAN_ELIGIBLE'", self.sql)
+        self.assertIn("'only_human_eligible_routes_to_queue',true", self.sql)
+        self.assertIn("'evidence_exhaustion_requires_proof',true", self.sql)
+        self.assertIn("'blocked_and_unknown_not_approval',true", self.sql)
+        self.assertIn("'recommended_is_not_permission',true", self.sql)
+
+    def test_no_human_approval_required_to_close_technical_cp5(self):
+        self.assertIn("'human_approval_required_for_CP5',false", self.sql)
+        self.assertIn("'technical_checkpoint_CP5_human_approval_required',false", self.sql)
+        self.assertIn("'cutover_human_receipt_not_replaced_by_safe_change',true", self.sql)
+        self.assertIn("'operational_cutover_authority_separate',true", self.sql)
+        self.assertIn("'m10_0_original_exit_criterion_v2'", self.sql)
+        self.assertIn("v_meta:=jsonb_set(v_meta,'{exit_criterion_v2}'", self.sql)
+        self.assertIn("BLOCKED_PENDING_GOVERNED_HUMAN_AUTHORITY", self.sql)
+
+    def test_checkpoint_assertions_verify_actual_router_contract(self):
+        self.assertIn("'prehuman_gate_bound',true", self.sql)
+        self.assertIn("'only_eligible_human',true", self.sql)
+        self.assertIn("AS prehuman_gate_bound", self.sql)
+        self.assertIn("AS only_eligible_human", self.sql)
+        self.assertIn("IG_M100_V2_PREHUMAN_CAPABILITY_DRIFT", self.sql)
+        self.assertIn("IG_M100_V2_IG_ESCALATION_POLICY_NOT_ACTIVE", self.sql)
+
+
 if __name__ == "__main__":
     unittest.main()
