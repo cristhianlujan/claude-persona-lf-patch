@@ -1,0 +1,161 @@
+{
+  "edges": [
+    {
+      "to": "lf_design.design_systems",
+      "from": "lf_design.component_tokens",
+      "constraint": "component_tokens_design_system_id_fkey"
+    },
+    {
+      "to": "public.lf_decisiones_gov",
+      "from": "lf_design.component_tokens",
+      "constraint": "fk_component_tokens_decision_number"
+    },
+    {
+      "to": "public.lf_decisiones_gov",
+      "from": "lf_design.design_systems",
+      "constraint": "fk_design_systems_decision_number"
+    },
+    {
+      "to": "lf_design.component_tokens",
+      "from": "lf_ops.estados_catalogo",
+      "constraint": "estados_badge_component_id_fkey"
+    },
+    {
+      "to": "public.lf_decisiones_gov",
+      "from": "lf_ops.estados_catalogo",
+      "constraint": "fk_estados_catalogo_decision_number"
+    },
+    {
+      "to": "public.lf_lineas",
+      "from": "public.lf_activos",
+      "constraint": "lf_activos_linea_codigo_fkey"
+    },
+    {
+      "to": "public.lf_operation_registry",
+      "from": "public.lf_operation_contracts",
+      "constraint": "lf_operation_contracts_operation_code_fkey"
+    },
+    {
+      "to": "public.lf_operation_registry",
+      "from": "public.lf_operation_execution",
+      "constraint": "lf_operation_execution_operation_code_fkey"
+    },
+    {
+      "to": "public.lf_operation_execution",
+      "from": "public.lf_operation_execution_steps",
+      "constraint": "lf_operation_execution_steps_execution_id_fkey"
+    },
+    {
+      "to": "public.lf_operation_registry",
+      "from": "public.lf_operation_judges",
+      "constraint": "lf_operation_judges_operation_code_fkey"
+    },
+    {
+      "to": "lf_ops.estados_catalogo",
+      "from": "public.lf_operation_registry",
+      "constraint": "lf_operation_registry_lifecycle_state_fkey"
+    },
+    {
+      "to": "public.lf_operation_judges",
+      "from": "public.lf_operation_step_judge_bindings",
+      "constraint": "lf_operation_step_judge_bindings_operation_code_judge_code_fkey"
+    },
+    {
+      "to": "public.lf_operation_steps",
+      "from": "public.lf_operation_step_judge_bindings",
+      "constraint": "lf_operation_step_judge_bindings_operation_code_step_order_fkey"
+    },
+    {
+      "to": "public.lf_operation_registry",
+      "from": "public.lf_operation_steps",
+      "constraint": "lf_operation_steps_operation_code_fkey"
+    }
+  ],
+  "authority": "LIVE_PG_CATALOG_READONLY_NOT_MIGRATION_SOURCE",
+  "relations": [
+    {
+      "fk_count": 0,
+      "relation": "programacion.provenance_channels",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 1,
+      "relation": "public.lf_activos",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 1,
+      "relation": "public.lf_operation_contracts",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 1,
+      "relation": "public.lf_operation_execution",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 1,
+      "relation": "public.lf_operation_execution_steps",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 1,
+      "relation": "public.lf_operation_judges",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 1,
+      "relation": "public.lf_operation_registry",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 0,
+      "relation": "public.lf_operation_step_contracts",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 2,
+      "relation": "public.lf_operation_step_judge_bindings",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 1,
+      "relation": "public.lf_operation_steps",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 0,
+      "relation": "public.lf_router_action_registry",
+      "min_depth": 0
+    },
+    {
+      "fk_count": 2,
+      "relation": "lf_ops.estados_catalogo",
+      "min_depth": 1
+    },
+    {
+      "fk_count": 0,
+      "relation": "public.lf_lineas",
+      "min_depth": 1
+    },
+    {
+      "fk_count": 2,
+      "relation": "lf_design.component_tokens",
+      "min_depth": 2
+    },
+    {
+      "fk_count": 0,
+      "relation": "public.lf_decisiones_gov",
+      "min_depth": 2
+    },
+    {
+      "fk_count": 1,
+      "relation": "lf_design.design_systems",
+      "min_depth": 3
+    }
+  ],
+  "root_count": 11,
+  "observed_at": "2026-10-13 09:20:10.966388+00",
+  "total_count": 16,
+  "schema_version": "LF_OPERATIONAL_BASELINE_FK_CLOSURE_READBACK_V1"
+}
