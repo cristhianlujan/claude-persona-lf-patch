@@ -5,6 +5,8 @@ on:
       - 'sandbox/lf_contract_gate_test/engineering_checkpoints/m10_5/dispatch_vnext_cohort.py'
       - 'sandbox/lf_contract_gate_test/engineering_checkpoints/m10_5/test_dispatch_vnext_cohort.py'
       - '.github/workflows/ig-m105-cp2-producer-tests.yml'
+      - 'sandbox/lf_contract_gate_test/engineering_checkpoints/m10_5/new_runs_vnext.py'
+      - 'sandbox/lf_contract_gate_test/engineering_checkpoints/m10_5/test_new_runs_vnext_live.py'
 permissions:
   contents: read
 jobs:
@@ -14,4 +16,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run positive and negative CP2 transport logic tests
-        run: python3 -m unittest discover -s sandbox/lf_contract_gate_test/engineering_checkpoints/m10_5 -p 'test_dispatch_vnext_cohort.py' -v
+        run: python3 -m unittest discover -s sandbox/lf_contract_gate_test/engineering_checkpoints/m10_5 -p 'test_*vnext*.py' -v
