@@ -137,7 +137,40 @@ def run():
     assert "CAUSAL_GRAPH_ANALYSIS" in replanned["blocked_methods_for_current_run"]
     assert not math_plan(replanned["new_composition"])["recommended_trials"]
 
-    invalid = math_plan(evaluate(dict(causal, budget={"max_shadow_method_cost_points": -1})))
+    # Unauthenticated reported positive uplift cannot outrank stronger signal fit.
+    claimed = dict(mix, method_effectiveness_observations={
+        "MCNEMAR_AND_CONFIDENCE_INTERVALS": {
+            "verification_state": "VERIFIED",
+            "evidence_refs": ["self-reported://not-authenticated"],
+            "paired_quality_delta": 0.99,
+            "critical_regressions": 0,
+            "independent_holdout_verified": True
+        }
+    })
+    claim_result = math_plan(evaluate(claimed))
+    assert claim_result["recommended_trials"][0]["method_id"] == "DELTA_DEBUGGING"
+    assert any(x["effectiveness"]["state"] == "REPORTED_POSITIVE_UNATTESTED"
+               for x in claim_result["recommended_trials"]) is False
+
+    # Invalid base capability catalog is an authoritative failure, not a
+    # reason to recommend mathematical experiments.
+    failed_base = compose_capabilities_v3(causal,
+        [{"capability_code": None, "signal_type": "risk",
+          "accepted_values": ["LOW"], "state": "AVAILABLE"}],
+        {"fallback_capabilities": []}, REG, preconditions())
+    assert failed_base["fallback_state"] == "CAPABILITY_FAILURE"
+    assert failed_base["selected_methods"] == []
+    assert math_plan(failed_base)["status"] == "BLOCK"
+
+    # The unknown outcome of an unavailable method must not be counted as PASS.
+    unproven = dict(mix, method_effectiveness_observations={
+        "DELTA_DEBUGGING": {"verification_state": "UNKNOWN",
+            "evidence_refs": ["unknown://report"], "paired_quality_delta": 0.9,
+            "critical_regressions": 0, "independent_holdout_verified": True}
+    })
+    assert math_plan(evaluate(unproven))["recommended_trials"][0]["effectiveness"]["state"] == "UNPROVEN"
+
+        invalid = math_plan(evaluate(dict(causal, budget={"max_shadow_method_cost_points": -1})))
     assert invalid["status"] == "BLOCK" and not invalid["execution_authorized"]
     assert math_plan(evaluate(dict(causal, budget={"max_shadow_method_trials": True})))["status"] == "BLOCK"
 
