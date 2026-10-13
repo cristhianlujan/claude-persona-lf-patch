@@ -285,7 +285,7 @@ SELECT count(*) AS total_screens,
 count(*) FILTER(WHERE NOT source_current OR NOT fresh_vnext) AS observed_stale_or_legacy,
 count(*) FILTER(WHERE (NOT source_current OR NOT fresh_vnext) AND release_bound AND edge_identities AND agent_edge_receipt) AS invalid_provenance_attempts,
 jsonb_agg(jsonb_build_object('pantalla_id',pantalla_id,'run_id',run_id,'source_current',source_current,
-'fresh_vnext',fresh_vnext,'release_bound',release_bound,'edge_identities',edge_identities)
+'fresh_vnext',fresh_vnext,'release_bound',release_bound,'edge_identities',edge_identities,'agent_edge_receipt',agent_edge_receipt)
 ORDER BY pantalla_id) AS observed_cases,
 'OBSERVATION_ONLY_NEGATIVE_TEST_REQUIRED'::text AS classification
 FROM e$cpquery_3$;
@@ -354,6 +354,7 @@ FROM aggregate a$cpquery_4$;
  
  n:=n+1;
 
+ m:=jsonb_set(m,'{action_specs_v1,NEG_STALE_RUN,test_execution_contract,negative_required}','true'::jsonb,true);
  IF n<>5 THEN RAISE EXCEPTION 'M105_V3_INCOMPLETE_UPDATE'; END IF;
  m:=jsonb_set(m,'{m105_validation_contract_v3}',jsonb_build_object(
  'schema_version','M105_COHORT_EVIDENCE_V3','phase','OPERATIONAL_POST_CUTOVER',
