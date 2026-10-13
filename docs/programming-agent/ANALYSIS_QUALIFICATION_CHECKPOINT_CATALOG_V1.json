@@ -81,7 +81,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A1: exact current source and EKB/authority binding for Correct request identity/objective; no solution inferred; ambiguity retained",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -131,7 +142,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Correct request identity/objective; no solution inferred; ambiguity retained",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -178,7 +200,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Semantic intent fidelity; materially ambiguous intent is not silently resolved",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -243,7 +276,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A2: exact current source and EKB/authority binding for L1/L2/L3 grounded in risk and authority, UNKNOWN cannot silently become L1",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -293,7 +337,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "L1/L2/L3 grounded in risk and authority, UNKNOWN cannot silently become L1",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -340,7 +395,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Independent classification precision against separately prepared expectations",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -405,7 +471,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A3: exact current source and EKB/authority binding for EKB/source reads actually observed, same current source and AS-IS/DELTA; minimum sufficient research",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -455,7 +532,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "EKB/source reads actually observed, same current source and AS-IS/DELTA; minimum sufficient research",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -502,7 +590,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Independent check for omitted material source/imagined source/overscan",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -567,7 +666,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A4: exact current source and EKB/authority binding for Direct and indirect effects, consumers, dependencies and uncertainties traced",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -617,7 +727,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Direct and indirect effects, consumers, dependencies and uncertainties traced",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -664,7 +785,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Zero unreported critical impact in subject-scoped independent oracle",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -729,7 +861,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A5: exact current source and EKB/authority binding for Current ADR vs new pending ADR distinguished; no self-approval",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -779,7 +922,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Current ADR vs new pending ADR distinguished; no self-approval",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -826,7 +980,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Owner decisions only when truly needed, independent policy compliance",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -891,7 +1056,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A6: exact current source and EKB/authority binding for Typed WHAT requirements include permissions/state/error/side effects, blockers; no unlicensed HOW",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -941,7 +1117,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Typed WHAT requirements include permissions/state/error/side effects, blockers; no unlicensed HOW",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -988,7 +1175,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "No critical implementability omission or material reinterpretation",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -1053,7 +1251,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A7: exact current source and EKB/authority binding for Front inventory derived from evidence; REQUIRED, REUSE_AS_IS and NA justified",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1103,7 +1312,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Front inventory derived from evidence; REQUIRED, REUSE_AS_IS and NA justified",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1150,7 +1370,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Coverage is complete; unknown material signals cannot yield false READY",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -1215,7 +1446,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A8: exact current source and EKB/authority binding for STOP only with decision stability, all material fronts and no decision-changing unresolved questions",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1265,7 +1507,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "STOP only with decision stability, all material fronts and no decision-changing unresolved questions",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1312,7 +1565,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Independent negative STOP checks and absence of untriggered research",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -1359,8 +1623,8 @@
             ],
             "stage_structure_validator": {
               "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_wave1_boundary_contracts_v1.py",
-              "callable": "validate_programming_snapshot_payload_v1",
-              "scope": "STRUCTURE_ONLY_NOT_SOURCE_ATTESTATION"
+              "callable": "validate_handoff_parity",
+              "scope": "A9_HANDOFF_CONTRACT_SHAPE_ONLY"
             },
             "canonical_source": {
               "repository": "cristhianlujan/claude-persona-lf-patch",
@@ -1377,7 +1641,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A9: exact current source and EKB/authority binding for Snapshot schema/currentness/permission/front matrix and exact immutable digest, runtime publisher receipt",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1407,6 +1682,7 @@
             "owner": "EXISTING_PROFILE_RUNTIME",
             "reused_validators": [
               "profiles/programming_analysis_lf/validators/runtime_validate.py",
+              "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_wave1_boundary_contracts_v1.py::validate_programming_snapshot_payload_v1",
               "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_wave1_boundary_contracts_v1.py::validate_programming_snapshot_payload_v1"
             ],
             "reused_capabilities": [
@@ -1427,7 +1703,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Snapshot schema/currentness/permission/front matrix and exact immutable digest, runtime publisher receipt",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1484,6 +1771,17 @@
                 "expected_schema_version"
               ],
               "rule": "REQUIRE_VERIFIED_ACTUAL_PG01_CONSUMPTION_NOT_ONLY_GUARD_BOOLEAN"
+            },
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Actual PG-01 readback matches context id/hash/schema; missing or stale receipt rejects",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
             }
           }
         }
@@ -1529,7 +1827,12 @@
               "CURRENTNESS_AUTHORITY@1.0.0",
               "SOURCE_RESOLUTION_POLICY@1.4.0"
             ],
-            "stage_structure_validator": null,
+            "stage_structure_validator": {
+              "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_analysis_evaluation_campaign_v1.py",
+              "callable": "validate",
+              "input_source": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_campaign_contract_v1.json",
+              "scope": "EVALUATION_CAMPAIGN_CONTRACT_SHAPE_ONLY_NOT_EXECUTION"
+            },
             "canonical_source": {
               "repository": "cristhianlujan/claude-persona-lf-patch",
               "ref_rule": "EXACT_CURRENT_MAIN_REBOUND",
@@ -1545,7 +1848,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A10: exact current source and EKB/authority binding for Actual diverse cohort executed by governed profile, not contract fixtures",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1594,7 +1908,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Actual diverse cohort executed by governed profile, not contract fixtures",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1641,7 +1966,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Independent scored omissions critical=0 and cohort coverage measured",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -1686,7 +2022,12 @@
               "CURRENTNESS_AUTHORITY@1.0.0",
               "SOURCE_RESOLUTION_POLICY@1.4.0"
             ],
-            "stage_structure_validator": null,
+            "stage_structure_validator": {
+              "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_analysis_evaluation_campaign_v1.py",
+              "callable": "validate",
+              "input_source": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_campaign_contract_v1.json",
+              "scope": "EVALUATION_CAMPAIGN_CONTRACT_SHAPE_ONLY_NOT_EXECUTION"
+            },
             "canonical_source": {
               "repository": "cristhianlujan/claude-persona-lf-patch",
               "ref_rule": "EXACT_CURRENT_MAIN_REBOUND",
@@ -1702,7 +2043,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A11: exact current source and EKB/authority binding for Actual adversarial negatives executed on governed profile, not synthetic scorer",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1751,7 +2103,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Actual adversarial negatives executed on governed profile, not synthetic scorer",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1798,7 +2161,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Independent critical false READY=0 and failures preserved",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -1843,7 +2217,12 @@
               "CURRENTNESS_AUTHORITY@1.0.0",
               "SOURCE_RESOLUTION_POLICY@1.4.0"
             ],
-            "stage_structure_validator": null,
+            "stage_structure_validator": {
+              "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_analysis_evaluation_campaign_v1.py",
+              "callable": "validate",
+              "input_source": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_campaign_contract_v1.json",
+              "scope": "EVALUATION_CAMPAIGN_CONTRACT_SHAPE_ONLY_NOT_EXECUTION"
+            },
             "canonical_source": {
               "repository": "cristhianlujan/claude-persona-lf-patch",
               "ref_rule": "EXACT_CURRENT_MAIN_REBOUND",
@@ -1859,7 +2238,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A12: exact current source and EKB/authority binding for Paired baseline/challenger genuinely executed; quality, p90 and tokens measured",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1908,7 +2298,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Paired baseline/challenger genuinely executed; quality, p90 and tokens measured",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -1955,7 +2356,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN; HISTORICAL_A12_REPLAY_NOT_QUALIFICATION",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Independent paired score improvement/absence of regressions, not surrogate proxy",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -2000,7 +2412,12 @@
               "CURRENTNESS_AUTHORITY@1.0.0",
               "SOURCE_RESOLUTION_POLICY@1.4.0"
             ],
-            "stage_structure_validator": null,
+            "stage_structure_validator": {
+              "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_analysis_evaluation_campaign_v1.py",
+              "callable": "validate",
+              "input_source": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_campaign_contract_v1.json",
+              "scope": "EVALUATION_CAMPAIGN_CONTRACT_SHAPE_ONLY_NOT_EXECUTION"
+            },
             "canonical_source": {
               "repository": "cristhianlujan/claude-persona-lf-patch",
               "ref_rule": "EXACT_CURRENT_MAIN_REBOUND",
@@ -2016,7 +2433,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A13: exact current source and EKB/authority binding for Generalizable remediated method executed with before/after version and exact root finding",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -2065,7 +2493,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Generalizable remediated method executed with before/after version and exact root finding",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -2112,7 +2551,18 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN"
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Independent evaluation confirms no new critical regression and changed behavior",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         }
       ]
@@ -2157,7 +2607,12 @@
               "CURRENTNESS_AUTHORITY@1.0.0",
               "SOURCE_RESOLUTION_POLICY@1.4.0"
             ],
-            "stage_structure_validator": null,
+            "stage_structure_validator": {
+              "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_analysis_evaluation_campaign_v1.py",
+              "callable": "validate",
+              "input_source": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_campaign_contract_v1.json",
+              "scope": "EVALUATION_CAMPAIGN_CONTRACT_SHAPE_ONLY_NOT_EXECUTION"
+            },
             "canonical_source": {
               "repository": "cristhianlujan/claude-persona-lf-patch",
               "ref_rule": "EXACT_CURRENT_MAIN_REBOUND",
@@ -2173,7 +2628,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A14: exact current source and EKB/authority binding for Provider-attested fresh holdout model results with blind reference and real token usage",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -2222,7 +2688,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Provider-attested fresh holdout model results with blind reference and real token usage",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -2269,13 +2746,24 @@
               "no_critical_regressions"
             ],
             "independent_reviewer_required": true,
-            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN",
+            "boundary": "HISTORICAL_OTHER_SUBJECT_PASS_IS_FORBIDDEN; A14_REPLAY_SCORER_NOT_REAL_MODEL_JUDGE",
             "required_thresholds": {
               "critical_omissions": 0,
               "critical_false_ready": 0,
               "classification_accuracy_min": 0.95,
               "usable_without_material_reinterpretation_min": 0.95,
               "score_replay_not_admitted": true
+            },
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Independent fresh judge zero critical false READY/omissions; classification and usability >=95%",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
             }
           }
         }
@@ -2321,11 +2809,7 @@
               "CURRENTNESS_AUTHORITY@1.0.0",
               "SOURCE_RESOLUTION_POLICY@1.4.0"
             ],
-            "stage_structure_validator": {
-              "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_wave1_boundary_contracts_v1.py",
-              "callable": "validate_manifest",
-              "scope": "STRUCTURE_ONLY_NOT_SOURCE_ATTESTATION"
-            },
+            "stage_structure_validator": null,
             "canonical_source": {
               "repository": "cristhianlujan/claude-persona-lf-patch",
               "ref_rule": "EXACT_CURRENT_MAIN_REBOUND",
@@ -2341,7 +2825,18 @@
               "readback_receipt_id",
               "source_attestation_verified"
             ],
-            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS"
+            "boundary": "STATIC_SHAPE_OR_SHA_PASS_IS_NOT_ATTESTED_CURRENTNESS; existing validate_manifest is WAVE1_MANIFEST_NOT_A15_FREEZE_VALIDATOR",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Stage A15: exact current source and EKB/authority binding for Readback of all A1Q-A14Q required validated evidence and exact source revisions",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -2390,7 +2885,18 @@
               "stage_source_receipt_refs",
               "evidence_ledger_verified_ref"
             ],
-            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT"
+            "boundary": "PROFILE_STRUCTURAL_PASS_AND_PROVIDER_ID_GENERATED_BY_MODEL_DO_NOT_COUNT",
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Readback of all A1Q-A14Q required validated evidence and exact source revisions",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
+            }
           }
         },
         {
@@ -2441,6 +2947,17 @@
             "terminal_dependencies": {
               "all_earlier_qualifiers_required": 14,
               "legacy_done_not_sufficient": true
+            },
+            "positive_control_spec": {
+              "current_subject": true,
+              "receipt_verified": true,
+              "stage_specific_assertion": "Independent frozen-release verdict on 14/14 and A9 receipt; no programmatic self-freeze",
+              "expected": "PASS_ONLY_IF_ALL_INDEPENDENT_AND_CURRENT"
+            },
+            "negative_control_spec": {
+              "mutation": "SUBJECT_OR_SOURCE_DRIFT_OR_MISSING_MATERIAL",
+              "expected": "FAIL_OR_BLOCK_NOT_PASS",
+              "no_case_family_hardcode": true
             }
           }
         }
@@ -2476,5 +2993,12 @@
       "PROGRAMMING_SUPABASE_CATALOG_ASSERT_V1"
     ],
     "warning": "Only source/catalog validators currently ACTIVE; operational profile-stage and independent assurance checkpoint consumers require exact scoped adaptation; no new parallel validator created."
-  }
+  },
+  "review_history": [
+    {
+      "date": "2026-10-13",
+      "topic": "SOURCE_FIRST_EKB_VALIDATOR_REUSE",
+      "finding": "A15 validate_manifest belongs to WAVE1 not A15 freeze; A9 contract vs concrete snapshot shape are different; A10-A14 have campaign-contract-only validator. Corrected per-stage binding, no wrong functional claims."
+    }
+  ]
 }
