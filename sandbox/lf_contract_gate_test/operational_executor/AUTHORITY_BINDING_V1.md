@@ -32,6 +32,20 @@ También declara una **ruta `PENDING_AUTHORITY`**, exclusivamente para `APPROVE`
 
 `supabase/tests/lf_operational_executor_authority_activation_readback_v1.sql` es un diagnóstico `SELECT` de solo lectura, ejecutado contra la base actual para enumerar faltantes. Sus conteos no son una certificación individual de autorización.
 
+## Canal verificado de procedencia — dependencia real
+
+Readback READ_ONLY del catálogo vigente: existen 7 canales `programacion.provenance_channels`, pero **0 autorizan** `HUMAN_ROUTING_DECISION`. Sin ese canal no puede producirse un recibo humano válido, aunque en el futuro la ruta y la autoridad sean declaradas `ACTIVE`.
+
+La misma función candidata de admisión y la función `lf_operational_executor_assert_decision_current_v1` exigen que el `issuer_channel` de la política vigente siga presente en `programacion.provenance_channels` con `allowed_kinds` que incluya `HUMAN_ROUTING_DECISION`. Si el canal es retirado, se bloquea tanto la admisión como el efecto y su cierre.
+
+El canal debe provisionarse mediante las reglas canónicas de `programacion.provenance_channels`, con secreto externo custodiado fuera de GitHub y sin usar el conector Supabase READ_ONLY como escritor. No se crea ningún token, canal, política `ACTIVE` ni decisión mediante este PR. Owner humano de decisión: `SUPER_ADMIN`.
+
+El diagnóstico `supabase/tests/lf_operational_executor_authority_activation_readback_v1.sql` mide canales autorizados y la **intersección exacta** entre la ruta operacional, su autoridad activa y su canal real; una política activa para otro consumidor no concede permisos a este carril.
+
+## Prueba real de catálogo con rollback
+
+`test_pg17_decision_slice_rollback_v1.py`, ejecutado en un PostgreSQL 17 desechable, carga el DDL, hashes, triggers y resolutor canónicos de LF desde sus migraciones existentes. Dentro de una única transacción introduce la regla de clasificación y la ruta `PENDING_AUTHORITY` exactas de este PR, comprueba los hashes, rechaza el intento de activarla sin referente humano aun recalculando el hash, y hace `ROLLBACK`. Esta prueba no aplica el resto del esquema LF ni reemplaza PASE/Train.
+
 ## Dependencias que siguen bloqueadas
 
 El readback de LF observa **cero políticas de autoridad activas y cero recibos de decisión humana**: no se ha habilitado ni inventado autoridad. La materialización de la clasificación, política de ruta y fuente verificable de decisión debe pasar por el gobierno existente; ninguna migración de este PR inserta una aprobación o credencial humana.
