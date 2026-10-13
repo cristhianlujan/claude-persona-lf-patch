@@ -17,14 +17,15 @@ class CandidateContract(unittest.TestCase):
     def setUpClass(cls):
         cls.sql = SOURCE.read_text(encoding="utf-8")
 
-    def test_retirement_boundary_explicit(self):
-        self.assertIn("NOT TO BE LABELED ready-to-merge UNTIL", self.sql)
+    def test_prior_unapplied_source_is_separate_nonblocking_debt(self):
+        self.assertIn("Its clean-up is NOT a prerequisite", self.sql)
+        self.assertNotIn("NOT TO BE LABELED ready-to-merge UNTIL", self.sql)
+        self.assertTrue(PREMERGED.exists(), "historical blob must stay in Git as debt")
         self.assertIn("dbe466b827f10c257dba6449d65d6750f2328057", self.sql)
-        retirement = ROOT / "docs/ig/M100_RETIRED_UNAPPLIED_SOURCE_BOUNDARY_20261012.md"
-        self.assertTrue(
-            PREMERGED.exists() or retirement.exists(),
-            "before retirement the source exists; after retirement the audit record exists",
-        )
+        self.assertIn("m10_0_historical_migration_debt_v1", self.sql)
+        self.assertIn("DEBT_RECONCILIATION_SEPARATE", self.sql)
+        self.assertIn("not_engineering_checkpoint_dependency',true", self.sql)
+        self.assertIn("IG_M100_V2_LEGACY_MIGRATION_NOT_UNAPPLIED", self.sql)
         self.assertNotIn("CREATE OR REPLACE FUNCTION", self.sql)
 
     def test_unit_work_and_governance_repaired_together(self):
