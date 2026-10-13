@@ -59,7 +59,7 @@ def self_test():
     assert classify(dict(readback, observed_cases=cases[:-1])) == "BLOCK_CASE_COUNT"
     assert classify(dict(readback, classification="VERIFIED")) == "BLOCK_PROVENANCE"
     assert classify(dict(readback, observed_cases=[good]*13)) == "BLOCK_SCREEN_DUPLICATE"
-    print("LOGICAL_POSITIVE_AND_NEGATIVES=10/10; MATERIAL_CP5_PASS=false")
+    print("LOGICAL_POSITIVE_AND_NEGATIVES=11/11; MATERIAL_CP5_PASS=false")
 
 
 if __name__ == "__main__":
