@@ -5,7 +5,7 @@ DO $check$
 BEGIN
  IF (SELECT count(*) FROM public.lf_operation_execution WHERE operation_code='ACTUALIZACION_PERFIL_LF' AND status='IN_PROGRESS')<>24 THEN RAISE EXCEPTION 'PE10_OPEN_SET_DRIFT'; END IF;
  IF (SELECT count(*) FROM public.lf_operation_execution WHERE status='IN_PROGRESS' AND manifest#>'{operation_policy_snapshots,PASS_POLICY,policy_payload,required_steps}' IS NOT NULL)<>24 THEN RAISE EXCEPTION 'FROZEN_SCOPE_DRIFT'; END IF;
-END $check$;
+END; $check$;
 
 CREATE OR REPLACE FUNCTION public.lf_record_operation_step_core_v1(p_execution_id text, p_step_id text, p_evidence_ref text, p_evidence_payload jsonb, p_actor_execution_id text, p_expected_operation_code text, p_expected_target_type text, p_contract_status text, p_binding_status text, p_judge_status text, p_trust_validation jsonb, p_close_on_report_output boolean, p_recorder_name text)
  RETURNS jsonb
@@ -305,5 +305,5 @@ BEGIN
  SELECT pg_get_functiondef('public.lf_record_operation_step_core_v1(text,text,text,jsonb,text,text,text,text,text,text,jsonb,boolean,text)'::regprocedure) INTO v_def;
  IF position('FROZEN_REQUIRED_STEPS_INVALID' in v_def)=0 OR position('v_snapshot_applies' in v_def)=0 OR position('not v_snapshot_applies or exists' in v_def)=0 THEN RAISE EXCEPTION 'RECORDER_FROZEN_GUARD_NOT_INSTALLED'; END IF;
  IF (SELECT count(*) FROM public.lf_operation_execution WHERE operation_code='ACTUALIZACION_PERFIL_LF' AND status='IN_PROGRESS')<>24 THEN RAISE EXCEPTION 'RECORDER_UNEXPECTED_EXECUTION_MUTATION'; END IF;
-END $verify$;
+END; $verify$;
 COMMIT;
