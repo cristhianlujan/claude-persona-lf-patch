@@ -15,8 +15,12 @@ def verified(value):
 
 
 def preconditions():
-    return {p["key"]: verified(p["expected"]) for m in REG["methods"]
-            if m["method_id"] in MATH for p in m["precondition_contract"]}
+    evidence = {p["key"]: verified(p["expected"]) for m in REG["methods"]
+                if m["method_id"] in MATH for p in m["precondition_contract"]}
+    evidence.update({key: verified(True) for key in (
+        "candidate_exists", "grader_available", "benchmark_exists",
+        "uplift_target_defined", "deterministic_verifier_exists")})
+    return evidence
 
 
 def evaluate(context, pre=None):
@@ -70,6 +74,7 @@ def run():
         reversed_registry, preconditions())
     assert [x["method_id"] for x in base_r["selected_methods"]] == [
         x["method_id"] for x in reversed_r["selected_methods"]]
+    assert len(base_r["selected_methods"]) >= 2, base_r
     assert all("matched_signal_types" in x for x in base_r["selected_methods"])
 
     # Five separate task shapes cause five different math trial recommendations.
