@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Real PostgreSQL 16 security-definer principal test using disposable CI service.
+"""Real PostgreSQL 17 security-definer principal test using disposable CI service.
 
 This extracts the EXACT proposed function from the migration, with no rewritten
 mock implementation. It does not apply the full LF migration or simulate Router.
@@ -149,5 +149,5 @@ psql("REVOKE lf_op_sandbox_extra FROM lf_op_sandbox_effect;")
 as_login("lf_op_sandbox_effect",
          "SELECT public.lf_operational_executor_assert_principal_v1('lf_operation_executor_runtime');")
 
-print("PASS_REAL_POSTGRES16_PRINCIPAL_RBAC_NEGATIVES_AND_ROLLBACK "
+print("PASS_REAL_POSTGRES17_PRINCIPAL_RBAC_NEGATIVES_AND_ROLLBACK "
       "separate_logins=2 denies=3 no_public_execute=true")
