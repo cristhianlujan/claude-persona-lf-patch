@@ -7,6 +7,7 @@ import unittest
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
+sys.path.insert(0, str(HERE))
 WORKFLOW = ROOT / ".github/workflows/lf-migration-merge-train.yml"
 RECORDER = HERE / "lf_train_execution_recorder.py"
 
@@ -25,7 +26,7 @@ class TrainExecutionRecorderTest(unittest.TestCase):
 
     def test_workflow_order(self) -> None:
         wf = WORKFLOW.read_text()
-        begin = wf.index("Router execution begin (Train-managed, pre-apply)")
+        begin = wf.index("Router execution begin or resume (Train-managed, pre-apply)")
         apply = wf.index("- name: Apply exact version and ledger readback")
         commit = wf.index("Router execution patch step (Train-managed, post-apply)")
         parity = wf.index("- name: Run changeset-scoped parity")
@@ -41,7 +42,8 @@ class TrainExecutionRecorderTest(unittest.TestCase):
         block = wf[wf.index("- name: Abort Train execution after pre-apply failure"):]
         block = block[:block.index("- name: Run changeset-scoped parity")]
         self.assertIn("if: failure() && steps.train_exec.outcome == 'success' && steps.real_apply.outputs.applied != 'true'", block)
-        self.assertIn('"$RUNNER_TEMP/lf-train-trusted/lf_train_execution_recorder.py" abort', block)
+        self.assertIn('trusted="$RUNNER_TEMP/lf-train-trusted"', block)
+        self.assertIn('"$trusted/lf_train_execution_recorder.py" abort', block)
         self.assertIn('--run-id "$GITHUB_RUN_ID"', block)
         self.assertIn('--failed-step "$FAILED_STEP_NAME"', block)
         self.assertIn('--error-summary "$ERROR_SUMMARY"', block)
@@ -114,7 +116,7 @@ class TrainExecutionRecorderTest(unittest.TestCase):
                      "Router execution verify and close (Train-managed, post-merge)"):
             block = wf[wf.index(name):wf.index(name) + 400]
             self.assertIn("continue-on-error: true", block, name)
-        begin = wf[wf.index("Router execution begin (Train-managed, pre-apply)"):]
+        begin = wf[wf.index("Router execution begin or resume (Train-managed, pre-apply)"):]
         begin = begin[:begin.index("- name: Apply exact version")]
         self.assertNotIn("continue-on-error", begin)
         self.assertIn("lf-train-trusted", begin)
