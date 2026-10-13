@@ -1,0 +1,145 @@
+{
+  "schema_version": "IG_M104_LEGACY_FREEZE_MANIFEST_V1",
+  "source_plan": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "source_unit": "M10.4",
+  "source_checkpoint": "FROZEN_SET_ASIS",
+  "classification_event_id": 20193,
+  "source_aggregate_md5": "76131fb54294aea7cb98eb0a299abee8",
+  "active_vnext_edge_excluded": [
+    "EDGE_FN_INPUT_GOVERNANCE_AGENT_V1",
+    "EDGE_FN_INPUT_GOVERNANCE_CURATOR_V1",
+    "EDGE_FN_INPUT_GOVERNANCE_VALIDATOR_V1"
+  ],
+  "legacy_functions": [
+    {
+      "identity": "programacion.fn_input_actionable_remediation_summary_v1(p_run_id bigint)",
+      "prosrc_md5": "3acdfd13a72a049612d748bec45cd9c5",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_archive_source_observation_v1(p_run_id bigint, p_ref jsonb, p_source_execution_id text, p_ledger_execution_id text, p_source_head_sha text)",
+      "prosrc_md5": "25f682cccec2c1ced298be6eabe73fb0",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_auth006_build_assertions(p_run_id bigint, p_seed_run_id bigint, p_family_code text)",
+      "prosrc_md5": "05c27f8372880e16a2894faacd560e4f",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_context_manifest(p_run_id bigint)",
+      "prosrc_md5": "fc21baeac6667afd41b35ddbcad28514",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_design_readiness_v2(p_pantalla_id integer)",
+      "prosrc_md5": "3cf033b6061d54b14ec8af9b93472f01",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_design_readiness(p_pantalla_id integer)",
+      "prosrc_md5": "7063bb2f15ac5cd7294de46e79b84838",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_evaluation_outcome_summary(p_run_id bigint)",
+      "prosrc_md5": "247d524093fa754701c4c4c137c9ec3b",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_governance_aggregate_requiredness_v1(p_results jsonb)",
+      "prosrc_md5": "458ae93a9ee4331b48c8b131abba9edc",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_governance_bootstrap_classify_v1_cached_v2(p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb)",
+      "prosrc_md5": "42e02cece283329a2a6f16063599a595",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb)",
+      "prosrc_md5": "7257b9bbc86b1f61e5435a37479d63a1",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_governance_bootstrap_materialize_v1(p_pantalla_id integer, p_consumer text, p_curator_identity text)",
+      "prosrc_md5": "bfd85f25b23fb127ca67f0dcd6bba668",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_governance_field_reference_probe_v1_cached_v1(p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb)",
+      "prosrc_md5": "b4fe5f8581c12596fd9e2a1642269099",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_governance_module_health(p_version_id bigint, p_module_code text)",
+      "prosrc_md5": "337b04bdbc5aff305df63082d1cdd8ff",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_governance_record_ekb_occurrence(p_classification text, p_error_code text, p_phase text, p_pantalla_id integer, p_run_id bigint, p_evidence text, p_details jsonb)",
+      "prosrc_md5": "b71ddca435f271a9e5d0422a7e6f4040",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_governance_semantic_probe_v2_cached_v1(p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb)",
+      "prosrc_md5": "05d39a40acfbe0619b6c32253bf45d97",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_governance_semantic_probe_v3_cached_v1(p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb)",
+      "prosrc_md5": "ff726ab1c658769389b65c8479af84fb",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_internal_remediation_summary(p_run_id bigint)",
+      "prosrc_md5": "c9124b21c5f35eb4f86ff118e6a8394b",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_na_positive_authority_v512_cached_v1(p_family_code text, p_pantalla_id integer, p_version_id bigint, p_graph jsonb)",
+      "prosrc_md5": "dbb181d6df12c9bca188b0072c23fe10",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_owner_decision_assertions(p_new_run_id bigint, p_parent_run_id bigint, p_family_code text)",
+      "prosrc_md5": "0e0f3ff1db331abb0daa352608b915cf",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_rate_enrichment_assertions(p_new_run_id bigint, p_parent_run_id bigint, p_family_code text)",
+      "prosrc_md5": "21e392b399b5f0147edd29868c2acaef",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_readiness_run_is_current_cached_v2(p_run_id bigint)",
+      "prosrc_md5": "99d54f5dcc27617831b0eb6098000777",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_rebind_assertion_specs(p_run_id bigint, p_family_code text, p_specs jsonb)",
+      "prosrc_md5": "3c5d13d942f9abd1a35a8ca836e46c83",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_resolve_retrieval_handle(p_run_id bigint, p_handle jsonb)",
+      "prosrc_md5": "6f93946d3b9dc2baaad81d6440cf8b38",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_run_semantic_revalidation_v1(p_run_id bigint)",
+      "prosrc_md5": "44a7f21a3c01411662ab568af58c4091",
+      "historical_class": "LEGACY_UNREFERENCED"
+    },
+    {
+      "identity": "programacion.fn_input_stage_gate_summary(p_run_id bigint)",
+      "prosrc_md5": "f723008533319dcd20f6cb194bebffef",
+      "historical_class": "LEGACY_REFERENCED"
+    },
+    {
+      "identity": "public.fn_lf_evidence_ledger_anchor_v1(p_execution_id text, p_capability_code text, p_gate_code text, p_receipt_kind text, p_subject_type text, p_subject_ref text, p_subject_sha256 text, p_source_head_sha text, p_authority_ref text, p_resolver_id text, p_provider text, p_provider_ref text, p_verification_method text, p_verification_state text, p_verification_payload jsonb, p_receipt_payload jsonb, p_actor_execution_id text)",
+      "prosrc_md5": "730d37e8698885335228c91d00231b1f",
+      "historical_class": "LEGACY_REFERENCED"
+    }
+  ]
+}
