@@ -130,11 +130,11 @@ begin
       c3_basis:=payload->'semantic_behavior_basis';
       c3_uplift:=false;
       c3_ids:=ARRAY[]::text[];
-      if jsonb_typeof(c3_basis)<>'object'
-         or c3_basis->>'schema'<>'PE10_C3_MATCHED_BEHAVIOR_BASIS_V1'
-         or jsonb_typeof(c3_basis->'critical_regressions')<>'number'
-         or c3_basis->>'critical_regressions'<>'0'
-         or jsonb_typeof(c3_basis->'matched_pairs')<>'array' then
+      if jsonb_typeof(c3_basis) IS DISTINCT FROM 'object'
+         or c3_basis->>'schema' IS DISTINCT FROM 'PE10_C3_MATCHED_BEHAVIOR_BASIS_V1'
+         or jsonb_typeof(c3_basis->'critical_regressions') IS DISTINCT FROM 'number'
+         or c3_basis->>'critical_regressions' IS DISTINCT FROM '0'
+         or jsonb_typeof(c3_basis->'matched_pairs') IS DISTINCT FROM 'array' then
         valid:=false;
         code:='SEMANTIC_BEHAVIOR_BASIS_INVALID';
         hard_fails:=hard_fails||'"review_receipt_invalid"'::jsonb;
@@ -142,21 +142,21 @@ begin
         valid:=false;
         code:='SEMANTIC_PAIR_COUNT_INVALID';
         hard_fails:=hard_fails||'"review_receipt_invalid"'::jsonb;
-      elsif jsonb_typeof(payload->'evidence_refs')<>'array' then
+      elsif jsonb_typeof(payload->'evidence_refs') IS DISTINCT FROM 'array' then
         valid:=false;
         code:='SEMANTIC_EVIDENCE_REFS_INVALID';
         hard_fails:=hard_fails||'"review_receipt_invalid"'::jsonb;
       else
         for c3_pair in select value from jsonb_array_elements(c3_basis->'matched_pairs') loop
-          if jsonb_typeof(c3_pair)<>'object'
+          if jsonb_typeof(c3_pair) IS DISTINCT FROM 'object'
              or nullif(btrim(coalesce(c3_pair->>'case_id','')),'') is null
              or (c3_pair->>'case_id')=any(c3_ids)
              or nullif(btrim(coalesce(c3_pair->>'baseline_raw_ref','')),'') is null
              or nullif(btrim(coalesce(c3_pair->>'candidate_raw_ref','')),'') is null
              or nullif(btrim(coalesce(c3_pair->>'review_evidence_ref','')),'') is null
              or c3_pair->>'baseline_raw_ref'=c3_pair->>'candidate_raw_ref'
-             or c3_pair->>'outcome' not in ('IMPROVED','PRESERVED','REGRESSION')
-             or jsonb_typeof(c3_pair->'critical')<>'boolean'
+             or coalesce(c3_pair->>'outcome','') not in ('IMPROVED','PRESERVED','REGRESSION')
+             or jsonb_typeof(c3_pair->'critical') IS DISTINCT FROM 'boolean'
              or (c3_pair->>'critical'='true' and c3_pair->>'outcome'='REGRESSION')
              or not (payload->'evidence_refs' @> jsonb_build_array(c3_pair->>'baseline_raw_ref'))
              or not (payload->'evidence_refs' @> jsonb_build_array(c3_pair->>'candidate_raw_ref'))
