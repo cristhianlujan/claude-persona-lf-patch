@@ -87,7 +87,7 @@ class ReconcileInventoryTests(unittest.TestCase):
         self.assertEqual(summary["legacy"]["ledger_rows"], 1)
         self.assertEqual(summary["post_cutover"]["categories"], {
             "A_RENAME": 1,
-            "B_SOURCE_FROM_LEDGER": 1,
+            "B_SOURCE_FROM_LEDGER": 2,
             "C_RETIRE": 1,
             "D_UNKNOWN": 2,
         })

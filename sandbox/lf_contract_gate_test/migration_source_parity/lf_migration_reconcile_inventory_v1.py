@@ -34,7 +34,8 @@ from run_migration_source_parity_flow_v1 import (  # noqa: E402
 from lf_migration_source_parity_ci_context import MARKER_RE  # noqa: E402
 
 FILENAME_RE = re.compile(r"^(\d{14})_(.+)\.sql$")
-VERSION_SUFFIX_RE = re.compile(r"(?:_v\d+)+$", re.IGNORECASE)
+VERSION_SUFFIX_RE = re.compile(r"(?:_v\d+)+(?=_|$)", re.IGNORECASE)
+THEME_QUALIFIER_SUFFIX_RE = re.compile(r"(?:_(?:train))+$", re.IGNORECASE)
 THEME_ALIASES = {
     # The two M100 names use different descriptive wording but share the
     # explicitly reviewed family/theme anchor.
@@ -79,6 +80,8 @@ def _theme(name: str) -> str:
     value = name.lower()
     value = re.sub(r"^(?:lf_)+", "", value)
     value = VERSION_SUFFIX_RE.sub("", value)
+    value = THEME_QUALIFIER_SUFFIX_RE.sub("", value)
+    value = re.sub(r"_+", "_", value).strip("_")
     return THEME_ALIASES.get(value, value)
 
 
@@ -233,21 +236,17 @@ def build_inventory(root: pathlib.Path, ledger_json: pathlib.Path) -> tuple[list
     # already perfectly reconciled, so search the full POST_CUTOVER ledger.
     for row in ledger:
         ledger_by_theme.setdefault(_theme(row.name), []).append(row)
-    consumed_ledger: set[tuple[str, str]] = set()
     for g in unmatched_git:
         matches = [l for l in ledger_by_theme.get(_theme(g.name), [])
                    if l.version > g.version
-                   and (l.version, l.name) not in consumed_ledger]
+                   ]
         if len(matches) == 1:
             replacement = matches[0]
-            consumed_ledger.add((replacement.version, replacement.name))
             emit("C_RETIRE", g, None, "UNAPPLIED_GIT_SOURCE_SUPERSEDED_BY_UNIQUE_APPLIED_THEME", replacement)
         else:
             emit("D_UNKNOWN", g, None,
                  "NO_UNIQUE_APPLIED_SAME_THEME_REPLACEMENT" if not matches else "AMBIGUOUS_SAME_THEME_REPLACEMENT")
     for l in unmatched_ledger:
-        if (l.version, l.name) in consumed_ledger:
-            continue
         emit("B_SOURCE_FROM_LEDGER", None, l, "LEDGER_SOURCE_WITHOUT_GIT_CONTENT_PAIR")
 
     result.sort(key=lambda row: (
