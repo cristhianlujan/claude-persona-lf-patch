@@ -83,8 +83,9 @@ def main():
             {"complexity": "HIGH"},
             {"candidate_exists": True, "grader_available": True,
              "deterministic_verifier_exists": True},
-            ["SELF_REFINE", "VERIFIER_GUIDED_SEARCH"],
-            {"REASONING_COMPOSITION_SEARCH": "EXPERIMENTAL_NOT_ADMITTED",
+            ["SELF_REFINE"],
+            {"VERIFIER_GUIDED_SEARCH": "DEFERRED_NO_MARGINAL_TASK_SIGNAL",
+             "REASONING_COMPOSITION_SEARCH": "EXPERIMENTAL_NOT_ADMITTED",
              "WORKFLOW_SEARCH": "EXPERIMENTAL_NOT_ADMITTED"}),
         run_case(
             "optimizer_matched_benchmark",
