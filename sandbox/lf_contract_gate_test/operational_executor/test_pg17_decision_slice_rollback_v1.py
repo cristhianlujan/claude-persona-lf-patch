@@ -63,9 +63,9 @@ def psql(script: str):
     return result.stdout
 
 setup="""
-CREATE SCHEMA private;
-CREATE SCHEMA extensions;
-CREATE EXTENSION pgcrypto WITH SCHEMA extensions;
+CREATE SCHEMA IF NOT EXISTS private;
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 """
 psql(setup+ddl+sha_guards+auth_table+resolver+"""
 INSERT INTO private.lf_human_decision_classes_v1
