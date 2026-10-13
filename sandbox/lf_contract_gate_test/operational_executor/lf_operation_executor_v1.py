@@ -15,6 +15,8 @@ from typing import Callable, Mapping
 
 CONNECTOR = "LF_OPERATION_EXECUTOR_V1"
 ACTIVE_LANE = "GOVERNED_OPERATIONAL_DML"
+OPERATIONAL_ASSET_TYPE = "OPERATIONAL_DB"
+OPERATIONAL_ACTION = "OPERATION_EXECUTE"
 EXEC_RE = re.compile(r"^EXEC-[A-Z0-9_-]{3,200}$")
 CODE_RE = re.compile(r"^[A-Z][A-Z0-9_]{1,100}$")
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
@@ -75,9 +77,9 @@ class Handler:
                 raise Blocked("BLOCK_HANDLER_REGISTRATION_INVALID")
         if not callable(self.perform) or not callable(self.verify):
             raise Blocked("BLOCK_HANDLER_CALLBACK_INVALID")
-        if self.target_type in ("MIGRATION", "FUNCTION", "TRIGGER", "CAPABILITY"):
+        if self.target_type in ("MIGRATION", "DB", "FUNCTION", "TRIGGER", "CAPABILITY"):
             raise Blocked("BLOCK_MIGRATION_RESERVED_FOR_TRAIN")
-        if self.target_type != "DB":
+        if self.target_type != OPERATIONAL_ASSET_TYPE or self.action_code != OPERATIONAL_ACTION:
             raise Blocked("BLOCK_HANDLER_TARGET_NOT_OPERATIONAL_DB")
 
 
@@ -110,8 +112,8 @@ def run_transaction(connection, req: Request, handlers: Mapping[str, Handler]) -
         raise Blocked("BLOCK_DIGEST_INVALID")
 
     with connection.cursor() as cur:
-        route = one(cur, "SELECT public.lf_router_resolve_v1(%s,%s,%s,%s)",
-                    ("Governed operational handler", handler.target_code, handler.action_code, handler.target_type))
+        route = one(cur, "SELECT public.lf_router_resolve_v1(%s,%s,%s,%s,%s)",
+                    ("Governed operational handler", None, handler.action_code, handler.target_type, "ROUTER"))
         if (not isinstance(route, dict) or route.get("router") != "ACT-0001"
                 or route.get("status") != "READY_TO_EXECUTE"
                 or route.get("downstream_execution_allowed") is not True
@@ -147,7 +149,9 @@ def run_transaction(connection, req: Request, handlers: Mapping[str, Handler]) -
                 or authority.get("applicable") is not True
                 or authority.get("code") != "ROUTER_DOWNSTREAM_AUTHORITY_VALID"
                 or authority.get("execution_id") != req.execution_id
-                or authority.get("operation_code") != req.operation_code):
+                or authority.get("operation_code") != req.operation_code
+                or authority.get("target_type") != handler.target_type
+                or authority.get("target_code") != handler.target_code):
             raise Blocked("BLOCK_ROUTER_AUTHORITY_STALE")
 
         owner = "operational-executor-" + hashlib.sha256(req.execution_id.encode()).hexdigest()[:32]
@@ -173,6 +177,11 @@ def run_transaction(connection, req: Request, handlers: Mapping[str, Handler]) -
         again = one(cur, "SELECT public.lf_router_downstream_authority_validate_v1(%s)",
                     (req.execution_id,))
         if (not isinstance(again, dict) or again.get("valid") is not True
+                or again.get("applicable") is not True
+                or again.get("execution_id") != req.execution_id
+                or again.get("operation_code") != req.operation_code
+                or again.get("target_type") != handler.target_type
+                or again.get("target_code") != handler.target_code
                 or again.get("code") != "ROUTER_DOWNSTREAM_AUTHORITY_VALID"):
             raise Blocked("BLOCK_ROUTER_AUTHORITY_CHANGED_BEFORE_RECEIPT")
         receipt = {"schema_version": "lf-operation-executor-receipt/v1",
