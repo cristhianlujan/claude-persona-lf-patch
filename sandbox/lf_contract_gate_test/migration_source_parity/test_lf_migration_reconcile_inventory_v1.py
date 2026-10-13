@@ -65,6 +65,7 @@ class ReconcileInventoryTests(unittest.TestCase):
 
     def test_classifies_unique_rename_source_from_ledger_retire_and_unknown(self) -> None:
         self.add_git(LEGACY_START, "checkpoint_legacy_fixture", "select 1;\n")
+        (self.migrations / "session_25_contract_fixes.sql").write_text("select 9;\n", encoding="utf-8")
         self.add_git("20261009000001", "alpha_old_v1", "-- source comment\nselect 10;\n")
         self.add_git("20261009000010", "retire_topic_v1", "select 20;\n")
         self.add_git("20261009000020", "unresolved_v1", "select 30;\n")
@@ -83,7 +84,8 @@ class ReconcileInventoryTests(unittest.TestCase):
         self.assertIn("C_RETIRE", categories)
         self.assertIn("D_UNKNOWN", categories)
         self.assertEqual(summary["legacy"]["parity_acceptance"], "PASS")
-        self.assertEqual(summary["legacy"]["git_files"], 1)
+        self.assertEqual(summary["legacy"]["git_files"], 2)
+        self.assertEqual(summary["legacy"]["git_unversioned_grandfathered"], 1)
         self.assertEqual(summary["legacy"]["ledger_rows"], 1)
         self.assertEqual(summary["post_cutover"]["categories"], {
             "A_RENAME": 1,

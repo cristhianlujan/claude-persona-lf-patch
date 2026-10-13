@@ -93,7 +93,11 @@ def _read_git(root: pathlib.Path) -> list[GitMigration]:
     for path in sorted(directory.glob("*.sql"), key=lambda item: item.name):
         match = FILENAME_RE.fullmatch(path.name)
         if not match:
-            raise InventoryError(f"MIGRATION_FILENAME_INVALID:{path.name}")
+            if re.match(r"^\d{14}_", path.name):
+                raise InventoryError(f"MIGRATION_FILENAME_INVALID:{path.name}")
+            # Historical unversioned files are grandfathered by the existing
+            # baseline/classifier and cannot belong to POST_CUTOVER.
+            continue
         version, name = match.groups()
         sql = path.read_text(encoding="utf-8")
         rows.append(GitMigration(version, name, path.relative_to(root).as_posix(),
@@ -163,6 +167,9 @@ def _checkpoint_status(root: pathlib.Path, ledger: list[LedgerMigration]) -> dic
 
 def build_inventory(root: pathlib.Path, ledger_json: pathlib.Path) -> tuple[list[dict[str, str]], dict[str, Any]]:
     git_all = _read_git(root)
+    unversioned_legacy = sum(1 for path in (root / "supabase" / "migrations").glob("*.sql")
+                             if FILENAME_RE.fullmatch(path.name) is None
+                             and re.match(r"^\d{14}_", path.name) is None)
     ledger_all = _read_ledger(ledger_json)
     git_legacy = [row for row in git_all if row.version < CUTOVER]
     ledger_legacy = [row for row in ledger_all if row.version < CUTOVER]
@@ -258,7 +265,8 @@ def build_inventory(root: pathlib.Path, ledger_json: pathlib.Path) -> tuple[list
         "schema_version": "lf-migration-reconcile-inventory/v1",
         "cutover": CUTOVER,
         "legacy": {
-            "git_files": len(git_legacy),
+            "git_files": len(git_legacy) + unversioned_legacy,
+            "git_unversioned_grandfathered": unversioned_legacy,
             "ledger_rows": len(ledger_legacy),
             "reconciled": False,
             "parity_acceptance": "PASS" if checkpoint["status"] == "PASS" else "UNVERIFIED",
