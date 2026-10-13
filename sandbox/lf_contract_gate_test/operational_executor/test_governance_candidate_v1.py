@@ -36,6 +36,7 @@ def verify(source: str) -> list[str]:
       "OPERATIONAL_PRINCIPAL_EXTERNAL_LOGIN_REQUIRED",
       "OPERATIONAL_PRINCIPAL_LEAST_PRIVILEGE_REQUIRED",
       "OPERATIONAL_PRINCIPAL_ROLE_CROSSOVER_OR_MEMBERSHIP_INVALID",
+      "OPERATIONAL_PRINCIPAL_EXTRA_ROLE_MEMBERSHIP_FORBIDDEN",
       "REVOKE ALL ON FUNCTION public.lf_operational_executor_assert_principal_v1",
       "GRANT EXECUTE ON FUNCTION public.lf_operational_executor_assert_principal_v1",
       "CREATE OR REPLACE FUNCTION public.lf_operational_executor_admit_v1",
@@ -138,6 +139,13 @@ class GovernedCandidateStaticTests(unittest.TestCase):
         self.assertTrue(verify(source.replace(
             "OPERATIONAL_PRINCIPAL_ROLE_CROSSOVER_OR_MEMBERSHIP_INVALID",
             "AUTHORITY_PRINCIPAL_NOT_CHECKED")))
+
+    def test_extra_role_memberships_fail_closed(self):
+        source=SQL.read_text(encoding="utf-8")
+        self.assertIn("WHERE u.rolname=session_user AND g.rolname<>p_expected_role",source)
+        self.assertTrue(verify(source.replace(
+            "OPERATIONAL_PRINCIPAL_EXTRA_ROLE_MEMBERSHIP_FORBIDDEN",
+            "ALLOW_EXTRA_PRIVILEGES")))
 
     def test_existing_authority_roles_are_fail_closed(self):
         source=SQL.read_text(encoding="utf-8")
