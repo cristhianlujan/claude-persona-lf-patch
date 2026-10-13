@@ -158,7 +158,10 @@ BEGIN
  v_cp6:=v_specs->'ORACLE_ACTIVATION_READBACK';
  IF v_cp4->>'action_kind' IS DISTINCT FROM 'BOUNDED_CHECKPOINT_TEST_AUTHORING'
  OR v_cp5->>'action_kind' IS DISTINCT FROM 'READBACK_ONCE'
- OR v_cp6->>'action_kind' IS DISTINCT FROM 'READBACK_ONCE'
+ OR COALESCE(v_cp6->>'action_kind',
+   programacion.fn_engineering_checkpoint_action_spec_v3(
+     'IG_CURATOR_VALIDATOR_REFACTOR_V2','M4.11','ORACLE_ACTIVATION_READBACK'
+   )->>'action_kind') IS DISTINCT FROM 'READBACK_ONCE'
  THEN RAISE EXCEPTION 'M411_SCOPE_V3_OTHER_CP_CONTRACT_DRIFT'; END IF;
  v_cp3:=v_cp3||jsonb_build_object(
  'status','READY','precision','M411_ENGINEERING_SCOPE_ONLY_V3',
