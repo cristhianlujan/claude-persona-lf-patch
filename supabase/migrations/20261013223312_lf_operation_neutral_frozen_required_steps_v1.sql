@@ -1,10 +1,18 @@
 BEGIN;
 -- PE10 C4 operation-neutral frozen-required-step parity. No profile-specific exception.
 -- Preflight: preserve known enforcement logic except frozen step membership.
+-- Freeze the actual open set; never pin a historical execution count.
+CREATE TEMP TABLE pe10_c4_open_before ON COMMIT DROP AS
+ SELECT execution_id, status, manifest::text AS manifest_text
+ FROM public.lf_operation_execution
+ WHERE operation_code='ACTUALIZACION_PERFIL_LF' AND status='IN_PROGRESS';
 DO $check$
 BEGIN
- IF (SELECT count(*) FROM public.lf_operation_execution WHERE operation_code='ACTUALIZACION_PERFIL_LF' AND status='IN_PROGRESS')<>24 THEN RAISE EXCEPTION 'PE10_OPEN_SET_DRIFT'; END IF;
- IF (SELECT count(*) FROM public.lf_operation_execution WHERE status='IN_PROGRESS' AND manifest#>'{operation_policy_snapshots,PASS_POLICY,policy_payload,required_steps}' IS NOT NULL)<>24 THEN RAISE EXCEPTION 'FROZEN_SCOPE_DRIFT'; END IF;
+ IF EXISTS (
+   SELECT 1 FROM public.lf_operation_execution
+   WHERE operation_code='ACTUALIZACION_PERFIL_LF' AND status='IN_PROGRESS'
+     AND manifest#>'{operation_policy_snapshots,PASS_POLICY,policy_payload,required_steps}' IS NULL
+ ) THEN RAISE EXCEPTION 'PE10_OPEN_FROZEN_STEP_SNAPSHOT_MISSING'; END IF;
 END $check$;
 
 CREATE OR REPLACE FUNCTION public.lf_record_operation_step_core_v1(p_execution_id text, p_step_id text, p_evidence_ref text, p_evidence_payload jsonb, p_actor_execution_id text, p_expected_operation_code text, p_expected_target_type text, p_contract_status text, p_binding_status text, p_judge_status text, p_trust_validation jsonb, p_close_on_report_output boolean, p_recorder_name text)
@@ -304,6 +312,20 @@ DECLARE v_def text;
 BEGIN
  SELECT pg_get_functiondef('public.lf_record_operation_step_core_v1(text,text,text,jsonb,text,text,text,text,text,text,jsonb,boolean,text)'::regprocedure) INTO v_def;
  IF position('FROZEN_REQUIRED_STEPS_INVALID' in v_def)=0 OR position('v_snapshot_applies' in v_def)=0 OR position('not v_snapshot_applies or exists' in v_def)=0 THEN RAISE EXCEPTION 'RECORDER_FROZEN_GUARD_NOT_INSTALLED'; END IF;
- IF (SELECT count(*) FROM public.lf_operation_execution WHERE operation_code='ACTUALIZACION_PERFIL_LF' AND status='IN_PROGRESS')<>24 THEN RAISE EXCEPTION 'RECORDER_UNEXPECTED_EXECUTION_MUTATION'; END IF;
+ IF EXISTS (
+   SELECT 1 FROM (
+     (SELECT execution_id, status, manifest::text AS manifest_text
+      FROM public.lf_operation_execution
+      WHERE operation_code='ACTUALIZACION_PERFIL_LF' AND status='IN_PROGRESS'
+      EXCEPT
+      SELECT execution_id, status, manifest_text FROM pe10_c4_open_before)
+     UNION ALL
+     (SELECT execution_id, status, manifest_text FROM pe10_c4_open_before
+      EXCEPT
+      SELECT execution_id, status, manifest::text
+      FROM public.lf_operation_execution
+      WHERE operation_code='ACTUALIZACION_PERFIL_LF' AND status='IN_PROGRESS')
+   ) delta
+ ) THEN RAISE EXCEPTION 'RECORDER_UNEXPECTED_EXECUTION_MUTATION'; END IF;
 END $verify$;
 COMMIT;
