@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import Callable, Mapping
 
 CONNECTOR = "LF_OPERATION_EXECUTOR_V1"
+OPERATION_CODE = "EJECUCION_OPERATIVA_LF"
 ACTIVE_LANE = "GOVERNED_OPERATIONAL_DML"
 OPERATIONAL_ASSET_TYPE = "OPERATIONAL_DB"
 OPERATIONAL_ACTION = "OPERATION_EXECUTE"
@@ -41,7 +42,7 @@ class Request:
     actor: str
 
     def validate(self) -> None:
-        if not (isinstance(self.operation_code, str) and CODE_RE.fullmatch(self.operation_code)):
+        if self.operation_code != OPERATION_CODE:
             raise Blocked("BLOCK_OPERATION_CODE_INVALID")
         if not (isinstance(self.execution_id, str) and EXEC_RE.fullmatch(self.execution_id)):
             raise Blocked("BLOCK_EXECUTION_ID_INVALID")
@@ -75,6 +76,8 @@ class Handler:
                       self.target_code, self.action_code):
             if not isinstance(value, str) or not value or len(value) > 256:
                 raise Blocked("BLOCK_HANDLER_REGISTRATION_INVALID")
+        if self.operation_code != OPERATION_CODE:
+            raise Blocked("BLOCK_HANDLER_OPERATION_NOT_OPERATIONAL")
         if not callable(self.perform) or not callable(self.verify):
             raise Blocked("BLOCK_HANDLER_CALLBACK_INVALID")
         if self.target_type in ("MIGRATION", "DB", "FUNCTION", "TRIGGER", "CAPABILITY"):
