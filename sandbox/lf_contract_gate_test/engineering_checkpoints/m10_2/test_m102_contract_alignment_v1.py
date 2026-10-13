@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import unittest
 
-SQL = Path(__file__).resolve().parents[4] / "supabase/migrations/20261013170000_ig_m102_engineering_gate_alignment_v1.sql"
+SQL = Path(__file__).resolve().parents[4] / "supabase/migrations/20261013170000_lf_ig_m102_engineering_gate_alignment_v1.sql"
 CODES = (
     "BINDING_ASIS", "REUSE_CAPABILITY_CUTOVER", "SWITCH_ONLY_MIGRATION",
     "RUNTIME_PREFLIGHT", "NEG_REVERSE", "SWITCH_READBACK",
@@ -66,10 +66,11 @@ class M102Source(unittest.TestCase):
             "'product_owner','NONE_TRANSVERSAL'",
             "public.fn_lf_capability_promote_v1",
             "M9.2:SWITCH_REVERT_SANDBOX",
-            "BLOCK_REGISTERED_CANDIDATE_AND_AUTHORITY_REQUIRED",
+            "m10_2_original_live_cutover_v1",
             "BLOCK_DEPLOYED_EDGE_SOURCE_PARITY_UNVERIFIED",
             "'runtime_activation','FORBIDDEN_IN_CONSTRUCTION_SANDBOX'",
-            "'db_targets_exact',jsonb_build_array('public.lf_capability_current')",
+            "'checkpoint_code','SWITCH_ONLY_MIGRATION'",
+            "'action_kind','READBACK_ONCE'",
         ):
             with self.subTest(expected=expected):
                 self.assertIn(expected, self.sql)
