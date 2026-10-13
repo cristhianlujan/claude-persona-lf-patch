@@ -172,6 +172,15 @@ def call(sql: str, **params: str) -> dict:
 
 
 def record_step(ids: dict, step: str, evidence: dict) -> dict:
+    prior = call(
+        "select coalesce((select jsonb_build_object('status', status)"
+        " from public.lf_operation_execution_steps"
+        " where execution_id = :'exec' and step_id = :'step'"
+        " order by step_order limit 1), '{}'::jsonb);",
+        exec=ids["execution_id"], step=step,
+    )
+    if prior.get("status") == CLEAN:
+        return {"outcome": "STEP_ALREADY_PASS_CLEAN", "status": CLEAN, "step_id": step}
     res = call(
         "select public.lf_record_db_operation_step_v1(:'exec', :'step', :'ref', (:'payload')::jsonb, :'actor');",
         exec=ids["execution_id"], step=step, ref=f"{ids['actor']}:{step}",
@@ -218,17 +227,107 @@ def begin(ctx: dict) -> dict:
     )
     if effect.get("dispatch_permitted") is not True:
         raise RuntimeError(f"TRAIN_EXEC_EFFECT_NOT_PERMITTED:{json.dumps(effect, sort_keys=True)[:600]}")
-    return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_READY_TO_APPLY"}
+    return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_READY_TO_APPLY", "effect_state": "RESERVED"}
+
+
+def resume(ctx: dict) -> dict:
+    """Resume one expired open execution only when its exact migration is in the ledger."""
+    validate_context(ctx)
+    ids = identity(ctx["pr"], ctx["version"], ctx["run_id"])
+    ledger = call(
+        "select coalesce((select jsonb_build_object('version', version, 'name', name)"
+        " from supabase_migrations.schema_migrations where version = :'v'), '{}'::jsonb);",
+        v=ctx["version"],
+    )
+    if ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]:
+        raise RuntimeError(f"TRAIN_EXEC_RESUME_LEDGER_IDENTITY_MISMATCH:{json.dumps(ledger, sort_keys=True)}")
+
+    target = f"{ctx['version']}_{ctx['name']}"
+    rows = call(
+        "select jsonb_build_object('matches', coalesce(jsonb_agg(q.row), '[]'::jsonb))"
+        " from (select jsonb_build_object("
+        " 'execution_id', e.execution_id, 'target_path', e.target_path,"
+        " 'target_repo', e.target_repo, 'effect_scope', g.effect_scope,"
+        " 'effect_request_sha256', g.effect_request_sha256, 'dispatch_key', g.dispatch_key,"
+        " 'effect_state', g.state, 'effect_receipt', g.receipt) AS row"
+        " from public.lf_operation_execution e"
+        " join public.lf_operation_effect_guard g on g.execution_id = e.execution_id"
+        " where e.execution_id like :'exec_prefix'"
+        " and e.operation_code = 'ACTUALIZACION_DB_LF'"
+        " and e.target_code = :'target' and e.target_type = 'MIGRATION'"
+        " and e.target_repo = :'repo' and e.target_path = :'path'"
+        " and e.status = 'IN_PROGRESS' and e.lease_expires_at <= clock_timestamp()"
+        " and e.request_sha256 = :'sha'"
+        " and g.effect_scope = 'MIGRATION:' || :'v'"
+        " and g.effect_request_sha256 = :'sha' and g.state in ('RESERVED','SUCCEEDED')"
+        " order by e.created_at desc limit 2) q;",
+        exec_prefix=f"EXEC-DB-TRAIN-PR{ctx['pr']}-{ctx['version']}-R%",
+        target=target, repo=ctx["repo"], path=ctx["path"],
+        sha=ctx["source_sha256"], v=ctx["version"],
+    )
+    matches = rows.get("matches", [])
+    if not matches:
+        return {"result": "TRAIN_EXECUTION_NOT_FOUND", "execution_id": None}
+    if len(matches) != 1:
+        raise RuntimeError(f"TRAIN_EXEC_RESUME_AMBIGUOUS:{len(matches)}")
+    candidate = matches[0]
+    if candidate.get("effect_state") == "SUCCEEDED" and not candidate.get("effect_receipt"):
+        raise RuntimeError("TRAIN_EXEC_RESUME_SUCCEEDED_RECEIPT_MISSING")
+
+    ids["execution_id"] = candidate["execution_id"]
+    ids["effect_scope"] = candidate["effect_scope"]
+    ids["dispatch_key"] = candidate["dispatch_key"]
+    ids["lease_owner"] = f"lf-migration-train-{ctx['run_id']}"
+    ids["effect_request_sha256"] = candidate["effect_request_sha256"]
+    lease = call(
+        "select public.fn_lf_operation_acquire_lease_v1(:'exec', :'owner', :ttl, :'actor');",
+        exec=ids["execution_id"], owner=ids["lease_owner"],
+        ttl=str(LEASE_TTL_SECONDS), actor=ids["actor"],
+    )
+    if lease.get("result") != "LEASE_ACQUIRED":
+        raise RuntimeError(f"TRAIN_EXEC_RESUME_LEASE_FAILED:{json.dumps(lease, sort_keys=True)}")
+    ids["lease_fence"] = str(lease["lease_fence"])
+    ledger_receipt = {
+        "ledger_version": ledger["version"],
+        "ledger_name": ledger["name"],
+        "executor": "supabase_migrations.schema_migrations",
+        "code": "ALREADY_APPLIED_EXACT",
+    }
+    return {
+        "context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_RESUMED",
+        "effect_state": candidate["effect_state"], "ledger_receipt": ledger_receipt,
+    }
+
+
+def abort(state: dict, run_id: str, failed_step: str, error_summary: str) -> dict:
+    """Record pre-apply failure; SQL independently rejects any version in the ledger."""
+    ctx, ids = state["context"], state["ids"]
+    evidence = {
+        "train_run_id": str(run_id),
+        "failed_step": " ".join(str(failed_step).split())[:160],
+        "error_summary": " ".join(str(error_summary).split())[:1000],
+        "secrets_included": False,
+    }
+    result = call(
+        "select public.lf_fail_db_operation_execution_v1(:'exec', :'owner', :fence, (:'ev')::jsonb, :'actor');",
+        exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
+        ev=json.dumps(evidence, sort_keys=True), actor=ids["actor"],
+    )
+    if result.get("result") not in ("EXECUTION_BLOCKED_NO_LEDGER_EFFECT", "REPLAY_ALREADY_FAILED"):
+        raise RuntimeError(f"TRAIN_EXEC_ABORT_FAILED:{json.dumps(result, sort_keys=True)}")
+    return {**state, "result": "TRAIN_EXECUTION_ABORTED", "abort": result}
 
 
 def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
     ctx, ids = state["context"], state["ids"]
     receipt = {"apply_receipt": apply_receipt, "train_run_id": ctx["run_id"]}
-    call(
-        "select public.fn_lf_operation_mark_effect_succeeded_v1(:'exec', :'owner', :fence, :'scope', (:'receipt')::jsonb, :'actor');",
-        exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
-        scope=ids["effect_scope"], receipt=json.dumps(receipt, sort_keys=True), actor=ids["actor"],
-    )
+    if state.get("effect_state") != "SUCCEEDED":
+        call(
+            "select public.fn_lf_operation_mark_effect_succeeded_v1(:'exec', :'owner', :fence, :'scope', (:'receipt')::jsonb, :'actor');",
+            exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
+            scope=ids["effect_scope"], receipt=json.dumps(receipt, sort_keys=True), actor=ids["actor"],
+        )
+        state["effect_state"] = "SUCCEEDED"
     record_step(ids, "patch", patch_evidence(ctx, ids, decision, apply_receipt))
     return {**state, "result": "TRAIN_EXECUTION_PATCH_RECORDED"}
 
@@ -299,10 +398,17 @@ def main() -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("self-test")
     b = sub.add_parser("begin")
-    for key in ("pr", "version", "name", "path", "source-blob", "source-sha256",
-                "repo", "head-sha", "persisted-head-sha", "run-id"):
-        b.add_argument(f"--{key}", required=True)
-    b.add_argument("--state", required=True)
+    r = sub.add_parser("resume")
+    for command in (b, r):
+        for key in ("pr", "version", "name", "path", "source-blob", "source-sha256",
+                    "repo", "head-sha", "persisted-head-sha", "run-id"):
+            command.add_argument(f"--{key}", required=True)
+        command.add_argument("--state", required=True)
+    a = sub.add_parser("abort")
+    a.add_argument("--state", required=True)
+    a.add_argument("--run-id", required=True)
+    a.add_argument("--failed-step", required=True)
+    a.add_argument("--error-summary", required=True)
     c = sub.add_parser("commit")
     c.add_argument("--state", required=True)
     c.add_argument("--apply-receipt", required=True)
@@ -314,11 +420,17 @@ def main() -> int:
     if args.cmd == "self-test":
         self_test()
         return 0
-    if args.cmd == "begin":
+    if args.cmd in ("begin", "resume"):
         ctx = {key.replace("-", "_"): getattr(args, key.replace("-", "_"))
                for key in ("pr", "version", "name", "path", "source-blob", "source-sha256",
                            "repo", "head-sha", "persisted-head-sha", "run-id")}
-        state = begin(ctx)
+        state = begin(ctx) if args.cmd == "begin" else resume(ctx)
+        if state.get("result") == "TRAIN_EXECUTION_NOT_FOUND":
+            print(json.dumps(state, sort_keys=True))
+            return 0
+    elif args.cmd == "abort":
+        state = json.loads(Path(args.state).read_text())
+        state = abort(state, args.run_id, args.failed_step, args.error_summary)
     elif args.cmd == "commit":
         state = json.loads(Path(args.state).read_text())
         receipt = json.loads(Path(args.apply_receipt).read_text())
