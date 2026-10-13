@@ -46,6 +46,8 @@ def verify(source: str) -> list[str]:
       "fn_lf_human_decision_consume_v1",
       "lf_operational_executor_assert_decision_current_v1",
       "OPERATIONAL_DECISION_NO_LONGER_CURRENT",
+      "OPERATIONAL_DECISION_SUPERSEDED_OR_OPEN",
+      "fn_lf_human_decision_current_for_subject_v1",
       "OPERATIONAL_DECISION_ROUTE_POLICY_NO_LONGER_ACTIVE",
       "fn_lf_human_decision_resolve_policy_v1",
       "fn_lf_human_decision_assert_authority_receipt_v1",
@@ -140,6 +142,16 @@ class GovernedCandidateStaticTests(unittest.TestCase):
         self.assertTrue(verify(source.replace(
             "OPERATIONAL_ADMISSION_AUTHORITY_POLICY_NOT_ACTIVE",
             "POLICY_BYPASSED")))
+
+    def test_no_superseded_human_decision_is_accepted(self):
+        source=SQL.read_text(encoding="utf-8")
+        self.assertEqual(source.count(
+            "private.fn_lf_human_decision_current_for_subject_v1("),2)
+        self.assertEqual(source.count(
+            "RAISE EXCEPTION 'OPERATIONAL_DECISION_SUPERSEDED_OR_OPEN'"),2)
+        self.assertTrue(verify(source.replace(
+            "OPERATIONAL_DECISION_SUPERSEDED_OR_OPEN",
+            "ALLOW_SUPERSEDED_DECISION")))
 
     def test_mutated_admission_body_is_rejected(self):
         source=SQL.read_text(encoding="utf-8")
