@@ -34,6 +34,21 @@ jobs:
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/contract_check_self_change_admission/lf_independent_change_admission_carrier_v1.py self-test
 
+      - name: M10.4 frozen legacy gate (trusted base source)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          guard=sandbox/lf_contract_gate_test/engineering_checkpoints/m10_4/legacy_freeze_guard.py
+          if [ -f "$guard" ]; then
+            python3 "$guard" self-test
+            python3 "$guard" check-pr --repo "$REPO" --pr "$PR_NUMBER"
+          else
+            echo "M104_FREEZE_GUARD_BOOTSTRAP_NOT_YET_ON_TRUSTED_BASE"
+          fi
+
       - name: Classify independent admission applicability
         id: admission_scope
         env:
