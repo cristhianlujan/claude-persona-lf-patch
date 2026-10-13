@@ -16,7 +16,7 @@ SELECT o.relation_name,jsonb_build_object(
  WHERE a.attrelid=o.oid AND a.attnum>0 AND NOT a.attisdropped),'[]'::jsonb),
 'constraints',COALESCE((SELECT jsonb_agg(jsonb_build_object(
  'name',c.conname,'type',c.contype,'definition',pg_get_constraintdef(c.oid,true),
- 'validated',c.convalidated,'references',CASE WHEN c.confrelid<>0 THEN c.confrelid::regclass::text ELSE NULL END)
+ 'validated',c.convalidated,'references',CASE WHEN c.confrelid<>0 THEN (SELECT rn.nspname||'.'||rc.relname FROM pg_class rc JOIN pg_namespace rn ON rn.oid=rc.relnamespace WHERE rc.oid=c.confrelid) ELSE NULL END)
  ORDER BY c.conname) FROM pg_constraint c WHERE c.conrelid=o.oid),'[]'::jsonb),
 'indexes',COALESCE((SELECT jsonb_agg(jsonb_build_object(
  'name',i.indexrelid::regclass::text,'definition',pg_get_indexdef(i.indexrelid),
@@ -24,7 +24,7 @@ SELECT o.relation_name,jsonb_build_object(
  ORDER BY i.indexrelid::regclass::text) FROM pg_index i WHERE i.indrelid=o.oid),'[]'::jsonb),
 'triggers',COALESCE((SELECT jsonb_agg(jsonb_build_object(
  'name',tg.tgname,'definition',pg_get_triggerdef(tg.oid,true),
- 'enabled',tg.tgenabled,'function',tg.tgfoid::regprocedure::text,
+ 'enabled',tg.tgenabled,'function',(SELECT fnn.nspname||'.'||fp.proname||'('||pg_get_function_identity_arguments(fp.oid)||')' FROM pg_proc fp JOIN pg_namespace fnn ON fnn.oid=fp.pronamespace WHERE fp.oid=tg.tgfoid),
  'function_source_sha256',encode(extensions.digest(convert_to(pg_get_functiondef(tg.tgfoid),'UTF8'),'sha256'),'hex'))
  ORDER BY tg.tgname) FROM pg_trigger tg WHERE tg.tgrelid=o.oid AND NOT tg.tgisinternal),'[]'::jsonb),
 'policies',COALESCE((SELECT jsonb_agg(jsonb_build_object(
