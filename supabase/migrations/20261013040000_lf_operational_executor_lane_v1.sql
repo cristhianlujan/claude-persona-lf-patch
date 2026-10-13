@@ -512,6 +512,7 @@ DECLARE
   v_reserved jsonb;
   v_authority jsonb;
   v_decision jsonb;
+  v_latest jsonb;
   v_policy jsonb;
   v_subject jsonb;
   v_meta jsonb;
@@ -557,6 +558,13 @@ BEGIN
   END IF;
   v_req_id:=(p_approval_receipt->>'request_id')::uuid;
   v_decision:=private.fn_lf_human_decision_consume_v1(v_req_id);
+  v_latest:=private.fn_lf_human_decision_current_for_subject_v1(
+    'LF_OPERATION_EXECUTOR','OPERATIONAL_EXECUTION',p_execution_id
+  );
+  IF v_latest #>> '{routing,request_id}' IS DISTINCT FROM v_req_id::text
+     OR v_latest #>> '{routing,request_status}' IS DISTINCT FROM 'DECIDED' THEN
+    RAISE EXCEPTION 'OPERATIONAL_DECISION_SUPERSEDED_OR_OPEN';
+  END IF;
   IF v_decision IS NULL
      OR v_decision->>'schema_version' IS DISTINCT FROM 'lf-human-decision-consume/v1'
      OR v_decision->>'request_status' IS DISTINCT FROM 'DECIDED'
@@ -681,6 +689,7 @@ DECLARE
   v_exec public.lf_operation_execution%rowtype;
   v_proof jsonb;
   v_decision jsonb;
+  v_latest jsonb;
   v_subject jsonb;
   v_meta jsonb;
   v_expires timestamptz;
@@ -705,6 +714,13 @@ BEGIN
   END IF;
   v_req:=(v_proof->>'decision_request_id')::uuid;
   v_decision:=private.fn_lf_human_decision_consume_v1(v_req);
+  v_latest:=private.fn_lf_human_decision_current_for_subject_v1(
+    'LF_OPERATION_EXECUTOR','OPERATIONAL_EXECUTION',p_execution_id
+  );
+  IF v_latest #>> '{routing,request_id}' IS DISTINCT FROM v_req::text
+     OR v_latest #>> '{routing,request_status}' IS DISTINCT FROM 'DECIDED' THEN
+    RAISE EXCEPTION 'OPERATIONAL_DECISION_SUPERSEDED_OR_OPEN';
+  END IF;
   IF v_decision IS NULL
      OR v_decision->>'request_status' IS DISTINCT FROM 'DECIDED'
      OR v_decision->>'producer_code' IS DISTINCT FROM 'LF_OPERATION_EXECUTOR'
