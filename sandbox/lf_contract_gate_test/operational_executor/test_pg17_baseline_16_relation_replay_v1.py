@@ -242,6 +242,7 @@ def main() -> None:
         "'lf_operation_executor_runtime','lf_operational_admission_authority');"
     ).strip()
     assert role_residue == "0", "BLOCK_OPERATIONAL_REPLAY_ROLLBACK_ROLE_RESIDUE"
+    print(marker + " rollback_roles_clean=true")
     print("PASS_PG17_LF_16_RELATION_CATALOG_REPLAY_ROLLBACK "
           + " ".join(f"{k}={v}" for k, v in expected.items())
           + " exact_trigger_sources=27 rollback_clean=true "
