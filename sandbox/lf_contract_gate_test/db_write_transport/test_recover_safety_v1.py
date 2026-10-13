@@ -65,7 +65,7 @@ class RecoverSafetyTest(unittest.TestCase):
     def test_applied_original_must_not_replay(self):
         with tempfile.TemporaryDirectory() as tmp:
             version,name,path=self.source(tmp)
-            with patch.object(a,"read_ledger",return_value=(version,name,"EXISTING")),patch.object(a,"_fallback_apply") as fallback:
+            with patch.object(a,"_verify_recover_router"),patch.object(a,"read_ledger",return_value=(version,name,"EXISTING")),patch.object(a,"_fallback_apply") as fallback:
                 with self.assertRaisesRegex(RuntimeError,"RECOVER_ALREADY_APPLIED"):
                     a.apply_exact(project_root=pathlib.Path(tmp),migration_path=path,
                       db_url="test",source_blob="a"*40,allow_fallback=True,recover_existing_main=True)
