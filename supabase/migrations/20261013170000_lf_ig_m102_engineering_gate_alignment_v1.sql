@@ -152,7 +152,7 @@ BEGIN
       'checkpoint_code','RUNTIME_PREFLIGHT',
       'contract_source','EXPLICIT_ACTION_SPEC',
       'action_kind','READBACK_ONCE',
-      'status','BLOCK_DEPLOYED_EDGE_SOURCE_PARITY_UNVERIFIED',
+      'status','READY',
       'recipe_mode','OBSERVE_AND_PERSIST',
       'expected','R17 actual deployed Edge source versions and Git main parity, contract current; no deployment',
       'target',jsonb_build_object('declared_objects',jsonb_build_array('public.lf_capability_current')),
@@ -160,6 +160,20 @@ BEGIN
       'runtime_evidence_required',jsonb_build_array(
            'input-governance-agent-v1','input-governance-curator-v1',
            'input-governance-validator-v1'),
+      'runtime_source_parity_preflight',jsonb_build_object(
+         'observed_date','2026-10-13',
+         'verification','DEPLOYED_INDEX_TS_EXACTLY_EQUALS_GITHUB_MAIN',
+         'required_currentness','REVERIFY_BEFORE_CHECKPOINT_DONE',
+         'items',jsonb_build_array(
+           jsonb_build_object('slug','input-governance-agent-v1','version',17,
+             'git_blob_sha','326a5c492c84cceccb45ea8d6a0f39a1d5305637',
+             'deployed_ezbr_sha256','95977bfd7be64aef68a4c18c2e7fe15914aa510bcc1c1ee668863068cc5e656c'),
+           jsonb_build_object('slug','input-governance-curator-v1','version',14,
+             'git_blob_sha','bd43f469d5d508f64dbee21eea7be611e7d2e780',
+             'deployed_ezbr_sha256','31fff4bc573c6832f7c3ce53c783c31b735ead263e3262af5d43b3a7b64b3d5c'),
+           jsonb_build_object('slug','input-governance-validator-v1','version',18,
+             'git_blob_sha','31a77e43c02f714479e5ed2f1fdb615fbe38eead',
+             'deployed_ezbr_sha256','57bfa7fcf19002378a5f1ffcdd3f3777223a4c8ca3417df8220b55c996e59a77'))),
       'requires_material_execution',false),true);
 
   -- CP5: enforce real source-bound reversibility; historical M9.2 is a
