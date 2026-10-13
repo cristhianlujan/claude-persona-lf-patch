@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from unittest.mock import patch
 
+from activation_readback_v1 import evaluate as evaluate_activation
 from lf_operation_executor_v1 import (
     ACTIVE_LANE, CONNECTOR, OPERATION_CODE, OPERATIONAL_ASSET_TYPE, OPERATIONAL_ACTION, Handler, Request, Blocked,
     digest, dispatch, runtime_dispatch,
@@ -98,6 +99,38 @@ class ExecutorTests(unittest.TestCase):
         req,h,conn=self.make()
         result=dispatch(req,{h.code:h},lambda:conn,dry_run=dry_run,admitted=True)
         return result, conn
+
+    def test_activation_requires_independent_router_route_and_catalogue(self):
+        from pathlib import Path
+        import json
+        manifest=json.loads((Path(__file__).parent/"operation_lane_contract_candidate_v1.json").read_text())
+        self.assertEqual(manifest["status"],"CANDIDATE_NOT_INSTALLED_NOT_ACTIVE")
+        self.assertTrue(manifest["independent_lane"]["migration_train_exclusive"])
+        self.assertEqual(manifest["independent_lane"]["asset_type"],OPERATIONAL_ASSET_TYPE)
+        self.assertEqual(manifest["independent_lane"]["action_code"],OPERATIONAL_ACTION)
+        snapshot={"migration_route":{"status":"READY_TO_EXECUTE","operation_code":"ACTUALIZACION_DB_LF"},
+                  "operational_route":{"status":"BLOCKED","blocking_code":"BLOCK_OPERATION_NOT_REGISTERED"},
+                  "operation_registry_count":0,"router_action_count":0,
+                  "router_authority_consumer":False,"active_contract_count":0,
+                  "active_required_step_count":0,"active_judge_binding_count":0,
+                  "governed_closeout_function":False,
+                  "read_only_connection_unchanged":True}
+        report=evaluate_activation(snapshot)
+        self.assertEqual(report["status"],"BLOCKED")
+        self.assertIn("BLOCK_OPERATIONAL_ROUTE_NOT_ADMITTED",report["blocking_codes"])
+        self.assertIn("BLOCK_OPERATION_CLOSEOUT_NOT_INSTALLED",report["blocking_codes"])
+        snapshot["operational_route"]={"status":"READY_TO_EXECUTE","operation_code":OPERATION_CODE,
+              "asset_type":OPERATIONAL_ASSET_TYPE,"action_code":OPERATIONAL_ACTION,
+              "downstream_execution_allowed":True}
+        snapshot.update(operation_registry_count=1,router_action_count=1,
+               router_authority_consumer=True,active_contract_count=1,
+               active_required_step_count=1,active_judge_binding_count=1,
+               governed_closeout_function=True)
+        verified=evaluate_activation(snapshot)
+        self.assertEqual(verified["status"],"PASS")
+        snapshot["migration_route"]["operation_code"]=OPERATION_CODE
+        self.assertIn("BLOCK_MIGRATION_ROUTE_NOT_PRESERVED",
+                      evaluate_activation(snapshot)["blocking_codes"])
 
     def test_default_inactive_no_connection(self):
         req,h,db=self.make()
