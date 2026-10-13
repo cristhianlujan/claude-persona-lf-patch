@@ -28,19 +28,19 @@ El contrato de admisión propuesto (NO activado) está en operation_lane_contrac
 
 ## Transacción y control
 
-dispatch() trabaja en UNA transacción: Router → ejecución → admission → autoridad → lease → effect reservation → callback confiable → readback obligatorio → revalidación de autoridad → marca efecto SUCCEEDED → lf_close_operational_execution_v1 → commit. El cierre debe comprobar la ejecución, su lease/fence, los pasos gobernados y el recibo; esa función aún NO EXISTE en la base. Hasta que esté versionada/admitida, cualquier operación real falla cerrada en vez de dejar una ejecución IN_PROGRESS o reclamar un COMMIT válido.
+dispatch() utiliza una sola transacción y **únicamente dos fachadas SQL autorizadas**: `lf_operational_executor_begin_v1` valida Router, admisión, lease y effect guard; el handler empaquetado realiza el efecto y lee su resultado; `lf_operational_executor_finish_v1` vuelve a validar Router, marca el efecto y llama `lf_close_operational_execution_v1` que registra tres pasos con `lf_record_operation_step_core_v1` antes de COMMIT. El cierre debe comprobar la ejecución, su lease/fence, los pasos gobernados y el recibo; las tres funciones siguen siendo CANDIDATAS en el PR #2372 y NO EXISTEN aún en la base. Hasta que esté versionada/admitida, cualquier operación real falla cerrada en vez de dejar una ejecución IN_PROGRESS o reclamar un COMMIT válido.
 
 dry_run=true revierte también reserva y recibo. Un effect reservado sin desenlace queda BLOQUEADO, no se repite automáticamente. La ruta READ_ONLY nunca escribe.
 
 runtime_dispatch() requiere LF_OPERATION_EXECUTOR_LANE=GOVERNED_OPERATIONAL_DML y LF_OPERATION_EXECUTOR_DSN en el servidor. La variable de entorno no concede permisos por sí sola: se requiere manifest durable aprobado y autoridad canónica vigente. LF_OPERATION_EXECUTOR_ACTOR es de servidor, no enviado por el caller.
 
-NO desplegar con postgres, service_role o una credencial de DML general. El administrador debe revisar EXECUTE mínimo, SECURITY INVOKER y privilegios de tablas. Si un handler requiere permisos adicionales, utilizar una fachada SQL restringida, versionada y aplicada únicamente por Migration Train. El ejecutor no se convierte en DB_WRITE_TRANSPORT para migraciones.
+El PR #2372 define el rol agrupador `lf_operation_executor_runtime NOLOGIN NOINHERIT`, sin acceso a tablas y con EXECUTE solo sobre las dos fachadas. Un usuario de conexión y su concesión de rol, autenticación y contraseñas quedan PENDIENTES de validación y aprovisionamiento seguro. NO desplegar con postgres, service_role o una credencial de DML general. El administrador debe revisar EXECUTE mínimo, SECURITY INVOKER y privilegios de tablas. Si un handler requiere permisos adicionales, utilizar una fachada SQL restringida, versionada y aplicada únicamente por Migration Train. El ejecutor no se convierte en DB_WRITE_TRANSPORT para migraciones.
 
 ## Estado y próximos gates
 
 CODE-ONLY / NO CONECTADO / NO DESPLEGADO / SIN HANDLERS REGISTRADOS.
 
-1. Preparar en un PR separado de una sola migración el registro EJECUCION_OPERATIVA_LF + OPERATIONAL_DB/OPERATION_EXECUTE, contratos/policies/steps/authority y función de cierre gobernado. No crear rutas paralelas.
+1. Revisar el PR #2372 (una sola migración candidata) que registra EJECUCION_OPERATIVA_LF, OPERATIONAL_DB/OPERATION_EXECUTE, contratos/policies/steps/authority y tres fachadas SQL de privilegio mínimo. No está aplicado.
 2. Registrar por separado cada handler con versión y bind exacto. Mantener independencia de proyectos.
 3. Auditar rol DB de privilegio mínimo. Cualquier cambio DDL o de políticas se aplica mediante Train.
 4. Probar positivo, denegación, conflicto, replay, rollback y readback real en sandbox.
