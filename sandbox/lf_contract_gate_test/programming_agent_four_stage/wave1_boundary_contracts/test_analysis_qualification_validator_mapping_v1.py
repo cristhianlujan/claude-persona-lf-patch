@@ -142,27 +142,44 @@ def check(catalog, migration, original_validator_source, campaign_validator_sour
     return problems
 
 
+def sql_with_catalog(sql, subject):
+    marker = "v_catalog jsonb := '"
+    start = sql.find(marker)
+    end = sql.find("'::jsonb;", start)
+    if start < 0 or end < 0:
+        raise AssertionError("SQL_CATALOG_UNAVAILABLE")
+    encoded = json.dumps(subject["units"], ensure_ascii=False, separators=(",", ":")).replace("'", "''")
+    return sql[:start + len(marker)] + encoded + sql[end:]
+
+
 def run_selftest(catalog, sql, original, campaign):
     assert not check(catalog, sql, original, campaign), "Baseline source binding must be structurally well formed"
     bad_mutations = [
-        ("CHANGED_STAGE_ASSERTION", lambda d: d["units"][1]["checkpoints"][2]["validator_contract"].update(stage_specific_assertion="")),
-        ("WRONG_A15_VALIDATOR", lambda d: d["units"][14]["checkpoints"][0]["validator_contract"].update(stage_structure_validator={"callable": "validate_manifest"})),
-        ("FALSE_PASS", lambda d: d["units"][0]["checkpoints"][0]["validator_contract"].update(acceptance_state="QUALIFIED")),
-        ("A9_CONSUMER_BYPASS", lambda d: d["units"][8]["checkpoints"][2]["validator_contract"].pop("additional_consumer_guard")),
-        ("A14_THRESHOLDS_WEAKENED", lambda d: d["units"][13]["checkpoints"][2]["validator_contract"]["required_thresholds"].update(classification_accuracy_min=.90)),
-        ("CROSS_SUBJECT", lambda d: d["units"][4]["checkpoints"][2]["validator_contract"].update(subject_ref="PROGRAMMING_AGENT_ANALYSIS_REMEDIATION_V1/A6Q/A6Q_C3")),
-        ("UNBOUND_RUNTIME", lambda d: d["units"][2]["checkpoints"][1]["validator_contract"].update(reused_validators=[])),
-        ("MISSING_CURRENTNESS", lambda d: d["units"][0]["checkpoints"][0]["validator_contract"].update(reusable_capabilities=[])),
+        ("CHANGED_STAGE_ASSERTION", "NO_INDIVIDUAL_ASSERTION", lambda d: d["units"][1]["checkpoints"][2]["validator_contract"].update(stage_specific_assertion="")),
+        ("WRONG_A15_VALIDATOR", "A15_WAVE1_VALIDATOR_MISAPPLIED", lambda d: d["units"][14]["checkpoints"][0]["validator_contract"].update(stage_structure_validator={"callable": "validate_manifest"})),
+        ("FALSE_PASS", "UNSUPPORTED_ADMISSION", lambda d: d["units"][0]["checkpoints"][0]["validator_contract"].update(acceptance_state="QUALIFIED")),
+        ("A9_CONSUMER_BYPASS", "A9_REAL_PG01_REQUIRED", lambda d: d["units"][8]["checkpoints"][2]["validator_contract"].pop("additional_consumer_guard")),
+        ("A14_THRESHOLDS_WEAKENED", "A14_HOLDOUT_THRESHOLDS_WEAKENED", lambda d: d["units"][13]["checkpoints"][2]["validator_contract"]["required_thresholds"].update(classification_accuracy_min=.90)),
+        ("CROSS_SUBJECT", "SUBJECT_CROSS_BIND", lambda d: d["units"][4]["checkpoints"][2]["validator_contract"].update(subject_ref="PROGRAMMING_AGENT_ANALYSIS_REMEDIATION_V1/A6Q/A6Q_C3")),
+        ("UNBOUND_RUNTIME", "PROFILE_VALIDATOR_MISSING", lambda d: d["units"][2]["checkpoints"][1]["validator_contract"].update(reused_validators=[])),
+        ("MISSING_CURRENTNESS", "CURRENTNESS_AUTHORITY_MISSING", lambda d: d["units"][0]["checkpoints"][0]["validator_contract"].update(reusable_capabilities=[])),
     ]
-    for name, mutation in bad_mutations:
+    for name, expected, mutation in bad_mutations:
         subject = copy.deepcopy(catalog)
         mutation(subject)
-        errors = check(subject, sql, original, campaign)
-        if not errors:
-            raise AssertionError("False PASS on negative: " + name)
-    print("PASS_45_INDIVIDUAL_BINDINGS_SOURCE_ONLY positives=45 negatives=" + str(len(bad_mutations))
-          + " operational_receipts=0 source_only=true")
-
+        errors = check(subject, sql_with_catalog(sql, subject), original, campaign)
+        if not any(err.endswith(":" + expected) for err in errors):
+            raise AssertionError("Semantic negative not detected: " + name + " " + repr(errors))
+        if any(err.endswith(":SQL_CATALOG_DRIFT") for err in errors):
+            raise AssertionError("Negative masked by SQL parity: " + name)
+    title_mutation = copy.deepcopy(catalog)
+    title_mutation["units"][0]["title"] += " (source-only parity probe)"
+    assert not check(title_mutation, sql_with_catalog(sql, title_mutation), original, campaign), "Synced SQL must accept nonsemantic title change"
+    parity_errors = check(title_mutation, sql, original, campaign)
+    if parity_errors != ["$:SQL_CATALOG_DRIFT"]:
+        raise AssertionError("SQL parity negative not isolated: " + repr(parity_errors))
+    print("PASS_45_INDIVIDUAL_BINDINGS_SOURCE_ONLY positives=45 semantic_negatives=" + str(len(bad_mutations))
+          + " parity_negative=1 operational_receipts=0 source_only=true")
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
