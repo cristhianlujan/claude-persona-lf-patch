@@ -131,12 +131,12 @@ BEGIN
         'authority', 'Solo señal; no estado ni veredicto.'),
       'aligned_with_log_plan_phase_4', true,
       'acceptance_criteria_result', jsonb_build_object(
-        'NATIVE_FIRST_THEN_GAP_ONLY', 'PASS',
-        'NO_NEW_OBSERVABILITY_TABLE_WITHOUT_MEASURED_GAP_AND_S28_AMENDMENT', 'PASS',
-        'HEARTBEAT_SIGNAL_NEVER_STATE_OR_VERDICT_AUTHORITY', 'PASS',
-        'DEBUG_DRIFT_DISPOSED', 'PASS',
-        'GATE_CHECK_OBSERVABILITY_REMAINS_INTERNAL_CHECK_NOT_CAPABILITY', 'PASS',
-        'ALIGNED_WITH_LOG_PLAN_PHASE_4', 'PASS'),
+        'NATIVE_FIRST_THEN_GAP_ONLY', 'PASS: every F09-015 question maps to an existing source or measured gap only',
+        'NO_NEW_OBSERVABILITY_TABLE_WITHOUT_MEASURED_GAP_AND_S28_AMENDMENT', 'PASS: no table is created without a measured gap and explicit S28 amendment',
+        'HEARTBEAT_SIGNAL_NEVER_STATE_OR_VERDICT_AUTHORITY', 'PASS: heartbeat remains a signal and never state or verdict authority',
+        'DEBUG_DRIFT_DISPOSED', 'PASS: DEBUG is disabled at INFO and retention_days remains 15',
+        'GATE_CHECK_OBSERVABILITY_REMAINS_INTERNAL_CHECK_NOT_CAPABILITY', 'PASS: observability remains an internal check, not a capability',
+        'ALIGNED_WITH_LOG_PLAN_PHASE_4', 'PASS: aligned with Phase 4/T4.1 and respects the Phase 3 dependency'),
       'acceptance_declared', false,
       'occurred_at', to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')
     ),
