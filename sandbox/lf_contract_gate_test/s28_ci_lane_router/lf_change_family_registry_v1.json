@@ -2,11 +2,6 @@
   "registry_version": "LF_CHANGE_FAMILY_REGISTRY_V1",
   "fixed_families": [
     {
-      "family": "MIGRATION",
-      "kind": "prefix",
-      "value": "supabase/migrations/"
-    },
-    {
       "family": "CHANGESET_MANIFEST",
       "kind": "prefix",
       "value": "sandbox/lf_contract_gate_test/changesets/"
@@ -17,13 +12,14 @@
       "value": "sandbox/lf_contract_gate_test/s28_ci_lane_router/"
     },
     {
-      "family": "WORKFLOW",
-      "kind": "prefix_suffixes",
-      "value": ".github/workflows/",
-      "suffixes": [
-        ".yaml",
-        ".yml"
-      ]
+      "family": "MIGRATION",
+      "kind": "prefix",
+      "value": "supabase/migrations/"
+    },
+    {
+      "family": "MIGRATION_ROUTE_GUARD",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/migration_route_guard/"
     },
     {
       "family": "SERVICE_RUNTIME",
@@ -34,6 +30,15 @@
       "family": "SUPABASE_FUNCTION",
       "kind": "prefix",
       "value": "supabase/functions/"
+    },
+    {
+      "family": "WORKFLOW",
+      "kind": "prefix_suffixes",
+      "value": ".github/workflows/",
+      "suffixes": [
+        ".yaml",
+        ".yml"
+      ]
     }
   ],
   "family_controls": {
@@ -50,7 +55,10 @@
       "CI_ROUTER_SELFTEST"
     ],
     "SERVICE_RUNTIME": [],
-    "SUPABASE_FUNCTION": []
+    "SUPABASE_FUNCTION": [],
+    "MIGRATION_ROUTE_GUARD": [
+      "MIGRATION_ROUTE_GUARD"
+    ]
   },
   "path_admission": {
     "version": "LF_REPOSITORY_PATH_ADMISSION_V1",
@@ -66,6 +74,7 @@
       ".github/workflows/lf-input-governance-recurate.yml",
       ".github/workflows/lf-material-currentness.yml",
       ".github/workflows/lf-migration-merge-train.yml",
+      ".github/workflows/lf-migration-route-guard.yml",
       ".github/workflows/lf-migration-source-parity-core.yml",
       ".github/workflows/lf-pack-validation-core.yml",
       ".github/workflows/pase-merge-gate.yml",
