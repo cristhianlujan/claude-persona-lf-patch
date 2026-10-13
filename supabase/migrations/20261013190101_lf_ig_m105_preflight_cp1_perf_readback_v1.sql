@@ -16,6 +16,7 @@ DECLARE
   v_old_action jsonb;
   v_q_as text;
   v_q_perf text;
+  v_q_suite text;
   v_q_release text;
   v_q_terminal text;
   v_q_columns text;
@@ -116,6 +117,34 @@ SELECT CASE WHEN count(*) FILTER (
 FROM metrics
 $query$;
 
+  -- M7 suite consumer: require real full evaluation, source/version/commit binding.
+  -- The newest historically PASSED suite is a single checkpoint case, not M7 global.
+  v_q_suite:=$query$
+WITH qualified_suite AS (
+ SELECT s.suite_run_id,s.status,s.commit_sha,s.tests_total,s.tests_passed,
+        s.tests_failed,s.tests_blocked,s.metadata
+ FROM public.lf_test_suite_runs s
+ WHERE s.suite_code='INPUT_GOVERNANCE_REGRESSION'
+   AND s.status='PASSED' AND s.commit_sha IS NOT NULL
+   AND s.metadata->>'full_catalog_evaluated'='true'
+ ORDER BY s.started_at DESC NULLS LAST LIMIT 1
+), binding AS (
+ SELECT version,previous_version,manifest_sha256
+ FROM public.lf_capability_current
+ WHERE capability_code='INPUT_GOVERNANCE'
+)
+SELECT CASE WHEN EXISTS(
+ SELECT 1 FROM qualified_suite s CROSS JOIN binding b
+ WHERE b.previous_version IS NOT NULL
+   AND s.tests_total>0 AND s.tests_passed=s.tests_total
+   AND s.tests_failed=0 AND s.tests_blocked=0
+   AND s.metadata->>'source_manifest_sha256'=b.manifest_sha256
+   AND s.metadata->>'source_version'=('INPUT_GOVERNANCE@'||b.version)
+) THEN 'PASS' ELSE 'FAIL' END AS verdict,
+coalesce((SELECT count(*) FROM qualified_suite),0) AS qualifying_suite_count,
+(SELECT version FROM binding) AS current_version
+$query$;
+
   v_q_release:=$query$
 WITH cohort AS (
  SELECT jsonb_array_elements_text(unit_metadata#>'{m105_scope_v1,screen_ids}')::integer AS pantalla_id
@@ -198,6 +227,28 @@ $query$;
         'queries',jsonb_build_array(v_q_as,v_q_columns)),
       'missing','[]'::jsonb,'missing_typed','[]'::jsonb),true);
 
+  -- CP3: explicit M7 full-regression verifier; a scoped subcase or NULL SHA
+  -- cannot qualify a 13-screen post-cutover suite.
+  IF coalesce(v_meta#>'{action_specs_v1,SUITE_M7_GREEN}','{}'::jsonb)<>'{}'::jsonb
+  THEN RAISE EXCEPTION 'M105_CP3_ACTION_DRIFT'; END IF;
+  v_meta:=jsonb_set(v_meta,'{action_specs_v1,SUITE_M7_GREEN}',
+    jsonb_build_object(
+      'status','READY','schema_version','ENGINEERING_ACTION_SPEC_V3',
+      'checkpoint_code','SUITE_M7_GREEN',
+      'action_kind','READBACK_ONCE','recipe_mode','READBACK_EXACT',
+      'requires_material_execution',false,'mutation_policy','NO_DOMAIN_MUTATION',
+      'expected','Require full M7 global suite PASSED with exact current-release manifest SHA, version, nonnull Git commit, all assertions green',
+      'verification_queries',jsonb_build_array(v_q_suite),
+      'target',jsonb_build_object('checkpoint','SUITE_M7_GREEN',
+         'declared_objects',jsonb_build_array('public.lf_test_suite_runs','public.lf_capability_current')),
+      'forbidden',jsonb_build_array('SCOPED_SINGLE_CASE_COUNTS_AS_FULL_SUITE','NULL_COMMIT_SHA_COUNTS_AS_BOUND','HISTORICAL_RELEASE_COUNTS_AS_VNEXT')),true);
+  v_meta:=jsonb_set(v_meta,'{source_pack_v1,checkpoint_inputs,SUITE_M7_GREEN}',
+    jsonb_build_object('inputs',jsonb_build_object(
+       'events','[]'::jsonb,'assets','[]'::jsonb,'artifacts','[]'::jsonb,
+       'db_objects',jsonb_build_array('public.lf_test_suite_runs','public.lf_capability_current'),
+       'queries',jsonb_build_array(v_q_suite)),
+       'missing','[]'::jsonb,'missing_typed','[]'::jsonb),true);
+
   -- CP4: a suite PASS is not a performance metric. Compare published M8 p95
   -- to the stronger-than-p90 150000ms absolute Edge budget, with no relative gate inference.
   IF v_meta#>>'{action_specs_v1,PERF_M8_GREEN,action_kind}' <> 'READBACK_ONCE'
@@ -252,7 +303,7 @@ $query$;
      'positive_test','current-run sample true run 930',
      'negative_test','12 source-stale latest cohort runs',
      'cp2_producer','MISSING_VERIFIED_VNEXT_RELEASE_AND_EDGE_DISPATCH_RECEIPTS',
-     'cp3_producer','LATEST_SUITE_PASS_HAS_NULL_COMMIT_SHA_NOT_CURRENT_BUNDLE_BOUND',
+     'cp3_producer','LATEST_SUITE_PASS_IS_SCOPED_CASE_OR_NULL_COMMIT_SHA; CURRENT_RELEASE_FULL_SUITE_NOT_PROVEN',
      'cp4_producer','fn_ig_performance_timing_metrics_v1',
      'cp5_negative','PENDING_MATERIAL_EXECUTION',
      'cp6_terminal','MUST_ENFORCE_REAL_VNEXT_RUN_RELEASE_ID',
@@ -319,7 +370,7 @@ SELECT
  'A readback-only checkpoint attempted a denied function; 13-screen historical scope was not explicit. M8 performance checkpoint read M7 suite rather than published timings. A suite PASSED with NULL commit SHA cannot prove release-bound regression. No authentic vNext release_id exists in 253 historical runs.',
  'Incoherent unit contract/source pack/validator and lack of post-cutover provenance producer; M10.2 sandbox completion was confused with real vNext execution readiness.',
  'For every checkpoint preflight bind source to callable authority, freeze exact producer-backed scope, check positive and stale negative, require release identity and Edge execution receipts, and use M8 timing receipt function for budget. Never infer vNext from contract revision or suite PASS without SHA.',
- 'Train executes exact source readback of 13 latest runs; CP1 DONE only after current+stale count=13 and canonical transition; CP4 query points to fn_ig_performance_timing_metrics_v1; CP2/3/5/6 remain PENDING without real producer receipts.',
+ 'Train executes exact source readback of 13 latest runs; CP1 DONE only after current+stale count=13 and canonical transition; CP3 refuses scoped PASSED without manifest/commit; CP4 validates actual M8 metrics; CP2/3/5/6 remain PENDING without authentic receipts.',
  'supabase://programacion.engineering_plan_units/IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.5;supabase://public.lf_eventos/19622',
  'programacion.engineering_plan_units/IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.5',
  'IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.5',
