@@ -15,11 +15,11 @@ def git(root,*args):
     return p.stdout.strip()
 
 class ReconcileGitOnlyTest(unittest.TestCase):
-    def prepare(self, status="renamed", mutate=False, extra=False):
+    def prepare(self, status="renamed", mutate=False, extra=False, source_sql="select 1;\n"):
         tmp=tempfile.TemporaryDirectory()
         root=Path(tmp.name)
         git(root,"init","-q");git(root,"config","user.email","tests@example.test");git(root,"config","user.name","Tests")
-        p=root/OLD;p.parent.mkdir(parents=True,exist_ok=True);p.write_text("select 1;\n")
+        p=root/OLD;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(source_sql)
         git(root,"add",".");git(root,"commit","-qm","original")
         base=git(root,"rev-parse","HEAD")
         p.rename(root/NEW)
@@ -31,12 +31,12 @@ class ReconcileGitOnlyTest(unittest.TestCase):
         file=root/"changed.json";file.write_text(json.dumps([rows]))
         return tmp,root,file,base,head
 
-    def run_case(self,*,status="renamed",mutate=False,extra=False):
-        tmp,root,changes,base,head=self.prepare(status=status,mutate=mutate,extra=extra)
+    def run_case(self,*,status="renamed",mutate=False,extra=False,source_sql="select 1;\n",ledger=None):
+        tmp,root,changes,base,head=self.prepare(status=status,mutate=mutate,extra=extra,source_sql=source_sql)
         try:
             args=["test","--repo-root",str(root),"--pr-files",str(changes),"--base-sha",base,"--head-sha",head,
                   "--router-execution-id","EXEC-RECONCILE-1","--repository","o/r","--db-url","test-db"]
-            with patch.object(sys,"argv",args),patch.object(m,"validate_router") as auth,patch.object(m,"ledger_row",return_value=("ig_example_v1","select 1;\n",1)):
+            with patch.object(sys,"argv",args),patch.object(m,"validate_router") as auth,patch.object(m,"ledger_row",return_value=ledger or ("ig_example_v1","select 1;\n",1)):
                 with redirect_stdout(StringIO()) as out:
                     m.main()
                 return json.loads(out.getvalue()),auth.call_count
@@ -81,7 +81,7 @@ class ReconcileGitOnlyTest(unittest.TestCase):
                   "--router-execution-id","EXEC-RECONCILE-1","--repository","o/r","--db-url","read-only"]
             with patch.object(sys,"argv",args),patch.object(m,"validate_router"),\
                  patch.object(m,"ledger_row",return_value=("ig_example_v1","select 1;\n",2)):
-                with self.assertRaisesRegex(RuntimeError,"RECONCILE_LEDGER_CARDINALITY_INVALID"):
+                with self.assertRaisesRegex(RuntimeError,"RECONCILE_CANONICAL_PARITY_FAILED"):
                     m.main()
         finally:
             tmp.cleanup()
@@ -98,6 +98,17 @@ class ReconcileGitOnlyTest(unittest.TestCase):
                     m.main()
         finally:
             tmp.cleanup()
+    def test_cli_multi_statement_ledger_representation_passes(self):
+        sql="select 1;\nselect 2;\n"
+        got,auth=self.run_case(source_sql=sql,ledger=("ig_example_v1","select 1\nselect 2",2))
+        self.assertEqual(got["code"],"RECONCILE_GIT_ONLY_PASS")
+        self.assertEqual(auth,1)
+
+    def test_inconsistent_ledger_statement_payload_is_rejected(self):
+        record={"name":"ig_example_v1","statement_count":2,"statements":["select 1;"]}
+        with patch.object(m,"read_only_query",return_value=[json.dumps(record)]):
+            with self.assertRaisesRegex(RuntimeError,"RECONCILE_LEDGER_STATEMENT_PAYLOAD_INVALID"):
+                m.ledger_row("fake-read-only","20261012012743")
     def test_git_only_exact_content_passes(self):
         got,auth=self.run_case()
         self.assertEqual(got["code"],"RECONCILE_GIT_ONLY_PASS")
