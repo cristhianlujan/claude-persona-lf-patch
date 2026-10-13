@@ -39,6 +39,20 @@ class ResumeEffectGuardTests(unittest.TestCase):
                        "Router execution verify and close (Train-managed, post-merge)"):
             self.assertNotIn("continue-on-error: true",wf[wf.index(marker):wf.index(marker)+300])
 
+    def test_verified_succeeded_effect_skips_apply_and_reuses_patch(self):
+        receipt={"apply_receipt":{"ledger_version":"20261013010000","ledger_name":"lf_example_v1"}}
+        effect={"result":"REPLAY_SUCCEEDED_EFFECT","receipt":receipt}
+        ledger={"version":"20261013010000","name":"lf_example_v1","source_sha256":"b"*64}
+        state=self.invoke(effect,ledger)
+        self.assertFalse(state["apply_required"])
+        self.assertEqual(state["resume"],"EFFECT_ALREADY_SUCCEEDED")
+
+    def test_already_applied_plan_reports_true_name_not_filename(self):
+        from pathlib import Path
+        wf=(Path(__file__).resolve().parents[3]/".github/workflows/lf-migration-merge-train.yml").read_text()
+        self.assertIn('echo "migration_name=$current_name" >> "$GITHUB_OUTPUT"',wf)
+        self.assertNotIn('echo "migration_name=${target_path##*/}" >> "$GITHUB_OUTPUT"',wf)
+
     def test_first_effect_requires_apply_once(self):
         state=self.invoke({"result":"EFFECT_RESERVED_NEW"},{})
         self.assertTrue(state["apply_required"])
